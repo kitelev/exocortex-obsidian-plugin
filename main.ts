@@ -393,6 +393,196 @@ export default class ExocortexPlugin extends Plugin {
 		return hierarchy;
 	}
 
+	async getAllSubclasses(className: string): Promise<string[]> {
+		const subclasses: string[] = [className];
+		const visited = new Set<string>();
+		visited.add(className);
+		const files = this.app.vault.getFiles();
+		
+		// Find all classes that inherit from this class (recursively)
+		const findSubclassesRecursive = async (parentClass: string) => {
+			for (const file of files) {
+				// Skip files in template folder
+				if (this.settings.templateFolderPath && file.path.startsWith(this.settings.templateFolderPath + '/')) {
+					continue;
+				}
+				
+				const metadata = this.app.metadataCache.getFileCache(file);
+				if (!metadata?.frontmatter) continue;
+				
+				const instanceClass = metadata.frontmatter['exo__Instance_class'];
+				if (!instanceClass) continue;
+				
+				// Check if this is a class definition
+				const classString = Array.isArray(instanceClass) ? instanceClass[0] : instanceClass;
+				const cleanClass = classString?.toString().replace(/\[\[|\]\]/g, '');
+				
+				if (cleanClass === 'exo__Class' || cleanClass === 'owl__Class' || cleanClass === 'rdfs__Class') {
+					const superClass = metadata.frontmatter['exo__Class_superClass'] || 
+									   metadata.frontmatter['rdfs__subClassOf'];
+					
+					if (superClass) {
+						const superClasses = Array.isArray(superClass) ? superClass : [superClass];
+						for (const sc of superClasses) {
+							const superClassClean = sc.toString().replace(/\[\[|\]\]/g, '');
+							
+							if (superClassClean === parentClass && !visited.has(file.basename)) {
+								visited.add(file.basename);
+								subclasses.push(file.basename);
+								// Recursively find subclasses of this subclass
+								await findSubclassesRecursive(file.basename);
+							}
+						}
+					}
+				}
+			}
+		};
+		
+		await findSubclassesRecursive(className);
+		return subclasses;
+	}
+
+	async buildClassHierarchyTree(): Promise<any[]> {
+		const files = this.app.vault.getFiles();
+		const classesMap = new Map<string, any>();
+		const rootClasses: any[] = [];
+		
+		// First pass: collect all classes and their metadata
+		for (const file of files) {
+			if (this.settings.templateFolderPath && file.path.startsWith(this.settings.templateFolderPath + '/')) {
+				continue;
+			}
+			
+			const metadata = this.app.metadataCache.getFileCache(file);
+			if (!metadata?.frontmatter) continue;
+			
+			const instanceClass = metadata.frontmatter['exo__Instance_class'];
+			if (!instanceClass) continue;
+			
+			const classString = Array.isArray(instanceClass) ? instanceClass[0] : instanceClass;
+			const cleanClass = classString?.toString().replace(/\[\[|\]\]/g, '');
+			
+			if (cleanClass === 'exo__Class' || cleanClass === 'owl__Class' || cleanClass === 'rdfs__Class') {
+				const className = file.basename;
+				const label = metadata.frontmatter['exo__Asset_label'] || 
+							 metadata.frontmatter['rdfs__label'] ||
+							 className;
+				
+				const superClass = metadata.frontmatter['exo__Class_superClass'] || 
+								  metadata.frontmatter['rdfs__subClassOf'];
+				
+				const superClasses = superClass 
+					? (Array.isArray(superClass) ? superClass : [superClass])
+						.map(sc => sc.toString().replace(/\[\[|\]\]/g, ''))
+					: [];
+				
+				const isDefinedBy = metadata.frontmatter['exo__Asset_isDefinedBy'];
+				const ontology = isDefinedBy ? isDefinedBy.toString().replace(/\[\[!?|\]\]/g, '') : 'unknown';
+				
+				classesMap.set(className, {
+					className,
+					label,
+					ontology,
+					superClasses,
+					children: []
+				});
+			}
+		}
+		
+		// Add common classes if not found
+		const commonClasses = [
+			{ className: 'exo__Asset', label: 'Asset (Base)', ontology: 'exo', superClasses: [] },
+			{ className: 'exo__Class', label: 'Class', ontology: 'exo', superClasses: ['exo__Asset'] },
+			{ className: 'exo__Ontology', label: 'Ontology', ontology: 'exo', superClasses: ['exo__Asset'] },
+			{ className: 'exo__Instance', label: 'Instance', ontology: 'exo', superClasses: ['exo__Asset'] },
+			{ className: 'ems__Task', label: 'Task (EMS)', ontology: 'ems', superClasses: ['exo__Asset'] },
+			{ className: 'ems__Project', label: 'Project (EMS)', ontology: 'ems', superClasses: ['exo__Asset'] },
+			{ className: 'ems__Area', label: 'Area (EMS)', ontology: 'ems', superClasses: ['exo__Asset'] },
+			{ className: 'ems__Effort', label: 'Effort', ontology: 'ems', superClasses: ['exo__Asset'] },
+			{ className: 'gtd__Task', label: 'Task (GTD)', ontology: 'gtd', superClasses: ['exo__Asset'] },
+			{ className: 'gtd__Project', label: 'Project (GTD)', ontology: 'gtd', superClasses: ['exo__Asset'] },
+			{ className: 'gtd__Context', label: 'Context', ontology: 'gtd', superClasses: ['exo__Asset'] },
+			{ className: 'ims__Concept', label: 'Concept', ontology: 'ims', superClasses: ['exo__Asset'] },
+			{ className: 'ims__Definition', label: 'Definition', ontology: 'ims', superClasses: ['exo__Asset'] },
+			{ className: 'ims__Person', label: 'Person', ontology: 'ims', superClasses: ['exo__Asset'] },
+			{ className: 'ims__Organization', label: 'Organization', ontology: 'ims', superClasses: ['exo__Asset'] },
+			{ className: 'ztlk__Note', label: 'Note', ontology: 'ztlk', superClasses: ['exo__Asset'] },
+			{ className: 'lit__Book', label: 'Book', ontology: 'lit', superClasses: ['exo__Asset'] },
+			{ className: 'meet__Meeting', label: 'Meeting', ontology: 'meet', superClasses: ['exo__Asset'] }
+		];
+		
+		for (const commonClass of commonClasses) {
+			if (!classesMap.has(commonClass.className)) {
+				classesMap.set(commonClass.className, {
+					...commonClass,
+					children: []
+				});
+			}
+		}
+		
+		// Build the tree with cycle detection
+		const buildTreeRecursive = (className: string, visited: Set<string>, path: string[] = []): any => {
+			if (visited.has(className)) {
+				// Cycle detected
+				return {
+					className: `⚠️ Recursion to ${className}`,
+					label: `Cycle detected`,
+					ontology: '',
+					isRecursion: true,
+					children: []
+				};
+			}
+			
+			const classInfo = classesMap.get(className);
+			if (!classInfo) {
+				return null;
+			}
+			
+			visited.add(className);
+			path.push(className);
+			
+			const node = {
+				...classInfo,
+				children: []
+			};
+			
+			// Find all children of this class
+			for (const [childName, childInfo] of classesMap) {
+				if (childInfo.superClasses.includes(className)) {
+					const childNode = buildTreeRecursive(childName, new Set(visited), [...path]);
+					if (childNode) {
+						node.children.push(childNode);
+					}
+				}
+			}
+			
+			// Sort children by className
+			node.children.sort((a: any, b: any) => {
+				if (a.isRecursion) return 1;
+				if (b.isRecursion) return -1;
+				return a.className.localeCompare(b.className);
+			});
+			
+			return node;
+		};
+		
+		// Find root classes (classes with no superclasses or only non-existent superclasses)
+		for (const [className, classInfo] of classesMap) {
+			const hasValidSuperClass = classInfo.superClasses.some((sc: string) => classesMap.has(sc));
+			if (!hasValidSuperClass) {
+				const tree = buildTreeRecursive(className, new Set(), []);
+				if (tree) {
+					rootClasses.push(tree);
+				}
+			}
+		}
+		
+		// Sort root classes
+		rootClasses.sort((a, b) => a.className.localeCompare(b.className));
+		
+		return rootClasses;
+	}
+
 	async findAllClasses(): Promise<{ className: string; label: string; ontology: string }[]> {
 		const classes: { className: string; label: string; ontology: string }[] = [];
 		const files = this.app.vault.getFiles();
@@ -467,12 +657,18 @@ export default class ExocortexPlugin extends Plugin {
 		return classes;
 	}
 
-	async findAssetsByClass(className: string): Promise<{ fileName: string; label: string; path: string }[]> {
-		const assets: { fileName: string; label: string; path: string }[] = [];
+	async findAssetsByClass(className: string, includeSubclasses: boolean = true): Promise<{ fileName: string; label: string; path: string; actualClass: string }[]> {
+		const assets: { fileName: string; label: string; path: string; actualClass: string }[] = [];
 		const files = this.app.vault.getFiles();
 		
 		// Clean the class name from wiki links
 		const cleanClassName = className.replace(/\[\[|\]\]/g, '');
+		
+		// Get all classes to search for (including subclasses if requested)
+		let classesToSearch: string[] = [cleanClassName];
+		if (includeSubclasses) {
+			classesToSearch = await this.getAllSubclasses(cleanClassName);
+		}
 		
 		for (const file of files) {
 			// Skip files in template folder
@@ -486,11 +682,13 @@ export default class ExocortexPlugin extends Plugin {
 			const instanceClass = metadata.frontmatter['exo__Instance_class'];
 			if (!instanceClass) continue;
 			
-			// Check if this asset is of the requested class
+			// Check if this asset is of the requested class or its subclasses
 			const classArray = Array.isArray(instanceClass) ? instanceClass : [instanceClass];
 			const cleanClasses = classArray.map((c: any) => c?.toString().replace(/\[\[|\]\]/g, ''));
 			
-			if (cleanClasses.includes(cleanClassName)) {
+			// Check if any of the asset's classes match our search list
+			const matchingClass = cleanClasses.find(c => classesToSearch.includes(c));
+			if (matchingClass) {
 				const label = metadata.frontmatter['exo__Asset_label'] || 
 							 metadata.frontmatter['rdfs__label'] ||
 							 file.basename;
@@ -498,7 +696,8 @@ export default class ExocortexPlugin extends Plugin {
 				assets.push({
 					fileName: file.basename,
 					label: label,
-					path: file.path
+					path: file.path,
+					actualClass: matchingClass
 				});
 			}
 		}
@@ -517,6 +716,8 @@ class ExocortexAssetModal extends Modal {
 	assetOntology: string = '';  // This will store the fileName, not prefix
 	availableOntologies: { file: TFile | null; prefix: string; label: string; fileName: string }[] = [];
 	availableClasses: { className: string; label: string; ontology: string }[] = [];
+	classHierarchyTree: any[] = [];
+	flattenedClasses: { className: string; label: string; ontology: string; level: number; isRecursion: boolean }[] = [];
 	propertyValues: Map<string, any> = new Map();
 	propertiesContainer: HTMLElement | null = null;
 	// Store property values for each class to preserve them when switching
@@ -528,6 +729,37 @@ class ExocortexAssetModal extends Modal {
 		// Don't set assetOntology here - will do it in onOpen after loading ontologies
 	}
 
+	flattenClassTree(nodes: any[], level: number = 0, visited: Set<string> = new Set()): void {
+		for (const node of nodes) {
+			if (node.isRecursion) {
+				this.flattenedClasses.push({
+					className: node.className,
+					label: node.label,
+					ontology: node.ontology,
+					level,
+					isRecursion: true
+				});
+			} else {
+				// Check if we've already added this class at this level (for multiple inheritance)
+				const key = `${node.className}_${level}`;
+				if (!visited.has(key)) {
+					visited.add(key);
+					this.flattenedClasses.push({
+						className: node.className,
+						label: node.label,
+						ontology: node.ontology,
+						level,
+						isRecursion: false
+					});
+					
+					if (node.children && node.children.length > 0) {
+						this.flattenClassTree(node.children, level + 1, visited);
+					}
+				}
+			}
+		}
+	}
+
 	async onOpen() {
 		const { contentEl } = this;
 		contentEl.createEl("h2", { text: "Create ExoAsset" });
@@ -535,6 +767,11 @@ class ExocortexAssetModal extends Modal {
 		// Load available ontologies and classes
 		this.availableOntologies = await this.plugin.findAllOntologies();
 		this.availableClasses = await this.plugin.findAllClasses();
+		
+		// Build class hierarchy tree
+		this.classHierarchyTree = await this.plugin.buildClassHierarchyTree();
+		this.flattenedClasses = [];
+		this.flattenClassTree(this.classHierarchyTree);
 		
 		// Set default ontology based on saved prefix
 		const defaultOntology = this.availableOntologies.find(o => o.prefix === this.plugin.settings.defaultOntology);
@@ -553,27 +790,40 @@ class ExocortexAssetModal extends Modal {
 				.setValue(this.assetTitle)
 				.onChange(value => this.assetTitle = value));
 
-		// Create the CLASS dropdown (now independent)
+		// Create the CLASS dropdown with tree structure
 		new Setting(contentEl)
 			.setName("Class")
-			.setDesc("Select the type of asset (all available classes)")
+			.setDesc("Select the type of asset (tree hierarchy)")
 			.addDropdown(dropdown => {
-				// Add all classes to dropdown
-				for (const classInfo of this.availableClasses) {
-					const displayName = `${classInfo.className} - ${classInfo.label}`;
-					dropdown.addOption(classInfo.className, displayName);
+				// Add classes with tree indentation
+				for (const classInfo of this.flattenedClasses) {
+					if (!classInfo.isRecursion) {
+						// Create indentation based on level
+						const indent = '　'.repeat(classInfo.level); // Using full-width space for better visibility
+						const displayName = `${indent}${classInfo.className} - ${classInfo.label}`;
+						dropdown.addOption(classInfo.className, displayName);
+					} else {
+						// Show recursion warning
+						const indent = '　'.repeat(classInfo.level);
+						const displayName = `${indent}${classInfo.className}`;
+						// Don't add recursion entries as selectable options
+					}
 				}
 				
 				// Set default value
-				if (this.availableClasses.length > 0) {
+				if (this.flattenedClasses.length > 0) {
 					// Try to find exo__Asset as default
-					const defaultClass = this.availableClasses.find(c => c.className === 'exo__Asset');
+					const defaultClass = this.flattenedClasses.find(c => c.className === 'exo__Asset' && !c.isRecursion);
 					if (defaultClass) {
 						this.assetClass = defaultClass.className;
 						dropdown.setValue(defaultClass.className);
 					} else {
-						this.assetClass = this.availableClasses[0].className;
-						dropdown.setValue(this.availableClasses[0].className);
+						// Find first non-recursion class
+						const firstClass = this.flattenedClasses.find(c => !c.isRecursion);
+						if (firstClass) {
+							this.assetClass = firstClass.className;
+							dropdown.setValue(firstClass.className);
+						}
 					}
 				}
 				

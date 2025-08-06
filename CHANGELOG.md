@@ -5,6 +5,30 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.4] - 2025-08-06
+
+### Added
+- **Subclass Instances in Dropdowns**: Object property dropdowns now include instances of subclasses
+- **Tree-like Class Hierarchy**: Classes displayed in hierarchical tree structure
+- **Multiple Inheritance Support**: Classes with multiple parents appear under each parent
+- **Cycle Detection**: Detects and displays recursion warnings for circular inheritance
+
+### Changed
+- `findAssetsByClass()` now includes assets from all subclasses by default
+- Class dropdown shows indented tree structure based on inheritance hierarchy
+- Object property dropdowns show assets from target class and all its subclasses
+
+### Improved
+- Better visualization of class relationships in the UI
+- More comprehensive asset discovery for object properties
+- Protection against infinite loops in circular inheritance chains
+
+### Technical
+- Added `getAllSubclasses()` method for recursive subclass discovery
+- Added `buildClassHierarchyTree()` for constructing inheritance tree
+- Added `flattenClassTree()` for converting tree to indented list
+- Cycle detection with visited set tracking
+
 ## [0.5.3] - 2025-08-06
 
 ### Added
