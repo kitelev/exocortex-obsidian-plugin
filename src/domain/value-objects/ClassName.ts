@@ -1,23 +1,29 @@
+import { Result } from '../core/Result';
+
 /**
  * Value object representing an asset class name
  * Ensures valid class naming conventions
  */
 export class ClassName {
-  private readonly value: string;
+  public readonly value: string;
 
-  constructor(value: string) {
+  private constructor(value: string) {
+    this.value = value;
+  }
+
+  static create(value: string): Result<ClassName> {
     if (!value || value.trim().length === 0) {
-      throw new Error('ClassName cannot be empty');
+      return Result.fail<ClassName>('ClassName cannot be empty');
     }
     
     // Remove wiki link brackets if present
     const cleaned = value.replace(/\[\[|\]\]/g, '');
     
     if (!/^[a-zA-Z_][a-zA-Z0-9_]*(?:__[a-zA-Z][a-zA-Z0-9_]*)?$/.test(cleaned)) {
-      throw new Error(`Invalid class name format: ${value}`);
+      return Result.fail<ClassName>(`Invalid class name format: ${value}`);
     }
     
-    this.value = cleaned;
+    return Result.ok<ClassName>(new ClassName(cleaned));
   }
 
   toString(): string {

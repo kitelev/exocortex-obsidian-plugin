@@ -1,3 +1,5 @@
+import { Result } from '../core/Result';
+
 /**
  * Value object representing an ontology prefix
  * Validates prefix format and ensures uniqueness
@@ -5,16 +7,20 @@
 export class OntologyPrefix {
   private readonly value: string;
 
-  constructor(value: string) {
+  private constructor(value: string) {
+    this.value = value;
+  }
+
+  static create(value: string): Result<OntologyPrefix> {
     if (!value || value.trim().length === 0) {
-      throw new Error('OntologyPrefix cannot be empty');
+      return Result.fail<OntologyPrefix>('OntologyPrefix cannot be empty');
     }
     
     if (!/^[a-z][a-z0-9]*$/.test(value)) {
-      throw new Error(`Invalid ontology prefix format: ${value}. Must be lowercase alphanumeric starting with a letter`);
+      return Result.fail<OntologyPrefix>(`Invalid ontology prefix format: ${value}. Must be lowercase alphanumeric starting with a letter`);
     }
     
-    this.value = value;
+    return Result.ok<OntologyPrefix>(new OntologyPrefix(value));
   }
 
   toString(): string {

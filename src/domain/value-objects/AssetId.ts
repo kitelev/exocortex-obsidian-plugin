@@ -1,3 +1,5 @@
+import { Result } from '../core/Result';
+
 /**
  * Value object representing a unique asset identifier
  * Immutable and self-validating
@@ -5,11 +7,15 @@
 export class AssetId {
   private readonly value: string;
 
-  constructor(value: string) {
-    if (!value || value.trim().length === 0) {
-      throw new Error('AssetId cannot be empty');
-    }
+  private constructor(value: string) {
     this.value = value;
+  }
+
+  static create(value: string): Result<AssetId> {
+    if (!value || value.trim().length === 0) {
+      return Result.fail<AssetId>('AssetId cannot be empty');
+    }
+    return Result.ok<AssetId>(new AssetId(value));
   }
 
   static generate(): AssetId {

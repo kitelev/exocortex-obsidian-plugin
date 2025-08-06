@@ -471,3 +471,87 @@
 .exocortex-related-asset:hover {
     background-color: var(--background-modifier-active-hover);
 }
+
+/* UI Button Styles */
+.exocortex-button-container {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    flex-wrap: wrap;
+    border-radius: 8px;
+    background-color: var(--background-secondary);
+    margin: 12px 0;
+}
+
+.exocortex-buttons-top {
+    order: -1;
+    border-bottom: 2px solid var(--background-modifier-border);
+}
+
+.exocortex-buttons-bottom {
+    order: 999;
+    border-top: 2px solid var(--background-modifier-border);
+}
+
+.exocortex-buttons-floating {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--background-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.exocortex-ui-button {
+    min-width: 100px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    background-color: var(--interactive-normal);
+    color: var(--text-normal);
+    border: 1px solid var(--background-modifier-border);
+}
+
+.exocortex-ui-button:hover:not(:disabled) {
+    background-color: var(--interactive-hover);
+    border-color: var(--interactive-accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.exocortex-ui-button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.exocortex-ui-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: var(--background-modifier-border);
+}
+
+/* Command Input Modal Styles */
+.exocortex-command-form {
+    padding: 20px 0;
+}
+
+.exocortex-modal-description {
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.exocortex-command-form .setting-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.exocortex-command-form .setting-item:last-child {
+    border-bottom: none;
+}
+
+.required-indicator {
+    color: var(--text-error);
+    font-weight: bold;
+    margin-left: 4px;
+}

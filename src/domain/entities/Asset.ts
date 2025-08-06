@@ -1,85 +1,89 @@
 import { AssetId } from '../value-objects/AssetId';
 import { ClassName } from '../value-objects/ClassName';
 import { OntologyPrefix } from '../value-objects/OntologyPrefix';
+import { Entity } from '../core/Entity';
+import { Result } from '../core/Result';
+
+interface AssetProps {
+  id: AssetId;
+  title: string;
+  className: ClassName;
+  ontology: OntologyPrefix;
+  label?: string;
+  description?: string;
+  properties: Map<string, any>;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 /**
  * Domain entity representing an Exocortex Asset
  * Core business logic and invariants
  */
-export class Asset {
-  private readonly id: AssetId;
-  private title: string;
-  private className: ClassName;
-  private ontologyPrefix: OntologyPrefix;
-  private properties: Map<string, any>;
-  private readonly createdAt: Date;
-  private updatedAt: Date;
-
-  constructor(params: {
-    id?: AssetId;
-    title: string;
-    className: ClassName;
-    ontologyPrefix: OntologyPrefix;
-    properties?: Map<string, any>;
-    createdAt?: Date;
-    updatedAt?: Date;
-  }) {
-    this.id = params.id || AssetId.generate();
-    this.title = params.title;
-    this.className = params.className;
-    this.ontologyPrefix = params.ontologyPrefix;
-    this.properties = params.properties || new Map();
-    this.createdAt = params.createdAt || new Date();
-    this.updatedAt = params.updatedAt || new Date();
-    
-    this.validate();
+export class Asset extends Entity<AssetProps> {
+  
+  private constructor(props: AssetProps) {
+    super(props);
   }
 
-  private validate(): void {
-    if (!this.title || this.title.trim().length === 0) {
-      throw new Error('Asset title cannot be empty');
+  static create(params: {
+    id: AssetId;
+    className: ClassName;
+    ontology: OntologyPrefix;
+    label: string;
+    description?: string;
+    properties?: Record<string, any>;
+  }): Result<Asset> {
+    if (!params.label || params.label.trim().length === 0) {
+      return Result.fail<Asset>('Asset label cannot be empty');
     }
-    
-    if (!this.className) {
-      throw new Error('Asset must have a class');
-    }
-    
-    if (!this.ontologyPrefix) {
-      throw new Error('Asset must belong to an ontology');
-    }
+
+    const props: AssetProps = {
+      id: params.id,
+      title: params.label,
+      className: params.className,
+      ontology: params.ontology,
+      label: params.label,
+      description: params.description,
+      properties: new Map(Object.entries(params.properties || {})),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    return Result.ok<Asset>(new Asset(props));
   }
 
   // Getters
   getId(): AssetId {
-    return this.id;
+    return this.props.id;
   }
 
   getTitle(): string {
-    return this.title;
+    return this.props.title;
   }
 
   getClassName(): ClassName {
-    return this.className;
+    return this.props.className;
   }
 
   getOntologyPrefix(): OntologyPrefix {
-    return this.ontologyPrefix;
+    return this.props.ontology;
   }
 
   getProperties(): Map<string, any> {
-    return new Map(this.properties);
+    return new Map(this.props.properties);
   }
 
   getProperty(key: string): any {
-    return this.properties.get(key);
+    return this.props.properties.get(key);
   }
 
   getCreatedAt(): Date {
-    return this.createdAt;
+    return this.props.createdAt;
   }
 
   getUpdatedAt(): Date {
-    return this.updatedAt;
+    return this.props.updatedAt;
   }
 
   // Business methods
