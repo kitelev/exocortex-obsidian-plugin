@@ -519,6 +519,8 @@ class ExocortexAssetModal extends Modal {
 	availableClasses: { className: string; label: string; ontology: string }[] = [];
 	propertyValues: Map<string, any> = new Map();
 	propertiesContainer: HTMLElement | null = null;
+	// Store property values for each class to preserve them when switching
+	classPropertyValues: Map<string, Map<string, any>> = new Map();
 
 	constructor(app: App, plugin: ExocortexPlugin) {
 		super(app);
@@ -576,6 +578,11 @@ class ExocortexAssetModal extends Modal {
 				}
 				
 				dropdown.onChange(async value => {
+					// Save current property values for the previous class before switching
+					if (this.assetClass && this.propertyValues.size > 0) {
+						this.classPropertyValues.set(this.assetClass, new Map(this.propertyValues));
+					}
+					
 					this.assetClass = value;
 					// Update properties when class changes
 					await this.updatePropertiesForClass(value);
@@ -627,6 +634,12 @@ class ExocortexAssetModal extends Modal {
 		this.propertiesContainer.empty();
 		this.propertyValues.clear();
 		
+		// Check if we have saved values for this class and restore them
+		const savedValues = this.classPropertyValues.get(className);
+		if (savedValues) {
+			this.propertyValues = new Map(savedValues);
+		}
+		
 		// Get properties for this class
 		const properties = await this.plugin.findPropertiesForClass(className);
 		
@@ -663,6 +676,13 @@ class ExocortexAssetModal extends Modal {
 						const wikiLink = `[[${asset.fileName}]]`;
 						dropdown.addOption(wikiLink, displayName);
 					}
+					
+					// Set saved value if exists
+					const savedValue = this.propertyValues.get(prop.propertyName);
+					if (savedValue) {
+						dropdown.setValue(savedValue);
+					}
+					
 					dropdown.onChange(value => {
 						if (value) {
 							this.propertyValues.set(prop.propertyName, value);
@@ -679,6 +699,13 @@ class ExocortexAssetModal extends Modal {
 					for (const option of options) {
 						dropdown.addOption(option, option);
 					}
+					
+					// Set saved value if exists
+					const savedValue = this.propertyValues.get(prop.propertyName);
+					if (savedValue) {
+						dropdown.setValue(savedValue);
+					}
+					
 					dropdown.onChange(value => {
 						if (value) {
 							this.propertyValues.set(prop.propertyName, value);
@@ -690,6 +717,12 @@ class ExocortexAssetModal extends Modal {
 			} else if (prop.range === 'boolean') {
 				// Toggle for boolean
 				setting.addToggle(toggle => {
+					// Set saved value if exists
+					const savedValue = this.propertyValues.get(prop.propertyName);
+					if (savedValue !== undefined) {
+						toggle.setValue(savedValue);
+					}
+					
 					toggle.onChange(value => {
 						this.propertyValues.set(prop.propertyName, value);
 					});
@@ -697,78 +730,118 @@ class ExocortexAssetModal extends Modal {
 			} else if (prop.range === 'date') {
 				// Text input for date (could be enhanced with date picker)
 				setting.addText(text => {
-					text.setPlaceholder('YYYY-MM-DD')
-						.onChange(value => {
-							if (value) {
-								this.propertyValues.set(prop.propertyName, value);
-							} else {
-								this.propertyValues.delete(prop.propertyName);
-							}
-						});
+					text.setPlaceholder('YYYY-MM-DD');
+					
+					// Set saved value if exists
+					const savedValue = this.propertyValues.get(prop.propertyName);
+					if (savedValue) {
+						text.setValue(savedValue);
+					}
+					
+					text.onChange(value => {
+						if (value) {
+							this.propertyValues.set(prop.propertyName, value);
+						} else {
+							this.propertyValues.delete(prop.propertyName);
+						}
+					});
 				});
 			} else if (prop.range === 'number') {
 				// Text input for number
 				setting.addText(text => {
-					text.setPlaceholder('Enter number')
-						.onChange(value => {
-							if (value) {
-								const num = parseFloat(value);
-								if (!isNaN(num)) {
-									this.propertyValues.set(prop.propertyName, num);
-								}
-							} else {
-								this.propertyValues.delete(prop.propertyName);
+					text.setPlaceholder('Enter number');
+					
+					// Set saved value if exists
+					const savedValue = this.propertyValues.get(prop.propertyName);
+					if (savedValue !== undefined) {
+						text.setValue(savedValue.toString());
+					}
+					
+					text.onChange(value => {
+						if (value) {
+							const num = parseFloat(value);
+							if (!isNaN(num)) {
+								this.propertyValues.set(prop.propertyName, num);
 							}
-						});
+						} else {
+							this.propertyValues.delete(prop.propertyName);
+						}
+					});
 				});
 			} else if (prop.range === 'text' || prop.propertyName.includes('description') || prop.propertyName.includes('comment')) {
 				// Textarea for long text
 				setting.addTextArea(text => {
-					text.setPlaceholder('Enter ' + prop.label.toLowerCase())
-						.onChange(value => {
-							if (value) {
-								this.propertyValues.set(prop.propertyName, value);
-							} else {
-								this.propertyValues.delete(prop.propertyName);
-							}
-						});
+					text.setPlaceholder('Enter ' + prop.label.toLowerCase());
+					
+					// Set saved value if exists
+					const savedValue = this.propertyValues.get(prop.propertyName);
+					if (savedValue) {
+						text.setValue(savedValue);
+					}
+					
+					text.onChange(value => {
+						if (value) {
+							this.propertyValues.set(prop.propertyName, value);
+						} else {
+							this.propertyValues.delete(prop.propertyName);
+						}
+					});
 				});
 			} else if (prop.range === 'array' || prop.propertyName.includes('relates')) {
 				// Text input for arrays (comma-separated)
 				setting.addText(text => {
-					text.setPlaceholder('Comma-separated values or [[links]]')
-						.onChange(value => {
-							if (value) {
-								// Parse as array of wiki links if contains [[
-								if (value.includes('[[')) {
-									const links = value.match(/\[\[([^\]]+)\]\]/g) || [];
-									this.propertyValues.set(prop.propertyName, links);
-								} else {
-									// Otherwise split by comma
-									const items = value.split(',').map(s => s.trim()).filter(s => s);
-									this.propertyValues.set(prop.propertyName, items);
-								}
+					text.setPlaceholder('Comma-separated values or [[links]]');
+					
+					// Set saved value if exists
+					const savedValue = this.propertyValues.get(prop.propertyName);
+					if (savedValue) {
+						// Convert array back to string for display
+						if (Array.isArray(savedValue)) {
+							text.setValue(savedValue.join(', '));
+						} else {
+							text.setValue(savedValue);
+						}
+					}
+					
+					text.onChange(value => {
+						if (value) {
+							// Parse as array of wiki links if contains [[
+							if (value.includes('[[')) {
+								const links = value.match(/\[\[([^\]]+)\]\]/g) || [];
+								this.propertyValues.set(prop.propertyName, links);
 							} else {
-								this.propertyValues.delete(prop.propertyName);
+								// Otherwise split by comma
+								const items = value.split(',').map(s => s.trim()).filter(s => s);
+								this.propertyValues.set(prop.propertyName, items);
 							}
-						});
+						} else {
+							this.propertyValues.delete(prop.propertyName);
+						}
+					});
 				});
 			} else {
 				// Default text input
 				setting.addText(text => {
-					text.setPlaceholder('Enter ' + prop.label.toLowerCase())
-						.onChange(value => {
-							if (value) {
-								this.propertyValues.set(prop.propertyName, value);
-							} else {
-								this.propertyValues.delete(prop.propertyName);
-							}
-						});
+					text.setPlaceholder('Enter ' + prop.label.toLowerCase());
+					
+					// Set saved value if exists
+					const savedValue = this.propertyValues.get(prop.propertyName);
+					if (savedValue) {
+						text.setValue(savedValue);
+					}
+					
+					text.onChange(value => {
+						if (value) {
+							this.propertyValues.set(prop.propertyName, value);
+						} else {
+							this.propertyValues.delete(prop.propertyName);
+						}
+					});
 				});
 			}
 			
-			// Set default value for label if it's the Asset label property
-			if (prop.propertyName === 'exo__Asset_label' && this.assetTitle) {
+			// Set default value for label if it's the Asset label property and no saved value exists
+			if (prop.propertyName === 'exo__Asset_label' && this.assetTitle && !this.propertyValues.has(prop.propertyName)) {
 				this.propertyValues.set(prop.propertyName, this.assetTitle);
 				// Update the input if it exists
 				const input = this.propertiesContainer.querySelector(`input[placeholder*="${prop.label.toLowerCase()}"]`) as HTMLInputElement;

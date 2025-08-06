@@ -5,6 +5,24 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.3] - 2025-08-06
+
+### Added
+- **Field Value Persistence**: Property values are now preserved when switching between classes
+- Values are stored per class in a Map structure
+- When returning to a previously selected class, all field values are restored
+
+### Improved
+- Better user experience when exploring different asset classes
+- No data loss when accidentally switching classes
+- Fields show saved values when switching back to a class
+
+### Technical
+- Added `classPropertyValues` Map to store values for each class
+- Save current values before switching to a new class
+- Restore saved values when loading properties for a class
+- Handle all field types: text, textarea, dropdown, toggle, date, number, array
+
 ## [0.5.2] - 2025-08-06
 
 ### Added
