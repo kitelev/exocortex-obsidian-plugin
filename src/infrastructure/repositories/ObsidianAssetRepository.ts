@@ -124,4 +124,32 @@ export class ObsidianAssetRepository implements IAssetRepository {
         
         return assets;
     }
+
+    async findByFilename(filename: string): Promise<Asset | null> {
+        // Handle different filename formats
+        let searchPath = filename;
+        
+        // Add .md extension if not present
+        if (!searchPath.endsWith('.md')) {
+            searchPath = `${searchPath}.md`;
+        }
+        
+        // Try to find by path first
+        let file = this.app.vault.getAbstractFileByPath(searchPath);
+        
+        // If not found, search all files by basename
+        if (!file) {
+            const files = this.app.vault.getMarkdownFiles();
+            file = files.find(f => f.path === searchPath || f.name === searchPath) || null;
+        }
+        
+        if (file instanceof TFile) {
+            const cache = this.app.metadataCache.getFileCache(file);
+            if (cache?.frontmatter) {
+                return Asset.fromFrontmatter(cache.frontmatter, file.basename);
+            }
+        }
+        
+        return null;
+    }
 }

@@ -5,6 +5,36 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.8] - 2025-08-06
+
+### Fixed
+- **Critical Bug**: Fixed "Asset not found" error when editing properties via dropdown
+- Asset lookup now correctly handles multiple identifier types (UUID, filename, path)
+- Improved error handling with fallback search methods
+
+### Added
+- **findByFilename** method in asset repositories for robust asset discovery
+- Comprehensive test suite to prevent regression
+- Enhanced asset identification with automatic extension handling
+
+### Improved
+- PropertyEditingUseCase now tries multiple lookup methods for asset discovery
+- Better handling of special characters in filenames
+- Performance optimizations for asset search operations
+
+### Technical
+- Added 20+ unit tests for asset repository operations
+- Added 10+ integration tests for property editing use case
+- Added 7 end-to-end tests for inline editing scenarios
+- Implemented robust fallback chain: ID → Filename → Path search
+
+### Tests Added
+- Unit tests for ObsidianAssetRepository.findByFilename()
+- Integration tests for PropertyEditingUseCase with different identifiers
+- E2E tests for dropdown selections and special characters
+- Performance tests ensuring < 500ms response times
+- Regression tests to prevent future "Asset not found" errors
+
 ## [0.5.7] - 2025-08-06
 
 ### Added

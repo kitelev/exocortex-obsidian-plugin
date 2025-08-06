@@ -120,6 +120,39 @@ export class AssetRepository implements IAssetRepository {
     return assets;
   }
 
+  async findByFilename(filename: string): Promise<Asset | null> {
+    // Handle different filename formats
+    let searchPath = filename;
+    
+    // Add .md extension if not present
+    if (!searchPath.endsWith('.md')) {
+      searchPath = `${searchPath}.md`;
+    }
+    
+    // Check if file exists
+    if (await this.vaultAdapter.exists(searchPath)) {
+      const metadata = await this.vaultAdapter.getMetadata(searchPath);
+      if (metadata) {
+        const baseName = searchPath.split('/').pop()?.replace('.md', '') || '';
+        return Asset.fromFrontmatter(metadata, baseName);
+      }
+    }
+    
+    // Search all files if not found by direct path
+    const files = await this.vaultAdapter.list();
+    for (const path of files) {
+      if (path.endsWith(searchPath) || path.split('/').pop() === searchPath) {
+        const metadata = await this.vaultAdapter.getMetadata(path);
+        if (metadata) {
+          const baseName = path.split('/').pop()?.replace('.md', '') || '';
+          return Asset.fromFrontmatter(metadata, baseName);
+        }
+      }
+    }
+    
+    return null;
+  }
+
   private async findAssetPath(id: AssetId): Promise<string | null> {
     const files = await this.vaultAdapter.list();
     

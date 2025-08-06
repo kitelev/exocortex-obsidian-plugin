@@ -2,6 +2,7 @@ import { UseCase } from '../core/UseCase';
 import { Result } from '../../domain/core/Result';
 import { IAssetRepository } from '../../domain/repositories/IAssetRepository';
 import { AssetId } from '../../domain/value-objects/AssetId';
+import { Asset } from '../../domain/entities/Asset';
 
 /**
  * Use case for editing asset properties inline
@@ -51,15 +52,22 @@ export class PropertyEditingUseCase implements UseCase<UpdatePropertyRequest, Up
             return Result.fail<UpdatePropertyResponse>(validationResult.error);
         }
 
-        // Load the asset
+        // Load the asset - try multiple methods
+        let asset: Asset | null = null;
+        
+        // First try as UUID
         const assetIdResult = AssetId.create(request.assetId);
-        if (assetIdResult.isFailure) {
-            return Result.fail<UpdatePropertyResponse>('Invalid asset ID');
+        if (assetIdResult.isSuccess) {
+            asset = await this.assetRepository.findById(assetIdResult.getValue());
         }
-
-        const asset = await this.assetRepository.findById(assetIdResult.getValue());
+        
+        // If not found by ID, try by filename
         if (!asset) {
-            return Result.fail<UpdatePropertyResponse>('Asset not found');
+            asset = await this.assetRepository.findByFilename(request.assetId);
+        }
+        
+        if (!asset) {
+            return Result.fail<UpdatePropertyResponse>(`Asset not found: ${request.assetId}`);
         }
 
         // Update the property

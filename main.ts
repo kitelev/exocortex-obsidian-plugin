@@ -145,9 +145,11 @@ export default class ExocortexPlugin extends Plugin {
 		
 		// Use PropertyRenderer for editable properties
 		const propertyRenderer = this.diContainer.getPropertyRenderer();
+		// Get the actual asset ID from frontmatter, or use filename as fallback
+		const assetId = frontmatter['exo__Asset_uid'] || file.path;
 		await propertyRenderer.renderPropertiesBlock(
 			propertiesContainer,
-			file.basename,
+			assetId,
 			cleanClassName,
 			frontmatter
 		);

@@ -42,4 +42,9 @@ export interface IAssetRepository {
    * Find all assets
    */
   findAll(): Promise<Asset[]>;
+
+  /**
+   * Find asset by filename/path
+   */
+  findByFilename(filename: string): Promise<Asset | null>;
 }
