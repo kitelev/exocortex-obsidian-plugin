@@ -4,6 +4,31 @@
     /* Custom styling for ribbon icon */
 }
 
+.exocortex-properties-header {
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--background-modifier-border);
+    color: var(--text-muted);
+    font-size: 0.95em;
+}
+
+.exocortex-properties-container {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    background-color: var(--background-secondary);
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.exocortex-no-properties {
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 1rem;
+}
+
 .exocortex-layout-container {
     padding: 1rem;
     margin: 0.5rem 0;

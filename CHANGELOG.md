@@ -5,6 +5,29 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-08-06
+
+### Added
+- **Dynamic property fields** based on selected class
+- Automatic discovery of properties through `exo__Property_domain`
+- Recursive property inheritance from parent classes
+- Different input types based on `exo__Property_range`:
+  - Text inputs for strings
+  - Textareas for descriptions/comments
+  - Dropdowns for enums
+  - Toggles for booleans
+  - Date inputs for dates
+  - Number inputs for numbers
+  - Array inputs for relations
+- Properties section in create note modal
+- All properties saved to frontmatter
+
+### Technical
+- Added `findPropertiesForClass()` to discover applicable properties
+- Added `getClassHierarchy()` for recursive parent class lookup
+- Dynamic form generation based on property ranges
+- Property values stored in Map and included in frontmatter
+
 ## [0.3.1] - 2025-08-06
 
 ### Fixed

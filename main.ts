@@ -237,6 +237,145 @@ export default class ExocortexPlugin extends Plugin {
 		return ontologies;
 	}
 
+	async findPropertiesForClass(className: string): Promise<{ 
+		propertyName: string; 
+		label: string; 
+		range: string; 
+		isRequired: boolean;
+		description: string;
+	}[]> {
+		const properties: { 
+			propertyName: string; 
+			label: string; 
+			range: string; 
+			isRequired: boolean;
+			description: string;
+		}[] = [];
+		
+		// Get all properties for this class and its parents
+		const classHierarchy = await this.getClassHierarchy(className);
+		const files = this.app.vault.getFiles();
+		
+		for (const file of files) {
+			const metadata = this.app.metadataCache.getFileCache(file);
+			if (!metadata?.frontmatter) continue;
+			
+			const instanceClass = metadata.frontmatter['exo__Instance_class'];
+			if (!instanceClass) continue;
+			
+			// Check if this is a property definition
+			const classString = Array.isArray(instanceClass) ? instanceClass[0] : instanceClass;
+			const cleanClass = classString?.toString().replace(/\[\[|\]\]/g, '');
+			
+			if (cleanClass === 'exo__Property' || cleanClass === 'exo__DatatypeProperty' || cleanClass === 'exo__ObjectProperty' || 
+				cleanClass === 'rdf__Property' || cleanClass === 'owl__DatatypeProperty' || cleanClass === 'owl__ObjectProperty') {
+				
+				// Check if this property applies to our class or its parents
+				const domain = metadata.frontmatter['exo__Property_domain'] || 
+							  metadata.frontmatter['rdfs__domain'];
+				if (domain) {
+					const domainClean = Array.isArray(domain) 
+						? domain.map(d => d.toString().replace(/\[\[|\]\]/g, ''))
+						: [domain.toString().replace(/\[\[|\]\]/g, '')];
+					
+					// Check if any of the domains match our class hierarchy
+					const applies = domainClean.some(d => classHierarchy.includes(d));
+					
+					if (applies) {
+						const propertyName = file.basename;
+						const label = metadata.frontmatter['exo__Asset_label'] || 
+									 metadata.frontmatter['rdfs__label'] ||
+									 propertyName;
+						
+						const range = metadata.frontmatter['exo__Property_range'] || 
+									 metadata.frontmatter['rdfs__range'] ||
+									 'string';
+						
+						const isRequired = metadata.frontmatter['exo__Property_required'] || false;
+						const description = metadata.frontmatter['exo__Asset_description'] || 
+										   metadata.frontmatter['rdfs__comment'] || '';
+						
+						properties.push({ propertyName, label, range, isRequired, description });
+					}
+				}
+			}
+		}
+		
+		// Add common properties based on class if not found
+		if (className === 'exo__Asset' || classHierarchy.includes('exo__Asset')) {
+			const commonAssetProps = [
+				{ propertyName: 'exo__Asset_label', label: 'Label', range: 'string', isRequired: true, description: 'Human-readable label' },
+				{ propertyName: 'exo__Asset_description', label: 'Description', range: 'text', isRequired: false, description: 'Detailed description' },
+				{ propertyName: 'exo__Asset_relates', label: 'Related Assets', range: 'array', isRequired: false, description: 'Links to related assets' }
+			];
+			
+			for (const prop of commonAssetProps) {
+				if (!properties.some(p => p.propertyName === prop.propertyName)) {
+					properties.push(prop);
+				}
+			}
+		}
+		
+		// Add class-specific common properties
+		if (className === 'ems__Task') {
+			const taskProps = [
+				{ propertyName: 'ems__Task_status', label: 'Status', range: 'enum:todo,in_progress,done', isRequired: false, description: 'Task status' },
+				{ propertyName: 'ems__Task_priority', label: 'Priority', range: 'enum:low,medium,high', isRequired: false, description: 'Task priority' },
+				{ propertyName: 'ems__Task_dueDate', label: 'Due Date', range: 'date', isRequired: false, description: 'When the task is due' }
+			];
+			
+			for (const prop of taskProps) {
+				if (!properties.some(p => p.propertyName === prop.propertyName)) {
+					properties.push(prop);
+				}
+			}
+		}
+		
+		return properties;
+	}
+
+	async getClassHierarchy(className: string): Promise<string[]> {
+		const hierarchy: string[] = [className];
+		const visited = new Set<string>();
+		visited.add(className);
+		
+		let current = className;
+		const files = this.app.vault.getFiles();
+		
+		// Recursively find parent classes
+		while (current) {
+			let parentFound = false;
+			
+			for (const file of files) {
+				if (file.basename === current) {
+					const metadata = this.app.metadataCache.getFileCache(file);
+					if (metadata?.frontmatter) {
+						const superClass = metadata.frontmatter['exo__Class_superClass'] || 
+										  metadata.frontmatter['rdfs__subClassOf'];
+						
+						if (superClass) {
+							const superClassClean = Array.isArray(superClass) 
+								? superClass[0].toString().replace(/\[\[|\]\]/g, '')
+								: superClass.toString().replace(/\[\[|\]\]/g, '');
+							
+							if (!visited.has(superClassClean)) {
+								hierarchy.push(superClassClean);
+								visited.add(superClassClean);
+								current = superClassClean;
+								parentFound = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+			
+			if (!parentFound) break;
+		}
+		
+		return hierarchy;
+	}
+
 	async findAllClasses(): Promise<{ className: string; label: string; ontology: string }[]> {
 		const classes: { className: string; label: string; ontology: string }[] = [];
 		const files = this.app.vault.getFiles();
@@ -314,6 +453,8 @@ class ExocortexNoteModal extends Modal {
 	noteOntology: string = '';  // This will store the fileName, not prefix
 	availableOntologies: { file: TFile | null; prefix: string; label: string; fileName: string }[] = [];
 	availableClasses: { className: string; label: string; ontology: string }[] = [];
+	propertyValues: Map<string, any> = new Map();
+	propertiesContainer: HTMLElement | null = null;
 
 	constructor(app: App, plugin: ExocortexPlugin) {
 		super(app);
@@ -367,8 +508,10 @@ class ExocortexNoteModal extends Modal {
 					}
 				}
 				
-				dropdown.onChange(value => {
+				dropdown.onChange(async value => {
 					this.noteClass = value;
+					// Update properties when class changes
+					await this.updatePropertiesForClass(value);
 				});
 			});
 		
@@ -391,6 +534,15 @@ class ExocortexNoteModal extends Modal {
 					});
 			});
 
+		// Add a separator
+		contentEl.createEl("h3", { text: "Properties", cls: "exocortex-properties-header" });
+		
+		// Create container for dynamic properties
+		this.propertiesContainer = contentEl.createDiv({ cls: "exocortex-properties-container" });
+		
+		// Load initial properties for default class
+		await this.updatePropertiesForClass(this.noteClass);
+
 		new Setting(contentEl)
 			.addButton(btn => btn
 				.setButtonText("Create")
@@ -401,16 +553,193 @@ class ExocortexNoteModal extends Modal {
 				}));
 	}
 
+	async updatePropertiesForClass(className: string) {
+		if (!this.propertiesContainer) return;
+		
+		// Clear existing properties
+		this.propertiesContainer.empty();
+		this.propertyValues.clear();
+		
+		// Get properties for this class
+		const properties = await this.plugin.findPropertiesForClass(className);
+		
+		if (properties.length === 0) {
+			this.propertiesContainer.createEl("p", { 
+				text: "No specific properties for this class", 
+				cls: "exocortex-no-properties" 
+			});
+			return;
+		}
+		
+		// Create input for each property
+		for (const prop of properties) {
+			const setting = new Setting(this.propertiesContainer)
+				.setName(prop.label + (prop.isRequired ? ' *' : ''))
+				.setDesc(prop.description);
+			
+			// Add appropriate input based on range
+			if (prop.range.startsWith('enum:')) {
+				// Dropdown for enum
+				const options = prop.range.substring(5).split(',');
+				setting.addDropdown(dropdown => {
+					dropdown.addOption('', '-- Select --');
+					for (const option of options) {
+						dropdown.addOption(option, option);
+					}
+					dropdown.onChange(value => {
+						if (value) {
+							this.propertyValues.set(prop.propertyName, value);
+						} else {
+							this.propertyValues.delete(prop.propertyName);
+						}
+					});
+				});
+			} else if (prop.range === 'boolean') {
+				// Toggle for boolean
+				setting.addToggle(toggle => {
+					toggle.onChange(value => {
+						this.propertyValues.set(prop.propertyName, value);
+					});
+				});
+			} else if (prop.range === 'date') {
+				// Text input for date (could be enhanced with date picker)
+				setting.addText(text => {
+					text.setPlaceholder('YYYY-MM-DD')
+						.onChange(value => {
+							if (value) {
+								this.propertyValues.set(prop.propertyName, value);
+							} else {
+								this.propertyValues.delete(prop.propertyName);
+							}
+						});
+				});
+			} else if (prop.range === 'number') {
+				// Text input for number
+				setting.addText(text => {
+					text.setPlaceholder('Enter number')
+						.onChange(value => {
+							if (value) {
+								const num = parseFloat(value);
+								if (!isNaN(num)) {
+									this.propertyValues.set(prop.propertyName, num);
+								}
+							} else {
+								this.propertyValues.delete(prop.propertyName);
+							}
+						});
+				});
+			} else if (prop.range === 'text' || prop.propertyName.includes('description') || prop.propertyName.includes('comment')) {
+				// Textarea for long text
+				setting.addTextArea(text => {
+					text.setPlaceholder('Enter ' + prop.label.toLowerCase())
+						.onChange(value => {
+							if (value) {
+								this.propertyValues.set(prop.propertyName, value);
+							} else {
+								this.propertyValues.delete(prop.propertyName);
+							}
+						});
+				});
+			} else if (prop.range === 'array' || prop.propertyName.includes('relates')) {
+				// Text input for arrays (comma-separated)
+				setting.addText(text => {
+					text.setPlaceholder('Comma-separated values or [[links]]')
+						.onChange(value => {
+							if (value) {
+								// Parse as array of wiki links if contains [[
+								if (value.includes('[[')) {
+									const links = value.match(/\[\[([^\]]+)\]\]/g) || [];
+									this.propertyValues.set(prop.propertyName, links);
+								} else {
+									// Otherwise split by comma
+									const items = value.split(',').map(s => s.trim()).filter(s => s);
+									this.propertyValues.set(prop.propertyName, items);
+								}
+							} else {
+								this.propertyValues.delete(prop.propertyName);
+							}
+						});
+				});
+			} else {
+				// Default text input
+				setting.addText(text => {
+					text.setPlaceholder('Enter ' + prop.label.toLowerCase())
+						.onChange(value => {
+							if (value) {
+								this.propertyValues.set(prop.propertyName, value);
+							} else {
+								this.propertyValues.delete(prop.propertyName);
+							}
+						});
+				});
+			}
+			
+			// Set default value for label if it's the Asset label property
+			if (prop.propertyName === 'exo__Asset_label' && this.noteTitle) {
+				this.propertyValues.set(prop.propertyName, this.noteTitle);
+				// Update the input if it exists
+				const input = this.propertiesContainer.querySelector(`input[placeholder*="${prop.label.toLowerCase()}"]`) as HTMLInputElement;
+				if (input) {
+					input.value = this.noteTitle;
+				}
+			}
+		}
+	}
+
 	async createNote() {
 		const fileName = `${this.noteTitle}.md`;
-		// noteOntology now contains the actual fileName (e.g., "!exo", "Ontology - EMS", etc.)
+		
+		// Build frontmatter with all properties
+		let frontmatterLines = [
+			`exo__Asset_isDefinedBy: "[[${this.noteOntology}]]"`,
+			`exo__Asset_uid: ${this.generateUUID()}`,
+			`exo__Asset_createdAt: ${new Date().toISOString()}`,
+			`exo__Instance_class:`,
+			`  - "[[${this.noteClass}]]"`
+		];
+		
+		// Add label if not already in propertyValues
+		if (!this.propertyValues.has('exo__Asset_label')) {
+			frontmatterLines.push(`exo__Asset_label: "${this.noteTitle}"`);
+		}
+		
+		// Add all property values
+		for (const [propName, propValue] of this.propertyValues) {
+			if (Array.isArray(propValue)) {
+				// Handle arrays
+				frontmatterLines.push(`${propName}:`);
+				for (const item of propValue) {
+					if (typeof item === 'string' && item.includes('[[')) {
+						frontmatterLines.push(`  - "${item}"`);
+					} else {
+						frontmatterLines.push(`  - ${JSON.stringify(item)}`);
+					}
+				}
+			} else if (typeof propValue === 'boolean') {
+				frontmatterLines.push(`${propName}: ${propValue}`);
+			} else if (typeof propValue === 'number') {
+				frontmatterLines.push(`${propName}: ${propValue}`);
+			} else if (typeof propValue === 'string') {
+				// Handle strings, checking for wiki links
+				if (propValue.includes('[[')) {
+					frontmatterLines.push(`${propName}: "${propValue}"`);
+				} else if (propValue.includes('\n')) {
+					// Multiline string
+					frontmatterLines.push(`${propName}: |`);
+					const lines = propValue.split('\n');
+					for (const line of lines) {
+						frontmatterLines.push(`  ${line}`);
+					}
+				} else {
+					frontmatterLines.push(`${propName}: "${propValue}"`);
+				}
+			} else {
+				frontmatterLines.push(`${propName}: ${JSON.stringify(propValue)}`);
+			}
+		}
+		
 		const frontmatter = `---
-exo__Asset_isDefinedBy: "[[${this.noteOntology}]]"
-exo__Asset_uid: ${this.generateUUID()}
-exo__Asset_createdAt: ${new Date().toISOString()}
-exo__Instance_class:
-  - "[[${this.noteClass}]]"
-exo__Asset_label: "${this.noteTitle}"
+${frontmatterLines.join('\n')}
 ---
 
 \`\`\`dataviewjs
