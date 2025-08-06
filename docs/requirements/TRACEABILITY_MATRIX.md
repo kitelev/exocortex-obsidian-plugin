@@ -9,8 +9,11 @@ This matrix traces business requirements through functional requirements to impl
 |---------------------|------------------------|-------------------|--------------|---------------|---------|
 | **BR-001: Interactive Class Selection** | FR-001: Tree Hierarchy Display | ClassTreeModal.ts | 195-267 | Pending | ✅ Implemented |
 | | FR-004: Modal Integration | main.ts | 846-863 | Pending | ✅ Implemented |
-| **BR-002: Tree Navigation** | FR-002: Expand/Collapse | ClassTreeModal.ts | 277-289 | Pending | ✅ Implemented |
-| | | ClassTreeModal.ts | 208-220 | Pending | ✅ Implemented |
+| **BR-002: Dynamic UI Buttons** | FR-005: Button Definition | UIButton.ts | 1-123 | Pending | ✅ Implemented |
+| | FR-006: Command Execution | ButtonCommand.ts | 1-232 | Pending | ✅ Implemented |
+| | FR-007: Class-Specific Buttons | ClassView.ts | 1-245 | Pending | ✅ Implemented |
+| | FR-008: Button Rendering | ButtonRenderer.ts | 1-357 | Pending | ✅ Implemented |
+| | FR-009: Command Handlers | ObsidianCommandExecutor.ts | 1-412 | Pending | ✅ Implemented |
 | **BR-003: Modal-based Selection** | FR-004: Modal Integration | main.ts | 810-825 | Pending | ✅ Implemented |
 | | | ClassTreeModal.ts | 15-314 | Pending | ✅ Implemented |
 | **Search Functionality** | FR-003: Search and Filter | ClassTreeModal.ts | 116-148 | Pending | ✅ Implemented |
