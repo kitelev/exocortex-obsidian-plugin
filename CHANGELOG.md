@@ -5,6 +5,23 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-08-06
+
+### Changed
+- **BREAKING**: Class and Ontology selections are now independent
+- Class dropdown shows ALL available classes from vault, regardless of ontology
+- Ontology selection only determines which knowledge graph the asset belongs to
+- Reordered fields: Title → Class → Ontology for better workflow
+
+### Fixed
+- Corrected conceptual understanding: ontology is about graph membership, not class restriction
+- Classes can be used with any ontology (e.g., ems__Task can belong to 'exo' ontology)
+
+### Technical
+- Replaced `findClassesForOntology()` with `findAllClasses()` that finds all exo__Class instances
+- Removed dependency between ontology and class dropdowns
+- Simplified modal logic for independent selections
+
 ## [0.2.0] - 2025-08-06
 
 ### Added

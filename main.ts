@@ -226,8 +226,8 @@ export default class ExocortexPlugin extends Plugin {
 		return ontologies;
 	}
 
-	async findClassesForOntology(ontologyPrefix: string): Promise<{ className: string; label: string }[]> {
-		const classes: { className: string; label: string }[] = [];
+	async findAllClasses(): Promise<{ className: string; label: string; ontology: string }[]> {
+		const classes: { className: string; label: string; ontology: string }[] = [];
 		const files = this.app.vault.getFiles();
 		
 		for (const file of files) {
@@ -242,55 +242,50 @@ export default class ExocortexPlugin extends Plugin {
 			const cleanClass = classString?.toString().replace(/\[\[|\]\]/g, '');
 			
 			if (cleanClass === 'exo__Class' || cleanClass === 'owl__Class' || cleanClass === 'rdfs__Class') {
-				// Check if this class belongs to the selected ontology
+				const className = file.basename;
+				const label = metadata.frontmatter['exo__Asset_label'] || 
+							 metadata.frontmatter['rdfs__label'] ||
+							 className;
+				
+				// Get the ontology this class is defined by (for information only)
 				const isDefinedBy = metadata.frontmatter['exo__Asset_isDefinedBy'];
-				if (isDefinedBy) {
-					const definedByClean = isDefinedBy.toString().replace(/\[\[!?|\]\]/g, '');
-					if (definedByClean === ontologyPrefix) {
-						const className = file.basename;
-						const label = metadata.frontmatter['exo__Asset_label'] || 
-									 metadata.frontmatter['rdfs__label'] ||
-									 className;
-						
-						classes.push({ className, label });
-					}
-				}
+				const ontology = isDefinedBy ? isDefinedBy.toString().replace(/\[\[!?|\]\]/g, '') : 'unknown';
+				
+				classes.push({ className, label, ontology });
 			}
 		}
 		
-		// Add common classes for known ontologies
-		const commonClasses: Record<string, { className: string; label: string }[]> = {
-			'exo': [
-				{ className: 'exo__Asset', label: 'Asset' },
-				{ className: 'exo__Class', label: 'Class' },
-				{ className: 'exo__Ontology', label: 'Ontology' },
-				{ className: 'exo__Instance', label: 'Instance' }
-			],
-			'ems': [
-				{ className: 'ems__Task', label: 'Task' },
-				{ className: 'ems__Project', label: 'Project' },
-				{ className: 'ems__Area', label: 'Area' },
-				{ className: 'ems__Effort', label: 'Effort' }
-			],
-			'gtd': [
-				{ className: 'gtd__Task', label: 'Task' },
-				{ className: 'gtd__Project', label: 'Project' },
-				{ className: 'gtd__Context', label: 'Context' }
-			],
-			'ims': [
-				{ className: 'ims__Concept', label: 'Concept' },
-				{ className: 'ims__Definition', label: 'Definition' },
-				{ className: 'ims__Person', label: 'Person' },
-				{ className: 'ims__Organization', label: 'Organization' }
-			]
-		};
+		// Add common classes if not already found
+		const commonClasses = [
+			// Exo core classes
+			{ className: 'exo__Asset', label: 'Asset (Base)', ontology: 'exo' },
+			{ className: 'exo__Class', label: 'Class', ontology: 'exo' },
+			{ className: 'exo__Ontology', label: 'Ontology', ontology: 'exo' },
+			{ className: 'exo__Instance', label: 'Instance', ontology: 'exo' },
+			// EMS classes
+			{ className: 'ems__Task', label: 'Task (EMS)', ontology: 'ems' },
+			{ className: 'ems__Project', label: 'Project (EMS)', ontology: 'ems' },
+			{ className: 'ems__Area', label: 'Area (EMS)', ontology: 'ems' },
+			{ className: 'ems__Effort', label: 'Effort', ontology: 'ems' },
+			// GTD classes
+			{ className: 'gtd__Task', label: 'Task (GTD)', ontology: 'gtd' },
+			{ className: 'gtd__Project', label: 'Project (GTD)', ontology: 'gtd' },
+			{ className: 'gtd__Context', label: 'Context', ontology: 'gtd' },
+			// IMS classes
+			{ className: 'ims__Concept', label: 'Concept', ontology: 'ims' },
+			{ className: 'ims__Definition', label: 'Definition', ontology: 'ims' },
+			{ className: 'ims__Person', label: 'Person', ontology: 'ims' },
+			{ className: 'ims__Organization', label: 'Organization', ontology: 'ims' },
+			// Other common classes
+			{ className: 'ztlk__Note', label: 'Note', ontology: 'ztlk' },
+			{ className: 'lit__Book', label: 'Book', ontology: 'lit' },
+			{ className: 'meet__Meeting', label: 'Meeting', ontology: 'meet' }
+		];
 		
 		// Add common classes if not already found
-		if (commonClasses[ontologyPrefix]) {
-			for (const commonClass of commonClasses[ontologyPrefix]) {
-				if (!classes.some(c => c.className === commonClass.className)) {
-					classes.push(commonClass);
-				}
+		for (const commonClass of commonClasses) {
+			if (!classes.some(c => c.className === commonClass.className)) {
+				classes.push(commonClass);
 			}
 		}
 		
@@ -307,6 +302,7 @@ class ExocortexNoteModal extends Modal {
 	noteClass: string = 'exo__Asset';
 	noteOntology: string = '';
 	availableOntologies: { file: TFile; prefix: string; label: string }[] = [];
+	availableClasses: { className: string; label: string; ontology: string }[] = [];
 
 	constructor(app: App, plugin: ExocortexPlugin) {
 		super(app);
@@ -318,8 +314,9 @@ class ExocortexNoteModal extends Modal {
 		const { contentEl } = this;
 		contentEl.createEl("h2", { text: "Create Exocortex Note" });
 
-		// Load available ontologies
+		// Load available ontologies and classes
 		this.availableOntologies = await this.plugin.findAllOntologies();
+		this.availableClasses = await this.plugin.findAllClasses();
 		
 		// If current default ontology is not in the list, use the first one
 		if (this.availableOntologies.length > 0 && !this.availableOntologies.some(o => o.prefix === this.noteOntology)) {
@@ -334,12 +331,39 @@ class ExocortexNoteModal extends Modal {
 				.setValue(this.noteTitle)
 				.onChange(value => this.noteTitle = value));
 
-		// Create the ontology dropdown first
-		let classDropdown: any = null;
+		// Create the CLASS dropdown (now independent)
+		new Setting(contentEl)
+			.setName("Class")
+			.setDesc("Select the type of asset (all available classes)")
+			.addDropdown(dropdown => {
+				// Add all classes to dropdown
+				for (const classInfo of this.availableClasses) {
+					const displayName = `${classInfo.className} - ${classInfo.label}`;
+					dropdown.addOption(classInfo.className, displayName);
+				}
+				
+				// Set default value
+				if (this.availableClasses.length > 0) {
+					// Try to find exo__Asset as default
+					const defaultClass = this.availableClasses.find(c => c.className === 'exo__Asset');
+					if (defaultClass) {
+						this.noteClass = defaultClass.className;
+						dropdown.setValue(defaultClass.className);
+					} else {
+						this.noteClass = this.availableClasses[0].className;
+						dropdown.setValue(this.availableClasses[0].className);
+					}
+				}
+				
+				dropdown.onChange(value => {
+					this.noteClass = value;
+				});
+			});
 		
+		// Create the ONTOLOGY dropdown (now independent)
 		new Setting(contentEl)
 			.setName("Ontology")
-			.setDesc("Select ontology from your vault")
+			.setDesc("Select which knowledge graph this asset belongs to")
 			.addDropdown(dropdown => {
 				// Add all found ontologies to dropdown
 				for (const ontology of this.availableOntologies) {
@@ -349,23 +373,10 @@ class ExocortexNoteModal extends Modal {
 				
 				dropdown
 					.setValue(this.noteOntology)
-					.onChange(async value => {
+					.onChange(value => {
 						this.noteOntology = value;
-						// Update the class dropdown when ontology changes
-						await this.updateClassDropdown(classDropdown, value);
 					});
 			});
-
-		// Create the class dropdown
-		const classSetting = new Setting(contentEl)
-			.setName("Class")
-			.setDesc("Select class from the chosen ontology");
-		
-		classSetting.addDropdown(dropdown => {
-			classDropdown = dropdown;
-			// Initialize with classes from the default ontology
-			this.updateClassDropdown(dropdown, this.noteOntology);
-		});
 
 		new Setting(contentEl)
 			.addButton(btn => btn
@@ -375,55 +386,6 @@ class ExocortexNoteModal extends Modal {
 					this.createNote();
 					this.close();
 				}));
-	}
-	
-	async updateClassDropdown(dropdown: any, ontologyPrefix: string) {
-		if (!dropdown) return;
-		
-		// Clear existing options
-		dropdown.selectEl.empty();
-		
-		// Get classes for this ontology
-		const classes = await this.plugin.findClassesForOntology(ontologyPrefix);
-		
-		// Add classes to dropdown
-		for (const classInfo of classes) {
-			const displayName = `${classInfo.className} - ${classInfo.label}`;
-			dropdown.addOption(classInfo.className, displayName);
-		}
-		
-		// Set default selection
-		if (classes.length > 0) {
-			// Try to find a sensible default based on ontology
-			let defaultClass = classes[0].className;
-			
-			switch(ontologyPrefix) {
-				case 'ems':
-					const emsTask = classes.find(c => c.className === 'ems__Task');
-					if (emsTask) defaultClass = emsTask.className;
-					break;
-				case 'gtd':
-					const gtdTask = classes.find(c => c.className === 'gtd__Task');
-					if (gtdTask) defaultClass = gtdTask.className;
-					break;
-				case 'ims':
-					const concept = classes.find(c => c.className === 'ims__Concept');
-					if (concept) defaultClass = concept.className;
-					break;
-				case 'exo':
-					const asset = classes.find(c => c.className === 'exo__Asset');
-					if (asset) defaultClass = asset.className;
-					break;
-			}
-			
-			this.noteClass = defaultClass;
-			dropdown.setValue(defaultClass);
-		}
-		
-		// Add change listener
-		dropdown.onChange((value: string) => {
-			this.noteClass = value;
-		});
 	}
 
 	async createNote() {
