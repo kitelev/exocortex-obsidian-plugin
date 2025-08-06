@@ -1,4 +1,5 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf } from 'obsidian';
+import { ClassTreeModal } from './src/presentation/modals/ClassTreeModal';
 
 interface ExocortexSettings {
 	defaultOntology: string;
@@ -800,54 +801,67 @@ class ExocortexAssetModal extends Modal {
 				.setValue(this.assetTitle)
 				.onChange(value => this.assetTitle = value));
 
-		// Create the CLASS dropdown with tree structure
-		new Setting(formEl)
+		// Create the CLASS selector with tree button
+		const classSetting = new Setting(formEl)
 			.setName("Class")
-			.setDesc("Select the type of asset (tree hierarchy)")
-			.addDropdown(dropdown => {
-				// Add classes with tree indentation
-				for (const classInfo of this.flattenedClasses) {
-					if (!classInfo.isRecursion) {
-						// Create indentation based on level
-						const indent = '　'.repeat(classInfo.level); // Using full-width space for better visibility
-						const displayName = `${indent}${classInfo.className} - ${classInfo.label}`;
-						dropdown.addOption(classInfo.className, displayName);
-					} else {
-						// Show recursion warning
-						const indent = '　'.repeat(classInfo.level);
-						const displayName = `${indent}${classInfo.className}`;
-						// Don't add recursion entries as selectable options
-					}
+			.setDesc("Select the type of asset (tree hierarchy)");
+			
+		// Create a container for the button
+		const buttonEl = classSetting.controlEl.createEl('button', {
+			cls: 'class-selector-button'
+		});
+		
+		// Initial setup for the button
+		const updateButtonText = () => {
+			buttonEl.empty();
+			const textEl = buttonEl.createEl('span', {
+				cls: 'class-selector-button-text',
+				text: this.assetClass || 'Select a class...'
+			});
+			buttonEl.createEl('span', {
+				cls: 'class-selector-button-icon',
+				text: '▼'
+			});
+		};
+		
+		updateButtonText();
+		
+		// Set default value if we have classes
+		if (this.flattenedClasses.length > 0) {
+			// Try to find exo__Asset as default
+			const defaultClass = this.flattenedClasses.find(c => c.className === 'exo__Asset' && !c.isRecursion);
+			if (defaultClass) {
+				this.assetClass = defaultClass.className;
+			} else {
+				// Find first non-recursion class
+				const firstClass = this.flattenedClasses.find(c => !c.isRecursion);
+				if (firstClass) {
+					this.assetClass = firstClass.className;
 				}
-				
-				// Set default value
-				if (this.flattenedClasses.length > 0) {
-					// Try to find exo__Asset as default
-					const defaultClass = this.flattenedClasses.find(c => c.className === 'exo__Asset' && !c.isRecursion);
-					if (defaultClass) {
-						this.assetClass = defaultClass.className;
-						dropdown.setValue(defaultClass.className);
-					} else {
-						// Find first non-recursion class
-						const firstClass = this.flattenedClasses.find(c => !c.isRecursion);
-						if (firstClass) {
-							this.assetClass = firstClass.className;
-							dropdown.setValue(firstClass.className);
-						}
-					}
-				}
-				
-				dropdown.onChange(async value => {
+			}
+			updateButtonText();
+		}
+		
+		// Add click handler to open tree modal
+		buttonEl.addEventListener('click', () => {
+			const treeModal = new ClassTreeModal(
+				this.app,
+				this.classHierarchyTree,
+				this.assetClass,
+				async (selectedClass: string) => {
 					// Save current property values for the previous class before switching
 					if (this.assetClass && this.propertyValues.size > 0) {
 						this.classPropertyValues.set(this.assetClass, new Map(this.propertyValues));
 					}
 					
-					this.assetClass = value;
+					this.assetClass = selectedClass;
+					updateButtonText();
 					// Update properties when class changes
-					await this.updatePropertiesForClass(value);
-				});
-			});
+					await this.updatePropertiesForClass(selectedClass);
+				}
+			);
+			treeModal.open();
+		});
 		
 		// Create the ONTOLOGY dropdown (now independent)
 		new Setting(formEl)

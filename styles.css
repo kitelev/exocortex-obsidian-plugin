@@ -208,6 +208,216 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
+/* Class Tree Modal Styles */
+.modal.class-tree-modal {
+    max-width: 700px;
+    width: 85vw;
+    max-height: 80vh;
+}
+
+.class-tree-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.class-tree-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-normal);
+}
+
+.class-tree-search {
+    padding: 16px 24px;
+    background-color: var(--background-secondary);
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.class-tree-search .setting-item {
+    padding: 0;
+    border: none;
+}
+
+.class-tree-container {
+    padding: 12px;
+    max-height: calc(70vh - 200px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb-bg) transparent;
+}
+
+.class-tree-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.class-tree-container::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb-bg);
+    border-radius: 4px;
+}
+
+.class-tree-empty {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.class-tree-node {
+    user-select: none;
+}
+
+.class-tree-node-content {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.class-tree-node-content:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.class-tree-node.is-selected .class-tree-node-content {
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.class-tree-expand-icon {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.class-tree-expand-icon:hover {
+    color: var(--text-normal);
+}
+
+.class-tree-expand-spacer {
+    display: inline-block;
+    width: 20px;
+}
+
+.class-tree-icon {
+    margin: 0 8px;
+    font-size: 1rem;
+}
+
+.class-tree-text {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+}
+
+.class-tree-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.class-tree-label {
+    color: var(--text-muted);
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.class-tree-ontology {
+    padding: 2px 8px;
+    margin-left: 8px;
+    background-color: var(--background-modifier-border);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.class-tree-node.is-selected .class-tree-ontology {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-on-accent);
+}
+
+.class-tree-children {
+    margin-left: 0;
+}
+
+.class-tree-recursion .class-tree-node-content {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.class-tree-recursion .class-tree-node-content:hover {
+    background-color: transparent;
+}
+
+.class-tree-recursion-text {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.class-tree-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--background-modifier-border);
+    background-color: var(--background-secondary);
+}
+
+.class-tree-footer .setting-item {
+    padding: 0;
+    border: none;
+    justify-content: flex-end;
+}
+
+/* Search highlighting */
+.class-tree-container mark {
+    background-color: var(--text-highlight-bg);
+    color: var(--text-normal);
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+/* Button to open tree selector */
+.class-selector-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 8px 12px;
+    background-color: var(--background-modifier-form-field);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.class-selector-button:hover {
+    background-color: var(--background-modifier-form-field-highlighted);
+    border-color: var(--interactive-accent);
+}
+
+.class-selector-button-text {
+    flex: 1;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.class-selector-button-icon {
+    margin-left: 8px;
+    color: var(--text-muted);
+}
+
 .exocortex-layout-container {
     padding: 1rem;
     margin: 0.5rem 0;

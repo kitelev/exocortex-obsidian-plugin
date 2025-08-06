@@ -5,6 +5,34 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.6] - 2025-08-06
+
+### Added
+- **Interactive Tree Selector Modal**: Replaced dropdown with interactive modal for class selection
+- **Expand/Collapse Functionality**: Tree nodes can be expanded/collapsed to navigate hierarchy
+- **Search Feature**: Real-time search with highlighting in tree view
+- **Visual Improvements**: Better visual hierarchy with icons and ontology badges
+- **Button Selector**: Class field now uses button to open tree modal
+
+### Changed
+- Class selection now opens a dedicated modal instead of using dropdown
+- Tree view automatically expands to show selected class
+- Search functionality filters tree and highlights matching terms
+- Modal overlays properly on top of the main creation modal
+
+### Improved
+- Better navigation of large class hierarchies
+- More intuitive visual representation of inheritance relationships
+- Easier to find classes with search functionality
+- Clearer distinction between classes from different ontologies
+
+### Technical
+- Added `ClassTreeModal` component with TreeNode interface
+- Implemented recursive tree rendering with cycle detection
+- Added expand/collapse state management
+- Search implementation with real-time filtering
+- Proper modal stacking for overlays
+
 ## [0.5.5] - 2025-08-06
 
 ### Improved
