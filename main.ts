@@ -143,10 +143,10 @@ export default class ExocortexPlugin extends Plugin {
 		}
 
 		// Show backlinks
-		const backlinks = this.app.metadataCache.getBacklinksForFile(file);
-		if (backlinks && backlinks.data.size > 0) {
+		const backlinks = (this.app.metadataCache as any).getBacklinksForFile(file);
+		if (backlinks && backlinks.data && backlinks.data.size > 0) {
 			dv.header(2, "Referenced By");
-			const backlinkFiles = Array.from(backlinks.data.keys()).map(path => {
+			const backlinkFiles = Array.from(backlinks.data.keys()).map((path: string) => {
 				const file = this.app.vault.getAbstractFileByPath(path);
 				return file ? `[[${file.path}]]` : path;
 			});
