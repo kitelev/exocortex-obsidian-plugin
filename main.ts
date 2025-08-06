@@ -179,22 +179,152 @@ export default class ExocortexPlugin extends Plugin {
 		});
 		new Notice('Exocortex layouts refreshed');
 	}
+
+	async findAllOntologies(): Promise<{ file: TFile; prefix: string; label: string }[]> {
+		const ontologies: { file: TFile; prefix: string; label: string }[] = [];
+		const files = this.app.vault.getFiles();
+		
+		for (const file of files) {
+			const metadata = this.app.metadataCache.getFileCache(file);
+			if (!metadata?.frontmatter) continue;
+			
+			const instanceClass = metadata.frontmatter['exo__Instance_class'];
+			if (!instanceClass) continue;
+			
+			// Check if this is an ontology
+			const classString = Array.isArray(instanceClass) ? instanceClass[0] : instanceClass;
+			const cleanClass = classString?.toString().replace(/\[\[|\]\]/g, '');
+			
+			if (cleanClass === 'exo__Ontology' || cleanClass === 'exo__InternalOntology' || cleanClass === 'exo__ExternalOntology') {
+				const prefix = metadata.frontmatter['exo__Ontology_prefix'] || 
+							  metadata.frontmatter['exo__Ontology_namespace'] ||
+							  file.basename.replace(/^!/, ''); // Remove leading ! from filename
+				
+				const label = metadata.frontmatter['exo__Asset_label'] || 
+							 metadata.frontmatter['rdfs__label'] ||
+							 file.basename;
+				
+				ontologies.push({ file, prefix, label });
+			}
+		}
+		
+		// Sort by prefix
+		ontologies.sort((a, b) => a.prefix.localeCompare(b.prefix));
+		
+		// Always include default ontologies even if not found
+		const defaultOntologies = ['exo', 'ems', 'gtd', 'ims'];
+		for (const defaultPrefix of defaultOntologies) {
+			if (!ontologies.some(o => o.prefix === defaultPrefix)) {
+				ontologies.push({
+					file: null as any,
+					prefix: defaultPrefix,
+					label: defaultPrefix.toUpperCase()
+				});
+			}
+		}
+		
+		return ontologies;
+	}
+
+	async findClassesForOntology(ontologyPrefix: string): Promise<{ className: string; label: string }[]> {
+		const classes: { className: string; label: string }[] = [];
+		const files = this.app.vault.getFiles();
+		
+		for (const file of files) {
+			const metadata = this.app.metadataCache.getFileCache(file);
+			if (!metadata?.frontmatter) continue;
+			
+			const instanceClass = metadata.frontmatter['exo__Instance_class'];
+			if (!instanceClass) continue;
+			
+			// Check if this is a class definition
+			const classString = Array.isArray(instanceClass) ? instanceClass[0] : instanceClass;
+			const cleanClass = classString?.toString().replace(/\[\[|\]\]/g, '');
+			
+			if (cleanClass === 'exo__Class' || cleanClass === 'owl__Class' || cleanClass === 'rdfs__Class') {
+				// Check if this class belongs to the selected ontology
+				const isDefinedBy = metadata.frontmatter['exo__Asset_isDefinedBy'];
+				if (isDefinedBy) {
+					const definedByClean = isDefinedBy.toString().replace(/\[\[!?|\]\]/g, '');
+					if (definedByClean === ontologyPrefix) {
+						const className = file.basename;
+						const label = metadata.frontmatter['exo__Asset_label'] || 
+									 metadata.frontmatter['rdfs__label'] ||
+									 className;
+						
+						classes.push({ className, label });
+					}
+				}
+			}
+		}
+		
+		// Add common classes for known ontologies
+		const commonClasses: Record<string, { className: string; label: string }[]> = {
+			'exo': [
+				{ className: 'exo__Asset', label: 'Asset' },
+				{ className: 'exo__Class', label: 'Class' },
+				{ className: 'exo__Ontology', label: 'Ontology' },
+				{ className: 'exo__Instance', label: 'Instance' }
+			],
+			'ems': [
+				{ className: 'ems__Task', label: 'Task' },
+				{ className: 'ems__Project', label: 'Project' },
+				{ className: 'ems__Area', label: 'Area' },
+				{ className: 'ems__Effort', label: 'Effort' }
+			],
+			'gtd': [
+				{ className: 'gtd__Task', label: 'Task' },
+				{ className: 'gtd__Project', label: 'Project' },
+				{ className: 'gtd__Context', label: 'Context' }
+			],
+			'ims': [
+				{ className: 'ims__Concept', label: 'Concept' },
+				{ className: 'ims__Definition', label: 'Definition' },
+				{ className: 'ims__Person', label: 'Person' },
+				{ className: 'ims__Organization', label: 'Organization' }
+			]
+		};
+		
+		// Add common classes if not already found
+		if (commonClasses[ontologyPrefix]) {
+			for (const commonClass of commonClasses[ontologyPrefix]) {
+				if (!classes.some(c => c.className === commonClass.className)) {
+					classes.push(commonClass);
+				}
+			}
+		}
+		
+		// Sort by className
+		classes.sort((a, b) => a.className.localeCompare(b.className));
+		
+		return classes;
+	}
 }
 
 class ExocortexNoteModal extends Modal {
 	plugin: ExocortexPlugin;
 	noteTitle: string = '';
 	noteClass: string = 'exo__Asset';
-	noteOntology: string = 'exo';
+	noteOntology: string = '';
+	availableOntologies: { file: TFile; prefix: string; label: string }[] = [];
 
 	constructor(app: App, plugin: ExocortexPlugin) {
 		super(app);
 		this.plugin = plugin;
+		this.noteOntology = plugin.settings.defaultOntology;
 	}
 
-	onOpen() {
+	async onOpen() {
 		const { contentEl } = this;
 		contentEl.createEl("h2", { text: "Create Exocortex Note" });
+
+		// Load available ontologies
+		this.availableOntologies = await this.plugin.findAllOntologies();
+		
+		// If current default ontology is not in the list, use the first one
+		if (this.availableOntologies.length > 0 && !this.availableOntologies.some(o => o.prefix === this.noteOntology)) {
+			this.noteOntology = this.availableOntologies[0].prefix;
+		}
 
 		new Setting(contentEl)
 			.setName("Title")
@@ -204,21 +334,38 @@ class ExocortexNoteModal extends Modal {
 				.setValue(this.noteTitle)
 				.onChange(value => this.noteTitle = value));
 
-		new Setting(contentEl)
-			.setName("Class")
-			.setDesc("Ontology class for the note")
-			.addText(text => text
-				.setPlaceholder("e.g., exo__Asset, ems__Task")
-				.setValue(this.noteClass)
-				.onChange(value => this.noteClass = value));
-
+		// Create the ontology dropdown first
+		let classDropdown: any = null;
+		
 		new Setting(contentEl)
 			.setName("Ontology")
-			.setDesc("Ontology namespace")
-			.addText(text => text
-				.setPlaceholder("e.g., exo, ems, gtd")
-				.setValue(this.noteOntology)
-				.onChange(value => this.noteOntology = value));
+			.setDesc("Select ontology from your vault")
+			.addDropdown(dropdown => {
+				// Add all found ontologies to dropdown
+				for (const ontology of this.availableOntologies) {
+					const displayName = `${ontology.prefix} - ${ontology.label}`;
+					dropdown.addOption(ontology.prefix, displayName);
+				}
+				
+				dropdown
+					.setValue(this.noteOntology)
+					.onChange(async value => {
+						this.noteOntology = value;
+						// Update the class dropdown when ontology changes
+						await this.updateClassDropdown(classDropdown, value);
+					});
+			});
+
+		// Create the class dropdown
+		const classSetting = new Setting(contentEl)
+			.setName("Class")
+			.setDesc("Select class from the chosen ontology");
+		
+		classSetting.addDropdown(dropdown => {
+			classDropdown = dropdown;
+			// Initialize with classes from the default ontology
+			this.updateClassDropdown(dropdown, this.noteOntology);
+		});
 
 		new Setting(contentEl)
 			.addButton(btn => btn
@@ -228,6 +375,55 @@ class ExocortexNoteModal extends Modal {
 					this.createNote();
 					this.close();
 				}));
+	}
+	
+	async updateClassDropdown(dropdown: any, ontologyPrefix: string) {
+		if (!dropdown) return;
+		
+		// Clear existing options
+		dropdown.selectEl.empty();
+		
+		// Get classes for this ontology
+		const classes = await this.plugin.findClassesForOntology(ontologyPrefix);
+		
+		// Add classes to dropdown
+		for (const classInfo of classes) {
+			const displayName = `${classInfo.className} - ${classInfo.label}`;
+			dropdown.addOption(classInfo.className, displayName);
+		}
+		
+		// Set default selection
+		if (classes.length > 0) {
+			// Try to find a sensible default based on ontology
+			let defaultClass = classes[0].className;
+			
+			switch(ontologyPrefix) {
+				case 'ems':
+					const emsTask = classes.find(c => c.className === 'ems__Task');
+					if (emsTask) defaultClass = emsTask.className;
+					break;
+				case 'gtd':
+					const gtdTask = classes.find(c => c.className === 'gtd__Task');
+					if (gtdTask) defaultClass = gtdTask.className;
+					break;
+				case 'ims':
+					const concept = classes.find(c => c.className === 'ims__Concept');
+					if (concept) defaultClass = concept.className;
+					break;
+				case 'exo':
+					const asset = classes.find(c => c.className === 'exo__Asset');
+					if (asset) defaultClass = asset.className;
+					break;
+			}
+			
+			this.noteClass = defaultClass;
+			dropdown.setValue(defaultClass);
+		}
+		
+		// Add change listener
+		dropdown.onChange((value: string) => {
+			this.noteClass = value;
+		});
 	}
 
 	async createNote() {

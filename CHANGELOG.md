@@ -5,6 +5,26 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-08-06
+
+### Added
+- Dynamic ontology discovery - automatically finds all ontologies in your vault
+- Dropdown selector for ontologies instead of text field
+- Dropdown selector for classes based on selected ontology
+- Automatic class discovery from vault assets
+- Intelligent defaults for common ontologies (exo, ems, gtd, ims)
+
+### Changed
+- Create Note modal now uses dropdowns for better user experience
+- Ontology dropdown shows prefix and label for clarity
+- Class dropdown updates dynamically when ontology changes
+- Better error handling for vaults without ontologies
+
+### Technical
+- Added `findAllOntologies()` method to scan vault for ontology definitions
+- Added `findClassesForOntology()` method to discover available classes
+- Improved metadata parsing for ontology prefixes and labels
+
 ## [0.1.0] - 2025-08-06
 
 ### Added
