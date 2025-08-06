@@ -79,7 +79,7 @@ export class CreateAssetModal extends Modal {
         }
         
         // Set default ontology
-        if (defaultOntology && ontologies.some(o => o.prefix === defaultOntology)) {
+        if (defaultOntology && ontologies.some((o: any) => o.prefix === defaultOntology)) {
           this.assetOntology = defaultOntology;
           dropdown.setValue(defaultOntology);
         } else if (ontologies.length > 0) {

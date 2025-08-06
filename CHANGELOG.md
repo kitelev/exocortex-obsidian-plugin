@@ -5,6 +5,23 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2025-08-06
+
+### Added
+- **Object Property Dropdowns**: Fields with `exo__ObjectProperty` class now show dropdowns
+- Assets matching the class specified in `exo__Property_range` are populated in dropdown
+- New method `findAssetsByClass()` to discover assets of a specific class
+- Property discovery now detects whether a property is an ObjectProperty
+
+### Changed
+- Updated `findPropertiesForClass()` to include `isObjectProperty` flag
+- Modal property field generation checks for ObjectProperty and creates dropdowns
+- Object property values are stored as wiki links (e.g., `[[AssetName]]`)
+
+### Improved
+- Better user experience when selecting related assets through dropdowns
+- Clear display of asset labels alongside filenames in dropdowns
+
 ## [0.5.1] - 2025-08-06
 
 ### Added

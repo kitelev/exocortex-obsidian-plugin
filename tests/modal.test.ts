@@ -32,7 +32,7 @@ describe('ExocortexAssetModal', () => {
     };
     
     // Mock vault.create
-    createSpy = jest.spyOn(app.vault, 'create').mockResolvedValue(new TFile('test.md'));
+    createSpy = jest.spyOn(app.vault, 'create').mockResolvedValue(new TFile());
     
     // Mock workspace.getLeaf and openFile
     const mockLeaf = {
@@ -101,7 +101,8 @@ describe('ExocortexAssetModal', () => {
           label: 'Status',
           range: 'enum:todo,in_progress,done',
           isRequired: false,
-          description: 'Task status'
+          description: 'Task status',
+          isObjectProperty: false
         }
       ]);
       
@@ -135,7 +136,7 @@ describe('ExocortexAssetModal', () => {
           expect(content).toContain('```dataviewjs');
           expect(content).toContain('await window.ExoUIRender(dv, this);');
           resolve();
-          return Promise.resolve(new TFile(fileName));
+          return Promise.resolve(new TFile());
         });
       });
       
@@ -180,7 +181,7 @@ await window.ExoUIRender(dv, this);
           expect(content).toContain('  - "[[Asset1]]"');
           expect(content).toContain('  - "[[Asset2]]"');
           resolve();
-          return Promise.resolve(new TFile(fileName));
+          return Promise.resolve(new TFile());
         });
       });
       
@@ -217,35 +218,40 @@ await window.ExoUIRender(dv, this);
           label: 'Text Property',
           range: 'string',
           isRequired: false,
-          description: 'A text property'
+          description: 'A text property',
+          isObjectProperty: false
         },
         {
           propertyName: 'enum_prop',
           label: 'Enum Property',
           range: 'enum:option1,option2,option3',
           isRequired: false,
-          description: 'An enum property'
+          description: 'An enum property',
+          isObjectProperty: false
         },
         {
           propertyName: 'bool_prop',
           label: 'Boolean Property',
           range: 'boolean',
           isRequired: false,
-          description: 'A boolean property'
+          description: 'A boolean property',
+          isObjectProperty: false
         },
         {
           propertyName: 'date_prop',
           label: 'Date Property',
           range: 'date',
           isRequired: false,
-          description: 'A date property'
+          description: 'A date property',
+          isObjectProperty: false
         },
         {
           propertyName: 'number_prop',
           label: 'Number Property',
           range: 'number',
           isRequired: false,
-          description: 'A number property'
+          description: 'A number property',
+          isObjectProperty: false
         }
       ];
       

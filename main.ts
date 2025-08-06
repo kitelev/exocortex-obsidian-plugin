@@ -250,6 +250,7 @@ export default class ExocortexPlugin extends Plugin {
 		range: string; 
 		isRequired: boolean;
 		description: string;
+		isObjectProperty: boolean;
 	}[]> {
 		const properties: { 
 			propertyName: string; 
@@ -257,6 +258,7 @@ export default class ExocortexPlugin extends Plugin {
 			range: string; 
 			isRequired: boolean;
 			description: string;
+			isObjectProperty: boolean;
 		}[] = [];
 		
 		// Get all properties for this class and its parents
@@ -307,7 +309,10 @@ export default class ExocortexPlugin extends Plugin {
 						const description = metadata.frontmatter['exo__Asset_description'] || 
 										   metadata.frontmatter['rdfs__comment'] || '';
 						
-						properties.push({ propertyName, label, range, isRequired, description });
+						// Check if this is an ObjectProperty
+						const isObjectProperty = cleanClass === 'exo__ObjectProperty' || cleanClass === 'owl__ObjectProperty';
+						
+						properties.push({ propertyName, label, range, isRequired, description, isObjectProperty });
 					}
 				}
 			}
@@ -316,9 +321,9 @@ export default class ExocortexPlugin extends Plugin {
 		// Add common properties based on class if not found
 		if (className === 'exo__Asset' || classHierarchy.includes('exo__Asset')) {
 			const commonAssetProps = [
-				{ propertyName: 'exo__Asset_label', label: 'Label', range: 'string', isRequired: true, description: 'Human-readable label' },
-				{ propertyName: 'exo__Asset_description', label: 'Description', range: 'text', isRequired: false, description: 'Detailed description' },
-				{ propertyName: 'exo__Asset_relates', label: 'Related Assets', range: 'array', isRequired: false, description: 'Links to related assets' }
+				{ propertyName: 'exo__Asset_label', label: 'Label', range: 'string', isRequired: true, description: 'Human-readable label', isObjectProperty: false },
+				{ propertyName: 'exo__Asset_description', label: 'Description', range: 'text', isRequired: false, description: 'Detailed description', isObjectProperty: false },
+				{ propertyName: 'exo__Asset_relates', label: 'Related Assets', range: 'array', isRequired: false, description: 'Links to related assets', isObjectProperty: false }
 			];
 			
 			for (const prop of commonAssetProps) {
@@ -331,9 +336,9 @@ export default class ExocortexPlugin extends Plugin {
 		// Add class-specific common properties
 		if (className === 'ems__Task') {
 			const taskProps = [
-				{ propertyName: 'ems__Task_status', label: 'Status', range: 'enum:todo,in_progress,done', isRequired: false, description: 'Task status' },
-				{ propertyName: 'ems__Task_priority', label: 'Priority', range: 'enum:low,medium,high', isRequired: false, description: 'Task priority' },
-				{ propertyName: 'ems__Task_dueDate', label: 'Due Date', range: 'date', isRequired: false, description: 'When the task is due' }
+				{ propertyName: 'ems__Task_status', label: 'Status', range: 'enum:todo,in_progress,done', isRequired: false, description: 'Task status', isObjectProperty: false },
+				{ propertyName: 'ems__Task_priority', label: 'Priority', range: 'enum:low,medium,high', isRequired: false, description: 'Task priority', isObjectProperty: false },
+				{ propertyName: 'ems__Task_dueDate', label: 'Due Date', range: 'date', isRequired: false, description: 'When the task is due', isObjectProperty: false }
 			];
 			
 			for (const prop of taskProps) {
@@ -460,6 +465,48 @@ export default class ExocortexPlugin extends Plugin {
 		classes.sort((a, b) => a.className.localeCompare(b.className));
 		
 		return classes;
+	}
+
+	async findAssetsByClass(className: string): Promise<{ fileName: string; label: string; path: string }[]> {
+		const assets: { fileName: string; label: string; path: string }[] = [];
+		const files = this.app.vault.getFiles();
+		
+		// Clean the class name from wiki links
+		const cleanClassName = className.replace(/\[\[|\]\]/g, '');
+		
+		for (const file of files) {
+			// Skip files in template folder
+			if (this.settings.templateFolderPath && file.path.startsWith(this.settings.templateFolderPath + '/')) {
+				continue;
+			}
+			
+			const metadata = this.app.metadataCache.getFileCache(file);
+			if (!metadata?.frontmatter) continue;
+			
+			const instanceClass = metadata.frontmatter['exo__Instance_class'];
+			if (!instanceClass) continue;
+			
+			// Check if this asset is of the requested class
+			const classArray = Array.isArray(instanceClass) ? instanceClass : [instanceClass];
+			const cleanClasses = classArray.map((c: any) => c?.toString().replace(/\[\[|\]\]/g, ''));
+			
+			if (cleanClasses.includes(cleanClassName)) {
+				const label = metadata.frontmatter['exo__Asset_label'] || 
+							 metadata.frontmatter['rdfs__label'] ||
+							 file.basename;
+				
+				assets.push({
+					fileName: file.basename,
+					label: label,
+					path: file.path
+				});
+			}
+		}
+		
+		// Sort by label
+		assets.sort((a, b) => a.label.localeCompare(b.label));
+		
+		return assets;
 	}
 }
 
@@ -597,8 +644,34 @@ class ExocortexAssetModal extends Modal {
 				.setName(prop.label + (prop.isRequired ? ' *' : ''))
 				.setDesc(prop.description);
 			
-			// Add appropriate input based on range
-			if (prop.range.startsWith('enum:')) {
+			// Check if this is an ObjectProperty - show dropdown with assets of the range class
+			if (prop.isObjectProperty && prop.range) {
+				// Clean the range to get the class name
+				const rangeClass = prop.range.replace(/\[\[|\]\]/g, '');
+				
+				// Get all assets of this class
+				const assets = await this.plugin.findAssetsByClass(rangeClass);
+				
+				setting.addDropdown(dropdown => {
+					dropdown.addOption('', '-- Select --');
+					for (const asset of assets) {
+						// Show both label and filename for clarity
+						const displayName = asset.label !== asset.fileName 
+							? `${asset.label} (${asset.fileName})`
+							: asset.fileName;
+						// Store as wiki link
+						const wikiLink = `[[${asset.fileName}]]`;
+						dropdown.addOption(wikiLink, displayName);
+					}
+					dropdown.onChange(value => {
+						if (value) {
+							this.propertyValues.set(prop.propertyName, value);
+						} else {
+							this.propertyValues.delete(prop.propertyName);
+						}
+					});
+				});
+			} else if (prop.range.startsWith('enum:')) {
 				// Dropdown for enum
 				const options = prop.range.substring(5).split(',');
 				setting.addDropdown(dropdown => {

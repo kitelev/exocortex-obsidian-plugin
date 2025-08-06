@@ -79,8 +79,10 @@ describe('ExocortexPlugin', () => {
   
   describe('Ontology Discovery', () => {
     test('should find all ontologies in vault', async () => {
-      const mockFile1 = new TFile('!exo.md');
-      const mockFile2 = new TFile('Ontology - EMS.md');
+      const mockFile1 = new TFile();
+      const mockFile2 = new TFile();
+      mockFile1.basename = '!exo';
+      mockFile2.basename = 'Ontology - EMS';
       
       jest.spyOn(app.vault, 'getFiles').mockReturnValue([mockFile1, mockFile2]);
       jest.spyOn(app.metadataCache, 'getFileCache')
@@ -134,8 +136,10 @@ describe('ExocortexPlugin', () => {
   
   describe('Class Discovery', () => {
     test('should find all classes in vault', async () => {
-      const mockFile1 = new TFile('exo__Asset.md');
-      const mockFile2 = new TFile('ems__Task.md');
+      const mockFile1 = new TFile();
+      const mockFile2 = new TFile();
+      mockFile1.basename = 'exo__Asset';
+      mockFile2.basename = 'ems__Task';
       
       jest.spyOn(app.vault, 'getFiles').mockReturnValue([mockFile1, mockFile2]);
       jest.spyOn(app.metadataCache, 'getFileCache')
@@ -190,8 +194,10 @@ describe('ExocortexPlugin', () => {
   
   describe('Property Discovery', () => {
     test('should find properties for a class', async () => {
-      const mockFile1 = new TFile('exo__Asset_label.md');
-      const mockFile2 = new TFile('ems__Task_status.md');
+      const mockFile1 = new TFile();
+      const mockFile2 = new TFile();
+      mockFile1.basename = 'exo__Asset_label';
+      mockFile2.basename = 'ems__Task_status';
       
       jest.spyOn(app.vault, 'getFiles').mockReturnValue([mockFile1, mockFile2]);
       jest.spyOn(app.metadataCache, 'getFileCache')
@@ -242,8 +248,10 @@ describe('ExocortexPlugin', () => {
     });
     
     test('should inherit properties from parent classes', async () => {
-      const mockFile1 = new TFile('ems__Task.md');
-      const mockFile2 = new TFile('exo__Asset_label.md');
+      const mockFile1 = new TFile();
+      const mockFile2 = new TFile();
+      mockFile1.basename = 'ems__Task';
+      mockFile2.basename = 'exo__Asset_label';
       
       jest.spyOn(app.vault, 'getFiles').mockReturnValue([mockFile1, mockFile2]);
       jest.spyOn(app.metadataCache, 'getFileCache')
@@ -280,8 +288,10 @@ describe('ExocortexPlugin', () => {
   
   describe('Class Hierarchy', () => {
     test('should get class hierarchy', async () => {
-      const mockFile1 = new TFile('ems__Task.md');
-      const mockFile2 = new TFile('exo__Asset.md');
+      const mockFile1 = new TFile();
+      const mockFile2 = new TFile();
+      mockFile1.basename = 'ems__Task';
+      mockFile2.basename = 'exo__Asset';
       
       jest.spyOn(app.vault, 'getFiles').mockReturnValue([mockFile1, mockFile2]);
       jest.spyOn(app.metadataCache, 'getFileCache')
@@ -302,8 +312,10 @@ describe('ExocortexPlugin', () => {
     });
     
     test('should handle circular references in hierarchy', async () => {
-      const mockFile1 = new TFile('ClassA.md');
-      const mockFile2 = new TFile('ClassB.md');
+      const mockFile1 = new TFile();
+      const mockFile2 = new TFile();
+      mockFile1.basename = 'ClassA';
+      mockFile2.basename = 'ClassB';
       
       jest.spyOn(app.vault, 'getFiles').mockReturnValue([mockFile1, mockFile2]);
       jest.spyOn(app.metadataCache, 'getFileCache')
@@ -335,7 +347,8 @@ describe('ExocortexPlugin', () => {
   
   describe('Layout Management', () => {
     test('should find layout for class', async () => {
-      const mockLayoutFile = new TFile('Layout - ems__Task.md');
+      const mockLayoutFile = new TFile();
+      mockLayoutFile.basename = 'Layout - ems__Task';
       
       jest.spyOn(app.vault, 'getFiles').mockReturnValue([mockLayoutFile]);
       
@@ -421,7 +434,8 @@ describe('ExocortexPlugin', () => {
     });
     
     test('should render error when no frontmatter', async () => {
-      const mockFile = new TFile('test.md');
+      const mockFile = new TFile();
+      mockFile.basename = 'test';
       const mockDv = {
         paragraph: jest.fn(),
         header: jest.fn(),
@@ -442,7 +456,8 @@ describe('ExocortexPlugin', () => {
     });
     
     test('should render default layout when no custom layout found', async () => {
-      const mockFile = new TFile('test.md');
+      const mockFile = new TFile();
+      mockFile.basename = 'test';
       const mockDv = {
         paragraph: jest.fn(),
         header: jest.fn(),
