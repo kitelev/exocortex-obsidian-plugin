@@ -5,6 +5,39 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2025-08-06
+
+### Added
+- **Clean Architecture**: Complete refactoring following Clean Architecture principles
+- **Domain Layer**: Pure business entities and value objects
+- **Application Layer**: Use cases with clear boundaries
+- **Infrastructure Layer**: Adapters for external dependencies
+- **Dependency Injection**: IoC container for service management
+- **Test Infrastructure**: Fake objects and test contexts for comprehensive testing
+- **Architecture Documentation**: Detailed documentation of patterns and principles
+
+### Changed
+- **BREAKING**: Complete restructure of codebase into layers
+- Code organized by feature and responsibility
+- All business logic isolated from Obsidian API
+- Tests refactored with fake implementations
+
+### Improved
+- **SOLID Principles**: Full adherence to SOLID principles
+- **DRY**: Eliminated code duplication
+- **KISS**: Simplified complex logic
+- **GRASP**: Proper responsibility assignment
+- **Low Coupling**: Minimal dependencies between modules
+- **High Cohesion**: Related functionality grouped together
+- **Testability**: 100% of business logic testable without Obsidian
+
+### Technical
+- Implemented Repository Pattern for data access
+- Implemented Adapter Pattern for external APIs
+- Implemented Factory Pattern for object creation
+- Added comprehensive test helpers and contexts
+- FIRST principles applied to all tests
+
 ## [0.4.3] - 2025-08-06
 
 ### Changed
