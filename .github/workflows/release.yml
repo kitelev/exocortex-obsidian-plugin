@@ -24,7 +24,7 @@ jobs:
         id: build
         run: |
           npm ci
-          npm run build
+          node esbuild.config.mjs production
           mkdir ${{ github.event.repository.name }}
           cp main.js manifest.json styles.css ${{ github.event.repository.name }}
           zip -r ${{ github.event.repository.name }}.zip ${{ github.event.repository.name }}
