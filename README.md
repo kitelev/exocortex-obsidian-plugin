@@ -10,22 +10,22 @@ The Exocortex plugin brings a revolutionary approach to knowledge management in 
 
 ### 🧠 Ontology-Driven Architecture
 - Define custom ontologies for your knowledge domains
-- Create semantic relationships between notes
+- Create semantic relationships between assets
 - Use RDF-compatible triple structures for maximum interoperability
 
 ### 📐 Universal Layout System
-- Configurable layouts for different note types
+- Configurable layouts for different asset types
 - Dynamic blocks that adapt to your content
 - Query-based content aggregation using Dataview
 
 ### 🔄 Dynamic Rendering
-- Real-time updates based on note metadata
-- Automatic layout selection based on note class
+- Real-time updates based on asset metadata
+- Automatic layout selection based on asset class
 - Customizable display templates for each ontology
 
 ### 🎯 Core Capabilities
 - **Universal Renderer**: Single entry point for all UI rendering
-- **Layout as Asset**: Layouts are notes themselves, fully configurable
+- **Layout as Asset**: Layouts are assets themselves, fully configurable
 - **Composable Queries**: Build complex queries from reusable components
 - **Semantic Navigation**: Navigate through knowledge using relationships
 
@@ -48,7 +48,7 @@ The Exocortex plugin brings a revolutionary approach to knowledge management in 
 
 ### Basic Setup
 
-1. **Create an Ontology Note**:
+1. **Create an Ontology Asset**:
 ```yaml
 ---
 exo__Instance_class: "[[exo__Ontology]]"
@@ -56,7 +56,7 @@ exo__Ontology_prefix: "my-ontology"
 ---
 ```
 
-2. **Create a Class Note**:
+2. **Create a Class Asset**:
 ```yaml
 ---
 exo__Instance_class: "[[exo__Class]]"
@@ -64,12 +64,12 @@ exo__Class_superClass: "[[exo__Asset]]"
 ---
 ```
 
-3. **Create an Instance Note**:
+3. **Create an Instance Asset**:
 ```yaml
 ---
 exo__Asset_isDefinedBy: "[[!my-ontology]]"
 exo__Instance_class: "[[MyClass]]"
-exo__Asset_label: "My Note"
+exo__Asset_label: "My Asset"
 ---
 
 \`\`\`dataviewjs
@@ -79,14 +79,14 @@ await window.ExoUIRender(dv, this);
 
 ### Commands
 
-- **Create Exocortex Note**: Create a new note with proper ontology metadata
+- **Create ExoAsset**: Create a new asset with proper ontology metadata
 - **Refresh Exocortex Layouts**: Manually refresh all dynamic layouts
 
 ### Configuration
 
 Access plugin settings through Settings → Plugin options → Exocortex:
 
-- **Default Ontology**: Set the default namespace for new notes
+- **Default Ontology**: Set the default namespace for new assets
 - **Enable Auto Layout**: Automatically refresh layouts periodically
 - **Debug Mode**: Enable detailed console logging
 
@@ -111,7 +111,7 @@ The plugin supports a three-tier ontology system:
 
 ### Custom Layouts
 
-Create a layout for any class by creating a note named `Layout - ClassName`:
+Create a layout for any class by creating an asset named `Layout - ClassName`:
 
 ```yaml
 ---

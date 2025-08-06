@@ -5,6 +5,21 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2025-08-06
+
+### Changed
+- **BREAKING**: Renamed command from "Create Exocortex Note" to "Create ExoAsset"
+- Command ID changed from `create-exo-note` to `create-exo-asset`
+- Modal class renamed from `ExocortexNoteModal` to `ExocortexAssetModal`
+- Replaced all "note" terminology with "asset" throughout the plugin
+- Updated UI text to use "asset" instead of "note"
+- Documentation updated to reflect new terminology
+
+### Technical
+- Consistent use of "asset" terminology aligns with Exocortex ontology concepts
+- All internal variables renamed (noteTitle → assetTitle, noteClass → assetClass, etc.)
+- Tests updated to use new terminology
+
 ## [0.4.2] - 2025-08-06
 
 ### Fixed

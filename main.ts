@@ -31,12 +31,12 @@ export default class ExocortexPlugin extends Plugin {
 		});
 		ribbonIconEl.addClass('exocortex-ribbon-class');
 
-		// Add command to create new ontology-aware note
+		// Add command to create new ExoAsset
 		this.addCommand({
-			id: 'create-exo-note',
-			name: 'Create Exocortex Note',
+			id: 'create-exo-asset',
+			name: 'Create ExoAsset',
 			callback: () => {
-				new ExocortexNoteModal(this.app, this).open();
+				new ExocortexAssetModal(this.app, this).open();
 			}
 		});
 
@@ -135,7 +135,7 @@ export default class ExocortexPlugin extends Plugin {
 			});
 		dv.table(["Property", "Value"], properties.map(p => [p.Property, p.Value]));
 
-		// Show related notes
+		// Show related assets
 		if (frontmatter['exo__Asset_relates']) {
 			dv.header(2, "Related Assets");
 			const relates = Array.isArray(frontmatter['exo__Asset_relates']) 
@@ -173,7 +173,7 @@ export default class ExocortexPlugin extends Plugin {
 	}
 
 	refreshAllLayouts() {
-		// Trigger re-render of all open notes
+		// Trigger re-render of all open assets
 		this.app.workspace.iterateAllLeaves((leaf: WorkspaceLeaf) => {
 			if (leaf.view instanceof MarkdownView) {
 				leaf.view.previewMode.rerender(true);
@@ -463,11 +463,11 @@ export default class ExocortexPlugin extends Plugin {
 	}
 }
 
-class ExocortexNoteModal extends Modal {
+class ExocortexAssetModal extends Modal {
 	plugin: ExocortexPlugin;
-	noteTitle: string = '';
-	noteClass: string = 'exo__Asset';
-	noteOntology: string = '';  // This will store the fileName, not prefix
+	assetTitle: string = '';
+	assetClass: string = 'exo__Asset';
+	assetOntology: string = '';  // This will store the fileName, not prefix
 	availableOntologies: { file: TFile | null; prefix: string; label: string; fileName: string }[] = [];
 	availableClasses: { className: string; label: string; ontology: string }[] = [];
 	propertyValues: Map<string, any> = new Map();
@@ -476,12 +476,12 @@ class ExocortexNoteModal extends Modal {
 	constructor(app: App, plugin: ExocortexPlugin) {
 		super(app);
 		this.plugin = plugin;
-		// Don't set noteOntology here - will do it in onOpen after loading ontologies
+		// Don't set assetOntology here - will do it in onOpen after loading ontologies
 	}
 
 	async onOpen() {
 		const { contentEl } = this;
-		contentEl.createEl("h2", { text: "Create Exocortex Note" });
+		contentEl.createEl("h2", { text: "Create ExoAsset" });
 
 		// Load available ontologies and classes
 		this.availableOntologies = await this.plugin.findAllOntologies();
@@ -490,19 +490,19 @@ class ExocortexNoteModal extends Modal {
 		// Set default ontology based on saved prefix
 		const defaultOntology = this.availableOntologies.find(o => o.prefix === this.plugin.settings.defaultOntology);
 		if (defaultOntology) {
-			this.noteOntology = defaultOntology.fileName;
+			this.assetOntology = defaultOntology.fileName;
 		} else if (this.availableOntologies.length > 0) {
 			// Fallback to first available if saved default not found
-			this.noteOntology = this.availableOntologies[0].fileName;
+			this.assetOntology = this.availableOntologies[0].fileName;
 		}
 
 		new Setting(contentEl)
 			.setName("Title")
-			.setDesc("Note title")
+			.setDesc("Asset title")
 			.addText(text => text
-				.setPlaceholder("Enter note title")
-				.setValue(this.noteTitle)
-				.onChange(value => this.noteTitle = value));
+				.setPlaceholder("Enter asset title")
+				.setValue(this.assetTitle)
+				.onChange(value => this.assetTitle = value));
 
 		// Create the CLASS dropdown (now independent)
 		new Setting(contentEl)
@@ -520,16 +520,16 @@ class ExocortexNoteModal extends Modal {
 					// Try to find exo__Asset as default
 					const defaultClass = this.availableClasses.find(c => c.className === 'exo__Asset');
 					if (defaultClass) {
-						this.noteClass = defaultClass.className;
+						this.assetClass = defaultClass.className;
 						dropdown.setValue(defaultClass.className);
 					} else {
-						this.noteClass = this.availableClasses[0].className;
+						this.assetClass = this.availableClasses[0].className;
 						dropdown.setValue(this.availableClasses[0].className);
 					}
 				}
 				
 				dropdown.onChange(async value => {
-					this.noteClass = value;
+					this.assetClass = value;
 					// Update properties when class changes
 					await this.updatePropertiesForClass(value);
 				});
@@ -548,9 +548,9 @@ class ExocortexNoteModal extends Modal {
 				}
 				
 				dropdown
-					.setValue(this.noteOntology)
+					.setValue(this.assetOntology)
 					.onChange(value => {
-						this.noteOntology = value; // This now stores the fileName
+						this.assetOntology = value; // This now stores the fileName
 					});
 			});
 
@@ -561,14 +561,14 @@ class ExocortexNoteModal extends Modal {
 		this.propertiesContainer = contentEl.createDiv({ cls: "exocortex-properties-container" });
 		
 		// Load initial properties for default class
-		await this.updatePropertiesForClass(this.noteClass);
+		await this.updatePropertiesForClass(this.assetClass);
 
 		new Setting(contentEl)
 			.addButton(btn => btn
 				.setButtonText("Create")
 				.setCta()
 				.onClick(() => {
-					this.createNote();
+					this.createAsset();
 					this.close();
 				}));
 	}
@@ -695,32 +695,32 @@ class ExocortexNoteModal extends Modal {
 			}
 			
 			// Set default value for label if it's the Asset label property
-			if (prop.propertyName === 'exo__Asset_label' && this.noteTitle) {
-				this.propertyValues.set(prop.propertyName, this.noteTitle);
+			if (prop.propertyName === 'exo__Asset_label' && this.assetTitle) {
+				this.propertyValues.set(prop.propertyName, this.assetTitle);
 				// Update the input if it exists
 				const input = this.propertiesContainer.querySelector(`input[placeholder*="${prop.label.toLowerCase()}"]`) as HTMLInputElement;
 				if (input) {
-					input.value = this.noteTitle;
+					input.value = this.assetTitle;
 				}
 			}
 		}
 	}
 
-	async createNote() {
-		const fileName = `${this.noteTitle}.md`;
+	async createAsset() {
+		const fileName = `${this.assetTitle}.md`;
 		
 		// Build frontmatter with all properties
 		let frontmatterLines = [
-			`exo__Asset_isDefinedBy: "[[${this.noteOntology}]]"`,
+			`exo__Asset_isDefinedBy: "[[${this.assetOntology}]]"`,
 			`exo__Asset_uid: ${this.generateUUID()}`,
 			`exo__Asset_createdAt: ${new Date().toISOString()}`,
 			`exo__Instance_class:`,
-			`  - "[[${this.noteClass}]]"`
+			`  - "[[${this.assetClass}]]"`
 		];
 		
 		// Add label if not already in propertyValues
 		if (!this.propertyValues.has('exo__Asset_label')) {
-			frontmatterLines.push(`exo__Asset_label: "${this.noteTitle}"`);
+			frontmatterLines.push(`exo__Asset_label: "${this.assetTitle}"`);
 		}
 		
 		// Add all property values
@@ -771,9 +771,9 @@ await window.ExoUIRender(dv, this);
 			const file = await this.app.vault.create(fileName, frontmatter);
 			const leaf = this.app.workspace.getLeaf();
 			await leaf.openFile(file);
-			new Notice(`Created note: ${fileName}`);
+			new Notice(`Created asset: ${fileName}`);
 		} catch (error) {
-			new Notice(`Error creating note: ${error.message}`);
+			new Notice(`Error creating asset: ${error.message}`);
 		}
 	}
 
@@ -809,7 +809,7 @@ class ExocortexSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Default Ontology')
-			.setDesc('Default ontology for new notes')
+			.setDesc('Default ontology for new assets')
 			.addDropdown(dropdown => {
 				// Add all found ontologies to dropdown
 				for (const ontology of ontologies) {

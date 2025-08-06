@@ -4,7 +4,7 @@ import ExocortexPlugin from '../main';
 // We need to import the classes directly from the main file
 // Since they're not exported, we'll test them through the plugin
 
-describe('ExocortexNoteModal', () => {
+describe('ExocortexAssetModal', () => {
   let app: App;
   let plugin: ExocortexPlugin;
   let createSpy: jest.SpyInstance;
@@ -84,8 +84,8 @@ describe('ExocortexNoteModal', () => {
     });
   });
   
-  describe('Note Creation', () => {
-    test('should create note with correct frontmatter', async () => {
+  describe('Asset Creation', () => {
+    test('should create asset with correct frontmatter', async () => {
       // Mock data
       jest.spyOn(plugin, 'findAllOntologies').mockResolvedValue([
         { file: null, prefix: 'exo', label: 'EXO', fileName: '!exo' }
@@ -105,13 +105,13 @@ describe('ExocortexNoteModal', () => {
         }
       ]);
       
-      // Simulate note creation
-      const noteTitle = 'Test Task';
-      const noteClass = 'ems__Task';
-      const noteOntology = '!exo';
+      // Simulate asset creation
+      const assetTitle = 'Test Task';
+      const assetClass = 'ems__Task';
+      const assetOntology = '!exo';
       const propertyValues = new Map([
         ['ems__Task_status', 'todo'],
-        ['exo__Asset_label', noteTitle]
+        ['exo__Asset_label', assetTitle]
       ]);
       
       // Expected frontmatter structure - updated to match actual output
@@ -122,7 +122,7 @@ describe('ExocortexNoteModal', () => {
           'exo__Asset_createdAt: \\d{4}-\\d{2}-\\d{2}T',
           'exo__Instance_class:',
           '  - "\\[\\[ems__Task\\]\\]"',
-          'ems__Task_status: "todo"',  // Note values are quoted
+          'ems__Task_status: "todo"',  // Values are quoted
           'exo__Asset_label: "Test Task"'
         ].join('[\\s\\S]*')
       );
@@ -139,15 +139,15 @@ describe('ExocortexNoteModal', () => {
         });
       });
       
-      // Manually trigger note creation logic
+      // Manually trigger asset creation logic
       // This simulates what happens when user clicks "Create" button
-      const fileName = `${noteTitle}.md`;
+      const fileName = `${assetTitle}.md`;
       const frontmatterLines = [
-        `exo__Asset_isDefinedBy: "[[${noteOntology}]]"`,
+        `exo__Asset_isDefinedBy: "[[${assetOntology}]]"`,
         `exo__Asset_uid: ${generateTestUUID()}`,
         `exo__Asset_createdAt: ${new Date().toISOString()}`,
         `exo__Instance_class:`,
-        `  - "[[${noteClass}]]"`
+        `  - "[[${assetClass}]]"`
       ];
       
       for (const [propName, propValue] of propertyValues) {
@@ -171,14 +171,14 @@ await window.ExoUIRender(dv, this);
     
     test('should handle array property values', async () => {
       const propertyValues = new Map([
-        ['exo__Asset_relates', ['[[Note1]]', '[[Note2]]']]
+        ['exo__Asset_relates', ['[[Asset1]]', '[[Asset2]]']]
       ]);
       
       const frontmatterTest = new Promise<void>((resolve) => {
         createSpy.mockImplementation((fileName: string, content: string) => {
           expect(content).toContain('exo__Asset_relates:');
-          expect(content).toContain('  - "[[Note1]]"');
-          expect(content).toContain('  - "[[Note2]]"');
+          expect(content).toContain('  - "[[Asset1]]"');
+          expect(content).toContain('  - "[[Asset2]]"');
           resolve();
           return Promise.resolve(new TFile(fileName));
         });
