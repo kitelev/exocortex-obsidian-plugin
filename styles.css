@@ -1,0 +1,59 @@
+/* Exocortex Plugin Styles */
+
+.exocortex-ribbon-class {
+    /* Custom styling for ribbon icon */
+}
+
+.exocortex-layout-container {
+    padding: 1rem;
+    margin: 0.5rem 0;
+}
+
+.exocortex-layout-block {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    background-color: var(--background-secondary);
+}
+
+.exocortex-layout-block-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.exocortex-layout-block-icon {
+    margin-right: 0.5rem;
+}
+
+.exocortex-property-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.exocortex-property-table th,
+.exocortex-property-table td {
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.exocortex-property-table th {
+    font-weight: 600;
+    background-color: var(--background-modifier-hover);
+}
+
+.exocortex-related-asset {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    margin: 0.25rem;
+    background-color: var(--background-modifier-hover);
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.exocortex-related-asset:hover {
+    background-color: var(--background-modifier-active-hover);
+}
