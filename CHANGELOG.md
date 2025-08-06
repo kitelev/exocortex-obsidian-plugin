@@ -5,6 +5,28 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2025-08-06
+
+### Added
+- **Quality Gate**: GitHub Actions workflow for comprehensive quality checks
+- **Mandatory Release Process**: Updated CLAUDE.md with strict release requirements
+- **Quality Checks**:
+  - Test execution
+  - Build validation
+  - File size checks
+  - Manifest validation
+  - Documentation verification
+  - Architecture compliance
+
+### Changed
+- CLAUDE.md now emphasizes mandatory release process after every code change
+- Added clear success/failure criteria for task completion
+
+### Technical
+- Quality Gate runs on every push to main branch
+- Automated checks ensure code quality before release
+- Clear documentation of release requirements for AI assistants
+
 ## [0.5.0] - 2025-08-06
 
 ### Added

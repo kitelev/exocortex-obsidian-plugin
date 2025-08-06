@@ -1,6 +1,12 @@
 # Claude Code Development Guidelines
 
-## Important Reminders for This Project
+## ⚠️ CRITICAL: MANDATORY RELEASE PROCESS ⚠️
+
+### ПОСЛЕ КАЖДОГО ИЗМЕНЕНИЯ КОДОВОЙ БАЗЫ:
+1. **ОБЯЗАТЕЛЬНО создать релиз на GitHub**
+2. **ПРОВЕРИТЬ успешность GitHub Actions**
+3. **УБЕДИТЬСЯ в прохождении Quality Gate**
+4. **ЗАДАНИЕ СЧИТАЕТСЯ ВЫПОЛНЕННЫМ ТОЛЬКО ПОСЛЕ УСПЕШНОГО РЕЛИЗА**
 
 ### After Every Code Change
 1. **Run Tests**: Always run `npm test` after making changes
@@ -54,10 +60,10 @@ git push origin master
 - Use `node esbuild.config.mjs production` if TypeScript check fails on test files
 - The plugin must be reloaded in Obsidian after building for changes to take effect
 
-### GitHub Release Process
+### GitHub Release Process - ОБЯЗАТЕЛЬНЫЙ ПРОЦЕСС!
 The repository has GitHub Actions configured to automatically create releases when tags are pushed.
 
-**IMPORTANT**: After every significant code change:
+**⚠️ КРИТИЧЕСКИ ВАЖНО - ВЫПОЛНЯТЬ ПОСЛЕ КАЖДОГО ИЗМЕНЕНИЯ ⚠️**:
 1. Update version in `manifest.json`, `package.json`, and `versions.json`
 2. Update CHANGELOG.md with changes
 3. Commit and push to master:
@@ -78,3 +84,16 @@ The repository has GitHub Actions configured to automatically create releases wh
 6. Users can download the release directly from GitHub
 
 **Note**: The release workflow is triggered by tags, not by pushes to master!
+
+## ❌ ЗАДАНИЕ НЕ ВЫПОЛНЕНО, ЕСЛИ:
+- Не создан релиз на GitHub
+- GitHub Actions завершились с ошибкой
+- Quality Gate не пройден
+- Релиз не опубликован
+
+## ✅ ЗАДАНИЕ ВЫПОЛНЕНО, КОГДА:
+- Код закоммичен и запушен
+- Тег версии создан и запушен
+- GitHub Actions успешно завершены
+- Релиз опубликован на GitHub
+- Все файлы (main.js, manifest.json, styles.css) приложены к релизу
