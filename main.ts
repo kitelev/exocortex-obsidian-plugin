@@ -779,21 +779,33 @@ class ExocortexSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-	display(): void {
+	async display(): Promise<void> {
 		const { containerEl } = this;
 		containerEl.empty();
 		containerEl.createEl('h2', { text: 'Exocortex Settings' });
 
+		// Load available ontologies
+		const ontologies = await this.plugin.findAllOntologies();
+
 		new Setting(containerEl)
 			.setName('Default Ontology')
-			.setDesc('Default ontology namespace for new notes')
-			.addText(text => text
-				.setPlaceholder('exo')
-				.setValue(this.plugin.settings.defaultOntology)
-				.onChange(async (value) => {
+			.setDesc('Default ontology for new notes')
+			.addDropdown(dropdown => {
+				// Add all found ontologies to dropdown
+				for (const ontology of ontologies) {
+					const displayName = `${ontology.prefix} - ${ontology.label}`;
+					dropdown.addOption(ontology.prefix, displayName);
+				}
+				
+				// Set current value
+				dropdown.setValue(this.plugin.settings.defaultOntology);
+				
+				// Handle change
+				dropdown.onChange(async (value) => {
 					this.plugin.settings.defaultOntology = value;
 					await this.plugin.saveSettings();
-				}));
+				});
+			});
 
 		new Setting(containerEl)
 			.setName('Enable Auto Layout')

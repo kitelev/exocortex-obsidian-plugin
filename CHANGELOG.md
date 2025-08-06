@@ -5,6 +5,17 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2025-08-06
+
+### Changed
+- Default Ontology setting is now a dropdown instead of text field
+- Setting automatically discovers all ontologies in vault
+- Shows prefix and label for each ontology in settings
+
+### Improved
+- Better UX in plugin settings with visual selection
+- Consistent with the dropdown approach used in note creation modal
+
 ## [0.4.0] - 2025-08-06
 
 ### Added
