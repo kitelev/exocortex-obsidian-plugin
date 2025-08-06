@@ -54,13 +54,27 @@ git push origin master
 - Use `node esbuild.config.mjs production` if TypeScript check fails on test files
 - The plugin must be reloaded in Obsidian after building for changes to take effect
 
-### GitHub Release Automation
-The repository has GitHub Actions configured to automatically:
-1. Build the plugin when pushing to master
-2. Create a release with the built files attached
-3. The release will include `main.js`, `manifest.json`, and `styles.css`
+### GitHub Release Process
+The repository has GitHub Actions configured to automatically create releases when tags are pushed.
 
 **IMPORTANT**: After every significant code change:
-1. Commit and push to master
-2. GitHub Actions will automatically create a release
-3. Users can download the release directly from GitHub
+1. Update version in `manifest.json`, `package.json`, and `versions.json`
+2. Update CHANGELOG.md with changes
+3. Commit and push to master:
+   ```bash
+   git add .
+   git commit -m "feat/fix: description"
+   git push origin main
+   ```
+4. Create and push a version tag to trigger release:
+   ```bash
+   git tag 0.x.x
+   git push origin 0.x.x
+   ```
+5. GitHub Actions will automatically:
+   - Build the plugin
+   - Create a release with the built files attached
+   - Include `main.js`, `manifest.json`, `styles.css`, and a ZIP file
+6. Users can download the release directly from GitHub
+
+**Note**: The release workflow is triggered by tags, not by pushes to master!
