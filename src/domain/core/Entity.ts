@@ -48,4 +48,12 @@ export abstract class Entity<T> {
     public get domainEvents(): any[] {
         return this._domainEvents;
     }
+
+    protected getDomainEvents(): any[] {
+        return this._domainEvents;
+    }
+
+    protected clearDomainEvents(): void {
+        this._domainEvents = [];
+    }
 }

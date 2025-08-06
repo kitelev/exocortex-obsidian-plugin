@@ -1,5 +1,6 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf } from 'obsidian';
 import { ClassTreeModal } from './src/presentation/modals/ClassTreeModal';
+import { DIContainer } from './src/infrastructure/container/DIContainer';
 
 interface ExocortexSettings {
 	defaultOntology: string;
@@ -17,9 +18,13 @@ const DEFAULT_SETTINGS: ExocortexSettings = {
 
 export default class ExocortexPlugin extends Plugin {
 	settings: ExocortexSettings;
+	private diContainer: DIContainer;
 
 	async onload() {
 		await this.loadSettings();
+
+		// Initialize Dependency Injection Container
+		this.diContainer = DIContainer.initialize(this.app, this);
 
 		// Register the universal renderer function
 		(window as any).ExoUIRender = async (dv: any, ctx: any) => {
@@ -100,12 +105,12 @@ export default class ExocortexPlugin extends Plugin {
 		const layoutFile = await this.findLayoutForClass(assetClass);
 		if (!layoutFile) {
 			// Fallback to default layout
-			await this.renderDefaultLayout(dv, file, metadata);
+			await this.renderDefaultLayout(dv, file, metadata, ctx.container);
 			return;
 		}
 
 		// Render the layout
-		await this.renderLayout(dv, file, metadata, layoutFile);
+		await this.renderLayout(dv, file, metadata, layoutFile, ctx.container);
 	}
 
 	async findLayoutForClass(className: string): Promise<TFile | null> {
@@ -125,16 +130,27 @@ export default class ExocortexPlugin extends Plugin {
 		return null;
 	}
 
-	async renderDefaultLayout(dv: any, file: TFile, metadata: any) {
+	async renderDefaultLayout(dv: any, file: TFile, metadata: any, container: HTMLElement) {
 		const frontmatter = metadata.frontmatter;
 		
+		// Get the asset class
+		const assetClass = frontmatter['exo__Instance_class'];
+		const cleanClassName = assetClass ? assetClass.toString().replace(/\[\[|\]\]/g, '') : 'exo__Asset';
+		
+		// Create properties section with inline editing
 		dv.header(2, "Properties");
-		const properties = Object.entries(frontmatter)
-			.filter(([key]) => !key.startsWith('position'))
-			.map(([key, value]) => {
-				return { Property: key, Value: this.formatValue(value) };
-			});
-		dv.table(["Property", "Value"], properties.map(p => [p.Property, p.Value]));
+		
+		// Create a container for editable properties
+		const propertiesContainer = container.createDiv({ cls: 'exocortex-properties-container' });
+		
+		// Use PropertyRenderer for editable properties
+		const propertyRenderer = this.diContainer.getPropertyRenderer();
+		await propertyRenderer.renderPropertiesBlock(
+			propertiesContainer,
+			file.basename,
+			cleanClassName,
+			frontmatter
+		);
 
 		// Show related assets
 		if (frontmatter['exo__Asset_relates']) {
@@ -157,10 +173,10 @@ export default class ExocortexPlugin extends Plugin {
 		}
 	}
 
-	async renderLayout(dv: any, file: TFile, metadata: any, layoutFile: TFile) {
+	async renderLayout(dv: any, file: TFile, metadata: any, layoutFile: TFile, container: HTMLElement) {
 		// This would parse the layout file and render blocks accordingly
 		// For now, using default layout
-		await this.renderDefaultLayout(dv, file, metadata);
+		await this.renderDefaultLayout(dv, file, metadata, container);
 	}
 
 	formatValue(value: any): string {

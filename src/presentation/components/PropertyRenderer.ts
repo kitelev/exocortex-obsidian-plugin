@@ -1,4 +1,4 @@
-import { App, Setting, TextComponent, DropdownComponent, ToggleComponent, TextAreaComponent, ButtonComponent } from 'obsidian';
+import { App, Setting, TextComponent, DropdownComponent, ToggleComponent, TextAreaComponent, ButtonComponent, Notice } from 'obsidian';
 import { PropertyEditingUseCase } from '../../application/use-cases/PropertyEditingUseCase';
 import { Result } from '../../domain/core/Result';
 
@@ -334,7 +334,7 @@ export class PropertyRenderer {
         }
 
         // Validate and save
-        const result = await this.propertyEditingUseCase.updateProperty({
+        const result = await this.propertyEditingUseCase.execute({
             assetId,
             propertyName: property.propertyName,
             value,
@@ -348,11 +348,9 @@ export class PropertyRenderer {
             this.originalValues.delete(property.propertyName);
             
             // Show success indicator
-            // @ts-ignore
             new Notice('Property updated', 1000);
         } else {
             // Show error
-            // @ts-ignore
             new Notice(`Error: ${result.error}`, 3000);
         }
     }

@@ -57,12 +57,7 @@ export class PropertyEditingUseCase implements UseCase<UpdatePropertyRequest, Up
             return Result.fail<UpdatePropertyResponse>('Invalid asset ID');
         }
 
-        const assetResult = await this.assetRepository.findById(assetIdResult.getValue());
-        if (assetResult.isFailure) {
-            return Result.fail<UpdatePropertyResponse>(`Failed to load asset: ${assetResult.error}`);
-        }
-
-        const asset = assetResult.getValue();
+        const asset = await this.assetRepository.findById(assetIdResult.getValue());
         if (!asset) {
             return Result.fail<UpdatePropertyResponse>('Asset not found');
         }
@@ -71,10 +66,7 @@ export class PropertyEditingUseCase implements UseCase<UpdatePropertyRequest, Up
         asset.setProperty(request.propertyName, request.value);
 
         // Save the asset
-        const saveResult = await this.assetRepository.save(asset);
-        if (saveResult.isFailure) {
-            return Result.fail<UpdatePropertyResponse>(`Failed to save asset: ${saveResult.error}`);
-        }
+        await this.assetRepository.save(asset);
 
         return Result.ok<UpdatePropertyResponse>({
             success: true,

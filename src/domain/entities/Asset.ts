@@ -91,36 +91,36 @@ export class Asset extends Entity<AssetProps> {
     if (!title || title.trim().length === 0) {
       throw new Error('Asset title cannot be empty');
     }
-    this.title = title;
-    this.updatedAt = new Date();
+    this.props.title = title;
+    this.props.updatedAt = new Date();
   }
 
   setProperty(key: string, value: any): void {
-    this.properties.set(key, value);
-    this.updatedAt = new Date();
+    this.props.properties.set(key, value);
+    this.props.updatedAt = new Date();
   }
 
   removeProperty(key: string): void {
-    this.properties.delete(key);
-    this.updatedAt = new Date();
+    this.props.properties.delete(key);
+    this.props.updatedAt = new Date();
   }
 
   changeClass(className: ClassName): void {
-    this.className = className;
-    this.updatedAt = new Date();
+    this.props.className = className;
+    this.props.updatedAt = new Date();
   }
 
   toFrontmatter(): Record<string, any> {
     const frontmatter: Record<string, any> = {
-      'exo__Asset_uid': this.id.toString(),
-      'exo__Asset_label': this.title,
-      'exo__Asset_isDefinedBy': `[[${this.ontologyPrefix.toFileName()}]]`,
-      'exo__Asset_createdAt': this.createdAt.toISOString(),
-      'exo__Instance_class': [this.className.toWikiLink()]
+      'exo__Asset_uid': this.props.id.toString(),
+      'exo__Asset_label': this.props.title,
+      'exo__Asset_isDefinedBy': `[[${this.props.ontology.toFileName()}]]`,
+      'exo__Asset_createdAt': this.props.createdAt.toISOString(),
+      'exo__Instance_class': [this.props.className.toWikiLink()]
     };
 
     // Add custom properties
-    for (const [key, value] of this.properties) {
+    for (const [key, value] of this.props.properties) {
       if (!frontmatter[key]) {
         frontmatter[key] = value;
       }
@@ -130,16 +130,19 @@ export class Asset extends Entity<AssetProps> {
   }
 
   static fromFrontmatter(frontmatter: Record<string, any>, fileName: string): Asset {
-    const id = new AssetId(frontmatter['exo__Asset_uid'] || AssetId.generate().toString());
+    const idResult = AssetId.create(frontmatter['exo__Asset_uid'] || AssetId.generate().toString());
+    const id = idResult.isSuccess ? idResult.getValue() : AssetId.generate();
     const title = frontmatter['exo__Asset_label'] || fileName.replace('.md', '');
     
     const classValue = Array.isArray(frontmatter['exo__Instance_class']) 
       ? frontmatter['exo__Instance_class'][0] 
       : frontmatter['exo__Instance_class'];
-    const className = new ClassName(classValue || 'exo__Asset');
+    const classNameResult = ClassName.create(classValue || 'exo__Asset');
+    const className = classNameResult.isSuccess ? classNameResult.getValue() : ClassName.create('exo__Asset').getValue()!;
     
     const ontologyValue = frontmatter['exo__Asset_isDefinedBy']?.replace(/\[\[!?|\]\]/g, '') || 'exo';
-    const ontologyPrefix = new OntologyPrefix(ontologyValue);
+    const ontologyResult = OntologyPrefix.create(ontologyValue);
+    const ontologyPrefix = ontologyResult.isSuccess ? ontologyResult.getValue() : OntologyPrefix.create('exo').getValue()!;
     
     const createdAt = frontmatter['exo__Asset_createdAt'] 
       ? new Date(frontmatter['exo__Asset_createdAt']) 
@@ -156,7 +159,7 @@ export class Asset extends Entity<AssetProps> {
       id,
       title,
       className,
-      ontologyPrefix,
+      ontology: ontologyPrefix,
       properties,
       createdAt,
       updatedAt: new Date()

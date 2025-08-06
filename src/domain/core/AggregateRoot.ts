@@ -14,7 +14,7 @@ export abstract class AggregateRoot<T> extends Entity<T> {
      * Get all domain events (inherits from Entity)
      */
     public getUncommittedEvents(): any[] {
-        return this.domainEvents;
+        return this.getDomainEvents();
     }
 
     /**
@@ -37,6 +37,6 @@ export abstract class AggregateRoot<T> extends Entity<T> {
      * Commit events
      */
     public markEventsAsCommitted(): void {
-        this._domainEvents = [];
+        this.clearDomainEvents();
     }
 }

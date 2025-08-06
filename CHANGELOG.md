@@ -5,6 +5,32 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.7] - 2025-08-06
+
+### Added
+- **Inline Property Editing**: Properties in asset views can now be edited directly by clicking on them
+- **Domain-Driven Design Architecture**: Refactored to follow DDD principles with proper layer separation
+- **Clean Architecture Implementation**: Added repositories, use cases, and dependency injection
+- **Property Renderer Component**: New component for rendering editable properties with same rules as asset creation
+
+### Changed
+- Asset properties are now displayed as clickable, editable fields in asset views
+- Property editing follows the same dropdown/input rules as the asset creation form
+- Refactored codebase to follow enterprise architecture patterns
+
+### Improved
+- Better separation of concerns with DDD/Clean Architecture
+- More maintainable and testable codebase structure
+- Consistent property editing experience across creation and viewing
+
+### Technical
+- Added `PropertyRenderer` component for inline editing functionality
+- Implemented `PropertyEditingUseCase` for business logic
+- Created `ObsidianAssetRepository` and `ObsidianOntologyRepository`
+- Set up dependency injection container with `DIContainer`
+- Added domain entities, value objects, and aggregates
+- Implemented Result pattern for error handling
+
 ## [0.5.6] - 2025-08-06
 
 ### Added

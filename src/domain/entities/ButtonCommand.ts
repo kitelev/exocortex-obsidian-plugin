@@ -118,6 +118,14 @@ export class ButtonCommand extends Entity<ButtonCommandProps> {
         return this.props.targetClass;
     }
 
+    get template(): string | undefined {
+        return this.props.template;
+    }
+
+    get script(): string | undefined {
+        return this.props.script;
+    }
+
     /**
      * Validate input parameters against command definition
      */

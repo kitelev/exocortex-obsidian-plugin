@@ -147,10 +147,7 @@ export class ObsidianCommandExecutor implements ICommandExecutor {
             }
 
             // Save asset
-            const saveResult = await this.assetRepository.save(assetResult.getValue());
-            if (saveResult.isFailure) {
-                return Result.fail<any>(saveResult.error);
-            }
+            await this.assetRepository.save(assetResult.getValue());
 
             // Open the new asset
             const file = this.app.vault.getAbstractFileByPath(`${title}.md`);

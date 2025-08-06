@@ -56,4 +56,26 @@ export class Ontology {
   equals(other: Ontology): boolean {
     return this.prefix.equals(other.prefix);
   }
+
+  toFrontmatter(): Record<string, any> {
+    return {
+      'exo__Ontology_prefix': this.prefix.toString(),
+      'exo__Ontology_label': this.label,
+      'exo__Ontology_namespace': this.namespace || '',
+      'exo__Ontology_description': this.description || ''
+    };
+  }
+
+  static fromFrontmatter(frontmatter: Record<string, any>): Ontology {
+    const prefixResult = OntologyPrefix.create(frontmatter['exo__Ontology_prefix'] || 'exo');
+    const prefix = prefixResult.isSuccess ? prefixResult.getValue() : OntologyPrefix.create('exo').getValue()!;
+    
+    return new Ontology({
+      prefix,
+      label: frontmatter['exo__Ontology_label'] || prefix.toString(),
+      fileName: `!${prefix.toString()}.md`,
+      namespace: frontmatter['exo__Ontology_namespace'],
+      description: frontmatter['exo__Ontology_description']
+    });
+  }
 }

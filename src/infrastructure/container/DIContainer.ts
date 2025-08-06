@@ -6,7 +6,8 @@ import { IAssetRepository } from '../../domain/repositories/IAssetRepository';
 import { IOntologyRepository } from '../../domain/repositories/IOntologyRepository';
 import { IClassViewRepository } from '../../domain/repositories/IClassViewRepository';
 import { IButtonRepository } from '../../domain/repositories/IButtonRepository';
-import { ObsidianVaultAdapter } from '../adapters/ObsidianVaultAdapter';
+import { ObsidianAssetRepository } from '../repositories/ObsidianAssetRepository';
+import { ObsidianOntologyRepository } from '../repositories/ObsidianOntologyRepository';
 import { ObsidianClassViewRepository } from '../repositories/ObsidianClassViewRepository';
 import { ObsidianButtonRepository } from '../repositories/ObsidianButtonRepository';
 
@@ -14,6 +15,7 @@ import { ObsidianButtonRepository } from '../repositories/ObsidianButtonReposito
 import { CreateAssetUseCase } from '../../application/use-cases/CreateAssetUseCase';
 import { RenderClassButtonsUseCase } from '../../application/use-cases/RenderClassButtonsUseCase';
 import { ExecuteButtonCommandUseCase } from '../../application/use-cases/ExecuteButtonCommandUseCase';
+import { PropertyEditingUseCase } from '../../application/use-cases/PropertyEditingUseCase';
 
 // Services
 import { ICommandExecutor } from '../../application/services/ICommandExecutor';
@@ -21,6 +23,7 @@ import { ObsidianCommandExecutor } from '../services/ObsidianCommandExecutor';
 
 // Presentation
 import { ButtonRenderer } from '../../presentation/components/ButtonRenderer';
+import { PropertyRenderer } from '../../presentation/components/PropertyRenderer';
 
 /**
  * Dependency Injection Container Setup
@@ -30,14 +33,19 @@ export class DIContainer {
     private static instance: DIContainer;
     private container: Container;
 
+    private plugin: any;
+
     private constructor(private app: App) {
         this.container = Container.getInstance();
         this.registerDependencies();
     }
 
-    public static initialize(app: App): DIContainer {
+    public static initialize(app: App, plugin?: any): DIContainer {
         if (!DIContainer.instance) {
             DIContainer.instance = new DIContainer(app);
+        }
+        if (plugin) {
+            DIContainer.instance.plugin = plugin;
         }
         return DIContainer.instance;
     }
@@ -56,12 +64,12 @@ export class DIContainer {
         // Register Repositories
         this.container.register<IAssetRepository>(
             'IAssetRepository',
-            () => new ObsidianVaultAdapter(this.app)
+            () => new ObsidianAssetRepository(this.app)
         );
 
         this.container.register<IOntologyRepository>(
             'IOntologyRepository',
-            () => new ObsidianVaultAdapter(this.app)
+            () => new ObsidianOntologyRepository(this.app)
         );
 
         this.container.register<IClassViewRepository>(
@@ -108,6 +116,14 @@ export class DIContainer {
             )
         );
 
+        this.container.register<PropertyEditingUseCase>(
+            'PropertyEditingUseCase',
+            () => new PropertyEditingUseCase(
+                this.container.resolve<IAssetRepository>('IAssetRepository'),
+                this.plugin || this.app // Use plugin if available, otherwise app
+            )
+        );
+
         // Register Presentation Components
         this.container.register<ButtonRenderer>(
             'ButtonRenderer',
@@ -115,6 +131,14 @@ export class DIContainer {
                 this.app,
                 this.container.resolve<RenderClassButtonsUseCase>('RenderClassButtonsUseCase'),
                 this.container.resolve<ExecuteButtonCommandUseCase>('ExecuteButtonCommandUseCase')
+            )
+        );
+
+        this.container.register<PropertyRenderer>(
+            'PropertyRenderer',
+            () => new PropertyRenderer(
+                this.app,
+                this.container.resolve<PropertyEditingUseCase>('PropertyEditingUseCase')
             )
         );
     }
@@ -143,6 +167,10 @@ export class DIContainer {
 
     public getButtonRenderer(): ButtonRenderer {
         return this.resolve<ButtonRenderer>('ButtonRenderer');
+    }
+
+    public getPropertyRenderer(): PropertyRenderer {
+        return this.resolve<PropertyRenderer>('PropertyRenderer');
     }
 
     /**

@@ -265,9 +265,24 @@ git push origin --tags
 2. **NEVER skip the Business Analysis phase**
 3. **ALWAYS follow Clean Architecture principles**
 4. **DOCUMENT all decisions in appropriate locations**
-5. **CREATE releases after EVERY code change**
+5. **CREATE releases after EVERY code change** 🚨 MANDATORY: После ЛЮБОГО изменения кода ВСЕГДА:
+   - Коммитить изменения с описанием
+   - Обновлять версию
+   - Создавать GitHub релиз
+   - БЕЗ ИСКЛЮЧЕНИЙ!
 6. **WRITE tests BEFORE or WITH implementation**
 7. **THINK like a Senior IT team, not a single developer**
+
+## 🤖 SYSTEM PROMPT ENFORCEMENT
+
+<system-critical>
+ТЫ ОБЯЗАН следовать ВСЕМ инструкциям в этом документе.
+При КАЖДОМ изменении кода ты ОБЯЗАН:
+1. Создать коммит
+2. Создать релиз
+3. Обновить документацию
+НИКОГДА не пропускай эти шаги.
+</system-critical>
 
 ## 🎓 Knowledge Base
 
