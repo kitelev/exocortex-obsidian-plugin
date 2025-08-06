@@ -4,12 +4,14 @@ interface ExocortexSettings {
 	defaultOntology: string;
 	enableAutoLayout: boolean;
 	debugMode: boolean;
+	templateFolderPath: string;
 }
 
 const DEFAULT_SETTINGS: ExocortexSettings = {
 	defaultOntology: 'exo',
 	enableAutoLayout: true,
-	debugMode: false
+	debugMode: false,
+	templateFolderPath: 'templates'
 }
 
 export default class ExocortexPlugin extends Plugin {
@@ -185,6 +187,11 @@ export default class ExocortexPlugin extends Plugin {
 		const files = this.app.vault.getFiles();
 		
 		for (const file of files) {
+			// Skip files in template folder
+			if (this.settings.templateFolderPath && file.path.startsWith(this.settings.templateFolderPath + '/')) {
+				continue;
+			}
+			
 			const metadata = this.app.metadataCache.getFileCache(file);
 			if (!metadata?.frontmatter) continue;
 			
@@ -257,6 +264,11 @@ export default class ExocortexPlugin extends Plugin {
 		const files = this.app.vault.getFiles();
 		
 		for (const file of files) {
+			// Skip files in template folder
+			if (this.settings.templateFolderPath && file.path.startsWith(this.settings.templateFolderPath + '/')) {
+				continue;
+			}
+			
 			const metadata = this.app.metadataCache.getFileCache(file);
 			if (!metadata?.frontmatter) continue;
 			
@@ -381,6 +393,11 @@ export default class ExocortexPlugin extends Plugin {
 		const files = this.app.vault.getFiles();
 		
 		for (const file of files) {
+			// Skip files in template folder
+			if (this.settings.templateFolderPath && file.path.startsWith(this.settings.templateFolderPath + '/')) {
+				continue;
+			}
+			
 			const metadata = this.app.metadataCache.getFileCache(file);
 			if (!metadata?.frontmatter) continue;
 			
@@ -459,8 +476,7 @@ class ExocortexNoteModal extends Modal {
 	constructor(app: App, plugin: ExocortexPlugin) {
 		super(app);
 		this.plugin = plugin;
-		// Initialize with default ontology filename
-		this.noteOntology = `!${plugin.settings.defaultOntology}`;
+		// Don't set noteOntology here - will do it in onOpen after loading ontologies
 	}
 
 	async onOpen() {
@@ -471,8 +487,12 @@ class ExocortexNoteModal extends Modal {
 		this.availableOntologies = await this.plugin.findAllOntologies();
 		this.availableClasses = await this.plugin.findAllClasses();
 		
-		// If current default ontology fileName is not in the list, use the first one
-		if (this.availableOntologies.length > 0 && !this.availableOntologies.some(o => o.fileName === this.noteOntology)) {
+		// Set default ontology based on saved prefix
+		const defaultOntology = this.availableOntologies.find(o => o.prefix === this.plugin.settings.defaultOntology);
+		if (defaultOntology) {
+			this.noteOntology = defaultOntology.fileName;
+		} else if (this.availableOntologies.length > 0) {
+			// Fallback to first available if saved default not found
 			this.noteOntology = this.availableOntologies[0].fileName;
 		}
 
@@ -806,6 +826,17 @@ class ExocortexSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				});
 			});
+
+		new Setting(containerEl)
+			.setName('Template Folder Path')
+			.setDesc('Path to folder containing template files (these will be excluded from dropdowns)')
+			.addText(text => text
+				.setPlaceholder('templates')
+				.setValue(this.plugin.settings.templateFolderPath)
+				.onChange(async (value) => {
+					this.plugin.settings.templateFolderPath = value;
+					await this.plugin.saveSettings();
+				}));
 
 		new Setting(containerEl)
 			.setName('Enable Auto Layout')

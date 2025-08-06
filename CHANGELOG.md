@@ -5,6 +5,26 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2025-08-06
+
+### Fixed
+- Default ontology from settings now properly applied when creating new notes
+- Fixed initialization logic to correctly map saved prefix to fileName
+
+### Added
+- Comprehensive test suite with 32 tests covering all features
+- Template folder path setting to exclude templates from dropdowns
+- Files in template folder are now excluded from ontology/class/property discovery
+
+### Improved
+- Test coverage for all plugin functionality
+- Settings validation and handling
+
+### Technical
+- Added Jest testing framework with Obsidian mocks
+- TypeScript configuration updated with esModuleInterop
+- 100% test pass rate achieved
+
 ## [0.4.1] - 2025-08-06
 
 ### Changed
