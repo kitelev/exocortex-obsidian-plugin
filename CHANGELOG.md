@@ -5,6 +5,32 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.5] - 2025-08-06
+
+### Improved
+- **Enhanced UI/UX**: Complete redesign to match Obsidian's native design language
+- **Dropdown Height Limits**: Dropdowns now limited to 40% of viewport height
+- **Better Modal Structure**: Proper semantic HTML structure with title, form, and button sections
+- **Refined Styling**: Improved spacing, borders, and transitions throughout
+
+### Added
+- Custom scrollbars for dropdowns and properties container
+- Hover effects for better interactivity
+- Proper modal sections with visual separation
+- Button container with Obsidian-style CTA button
+
+### Changed
+- Dropdowns now have maximum height with scrollbar
+- Properties section has improved visual hierarchy
+- Form elements have consistent spacing and alignment
+- Modal has proper width constraints and responsive design
+
+### Technical
+- Added `exocortex-asset-modal` CSS class to modal
+- Implemented viewport-relative height calculations
+- Used Obsidian CSS variables for consistent theming
+- Improved CSS organization and specificity
+
 ## [0.5.4] - 2025-08-06
 
 ### Added

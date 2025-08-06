@@ -726,6 +726,8 @@ class ExocortexAssetModal extends Modal {
 	constructor(app: App, plugin: ExocortexPlugin) {
 		super(app);
 		this.plugin = plugin;
+		// Add CSS class to modal for styling
+		this.modalEl.addClass('exocortex-asset-modal');
 		// Don't set assetOntology here - will do it in onOpen after loading ontologies
 	}
 
@@ -762,7 +764,15 @@ class ExocortexAssetModal extends Modal {
 
 	async onOpen() {
 		const { contentEl } = this;
-		contentEl.createEl("h2", { text: "Create ExoAsset" });
+		
+		// Add modal title with proper styling
+		const titleEl = contentEl.createEl("h2", { 
+			text: "Create ExoAsset",
+			cls: "modal-title"
+		});
+		
+		// Create form container
+		const formEl = contentEl.createDiv({ cls: "modal-form" });
 
 		// Load available ontologies and classes
 		this.availableOntologies = await this.plugin.findAllOntologies();
@@ -782,7 +792,7 @@ class ExocortexAssetModal extends Modal {
 			this.assetOntology = this.availableOntologies[0].fileName;
 		}
 
-		new Setting(contentEl)
+		new Setting(formEl)
 			.setName("Title")
 			.setDesc("Asset title")
 			.addText(text => text
@@ -791,7 +801,7 @@ class ExocortexAssetModal extends Modal {
 				.onChange(value => this.assetTitle = value));
 
 		// Create the CLASS dropdown with tree structure
-		new Setting(contentEl)
+		new Setting(formEl)
 			.setName("Class")
 			.setDesc("Select the type of asset (tree hierarchy)")
 			.addDropdown(dropdown => {
@@ -840,7 +850,7 @@ class ExocortexAssetModal extends Modal {
 			});
 		
 		// Create the ONTOLOGY dropdown (now independent)
-		new Setting(contentEl)
+		new Setting(formEl)
 			.setName("Ontology")
 			.setDesc("Select which knowledge graph this asset belongs to")
 			.addDropdown(dropdown => {
@@ -859,15 +869,18 @@ class ExocortexAssetModal extends Modal {
 			});
 
 		// Add a separator
-		contentEl.createEl("h3", { text: "Properties", cls: "exocortex-properties-header" });
+		formEl.createEl("h3", { text: "Properties", cls: "exocortex-properties-header" });
 		
 		// Create container for dynamic properties
-		this.propertiesContainer = contentEl.createDiv({ cls: "exocortex-properties-container" });
+		this.propertiesContainer = formEl.createDiv({ cls: "exocortex-properties-container" });
 		
 		// Load initial properties for default class
 		await this.updatePropertiesForClass(this.assetClass);
 
-		new Setting(contentEl)
+		// Create button container
+		const buttonContainer = contentEl.createDiv({ cls: "modal-button-container" });
+		
+		new Setting(buttonContainer)
 			.addButton(btn => btn
 				.setButtonText("Create")
 				.setCta()
