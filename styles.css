@@ -555,3 +555,182 @@
     font-weight: bold;
     margin-left: 4px;
 }
+
+/* Inline Property Editing Styles */
+.exocortex-properties-editable {
+    padding: 12px;
+    background-color: var(--background-secondary);
+    border-radius: 8px;
+    margin: 12px 0;
+}
+
+.exocortex-property-item {
+    padding: 12px;
+    margin-bottom: 8px;
+    background-color: var(--background-primary);
+    border-radius: 6px;
+    border: 1px solid var(--background-modifier-border);
+    transition: all 0.2s ease;
+}
+
+.exocortex-property-item:hover {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.exocortex-property-label {
+    font-weight: 500;
+    color: var(--text-normal);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.exocortex-property-value {
+    min-height: 32px;
+    display: flex;
+    align-items: center;
+}
+
+.exocortex-property-value-readonly {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background-color: var(--background-modifier-form-field);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    width: 100%;
+}
+
+.exocortex-property-value-readonly:hover {
+    background-color: var(--background-modifier-form-field-highlighted);
+    border-color: var(--interactive-accent);
+}
+
+.exocortex-property-value-readonly:focus {
+    outline: none;
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.exocortex-edit-icon {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    margin-left: 8px;
+    font-size: 0.9em;
+}
+
+.exocortex-property-value-readonly:hover .exocortex-edit-icon {
+    opacity: 0.6;
+}
+
+.exocortex-property-description {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+.exocortex-edit-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.exocortex-edit-control input,
+.exocortex-edit-control select,
+.exocortex-edit-control textarea {
+    flex: 1;
+    padding: 6px 10px;
+    background-color: var(--background-modifier-form-field);
+    border: 2px solid var(--interactive-accent);
+    border-radius: 4px;
+    color: var(--text-normal);
+    font-size: inherit;
+    font-family: inherit;
+}
+
+.exocortex-edit-control input:focus,
+.exocortex-edit-control select:focus,
+.exocortex-edit-control textarea:focus {
+    outline: none;
+    border-color: var(--interactive-accent-hover);
+    box-shadow: 0 0 0 3px rgba(var(--interactive-accent-rgb), 0.2);
+}
+
+.exocortex-edit-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.exocortex-edit-actions button {
+    padding: 4px 8px;
+    background-color: var(--interactive-normal);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.exocortex-edit-actions button:hover {
+    background-color: var(--interactive-hover);
+}
+
+.exocortex-array-input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.exocortex-array-input .array-item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.exocortex-array-input .array-item input {
+    flex: 1;
+}
+
+/* Validation error styles */
+.exocortex-property-item.has-error {
+    border-color: var(--text-error);
+}
+
+.exocortex-property-error {
+    color: var(--text-error);
+    font-size: 0.85em;
+    margin-top: 4px;
+}
+
+/* Auto-save indicator */
+.exocortex-save-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 8px 16px;
+    background-color: var(--interactive-success);
+    color: var(--text-on-accent);
+    border-radius: 20px;
+    font-size: 0.9em;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.exocortex-save-indicator.show {
+    opacity: 1;
+}
+
+/* Edit mode visual feedback */
+.exocortex-property-item.editing {
+    border-color: var(--interactive-accent);
+    box-shadow: 0 0 0 3px rgba(var(--interactive-accent-rgb), 0.1);
+    background-color: var(--background-modifier-form-field-highlighted);
+}
