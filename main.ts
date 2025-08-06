@@ -180,8 +180,8 @@ export default class ExocortexPlugin extends Plugin {
 		new Notice('Exocortex layouts refreshed');
 	}
 
-	async findAllOntologies(): Promise<{ file: TFile; prefix: string; label: string }[]> {
-		const ontologies: { file: TFile; prefix: string; label: string }[] = [];
+	async findAllOntologies(): Promise<{ file: TFile | null; prefix: string; label: string; fileName: string }[]> {
+		const ontologies: { file: TFile | null; prefix: string; label: string; fileName: string }[] = [];
 		const files = this.app.vault.getFiles();
 		
 		for (const file of files) {
@@ -204,7 +204,10 @@ export default class ExocortexPlugin extends Plugin {
 							 metadata.frontmatter['rdfs__label'] ||
 							 file.basename;
 				
-				ontologies.push({ file, prefix, label });
+				// Store the actual filename (basename) for linking
+				const fileName = file.basename;
+				
+				ontologies.push({ file, prefix, label, fileName });
 			}
 		}
 		
@@ -212,13 +215,21 @@ export default class ExocortexPlugin extends Plugin {
 		ontologies.sort((a, b) => a.prefix.localeCompare(b.prefix));
 		
 		// Always include default ontologies even if not found
-		const defaultOntologies = ['exo', 'ems', 'gtd', 'ims'];
-		for (const defaultPrefix of defaultOntologies) {
-			if (!ontologies.some(o => o.prefix === defaultPrefix)) {
+		// These will use the convention of !prefix for the filename
+		const defaultOntologies = [
+			{ prefix: 'exo', label: 'EXO', fileName: '!exo' },
+			{ prefix: 'ems', label: 'EMS', fileName: '!ems' },
+			{ prefix: 'gtd', label: 'GTD', fileName: '!gtd' },
+			{ prefix: 'ims', label: 'IMS', fileName: '!ims' }
+		];
+		
+		for (const defaultOnt of defaultOntologies) {
+			if (!ontologies.some(o => o.prefix === defaultOnt.prefix)) {
 				ontologies.push({
-					file: null as any,
-					prefix: defaultPrefix,
-					label: defaultPrefix.toUpperCase()
+					file: null,
+					prefix: defaultOnt.prefix,
+					label: defaultOnt.label,
+					fileName: defaultOnt.fileName
 				});
 			}
 		}
@@ -300,14 +311,15 @@ class ExocortexNoteModal extends Modal {
 	plugin: ExocortexPlugin;
 	noteTitle: string = '';
 	noteClass: string = 'exo__Asset';
-	noteOntology: string = '';
-	availableOntologies: { file: TFile; prefix: string; label: string }[] = [];
+	noteOntology: string = '';  // This will store the fileName, not prefix
+	availableOntologies: { file: TFile | null; prefix: string; label: string; fileName: string }[] = [];
 	availableClasses: { className: string; label: string; ontology: string }[] = [];
 
 	constructor(app: App, plugin: ExocortexPlugin) {
 		super(app);
 		this.plugin = plugin;
-		this.noteOntology = plugin.settings.defaultOntology;
+		// Initialize with default ontology filename
+		this.noteOntology = `!${plugin.settings.defaultOntology}`;
 	}
 
 	async onOpen() {
@@ -318,9 +330,9 @@ class ExocortexNoteModal extends Modal {
 		this.availableOntologies = await this.plugin.findAllOntologies();
 		this.availableClasses = await this.plugin.findAllClasses();
 		
-		// If current default ontology is not in the list, use the first one
-		if (this.availableOntologies.length > 0 && !this.availableOntologies.some(o => o.prefix === this.noteOntology)) {
-			this.noteOntology = this.availableOntologies[0].prefix;
+		// If current default ontology fileName is not in the list, use the first one
+		if (this.availableOntologies.length > 0 && !this.availableOntologies.some(o => o.fileName === this.noteOntology)) {
+			this.noteOntology = this.availableOntologies[0].fileName;
 		}
 
 		new Setting(contentEl)
@@ -368,13 +380,14 @@ class ExocortexNoteModal extends Modal {
 				// Add all found ontologies to dropdown
 				for (const ontology of this.availableOntologies) {
 					const displayName = `${ontology.prefix} - ${ontology.label}`;
-					dropdown.addOption(ontology.prefix, displayName);
+					// Use fileName as the value to store the correct reference
+					dropdown.addOption(ontology.fileName, displayName);
 				}
 				
 				dropdown
 					.setValue(this.noteOntology)
 					.onChange(value => {
-						this.noteOntology = value;
+						this.noteOntology = value; // This now stores the fileName
 					});
 			});
 
@@ -390,8 +403,9 @@ class ExocortexNoteModal extends Modal {
 
 	async createNote() {
 		const fileName = `${this.noteTitle}.md`;
+		// noteOntology now contains the actual fileName (e.g., "!exo", "Ontology - EMS", etc.)
 		const frontmatter = `---
-exo__Asset_isDefinedBy: "[[!${this.noteOntology}]]"
+exo__Asset_isDefinedBy: "[[${this.noteOntology}]]"
 exo__Asset_uid: ${this.generateUUID()}
 exo__Asset_createdAt: ${new Date().toISOString()}
 exo__Instance_class:

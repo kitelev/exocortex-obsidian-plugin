@@ -5,6 +5,18 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2025-08-06
+
+### Fixed
+- Fixed incorrect links in `exo__Asset_isDefinedBy` - now uses actual ontology filename
+- Previously was incorrectly adding `!` prefix to ontology prefix (e.g., `[[!exo]]` instead of `[[!exo]]` file)
+- Now correctly links to the actual ontology file (e.g., `[[!exo]]`, `[[Ontology - EMS]]`)
+
+### Technical
+- Modified `findAllOntologies()` to return fileName alongside prefix
+- Dropdown now stores and uses actual filename for creating correct wiki links
+- Default ontologies use convention of `!prefix` for filename
+
 ## [0.3.0] - 2025-08-06
 
 ### Changed
