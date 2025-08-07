@@ -256,76 +256,101 @@ When acting in different roles, adopt these mindsets:
 
 ## 🔧 Technical Standards
 
-### Code Organization
+### Code Organization (Current Implementation)
 ```
 /src
-  /domain           - Business entities
-  /application      - Use cases
-  /infrastructure   - External adapters
-  /presentation     - UI components
-/features          - BDD specifications
-/docs
-  /requirements    - Business requirements
-  /project        - Project management
-  /architecture   - Technical designs
+  /domain           - Business entities, value objects, repositories interfaces
+    /core           - Entity, AggregateRoot, Result patterns
+    /entities       - Asset, ButtonCommand, ClassLayout, etc.
+    /value-objects  - AssetId, ClassName, OntologyPrefix
+    /repositories   - Interface definitions (IAssetRepository, etc.)
+  /application      - Use cases and application services
+    /core           - Container, UseCase base classes
+    /use-cases      - CreateAssetUseCase, PropertyEditingUseCase, etc.
+    /services       - ICommandExecutor interface
+  /infrastructure   - External adapters and implementations
+    /container      - DIContainer for dependency injection
+    /repositories   - Obsidian-specific implementations
+    /services       - ObsidianCommandExecutor
+  /presentation     - UI components and renderers
+    /components     - ButtonRenderer, PropertyRenderer
+    /modals         - ClassTreeModal, CreateAssetModal
+    /renderers      - LayoutRenderer, QueryBlockRenderer
 /tests
-  /unit           - Unit tests
-  /integration    - Integration tests
-  /e2e           - End-to-end tests
+  /unit             - Jest unit tests with mocks
+  /integration      - Integration tests with fake adapters
+  /e2e              - End-to-end workflow tests
+  /__mocks__        - Obsidian API mocks
+  /helpers          - FakeVaultAdapter, TestContext
+/features           - BDD specifications (documentation/planning)
+/docs               - Project documentation and requirements
 ```
 
-### BDD Specifications
-ALL requirements MUST have:
-1. Feature file in `/features/`
-2. Step definitions in `/features/step_definitions/`
-3. Executable with Cucumber
-4. Tagged appropriately (@smoke, @regression, etc.)
+### Testing Strategy (Current Implementation)
+The project uses **Jest-based testing** with comprehensive mocking:
 
-### Git Workflow
+1. **Unit Tests**: Test individual components in isolation using Jest
+2. **Integration Tests**: Use fake adapters (FakeVaultAdapter) for testing interactions
+3. **Mocking Strategy**: Comprehensive Obsidian API mocks in `tests/__mocks__/obsidian.ts`
+4. **Test Helpers**: `TestContext` class for consistent test setup
+5. **Coverage**: Configured with 70% threshold across branches, functions, lines, statements
+
+**BDD Features are primarily for documentation and planning**, not active test execution.
+
+### Git Workflow (Current Implementation)
 ```bash
 # Feature branch
 git checkout -b feature/TASK-ID-description
 
 # Development
-npm run dev
-npm test:watch
+npm run dev          # ESBuild development build
+npm test:watch       # Jest in watch mode
+npm test:coverage    # Generate coverage report
 
-# Pre-commit
-npm test
-npm run build
-npm run lint
+# Pre-commit (Quality checks)
+npm test            # Jest unit tests
+npm run build       # TypeScript + ESBuild production build
 
 # Commit with conventional commits
 git commit -m "feat: add new feature"
 git commit -m "fix: resolve issue"
 git commit -m "docs: update documentation"
-git commit -m "test: add test coverage"
 
-# Release
-npm version patch/minor/major
+# Automated Release (via GitHub Actions)
 git push origin main
-git push origin --tags
+# GitHub Actions automatically:
+# 1. Runs quality gate (tests, build, lint)
+# 2. Bumps version using version-bump.mjs
+# 3. Updates manifest.json and versions.json
+# 4. Creates GitHub release with generated notes
+# 5. Publishes release assets
 ```
 
-## 📊 Quality Metrics
+## 📊 Quality Metrics (Current Implementation)
 
-### Code Quality
-- Test coverage > 80%
-- No TypeScript errors
-- No linting warnings
-- Clean build
+### Code Quality Standards
+- **Test Coverage**: 70% threshold (branches, functions, lines, statements)
+- **TypeScript**: Strict compilation with `tsc -noEmit -skipLibCheck`
+- **Build Process**: ESBuild for fast compilation and bundling
+- **Architecture**: Clean Architecture with proper layer separation
 
-### Documentation Quality
-- All features documented
-- BDD scenarios complete
-- API documentation current
-- User guides updated
+### Testing Metrics
+- **Unit Tests**: Jest with comprehensive Obsidian API mocking
+- **Integration Tests**: Using FakeVaultAdapter and TestContext
+- **Test Performance**: All tests complete within 60-second timeout
+- **Coverage Report**: Generated via `npm run test:coverage`
 
-### Release Quality
-- All tests passing
-- Performance benchmarks met
-- Security scan clean
-- Accessibility compliant
+### Release Quality Gates (GitHub Actions)
+- **Continuous Integration**: Automated testing on every push
+- **Quality Gate**: Tests, build, and artifact validation
+- **Automated Releases**: On main branch push with semantic versioning
+- **Release Artifacts**: manifest.json, main.js, and styles.css
+
+### Documentation Standards
+- **Architecture Documentation**: Up-to-date ARCHITECTURE.md
+- **Release Notes**: Product-focused with user benefits and scenarios
+- **Code Documentation**: TSDoc comments on public APIs
+- **User Guides**: Practical examples in /examples directory
 
 ## 🚀 Release Process
 
@@ -364,19 +389,19 @@ git push origin --tags
 4. **NEVER skip the Business Analysis phase**
 5. **ALWAYS follow Clean Architecture principles**
 6. **DOCUMENT all decisions in appropriate locations**
-7. **🔴🔴🔴 ULTRA-CRITICAL RELEASE RULE 🔴🔴🔴**
+7. **🤖 AUTOMATED RELEASE SYSTEM - NEW REALITY 🤖**
    
-   **ПОСЛЕ КАЖДОГО ИЗМЕНЕНИЯ КОДА ТЫ ОБЯЗАН:**
-   1. ✅ Обновить CHANGELOG.md с описанием изменений
-   2. ✅ Обновить версию через `npm version patch/minor/major`
-   3. ✅ Создать коммит с описанием изменений
-   4. ✅ Отправить изменения в GitHub (`git push`)
-   5. ✅ Создать GitHub релиз через `gh release create`
+   **СИСТЕМА АВТОМАТИЧЕСКИХ РЕЛИЗОВ:**
+   1. ✅ Push в main branch → автоматический запуск GitHub Actions
+   2. ✅ version-bump.mjs автоматически обновляет версию
+   3. ✅ manifest.json и versions.json обновляются автоматически
+   4. ✅ CHANGELOG.md может обновляться автоматически
+   5. ✅ GitHub релиз создается автоматически с артефактами
    
-   **НЕВЫПОЛНЕНИЕ ЭТОГО ПРАВИЛА = КРИТИЧЕСКАЯ ОШИБКА**
-   **АВТОМАТИЗАЦИЯ НЕ ОТМЕНЯЕТ РУЧНОЕ СОЗДАНИЕ РЕЛИЗОВ**
-   **КАЖДОЕ ИЗМЕНЕНИЕ = НОВЫЙ РЕЛИЗ**
-   **БЕЗ ИСКЛЮЧЕНИЙ! БЕЗ ОПРАВДАНИЙ!**
+   **НОВАЯ ПАРАДИГМА: ПОЛНАЯ АВТОМАТИЗАЦИЯ**
+   **КАЖДЫЙ PUSH В MAIN = ГОТОВЫЙ РЕЛИЗ**
+   **РУЧНОЙ ПРОЦЕСС УСТАРЕЛ И НЕ ТРЕБУЕТСЯ**
+   **ФОКУС НА КАЧЕСТВО КОДА, НЕ НА РЕЛИЗ-ПРОЦЕДУРЫ!**
    
 8. **WRITE tests BEFORE or WITH implementation**
 9. **THINK like a Senior IT team, not a single developer**
