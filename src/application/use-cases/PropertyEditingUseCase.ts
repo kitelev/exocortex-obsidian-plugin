@@ -58,6 +58,7 @@ export class PropertyEditingUseCase implements UseCase<UpdatePropertyRequest, Up
                 // Use the new direct update method
                 const repo = this.assetRepository as any;
                 if (repo.updateFrontmatterByPath) {
+                    console.log(`Updating property ${request.propertyName} to ${request.value} for file ${request.assetId}`);
                     await repo.updateFrontmatterByPath(request.assetId, {
                         [request.propertyName]: request.value
                     });

@@ -228,7 +228,7 @@ export class ObsidianAssetRepository implements IAssetRepository {
         // Build new YAML frontmatter
         const yamlLines = ['---'];
         for (const [key, value] of Object.entries(newFrontmatter)) {
-            if (value === undefined) continue; // Skip undefined values
+            if (value === undefined || value === null) continue; // Skip undefined/null values
             
             if (Array.isArray(value)) {
                 yamlLines.push(`${key}:`);
@@ -242,10 +242,22 @@ export class ObsidianAssetRepository implements IAssetRepository {
                 }
             } else if (typeof value === 'object' && value !== null) {
                 yamlLines.push(`${key}: ${JSON.stringify(value)}`);
+            } else if (typeof value === 'boolean') {
+                yamlLines.push(`${key}: ${value}`);
+            } else if (typeof value === 'number') {
+                yamlLines.push(`${key}: ${value}`);
             } else {
                 const valueStr = String(value);
-                if (valueStr.includes('[[') && valueStr.includes(']]')) {
-                    yamlLines.push(`${key}: "${valueStr}"`);
+                // Check if value needs quoting
+                if (valueStr.includes(':') || valueStr.includes('#') || 
+                    valueStr.includes('[') || valueStr.includes(']') ||
+                    valueStr.includes('{') || valueStr.includes('}') ||
+                    valueStr.includes('|') || valueStr.includes('>') ||
+                    valueStr.includes('@') || valueStr.includes('`') ||
+                    valueStr.includes('"') || valueStr.includes("'") ||
+                    valueStr.startsWith(' ') || valueStr.endsWith(' ')) {
+                    // Escape quotes and wrap in quotes
+                    yamlLines.push(`${key}: "${valueStr.replace(/"/g, '\\"')}"`);
                 } else {
                     yamlLines.push(`${key}: ${valueStr}`);
                 }
@@ -253,9 +265,24 @@ export class ObsidianAssetRepository implements IAssetRepository {
         }
         yamlLines.push('---');
         
-        // Extract body content
-        const contentMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
-        const bodyContent = contentMatch ? contentMatch[1] : content;
+        // Extract body content - handle multiple cases
+        let bodyContent = '';
+        
+        // Check if content has frontmatter
+        if (content.startsWith('---\n')) {
+            // Find the end of frontmatter
+            const endOfFrontmatter = content.indexOf('\n---\n', 4);
+            if (endOfFrontmatter !== -1) {
+                // Extract content after frontmatter
+                bodyContent = content.substring(endOfFrontmatter + 5);
+            } else {
+                // Malformed frontmatter, preserve original content
+                bodyContent = content;
+            }
+        } else {
+            // No frontmatter, entire content is body
+            bodyContent = content;
+        }
         
         const newContent = yamlLines.join('\n') + '\n' + bodyContent;
         await this.app.vault.modify(file, newContent);
