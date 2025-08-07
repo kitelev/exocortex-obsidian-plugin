@@ -14,6 +14,7 @@ interface AssetProps {
   properties: Map<string, any>;
   createdAt: Date;
   updatedAt: Date;
+  filePath?: string; // Store the actual file path
 }
 
 /**

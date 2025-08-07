@@ -65,8 +65,43 @@ export class ObsidianAssetRepository implements IAssetRepository {
     }
 
     async save(asset: Asset): Promise<void> {
-        const fileName = `${asset.getTitle()}.md`;
         const frontmatter = asset.toFrontmatter();
+        
+        // Try to find the existing file by asset ID, stored path, or filename
+        let targetFile: TFile | null = null;
+        
+        // First check if asset has a stored file path
+        const storedPath = (asset as any).props?.filePath;
+        if (storedPath) {
+            const file = this.app.vault.getAbstractFileByPath(storedPath);
+            if (file instanceof TFile) {
+                targetFile = file;
+            }
+        }
+        
+        // If not found by stored path, try by asset ID
+        if (!targetFile) {
+            const assetId = frontmatter['exo__Asset_uid'];
+            if (assetId) {
+                const files = this.app.vault.getMarkdownFiles();
+                for (const file of files) {
+                    const cache = this.app.metadataCache.getFileCache(file);
+                    if (cache?.frontmatter?.['exo__Asset_uid'] === assetId) {
+                        targetFile = file;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // If not found by ID, try by filename
+        if (!targetFile) {
+            const fileName = `${asset.getTitle()}.md`;
+            const file = this.app.vault.getAbstractFileByPath(fileName);
+            if (file instanceof TFile) {
+                targetFile = file;
+            }
+        }
         
         // Build YAML frontmatter
         const yamlLines = ['---'];
@@ -94,15 +129,20 @@ export class ObsidianAssetRepository implements IAssetRepository {
                 }
             }
         }
-        yamlLines.push('---', '');
+        yamlLines.push('---');
         
-        const content = yamlLines.join('\n');
-        
-        // Check if file exists
-        const existingFile = this.app.vault.getAbstractFileByPath(fileName);
-        if (existingFile instanceof TFile) {
-            await this.app.vault.modify(existingFile, content);
+        if (targetFile) {
+            // Preserve existing content after frontmatter
+            const existingContent = await this.app.vault.read(targetFile);
+            const contentMatch = existingContent.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+            const bodyContent = contentMatch ? contentMatch[1] : '';
+            
+            const newContent = yamlLines.join('\n') + '\n' + bodyContent;
+            await this.app.vault.modify(targetFile, newContent);
         } else {
+            // Create new file if it doesn't exist
+            const fileName = `${asset.getTitle()}.md`;
+            const content = yamlLines.join('\n') + '\n';
             await this.app.vault.create(fileName, content);
         }
     }
@@ -158,10 +198,66 @@ export class ObsidianAssetRepository implements IAssetRepository {
         if (file instanceof TFile) {
             const cache = this.app.metadataCache.getFileCache(file);
             if (cache?.frontmatter) {
-                return Asset.fromFrontmatter(cache.frontmatter, file.basename);
+                const asset = Asset.fromFrontmatter(cache.frontmatter, file.basename);
+                // Store the file path for later use in save
+                (asset as any).props.filePath = file.path;
+                return asset;
             }
         }
         
         return null;
+    }
+
+    /**
+     * Update only the frontmatter of a file by path
+     */
+    async updateFrontmatterByPath(filePath: string, updates: Record<string, any>): Promise<void> {
+        const file = this.app.vault.getAbstractFileByPath(filePath);
+        
+        if (!(file instanceof TFile)) {
+            throw new Error(`File not found: ${filePath}`);
+        }
+
+        const content = await this.app.vault.read(file);
+        const cache = this.app.metadataCache.getFileCache(file);
+        const currentFrontmatter = cache?.frontmatter || {};
+        
+        // Merge updates with current frontmatter
+        const newFrontmatter = { ...currentFrontmatter, ...updates };
+        
+        // Build new YAML frontmatter
+        const yamlLines = ['---'];
+        for (const [key, value] of Object.entries(newFrontmatter)) {
+            if (value === undefined) continue; // Skip undefined values
+            
+            if (Array.isArray(value)) {
+                yamlLines.push(`${key}:`);
+                for (const item of value) {
+                    const itemStr = String(item);
+                    if (itemStr.includes('[[') && itemStr.includes(']]')) {
+                        yamlLines.push(`  - "${itemStr}"`);
+                    } else {
+                        yamlLines.push(`  - ${itemStr}`);
+                    }
+                }
+            } else if (typeof value === 'object' && value !== null) {
+                yamlLines.push(`${key}: ${JSON.stringify(value)}`);
+            } else {
+                const valueStr = String(value);
+                if (valueStr.includes('[[') && valueStr.includes(']]')) {
+                    yamlLines.push(`${key}: "${valueStr}"`);
+                } else {
+                    yamlLines.push(`${key}: ${valueStr}`);
+                }
+            }
+        }
+        yamlLines.push('---');
+        
+        // Extract body content
+        const contentMatch = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
+        const bodyContent = contentMatch ? contentMatch[1] : content;
+        
+        const newContent = yamlLines.join('\n') + '\n' + bodyContent;
+        await this.app.vault.modify(file, newContent);
     }
 }

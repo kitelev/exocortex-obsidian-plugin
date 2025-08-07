@@ -52,34 +52,54 @@ export class PropertyEditingUseCase implements UseCase<UpdatePropertyRequest, Up
             return Result.fail<UpdatePropertyResponse>(validationResult.error);
         }
 
-        // Load the asset - try multiple methods
-        let asset: Asset | null = null;
-        
-        // First try as UUID
-        const assetIdResult = AssetId.create(request.assetId);
-        if (assetIdResult.isSuccess) {
-            asset = await this.assetRepository.findById(assetIdResult.getValue());
-        }
-        
-        // If not found by ID, try by filename
-        if (!asset) {
-            asset = await this.assetRepository.findByFilename(request.assetId);
-        }
-        
-        if (!asset) {
-            return Result.fail<UpdatePropertyResponse>(`Asset not found: ${request.assetId}`);
-        }
+        try {
+            // If assetId looks like a file path, use direct update method
+            if (request.assetId.includes('/') || request.assetId.endsWith('.md')) {
+                // Use the new direct update method
+                const repo = this.assetRepository as any;
+                if (repo.updateFrontmatterByPath) {
+                    await repo.updateFrontmatterByPath(request.assetId, {
+                        [request.propertyName]: request.value
+                    });
+                    
+                    return Result.ok<UpdatePropertyResponse>({
+                        success: true,
+                        updatedValue: request.value
+                    });
+                }
+            }
 
-        // Update the property
-        asset.setProperty(request.propertyName, request.value);
+            // Fallback to original logic for asset IDs
+            let asset: Asset | null = null;
+            
+            // First try as UUID
+            const assetIdResult = AssetId.create(request.assetId);
+            if (assetIdResult.isSuccess) {
+                asset = await this.assetRepository.findById(assetIdResult.getValue());
+            }
+            
+            // If not found by ID, try by filename
+            if (!asset) {
+                asset = await this.assetRepository.findByFilename(request.assetId);
+            }
+            
+            if (!asset) {
+                return Result.fail<UpdatePropertyResponse>(`Asset not found: ${request.assetId}`);
+            }
 
-        // Save the asset
-        await this.assetRepository.save(asset);
+            // Update the property
+            asset.setProperty(request.propertyName, request.value);
 
-        return Result.ok<UpdatePropertyResponse>({
-            success: true,
-            updatedValue: request.value
-        });
+            // Save the asset
+            await this.assetRepository.save(asset);
+
+            return Result.ok<UpdatePropertyResponse>({
+                success: true,
+                updatedValue: request.value
+            });
+        } catch (error) {
+            return Result.fail<UpdatePropertyResponse>(`Failed to update property: ${error}`);
+        }
     }
 
     /**
