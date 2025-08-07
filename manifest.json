@@ -1,11 +1,11 @@
 {
-  "id": "exocortex-obsidian-plugin",
-  "name": "Exocortex",
-  "version": "0.5.8",
-  "minAppVersion": "1.0.0",
-  "description": "A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
-  "author": "kitelev",
-  "authorUrl": "https://github.com/kitelev",
-  "fundingUrl": "",
-  "isDesktopOnly": false
+	"id": "exocortex-obsidian-plugin",
+	"name": "Exocortex",
+	"version": "0.5.9",
+	"minAppVersion": "1.0.0",
+	"description": "A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
+	"author": "kitelev",
+	"authorUrl": "https://github.com/kitelev",
+	"fundingUrl": "",
+	"isDesktopOnly": false
 }
