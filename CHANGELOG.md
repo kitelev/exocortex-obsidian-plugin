@@ -5,6 +5,27 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.9] - 2025-08-07
+
+### 🔧 Fixed
+- **CI/CD Pipeline**: Resolved critical GitHub workflow failures blocking releases
+- **NPM Dependencies**: Restored stable package-lock.json for consistent builds
+- **Test Execution**: Implemented 60-second timeout limits to prevent hanging tests
+
+### 🚀 Improvements
+- **GitHub Actions Optimization**:
+  - Added npm caching for faster workflow runs
+  - Configured retry logic and timeout protection
+  - Optimized with `--prefer-offline` and `--no-audit` flags
+- **Development Process**: 
+  - Updated CLAUDE.md with mandatory workflow checks before new tasks
+  - Added automated workflow status verification requirements
+
+### 📋 Technical Changes
+- Created `.npmrc` configuration for faster npm operations
+- Enhanced CI/CD with proper timeout management
+- Fixed npm ci compatibility issues in GitHub Actions
+
 ## [0.5.8] - 2025-08-06
 
 ### Fixed
