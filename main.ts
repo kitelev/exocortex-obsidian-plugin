@@ -1,5 +1,6 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf } from 'obsidian';
 import { ClassTreeModal } from './src/presentation/modals/ClassTreeModal';
+import { FocusAreaModal, AreaOption } from './src/presentation/modals/FocusAreaModal';
 import { DIContainer } from './src/infrastructure/container/DIContainer';
 
 interface ExocortexSettings {
@@ -21,8 +22,8 @@ const DEFAULT_SETTINGS: ExocortexSettings = {
 }
 
 export default class ExocortexPlugin extends Plugin {
-	settings: ExocortexSettings;
-	private diContainer: DIContainer;
+        settings: ExocortexSettings;
+        private diContainer: DIContainer;
 
 	async onload() {
 		await this.loadSettings();
@@ -50,14 +51,31 @@ export default class ExocortexPlugin extends Plugin {
 			}
 		});
 
-		// Add command to refresh layouts
-		this.addCommand({
-			id: 'refresh-exo-layouts',
-			name: 'Refresh Exocortex Layouts',
-			callback: () => {
-				this.refreshAllLayouts();
-			}
-		});
+                // Add command to refresh layouts
+                this.addCommand({
+                        id: 'refresh-exo-layouts',
+                        name: 'Refresh Exocortex Layouts',
+                        callback: () => {
+                                this.refreshAllLayouts();
+                        }
+                });
+
+                // Add command to set current focus area
+                this.addCommand({
+                        id: 'set-current-focus-area',
+                        name: 'Set Current Focus Area',
+                        callback: async () => {
+                                const areas = await this.findAssetsByClass('ems__Area', true);
+                                if (!areas || areas.length === 0) {
+                                        new Notice('No areas found');
+                                        return;
+                                }
+                                new FocusAreaModal(this.app, areas, async (area: AreaOption) => {
+                                        await this.setCurrentFocusArea(area.fileName);
+                                        new Notice(`Focus set to ${area.label}`);
+                                }).open();
+                        }
+                });
 
 		// Add settings tab
 		this.addSettingTab(new ExocortexSettingTab(this.app, this));
@@ -67,8 +85,8 @@ export default class ExocortexPlugin extends Plugin {
 			this.registerInterval(window.setInterval(() => this.refreshAllLayouts(), 30000));
 		}
 
-		console.log('Exocortex plugin loaded');
-	}
+                console.log('Exocortex plugin loaded');
+        }
 
 	onunload() {
 		console.log('Exocortex plugin unloaded');
@@ -79,9 +97,66 @@ export default class ExocortexPlugin extends Plugin {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
 
-	async saveSettings() {
-		await this.saveData(this.settings);
-	}
+        async saveSettings() {
+                await this.saveData(this.settings);
+        }
+
+        /**
+         * Get current focus area file name from focus asset
+         */
+        async getCurrentFocusArea(): Promise<string | null> {
+                const focusAssets = await this.findAssetsByClass('focusCurrentFocus', false);
+                if (!focusAssets || focusAssets.length === 0) return null;
+                const file = this.app.vault.getAbstractFileByPath(focusAssets[0].path);
+                if (!(file instanceof TFile)) return null;
+                const metadata = this.app.metadataCache.getFileCache(file);
+                const area = metadata?.frontmatter?.['focusCurrentFocus_area'];
+                return area ? area.toString().replace(/\[\[|\]\]/g, '') : null;
+        }
+
+        /**
+         * Set current focus area, creating focus asset if needed
+         */
+        async setCurrentFocusArea(areaFileName: string): Promise<void> {
+                const focusAssets = await this.findAssetsByClass('focusCurrentFocus', false);
+                if (focusAssets && focusAssets.length > 0) {
+                        const file = this.app.vault.getAbstractFileByPath(focusAssets[0].path) as TFile;
+                        await this.app.fileManager.processFrontMatter(file, (fm) => {
+                                fm['exo__Instance_class'] = fm['exo__Instance_class'] || '[[focusCurrentFocus]]';
+                                fm['focusCurrentFocus_area'] = `[[${areaFileName}]]`;
+                        });
+                } else {
+                        const content = `---\nexo__Instance_class: [[focusCurrentFocus]]\nfocusCurrentFocus_area: [[${areaFileName}]]\n---\n`;
+                        await this.app.vault.create('CurrentFocus.md', content);
+                }
+        }
+
+        /**
+         * Filter area assets to those within current focus
+         */
+        private async filterAreasByFocus(areas: { fileName: string; label: string; path: string; actualClass: string }[], focusArea: string) {
+                const parentMap = new Map<string, string>();
+                for (const area of areas) {
+                        const file = this.app.vault.getAbstractFileByPath(area.path);
+                        if (!(file instanceof TFile)) continue;
+                        const metadata = this.app.metadataCache.getFileCache(file);
+                        const parent = metadata?.frontmatter?.['ems__Area_parent'];
+                        if (parent) {
+                                parentMap.set(area.fileName, parent.toString().replace(/\[\[|\]\]/g, ''));
+                        }
+                }
+
+                const isDescendant = (name: string): boolean => {
+                        let current: string | undefined = name;
+                        while (current) {
+                                if (current === focusArea) return true;
+                                current = parentMap.get(current);
+                        }
+                        return false;
+                };
+
+                return areas.filter(a => isDescendant(a.fileName));
+        }
 
 	async renderUniversalLayout(dv: any, ctx: any) {
 		const file = ctx.container.closest('.markdown-preview-view')?.file || 
@@ -732,11 +807,21 @@ export default class ExocortexPlugin extends Plugin {
 			}
 		}
 		
-		// Sort by label
-		assets.sort((a, b) => a.label.localeCompare(b.label));
-		
-		return assets;
-	}
+                // If querying areas, filter by current focus
+                if (cleanClassName === 'ems__Area') {
+                        const focus = await this.getCurrentFocusArea();
+                        if (focus) {
+                                const filtered = await this.filterAreasByFocus(assets, focus);
+                                assets.length = 0;
+                                assets.push(...filtered);
+                        }
+                }
+
+                // Sort by label
+                assets.sort((a, b) => a.label.localeCompare(b.label));
+
+                return assets;
+        }
 }
 
 class ExocortexAssetModal extends Modal {

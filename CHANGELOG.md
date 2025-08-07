@@ -5,6 +5,11 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Command to set current focus area, limiting `ems__Area` selections to focused context.
+
 ## [0.6.2] - 2025-08-07
 
 ### 📚 Документация синхронизирована с реальностью кода!
