@@ -6,10 +6,12 @@ import { IAssetRepository } from '../../domain/repositories/IAssetRepository';
 import { IOntologyRepository } from '../../domain/repositories/IOntologyRepository';
 import { IClassViewRepository } from '../../domain/repositories/IClassViewRepository';
 import { IButtonRepository } from '../../domain/repositories/IButtonRepository';
+import { IClassLayoutRepository } from '../../domain/repositories/IClassLayoutRepository';
 import { ObsidianAssetRepository } from '../repositories/ObsidianAssetRepository';
 import { ObsidianOntologyRepository } from '../repositories/ObsidianOntologyRepository';
 import { ObsidianClassViewRepository } from '../repositories/ObsidianClassViewRepository';
 import { ObsidianButtonRepository } from '../repositories/ObsidianButtonRepository';
+import { ObsidianClassLayoutRepository } from '../repositories/ObsidianClassLayoutRepository';
 
 // Use Cases
 import { CreateAssetUseCase } from '../../application/use-cases/CreateAssetUseCase';
@@ -24,6 +26,7 @@ import { ObsidianCommandExecutor } from '../services/ObsidianCommandExecutor';
 // Presentation
 import { ButtonRenderer } from '../../presentation/components/ButtonRenderer';
 import { PropertyRenderer } from '../../presentation/components/PropertyRenderer';
+import { LayoutRenderer } from '../../presentation/renderers/LayoutRenderer';
 
 /**
  * Dependency Injection Container Setup
@@ -80,6 +83,14 @@ export class DIContainer {
         this.container.register<IButtonRepository>(
             'IButtonRepository',
             () => new ObsidianButtonRepository(this.app)
+        );
+
+        this.container.register<IClassLayoutRepository>(
+            'IClassLayoutRepository',
+            () => new ObsidianClassLayoutRepository(
+                this.app,
+                this.plugin?.settings?.layoutsFolderPath || 'layouts'
+            )
         );
 
         // Register Services
@@ -141,6 +152,15 @@ export class DIContainer {
                 this.container.resolve<PropertyEditingUseCase>('PropertyEditingUseCase')
             )
         );
+
+        this.container.register<LayoutRenderer>(
+            'LayoutRenderer',
+            () => new LayoutRenderer(
+                this.app,
+                this.container.resolve<IClassLayoutRepository>('IClassLayoutRepository'),
+                this.container.resolve<PropertyRenderer>('PropertyRenderer')
+            )
+        );
     }
 
     /**
@@ -171,6 +191,10 @@ export class DIContainer {
 
     public getPropertyRenderer(): PropertyRenderer {
         return this.resolve<PropertyRenderer>('PropertyRenderer');
+    }
+
+    public getLayoutRenderer(): LayoutRenderer {
+        return this.resolve<LayoutRenderer>('LayoutRenderer');
     }
 
     /**

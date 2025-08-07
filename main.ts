@@ -7,13 +7,17 @@ interface ExocortexSettings {
 	enableAutoLayout: boolean;
 	debugMode: boolean;
 	templateFolderPath: string;
+	layoutsFolderPath: string;
+	enableClassLayouts: boolean;
 }
 
 const DEFAULT_SETTINGS: ExocortexSettings = {
 	defaultOntology: 'exo',
 	enableAutoLayout: true,
 	debugMode: false,
-	templateFolderPath: 'templates'
+	templateFolderPath: 'templates',
+	layoutsFolderPath: 'layouts',
+	enableClassLayouts: true
 }
 
 export default class ExocortexPlugin extends Plugin {
@@ -101,7 +105,14 @@ export default class ExocortexPlugin extends Plugin {
 			return;
 		}
 
-		// Find layout for this class
+		// Use new layout system if enabled
+		if (this.settings.enableClassLayouts) {
+			const layoutRenderer = this.diContainer.getLayoutRenderer();
+			await layoutRenderer.renderLayout(ctx.container, file, metadata, dv);
+			return;
+		}
+
+		// Old system fallback
 		const layoutFile = await this.findLayoutForClass(assetClass);
 		if (!layoutFile) {
 			// Fallback to default layout
@@ -1276,6 +1287,27 @@ class ExocortexSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.templateFolderPath)
 				.onChange(async (value) => {
 					this.plugin.settings.templateFolderPath = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Layouts Folder Path')
+			.setDesc('Path to folder containing UI layout configurations')
+			.addText(text => text
+				.setPlaceholder('layouts')
+				.setValue(this.plugin.settings.layoutsFolderPath)
+				.onChange(async (value) => {
+					this.plugin.settings.layoutsFolderPath = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Enable Class-Based Layouts')
+			.setDesc('Use configurable layouts based on asset class')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableClassLayouts)
+				.onChange(async (value) => {
+					this.plugin.settings.enableClassLayouts = value;
 					await this.plugin.saveSettings();
 				}));
 

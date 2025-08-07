@@ -1,0 +1,239 @@
+import { App, TFile } from 'obsidian';
+import { ClassLayout } from '../../domain/entities/ClassLayout';
+import { QueryBlockRenderer } from './QueryBlockRenderer';
+import { PropertiesBlockRenderer } from './PropertiesBlockRenderer';
+import { BacklinksBlockRenderer } from './BacklinksBlockRenderer';
+import { CustomBlockRenderer } from './CustomBlockRenderer';
+import { GetLayoutForClassUseCase } from '../../application/use-cases/GetLayoutForClassUseCase';
+import { IClassLayoutRepository } from '../../domain/repositories/IClassLayoutRepository';
+import { PropertyRenderer } from '../components/PropertyRenderer';
+
+export class LayoutRenderer {
+    private queryRenderer: QueryBlockRenderer;
+    private propertiesRenderer: PropertiesBlockRenderer;
+    private backlinksRenderer: BacklinksBlockRenderer;
+    private customRenderer: CustomBlockRenderer;
+    private getLayoutUseCase: GetLayoutForClassUseCase;
+
+    constructor(
+        private app: App,
+        layoutRepository: IClassLayoutRepository,
+        propertyRenderer: PropertyRenderer
+    ) {
+        this.getLayoutUseCase = new GetLayoutForClassUseCase(layoutRepository);
+        this.queryRenderer = new QueryBlockRenderer(app);
+        this.propertiesRenderer = new PropertiesBlockRenderer(app, propertyRenderer);
+        this.backlinksRenderer = new BacklinksBlockRenderer(app);
+        this.customRenderer = new CustomBlockRenderer(app);
+    }
+
+    async renderLayout(
+        container: HTMLElement,
+        file: TFile,
+        metadata: any,
+        dv: any
+    ): Promise<void> {
+        const frontmatter = metadata.frontmatter;
+        const instanceClass = frontmatter['exo__Instance_class'];
+        
+        if (!instanceClass) {
+            this.renderError(container, 'No instance class defined');
+            return;
+        }
+
+        const cleanClassName = this.cleanClassName(instanceClass);
+        
+        // Get layout for this class
+        const layoutResult = await this.getLayoutUseCase.execute({
+            className: cleanClassName
+        });
+
+        if (layoutResult.isFailure) {
+            this.renderError(container, layoutResult.error);
+            return;
+        }
+
+        const { layout, fallbackUsed } = layoutResult.getValue();
+
+        if (!layout) {
+            // Use default layout
+            await this.renderDefaultLayout(container, file, metadata, dv);
+            return;
+        }
+
+        // Render custom layout
+        await this.renderCustomLayout(container, file, metadata, layout, dv);
+    }
+
+    private async renderCustomLayout(
+        container: HTMLElement,
+        file: TFile,
+        metadata: any,
+        layout: ClassLayout,
+        dv: any
+    ): Promise<void> {
+        const frontmatter = metadata.frontmatter;
+        
+        // Add layout info
+        const layoutInfo = container.createDiv({ cls: 'exocortex-layout-info' });
+        layoutInfo.style.display = 'none'; // Hidden by default
+        layoutInfo.setAttribute('data-layout-id', layout.id.toString());
+        layoutInfo.setAttribute('data-layout-class', layout.targetClass.value);
+
+        // Render each visible block
+        const visibleBlocks = layout.getVisibleBlocks();
+        
+        for (const block of visibleBlocks) {
+            const blockContainer = container.createDiv({ 
+                cls: `exocortex-block exocortex-block-${block.type}` 
+            });
+            blockContainer.setAttribute('data-block-id', block.id);
+            
+            // Add block header if title exists
+            if (block.title) {
+                const header = blockContainer.createEl('h3', { 
+                    text: block.title,
+                    cls: 'exocortex-block-header'
+                });
+                
+                // Add collapse toggle if collapsible
+                if (block.isCollapsible) {
+                    header.addClass('is-collapsible');
+                    header.addEventListener('click', () => {
+                        blockContainer.toggleClass('is-collapsed', !blockContainer.hasClass('is-collapsed'));
+                    });
+                }
+            }
+
+            // Render block content
+            const contentContainer = blockContainer.createDiv({ cls: 'exocortex-block-content' });
+            
+            try {
+                switch (block.type) {
+                    case 'query':
+                        await this.queryRenderer.render(
+                            contentContainer,
+                            block.config,
+                            file,
+                            frontmatter,
+                            dv
+                        );
+                        break;
+                        
+                    case 'properties':
+                        await this.propertiesRenderer.render(
+                            contentContainer,
+                            block.config,
+                            file,
+                            frontmatter,
+                            dv
+                        );
+                        break;
+                        
+                    case 'backlinks':
+                        await this.backlinksRenderer.render(
+                            contentContainer,
+                            block.config,
+                            file,
+                            dv
+                        );
+                        break;
+                        
+                    case 'custom':
+                        await this.customRenderer.render(
+                            contentContainer,
+                            block.config,
+                            file,
+                            frontmatter,
+                            dv
+                        );
+                        break;
+                        
+                    default:
+                        contentContainer.createEl('p', { 
+                            text: `Unknown block type: ${block.type}`,
+                            cls: 'exocortex-error'
+                        });
+                }
+            } catch (error) {
+                contentContainer.createEl('p', { 
+                    text: `Error rendering block: ${error}`,
+                    cls: 'exocortex-error'
+                });
+                console.error(`Error rendering block ${block.id}:`, error);
+            }
+        }
+    }
+
+    private async renderDefaultLayout(
+        container: HTMLElement,
+        file: TFile,
+        metadata: any,
+        dv: any
+    ): Promise<void> {
+        const frontmatter = metadata.frontmatter;
+        
+        // Properties section
+        const propsContainer = container.createDiv({ cls: 'exocortex-block exocortex-block-properties' });
+        propsContainer.createEl('h3', { text: '📝 Properties' });
+        const propsContent = propsContainer.createDiv({ cls: 'exocortex-block-content' });
+        
+        await this.propertiesRenderer.render(
+            propsContent,
+            { 
+                type: 'properties',
+                editableProperties: Object.keys(frontmatter).filter(k => !k.startsWith('exo__'))
+            },
+            file,
+            frontmatter,
+            dv
+        );
+        
+        // Relations section
+        if (frontmatter['exo__Asset_relates']) {
+            const relContainer = container.createDiv({ cls: 'exocortex-block exocortex-block-relations' });
+            relContainer.createEl('h3', { text: '🔗 Related Assets' });
+            const relContent = relContainer.createDiv({ cls: 'exocortex-block-content' });
+            
+            const relates = Array.isArray(frontmatter['exo__Asset_relates']) 
+                ? frontmatter['exo__Asset_relates'] 
+                : [frontmatter['exo__Asset_relates']];
+            
+            const list = relContent.createEl('ul');
+            relates.forEach((rel: string) => {
+                const item = list.createEl('li');
+                const link = this.cleanClassName(rel);
+                item.createEl('a', { 
+                    text: link,
+                    href: link,
+                    cls: 'internal-link'
+                });
+            });
+        }
+        
+        // Backlinks section
+        const backlinksContainer = container.createDiv({ cls: 'exocortex-block exocortex-block-backlinks' });
+        backlinksContainer.createEl('h3', { text: '📎 Referenced By' });
+        const backlinksContent = backlinksContainer.createDiv({ cls: 'exocortex-block-content' });
+        
+        await this.backlinksRenderer.render(
+            backlinksContent,
+            { type: 'backlinks' },
+            file,
+            dv
+        );
+    }
+
+    private renderError(container: HTMLElement, error: string): void {
+        container.createEl('div', { 
+            text: `Layout Error: ${error}`,
+            cls: 'exocortex-error notice-error'
+        });
+    }
+
+    private cleanClassName(className: any): string {
+        if (!className) return '';
+        const str = Array.isArray(className) ? className[0] : className;
+        return str?.toString().replace(/\[\[|\]\]/g, '') || '';
+    }
+}
