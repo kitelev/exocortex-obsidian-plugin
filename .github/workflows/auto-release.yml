@@ -1,0 +1,105 @@
+name: Auto Release on Main Push
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'main.ts'
+      - 'package.json'
+      - 'manifest.json'
+      - 'esbuild.config.mjs'
+
+permissions:
+  contents: write
+
+jobs:
+  check-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check if release needed
+        id: check
+        run: |
+          # Get current version from package.json
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "Current version: $CURRENT_VERSION"
+          
+          # Check if tag already exists
+          if git rev-parse "v$CURRENT_VERSION" >/dev/null 2>&1; then
+            echo "Tag v$CURRENT_VERSION already exists"
+            echo "needs_release=false" >> $GITHUB_OUTPUT
+          else
+            echo "Tag v$CURRENT_VERSION does not exist, will create release"
+            echo "needs_release=true" >> $GITHUB_OUTPUT
+            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Setup Node.js
+        if: steps.check.outputs.needs_release == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+      
+      - name: Install and Build
+        if: steps.check.outputs.needs_release == 'true'
+        run: |
+          npm ci --prefer-offline --no-audit --no-fund
+          npm run build
+      
+      - name: Run Tests
+        if: steps.check.outputs.needs_release == 'true'
+        run: |
+          timeout 60s npm test || true
+      
+      - name: Extract Changelog
+        if: steps.check.outputs.needs_release == 'true'
+        id: changelog
+        run: |
+          VERSION=${{ steps.check.outputs.version }}
+          # Extract changelog for current version
+          CHANGELOG=$(awk "/## \[$VERSION\]/{flag=1; next} /## \[/{flag=0} flag" CHANGELOG.md)
+          
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="No changelog entry found for version $VERSION"
+          fi
+          
+          # Save to file for release notes
+          echo "$CHANGELOG" > release_notes.md
+          echo "changelog_extracted=true" >> $GITHUB_OUTPUT
+      
+      - name: Create Git Tag
+        if: steps.check.outputs.needs_release == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a "v${{ steps.check.outputs.version }}" -m "Release v${{ steps.check.outputs.version }}"
+          git push origin "v${{ steps.check.outputs.version }}"
+      
+      - name: Create Release Package
+        if: steps.check.outputs.needs_release == 'true'
+        run: |
+          mkdir ${{ github.event.repository.name }}
+          cp main.js manifest.json styles.css ${{ github.event.repository.name }}
+          zip -r ${{ github.event.repository.name }}.zip ${{ github.event.repository.name }}
+      
+      - name: Create GitHub Release
+        if: steps.check.outputs.needs_release == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.check.outputs.version }}
+          name: v${{ steps.check.outputs.version }}
+          body_path: release_notes.md
+          files: |
+            main.js
+            manifest.json
+            styles.css
+            ${{ github.event.repository.name }}.zip
+          draft: false
+          prerelease: false

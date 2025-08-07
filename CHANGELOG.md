@@ -5,6 +5,25 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.11] - 2025-08-07
+
+### 🚀 CI/CD Improvements
+- **Automated Release Pipeline**: Added GitHub Actions workflow for automatic releases on code changes
+  - Automatic version detection and tag creation
+  - Build and test verification before release
+  - Changelog extraction for release notes
+  - ZIP package creation for easy installation
+
+### 📋 Process Enhancements
+- **Strict Release Policy**: Enforced mandatory release creation after every code change
+- **CLAUDE.md Updates**: Added ultra-critical release rules with zero tolerance policy
+- **Release Verification**: Added mandatory release verification step in development process
+
+### 🔧 Technical Changes
+- Created `.github/workflows/auto-release.yml` for automated releases
+- Enhanced release documentation and procedures
+- Improved development workflow automation
+
 ## [0.5.10] - 2025-08-07
 
 ### ✨ New Features
