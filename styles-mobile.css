@@ -7,11 +7,16 @@
     .modal.exocortex-asset-modal .modal-title {
         padding-top: calc(16px + env(safe-area-inset-top));
     }
-    
+
     .modal.exocortex-asset-modal .modal-button-container {
         padding-bottom: calc(12px + env(safe-area-inset-bottom));
     }
-    
+
+    .modal.exocortex-asset-modal .modal-form {
+        padding-left: calc(16px + env(safe-area-inset-left));
+        padding-right: calc(16px + env(safe-area-inset-right));
+    }
+
     @media screen and (max-width: 428px) {
         .modal-container {
             padding-left: env(safe-area-inset-left);
@@ -114,7 +119,7 @@
     .exocortex-mobile-fab {
         position: fixed;
         bottom: calc(20px + env(safe-area-inset-bottom));
-        right: 20px;
+        right: calc(20px + env(safe-area-inset-right));
         width: 56px;
         height: 56px;
         border-radius: 28px;
