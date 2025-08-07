@@ -21,9 +21,18 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: package-lock.json
 
-    - name: Install dependencies
-      run: npm ci
+    - name: Configure npm for CI
+      run: |
+        npm config set fetch-retries 3
+        npm config set fetch-timeout 60000
+        npm config set progress false
+
+    - name: Install dependencies with timeout
+      timeout-minutes: 5
+      run: npm ci --prefer-offline --no-audit --no-fund
 
     - name: Check TypeScript
       run: npx tsc --noEmit

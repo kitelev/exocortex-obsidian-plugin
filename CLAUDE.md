@@ -83,6 +83,7 @@ Every request in this repository must be executed as if by a highly qualified IT
 ## 📋 Mandatory Checklists
 
 ### Before Starting Any Task
+- [ ] **CRITICAL: Check GitHub workflow status and fix any failures FIRST**
 - [ ] Requirements documented with BDD scenarios
 - [ ] Acceptance criteria defined
 - [ ] Technical design reviewed
@@ -95,7 +96,7 @@ Every request in this repository must be executed as if by a highly qualified IT
 - [ ] Check for security issues
 
 ### Before Creating Release
-- [ ] All tests passing (`npm test`)
+- [ ] All tests passing (`npm test` with 60s timeout max)
 - [ ] Build successful (`npm run build`)
 - [ ] Linting passed (if configured)
 - [ ] TypeScript compilation clean
@@ -261,17 +262,19 @@ git push origin --tags
 
 ## ⚠️ Critical Reminders
 
-1. **EVERY requirement MUST have executable BDD tests**
-2. **NEVER skip the Business Analysis phase**
-3. **ALWAYS follow Clean Architecture principles**
-4. **DOCUMENT all decisions in appropriate locations**
-5. **CREATE releases after EVERY code change** 🚨 MANDATORY: После ЛЮБОГО изменения кода ВСЕГДА:
+1. **🚨 BEFORE ANY NEW TASK: Check and fix GitHub workflow failures**
+2. **⏰ ALL test runs MUST use 60-second timeout maximum**  
+3. **EVERY requirement MUST have executable BDD tests**
+4. **NEVER skip the Business Analysis phase**
+5. **ALWAYS follow Clean Architecture principles**
+6. **DOCUMENT all decisions in appropriate locations**
+7. **CREATE releases after EVERY code change** 🚨 MANDATORY: После ЛЮБОГО изменения кода ВСЕГДА:
    - Коммитить изменения с описанием
    - Обновлять версию
    - Создавать GitHub релиз
    - БЕЗ ИСКЛЮЧЕНИЙ!
-6. **WRITE tests BEFORE or WITH implementation**
-7. **THINK like a Senior IT team, not a single developer**
+8. **WRITE tests BEFORE or WITH implementation**
+9. **THINK like a Senior IT team, not a single developer**
 
 ## 🤖 SYSTEM PROMPT ENFORCEMENT
 

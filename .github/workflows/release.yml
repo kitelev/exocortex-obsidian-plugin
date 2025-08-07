@@ -19,11 +19,19 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "18.x"
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Configure npm for release
+        run: |
+          npm config set fetch-retries 3
+          npm config set fetch-timeout 60000
+          npm config set progress false
 
       - name: Build plugin
         id: build
         run: |
-          npm ci
+          timeout 5m npm ci --prefer-offline --no-audit --no-fund
           node esbuild.config.mjs production
           mkdir ${{ github.event.repository.name }}
           cp main.js manifest.json styles.css ${{ github.event.repository.name }}
