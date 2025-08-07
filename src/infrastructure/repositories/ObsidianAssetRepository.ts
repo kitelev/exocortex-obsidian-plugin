@@ -74,12 +74,24 @@ export class ObsidianAssetRepository implements IAssetRepository {
             if (Array.isArray(value)) {
                 yamlLines.push(`${key}:`);
                 for (const item of value) {
-                    yamlLines.push(`  - ${item}`);
+                    // Check if item contains wikilinks that need quotes
+                    const itemStr = String(item);
+                    if (itemStr.includes('[[') && itemStr.includes(']]')) {
+                        yamlLines.push(`  - "${itemStr}"`);
+                    } else {
+                        yamlLines.push(`  - ${itemStr}`);
+                    }
                 }
             } else if (typeof value === 'object' && value !== null) {
                 yamlLines.push(`${key}: ${JSON.stringify(value)}`);
             } else {
-                yamlLines.push(`${key}: ${value}`);
+                // Check if value contains wikilinks that need quotes
+                const valueStr = String(value);
+                if (valueStr.includes('[[') && valueStr.includes(']]')) {
+                    yamlLines.push(`${key}: "${valueStr}"`);
+                } else {
+                    yamlLines.push(`${key}: ${valueStr}`);
+                }
             }
         }
         yamlLines.push('---', '');
