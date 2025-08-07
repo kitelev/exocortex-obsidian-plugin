@@ -5,6 +5,41 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.12] - 2025-08-07
+
+### 📱 Mobile Experience Improvements
+- **iPhone 13 Pro Optimization**: Complete redesign for mobile devices
+  - Full-screen modals on mobile for better space utilization
+  - Touch-friendly 44px minimum tap targets (iOS standard)
+  - Safe area support for modern devices with notches
+  - Sticky headers and footers for better navigation
+
+### ✨ New Mobile Features
+- **Responsive Design**: Adaptive layouts for all screen sizes
+  - Automatic layout adjustments for phones (< 428px)
+  - Tablet optimizations (< 768px)
+  - Landscape mode support
+  - High DPI/Retina display support
+
+### 🎨 UI/UX Enhancements
+- **Touch Gestures**: Improved touch interaction
+  - Larger hit areas for buttons and controls
+  - Visual feedback on touch
+  - Smooth scrolling with momentum
+  - No zoom on input focus (16px font size)
+
+### 🔧 Technical Improvements
+- Created separate `styles-mobile.css` for mobile-specific styles
+- Added media queries for various breakpoints
+- Implemented CSS Grid and Flexbox for responsive layouts
+- Added support for CSS environment variables (safe areas)
+- Optimized for iOS-specific requirements
+
+### 📊 Mobile Tables
+- Tables convert to card layout on mobile
+- Horizontal scrolling for wide content
+- Improved readability with adjusted typography
+
 ## [0.5.11] - 2025-08-07
 
 ### 🚀 CI/CD Improvements

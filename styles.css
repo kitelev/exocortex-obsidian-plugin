@@ -1,5 +1,8 @@
 /* Exocortex Plugin Styles */
 
+/* Import mobile-specific styles */
+@import url('styles-mobile.css');
+
 .exocortex-ribbon-class {
     /* Custom styling for ribbon icon */
 }
@@ -733,4 +736,287 @@
     border-color: var(--interactive-accent);
     box-shadow: 0 0 0 3px rgba(var(--interactive-accent-rgb), 0.1);
     background-color: var(--background-modifier-form-field-highlighted);
+}
+
+/* ================================================
+   MOBILE RESPONSIVE STYLES
+   ================================================ */
+
+/* Mobile breakpoints */
+/* iPhone 13 Pro and similar devices (390px wide) */
+@media screen and (max-width: 428px) {
+    /* Modal adjustments for mobile */
+    .modal.exocortex-asset-modal,
+    .modal.class-tree-modal {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+    }
+    
+    .modal.exocortex-asset-modal .modal-content {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .modal.exocortex-asset-modal .modal-title {
+        font-size: 1.1rem;
+        padding: 16px 16px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--background-primary);
+    }
+    
+    .modal.exocortex-asset-modal .modal-form {
+        padding: 16px;
+        flex: 1;
+        overflow-y: auto;
+    }
+    
+    /* Reduce padding and margins */
+    .modal.exocortex-asset-modal .setting-item {
+        padding: 12px 0;
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .modal.exocortex-asset-modal .setting-item-info {
+        margin-right: 0;
+        margin-bottom: 8px;
+    }
+    
+    .modal.exocortex-asset-modal .setting-item-control {
+        min-width: unset;
+        width: 100%;
+    }
+    
+    /* Properties container optimization */
+    .exocortex-properties-container {
+        max-height: 40vh;
+        padding: 8px;
+        margin-bottom: 12px;
+    }
+    
+    .exocortex-properties-header {
+        margin-top: 16px;
+        margin-bottom: 12px;
+        padding-top: 16px;
+        font-size: 1rem;
+    }
+    
+    /* Button container for mobile */
+    .modal.exocortex-asset-modal .modal-button-container {
+        padding: 12px 16px;
+        position: sticky;
+        bottom: 0;
+        background-color: var(--background-primary);
+        z-index: 10;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .modal.exocortex-asset-modal button {
+        padding: 10px 16px;
+        font-size: 0.95rem;
+        flex: 1;
+    }
+    
+    /* Layout blocks optimization */
+    .exocortex-layout-container {
+        padding: 0.5rem;
+        margin: 0.25rem 0;
+    }
+    
+    .exocortex-layout-block {
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Property table responsive */
+    .exocortex-property-table {
+        font-size: 0.85rem;
+    }
+    
+    .exocortex-property-table th,
+    .exocortex-property-table td {
+        padding: 0.35rem;
+    }
+    
+    /* Make tables scrollable horizontally */
+    .exocortex-property-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    
+    /* Button container responsive */
+    .exocortex-button-container {
+        padding: 8px;
+        gap: 6px;
+    }
+    
+    .exocortex-ui-button {
+        min-width: auto;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+        flex: 1 1 auto;
+    }
+    
+    /* Class tree adjustments */
+    .class-tree-container {
+        max-height: calc(100vh - 250px);
+        padding: 8px;
+    }
+    
+    .class-tree-node-content {
+        padding: 8px 6px;
+    }
+    
+    .class-tree-name {
+        font-size: 0.95rem;
+    }
+    
+    .class-tree-ontology {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+    }
+    
+    /* Inline property editing for mobile */
+    .exocortex-properties-editable {
+        padding: 8px;
+        margin: 8px 0;
+    }
+    
+    .exocortex-property-item {
+        padding: 10px;
+        margin-bottom: 6px;
+    }
+    
+    .exocortex-property-label {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+    
+    .exocortex-property-value-readonly {
+        padding: 8px 10px;
+        font-size: 0.95rem;
+    }
+    
+    .exocortex-edit-control input,
+    .exocortex-edit-control select,
+    .exocortex-edit-control textarea {
+        padding: 8px 10px;
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+    
+    /* Touch-friendly tap targets */
+    button,
+    .exocortex-ui-button,
+    .class-selector-button,
+    .exocortex-property-value-readonly,
+    select,
+    input[type="text"],
+    input[type="number"],
+    textarea {
+        min-height: 44px; /* iOS recommended touch target size */
+    }
+    
+    /* Fix dropdown for mobile */
+    select {
+        font-size: 16px; /* Prevents zoom on iOS */
+        -webkit-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg width='14' height='8' viewBox='0 0 14 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M1 1L7 7L13 1' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        padding-right: 30px;
+    }
+}
+
+/* Tablet and small desktop (up to 768px) */
+@media screen and (max-width: 768px) {
+    .modal.exocortex-asset-modal,
+    .modal.class-tree-modal {
+        width: 95vw;
+        max-width: 95vw;
+    }
+    
+    .exocortex-layout-container {
+        padding: 0.75rem;
+    }
+    
+    .modal.exocortex-asset-modal .setting-item-control {
+        min-width: 200px;
+    }
+    
+    /* Stack form elements on tablets */
+    @media screen and (max-width: 600px) {
+        .modal.exocortex-asset-modal .setting-item {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .modal.exocortex-asset-modal .setting-item-info {
+            margin-right: 0;
+            margin-bottom: 8px;
+        }
+        
+        .modal.exocortex-asset-modal .setting-item-control {
+            width: 100%;
+        }
+    }
+}
+
+/* Landscape mode adjustments */
+@media screen and (max-height: 500px) {
+    .modal.exocortex-asset-modal .modal-title {
+        padding: 12px 16px;
+        font-size: 1rem;
+    }
+    
+    .exocortex-properties-container {
+        max-height: 30vh;
+    }
+    
+    .class-tree-container {
+        max-height: calc(60vh - 150px);
+    }
+    
+    .modal.exocortex-asset-modal .modal-button-container {
+        padding: 8px 16px;
+    }
+    
+    .modal.exocortex-asset-modal button {
+        padding: 6px 12px;
+    }
+}
+
+/* High DPI screens (Retina) */
+@media screen and (-webkit-min-device-pixel-ratio: 2),
+       screen and (min-resolution: 192dpi) {
+    /* Ensure crisp borders and text */
+    .exocortex-layout-block,
+    .exocortex-property-item,
+    .modal.exocortex-asset-modal .setting-item {
+        border-width: 0.5px;
+    }
+}
+
+/* Accessibility: Prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* Dark mode specific mobile adjustments */
+@media screen and (max-width: 428px) and (prefers-color-scheme: dark) {
+    .modal.exocortex-asset-modal .modal-button-container,
+    .modal.exocortex-asset-modal .modal-title {
+        box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.3);
+    }
 }
