@@ -5,6 +5,18 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.10] - 2025-08-07
+
+### ✨ New Features
+- **Claude Code GitHub Integration**: Added GitHub Action workflow for AI-powered code reviews and assistance
+  - Automatic code review on pull requests
+  - AI-powered assistance for issues and PRs
+  - Seamless integration with Claude API
+
+### 🚀 Improvements
+- **Development Workflow**: Enhanced CI/CD pipeline with Claude Code support
+- **Code Quality**: Automated AI-driven code analysis and suggestions
+
 ## [0.5.9] - 2025-08-07
 
 ### 🔧 Fixed
