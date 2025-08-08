@@ -1,162 +1,191 @@
 import { Plugin, Notice, MarkdownPostProcessorContext } from 'obsidian';
 
-interface Triple {
-    subject: string;
-    predicate: string;
-    object: string;
-}
-
-interface QueryResult {
-    [key: string]: string;
-}
-
 export default class ExocortexPlugin extends Plugin {
     
     async onload(): Promise<void> {
-        console.log('Exocortex: Loading SPARQL plugin...');
+        console.log('🚀 Exocortex: Loading SPARQL plugin v2.0...');
         
         // Register SPARQL code block processor
-        this.registerMarkdownCodeBlockProcessor('sparql', this.processSPARQLBlock.bind(this));
+        this.registerMarkdownCodeBlockProcessor('sparql', this.processSPARQL.bind(this));
         
-        new Notice('Exocortex: SPARQL support enabled!');
-        console.log('Exocortex: SPARQL processor registered successfully');
+        new Notice('🔍 Exocortex: SPARQL support enabled!');
+        console.log('✅ Exocortex: SPARQL processor registered');
     }
     
-    async processSPARQLBlock(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext): Promise<void> {
-        console.log('SPARQL query received:', source);
+    async processSPARQL(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext): Promise<void> {
+        console.log('🔍 SPARQL query received:', source);
         
-        // Clear element
         el.empty();
         
-        // Create container
-        const container = el.createDiv();
-        container.style.border = '1px solid #ccc';
-        container.style.padding = '10px';
-        container.style.margin = '10px 0';
-        container.style.borderRadius = '5px';
+        // Create styled container
+        const container = el.createDiv({
+            cls: 'exocortex-sparql-container'
+        });
         
-        // Title
-        const title = container.createEl('h4');
+        // Add styles
+        container.style.cssText = `
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            background: #f8f9ff;
+        `;
+        
+        // Title with emoji
+        const title = container.createEl('h3');
         title.textContent = '🔍 SPARQL Query Results';
-        title.style.color = '#4a90e2';
-        title.style.marginTop = '0';
+        title.style.cssText = `
+            color: #4a90e2;
+            margin: 0 0 12px 0;
+            font-size: 18px;
+        `;
         
-        // Show the query
-        const querySection = container.createDiv();
-        querySection.style.marginBottom = '15px';
+        // Show query
+        const queryDiv = container.createDiv();
+        queryDiv.style.marginBottom = '16px';
         
-        const queryLabel = querySection.createEl('strong');
+        const queryLabel = queryDiv.createEl('strong');
         queryLabel.textContent = 'Query:';
         queryLabel.style.display = 'block';
-        queryLabel.style.marginBottom = '5px';
+        queryLabel.style.marginBottom = '8px';
         
-        const queryPre = querySection.createEl('pre');
+        const queryPre = queryDiv.createEl('pre');
         queryPre.textContent = source;
-        queryPre.style.backgroundColor = '#f5f5f5';
-        queryPre.style.padding = '10px';
-        queryPre.style.borderRadius = '3px';
-        queryPre.style.fontSize = '12px';
-        queryPre.style.overflow = 'auto';
+        queryPre.style.cssText = `
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            border-left: 4px solid #4a90e2;
+        `;
         
         try {
-            // Execute query
+            // Execute SPARQL
+            const startTime = Date.now();
             const results = await this.executeSPARQL(source);
+            const execTime = Date.now() - startTime;
+            
+            console.log(`✅ SPARQL executed in ${execTime}ms, ${results.length} results`);
             
             // Results section
-            const resultsSection = container.createDiv();
-            const resultsLabel = resultsSection.createEl('strong');
-            resultsLabel.textContent = 'Results:';
-            resultsLabel.style.display = 'block';
-            resultsLabel.style.marginBottom = '10px';
+            const resultsDiv = container.createDiv();
             
             if (results && results.length > 0) {
-                // Create table
-                const table = resultsSection.createEl('table');
-                table.style.width = '100%';
-                table.style.borderCollapse = 'collapse';
-                table.style.marginBottom = '10px';
+                const resultsLabel = resultsDiv.createEl('strong');
+                resultsLabel.textContent = `Results (${results.length} found):`;
+                resultsLabel.style.cssText = 'display: block; margin-bottom: 8px; color: #2d5aa0;';
                 
-                // Table header
+                // Create table
+                const table = resultsDiv.createEl('table');
+                table.style.cssText = `
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 8px 0;
+                    background: white;
+                    border-radius: 4px;
+                    overflow: hidden;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                `;
+                
+                // Header
                 const thead = table.createEl('thead');
                 const headerRow = thead.createEl('tr');
-                const columns = Object.keys(results[0]);
+                headerRow.style.background = '#4a90e2';
                 
+                const columns = Object.keys(results[0]);
                 columns.forEach(col => {
                     const th = headerRow.createEl('th');
                     th.textContent = col;
-                    th.style.border = '1px solid #ddd';
-                    th.style.padding = '8px';
-                    th.style.backgroundColor = '#f9f9f9';
-                    th.style.textAlign = 'left';
+                    th.style.cssText = `
+                        padding: 12px;
+                        text-align: left;
+                        color: white;
+                        font-weight: bold;
+                        border: none;
+                    `;
                 });
                 
-                // Table body
+                // Body
                 const tbody = table.createEl('tbody');
-                results.forEach((row, index) => {
+                results.forEach((row, idx) => {
                     const tr = tbody.createEl('tr');
-                    if (index % 2 === 0) {
-                        tr.style.backgroundColor = '#f9f9f9';
+                    if (idx % 2 === 0) {
+                        tr.style.background = '#f8f9ff';
                     }
+                    tr.style.borderBottom = '1px solid #e0e0e0';
                     
                     columns.forEach(col => {
                         const td = tr.createEl('td');
                         const value = row[col] || '';
-                        td.textContent = value;
-                        td.style.border = '1px solid #ddd';
-                        td.style.padding = '8px';
+                        td.style.cssText = `
+                            padding: 10px 12px;
+                            border: none;
+                            vertical-align: top;
+                        `;
                         
-                        // Make file links clickable
                         if (value.includes('file://')) {
-                            td.style.color = '#4a90e2';
-                            td.style.cursor = 'pointer';
-                            td.onclick = () => {
-                                const filename = value.replace('file://', '');
-                                this.app.workspace.openLinkText(filename, '');
+                            const link = td.createEl('a');
+                            link.textContent = value.replace('file://', '');
+                            link.style.cssText = 'color: #4a90e2; cursor: pointer; text-decoration: underline;';
+                            link.onclick = () => {
+                                this.app.workspace.openLinkText(value.replace('file://', ''), '');
                             };
+                        } else {
+                            td.textContent = value;
                         }
                     });
                 });
                 
                 // Stats
-                const stats = resultsSection.createEl('div');
-                stats.textContent = `Found ${results.length} result(s)`;
-                stats.style.fontSize = '12px';
-                stats.style.color = '#666';
-                stats.style.fontStyle = 'italic';
+                const stats = resultsDiv.createEl('div');
+                stats.textContent = `⚡ Executed in ${execTime}ms`;
+                stats.style.cssText = `
+                    font-size: 12px;
+                    color: #666;
+                    margin-top: 8px;
+                    font-style: italic;
+                `;
+                
             } else {
-                const noResults = resultsSection.createEl('p');
-                noResults.textContent = 'No results found';
-                noResults.style.color = '#666';
-                noResults.style.fontStyle = 'italic';
+                const noResults = resultsDiv.createEl('div');
+                noResults.innerHTML = '📭 <strong>No results found</strong>';
+                noResults.style.cssText = `
+                    padding: 20px;
+                    text-align: center;
+                    color: #666;
+                    background: #f0f0f0;
+                    border-radius: 4px;
+                `;
             }
             
         } catch (error: any) {
-            // Error section
-            const errorSection = container.createDiv();
-            errorSection.style.color = '#e74c3c';
-            errorSection.style.marginTop = '10px';
+            console.error('❌ SPARQL error:', error);
             
-            const errorLabel = errorSection.createEl('strong');
-            errorLabel.textContent = 'Error:';
-            errorLabel.style.display = 'block';
-            errorLabel.style.marginBottom = '5px';
+            const errorDiv = container.createDiv();
+            errorDiv.style.cssText = `
+                background: #ffebee;
+                border: 2px solid #f44336;
+                border-radius: 4px;
+                padding: 16px;
+                margin-top: 16px;
+            `;
             
-            const errorMsg = errorSection.createEl('p');
-            errorMsg.textContent = error.message || 'Unknown error occurred';
-            errorMsg.style.margin = '0';
-            
-            console.error('SPARQL error:', error);
+            errorDiv.innerHTML = `
+                <strong style="color: #f44336;">❌ SPARQL Error:</strong><br>
+                <span style="color: #d32f2f;">${error.message}</span>
+            `;
         }
     }
     
-    async executeSPARQL(query: string): Promise<QueryResult[]> {
-        console.log('Executing SPARQL query:', query);
+    async executeSPARQL(query: string): Promise<any[]> {
+        console.log('🔄 Executing SPARQL:', query);
         
-        // Get all markdown files
         const files = this.app.vault.getMarkdownFiles();
-        const triples: Triple[] = [];
+        const triples: any[] = [];
         
-        // Extract RDF triples from frontmatter
+        // Extract triples from files
         for (const file of files) {
             try {
                 const content = await this.app.vault.read(file);
@@ -166,36 +195,32 @@ export default class ExocortexPlugin extends Plugin {
                     const frontmatter = this.parseFrontmatter(frontmatterMatch[1]);
                     const subject = `file://${file.basename}`;
                     
-                    for (const [key, value] of Object.entries(frontmatter)) {
+                    Object.entries(frontmatter).forEach(([key, value]) => {
                         if (Array.isArray(value)) {
                             value.forEach((v: any) => {
                                 triples.push({
-                                    subject: subject,
+                                    subject,
                                     predicate: key,
                                     object: String(v)
                                 });
                             });
                         } else {
                             triples.push({
-                                subject: subject,
+                                subject,
                                 predicate: key,
                                 object: String(value)
                             });
                         }
-                    }
+                    });
                 }
-            } catch (error) {
-                console.warn(`Failed to process ${file.path}:`, error);
+            } catch (err) {
+                console.warn(`Failed to process ${file.path}:`, err);
             }
         }
         
-        console.log(`Extracted ${triples.length} triples from ${files.length} files`);
+        console.log(`📊 Extracted ${triples.length} triples from ${files.length} files`);
         
-        // Simple query processing
-        const results = this.processQuery(query, triples);
-        console.log(`Query returned ${results.length} results`);
-        
-        return results;
+        return this.processQuery(query, triples);
     }
     
     parseFrontmatter(yaml: string): Record<string, any> {
@@ -204,29 +229,27 @@ export default class ExocortexPlugin extends Plugin {
         
         for (const line of lines) {
             const trimmed = line.trim();
-            if (!trimmed) continue;
+            if (!trimmed || !trimmed.includes(':')) continue;
             
-            if (trimmed.includes(':')) {
-                const [key, ...valueParts] = trimmed.split(':');
-                const value = valueParts.join(':').trim().replace(/["']/g, '');
-                
-                if (value) {
-                    result[key.trim()] = value;
-                }
+            const [key, ...valueParts] = trimmed.split(':');
+            const value = valueParts.join(':').trim().replace(/["']/g, '');
+            
+            if (value) {
+                result[key.trim()] = value;
             }
         }
         
         return result;
     }
     
-    processQuery(query: string, triples: Triple[]): QueryResult[] {
-        const results: QueryResult[] = [];
+    processQuery(query: string, triples: any[]): any[] {
+        const results: any[] = [];
         
         try {
-            // Extract variables from SELECT clause
+            // Basic SELECT parsing
             const selectMatch = query.match(/SELECT\s+(.*?)\s+WHERE/i);
             if (!selectMatch) {
-                return [{ error: 'Invalid SELECT query' }];
+                throw new Error('Only SELECT queries supported');
             }
             
             const selectClause = selectMatch[1].trim();
@@ -236,77 +259,65 @@ export default class ExocortexPlugin extends Plugin {
                 variables = ['subject', 'predicate', 'object'];
             } else {
                 const varMatches = selectClause.match(/\?\w+/g);
-                if (varMatches) {
-                    variables = varMatches.map(v => v.substring(1));
-                }
+                variables = varMatches ? varMatches.map(v => v.substring(1)) : [];
             }
             
+            // Apply LIMIT
+            const limitMatch = query.match(/LIMIT\s+(\d+)/i);
+            const limit = limitMatch ? parseInt(limitMatch[1]) : 50;
+            
             // Simple pattern matching
-            if (query.toLowerCase().includes('task')) {
-                // Filter for tasks
-                const taskTriples = triples.filter(t => 
-                    t.object.includes('Task') || 
-                    t.predicate.includes('Instance_class') ||
-                    t.subject.includes('Task')
-                );
+            const limitedTriples = triples.slice(0, limit);
+            
+            limitedTriples.forEach(triple => {
+                const result: any = {};
                 
-                taskTriples.forEach(triple => {
-                    const result: QueryResult = {};
-                    if (variables.includes('subject') || variables.includes('s')) {
-                        result.subject = triple.subject;
-                    }
-                    if (variables.includes('predicate') || variables.includes('p')) {
-                        result.predicate = triple.predicate;
-                    }
-                    if (variables.includes('object') || variables.includes('o')) {
-                        result.object = triple.object;
-                    }
-                    if (variables.includes('task')) {
-                        result.task = triple.subject;
-                    }
-                    if (variables.includes('status') && triple.predicate.includes('status')) {
-                        result.status = triple.object;
-                    }
-                    if (variables.includes('label') && triple.predicate.includes('label')) {
-                        result.label = triple.object;
-                    }
-                    
-                    if (Object.keys(result).length > 0) {
-                        results.push(result);
+                variables.forEach(variable => {
+                    switch(variable) {
+                        case 'subject':
+                        case 's':
+                            result[variable] = triple.subject;
+                            break;
+                        case 'predicate': 
+                        case 'p':
+                            result[variable] = triple.predicate;
+                            break;
+                        case 'object':
+                        case 'o':
+                            result[variable] = triple.object;
+                            break;
+                        case 'task':
+                            if (triple.predicate.includes('Instance_class') && triple.object.includes('Task')) {
+                                result[variable] = triple.subject;
+                            }
+                            break;
+                        case 'status':
+                            if (triple.predicate.includes('status')) {
+                                result[variable] = triple.object;
+                            }
+                            break;
+                        case 'label':
+                            if (triple.predicate.includes('label')) {
+                                result[variable] = triple.object;
+                            }
+                            break;
                     }
                 });
-            } else {
-                // Return all triples (limited)
-                const limit = query.match(/LIMIT\s+(\d+)/i);
-                const maxResults = limit ? parseInt(limit[1]) : 20;
                 
-                triples.slice(0, maxResults).forEach(triple => {
-                    const result: QueryResult = {};
-                    if (variables.includes('subject') || variables.includes('s')) {
-                        result.s = triple.subject;
-                    }
-                    if (variables.includes('predicate') || variables.includes('p')) {
-                        result.p = triple.predicate;
-                    }
-                    if (variables.includes('object') || variables.includes('o')) {
-                        result.o = triple.object;
-                    }
-                    
-                    if (Object.keys(result).length > 0) {
-                        results.push(result);
-                    }
-                });
-            }
+                if (Object.keys(result).length > 0) {
+                    results.push(result);
+                }
+            });
             
         } catch (error: any) {
             console.error('Query processing error:', error);
-            return [{ error: error.message }];
+            throw error;
         }
         
         return results;
     }
     
     async onunload(): Promise<void> {
-        console.log('Exocortex: Plugin unloaded');
+        console.log('👋 Exocortex: Plugin unloaded');
     }
 }
