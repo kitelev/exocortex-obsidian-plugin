@@ -31,8 +31,8 @@ export interface KnowledgeObjectProps {
  * 4. Validatable: SHACL shapes ensure data integrity
  */
 export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
-  private constructor(props: KnowledgeObjectProps, id?: string) {
-    super(props, id ?? props.uuid);
+  private constructor(props: KnowledgeObjectProps) {
+    super(props);
   }
 
   /**
@@ -122,7 +122,7 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
       updatedAt
     };
     
-    return Result.ok(new KnowledgeObject(props, uuid));
+    return Result.ok(new KnowledgeObject(props));
   }
 
   /**
@@ -370,7 +370,7 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
       updatedAt: this.props.updatedAt
     };
     
-    return new KnowledgeObject(props, this.props.uuid);
+    return new KnowledgeObject(props);
   }
 
   /**

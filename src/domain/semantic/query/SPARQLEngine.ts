@@ -22,6 +22,8 @@ export interface TriplePattern {
   object: string | IRI | BlankNode | Literal;
 }
 
+type PatternNode = string | IRI | BlankNode | Literal;
+
 /**
  * SPARQL Query Engine
  * Supports basic graph pattern matching with optional filters
@@ -244,13 +246,22 @@ export class SPARQLEngine {
 
     if (!subject || !predicate || !object) return null;
 
-    return { subject, predicate, object };
+    // Cast to appropriate types for the pattern
+    const subjectNode = subject as string | IRI | BlankNode;
+    const predicateNode = predicate as string | IRI;
+    const objectNode = object as string | IRI | BlankNode | Literal;
+
+    return { 
+      subject: subjectNode, 
+      predicate: predicateNode, 
+      object: objectNode 
+    };
   }
 
   /**
    * Parse a node (IRI, variable, or literal)
    */
-  private parseNode(str: string): string | IRI | Literal | null {
+  private parseNode(str: string): string | IRI | BlankNode | Literal | null {
     if (!str) return null;
 
     // Variable

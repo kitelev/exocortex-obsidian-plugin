@@ -37,4 +37,14 @@ export interface IVaultAdapter {
    * Get file metadata
    */
   getMetadata(path: string): Promise<Record<string, any> | null>;
+
+  /**
+   * Get all files in the vault
+   */
+  getFiles(): Promise<any[]>;
+
+  /**
+   * Get metadata for a specific file object
+   */
+  getFileMetadata(file: any): Promise<any>;
 }

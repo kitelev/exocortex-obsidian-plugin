@@ -3,7 +3,7 @@
  * Supports OWL ontologies with class hierarchies, properties, and constraints
  */
 
-import { IRI, RDFS, OWL, XSD } from '../core/Triple';
+import { IRI, RDF, RDFS, OWL, XSD } from '../core/Triple';
 import { Graph } from '../core/Graph';
 import { Result } from '../../core/Result';
 

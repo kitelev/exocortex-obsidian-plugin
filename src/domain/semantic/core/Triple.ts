@@ -101,9 +101,13 @@ export class Literal {
   }
 
   equals(other: Literal): boolean {
+    const datatypeEquals = this.datatype && other.datatype 
+      ? this.datatype.equals(other.datatype)
+      : this.datatype === other.datatype;
+    
     return (
       this.value === other.value &&
-      this.datatype?.equals(other.datatype) &&
+      datatypeEquals &&
       this.language === other.language
     );
   }

@@ -66,4 +66,17 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
     const cache = this.metadataCache.getFileCache(file);
     return cache?.frontmatter || null;
   }
+
+  async getFiles(): Promise<any[]> {
+    return this.vault.getFiles();
+  }
+
+  async getFileMetadata(file: any): Promise<any> {
+    if (!(file instanceof TFile)) {
+      return null;
+    }
+    
+    const cache = this.metadataCache.getFileCache(file);
+    return cache || null;
+  }
 }
