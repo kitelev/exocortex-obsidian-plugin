@@ -1,5 +1,6 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, WorkspaceLeaf } from 'obsidian';
 import { ClassTreeModal } from './src/presentation/modals/ClassTreeModal';
+import { EffortSearchModal } from './src/presentation/modals/EffortSearchModal';
 import { DIContainer } from './src/infrastructure/container/DIContainer';
 
 interface ExocortexSettings {
@@ -50,17 +51,39 @@ export default class ExocortexPlugin extends Plugin {
 			}
 		});
 
-		// Add command to refresh layouts
-		this.addCommand({
-			id: 'refresh-exo-layouts',
-			name: 'Refresh Exocortex Layouts',
-			callback: () => {
-				this.refreshAllLayouts();
-			}
-		});
+                // Add command to refresh layouts
+                this.addCommand({
+                        id: 'refresh-exo-layouts',
+                        name: 'Refresh Exocortex Layouts',
+                        callback: () => {
+                                this.refreshAllLayouts();
+                        }
+                });
 
-		// Add settings tab
-		this.addSettingTab(new ExocortexSettingTab(this.app, this));
+                // Add command to search and insert Effort link
+                this.addCommand({
+                        id: 'search-efforts',
+                        name: 'Search Efforts',
+                        editorCallback: async (editor: Editor) => {
+                                const efforts = await this.findAssetsByClass('ems__Effort');
+                                const lastOpen: string[] = (this.app.workspace as any).getLastOpenFiles?.() || [];
+                                efforts.sort((a, b) => {
+                                        const ia = lastOpen.indexOf(a.path);
+                                        const ib = lastOpen.indexOf(b.path);
+                                        const va = ia === -1 ? Number.MAX_SAFE_INTEGER : ia;
+                                        const vb = ib === -1 ? Number.MAX_SAFE_INTEGER : ib;
+                                        return va - vb;
+                                });
+                                const modal = new EffortSearchModal(this.app, efforts, (effort) => {
+                                        const link = `[[${effort.path.replace(/\.md$/, '')}]]`;
+                                        editor.replaceSelection(link);
+                                });
+                                modal.open();
+                        }
+                });
+
+                // Add settings tab
+                this.addSettingTab(new ExocortexSettingTab(this.app, this));
 
 		// Register interval for auto-refresh if enabled
 		if (this.settings.enableAutoLayout) {
