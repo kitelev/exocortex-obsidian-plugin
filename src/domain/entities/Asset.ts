@@ -115,7 +115,7 @@ export class Asset extends Entity<AssetProps> {
     const frontmatter: Record<string, any> = {
       'exo__Asset_uid': this.props.id.toString(),
       'exo__Asset_label': this.props.title,
-      'exo__Asset_isDefinedBy': `[[${this.props.ontology.toFileName()}]]`,
+      'exo__Asset_isDefinedBy': `[[!${this.props.ontology.toString()}]]`,
       'exo__Asset_createdAt': this.props.createdAt.toISOString(),
       'exo__Instance_class': [this.props.className.toWikiLink()]
     };
@@ -171,6 +171,8 @@ export class Asset extends Entity<AssetProps> {
         // Update timestamps
         (asset as any).props.createdAt = createdAt;
         return asset;
+      } else {
+        console.warn('Failed to create asset from frontmatter:', result.error);
       }
       
       return null;

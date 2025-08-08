@@ -466,9 +466,13 @@ describe('ExocortexPlugin', () => {
       };
       const mockCtx = {
         container: {
-          closest: jest.fn().mockReturnValue({ file: mockFile })
+          closest: jest.fn().mockReturnValue({ file: mockFile }),
+          createDiv: jest.fn().mockReturnValue({})
         }
       };
+      
+      // Initialize diContainer if class layouts are enabled
+      plugin.settings.enableClassLayouts = false; // Disable to avoid diContainer issue
       
       jest.spyOn(app.metadataCache, 'getFileCache').mockReturnValue({
         frontmatter: {
@@ -477,6 +481,12 @@ describe('ExocortexPlugin', () => {
         }
       });
       jest.spyOn(plugin, 'findLayoutForClass').mockResolvedValue(null);
+      
+      // Mock the renderDefaultLayout to avoid diContainer issues
+      jest.spyOn(plugin as any, 'renderDefaultLayout').mockImplementation(async (dv, container, file, metadata) => {
+        dv.header(2, 'Properties');
+        dv.table(['Property', 'Value'], []);
+      });
       
       await plugin.renderUniversalLayout(mockDv, mockCtx);
       

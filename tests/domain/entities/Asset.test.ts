@@ -77,10 +77,13 @@ describe('Asset Entity', () => {
       asset = result.getValue()!;
     });
 
-    it('should update title', () => {
+    it('should update title', async () => {
       // Given
       const newTitle = 'Updated Title';
       const originalUpdatedAt = asset.getUpdatedAt();
+      
+      // Wait a moment to ensure time difference
+      await new Promise(resolve => setTimeout(resolve, 2));
       
       // When
       asset.updateTitle(newTitle);
@@ -112,7 +115,7 @@ describe('Asset Entity', () => {
 
     it('should change class', () => {
       // Given
-      const newClass = new ClassName('ems__Task');
+      const newClass = ClassName.create('ems__Task').getValue()!;
       
       // When
       asset.changeClass(newClass);
@@ -125,15 +128,22 @@ describe('Asset Entity', () => {
   describe('Serialization', () => {
     it('should convert to frontmatter', () => {
       // Given
-      const asset = new Asset({
-        title: 'Test Asset',
-        className: new ClassName('ems__Task'),
-        ontologyPrefix: new OntologyPrefix('ems'),
-        properties: new Map([
-          ['ems__Task_status', 'todo'],
-          ['ems__Task_priority', 'high']
-        ])
+      const id = AssetId.generate();
+      const className = ClassName.create('ems__Task').getValue()!;
+      const ontology = OntologyPrefix.create('ems').getValue()!;
+      
+      const assetResult = Asset.create({
+        id,
+        label: 'Test Asset',
+        className,
+        ontology,
+        properties: {
+          'ems__Task_status': 'todo',
+          'ems__Task_priority': 'high'
+        }
       });
+      
+      const asset = assetResult.getValue()!;
       
       // When
       const frontmatter = asset.toFrontmatter();
@@ -151,7 +161,7 @@ describe('Asset Entity', () => {
       const frontmatter = {
         'exo__Asset_uid': 'test-id-123',
         'exo__Asset_label': 'Test Asset',
-        'exo__Asset_isDefinedBy': '[[!ems]]',
+        'exo__Asset_isDefinedBy': '[[ems]]',
         'exo__Instance_class': ['[[ems__Task]]'],
         'exo__Asset_createdAt': '2024-01-01T00:00:00.000Z',
         'ems__Task_status': 'done'
@@ -189,17 +199,21 @@ describe('Asset Entity - FIRST Principles', () => {
 
   // Independent - Tests don't depend on each other
   it('should not affect other asset instances', () => {
-    const asset1 = new Asset({
-      title: 'Asset 1',
-      className: new ClassName('exo__Asset'),
-      ontologyPrefix: new OntologyPrefix('exo')
+    const asset1Result = Asset.create({
+      id: AssetId.generate(),
+      label: 'Asset 1',
+      className: ClassName.create('exo__Asset').getValue()!,
+      ontology: OntologyPrefix.create('exo').getValue()!
     });
+    const asset1 = asset1Result.getValue()!;
     
-    const asset2 = new Asset({
-      title: 'Asset 2',
-      className: new ClassName('exo__Asset'),
-      ontologyPrefix: new OntologyPrefix('exo')
+    const asset2Result = Asset.create({
+      id: AssetId.generate(),
+      label: 'Asset 2',
+      className: ClassName.create('exo__Asset').getValue()!,
+      ontology: OntologyPrefix.create('exo').getValue()!
     });
+    const asset2 = asset2Result.getValue()!;
     
     asset1.setProperty('prop', 'value1');
     asset2.setProperty('prop', 'value2');
@@ -210,11 +224,13 @@ describe('Asset Entity - FIRST Principles', () => {
 
   // Repeatable - Same results every run
   it('should generate consistent IDs', () => {
-    const asset = new Asset({
-      title: 'Repeatable Test',
-      className: new ClassName('exo__Asset'),
-      ontologyPrefix: new OntologyPrefix('exo')
+    const assetResult = Asset.create({
+      id: AssetId.generate(),
+      label: 'Repeatable Test',
+      className: ClassName.create('exo__Asset').getValue()!,
+      ontology: OntologyPrefix.create('exo').getValue()!
     });
+    const asset = assetResult.getValue()!;
     
     const id1 = asset.getId().toString();
     const id2 = asset.getId().toString();
@@ -224,33 +240,37 @@ describe('Asset Entity - FIRST Principles', () => {
 
   // Self-Validating - Clear pass/fail
   it('should clearly validate required fields', () => {
-    const validAsset = () => new Asset({
-      title: 'Valid',
-      className: new ClassName('exo__Asset'),
-      ontologyPrefix: new OntologyPrefix('exo')
+    const validAsset = () => Asset.create({
+      id: AssetId.generate(),
+      label: 'Valid',
+      className: ClassName.create('exo__Asset').getValue()!,
+      ontology: OntologyPrefix.create('exo').getValue()!
     });
     
-    const invalidAsset = () => new Asset({
-      title: '',
-      className: new ClassName('exo__Asset'),
-      ontologyPrefix: new OntologyPrefix('exo')
+    const invalidAsset = () => Asset.create({
+      id: AssetId.generate(),
+      label: '',
+      className: ClassName.create('exo__Asset').getValue()!,
+      ontology: OntologyPrefix.create('exo').getValue()!
     });
     
-    expect(validAsset).not.toThrow();
-    expect(invalidAsset).toThrow();
+    expect(validAsset().isSuccess).toBe(true);
+    expect(invalidAsset().isFailure).toBe(true);
   });
 
   // Timely - Written with the code
   it('should test current implementation', () => {
-    const asset = new Asset({
-      title: 'Current Implementation',
-      className: new ClassName('exo__Asset'),
-      ontologyPrefix: new OntologyPrefix('exo')
+    const assetResult = Asset.create({
+      id: AssetId.generate(),
+      label: 'Current Implementation',
+      className: ClassName.create('exo__Asset').getValue()!,
+      ontology: OntologyPrefix.create('exo').getValue()!
     });
+    const asset = assetResult.getValue()!;
     
     // Tests match current implementation
-    expect(asset).toHaveProperty('title');
-    expect(asset).toHaveProperty('className');
-    expect(asset).toHaveProperty('ontologyPrefix');
+    expect(asset.getTitle()).toBe('Current Implementation');
+    expect(asset.getClassName()).toBeDefined();
+    expect(asset.getOntologyPrefix()).toBeDefined();
   });
 });
