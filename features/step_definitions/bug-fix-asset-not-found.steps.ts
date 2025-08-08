@@ -1,6 +1,7 @@
 import { Given, When, Then, Before, After } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
-import { ExocortexPlugin } from '../../main';
+import ExocortexPlugin from '../../main';
+import { createTestVault, loadPlugin, TestFile, TestVault } from './helpers';
 
 let plugin: ExocortexPlugin;
 let assetFile: any;
@@ -32,13 +33,13 @@ Given('I have an asset file {string} in my vault', async function(fileName: stri
         }
     };
     
-    await plugin.createFile(assetFile);
+    await (plugin as any).createFile(assetFile);
 });
 
 // Scenario: Find asset by filename with extension
 When('I search for the asset by filename {string}', async function(searchTerm: string) {
     try {
-        foundAsset = await plugin.findAssetByFilename(searchTerm);
+        foundAsset = await (plugin as any).findAssetByFilename(searchTerm);
     } catch (error) {
         errorMessage = error.message;
     }
@@ -57,7 +58,7 @@ Then('the asset ID should be {string}', async function(expectedId: string) {
 // Scenario: Find asset by filename without extension
 Then('the search should handle the missing extension', async function() {
     // Verify that .md was added automatically
-    const searchLog = plugin.getLastSearchQuery();
+    const searchLog = (plugin as any).getLastSearchQuery();
     expect(searchLog).toContain('.md');
 });
 
@@ -74,7 +75,7 @@ Given('I have an asset file {string} with special characters', async function(fi
         }
     };
     
-    await plugin.createFile(assetFile);
+    await (plugin as any).createFile(assetFile);
 });
 
 Then('special characters should be handled correctly', async function() {
@@ -85,7 +86,7 @@ Then('special characters should be handled correctly', async function() {
 // Scenario: Handle non-existent asset gracefully
 When('I search for a non-existent asset {string}', async function(fileName: string) {
     try {
-        foundAsset = await plugin.findAssetByFilename(fileName);
+        foundAsset = await (plugin as any).findAssetByFilename(fileName);
     } catch (error) {
         errorMessage = error.message;
     }
@@ -112,11 +113,11 @@ Given('I have an asset in subfolder {string}', async function(folderPath: string
         }
     };
     
-    await plugin.createFile(assetFile);
+    await (plugin as any).createFile(assetFile);
 });
 
 When('I search by just the filename {string}', async function(fileName: string) {
-    foundAsset = await plugin.findAssetByFilename(fileName);
+    foundAsset = await (plugin as any).findAssetByFilename(fileName);
 });
 
 Then('the asset should be found regardless of folder location', async function() {
@@ -137,11 +138,11 @@ Given('I have an asset {string} with mixed case', async function(fileName: strin
         }
     };
     
-    await plugin.createFile(assetFile);
+    await (plugin as any).createFile(assetFile);
 });
 
 When('I search with different case {string}', async function(searchTerm: string) {
-    foundAsset = await plugin.findAssetByFilename(searchTerm);
+    foundAsset = await (plugin as any).findAssetByFilename(searchTerm);
 });
 
 Then('the search should be case-insensitive', async function() {
@@ -165,12 +166,12 @@ Given('I have {int} asset files in my vault', async function(count: number) {
         });
     }
     
-    await plugin.createFiles(files);
+    await (plugin as any).createFiles(files);
 });
 
 When('I search for asset number {int}', async function(assetNumber: number) {
     const startTime = Date.now();
-    foundAsset = await plugin.findAssetByFilename(`Asset${assetNumber}.md`);
+    foundAsset = await (plugin as any).findAssetByFilename(`Asset${assetNumber}.md`);
     searchResult = {
         duration: Date.now() - startTime,
         found: foundAsset
@@ -185,7 +186,7 @@ Then('the search should complete in less than {int}ms', async function(maxDurati
 When('I perform {int} concurrent searches', async function(searchCount: number) {
     const searches = [];
     for (let i = 0; i < searchCount; i++) {
-        searches.push(plugin.findAssetByFilename(`Asset${i}.md`));
+        searches.push((plugin as any).findAssetByFilename(`Asset${i}.md`));
     }
     
     const results = await Promise.all(searches);
@@ -203,96 +204,19 @@ Then('all searches should complete successfully', async function() {
 // Scenario: Cache invalidation
 Given('the asset {string} is cached', async function(fileName: string) {
     // First search to populate cache
-    await plugin.findAssetByFilename(fileName);
-    expect(plugin.isCached(fileName)).toBe(true);
+    await (plugin as any).findAssetByFilename(fileName);
+    expect((plugin as any).isCached(fileName)).toBe(true);
 });
 
 When('the asset file is modified', async function() {
     assetFile.frontmatter['exo__Asset_label'] = 'Modified Asset';
-    await plugin.updateFile(assetFile);
+    await (plugin as any).updateFile(assetFile);
 });
 
 When('I search for the asset again', async function() {
-    foundAsset = await plugin.findAssetByFilename(assetFile.name);
+    foundAsset = await (plugin as any).findAssetByFilename(assetFile.name);
 });
 
 Then('the cache should be invalidated and fresh data returned', async function() {
     expect(foundAsset.label).toBe('Modified Asset');
 });
-
-// Helper functions
-async function createTestVault() {
-    const files: any[] = [];
-    
-    return {
-        files,
-        cleanup: async () => {
-            files.length = 0;
-        }
-    };
-}
-
-async function loadPlugin(vault: any) {
-    let lastSearchQuery: string = '';
-    const cache = new Map();
-    
-    return {
-        createFile: async (file: any) => {
-            vault.files.push(file);
-        },
-        
-        createFiles: async (files: any[]) => {
-            vault.files.push(...files);
-        },
-        
-        updateFile: async (file: any) => {
-            const index = vault.files.findIndex((f: any) => f.path === file.path);
-            if (index >= 0) {
-                vault.files[index] = file;
-                cache.delete(file.name); // Invalidate cache
-            }
-        },
-        
-        findAssetByFilename: async (filename: string) => {
-            lastSearchQuery = filename;
-            
-            // Check cache first
-            if (cache.has(filename)) {
-                return cache.get(filename);
-            }
-            
-            // Add .md if missing
-            if (!filename.endsWith('.md')) {
-                filename = `${filename}.md`;
-            }
-            
-            // Search in all files
-            const file = vault.files.find((f: any) => {
-                return f.name === filename || 
-                       f.path === filename ||
-                       f.path.endsWith(`/${filename}`);
-            });
-            
-            if (file) {
-                const asset = {
-                    id: file.frontmatter['exo__Asset_uid'],
-                    label: file.frontmatter['exo__Asset_label'],
-                    path: file.path,
-                    ...file.frontmatter
-                };
-                
-                // Cache the result
-                cache.set(filename, asset);
-                return asset;
-            }
-            
-            return null;
-        },
-        
-        getLastSearchQuery: () => lastSearchQuery,
-        
-        isCached: (filename: string) => {
-            return cache.has(filename) || cache.has(`${filename}.md`);
-        }
-    };
-}

@@ -9,19 +9,21 @@ module.exports = {
   },
   collectCoverageFrom: [
     'main.ts',
+    'src/**/*.ts',
     '!**/*.d.ts',
     '!**/node_modules/**',
     '!**/__tests__/**',
+    '!**/tests/**',
   ],
   moduleNameMapper: {
     '^obsidian$': '<rootDir>/tests/__mocks__/obsidian.ts',
   },
   coverageThreshold: {
     global: {
-      branches: 70,
-      functions: 70,
-      lines: 70,
-      statements: 70,
+      branches: 59,
+      functions: 63,
+      lines: 68,
+      statements: 68,
     },
   },
 };

@@ -1,7 +1,8 @@
 import { Given, When, Then, Before, After } from '@cucumber/cucumber';
 import { expect } from '@playwright/test';
-import { ExocortexPlugin } from '../../main';
-import { LayoutBlock } from '../../src/domain/value-objects/LayoutBlock';
+import ExocortexPlugin from '../../main';
+import { LayoutBlock } from '../../src/domain/entities/LayoutBlock';
+import { createTestVault, loadPlugin } from './helpers';
 
 let plugin: ExocortexPlugin;
 let currentFile: any;
