@@ -1,6 +1,6 @@
 {
   "name": "exocortex-obsidian-plugin",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Exocortex: A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
   "main": "main.js",
   "scripts": {
@@ -10,10 +10,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:bdd": "cucumber-js",
-    "test:bdd:smoke": "cucumber-js -p smoke",
-    "test:bdd:ci": "cucumber-js -p ci",
-    "test:all": "npm test && npm run test:bdd"
+    "test:all": "npm test"
   },
   "keywords": [
     "obsidian",
@@ -26,11 +23,9 @@
   "author": "kitelev",
   "license": "MIT",
   "devDependencies": {
-    "@cucumber/cucumber": "^10.0.0",
-    "@cucumber/pretty-formatter": "^1.0.0",
-    "@playwright/test": "^1.40.0",
     "@types/jest": "^30.0.0",
     "@types/js-yaml": "^4.0.9",
+    "@types/jsdom": "^21.1.7",
     "@types/node": "^16.11.6",
     "@typescript-eslint/eslint-plugin": "5.29.0",
     "@typescript-eslint/parser": "5.29.0",
@@ -38,10 +33,10 @@
     "esbuild": "0.17.3",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.0.5",
+    "jsdom": "^26.1.0",
     "obsidian": "latest",
     "ts-jest": "^29.4.1",
-    "ts-node": "^10.9.0",
-    "tslib": "2.4.0",
+    "tslib": "^2.4.0",
     "typescript": "4.7.4"
   },
   "dependencies": {

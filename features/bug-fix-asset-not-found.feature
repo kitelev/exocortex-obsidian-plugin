@@ -26,8 +26,7 @@ Feature: Fix Asset Not Found Error in Inline Editing
   Scenario: Asset lookup should use correct identifier
     Given I am editing an inline property
     When I save a dropdown selection
-    Then the system should look up the asset by filename
-    Not by the display label
+    Then the system should look up the asset by filename not by the display label
     And the asset should be found successfully
 
   @validation

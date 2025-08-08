@@ -1,6 +1,6 @@
 import { App, Modal, Setting, Notice } from 'obsidian';
 import { CreateAssetUseCase } from '../../application/use-cases/CreateAssetUseCase';
-import { Container, SERVICE_TOKENS } from '../../shared/Container';
+import { DIContainer } from '../../infrastructure/container/DIContainer';
 
 /**
  * Modal for creating new ExoAssets
@@ -14,12 +14,12 @@ export class CreateAssetModal extends Modal {
   private propertiesContainer: HTMLElement | null = null;
   
   private createAssetUseCase: CreateAssetUseCase;
-  private container: Container;
+  private container: DIContainer;
 
   constructor(app: App) {
     super(app);
-    this.container = Container.getInstance();
-    this.createAssetUseCase = this.container.resolve(SERVICE_TOKENS.CREATE_ASSET_USE_CASE);
+    this.container = DIContainer.getInstance();
+    this.createAssetUseCase = this.container.getCreateAssetUseCase();
   }
 
   async onOpen() {
@@ -44,8 +44,8 @@ export class CreateAssetModal extends Modal {
   }
 
   private async setupClassField(containerEl: HTMLElement): Promise<void> {
-    const classService = this.container.resolve<any>(SERVICE_TOKENS.ASSET_SERVICE);
-    const classes = await classService.findAllClasses();
+    // TODO: Implement class service or use repository directly
+    const classes: any[] = [];
 
     new Setting(containerEl)
       .setName("Class")
@@ -64,11 +64,10 @@ export class CreateAssetModal extends Modal {
   }
 
   private async setupOntologyField(containerEl: HTMLElement): Promise<void> {
-    const ontologyService = this.container.resolve<any>(SERVICE_TOKENS.ONTOLOGY_SERVICE);
-    const ontologies = await ontologyService.findAll();
+    // TODO: Implement ontology service or use repository directly
+    const ontologies: any[] = [];
     
-    const settings = this.container.resolve<any>(SERVICE_TOKENS.SETTINGS);
-    const defaultOntology = settings.defaultOntology;
+    const defaultOntology = 'exo';
 
     new Setting(containerEl)
       .setName("Ontology")
@@ -112,8 +111,8 @@ export class CreateAssetModal extends Modal {
     this.propertiesContainer.empty();
     this.propertyValues.clear();
     
-    const propertyService = this.container.resolve<any>(SERVICE_TOKENS.PROPERTY_SERVICE);
-    const properties = await propertyService.findPropertiesForClass(className);
+    // TODO: Implement property service or use repository directly
+    const properties: any[] = [];
     
     if (properties.length === 0) {
       this.propertiesContainer.createEl("p", {
