@@ -15,12 +15,13 @@ export default class ExocortexPlugin extends Plugin {
     async processSPARQL(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext): Promise<void> {
         console.log('🔍 SPARQL query received:', source);
         
-        el.empty();
+        // Clear element content (compatible with both Obsidian and standard DOM)
+        el.innerHTML = '';
         
         // Create styled container
-        const container = el.createDiv({
-            cls: 'exocortex-sparql-container'
-        });
+        const container = document.createElement('div');
+        container.className = 'exocortex-sparql-container';
+        el.appendChild(container);
         
         // Add styles
         container.style.cssText = `
@@ -32,7 +33,8 @@ export default class ExocortexPlugin extends Plugin {
         `;
         
         // Title with emoji
-        const title = container.createEl('h3');
+        const title = document.createElement('h3');
+        container.appendChild(title);
         title.textContent = '🔍 SPARQL Query Results';
         title.style.cssText = `
             color: #4a90e2;
@@ -41,15 +43,18 @@ export default class ExocortexPlugin extends Plugin {
         `;
         
         // Show query
-        const queryDiv = container.createDiv();
+        const queryDiv = document.createElement('div');
+        container.appendChild(queryDiv);
         queryDiv.style.marginBottom = '16px';
         
-        const queryLabel = queryDiv.createEl('strong');
+        const queryLabel = document.createElement('strong');
+        queryDiv.appendChild(queryLabel);
         queryLabel.textContent = 'Query:';
         queryLabel.style.display = 'block';
         queryLabel.style.marginBottom = '8px';
         
-        const queryPre = queryDiv.createEl('pre');
+        const queryPre = document.createElement('pre');
+        queryDiv.appendChild(queryPre);
         queryPre.textContent = source;
         queryPre.style.cssText = `
             background: #f0f0f0;
@@ -70,15 +75,18 @@ export default class ExocortexPlugin extends Plugin {
             console.log(`✅ SPARQL executed in ${execTime}ms, ${results.length} results`);
             
             // Results section
-            const resultsDiv = container.createDiv();
+            const resultsDiv = document.createElement('div');
+            container.appendChild(resultsDiv);
             
             if (results && results.length > 0) {
-                const resultsLabel = resultsDiv.createEl('strong');
+                const resultsLabel = document.createElement('strong');
+                resultsDiv.appendChild(resultsLabel);
                 resultsLabel.textContent = `Results (${results.length} found):`;
                 resultsLabel.style.cssText = 'display: block; margin-bottom: 8px; color: #2d5aa0;';
                 
                 // Create table
-                const table = resultsDiv.createEl('table');
+                const table = document.createElement('table');
+                resultsDiv.appendChild(table);
                 table.style.cssText = `
                     width: 100%;
                     border-collapse: collapse;
@@ -90,13 +98,16 @@ export default class ExocortexPlugin extends Plugin {
                 `;
                 
                 // Header
-                const thead = table.createEl('thead');
-                const headerRow = thead.createEl('tr');
+                const thead = document.createElement('thead');
+                table.appendChild(thead);
+                const headerRow = document.createElement('tr');
+                thead.appendChild(headerRow);
                 headerRow.style.background = '#4a90e2';
                 
                 const columns = Object.keys(results[0]);
                 columns.forEach(col => {
-                    const th = headerRow.createEl('th');
+                    const th = document.createElement('th');
+                    headerRow.appendChild(th);
                     th.textContent = col;
                     th.style.cssText = `
                         padding: 12px;
@@ -108,16 +119,19 @@ export default class ExocortexPlugin extends Plugin {
                 });
                 
                 // Body
-                const tbody = table.createEl('tbody');
+                const tbody = document.createElement('tbody');
+                table.appendChild(tbody);
                 results.forEach((row, idx) => {
-                    const tr = tbody.createEl('tr');
+                    const tr = document.createElement('tr');
+                    tbody.appendChild(tr);
                     if (idx % 2 === 0) {
                         tr.style.background = '#f8f9ff';
                     }
                     tr.style.borderBottom = '1px solid #e0e0e0';
                     
                     columns.forEach(col => {
-                        const td = tr.createEl('td');
+                        const td = document.createElement('td');
+                        tr.appendChild(td);
                         const value = row[col] || '';
                         td.style.cssText = `
                             padding: 10px 12px;
@@ -126,7 +140,8 @@ export default class ExocortexPlugin extends Plugin {
                         `;
                         
                         if (value.includes('file://')) {
-                            const link = td.createEl('a');
+                            const link = document.createElement('a');
+                            td.appendChild(link);
                             link.textContent = value.replace('file://', '');
                             link.style.cssText = 'color: #4a90e2; cursor: pointer; text-decoration: underline;';
                             link.onclick = () => {
@@ -139,7 +154,8 @@ export default class ExocortexPlugin extends Plugin {
                 });
                 
                 // Stats
-                const stats = resultsDiv.createEl('div');
+                const stats = document.createElement('div');
+                resultsDiv.appendChild(stats);
                 stats.textContent = `⚡ Executed in ${execTime}ms`;
                 stats.style.cssText = `
                     font-size: 12px;
@@ -149,7 +165,8 @@ export default class ExocortexPlugin extends Plugin {
                 `;
                 
             } else {
-                const noResults = resultsDiv.createEl('div');
+                const noResults = document.createElement('div');
+                resultsDiv.appendChild(noResults);
                 noResults.innerHTML = '📭 <strong>No results found</strong>';
                 noResults.style.cssText = `
                     padding: 20px;
@@ -163,7 +180,8 @@ export default class ExocortexPlugin extends Plugin {
         } catch (error: any) {
             console.error('❌ SPARQL error:', error);
             
-            const errorDiv = container.createDiv();
+            const errorDiv = document.createElement('div');
+            container.appendChild(errorDiv);
             errorDiv.style.cssText = `
                 background: #ffebee;
                 border: 2px solid #f44336;
