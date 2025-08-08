@@ -1,0 +1,100 @@
+import { Plugin, Notice, MarkdownPostProcessorContext } from 'obsidian';
+
+export default class ExocortexPlugin extends Plugin {
+    
+    async onload() {
+        console.log('Exocortex: Plugin loading...');
+        
+        // Register SPARQL code block processor
+        this.registerMarkdownCodeBlockProcessor('sparql', this.processSPARQLBlock.bind(this));
+        
+        new Notice('Exocortex: Plugin loaded with SPARQL support!');
+        console.log('Exocortex: SPARQL code block processor registered');
+    }
+    
+    async processSPARQLBlock(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext): Promise<void> {
+        console.log('Exocortex: Processing SPARQL query:', source);
+        
+        // Clear element
+        el.empty();
+        
+        try {
+            // Create container
+            const container = el.createDiv({ cls: 'exocortex-sparql-result' });
+            
+            // Show query
+            const queryDiv = container.createDiv({ cls: 'sparql-query' });
+            queryDiv.createEl('h4', { text: 'SPARQL Query:' });
+            queryDiv.createEl('pre', { text: source, cls: 'sparql-query-text' });
+            
+            // Simulate simple processing
+            const results = this.executeSimpleSPARQL(source);
+            
+            // Show results
+            const resultsDiv = container.createDiv({ cls: 'sparql-results' });
+            resultsDiv.createEl('h4', { text: 'Results:' });
+            
+            if (results.length > 0) {
+                const table = resultsDiv.createEl('table', { cls: 'sparql-results-table' });
+                
+                // Create header
+                const thead = table.createEl('thead');
+                const headerRow = thead.createEl('tr');
+                Object.keys(results[0]).forEach(key => {
+                    headerRow.createEl('th', { text: key });
+                });
+                
+                // Create body
+                const tbody = table.createEl('tbody');
+                results.forEach(row => {
+                    const tr = tbody.createEl('tr');
+                    Object.values(row).forEach(value => {
+                        tr.createEl('td', { text: String(value) });
+                    });
+                });
+            } else {
+                resultsDiv.createEl('p', { text: 'No results found', cls: 'no-results' });
+            }
+            
+            // Show status
+            const statusDiv = container.createDiv({ cls: 'sparql-status' });
+            statusDiv.createEl('small', { text: `Processed ${results.length} results` });
+            
+            console.log('Exocortex: SPARQL processing completed');
+            
+        } catch (error) {
+            console.error('Exocortex: SPARQL processing error:', error);
+            
+            const errorDiv = el.createDiv({ cls: 'sparql-error' });
+            errorDiv.createEl('h4', { text: 'SPARQL Error' });
+            errorDiv.createEl('p', { text: error.message });
+        }
+    }
+    
+    private executeSimpleSPARQL(query: string): any[] {
+        // Very simple mock SPARQL execution for testing
+        const mockResults = [
+            { subject: 'file://Test Task 1', predicate: 'exo:Instance_class', object: 'ems__Task' },
+            { subject: 'file://Test Task 2', predicate: 'exo:Instance_class', object: 'ems__Task' },
+            { subject: 'file://Test Task 1', predicate: 'ems:Effort_status', object: 'ems__EffortStatusDoing' },
+            { subject: 'file://Test Task 2', predicate: 'ems:Effort_status', object: 'ems__EffortStatusToDo' }
+        ];
+        
+        // Simple filtering based on query content
+        if (query.toLowerCase().includes('task')) {
+            return mockResults.filter(r => r.object.includes('Task') || r.subject.includes('Task'));
+        }
+        
+        if (query.toLowerCase().includes('limit')) {
+            const limitMatch = query.match(/limit\s+(\d+)/i);
+            const limit = limitMatch ? parseInt(limitMatch[1]) : 10;
+            return mockResults.slice(0, limit);
+        }
+        
+        return mockResults;
+    }
+    
+    async onunload() {
+        console.log('Exocortex: Plugin unloading...');
+    }
+}
