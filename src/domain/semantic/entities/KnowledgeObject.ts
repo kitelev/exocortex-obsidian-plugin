@@ -7,7 +7,6 @@ import { Entity } from '../../core/Entity';
 import { Result } from '../../core/Result';
 import { Graph } from '../core/Graph';
 import { Triple, IRI, Literal, BlankNode, RDF, RDFS, EXO } from '../core/Triple';
-import { v4 as uuidv4 } from 'uuid';
 
 export type UUID = string;
 export type MarkdownContent = string;
@@ -43,7 +42,7 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
     initialProperties?: Map<IRI, any>,
     content?: MarkdownContent
   ): Result<KnowledgeObject> {
-    const uuid = uuidv4();
+    const uuid = crypto.randomUUID ? crypto.randomUUID() : KnowledgeObject.generateUUID();
     const now = new Date();
     const graph = new Graph();
     
@@ -478,5 +477,16 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
     }
     
     return value;
+  }
+
+  /**
+   * Fallback UUID generator if crypto.randomUUID is not available
+   */
+  private static generateUUID(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
   }
 }
