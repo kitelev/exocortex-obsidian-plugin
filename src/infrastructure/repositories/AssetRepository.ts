@@ -44,7 +44,10 @@ export class AssetRepository implements IAssetRepository {
         const classValue = this.extractClassName(metadata);
         if (classValue === className.toString()) {
           const fileName = path.split('/').pop()?.replace('.md', '') || '';
-          assets.push(Asset.fromFrontmatter(metadata, fileName));
+          const asset = Asset.fromFrontmatter(metadata, fileName);
+          if (asset) {
+            assets.push(asset);
+          }
         }
       }
     }
@@ -64,7 +67,10 @@ export class AssetRepository implements IAssetRepository {
         const ontologyValue = this.extractOntologyPrefix(metadata);
         if (ontologyValue === prefix.toString()) {
           const fileName = path.split('/').pop()?.replace('.md', '') || '';
-          assets.push(Asset.fromFrontmatter(metadata, fileName));
+          const asset = Asset.fromFrontmatter(metadata, fileName);
+          if (asset) {
+            assets.push(asset);
+          }
         }
       }
     }
@@ -109,7 +115,10 @@ export class AssetRepository implements IAssetRepository {
       if (metadata && metadata['exo__Instance_class']) {
         const fileName = path.split('/').pop()?.replace('.md', '') || '';
         try {
-          assets.push(Asset.fromFrontmatter(metadata, fileName));
+          const asset = Asset.fromFrontmatter(metadata, fileName);
+          if (asset) {
+            assets.push(asset);
+          }
         } catch (error) {
           // Skip invalid assets
           console.warn(`Failed to parse asset from ${path}:`, error);

@@ -37,7 +37,10 @@ export class ObsidianAssetRepository implements IAssetRepository {
                 const classArray = Array.isArray(classes) ? classes : [classes];
                 
                 if (classArray.some(c => c === className.toWikiLink() || c === className.toString())) {
-                    assets.push(Asset.fromFrontmatter(cache.frontmatter, file.basename));
+                    const asset = Asset.fromFrontmatter(cache.frontmatter, file.basename);
+                    if (asset) {
+                        assets.push(asset);
+                    }
                 }
             }
         }
@@ -56,7 +59,10 @@ export class ObsidianAssetRepository implements IAssetRepository {
                 const ontologyValue = ontology?.replace(/\[\[!?|\]\]/g, '');
                 
                 if (ontologyValue === prefix.toString()) {
-                    assets.push(Asset.fromFrontmatter(cache.frontmatter, file.basename));
+                    const asset = Asset.fromFrontmatter(cache.frontmatter, file.basename);
+                    if (asset) {
+                        assets.push(asset);
+                    }
                 }
             }
         }
@@ -170,7 +176,10 @@ export class ObsidianAssetRepository implements IAssetRepository {
         for (const file of files) {
             const cache = this.app.metadataCache.getFileCache(file);
             if (cache?.frontmatter?.['exo__Asset_uid']) {
-                assets.push(Asset.fromFrontmatter(cache.frontmatter, file.basename));
+                const asset = Asset.fromFrontmatter(cache.frontmatter, file.basename);
+                if (asset) {
+                    assets.push(asset);
+                }
             }
         }
         
