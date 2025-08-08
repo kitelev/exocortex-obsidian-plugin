@@ -7,47 +7,56 @@ describe('Asset Entity', () => {
   describe('Construction', () => {
     it('should create an asset with valid properties', () => {
       // Given
-      const title = 'Test Asset';
-      const className = new ClassName('exo__Asset');
-      const ontologyPrefix = new OntologyPrefix('exo');
+      const label = 'Test Asset';
+      const id = AssetId.generate();
+      const className = ClassName.create('exo__Asset').getValue()!;
+      const ontology = OntologyPrefix.create('exo').getValue()!;
       
       // When
-      const asset = new Asset({
-        title,
+      const assetResult = Asset.create({
+        id,
+        label,
         className,
-        ontologyPrefix
+        ontology
       });
       
       // Then
-      expect(asset.getTitle()).toBe(title);
-      expect(asset.getClassName()).toBe(className);
-      expect(asset.getOntologyPrefix()).toBe(ontologyPrefix);
+      expect(assetResult.isSuccess).toBe(true);
+      const asset = assetResult.getValue()!;
+      expect(asset.getTitle()).toBe(label);
+      expect(asset.getClassName()).toEqual(className);
+      expect(asset.getOntologyPrefix()).toEqual(ontology);
       expect(asset.getId()).toBeDefined();
       expect(asset.getCreatedAt()).toBeInstanceOf(Date);
     });
 
-    it('should throw error when title is empty', () => {
+    it('should fail when label is empty', () => {
       // Given
-      const className = new ClassName('exo__Asset');
-      const ontologyPrefix = new OntologyPrefix('exo');
+      const id = AssetId.generate();
+      const className = ClassName.create('exo__Asset').getValue()!;
+      const ontology = OntologyPrefix.create('exo').getValue()!;
       
-      // When/Then
-      expect(() => {
-        new Asset({
-          title: '',
-          className,
-          ontologyPrefix
-        });
-      }).toThrow('Asset title cannot be empty');
+      // When
+      const assetResult = Asset.create({
+        id,
+        label: '',
+        className,
+        ontology
+      });
+      
+      // Then
+      expect(assetResult.isFailure).toBe(true);
+      expect(assetResult.error).toBe('Asset label cannot be empty');
     });
 
     it('should throw error when className is missing', () => {
       // When/Then
       expect(() => {
-        new Asset({
-          title: 'Test',
+        Asset.create({
+          id: AssetId.generate(),
+          label: 'Test',
           className: null as any,
-          ontologyPrefix: new OntologyPrefix('exo')
+          ontology: OntologyPrefix.create('exo').getValue()!
         });
       }).toThrow('Asset must have a class');
     });
@@ -148,11 +157,12 @@ describe('Asset Entity', () => {
       const asset = Asset.fromFrontmatter(frontmatter, 'test.md');
       
       // Then
-      expect(asset.getId().toString()).toBe('test-id-123');
-      expect(asset.getTitle()).toBe('Test Asset');
-      expect(asset.getClassName().toString()).toBe('ems__Task');
-      expect(asset.getOntologyPrefix().toString()).toBe('ems');
-      expect(asset.getProperty('ems__Task_status')).toBe('done');
+      expect(asset).not.toBeNull();
+      expect(asset!.getId().toString()).toBe('test-id-123');
+      expect(asset!.getTitle()).toBe('Test Asset');
+      expect(asset!.getClassName().toString()).toBe('ems__Task');
+      expect(asset!.getOntologyPrefix().toString()).toBe('ems');
+      expect(asset!.getProperty('ems__Task_status')).toBe('done');
     });
   });
 });
@@ -162,10 +172,11 @@ describe('Asset Entity - FIRST Principles', () => {
   it('should create asset in milliseconds', () => {
     const start = Date.now();
     
-    new Asset({
-      title: 'Performance Test',
-      className: new ClassName('exo__Asset'),
-      ontologyPrefix: new OntologyPrefix('exo')
+    Asset.create({
+      id: AssetId.generate(),
+      label: 'Performance Test',
+      className: ClassName.create('exo__Asset').getValue()!,
+      ontology: OntologyPrefix.create('exo').getValue()!
     });
     
     const duration = Date.now() - start;

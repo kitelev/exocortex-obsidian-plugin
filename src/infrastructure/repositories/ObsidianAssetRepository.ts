@@ -199,9 +199,11 @@ export class ObsidianAssetRepository implements IAssetRepository {
             const cache = this.app.metadataCache.getFileCache(file);
             if (cache?.frontmatter) {
                 const asset = Asset.fromFrontmatter(cache.frontmatter, file.basename);
-                // Store the file path for later use in save
-                (asset as any).props.filePath = file.path;
-                return asset;
+                if (asset) {
+                    // Store the file path for later use in save
+                    (asset as any).props.filePath = file.path;
+                    return asset;
+                }
             }
         }
         

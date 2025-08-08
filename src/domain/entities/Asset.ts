@@ -130,40 +130,53 @@ export class Asset extends Entity<AssetProps> {
     return frontmatter;
   }
 
-  static fromFrontmatter(frontmatter: Record<string, any>, fileName: string): Asset {
-    const idResult = AssetId.create(frontmatter['exo__Asset_uid'] || AssetId.generate().toString());
-    const id = idResult.isSuccess ? idResult.getValue() : AssetId.generate();
-    const title = frontmatter['exo__Asset_label'] || fileName.replace('.md', '');
-    
-    const classValue = Array.isArray(frontmatter['exo__Instance_class']) 
-      ? frontmatter['exo__Instance_class'][0] 
-      : frontmatter['exo__Instance_class'];
-    const classNameResult = ClassName.create(classValue || 'exo__Asset');
-    const className = classNameResult.isSuccess ? classNameResult.getValue() : ClassName.create('exo__Asset').getValue()!;
-    
-    const ontologyValue = frontmatter['exo__Asset_isDefinedBy']?.replace(/\[\[!?|\]\]/g, '') || 'exo';
-    const ontologyResult = OntologyPrefix.create(ontologyValue);
-    const ontologyPrefix = ontologyResult.isSuccess ? ontologyResult.getValue() : OntologyPrefix.create('exo').getValue()!;
-    
-    const createdAt = frontmatter['exo__Asset_createdAt'] 
-      ? new Date(frontmatter['exo__Asset_createdAt']) 
-      : new Date();
-    
-    const properties = new Map<string, any>();
-    for (const [key, value] of Object.entries(frontmatter)) {
-      if (!key.startsWith('exo__Asset_') && !key.startsWith('exo__Instance_')) {
-        properties.set(key, value);
+  static fromFrontmatter(frontmatter: Record<string, any>, fileName: string): Asset | null {
+    try {
+      const idResult = AssetId.create(frontmatter['exo__Asset_uid'] || AssetId.generate().toString());
+      const id = idResult.isSuccess ? idResult.getValue() : AssetId.generate();
+      const label = frontmatter['exo__Asset_label'] || fileName.replace('.md', '');
+      
+      const classValue = Array.isArray(frontmatter['exo__Instance_class']) 
+        ? frontmatter['exo__Instance_class'][0] 
+        : frontmatter['exo__Instance_class'];
+      const classNameResult = ClassName.create(classValue || 'exo__Asset');
+      const className = classNameResult.isSuccess ? classNameResult.getValue() : ClassName.create('exo__Asset').getValue()!;
+      
+      const ontologyValue = frontmatter['exo__Asset_isDefinedBy']?.replace(/\[\[!?|\]\]/g, '') || 'exo';
+      const ontologyResult = OntologyPrefix.create(ontologyValue);
+      const ontology = ontologyResult.isSuccess ? ontologyResult.getValue() : OntologyPrefix.create('exo').getValue()!;
+      
+      const createdAt = frontmatter['exo__Asset_createdAt'] 
+        ? new Date(frontmatter['exo__Asset_createdAt']) 
+        : new Date();
+      
+      const properties: Record<string, any> = {};
+      for (const [key, value] of Object.entries(frontmatter)) {
+        if (!key.startsWith('exo__Asset_') && !key.startsWith('exo__Instance_')) {
+          properties[key] = value;
+        }
       }
+      
+      // Use the factory method instead of constructor
+      const result = Asset.create({
+        id,
+        label,
+        className,
+        ontology,
+        properties
+      });
+      
+      if (result.isSuccess) {
+        const asset = result.getValue()!;
+        // Update timestamps
+        (asset as any).props.createdAt = createdAt;
+        return asset;
+      }
+      
+      return null;
+    } catch (error) {
+      console.warn('Failed to create asset from frontmatter:', error);
+      return null;
     }
-    
-    return new Asset({
-      id,
-      title,
-      className,
-      ontology: ontologyPrefix,
-      properties,
-      createdAt,
-      updatedAt: new Date()
-    });
   }
 }

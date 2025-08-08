@@ -231,10 +231,10 @@ export class TFile {
   basename: string;
   extension: string;
   
-  constructor(path: string) {
-    this.path = path;
-    this.basename = path.split('/').pop()?.replace(/\.[^/.]+$/, '') || '';
-    this.extension = path.split('.').pop() || '';
+  constructor(path?: string) {
+    this.path = path || '';
+    this.basename = path ? (path.split('/').pop()?.replace(/\.[^/.]+$/, '') || '') : '';
+    this.extension = path ? (path.split('.').pop() || '') : '';
   }
 }
 
