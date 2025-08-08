@@ -10,7 +10,10 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:all": "npm test"
+    "test:all": "npm test",
+    "test:e2e": "node tests/e2e/plugin-loading.test.js",
+    "test:e2e:all": "npm run test:e2e && npm run test:e2e:sparql",
+    "test:e2e:sparql": "node tests/e2e/sparql-functionality.test.js"
   },
   "keywords": [
     "obsidian",
