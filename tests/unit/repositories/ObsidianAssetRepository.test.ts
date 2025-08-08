@@ -42,7 +42,8 @@ describe('ObsidianAssetRepository', () => {
             const mockFrontmatter = {
                 'exo__Asset_uid': 'test-uuid',
                 'exo__Asset_label': 'My Asset',
-                'exo__Instance_class': '[[TestClass]]'
+                'exo__Instance_class': '[[TestClass]]',
+                'exo__Asset_isDefinedBy': '[[!exo]]'
             };
 
             mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
@@ -66,7 +67,8 @@ describe('ObsidianAssetRepository', () => {
             const mockFrontmatter = {
                 'exo__Asset_uid': 'test-uuid',
                 'exo__Asset_label': 'My Asset',
-                'exo__Instance_class': '[[TestClass]]'
+                'exo__Instance_class': '[[TestClass]]',
+                'exo__Asset_isDefinedBy': '[[!exo]]'
             };
 
             mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
@@ -89,7 +91,8 @@ describe('ObsidianAssetRepository', () => {
             const mockFrontmatter = {
                 'exo__Asset_uid': 'test-uuid',
                 'exo__Asset_label': 'My Asset',
-                'exo__Instance_class': '[[TestClass]]'
+                'exo__Instance_class': '[[TestClass]]',
+                'exo__Asset_isDefinedBy': '[[!exo]]'
             };
 
             mockVault.getAbstractFileByPath.mockReturnValue(null);
