@@ -5,6 +5,19 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2025-01-08
+
+### 🔧 Hotfix: CI TypeScript compilation
+
+**Проблема**: CI workflow падал с ошибкой TypeScript о несуществующем типе `Disposable` в jest-mock.
+
+**Решение**: Добавлен `skipLibCheck: true` в tsconfig.json для пропуска проверки типов в node_modules.
+
+**Технические детали**:
+- Jest обновился и требует новые TypeScript типы
+- Добавлена опция skipLibCheck для совместимости
+- CI/CD pipeline восстановлен
+
 ## [0.7.0] - 2025-01-08
 
 ### 🎯 Полное соответствие best practices достигнуто!
