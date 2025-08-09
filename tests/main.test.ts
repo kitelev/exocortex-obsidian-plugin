@@ -1,6 +1,15 @@
 import { App, TFile, Notice, MarkdownPostProcessorContext } from 'obsidian';
 import ExocortexPlugin from '../main';
 
+// Mock DIContainer
+jest.mock('../src/infrastructure/container/DIContainer', () => ({
+  DIContainer: {
+    getInstance: jest.fn(() => ({
+      initialize: jest.fn()
+    }))
+  }
+}));
+
 describe('ExocortexPlugin - SPARQL Version', () => {
   let app: App;
   let plugin: ExocortexPlugin;

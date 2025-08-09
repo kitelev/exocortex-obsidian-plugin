@@ -2,6 +2,20 @@
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
 
+## [2.1.7] - 2025-08-09
+
+### Fixed
+- **Build issues resolved** - Fixed import paths and build configuration
+- **Command now appears in Command Palette** - "Create new ExoAsset" command is properly compiled
+- **Tests added** - Added comprehensive tests for CreateAssetModal and command registration
+- **Main.ts consolidation** - Merged src/main.ts into root main.ts with correct imports
+
+### Technical
+- Fixed esbuild configuration to properly compile all dependencies
+- Consolidated multiple main.ts files into single source
+- Added 50+ tests for CreateAsset functionality
+- Command properly registers with id "create-exo-asset"
+
 ## [2.1.6] - 2025-08-09
 
 ### Added
