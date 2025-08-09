@@ -8,9 +8,10 @@ export default class ExocortexPlugin extends Plugin {
     private graph: Graph;
     private sparqlProcessor: SPARQLProcessor;
     private container: DIContainer;
+    private processorRegistered: boolean = false;
     
     async onload(): Promise<void> {
-        console.log('🚀 Exocortex: Loading plugin v2.1.8...');
+        console.log('🚀 Exocortex: Loading plugin v2.1.10...');
         
         // Initialize DI container
         this.container = DIContainer.initialize(this.app, this);
@@ -24,10 +25,19 @@ export default class ExocortexPlugin extends Plugin {
         // Initialize SPARQL processor
         this.sparqlProcessor = new SPARQLProcessor(this, this.graph);
         
-        // Register SPARQL code block processor
-        this.registerMarkdownCodeBlockProcessor('sparql', 
-            (source, el, ctx) => this.sparqlProcessor.processCodeBlock(source, el, ctx)
-        );
+        // Register SPARQL code block processor with protection against double registration
+        try {
+            this.registerMarkdownCodeBlockProcessor('sparql', 
+                (source, el, ctx) => this.sparqlProcessor.processCodeBlock(source, el, ctx)
+            );
+            this.processorRegistered = true;
+        } catch (error) {
+            if (error.message && error.message.includes('already registered')) {
+                console.warn('⚠️ SPARQL processor already registered, skipping...');
+            } else {
+                throw error;
+            }
+        }
         
         // Register command: Create new asset
         this.addCommand({
@@ -71,8 +81,10 @@ export default class ExocortexPlugin extends Plugin {
             })
         );
         
-        new Notice('🔍 Exocortex: SPARQL support enabled!');
-        console.log('✅ Exocortex: SPARQL processor registered');
+        if (this.processorRegistered) {
+            new Notice('🔍 Exocortex: SPARQL support enabled!');
+            console.log('✅ Exocortex: SPARQL processor registered');
+        }
     }
     
     private async loadVaultIntoGraph(): Promise<void> {
@@ -229,8 +241,18 @@ export default class ExocortexPlugin extends Plugin {
     
     async onunload(): Promise<void> {
         console.log('👋 Exocortex: Plugin unloaded');
+        
+        // Clear graph
         if (this.graph) {
             this.graph.clear();
+        }
+        
+        // Reset registration flag
+        this.processorRegistered = false;
+        
+        // Clean up DI container
+        if (this.container) {
+            this.container.dispose();
         }
     }
 }

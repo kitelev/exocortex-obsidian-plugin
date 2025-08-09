@@ -2,6 +2,20 @@
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
 
+## [2.1.10] - 2025-08-09
+
+### Fixed
+- **SPARQL processor double registration error resolved** - Plugin now handles hot reload correctly
+- **Graceful error handling** - Plugin continues to work even if SPARQL processor already registered
+- **Proper cleanup on unload** - Added disposal of DIContainer and reset of registration flags
+- **Test coverage maintained at 91.5%** - Added comprehensive tests for registration scenarios
+
+### Technical
+- Added try-catch block around SPARQL processor registration
+- Added processorRegistered flag to track registration state
+- Enhanced onunload() with proper cleanup of all resources
+- Added SPARQLProcessorRegistration.test.ts for regression testing
+
 ## [2.1.9] - 2025-08-09
 
 ### Fixed
