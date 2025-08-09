@@ -9,6 +9,18 @@ All notable changes to the Exocortex Obsidian Plugin will be documented in this 
 ### Fixed
 
 - Fix UI tests in GitHub Actions workflows
+## [2.1.0] - 2025-08-09
+
+### Added
+
+- feat: Complete CI/CD setup with comprehensive testing
+
+### Fixed
+
+- fix: Remove Obsidian cache from repository
+- fix: Add missing WDIO reporters for CI
+- fix: Comprehensive CI/CD fixes and Obsidian plugin best practices
+- Fix UI tests in GitHub Actions workflows
 
 ## [2.1.0] - 2025-08-09
 

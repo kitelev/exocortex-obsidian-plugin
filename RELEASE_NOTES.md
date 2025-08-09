@@ -6,6 +6,18 @@
 
 ### Fixed
 
+- fix: Remove Obsidian cache from repository
+- fix: Add missing WDIO reporters for CI
+- fix: Comprehensive CI/CD fixes and Obsidian plugin best practices
+- Fix UI tests in GitHub Actions workflows
+
+
+### Added
+
+- feat: Complete CI/CD setup with comprehensive testing
+
+### Fixed
+
 - Fix UI tests in GitHub Actions workflows
 
 
