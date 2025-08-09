@@ -2,6 +2,45 @@
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
 
+## [2.2.0] - 2025-08-09
+
+### 🚀 Added - Critical MVP Feature
+- **CONSTRUCT Query Support** - Enables reasoning and knowledge inference
+- **Template-based Triple Generation** - Generate new knowledge from patterns
+- **Multi-pattern Joins** - Support for complex WHERE clauses with multiple patterns
+- **Graph Integration** - Generated triples automatically added to knowledge graph
+- **Provenance Tracking** - Each generated triple tracked with creation timestamp
+
+### Features
+- CONSTRUCT queries now work alongside SELECT queries
+- Automatic notification shows number of generated triples
+- Support for LIMIT clause in CONSTRUCT queries
+- Comprehensive error handling for malformed queries
+
+### Technical
+- SPARQLEngine.construct() method implementation
+- Pattern joining algorithm for complex queries
+- Full test coverage for CONSTRUCT functionality
+- Integration with existing Graph triple store
+
+### Why This Matters
+CONSTRUCT queries are what distinguish Exocortex from simple query tools. They enable:
+- Automated reasoning and inference
+- Knowledge derivation from existing facts
+- Rule-based knowledge generation
+- Semantic relationship discovery
+
+Example:
+```sparql
+CONSTRUCT {
+  ?person ems:contributesTo ?project
+}
+WHERE {
+  ?task ems:assignedTo ?person .
+  ?task ems:partOf ?project .
+}
+```
+
 ## [2.1.13] - 2025-08-09
 
 ### Fixed
