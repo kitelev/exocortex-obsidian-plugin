@@ -32,8 +32,9 @@ jobs:
           
           # Check if tag already exists
           if git rev-parse "v$CURRENT_VERSION" >/dev/null 2>&1; then
-            echo "Tag v$CURRENT_VERSION already exists"
+            echo "Tag v$CURRENT_VERSION already exists, skipping release"
             echo "needs_release=false" >> $GITHUB_OUTPUT
+            exit 0
           else
             echo "Tag v$CURRENT_VERSION does not exist, will create release"
             echo "needs_release=true" >> $GITHUB_OUTPUT

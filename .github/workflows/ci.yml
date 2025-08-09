@@ -114,6 +114,9 @@ jobs:
     - name: Install dependencies
       run: npm ci
       
+    - name: Build plugin
+      run: npm run build
+      
     - name: Test plugin loading in minimal environment
       run: |
         # Create minimal test environment
