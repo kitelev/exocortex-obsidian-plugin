@@ -3,6 +3,7 @@ import { Graph, Triple } from './src/domain/Graph';
 import { SPARQLProcessor } from './src/presentation/processors/SPARQLProcessor';
 import { CreateAssetModal } from './src/presentation/modals/CreateAssetModal';
 import { DIContainer } from './src/infrastructure/container/DIContainer';
+import { OntologizeAssetCommand } from './src/presentation/commands/OntologizeAssetCommand';
 
 export default class ExocortexPlugin extends Plugin {
     private graph: Graph;
@@ -52,6 +53,14 @@ export default class ExocortexPlugin extends Plugin {
         // Add ribbon icon for quick access
         this.addRibbonIcon('plus-circle', 'Create ExoAsset', () => {
             new CreateAssetModal(this.app).open();
+        });
+        
+        // Register command: Ontologize relations
+        const ontologizeCommand = new OntologizeAssetCommand(this.app);
+        this.addCommand({
+            id: ontologizeCommand.id,
+            name: ontologizeCommand.name,
+            callback: () => ontologizeCommand.callback()
         });
         
         // Register file modification handler to update graph

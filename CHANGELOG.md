@@ -2,6 +2,61 @@
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
 
+## [2.3.0] - 2025-08-09
+
+### 🚀 Added - Relation Ontologization Feature
+- **Relation Ontologization Command** - Convert asset properties into first-class Relation objects
+- **Event Sourcing Support** - Every relation becomes a versioned, trackable entity
+- **Bidirectional Relations** - Automatically create inverse relations for complete graph
+- **N-ary Relations** - Support for complex relationships between multiple assets
+- **Vault Migration** - Convert entire vault to relation-based model with progress tracking
+- **RelationAsset Entity** - New domain entity for managing relations as assets
+
+### Features
+- New "Ontologize Asset Relations" command in Command Palette
+- Automatic extraction of object properties from frontmatter
+- Wiki link pattern detection for relationship discovery
+- Relation files created in "99 Relations" folder
+- Confidence scoring and provenance tracking for each relation
+- Clean original assets by removing converted properties
+
+### Technical
+- RelationOntologizer service for property-to-relation conversion
+- RelationAssetHelper for bidirectional relation creation
+- Support for inverse predicate mapping
+- YAML generation for relation frontmatter
+- Comprehensive test coverage for all relation operations
+
+### Why This Matters
+Relation Ontologization transforms Obsidian into a true graph database where:
+- Every relationship is a trackable, versioned entity
+- Event Sourcing enables complete history of knowledge evolution
+- Bidirectional relations provide full graph traversal
+- N-ary relations support complex real-world relationships
+- Relations can have their own metadata, confidence scores, and provenance
+
+Example:
+```yaml
+# Before (in Task asset)
+ems__Task_project: "[[Project Alpha]]"
+ems__Task_assignedTo: "[[John Doe]]"
+
+# After (as Relation assets)
+Relation 1:
+  subject: Task-123
+  predicate: ems__Task_project
+  object: Project Alpha
+  confidence: 1.0
+  inverseOf: Relation-2
+
+Relation 2:
+  subject: Project Alpha
+  predicate: ems__Project_hasTasks
+  object: Task-123
+  confidence: 1.0
+  inverseOf: Relation-1
+```
+
 ## [2.2.0] - 2025-08-09
 
 ### 🚀 Added - Critical MVP Feature
