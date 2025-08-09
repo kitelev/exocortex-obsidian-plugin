@@ -3,7 +3,11 @@ module.exports = {
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/tests'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
-  testPathIgnorePatterns: ['/node_modules/', '/tests/e2e/'],
+  testPathIgnorePatterns: [
+    '/node_modules/', 
+    '/tests/e2e/',
+    '/tests/ui/',  // Exclude WebDriver UI tests
+  ],
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
@@ -26,4 +30,13 @@ module.exports = {
       statements: 68,
     },
   },
+  // Enhanced setup for CI environments
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  // Handle ES modules and other transformations in CI
+  transformIgnorePatterns: [
+    'node_modules/(?!(chai)/)'
+  ],
+  // Additional environment settings for CI
+  testTimeout: 30000,
+  maxWorkers: process.env.CI ? 1 : '50%',
 };

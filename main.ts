@@ -1,15 +1,27 @@
 import { Plugin, Notice, MarkdownPostProcessorContext } from 'obsidian';
 
 export default class ExocortexPlugin extends Plugin {
+    private processorRegistered: boolean = false;
     
     async onload(): Promise<void> {
         console.log('🚀 Exocortex: Loading SPARQL plugin v2.0...');
         
-        // Register SPARQL code block processor
-        this.registerMarkdownCodeBlockProcessor('sparql', this.processSPARQL.bind(this));
-        
-        new Notice('🔍 Exocortex: SPARQL support enabled!');
-        console.log('✅ Exocortex: SPARQL processor registered');
+        // Register SPARQL code block processor only if not already registered
+        try {
+            this.registerMarkdownCodeBlockProcessor('sparql', this.processSPARQL.bind(this));
+            this.processorRegistered = true;
+            new Notice('🔍 Exocortex: SPARQL support enabled!');
+            console.log('✅ Exocortex: SPARQL processor registered');
+        } catch (error: any) {
+            if (error.message?.includes('already registered')) {
+                console.warn('⚠️ SPARQL processor already registered, skipping...');
+                new Notice('⚠️ Exocortex: SPARQL already active');
+            } else {
+                console.error('❌ Failed to register SPARQL processor:', error);
+                new Notice('❌ Exocortex: Failed to enable SPARQL');
+                throw error;
+            }
+        }
     }
     
     async processSPARQL(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext): Promise<void> {
@@ -336,6 +348,10 @@ export default class ExocortexPlugin extends Plugin {
     }
     
     async onunload(): Promise<void> {
-        console.log('👋 Exocortex: Plugin unloaded');
+        console.log('👋 Exocortex: Plugin unloading...');
+        this.processorRegistered = false;
+        // Note: Obsidian should automatically unregister processors
+        // but we track the state for safety
+        console.log('✅ Exocortex: Plugin unloaded successfully');
     }
 }

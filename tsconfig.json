@@ -27,6 +27,7 @@
   "exclude": [
     "node_modules",
     "features/**/*",
-    "tests/**/*"
+    "tests/**/*",
+    "wdio.conf*.ts"
   ]
 }

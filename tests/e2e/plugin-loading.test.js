@@ -8,6 +8,14 @@
 const fs = require('fs');
 const path = require('path');
 
+// Check CI environment
+const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+
+// Handle missing dependencies gracefully in CI
+if (isCI) {
+  console.log('🔧 Running in CI environment - enabling CI optimizations');
+}
+
 console.log('🧪 E2E Test: Plugin Loading');
 
 // Test configuration

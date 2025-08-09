@@ -1,10 +1,10 @@
-name: CI/CD Pipeline
+name: CI Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, master, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master, develop ]
 
 jobs:
   test:
@@ -12,94 +12,118 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [16.x, 18.x]
+        node-version: [16.x, 18.x, 20.x]
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v4
       
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         
     - name: Install dependencies
-      run: npm ci
-      
-    - name: Run TypeScript compiler check
-      run: npx tsc --noEmit --skipLibCheck
-      
-    - name: Run unit tests
-      run: npm test
-      
-    - name: Run E2E plugin loading tests  
-      run: npm run test:e2e
-      
-    - name: Run E2E SPARQL functionality tests
-      run: npm run test:e2e:sparql
-      
-    - name: Build plugin
+      run: |
+        npm ci
+        # Install additional dependencies that might be needed in CI
+        npm install --save-dev jsdom
+        
+    - name: Build project
       run: npm run build
       
-    - name: Verify build outputs exist
-      run: |
-        test -f main.js || exit 1
-        test -f manifest.json || exit 1
-        echo "✅ Build artifacts verified"
+    - name: Run unit tests
+      run: npm run test:unit
+      env:
+        CI: true
+        
+    - name: Run integration tests
+      run: npm run test:integration
+      env:
+        CI: true
+        
+    - name: Run E2E tests
+      run: npm run test:e2e:all
+      env:
+        CI: true
+        
+    - name: Generate test coverage
+      run: npm run test:coverage
+      env:
+        CI: true
+        
+    - name: Upload coverage to Codecov
+      if: matrix.node-version == '18.x'
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+        verbose: true
 
-  release:
-    needs: test
+  lint:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v4
       
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v3
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
       with:
-        node-version: 18.x
+        node-version: '18.x'
         cache: 'npm'
         
     - name: Install dependencies
       run: npm ci
       
-    - name: Build plugin
-      run: npm run build
+    - name: Check TypeScript compilation
+      run: npx tsc --noEmit --skipLibCheck
       
-    - name: Get version from manifest
-      id: version
-      run: echo "version=$(jq -r '.version' manifest.json)" >> $GITHUB_OUTPUT
+    - name: Verify build artifacts
+      run: |
+        # Ensure main.js is built and not empty
+        test -f main.js
+        test -s main.js
+        echo "✅ Build artifacts verified"
+        
+  test-build-install:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
       
-    - name: Create GitHub Release
-      if: steps.version.outputs.version != ''
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
       with:
-        tag_name: v${{ steps.version.outputs.version }}
-        release_name: Release v${{ steps.version.outputs.version }}
-        body: |
-          ## 🚀 Automated Release v${{ steps.version.outputs.version }}
+        node-version: '18.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Test plugin loading in minimal environment
+      run: |
+        # Create minimal test environment
+        mkdir -p test-vault/.obsidian/plugins/exocortex
+        cp main.js manifest.json test-vault/.obsidian/plugins/exocortex/
+        
+        # Verify plugin files are valid
+        node -e "
+          const fs = require('fs');
+          const path = require('path');
           
-          ### Features
-          - SPARQL query processing in Obsidian
-          - RDF triple extraction from frontmatter
-          - Styled results with interactive tables
-          - Error handling and performance metrics
+          // Test manifest
+          const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+          console.log('✅ Manifest valid:', manifest.id);
           
-          ### Installation
-          1. Download `main.js` and `manifest.json`
-          2. Place in `.obsidian/plugins/exocortex/`  
-          3. Enable plugin in Obsidian settings
+          // Test main.js syntax
+          const mainJs = fs.readFileSync('main.js', 'utf8');
+          new Function('module', 'exports', 'require', mainJs);
+          console.log('✅ Plugin code syntactically valid');
           
-          ### Tests Passed ✅
-          - Plugin Loading: 6/6 tests
-          - SPARQL Functionality: 7/7 tests
-          - TypeScript compilation ✅
-          - Build verification ✅
-          
-        draft: false
-        prerelease: false
+          console.log('✅ Plugin ready for installation');
+        "

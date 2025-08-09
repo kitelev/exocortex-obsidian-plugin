@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "ES2022",
+    "module": "commonjs",
+    "lib": ["ES2022", "DOM"],
+    "types": ["node", "@wdio/globals/types", "mocha", "chai"],
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "outDir": "./dist",
+    "rootDir": "."
+  },
+  "include": [
+    "wdio.conf.ts",
+    "wdio.conf.ci.ts",
+    "tests/ui/**/*.ts",
+    "tests/ui/**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
