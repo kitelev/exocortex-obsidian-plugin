@@ -2,6 +2,19 @@
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
 
+## [2.1.9] - 2025-08-09
+
+### Fixed
+- **Command now appears in Command Palette** - Added missing "main" field to manifest.json
+- **Create ExoAsset command fully functional** - Command can be accessed via Cmd/Ctrl+P
+- **Hotkey support working** - Cmd/Ctrl+Shift+N creates new asset
+- **Ribbon icon functional** - Plus circle icon in sidebar works correctly
+
+### Technical
+- Added "main": "main.js" to manifest.json for proper plugin loading
+- Fixed plugin export in build process
+- Command ID "create-exo-asset" properly registered
+
 ## [2.1.8] - 2025-08-09
 
 ### Fixed
