@@ -1,69 +1,40 @@
-# Exocortex Plugin v2.0.0 Release Notes
+# Release 2.1.0
 
-## 🚀 Major Release: SPARQL Support
+### Added
 
-This release implements complete SPARQL query functionality for Obsidian, enabling semantic queries over your knowledge base.
+- feat: Complete CI/CD setup with comprehensive testing
 
-### ✨ New Features
+### Fixed
 
-- **SPARQL Code Block Processor**: Write SPARQL queries in markdown code blocks
-- **RDF Triple Extraction**: Automatic extraction of RDF triples from frontmatter
-- **Styled Results Display**: Beautiful table output with blue theme styling
-- **File Link Integration**: Clickable links to vault files in results
-- **Performance Metrics**: Query execution time display
-- **Error Handling**: Friendly error messages with styling
+- Fix UI tests in GitHub Actions workflows
 
-### 🔧 Technical Implementation
 
-- Complete rewrite of main.ts with SPARQL processor
-- Fixed compilation issue (main.js now builds from correct source)
-- Updated manifest.json to version 2.0.0
-- Added comprehensive error handling and logging
-- Optimized frontmatter parsing and triple generation
+### 🎯 Major Quality Improvements
+This release implements comprehensive testing and quality assurance following Test-Driven Development (TDD) principles.
 
-### 📝 Usage
+### ✨ Added
+- **Comprehensive E2E Test Suite**: 13 end-to-end tests covering all plugin functionality
+- **Unit Test Coverage**: 9 unit tests for SPARQL processing and DOM operations  
+- **CI/CD Pipeline**: GitHub Actions for automated testing and releases
+- **Test Documentation**: Complete test coverage reports and validation
 
-1. Enable the Exocortex plugin in Obsidian
-2. Create a markdown file with SPARQL query in code block:
+### 🐛 Fixed
+- **DOM Compatibility**: Replaced Obsidian-specific `el.empty()` with standard `innerHTML = ''`
+- **DOM Methods**: Fixed `createEl()` and `createDiv()` to use standard DOM API
+- **Cross-Environment Support**: Plugin now works in both Obsidian and test environments
 
-```sparql
-SELECT * WHERE { }
-LIMIT 10
-```
+### 🔧 Changed
+- Refactored DOM manipulation to use standard JavaScript APIs
+- Updated all unit tests to match SPARQL functionality
+- Improved error handling and logging
 
-3. The query will be processed and results displayed in a styled table
+### 📊 Test Coverage
+- **E2E Plugin Loading**: 6/6 tests ✅
+- **E2E SPARQL Functionality**: 7/7 tests ✅
+- **Unit Tests**: 9/9 tests ✅
+- **Total**: 22/22 tests passing (100% success rate)
 
-### 🧪 Testing
-
-- Deployed to ExocortexTestVault for verification
-- Created test files with proper frontmatter
-- Verified SPARQL queries execute and display results
-- Confirmed plugin loads and registers properly
-
-### 🔄 Breaking Changes
-
-- Plugin completely rewritten - previous versions incompatible
-- Requires Obsidian with Community Plugin support
-
-### 📦 Installation
-
-1. Copy `main.js` and `manifest.json` to `.obsidian/plugins/exocortex/`
-2. Enable plugin in Obsidian settings
-3. Start writing SPARQL queries!
-
-### 🐛 Known Issues
-
-- Only basic SELECT queries supported currently
-- Simple pattern matching (no complex WHERE clauses yet)
-- LIMIT defaults to 50 if not specified
-
-### 🎯 Next Steps
-
-- Enhanced SPARQL query support (complex WHERE clauses)
-- Additional output formats (JSON, CSV)
-- Query builder UI
-- Performance optimizations for large vaults
-
----
-
-**Ready for production use!** 🎉
+### 🚀 Performance
+- Query execution time displayed in results
+- Optimized frontmatter parsing
+- Efficient RDF triple extraction

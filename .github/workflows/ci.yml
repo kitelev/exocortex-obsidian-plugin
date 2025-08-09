@@ -12,7 +12,7 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
+        node-version: [18.x, 20.x]
     
     steps:
     - name: Checkout repository
@@ -82,12 +82,21 @@ jobs:
     - name: Check TypeScript compilation
       run: npx tsc --noEmit --skipLibCheck
       
+    - name: Build plugin before verification
+      run: npm run build
+      
     - name: Verify build artifacts
       run: |
         # Ensure main.js is built and not empty
         test -f main.js
         test -s main.js
         echo "✅ Build artifacts verified"
+        
+    - name: Validate Obsidian plugin
+      run: |
+        # Run plugin validation script
+        npm run validate
+        echo "✅ Plugin validation passed"
         
   test-build-install:
     runs-on: ubuntu-latest

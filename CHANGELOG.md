@@ -1,6 +1,24 @@
 # Changelog
 
-All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
+All notable changes to the Exocortex Obsidian Plugin will be documented in this file.## [2.1.0] - 2025-08-09
+
+### Added
+
+- feat: Complete CI/CD setup with comprehensive testing
+
+### Fixed
+
+- Fix UI tests in GitHub Actions workflows
+
+## [2.1.0] - 2025-08-09
+
+### Added
+
+- feat: Complete CI/CD setup with comprehensive testing
+
+### Fixed
+
+- Fix UI tests in GitHub Actions workflows
 
 ## [2.1.0] - 2025-08-09
 

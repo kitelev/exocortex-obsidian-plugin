@@ -1,12 +1,18 @@
 {
   "name": "exocortex-obsidian-plugin",
-  "version": "0.9.0",
+  "version": "2.1.0",
   "description": "Exocortex: A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
   "main": "main.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
     "version": "node version-bump.mjs && git add manifest.json versions.json",
+    "validate": "node scripts/validate-plugin.js",
+    "generate-changelog": "node scripts/generate-changelog.js",
+    "prepare-release": "node scripts/prepare-release.js",
     "test": "npm run test:unit",
     "test:unit": "jest --testPathIgnorePatterns='/tests/ui/' '/tests/e2e/'",
     "test:integration": "jest --testMatch='**/integration/**/*.test.ts'",
@@ -39,7 +45,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/jsdom": "^21.1.7",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^16.11.6",
+    "@types/node": "^18.19.0",
     "@typescript-eslint/eslint-plugin": "5.29.0",
     "@typescript-eslint/parser": "5.29.0",
     "@wdio/cli": "^9.0.8",

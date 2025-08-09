@@ -45,6 +45,11 @@ jobs:
           node esbuild.config.mjs production
           echo "Build successful"
       
+      - name: Validate plugin structure
+        run: |
+          npm run validate
+          echo "Plugin validation successful"
+      
       - name: Check file sizes
         run: |
           echo "Checking build output sizes..."
