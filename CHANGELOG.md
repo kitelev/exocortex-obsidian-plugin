@@ -2,6 +2,24 @@
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
 
+## [2.1.12] - 2025-08-09
+
+### Fixed
+- **Dynamic property field updates** - Properties now correctly refresh when switching classes
+- **Obsidian API compatibility** - Fixed empty() method usage for both Obsidian and DOM elements
+- **Array domain support** - Properties with multiple domain classes now detected correctly
+
+### Added
+- Console logging for debugging property discovery
+- Fallback to DOM methods when Obsidian methods unavailable
+- Support for properties with array domains (multiple classes)
+
+### Technical
+- Fixed container clearing using compatible methods
+- Added proper type checking for empty() method availability
+- Enhanced domain matching to support arrays
+- Added comprehensive tests for dynamic updates
+
 ## [2.1.11] - 2025-08-09
 
 ### Fixed

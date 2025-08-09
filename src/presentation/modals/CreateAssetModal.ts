@@ -159,12 +159,24 @@ export class CreateAssetModal extends Modal {
   private async updatePropertiesForClass(className: string): Promise<void> {
     if (!this.propertiesContainer) return;
     
-    this.propertiesContainer.empty();
+    console.log(`Updating properties for class: ${className}`);
+    
+    // Clear the container - try Obsidian method first, fallback to DOM
+    if ('empty' in this.propertiesContainer && typeof (this.propertiesContainer as any).empty === 'function') {
+      (this.propertiesContainer as any).empty();
+    } else {
+      // Fallback to standard DOM method
+      while (this.propertiesContainer.firstChild) {
+        this.propertiesContainer.removeChild(this.propertiesContainer.firstChild);
+      }
+    }
     this.propertyValues.clear();
     
     // Get properties for this class
     const properties: any[] = [];
     const files = this.app.vault.getMarkdownFiles();
+    
+    console.log(`Scanning ${files.length} files for properties...`);
     
     // Find all property definitions related to this class
     for (const file of files) {
@@ -174,13 +186,15 @@ export class CreateAssetModal extends Modal {
         if (instanceClass === '[[exo__Property]]' || instanceClass === 'exo__Property') {
           const domain = cache.frontmatter['rdfs__domain'];
           // Check if this property belongs to the current class
-          if (domain === `[[${className}]]` || domain === className) {
+          if (domain === `[[${className}]]` || domain === className || 
+              (Array.isArray(domain) && (domain.includes(className) || domain.includes(`[[${className}]]`)))) {
             const propertyName = file.basename;
             const label = cache.frontmatter['rdfs__label'] || propertyName;
             const description = cache.frontmatter['rdfs__comment'] || '';
             const range = cache.frontmatter['rdfs__range'] || 'string';
             const isRequired = cache.frontmatter['exo__Property_isRequired'] || false;
             
+            console.log(`Found property ${propertyName} for class ${className}`);
             properties.push({
               name: propertyName,
               label: label,
@@ -193,6 +207,8 @@ export class CreateAssetModal extends Modal {
         }
       }
     }
+    
+    console.log(`Found ${properties.length} properties for class ${className}`);
     
     // Add some default properties for common classes
     if (properties.length === 0 && className === 'exo__Asset') {
@@ -406,6 +422,14 @@ export class CreateAssetModal extends Modal {
 
   onClose() {
     const { contentEl } = this;
-    contentEl.empty();
+    // Clear content - try Obsidian method first, fallback to DOM
+    if ('empty' in contentEl && typeof (contentEl as any).empty === 'function') {
+      (contentEl as any).empty();
+    } else {
+      // Fallback to standard DOM method
+      while (contentEl.firstChild) {
+        contentEl.removeChild(contentEl.firstChild);
+      }
+    }
   }
 }
