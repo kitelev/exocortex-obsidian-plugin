@@ -303,6 +303,9 @@ export default class ExocortexPlugin extends Plugin {
                 const result: any = {};
                 
                 variables.forEach(variable => {
+                    // Initialize with undefined to ensure variable is always present
+                    result[variable] = undefined;
+                    
                     switch(variable) {
                         case 'subject':
                         case 's':
@@ -331,12 +334,13 @@ export default class ExocortexPlugin extends Plugin {
                                 result[variable] = triple.object;
                             }
                             break;
+                        // Default case: variable remains undefined
                     }
                 });
                 
-                if (Object.keys(result).length > 0) {
-                    results.push(result);
-                }
+                // Always add result, even if all variables are undefined
+                // This ensures user gets feedback about their query
+                results.push(result);
             });
             
         } catch (error: any) {
