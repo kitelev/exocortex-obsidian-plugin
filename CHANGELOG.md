@@ -2,6 +2,19 @@
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
 
+## [2.1.13] - 2025-08-09
+
+### Fixed
+- **Test Infrastructure** - Improved test mocks for Obsidian DOM methods
+- **HTMLElement Extensions** - Added global createEl, createDiv, empty methods for tests
+- **Mock Components** - Fixed Setting and DropdownComponent mocks
+- **Test Stability** - Reduced test failures from 22 to 9
+
+### Technical
+- Added proper DOM method mocking for Obsidian API
+- Improved test isolation and reliability
+- Enhanced mock coverage for UI components
+
 ## [2.1.12] - 2025-08-09
 
 ### Fixed
