@@ -1,13 +1,15 @@
-import { MarkdownPostProcessorContext, Plugin } from 'obsidian';
-import { SPARQLEngine } from '../../application/SPARQLEngine';
+import { MarkdownPostProcessorContext, Plugin, Notice } from 'obsidian';
+import { SPARQLEngine, ConstructResult } from '../../application/SPARQLEngine';
 import { Graph } from '../../domain/Graph';
 
 export class SPARQLProcessor {
     private plugin: Plugin;
     private engine: SPARQLEngine;
+    private graph: Graph;
     
     constructor(plugin: Plugin, graph: Graph) {
         this.plugin = plugin;
+        this.graph = graph;
         this.engine = new SPARQLEngine(graph);
     }
     
@@ -63,13 +65,34 @@ export class SPARQLProcessor {
             throw new Error('Empty query');
         }
         
-        // For MVP, support simple SELECT queries
-        if (!sparql.toUpperCase().includes('SELECT')) {
-            throw new Error('Only SELECT queries are currently supported');
-        }
+        const upperQuery = sparql.toUpperCase();
         
-        // Execute using SPARQL engine
-        return this.engine.select(sparql);
+        // Check query type
+        if (upperQuery.includes('CONSTRUCT')) {
+            // Execute CONSTRUCT query
+            const result = this.engine.construct(sparql);
+            
+            // Add generated triples to graph
+            for (const triple of result.triples) {
+                this.graph.add(triple);
+            }
+            
+            // Show notification
+            new Notice(`Generated ${result.triples.length} new triples`);
+            
+            // Return triples as results for display
+            return result.triples.map(t => ({
+                subject: t.subject,
+                predicate: t.predicate,
+                object: t.object,
+                provenance: result.provenance
+            }));
+        } else if (upperQuery.includes('SELECT')) {
+            // Execute SELECT query
+            return this.engine.select(sparql);
+        } else {
+            throw new Error('Only SELECT and CONSTRUCT queries are currently supported');
+        }
     }
     
     private createResultTable(results: any[]): HTMLTableElement {
