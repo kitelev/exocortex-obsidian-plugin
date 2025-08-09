@@ -2,6 +2,24 @@
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
 
+## [2.1.11] - 2025-08-09
+
+### Fixed
+- **Dropdown lists now populated with data** - Classes and ontologies now appear in Create ExoAsset modal
+- **Dynamic property loading** - Properties are loaded based on selected class
+- **Default values provided** - When no data found, sensible defaults are shown
+
+### Added
+- Automatic discovery of classes from vault files with `exo__Instance_class: [[exo__Class]]`
+- Automatic discovery of ontologies from files starting with `!`
+- Property detection based on `rdfs__domain` matching selected class
+- Type mapping from RDF ranges to appropriate input fields
+
+### Technical
+- Enhanced CreateAssetModal to scan vault for classes, ontologies and properties
+- Added mapRangeToType() method for converting RDF types to UI inputs
+- Provided fallback default values when vault is empty
+
 ## [2.1.10] - 2025-08-09
 
 ### Fixed

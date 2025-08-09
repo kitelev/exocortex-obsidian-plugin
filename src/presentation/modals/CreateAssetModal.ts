@@ -1,6 +1,8 @@
-import { App, Modal, Setting, Notice } from 'obsidian';
+import { App, Modal, Setting, Notice, TFile } from 'obsidian';
 import { CreateAssetUseCase } from '../../application/use-cases/CreateAssetUseCase';
 import { DIContainer } from '../../infrastructure/container/DIContainer';
+import { IOntologyRepository } from '../../domain/repositories/IOntologyRepository';
+import { IClassViewRepository } from '../../domain/repositories/IClassViewRepository';
 
 /**
  * Modal for creating new ExoAssets
@@ -15,11 +17,15 @@ export class CreateAssetModal extends Modal {
   
   private createAssetUseCase: CreateAssetUseCase;
   private container: DIContainer;
+  private ontologyRepository: IOntologyRepository;
+  private classViewRepository: IClassViewRepository;
 
   constructor(app: App) {
     super(app);
     this.container = DIContainer.getInstance();
     this.createAssetUseCase = this.container.getCreateAssetUseCase();
+    this.ontologyRepository = this.container.resolve<IOntologyRepository>('IOntologyRepository');
+    this.classViewRepository = this.container.resolve<IClassViewRepository>('IClassViewRepository');
   }
 
   async onOpen() {
@@ -44,8 +50,31 @@ export class CreateAssetModal extends Modal {
   }
 
   private async setupClassField(containerEl: HTMLElement): Promise<void> {
-    // TODO: Implement class service or use repository directly
-    const classes: any[] = [];
+    // Get all class files from the vault
+    const files = this.app.vault.getMarkdownFiles();
+    const classes: { className: string; displayName: string }[] = [];
+    
+    // Find all class definitions (files with exo__Class frontmatter)
+    for (const file of files) {
+      const cache = this.app.metadataCache.getFileCache(file);
+      if (cache?.frontmatter) {
+        const instanceClass = cache.frontmatter['exo__Instance_class'];
+        if (instanceClass === '[[exo__Class]]' || instanceClass === 'exo__Class') {
+          const className = file.basename;
+          const displayName = cache.frontmatter['rdfs__label'] || className;
+          classes.push({ className, displayName });
+        }
+      }
+    }
+    
+    // Add default classes if none found
+    if (classes.length === 0) {
+      classes.push(
+        { className: 'exo__Asset', displayName: 'Asset' },
+        { className: 'exo__Class', displayName: 'Class' },
+        { className: 'exo__Property', displayName: 'Property' }
+      );
+    }
 
     new Setting(containerEl)
       .setName("Class")
@@ -64,8 +93,30 @@ export class CreateAssetModal extends Modal {
   }
 
   private async setupOntologyField(containerEl: HTMLElement): Promise<void> {
-    // TODO: Implement ontology service or use repository directly
-    const ontologies: any[] = [];
+    // Get all ontology files from the vault
+    const files = this.app.vault.getMarkdownFiles();
+    const ontologies: { prefix: string; displayName: string }[] = [];
+    
+    // Find all ontology definitions (files starting with ! or having exo__Ontology_prefix)
+    for (const file of files) {
+      if (file.name.startsWith('!')) {
+        const cache = this.app.metadataCache.getFileCache(file);
+        if (cache?.frontmatter) {
+          const prefix = cache.frontmatter['exo__Ontology_prefix'] || file.basename.substring(1);
+          const displayName = cache.frontmatter['rdfs__label'] || prefix;
+          ontologies.push({ prefix, displayName });
+        }
+      }
+    }
+    
+    // Add default ontologies if none found
+    if (ontologies.length === 0) {
+      ontologies.push(
+        { prefix: 'exo', displayName: 'Exocortex Core' },
+        { prefix: 'ui', displayName: 'User Interface' },
+        { prefix: 'rdfs', displayName: 'RDF Schema' }
+      );
+    }
     
     const defaultOntology = 'exo';
 
@@ -111,8 +162,57 @@ export class CreateAssetModal extends Modal {
     this.propertiesContainer.empty();
     this.propertyValues.clear();
     
-    // TODO: Implement property service or use repository directly
+    // Get properties for this class
     const properties: any[] = [];
+    const files = this.app.vault.getMarkdownFiles();
+    
+    // Find all property definitions related to this class
+    for (const file of files) {
+      const cache = this.app.metadataCache.getFileCache(file);
+      if (cache?.frontmatter) {
+        const instanceClass = cache.frontmatter['exo__Instance_class'];
+        if (instanceClass === '[[exo__Property]]' || instanceClass === 'exo__Property') {
+          const domain = cache.frontmatter['rdfs__domain'];
+          // Check if this property belongs to the current class
+          if (domain === `[[${className}]]` || domain === className) {
+            const propertyName = file.basename;
+            const label = cache.frontmatter['rdfs__label'] || propertyName;
+            const description = cache.frontmatter['rdfs__comment'] || '';
+            const range = cache.frontmatter['rdfs__range'] || 'string';
+            const isRequired = cache.frontmatter['exo__Property_isRequired'] || false;
+            
+            properties.push({
+              name: propertyName,
+              label: label,
+              description: description,
+              type: this.mapRangeToType(range),
+              isRequired: isRequired,
+              range: range
+            });
+          }
+        }
+      }
+    }
+    
+    // Add some default properties for common classes
+    if (properties.length === 0 && className === 'exo__Asset') {
+      properties.push(
+        {
+          name: 'description',
+          label: 'Description',
+          description: 'A brief description of the asset',
+          type: 'text',
+          isRequired: false
+        },
+        {
+          name: 'tags',
+          label: 'Tags',
+          description: 'Tags for categorization',
+          type: 'array',
+          isRequired: false
+        }
+      );
+    }
     
     if (properties.length === 0) {
       this.propertiesContainer.createEl("p", {
@@ -125,6 +225,16 @@ export class CreateAssetModal extends Modal {
     for (const prop of properties) {
       this.createPropertyField(prop);
     }
+  }
+  
+  private mapRangeToType(range: string): string {
+    // Map RDF/OWL ranges to input types
+    if (range.includes('boolean')) return 'boolean';
+    if (range.includes('date') || range.includes('Date')) return 'date';
+    if (range.includes('integer') || range.includes('decimal') || range.includes('float')) return 'number';
+    if (range.includes('string') && range.includes('[]')) return 'array';
+    if (range.includes('text') || range.includes('Text')) return 'text';
+    return 'string'; // default
   }
 
   private createPropertyField(property: any): void {

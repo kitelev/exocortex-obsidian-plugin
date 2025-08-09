@@ -11,7 +11,7 @@ export default class ExocortexPlugin extends Plugin {
     private processorRegistered: boolean = false;
     
     async onload(): Promise<void> {
-        console.log('🚀 Exocortex: Loading plugin v2.1.10...');
+        console.log('🚀 Exocortex: Loading plugin v2.1.11...');
         
         // Initialize DI container
         this.container = DIContainer.initialize(this.app, this);
