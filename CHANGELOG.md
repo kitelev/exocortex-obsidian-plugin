@@ -2,6 +2,19 @@
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
 
+## [2.1.6] - 2025-08-09
+
+### Added
+- **Create ExoAsset command** - New command to create assets through a modal dialog
+- **Command palette integration** - Access via Cmd/Ctrl+P and search for "Create new ExoAsset"
+- **Hotkey support** - Use Cmd/Ctrl+Shift+N to quickly create new assets
+- **Ribbon icon** - Added plus-circle icon in the left sidebar for quick access
+- **DI Container integration** - Properly initialized dependency injection for asset creation
+
+### Fixed
+- Integrated CreateAssetModal and CreateAssetUseCase into the main plugin
+- Connected DIContainer for proper dependency resolution
+
 ## [2.1.5] - 2025-08-09
 
 ### Fixed

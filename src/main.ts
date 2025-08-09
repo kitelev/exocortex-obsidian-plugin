@@ -1,13 +1,20 @@
 import { Plugin, Notice, MarkdownPostProcessorContext, TFile } from 'obsidian';
 import { Graph, Triple } from './domain/Graph';
 import { SPARQLProcessor } from './presentation/processors/SPARQLProcessor';
+import { CreateAssetModal } from './presentation/modals/CreateAssetModal';
+import { DIContainer } from './infrastructure/container/DIContainer';
 
 export default class ExocortexPlugin extends Plugin {
     private graph: Graph;
     private sparqlProcessor: SPARQLProcessor;
+    private container: DIContainer;
     
     async onload(): Promise<void> {
-        console.log('🚀 Exocortex: Loading SPARQL plugin v2.1.5...');
+        console.log('🚀 Exocortex: Loading plugin v2.1.6...');
+        
+        // Initialize DI container
+        this.container = DIContainer.getInstance();
+        await this.container.initialize(this.app);
         
         // Initialize graph
         this.graph = new Graph();
@@ -22,6 +29,21 @@ export default class ExocortexPlugin extends Plugin {
         this.registerMarkdownCodeBlockProcessor('sparql', 
             (source, el, ctx) => this.sparqlProcessor.processCodeBlock(source, el, ctx)
         );
+        
+        // Register command: Create new asset
+        this.addCommand({
+            id: 'create-exo-asset',
+            name: 'Create new ExoAsset',
+            hotkeys: [{ modifiers: ["Mod", "Shift"], key: "n" }],
+            callback: () => {
+                new CreateAssetModal(this.app).open();
+            }
+        });
+        
+        // Add ribbon icon for quick access
+        this.addRibbonIcon('plus-circle', 'Create ExoAsset', () => {
+            new CreateAssetModal(this.app).open();
+        });
         
         // Register file modification handler to update graph
         this.registerEvent(
