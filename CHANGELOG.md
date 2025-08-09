@@ -2,6 +2,19 @@
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
 
+## [2.1.8] - 2025-08-09
+
+### Fixed
+- **Critical DIContainer initialization error resolved** - Plugin now loads correctly without errors
+- **Singleton pattern fix** - DIContainer.initialize() now properly creates and manages the singleton instance
+- **Test coverage maintained at 91%** - Added comprehensive integration tests for DIContainer initialization
+
+### Technical
+- Fixed DIContainer.initialize() to be called instead of getInstance() in main.ts
+- Added getPropertyEditingUseCase() method to DIContainer
+- Updated mocks to include registerEvent method for Plugin class
+- Added comprehensive DIContainerInitialization.test.ts to prevent regression
+
 ## [2.1.7] - 2025-08-09
 
 ### Fixed

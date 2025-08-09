@@ -60,6 +60,14 @@ export class DIContainer {
         return DIContainer.instance;
     }
 
+    /**
+     * Async initialize method for backward compatibility
+     */
+    public async initialize(app: App): Promise<void> {
+        // Already initialized in constructor, this is for backward compatibility
+        return Promise.resolve();
+    }
+
     private registerDependencies(): void {
         // Register Obsidian App
         this.container.register('App', () => this.app);
@@ -195,6 +203,10 @@ export class DIContainer {
 
     public getLayoutRenderer(): LayoutRenderer {
         return this.resolve<LayoutRenderer>('LayoutRenderer');
+    }
+
+    public getPropertyEditingUseCase(): PropertyEditingUseCase {
+        return this.resolve<PropertyEditingUseCase>('PropertyEditingUseCase');
     }
 
     /**

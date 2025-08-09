@@ -10,11 +10,10 @@ export default class ExocortexPlugin extends Plugin {
     private container: DIContainer;
     
     async onload(): Promise<void> {
-        console.log('🚀 Exocortex: Loading plugin v2.1.6...');
+        console.log('🚀 Exocortex: Loading plugin v2.1.8...');
         
         // Initialize DI container
-        this.container = DIContainer.getInstance();
-        await this.container.initialize(this.app);
+        this.container = DIContainer.initialize(this.app, this);
         
         // Initialize graph
         this.graph = new Graph();

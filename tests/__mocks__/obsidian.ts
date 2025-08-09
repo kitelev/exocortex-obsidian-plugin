@@ -23,6 +23,8 @@ export class Plugin {
   
   addSettingTab(settingTab: any): void {}
   
+  registerEvent(event: any): void {}
+  
   registerInterval(interval: number): number {
     return interval;
   }
@@ -334,6 +336,10 @@ export class Vault {
 
   async exists(path: string): Promise<boolean> {
     return this.mockFiles.some(file => file.path === path);
+  }
+  
+  on(event: string, callback: any): any {
+    return { event, callback };
   }
 
   // Helper method for testing
