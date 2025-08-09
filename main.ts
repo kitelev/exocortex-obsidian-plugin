@@ -4,12 +4,16 @@ import { SPARQLProcessor } from './src/presentation/processors/SPARQLProcessor';
 import { CreateAssetModal } from './src/presentation/modals/CreateAssetModal';
 import { DIContainer } from './src/infrastructure/container/DIContainer';
 import { OntologizeAssetCommand } from './src/presentation/commands/OntologizeAssetCommand';
+import { LayoutRenderer } from './src/presentation/renderers/LayoutRenderer';
+import { PropertyRenderer } from './src/presentation/components/PropertyRenderer';
+import { ObsidianClassLayoutRepository } from './src/infrastructure/repositories/ObsidianClassLayoutRepository';
 
 export default class ExocortexPlugin extends Plugin {
     private graph: Graph;
     private sparqlProcessor: SPARQLProcessor;
     private container: DIContainer;
     private processorRegistered: boolean = false;
+    private layoutRenderer: LayoutRenderer;
     
     async onload(): Promise<void> {
         console.log('🚀 Exocortex: Loading plugin v2.1.12...');
@@ -19,6 +23,12 @@ export default class ExocortexPlugin extends Plugin {
         
         // Initialize graph
         this.graph = new Graph();
+        
+        // Initialize layout renderer
+        const layoutRepository = new ObsidianClassLayoutRepository(this.app);
+        const propertyEditingUseCase = this.container.getPropertyEditingUseCase();
+        const propertyRenderer = new PropertyRenderer(this.app, propertyEditingUseCase);
+        this.layoutRenderer = new LayoutRenderer(this.app, layoutRepository, propertyRenderer);
         
         // Load vault data into graph
         await this.loadVaultIntoGraph();
@@ -62,6 +72,21 @@ export default class ExocortexPlugin extends Plugin {
             name: ontologizeCommand.name,
             callback: () => ontologizeCommand.callback()
         });
+        
+        // Register layout renderer for code blocks
+        this.registerMarkdownCodeBlockProcessor('exo-layout',
+            async (source, el, ctx) => {
+                const file = this.app.workspace.getActiveFile();
+                if (!file) return;
+                
+                const metadata = this.app.metadataCache.getFileCache(file);
+                if (!metadata || !metadata.frontmatter) return;
+                
+                // Clear element and render layout
+                el.empty();
+                await this.layoutRenderer.renderLayout(el, file, metadata, null);
+            }
+        );
         
         // Register file modification handler to update graph
         this.registerEvent(

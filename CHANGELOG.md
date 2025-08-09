@@ -2,6 +2,38 @@
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
 
+## [2.4.0] - 2025-08-09
+
+### 🎨 Added - Layout Renderer Integration
+- **Custom Layout System** - Dynamic rendering of assets based on class-specific layouts
+- **Code Block Support** - Use `exo-layout` code blocks to render custom asset views
+- **Block Types** - Support for query, properties, backlinks, and custom blocks
+- **Collapsible Sections** - Interactive UI with collapsible layout blocks
+- **Default Layouts** - Automatic fallback to sensible defaults when no layout defined
+
+### Features
+- New `exo-layout` code block processor for custom rendering
+- Integration with existing PropertyRenderer and block renderers
+- Support for class-based layout configuration
+- Dynamic layout loading based on asset's instance class
+- Clean separation between layout definition and rendering
+
+### Technical
+- LayoutRenderer integrated into main plugin
+- Support for four block types: query, properties, backlinks, custom
+- Proper dependency injection with DIContainer
+- Comprehensive test coverage for layout rendering
+- Compatible with Obsidian's markdown post-processor API
+
+### Usage
+Add this code block to any asset note to render its custom layout:
+```markdown
+```exo-layout
+```
+```
+
+The layout will automatically adapt based on the asset's `exo__Instance_class` property.
+
 ## [2.3.0] - 2025-08-09
 
 ### 🚀 Added - Relation Ontologization Feature
