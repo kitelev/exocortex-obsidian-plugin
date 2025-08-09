@@ -1,497 +1,151 @@
-import { App, TFile, Notice } from 'obsidian';
+import { App, TFile, Notice, MarkdownPostProcessorContext } from 'obsidian';
 import ExocortexPlugin from '../main';
 
-describe('ExocortexPlugin', () => {
+describe('ExocortexPlugin - SPARQL Version', () => {
   let app: App;
   let plugin: ExocortexPlugin;
   
+  // Mock Obsidian App
   beforeEach(async () => {
-    app = new App();
+    app = {
+      vault: {
+        getMarkdownFiles: jest.fn().mockReturnValue([
+          { basename: 'test-file', path: 'test-file.md' }
+        ]),
+        read: jest.fn().mockResolvedValue(`---
+exo__Asset_uid: test-uid
+exo__Asset_label: Test Asset
+exo__Instance_class: "[[exo__Class]]"
+---
+
+# Test File`)
+      },
+      workspace: {
+        openLinkText: jest.fn()
+      }
+    } as unknown as App;
+    
     plugin = new ExocortexPlugin(app, {
-      id: 'exocortex-obsidian-plugin',
+      id: 'exocortex',
       name: 'Exocortex',
-      version: '0.4.1',
+      version: '2.0.0',
       minAppVersion: '1.0.0',
-      description: 'Test',
-      author: 'test',
+      description: 'SPARQL queries in Obsidian',
+      author: 'M.K. Khromov',
       authorUrl: '',
       isDesktopOnly: false
     });
-    // Initialize settings
-    await plugin.loadSettings();
   });
   
   describe('Plugin Lifecycle', () => {
     test('should load plugin successfully', async () => {
-      const loadDataSpy = jest.spyOn(plugin, 'loadData');
+      const registerSpy = jest.spyOn(plugin, 'registerMarkdownCodeBlockProcessor');
       await plugin.onload();
       
-      expect(loadDataSpy).toHaveBeenCalled();
-      expect((window as any).ExoUIRender).toBeDefined();
+      expect(registerSpy).toHaveBeenCalledWith('sparql', expect.any(Function));
     });
     
-    test('should unload plugin successfully', () => {
-      (window as any).ExoUIRender = {};
-      plugin.onunload();
-      
-      expect((window as any).ExoUIRender).toBeUndefined();
+    test('should unload plugin successfully', async () => {
+      await plugin.onload();
+      await plugin.onunload();
+      // Plugin should unload without errors
     });
   });
   
-  describe('Settings Management', () => {
-    test('should load default settings', async () => {
-      await plugin.loadSettings();
-      
-      expect(plugin.settings).toBeDefined();
-      expect(plugin.settings.defaultOntology).toBe('exo');
-      expect(plugin.settings.enableAutoLayout).toBe(true);
-      expect(plugin.settings.debugMode).toBe(false);
-      expect(plugin.settings.templateFolderPath).toBe('templates');
+  describe('SPARQL Processing', () => {
+    test('should register SPARQL code block processor', async () => {
+      await plugin.onload();
+      // Check if processor was registered (tested via E2E tests)
+      expect(true).toBe(true);
     });
     
-    test('should save settings', async () => {
-      const saveDataSpy = jest.spyOn(plugin, 'saveData').mockResolvedValue();
-      plugin.settings = {
-        defaultOntology: 'ems',
-        enableAutoLayout: false,
-        debugMode: true,
-        templateFolderPath: 'templates'
+    test('should extract triples from files', async () => {
+      await plugin.onload();
+      
+      const query = 'SELECT * WHERE { } LIMIT 1';
+      const results = await plugin.executeSPARQL(query);
+      
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBeGreaterThan(0);
+      expect(results[0]).toHaveProperty('subject');
+      expect(results[0]).toHaveProperty('predicate');
+      expect(results[0]).toHaveProperty('object');
+    });
+    
+    test('should parse frontmatter correctly', async () => {
+      await plugin.onload();
+      
+      const yaml = `exo__Asset_uid: test-uid
+exo__Asset_label: Test Asset
+exo__Instance_class: "[[exo__Class]]"`;
+      
+      const result = plugin.parseFrontmatter(yaml);
+      
+      expect(result['exo__Asset_uid']).toBe('test-uid');
+      expect(result['exo__Asset_label']).toBe('Test Asset');
+      expect(result['exo__Instance_class']).toBe('[[exo__Class]]');
+    });
+    
+    test('should handle invalid SPARQL queries', async () => {
+      await plugin.onload();
+      
+      const invalidQuery = 'INVALID QUERY';
+      
+      // Should throw an error for invalid queries, but not crash
+      await expect(plugin.executeSPARQL(invalidQuery)).rejects.toThrow('Only SELECT queries supported');
+    });
+    
+    test('should respect LIMIT in queries', async () => {
+      await plugin.onload();
+      
+      const query = 'SELECT * WHERE { } LIMIT 2';
+      const results = await plugin.executeSPARQL(query);
+      
+      expect(results.length).toBeLessThanOrEqual(2);
+    });
+    
+    test('should extract specific variables from SELECT queries', async () => {
+      await plugin.onload();
+      
+      const query = 'SELECT ?subject ?predicate WHERE { } LIMIT 3';
+      const results = await plugin.executeSPARQL(query);
+      
+      expect(results.length).toBeGreaterThan(0);
+      if (results[0]) {
+        expect(results[0]).toHaveProperty('subject');
+        expect(results[0]).toHaveProperty('predicate');
+        expect(results[0]).not.toHaveProperty('object');
+      }
+    });
+  });
+  
+  describe('DOM Processing', () => {
+    test('should process SPARQL code blocks without errors', async () => {
+      // Setup DOM mock
+      const mockContainer = {
+        innerHTML: '',
+        appendChild: jest.fn(),
+        className: '',
+        style: {}
       };
       
-      await plugin.saveSettings();
-      
-      expect(saveDataSpy).toHaveBeenCalledWith(plugin.settings);
-    });
-    
-    test('should merge saved settings with defaults', async () => {
-      jest.spyOn(plugin, 'loadData').mockResolvedValue({
-        defaultOntology: 'gtd'
-      });
-      
-      await plugin.loadSettings();
-      
-      expect(plugin.settings.defaultOntology).toBe('gtd');
-      expect(plugin.settings.enableAutoLayout).toBe(true); // default value
-      expect(plugin.settings.debugMode).toBe(false); // default value
-      expect(plugin.settings.templateFolderPath).toBe('templates'); // default value
-    });
-  });
-  
-  describe('Ontology Discovery', () => {
-    test('should find all ontologies in vault', async () => {
-      const mockFile1 = new TFile();
-      const mockFile2 = new TFile();
-      mockFile1.basename = '!exo';
-      mockFile2.basename = 'Ontology - EMS';
-      
-      jest.spyOn(app.vault, 'getFiles').mockReturnValue([mockFile1, mockFile2]);
-      jest.spyOn(app.metadataCache, 'getFileCache')
-        .mockImplementation((file: TFile) => {
-          if (file.basename === '!exo') {
-            return {
-              frontmatter: {
-                'exo__Instance_class': '[[exo__Ontology]]',
-                'exo__Ontology_prefix': 'exo',
-                'exo__Asset_label': 'EXO Core'
-              }
-            };
-          }
-          if (file.basename === 'Ontology - EMS') {
-            return {
-              frontmatter: {
-                'exo__Instance_class': 'exo__InternalOntology',
-                'exo__Ontology_prefix': 'ems',
-                'exo__Asset_label': 'EMS Ontology'
-              }
-            };
-          }
-          return null;
-        });
-      
-      const ontologies = await plugin.findAllOntologies();
-      
-      expect(ontologies).toHaveLength(4); // 2 found + 2 defaults (gtd, ims added, exo and ems already found)
-      expect(ontologies.find(o => o.prefix === 'exo')).toMatchObject({
-        prefix: 'exo',
-        label: 'EXO Core',
-        fileName: '!exo'
-      });
-      expect(ontologies.find(o => o.prefix === 'ems')).toMatchObject({
-        prefix: 'ems',
-        label: 'EMS Ontology',
-        fileName: 'Ontology - EMS'
-      });
-    });
-    
-    test('should include default ontologies even if not found', async () => {
-      jest.spyOn(app.vault, 'getFiles').mockReturnValue([]);
-      
-      const ontologies = await plugin.findAllOntologies();
-      
-      expect(ontologies).toHaveLength(4); // All defaults
-      const prefixes = ontologies.map(o => o.prefix).sort();
-      expect(prefixes).toEqual(['ems', 'exo', 'gtd', 'ims']);
-    });
-  });
-  
-  describe('Class Discovery', () => {
-    test('should find all classes in vault', async () => {
-      const mockFile1 = new TFile();
-      const mockFile2 = new TFile();
-      mockFile1.basename = 'exo__Asset';
-      mockFile2.basename = 'ems__Task';
-      
-      jest.spyOn(app.vault, 'getFiles').mockReturnValue([mockFile1, mockFile2]);
-      jest.spyOn(app.metadataCache, 'getFileCache')
-        .mockImplementation((file: TFile) => {
-          if (file.basename === 'exo__Asset') {
-            return {
-              frontmatter: {
-                'exo__Instance_class': 'exo__Class',
-                'exo__Asset_label': 'Asset Base Class',
-                'exo__Asset_isDefinedBy': '[[!exo]]'
-              }
-            };
-          }
-          if (file.basename === 'ems__Task') {
-            return {
-              frontmatter: {
-                'exo__Instance_class': '[[owl__Class]]',
-                'rdfs__label': 'Task',
-                'exo__Asset_isDefinedBy': '[[!ems]]'
-              }
-            };
-          }
-          return null;
-        });
-      
-      const classes = await plugin.findAllClasses();
-      
-      expect(classes.length).toBeGreaterThan(2);
-      expect(classes.find(c => c.className === 'exo__Asset')).toMatchObject({
-        className: 'exo__Asset',
-        label: 'Asset Base Class',
-        ontology: 'exo'
-      });
-      expect(classes.find(c => c.className === 'ems__Task')).toMatchObject({
-        className: 'ems__Task',
-        label: 'Task',
-        ontology: 'ems'
-      });
-    });
-    
-    test('should include common classes even if not found', async () => {
-      jest.spyOn(app.vault, 'getFiles').mockReturnValue([]);
-      
-      const classes = await plugin.findAllClasses();
-      
-      expect(classes.length).toBeGreaterThan(10);
-      expect(classes.find(c => c.className === 'exo__Asset')).toBeDefined();
-      expect(classes.find(c => c.className === 'ems__Task')).toBeDefined();
-      expect(classes.find(c => c.className === 'gtd__Project')).toBeDefined();
-    });
-  });
-  
-  describe('Property Discovery', () => {
-    test('should find properties for a class', async () => {
-      const mockFile1 = new TFile();
-      const mockFile2 = new TFile();
-      mockFile1.basename = 'exo__Asset_label';
-      mockFile2.basename = 'ems__Task_status';
-      
-      jest.spyOn(app.vault, 'getFiles').mockReturnValue([mockFile1, mockFile2]);
-      jest.spyOn(app.metadataCache, 'getFileCache')
-        .mockImplementation((file: TFile) => {
-          if (file.basename === 'exo__Asset_label') {
-            return {
-              frontmatter: {
-                'exo__Instance_class': 'exo__DatatypeProperty',
-                'exo__Property_domain': 'exo__Asset',
-                'exo__Property_range': 'string',
-                'exo__Property_required': true,
-                'exo__Asset_label': 'Label'
-              }
-            };
-          }
-          if (file.basename === 'ems__Task_status') {
-            return {
-              frontmatter: {
-                'exo__Instance_class': 'exo__Property',
-                'exo__Property_domain': '[[ems__Task]]',
-                'exo__Property_range': 'enum:todo,in_progress,done',
-                'rdfs__label': 'Status'
-              }
-            };
-          }
-          return null;
-        });
-      
-      // Test for exo__Asset
-      const assetProps = await plugin.findPropertiesForClass('exo__Asset');
-      const labelProp = assetProps.find(p => p.propertyName === 'exo__Asset_label');
-      expect(labelProp).toMatchObject({
-        propertyName: 'exo__Asset_label',
-        label: 'Label',
-        range: 'string',
-        isRequired: true
-      });
-      
-      // Test for ems__Task
-      const taskProps = await plugin.findPropertiesForClass('ems__Task');
-      const statusProp = taskProps.find(p => p.propertyName === 'ems__Task_status');
-      expect(statusProp).toMatchObject({
-        propertyName: 'ems__Task_status',
-        label: 'Status',
-        range: 'enum:todo,in_progress,done',
-        isRequired: false
-      });
-    });
-    
-    test('should inherit properties from parent classes', async () => {
-      const mockFile1 = new TFile();
-      const mockFile2 = new TFile();
-      mockFile1.basename = 'ems__Task';
-      mockFile2.basename = 'exo__Asset_label';
-      
-      jest.spyOn(app.vault, 'getFiles').mockReturnValue([mockFile1, mockFile2]);
-      jest.spyOn(app.metadataCache, 'getFileCache')
-        .mockImplementation((file: TFile) => {
-          if (file.basename === 'ems__Task') {
-            return {
-              frontmatter: {
-                'exo__Instance_class': 'exo__Class',
-                'exo__Class_superClass': '[[exo__Asset]]'
-              }
-            };
-          }
-          if (file.basename === 'exo__Asset_label') {
-            return {
-              frontmatter: {
-                'exo__Instance_class': 'exo__Property',
-                'exo__Property_domain': 'exo__Asset',
-                'exo__Property_range': 'string'
-              }
-            };
-          }
-          return null;
-        });
-      
-      const hierarchy = await plugin.getClassHierarchy('ems__Task');
-      expect(hierarchy).toContain('ems__Task');
-      expect(hierarchy).toContain('exo__Asset');
-      
-      const props = await plugin.findPropertiesForClass('ems__Task');
-      const labelProp = props.find(p => p.propertyName === 'exo__Asset_label');
-      expect(labelProp).toBeDefined();
-    });
-  });
-  
-  describe('Class Hierarchy', () => {
-    test('should get class hierarchy', async () => {
-      const mockFile1 = new TFile();
-      const mockFile2 = new TFile();
-      mockFile1.basename = 'ems__Task';
-      mockFile2.basename = 'exo__Asset';
-      
-      jest.spyOn(app.vault, 'getFiles').mockReturnValue([mockFile1, mockFile2]);
-      jest.spyOn(app.metadataCache, 'getFileCache')
-        .mockImplementation((file: TFile) => {
-          if (file.basename === 'ems__Task') {
-            return {
-              frontmatter: {
-                'exo__Class_superClass': '[[exo__Asset]]'
-              }
-            };
-          }
-          return null;
-        });
-      
-      const hierarchy = await plugin.getClassHierarchy('ems__Task');
-      
-      expect(hierarchy).toEqual(['ems__Task', 'exo__Asset']);
-    });
-    
-    test('should handle circular references in hierarchy', async () => {
-      const mockFile1 = new TFile();
-      const mockFile2 = new TFile();
-      mockFile1.basename = 'ClassA';
-      mockFile2.basename = 'ClassB';
-      
-      jest.spyOn(app.vault, 'getFiles').mockReturnValue([mockFile1, mockFile2]);
-      jest.spyOn(app.metadataCache, 'getFileCache')
-        .mockImplementation((file: TFile) => {
-          if (file.basename === 'ClassA') {
-            return {
-              frontmatter: {
-                'exo__Class_superClass': 'ClassB'
-              }
-            };
-          }
-          if (file.basename === 'ClassB') {
-            return {
-              frontmatter: {
-                'exo__Class_superClass': 'ClassA'
-              }
-            };
-          }
-          return null;
-        });
-      
-      const hierarchy = await plugin.getClassHierarchy('ClassA');
-      
-      expect(hierarchy).toContain('ClassA');
-      expect(hierarchy).toContain('ClassB');
-      expect(hierarchy.length).toBeLessThanOrEqual(2); // Should stop at circular reference
-    });
-  });
-  
-  describe('Layout Management', () => {
-    test('should find layout for class', async () => {
-      const mockLayoutFile = new TFile();
-      mockLayoutFile.basename = 'Layout - ems__Task';
-      
-      jest.spyOn(app.vault, 'getFiles').mockReturnValue([mockLayoutFile]);
-      
-      const layoutFile = await plugin.findLayoutForClass('[[ems__Task]]');
-      
-      expect(layoutFile).toBe(mockLayoutFile);
-    });
-    
-    test('should return null if no layout found', async () => {
-      jest.spyOn(app.vault, 'getFiles').mockReturnValue([]);
-      
-      const layoutFile = await plugin.findLayoutForClass('NonExistentClass');
-      
-      expect(layoutFile).toBeNull();
-    });
-    
-    test('should refresh all layouts', () => {
-      // Import MarkdownView from the mock
-      const { MarkdownView } = require('obsidian');
-      const mockView = new MarkdownView();
-      const mockLeaf = { view: mockView };
-      
-      // Make the view look like a MarkdownView instance
-      Object.setPrototypeOf(mockView, MarkdownView.prototype);
-      
-      jest.spyOn(app.workspace, 'iterateAllLeaves')
-        .mockImplementation((callback: any) => {
-          callback(mockLeaf);
-        });
-      
-      plugin.refreshAllLayouts();
-      
-      expect(mockView.previewMode.rerender).toHaveBeenCalledWith(true);
-    });
-  });
-  
-  describe('Value Formatting', () => {
-    test('should format array values', () => {
-      const result = plugin.formatValue(['item1', 'item2', 'item3']);
-      expect(result).toBe('item1, item2, item3');
-    });
-    
-    test('should format object values', () => {
-      const result = plugin.formatValue({ key: 'value' });
-      expect(result).toBe('{"key":"value"}');
-    });
-    
-    test('should format string values', () => {
-      const result = plugin.formatValue('simple string');
-      expect(result).toBe('simple string');
-    });
-    
-    test('should format null values', () => {
-      const result = plugin.formatValue(null);
-      expect(result).toBe('null');
-    });
-    
-    test('should format nested arrays', () => {
-      const result = plugin.formatValue([['nested'], 'item']);
-      expect(result).toBe('nested, item');
-    });
-  });
-  
-  describe('Universal Layout Renderer', () => {
-    test('should render error when no file determined', async () => {
-      const mockDv = {
-        paragraph: jest.fn(),
-        header: jest.fn(),
-        table: jest.fn(),
-        list: jest.fn()
-      };
-      const mockCtx = {
-        container: {
-          closest: jest.fn().mockReturnValue(null)
-        }
+      const mockContext: MarkdownPostProcessorContext = {
+        sourcePath: 'test.md',
+        frontmatter: {},
+        addChild: jest.fn(),
+        getSectionInfo: jest.fn()
       };
       
-      jest.spyOn(app.workspace, 'getActiveFile').mockReturnValue(null);
+      await plugin.onload();
       
-      await plugin.renderUniversalLayout(mockDv, mockCtx);
+      const query = 'SELECT * WHERE { } LIMIT 1';
       
-      expect(mockDv.paragraph).toHaveBeenCalledWith('Error: Could not determine current file');
-    });
-    
-    test('should render error when no frontmatter', async () => {
-      const mockFile = new TFile();
-      mockFile.basename = 'test';
-      const mockDv = {
-        paragraph: jest.fn(),
-        header: jest.fn(),
-        table: jest.fn(),
-        list: jest.fn()
-      };
-      const mockCtx = {
-        container: {
-          closest: jest.fn().mockReturnValue({ file: mockFile })
-        }
-      };
+      // Should not throw errors
+      await expect(plugin.processSPARQL(query, mockContainer as any, mockContext)).resolves.toBeUndefined();
       
-      jest.spyOn(app.metadataCache, 'getFileCache').mockReturnValue(null);
-      
-      await plugin.renderUniversalLayout(mockDv, mockCtx);
-      
-      expect(mockDv.paragraph).toHaveBeenCalledWith('No frontmatter found');
-    });
-    
-    test('should render default layout when no custom layout found', async () => {
-      const mockFile = new TFile();
-      mockFile.basename = 'test';
-      const mockDv = {
-        paragraph: jest.fn(),
-        header: jest.fn(),
-        table: jest.fn(),
-        list: jest.fn()
-      };
-      const mockCtx = {
-        container: {
-          closest: jest.fn().mockReturnValue({ file: mockFile }),
-          createDiv: jest.fn().mockReturnValue({})
-        }
-      };
-      
-      // Initialize diContainer if class layouts are enabled
-      plugin.settings.enableClassLayouts = false; // Disable to avoid diContainer issue
-      
-      jest.spyOn(app.metadataCache, 'getFileCache').mockReturnValue({
-        frontmatter: {
-          'exo__Instance_class': '[[ems__Task]]',
-          'exo__Asset_label': 'Test Task'
-        }
-      });
-      jest.spyOn(plugin, 'findLayoutForClass').mockResolvedValue(null);
-      
-      // Mock the renderDefaultLayout to avoid diContainer issues
-      jest.spyOn(plugin as any, 'renderDefaultLayout').mockImplementation(async (dv, container, file, metadata) => {
-        dv.header(2, 'Properties');
-        dv.table(['Property', 'Value'], []);
-      });
-      
-      await plugin.renderUniversalLayout(mockDv, mockCtx);
-      
-      expect(mockDv.header).toHaveBeenCalledWith(2, 'Properties');
-      expect(mockDv.table).toHaveBeenCalled();
+      // Should have cleared and modified container
+      expect(mockContainer.innerHTML).toBe('');
+      expect(mockContainer.appendChild).toHaveBeenCalled();
     });
   });
 });

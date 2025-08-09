@@ -26,6 +26,10 @@ export class Plugin {
   registerInterval(interval: number): number {
     return interval;
   }
+  
+  registerMarkdownCodeBlockProcessor(language: string, handler: Function): void {
+    // Mock implementation for SPARQL processor registration
+  }
 }
 
 export class Modal {
