@@ -27,26 +27,16 @@ export const config = {
   // ============
   maxInstances: 1,
   capabilities: [{
-    browserName: 'chrome',
-    'goog:chromeOptions': {
-      args: process.env.CI ? [
-        '--headless=new',
-        '--no-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ] : [
-        '--disable-web-security',
-        '--window-size=1920,1080'
-      ]
-    },
+    browserName: 'obsidian',
+    browserVersion: 'latest',
     'wdio:obsidianOptions': {
-      appVersion: 'latest',
       vault: './tests/ui/fixtures/vault',
       plugins: [
         { path: '.', enabled: true }  // The exocortex plugin from current directory
       ],
       // Increase timeout for slower environments
-      startupTimeout: process.env.CI ? 60000 : 30000
+      startupTimeout: process.env.CI ? 60000 : 30000,
+      headless: process.env.CI ? true : false
     }
   }],
   

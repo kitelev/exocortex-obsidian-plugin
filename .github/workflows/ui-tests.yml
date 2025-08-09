@@ -32,38 +32,27 @@ jobs:
       - name: Build plugin
         run: npm run build
       
-      - name: Setup display and dependencies (Linux only)
+      - name: Setup display server (Linux only)
         if: runner.os == 'Linux'
         run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb libnss3-dev libatk-bridge2.0-dev libdrm2 libgtk-3-dev libgbm-dev libasound2-dev
+          sudo apt-get update -q
+          sudo apt-get install -y xvfb fluxbox x11-utils x11-xserver-utils
+          # Start Xvfb
           export DISPLAY=:99
-          Xvfb :99 -screen 0 1920x1080x24 -ac -nolisten tcp -dpi 96 > /tmp/xvfb.log 2>&1 &
-          sleep 3  # Wait for Xvfb to start
+          Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset &
+          # Wait for X server to start
+          sleep 3
+          # Start a lightweight window manager
+          fluxbox -display :99 &
+          sleep 2
           echo "DISPLAY=:99" >> $GITHUB_ENV
       
-      - name: Download Obsidian (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          curl -L -o Obsidian.AppImage "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.7/Obsidian-1.6.7.AppImage"
-          chmod +x Obsidian.AppImage
-          echo "OBSIDIAN_APP_PATH=$PWD/Obsidian.AppImage" >> $GITHUB_ENV
-      
-      - name: Download Obsidian (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          curl -L -o Obsidian.dmg "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.7/Obsidian-1.6.7-universal.dmg"
-          hdiutil attach Obsidian.dmg -nobrowse -noautoopen
-          cp -R "/Volumes/Obsidian/Obsidian.app" .
-          hdiutil detach "/Volumes/Obsidian"
-          echo "OBSIDIAN_APP_PATH=$PWD/Obsidian.app" >> $GITHUB_ENV
-      
-      - name: Run UI tests
+      - name: Run UI tests with fallback
         env:
           DISPLAY: ${{ runner.os == 'Linux' && ':99' || '' }}
           CI: true
           DEBUG: ${{ runner.debug == '1' && 'true' || 'false' }}
-        run: npm run test:ui:ci
+        run: npm run test:ui:with-fallback
         timeout-minutes: 30
       
       - name: Upload test results and artifacts

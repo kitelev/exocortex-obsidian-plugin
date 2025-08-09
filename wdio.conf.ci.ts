@@ -18,31 +18,9 @@ export const config = {
   // Capabilities - CI Optimized
   // ============
   capabilities: [{
-    ...(baseConfig as any).capabilities[0],
-    browserName: 'chrome',
-    'goog:chromeOptions': {
-      args: [
-        '--headless=new',
-        '--no-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--disable-web-security',
-        '--disable-features=VizDisplayCompositor',
-        '--window-size=1920,1080',
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding',
-        '--disable-features=TranslateUI',
-        '--disable-default-apps',
-        '--no-first-run',
-        '--disable-extensions',
-        '--disable-plugins',
-        '--disable-images',
-        '--disable-background-networking'
-      ]
-    },
+    browserName: 'obsidian',
+    browserVersion: 'latest',
     'wdio:obsidianOptions': {
-      appVersion: 'latest',
       vault: './tests/ui/fixtures/vault',
       plugins: [
         { path: '.', enabled: true }

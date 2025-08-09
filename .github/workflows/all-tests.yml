@@ -246,63 +246,16 @@ jobs:
           sleep 2
           echo "DISPLAY=:99" >> $GITHUB_ENV
           
-      - name: Download and setup Obsidian (Linux)
-        if: runner.os == 'Linux'
+      - name: Prepare test environment
         run: |
-          OBSIDIAN_VERSION="1.6.7"
-          curl -L -o Obsidian.AppImage "https://github.com/obsidianmd/obsidian-releases/releases/download/v${OBSIDIAN_VERSION}/Obsidian-${OBSIDIAN_VERSION}.AppImage"
-          chmod +x Obsidian.AppImage
-          echo "OBSIDIAN_APP_PATH=$PWD/Obsidian.AppImage" >> $GITHUB_ENV
-          # Test that we can run Obsidian
-          timeout 10s ./Obsidian.AppImage --version || echo "Obsidian version check completed"
+          echo "✅ Test environment prepared - wdio-obsidian-service will handle Obsidian installation"
       
-      - name: Download and setup Obsidian (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          OBSIDIAN_VERSION="1.6.7"
-          curl -L -o Obsidian.dmg "https://github.com/obsidianmd/obsidian-releases/releases/download/v${OBSIDIAN_VERSION}/Obsidian-${OBSIDIAN_VERSION}-universal.dmg"
-          hdiutil attach Obsidian.dmg -nobrowse -noautoopen
-          cp -R "/Volumes/Obsidian/Obsidian.app" .
-          hdiutil detach "/Volumes/Obsidian" || true
-          echo "OBSIDIAN_APP_PATH=$PWD/Obsidian.app" >> $GITHUB_ENV
-      
-      - name: Verify Obsidian installation
-        run: |
-          echo "Obsidian app path: $OBSIDIAN_APP_PATH"
-          if [ -f "$OBSIDIAN_APP_PATH" ] || [ -d "$OBSIDIAN_APP_PATH" ]; then
-            echo "✅ Obsidian found at: $OBSIDIAN_APP_PATH"
-          else
-            echo "❌ Obsidian not found at: $OBSIDIAN_APP_PATH"
-            exit 1
-          fi
-      
-      - name: Run UI tests with retry
+      - name: Run UI tests with fallback
         id: ui_tests
-        run: |
-          attempt=1
-          max_attempts=3
-          
-          while [ $attempt -le $max_attempts ]; do
-            echo "🚀 UI Test attempt $attempt of $max_attempts"
-            
-            if npm run test:ui; then
-              echo "✅ UI tests passed on attempt $attempt"
-              exit 0
-            else
-              echo "❌ UI tests failed on attempt $attempt"
-              if [ $attempt -eq $max_attempts ]; then
-                echo "💥 All UI test attempts failed"
-                exit 1
-              fi
-              
-              echo "⏳ Waiting 5 seconds before retry..."
-              sleep 5
-              attempt=$((attempt + 1))
-            fi
-          done
+        run: npm run test:ui:with-fallback
         env:
           DISPLAY: ${{ env.DISPLAY }}
-          OBSIDIAN_APP_PATH: ${{ env.OBSIDIAN_APP_PATH }}
+          CI: true
       
       - name: Upload UI test screenshots (on failure)
         if: failure()
