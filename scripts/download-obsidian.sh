@@ -5,7 +5,7 @@
 
 set -e
 
-OBSIDIAN_VERSION="${OBSIDIAN_VERSION:-1.6.7}"
+OBSIDIAN_VERSION="${OBSIDIAN_VERSION:-1.8.10}"
 PLATFORM=$(uname -s)
 ARCH=$(uname -m)
 
@@ -13,13 +13,9 @@ echo "🔍 Detecting platform: $PLATFORM $ARCH"
 
 if [ "$PLATFORM" = "Darwin" ]; then
     # macOS
-    if [ "$ARCH" = "arm64" ]; then
-        URL="https://github.com/obsidianmd/obsidian-releases/releases/download/v${OBSIDIAN_VERSION}/Obsidian-${OBSIDIAN_VERSION}-universal.dmg"
-        FILE="Obsidian.dmg"
-    else
-        URL="https://github.com/obsidianmd/obsidian-releases/releases/download/v${OBSIDIAN_VERSION}/Obsidian-${OBSIDIAN_VERSION}.dmg"
-        FILE="Obsidian.dmg"
-    fi
+    # All macOS versions now use the same DMG
+    URL="https://github.com/obsidianmd/obsidian-releases/releases/download/v${OBSIDIAN_VERSION}/Obsidian-${OBSIDIAN_VERSION}.dmg"
+    FILE="Obsidian.dmg"
 elif [ "$PLATFORM" = "Linux" ]; then
     # Linux
     URL="https://github.com/obsidianmd/obsidian-releases/releases/download/v${OBSIDIAN_VERSION}/Obsidian-${OBSIDIAN_VERSION}.AppImage"

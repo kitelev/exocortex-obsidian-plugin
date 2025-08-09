@@ -23,4 +23,12 @@ data.json
 
 # Test coverage reports
 coverage/
-*.lcov.obsidian-cache/
+*.lcov
+
+# Obsidian test cache
+.obsidian-cache/
+test-obsidian/
+
+# Test artifacts
+screenshots/
+wdio-logs/

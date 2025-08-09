@@ -1,6 +1,22 @@
 # Changelog
 
-All notable changes to the Exocortex Obsidian Plugin will be documented in this file.## [2.1.0] - 2025-08-09
+All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
+
+## [2.1.5] - 2025-08-09
+
+### Fixed
+- Fixed SPARQL functionality by integrating proper SPARQLEngine and Graph components
+- Replaced simplified SPARQL implementation with full-featured RDF triple store
+- Added real-time graph updates when files are modified, created, or deleted
+- Improved frontmatter parsing to handle arrays and complex values correctly
+- Fixed SPARQL processor to use the proper architecture components
+
+### Changed
+- SPARQL queries now run against a persistent in-memory RDF graph
+- Graph is automatically synchronized with vault changes
+- Better performance for large vaults through indexed triple store
+
+## [2.1.0] - 2025-08-09
 
 ### Added
 

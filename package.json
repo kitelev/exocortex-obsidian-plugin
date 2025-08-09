@@ -1,6 +1,6 @@
 {
   "name": "exocortex-obsidian-plugin",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "Exocortex: A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
   "main": "main.js",
   "engines": {
@@ -25,6 +25,7 @@
     "test:ui:ci": "wdio run wdio.conf.ci.ts",
     "test:ui:local": "wdio run wdio.conf.ts",
     "test:ui:headless": "CI=true wdio run wdio.conf.ts",
+    "test:ui:macos": "wdio run wdio.conf.macos.ts",
     "test:ui:with-fallback": "bash scripts/run-ui-tests-with-fallback.sh",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e:all",
     "test:ci": "npm run test:unit && npm run test:integration && npm run test:e2e:all && npm run test:ui:ci"
@@ -37,7 +38,7 @@
     "ontology",
     "semantic"
   ],
-  "author": "kitelev",
+  "author": "A. Kitelev",
   "license": "MIT",
   "devDependencies": {
     "@types/chai": "^5.2.2",

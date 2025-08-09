@@ -181,7 +181,7 @@ Tests automatically capture screenshots on failure (when configured).
 
 ### Environment Variables
 - `OBSIDIAN_APP_PATH`: Path to Obsidian executable
-- `OBSIDIAN_VERSION`: Specific version to test (default: latest)
+- `OBSIDIAN_VERSION`: Specific version to test (default: 1.8.10)
 - `HEADLESS`: Run in headless mode (default: true)
 
 ## Contributing

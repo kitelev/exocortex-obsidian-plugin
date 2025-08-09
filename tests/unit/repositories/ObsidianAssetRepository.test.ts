@@ -371,4 +371,696 @@ Content`;
             expect(modifiedContent).toContain('existing: value');
         });
     });
+
+    describe('findByClass', () => {
+        it('should find assets by class name', async () => {
+            const mockFiles = [
+                new TFile('Asset1.md'),
+                new TFile('Asset2.md'),
+                new TFile('Asset3.md')
+            ];
+
+            const targetClass = 'exo__TestClass';
+            const className = ClassName.create(targetClass).getValue()!;
+
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+                if (file.path === 'Asset1.md') {
+                    return { 
+                        frontmatter: {
+                            'exo__Asset_uid': 'asset-1',
+                            'exo__Asset_label': 'Asset 1',
+                            'exo__Instance_class': ['[[exo__TestClass]]'],
+                            'exo__Asset_isDefinedBy': '[[exo]]'
+                        }
+                    };
+                }
+                if (file.path === 'Asset3.md') {
+                    return { 
+                        frontmatter: {
+                            'exo__Asset_uid': 'asset-3',
+                            'exo__Asset_label': 'Asset 3',
+                            'exo__Instance_class': ['[[exo__TestClass]]'],
+                            'exo__Asset_isDefinedBy': '[[exo]]'
+                        }
+                    };
+                }
+                return {
+                    frontmatter: {
+                        'exo__Asset_uid': 'asset-2',
+                        'exo__Asset_label': 'Asset 2',
+                        'exo__Instance_class': ['[[exo__OtherClass]]'],
+                        'exo__Asset_isDefinedBy': '[[exo]]'
+                    }
+                };
+            });
+
+            const assets = await repository.findByClass(className);
+
+            expect(assets).toHaveLength(2);
+            expect(assets[0].getId().toString()).toBe('asset-1');
+            expect(assets[1].getId().toString()).toBe('asset-3');
+        });
+
+        it('should find assets with class name without brackets', async () => {
+            const mockFiles = [new TFile('Asset1.md')];
+            const className = ClassName.create('exo__TestClass').getValue()!;
+
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockReturnValue({
+                frontmatter: {
+                    'exo__Asset_uid': 'asset-1',
+                    'exo__Asset_label': 'Asset 1',
+                    'exo__Instance_class': ['exo__TestClass'], // No brackets
+                    'exo__Asset_isDefinedBy': '[[exo]]'
+                }
+            });
+
+            const assets = await repository.findByClass(className);
+
+            expect(assets).toHaveLength(1);
+            expect(assets[0].getId().toString()).toBe('asset-1');
+        });
+
+        it('should handle array of classes', async () => {
+            const mockFiles = [new TFile('Asset1.md')];
+            const className = ClassName.create('exo__TestClass').getValue()!;
+
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockReturnValue({
+                frontmatter: {
+                    'exo__Asset_uid': 'asset-1',
+                    'exo__Asset_label': 'Asset 1',
+                    'exo__Instance_class': ['[[exo__OtherClass]]', '[[exo__TestClass]]'],
+                    'exo__Asset_isDefinedBy': '[[exo]]'
+                }
+            });
+
+            const assets = await repository.findByClass(className);
+
+            expect(assets).toHaveLength(1);
+            expect(assets[0].getId().toString()).toBe('asset-1');
+        });
+
+        it('should handle single class as string', async () => {
+            const mockFiles = [new TFile('Asset1.md')];
+            const className = ClassName.create('exo__TestClass').getValue()!;
+
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockReturnValue({
+                frontmatter: {
+                    'exo__Asset_uid': 'asset-1',
+                    'exo__Asset_label': 'Asset 1',
+                    'exo__Instance_class': '[[exo__TestClass]]', // Single string, not array
+                    'exo__Asset_isDefinedBy': '[[exo]]'
+                }
+            });
+
+            const assets = await repository.findByClass(className);
+
+            expect(assets).toHaveLength(1);
+            expect(assets[0].getId().toString()).toBe('asset-1');
+        });
+
+        it('should return empty array when no assets match class', async () => {
+            const mockFiles = [new TFile('Asset1.md')];
+            const className = ClassName.create('exo__NonexistentClass').getValue()!;
+
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockReturnValue({
+                frontmatter: {
+                    'exo__Asset_uid': 'asset-1',
+                    'exo__Asset_label': 'Asset 1',
+                    'exo__Instance_class': ['[[exo__TestClass]]'],
+                    'exo__Asset_isDefinedBy': '[[exo]]'
+                }
+            });
+
+            const assets = await repository.findByClass(className);
+
+            expect(assets).toEqual([]);
+        });
+
+        it('should skip files without frontmatter', async () => {
+            const mockFiles = [
+                new TFile('Asset1.md'),
+                new TFile('Asset2.md')
+            ];
+            const className = ClassName.create('exo__TestClass').getValue()!;
+
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+                if (file.path === 'Asset1.md') {
+                    return null; // No frontmatter
+                }
+                return {
+                    frontmatter: {
+                        'exo__Asset_uid': 'asset-2',
+                        'exo__Asset_label': 'Asset 2',
+                        'exo__Instance_class': ['[[exo__TestClass]]'],
+                        'exo__Asset_isDefinedBy': '[[exo]]'
+                    }
+                };
+            });
+
+            const assets = await repository.findByClass(className);
+
+            expect(assets).toHaveLength(1);
+            expect(assets[0].getId().toString()).toBe('asset-2');
+        });
+
+        it('should skip assets that fail to parse', async () => {
+            const mockFiles = [new TFile('Asset1.md')];
+            const className = ClassName.create('exo__TestClass').getValue()!;
+
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockReturnValue({
+                frontmatter: {
+                    'exo__Instance_class': ['[[exo__TestClass]]'],
+                    // Missing required fields to cause Asset.fromFrontmatter to return null
+                }
+            });
+
+            // Mock Asset.fromFrontmatter to return null
+            jest.spyOn(Asset, 'fromFrontmatter').mockReturnValue(null);
+
+            const assets = await repository.findByClass(className);
+
+            expect(assets).toEqual([]);
+
+            // Restore original implementation
+            jest.restoreAllMocks();
+        });
+    });
+
+    describe('findByOntology', () => {
+        it('should find assets by ontology prefix', async () => {
+            const mockFiles = [
+                new TFile('Asset1.md'),
+                new TFile('Asset2.md')
+            ];
+            const ontologyPrefix = OntologyPrefix.create('exo').getValue()!;
+
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+                if (file.path === 'Asset1.md') {
+                    return {
+                        frontmatter: {
+                            'exo__Asset_uid': 'asset-1',
+                            'exo__Asset_label': 'Asset 1',
+                            'exo__Instance_class': ['[[exo__TestClass]]'],
+                            'exo__Asset_isDefinedBy': '[[exo]]'
+                        }
+                    };
+                }
+                return {
+                    frontmatter: {
+                        'exo__Asset_uid': 'asset-2',
+                        'exo__Asset_label': 'Asset 2',
+                        'exo__Instance_class': ['[[ems__Task]]'],
+                        'exo__Asset_isDefinedBy': '[[ems]]'
+                    }
+                };
+            });
+
+            const assets = await repository.findByOntology(ontologyPrefix);
+
+            expect(assets).toHaveLength(1);
+            expect(assets[0].getId().toString()).toBe('asset-1');
+        });
+
+        it('should handle ontology with exclamation mark', async () => {
+            const mockFiles = [new TFile('Asset1.md')];
+            const ontologyPrefix = OntologyPrefix.create('exo').getValue()!;
+
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockReturnValue({
+                frontmatter: {
+                    'exo__Asset_uid': 'asset-1',
+                    'exo__Asset_label': 'Asset 1',
+                    'exo__Instance_class': ['[[exo__TestClass]]'],
+                    'exo__Asset_isDefinedBy': '[[!exo]]' // With exclamation mark
+                }
+            });
+
+            const assets = await repository.findByOntology(ontologyPrefix);
+
+            expect(assets).toHaveLength(1);
+            expect(assets[0].getId().toString()).toBe('asset-1');
+        });
+
+        it('should return empty array when no assets match ontology', async () => {
+            const mockFiles = [new TFile('Asset1.md')];
+            const ontologyPrefix = OntologyPrefix.create('nonexistent').getValue()!;
+
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockReturnValue({
+                frontmatter: {
+                    'exo__Asset_uid': 'asset-1',
+                    'exo__Asset_label': 'Asset 1',
+                    'exo__Instance_class': ['[[exo__TestClass]]'],
+                    'exo__Asset_isDefinedBy': '[[exo]]'
+                }
+            });
+
+            const assets = await repository.findByOntology(ontologyPrefix);
+
+            expect(assets).toEqual([]);
+        });
+
+        it('should skip files without frontmatter', async () => {
+            const mockFiles = [new TFile('Asset1.md')];
+            const ontologyPrefix = OntologyPrefix.create('exo').getValue()!;
+
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockReturnValue(null);
+
+            const assets = await repository.findByOntology(ontologyPrefix);
+
+            expect(assets).toEqual([]);
+        });
+    });
+
+    describe('delete', () => {
+        it('should delete existing asset', async () => {
+            const assetId = AssetId.create('test-id').getValue()!;
+            const mockFile = new TFile('Test Asset.md');
+
+            // Mock findById to return an asset
+            const mockAsset = Asset.create({
+                id: assetId,
+                label: 'Test Asset',
+                className: ClassName.create('TestClass').getValue()!,
+                ontology: OntologyPrefix.create('test').getValue()!
+            }).getValue()!;
+
+            jest.spyOn(repository, 'findById').mockResolvedValue(mockAsset);
+            mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
+
+            await repository.delete(assetId);
+
+            expect(mockVault.delete).toHaveBeenCalledWith(mockFile);
+        });
+
+        it('should not delete when asset not found', async () => {
+            const assetId = AssetId.create('nonexistent-id').getValue()!;
+
+            jest.spyOn(repository, 'findById').mockResolvedValue(null);
+
+            await repository.delete(assetId);
+
+            expect(mockVault.delete).not.toHaveBeenCalled();
+        });
+
+        it('should not delete when file not found', async () => {
+            const assetId = AssetId.create('test-id').getValue()!;
+
+            const mockAsset = Asset.create({
+                id: assetId,
+                label: 'Test Asset',
+                className: ClassName.create('TestClass').getValue()!,
+                ontology: OntologyPrefix.create('test').getValue()!
+            }).getValue()!;
+
+            jest.spyOn(repository, 'findById').mockResolvedValue(mockAsset);
+            mockVault.getAbstractFileByPath.mockReturnValue(null);
+
+            await repository.delete(assetId);
+
+            expect(mockVault.delete).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('exists', () => {
+        it('should return true when asset exists', async () => {
+            const assetId = AssetId.create('test-id').getValue()!;
+            const mockAsset = Asset.create({
+                id: assetId,
+                label: 'Test Asset',
+                className: ClassName.create('TestClass').getValue()!,
+                ontology: OntologyPrefix.create('test').getValue()!
+            }).getValue()!;
+
+            jest.spyOn(repository, 'findById').mockResolvedValue(mockAsset);
+
+            const exists = await repository.exists(assetId);
+
+            expect(exists).toBe(true);
+        });
+
+        it('should return false when asset does not exist', async () => {
+            const assetId = AssetId.create('nonexistent-id').getValue()!;
+
+            jest.spyOn(repository, 'findById').mockResolvedValue(null);
+
+            const exists = await repository.exists(assetId);
+
+            expect(exists).toBe(false);
+        });
+    });
+
+    describe('findAll', () => {
+        it('should return all assets with asset UIDs', async () => {
+            const mockFiles = [
+                new TFile('Asset1.md'),
+                new TFile('Asset2.md'),
+                new TFile('NoAssetUID.md')
+            ];
+
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+                if (file.path === 'Asset1.md') {
+                    return {
+                        frontmatter: {
+                            'exo__Asset_uid': 'asset-1',
+                            'exo__Asset_label': 'Asset 1',
+                            'exo__Instance_class': ['[[exo__TestClass]]'],
+                            'exo__Asset_isDefinedBy': '[[exo]]'
+                        }
+                    };
+                }
+                if (file.path === 'Asset2.md') {
+                    return {
+                        frontmatter: {
+                            'exo__Asset_uid': 'asset-2',
+                            'exo__Asset_label': 'Asset 2',
+                            'exo__Instance_class': ['[[exo__TestClass]]'],
+                            'exo__Asset_isDefinedBy': '[[exo]]'
+                        }
+                    };
+                }
+                // NoAssetUID.md has no asset UID
+                return {
+                    frontmatter: {
+                        'title': 'Some Note',
+                        'tags': ['note']
+                    }
+                };
+            });
+
+            const assets = await repository.findAll();
+
+            expect(assets).toHaveLength(2);
+            expect(assets[0].getId().toString()).toBe('asset-1');
+            expect(assets[1].getId().toString()).toBe('asset-2');
+        });
+
+        it('should skip files without frontmatter', async () => {
+            const mockFiles = [new TFile('Asset1.md')];
+
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockReturnValue(null);
+
+            const assets = await repository.findAll();
+
+            expect(assets).toEqual([]);
+        });
+
+        it('should skip assets that fail to parse', async () => {
+            const mockFiles = [new TFile('Asset1.md')];
+
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockReturnValue({
+                frontmatter: {
+                    'exo__Asset_uid': 'asset-1'
+                    // Missing required fields
+                }
+            });
+
+            // Mock Asset.fromFrontmatter to return null
+            jest.spyOn(Asset, 'fromFrontmatter').mockReturnValue(null);
+
+            const assets = await repository.findAll();
+
+            expect(assets).toEqual([]);
+
+            // Restore original implementation
+            jest.restoreAllMocks();
+        });
+    });
+
+    describe('save - additional scenarios', () => {
+        it('should find existing file by asset ID when stored path is invalid', async () => {
+            const asset = Asset.create({
+                id: AssetId.generate(),
+                label: 'Test Asset',
+                className: ClassName.create('TestClass').getValue()!,
+                ontology: OntologyPrefix.create('test').getValue()!,
+                properties: {}
+            }).getValue()!;
+
+            // Set invalid stored path
+            (asset as any).props.filePath = 'invalid/path.md';
+
+            const mockFile = new TFile('Test Asset.md');
+            const assetId = asset.toFrontmatter()['exo__Asset_uid'];
+
+            mockVault.getAbstractFileByPath.mockReturnValueOnce(null); // Invalid path
+            mockVault.getMarkdownFiles.mockReturnValue([mockFile]);
+            mockMetadataCache.getFileCache.mockReturnValue({
+                frontmatter: {
+                    'exo__Asset_uid': assetId
+                }
+            });
+            mockVault.read.mockResolvedValue(`---
+exo__Asset_uid: ${assetId}
+---
+
+# Content`);
+
+            await repository.save(asset);
+
+            expect(mockVault.modify).toHaveBeenCalledWith(
+                mockFile,
+                expect.stringContaining('# Content')
+            );
+        });
+
+        it('should handle array properties in frontmatter', async () => {
+            const asset = Asset.create({
+                id: AssetId.generate(),
+                label: 'Test Asset',
+                className: ClassName.create('TestClass').getValue()!,
+                ontology: OntologyPrefix.create('test').getValue()!,
+                properties: {
+                    'tags': ['tag1', '[[Tag 2]]', 'tag3'],
+                    'categories': ['Category A']
+                }
+            }).getValue()!;
+
+            mockVault.getAbstractFileByPath.mockReturnValue(null);
+            mockVault.getMarkdownFiles.mockReturnValue([]);
+
+            await repository.save(asset);
+
+            const createCall = mockVault.create.mock.calls[0];
+            const content = createCall[1];
+
+            expect(content).toContain('tags:');
+            expect(content).toContain('  - tag1');
+            expect(content).toContain('  - "[[Tag 2]]"');
+            expect(content).toContain('  - tag3');
+            expect(content).toContain('categories:');
+            expect(content).toContain('  - Category A');
+        });
+
+        it('should handle object properties in frontmatter', async () => {
+            const asset = Asset.create({
+                id: AssetId.generate(),
+                label: 'Test Asset',
+                className: ClassName.create('TestClass').getValue()!,
+                ontology: OntologyPrefix.create('test').getValue()!,
+                properties: {
+                    'metadata': { type: 'test', version: 1 },
+                    'config': { enabled: true }
+                }
+            }).getValue()!;
+
+            mockVault.getAbstractFileByPath.mockReturnValue(null);
+            mockVault.getMarkdownFiles.mockReturnValue([]);
+
+            await repository.save(asset);
+
+            const createCall = mockVault.create.mock.calls[0];
+            const content = createCall[1];
+
+            expect(content).toContain('metadata: {"type":"test","version":1}');
+            expect(content).toContain('config: {"enabled":true}');
+        });
+
+        it('should handle wiki links in scalar properties', async () => {
+            const asset = Asset.create({
+                id: AssetId.generate(),
+                label: 'Test Asset',
+                className: ClassName.create('TestClass').getValue()!,
+                ontology: OntologyPrefix.create('test').getValue()!,
+                properties: {
+                    'linkedAsset': '[[Other Asset]]',
+                    'normalProperty': 'normal value'
+                }
+            }).getValue()!;
+
+            mockVault.getAbstractFileByPath.mockReturnValue(null);
+            mockVault.getMarkdownFiles.mockReturnValue([]);
+
+            await repository.save(asset);
+
+            const createCall = mockVault.create.mock.calls[0];
+            const content = createCall[1];
+
+            expect(content).toContain('linkedAsset: "[[Other Asset]]"');
+            expect(content).toContain('normalProperty: normal value');
+        });
+    });
+
+    describe('Edge cases and error handling', () => {
+        it('should handle malformed frontmatter in updateFrontmatterByPath', async () => {
+            const filePath = 'test/file.md';
+            const mockFile = new TFile(filePath);
+            const malformedContent = `---
+title: Test
+status incomplete
+---
+
+Content`; // Missing colon
+
+            mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
+            mockVault.read.mockResolvedValue(malformedContent);
+            mockMetadataCache.getFileCache.mockReturnValue({
+                frontmatter: {
+                    title: 'Test'
+                    // Parser might handle malformed YAML differently
+                }
+            } as any);
+
+            await repository.updateFrontmatterByPath(filePath, {
+                status: 'completed'
+            });
+
+            // Should still work, using the current frontmatter from cache
+            expect(mockVault.modify).toHaveBeenCalled();
+        });
+
+        it('should handle content without frontmatter in updateFrontmatterByPath', async () => {
+            const filePath = 'test/file.md';
+            const mockFile = new TFile(filePath);
+            const contentWithoutFrontmatter = `# Title
+
+Some content without frontmatter.`;
+
+            mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
+            mockVault.read.mockResolvedValue(contentWithoutFrontmatter);
+            mockMetadataCache.getFileCache.mockReturnValue({
+                frontmatter: {}
+            } as any);
+
+            await repository.updateFrontmatterByPath(filePath, {
+                status: 'completed'
+            });
+
+            const modifyCall = mockVault.modify.mock.calls[0];
+            const modifiedContent = modifyCall[1];
+
+            expect(modifiedContent).toContain('---\nstatus: completed\n---');
+            expect(modifiedContent).toContain('# Title\n\nSome content without frontmatter.');
+        });
+
+        it('should handle complex YAML values that need quoting', async () => {
+            const filePath = 'test/file.md';
+            const mockFile = new TFile(filePath);
+
+            mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
+            mockVault.read.mockResolvedValue('---\n---\n\nContent');
+            mockMetadataCache.getFileCache.mockReturnValue({
+                frontmatter: {}
+            } as any);
+
+            await repository.updateFrontmatterByPath(filePath, {
+                colonValue: 'value: with colon',
+                hashValue: 'value # with hash',
+                bracketValue: 'value [with] brackets',
+                braceValue: 'value {with} braces',
+                pipeValue: 'value | with pipe',
+                angleValue: 'value > with angle',
+                atValue: 'value @ with at',
+                tickValue: 'value ` with tick',
+                quoteValue: 'value "with" quotes',
+                apostropheValue: "value 'with' apostrophes",
+                leadingSpaceValue: ' leading space',
+                trailingSpaceValue: 'trailing space ',
+                booleanValue: true,
+                numberValue: 42
+            });
+
+            const modifyCall = mockVault.modify.mock.calls[0];
+            const modifiedContent = modifyCall[1];
+
+            // Values that need quoting
+            expect(modifiedContent).toContain('colonValue: "value: with colon"');
+            expect(modifiedContent).toContain('hashValue: "value # with hash"');
+            expect(modifiedContent).toContain('bracketValue: "value [with] brackets"');
+            expect(modifiedContent).toContain('braceValue: "value {with} braces"');
+            expect(modifiedContent).toContain('pipeValue: "value | with pipe"');
+            expect(modifiedContent).toContain('angleValue: "value > with angle"');
+            expect(modifiedContent).toContain('atValue: "value @ with at"');
+            expect(modifiedContent).toContain('tickValue: "value ` with tick"');
+            expect(modifiedContent).toContain('quoteValue: "value \\"with\\" quotes"');
+            expect(modifiedContent).toContain("apostropheValue: \"value 'with' apostrophes\"");
+            expect(modifiedContent).toContain('leadingSpaceValue: " leading space"');
+            expect(modifiedContent).toContain('trailingSpaceValue: "trailing space "');
+            
+            // Values that don't need quoting
+            expect(modifiedContent).toContain('booleanValue: true');
+            expect(modifiedContent).toContain('numberValue: 42');
+        });
+
+        it('should preserve file path in asset after findByFilename', async () => {
+            const mockFile = new TFile('assets/MyAsset.md');
+
+            const mockFrontmatter = {
+                'exo__Asset_uid': 'test-uuid',
+                'exo__Asset_label': 'My Asset',
+                'exo__Instance_class': ['[[exo__TestClass]]'],
+                'exo__Asset_isDefinedBy': '[[exo]]'
+            };
+
+            mockVault.getAbstractFileByPath.mockReturnValue(mockFile);
+            mockMetadataCache.getFileCache.mockReturnValue({
+                frontmatter: mockFrontmatter
+            });
+
+            const asset = await repository.findByFilename('assets/MyAsset.md');
+
+            expect(asset).not.toBeNull();
+            expect((asset as any).props.filePath).toBe('assets/MyAsset.md');
+        });
+
+        it('should handle search fallback in findByFilename', async () => {
+            // Create TFile with correct name property
+            const mockFile1 = Object.assign(new TFile('other/Asset.md'), { name: 'Asset.md' });
+            const mockFile2 = Object.assign(new TFile('assets/MyAsset.md'), { name: 'MyAsset.md' });
+            const mockFiles = [mockFile1, mockFile2];
+
+            const mockFrontmatter = {
+                'exo__Asset_uid': 'test-uuid',
+                'exo__Asset_label': 'My Asset',
+                'exo__Instance_class': ['[[exo__TestClass]]'],
+                'exo__Asset_isDefinedBy': '[[exo]]'
+            };
+
+            mockVault.getAbstractFileByPath.mockReturnValue(null);
+            mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
+            mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+                if (file.name === 'MyAsset.md') {
+                    return { frontmatter: mockFrontmatter };
+                }
+                return null;
+            });
+
+            const asset = await repository.findByFilename('MyAsset.md');
+
+            expect(asset).not.toBeNull();
+            expect(mockVault.getMarkdownFiles).toHaveBeenCalled();
+        });
+    });
 });
