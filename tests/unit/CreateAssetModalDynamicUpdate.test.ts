@@ -1,8 +1,10 @@
 import { CreateAssetModal } from '../../src/presentation/modals/CreateAssetModal';
-import { App, TFile } from 'obsidian';
+import { App, TFile, Plugin } from 'obsidian';
+import { DIContainer } from '../../src/infrastructure/container/DIContainer';
 
 describe('CreateAssetModal Dynamic Property Update', () => {
     let app: App;
+    let plugin: Plugin;
     let modal: CreateAssetModal;
     let mockFiles: TFile[];
     let containerEl: HTMLElement;
@@ -94,25 +96,9 @@ describe('CreateAssetModal Dynamic Property Update', () => {
         // Create container element
         containerEl = document.createElement('div');
         
-        // Mock DIContainer
-        const mockContainer = {
-            getCreateAssetUseCase: jest.fn().mockReturnValue({
-                execute: jest.fn().mockResolvedValue({
-                    success: true,
-                    message: 'Asset created'
-                })
-            }),
-            resolve: jest.fn().mockImplementation((token: string) => {
-                return {};
-            })
-        };
-        
-        // Mock DIContainer.getInstance
-        jest.mock('../../src/infrastructure/container/DIContainer', () => ({
-            DIContainer: {
-                getInstance: jest.fn().mockReturnValue(mockContainer)
-            }
-        }));
+        // Initialize plugin and DIContainer
+        plugin = new Plugin(app, {} as any);
+        DIContainer.initialize(app, plugin);
         
         // Add empty method to container element if it doesn't exist
         if (!containerEl.empty) {

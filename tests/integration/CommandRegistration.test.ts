@@ -8,8 +8,24 @@ jest.mock('../../src/presentation/modals/CreateAssetModal');
 // Mock DIContainer
 jest.mock('../../src/infrastructure/container/DIContainer', () => ({
   DIContainer: {
+    initialize: jest.fn((app, plugin) => ({
+      getCreateAssetUseCase: jest.fn().mockReturnValue({
+        execute: jest.fn().mockResolvedValue({
+          success: true,
+          message: 'Asset created'
+        })
+      }),
+      resolve: jest.fn().mockImplementation(() => ({})),
+      dispose: jest.fn()
+    })),
     getInstance: jest.fn(() => ({
-      initialize: jest.fn()
+      getCreateAssetUseCase: jest.fn().mockReturnValue({
+        execute: jest.fn().mockResolvedValue({
+          success: true,
+          message: 'Asset created'
+        })
+      }),
+      resolve: jest.fn().mockImplementation(() => ({}))
     }))
   }
 }));

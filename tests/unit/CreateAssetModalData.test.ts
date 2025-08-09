@@ -1,8 +1,10 @@
 import { CreateAssetModal } from '../../src/presentation/modals/CreateAssetModal';
-import { App, TFile } from 'obsidian';
+import { App, TFile, Plugin } from 'obsidian';
+import { DIContainer } from '../../src/infrastructure/container/DIContainer';
 
 describe('CreateAssetModal Data Loading', () => {
     let app: App;
+    let plugin: Plugin;
     let modal: CreateAssetModal;
     let mockFiles: TFile[];
     
@@ -102,35 +104,9 @@ describe('CreateAssetModal Data Loading', () => {
             }
         } as any;
         
-        // Mock DIContainer to return itself
-        const mockContainer = {
-            getCreateAssetUseCase: jest.fn().mockReturnValue({
-                execute: jest.fn().mockResolvedValue({
-                    success: true,
-                    message: 'Asset created'
-                })
-            }),
-            resolve: jest.fn().mockImplementation((token: string) => {
-                if (token === 'IOntologyRepository') {
-                    return {
-                        findAll: jest.fn().mockResolvedValue([])
-                    };
-                }
-                if (token === 'IClassViewRepository') {
-                    return {
-                        findAll: jest.fn().mockResolvedValue([])
-                    };
-                }
-                return {};
-            })
-        };
-        
-        // Mock DIContainer.getInstance
-        jest.mock('../../src/infrastructure/container/DIContainer', () => ({
-            DIContainer: {
-                getInstance: jest.fn().mockReturnValue(mockContainer)
-            }
-        }));
+        // Initialize plugin and DIContainer
+        plugin = new Plugin(app, {} as any);
+        DIContainer.initialize(app, plugin);
     });
     
     afterEach(() => {

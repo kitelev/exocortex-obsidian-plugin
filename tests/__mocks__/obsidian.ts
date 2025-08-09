@@ -1,3 +1,41 @@
+// Add Obsidian-specific methods to HTMLElement globally
+declare global {
+  interface HTMLElement {
+    createEl?: (tag: string, options?: any) => HTMLElement;
+    createDiv?: (options?: any) => HTMLElement;
+    empty?: () => void;
+  }
+}
+
+// Setup DOM extensions
+if (typeof document !== 'undefined') {
+  const proto = HTMLElement.prototype as any;
+  if (!proto.createEl) {
+    proto.createEl = function(tag: string, options?: any) {
+      const el = document.createElement(tag);
+      if (options?.text) el.textContent = options.text;
+      if (options?.cls) el.className = options.cls;
+      this.appendChild(el);
+      return el;
+    };
+  }
+  if (!proto.createDiv) {
+    proto.createDiv = function(options?: any) {
+      const el = document.createElement('div');
+      if (options?.cls) el.className = options.cls;
+      this.appendChild(el);
+      return el;
+    };
+  }
+  if (!proto.empty) {
+    proto.empty = function() {
+      while (this.firstChild) {
+        this.removeChild(this.firstChild);
+      }
+    };
+  }
+}
+
 export class Plugin {
   app: App;
   manifest: any;
@@ -89,11 +127,43 @@ export class Setting {
   containerEl: HTMLElement;
   nameEl: HTMLElement;
   descEl: HTMLElement;
+  controlEl: HTMLElement;
   
   constructor(containerEl: HTMLElement) {
     this.containerEl = containerEl;
     this.nameEl = document.createElement('div');
     this.descEl = document.createElement('div');
+    this.controlEl = document.createElement('div');
+    
+    // Add Obsidian-specific methods to container
+    this.setupContainerMethods(containerEl);
+  }
+  
+  private setupContainerMethods(el: HTMLElement): void {
+    if (!el.createEl) {
+      (el as any).createEl = function(tag: string, options?: any) {
+        const element = document.createElement(tag);
+        if (options?.text) element.textContent = options.text;
+        if (options?.cls) element.className = options.cls;
+        this.appendChild(element);
+        return element;
+      };
+    }
+    if (!el.createDiv) {
+      (el as any).createDiv = function(options?: any) {
+        const element = document.createElement('div');
+        if (options?.cls) element.className = options.cls;
+        this.appendChild(element);
+        return element;
+      };
+    }
+    if (!el.empty) {
+      (el as any).empty = function() {
+        while (this.firstChild) {
+          this.removeChild(this.firstChild);
+        }
+      };
+    }
   }
   
   setName(name: string): this {
@@ -223,9 +293,14 @@ export class DropdownComponent {
   constructor(containerEl: HTMLElement) {
     this.containerEl = containerEl;
     this.selectEl = document.createElement('select');
+    containerEl.appendChild(this.selectEl);
   }
   
   addOption(value: string, display: string): this {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = display || value;
+    this.selectEl.appendChild(option);
     return this;
   }
   
@@ -235,6 +310,7 @@ export class DropdownComponent {
   }
   
   onChange(callback: (value: string) => void): this {
+    this.selectEl.addEventListener('change', () => callback(this.selectEl.value));
     return this;
   }
 }

@@ -62,7 +62,11 @@ describe('CreateAssetModal', () => {
     // Setup DIContainer mock
     mockContainer = {
       getCreateAssetUseCase: jest.fn().mockReturnValue(mockCreateAssetUseCase),
-      getInstance: jest.fn().mockReturnThis()
+      getInstance: jest.fn().mockReturnThis(),
+      resolve: jest.fn().mockImplementation((token: string) => {
+        // Return empty mock repositories
+        return {};
+      })
     } as any;
 
     (DIContainer.getInstance as jest.Mock).mockReturnValue(mockContainer);
