@@ -21,8 +21,10 @@ export class IRI {
       new URL(value);
       return true;
     } catch {
-      // Check if it's a valid CURIE (prefix:localName)
-      return /^[a-zA-Z][a-zA-Z0-9]*:[a-zA-Z_][a-zA-Z0-9_-]*$/.test(value);
+      // Check if it's a valid CURIE (prefix:localName) or property path (prefix__Class_property)
+      // Allows double underscore for Exocortex naming convention
+      return /^[a-zA-Z][a-zA-Z0-9_]*(__[a-zA-Z][a-zA-Z0-9_]*(_[a-zA-Z][a-zA-Z0-9_]*)?)?$/.test(value) ||
+             /^[a-zA-Z][a-zA-Z0-9]*:[a-zA-Z_][a-zA-Z0-9_-]*$/.test(value);
     }
   }
 

@@ -44,14 +44,22 @@ export default class ExocortexPlugin extends Plugin {
         this.graphVisualizationProcessor = new GraphVisualizationProcessor(this, this.graph);
         
         // Register SPARQL code block processor
-        this.registerMarkdownCodeBlockProcessor('sparql', 
-            (source, el, ctx) => this.sparqlProcessor.processCodeBlock(source, el, ctx)
-        );
+        try {
+            this.registerMarkdownCodeBlockProcessor('sparql', 
+                (source, el, ctx) => this.sparqlProcessor.processCodeBlock(source, el, ctx)
+            );
+        } catch (error) {
+            console.warn('SPARQL processor registration failed (may already be registered):', error.message);
+        }
         
         // Register Graph Visualization code block processor
-        this.registerMarkdownCodeBlockProcessor('graph', 
-            (source, el, ctx) => this.graphVisualizationProcessor.processCodeBlock(source, el, ctx)
-        );
+        try {
+            this.registerMarkdownCodeBlockProcessor('graph', 
+                (source, el, ctx) => this.graphVisualizationProcessor.processCodeBlock(source, el, ctx)
+            );
+        } catch (error) {
+            console.warn('Graph processor registration failed (may already be registered):', error.message);
+        }
         
         // Register command: Create new asset
         this.addCommand({

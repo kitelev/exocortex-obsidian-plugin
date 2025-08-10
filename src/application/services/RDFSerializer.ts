@@ -40,6 +40,15 @@ export class RDFSerializer {
      */
     serialize(graph: Graph, options: SerializationOptions): Result<SerializationResult> {
         try {
+            // Validate baseIRI if provided
+            if (options.baseIRI) {
+                try {
+                    new URL(options.baseIRI);
+                } catch {
+                    return Result.fail(`Invalid base IRI: ${options.baseIRI}`);
+                }
+            }
+            
             const nm = options.namespaceManager || this.namespaceManager;
             
             let content: string;

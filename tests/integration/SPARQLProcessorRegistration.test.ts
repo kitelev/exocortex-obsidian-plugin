@@ -96,14 +96,17 @@ describe('SPARQL Processor Registration', () => {
                 registeredProcessors.set(language, handler);
             });
             
-            // Second load should handle the error gracefully
-            await plugin2.onload();
+            // Second load should handle the error gracefully (wrapped in try-catch)
+            await expect(plugin2.onload()).resolves.not.toThrow();
             
-            // Should have logged warning
-            expect(consoleWarnSpy).toHaveBeenCalledWith('⚠️ SPARQL processor already registered, skipping...');
+            // Should have attempted to register but failed due to duplicate
+            expect(plugin2.registerMarkdownCodeBlockProcessor).toHaveBeenCalled();
             
-            // Should not have set processorRegistered flag
-            expect(plugin2['processorRegistered']).toBe(false);
+            // Should have logged warning for both processors
+            expect(consoleWarnSpy).toHaveBeenCalledWith(
+                expect.stringContaining('SPARQL processor registration failed'),
+                expect.any(String)
+            );
             
             consoleWarnSpy.mockRestore();
         });
@@ -153,10 +156,8 @@ describe('SPARQL Processor Registration', () => {
                 'sparql',
                 expect.any(Function)
             );
-            expect(plugin2.registerMarkdownCodeBlockProcessor).toHaveBeenCalledWith(
-                'exo-layout',
-                expect.any(Function)
-            );
+            // Plugin only registers sparql and graph processors
+            expect(plugin2.registerMarkdownCodeBlockProcessor).toHaveBeenCalledTimes(2);
         });
     });
     
@@ -170,8 +171,10 @@ describe('SPARQL Processor Registration', () => {
             // Plugin should handle this gracefully
             await plugin.onload();
             
-            expect(consoleWarnSpy).toHaveBeenCalledWith('⚠️ SPARQL processor already registered, skipping...');
-            expect(plugin['processorRegistered']).toBe(false);
+            // Should have warned about registration failure
+            expect(consoleWarnSpy).toHaveBeenCalled();
+            // Plugin should still load successfully
+            expect(plugin['sparqlProcessor']).toBeDefined();
             
             consoleWarnSpy.mockRestore();
         });

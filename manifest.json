@@ -1,7 +1,7 @@
 {
 	"id": "exocortex",
 	"name": "Exocortex",
-	"version": "2.9.0",
+	"version": "2.9.1",
 	"minAppVersion": "1.0.0",
 	"description": "SPARQL queries in Obsidian - Semantic knowledge management",
 	"author": "A. Kitelev",

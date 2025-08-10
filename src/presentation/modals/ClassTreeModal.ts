@@ -269,9 +269,26 @@ export class ClassTreeModal extends Modal {
     private highlightSearchTerm(element: HTMLElement, text: string) {
         if (!this.searchTerm) return;
         
-        const regex = new RegExp(`(${this.searchTerm})`, 'gi');
-        const highlighted = text.replace(regex, '<mark>$1</mark>');
-        element.innerHTML = highlighted;
+        // Clear existing content safely
+        element.textContent = '';
+        
+        // Escape special regex characters in search term
+        const escapedTerm = this.searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${escapedTerm})`, 'gi');
+        
+        // Split text and create elements safely
+        const parts = text.split(regex);
+        parts.forEach((part, index) => {
+            if (index % 2 === 1 && part.toLowerCase() === this.searchTerm.toLowerCase()) {
+                // Create mark element safely
+                const mark = document.createElement('mark');
+                mark.textContent = part;
+                element.appendChild(mark);
+            } else if (part) {
+                // Add text node
+                element.appendChild(document.createTextNode(part));
+            }
+        });
     }
 
     private toggleExpand(node: TreeNode) {

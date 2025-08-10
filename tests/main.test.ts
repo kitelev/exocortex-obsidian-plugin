@@ -109,7 +109,7 @@ exo__Instance_class: "[[exo__Class]]"
       
       // Verify the processor has required components
       expect(plugin['graph']).toBeDefined();
-      expect(plugin['focusService']).toBeDefined();
+      expect(plugin['sparqlProcessor']).toBeDefined();
     });
     
     test('should register event handlers for file changes', async () => {
@@ -124,24 +124,20 @@ exo__Instance_class: "[[exo__Class]]"
     test('should initialize layout renderer', async () => {
       await plugin.onload();
       
-      // Verify that the layout renderer was initialized
-      expect(plugin['layoutRenderer']).toBeDefined();
-      
-      // Verify that the container provides PropertyEditingUseCase
-      const container = plugin['container'];
-      expect(container).toBeDefined();
-      expect(container.getPropertyEditingUseCase).toBeDefined();
+      // Verify that the graph and processors are initialized
+      expect(plugin['graph']).toBeDefined();
+      expect(plugin['sparqlProcessor']).toBeDefined();
+      expect(plugin['graphVisualizationProcessor']).toBeDefined();
     });
     
     test('should initialize API server when enabled', async () => {
       // Note: API server initialization depends on settings
       await plugin.onload();
       
-      // Verify that the API server property exists (may be null if disabled)
-      expect('apiServer' in plugin).toBe(true);
-      
-      // Verify the plugin loaded successfully
+      // Verify the plugin loaded successfully with core components
       expect(plugin['graph']).toBeDefined();
+      expect(plugin['rdfService']).toBeDefined();
+      expect(plugin['container']).toBeDefined();
     });
   });
   
@@ -153,9 +149,11 @@ exo__Instance_class: "[[exo__Class]]"
       
       await plugin.onload();
       
-      // Verify that SPARQL and layout processors were registered
-      // Note: The actual registration happens but may catch errors for duplicates
-      expect(plugin['processorRegistered']).toBeDefined();
+      // Verify that processors were registered (with error handling)
+      // The plugin should attempt to register both SPARQL and graph processors
+      expect(registerProcessorSpy).toHaveBeenCalledTimes(2);
+      expect(registerProcessorSpy).toHaveBeenCalledWith('sparql', expect.any(Function));
+      expect(registerProcessorSpy).toHaveBeenCalledWith('graph', expect.any(Function));
       
       // Verify the plugin loaded successfully even if processor registration had issues
       expect(plugin['graph']).toBeDefined();

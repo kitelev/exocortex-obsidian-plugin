@@ -89,32 +89,158 @@ Then reload Obsidian and enable the plugin in Settings → Community plugins.
 #### Manual Update
 Follow the same steps as manual installation with the latest source code.
 
-## Usage
+## Quick Start Guide
 
-### Basic Setup
+### 🚀 Your First Exocortex Asset in 5 Minutes
 
-1. **Create an Ontology Asset**:
+1. **Enable the Plugin**
+   - Go to Settings → Community plugins
+   - Find "Exocortex" and toggle it on
+   - You should see "Exocortex plugin loaded" in the console
+
+2. **Create Your First Asset**
+   - Create a new note called `My First Asset`
+   - Add this frontmatter and content:
+
 ```yaml
 ---
+exo__Instance_class: "[[exo__Asset]]"
+exo__Asset_label: "My Knowledge Asset"
+exo__Asset_description: "This is my first semantic asset"
+tags: [exocortex, tutorial]
+---
+
+# My First Asset
+
+This note is now a semantic asset in your knowledge graph!
+
+\`\`\`dataviewjs
+await window.ExoUIRender(dv, this);
+\`\`\`
+```
+
+3. **See It In Action**
+   - Switch to Reading view
+   - The ExoUIRender will display your asset with its metadata
+   - Try editing the frontmatter values and watch it update!
+
+## Usage Examples
+
+### Example 1: Task Management System
+
+Create a complete task management system with semantic relationships:
+
+```yaml
+---
+# Task Definition
+exo__Instance_class: "[[ems__Task]]"
+exo__Asset_label: "Implement User Authentication"
+ems__Task_status: "in-progress"
+ems__Task_priority: "high"
+ems__Task_assignee: "[[John Doe]]"
+ems__Task_dueDate: "2025-01-15"
+ems__Task_project: "[[Website Redesign]]"
+---
+
+## Task Details
+
+\`\`\`dataviewjs
+await window.ExoUIRender(dv, this);
+\`\`\`
+```
+
+### Example 2: Knowledge Article with Semantic Links
+
+```yaml
+---
+exo__Instance_class: "[[kb__Article]]"
+exo__Asset_label: "RDF Triple Store Architecture"
+kb__Article_category: "[[Technical Documentation]]"
+kb__Article_relatedTo:
+  - "[[SPARQL Query Engine]]"
+  - "[[Graph Databases]]"
+  - "[[Semantic Web]]"
+kb__Article_author: "[[Your Name]]"
+kb__Article_lastReviewed: "2025-01-10"
+---
+
+# RDF Triple Store Architecture
+
+## Overview
+This article explains how RDF triple stores work...
+
+\`\`\`dataviewjs
+await window.ExoUIRender(dv, this);
+\`\`\`
+```
+
+### Example 3: Project Dashboard
+
+```yaml
+---
+exo__Instance_class: "[[pm__Project]]"
+exo__Asset_label: "Q1 2025 Roadmap"
+pm__Project_status: "active"
+pm__Project_startDate: "2025-01-01"
+pm__Project_endDate: "2025-03-31"
+pm__Project_team:
+  - "[[Alice]]"
+  - "[[Bob]]"
+  - "[[Charlie]]"
+---
+
+# Project Dashboard
+
+\`\`\`dataviewjs
+// Custom dashboard showing all related tasks
+const tasks = dv.pages()
+  .where(p => p.ems__Task_project?.path === dv.current().file.path)
+  .sort(p => p.ems__Task_priority, 'desc');
+
+dv.table(
+  ["Task", "Status", "Priority", "Due Date"],
+  tasks.map(t => [
+    t.file.link,
+    t.ems__Task_status,
+    t.ems__Task_priority,
+    t.ems__Task_dueDate
+  ])
+);
+
+// Render the standard layout below
+await window.ExoUIRender(dv, this);
+\`\`\`
+```
+
+### Example 4: Custom Ontology for Research Notes
+
+```yaml
+---
+# First, create your ontology
 exo__Instance_class: "[[exo__Ontology]]"
-exo__Ontology_prefix: "my-ontology"
+exo__Ontology_prefix: "research"
+exo__Asset_label: "Research Ontology"
 ---
+
+# Research Ontology Definition
 ```
 
-2. **Create a Class Asset**:
-```yaml
----
-exo__Instance_class: "[[exo__Class]]"
-exo__Class_superClass: "[[exo__Asset]]"
----
-```
+Then use it in your research notes:
 
-3. **Create an Instance Asset**:
 ```yaml
 ---
-exo__Asset_isDefinedBy: "[[!my-ontology]]"
-exo__Instance_class: "[[MyClass]]"
-exo__Asset_label: "My Asset"
+exo__Asset_isDefinedBy: "[[!research]]"
+exo__Instance_class: "[[research__Paper]]"
+research__Paper_title: "Effects of Knowledge Graphs on Learning"
+research__Paper_authors: ["Smith, J.", "Doe, A."]
+research__Paper_year: 2024
+research__Paper_doi: "10.1234/example"
+research__Paper_keyFindings:
+  - "Knowledge graphs improve retention by 40%"
+  - "Semantic links enhance understanding"
+research__Paper_relatedWorks:
+  - "[[Previous Study 2023]]"
+  - "[[Foundational Work 2020]]"
 ---
 
 \`\`\`dataviewjs
@@ -182,6 +308,178 @@ ui__LayoutBlock_query: |
   WHERE ems__Task_status != "completed"
   SORT due ASC
 ---
+```
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### 1. Plugin Not Loading
+
+**Symptom**: Exocortex doesn't appear in the Community plugins list
+
+**Solutions**:
+- Ensure you've installed via BRAT or manually copied all files
+- Check that `manifest.json`, `main.js`, and `styles.css` are in the plugin folder
+- Restart Obsidian completely (Cmd/Ctrl + Q, then reopen)
+- Check the console for error messages (Cmd/Ctrl + Shift + I)
+
+#### 2. ExoUIRender Not Working
+
+**Symptom**: `ExoUIRender is not defined` error or blank render
+
+**Solutions**:
+```javascript
+// Ensure Dataview is installed and enabled first
+// Use this diagnostic code block:
+\`\`\`dataviewjs
+if (typeof window.ExoUIRender === 'undefined') {
+  dv.paragraph("❌ ExoUIRender not found. Please ensure:");
+  dv.list([
+    "Exocortex plugin is enabled",
+    "Dataview plugin is installed and enabled",
+    "You've reloaded Obsidian after installation"
+  ]);
+} else {
+  dv.paragraph("✅ ExoUIRender is available!");
+  await window.ExoUIRender(dv, this);
+}
+\`\`\`
+```
+
+#### 3. Assets Not Displaying Properly
+
+**Symptom**: Asset metadata not showing or layout broken
+
+**Solutions**:
+- Verify frontmatter syntax (must be valid YAML)
+- Check that class references use double brackets: `[[exo__Asset]]`
+- Ensure you're in Reading view, not Edit view
+- Validate property names follow the pattern: `prefix__Class_property`
+
+**Debug frontmatter**:
+```yaml
+---
+# This will help identify issues
+exo__Instance_class: "[[exo__Asset]]"  # Correct
+# exo__Instance_class: exo__Asset       # Wrong - missing brackets
+# exo__Instance_class: [[exo__Asset]]   # Wrong - missing quotes
+---
+```
+
+#### 4. Performance Issues
+
+**Symptom**: Slow rendering or Obsidian freezing
+
+**Solutions**:
+- Limit the number of ExoUIRender blocks per note (max 3-5)
+- Reduce query complexity in Dataview blocks
+- Disable auto-refresh in settings if not needed
+- For large vaults (>1000 notes), use filtered queries:
+
+```javascript
+\`\`\`dataviewjs
+// Instead of querying all pages
+const filtered = dv.pages('"specific-folder"')
+  .where(p => p.exo__Instance_class)
+  .limit(20);
+\`\`\`
+```
+
+#### 5. Ontology Not Recognized
+
+**Symptom**: Custom ontology prefix not working
+
+**Solutions**:
+1. Create the ontology asset first:
+```yaml
+---
+exo__Instance_class: "[[exo__Ontology]]"
+exo__Ontology_prefix: "myprefix"
+---
+```
+
+2. Reference it correctly in other assets:
+```yaml
+---
+exo__Asset_isDefinedBy: "[[!myprefix]]"  # Note the ! prefix
+---
+```
+
+#### 6. Layout Blocks Not Updating
+
+**Symptom**: Changes to layout definitions not reflected
+
+**Solutions**:
+- Use the "Refresh Exocortex Layouts" command (Cmd/Ctrl + P)
+- Clear the cache: Settings → Files & Links → Clear cache
+- Ensure layout asset follows naming convention: `Layout - ClassName`
+
+#### 7. BRAT Update Issues
+
+**Symptom**: BRAT not updating to latest version
+
+**Solutions**:
+```bash
+# Manual BRAT update process:
+1. Settings → BRAT → "Check for updates"
+2. If that fails, remove and re-add:
+   - Click "Delete" next to the plugin
+   - Click "Add Beta plugin" 
+   - Re-enter the GitHub URL
+```
+
+#### 8. Console Errors
+
+**Common errors and fixes**:
+
+| Error | Solution |
+|-------|----------|
+| `Cannot read property 'exo__Instance_class' of undefined` | Add frontmatter to your note |
+| `Maximum call stack size exceeded` | Check for circular references in assets |
+| `Failed to load plugin` | Reinstall via BRAT or check file permissions |
+| `Dataview API not found` | Install and enable Dataview plugin |
+
+### Getting Help
+
+If you're still experiencing issues:
+
+1. **Check the Console** (Cmd/Ctrl + Shift + I)
+   - Look for red error messages
+   - Copy the full error text
+
+2. **Enable Debug Mode**
+   - Settings → Exocortex → Enable Debug Mode
+   - Check console for detailed logs
+
+3. **Report Issues**
+   - [GitHub Issues](https://github.com/kitelev/exocortex-obsidian-plugin/issues)
+   - Include:
+     - Obsidian version
+     - Exocortex version
+     - Error messages
+     - Steps to reproduce
+
+4. **Community Support**
+   - [GitHub Discussions](https://github.com/kitelev/exocortex-obsidian-plugin/discussions)
+   - Discord: [Obsidian Community](https://obsidian.md/community)
+
+### Diagnostic Commands
+
+Run these in the Developer Console (Cmd/Ctrl + Shift + I):
+
+```javascript
+// Check if plugin is loaded
+app.plugins.plugins['exocortex-obsidian-plugin']
+
+// Check Dataview availability
+app.plugins.plugins['dataview']
+
+// List all available commands
+app.commands.listCommands().filter(c => c.id.includes('exocortex'))
+
+// Check plugin version
+app.plugins.plugins['exocortex-obsidian-plugin']?.manifest?.version
 ```
 
 ## Development

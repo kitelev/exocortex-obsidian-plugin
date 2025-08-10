@@ -6,6 +6,7 @@ import { QueryCacheConfig } from '../../application/services/QueryCache';
 import { RDFService } from '../../application/services/RDFService';
 import { ExportRDFModal } from '../modals/ExportRDFModal';
 import { RDFFormat } from '../../application/services/RDFSerializer';
+import { SPARQLSanitizer } from '../../application/services/SPARQLSanitizer';
 
 export class SPARQLProcessor {
     private plugin: Plugin;
@@ -13,6 +14,7 @@ export class SPARQLProcessor {
     private graph: Graph;
     private focusService?: ExoFocusService;
     private rdfService: RDFService;
+    private sanitizer: SPARQLSanitizer;
     
     constructor(plugin: Plugin, graph: Graph, focusService?: ExoFocusService, cacheConfig?: Partial<QueryCacheConfig>) {
         this.plugin = plugin;
@@ -20,6 +22,7 @@ export class SPARQLProcessor {
         this.engine = new SPARQLEngine(graph, cacheConfig);
         this.focusService = focusService;
         this.rdfService = new RDFService(plugin.app);
+        this.sanitizer = new SPARQLSanitizer();
     }
     
     /**
@@ -103,12 +106,25 @@ export class SPARQLProcessor {
             throw new Error('Empty query');
         }
         
-        const upperQuery = sparql.toUpperCase();
+        // Sanitize query for security
+        const sanitizationResult = this.sanitizer.sanitize(sparql);
+        if (sanitizationResult.isFailure) {
+            throw new Error(`Query validation failed: ${sanitizationResult.errorValue()}`);
+        }
+        
+        const sanitized = sanitizationResult.getValue();
+        if (sanitized.warnings.length > 0) {
+            console.warn('SPARQL query warnings:', sanitized.warnings);
+            new Notice(`Query executed with warnings: ${sanitized.warnings[0]}`);
+        }
+        
+        const safeQuery = sanitized.query;
+        const upperQuery = safeQuery.toUpperCase();
         
         // Check query type
         if (upperQuery.includes('CONSTRUCT')) {
             // Execute CONSTRUCT query
-            const result: ConstructResult = this.engine.construct(sparql);
+            const result: ConstructResult = this.engine.construct(safeQuery);
             
             // Add generated triples to graph (only if not cached to avoid duplicates)
             if (!result.cached) {
@@ -133,7 +149,7 @@ export class SPARQLProcessor {
             };
         } else if (upperQuery.includes('SELECT')) {
             // Execute SELECT query
-            const selectResult: SelectResult = this.engine.select(sparql);
+            const selectResult: SelectResult = this.engine.select(safeQuery);
             let results = selectResult.results;
             
             // Apply ExoFocus filtering if available

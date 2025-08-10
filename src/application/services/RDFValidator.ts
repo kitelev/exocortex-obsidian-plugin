@@ -235,7 +235,7 @@ export class RDFValidator {
 
         const validFormats: RDFFormat[] = ['turtle', 'n-triples', 'json-ld', 'rdf-xml'];
         if (!validFormats.includes(options.format)) {
-            return Result.fail(`Invalid export format: ${options.format}`);
+            return Result.fail(`Unsupported export format: ${options.format}`);
         }
 
         if (options.targetFolder && typeof options.targetFolder !== 'string') {
@@ -261,7 +261,7 @@ export class RDFValidator {
         if (options.format) {
             const validFormats: RDFFormat[] = ['turtle', 'n-triples', 'json-ld', 'rdf-xml'];
             if (!validFormats.includes(options.format)) {
-                return Result.fail(`Invalid import format: ${options.format}`);
+                return Result.fail(`Unsupported import format: ${options.format}`);
             }
         }
 

@@ -281,23 +281,13 @@ export class ObsidianCommandExecutor implements ICommandExecutor {
                 return Result.fail<any>('Script is required for custom commands');
             }
 
-            try {
-                // Create a safe execution context
-                const context = {
-                    app: this.app,
-                    parameters: request.context.parameters,
-                    assetId: request.context.assetId,
-                    Notice: Notice
-                };
-
-                // Execute script in a controlled way
-                const func = new Function('context', script);
-                const result = await func(context);
-                
-                return Result.ok<any>(result);
-            } catch (error) {
-                return Result.fail<any>(`Script execution failed: ${error.message}`);
-            }
+            // Script execution is disabled for security reasons
+            // Dynamic code execution (eval, new Function) poses significant security risks:
+            // - Arbitrary code execution
+            // - Access to sensitive APIs
+            // - Potential data exfiltration
+            // Please use predefined commands or safe templating instead
+            return Result.fail<any>('Script execution is disabled for security. Use predefined commands instead.');
         });
     }
 
