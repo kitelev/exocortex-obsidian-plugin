@@ -2,6 +2,47 @@
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
 
+## [2.6.0] - 2025-08-10
+
+### 🎯 Added - ExoFocus Context Filtering
+- **Context-Aware Knowledge Management** - Filter your knowledge base by current focus
+- **Predefined Contexts** - Work, Personal, Today, This Week contexts ready to use
+- **Dynamic SPARQL Filtering** - Query results automatically filtered by active focus
+- **Multi-Criteria Filtering** - Filter by class, tags, properties, timeframe, and relations
+- **Persistent Configuration** - Focus settings saved in .exocortex folder
+- **Statistics Dashboard** - View filtered vs total assets and triples
+
+### Features
+- ExoFocus entity with comprehensive filtering logic
+- Integration with SPARQL processor for automatic result filtering
+- Five predefined focus contexts with smart defaults
+- Commands to quickly switch between contexts
+- Real-time statistics about filtered knowledge
+- Support for complex filter combinations
+- Date-based filtering for tasks and events
+
+### Commands
+- **ExoFocus: Show All Knowledge** - Disable filtering
+- **ExoFocus: Work Context** - Focus on work-related items
+- **ExoFocus: Personal Context** - Focus on personal knowledge
+- **ExoFocus: Today** - Focus on today's items
+- **ExoFocus: Show Statistics** - View filtering statistics
+
+### Technical
+- ExoFocus domain entity with Result pattern
+- ExoFocusService for managing contexts
+- Filter types: class, tag, property, timeframe, relation
+- Operators: includes, excludes, equals, contains, before, after, between
+- Automatic week start/end calculation for timeframe filters
+
+### Why This Matters
+ExoFocus transforms Exocortex into a context-aware knowledge system:
+- AI agents can work within specific knowledge contexts
+- Reduce cognitive overload by hiding irrelevant information
+- Switch between work and personal contexts instantly
+- Focus on time-sensitive information with date filters
+- Maintain multiple parallel research contexts
+
 ## [2.5.0] - 2025-08-10
 
 ### 🌐 Added - REST API for External AI Agents
