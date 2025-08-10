@@ -1,5 +1,6 @@
 import { App } from 'obsidian';
 import { Graph } from '../../domain/semantic/core/Graph';
+import { IRI, Literal } from '../../domain/semantic/core/Triple';
 
 export interface QueryIntent {
     type: 'query_tasks' | 'query_projects' | 'query_relations' | 'general';
@@ -228,11 +229,14 @@ export class ExoAgent {
         
         const [s, p, o] = parts;
         
-        const matchedTriples = this.graph.match(
-            s.startsWith('?') ? null : s.replace(/[<>]/g, ''),
-            p.startsWith('?') ? null : p,
-            o.startsWith('?') ? null : o.replace(/[<>"]/g, '').replace('.', '')
-        );
+        const subject = s.startsWith('?') ? null : new IRI(s.replace(/[<>]/g, ''));
+        const predicate = p.startsWith('?') ? null : new IRI(p);
+        const object = o.startsWith('?') ? null : 
+            (o.startsWith('"') ? 
+                Literal.string(o.replace(/[<>"]/g, '').replace('.', '')) : 
+                new IRI(o.replace(/[<>]/g, '').replace('.', '')));
+        
+        const matchedTriples = this.graph.match(subject, predicate, object);
         
         const limitMatch = query.match(/LIMIT\s+(\d+)/i);
         const limit = limitMatch ? parseInt(limitMatch[1]) : 20;

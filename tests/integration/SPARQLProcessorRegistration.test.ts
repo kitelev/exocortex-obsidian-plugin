@@ -55,6 +55,8 @@ describe('SPARQL Processor Registration', () => {
     
     afterEach(() => {
         registeredProcessors.clear();
+        // Reset DIContainer between tests
+        (DIContainer as any).reset();
     });
     
     describe('Plugin Loading', () => {
@@ -68,11 +70,11 @@ describe('SPARQL Processor Registration', () => {
                 expect.any(Function)
             );
             expect(plugin.registerMarkdownCodeBlockProcessor).toHaveBeenCalledWith(
-                'exo-layout',
+                'graph',
                 expect.any(Function)
             );
             expect(registeredProcessors.has('sparql')).toBe(true);
-            expect(registeredProcessors.has('exo-layout')).toBe(true);
+            expect(registeredProcessors.has('graph')).toBe(true);
         });
         
         it('should handle duplicate registration gracefully', async () => {

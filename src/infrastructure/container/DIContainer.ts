@@ -76,6 +76,13 @@ export class DIContainer {
         // Already initialized in constructor, this is for backward compatibility
         return Promise.resolve();
     }
+    
+    /**
+     * Reset the container instance (for testing purposes)
+     */
+    public static reset(): void {
+        DIContainer.instance = null as any;
+    }
 
     private registerDependencies(): void {
         // Register Obsidian App

@@ -1,5 +1,6 @@
 import { App, Notice, TFile, TFolder } from 'obsidian';
 import { Graph } from '../../domain/semantic/core/Graph';
+import { Triple, IRI, Literal } from '../../domain/semantic/core/Triple';
 import { ExoAgent } from '../../application/services/ExoAgent';
 import { SPARQLProcessor } from '../../presentation/processors/SPARQLProcessor';
 
@@ -363,11 +364,13 @@ print(result)
                 return { error: 'Subject, predicate, and object required', status: 400 };
             }
             
-            this.graph.add({
-                subject: params.subject,
-                predicate: params.predicate,
-                object: params.object
-            });
+            const subjectNode = new IRI(params.subject);
+            const predicateNode = new IRI(params.predicate);
+            const objectNode = typeof params.object === 'string' && params.object.startsWith('"') ?
+                Literal.string(params.object.replace(/^"|"$/g, '')) :
+                new IRI(params.object);
+            
+            this.graph.add(new Triple(subjectNode, predicateNode, objectNode));
             
             return {
                 status: 201,

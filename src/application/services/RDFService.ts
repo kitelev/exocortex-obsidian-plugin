@@ -58,7 +58,7 @@ export class RDFService {
             // Validate options
             const validationResult = this.validateExportOptions(options);
             if (validationResult.isFailure) {
-                return validationResult;
+                return Result.fail<SerializationResult>(validationResult.errorValue());
             }
             
             // Prepare serialization options
@@ -106,7 +106,7 @@ export class RDFService {
             // Validate options
             const validationResult = this.validateImportOptions(options);
             if (validationResult.isFailure) {
-                return validationResult;
+                return Result.fail<{ graph: Graph; imported: ParseResult }>(validationResult.errorValue());
             }
             
             // Prepare parse options

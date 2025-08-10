@@ -20,8 +20,8 @@ export default class ExocortexPlugin extends Plugin {
         console.log('🚀 Exocortex: Loading plugin v2.1.6...');
         
         // Initialize DI container
+        DIContainer.initialize(this.app, this);
         this.container = DIContainer.getInstance();
-        await this.container.initialize(this.app);
         
         // Initialize graph
         this.graph = new Graph();

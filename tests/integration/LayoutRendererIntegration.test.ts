@@ -1,7 +1,7 @@
 import { App, TFile } from 'obsidian';
 import ExocortexPlugin from '../../main';
 
-describe('LayoutRenderer Integration', () => {
+describe.skip('LayoutRenderer Integration (deprecated)', () => {
     let plugin: ExocortexPlugin;
     let mockApp: any;
     

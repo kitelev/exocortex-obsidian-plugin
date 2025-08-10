@@ -2,6 +2,51 @@
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
 
+## [2.8.0] - 2025-08-10
+
+### 🚀 Major Improvements - Test Suite & Installation
+
+#### Complete Test Suite Overhaul
+- **100% Test Pass Rate** - Fixed all 32 failing tests
+- **518 Tests Passing** - Comprehensive test coverage across all modules
+- **Fixed TypeScript Issues** - Resolved all compilation errors
+- **Improved Test Architecture** - Better test isolation and mock infrastructure
+
+#### BRAT Installation Support
+- **Beta Installation Method** - Now installable via BRAT (Beta Reviewers Auto-update Tool)
+- **Auto-Updates** - Automatic updates for beta testers
+- **Simplified Installation** - One-click install from GitHub repository
+- **Better Documentation** - Comprehensive installation guide in README
+
+#### Dynamic Asset Creation Modal
+- **Class-Based Properties** - Properties dynamically update based on selected class
+- **Property Types Support** - Dropdown selects, date pickers, text fields
+- **Property Options** - Support for enumerated values with dropdown selections
+- **Value Preservation** - Form values preserved when switching between classes
+- **Improved UX** - Better form validation and user feedback
+
+### Technical Improvements
+- Fixed RDF Parser for single-line Turtle format
+- Improved SPARQL pattern matching for literals with datatypes
+- Fixed Graph import conflicts and Result API usage
+- Enhanced DIContainer initialization and lifecycle management
+- Fixed date input type handling in modal forms
+- Improved property type detection from ontology metadata
+
+### Bug Fixes
+- Fixed Triple property access (subject/predicate/object getters)
+- Fixed Result.isFailure property vs method inconsistency
+- Fixed graph.size() method calls throughout codebase
+- Fixed cache test predicate IRIs to use proper prefixes
+- Fixed SPARQL CONSTRUCT query template patterns
+- Fixed API server Triple creation with proper constructors
+
+### Developer Experience
+- Better error messages for test failures
+- Improved mock infrastructure for Obsidian API
+- Added DIContainer.reset() for test isolation
+- Enhanced test documentation and examples
+
 ## [2.7.0] - 2025-08-10
 
 ### ⚡ Performance - IndexedGraph Implementation

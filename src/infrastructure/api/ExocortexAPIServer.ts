@@ -1,5 +1,6 @@
 import { App, Notice, Plugin, requestUrl, RequestUrlParam } from 'obsidian';
 import { Graph } from '../../domain/semantic/core/Graph';
+import { Triple, IRI, Literal } from '../../domain/semantic/core/Triple';
 import { SPARQLProcessor } from '../../presentation/processors/SPARQLProcessor';
 import { ExoAgent } from '../../application/services/ExoAgent';
 import { RelationOntologizer } from '../../application/services/RelationOntologizer';
@@ -370,10 +371,16 @@ export class ExocortexAPIServer {
             const object = url.searchParams.get('o');
             const limit = parseInt(url.searchParams.get('limit') || '100');
             
+            const subjectNode = subject ? new IRI(subject) : null;
+            const predicateNode = predicate ? new IRI(predicate) : null;
+            const objectNode = object ? 
+                (object.startsWith('"') ? Literal.string(object.replace(/^"|"$/g, '')) : new IRI(object)) : 
+                null;
+            
             const triples = this.graph.match(
-                subject || null,
-                predicate || null,
-                object || null
+                subjectNode,
+                predicateNode,
+                objectNode
             ).slice(0, limit);
             
             this.sendJson(res, {
@@ -390,19 +397,25 @@ export class ExocortexAPIServer {
                     return;
                 }
                 
-                this.graph.add({
-                    subject: data.subject,
-                    predicate: data.predicate,
-                    object: data.object
-                });
+                const subjectNode = new IRI(data.subject);
+                const predicateNode = new IRI(data.predicate);
+                const objectNode = typeof data.object === 'string' && data.object.startsWith('"') ?
+                    Literal.string(data.object.replace(/^"|"$/g, '')) :
+                    new IRI(data.object);
+                
+                this.graph.add(new Triple(subjectNode, predicateNode, objectNode));
                 
                 this.sendJson(res, { success: true });
             } else if (data.operation === 'remove') {
-                const triples = this.graph.match(
-                    data.subject || null,
-                    data.predicate || null,
-                    data.object || null
-                );
+                const subjectNode = data.subject ? new IRI(data.subject) : null;
+                const predicateNode = data.predicate ? new IRI(data.predicate) : null;
+                const objectNode = data.object ? 
+                    (typeof data.object === 'string' && data.object.startsWith('"') ? 
+                        Literal.string(data.object.replace(/^"|"$/g, '')) : 
+                        new IRI(data.object)) : 
+                    null;
+                
+                const triples = this.graph.match(subjectNode, predicateNode, objectNode);
                 
                 for (const triple of triples) {
                     this.graph.remove(triple);

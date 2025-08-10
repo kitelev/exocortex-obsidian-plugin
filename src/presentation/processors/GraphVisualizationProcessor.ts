@@ -1,7 +1,7 @@
 import { MarkdownPostProcessorContext, Plugin, Notice } from 'obsidian';
 import { SPARQLEngine, SelectResult } from '../../application/SPARQLEngine';
 import { Graph } from '../../domain/semantic/core/Graph';
-import { Triple } from '../../domain/semantic/core/Triple';
+import { Triple, IRI, Literal } from '../../domain/semantic/core/Triple';
 import { RDFService } from '../../application/services/RDFService';
 import { ExportRDFModal } from '../modals/ExportRDFModal';
 import { RDFFormat } from '../../application/services/RDFSerializer';
@@ -171,17 +171,17 @@ export class GraphVisualizationProcessor {
             // Convert SPARQL results to triples
             for (const row of result.results) {
                 if (row.s && row.p && row.o) {
-                    triples.push({
-                        subject: row.s,
-                        predicate: row.p,
-                        object: row.o
-                    });
+                    triples.push(new Triple(
+                        new IRI(row.s),
+                        new IRI(row.p),
+                        row.o.startsWith('"') ? Literal.string(row.o.replace(/^"|"$/g, '')) : new IRI(row.o)
+                    ));
                 } else if (row.subject && row.predicate && row.object) {
-                    triples.push({
-                        subject: row.subject,
-                        predicate: row.predicate,
-                        object: row.object
-                    });
+                    triples.push(new Triple(
+                        new IRI(row.subject),
+                        new IRI(row.predicate),
+                        row.object.startsWith('"') ? Literal.string(row.object.replace(/^"|"$/g, '')) : new IRI(row.object)
+                    ));
                 }
             }
         } else if (config.focus) {
@@ -215,23 +215,25 @@ export class GraphVisualizationProcessor {
             visited.add(entity);
             
             // Get triples where entity is subject
-            const subjectTriples = this.graph.match(entity, null, null);
+            const subjectTriples = this.graph.match(new IRI(entity), null, null);
             result.push(...subjectTriples);
             
             // Get triples where entity is object
-            const objectTriples = this.graph.match(null, null, entity);
+            const objectTriples = this.graph.match(null, null, new IRI(entity));
             result.push(...objectTriples);
             
             // Add related entities to queue for next depth level
             if (currentDepth < depth - 1) {
                 for (const triple of subjectTriples) {
-                    if (!visited.has(triple.object)) {
-                        queue.push({ entity: triple.object, currentDepth: currentDepth + 1 });
+                    const objectStr = triple.getObject().toString();
+                    if (!visited.has(objectStr)) {
+                        queue.push({ entity: objectStr, currentDepth: currentDepth + 1 });
                     }
                 }
                 for (const triple of objectTriples) {
-                    if (!visited.has(triple.subject)) {
-                        queue.push({ entity: triple.subject, currentDepth: currentDepth + 1 });
+                    const subjectStr = triple.getSubject().toString();
+                    if (!visited.has(subjectStr)) {
+                        queue.push({ entity: subjectStr, currentDepth: currentDepth + 1 });
                     }
                 }
             }
@@ -245,32 +247,36 @@ export class GraphVisualizationProcessor {
         const links: GraphLink[] = [];
         
         for (const triple of triples) {
+            const subjectStr = triple.getSubject().toString();
+            const predicateStr = triple.getPredicate().toString();
+            const objectStr = triple.getObject().toString();
+            
             // Add subject node
-            if (!nodesMap.has(triple.subject)) {
-                nodesMap.set(triple.subject, {
-                    id: triple.subject,
-                    label: this.getDisplayLabel(triple.subject),
+            if (!nodesMap.has(subjectStr)) {
+                nodesMap.set(subjectStr, {
+                    id: subjectStr,
+                    label: this.getDisplayLabel(subjectStr),
                     type: 'subject',
                     group: 1
                 });
             }
             
             // Add object node
-            if (!nodesMap.has(triple.object)) {
-                nodesMap.set(triple.object, {
-                    id: triple.object,
-                    label: this.getDisplayLabel(triple.object),
+            if (!nodesMap.has(objectStr)) {
+                nodesMap.set(objectStr, {
+                    id: objectStr,
+                    label: this.getDisplayLabel(objectStr),
                     type: 'object',
                     group: 2
                 });
             }
             
             // Add link
-            const linkId = `${triple.subject}-${triple.predicate}-${triple.object}`;
+            const linkId = `${subjectStr}-${predicateStr}-${objectStr}`;
             links.push({
-                source: triple.subject,
-                target: triple.object,
-                label: triple.predicate,
+                source: subjectStr,
+                target: objectStr,
+                label: predicateStr,
                 id: linkId
             });
         }
@@ -813,11 +819,11 @@ export class GraphVisualizationProcessor {
             const targetNode = data.nodes.find(n => n.id === (typeof link.target === 'string' ? link.target : link.target.id));
             
             if (sourceNode && targetNode) {
-                triples.push({
-                    subject: sourceNode.id,
-                    predicate: link.label,
-                    object: targetNode.id
-                });
+                triples.push(new Triple(
+                    new IRI(sourceNode.id),
+                    new IRI(link.label),
+                    new IRI(targetNode.id)
+                ));
             }
         }
         

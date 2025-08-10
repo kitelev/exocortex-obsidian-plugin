@@ -194,15 +194,26 @@ export class CreateAssetModal extends Modal {
             const description = cache.frontmatter['rdfs__comment'] || '';
             const range = cache.frontmatter['rdfs__range'] || 'string';
             const isRequired = cache.frontmatter['exo__Property_isRequired'] || false;
+            const options = cache.frontmatter['exo__Property_options'] || null;
             
             console.log(`Found property ${propertyName} for class ${className}`);
+            
+            // Determine property type based on range and options
+            let type = this.mapRangeToType(range);
+            if (options && Array.isArray(options)) {
+              type = 'enum';
+            } else if (range === 'select' && options) {
+              type = 'enum';
+            }
+            
             this.properties.push({
               name: propertyName,
               label: label,
               description: description,
-              type: this.mapRangeToType(range),
+              type: type,
               isRequired: isRequired,
-              range: range
+              range: range,
+              options: options
             });
           }
         }
@@ -247,6 +258,7 @@ export class CreateAssetModal extends Modal {
   
   private mapRangeToType(range: string): string {
     // Map RDF/OWL ranges to input types
+    if (range === 'select') return 'enum';
     if (range.includes('boolean')) return 'boolean';
     if (range.includes('date') || range.includes('Date')) return 'date';
     if (range.includes('integer') || range.includes('decimal') || range.includes('float')) return 'number';
@@ -321,6 +333,8 @@ export class CreateAssetModal extends Modal {
             this.propertyValues.delete(property.name);
           }
         });
+      // Set the input type to date
+      text.inputEl.type = 'date';
     });
   }
 

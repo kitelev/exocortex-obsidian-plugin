@@ -323,7 +323,15 @@ export class ExoFocusService {
             return triples;
         }
         
-        return triples.filter(triple => this.activeFocus!.matchesTriple(triple));
+        return triples.filter(triple => {
+            // Convert Triple to plain object for matchesTriple
+            const tripleObj = {
+                subject: triple.getSubject().toString(),
+                predicate: triple.getPredicate().toString(),
+                object: triple.getObject().toString()
+            };
+            return this.activeFocus!.matchesTriple(tripleObj);
+        });
     }
     
     /**

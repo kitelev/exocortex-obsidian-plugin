@@ -6,7 +6,7 @@ describe('DIContainer Initialization', () => {
     
     beforeEach(() => {
         // Reset the singleton instance for clean tests
-        (DIContainer as any).instance = undefined;
+        DIContainer.reset();
         
         // Create mock app
         mockApp = {

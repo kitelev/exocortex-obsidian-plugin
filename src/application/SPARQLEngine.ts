@@ -1,5 +1,5 @@
 import { Graph } from '../domain/semantic/core/Graph';
-import { Triple, IRI, Literal } from '../domain/semantic/core/Triple';
+import { Triple, IRI, Literal, BlankNode } from '../domain/semantic/core/Triple';
 import { QueryCache, QueryCacheConfig } from './services/QueryCache';
 
 export interface ConstructResult {
@@ -50,11 +50,16 @@ export class SPARQLEngine {
         if (patterns.length === 1) {
             // Single pattern - simple case
             const pattern = patterns[0];
-            const matchedTriples = this.graph.match(
-                pattern.subject.startsWith('?') ? null : pattern.subject,
-                pattern.predicate.startsWith('?') ? null : pattern.predicate,
-                pattern.object.startsWith('?') ? null : pattern.object
-            );
+            
+            // Convert pattern strings to proper types
+            const subject = pattern.subject.startsWith('?') ? null : new IRI(pattern.subject);
+            const predicate = pattern.predicate.startsWith('?') ? null : new IRI(pattern.predicate);
+            const object = pattern.object.startsWith('?') ? null : 
+                (pattern.object.startsWith('"') ? 
+                    Literal.string(pattern.object.replace(/^"|"$/g, '')) : 
+                    new IRI(pattern.object));
+            
+            const matchedTriples = this.graph.match(subject, predicate, object);
             
             for (const triple of matchedTriples) {
                 const binding = this.createBinding(pattern, triple);
@@ -98,7 +103,8 @@ export class SPARQLEngine {
     
     private parseConstructTemplate(templateClause: string): any[] {
         const templates: any[] = [];
-        const lines = templateClause.trim().split(/[\.\n]/);
+        // Split by period followed by whitespace or newline, not just any period
+        const lines = templateClause.trim().split(/\.\s*(?:\n|\s|$)/);
         
         for (const line of lines) {
             const trimmed = line.trim();
@@ -106,10 +112,12 @@ export class SPARQLEngine {
             
             const parts = trimmed.split(/\s+/);
             if (parts.length >= 3) {
+                // Preserve quotes for literals
+                let object = parts.slice(2).join(' ');
                 templates.push({
                     subject: parts[0],
                     predicate: parts[1],
-                    object: parts.slice(2).join(' ').replace(/["']/g, '')
+                    object: object
                 });
             }
         }
@@ -143,11 +151,30 @@ export class SPARQLEngine {
             
             if (subjectStr && predicateStr && objectStr) {
                 // Create proper Triple objects
-                const subject = new IRI(subjectStr);
+                const subject = subjectStr.startsWith('_:') ? new BlankNode(subjectStr) : new IRI(subjectStr);
                 const predicate = new IRI(predicateStr);
-                const object = objectStr.startsWith('"') 
-                    ? Literal.string(objectStr.replace(/^"|"$/g, ''))
-                    : new IRI(objectStr);
+                
+                // Handle different object types
+                let object: IRI | BlankNode | Literal;
+                if (objectStr.startsWith('"')) {
+                    // It's a literal
+                    object = Literal.string(objectStr.replace(/^"|"$/g, ''));
+                } else if (objectStr === 'true' || objectStr === 'false') {
+                    // Boolean literal
+                    object = Literal.boolean(objectStr === 'true');
+                } else if (objectStr.startsWith('_:')) {
+                    // Blank node
+                    object = new BlankNode(objectStr);
+                } else if (/^\d+$/.test(objectStr)) {
+                    // Integer literal
+                    object = Literal.integer(parseInt(objectStr));
+                } else if (/^\d+\.\d+$/.test(objectStr)) {
+                    // Double literal
+                    object = Literal.double(parseFloat(objectStr));
+                } else {
+                    // IRI
+                    object = new IRI(objectStr);
+                }
                 
                 triples.push(new Triple(subject, predicate, object));
             }
@@ -260,11 +287,14 @@ export class SPARQLEngine {
         
         // Execute first pattern (MVP - single pattern support)
         const pattern = patterns[0];
-        const triples = this.graph.match(
-            pattern.subject.startsWith('?') ? null : pattern.subject,
-            pattern.predicate.startsWith('?') ? null : pattern.predicate,
-            pattern.object.startsWith('?') ? null : pattern.object
-        );
+        
+        // Convert string patterns to proper types for match
+        const subject = pattern.subject.startsWith('?') ? null : new IRI(pattern.subject);
+        const predicate = pattern.predicate.startsWith('?') ? null : new IRI(pattern.predicate);
+        const object = pattern.object.startsWith('?') ? null : 
+            (pattern.object.startsWith('"') ? Literal.string(pattern.object.replace(/^"|"$/g, '')) : new IRI(pattern.object));
+        
+        const triples = this.graph.match(subject, predicate, object);
         
         // Bind variables
         for (const triple of triples) {
@@ -273,21 +303,21 @@ export class SPARQLEngine {
             if (pattern.subject.startsWith('?')) {
                 const varName = pattern.subject.substring(1);
                 if (variables.includes('*') || variables.includes(varName)) {
-                    binding[varName] = triple.subject;
+                    binding[varName] = triple.getSubject().toString();
                 }
             }
             
             if (pattern.predicate.startsWith('?')) {
                 const varName = pattern.predicate.substring(1);
                 if (variables.includes('*') || variables.includes(varName)) {
-                    binding[varName] = triple.predicate;
+                    binding[varName] = triple.getPredicate().toString();
                 }
             }
             
             if (pattern.object.startsWith('?')) {
                 const varName = pattern.object.substring(1);
                 if (variables.includes('*') || variables.includes(varName)) {
-                    binding[varName] = triple.object;
+                    binding[varName] = triple.getObject().toString();
                 }
             }
             
@@ -332,7 +362,8 @@ export class SPARQLEngine {
         const patterns: any[] = [];
         
         // Simple triple pattern: ?s ?p ?o or with literals
-        const lines = whereClause.trim().split(/[\.\n]/);
+        // Split by period followed by whitespace/newline, not dots inside quotes
+        const lines = whereClause.trim().split(/\.\s*(?:\n|\s|$)/);
         
         for (const line of lines) {
             const trimmed = line.trim();
@@ -344,7 +375,7 @@ export class SPARQLEngine {
                 patterns.push({
                     subject: parts[0],
                     predicate: parts[1],
-                    object: parts.slice(2).join(' ').replace(/["']/g, '')
+                    object: parts.slice(2).join(' ')  // Keep quotes for proper matching
                 });
             }
         }

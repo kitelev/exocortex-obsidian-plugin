@@ -1,6 +1,7 @@
 import * as http from 'http';
 import { App, Notice } from 'obsidian';
 import { Graph } from '../../domain/semantic/core/Graph';
+import { Triple, IRI, Literal } from '../../domain/semantic/core/Triple';
 import { ExoAgent } from '../../application/services/ExoAgent';
 
 /**
@@ -204,10 +205,16 @@ export class SimpleHTTPServer {
             const object = url.searchParams.get('o');
             const limit = parseInt(url.searchParams.get('limit') || '100');
             
+            const subjectNode = subject ? new IRI(subject) : null;
+            const predicateNode = predicate ? new IRI(predicate) : null;
+            const objectNode = object ? 
+                (object.startsWith('"') ? Literal.string(object.replace(/^"|"$/g, '')) : new IRI(object)) : 
+                null;
+            
             const triples = this.graph.match(
-                subject || null,
-                predicate || null,
-                object || null
+                subjectNode,
+                predicateNode,
+                objectNode
             ).slice(0, limit);
             
             this.sendJSON(res, {
@@ -223,7 +230,13 @@ export class SimpleHTTPServer {
                 return;
             }
             
-            this.graph.add({ subject, predicate, object });
+            const subjectNode = new IRI(subject);
+            const predicateNode = new IRI(predicate);
+            const objectNode = object.startsWith('"') ? 
+                Literal.string(object.replace(/^"|"$/g, '')) : 
+                new IRI(object);
+            
+            this.graph.add(new Triple(subjectNode, predicateNode, objectNode));
             this.sendJSON(res, { success: true });
         } else {
             this.sendError(res, 405, 'Method not allowed');
@@ -333,11 +346,14 @@ export class SimpleHTTPServer {
         const [s, p, o] = parts;
         
         // Execute match
-        const triples = this.graph.match(
-            s.startsWith('?') ? null : s.replace(/"/g, ''),
-            p.startsWith('?') ? null : p.replace(/"/g, ''),
-            o.startsWith('?') ? null : o.replace(/"/g, '').replace('.', '')
-        );
+        const subjectNode = s.startsWith('?') ? null : new IRI(s.replace(/"/g, ''));
+        const predicateNode = p.startsWith('?') ? null : new IRI(p.replace(/"/g, ''));
+        const objectNode = o.startsWith('?') ? null : 
+            (o.startsWith('"') ? 
+                Literal.string(o.replace(/"/g, '').replace('.', '')) : 
+                new IRI(o.replace(/"/g, '').replace('.', '')));
+        
+        const triples = this.graph.match(subjectNode, predicateNode, objectNode);
         
         // Apply LIMIT
         const limitMatch = query.match(/LIMIT\s+(\d+)/i);

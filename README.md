@@ -31,18 +31,63 @@ The Exocortex plugin brings a revolutionary approach to knowledge management in 
 
 ## Installation
 
-### From GitHub Releases (Recommended)
-1. Download the latest release from the [Releases](https://github.com/kitelev/exocortex-obsidian-plugin/releases) page
-2. Extract the files into your vault's plugins folder: `<vault>/.obsidian/plugins/exocortex-obsidian-plugin/`
-3. Reload Obsidian
-4. Enable the plugin in Settings → Community plugins
+### Using BRAT (Recommended for Beta Testing)
 
-### Manual Installation
-1. Clone this repository
-2. Run `npm install` to install dependencies
-3. Run `npm run build` to compile the plugin
-4. Copy `main.js`, `manifest.json`, and `styles.css` to your vault's plugins folder
-5. Reload Obsidian and enable the plugin
+The Exocortex plugin is currently in beta and can be installed using BRAT (Beta Reviewers Auto-update Tool).
+
+#### Step 1: Install BRAT
+
+1. Open Obsidian Settings
+2. Navigate to **Community plugins** → **Browse**
+3. Search for "BRAT" (Beta Reviewers Auto-update Tool)
+4. Install and enable the BRAT plugin
+
+#### Step 2: Add Exocortex via BRAT
+
+1. Open Obsidian Settings → **BRAT**
+2. Click on **"Add Beta plugin"**
+3. Enter the GitHub repository URL: `https://github.com/kitelev/exocortex-obsidian-plugin`
+4. Click **"Add Plugin"**
+5. BRAT will automatically download and install the plugin
+6. Enable "Exocortex" in your Community plugins list
+
+#### Benefits of Using BRAT
+- **Auto-updates**: Automatically receive the latest beta updates
+- **Easy rollback**: Switch between versions if needed
+- **No manual file management**: BRAT handles all file operations
+
+### Manual Installation (For Developers)
+
+If you prefer to build from source or contribute to development:
+
+```bash
+# Clone the repository
+git clone https://github.com/kitelev/exocortex-obsidian-plugin.git
+
+# Navigate to the plugin directory
+cd exocortex-obsidian-plugin
+
+# Install dependencies
+npm install
+
+# Build the plugin
+npm run build
+
+# Copy files to your vault (replace <vault> with your vault path)
+cp main.js manifest.json styles.css <vault>/.obsidian/plugins/exocortex-obsidian-plugin/
+```
+
+Then reload Obsidian and enable the plugin in Settings → Community plugins.
+
+### Updating the Plugin
+
+#### Via BRAT
+1. Open Settings → **BRAT**
+2. Click **"Check for updates"**
+3. BRAT will automatically update all beta plugins
+
+#### Manual Update
+Follow the same steps as manual installation with the latest source code.
 
 ## Usage
 

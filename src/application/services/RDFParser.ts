@@ -142,65 +142,58 @@ export class RDFParser {
         errors: string[]
     ): Graph {
         const graph = new Graph();
-        const lines = content.split('\n');
         let currentSubject: IRI | BlankNode | null = null;
         let baseIRI = options.baseIRI;
         
-        // Parse namespace prefixes first
-        nm.parseNamespaces(content, 'turtle');
+        // First, extract and process all prefix declarations
+        // Handle both single-line and multi-line content
+        const prefixPattern = /@prefix\s+(\w+):\s+<([^>]+)>\s*\./g;
+        let match;
+        while ((match = prefixPattern.exec(content)) !== null) {
+            nm.addBinding(match[1], match[2]);
+        }
         
-        // Accumulate statement lines (handling multi-line statements)
-        let statementBuffer = '';
+        // Remove prefix declarations from content
+        let processedContent = content.replace(/@prefix\s+\w+:\s+<[^>]+>\s*\./g, '');
         
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
+        // Also handle @base declarations
+        const basePattern = /@base\s+<([^>]+)>\s*\./g;
+        const baseMatch = basePattern.exec(processedContent);
+        if (baseMatch) {
+            baseIRI = baseMatch[1];
+            processedContent = processedContent.replace(/@base\s+<[^>]+>\s*\./g, '');
+        }
+        
+        // Split the remaining content into statements
+        // Statements end with . (but not inside quotes)
+        const statements = processedContent.split(/\.\s*(?=(?:[^"]*"[^"]*")*[^"]*$)/).filter(s => s.trim());
+        
+        for (let i = 0; i < statements.length; i++) {
+            const statement = statements[i].trim();
             
-            if (!line || line.startsWith('#')) continue;
+            if (!statement || statement.startsWith('#')) continue;
             
-            // Handle @base directive
-            const baseMatch = line.match(/^@base\s+<([^>]+)>\s*\.\s*$/);
-            if (baseMatch) {
-                baseIRI = baseMatch[1];
-                continue;
-            }
-            
-            // Skip @prefix lines (already handled)
-            if (line.startsWith('@prefix')) continue;
-            
-            // Accumulate statement
-            statementBuffer += (statementBuffer ? ' ' : '') + line;
-            
-            // Check if statement is complete (ends with . but not inside quotes)
-            // Also handle statements that continue with ; or ,
-            const trimmedLine = line.trim();
-            const isComplete = trimmedLine.endsWith('.') && !trimmedLine.endsWith('>.') && !trimmedLine.endsWith('".');
-            
-            if (isComplete) {
-                try {
-                    // Parse complete statement
-                    const triples = this.parseTurtleStatement(statementBuffer, nm, currentSubject, baseIRI);
-                    
-                    for (const triple of triples) {
-                        if (triple.subject) {
-                            currentSubject = triple.subject;
-                        }
-                        
-                        if (triple.triple) {
-                            graph.add(triple.triple);
-                        }
+            try {
+                // Parse the statement
+                const triples = this.parseTurtleStatement(statement, nm, currentSubject, baseIRI);
+                
+                for (const triple of triples) {
+                    if (triple.subject) {
+                        currentSubject = triple.subject;
                     }
                     
-                } catch (error) {
-                    const errorMsg = `Line ${i + 1}: ${error.message}`;
-                    if (options.strictMode) {
-                        errors.push(errorMsg);
-                    } else {
-                        warnings.push(errorMsg);
+                    if (triple.triple) {
+                        graph.add(triple.triple);
                     }
                 }
                 
-                // Clear buffer for next statement
-                statementBuffer = '';
+            } catch (error) {
+                const errorMsg = `Statement ${i + 1}: ${error.message}`;
+                if (options.strictMode) {
+                    errors.push(errorMsg);
+                } else {
+                    warnings.push(errorMsg);
+                }
             }
         }
         
@@ -222,31 +215,21 @@ export class RDFParser {
         statement = statement.trim();
         if (!statement) return results;
         
-        // Handle multi-line statements with ; and ,
-        // Split by ; to handle multiple predicates for same subject
-        const predicateGroups = statement.split(';').map(s => s.trim()).filter(s => s);
+        // Remove trailing .
+        statement = statement.replace(/\.\s*$/, '');
         
-        let subject: IRI | BlankNode | null = currentSubject;
-        
-        for (let i = 0; i < predicateGroups.length; i++) {
-            let group = predicateGroups[i];
+        // Simple approach: if statement contains semicolon, it's a multi-predicate statement
+        if (statement.includes(';')) {
+            // Split by ; to handle multiple predicates for same subject
+            const parts = statement.split(';').map(s => s.trim()).filter(s => s);
             
-            // Remove trailing . from last group
-            if (i === predicateGroups.length - 1) {
-                group = group.replace(/\.\s*$/, '');
-            }
+            let subject: IRI | BlankNode | null = null;
             
-            // Split by comma to handle multiple objects for same predicate
-            const objectGroups = group.split(',').map(s => s.trim()).filter(s => s);
-            
-            for (const objGroup of objectGroups) {
-                const tokens = this.tokenizeTurtleLine(objGroup);
+            for (let i = 0; i < parts.length; i++) {
+                const tokens = this.tokenizeTurtleLine(parts[i]);
                 
-                if (tokens.length === 0) continue;
-                
-                // First token group should have subject if this is the first statement
-                if (i === 0 && objectGroups.indexOf(objGroup) === 0 && tokens.length >= 3) {
-                    // Full triple: subject predicate object
+                if (i === 0 && tokens.length >= 3) {
+                    // First part has subject predicate object
                     subject = this.parseNode(tokens[0], nm, baseIRI) as IRI | BlankNode;
                     const predicate = this.parseNode(tokens[1], nm, baseIRI) as IRI;
                     const object = this.parseNode(tokens[2], nm, baseIRI);
@@ -254,17 +237,25 @@ export class RDFParser {
                     const triple = new Triple(subject, predicate, object);
                     results.push({ subject, triple });
                 } else if (subject && tokens.length >= 2) {
-                    // Predicate and object only (continuing previous subject)
+                    // Subsequent parts have predicate object
                     const predicate = this.parseNode(tokens[0], nm, baseIRI) as IRI;
                     const object = this.parseNode(tokens[1], nm, baseIRI);
                     
                     const triple = new Triple(subject, predicate, object);
                     results.push({ triple });
-                } else if (subject && tokens.length === 1) {
-                    // Just object (continuing previous subject and predicate)
-                    // This case needs the previous predicate which we don't have
-                    // Skip for now in this simple implementation
                 }
+            }
+        } else {
+            // Simple single triple
+            const tokens = this.tokenizeTurtleLine(statement);
+            
+            if (tokens.length >= 3) {
+                const subject = this.parseNode(tokens[0], nm, baseIRI) as IRI | BlankNode;
+                const predicate = this.parseNode(tokens[1], nm, baseIRI) as IRI;
+                const object = this.parseNode(tokens[2], nm, baseIRI);
+                
+                const triple = new Triple(subject, predicate, object);
+                results.push({ subject, triple });
             }
         }
         
@@ -280,17 +271,21 @@ export class RDFParser {
         let inQuotes = false;
         let quoteChar = '';
         let inBrackets = false;
+        let afterQuote = false;
         
         for (let i = 0; i < line.length; i++) {
             const char = line[i];
+            const nextChar = i < line.length - 1 ? line[i + 1] : '';
             
             if (char === '"' || char === "'") {
                 if (!inQuotes) {
                     inQuotes = true;
                     quoteChar = char;
+                    afterQuote = false;
                 } else if (char === quoteChar) {
                     inQuotes = false;
                     quoteChar = '';
+                    afterQuote = true;
                 }
                 current += char;
             } else if (char === '<') {
@@ -299,10 +294,22 @@ export class RDFParser {
             } else if (char === '>') {
                 inBrackets = false;
                 current += char;
+                // Check if this is followed by a space or end of line
+                if (nextChar === ' ' || nextChar === '') {
+                    if (current) {
+                        tokens.push(current);
+                        current = '';
+                    }
+                }
+            } else if (char === '^' && nextChar === '^' && afterQuote) {
+                // Datatype marker - include it with the literal
+                current += '^^';
+                i++; // Skip next ^
             } else if (char === ' ' && !inQuotes && !inBrackets) {
                 if (current) {
                     tokens.push(current);
                     current = '';
+                    afterQuote = false;
                 }
             } else {
                 current += char;
@@ -601,13 +608,23 @@ export class RDFParser {
         }
         
         // Literal with datatype: "value"^^<datatype>
-        match = literalStr.match(/^"([^"]*)"\\^\\^<([^>]+)>$/);
+        match = literalStr.match(/^"([^"]*)"(?:\^\^)<([^>]+)>$/);
         if (match) {
             return new Literal(match[1], new IRI(match[2]));
         }
         
+        // Alternative: Try without regex escaping
+        if (literalStr.includes('^^<')) {
+            const parts = literalStr.split('^^');
+            if (parts.length === 2) {
+                const value = parts[0].replace(/^"|"$/g, '');
+                const datatype = parts[1].replace(/^<|>$/g, '');
+                return new Literal(value, new IRI(datatype));
+            }
+        }
+        
         // Literal with datatype CURIE: "value"^^prefix:local
-        match = literalStr.match(/^"([^"]*)"\\^\\^([^\\s]+)$/);
+        match = literalStr.match(/^"([^"]*)"(?:\^\^)([^\s]+)$/);
         if (match) {
             // Would need namespace manager to expand CURIE
             return new Literal(match[1]);

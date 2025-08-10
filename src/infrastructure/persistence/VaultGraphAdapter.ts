@@ -1,5 +1,6 @@
 import { Plugin, TFile, TFolder, Notice } from 'obsidian';
 import { Graph } from '../../domain/semantic/core/Graph';
+import { Triple, IRI, BlankNode, Literal } from '../../domain/semantic/core/Triple';
 import { KnowledgeObject } from '../../domain/KnowledgeObject';
 
 export class VaultGraphAdapter {
@@ -28,7 +29,7 @@ export class VaultGraphAdapter {
                 
                 if (this.isCacheValid(cacheData)) {
                     this.deserializeGraph(cacheData.triples);
-                    console.log(`Loaded ${this.graph.size} triples from cache`);
+                    console.log(`Loaded ${this.graph.size()} triples from cache`);
                     return this.graph;
                 }
             }
@@ -53,7 +54,7 @@ export class VaultGraphAdapter {
             const cacheData = {
                 timestamp: Date.now(),
                 version: '1.0.0',
-                tripleCount: this.graph.size,
+                tripleCount: this.graph.size(),
                 triples: this.serializeGraph()
             };
             
@@ -65,7 +66,7 @@ export class VaultGraphAdapter {
                 JSON.stringify(cacheData, null, 2)
             );
             
-            console.log(`Saved ${this.graph.size} triples to cache`);
+            console.log(`Saved ${this.graph.size()} triples to cache`);
             
         } catch (error) {
             console.error('Failed to save graph cache:', error);
@@ -101,7 +102,7 @@ export class VaultGraphAdapter {
             }
         }
         
-        console.log(`Loaded ${this.graph.size} triples from ${this.watchedFiles.size} files`);
+        console.log(`Loaded ${this.graph.size()} triples from ${this.watchedFiles.size} files`);
     }
     
     /**
@@ -208,15 +209,17 @@ export class VaultGraphAdapter {
     }
     
     private addTriple(subject: string, predicate: string, object: any): void {
-        this.graph.add({
-            subject,
-            predicate,
-            object: String(object)
-        });
+        const subjectNode = new IRI(subject);
+        const predicateNode = new IRI(predicate);
+        const objectNode = typeof object === 'string' ? 
+            Literal.string(object) : 
+            Literal.string(String(object));
+        
+        this.graph.add(new Triple(subjectNode, predicateNode, objectNode));
     }
     
     private removeFileTriples(filePath: string): void {
-        const subject = this.fileToUri(filePath);
+        const subject = new IRI(this.fileToUri(filePath));
         const triplesToRemove = this.graph.match(subject, null, null);
         
         for (const triple of triplesToRemove) {
@@ -231,9 +234,9 @@ export class VaultGraphAdapter {
         const allTriples = this.graph.match(null, null, null);
         for (const triple of allTriples) {
             triples.push({
-                s: triple.subject,
-                p: triple.predicate,
-                o: triple.object
+                s: triple.getSubject().toString(),
+                p: triple.getPredicate().toString(),
+                o: triple.getObject().toString()
             });
         }
         
@@ -242,11 +245,29 @@ export class VaultGraphAdapter {
     
     private deserializeGraph(triples: any[]): void {
         for (const t of triples) {
-            this.graph.add({
-                subject: t.s,
-                predicate: t.p,
-                object: t.o
-            });
+            // Parse stored strings back to proper Triple objects
+            const subject = t.s.startsWith('_:') ? new BlankNode(t.s) : new IRI(t.s);
+            const predicate = new IRI(t.p);
+            let object: IRI | BlankNode | Literal;
+            
+            if (t.o.startsWith('"')) {
+                // It's a literal - parse it
+                if (t.o.includes('^^')) {
+                    const [value, datatype] = t.o.split('^^');
+                    object = new Literal(value.replace(/^"|"$/g, ''), new IRI(datatype));
+                } else if (t.o.includes('@')) {
+                    const [value, lang] = t.o.split('@');
+                    object = new Literal(value.replace(/^"|"$/g, ''), undefined, lang);
+                } else {
+                    object = new Literal(t.o.replace(/^"|"$/g, ''));
+                }
+            } else if (t.o.startsWith('_:')) {
+                object = new BlankNode(t.o);
+            } else {
+                object = new IRI(t.o);
+            }
+            
+            this.graph.add(new Triple(subject, predicate, object));
         }
     }
     
@@ -258,7 +279,7 @@ export class VaultGraphAdapter {
     }
     
     get size(): number {
-        return this.graph.size;
+        return this.graph.size();
     }
     
     getGraph(): Graph {

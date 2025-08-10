@@ -14,17 +14,17 @@ describe('SPARQLEngine Caching Integration', () => {
         graph = new Graph();
         
         // Add test data
-        graph.add(new Triple(new IRI('file://test1'), new IRI('title'), Literal.string('Test Document 1')));
-        graph.add(new Triple(new IRI('file://test1'), new IRI('type'), Literal.string('Document')));
-        graph.add(new Triple(new IRI('file://test1'), new IRI('priority'), Literal.string('high')));
+        graph.add(new Triple(new IRI('file://test1'), new IRI('dc:title'), Literal.string('Test Document 1')));
+        graph.add(new Triple(new IRI('file://test1'), new IRI('rdf:type'), Literal.string('Document')));
+        graph.add(new Triple(new IRI('file://test1'), new IRI('ex:priority'), Literal.string('high')));
         
-        graph.add(new Triple(new IRI('file://test2'), new IRI('title'), Literal.string('Test Document 2')));
-        graph.add(new Triple(new IRI('file://test2'), new IRI('type'), Literal.string('Note')));
-        graph.add(new Triple(new IRI('file://test2'), new IRI('priority'), Literal.string('low')));
+        graph.add(new Triple(new IRI('file://test2'), new IRI('dc:title'), Literal.string('Test Document 2')));
+        graph.add(new Triple(new IRI('file://test2'), new IRI('rdf:type'), Literal.string('Note')));
+        graph.add(new Triple(new IRI('file://test2'), new IRI('ex:priority'), Literal.string('low')));
         
-        graph.add(new Triple(new IRI('file://test3'), new IRI('title'), Literal.string('Test Document 3')));
-        graph.add(new Triple(new IRI('file://test3'), new IRI('type'), Literal.string('Document')));
-        graph.add(new Triple(new IRI('file://test3'), new IRI('status'), Literal.string('complete')));
+        graph.add(new Triple(new IRI('file://test3'), new IRI('dc:title'), Literal.string('Test Document 3')));
+        graph.add(new Triple(new IRI('file://test3'), new IRI('rdf:type'), Literal.string('Document')));
+        graph.add(new Triple(new IRI('file://test3'), new IRI('ex:status'), Literal.string('complete')));
 
         // Initialize engine with cache enabled
         engine = new SPARQLEngine(graph, {
@@ -40,7 +40,7 @@ describe('SPARQLEngine Caching Integration', () => {
 
     describe('SELECT query caching', () => {
         it('should cache SELECT query results', () => {
-            const query = 'SELECT ?s ?title WHERE { ?s title ?title }';
+            const query = 'SELECT ?s ?title WHERE { ?s dc:title ?title }';
             
             // First execution - should miss cache
             const result1 = engine.select(query);
@@ -54,8 +54,8 @@ describe('SPARQLEngine Caching Integration', () => {
         });
 
         it('should cache different SELECT queries separately', () => {
-            const query1 = 'SELECT ?s WHERE { ?s type Document }';
-            const query2 = 'SELECT ?s WHERE { ?s type Note }';
+            const query1 = 'SELECT ?s WHERE { ?s rdf:type "Document" }';
+            const query2 = 'SELECT ?s WHERE { ?s rdf:type "Note" }';
             
             const result1 = engine.select(query1);
             const result2 = engine.select(query2);
@@ -74,9 +74,9 @@ describe('SPARQLEngine Caching Integration', () => {
         });
 
         it('should handle query normalization for caching', () => {
-            const query1 = 'SELECT ?s ?title WHERE { ?s title ?title }';
-            const query2 = '  SELECT   ?s   ?title   WHERE   {   ?s   title   ?title   }  ';
-            const query3 = 'SELECT\n?s\n?title\nWHERE\n{\n?s\ntitle\n?title\n}';
+            const query1 = 'SELECT ?s ?title WHERE { ?s dc:title ?title }';
+            const query2 = '  SELECT   ?s   ?title   WHERE   {   ?s   dc:title   ?title   }  ';
+            const query3 = 'SELECT\n?s\n?title\nWHERE\n{\n?s\ndc:title\n?title\n}';
             
             // Debug cache key generation
             const cache = (engine as any).queryCache;
@@ -103,7 +103,7 @@ describe('SPARQLEngine Caching Integration', () => {
         });
 
         it('should cache empty results', () => {
-            const query = 'SELECT ?s WHERE { ?s nonexistent_predicate ?o }';
+            const query = 'SELECT ?s WHERE { ?s ex:nonexistent_predicate ?o }';
             
             const result1 = engine.select(query);
             expect(result1.cached).toBe(false);
@@ -115,7 +115,7 @@ describe('SPARQLEngine Caching Integration', () => {
         });
 
         it('should cache queries with LIMIT', () => {
-            const query = 'SELECT ?s ?title WHERE { ?s title ?title } LIMIT 2';
+            const query = 'SELECT ?s ?title WHERE { ?s dc:title ?title } LIMIT 2';
             
             const result1 = engine.select(query);
             expect(result1.cached).toBe(false);
@@ -130,7 +130,7 @@ describe('SPARQLEngine Caching Integration', () => {
 
     describe('CONSTRUCT query caching', () => {
         it('should cache CONSTRUCT query results', () => {
-            const query = 'CONSTRUCT { ?s hasType ?type } WHERE { ?s type ?type }';
+            const query = 'CONSTRUCT { ?s ex:hasType ?type } WHERE { ?s rdf:type ?type }';
             
             const result1 = engine.construct(query);
             expect(result1.cached).toBe(false);
@@ -145,24 +145,25 @@ describe('SPARQLEngine Caching Integration', () => {
         });
 
         it('should not add cached triples to graph again', () => {
-            const query = 'CONSTRUCT { ?s derived_type ?type } WHERE { ?s type ?type }';
-            const originalSize = graph.size;
+            const query = 'CONSTRUCT { ?s ex:derived_type ?type } WHERE { ?s rdf:type ?type }';
+            const originalSize = graph.size();
             
-            // First execution should add triples to graph
+            // First execution - CONSTRUCT doesn't modify the graph
             const result1 = engine.construct(query);
             expect(result1.cached).toBe(false);
             // There are 3 triples with 'type' predicate (Document, Note, Document)
             expect(result1.triples.length).toBe(3);
-            expect(graph.size).toBe(originalSize + result1.triples.length);
+            expect(graph.size()).toBe(originalSize); // Graph unchanged
             
-            // Second execution should not add triples again
+            // Second execution should use cache
             const result2 = engine.construct(query);
             expect(result2.cached).toBe(true);
-            expect(graph.size).toBe(originalSize + result1.triples.length);
+            expect(graph.size()).toBe(originalSize); // Still unchanged
+            expect(result2.triples).toEqual(result1.triples);
         });
 
         it('should cache CONSTRUCT queries with LIMIT', () => {
-            const query = 'CONSTRUCT { ?s limited_type ?type } WHERE { ?s type ?type } LIMIT 2';
+            const query = 'CONSTRUCT { ?s ex:limited_type ?type } WHERE { ?s rdf:type ?type } LIMIT 2';
             
             const result1 = engine.construct(query);
             expect(result1.cached).toBe(false);
@@ -175,7 +176,7 @@ describe('SPARQLEngine Caching Integration', () => {
         });
 
         it('should handle empty CONSTRUCT results', () => {
-            const query = 'CONSTRUCT { ?s empty_construct ?value } WHERE { ?s nonexistent ?value }';
+            const query = 'CONSTRUCT { ?s ex:empty_construct ?value } WHERE { ?s ex:nonexistent ?value }';
             
             const result1 = engine.construct(query);
             expect(result1.cached).toBe(false);
@@ -189,9 +190,9 @@ describe('SPARQLEngine Caching Integration', () => {
 
     describe('cache key generation', () => {
         it('should distinguish between SELECT and CONSTRUCT queries', () => {
-            const baseQuery = '{ ?s type ?type }';
+            const baseQuery = '{ ?s rdf:type ?type }';
             const selectQuery = `SELECT ?s ?type WHERE ${baseQuery}`;
-            const constructQuery = `CONSTRUCT { ?s hasType ?type } WHERE ${baseQuery}`;
+            const constructQuery = `CONSTRUCT { ?s ex:hasType ?type } WHERE ${baseQuery}`;
             
             const selectResult = engine.select(selectQuery);
             const constructResult = engine.construct(constructQuery);
@@ -208,8 +209,8 @@ describe('SPARQLEngine Caching Integration', () => {
         });
 
         it('should handle case insensitive caching', () => {
-            const query1 = 'SELECT ?s WHERE { ?s type Document }';
-            const query2 = 'select ?s where { ?s type document }';
+            const query1 = 'SELECT ?s WHERE { ?s rdf:type "Document" }';
+            const query2 = 'select ?s where { ?s rdf:type "document" }';
             
             const result1 = engine.select(query1);
             expect(result1.cached).toBe(false);
@@ -221,7 +222,7 @@ describe('SPARQLEngine Caching Integration', () => {
 
     describe('cache statistics and management', () => {
         it('should track cache statistics correctly', () => {
-            const query = 'SELECT ?s WHERE { ?s type Document }';
+            const query = 'SELECT ?s WHERE { ?s rdf:type "Document" }';
             
             let stats = engine.getCacheStatistics();
             expect(stats.hits).toBe(0);
@@ -245,7 +246,7 @@ describe('SPARQLEngine Caching Integration', () => {
         });
 
         it('should invalidate cache properly', () => {
-            const query = 'SELECT ?s WHERE { ?s type Document }';
+            const query = 'SELECT ?s WHERE { ?s rdf:type "Document" }';
             
             // Cache the query
             const result1 = engine.select(query);
@@ -270,7 +271,7 @@ describe('SPARQLEngine Caching Integration', () => {
                 defaultTTL: 1000 // 1 second
             });
             
-            const query = 'SELECT ?s WHERE { ?s type Document }';
+            const query = 'SELECT ?s WHERE { ?s rdf:type "Document" }';
             
             // Cache query
             const result1 = shortTTLEngine.select(query);
@@ -292,7 +293,7 @@ describe('SPARQLEngine Caching Integration', () => {
         });
 
         it('should update cache configuration', () => {
-            const query = 'SELECT ?s WHERE { ?s type Document }';
+            const query = 'SELECT ?s WHERE { ?s rdf:type "Document" }';
             
             // Cache with original config
             engine.select(query);
@@ -315,9 +316,9 @@ describe('SPARQLEngine Caching Integration', () => {
         it('should improve performance for repeated queries', () => {
             const complexQuery = `
                 SELECT ?s ?title ?type ?priority WHERE {
-                    ?s title ?title .
-                    ?s type ?type .
-                    ?s priority ?priority
+                    ?s dc:title ?title .
+                    ?s rdf:type ?type .
+                    ?s ex:priority ?priority
                 }
             `;
             
@@ -353,7 +354,7 @@ describe('SPARQLEngine Caching Integration', () => {
         });
 
         it('should handle cache operations when engine is destroyed', () => {
-            const query = 'SELECT ?s WHERE { ?s type Document }';
+            const query = 'SELECT ?s WHERE { ?s rdf:type "Document" }';
             
             // Cache a query
             engine.select(query);
@@ -370,7 +371,7 @@ describe('SPARQLEngine Caching Integration', () => {
 
     describe('cache with graph modifications', () => {
         it('should work correctly with graph that changes over time', () => {
-            const query = 'SELECT ?s WHERE { ?s type NewType }';
+            const query = 'SELECT ?s WHERE { ?s rdf:type "NewType" }';
             
             // Initially no results
             const result1 = engine.select(query);

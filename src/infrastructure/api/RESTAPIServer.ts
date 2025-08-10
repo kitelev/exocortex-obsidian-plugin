@@ -1,5 +1,6 @@
 import { App, Notice, Plugin, requestUrl } from 'obsidian';
 import { Graph } from '../../domain/semantic/core/Graph';
+import { Triple, IRI, Literal } from '../../domain/semantic/core/Triple';
 import { SPARQLProcessor } from '../../presentation/processors/SPARQLProcessor';
 import { ExoAgent } from '../../application/services/ExoAgent';
 import { RelationOntologizer } from '../../application/services/RelationOntologizer';
@@ -304,7 +305,13 @@ export class RESTAPIServer {
         }
         
         try {
-            this.graph.add({ subject, predicate, object });
+            const subjectNode = new IRI(subject);
+            const predicateNode = new IRI(predicate);
+            const objectNode = typeof object === 'string' && object.startsWith('"') ?
+                Literal.string(object.replace(/^"|"$/g, '')) :
+                new IRI(object);
+            
+            this.graph.add(new Triple(subjectNode, predicateNode, objectNode));
             
             return {
                 data: { success: true },
