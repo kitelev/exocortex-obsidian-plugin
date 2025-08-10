@@ -1,3 +1,45 @@
+## [2.14.0] - 2025-01-10
+
+### 🎨 Visual Query Canvas - Drag-and-Drop SPARQL Builder
+
+#### Revolutionary Visual Query Interface
+Transform complex SPARQL queries into **intuitive visual graphs**! Build queries by simply dragging and connecting visual elements - no syntax knowledge required.
+
+#### Interactive Canvas Features
+- **Drag-and-Drop Nodes**: Create entities, variables, literals, and filters with simple mouse gestures
+- **Visual Edge Connections**: Draw relationships between nodes to build triple patterns
+- **Live SPARQL Generation**: Watch your visual graph automatically convert to executable SPARQL
+- **Real-time Validation**: Instant feedback on query structure and syntax
+
+#### Professional Canvas Experience
+- **Zoom & Pan Controls**: Navigate large queries with smooth viewport management (0.1x to 5x zoom)
+- **Smart Selection**: Multi-select with keyboard shortcuts (Ctrl+A, Shift+Click)
+- **Context Menus**: Right-click for quick actions and property editing
+- **Keyboard Shortcuts**: Power user efficiency with Delete, Copy (Ctrl+C), Paste (Ctrl+V)
+
+#### Advanced Query Building
+- **Multiple Node Types**: Entities (🔗), Variables (❓), Literals (📝), Filters (🔍)
+- **Optional Patterns**: Visual representation of OPTIONAL clauses with dashed edges  
+- **Filter Integration**: Drag filter nodes to add WHERE conditions
+- **Export/Import**: Save visual queries as JSON for reuse and sharing
+
+#### Seamless Integration
+- **SPARQL Processor**: Direct execution within Obsidian environment
+- **Clean Architecture**: Follows existing patterns with domain-driven design
+- **Comprehensive Testing**: 32 test cases covering all interaction scenarios
+- **SVG Rendering**: Crisp, scalable graphics that work on all devices
+
+#### Getting Started
+1. Use toolbar buttons to add nodes to the canvas
+2. Drag between nodes to create relationships  
+3. Double-click nodes to edit labels and properties
+4. Click "Generate SPARQL" to see the resulting query
+5. Click "Execute" to run your visual query
+
+*Perfect for beginners learning SPARQL and experts building complex queries visually!*
+
+---
+
 ## [2.12.0] - 2025-01-10
 
 ### 🧠 SPARQL Autocomplete System - Intelligence at Your Fingertips
