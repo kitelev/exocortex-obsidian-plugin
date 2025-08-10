@@ -1,3 +1,34 @@
+## [2.9.0] - 2025-08-10
+
+### 🏗️ Architecture Improvements
+
+#### SOLID Principles Refactoring
+- **Single Responsibility**: Split RDFService into focused, single-purpose classes
+- **Separation of Concerns**: Created dedicated RDFValidator for validation logic
+- **File Operations**: Extracted RDFFileManager for all vault file operations
+- **Improved Testability**: Each service can now be tested in isolation
+- **Better Maintainability**: Clear separation of responsibilities makes code easier to understand and modify
+
+### 🤖 Developer Experience
+
+#### Automated Release Process
+- **Release Agent**: New automated release script ensures consistent, high-quality releases
+- **Quality Gates**: Automatic verification of tests, coverage, and build before release
+- **Release Checklist**: Comprehensive documentation for manual release process
+- **Error Prevention**: Automated checks prevent common release mistakes
+
+### 🔧 Technical Improvements
+- Standardized RDF format names across the codebase (turtle, n-triples, json-ld, rdf-xml)
+- Improved type safety with proper getter methods for Triple components
+- Enhanced validation with detailed error reporting
+- Better error handling with Result pattern consistently applied
+
+### 📊 Code Quality
+- Maintained 100% backward compatibility
+- All 509 tests passing
+- TypeScript strict mode compliance
+- Clean Architecture principles applied
+
 # Changelog
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
