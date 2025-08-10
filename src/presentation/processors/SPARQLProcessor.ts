@@ -1,16 +1,19 @@
-import { MarkdownPostProcessorContext, Plugin, Notice } from 'obsidian';
+import { MarkdownPostProcessorContext, Plugin, Notice, App } from 'obsidian';
 import { SPARQLEngine, ConstructResult } from '../../application/SPARQLEngine';
 import { Graph } from '../../domain/Graph';
+import { ExoFocusService } from '../../application/services/ExoFocusService';
 
 export class SPARQLProcessor {
     private plugin: Plugin;
     private engine: SPARQLEngine;
     private graph: Graph;
+    private focusService?: ExoFocusService;
     
-    constructor(plugin: Plugin, graph: Graph) {
+    constructor(plugin: Plugin, graph: Graph, focusService?: ExoFocusService) {
         this.plugin = plugin;
         this.graph = graph;
         this.engine = new SPARQLEngine(graph);
+        this.focusService = focusService;
     }
     
     /**
@@ -89,7 +92,14 @@ export class SPARQLProcessor {
             }));
         } else if (upperQuery.includes('SELECT')) {
             // Execute SELECT query
-            return this.engine.select(sparql);
+            let results = this.engine.select(sparql);
+            
+            // Apply ExoFocus filtering if available
+            if (this.focusService) {
+                results = this.focusService.filterSPARQLResults(results);
+            }
+            
+            return results;
         } else {
             throw new Error('Only SELECT and CONSTRUCT queries are currently supported');
         }

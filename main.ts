@@ -8,6 +8,7 @@ import { LayoutRenderer } from './src/presentation/renderers/LayoutRenderer';
 import { PropertyRenderer } from './src/presentation/components/PropertyRenderer';
 import { ObsidianClassLayoutRepository } from './src/infrastructure/repositories/ObsidianClassLayoutRepository';
 import { ExocortexAPIServer } from './src/infrastructure/api/ExocortexAPIServer';
+import { ExoFocusService } from './src/application/services/ExoFocusService';
 
 export default class ExocortexPlugin extends Plugin {
     private graph: Graph;
@@ -16,6 +17,7 @@ export default class ExocortexPlugin extends Plugin {
     private processorRegistered: boolean = false;
     private layoutRenderer: LayoutRenderer;
     private apiServer: ExocortexAPIServer;
+    private focusService: ExoFocusService;
     
     async onload(): Promise<void> {
         console.log('🚀 Exocortex: Loading plugin v2.1.12...');
@@ -35,8 +37,11 @@ export default class ExocortexPlugin extends Plugin {
         // Load vault data into graph
         await this.loadVaultIntoGraph();
         
-        // Initialize SPARQL processor
-        this.sparqlProcessor = new SPARQLProcessor(this, this.graph);
+        // Initialize ExoFocus service
+        this.focusService = new ExoFocusService(this.app, this.graph);
+        
+        // Initialize SPARQL processor with focus service
+        this.sparqlProcessor = new SPARQLProcessor(this, this.graph, this.focusService);
         
         // Register SPARQL code block processor with protection against double registration
         try {
@@ -114,6 +119,64 @@ export default class ExocortexPlugin extends Plugin {
                 const apiKey = this.apiServer.getAPIKey();
                 navigator.clipboard.writeText(apiKey);
                 new Notice(`API Key copied to clipboard: ${apiKey.substring(0, 10)}...`);
+            }
+        });
+        
+        // Register ExoFocus commands
+        this.addCommand({
+            id: 'set-focus-all',
+            name: 'ExoFocus: Show All Knowledge',
+            callback: async () => {
+                const allFocus = this.focusService.getAllFocuses().find(f => f.name === 'All');
+                if (allFocus) {
+                    await this.focusService.setActiveFocus(allFocus.id);
+                    new Notice('Focus: All Knowledge');
+                }
+            }
+        });
+        
+        this.addCommand({
+            id: 'set-focus-work',
+            name: 'ExoFocus: Work Context',
+            callback: async () => {
+                const workFocus = this.focusService.getAllFocuses().find(f => f.name === 'Work');
+                if (workFocus) {
+                    await this.focusService.setActiveFocus(workFocus.id);
+                    new Notice('Focus: Work Context');
+                }
+            }
+        });
+        
+        this.addCommand({
+            id: 'set-focus-personal',
+            name: 'ExoFocus: Personal Context',
+            callback: async () => {
+                const personalFocus = this.focusService.getAllFocuses().find(f => f.name === 'Personal');
+                if (personalFocus) {
+                    await this.focusService.setActiveFocus(personalFocus.id);
+                    new Notice('Focus: Personal Context');
+                }
+            }
+        });
+        
+        this.addCommand({
+            id: 'set-focus-today',
+            name: 'ExoFocus: Today',
+            callback: async () => {
+                const todayFocus = this.focusService.getAllFocuses().find(f => f.name === 'Today');
+                if (todayFocus) {
+                    await this.focusService.setActiveFocus(todayFocus.id);
+                    new Notice('Focus: Today');
+                }
+            }
+        });
+        
+        this.addCommand({
+            id: 'show-focus-stats',
+            name: 'ExoFocus: Show Statistics',
+            callback: async () => {
+                const stats = await this.focusService.getFocusStatistics();
+                new Notice(`Focus: ${stats.activeFocus}\nVisible: ${stats.filteredAssets}/${stats.totalAssets} assets, ${stats.filteredTriples}/${stats.totalTriples} triples`);
             }
         });
         
