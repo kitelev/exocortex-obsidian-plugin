@@ -22,6 +22,7 @@ import { PropertyEditingUseCase } from '../../application/use-cases/PropertyEdit
 // Services
 import { ICommandExecutor } from '../../application/services/ICommandExecutor';
 import { ObsidianCommandExecutor } from '../services/ObsidianCommandExecutor';
+import { ErrorHandlerService } from '../../application/services/ErrorHandlerService';
 
 // Presentation
 import { ButtonRenderer } from '../../presentation/components/ButtonRenderer';
@@ -124,6 +125,17 @@ export class DIContainer {
                 this.app,
                 this.container.resolve<IAssetRepository>('IAssetRepository')
             )
+        );
+
+        // Register Error Handler Service
+        this.container.register<ErrorHandlerService>(
+            'ErrorHandlerService',
+            () => new ErrorHandlerService({
+                showUserNotification: true,
+                logToConsole: true,
+                trackMetrics: true,
+                autoRecover: false
+            })
         );
 
         // Register Use Cases

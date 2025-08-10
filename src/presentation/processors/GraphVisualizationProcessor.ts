@@ -585,6 +585,10 @@ export class GraphVisualizationProcessor {
         info.style.cssText = 'color: var(--text-muted); font-size: 0.9em; margin-right: auto;';
         controlsDiv.appendChild(info);
         
+        // PNG Export dropdown
+        const pngExportContainer = this.createPNGExportDropdown(container, data, config);
+        controlsDiv.appendChild(pngExportContainer);
+        
         // Export as SVG button
         const exportSvgBtn = document.createElement('button');
         exportSvgBtn.textContent = 'Export SVG';
@@ -679,6 +683,301 @@ export class GraphVisualizationProcessor {
         container.appendChild(controlsDiv);
     }
     
+    private createPNGExportDropdown(container: HTMLElement, data: GraphData, config: GraphConfig): HTMLElement {
+        const pngExportContainer = document.createElement('div');
+        pngExportContainer.style.cssText = 'position: relative; display: inline-block;';
+        
+        const pngExportBtn = document.createElement('button');
+        pngExportBtn.textContent = 'Export PNG ▼';
+        pngExportBtn.style.cssText = 'padding: 0.25em 0.5em; font-size: 0.9em; background: var(--interactive-accent); color: var(--text-on-accent); border: none; border-radius: 3px; cursor: pointer;';
+        
+        const pngDropdown = document.createElement('div');
+        pngDropdown.style.cssText = `
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--background-primary);
+            border: 1px solid var(--background-modifier-border);
+            border-radius: 3px;
+            box-shadow: var(--shadow-s);
+            z-index: 1000;
+            min-width: 180px;
+        `;
+        
+        const resolutions = [
+            { scale: 1, label: 'Standard (800×600)', filename: 'graph-standard.png' },
+            { scale: 2, label: 'High-DPI (1600×1200)', filename: 'graph-hd.png' },
+            { scale: 4, label: '4K (3200×2400)', filename: 'graph-4k.png' }
+        ];
+        
+        for (const resolution of resolutions) {
+            const item = document.createElement('div');
+            item.textContent = resolution.label;
+            item.style.cssText = 'padding: 0.5em 0.8em; cursor: pointer; border-bottom: 1px solid var(--background-modifier-border);';
+            
+            item.addEventListener('mouseenter', () => {
+                item.style.background = 'var(--background-modifier-hover)';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.background = '';
+            });
+            item.addEventListener('click', () => {
+                this.exportAsPNG(container, data, config, resolution.scale, resolution.filename);
+                pngDropdown.style.display = 'none';
+            });
+            
+            pngDropdown.appendChild(item);
+        }
+        
+        pngExportBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            pngDropdown.style.display = pngDropdown.style.display === 'none' ? 'block' : 'none';
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            pngDropdown.style.display = 'none';
+        });
+        
+        pngExportContainer.appendChild(pngExportBtn);
+        pngExportContainer.appendChild(pngDropdown);
+        
+        return pngExportContainer;
+    }
+    
+    private async exportAsPNG(container: HTMLElement, data: GraphData, config: GraphConfig, scale: number = 1, filename: string = 'knowledge-graph.png'): Promise<void> {
+        const svg = container.querySelector('svg');
+        if (!svg) {
+            new Notice('No graph visualization found');
+            return;
+        }
+        
+        try {
+            // Show loading notice for high-resolution exports
+            let loadingNotice: Notice | null = null;
+            if (scale >= 2) {
+                loadingNotice = new Notice(`Generating ${scale === 2 ? 'high-resolution' : '4K'} PNG export...`, 0);
+            }
+            
+            // Create canvas with scaled dimensions
+            const canvas = document.createElement('canvas');
+            const baseWidth = 800;
+            const baseHeight = 600;
+            canvas.width = baseWidth * scale;
+            canvas.height = baseHeight * scale;
+            
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                throw new Error('Could not get canvas context');
+            }
+            
+            // Scale context for high-DPI rendering
+            ctx.scale(scale, scale);
+            
+            // Set high-quality rendering
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            
+            // Fill background with theme color
+            const bgColor = this.getThemeColor('--background-primary') || '#ffffff';
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, baseWidth, baseHeight);
+            
+            // Draw border
+            const borderColor = this.getThemeColor('--background-modifier-border') || '#e5e5e5';
+            ctx.strokeStyle = borderColor;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(0, 0, baseWidth, baseHeight);
+            
+            // Render graph to canvas
+            await this.renderGraphToCanvas(ctx, data, config, baseWidth, baseHeight);
+            
+            // Convert canvas to PNG blob
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    this.downloadBlob(blob, filename);
+                    
+                    if (loadingNotice) {
+                        loadingNotice.hide();
+                    }
+                    
+                    const sizeKB = Math.round(blob.size / 1024);
+                    new Notice(`Graph exported as PNG (${sizeKB} KB)`);
+                } else {
+                    throw new Error('Failed to create PNG blob');
+                }
+            }, 'image/png', 0.9);
+            
+        } catch (error: any) {
+            console.error('PNG export failed:', error);
+            new Notice(`PNG export failed: ${error.message}`);
+        }
+    }
+    
+    private async renderGraphToCanvas(ctx: CanvasRenderingContext2D, data: GraphData, config: GraphConfig, width: number, height: number): Promise<void> {
+        // Position nodes (reuse existing algorithm)
+        this.positionNodes(data.nodes, width, height);
+        
+        // Render links first (background layer)
+        for (const link of data.links) {
+            const sourceNode = data.nodes.find(n => n.id === (typeof link.source === 'string' ? link.source : link.source.id));
+            const targetNode = data.nodes.find(n => n.id === (typeof link.target === 'string' ? link.target : link.target.id));
+            
+            if (sourceNode && targetNode) {
+                // Draw line
+                ctx.beginPath();
+                ctx.moveTo(sourceNode.x || 0, sourceNode.y || 0);
+                ctx.lineTo(targetNode.x || 0, targetNode.y || 0);
+                ctx.strokeStyle = this.getThemeColor('--text-muted') || '#6b7280';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // Draw arrowhead
+                this.drawArrowHead(ctx, sourceNode.x || 0, sourceNode.y || 0, targetNode.x || 0, targetNode.y || 0);
+                
+                // Draw edge label if enabled
+                if (config.showLabels && link.label) {
+                    const midX = ((sourceNode.x || 0) + (targetNode.x || 0)) / 2;
+                    const midY = ((sourceNode.y || 0) + (targetNode.y || 0)) / 2;
+                    
+                    // Draw background rectangle for label
+                    const labelText = this.truncateLabel(link.label, 15);
+                    ctx.font = '10px var(--font-interface)';
+                    const textMetrics = ctx.measureText(labelText);
+                    
+                    ctx.fillStyle = this.getThemeColor('--background-primary') || '#ffffff';
+                    ctx.fillRect(midX - textMetrics.width / 2 - 2, midY - 7, textMetrics.width + 4, 12);
+                    
+                    // Draw label text
+                    ctx.fillStyle = this.getThemeColor('--text-muted') || '#6b7280';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(labelText, midX, midY + 3);
+                }
+            }
+        }
+        
+        // Render nodes on top
+        for (const node of data.nodes) {
+            const x = node.x || 0;
+            const y = node.y || 0;
+            const radius = config.nodeSize || 8;
+            
+            // Draw node circle
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = this.getNodeCanvasColor(node.type);
+            ctx.fill();
+            
+            // Draw border
+            ctx.strokeStyle = this.getThemeColor('--background-modifier-border') || '#e5e5e5';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Draw node label if enabled
+            if (config.showLabels) {
+                ctx.font = '12px var(--font-interface)';
+                ctx.fillStyle = this.getThemeColor('--text-normal') || '#000000';
+                ctx.textAlign = 'center';
+                const labelText = this.truncateLabel(node.label, 20);
+                ctx.fillText(labelText, x, y + radius + 15);
+            }
+        }
+    }
+    
+    private drawArrowHead(ctx: CanvasRenderingContext2D, fromX: number, fromY: number, toX: number, toY: number): void {
+        const angle = Math.atan2(toY - fromY, toX - fromX);
+        const arrowLength = 10;
+        const arrowAngle = Math.PI / 6;
+        
+        // Calculate arrowhead position (offset from target node)
+        const offsetDistance = 10; // Distance from node edge
+        const offsetX = toX - offsetDistance * Math.cos(angle);
+        const offsetY = toY - offsetDistance * Math.sin(angle);
+        
+        ctx.beginPath();
+        ctx.moveTo(offsetX, offsetY);
+        ctx.lineTo(
+            offsetX - arrowLength * Math.cos(angle - arrowAngle),
+            offsetY - arrowLength * Math.sin(angle - arrowAngle)
+        );
+        ctx.moveTo(offsetX, offsetY);
+        ctx.lineTo(
+            offsetX - arrowLength * Math.cos(angle + arrowAngle),
+            offsetY - arrowLength * Math.sin(angle + arrowAngle)
+        );
+        ctx.strokeStyle = this.getThemeColor('--text-muted') || '#6b7280';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+    
+    private getThemeColor(cssVariable: string): string | null {
+        try {
+            const style = getComputedStyle(document.documentElement);
+            const color = style.getPropertyValue(cssVariable).trim();
+            
+            if (!color) return null;
+            
+            // Convert CSS color formats to hex if needed
+            if (color.startsWith('hsl')) {
+                return this.hslToHex(color);
+            }
+            if (color.startsWith('rgb')) {
+                return this.rgbToHex(color);
+            }
+            
+            return color;
+        } catch (error) {
+            console.warn(`Failed to get theme color for ${cssVariable}:`, error);
+            return null;
+        }
+    }
+    
+    private getNodeCanvasColor(type: 'subject' | 'object' | 'predicate'): string {
+        switch (type) {
+            case 'subject':
+                return this.getThemeColor('--color-accent') || '#7c3aed';
+            case 'object':
+                return this.getThemeColor('--color-blue') || '#2563eb';
+            case 'predicate':
+                return this.getThemeColor('--color-green') || '#059669';
+            default:
+                return '#6b7280';
+        }
+    }
+    
+    private hslToHex(hsl: string): string {
+        // Simple HSL to hex conversion - for basic theme support
+        // This is a simplified version; for production, consider using a library
+        return '#6b7280'; // Fallback color
+    }
+    
+    private rgbToHex(rgb: string): string {
+        const match = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+        if (!match) return '#000000';
+        
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        
+        return '#' + [r, g, b].map(x => {
+            const hex = x.toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
+        }).join('');
+    }
+    
+    private downloadBlob(blob: Blob, filename: string): void {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+    
     private exportAsSVG(container: HTMLElement): void {
         const svg = container.querySelector('svg');
         if (!svg) return;
@@ -688,14 +987,8 @@ export class GraphVisualizationProcessor {
             const svgString = serializer.serializeToString(svg);
             
             const blob = new Blob([svgString], { type: 'image/svg+xml' });
-            const url = URL.createObjectURL(blob);
+            this.downloadBlob(blob, 'knowledge-graph.svg');
             
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'knowledge-graph.svg';
-            link.click();
-            
-            URL.revokeObjectURL(url);
             new Notice('Graph exported as SVG');
         } catch (error) {
             console.error('SVG export failed:', error);

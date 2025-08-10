@@ -166,7 +166,7 @@ export class SPARQLProcessor {
         }
     }
     
-    private createResultTable(results: any[]): HTMLTableElement {
+    protected createResultTable(results: any[]): HTMLTableElement {
         const table = document.createElement('table');
         table.className = 'sparql-results-table';
         
@@ -230,7 +230,7 @@ export class SPARQLProcessor {
         return link;
     }
     
-    private createLoadingIndicator(): HTMLElement {
+    protected createLoadingIndicator(): HTMLElement {
         const loading = document.createElement('div');
         loading.className = 'sparql-loading';
         loading.textContent = 'Executing query...';
@@ -253,7 +253,7 @@ export class SPARQLProcessor {
         return errorDiv;
     }
     
-    private createStatsElement(count: number, time: number, cached?: boolean): HTMLElement {
+    protected createStatsElement(count: number, time: number, cached?: boolean): HTMLElement {
         const stats = document.createElement('div');
         stats.className = 'sparql-stats';
         const cacheInfo = cached ? ' (cached result)' : '';
@@ -262,7 +262,7 @@ export class SPARQLProcessor {
         return stats;
     }
 
-    private createCacheIndicator(cached: boolean): HTMLElement {
+    protected createCacheIndicator(cached: boolean): HTMLElement {
         const indicator = document.createElement('div');
         indicator.className = 'sparql-cache-indicator';
         
@@ -308,7 +308,7 @@ export class SPARQLProcessor {
     /**
      * Create export controls for SPARQL results
      */
-    private createExportControls(results: any[], query: string): HTMLElement {
+    protected createExportControls(results: any[], query: string): HTMLElement {
         const exportContainer = document.createElement('div');
         exportContainer.className = 'sparql-export-controls';
         exportContainer.style.cssText = 'margin: 1em 0; padding: 0.8em; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;';

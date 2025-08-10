@@ -157,6 +157,99 @@
     font-size: 0.9em;
 }
 
+/* SPARQL Autocomplete Styles */
+.exocortex-autocomplete-container {
+    font-family: var(--font-interface);
+    font-size: var(--font-ui-small);
+    backdrop-filter: blur(8px);
+}
+
+.exocortex-autocomplete-list {
+    padding: 4px 0;
+}
+
+.exocortex-autocomplete-item {
+    margin: 0 4px;
+    border-radius: var(--radius-s);
+}
+
+.exocortex-autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.exocortex-autocomplete-item:hover {
+    background-color: var(--background-modifier-hover) !important;
+}
+
+.exocortex-autocomplete-item.selected {
+    background-color: var(--background-modifier-hover);
+}
+
+.autocomplete-item-main {
+    user-select: none;
+}
+
+.autocomplete-item-label {
+    font-weight: 500;
+}
+
+.autocomplete-item-description {
+    user-select: none;
+    line-height: 1.2;
+}
+
+.autocomplete-type-icon {
+    font-weight: bold;
+    font-family: var(--font-interface);
+}
+
+.autocomplete-confidence {
+    opacity: 0.7;
+}
+
+/* Animation for autocomplete appearance */
+.exocortex-autocomplete-container {
+    animation: autocomplete-fade-in 0.15s ease-out;
+}
+
+@keyframes autocomplete-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Dark mode adjustments */
+.theme-dark .exocortex-autocomplete-container {
+    border-color: var(--background-modifier-border);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.theme-dark .autocomplete-type-icon {
+    opacity: 0.9;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .exocortex-autocomplete-container {
+        border-width: 2px;
+        border-color: var(--text-normal);
+    }
+    
+    .exocortex-autocomplete-item:hover {
+        background-color: var(--interactive-accent) !important;
+        color: var(--text-on-accent);
+    }
+    
+    .autocomplete-type-icon {
+        border: 1px solid currentColor;
+    }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .exocortex-graph-container svg {
@@ -171,5 +264,14 @@
     
     .exocortex-graph-container button {
         width: 100%;
+    }
+    
+    .exocortex-autocomplete-container {
+        max-width: calc(100vw - 20px) !important;
+        min-width: 180px !important;
+    }
+    
+    .autocomplete-item-description {
+        display: none;
     }
 }

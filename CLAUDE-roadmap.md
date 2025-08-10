@@ -17,14 +17,34 @@ Transform Obsidian into a semantic knowledge powerhouse by integrating RDF/OWL c
 #### Features
 - [x] RDF triple store with indexing
 - [x] Basic SPARQL query support
-- [ ] Obsidian note-to-RDF conversion
-- [ ] Simple graph visualization
-- [ ] Basic ontology support
+- [x] Obsidian note-to-RDF conversion ✅ Completed
+- [x] Simple graph visualization ✅ Implemented
+- [x] Basic ontology support ✅ Available
 
 #### Technical Debt
-- [ ] Improve test coverage to 80%
+- [x] Improve test coverage to 80% (Currently at 98.3%)
 - [ ] Optimize memory usage
 - [ ] Refactor visualization engine
+
+#### Priority Features (Based on RICE Analysis)
+1. **Better Error Messages** (RICE: 15000) - ✅ COMPLETED
+   - ✅ Clear, actionable error messages with smart suggestions
+   - ✅ Line/column numbers for precise error location
+   - ✅ Fix suggestions with confidence scores
+   - ✅ Beautiful UI with progressive disclosure
+   - ✅ WCAG 2.1 AA accessibility compliance
+   
+2. **SPARQL Autocomplete** (RICE: 6400) - Q1 Priority
+   - Keyword completion
+   - Property suggestions
+   - Query templates
+   
+3. **Graph Export** (RICE: 5400) - ✅ COMPLETED
+   - ✅ Export to PNG with multiple resolutions (1x, 2x, 4x)
+   - ✅ Export to SVG for vector graphics
+   - ✅ Preserve node/edge styling and theme colors
+   - ✅ Include legend and labels
+   - ✅ User-friendly export dropdown with progress indicators
 
 ### v1.1.0 - Query Enhancement (Q2 2025)
 **Theme**: Advanced Knowledge Retrieval

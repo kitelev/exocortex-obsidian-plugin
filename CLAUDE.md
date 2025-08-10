@@ -1,5 +1,14 @@
 # AI Assistant Development Guidelines for Exocortex Plugin
 
+## 🚨 CRITICAL: MANDATORY AGENT USAGE
+**EVERY significant task MUST use specialized agents.** Not using agents is a violation of project standards.
+
+### Agent Usage Rules
+1. **ALWAYS use 3-5 agents in parallel** for any non-trivial task
+2. **NEVER work alone** - agents provide specialized expertise
+3. **Follow Feature Development Pipeline**: Product → Architecture → Implementation → QA → Documentation
+4. **Check AGENT-UTILIZATION-GUIDE.md** for patterns and selection
+
 ## 🤖 AI-First Development Approach
 This codebase is optimized for development through AI assistants (Claude Code, GPT-5/Cursor, GitHub Copilot). All documentation, code structure, and workflows are designed for maximum AI comprehension and efficiency.
 
