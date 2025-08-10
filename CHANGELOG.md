@@ -27,6 +27,34 @@ Transform your SPARQL query experience with **AI-powered autocomplete**! Get con
 
 Ready to write SPARQL queries like a pro? The plugin now guides you every step of the way!
 
+## [2.13.0] - 2025-01-11
+
+### 🚀 SPARQL Autocomplete - Write Queries Like a Pro
+
+#### Intelligent Query Assistance
+Transform your SPARQL query writing experience with **context-aware autocomplete**! Get intelligent suggestions as you type, including keywords, properties from your graph, variables, functions, and ready-to-use templates.
+
+#### Smart Suggestions
+- **Keywords**: All SPARQL keywords with contextual relevance (SELECT, WHERE, FILTER, etc.)
+- **Properties**: Automatically extracted from your knowledge graph with usage frequency
+- **Classes**: Discover available types with instance counts
+- **Variables**: Reuse existing variables or get common naming suggestions
+- **Functions**: String, date, and aggregate functions with examples
+- **Templates**: Ready-to-use query patterns for common tasks
+
+#### Beautiful Interface
+- **Visual Type Indicators**: Color-coded badges for different suggestion types
+- **Confidence Scoring**: See suggestion relevance at a glance
+- **Keyboard Navigation**: Arrow keys, Tab/Enter to accept, Escape to dismiss
+- **Progressive Descriptions**: Helpful descriptions and examples for each suggestion
+- **Theme-Aware**: Adapts to your Obsidian light/dark theme
+
+#### Lightning Fast Performance
+- **<100ms Response Time**: Instant suggestions with intelligent caching
+- **Debounced Input**: Smooth typing experience without lag
+- **Context Analysis**: Smart filtering based on cursor position
+- **Memory Efficient**: Optimized caching with automatic cleanup
+
 ## [2.11.0] - 2025-01-10
 
 ### 🎯 Better Error Messages - Your Friendly Knowledge Assistant

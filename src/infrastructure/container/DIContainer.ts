@@ -23,6 +23,9 @@ import { PropertyEditingUseCase } from '../../application/use-cases/PropertyEdit
 import { ICommandExecutor } from '../../application/services/ICommandExecutor';
 import { ObsidianCommandExecutor } from '../services/ObsidianCommandExecutor';
 import { ErrorHandlerService } from '../../application/services/ErrorHandlerService';
+import { SPARQLAutocompleteService } from '../../application/services/SPARQLAutocompleteService';
+import { ISuggestionRepository } from '../../domain/repositories/ISuggestionRepository';
+import { GraphSuggestionRepository } from '../repositories/GraphSuggestionRepository';
 
 // Presentation
 import { ButtonRenderer } from '../../presentation/components/ButtonRenderer';
@@ -136,6 +139,24 @@ export class DIContainer {
                 trackMetrics: true,
                 autoRecover: false
             })
+        );
+
+        // Register Autocomplete Services
+        this.container.register<ISuggestionRepository>(
+            'ISuggestionRepository',
+            () => {
+                // Need to get graph instance - will be provided by plugin
+                const graph = (this.plugin as any)?.graph || null;
+                return new GraphSuggestionRepository(graph);
+            }
+        );
+
+        this.container.register<SPARQLAutocompleteService>(
+            'SPARQLAutocompleteService',
+            () => new SPARQLAutocompleteService(
+                this.container.resolve<ISuggestionRepository>('ISuggestionRepository'),
+                (this.plugin as any)?.graph || null
+            )
         );
 
         // Register Use Cases
