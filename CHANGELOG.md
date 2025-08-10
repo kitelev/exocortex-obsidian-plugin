@@ -2,6 +2,59 @@
 
 All notable changes to the Exocortex Obsidian Plugin will be documented in this file.
 
+## [2.5.0] - 2025-08-10
+
+### 🌐 Added - REST API for External AI Agents
+- **Comprehensive REST API Server** - Enable external AI agents to interact with your knowledge base
+- **Natural Language Processing** - Convert natural language queries to SPARQL automatically
+- **Multiple API Endpoints** - SPARQL, NLP, assets, graph operations, and more
+- **File-Based API Fallback** - Alternative mechanism for restricted environments
+- **Python Client Library** - Ready-to-use client for AI agent integration
+- **API Documentation** - Complete reference with examples and best practices
+
+### Features
+- REST API server on port 27124 with API key authentication
+- SPARQL query execution endpoint for semantic searches
+- Natural language to SPARQL conversion with ExoAgent
+- Asset creation and management via API
+- Graph operations for triple manipulation
+- ExoFocus context management
+- Vault search and file operations
+- CORS support for browser-based clients
+- Self-signed HTTPS option for secure connections
+
+### Commands
+- **Start REST API Server** - Launch the API server
+- **Stop REST API Server** - Shutdown the API server  
+- **Show REST API Key** - Copy API key to clipboard
+
+### Technical
+- Integration with obsidian-local-rest-api patterns
+- ExoAgent service for NLP to SPARQL conversion
+- LocalAPIServer for file-based communication
+- Support for both HTTP and HTTPS servers
+- Comprehensive error handling and validation
+
+### API Endpoints
+- `GET /api/health` - Server health check
+- `POST /api/sparql` - Execute SPARQL queries
+- `POST /api/nlp` - Natural language queries
+- `GET/POST /api/graph` - Graph operations
+- `GET /api/assets` - Search assets
+- `POST /api/assets/create` - Create new assets
+- `POST /api/relations/ontologize` - Ontologize relations
+- `GET/POST /api/focus` - Manage ExoFocus context
+- `GET /api/vault/files` - List vault files
+- `GET /api/vault/search` - Search vault content
+
+### Why This Matters
+The REST API transforms Exocortex into an AI-accessible knowledge platform:
+- AI agents can query your knowledge base for context
+- Automated knowledge creation from AI conversations
+- Semantic reasoning through SPARQL queries
+- Integration with Claude MCP, GPT agents, and other AI tools
+- Programmatic access for automation and workflows
+
 ## [2.4.0] - 2025-08-09
 
 ### 🎨 Added - Layout Renderer Integration
