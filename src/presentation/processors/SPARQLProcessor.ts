@@ -59,7 +59,7 @@ export class SPARQLProcessor {
         }
     }
     
-    private async executeQuery(sparql: string): Promise<any[]> {
+    public async executeQuery(sparql: string): Promise<any[]> {
         // Basic query validation
         if (!sparql || sparql.trim().length === 0) {
             throw new Error('Empty query');

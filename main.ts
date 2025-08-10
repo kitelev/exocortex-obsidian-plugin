@@ -7,6 +7,7 @@ import { OntologizeAssetCommand } from './src/presentation/commands/OntologizeAs
 import { LayoutRenderer } from './src/presentation/renderers/LayoutRenderer';
 import { PropertyRenderer } from './src/presentation/components/PropertyRenderer';
 import { ObsidianClassLayoutRepository } from './src/infrastructure/repositories/ObsidianClassLayoutRepository';
+import { ExocortexAPIServer } from './src/infrastructure/api/ExocortexAPIServer';
 
 export default class ExocortexPlugin extends Plugin {
     private graph: Graph;
@@ -14,6 +15,7 @@ export default class ExocortexPlugin extends Plugin {
     private container: DIContainer;
     private processorRegistered: boolean = false;
     private layoutRenderer: LayoutRenderer;
+    private apiServer: ExocortexAPIServer;
     
     async onload(): Promise<void> {
         console.log('🚀 Exocortex: Loading plugin v2.1.12...');
@@ -71,6 +73,48 @@ export default class ExocortexPlugin extends Plugin {
             id: ontologizeCommand.id,
             name: ontologizeCommand.name,
             callback: () => ontologizeCommand.callback()
+        });
+        
+        // Initialize REST API server
+        this.apiServer = new ExocortexAPIServer(this.app, this, this.graph);
+        
+        // Register command: Start REST API
+        this.addCommand({
+            id: 'start-rest-api',
+            name: 'Start REST API Server',
+            callback: async () => {
+                if (!this.apiServer.isRunning()) {
+                    await this.apiServer.start();
+                    const apiKey = this.apiServer.getAPIKey();
+                    new Notice(`REST API started. API Key: ${apiKey.substring(0, 10)}...`);
+                } else {
+                    new Notice('REST API is already running');
+                }
+            }
+        });
+        
+        // Register command: Stop REST API
+        this.addCommand({
+            id: 'stop-rest-api',
+            name: 'Stop REST API Server',
+            callback: async () => {
+                if (this.apiServer.isRunning()) {
+                    await this.apiServer.stop();
+                } else {
+                    new Notice('REST API is not running');
+                }
+            }
+        });
+        
+        // Register command: Show API Key
+        this.addCommand({
+            id: 'show-api-key',
+            name: 'Show REST API Key',
+            callback: () => {
+                const apiKey = this.apiServer.getAPIKey();
+                navigator.clipboard.writeText(apiKey);
+                new Notice(`API Key copied to clipboard: ${apiKey.substring(0, 10)}...`);
+            }
         });
         
         // Register layout renderer for code blocks
@@ -275,6 +319,11 @@ export default class ExocortexPlugin extends Plugin {
     
     async onunload(): Promise<void> {
         console.log('👋 Exocortex: Plugin unloaded');
+        
+        // Stop API server if running
+        if (this.apiServer && this.apiServer.isRunning()) {
+            await this.apiServer.stop();
+        }
         
         // Clear graph
         if (this.graph) {
