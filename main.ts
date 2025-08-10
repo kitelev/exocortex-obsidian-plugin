@@ -1,5 +1,6 @@
 import { Plugin, Notice, MarkdownPostProcessorContext, TFile } from 'obsidian';
 import { Graph, Triple } from './src/domain/Graph';
+import { IndexedGraph } from './src/domain/IndexedGraph';
 import { SPARQLProcessor } from './src/presentation/processors/SPARQLProcessor';
 import { CreateAssetModal } from './src/presentation/modals/CreateAssetModal';
 import { DIContainer } from './src/infrastructure/container/DIContainer';
@@ -25,8 +26,8 @@ export default class ExocortexPlugin extends Plugin {
         // Initialize DI container
         this.container = DIContainer.initialize(this.app, this);
         
-        // Initialize graph
-        this.graph = new Graph();
+        // Initialize indexed graph for better performance
+        this.graph = new IndexedGraph();
         
         // Initialize layout renderer
         const layoutRepository = new ObsidianClassLayoutRepository(this.app);
@@ -177,6 +178,33 @@ export default class ExocortexPlugin extends Plugin {
             callback: async () => {
                 const stats = await this.focusService.getFocusStatistics();
                 new Notice(`Focus: ${stats.activeFocus}\nVisible: ${stats.filteredAssets}/${stats.totalAssets} assets, ${stats.filteredTriples}/${stats.totalTriples} triples`);
+            }
+        });
+        
+        // Performance monitoring command
+        this.addCommand({
+            id: 'show-performance-stats',
+            name: 'Show Graph Performance Statistics',
+            callback: () => {
+                if (this.graph instanceof IndexedGraph) {
+                    const stats = (this.graph as IndexedGraph).getIndexStats();
+                    const topPredicates = (this.graph as IndexedGraph).getTopPredicates(5);
+                    
+                    let message = `📊 Graph Performance Stats:\n`;
+                    message += `Triples: ${stats.totalTriples}\n`;
+                    message += `Unique Subjects: ${stats.uniqueSubjects}\n`;
+                    message += `Unique Objects: ${stats.uniqueObjects}\n`;
+                    message += `Classes: ${stats.classCount}\n`;
+                    message += `Predicates: ${stats.predicateCount}\n\n`;
+                    message += `Top Predicates:\n`;
+                    topPredicates.forEach(p => {
+                        message += `  ${p.predicate}: ${p.count}\n`;
+                    });
+                    
+                    new Notice(message);
+                } else {
+                    new Notice('Graph indexing not available');
+                }
             }
         });
         
