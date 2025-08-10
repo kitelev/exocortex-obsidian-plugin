@@ -306,9 +306,9 @@ export class SPARQLProcessor {
         // Quick export buttons
         const formats: Array<{ format: RDFFormat; label: string }> = [
             { format: 'turtle', label: 'Turtle' },
-            { format: 'jsonld', label: 'JSON-LD' },
-            { format: 'ntriples', label: 'N-Triples' },
-            { format: 'rdfxml', label: 'RDF/XML' }
+            { format: 'json-ld', label: 'JSON-LD' },
+            { format: 'n-triples', label: 'N-Triples' },
+            { format: 'rdf-xml', label: 'RDF/XML' }
         ];
         
         for (const { format, label } of formats) {

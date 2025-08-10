@@ -49,15 +49,15 @@ export class RDFParser {
                     graph = this.parseTurtle(content, nm, options, warnings, errors);
                     break;
                     
-                case 'ntriples':
+                case 'n-triples':
                     graph = this.parseNTriples(content, warnings, errors);
                     break;
                     
-                case 'jsonld':
+                case 'json-ld':
                     graph = this.parseJSONLD(content, nm, options, warnings, errors);
                     break;
                     
-                case 'rdfxml':
+                case 'rdf-xml':
                     graph = this.parseRDFXML(content, nm, options, warnings, errors);
                     break;
                     
@@ -101,7 +101,7 @@ export class RDFParser {
             try {
                 const parsed = JSON.parse(trimmed);
                 if (parsed['@context'] || parsed['@graph'] || parsed['@id']) {
-                    return 'jsonld';
+                    return 'json-ld';
                 }
             } catch {
                 // Not valid JSON
@@ -110,7 +110,7 @@ export class RDFParser {
         
         // Check for RDF/XML
         if (trimmed.startsWith('<?xml') || trimmed.includes('<rdf:RDF')) {
-            return 'rdfxml';
+            return 'rdf-xml';
         }
         
         // Check for Turtle prefixes
@@ -123,7 +123,7 @@ export class RDFParser {
         if (lines.every(line => line.trim().endsWith(' .'))) {
             // Further check for angle brackets (IRIs) or quotes (literals)
             if (lines.some(line => line.includes('<') && line.includes('>'))) {
-                return 'ntriples';
+                return 'n-triples';
             }
         }
         

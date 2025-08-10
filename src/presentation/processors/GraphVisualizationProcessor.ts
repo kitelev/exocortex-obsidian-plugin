@@ -617,9 +617,9 @@ export class GraphVisualizationProcessor {
         
         const formats: Array<{ format: RDFFormat; label: string }> = [
             { format: 'turtle', label: 'Turtle (.ttl)' },
-            { format: 'jsonld', label: 'JSON-LD (.jsonld)' },
-            { format: 'ntriples', label: 'N-Triples (.nt)' },
-            { format: 'rdfxml', label: 'RDF/XML (.rdf)' }
+            { format: 'json-ld', label: 'JSON-LD (.jsonld)' },
+            { format: 'n-triples', label: 'N-Triples (.nt)' },
+            { format: 'rdf-xml', label: 'RDF/XML (.rdf)' }
         ];
         
         for (const { format, label } of formats) {

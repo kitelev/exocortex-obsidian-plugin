@@ -60,14 +60,14 @@ describe('RDFService', () => {
         
         it('should export graph in JSON-LD format', async () => {
             const result = await rdfService.exportGraph(graph, {
-                format: 'jsonld',
+                format: 'json-ld',
                 saveToVault: false
             });
             
             expect(result.isSuccess).toBe(true);
             
             const exportData = result.getValue();
-            expect(exportData.format).toBe('jsonld');
+            expect(exportData.format).toBe('json-ld');
             expect(exportData.tripleCount).toBe(1);
             
             // Should be valid JSON
@@ -122,7 +122,7 @@ describe('RDFService', () => {
             });
             
             const result = await rdfService.importRDF(jsonldContent, graph, {
-                format: 'jsonld',
+                format: 'json-ld',
                 mergeMode: 'merge'
             });
             
@@ -168,9 +168,9 @@ describe('RDFService', () => {
             const formats = rdfService.getSupportedFormats();
             
             expect(formats).toContain('turtle');
-            expect(formats).toContain('ntriples');
-            expect(formats).toContain('jsonld');
-            expect(formats).toContain('rdfxml');
+            expect(formats).toContain('n-triples');
+            expect(formats).toContain('json-ld');
+            expect(formats).toContain('rdf-xml');
         });
     });
     
@@ -317,7 +317,7 @@ describe('RDFSerializer', () => {
     
     it('should serialize to N-Triples format', () => {
         const result = serializer.serialize(graph, {
-            format: 'ntriples'
+            format: 'n-triples'
         });
         
         expect(result.isSuccess).toBe(true);
@@ -331,16 +331,16 @@ describe('RDFSerializer', () => {
     
     it('should provide file extension for format', () => {
         expect(RDFSerializer.getFileExtension('turtle')).toBe('.ttl');
-        expect(RDFSerializer.getFileExtension('ntriples')).toBe('.nt');
-        expect(RDFSerializer.getFileExtension('jsonld')).toBe('.jsonld');
-        expect(RDFSerializer.getFileExtension('rdfxml')).toBe('.rdf');
+        expect(RDFSerializer.getFileExtension('n-triples')).toBe('.nt');
+        expect(RDFSerializer.getFileExtension('json-ld')).toBe('.jsonld');
+        expect(RDFSerializer.getFileExtension('rdf-xml')).toBe('.rdf');
     });
     
     it('should provide MIME type for format', () => {
         expect(RDFSerializer.getMimeType('turtle')).toBe('text/turtle');
-        expect(RDFSerializer.getMimeType('ntriples')).toBe('application/n-triples');
-        expect(RDFSerializer.getMimeType('jsonld')).toBe('application/ld+json');
-        expect(RDFSerializer.getMimeType('rdfxml')).toBe('application/rdf+xml');
+        expect(RDFSerializer.getMimeType('n-triples')).toBe('application/n-triples');
+        expect(RDFSerializer.getMimeType('json-ld')).toBe('application/ld+json');
+        expect(RDFSerializer.getMimeType('rdf-xml')).toBe('application/rdf+xml');
     });
 });
 
@@ -377,7 +377,7 @@ describe('RDFParser', () => {
             <http://example.org/person1> <http://xmlns.com/foaf/0.1/age> "32"^^<http://www.w3.org/2001/XMLSchema#integer> .
         `;
         
-        const result = parser.parse(ntriplesContent, { format: 'ntriples' });
+        const result = parser.parse(ntriplesContent, { format: 'n-triples' });
         
         expect(result.isSuccess).toBe(true);
         

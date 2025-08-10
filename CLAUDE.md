@@ -160,6 +160,8 @@ Every code change MUST:
 3. Commit with conventional message
 4. Push to trigger auto-release
 
+**AUTOMATED RELEASE**: Use `.claude/agents/release.sh` script or follow `.claude/agents/release-agent.md` checklist
+
 ### RULE 2: User-Focused Release Notes
 Write CHANGELOG entries as Product Manager:
 - Focus on user benefits, not technical details

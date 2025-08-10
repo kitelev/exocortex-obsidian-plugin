@@ -8,7 +8,7 @@ import { Triple, IRI, BlankNode, Literal } from '../../domain/semantic/core/Trip
 import { Result } from '../../domain/core/Result';
 import { NamespaceManager } from './NamespaceManager';
 
-export type RDFFormat = 'turtle' | 'ntriples' | 'jsonld' | 'rdfxml';
+export type RDFFormat = 'turtle' | 'n-triples' | 'json-ld' | 'rdf-xml';
 
 export interface SerializationOptions {
     format: RDFFormat;
@@ -50,15 +50,15 @@ export class RDFSerializer {
                     content = this.serializeToTurtle(graph, nm, options);
                     break;
                     
-                case 'ntriples':
+                case 'n-triples':
                     content = this.serializeToNTriples(graph, warnings);
                     break;
                     
-                case 'jsonld':
+                case 'json-ld':
                     content = this.serializeToJSONLD(graph, nm, options);
                     break;
                     
-                case 'rdfxml':
+                case 'rdf-xml':
                     content = this.serializeToRDFXML(graph, nm, options);
                     break;
                     
@@ -478,9 +478,9 @@ export class RDFSerializer {
     static getFileExtension(format: RDFFormat): string {
         switch (format) {
             case 'turtle': return '.ttl';
-            case 'ntriples': return '.nt';
-            case 'jsonld': return '.jsonld';
-            case 'rdfxml': return '.rdf';
+            case 'n-triples': return '.nt';
+            case 'json-ld': return '.jsonld';
+            case 'rdf-xml': return '.rdf';
             default: return '.rdf';
         }
     }
@@ -491,9 +491,9 @@ export class RDFSerializer {
     static getMimeType(format: RDFFormat): string {
         switch (format) {
             case 'turtle': return 'text/turtle';
-            case 'ntriples': return 'application/n-triples';
-            case 'jsonld': return 'application/ld+json';
-            case 'rdfxml': return 'application/rdf+xml';
+            case 'n-triples': return 'application/n-triples';
+            case 'json-ld': return 'application/ld+json';
+            case 'rdf-xml': return 'application/rdf+xml';
             default: return 'application/rdf+xml';
         }
     }
