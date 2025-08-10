@@ -46,8 +46,17 @@ export class DIContainer {
     public static initialize(app: App, plugin?: any): DIContainer {
         if (!DIContainer.instance) {
             DIContainer.instance = new DIContainer(app);
+        } else {
+            // Always update app and plugin references
+            DIContainer.instance.app = app;
+            if (plugin) {
+                DIContainer.instance.plugin = plugin;
+            }
+            // Re-register dependencies to ensure they use the new app instance
+            DIContainer.instance.container.clear();
+            DIContainer.instance.registerDependencies();
         }
-        if (plugin) {
+        if (plugin && !DIContainer.instance.plugin) {
             DIContainer.instance.plugin = plugin;
         }
         return DIContainer.instance;

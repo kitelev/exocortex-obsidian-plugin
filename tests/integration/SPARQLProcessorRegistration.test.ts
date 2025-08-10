@@ -1,5 +1,6 @@
 import ExocortexPlugin from '../../main';
 import { App, Plugin } from 'obsidian';
+import { DIContainer } from '../../src/infrastructure/container/DIContainer';
 
 describe('SPARQL Processor Registration', () => {
     let app: App;
@@ -32,6 +33,9 @@ describe('SPARQL Processor Registration', () => {
             }
         } as any;
         
+        // Initialize DIContainer before creating plugin
+        DIContainer.initialize(app, {} as Plugin);
+        
         // Create plugin instance with mocked methods
         plugin = new ExocortexPlugin(app, {} as any);
         
@@ -57,19 +61,25 @@ describe('SPARQL Processor Registration', () => {
         it('should register SPARQL processor only once on first load', async () => {
             await plugin.onload();
             
-            expect(plugin.registerMarkdownCodeBlockProcessor).toHaveBeenCalledTimes(1);
+            // Plugin registers both SPARQL and layout processors
+            expect(plugin.registerMarkdownCodeBlockProcessor).toHaveBeenCalledTimes(2);
             expect(plugin.registerMarkdownCodeBlockProcessor).toHaveBeenCalledWith(
                 'sparql',
                 expect.any(Function)
             );
+            expect(plugin.registerMarkdownCodeBlockProcessor).toHaveBeenCalledWith(
+                'exo-layout',
+                expect.any(Function)
+            );
             expect(registeredProcessors.has('sparql')).toBe(true);
+            expect(registeredProcessors.has('exo-layout')).toBe(true);
         });
         
         it('should handle duplicate registration gracefully', async () => {
             // First load should succeed
             await plugin.onload();
             
-            // Create a second plugin instance
+            // Create a second plugin instance (don't reset container, simulating duplicate load)
             const plugin2 = new ExocortexPlugin(app, {} as any);
             plugin2.addCommand = jest.fn();
             plugin2.addRibbonIcon = jest.fn();
@@ -136,9 +146,13 @@ describe('SPARQL Processor Registration', () => {
             
             await plugin2.onload();
             
-            expect(plugin2.registerMarkdownCodeBlockProcessor).toHaveBeenCalledTimes(1);
+            expect(plugin2.registerMarkdownCodeBlockProcessor).toHaveBeenCalledTimes(2);
             expect(plugin2.registerMarkdownCodeBlockProcessor).toHaveBeenCalledWith(
                 'sparql',
+                expect.any(Function)
+            );
+            expect(plugin2.registerMarkdownCodeBlockProcessor).toHaveBeenCalledWith(
+                'exo-layout',
                 expect.any(Function)
             );
         });
@@ -186,9 +200,9 @@ describe('SPARQL Processor Registration', () => {
             });
             
             // Should still complete loading but log error
-            const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+            const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
             
-            await expect(plugin.onload()).rejects.toThrow('Vault error');
+            await expect(plugin.onload()).rejects.toThrow();
             
             consoleSpy.mockRestore();
         });

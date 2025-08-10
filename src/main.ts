@@ -1,13 +1,20 @@
 import { Plugin, Notice, MarkdownPostProcessorContext, TFile } from 'obsidian';
-import { Graph, Triple } from './domain/Graph';
+import { Graph } from './domain/semantic/core/Graph';
+import { Triple, IRI, Literal } from './domain/semantic/core/Triple';
 import { SPARQLProcessor } from './presentation/processors/SPARQLProcessor';
+import { GraphVisualizationProcessor } from './presentation/processors/GraphVisualizationProcessor';
 import { CreateAssetModal } from './presentation/modals/CreateAssetModal';
+import { ExportRDFModal } from './presentation/modals/ExportRDFModal';
+import { ImportRDFModal } from './presentation/modals/ImportRDFModal';
 import { DIContainer } from './infrastructure/container/DIContainer';
+import { RDFService } from './application/services/RDFService';
 
 export default class ExocortexPlugin extends Plugin {
     private graph: Graph;
     private sparqlProcessor: SPARQLProcessor;
+    private graphVisualizationProcessor: GraphVisualizationProcessor;
     private container: DIContainer;
+    private rdfService: RDFService;
     
     async onload(): Promise<void> {
         console.log('🚀 Exocortex: Loading plugin v2.1.6...');
@@ -19,15 +26,31 @@ export default class ExocortexPlugin extends Plugin {
         // Initialize graph
         this.graph = new Graph();
         
+        // Initialize RDF service
+        this.rdfService = new RDFService(this.app);
+        
         // Load vault data into graph
         await this.loadVaultIntoGraph();
         
-        // Initialize SPARQL processor
-        this.sparqlProcessor = new SPARQLProcessor(this, this.graph);
+        // Initialize SPARQL processor with cache configuration
+        const cacheConfig = {
+            maxSize: 500,           // Reasonable cache size for Obsidian plugin
+            defaultTTL: 5 * 60 * 1000,  // 5 minutes TTL
+            enabled: true
+        };
+        this.sparqlProcessor = new SPARQLProcessor(this, this.graph, undefined, cacheConfig);
+        
+        // Initialize Graph Visualization processor
+        this.graphVisualizationProcessor = new GraphVisualizationProcessor(this, this.graph);
         
         // Register SPARQL code block processor
         this.registerMarkdownCodeBlockProcessor('sparql', 
             (source, el, ctx) => this.sparqlProcessor.processCodeBlock(source, el, ctx)
+        );
+        
+        // Register Graph Visualization code block processor
+        this.registerMarkdownCodeBlockProcessor('graph', 
+            (source, el, ctx) => this.graphVisualizationProcessor.processCodeBlock(source, el, ctx)
         );
         
         // Register command: Create new asset
@@ -44,12 +67,92 @@ export default class ExocortexPlugin extends Plugin {
         this.addRibbonIcon('plus-circle', 'Create ExoAsset', () => {
             new CreateAssetModal(this.app).open();
         });
+
+        // Register command: View SPARQL cache statistics
+        this.addCommand({
+            id: 'view-sparql-cache-stats',
+            name: 'View SPARQL cache statistics',
+            callback: () => {
+                const stats = this.sparqlProcessor.getCacheStatistics();
+                const message = [
+                    `SPARQL Query Cache Statistics:`,
+                    `• Cache hits: ${stats.hits}`,
+                    `• Cache misses: ${stats.misses}`,
+                    `• Hit rate: ${stats.hitRate.toFixed(1)}%`,
+                    `• Cached entries: ${stats.size}/${stats.maxSize}`,
+                    `• Total queries: ${stats.totalQueries}`,
+                    `• Evictions: ${stats.evictions}`
+                ].join('\n');
+                new Notice(message, 8000);
+            }
+        });
+
+        // Register command: Clear SPARQL cache
+        this.addCommand({
+            id: 'clear-sparql-cache',
+            name: 'Clear SPARQL cache',
+            callback: () => {
+                this.sparqlProcessor.invalidateCache();
+                new Notice('SPARQL query cache cleared!');
+            }
+        });
+
+        // Register command: Export knowledge graph
+        this.addCommand({
+            id: 'export-knowledge-graph',
+            name: 'Export knowledge graph',
+            callback: () => {
+                const modal = new ExportRDFModal(
+                    this.app,
+                    this.graph,
+                    this.rdfService.getNamespaceManager(),
+                    (result) => {
+                        console.log('Knowledge graph exported:', result);
+                    }
+                );
+                modal.open();
+            }
+        });
+
+        // Register command: Import RDF data
+        this.addCommand({
+            id: 'import-rdf-data',
+            name: 'Import RDF data',
+            callback: () => {
+                const modal = new ImportRDFModal(
+                    this.app,
+                    this.graph,
+                    this.rdfService.getNamespaceManager(),
+                    async (importedGraph, options) => {
+                        try {
+                            if (options.mergeMode === 'replace') {
+                                this.graph.clear();
+                                this.graph.merge(importedGraph);
+                            } else {
+                                this.graph.merge(importedGraph);
+                            }
+                            
+                            // Invalidate SPARQL cache since graph changed
+                            this.sparqlProcessor.invalidateCache();
+                            
+                            console.log('RDF data imported successfully');
+                        } catch (error) {
+                            console.error('Failed to import RDF data:', error);
+                            new Notice(`Import failed: ${error.message}`);
+                        }
+                    }
+                );
+                modal.open();
+            }
+        });
         
         // Register file modification handler to update graph
         this.registerEvent(
             this.app.vault.on('modify', async (file) => {
                 if (file instanceof TFile && file.extension === 'md') {
                     await this.updateFileInGraph(file);
+                    // Invalidate SPARQL query cache when data changes
+                    this.sparqlProcessor.invalidateCache();
                 }
             })
         );
@@ -59,6 +162,8 @@ export default class ExocortexPlugin extends Plugin {
             this.app.vault.on('create', async (file) => {
                 if (file instanceof TFile && file.extension === 'md') {
                     await this.updateFileInGraph(file);
+                    // Invalidate SPARQL query cache when data changes
+                    this.sparqlProcessor.invalidateCache();
                 }
             })
         );
@@ -68,12 +173,14 @@ export default class ExocortexPlugin extends Plugin {
             this.app.vault.on('delete', async (file) => {
                 if (file instanceof TFile && file.extension === 'md') {
                     this.removeFileFromGraph(file);
+                    // Invalidate SPARQL query cache when data changes
+                    this.sparqlProcessor.invalidateCache();
                 }
             })
         );
         
-        new Notice('🔍 Exocortex: SPARQL support enabled!');
-        console.log('✅ Exocortex: SPARQL processor registered');
+        new Notice('🔍 Exocortex: SPARQL support and graph visualization enabled!');
+        console.log('✅ Exocortex: SPARQL processor and graph visualization registered');
     }
     
     private async loadVaultIntoGraph(): Promise<void> {
@@ -119,7 +226,7 @@ export default class ExocortexPlugin extends Plugin {
     }
     
     private removeFileFromGraph(file: TFile): void {
-        const subject = `file://${file.basename}`;
+        const subject = new IRI(`file://${file.basename}`);
         const triplesToRemove = this.graph.match(subject, null, null);
         
         for (const triple of triplesToRemove) {
@@ -129,7 +236,7 @@ export default class ExocortexPlugin extends Plugin {
     
     private extractTriplesFromFile(file: TFile, content: string): Triple[] {
         const triples: Triple[] = [];
-        const subject = `file://${file.basename}`;
+        const subject = new IRI(`file://${file.basename}`);
         
         // Extract frontmatter
         const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
@@ -140,34 +247,34 @@ export default class ExocortexPlugin extends Plugin {
             for (const [key, value] of Object.entries(frontmatter)) {
                 if (Array.isArray(value)) {
                     for (const v of value) {
-                        triples.push({
+                        triples.push(new Triple(
                             subject,
-                            predicate: key,
-                            object: String(v)
-                        });
+                            new IRI(key),
+                            Literal.string(String(v))
+                        ));
                     }
                 } else if (value !== null && value !== undefined) {
-                    triples.push({
+                    triples.push(new Triple(
                         subject,
-                        predicate: key,
-                        object: String(value)
-                    });
+                        new IRI(key),
+                        Literal.string(String(value))
+                    ));
                 }
             }
         }
         
         // Add basic file metadata
-        triples.push({
+        triples.push(new Triple(
             subject,
-            predicate: 'file_path',
-            object: file.path
-        });
+            new IRI('file_path'),
+            Literal.string(file.path)
+        ));
         
-        triples.push({
+        triples.push(new Triple(
             subject,
-            predicate: 'file_name',
-            object: file.name
-        });
+            new IRI('file_name'),
+            Literal.string(file.name)
+        ));
         
         return triples;
     }
@@ -232,6 +339,9 @@ export default class ExocortexPlugin extends Plugin {
         console.log('👋 Exocortex: Plugin unloaded');
         if (this.graph) {
             this.graph.clear();
+        }
+        if (this.sparqlProcessor) {
+            this.sparqlProcessor.destroy();
         }
     }
 }

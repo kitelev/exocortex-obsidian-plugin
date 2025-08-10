@@ -1,5 +1,5 @@
 import { Plugin, TFile, TFolder, Notice } from 'obsidian';
-import { Graph } from '../../domain/Graph';
+import { Graph } from '../../domain/semantic/core/Graph';
 import { KnowledgeObject } from '../../domain/KnowledgeObject';
 
 export class VaultGraphAdapter {

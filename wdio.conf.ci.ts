@@ -31,7 +31,17 @@ export const config = {
       safeMode: false,
       configDir: '.obsidian-ci',
       // Increase startup timeout for CI
-      startupTimeout: 60000
+      startupTimeout: 90000,
+      // Additional CI-specific options
+      electronArgs: [
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu-sandbox',
+        '--disable-software-rasterizer',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding'
+      ]
     }
   }],
 
@@ -122,27 +132,34 @@ export const config = {
 
   before: async function (capabilities, specs, browser) {
     console.log('🔧 Setting up test environment...');
+    console.log('🖥️  Display:', process.env.DISPLAY || 'not set');
+    console.log('🐧 Platform:', process.platform);
     
     // Set longer implicit wait for CI
-    await browser.setTimeout({ 'implicit': 10000 });
+    await browser.setTimeout({ 'implicit': 15000 });
     
     // Add custom commands for better error handling
-    browser.addCommand('waitForObsidianReady', async function(timeout = 60000) {
+    browser.addCommand('waitForObsidianReady', async function(timeout = 90000) {
+      console.log('⏳ Waiting for Obsidian to become ready...');
       await (this as any).waitUntil(
         async () => {
           try {
             const ready = await (this as any).executeObsidian(({ app }: any) => {
               return app && app.workspace && app.workspace.layoutReady;
             });
+            if (ready) {
+              console.log('✅ Obsidian is ready');
+            }
             return ready === true;
           } catch (error: any) {
-            console.warn('Waiting for Obsidian to be ready...', error.message);
+            console.warn('⏳ Waiting for Obsidian to be ready...', error.message);
             return false;
           }
         },
         {
           timeout,
-          timeoutMsg: `Obsidian failed to become ready within ${timeout}ms`
+          timeoutMsg: `Obsidian failed to become ready within ${timeout}ms`,
+          interval: 2000
         }
       );
     });

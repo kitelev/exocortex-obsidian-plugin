@@ -160,9 +160,18 @@ describe('CreateAssetModal Data Loading', () => {
             
             await modal['updatePropertiesForClass']('exo__Asset');
             
-            // Should have created property fields
-            const settings = containerEl.querySelectorAll('.setting-item');
-            expect(settings.length).toBeGreaterThan(0);
+            // Should have properties loaded (either specific or defaults)
+            const properties = modal['properties'];
+            expect(properties.length).toBeGreaterThan(0);
+            
+            // Check that it has the expected properties
+            const hasDescription = properties.some((p: any) => 
+                p.name === 'description' || 
+                p.name === 'exo__description' || 
+                p.name === 'exo__Property_description' ||
+                p.label === 'Description'
+            );
+            expect(hasDescription).toBe(true);
         });
         
         it('should use default values when no data found', async () => {

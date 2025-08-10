@@ -1,17 +1,36 @@
-import { Graph, Triple } from '../domain/Graph';
+import { Graph } from '../domain/semantic/core/Graph';
+import { Triple, IRI, Literal } from '../domain/semantic/core/Triple';
+import { QueryCache, QueryCacheConfig } from './services/QueryCache';
 
 export interface ConstructResult {
     triples: Triple[];
     provenance: string;
+    cached?: boolean;
+}
+
+export interface SelectResult {
+    results: any[];
+    cached?: boolean;
 }
 
 export class SPARQLEngine {
-    constructor(private graph: Graph) {}
+    private queryCache: QueryCache;
+
+    constructor(private graph: Graph, cacheConfig?: Partial<QueryCacheConfig>) {
+        this.queryCache = new QueryCache(cacheConfig);
+    }
     
     /**
      * Execute CONSTRUCT query to generate new triples
      */
     construct(query: string): ConstructResult {
+        // Check cache first
+        const cacheKey = this.queryCache.createCacheKey(`CONSTRUCT:${query}`);
+        const cachedResult = this.queryCache.get<ConstructResult>(cacheKey);
+        
+        if (cachedResult) {
+            return { ...cachedResult, cached: true };
+        }
         // Parse CONSTRUCT query
         const constructMatch = query.match(/CONSTRUCT\s*\{(.*?)\}\s*WHERE\s*\{(.*?)\}/is);
         if (!constructMatch) {
@@ -54,18 +73,27 @@ export class SPARQLEngine {
         
         // Apply LIMIT if present
         const limitMatch = query.match(/LIMIT\s+(\d+)/i);
+        let result: ConstructResult;
+        
         if (limitMatch) {
             const limit = parseInt(limitMatch[1]);
-            return {
+            result = {
                 triples: generatedTriples.slice(0, limit),
-                provenance: `CONSTRUCT query at ${new Date().toISOString()}`
+                provenance: `CONSTRUCT query at ${new Date().toISOString()}`,
+                cached: false
+            };
+        } else {
+            result = {
+                triples: generatedTriples,
+                provenance: `CONSTRUCT query at ${new Date().toISOString()}`,
+                cached: false
             };
         }
         
-        return {
-            triples: generatedTriples,
-            provenance: `CONSTRUCT query at ${new Date().toISOString()}`
-        };
+        // Cache the result
+        this.queryCache.set(cacheKey, result);
+        
+        return result;
     }
     
     private parseConstructTemplate(templateClause: string): any[] {
@@ -93,13 +121,13 @@ export class SPARQLEngine {
         const binding: Record<string, string> = {};
         
         if (pattern.subject.startsWith('?')) {
-            binding[pattern.subject.substring(1)] = triple.subject;
+            binding[pattern.subject.substring(1)] = triple.getSubject().toString();
         }
         if (pattern.predicate.startsWith('?')) {
-            binding[pattern.predicate.substring(1)] = triple.predicate;
+            binding[pattern.predicate.substring(1)] = triple.getPredicate().toString();
         }
         if (pattern.object.startsWith('?')) {
-            binding[pattern.object.substring(1)] = triple.object;
+            binding[pattern.object.substring(1)] = triple.getObject().toString();
         }
         
         return binding;
@@ -109,12 +137,19 @@ export class SPARQLEngine {
         const triples: Triple[] = [];
         
         for (const t of template) {
-            const subject = this.resolveValue(t.subject, binding);
-            const predicate = this.resolveValue(t.predicate, binding);
-            const object = this.resolveValue(t.object, binding);
+            const subjectStr = this.resolveValue(t.subject, binding);
+            const predicateStr = this.resolveValue(t.predicate, binding);
+            const objectStr = this.resolveValue(t.object, binding);
             
-            if (subject && predicate && object) {
-                triples.push({ subject, predicate, object });
+            if (subjectStr && predicateStr && objectStr) {
+                // Create proper Triple objects
+                const subject = new IRI(subjectStr);
+                const predicate = new IRI(predicateStr);
+                const object = objectStr.startsWith('"') 
+                    ? Literal.string(objectStr.replace(/^"|"$/g, ''))
+                    : new IRI(objectStr);
+                
+                triples.push(new Triple(subject, predicate, object));
             }
         }
         
@@ -152,15 +187,22 @@ export class SPARQLEngine {
             
             for (const binding of bindings) {
                 // Resolve pattern with current binding
-                const subject = pattern.subject.startsWith('?') 
+                const subjectStr = pattern.subject.startsWith('?') 
                     ? (binding[pattern.subject.substring(1)] || null)
                     : pattern.subject;
-                const predicate = pattern.predicate.startsWith('?')
+                const predicateStr = pattern.predicate.startsWith('?')
                     ? (binding[pattern.predicate.substring(1)] || null)
                     : pattern.predicate;
-                const object = pattern.object.startsWith('?')
+                const objectStr = pattern.object.startsWith('?')
                     ? (binding[pattern.object.substring(1)] || null)
                     : pattern.object;
+                
+                // Convert strings to proper types for match
+                const subject = subjectStr ? new IRI(subjectStr) : null;
+                const predicate = predicateStr ? new IRI(predicateStr) : null;
+                const object = objectStr ? 
+                    (objectStr.startsWith('"') ? Literal.string(objectStr.replace(/^"|"$/g, '')) : new IRI(objectStr))
+                    : null;
                 
                 // Find matching triples
                 const matches = this.graph.match(subject, predicate, object);
@@ -169,14 +211,14 @@ export class SPARQLEngine {
                     const extendedBinding = { ...binding };
                     
                     // Add new variable bindings
-                    if (pattern.subject.startsWith('?') && !subject) {
-                        extendedBinding[pattern.subject.substring(1)] = triple.subject;
+                    if (pattern.subject.startsWith('?') && !subjectStr) {
+                        extendedBinding[pattern.subject.substring(1)] = triple.getSubject().toString();
                     }
-                    if (pattern.predicate.startsWith('?') && !predicate) {
-                        extendedBinding[pattern.predicate.substring(1)] = triple.predicate;
+                    if (pattern.predicate.startsWith('?') && !predicateStr) {
+                        extendedBinding[pattern.predicate.substring(1)] = triple.getPredicate().toString();
                     }
-                    if (pattern.object.startsWith('?') && !object) {
-                        extendedBinding[pattern.object.substring(1)] = triple.object;
+                    if (pattern.object.startsWith('?') && !objectStr) {
+                        extendedBinding[pattern.object.substring(1)] = triple.getObject().toString();
                     }
                     
                     newBindings.push(extendedBinding);
@@ -189,7 +231,15 @@ export class SPARQLEngine {
         return bindings;
     }
     
-    select(query: string): any[] {
+    select(query: string): SelectResult {
+        // Check cache first
+        const cacheKey = this.queryCache.createCacheKey(`SELECT:${query}`);
+        const cachedResult = this.queryCache.get<SelectResult>(cacheKey);
+        
+        if (cachedResult) {
+            return { ...cachedResult, cached: true };
+        }
+
         // Very basic SPARQL SELECT implementation for MVP
         const results: any[] = [];
         
@@ -203,7 +253,9 @@ export class SPARQLEngine {
         const patterns = this.parsePatterns(selectMatch[2]);
         
         if (patterns.length === 0) {
-            return [];
+            const emptyResult: SelectResult = { results: [], cached: false };
+            this.queryCache.set(cacheKey, emptyResult);
+            return emptyResult;
         }
         
         // Execute first pattern (MVP - single pattern support)
@@ -246,12 +298,19 @@ export class SPARQLEngine {
         
         // Apply LIMIT if present
         const limitMatch = query.match(/LIMIT\s+(\d+)/i);
+        let result: SelectResult;
+        
         if (limitMatch) {
             const limit = parseInt(limitMatch[1]);
-            return results.slice(0, limit);
+            result = { results: results.slice(0, limit), cached: false };
+        } else {
+            result = { results, cached: false };
         }
         
-        return results;
+        // Cache the result
+        this.queryCache.set(cacheKey, result);
+        
+        return result;
     }
     
     private parseVariables(selectClause: string): string[] {
@@ -291,5 +350,47 @@ export class SPARQLEngine {
         }
         
         return patterns;
+    }
+
+    /**
+     * Get cache statistics
+     */
+    getCacheStatistics() {
+        return this.queryCache.getStatistics();
+    }
+
+    /**
+     * Invalidate all cached queries
+     */
+    invalidateCache(): void {
+        this.queryCache.invalidateAll();
+    }
+
+    /**
+     * Update cache configuration
+     */
+    updateCacheConfig(config: Partial<QueryCacheConfig>): void {
+        this.queryCache.updateConfig(config);
+    }
+
+    /**
+     * Get current cache configuration
+     */
+    getCacheConfig(): QueryCacheConfig {
+        return this.queryCache.getConfig();
+    }
+
+    /**
+     * Cleanup expired cache entries
+     */
+    cleanupCache(): number {
+        return this.queryCache.cleanup();
+    }
+
+    /**
+     * Destroy cache and cleanup resources
+     */
+    destroy(): void {
+        this.queryCache.destroy();
     }
 }

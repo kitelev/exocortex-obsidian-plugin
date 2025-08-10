@@ -1,4 +1,5 @@
-import { Graph, Triple } from './Graph';
+import { Graph } from './semantic/core/Graph';
+import { Triple } from './semantic/core/Triple';
 
 /**
  * Indexed Graph implementation for high-performance triple operations

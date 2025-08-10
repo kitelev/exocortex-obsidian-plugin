@@ -235,14 +235,19 @@ describe('CreateAssetModal', () => {
       expect((modal as any).propertyValues.size).toBe(0);
     });
 
-    test('should display no properties message when no properties available', async () => {
+    test('should add default properties for exo__Asset class', async () => {
       const mockPropertiesContainer = document.createElement('div');
+      mockPropertiesContainer.createEl = jest.fn().mockReturnValue(document.createElement('div'));
+      mockPropertiesContainer.empty = jest.fn();
       
       (modal as any).propertiesContainer = mockPropertiesContainer;
 
       await (modal as any).updatePropertiesForClass('exo__Asset');
 
-      expect(mockPropertiesContainer.createEl).toHaveBeenCalledWith('p', {
+      // Should have added default properties for exo__Asset (description and tags)
+      expect((modal as any).propertyValues).toBeDefined();
+      // Should have created property fields in the container
+      expect(mockPropertiesContainer.createEl).not.toHaveBeenCalledWith('p', {
         text: 'No specific properties for this class',
         cls: 'exocortex-no-properties'
       });

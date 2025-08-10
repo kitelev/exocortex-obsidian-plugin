@@ -1,6 +1,6 @@
 import * as http from 'http';
 import { App, Notice } from 'obsidian';
-import { Graph } from '../../domain/Graph';
+import { Graph } from '../../domain/semantic/core/Graph';
 import { ExoAgent } from '../../application/services/ExoAgent';
 
 /**

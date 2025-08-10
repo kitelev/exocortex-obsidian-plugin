@@ -369,6 +369,14 @@ export class App {
 
 export class Vault {
   private mockFiles: TFile[] = [];
+  adapter: any = {
+    read: jest.fn().mockRejectedValue(new Error('File not found')),
+    write: jest.fn().mockResolvedValue(undefined),
+    exists: jest.fn().mockResolvedValue(false),
+    mkdir: jest.fn().mockResolvedValue(undefined),
+    remove: jest.fn().mockResolvedValue(undefined),
+    list: jest.fn().mockResolvedValue({ files: [], folders: [] })
+  };
 
   getFiles(): TFile[] {
     return this.mockFiles;
@@ -415,7 +423,18 @@ export class Vault {
   }
   
   on(event: string, callback: any): any {
-    return { event, callback };
+    // Return an EventRef-like object that registerEvent expects
+    return { 
+      e: { 
+        target: this,
+        fn: callback,
+        event: event 
+      }
+    };
+  }
+  
+  off(event: string, callback: any): void {
+    // Mock implementation for removing event listeners
   }
 
   // Helper method for testing

@@ -14,6 +14,7 @@ export class CreateAssetModal extends Modal {
   private assetOntology: string = '';
   private propertyValues: Map<string, any> = new Map();
   private propertiesContainer: HTMLElement | null = null;
+  private properties: any[] = []; // Store current properties for testing
   
   private createAssetUseCase: CreateAssetUseCase;
   private container: DIContainer;
@@ -173,7 +174,7 @@ export class CreateAssetModal extends Modal {
     this.propertyValues.clear();
     
     // Get properties for this class
-    const properties: any[] = [];
+    this.properties = [];
     const files = this.app.vault.getMarkdownFiles();
     
     console.log(`Scanning ${files.length} files for properties...`);
@@ -195,7 +196,7 @@ export class CreateAssetModal extends Modal {
             const isRequired = cache.frontmatter['exo__Property_isRequired'] || false;
             
             console.log(`Found property ${propertyName} for class ${className}`);
-            properties.push({
+            this.properties.push({
               name: propertyName,
               label: label,
               description: description,
@@ -208,11 +209,11 @@ export class CreateAssetModal extends Modal {
       }
     }
     
-    console.log(`Found ${properties.length} properties for class ${className}`);
+    console.log(`Found ${this.properties.length} properties for class ${className}`);
     
     // Add some default properties for common classes
-    if (properties.length === 0 && className === 'exo__Asset') {
-      properties.push(
+    if (this.properties.length === 0 && className === 'exo__Asset') {
+      this.properties.push(
         {
           name: 'description',
           label: 'Description',
@@ -230,7 +231,7 @@ export class CreateAssetModal extends Modal {
       );
     }
     
-    if (properties.length === 0) {
+    if (this.properties.length === 0) {
       this.propertiesContainer.createEl("p", {
         text: "No specific properties for this class",
         cls: "exocortex-no-properties"
@@ -238,7 +239,8 @@ export class CreateAssetModal extends Modal {
       return;
     }
     
-    for (const prop of properties) {
+    // Create fields for all properties (including defaults)
+    for (const prop of this.properties) {
       this.createPropertyField(prop);
     }
   }

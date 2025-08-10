@@ -1,8 +1,10 @@
 import { App, Notice, Plugin, requestUrl } from 'obsidian';
-import { Graph } from '../../domain/Graph';
+import { Graph } from '../../domain/semantic/core/Graph';
 import { SPARQLProcessor } from '../../presentation/processors/SPARQLProcessor';
 import { ExoAgent } from '../../application/services/ExoAgent';
 import { RelationOntologizer } from '../../application/services/RelationOntologizer';
+import { RDFService } from '../../application/services/RDFService';
+import { RDFFormat } from '../../application/services/RDFSerializer';
 
 /**
  * REST API Server for external AI agents
@@ -16,6 +18,7 @@ export class RESTAPIServer {
     private sparqlProcessor: SPARQLProcessor;
     private exoAgent: ExoAgent;
     private relationOntologizer: RelationOntologizer;
+    private rdfService: RDFService;
     
     constructor(
         private app: App,
@@ -29,6 +32,7 @@ export class RESTAPIServer {
         this.sparqlProcessor = new SPARQLProcessor(plugin, graph);
         this.exoAgent = new ExoAgent(app, graph);
         this.relationOntologizer = new RelationOntologizer(app);
+        this.rdfService = new RDFService(app);
     }
     
     /**
@@ -189,6 +193,15 @@ export class RESTAPIServer {
                 case '/focus/get':
                     return await this.handleGetFocus(request);
                     
+                case '/rdf/export':
+                    return await this.handleRDFExport(request);
+                    
+                case '/rdf/import':
+                    return await this.handleRDFImport(request);
+                    
+                case '/rdf/formats':
+                    return await this.handleGetRDFFormats(request);
+                    
                 default:
                     return {
                         error: 'Unknown endpoint',
@@ -213,12 +226,13 @@ export class RESTAPIServer {
         }
         
         try {
-            const results = await this.sparqlProcessor.executeQuery(query);
+            const queryResult = await this.sparqlProcessor.executeQuery(query);
             return {
-                data: results,
+                data: queryResult.results,
                 status: 200,
                 metadata: {
-                    count: results.length,
+                    count: queryResult.results.length,
+                    cached: queryResult.cached,
                     timestamp: new Date().toISOString()
                 }
             };
@@ -576,6 +590,170 @@ export class RESTAPIServer {
             return JSON.parse(content);
         } catch {
             return null;
+        }
+    }
+    
+    /**
+     * Handle RDF export
+     */
+    private async handleRDFExport(request: APIRequest): Promise<APIResponse> {
+        const { format = 'turtle', includeComments = true, prettyPrint = true, fileName } = request.params || {};
+        
+        // Validate format
+        const supportedFormats = this.rdfService.getSupportedFormats();
+        if (!supportedFormats.includes(format)) {
+            return {
+                error: `Unsupported format. Supported: ${supportedFormats.join(', ')}`,
+                status: 400
+            };
+        }
+        
+        try {
+            const result = await this.rdfService.exportGraph(this.graph, {
+                format: format as RDFFormat,
+                includeComments,
+                prettyPrint,
+                fileName: fileName || `export-${Date.now()}`,
+                saveToVault: false // Return content instead of saving
+            });
+            
+            if (result.isFailure) {
+                return {
+                    error: result.errorValue(),
+                    status: 500
+                };
+            }
+            
+            const exportData = result.getValue();
+            
+            return {
+                data: {
+                    content: exportData.content,
+                    format: exportData.format,
+                    tripleCount: exportData.tripleCount,
+                    metadata: exportData.metadata
+                },
+                status: 200,
+                metadata: {
+                    timestamp: new Date().toISOString(),
+                    mimeType: this.rdfService.getFormatInfo(format as RDFFormat).mimeType
+                }
+            };
+        } catch (error) {
+            return {
+                error: `Export failed: ${error.message}`,
+                status: 500
+            };
+        }
+    }
+    
+    /**
+     * Handle RDF import
+     */
+    private async handleRDFImport(request: APIRequest): Promise<APIResponse> {
+        const { content, format, mergeMode = 'merge', validateInput = true, strictMode = false, baseIRI } = request.params || {};
+        
+        if (!content) {
+            return {
+                error: 'RDF content is required',
+                status: 400
+            };
+        }
+        
+        // Validate format if specified
+        if (format) {
+            const supportedFormats = this.rdfService.getSupportedFormats();
+            if (!supportedFormats.includes(format)) {
+                return {
+                    error: `Unsupported format. Supported: ${supportedFormats.join(', ')}`,
+                    status: 400
+                };
+            }
+        }
+        
+        // Validate merge mode
+        if (!['merge', 'replace'].includes(mergeMode)) {
+            return {
+                error: 'Invalid merge mode. Use "merge" or "replace"',
+                status: 400
+            };
+        }
+        
+        try {
+            const result = await this.rdfService.importRDF(content, this.graph, {
+                format: format as RDFFormat,
+                mergeMode: mergeMode as 'merge' | 'replace',
+                validateInput,
+                strictMode,
+                baseIRI
+            });
+            
+            if (result.isFailure) {
+                return {
+                    error: result.errorValue(),
+                    status: 400
+                };
+            }
+            
+            const { graph: updatedGraph, imported } = result.getValue();
+            
+            // Update the server's graph instance
+            if (mergeMode === 'replace') {
+                this.graph.clear();
+                this.graph.merge(updatedGraph);
+            } else {
+                this.graph.merge(imported.graph);
+            }
+            
+            return {
+                data: {
+                    success: true,
+                    importedTriples: imported.tripleCount,
+                    totalTriples: updatedGraph.size(),
+                    mergeMode,
+                    namespaces: imported.namespaces,
+                    warnings: imported.warnings,
+                    errors: imported.errors
+                },
+                status: 200,
+                metadata: {
+                    timestamp: new Date().toISOString()
+                }
+            };
+        } catch (error) {
+            return {
+                error: `Import failed: ${error.message}`,
+                status: 500
+            };
+        }
+    }
+    
+    /**
+     * Handle get RDF formats
+     */
+    private async handleGetRDFFormats(request: APIRequest): Promise<APIResponse> {
+        try {
+            const supportedFormats = this.rdfService.getSupportedFormats();
+            const formatInfo = supportedFormats.map(format => ({
+                format,
+                ...this.rdfService.getFormatInfo(format)
+            }));
+            
+            return {
+                data: {
+                    formats: formatInfo,
+                    defaultFormat: 'turtle'
+                },
+                status: 200,
+                metadata: {
+                    timestamp: new Date().toISOString()
+                }
+            };
+        } catch (error) {
+            return {
+                error: `Failed to get format info: ${error.message}`,
+                status: 500
+            };
         }
     }
 }

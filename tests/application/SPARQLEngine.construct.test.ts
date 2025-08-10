@@ -1,5 +1,6 @@
 import { SPARQLEngine } from '../../src/application/SPARQLEngine';
-import { Graph } from '../../src/domain/Graph';
+import { Graph } from '../../src/domain/semantic/core/Graph';
+import { Triple, IRI, Literal } from '../../src/domain/semantic/core/Triple';
 
 describe('SPARQLEngine CONSTRUCT Queries', () => {
     let engine: SPARQLEngine;
@@ -10,17 +11,17 @@ describe('SPARQLEngine CONSTRUCT Queries', () => {
         engine = new SPARQLEngine(graph);
         
         // Add test data
-        graph.add({ subject: 'task1', predicate: 'rdf:type', object: 'ems:Task' });
-        graph.add({ subject: 'task1', predicate: 'ems:deadline', object: '2025-08-10' });
-        graph.add({ subject: 'task1', predicate: 'ems:status', object: 'pending' });
+        graph.add(new Triple(new IRI('task1'), new IRI('rdf:type'), new IRI('ems:Task')));
+        graph.add(new Triple(new IRI('task1'), new IRI('ems:deadline'), Literal.string('2025-08-10')));
+        graph.add(new Triple(new IRI('task1'), new IRI('ems:status'), Literal.string('pending')));
         
-        graph.add({ subject: 'task2', predicate: 'rdf:type', object: 'ems:Task' });
-        graph.add({ subject: 'task2', predicate: 'ems:deadline', object: '2025-08-08' });
-        graph.add({ subject: 'task2', predicate: 'ems:status', object: 'pending' });
+        graph.add(new Triple(new IRI('task2'), new IRI('rdf:type'), new IRI('ems:Task')));
+        graph.add(new Triple(new IRI('task2'), new IRI('ems:deadline'), Literal.string('2025-08-08')));
+        graph.add(new Triple(new IRI('task2'), new IRI('ems:status'), Literal.string('pending')));
         
-        graph.add({ subject: 'task3', predicate: 'rdf:type', object: 'ems:Task' });
-        graph.add({ subject: 'task3', predicate: 'ems:assignedTo', object: 'person1' });
-        graph.add({ subject: 'task3', predicate: 'ems:partOf', object: 'project1' });
+        graph.add(new Triple(new IRI('task3'), new IRI('rdf:type'), new IRI('ems:Task')));
+        graph.add(new Triple(new IRI('task3'), new IRI('ems:assignedTo'), new IRI('person1')));
+        graph.add(new Triple(new IRI('task3'), new IRI('ems:partOf'), new IRI('project1')));
     });
     
     describe('Basic CONSTRUCT', () => {
@@ -179,8 +180,8 @@ describe('SPARQLEngine CONSTRUCT Queries', () => {
             
             const selectResult = engine.select(selectQuery);
             
-            expect(selectResult).toHaveLength(2); // task1 and task2 have deadlines
-            expect(selectResult[0].priority).toBe('high');
+            expect(selectResult.results).toHaveLength(2); // task1 and task2 have deadlines
+            expect(selectResult.results[0].priority).toBe('high');
         });
     });
 });

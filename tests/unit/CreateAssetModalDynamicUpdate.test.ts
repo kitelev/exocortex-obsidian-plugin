@@ -121,17 +121,17 @@ describe('CreateAssetModal Dynamic Property Update', () => {
             
             // First, load properties for Asset
             await modal['updatePropertiesForClass']('exo__Asset');
-            const initialChildCount = containerEl.children.length;
-            expect(initialChildCount).toBeGreaterThan(0);
+            const assetProperties = modal['properties'];
+            expect(assetProperties.length).toBeGreaterThan(0);
             
             // Then, switch to Person
             await modal['updatePropertiesForClass']('exo__Person');
             
-            // Container should have been cleared and refilled
             // Properties should be different
-            const settings = containerEl.querySelectorAll('.setting-item');
-            const hasFirstName = Array.from(settings).some(s => 
-                s.textContent?.includes('First Name')
+            const personProperties = modal['properties'];
+            expect(personProperties.length).toBeGreaterThan(0);
+            const hasFirstName = personProperties.some((p: any) => 
+                p.label === 'First Name'
             );
             expect(hasFirstName).toBe(true);
         });
@@ -146,10 +146,11 @@ describe('CreateAssetModal Dynamic Property Update', () => {
             await modal['updatePropertiesForClass']('exo__Asset');
             
             // Should have default properties
-            const hasDescription = containerEl.textContent?.includes('Description');
-            const hasTags = containerEl.textContent?.includes('Tags');
+            const properties = modal['properties'];
+            const hasDescription = properties.some((p: any) => p.label === 'Description');
+            const hasTags = properties.some((p: any) => p.label === 'Tags');
             
-            expect(hasDescription || hasTags).toBe(true);
+            expect(hasDescription && hasTags).toBe(true);
         });
         
         it('should show no properties message for unknown class', async () => {
@@ -176,6 +177,14 @@ describe('CreateAssetModal Dynamic Property Update', () => {
                         }
                     };
                 }
+                if (file.basename === 'exo__Asset') {
+                    return {
+                        frontmatter: {
+                            'exo__Instance_class': '[[exo__Class]]',
+                            'rdfs__label': 'Asset'
+                        }
+                    };
+                }
                 return { frontmatter: {} };
             });
             
@@ -191,7 +200,8 @@ describe('CreateAssetModal Dynamic Property Update', () => {
             
             await modal['updatePropertiesForClass']('exo__Asset');
             
-            const hasMultiDomain = containerEl.textContent?.includes('Multi Domain Property');
+            const properties = modal['properties'];
+            const hasMultiDomain = properties.some((p: any) => p.label === 'Multi Domain Property');
             expect(hasMultiDomain).toBe(true);
         });
         

@@ -59,6 +59,18 @@ const ObsidianMock = {
             this.manifest = manifest;
         }
         
+        addCommand(command) {
+            console.log(`    📝 Registered command: ${command.id}`);
+        }
+        
+        addRibbonIcon(icon, title, callback) {
+            console.log(`    🎯 Registered ribbon icon: ${title}`);
+        }
+        
+        registerEvent(event) {
+            console.log(`    📌 Registered event listener`);
+        }
+        
         registerMarkdownCodeBlockProcessor(language, processor) {
             console.log(`    📝 Registered processor for '${language}' blocks`);
             this.codeBlockProcessor = processor;
@@ -79,6 +91,22 @@ const ObsidianMock = {
             this.message = message;
             this.timeout = timeout;
         }
+    },
+    
+    TFile: class TFile {
+        constructor(path) {
+            this.path = path;
+            this.basename = path ? path.split('/').pop().replace(/\.[^/.]+$/, '') : '';
+            this.extension = path ? path.split('.').pop() : '';
+        }
+    },
+    
+    Modal: class Modal {
+        constructor(app) {
+            this.app = app;
+        }
+        open() {}
+        close() {}
     }
 };
 
@@ -89,7 +117,8 @@ const AppMock = {
             return [
                 { 
                     basename: 'test-file',
-                    path: 'test-file.md'
+                    path: 'test-file.md',
+                    extension: 'md'
                 }
             ];
         },
@@ -102,12 +131,39 @@ exo__Instance_class: "[[exo__Class]]"
 ---
 
 # Test File`;
+        },
+        
+        on(event, callback) {
+            console.log(`    📎 Vault event registered: ${event}`);
+            return { event, callback };
+        },
+        
+        adapter: {
+            read: () => Promise.reject(new Error('File not found')),
+            write: () => Promise.resolve(),
+            exists: () => Promise.resolve(false)
         }
     },
     
     workspace: {
         openLinkText(linkText, sourcePath) {
             console.log(`    🔗 Opening link: ${linkText}`);
+        },
+        
+        getActiveFile() {
+            return null;
+        }
+    },
+    
+    metadataCache: {
+        getFileCache(file) {
+            return {
+                frontmatter: {
+                    'exo__Asset_uid': 'test-uid',
+                    'exo__Asset_label': 'Test Asset',
+                    'exo__Instance_class': '[[exo__Class]]'
+                }
+            };
         }
     }
 };

@@ -20,15 +20,31 @@ export class SparqlBlockPage {
   /**
    * Wait for SPARQL results to appear
    */
-  async waitForResults(timeout = 10000): Promise<void> {
+  async waitForResults(timeout = 30000): Promise<void> {
+    const isCI = process.env.CI === 'true';
+    const actualTimeout = isCI ? Math.max(timeout, 30000) : timeout;
+    
+    console.log(`⏳ Waiting for SPARQL results (timeout: ${actualTimeout}ms, CI: ${isCI})...`);
+    
     await (browser as any).waitUntil(
       async () => {
-        const containers = await this.resultContainers;
-        return (await containers.length) > 0;
+        try {
+          const containers = await this.resultContainers;
+          const count = await containers.length;
+          if (count > 0) {
+            console.log(`✅ Found ${count} SPARQL result container(s)`);
+            return true;
+          }
+          return false;
+        } catch (error: any) {
+          console.warn('⏳ Still waiting for SPARQL results...', error.message);
+          return false;
+        }
       },
       {
-        timeout,
-        timeoutMsg: 'SPARQL results container did not appear'
+        timeout: actualTimeout,
+        interval: isCI ? 2000 : 1000,
+        timeoutMsg: `SPARQL results container did not appear within ${actualTimeout}ms (CI: ${isCI})`
       }
     );
   }

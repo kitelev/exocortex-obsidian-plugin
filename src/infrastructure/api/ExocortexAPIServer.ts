@@ -1,5 +1,5 @@
 import { App, Notice, Plugin, requestUrl, RequestUrlParam } from 'obsidian';
-import { Graph } from '../../domain/Graph';
+import { Graph } from '../../domain/semantic/core/Graph';
 import { SPARQLProcessor } from '../../presentation/processors/SPARQLProcessor';
 import { ExoAgent } from '../../application/services/ExoAgent';
 import { RelationOntologizer } from '../../application/services/RelationOntologizer';
@@ -319,10 +319,11 @@ export class ExocortexAPIServer {
         }
         
         try {
-            const results = await this.sparqlProcessor.executeQuery(query);
+            const queryResult = await this.sparqlProcessor.executeQuery(query);
             this.sendJson(res, {
-                results,
-                count: results.length,
+                results: queryResult.results,
+                count: queryResult.results.length,
+                cached: queryResult.cached,
                 timestamp: new Date().toISOString()
             });
         } catch (error) {

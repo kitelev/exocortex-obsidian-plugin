@@ -69,4 +69,14 @@ export class Container {
         this.services.clear();
         this.factories.clear();
     }
+
+    /**
+     * Reset the container instance (for testing)
+     */
+    public static reset(): void {
+        if (Container.instance) {
+            Container.instance.clear();
+            Container.instance = null as any;
+        }
+    }
 }

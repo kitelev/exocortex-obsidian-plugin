@@ -1,5 +1,5 @@
 import { App, Notice, TFile, TFolder } from 'obsidian';
-import { Graph } from '../../domain/Graph';
+import { Graph } from '../../domain/semantic/core/Graph';
 import { ExoAgent } from '../../application/services/ExoAgent';
 import { SPARQLProcessor } from '../../presentation/processors/SPARQLProcessor';
 
@@ -302,12 +302,13 @@ print(result)
         }
         
         try {
-            const results = await this.sparqlProcessor.executeQuery(params.query);
+            const queryResult = await this.sparqlProcessor.executeQuery(params.query);
             return {
                 status: 200,
                 data: {
-                    results,
-                    count: results.length,
+                    results: queryResult.results,
+                    count: queryResult.results.length,
+                    cached: queryResult.cached,
                     timestamp: new Date().toISOString()
                 }
             };

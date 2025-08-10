@@ -209,19 +209,27 @@ export default class ExocortexPlugin extends Plugin {
         });
         
         // Register layout renderer for code blocks
-        this.registerMarkdownCodeBlockProcessor('exo-layout',
-            async (source, el, ctx) => {
-                const file = this.app.workspace.getActiveFile();
-                if (!file) return;
-                
-                const metadata = this.app.metadataCache.getFileCache(file);
+        // Register layout processor with error handling
+        try {
+            this.registerMarkdownCodeBlockProcessor('exo-layout',
+                async (source, el, ctx) => {
+                    const file = this.app.workspace.getActiveFile();
+                    if (!file) return;
+                    
+                    const metadata = this.app.metadataCache.getFileCache(file);
                 if (!metadata || !metadata.frontmatter) return;
                 
                 // Clear element and render layout
                 el.empty();
                 await this.layoutRenderer.renderLayout(el, file, metadata, null);
+            });
+        } catch (error) {
+            if (error.message && error.message.includes('already registered')) {
+                console.warn('⚠️ Layout processor already registered, skipping...');
+            } else {
+                throw error;
             }
-        );
+        }
         
         // Register file modification handler to update graph
         this.registerEvent(

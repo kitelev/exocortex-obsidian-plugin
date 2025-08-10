@@ -1,5 +1,5 @@
 import { App } from 'obsidian';
-import { Graph } from '../../domain/Graph';
+import { Graph } from '../../domain/semantic/core/Graph';
 
 export interface QueryIntent {
     type: 'query_tasks' | 'query_projects' | 'query_relations' | 'general';

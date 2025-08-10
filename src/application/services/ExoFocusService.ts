@@ -1,6 +1,7 @@
 import { App, TFile } from 'obsidian';
 import { ExoFocus, FocusFilter } from '../../domain/entities/ExoFocus';
-import { Graph, Triple } from '../../domain/Graph';
+import { Graph } from '../../domain/semantic/core/Graph';
+import { Triple } from '../../domain/semantic/core/Triple';
 import { Result } from '../../domain/core/Result';
 
 export class ExoFocusService {
@@ -13,13 +14,20 @@ export class ExoFocusService {
         private app: App,
         private graph: Graph
     ) {
-        this.loadFocuses();
+        // Only load focuses if vault adapter is available
+        if (this.app?.vault?.adapter) {
+            this.loadFocuses();
+        }
     }
     
     /**
      * Load all focus configurations from vault
      */
     private async loadFocuses(): Promise<void> {
+        if (!this.app?.vault?.adapter) {
+            return;
+        }
+        
         try {
             const content = await this.app.vault.adapter.read(this.focusConfigPath);
             const configs = JSON.parse(content);
@@ -45,6 +53,10 @@ export class ExoFocusService {
      * Create default focus configurations
      */
     private async createDefaultFocuses(): Promise<void> {
+        if (!this.app?.vault?.adapter) {
+            return;
+        }
+        
         const defaults = [
             {
                 name: 'All',
@@ -144,6 +156,10 @@ export class ExoFocusService {
      * Save all focus configurations
      */
     private async saveFocuses(): Promise<void> {
+        if (!this.app?.vault?.adapter) {
+            return;
+        }
+        
         const configs = Array.from(this.allFocuses.values()).map(f => f.toJSON());
         
         await this.app.vault.adapter.write(

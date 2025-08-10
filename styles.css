@@ -72,3 +72,104 @@
     color: var(--link-color-hover);
     text-decoration: underline;
 }
+
+/* Graph Visualization Styles */
+.exocortex-graph-container {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    background: var(--background-secondary);
+    padding: 1em;
+    margin: 1em 0;
+}
+
+.exocortex-graph-container svg {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    background: var(--background-primary);
+}
+
+/* Graph nodes and links */
+.exocortex-graph-container .node {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.exocortex-graph-container .node:hover {
+    filter: brightness(1.1);
+}
+
+.exocortex-graph-container .links line {
+    cursor: pointer;
+    transition: stroke 0.2s ease, stroke-width 0.2s ease;
+}
+
+.exocortex-graph-container .links line:hover {
+    stroke: var(--text-accent) !important;
+    stroke-width: 2 !important;
+}
+
+/* Graph loading indicator */
+.graph-loading {
+    padding: 2em;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Graph error styling */
+.graph-error {
+    background: var(--background-modifier-error);
+    color: var(--text-error);
+    border: 1px solid var(--background-modifier-border);
+    border-left: 3px solid var(--text-error);
+    padding: 1em;
+    border-radius: var(--radius-m);
+}
+
+/* Graph controls */
+.exocortex-graph-container button {
+    background: var(--interactive-normal);
+    color: var(--text-normal);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    padding: 0.25em 0.75em;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.2s ease;
+}
+
+.exocortex-graph-container button:hover {
+    background: var(--interactive-hover);
+}
+
+.exocortex-graph-container button.mod-cta {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.exocortex-graph-container button.mod-cta:hover {
+    background: var(--interactive-accent-hover);
+}
+
+/* Graph info text */
+.exocortex-graph-container .graph-info {
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .exocortex-graph-container svg {
+        height: 400px !important;
+    }
+    
+    .exocortex-graph-container .controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.25em;
+    }
+    
+    .exocortex-graph-container button {
+        width: 100%;
+    }
+}

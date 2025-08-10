@@ -98,6 +98,73 @@ jobs:
         npm run validate
         echo "✅ Plugin validation passed"
         
+  ui-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build project
+      run: npm run build
+      
+    - name: Install system dependencies for UI tests
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          xvfb \
+          herbstluftwm \
+          libnss3-dev \
+          libatk-bridge2.0-dev \
+          libgtk-3-dev \
+          libgbm-dev \
+          libasound2-dev
+      
+    - name: Cache Obsidian versions
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/wdio-obsidian-service
+        key: obsidian-${{ runner.os }}-${{ hashFiles('wdio.conf.ci.ts') }}
+        restore-keys: |
+          obsidian-${{ runner.os }}-
+    
+    - name: Setup virtual display for Linux
+      run: |
+        export DISPLAY=:99.0
+        Xvfb :99 -screen 0 1024x768x24 -ac +extension GLX +render -noreset &
+        sleep 3
+        herbstluftwm &
+        sleep 1
+        echo "DISPLAY=:99.0" >> $GITHUB_ENV
+    
+    - name: Run UI tests
+      run: npm run test:ui:ci
+      env:
+        CI: true
+        DISPLAY: :99.0
+        NODE_OPTIONS: --max-old-space-size=4096
+        WDIO_LOG_LEVEL: warn
+      timeout-minutes: 30
+      
+    - name: Upload test artifacts on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ui-test-artifacts-${{ github.run_number }}
+        path: |
+          screenshots/
+          wdio-logs/
+        retention-days: 7
+
   test-build-install:
     runs-on: ubuntu-latest
     

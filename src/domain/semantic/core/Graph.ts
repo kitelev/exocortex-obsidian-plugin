@@ -256,7 +256,7 @@ export class Graph {
    * Merge another graph into this one
    */
   merge(other: Graph): void {
-    for (const triple of other.triples) {
+    for (const triple of other.toArray()) {
       this.add(triple);
     }
   }
@@ -289,11 +289,12 @@ export class Graph {
   }
 
   /**
-   * Clone the graph
+   * Create a copy of this graph
    */
   clone(): Graph {
     return new Graph(this.toArray());
   }
+
 
   /**
    * Check if two graphs are equal
