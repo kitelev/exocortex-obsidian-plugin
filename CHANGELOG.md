@@ -1,3 +1,45 @@
+## [2.15.0] - 2025-01-10
+
+### 📚 Query Template System - Professional SPARQL Patterns
+
+#### Comprehensive Template Library
+Accelerate SPARQL development with **10 built-in professional templates**! From basic exploration to advanced analysis, get instant access to proven query patterns.
+
+#### Built-in Template Categories
+- **Exploration Templates**: Find All Related, Find by Label, Entity Properties
+- **Analysis Templates**: Type Hierarchy, Count Entities, Value Comparison
+- **Relationship Templates**: Property Chain, Relationship Path, Optional Properties
+- **Filter Templates**: Filter by Value, Complex Conditions, Pattern Matching
+
+#### Parameterized Templates
+- **Smart Placeholders**: Define parameters with type validation and constraints
+- **Default Values**: Pre-configured sensible defaults for quick starts
+- **Input Validation**: Real-time validation with helpful error messages
+- **Pattern Matching**: Regex constraints for parameter formats
+
+#### Template Management
+- **Save as Template**: Convert any visual query into a reusable template
+- **Custom Categories**: Organize templates by project or domain
+- **Usage Analytics**: Track most-used templates for optimization
+- **Import/Export**: Share templates across teams and projects
+
+#### Professional Features
+- **Visual Layout Preservation**: Templates maintain exact node positioning
+- **SPARQL Pattern Storage**: Both visual and text representations saved
+- **Difficulty Levels**: Beginner, Intermediate, and Advanced templates
+- **Rich Metadata**: Tags, descriptions, and author information
+
+#### Getting Started with Templates
+1. Click "Templates" button in Visual Query Canvas
+2. Browse or search for the template you need
+3. Configure any required parameters
+4. Instantly load the template into your canvas
+5. Customize and execute your templated query
+
+*Transform hours of SPARQL development into seconds with professional templates!*
+
+---
+
 ## [2.14.0] - 2025-01-10
 
 ### 🎨 Visual Query Canvas - Drag-and-Drop SPARQL Builder
