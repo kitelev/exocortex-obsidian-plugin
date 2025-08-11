@@ -18,6 +18,7 @@ import { CreateAssetUseCase } from '../../application/use-cases/CreateAssetUseCa
 import { RenderClassButtonsUseCase } from '../../application/use-cases/RenderClassButtonsUseCase';
 import { ExecuteButtonCommandUseCase } from '../../application/use-cases/ExecuteButtonCommandUseCase';
 import { PropertyEditingUseCase } from '../../application/use-cases/PropertyEditingUseCase';
+import { QueryTemplateUseCase } from '../../application/use-cases/QueryTemplateUseCase';
 
 // Services
 import { ICommandExecutor } from '../../application/services/ICommandExecutor';
@@ -26,6 +27,8 @@ import { ErrorHandlerService } from '../../application/services/ErrorHandlerServ
 import { SPARQLAutocompleteService } from '../../application/services/SPARQLAutocompleteService';
 import { ISuggestionRepository } from '../../domain/repositories/ISuggestionRepository';
 import { GraphSuggestionRepository } from '../repositories/GraphSuggestionRepository';
+import { IQueryTemplateRepository } from '../../domain/repositories/IQueryTemplateRepository';
+import { ObsidianQueryTemplateRepository } from '../repositories/ObsidianQueryTemplateRepository';
 
 // Presentation
 import { ButtonRenderer } from '../../presentation/components/ButtonRenderer';
@@ -121,6 +124,15 @@ export class DIContainer {
             )
         );
 
+        this.container.register<IQueryTemplateRepository>(
+            'IQueryTemplateRepository',
+            () => new ObsidianQueryTemplateRepository(
+                this.app,
+                this.plugin?.settings?.templatesPath || '.exocortex/templates',
+                this.plugin?.settings?.templateUsageDataPath || '.exocortex/template-usage.json'
+            )
+        );
+
         // Register Services
         this.container.register<ICommandExecutor>(
             'ICommandExecutor',
@@ -192,6 +204,13 @@ export class DIContainer {
             )
         );
 
+        this.container.register<QueryTemplateUseCase>(
+            'QueryTemplateUseCase',
+            () => new QueryTemplateUseCase(
+                this.container.resolve<IQueryTemplateRepository>('IQueryTemplateRepository')
+            )
+        );
+
         // Register Presentation Components
         this.container.register<ButtonRenderer>(
             'ButtonRenderer',
@@ -256,6 +275,14 @@ export class DIContainer {
 
     public getPropertyEditingUseCase(): PropertyEditingUseCase {
         return this.resolve<PropertyEditingUseCase>('PropertyEditingUseCase');
+    }
+
+    public getQueryTemplateUseCase(): QueryTemplateUseCase {
+        return this.resolve<QueryTemplateUseCase>('QueryTemplateUseCase');
+    }
+
+    public getQueryTemplateRepository(): IQueryTemplateRepository {
+        return this.resolve<IQueryTemplateRepository>('IQueryTemplateRepository');
     }
 
     /**

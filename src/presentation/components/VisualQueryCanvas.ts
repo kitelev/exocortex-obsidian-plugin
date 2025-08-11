@@ -2,6 +2,11 @@ import { VisualQueryNode, NodeType, NodePosition } from '../../domain/visual/Vis
 import { VisualQueryEdge, EdgeType } from '../../domain/visual/VisualQueryEdge';
 import { SPARQLProcessor } from '../processors/SPARQLProcessor';
 import { Notice } from 'obsidian';
+import { QueryTemplate } from '../../domain/visual/QueryTemplate';
+import { TemplateSelectionPanel } from './TemplateSelectionPanel';
+import { TemplateParameterModal } from '../modals/TemplateParameterModal';
+import { SaveTemplateModal } from '../modals/SaveTemplateModal';
+import { QueryTemplateUseCase } from '../../application/use-cases/QueryTemplateUseCase';
 
 export interface CanvasOptions {
     width?: number;
@@ -13,6 +18,9 @@ export interface CanvasOptions {
     zoomStep?: number;
     onQueryChange?: (sparql: string) => void;
     onExecute?: (sparql: string) => void;
+    enableTemplates?: boolean;
+    templateUseCase?: QueryTemplateUseCase;
+    appInstance?: any; // For modal creation
 }
 
 export class VisualQueryCanvas {
@@ -49,7 +57,10 @@ export class VisualQueryCanvas {
         zoomMax: 5,
         zoomStep: 0.1,
         onQueryChange: () => {},
-        onExecute: () => {}
+        onExecute: () => {},
+        enableTemplates: true,
+        templateUseCase: undefined as any,
+        appInstance: undefined as any
     };
     
     private options: Required<CanvasOptions>;
@@ -125,7 +136,21 @@ export class VisualQueryCanvas {
             background: var(--background-secondary);
             border-radius: var(--radius-s);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+            max-width: 300px;
         `;
+        
+        // Template controls (if enabled)
+        if (this.options.enableTemplates && this.options.templateUseCase) {
+            const templatesBtn = this.createControlButton('Templates', () => this.showTemplateSelection());
+            const saveTemplateBtn = this.createControlButton('Save Template', () => this.showSaveTemplateModal());
+            controls.appendChild(templatesBtn);
+            controls.appendChild(saveTemplateBtn);
+            
+            const templateSeparator = document.createElement('div');
+            templateSeparator.style.cssText = 'width: 1px; background: var(--background-modifier-border); margin: 0 4px;';
+            controls.appendChild(templateSeparator);
+        }
         
         const addEntityBtn = this.createControlButton('Entity', () => this.addNode(NodeType.ENTITY));
         const addVariableBtn = this.createControlButton('Variable', () => this.addNode(NodeType.VARIABLE));
@@ -1003,6 +1028,187 @@ export class VisualQueryCanvas {
         this.viewportX = 0;
         this.viewportY = 0;
         this.updateTransform();
+    }
+
+    private showTemplateSelection(): void {
+        if (!this.options.templateUseCase) {
+            new Notice('Template functionality not available');
+            return;
+        }
+
+        const modalContainer = document.createElement('div');
+        modalContainer.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        `;
+
+        const templatePanel = new TemplateSelectionPanel(
+            modalContainer,
+            this.options.templateUseCase.templateRepository as any,
+            {
+                showPreview: true,
+                allowCustomTemplates: true,
+                onTemplateSelect: (template) => {
+                    this.loadTemplate(template);
+                    modalContainer.remove();
+                },
+                onClose: () => {
+                    modalContainer.remove();
+                }
+            }
+        );
+
+        document.body.appendChild(modalContainer);
+
+        // Close on background click
+        modalContainer.addEventListener('click', (e) => {
+            if (e.target === modalContainer) {
+                modalContainer.remove();
+            }
+        });
+    }
+
+    private async loadTemplate(template: QueryTemplate): Promise<void> {
+        try {
+            if (template.getParameters().length > 0) {
+                // Show parameter input modal
+                if (!this.options.appInstance) {
+                    new Notice('Cannot configure template parameters - app instance not available');
+                    return;
+                }
+
+                const parameterModal = new TemplateParameterModal(
+                    this.options.appInstance,
+                    template,
+                    {
+                        onSubmit: async (configuredTemplate, parameterValues) => {
+                            await this.instantiateTemplate(configuredTemplate);
+                        },
+                        onCancel: () => {
+                            // User cancelled parameter configuration
+                        }
+                    }
+                );
+
+                parameterModal.open();
+            } else {
+                // Template has no parameters, instantiate directly
+                await this.instantiateTemplate(template);
+            }
+        } catch (error) {
+            console.error('Failed to load template:', error);
+            new Notice(`Failed to load template: ${error.message}`);
+        }
+    }
+
+    private async instantiateTemplate(template: QueryTemplate): Promise<void> {
+        try {
+            const { nodes, edges } = await this.options.templateUseCase!.instantiateTemplate(template);
+            
+            // Clear current canvas
+            this.clearCanvas();
+            
+            // Add nodes to canvas
+            nodes.forEach(node => {
+                this.nodes.set(node.getId(), node);
+            });
+            
+            // Add edges to canvas
+            edges.forEach(edge => {
+                this.edges.set(edge.getId(), edge);
+            });
+            
+            // Update display
+            this.render();
+            this.updateQuery();
+            
+            new Notice(`Template "${template.getMetadata().name}" loaded successfully`);
+        } catch (error) {
+            console.error('Failed to instantiate template:', error);
+            new Notice(`Failed to apply template: ${error.message}`);
+        }
+    }
+
+    private showSaveTemplateModal(): void {
+        if (!this.options.templateUseCase || !this.options.appInstance) {
+            new Notice('Template functionality not available');
+            return;
+        }
+
+        if (this.nodes.size === 0) {
+            new Notice('Create a query first before saving as template');
+            return;
+        }
+
+        const saveModal = new SaveTemplateModal(
+            this.options.appInstance,
+            {
+                nodes: this.nodes,
+                edges: this.edges,
+                viewport: {
+                    x: this.viewportX,
+                    y: this.viewportY,
+                    zoom: this.zoom
+                },
+                sparqlQuery: this.generateSPARQL(),
+                onSave: async (templateData) => {
+                    try {
+                        const template = await this.options.templateUseCase!.createCustomTemplate(
+                            this.nodes,
+                            this.edges,
+                            {
+                                x: this.viewportX,
+                                y: this.viewportY,
+                                zoom: this.zoom
+                            },
+                            templateData.name,
+                            templateData.description,
+                            templateData.category,
+                            templateData.tags
+                        );
+                        
+                        new Notice(`Template "${template.getMetadata().name}" saved successfully`);
+                    } catch (error) {
+                        console.error('Failed to save template:', error);
+                        new Notice(`Failed to save template: ${error.message}`);
+                    }
+                },
+                onCancel: () => {
+                    // User cancelled save
+                }
+            }
+        );
+
+        saveModal.open();
+    }
+
+    loadFromTemplate(template: QueryTemplate): void {
+        this.loadTemplate(template);
+    }
+
+    getCurrentCanvasState(): {
+        nodes: Map<string, VisualQueryNode>;
+        edges: Map<string, VisualQueryEdge>;
+        viewport: { x: number; y: number; zoom: number };
+    } {
+        return {
+            nodes: new Map(this.nodes),
+            edges: new Map(this.edges),
+            viewport: {
+                x: this.viewportX,
+                y: this.viewportY,
+                zoom: this.zoom
+            }
+        };
     }
 
     destroy(): void {

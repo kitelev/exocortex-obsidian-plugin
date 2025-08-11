@@ -1,0 +1,392 @@
+import { VisualQueryNode } from './VisualQueryNode';
+import { VisualQueryEdge } from './VisualQueryEdge';
+
+export enum TemplateCategory {
+    EXPLORATION = 'exploration',
+    ANALYSIS = 'analysis',
+    RELATIONSHIP = 'relationship',
+    PROPERTY = 'property',
+    CUSTOM = 'custom'
+}
+
+export enum TemplateDifficulty {
+    BEGINNER = 'beginner',
+    INTERMEDIATE = 'intermediate',
+    ADVANCED = 'advanced'
+}
+
+export interface TemplateParameter {
+    name: string;
+    type: 'entity' | 'property' | 'literal' | 'variable';
+    description: string;
+    defaultValue?: string;
+    required: boolean;
+    placeholder?: string;
+    constraints?: {
+        pattern?: string;
+        minLength?: number;
+        maxLength?: number;
+        allowedValues?: string[];
+    };
+}
+
+export interface TemplateMetadata {
+    name: string;
+    description: string;
+    category: TemplateCategory;
+    difficulty: TemplateDifficulty;
+    tags: string[];
+    author?: string;
+    version?: string;
+    sparqlPattern?: string;
+    usageCount?: number;
+    lastUsed?: Date;
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface SerializedNode {
+    id: string;
+    type: string;
+    label: string;
+    position: { x: number; y: number };
+    variableName?: string;
+    uri?: string;
+    dimensions?: { width: number; height: number };
+}
+
+export interface SerializedEdge {
+    id: string;
+    sourceNodeId: string;
+    targetNodeId: string;
+    type: string;
+    label: string;
+    propertyUri?: string;
+}
+
+export interface TemplateLayout {
+    nodes: SerializedNode[];
+    edges: SerializedEdge[];
+    viewport?: {
+        x: number;
+        y: number;
+        zoom: number;
+    };
+}
+
+export class QueryTemplate {
+    private readonly id: string;
+    private readonly metadata: TemplateMetadata;
+    private readonly layout: TemplateLayout;
+    private readonly parameters: TemplateParameter[];
+    private readonly sparqlTemplate: string;
+    private readonly isBuiltIn: boolean;
+
+    constructor(params: {
+        id: string;
+        metadata: TemplateMetadata;
+        layout: TemplateLayout;
+        parameters?: TemplateParameter[];
+        sparqlTemplate: string;
+        isBuiltIn?: boolean;
+    }) {
+        this.id = params.id;
+        this.metadata = params.metadata;
+        this.layout = params.layout;
+        this.parameters = params.parameters || [];
+        this.sparqlTemplate = params.sparqlTemplate;
+        this.isBuiltIn = params.isBuiltIn || false;
+        
+        Object.freeze(this.id);
+        Object.freeze(this.isBuiltIn);
+    }
+
+    getId(): string {
+        return this.id;
+    }
+
+    getName(): string {
+        return this.metadata.name;
+    }
+
+    getDescription(): string {
+        return this.metadata.description;
+    }
+
+    getCategory(): TemplateCategory {
+        return this.metadata.category;
+    }
+
+    getDifficulty(): TemplateDifficulty {
+        return this.metadata.difficulty;
+    }
+
+    getTags(): string[] {
+        return [...this.metadata.tags];
+    }
+
+    getParameters(): TemplateParameter[] {
+        return this.parameters.map(p => ({ ...p }));
+    }
+
+    getLayout(): TemplateLayout {
+        return {
+            nodes: this.layout.nodes.map(n => ({ ...n })),
+            edges: this.layout.edges.map(e => ({ ...e })),
+            viewport: this.layout.viewport ? { ...this.layout.viewport } : undefined
+        };
+    }
+
+    getSparqlTemplate(): string {
+        return this.sparqlTemplate;
+    }
+
+    getMetadata(): TemplateMetadata {
+        return { ...this.metadata };
+    }
+
+    isBuiltInTemplate(): boolean {
+        return this.isBuiltIn;
+    }
+
+    hasParameters(): boolean {
+        return this.parameters.length > 0;
+    }
+
+    getRequiredParameters(): TemplateParameter[] {
+        return this.parameters.filter(p => p.required);
+    }
+
+    instantiate(parameterValues: Record<string, string>): {
+        layout: TemplateLayout;
+        sparql: string;
+        errors: string[];
+    } {
+        const errors: string[] = [];
+        
+        // Validate required parameters
+        for (const param of this.getRequiredParameters()) {
+            if (!parameterValues[param.name]) {
+                errors.push(`Required parameter '${param.name}' is missing`);
+            }
+        }
+        
+        // Validate parameter constraints
+        for (const param of this.parameters) {
+            const value = parameterValues[param.name];
+            if (value && param.constraints) {
+                if (param.constraints.pattern) {
+                    const regex = new RegExp(param.constraints.pattern);
+                    if (!regex.test(value)) {
+                        errors.push(`Parameter '${param.name}' does not match required pattern`);
+                    }
+                }
+                
+                if (param.constraints.minLength && value.length < param.constraints.minLength) {
+                    errors.push(`Parameter '${param.name}' is too short (min: ${param.constraints.minLength})`);
+                }
+                
+                if (param.constraints.maxLength && value.length > param.constraints.maxLength) {
+                    errors.push(`Parameter '${param.name}' is too long (max: ${param.constraints.maxLength})`);
+                }
+                
+                if (param.constraints.allowedValues && !param.constraints.allowedValues.includes(value)) {
+                    errors.push(`Parameter '${param.name}' must be one of: ${param.constraints.allowedValues.join(', ')}`);
+                }
+            }
+        }
+        
+        if (errors.length > 0) {
+            return { layout: this.layout, sparql: this.sparqlTemplate, errors };
+        }
+        
+        // Replace placeholders in layout
+        const instantiatedLayout = this.replacePlaceholdersInLayout(parameterValues);
+        
+        // Replace placeholders in SPARQL
+        const instantiatedSparql = this.replacePlaceholdersInSparql(parameterValues);
+        
+        return {
+            layout: instantiatedLayout,
+            sparql: instantiatedSparql,
+            errors: []
+        };
+    }
+
+    private replacePlaceholdersInLayout(values: Record<string, string>): TemplateLayout {
+        const layout = this.getLayout();
+        
+        // Replace in nodes
+        layout.nodes = layout.nodes.map(node => {
+            const newNode = { ...node };
+            
+            // Replace in label
+            newNode.label = this.replacePlaceholders(node.label, values);
+            
+            // Replace in variableName
+            if (node.variableName) {
+                newNode.variableName = this.replacePlaceholders(node.variableName, values);
+            }
+            
+            // Replace in URI
+            if (node.uri) {
+                newNode.uri = this.replacePlaceholders(node.uri, values);
+            }
+            
+            return newNode;
+        });
+        
+        // Replace in edges
+        layout.edges = layout.edges.map(edge => {
+            const newEdge = { ...edge };
+            
+            // Replace in label
+            newEdge.label = this.replacePlaceholders(edge.label, values);
+            
+            // Replace in propertyUri
+            if (edge.propertyUri) {
+                newEdge.propertyUri = this.replacePlaceholders(edge.propertyUri, values);
+            }
+            
+            return newEdge;
+        });
+        
+        return layout;
+    }
+
+    private replacePlaceholdersInSparql(values: Record<string, string>): string {
+        return this.replacePlaceholders(this.sparqlTemplate, values);
+    }
+
+    private replacePlaceholders(text: string, values: Record<string, string>): string {
+        let result = text;
+        
+        for (const [key, value] of Object.entries(values)) {
+            const placeholder = `{{${key}}}`;
+            result = result.replace(new RegExp(placeholder, 'g'), value);
+        }
+        
+        // Replace any remaining placeholders with defaults
+        for (const param of this.parameters) {
+            if (param.defaultValue) {
+                const placeholder = `{{${param.name}}}`;
+                result = result.replace(new RegExp(placeholder, 'g'), param.defaultValue);
+            }
+        }
+        
+        return result;
+    }
+
+    incrementUsage(): QueryTemplate {
+        const updatedMetadata = {
+            ...this.metadata,
+            usageCount: (this.metadata.usageCount || 0) + 1,
+            lastUsed: new Date(),
+            updatedAt: new Date()
+        };
+        
+        return new QueryTemplate({
+            id: this.id,
+            metadata: updatedMetadata,
+            layout: this.layout,
+            parameters: this.parameters,
+            sparqlTemplate: this.sparqlTemplate,
+            isBuiltIn: this.isBuiltIn
+        });
+    }
+
+    updateMetadata(updates: Partial<TemplateMetadata>): QueryTemplate {
+        const updatedMetadata = {
+            ...this.metadata,
+            ...updates,
+            updatedAt: new Date()
+        };
+        
+        return new QueryTemplate({
+            id: this.id,
+            metadata: updatedMetadata,
+            layout: this.layout,
+            parameters: this.parameters,
+            sparqlTemplate: this.sparqlTemplate,
+            isBuiltIn: this.isBuiltIn
+        });
+    }
+
+    toJSON(): any {
+        return {
+            id: this.id,
+            metadata: this.metadata,
+            layout: this.layout,
+            parameters: this.parameters,
+            sparqlTemplate: this.sparqlTemplate,
+            isBuiltIn: this.isBuiltIn
+        };
+    }
+
+    static fromJSON(json: any): QueryTemplate {
+        return new QueryTemplate({
+            id: json.id,
+            metadata: {
+                ...json.metadata,
+                createdAt: new Date(json.metadata.createdAt),
+                updatedAt: new Date(json.metadata.updatedAt),
+                lastUsed: json.metadata.lastUsed ? new Date(json.metadata.lastUsed) : undefined
+            },
+            layout: json.layout,
+            parameters: json.parameters || [],
+            sparqlTemplate: json.sparqlTemplate,
+            isBuiltIn: json.isBuiltIn || false
+        });
+    }
+
+    static createFromCanvas(
+        name: string,
+        description: string,
+        nodes: VisualQueryNode[],
+        edges: VisualQueryEdge[],
+        sparql: string,
+        category: TemplateCategory = TemplateCategory.CUSTOM,
+        tags: string[] = []
+    ): QueryTemplate {
+        const layout: TemplateLayout = {
+            nodes: nodes.map(node => ({
+                id: node.getId(),
+                type: node.getType(),
+                label: node.getLabel(),
+                position: node.getPosition(),
+                variableName: node.getVariableName(),
+                uri: node.getUri(),
+                dimensions: node.getDimensions()
+            })),
+            edges: edges.map(edge => ({
+                id: edge.getId(),
+                sourceNodeId: edge.getSourceNodeId(),
+                targetNodeId: edge.getTargetNodeId(),
+                type: edge.getType(),
+                label: edge.getLabel(),
+                propertyUri: edge.getPropertyUri()
+            }))
+        };
+        
+        const metadata: TemplateMetadata = {
+            name,
+            description,
+            category,
+            difficulty: TemplateDifficulty.INTERMEDIATE,
+            tags,
+            sparqlPattern: sparql,
+            usageCount: 0,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        
+        return new QueryTemplate({
+            id: `template_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            metadata,
+            layout,
+            parameters: [],
+            sparqlTemplate: sparql,
+            isBuiltIn: false
+        });
+    }
+}
