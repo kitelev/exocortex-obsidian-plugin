@@ -308,7 +308,7 @@ async function main() {
         assert(plugin.sparqlProcessor, 'Plugin should have SPARQL processor');
     });
 
-    // Test 3: Graph contains loaded triples
+    // Test 3: Graph contains loaded triples (including UID triples)
     await runAsyncTest('Graph contains triples from vault files', async () => {
         const plugin = await loadPlugin();
         
@@ -316,9 +316,24 @@ async function main() {
         const allTriples = plugin.graph.match(null, null, null);
         assert(allTriples.length > 0, 'Graph should contain triples');
         
-        // Check for specific expected triples
-        const uidTriples = allTriples.filter(t => t.predicate === 'exo__Asset_uid');
+        // Check for specific expected UID triples
+        // Note: Must access predicate.value since predicates are IRI objects, not strings
+        const uidTriples = allTriples.filter(t => t.predicate.value === 'exo__Asset_uid');
         assert(uidTriples.length >= 3, 'Should have UID triples for each file');
+        
+        // Verify each file has its expected UID triple
+        const expectedUIDs = ['task-1-uid', 'task-2-uid', 'asset-1-uid'];
+        const actualUIDs = uidTriples.map(t => t.object.value);
+        
+        for (const expectedUID of expectedUIDs) {
+            assert(actualUIDs.includes(expectedUID), `Missing UID triple for: ${expectedUID}`);
+        }
+        
+        // Verify triple structure: file://[basename] exo__Asset_uid [uid-value]
+        const uidTriple = uidTriples[0];
+        assert(uidTriple.subject.value.startsWith('file://'), 'UID triple subject should be file:// URI');
+        assert(uidTriple.predicate.value === 'exo__Asset_uid', 'UID triple predicate should be exo__Asset_uid');
+        assert(typeof uidTriple.object.value === 'string', 'UID triple object should be string literal');
     });
 
     // Test 4: SPARQL processor can execute queries

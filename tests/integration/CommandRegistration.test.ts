@@ -56,7 +56,7 @@ describe('Command Registration Integration Tests', () => {
     plugin = new ExocortexPlugin(app, {
       id: 'exocortex',
       name: 'Exocortex',
-      version: '2.1.6',
+      version: '2.16.0',
       minAppVersion: '1.0.0',
       description: 'SPARQL queries in Obsidian',
       author: 'Test Author',

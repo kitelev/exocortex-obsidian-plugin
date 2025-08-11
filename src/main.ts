@@ -16,6 +16,9 @@ import { ObsidianAssetRepository } from './infrastructure/repositories/ObsidianA
 import { IndexedGraph } from './domain/semantic/core/IndexedGraph';
 import { ExoFocusService } from './application/services/ExoFocusService';
 
+// @ts-ignore
+import manifest from '../manifest.json';
+
 export default class ExocortexPlugin extends Plugin {
     private graph: Graph;
     private sparqlProcessor: SPARQLProcessor;
@@ -24,7 +27,7 @@ export default class ExocortexPlugin extends Plugin {
     private rdfService: RDFService;
     
     async onload(): Promise<void> {
-        console.log('🚀 Exocortex: Loading plugin v2.1.6...');
+        console.log(`🚀 Exocortex: Loading plugin v${manifest.version}...`);
         
         // Initialize DI container
         DIContainer.initialize(this.app, this);
