@@ -23,9 +23,9 @@ export class UITestHelpers {
     const endTime = Date.now() + timeout;
     
     while (Date.now() < endTime) {
-      const exists = await browser.executeObsidian(() => {
-        return document.querySelector(selector) !== null;
-      });
+      const exists = await browser.executeObsidian((obsidianContext, sel) => {
+        return document.querySelector(sel) !== null;
+      }, selector);
       
       if (exists) return true;
       await browser.pause(interval);
@@ -58,10 +58,10 @@ export class UITestHelpers {
     const endTime = Date.now() + timeout;
     
     while (Date.now() < endTime) {
-      const hasContent = await browser.executeObsidian((selector) => {
+      const hasContent = await browser.executeObsidian((obsidianContext, sel) => {
         const modal = document.querySelector('.modal');
         if (!modal) return false;
-        return modal.querySelector(selector) !== null;
+        return modal.querySelector(sel) !== null;
       }, contentSelector);
       
       if (hasContent) return true;
@@ -137,7 +137,7 @@ export class UITestHelpers {
     const exists = await this.waitForElement(selector, timeout);
     if (!exists) return null;
     
-    return await browser.executeObsidian((sel) => {
+    return await browser.executeObsidian((obsidianContext, sel) => {
       const element = document.querySelector(sel);
       return element ? element.textContent : null;
     }, selector);
@@ -187,7 +187,7 @@ export class UITestHelpers {
     const endTime = Date.now() + timeout;
     
     while (Date.now() < endTime) {
-      const exists = await browser.executeObsidian((sel) => {
+      const exists = await browser.executeObsidian((obsidianContext, sel) => {
         return document.querySelector(sel) !== null;
       }, selector);
       
