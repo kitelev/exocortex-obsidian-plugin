@@ -1053,7 +1053,7 @@ export class VisualQueryCanvas {
 
         const templatePanel = new TemplateSelectionPanel(
             modalContainer,
-            this.options.templateUseCase.templateRepository as any,
+            this.options.templateUseCase.getTemplateRepository(),
             {
                 showPreview: true,
                 allowCustomTemplates: true,

@@ -206,7 +206,7 @@ export class TemplateParameterModal extends Modal {
         input.addEventListener('blur', () => this.validateParameter(parameter, input, errorContainer));
 
         paramContainer.appendChild(input);
-        this.parameterInputs.set(parameter.id, input);
+        this.parameterInputs.set(parameter.id || `param_${parameter.name}`, input);
 
         // Constraints help text
         if (parameter.constraints) {
@@ -283,13 +283,13 @@ export class TemplateParameterModal extends Modal {
     ): boolean {
         const value = input.value.trim();
         errorContainer.textContent = '';
-        this.validationErrors.delete(parameter.id);
+        this.validationErrors.delete(parameter.id || `param_${parameter.name}`);
 
         // Required check
         if (parameter.required && !value) {
             const error = `${parameter.name} is required`;
             errorContainer.textContent = error;
-            this.validationErrors.set(parameter.id, error);
+            this.validationErrors.set(parameter.id || `param_${parameter.name}`, error);
             input.style.borderColor = 'var(--text-error)';
             return false;
         }
@@ -307,7 +307,7 @@ export class TemplateParameterModal extends Modal {
             if (constraints.pattern && !new RegExp(constraints.pattern).test(value)) {
                 const error = 'Value does not match required pattern';
                 errorContainer.textContent = error;
-                this.validationErrors.set(parameter.id, error);
+                this.validationErrors.set(parameter.id || `param_${parameter.name}`, error);
                 input.style.borderColor = 'var(--text-error)';
                 return false;
             }
@@ -315,7 +315,7 @@ export class TemplateParameterModal extends Modal {
             if (constraints.minLength && value.length < constraints.minLength) {
                 const error = `Minimum length is ${constraints.minLength}`;
                 errorContainer.textContent = error;
-                this.validationErrors.set(parameter.id, error);
+                this.validationErrors.set(parameter.id || `param_${parameter.name}`, error);
                 input.style.borderColor = 'var(--text-error)';
                 return false;
             }
@@ -323,7 +323,7 @@ export class TemplateParameterModal extends Modal {
             if (constraints.maxLength && value.length > constraints.maxLength) {
                 const error = `Maximum length is ${constraints.maxLength}`;
                 errorContainer.textContent = error;
-                this.validationErrors.set(parameter.id, error);
+                this.validationErrors.set(parameter.id || `param_${parameter.name}`, error);
                 input.style.borderColor = 'var(--text-error)';
                 return false;
             }
@@ -331,7 +331,7 @@ export class TemplateParameterModal extends Modal {
             if (constraints.allowedValues && !constraints.allowedValues.includes(value)) {
                 const error = 'Value must be one of the allowed options';
                 errorContainer.textContent = error;
-                this.validationErrors.set(parameter.id, error);
+                this.validationErrors.set(parameter.id || `param_${parameter.name}`, error);
                 input.style.borderColor = 'var(--text-error)';
                 return false;
             }

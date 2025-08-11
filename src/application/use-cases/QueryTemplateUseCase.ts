@@ -1,5 +1,5 @@
 import { IQueryTemplateRepository, TemplateSearchCriteria } from '../../domain/repositories/IQueryTemplateRepository';
-import { QueryTemplate, TemplateCategory } from '../../domain/visual/QueryTemplate';
+import { QueryTemplate, TemplateCategory, TemplateDifficulty } from '../../domain/visual/QueryTemplate';
 import { VisualQueryNode } from '../../domain/visual/VisualQueryNode';
 import { VisualQueryEdge } from '../../domain/visual/VisualQueryEdge';
 
@@ -7,6 +7,10 @@ export class QueryTemplateUseCase {
     constructor(
         private readonly templateRepository: IQueryTemplateRepository
     ) {}
+
+    getTemplateRepository(): IQueryTemplateRepository {
+        return this.templateRepository;
+    }
 
     async getAllTemplates(): Promise<QueryTemplate[]> {
         return await this.templateRepository.findAll();
@@ -63,7 +67,13 @@ export class QueryTemplateUseCase {
             version: '1.0.0'
         };
 
-        const template = QueryTemplate.fromCanvas(nodes, edges, viewport, metadata);
+        const template = QueryTemplate.fromCanvas(nodes, edges, viewport, {
+            name,
+            description,
+            category,
+            difficulty: TemplateDifficulty.INTERMEDIATE,
+            tags
+        });
         return await this.templateRepository.create(template);
     }
 
@@ -73,11 +83,9 @@ export class QueryTemplateUseCase {
             throw new Error(`Template with ID ${templateId} not found`);
         }
 
-        const cloned = template.clone();
+        let cloned = template.clone();
         if (newName) {
-            const metadata = cloned.getMetadata();
-            cloned.updateMetadata({
-                ...metadata,
+            cloned = cloned.updateMetadata({
                 name: newName
             });
         }
@@ -108,7 +116,19 @@ export class QueryTemplateUseCase {
         }
 
         await this.templateRepository.recordUsage(template.getId());
-        return template.instantiate();
+        const instantiated = template.instantiate({});
+        return {
+            nodes: instantiated.layout.nodes.map(node => {
+                // Convert serialized nodes back to VisualQueryNode instances
+                // This would require access to the VisualQueryNode factory
+                throw new Error('Node instantiation not implemented');
+            }),
+            edges: instantiated.layout.edges.map(edge => {
+                // Convert serialized edges back to VisualQueryEdge instances
+                // This would require access to the VisualQueryEdge factory
+                throw new Error('Edge instantiation not implemented');
+            })
+        };
     }
 
     async exportTemplates(templateIds?: string[]): Promise<string> {
@@ -145,7 +165,7 @@ export class QueryTemplateUseCase {
             description: string;
             category: TemplateCategory;
             tags: string[];
-            difficulty: 'beginner' | 'intermediate' | 'advanced';
+            difficulty: TemplateDifficulty;
         }>
     ): Promise<QueryTemplate> {
         const template = await this.templateRepository.findById(templateId);
@@ -157,8 +177,8 @@ export class QueryTemplateUseCase {
             throw new Error('Cannot modify built-in templates');
         }
 
-        template.updateMetadata(updates);
-        return await this.templateRepository.update(template);
+        const updatedTemplate = template.updateMetadata(updates);
+        return await this.templateRepository.update(updatedTemplate);
     }
 
     async validateTemplateParameters(template: QueryTemplate): Promise<{
@@ -175,11 +195,12 @@ export class QueryTemplateUseCase {
         const invalidParameters: string[] = [];
 
         parameters.forEach(param => {
-            if (param.required && !parameterValues.has(param.id)) {
+            const paramId = param.id || `param_${param.name}`;
+            if (param.required && !parameterValues.has(paramId)) {
                 missingParameters.push(param.name);
             }
 
-            const value = parameterValues.get(param.id);
+            const value = parameterValues.get(paramId);
             if (value && param.constraints) {
                 // Additional validation could be added here
             }
@@ -227,7 +248,8 @@ export class QueryTemplateUseCase {
         
         // Replace parameter placeholders with example values
         parameters.forEach(param => {
-            const placeholder = `{${param.id.toUpperCase()}}`;
+            const paramId = param.id || `param_${param.name}`;
+            const placeholder = `{${paramId.toUpperCase()}}`;
             const exampleValue = param.defaultValue || `{${param.name}}`;
             sparqlQuery = sparqlQuery.replace(new RegExp(placeholder, 'g'), exampleValue);
         });

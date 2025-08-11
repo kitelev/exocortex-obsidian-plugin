@@ -8,6 +8,7 @@ interface StoredTemplateData {
     metadata: TemplateMetadata;
     layout: TemplateLayout;
     parameters: TemplateParameter[];
+    sparqlTemplate: string;
     isBuiltIn: boolean;
     usageCount?: number;
     lastUsed?: string;
@@ -137,6 +138,7 @@ export class ObsidianQueryTemplateRepository implements IQueryTemplateRepository
             metadata: template.getMetadata(),
             layout: template.getLayout(),
             parameters: template.getParameters(),
+            sparqlTemplate: template.getSparqlTemplate(),
             isBuiltIn: template.isBuiltInTemplate()
         };
 
@@ -171,6 +173,7 @@ export class ObsidianQueryTemplateRepository implements IQueryTemplateRepository
             metadata: template.getMetadata(),
             layout: template.getLayout(),
             parameters: template.getParameters(),
+            sparqlTemplate: template.getSparqlTemplate(),
             isBuiltIn: template.isBuiltInTemplate()
         };
 
@@ -422,6 +425,7 @@ export class ObsidianQueryTemplateRepository implements IQueryTemplateRepository
             metadata: data.metadata,
             layout: data.layout,
             parameters: data.parameters,
+            sparqlTemplate: data.sparqlTemplate || 'SELECT * WHERE { ?s ?p ?o }',
             isBuiltIn: data.isBuiltIn
         });
     }

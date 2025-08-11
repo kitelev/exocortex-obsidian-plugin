@@ -1,4 +1,4 @@
-import { QueryTemplate, TemplateCategory } from '../../domain/visual/QueryTemplate';
+import { QueryTemplate, TemplateCategory, TemplateParameter } from '../../domain/visual/QueryTemplate';
 import { IQueryTemplateRepository } from '../../domain/repositories/IQueryTemplateRepository';
 
 export interface TemplateSelectionOptions {

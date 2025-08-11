@@ -1,3 +1,52 @@
+## [2.16.0] - 2025-01-11
+
+### 🚀 Quick Task Creation - Lightning-Fast Productivity
+
+#### Instant Task Creation with Smart Context Detection
+Transform your productivity with **one-keystroke task creation**! Press `Ctrl+Shift+T` (or `Cmd+Shift+T` on Mac) to instantly capture tasks with intelligent project detection.
+
+#### Core Features
+- **One-Key Access**: `Ctrl+Shift+T` hotkey launches task creation from anywhere in Obsidian
+- **Smart Project Detection**: Automatically identifies current project context from active note
+- **Semantic Integration**: Tasks become part of your knowledge graph with RDF triples
+- **Instant Note Creation**: Each task gets its own linked note for detailed planning
+
+#### Intelligent Context Awareness
+- **Active Note Analysis**: Detects project names from current note title and content
+- **Folder-Based Detection**: Recognizes project structure from vault organization
+- **Tag Recognition**: Identifies project tags and maintains consistency
+- **Previous Task Context**: Remembers recent project assignments for quick selection
+
+#### Streamlined Workflow
+1. **Quick Access**: Press `Ctrl+Shift+T` while working on any note
+2. **Smart Defaults**: Task modal pre-fills project information from context
+3. **Priority Setting**: Choose from Low, Medium, High, or Critical priorities
+4. **Status Tracking**: Tasks start as "todo" with full status lifecycle support
+5. **Instant Creation**: Task note appears immediately with semantic relationships
+
+#### Knowledge Graph Integration
+- **RDF Triple Storage**: Tasks stored as semantic triples in your knowledge graph
+- **Project Relationships**: Automatic linking between tasks and project entities
+- **Priority Semantics**: Task priorities become queryable graph properties
+- **Status Transitions**: Task lifecycle changes tracked in semantic layer
+
+#### Professional Task Management
+- **Unique Identifiers**: Each task gets a UUID for precise referencing
+- **Metadata Rich**: Full semantic properties for advanced querying
+- **Extensible Structure**: Built on domain-driven architecture for customization
+- **Privacy First**: All identifiers and relationships remain local to your vault
+
+#### Getting Started
+1. Open any note in your vault
+2. Press `Ctrl+Shift+T` (Windows/Linux) or `Cmd+Shift+T` (Mac)
+3. Enter task name (project auto-detected from context)
+4. Set priority and add description if needed
+5. Click "Create Task" - your new task note opens instantly!
+
+*From thought to task in under 3 seconds - revolutionize your productivity workflow!*
+
+---
+
 ## [2.15.0] - 2025-01-10
 
 ### 📚 Query Template System - Professional SPARQL Patterns

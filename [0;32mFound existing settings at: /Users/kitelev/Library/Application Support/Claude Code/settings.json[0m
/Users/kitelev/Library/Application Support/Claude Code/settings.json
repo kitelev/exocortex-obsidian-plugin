@@ -1,0 +1,6 @@
+{
+  "hooks": {
+    "tool_use": "/Users/kitelev/Documents/exocortex-obsidian-plugin/.claude/hooks/universal-agent-enforcement.sh",
+    "prompt_submit": "/Users/kitelev/Documents/exocortex-obsidian-plugin/.claude/hooks/universal-agent-enforcement.sh"
+  }
+}

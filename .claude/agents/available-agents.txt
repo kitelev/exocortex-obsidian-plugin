@@ -1,0 +1,13 @@
+architect-agent:System architecture decisions
+code-review-agent:Code quality review
+code-searcher:Locate functions and code in codebase
+devops-engineer:CI/CD and deployment
+error-handler:Error diagnosis and debugging
+general-purpose:General research and multi-step tasks
+orchestrator:Coordinate complex multi-domain tasks
+performance-agent:Performance optimization
+product-manager:Product planning and requirements
+qa-engineer:Quality assurance and testing
+security-agent:Security analysis and compliance
+swebok-engineer:Software engineering best practices
+test-fixer-agent:Fix failing tests

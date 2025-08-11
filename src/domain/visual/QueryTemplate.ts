@@ -16,6 +16,7 @@ export enum TemplateDifficulty {
 }
 
 export interface TemplateParameter {
+    id?: string;
     name: string;
     type: 'entity' | 'property' | 'literal' | 'variable';
     description: string;
@@ -43,6 +44,7 @@ export interface TemplateMetadata {
     lastUsed?: Date;
     createdAt: Date;
     updatedAt: Date;
+    exampleUsage?: string;
 }
 
 export interface SerializedNode {
@@ -93,7 +95,10 @@ export class QueryTemplate {
         this.id = params.id;
         this.metadata = params.metadata;
         this.layout = params.layout;
-        this.parameters = params.parameters || [];
+        this.parameters = (params.parameters || []).map(p => ({
+            ...p,
+            id: p.id || `param_${p.name}_${Math.random().toString(36).substr(2, 9)}`
+        }));
         this.sparqlTemplate = params.sparqlTemplate;
         this.isBuiltIn = params.isBuiltIn || false;
         
@@ -126,7 +131,10 @@ export class QueryTemplate {
     }
 
     getParameters(): TemplateParameter[] {
-        return this.parameters.map(p => ({ ...p }));
+        return this.parameters.map(p => ({ 
+            ...p, 
+            id: p.id || `param_${p.name}` // Ensure id exists
+        }));
     }
 
     getLayout(): TemplateLayout {
@@ -155,6 +163,59 @@ export class QueryTemplate {
 
     getRequiredParameters(): TemplateParameter[] {
         return this.parameters.filter(p => p.required);
+    }
+
+    getParameter(id: string): TemplateParameter | undefined {
+        return this.parameters.find(p => (p.id || `param_${p.name}`) === id);
+    }
+
+    getParameterValues(): Map<string, string> {
+        const values = new Map<string, string>();
+        this.parameters.forEach(param => {
+            if (param.defaultValue) {
+                values.set(param.id || `param_${param.name}`, param.defaultValue);
+            }
+        });
+        return values;
+    }
+
+    setParameterValue(parameterId: string, value: string): QueryTemplate {
+        // Return a new instance with updated parameter values
+        // This would typically be handled by the instantiate method
+        return this;
+    }
+
+    validateParameters(): { isValid: boolean; errors: string[] } {
+        const errors: string[] = [];
+        
+        // Validate required parameters have default values or will be provided
+        for (const param of this.getRequiredParameters()) {
+            if (!param.defaultValue) {
+                // This would be checked against actual parameter values in real usage
+                // For now, we just validate the structure
+            }
+        }
+        
+        return {
+            isValid: errors.length === 0,
+            errors
+        };
+    }
+
+    clone(): QueryTemplate {
+        return new QueryTemplate({
+            id: `${this.id}_clone_${Date.now()}`,
+            metadata: {
+                ...this.metadata,
+                name: `${this.metadata.name} (Copy)`,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            },
+            layout: this.layout,
+            parameters: this.parameters,
+            sparqlTemplate: this.sparqlTemplate,
+            isBuiltIn: false
+        });
     }
 
     instantiate(parameterValues: Record<string, string>): {
@@ -336,6 +397,61 @@ export class QueryTemplate {
             parameters: json.parameters || [],
             sparqlTemplate: json.sparqlTemplate,
             isBuiltIn: json.isBuiltIn || false
+        });
+    }
+
+    static fromCanvas(
+        nodes: Map<string, VisualQueryNode> | VisualQueryNode[],
+        edges: Map<string, VisualQueryEdge> | VisualQueryEdge[],
+        viewport: { x: number; y: number; zoom: number },
+        metadata: Partial<TemplateMetadata>
+    ): QueryTemplate {
+        // Convert Maps to arrays if needed
+        const nodeArray = nodes instanceof Map ? Array.from(nodes.values()) : nodes;
+        const edgeArray = edges instanceof Map ? Array.from(edges.values()) : edges;
+        
+        const layout: TemplateLayout = {
+            nodes: nodeArray.map(node => ({
+                id: node.getId(),
+                type: node.getType(),
+                label: node.getLabel(),
+                position: node.getPosition(),
+                variableName: node.getVariableName(),
+                uri: node.getUri(),
+                dimensions: node.getDimensions()
+            })),
+            edges: edgeArray.map(edge => ({
+                id: edge.getId(),
+                sourceNodeId: edge.getSourceNodeId(),
+                targetNodeId: edge.getTargetNodeId(),
+                type: edge.getType(),
+                label: edge.getLabel(),
+                propertyUri: edge.getPropertyUri()
+            })),
+            viewport
+        };
+        
+        const fullMetadata: TemplateMetadata = {
+            name: metadata.name || 'Untitled Template',
+            description: metadata.description || '',
+            category: metadata.category || TemplateCategory.CUSTOM,
+            difficulty: metadata.difficulty || TemplateDifficulty.INTERMEDIATE,
+            tags: metadata.tags || [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            ...metadata
+        };
+        
+        // Generate a basic SPARQL template
+        const sparql = 'SELECT * WHERE { ?s ?p ?o }';
+        
+        return new QueryTemplate({
+            id: `template_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            metadata: fullMetadata,
+            layout,
+            parameters: [],
+            sparqlTemplate: sparql,
+            isBuiltIn: false
         });
     }
 

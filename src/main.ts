@@ -6,8 +6,15 @@ import { GraphVisualizationProcessor } from './presentation/processors/GraphVisu
 import { CreateAssetModal } from './presentation/modals/CreateAssetModal';
 import { ExportRDFModal } from './presentation/modals/ExportRDFModal';
 import { ImportRDFModal } from './presentation/modals/ImportRDFModal';
+import { QuickTaskModal } from './presentation/modals/QuickTaskModal';
 import { DIContainer } from './infrastructure/container/DIContainer';
 import { RDFService } from './application/services/RDFService';
+import { CreateTaskFromProjectUseCase } from './application/use-cases/CreateTaskFromProjectUseCase';
+import { GetCurrentProjectUseCase } from './application/use-cases/GetCurrentProjectUseCase';
+import { ObsidianTaskRepository } from './infrastructure/repositories/ObsidianTaskRepository';
+import { ObsidianAssetRepository } from './infrastructure/repositories/ObsidianAssetRepository';
+import { IndexedGraph } from './domain/semantic/core/IndexedGraph';
+import { ExoFocusService } from './application/services/ExoFocusService';
 
 export default class ExocortexPlugin extends Plugin {
     private graph: Graph;
@@ -151,6 +158,52 @@ export default class ExocortexPlugin extends Plugin {
                     }
                 );
                 modal.open();
+            }
+        });
+
+        // Register command: Quick Task Creation
+        this.addCommand({
+            id: 'quick-create-task',
+            name: 'Quick create task for current project',
+            hotkeys: [{ modifiers: ["Mod", "Shift"], key: "t" }],
+            callback: async () => {
+                try {
+                    // Get current file context
+                    const activeFile = this.app.workspace.getActiveFile();
+                    const activeFilePath = activeFile?.path;
+
+                    // Initialize repositories and services
+                    const taskRepository = new ObsidianTaskRepository(this.app);
+                    const assetRepository = new ObsidianAssetRepository(this.app);
+                    const indexedGraph = new IndexedGraph();
+                    const focusService = new ExoFocusService(this.app, this.graph);
+
+                    // Create use cases
+                    const getCurrentProjectUseCase = new GetCurrentProjectUseCase(
+                        assetRepository,
+                        focusService,
+                        indexedGraph
+                    );
+                    
+                    const createTaskUseCase = new CreateTaskFromProjectUseCase(
+                        taskRepository,
+                        assetRepository,
+                        indexedGraph,
+                        getCurrentProjectUseCase
+                    );
+
+                    // Open modal
+                    const modal = new QuickTaskModal(
+                        this.app,
+                        createTaskUseCase,
+                        getCurrentProjectUseCase,
+                        activeFilePath
+                    );
+                    modal.open();
+                } catch (error) {
+                    console.error('Failed to open quick task modal:', error);
+                    new Notice(`Failed to open task creation: ${error.message}`);
+                }
             }
         });
         
