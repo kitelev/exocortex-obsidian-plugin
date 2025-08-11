@@ -1,5 +1,5 @@
 import { App } from 'obsidian';
-import ExocortexPlugin from '../../main';
+import ExocortexPlugin from '../../src/main';
 import { CreateAssetModal } from '../../src/presentation/modals/CreateAssetModal';
 
 // Mock CreateAssetModal

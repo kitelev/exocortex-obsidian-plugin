@@ -1,4 +1,4 @@
-import ExocortexPlugin from '../../main';
+import ExocortexPlugin from '../../src/main';
 import { App, Plugin } from 'obsidian';
 import { DIContainer } from '../../src/infrastructure/container/DIContainer';
 
