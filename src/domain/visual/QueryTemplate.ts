@@ -185,11 +185,6 @@ export class QueryTemplate {
         return values;
     }
 
-    setParameterValue(parameterId: string, value: string): QueryTemplate {
-        // Return a new instance with updated parameter values
-        // This would typically be handled by the instantiate method
-        return this;
-    }
 
     validateParameters(): { isValid: boolean; errors: string[] } {
         const errors: string[] = [];

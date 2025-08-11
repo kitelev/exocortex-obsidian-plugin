@@ -118,7 +118,7 @@ export class QueryTemplateUseCase {
         await this.templateRepository.recordUsage(template.getId());
         const instantiated = template.instantiate({});
         return {
-            nodes: instantiated.layout.nodes.map(node => {
+            nodes: instantiated.layout?.nodes?.map(node => {
                 // Convert serialized nodes back to VisualQueryNode instances
                 return new VisualQueryNode({
                     id: node.id,
@@ -129,8 +129,8 @@ export class QueryTemplateUseCase {
                     uri: node.uri,
                     dimensions: node.dimensions
                 });
-            }),
-            edges: instantiated.layout.edges.map(edge => {
+            }) || [],
+            edges: instantiated.layout?.edges?.map(edge => {
                 // Convert serialized edges back to VisualQueryEdge instances
                 return new VisualQueryEdge({
                     id: edge.id,
@@ -140,7 +140,7 @@ export class QueryTemplateUseCase {
                     label: edge.label,
                     propertyUri: edge.propertyUri
                 });
-            })
+            }) || []
         };
     }
 

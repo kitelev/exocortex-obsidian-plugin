@@ -989,14 +989,6 @@ export class VisualQueryCanvas {
         return Array.from(this.selectedEdges);
     }
 
-    executeQuery(): void {
-        const sparql = this.generateSPARQL();
-        // Call the execute query callback
-        this.options.onExecuteQuery?.();
-        if (this.options.onExecute) {
-            this.options.onExecute(sparql);
-        }
-    }
 
     exportToSVG(): string {
         const serializer = new XMLSerializer();
@@ -1078,13 +1070,16 @@ export class VisualQueryCanvas {
         return query;
     }
 
-    private async executeQuery(): Promise<void> {
+    async executeQuery(): Promise<void> {
         const sparql = this.generateSPARQL();
         
         if (!sparql) {
             new Notice('Please create a query first');
             return;
         }
+
+        // Call the execute query callback
+        this.options.onExecuteQuery?.();
         
         if (this.sparqlProcessor) {
             try {
