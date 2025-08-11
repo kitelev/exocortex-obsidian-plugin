@@ -25,7 +25,7 @@ describe('QueryTemplate', () => {
                 {
                     id: 'node1',
                     type: NodeType.ENTITY,
-                    label: 'Test Entity',
+                    label: '{{Entity Name}}',
                     position: { x: 100, y: 100 }
                 }
             ],
@@ -96,8 +96,8 @@ describe('QueryTemplate', () => {
 
     describe('Parameter Management', () => {
         it('should allow setting parameter values', () => {
-            template.setParameterValue('param1', 'test-entity');
-            expect(template.getParameterValue('param1')).toBe('test-entity');
+            template.setParameterValue('Entity Name', 'test-entity');
+            expect(template.getParameterValue('Entity Name')).toBe('test-entity');
         });
 
         it('should throw error when setting value for non-existent parameter', () => {
@@ -122,7 +122,7 @@ describe('QueryTemplate', () => {
 
     describe('Template Instantiation', () => {
         beforeEach(() => {
-            template.setParameterValue('param1', 'test-entity');
+            template.setParameterValue('Entity Name', 'test-entity');
         });
 
         it('should instantiate template with valid parameters', () => {

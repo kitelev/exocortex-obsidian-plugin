@@ -1,7 +1,7 @@
 import { IQueryTemplateRepository, TemplateSearchCriteria } from '../../domain/repositories/IQueryTemplateRepository';
 import { QueryTemplate, TemplateCategory, TemplateDifficulty } from '../../domain/visual/QueryTemplate';
-import { VisualQueryNode } from '../../domain/visual/VisualQueryNode';
-import { VisualQueryEdge } from '../../domain/visual/VisualQueryEdge';
+import { VisualQueryNode, NodeType } from '../../domain/visual/VisualQueryNode';
+import { VisualQueryEdge, EdgeType } from '../../domain/visual/VisualQueryEdge';
 
 export class QueryTemplateUseCase {
     constructor(
@@ -120,13 +120,26 @@ export class QueryTemplateUseCase {
         return {
             nodes: instantiated.layout.nodes.map(node => {
                 // Convert serialized nodes back to VisualQueryNode instances
-                // This would require access to the VisualQueryNode factory
-                throw new Error('Node instantiation not implemented');
+                return new VisualQueryNode({
+                    id: node.id,
+                    type: node.type as NodeType,
+                    label: node.label,
+                    position: node.position,
+                    variableName: node.variableName,
+                    uri: node.uri,
+                    dimensions: node.dimensions
+                });
             }),
             edges: instantiated.layout.edges.map(edge => {
                 // Convert serialized edges back to VisualQueryEdge instances
-                // This would require access to the VisualQueryEdge factory
-                throw new Error('Edge instantiation not implemented');
+                return new VisualQueryEdge({
+                    id: edge.id,
+                    sourceNodeId: edge.sourceNodeId,
+                    targetNodeId: edge.targetNodeId,
+                    type: edge.type as EdgeType,
+                    label: edge.label,
+                    propertyUri: edge.propertyUri
+                });
             })
         };
     }

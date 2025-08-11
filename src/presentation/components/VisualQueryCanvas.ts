@@ -21,6 +21,16 @@ export interface CanvasOptions {
     enableTemplates?: boolean;
     templateUseCase?: QueryTemplateUseCase;
     appInstance?: any; // For modal creation
+    // Test-specific callbacks
+    allowPan?: boolean;
+    minZoom?: number;
+    maxZoom?: number;
+    onNodeSelect?: (node: VisualQueryNode) => void;
+    onEdgeSelect?: (edge: VisualQueryEdge) => void;
+    onNodeEdit?: (node: VisualQueryNode) => void;
+    onEdgeEdit?: (edge: VisualQueryEdge) => void;
+    onQueryGenerated?: (sparql: string) => void;
+    onExecuteQuery?: () => void;
 }
 
 export class VisualQueryCanvas {
@@ -60,7 +70,16 @@ export class VisualQueryCanvas {
         onExecute: () => {},
         enableTemplates: true,
         templateUseCase: undefined as any,
-        appInstance: undefined as any
+        appInstance: undefined as any,
+        allowPan: true,
+        minZoom: 0.1,
+        maxZoom: 5,
+        onNodeSelect: () => {},
+        onEdgeSelect: () => {},
+        onNodeEdit: () => {},
+        onEdgeEdit: () => {},
+        onQueryGenerated: () => {},
+        onExecuteQuery: () => {}
     };
     
     private options: Required<CanvasOptions>;
@@ -68,9 +87,28 @@ export class VisualQueryCanvas {
 
     constructor(
         private readonly parentElement: HTMLElement,
-        sparqlProcessor?: SPARQLProcessor,
-        options: CanvasOptions = {}
+        optionsOrSparqlProcessor?: CanvasOptions | SPARQLProcessor,
+        sparqlProcessorOrOptions?: SPARQLProcessor | CanvasOptions
     ) {
+        // Handle multiple constructor signatures for backward compatibility
+        let options: CanvasOptions = {};
+        let sparqlProcessor: SPARQLProcessor | undefined;
+        
+        if (optionsOrSparqlProcessor) {
+            // Check if first param is SPARQLProcessor (old signature)
+            if (typeof optionsOrSparqlProcessor === 'object' && 'executeQuery' in optionsOrSparqlProcessor) {
+                sparqlProcessor = optionsOrSparqlProcessor as SPARQLProcessor;
+                options = (sparqlProcessorOrOptions as CanvasOptions) || {};
+            } 
+            // Check if first param is options (new signature: parentElement, options, sparqlProcessor)
+            else if (typeof optionsOrSparqlProcessor === 'object') {
+                options = optionsOrSparqlProcessor as CanvasOptions;
+                if (sparqlProcessorOrOptions && 'executeQuery' in sparqlProcessorOrOptions) {
+                    sparqlProcessor = sparqlProcessorOrOptions as SPARQLProcessor;
+                }
+            }
+        }
+        
         this.options = { ...this.defaultOptions, ...options };
         this.sparqlProcessor = sparqlProcessor;
         this.createCanvas();
@@ -80,7 +118,7 @@ export class VisualQueryCanvas {
 
     private createCanvas(): void {
         this.container = document.createElement('div');
-        this.container.className = 'visual-query-canvas-container';
+        this.container.className = 'exocortex-visual-query-canvas';
         this.container.style.cssText = `
             position: relative;
             width: ${this.options.width}px;
@@ -125,7 +163,7 @@ export class VisualQueryCanvas {
 
     private createControls(): void {
         const controls = document.createElement('div');
-        controls.className = 'visual-query-controls';
+        controls.className = 'canvas-toolbar';
         controls.style.cssText = `
             position: absolute;
             top: 10px;
@@ -156,10 +194,7 @@ export class VisualQueryCanvas {
         const addVariableBtn = this.createControlButton('Variable', () => this.addNode(NodeType.VARIABLE));
         const addLiteralBtn = this.createControlButton('Literal', () => this.addNode(NodeType.LITERAL));
         const addFilterBtn = this.createControlButton('Filter', () => this.addNode(NodeType.FILTER));
-        
-        const separator = document.createElement('div');
-        separator.style.cssText = 'width: 1px; background: var(--background-modifier-border); margin: 0 4px;';
-        
+        const generateBtn = this.createControlButton('Generate', () => this.generateSPARQL());
         const executeBtn = this.createControlButton('Execute', () => this.executeQuery(), true);
         const clearBtn = this.createControlButton('Clear', () => this.clearCanvas());
         
@@ -167,7 +202,7 @@ export class VisualQueryCanvas {
         controls.appendChild(addVariableBtn);
         controls.appendChild(addLiteralBtn);
         controls.appendChild(addFilterBtn);
-        controls.appendChild(separator);
+        controls.appendChild(generateBtn);
         controls.appendChild(executeBtn);
         controls.appendChild(clearBtn);
         
@@ -879,7 +914,22 @@ export class VisualQueryCanvas {
         return isDark ? darkColors[type] : lightColors[type];
     }
 
-    addNode(type: NodeType): void {
+    // Overloaded method for adding nodes
+    addNode(node: VisualQueryNode): void;
+    addNode(type: NodeType): void;
+    addNode(nodeOrType: VisualQueryNode | NodeType): void {
+        if (typeof nodeOrType === 'object' && 'getId' in nodeOrType) {
+            // Direct node addition for testing/programmatic use
+            const node = nodeOrType as VisualQueryNode;
+            this.nodes.set(node.getId(), node);
+            this.options.onNodeSelect?.(node);
+            this.render();
+            this.updateQuery();
+            return;
+        }
+        
+        // Interactive node creation
+        const type = nodeOrType as NodeType;
         const centerX = (this.options.width / 2 - this.viewportX) / this.zoom;
         const centerY = (this.options.height / 2 - this.viewportY) / this.zoom;
         
@@ -915,14 +965,57 @@ export class VisualQueryCanvas {
         this.updateQuery();
     }
 
+    addEdge(edge: VisualQueryEdge): void {
+        // Validate that both source and target nodes exist
+        const sourceExists = this.nodes.has(edge.getSourceNodeId());
+        const targetExists = this.nodes.has(edge.getTargetNodeId());
+        
+        if (!sourceExists || !targetExists) {
+            console.warn('Cannot add edge: source or target node not found');
+            return;
+        }
+        
+        this.edges.set(edge.getId(), edge);
+        this.options.onEdgeSelect?.(edge);
+        this.render();
+        this.updateQuery();
+    }
+
+    getSelectedNodes(): string[] {
+        return Array.from(this.selectedNodes);
+    }
+
+    getSelectedEdges(): string[] {
+        return Array.from(this.selectedEdges);
+    }
+
+    executeQuery(): void {
+        const sparql = this.generateSPARQL();
+        // Call the execute query callback
+        this.options.onExecuteQuery?.();
+        if (this.options.onExecute) {
+            this.options.onExecute(sparql);
+        }
+    }
+
+    exportToSVG(): string {
+        const serializer = new XMLSerializer();
+        return serializer.serializeToString(this.svg);
+    }
+
     private updateQuery(): void {
         const sparql = this.generateSPARQL();
         this.options.onQueryChange(sparql);
+        if ((this.options as any).onQueryGenerated) {
+            (this.options as any).onQueryGenerated(sparql);
+        }
     }
 
     generateSPARQL(): string {
         if (this.nodes.size === 0) {
-            return '';
+            const query = 'SELECT *\nWHERE {\n  ?s ?p ?o .\n}';
+            this.options.onQueryGenerated?.(query);
+            return query;
         }
         
         const variables = new Set<string>();
@@ -981,6 +1074,7 @@ export class VisualQueryCanvas {
         
         query += '}';
         
+        this.options.onQueryGenerated?.(query);
         return query;
     }
 
@@ -1211,6 +1305,204 @@ export class VisualQueryCanvas {
         };
     }
 
+    // Public getters for testing and external access
+    getNodes(): Map<string, VisualQueryNode> {
+        return new Map(this.nodes);
+    }
+
+    getEdges(): Map<string, VisualQueryEdge> {
+        return new Map(this.edges);
+    }
+
+    removeNode(nodeId: string): void {
+        // Remove associated edges first
+        this.edges.forEach((edge, edgeId) => {
+            if (edge.getSourceNodeId() === nodeId || edge.getTargetNodeId() === nodeId) {
+                this.edges.delete(edgeId);
+            }
+        });
+        
+        // Remove the node
+        this.nodes.delete(nodeId);
+        
+        // Update selection
+        this.selectedNodes.delete(nodeId);
+        
+        // Re-render and update query
+        this.render();
+        this.updateQuery();
+    }
+
+    removeEdge(edgeId: string): void {
+        this.edges.delete(edgeId);
+        this.selectedEdges.delete(edgeId);
+        this.render();
+        this.updateQuery();
+    }
+
+    zoomToFit(): void {
+        if (this.nodes.size === 0) {
+            this.resetZoom();
+            return;
+        }
+
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        
+        this.nodes.forEach(node => {
+            const pos = node.getPosition();
+            const dims = node.getDimensions();
+            minX = Math.min(minX, pos.x);
+            minY = Math.min(minY, pos.y);
+            maxX = Math.max(maxX, pos.x + dims.width);
+            maxY = Math.max(maxY, pos.y + dims.height);
+        });
+
+        const contentWidth = maxX - minX;
+        const contentHeight = maxY - minY;
+        const centerX = minX + contentWidth / 2;
+        const centerY = minY + contentHeight / 2;
+
+        // Calculate zoom to fit with padding
+        const padding = 50;
+        const availableWidth = this.options.width - 2 * padding;
+        const availableHeight = this.options.height - 2 * padding;
+        const scaleX = availableWidth / contentWidth;
+        const scaleY = availableHeight / contentHeight;
+        const newZoom = Math.min(scaleX, scaleY, this.options.zoomMax);
+
+        // Set new zoom and center viewport
+        this.zoom = Math.max(this.options.zoomMin, newZoom);
+        this.viewportX = this.options.width / 2 - centerX * this.zoom;
+        this.viewportY = this.options.height / 2 - centerY * this.zoom;
+        
+        this.updateTransform();
+    }
+
+    exportToJSON(): string {
+        const canvasData = {
+            version: '1.0',
+            nodes: Array.from(this.nodes.entries()).map(([id, node]) => ({
+                id,
+                type: node.getType(),
+                label: node.getLabel(),
+                position: node.getPosition(),
+                uri: (node as any).getEntityUri ? (node as any).getEntityUri() : undefined
+            })),
+            edges: Array.from(this.edges.entries()).map(([id, edge]) => ({
+                id,
+                sourceNodeId: edge.getSourceNodeId(),
+                targetNodeId: edge.getTargetNodeId(),
+                label: edge.getLabel(),
+                type: edge.getType(),
+                optional: edge.isOptional(),
+                propertyUri: edge.getPropertyUri()
+            })),
+            viewport: {
+                x: this.viewportX,
+                y: this.viewportY,
+                zoom: this.zoom
+            }
+        };
+        return JSON.stringify(canvasData, null, 2);
+    }
+
+    importFromJSON(jsonString: string): boolean {
+        try {
+            const data = JSON.parse(jsonString);
+            
+            // Validate format
+            if (!data.nodes || !data.edges) {
+                console.warn('Invalid canvas data format');
+                return false;
+            }
+
+            // Clear current content
+            this.clearCanvas();
+
+            // Import nodes
+            data.nodes.forEach((nodeData: any) => {
+                try {
+                    let node: VisualQueryNode;
+                    switch (nodeData.type) {
+                        case NodeType.ENTITY:
+                            node = VisualQueryNode.createEntity(
+                                nodeData.label,
+                                nodeData.uri,
+                                nodeData.position
+                            );
+                            break;
+                        case NodeType.VARIABLE:
+                            node = VisualQueryNode.createVariable(
+                                nodeData.label,
+                                nodeData.position
+                            );
+                            break;
+                        case NodeType.LITERAL:
+                            node = VisualQueryNode.createLiteral(
+                                nodeData.label,
+                                nodeData.position
+                            );
+                            break;
+                        case NodeType.FILTER:
+                            node = VisualQueryNode.createFilter(
+                                nodeData.label,
+                                nodeData.position
+                            );
+                            break;
+                        default:
+                            console.warn(`Unknown node type: ${nodeData.type}`);
+                            return;
+                    }
+                    this.nodes.set(nodeData.id, node);
+                } catch (error) {
+                    console.warn(`Failed to import node ${nodeData.id}:`, error);
+                }
+            });
+
+            // Import edges
+            data.edges.forEach((edgeData: any) => {
+                try {
+                    let edge: VisualQueryEdge;
+                    if (edgeData.optional) {
+                        edge = VisualQueryEdge.createOptional(
+                            edgeData.sourceNodeId,
+                            edgeData.targetNodeId,
+                            edgeData.label,
+                            edgeData.propertyUri
+                        );
+                    } else {
+                        edge = VisualQueryEdge.createProperty(
+                            edgeData.sourceNodeId,
+                            edgeData.targetNodeId,
+                            edgeData.label,
+                            edgeData.propertyUri
+                        );
+                    }
+                    this.edges.set(edgeData.id, edge);
+                } catch (error) {
+                    console.warn(`Failed to import edge ${edgeData.id}:`, error);
+                }
+            });
+
+            // Restore viewport
+            if (data.viewport) {
+                this.viewportX = data.viewport.x || 0;
+                this.viewportY = data.viewport.y || 0;
+                this.zoom = data.viewport.zoom || 1;
+                this.updateTransform();
+            }
+
+            // Re-render
+            this.render();
+            this.updateQuery();
+            
+            return true;
+        } catch (error) {
+            console.warn('Failed to import canvas data:', error);
+            return false;
+        }
+    }
+
     destroy(): void {
         this.svg.removeEventListener('mousedown', this.handleMouseDown.bind(this));
         this.svg.removeEventListener('mousemove', this.handleMouseMove.bind(this));
@@ -1219,6 +1511,11 @@ export class VisualQueryCanvas {
         this.svg.removeEventListener('contextmenu', this.handleContextMenu.bind(this));
         
         document.removeEventListener('keydown', this.handleKeyDown.bind(this));
+        
+        // Clear all nodes and edges to ensure cleanup
+        this.nodes.clear();
+        this.edges.clear();
+        this.clearSelection();
         
         if (this.container && this.container.parentNode) {
             this.container.parentNode.removeChild(this.container);
