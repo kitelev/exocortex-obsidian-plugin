@@ -11,3 +11,4 @@ qa-engineer:Quality assurance and testing
 security-agent:Security analysis and compliance
 swebok-engineer:Software engineering best practices
 test-fixer-agent:Fix failing tests
+cicd-optimization-agent

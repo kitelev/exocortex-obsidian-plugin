@@ -216,4 +216,132 @@ export class UITestHelpers {
     
     return await operation();
   }
+
+  /**
+   * Check if currently running in CI environment
+   * 
+   * @returns true if running in CI environment
+   */
+  static isCI(): boolean {
+    return !!(
+      process.env.CI ||
+      process.env.GITHUB_ACTIONS ||
+      process.env.CONTINUOUS_INTEGRATION ||
+      process.env.BUILD_NUMBER ||
+      process.env.JENKINS_URL
+    );
+  }
+
+  /**
+   * Check if modal exists without waiting
+   * 
+   * @returns Promise that resolves to true if modal exists, false otherwise
+   */
+  static async isModalOpen(): Promise<boolean> {
+    try {
+      return await browser.executeObsidian(() => {
+        return document.querySelector('.modal') !== null;
+      });
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Safely close modal only if it exists
+   * 
+   * @param maxAttempts Maximum number of attempts to close modal
+   * @returns Promise that resolves to true if modal was closed or didn't exist, false if failed to close
+   */
+  static async safeCloseModal(maxAttempts: number = 3): Promise<boolean> {
+    try {
+      const modalExists = await this.isModalOpen();
+      
+      if (!modalExists) {
+        console.log('No modal to close - skipping close operation');
+        return true;
+      }
+
+      await this.retryOperation(async () => {
+        await browser.executeObsidian(() => {
+          const modal = document.querySelector('.modal');
+          if (!modal) {
+            return; // Modal already closed
+          }
+          
+          // Try multiple close strategies
+          const closeButton = modal.querySelector('.modal-close-button');
+          if (closeButton) {
+            (closeButton as HTMLElement).click();
+          } else {
+            // Fallback: press Escape key
+            const event = new KeyboardEvent('keydown', {
+              key: 'Escape',
+              keyCode: 27,
+              which: 27
+            });
+            document.dispatchEvent(event);
+          }
+        });
+      }, maxAttempts, 500);
+
+      // Wait for modal to disappear
+      await browser.pause(1000);
+
+      // Verify modal is closed
+      const stillOpen = await this.isModalOpen();
+      return !stillOpen;
+      
+    } catch (error) {
+      console.warn('Error during safe modal close:', error.message);
+      return false;
+    }
+  }
+
+  /**
+   * Get detailed modal state information for debugging
+   * 
+   * @returns Promise that resolves to modal state object
+   */
+  static async getModalState(): Promise<{
+    exists: boolean;
+    hasCloseButton: boolean;
+    isVisible: boolean;
+    content: string | null;
+    error?: string;
+  }> {
+    try {
+      return await browser.executeObsidian(() => {
+        const modal = document.querySelector('.modal');
+        
+        if (!modal) {
+          return {
+            exists: false,
+            hasCloseButton: false,
+            isVisible: false,
+            content: null
+          };
+        }
+
+        const closeButton = modal.querySelector('.modal-close-button');
+        const style = window.getComputedStyle(modal);
+        const isVisible = style.display !== 'none' && style.visibility !== 'hidden';
+        
+        return {
+          exists: true,
+          hasCloseButton: closeButton !== null,
+          isVisible,
+          content: modal.textContent?.substring(0, 100) || null
+        };
+      });
+    } catch (error) {
+      return {
+        exists: false,
+        hasCloseButton: false,
+        isVisible: false,
+        content: null,
+        error: error.message
+      };
+    }
+  }
 }
