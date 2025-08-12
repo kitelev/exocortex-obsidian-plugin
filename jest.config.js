@@ -39,4 +39,10 @@ module.exports = {
   // Additional environment settings for CI
   testTimeout: 30000,
   maxWorkers: process.env.CI ? 1 : '50%',
+  // Optimize for performance and stability
+  verbose: false,
+  silent: true,
+  // Cache for faster subsequent runs
+  cache: true,
+  cacheDirectory: '<rootDir>/.jest-cache',
 };
