@@ -1,0 +1,38 @@
+8cfc30b587e9c9b76df98661193d739e
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AggregateRoot = void 0;
+const Entity_1 = require("./Entity");
+/**
+ * Aggregate Root base class for Domain-Driven Design
+ * Aggregate roots are the entry points to aggregates
+ */
+class AggregateRoot extends Entity_1.Entity {
+    constructor(props) {
+        super(props);
+    }
+    /**
+     * Get all domain events (inherits from Entity)
+     */
+    getUncommittedEvents() {
+        return this.getDomainEvents();
+    }
+    /**
+     * Mark domain event for dispatch
+     */
+    markDomainEventForDispatch(domainEvent) {
+        // This would integrate with an event bus in a full implementation
+        // For now, we just mark it as ready for dispatch
+        const markedEvent = Object.assign(Object.assign({}, domainEvent), { dateTimeOccurred: new Date(), aggregateId: this._id });
+        // In a real implementation, this would be sent to a domain event dispatcher
+        console.log('Domain event marked for dispatch:', markedEvent);
+    }
+    /**
+     * Commit events
+     */
+    markEventsAsCommitted() {
+        this.clearDomainEvents();
+    }
+}
+exports.AggregateRoot = AggregateRoot;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiL1VzZXJzL2tpdGVsZXYvRG9jdW1lbnRzL2V4b2NvcnRleC1vYnNpZGlhbi1wbHVnaW4vc3JjL2RvbWFpbi9jb3JlL0FnZ3JlZ2F0ZVJvb3QudHMiLCJtYXBwaW5ncyI6Ijs7O0FBQUEscUNBQWtDO0FBRWxDOzs7R0FHRztBQUNILE1BQXNCLGFBQWlCLFNBQVEsZUFBUztJQUVwRCxZQUFzQixLQUFRO1FBQzFCLEtBQUssQ0FBQyxLQUFLLENBQUMsQ0FBQztJQUNqQixDQUFDO0lBRUQ7O09BRUc7SUFDSSxvQkFBb0I7UUFDdkIsT0FBTyxJQUFJLENBQUMsZUFBZSxFQUFFLENBQUM7SUFDbEMsQ0FBQztJQUVEOztPQUVHO0lBQ0ssMEJBQTBCLENBQUMsV0FBZ0I7UUFDL0Msa0VBQWtFO1FBQ2xFLGlEQUFpRDtRQUNqRCxNQUFNLFdBQVcsbUNBQ1YsV0FBVyxLQUNkLGdCQUFnQixFQUFFLElBQUksSUFBSSxFQUFFLEVBQzVCLFdBQVcsRUFBRSxJQUFJLENBQUMsR0FBRyxHQUN4QixDQUFDO1FBRUYsNEVBQTRFO1FBQzVFLE9BQU8sQ0FBQyxHQUFHLENBQUMsbUNBQW1DLEVBQUUsV0FBVyxDQUFDLENBQUM7SUFDbEUsQ0FBQztJQUVEOztPQUVHO0lBQ0kscUJBQXFCO1FBQ3hCLElBQUksQ0FBQyxpQkFBaUIsRUFBRSxDQUFDO0lBQzdCLENBQUM7Q0FDSjtBQW5DRCxzQ0FtQ0MiLCJuYW1lcyI6W10sInNvdXJjZXMiOlsiL1VzZXJzL2tpdGVsZXYvRG9jdW1lbnRzL2V4b2NvcnRleC1vYnNpZGlhbi1wbHVnaW4vc3JjL2RvbWFpbi9jb3JlL0FnZ3JlZ2F0ZVJvb3QudHMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgRW50aXR5IH0gZnJvbSAnLi9FbnRpdHknO1xuXG4vKipcbiAqIEFnZ3JlZ2F0ZSBSb290IGJhc2UgY2xhc3MgZm9yIERvbWFpbi1Ecml2ZW4gRGVzaWduXG4gKiBBZ2dyZWdhdGUgcm9vdHMgYXJlIHRoZSBlbnRyeSBwb2ludHMgdG8gYWdncmVnYXRlc1xuICovXG5leHBvcnQgYWJzdHJhY3QgY2xhc3MgQWdncmVnYXRlUm9vdDxUPiBleHRlbmRzIEVudGl0eTxUPiB7XG5cbiAgICBwcm90ZWN0ZWQgY29uc3RydWN0b3IocHJvcHM6IFQpIHtcbiAgICAgICAgc3VwZXIocHJvcHMpO1xuICAgIH1cblxuICAgIC8qKlxuICAgICAqIEdldCBhbGwgZG9tYWluIGV2ZW50cyAoaW5oZXJpdHMgZnJvbSBFbnRpdHkpXG4gICAgICovXG4gICAgcHVibGljIGdldFVuY29tbWl0dGVkRXZlbnRzKCk6IGFueVtdIHtcbiAgICAgICAgcmV0dXJuIHRoaXMuZ2V0RG9tYWluRXZlbnRzKCk7XG4gICAgfVxuXG4gICAgLyoqXG4gICAgICogTWFyayBkb21haW4gZXZlbnQgZm9yIGRpc3BhdGNoXG4gICAgICovXG4gICAgcHJpdmF0ZSBtYXJrRG9tYWluRXZlbnRGb3JEaXNwYXRjaChkb21haW5FdmVudDogYW55KTogdm9pZCB7XG4gICAgICAgIC8vIFRoaXMgd291bGQgaW50ZWdyYXRlIHdpdGggYW4gZXZlbnQgYnVzIGluIGEgZnVsbCBpbXBsZW1lbnRhdGlvblxuICAgICAgICAvLyBGb3Igbm93LCB3ZSBqdXN0IG1hcmsgaXQgYXMgcmVhZHkgZm9yIGRpc3BhdGNoXG4gICAgICAgIGNvbnN0IG1hcmtlZEV2ZW50ID0ge1xuICAgICAgICAgICAgLi4uZG9tYWluRXZlbnQsXG4gICAgICAgICAgICBkYXRlVGltZU9jY3VycmVkOiBuZXcgRGF0ZSgpLFxuICAgICAgICAgICAgYWdncmVnYXRlSWQ6IHRoaXMuX2lkXG4gICAgICAgIH07XG4gICAgICAgIFxuICAgICAgICAvLyBJbiBhIHJlYWwgaW1wbGVtZW50YXRpb24sIHRoaXMgd291bGQgYmUgc2VudCB0byBhIGRvbWFpbiBldmVudCBkaXNwYXRjaGVyXG4gICAgICAgIGNvbnNvbGUubG9nKCdEb21haW4gZXZlbnQgbWFya2VkIGZvciBkaXNwYXRjaDonLCBtYXJrZWRFdmVudCk7XG4gICAgfVxuXG4gICAgLyoqXG4gICAgICogQ29tbWl0IGV2ZW50c1xuICAgICAqL1xuICAgIHB1YmxpYyBtYXJrRXZlbnRzQXNDb21taXR0ZWQoKTogdm9pZCB7XG4gICAgICAgIHRoaXMuY2xlYXJEb21haW5FdmVudHMoKTtcbiAgICB9XG59Il0sInZlcnNpb24iOjN9

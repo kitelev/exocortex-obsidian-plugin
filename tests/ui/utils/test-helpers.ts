@@ -6,7 +6,68 @@
  * specifically designed for the challenges of headless browser testing.
  */
 
+import { testConfig, TEST_TIMEOUTS, TEST_RETRIES, IS_CI, DEBUG_ENABLED } from '../config/test-config';
+
 export class UITestHelpers {
+  /**
+   * Take a screenshot for debugging purposes
+   * 
+   * @param name Screenshot name/identifier
+   * @returns Promise that resolves when screenshot is taken
+   */
+  static async takeDebugScreenshot(name: string): Promise<void> {
+    try {
+      if (testConfig.isDebuggingEnabled('screenshots')) {
+        console.log(`📸 Taking debug screenshot: ${name}`);
+        // In CI, we may not have screenshot capability, so just log
+        await browser.executeObsidian(() => {
+          console.log(`Screenshot requested: ${name}`);
+          console.log('Document title:', document.title);
+          console.log('Modal count:', document.querySelectorAll('.modal').length);
+          console.log('Body classes:', document.body.className);
+        });
+      }
+    } catch (error) {
+      console.warn(`Failed to take screenshot '${name}':`, error.message);
+    }
+  }
+  
+  /**
+   * Log DOM state for debugging
+   * 
+   * @param context Description of when this is being called
+   * @returns Promise that resolves when logging is complete
+   */
+  static async logDOMState(context: string): Promise<void> {
+    try {
+      await browser.executeObsidian((obsidianContext, ctx) => {
+        console.log(`=== DOM State (${ctx}) ===`);
+        
+        const modals = document.querySelectorAll('.modal');
+        console.log(`Modals found: ${modals.length}`);
+        
+        modals.forEach((modal, i) => {
+          console.log(`Modal ${i}:`);
+          console.log(`  - Visible: ${window.getComputedStyle(modal).display !== 'none'}`);
+          console.log(`  - Classes: ${modal.className}`);
+          console.log(`  - Children: ${modal.children.length}`);
+          
+          const h2 = modal.querySelector('h2');
+          if (h2) console.log(`  - Title: '${h2.textContent}'`);
+          
+          const inputs = modal.querySelectorAll('input');
+          console.log(`  - Inputs: ${inputs.length}`);
+          
+          const selects = modal.querySelectorAll('select');
+          console.log(`  - Selects: ${selects.length}`);
+        });
+        
+        console.log(`=== End DOM State (${ctx}) ===`);
+      }, context);
+    } catch (error) {
+      console.warn(`Failed to log DOM state for '${context}':`, error.message);
+    }
+  }
   /**
    * Wait for a DOM element to appear within the specified timeout
    * 
@@ -17,18 +78,38 @@ export class UITestHelpers {
    */
   static async waitForElement(
     selector: string, 
-    timeout: number = 10000,
+    timeout: number = TEST_TIMEOUTS.ELEMENT,
     interval: number = 100
   ): Promise<boolean> {
     const endTime = Date.now() + timeout;
+    let lastError = null;
     
     while (Date.now() < endTime) {
-      const exists = await browser.executeObsidian((obsidianContext, sel) => {
-        return document.querySelector(sel) !== null;
-      }, selector);
+      try {
+        const exists = await browser.executeObsidian((obsidianContext, sel) => {
+          const element = document.querySelector(sel);
+          if (element) {
+            console.log(`Element found: ${sel}`);
+            return true;
+          }
+          return false;
+        }, selector);
+        
+        if (exists) {
+          if (DEBUG_ENABLED) console.log(`✓ Element '${selector}' found after ${Date.now() - (endTime - timeout)}ms`);
+          return true;
+        }
+      } catch (error) {
+        lastError = error;
+        if (DEBUG_ENABLED) console.log(`Error checking element '${selector}':`, error.message);
+      }
       
-      if (exists) return true;
       await browser.pause(interval);
+    }
+    
+    if (DEBUG_ENABLED) {
+      console.log(`✗ Element '${selector}' not found within ${timeout}ms`);
+      if (lastError) console.log('Last error:', lastError.message);
     }
     
     return false;
@@ -40,7 +121,7 @@ export class UITestHelpers {
    * @param timeout Maximum time to wait in milliseconds
    * @returns Promise that resolves to true if modal found, false otherwise
    */
-  static async waitForModal(timeout: number = 10000): Promise<boolean> {
+  static async waitForModal(timeout: number = TEST_TIMEOUTS.MODAL): Promise<boolean> {
     return await this.waitForElement('.modal', timeout);
   }
   
@@ -53,19 +134,54 @@ export class UITestHelpers {
    */
   static async waitForModalContent(
     contentSelector: string,
-    timeout: number = 10000
+    timeout: number = TEST_TIMEOUTS.CONTENT
   ): Promise<boolean> {
     const endTime = Date.now() + timeout;
+    let attempts = 0;
     
     while (Date.now() < endTime) {
-      const hasContent = await browser.executeObsidian((obsidianContext, sel) => {
-        const modal = document.querySelector('.modal');
-        if (!modal) return false;
-        return modal.querySelector(sel) !== null;
-      }, contentSelector);
+      attempts++;
       
-      if (hasContent) return true;
+      try {
+        const hasContent = await browser.executeObsidian((obsidianContext, sel) => {
+          const modal = document.querySelector('.modal');
+          if (!modal) {
+            console.log('Modal not found when checking for content');
+            return false;
+          }
+          
+          const content = modal.querySelector(sel);
+          if (content) {
+            console.log(`Modal content found: ${sel}`);
+            return true;
+          }
+          
+          // Debug: log what we do have in the modal
+          if (attempts % 20 === 0) { // Log every 2 seconds
+            const allElements = Array.from(modal.querySelectorAll('*'))
+              .map(el => el.tagName.toLowerCase())
+              .slice(0, 10); // Limit output
+            console.log(`Modal elements (attempt ${attempts}):`, allElements.join(', '));
+          }
+          
+          return false;
+        }, contentSelector);
+        
+        if (hasContent) {
+          if (DEBUG_ENABLED) console.log(`✓ Modal content '${contentSelector}' found after ${attempts} attempts`);
+          return true;
+        }
+      } catch (error) {
+        if (DEBUG_ENABLED && attempts % 50 === 0) {
+          console.log(`Error checking modal content '${contentSelector}' (attempt ${attempts}):`, error.message);
+        }
+      }
+      
       await browser.pause(100);
+    }
+    
+    if (DEBUG_ENABLED) {
+      console.log(`✗ Modal content '${contentSelector}' not found within ${timeout}ms (${attempts} attempts)`);
     }
     
     return false;
@@ -82,7 +198,7 @@ export class UITestHelpers {
    */
   static async retryOperation<T>(
     operation: () => Promise<T>,
-    maxAttempts: number = 3,
+    maxAttempts: number = TEST_RETRIES.OPERATIONS,
     delay: number = 1000,
     backoffMultiplier: number = 1
   ): Promise<T> {
@@ -90,15 +206,38 @@ export class UITestHelpers {
     
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        return await operation();
+        if (DEBUG_ENABLED && attempt > 1) {
+          console.log(`🔄 Retry attempt ${attempt}/${maxAttempts}`);
+        }
+        
+        const result = await operation();
+        
+        if (DEBUG_ENABLED && attempt > 1) {
+          console.log(`✓ Operation succeeded on attempt ${attempt}`);
+        }
+        
+        return result;
       } catch (error) {
         lastError = error;
+        
+        if (DEBUG_ENABLED) {
+          console.log(`✗ Attempt ${attempt}/${maxAttempts} failed:`, error.message);
+        }
+        
         if (attempt < maxAttempts) {
           const waitTime = delay * Math.pow(backoffMultiplier, attempt - 1);
-          console.log(`Attempt ${attempt} failed, retrying in ${waitTime}ms...`);
+          
+          if (DEBUG_ENABLED || attempt === 1) {
+            console.log(`Retrying in ${waitTime}ms... (${maxAttempts - attempt} attempts left)`);
+          }
+          
           await browser.pause(waitTime);
         }
       }
+    }
+    
+    if (DEBUG_ENABLED) {
+      console.log(`💥 All ${maxAttempts} attempts failed. Final error:`, lastError?.message);
     }
     
     throw lastError;
@@ -223,14 +362,25 @@ export class UITestHelpers {
    * @returns true if running in CI environment
    */
   static isCI(): boolean {
-    return !!(
+    const ci = !!(
       process.env.CI ||
       process.env.GITHUB_ACTIONS ||
       process.env.CONTINUOUS_INTEGRATION ||
       process.env.BUILD_NUMBER ||
       process.env.JENKINS_URL
     );
+    
+    // Log CI detection once
+    if (ci && !this._ciLogged) {
+      console.log('🤖 CI environment detected');
+      console.log(`Environment vars: CI=${process.env.CI}, GITHUB_ACTIONS=${process.env.GITHUB_ACTIONS}`);
+      this._ciLogged = true;
+    }
+    
+    return ci;
   }
+  
+  private static _ciLogged = false;
 
   /**
    * Check if modal exists without waiting
@@ -308,6 +458,11 @@ export class UITestHelpers {
     hasCloseButton: boolean;
     isVisible: boolean;
     content: string | null;
+    elementCount: number;
+    hasTitle: boolean;
+    hasInputs: boolean;
+    hasSelects: boolean;
+    className: string | null;
     error?: string;
   }> {
     try {
@@ -315,23 +470,49 @@ export class UITestHelpers {
         const modal = document.querySelector('.modal');
         
         if (!modal) {
+          // Check if there are any elements that might be modals
+          const possibleModals = document.querySelectorAll('[class*="modal"], .dialog, .popup');
+          console.log(`No .modal found, but found ${possibleModals.length} possible modal elements`);
+          
           return {
             exists: false,
             hasCloseButton: false,
             isVisible: false,
-            content: null
+            content: null,
+            elementCount: 0,
+            hasTitle: false,
+            hasInputs: false,
+            hasSelects: false,
+            className: null
           };
         }
 
         const closeButton = modal.querySelector('.modal-close-button');
         const style = window.getComputedStyle(modal);
         const isVisible = style.display !== 'none' && style.visibility !== 'hidden';
+        const elements = modal.querySelectorAll('*');
+        const title = modal.querySelector('h1, h2, h3, .modal-title');
+        const inputs = modal.querySelectorAll('input');
+        const selects = modal.querySelectorAll('select');
+        
+        // Log modal structure for debugging
+        const structure = Array.from(elements)
+          .slice(0, 15) // First 15 elements
+          .map(el => `${el.tagName.toLowerCase()}${el.className ? '.' + el.className : ''}`)
+          .join(', ');
+        
+        console.log('Modal structure:', structure);
         
         return {
           exists: true,
           hasCloseButton: closeButton !== null,
           isVisible,
-          content: modal.textContent?.substring(0, 100) || null
+          content: modal.textContent?.substring(0, 200) || null,
+          elementCount: elements.length,
+          hasTitle: title !== null,
+          hasInputs: inputs.length > 0,
+          hasSelects: selects.length > 0,
+          className: modal.className || null
         };
       });
     } catch (error) {
@@ -340,6 +521,11 @@ export class UITestHelpers {
         hasCloseButton: false,
         isVisible: false,
         content: null,
+        elementCount: 0,
+        hasTitle: false,
+        hasInputs: false,
+        hasSelects: false,
+        className: null,
         error: error.message
       };
     }
