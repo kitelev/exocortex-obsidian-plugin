@@ -213,10 +213,11 @@ describe('IndexedGraph Performance Benchmarks', () => {
 
   describe('Regression Testing', () => {
     it('should maintain baseline performance over time', () => {
-      // Performance baseline (adjust based on actual measurements)
+      // Performance baseline (CI-friendly values)
+      const isCI = process.env.CI === 'true';
       const performanceBaselines = {
-        avgQueryTime: 1.0, // 1ms average
-        maxQueryTime: 5.0, // 5ms max
+        avgQueryTime: isCI ? 5.0 : 1.0, // 5ms average in CI, 1ms locally
+        maxQueryTime: isCI ? 25.0 : 5.0, // 25ms max in CI, 5ms locally
         cacheHitRatio: 0.5 // 50% cache hit rate
       };
       

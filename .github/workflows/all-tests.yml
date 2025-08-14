@@ -50,7 +50,7 @@ jobs:
         run: |
           test -f package.json || exit 1
           test -f tsconfig.json || exit 1
-          test -f main.ts || exit 1
+          test -f src/main.ts || exit 1
           test -f manifest.json || exit 1
           echo "✅ Critical files verified"
 
