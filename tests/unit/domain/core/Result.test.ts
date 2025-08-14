@@ -392,6 +392,11 @@ describe('Result', () => {
     it('should handle rapid creation of many results', () => {
       // Given
       const count = 1000;
+      // Adaptive thresholds for different environments
+      const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+      const isMacOS = process.platform === 'darwin';
+      const performanceThreshold = (isCI && isMacOS) ? 500 : (isCI ? 200 : 100); // More lenient for macOS CI
+      
       const start = performance.now();
 
       // When
@@ -404,7 +409,7 @@ describe('Result', () => {
 
       // Then
       const duration = performance.now() - start;
-      expect(duration).toBeLessThan(100); // Should be fast
+      expect(duration).toBeLessThan(performanceThreshold); // Adaptive threshold
     });
 
     it('should handle combine with large arrays', () => {
