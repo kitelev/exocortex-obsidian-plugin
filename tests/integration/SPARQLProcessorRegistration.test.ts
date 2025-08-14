@@ -168,8 +168,9 @@ describe('SPARQL Processor Registration', () => {
             // Plugin should handle this gracefully
             await plugin.onload();
             
-            // Should have warned about registration failure
-            expect(consoleWarnSpy).toHaveBeenCalled();
+            // Plugin should handle duplicate registration gracefully without throwing
+            // (console.warn was removed in favor of silent handling)
+            
             // Plugin should still load successfully
             expect(plugin['sparqlProcessor']).toBeDefined();
             
@@ -201,12 +202,19 @@ describe('SPARQL Processor Registration', () => {
                 throw new Error('Vault error');
             });
             
-            // Should still complete loading but log error
-            const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+            // Should still complete loading but log warning
+            const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
             
-            await expect(plugin.onload()).rejects.toThrow();
+            // Plugin should handle the error gracefully and continue loading
+            await expect(plugin.onload()).resolves.toBeUndefined();
             
-            consoleSpy.mockRestore();
+            // Should have warned about the vault access failure
+            expect(consoleWarnSpy).toHaveBeenCalledWith(
+                'Failed to access vault files during graph initialization:', 
+                expect.any(Error)
+            );
+            
+            consoleWarnSpy.mockRestore();
         });
     });
 });

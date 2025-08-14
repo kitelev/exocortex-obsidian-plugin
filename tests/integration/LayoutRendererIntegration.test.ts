@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import ExocortexPlugin from '../../main';
+import ExocortexPlugin from '../../src/main';
 
 describe.skip('LayoutRenderer Integration (deprecated)', () => {
     let plugin: ExocortexPlugin;
