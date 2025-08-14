@@ -39,7 +39,12 @@ export default class ExocortexPlugin extends Plugin {
         this.rdfService = new RDFService(this.app);
         
         // Load vault data into graph
-        await this.loadVaultIntoGraph();
+        try {
+            await this.loadVaultIntoGraph();
+        } catch (error) {
+            // Vault loading failed - plugin should still function
+            console.warn('Failed to load vault into graph:', error);
+        }
         
         // Initialize SPARQL processor with cache configuration
         const cacheConfig = {
@@ -58,7 +63,8 @@ export default class ExocortexPlugin extends Plugin {
                 (source, el, ctx) => this.sparqlProcessor.processCodeBlock(source, el, ctx)
             );
         } catch (error) {
-            // SPARQL processor may already be registered
+            // SPARQL processor may already be registered (hot reload scenario)
+            console.warn('SPARQL processor registration failed, likely due to hot reload:', error.message);
         }
         
         // Register Graph Visualization code block processor
@@ -67,7 +73,8 @@ export default class ExocortexPlugin extends Plugin {
                 (source, el, ctx) => this.graphVisualizationProcessor.processCodeBlock(source, el, ctx)
             );
         } catch (error) {
-            // Graph processor may already be registered
+            // Graph processor may already be registered (hot reload scenario)
+            console.warn('Graph processor registration failed, likely due to hot reload:', error.message);
         }
         
         // Register command: Create new asset
@@ -249,22 +256,29 @@ export default class ExocortexPlugin extends Plugin {
     private async loadVaultIntoGraph(): Promise<void> {
         // Loading vault data
         const startTime = Date.now();
-        
-        const files = this.app.vault.getMarkdownFiles();
         let triplesCount = 0;
         
-        for (const file of files) {
-            try {
-                const content = await this.app.vault.read(file);
-                const triples = this.extractTriplesFromFile(file, content);
-                
-                for (const triple of triples) {
-                    this.graph.add(triple);
-                    triplesCount++;
+        try {
+            const files = this.app.vault.getMarkdownFiles();
+            
+            for (const file of files) {
+                try {
+                    const content = await this.app.vault.read(file);
+                    const triples = this.extractTriplesFromFile(file, content);
+                    
+                    for (const triple of triples) {
+                        this.graph.add(triple);
+                        triplesCount++;
+                    }
+                } catch (err) {
+                    // File processing failed - continue with next file
                 }
-            } catch (err) {
-                // File processing failed
             }
+        } catch (err) {
+            // Vault access failed - plugin should still function
+            console.warn('Failed to access vault files during graph initialization:', err);
+            new Notice('Exocortex: Unable to load vault files into graph');
+            return;
         }
         
         const loadTime = Date.now() - startTime;
