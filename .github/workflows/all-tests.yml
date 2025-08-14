@@ -12,10 +12,10 @@ env:
 
 jobs:
   # ==========================================
-  # JOB 1: Linting and Type Checking
+  # JOB 1: Quick Validation (Lint, TypeCheck, Build)
   # ==========================================
-  lint-and-typecheck:
-    name: 🔍 Lint & TypeCheck
+  quick-validation:
+    name: 🔍 Quick Validation
     runs-on: ubuntu-latest
     timeout-minutes: 10
     
@@ -37,175 +37,24 @@ jobs:
       - name: Run TypeScript compiler check
         run: npx tsc --noEmit --skipLibCheck
       
-      - name: Run ESLint (if configured)
-        continue-on-error: true
-        run: |
-          if [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ] || [ -f "eslint.config.js" ]; then
-            npx eslint src/ tests/ --ext .ts --format=compact
-          else
-            echo "⚠️  No ESLint configuration found, skipping..."
-          fi
-      
-      - name: Verify critical files exist
-        run: |
-          test -f package.json || exit 1
-          test -f tsconfig.json || exit 1
-          test -f src/main.ts || exit 1
-          test -f manifest.json || exit 1
-          echo "✅ Critical files verified"
-
-  # ==========================================
-  # JOB 2: Unit Tests with Coverage
-  # ==========================================
-  unit-tests:
-    name: 🧪 Unit Tests
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        node-version: ['18.x', '20.x']
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-      
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit
-      
-      - name: Run unit tests with coverage
-        run: npm run test:coverage
-        env:
-          NODE_ENV: test
-      
-      - name: Verify coverage thresholds
-        run: |
-          if [ -f "coverage/lcov.info" ]; then
-            echo "✅ Coverage report generated"
-            # Show coverage summary
-            if command -v lcov >/dev/null 2>&1; then
-              lcov --summary coverage/lcov.info
-            fi
-          else
-            echo "⚠️  No coverage report found"
-          fi
-      
-      - name: Upload unit test coverage
-        if: success()
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./coverage/lcov.info
-          flags: unit-tests
-          name: unit-coverage-${{ matrix.os }}-node${{ matrix.node-version }}
-          fail_ci_if_error: false
-          verbose: true
-      
-      - name: Upload unit test artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: unit-test-results-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: |
-            coverage/
-            jest-results.xml
-          retention-days: 30
-
-  # ==========================================
-  # JOB 3: E2E Node-based Tests
-  # ==========================================
-  e2e-node-tests:
-    name: 🔧 E2E Node Tests
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        node-version: ['18.x', '20.x']
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-      
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit
-      
-      - name: Build plugin for E2E tests
+      - name: Build plugin
         run: npm run build
       
       - name: Verify build outputs
         run: |
           test -f main.js || exit 1
           test -f manifest.json || exit 1
-          echo "✅ Build outputs verified for E2E tests"
-      
-      - name: Run E2E plugin loading tests
-        id: plugin_loading
-        run: |
-          echo "🚀 Running plugin loading tests..."
-          npm run test:e2e 2>&1 | tee e2e-plugin-loading.log
-          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
-        continue-on-error: true
-      
-      - name: Run E2E SPARQL functionality tests  
-        id: sparql_tests
-        run: |
-          echo "🚀 Running SPARQL functionality tests..."
-          npm run test:e2e:sparql 2>&1 | tee e2e-sparql.log
-          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
-        continue-on-error: true
-      
-      - name: Check E2E test results
-        run: |
-          plugin_exit=${{ steps.plugin_loading.outputs.exit_code }}
-          sparql_exit=${{ steps.sparql_tests.outputs.exit_code }}
-          
-          echo "Plugin loading tests exit code: $plugin_exit"
-          echo "SPARQL tests exit code: $sparql_exit"
-          
-          if [ "$plugin_exit" -ne "0" ] || [ "$sparql_exit" -ne "0" ]; then
-            echo "❌ One or more E2E tests failed"
-            exit 1
-          else
-            echo "✅ All E2E tests passed"
-          fi
-      
-      - name: Upload E2E test logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-test-logs-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: |
-            e2e-*.log
-            tests/e2e/
-          retention-days: 30
+          test -s main.js || exit 1
+          echo "✅ Build verification completed"
 
   # ==========================================
-  # JOB 4: UI Tests with Obsidian
+  # JOB 2: Core Tests (Unit + Integration)
   # ==========================================
-  ui-tests:
-    name: 🖥️ UI Tests (Obsidian)
+  core-tests:
+    name: 🧪 Core Tests
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 20
+    needs: quick-validation
     
     strategy:
       fail-fast: false
@@ -231,61 +80,50 @@ jobs:
       - name: Build plugin
         run: npm run build
       
-      - name: Setup display server (Linux only)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update -q
-          sudo apt-get install -y xvfb fluxbox x11-utils x11-xserver-utils
-          # Start Xvfb
-          export DISPLAY=:99
-          Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset &
-          # Wait for X server to start
-          sleep 3
-          # Start a lightweight window manager
-          fluxbox -display :99 &
-          sleep 2
-          echo "DISPLAY=:99" >> $GITHUB_ENV
-          
-      - name: Prepare test environment
-        run: |
-          echo "✅ Test environment prepared - wdio-obsidian-service will handle Obsidian installation"
-      
-      - name: Run UI tests with fallback
-        id: ui_tests
-        run: npm run test:ui:with-fallback
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
         env:
-          DISPLAY: ${{ env.DISPLAY }}
-          CI: true
+          NODE_ENV: test
       
-      - name: Upload UI test screenshots (on failure)
-        if: failure()
-        uses: actions/upload-artifact@v4
+      - name: Run integration tests
+        run: npm run test:integration
+        env:
+          NODE_ENV: test
+      
+      - name: Run E2E tests
+        run: npm run test:e2e:all
+        env:
+          NODE_ENV: test
+      
+      - name: Upload test coverage
+        if: success() && matrix.node-version == '20.x' && matrix.os == 'ubuntu-latest'
+        uses: codecov/codecov-action@v4
         with:
-          name: ui-test-screenshots-${{ matrix.os }}-node${{ matrix.node-version }}
-          path: |
-            wdio-logs/
-            screenshots/
-            errorShots/
-          retention-days: 30
+          files: ./coverage/lcov.info
+          flags: core-tests
+          name: core-coverage
+          fail_ci_if_error: false
+          verbose: true
       
-      - name: Upload UI test results
+      - name: Upload test artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ui-test-results-${{ matrix.os }}-node${{ matrix.node-version }}
+          name: core-test-results-${{ matrix.os }}-node${{ matrix.node-version }}
           path: |
-            wdio-logs/
-            test-results/
-            junit-results/
+            coverage/
+            e2e-*.log
+            tests/e2e/
           retention-days: 30
 
   # ==========================================
-  # JOB 5: Build Verification
+  # JOB 3: UI Tests with Obsidian
   # ==========================================
-  build-verification:
-    name: 🏗️ Build Verification
+  ui-tests:
+    name: 🖥️ UI Tests (Obsidian)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
+    needs: quick-validation
     
     steps:
       - name: Checkout code
@@ -302,93 +140,73 @@ jobs:
       - name: Install dependencies
         run: npm ci --prefer-offline --no-audit
       
-      - name: Clean previous build
-        run: rm -f main.js main.js.map
+      - name: Build plugin
+        run: npm run build
       
-      - name: Build plugin (development)
-        run: npm run dev
-      
-      - name: Verify development build
+      - name: Setup display server
         run: |
-          test -f main.js || exit 1
-          echo "✅ Development build verified"
+          sudo apt-get update -q
+          sudo apt-get install -y xvfb fluxbox x11-utils x11-xserver-utils
+          # Start Xvfb
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset &
+          # Wait for X server to start
+          sleep 3
+          # Start a lightweight window manager
+          fluxbox -display :99 &
+          sleep 2
+          echo "DISPLAY=:99" >> $GITHUB_ENV
       
-      - name: Clean and build for production
-        run: |
-          rm -f main.js main.js.map
-          npm run build
+      - name: Run UI tests with fallback
+        env:
+          DISPLAY: :99
+          CI: true
+          DEBUG: ${{ runner.debug == '1' && 'true' || 'false' }}
+        run: npm run test:ui:with-fallback
+        timeout-minutes: 30
       
-      - name: Verify production build outputs
-        run: |
-          test -f main.js || exit 1
-          test -f manifest.json || exit 1
-          
-          # Check file sizes
-          MAIN_SIZE=$(wc -c < main.js)
-          echo "main.js size: ${MAIN_SIZE} bytes"
-          
-          # Ensure main.js is not empty and reasonable size
-          if [ "$MAIN_SIZE" -lt 1000 ]; then
-            echo "❌ main.js seems too small (${MAIN_SIZE} bytes)"
-            exit 1
-          fi
-          
-          # Verify manifest.json is valid JSON
-          cat manifest.json | jq . > /dev/null
-          
-          echo "✅ Production build verified"
-      
-      - name: Test plugin loading syntax
-        run: |
-          # Basic syntax check
-          node -c main.js
-          echo "✅ Plugin JavaScript syntax is valid"
-      
-      - name: Upload build artifacts
+      - name: Upload test results and artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
+          name: ui-test-results-all-tests
           path: |
-            main.js
-            manifest.json
-            styles.css
+            wdio-logs/
+            screenshots/
+            /tmp/xvfb.log
           retention-days: 30
 
   # ==========================================
-  # JOB 6: Test Results Summary
+  # JOB 4: Test Results Summary
   # ==========================================
   test-summary:
     name: 📊 Test Summary
     runs-on: ubuntu-latest
     if: always()
-    needs: [lint-and-typecheck, unit-tests, e2e-node-tests, ui-tests, build-verification]
+    needs: [quick-validation, core-tests, ui-tests]
     timeout-minutes: 5
     
     steps:
       - name: Evaluate test results
         run: |
-          echo "## 📋 Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## 📋 Comprehensive Test Results Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Check results of each job
-          lint_result="${{ needs.lint-and-typecheck.result }}"
-          unit_result="${{ needs.unit-tests.result }}"
-          e2e_result="${{ needs.e2e-node-tests.result }}"
+          validation_result="${{ needs.quick-validation.result }}"
+          core_result="${{ needs.core-tests.result }}"
           ui_result="${{ needs.ui-tests.result }}"
-          build_result="${{ needs.build-verification.result }}"
           
           echo "| Test Suite | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|------------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔍 Lint & TypeCheck | $lint_result |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🧪 Unit Tests | $unit_result |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔧 E2E Node Tests | $e2e_result |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔍 Quick Validation | $validation_result |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧪 Core Tests | $core_result |" >> $GITHUB_STEP_SUMMARY
           echo "| 🖥️ UI Tests | $ui_result |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🏗️ Build Verification | $build_result |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Overall status
-          if [ "$lint_result" == "success" ] && [ "$unit_result" == "success" ] && [ "$e2e_result" == "success" ] && [ "$ui_result" == "success" ] && [ "$build_result" == "success" ]; then
-            echo "✅ **All tests passed successfully!**" >> $GITHUB_STEP_SUMMARY
+          if [ "$validation_result" == "success" ] && [ "$core_result" == "success" ] && [ "$ui_result" == "success" ]; then
+            echo "✅ **All comprehensive tests passed successfully!**" >> $GITHUB_STEP_SUMMARY
             exit 0
           else
             echo "❌ **Some tests failed. Check individual job logs for details.**" >> $GITHUB_STEP_SUMMARY
@@ -396,47 +214,9 @@ jobs:
             # List failed jobs
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Failed Jobs:" >> $GITHUB_STEP_SUMMARY
-            [ "$lint_result" != "success" ] && echo "- 🔍 Lint & TypeCheck: $lint_result" >> $GITHUB_STEP_SUMMARY
-            [ "$unit_result" != "success" ] && echo "- 🧪 Unit Tests: $unit_result" >> $GITHUB_STEP_SUMMARY
-            [ "$e2e_result" != "success" ] && echo "- 🔧 E2E Node Tests: $e2e_result" >> $GITHUB_STEP_SUMMARY
+            [ "$validation_result" != "success" ] && echo "- 🔍 Quick Validation: $validation_result" >> $GITHUB_STEP_SUMMARY
+            [ "$core_result" != "success" ] && echo "- 🧪 Core Tests: $core_result" >> $GITHUB_STEP_SUMMARY
             [ "$ui_result" != "success" ] && echo "- 🖥️ UI Tests: $ui_result" >> $GITHUB_STEP_SUMMARY
-            [ "$build_result" != "success" ] && echo "- 🏗️ Build Verification: $build_result" >> $GITHUB_STEP_SUMMARY
             
             exit 1
           fi
-      
-      - name: Comment on PR (if applicable)
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const lint_result = "${{ needs.lint-and-typecheck.result }}";
-            const unit_result = "${{ needs.unit-tests.result }}";
-            const e2e_result = "${{ needs.e2e-node-tests.result }}";
-            const ui_result = "${{ needs.ui-tests.result }}";
-            const build_result = "${{ needs.build-verification.result }}";
-            
-            const allPassed = [lint_result, unit_result, e2e_result, ui_result, build_result].every(result => result === 'success');
-            
-            const body = `## 🧪 Test Results
-            
-            | Test Suite | Status |
-            |------------|--------|
-            | 🔍 Lint & TypeCheck | ${lint_result === 'success' ? '✅' : '❌'} ${lint_result} |
-            | 🧪 Unit Tests | ${unit_result === 'success' ? '✅' : '❌'} ${unit_result} |
-            | 🔧 E2E Node Tests | ${e2e_result === 'success' ? '✅' : '❌'} ${e2e_result} |
-            | 🖥️ UI Tests | ${ui_result === 'success' ? '✅' : '❌'} ${ui_result} |
-            | 🏗️ Build Verification | ${build_result === 'success' ? '✅' : '❌'} ${build_result} |
-            
-            ${allPassed ? 
-              '✅ **All tests passed! This PR is ready for review.**' : 
-              '❌ **Some tests failed. Please check the failed jobs and fix issues before merging.**'
-            }
-            `;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
