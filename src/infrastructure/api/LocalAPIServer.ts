@@ -141,7 +141,7 @@ print(result)
      */
     async start(): Promise<void> {
         if (this.isRunning) {
-            console.log('Local API server already running');
+            // API server already running
             return;
         }
         
@@ -155,9 +155,7 @@ print(result)
         this.isRunning = true;
         
         new Notice(`🌐 Local API Server started\nAPI Key: ${this.apiKey.substring(0, 10)}...`);
-        console.log(`Local API Server started`);
-        console.log(`API Key: ${this.apiKey}`);
-        console.log(`Requests folder: ${this.requestsFolder}`);
+        // Local API Server started
     }
     
     /**
@@ -187,7 +185,7 @@ print(result)
         this.isRunning = false;
         
         new Notice('Local API Server stopped');
-        console.log('Local API Server stopped');
+        // Local API Server stopped
     }
     
     /**

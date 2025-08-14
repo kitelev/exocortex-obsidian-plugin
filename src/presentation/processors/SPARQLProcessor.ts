@@ -96,7 +96,7 @@ export class SPARQLProcessor {
             container.innerHTML = '';
             const errorEl = this.createErrorMessage(error);
             container.appendChild(errorEl);
-            console.error('SPARQL execution error:', error);
+            // SPARQL execution error
         }
     }
     
@@ -114,7 +114,7 @@ export class SPARQLProcessor {
         
         const sanitized = sanitizationResult.getValue();
         if (sanitized.warnings.length > 0) {
-            console.warn('SPARQL query warnings:', sanitized.warnings);
+            // SPARQL query has warnings
             new Notice(`Query executed with warnings: ${sanitized.warnings[0]}`);
         }
         
@@ -389,7 +389,7 @@ export class SPARQLProcessor {
             }
         } catch (error: any) {
             new Notice(`Export error: ${error.message}`);
-            console.error('SPARQL export error:', error);
+            // SPARQL export error
         }
     }
     
@@ -418,7 +418,7 @@ export class SPARQLProcessor {
             modal.open();
         } catch (error: any) {
             new Notice(`Failed to open export modal: ${error.message}`);
-            console.error('Export modal error:', error);
+            // Export modal error
         }
     }
 }

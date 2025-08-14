@@ -120,6 +120,11 @@ export class CreateAssetModal extends Modal {
     }
     
     const defaultOntology = 'exo';
+    
+    // Set default ontology when no ontologies found in vault
+    if (ontologies.length > 0 && !this.assetOntology) {
+      this.assetOntology = defaultOntology;
+    }
 
     new Setting(containerEl)
       .setName("Ontology")
@@ -166,10 +171,8 @@ export class CreateAssetModal extends Modal {
     if ('empty' in this.propertiesContainer && typeof (this.propertiesContainer as any).empty === 'function') {
       (this.propertiesContainer as any).empty();
     } else {
-      // Fallback to standard DOM method
-      while (this.propertiesContainer.firstChild) {
-        this.propertiesContainer.removeChild(this.propertiesContainer.firstChild);
-      }
+      // Fallback to standard DOM method - use innerHTML for complete cleanup
+      this.propertiesContainer.innerHTML = '';
     }
     this.propertyValues.clear();
     
@@ -437,14 +440,16 @@ export class CreateAssetModal extends Modal {
   }
 
   onClose() {
-    const { contentEl } = this;
     // Clear content - try Obsidian method first, fallback to DOM
-    if ('empty' in contentEl && typeof (contentEl as any).empty === 'function') {
-      (contentEl as any).empty();
+    if ('empty' in this.contentEl && typeof (this.contentEl as any).empty === 'function') {
+      (this.contentEl as any).empty();
     } else {
-      // Fallback to standard DOM method
-      while (contentEl.firstChild) {
-        contentEl.removeChild(contentEl.firstChild);
+      // Fallback to standard DOM method - use innerHTML for complete cleanup
+      // Try both methods to ensure compatibility
+      this.contentEl.innerHTML = '';
+      // Also try removing children manually as additional fallback
+      while (this.contentEl.firstChild) {
+        this.contentEl.removeChild(this.contentEl.firstChild);
       }
     }
   }

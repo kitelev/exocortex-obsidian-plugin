@@ -16,14 +16,23 @@ export class QueryBlockRenderer {
         frontmatter: any,
         dv: any
     ): Promise<void> {
-        const queryConfig = config as QueryBlockConfig;
-        
-        // Execute query
-        const result = await this.executeQueryUseCase.execute({
-            blockConfig: queryConfig,
-            currentAssetPath: file.path,
-            currentAssetFrontmatter: frontmatter
-        });
+        try {
+            if (!config) {
+                container.createEl('p', { 
+                    text: 'Query configuration is missing',
+                    cls: 'exocortex-error'
+                });
+                return;
+            }
+
+            const queryConfig = config as QueryBlockConfig;
+            
+            // Execute query
+            const result = await this.executeQueryUseCase.execute({
+                blockConfig: queryConfig,
+                currentAssetPath: file.path,
+                currentAssetFrontmatter: frontmatter
+            });
 
         if (result.isFailure) {
             container.createEl('p', { 
@@ -64,6 +73,13 @@ export class QueryBlockRenderer {
             default:
                 this.renderList(container, results);
                 break;
+        }
+        } catch (error) {
+            container.createEl('p', { 
+                text: `Error rendering query block: ${error}`,
+                cls: 'exocortex-error'
+            });
+            console.error('Query block render error:', error);
         }
     }
 

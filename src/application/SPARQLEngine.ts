@@ -51,13 +51,12 @@ export class SPARQLEngine {
             // Single pattern - simple case
             const pattern = patterns[0];
             
-            // Convert pattern strings to proper types
-            const subject = pattern.subject.startsWith('?') ? null : new IRI(pattern.subject);
-            const predicate = pattern.predicate.startsWith('?') ? null : new IRI(pattern.predicate);
-            const object = pattern.object.startsWith('?') ? null : 
-                (pattern.object.startsWith('"') ? 
-                    Literal.string(pattern.object.replace(/^"|"$/g, '')) : 
-                    new IRI(pattern.object));
+            // Convert pattern strings to proper types, stripping angle brackets from IRIs
+            const subject = pattern.subject.startsWith('?') ? null : 
+                new IRI(pattern.subject.replace(/^<|>$/g, ''));
+            const predicate = pattern.predicate.startsWith('?') ? null : 
+                new IRI(pattern.predicate.replace(/^<|>$/g, ''));
+            const object = pattern.object.startsWith('?') ? null : this.parseObjectForMatching(pattern.object);
             
             const matchedTriples = this.graph.match(subject, predicate, object);
             
@@ -129,16 +128,21 @@ export class SPARQLEngine {
         const binding: Record<string, string> = {};
         
         if (pattern.subject.startsWith('?')) {
-            binding[pattern.subject.substring(1)] = triple.getSubject().toString();
+            binding[pattern.subject.substring(1)] = this.formatForBinding(triple.getSubject());
         }
         if (pattern.predicate.startsWith('?')) {
-            binding[pattern.predicate.substring(1)] = triple.getPredicate().toString();
+            binding[pattern.predicate.substring(1)] = this.formatForBinding(triple.getPredicate());
         }
         if (pattern.object.startsWith('?')) {
-            binding[pattern.object.substring(1)] = triple.getObject().toString();
+            binding[pattern.object.substring(1)] = this.formatForBinding(triple.getObject());
         }
         
         return binding;
+    }
+    
+    private formatForBinding(node: any): string {
+        // For SELECT query results, return full typed representation
+        return node.toString();
     }
     
     private instantiateTemplate(template: any[], binding: Record<string, string>): Triple[] {
@@ -151,13 +155,13 @@ export class SPARQLEngine {
             
             if (subjectStr && predicateStr && objectStr) {
                 // Create proper Triple objects
-                const subject = subjectStr.startsWith('_:') ? new BlankNode(subjectStr) : new IRI(subjectStr);
-                const predicate = new IRI(predicateStr);
+                const subject = subjectStr.startsWith('_:') ? new BlankNode(subjectStr) : new IRI(subjectStr.replace(/^<|>$/g, ''));
+                const predicate = new IRI(predicateStr.replace(/^<|>$/g, ''));
                 
                 // Handle different object types
                 let object: IRI | BlankNode | Literal;
                 if (objectStr.startsWith('"')) {
-                    // It's a literal
+                    // It's a string literal - create typed literal with datatype
                     object = Literal.string(objectStr.replace(/^"|"$/g, ''));
                 } else if (objectStr === 'true' || objectStr === 'false') {
                     // Boolean literal
@@ -173,7 +177,7 @@ export class SPARQLEngine {
                     object = Literal.double(parseFloat(objectStr));
                 } else {
                     // IRI
-                    object = new IRI(objectStr);
+                    object = new IRI(objectStr.replace(/^<|>$/g, ''));
                 }
                 
                 triples.push(new Triple(subject, predicate, object));
@@ -197,9 +201,12 @@ export class SPARQLEngine {
         // Start with first pattern
         const firstPattern = patterns[0];
         const firstTriples = this.graph.match(
-            firstPattern.subject.startsWith('?') ? null : firstPattern.subject,
-            firstPattern.predicate.startsWith('?') ? null : firstPattern.predicate,
-            firstPattern.object.startsWith('?') ? null : firstPattern.object
+            firstPattern.subject.startsWith('?') ? null : new IRI(firstPattern.subject.replace(/^<|>$/g, '')),
+            firstPattern.predicate.startsWith('?') ? null : new IRI(firstPattern.predicate.replace(/^<|>$/g, '')),
+            firstPattern.object.startsWith('?') ? null : 
+                (firstPattern.object.startsWith('"') ? 
+                    new Literal(firstPattern.object.replace(/^"|"$/g, '')) : 
+                    new IRI(firstPattern.object.replace(/^<|>$/g, '')))
         );
         
         let bindings: Record<string, string>[] = [];
@@ -225,11 +232,9 @@ export class SPARQLEngine {
                     : pattern.object;
                 
                 // Convert strings to proper types for match
-                const subject = subjectStr ? new IRI(subjectStr) : null;
-                const predicate = predicateStr ? new IRI(predicateStr) : null;
-                const object = objectStr ? 
-                    (objectStr.startsWith('"') ? Literal.string(objectStr.replace(/^"|"$/g, '')) : new IRI(objectStr))
-                    : null;
+                const subject = subjectStr ? new IRI(subjectStr.replace(/^<|>$/g, '')) : null;
+                const predicate = predicateStr ? new IRI(predicateStr.replace(/^<|>$/g, '')) : null;
+                const object = objectStr ? this.parseObjectForMatching(objectStr) : null;
                 
                 // Find matching triples
                 const matches = this.graph.match(subject, predicate, object);
@@ -239,13 +244,13 @@ export class SPARQLEngine {
                     
                     // Add new variable bindings
                     if (pattern.subject.startsWith('?') && !subjectStr) {
-                        extendedBinding[pattern.subject.substring(1)] = triple.getSubject().toString();
+                        extendedBinding[pattern.subject.substring(1)] = this.formatForBinding(triple.getSubject());
                     }
                     if (pattern.predicate.startsWith('?') && !predicateStr) {
-                        extendedBinding[pattern.predicate.substring(1)] = triple.getPredicate().toString();
+                        extendedBinding[pattern.predicate.substring(1)] = this.formatForBinding(triple.getPredicate());
                     }
                     if (pattern.object.startsWith('?') && !objectStr) {
-                        extendedBinding[pattern.object.substring(1)] = triple.getObject().toString();
+                        extendedBinding[pattern.object.substring(1)] = this.formatForBinding(triple.getObject());
                     }
                     
                     newBindings.push(extendedBinding);
@@ -267,9 +272,6 @@ export class SPARQLEngine {
             return { ...cachedResult, cached: true };
         }
 
-        // Very basic SPARQL SELECT implementation for MVP
-        const results: any[] = [];
-        
         // Parse basic SELECT ?var WHERE { ?s ?p ?o } pattern
         const selectMatch = query.match(/SELECT\s+(.*?)\s+WHERE\s*\{(.*?)\}/is);
         if (!selectMatch) {
@@ -285,44 +287,65 @@ export class SPARQLEngine {
             return emptyResult;
         }
         
-        // Execute first pattern (MVP - single pattern support)
-        const pattern = patterns[0];
+        let results: any[] = [];
         
-        // Convert string patterns to proper types for match
-        const subject = pattern.subject.startsWith('?') ? null : new IRI(pattern.subject);
-        const predicate = pattern.predicate.startsWith('?') ? null : new IRI(pattern.predicate);
-        const object = pattern.object.startsWith('?') ? null : 
-            (pattern.object.startsWith('"') ? Literal.string(pattern.object.replace(/^"|"$/g, '')) : new IRI(pattern.object));
-        
-        const triples = this.graph.match(subject, predicate, object);
-        
-        // Bind variables
-        for (const triple of triples) {
-            const binding: any = {};
+        if (patterns.length === 1) {
+            // Single pattern - simple case
+            const pattern = patterns[0];
             
-            if (pattern.subject.startsWith('?')) {
-                const varName = pattern.subject.substring(1);
-                if (variables.includes('*') || variables.includes(varName)) {
-                    binding[varName] = triple.getSubject().toString();
+            // Convert string patterns to proper types for match
+            const subject = pattern.subject.startsWith('?') ? null : new IRI(pattern.subject.replace(/^<|>$/g, ''));
+            const predicate = pattern.predicate.startsWith('?') ? null : new IRI(pattern.predicate.replace(/^<|>$/g, ''));
+            const object = pattern.object.startsWith('?') ? null : this.parseObjectForMatching(pattern.object);
+            
+            const triples = this.graph.match(subject, predicate, object);
+            
+            // Bind variables
+            for (const triple of triples) {
+                const binding: any = {};
+                
+                if (pattern.subject.startsWith('?')) {
+                    const varName = pattern.subject.substring(1);
+                    if (variables.includes('*') || variables.includes(varName)) {
+                        binding[varName] = this.formatForBinding(triple.getSubject());
+                    }
+                }
+                
+                if (pattern.predicate.startsWith('?')) {
+                    const varName = pattern.predicate.substring(1);
+                    if (variables.includes('*') || variables.includes(varName)) {
+                        binding[varName] = this.formatForBinding(triple.getPredicate());
+                    }
+                }
+                
+                if (pattern.object.startsWith('?')) {
+                    const varName = pattern.object.substring(1);
+                    if (variables.includes('*') || variables.includes(varName)) {
+                        binding[varName] = this.formatForBinding(triple.getObject());
+                    }
+                }
+                
+                if (Object.keys(binding).length > 0) {
+                    results.push(binding);
                 }
             }
+        } else {
+            // Multiple patterns - need to join bindings
+            const bindings = this.executeWhereClauseForSelect(patterns);
             
-            if (pattern.predicate.startsWith('?')) {
-                const varName = pattern.predicate.substring(1);
-                if (variables.includes('*') || variables.includes(varName)) {
-                    binding[varName] = triple.getPredicate().toString();
+            for (const binding of bindings) {
+                const filteredBinding: any = {};
+                
+                // Only include requested variables
+                for (const [key, value] of Object.entries(binding)) {
+                    if (variables.includes('*') || variables.includes(key)) {
+                        filteredBinding[key] = value;
+                    }
                 }
-            }
-            
-            if (pattern.object.startsWith('?')) {
-                const varName = pattern.object.substring(1);
-                if (variables.includes('*') || variables.includes(varName)) {
-                    binding[varName] = triple.getObject().toString();
+                
+                if (Object.keys(filteredBinding).length > 0) {
+                    results.push(filteredBinding);
                 }
-            }
-            
-            if (Object.keys(binding).length > 0) {
-                results.push(binding);
             }
         }
         
@@ -356,6 +379,82 @@ export class SPARQLEngine {
             variables.push(match[1]);
         }
         return variables;
+    }
+    
+    private parseObjectForMatching(objectStr: string): IRI | Literal | null {
+        if (objectStr.startsWith('"')) {
+            // It's a string literal - create proper Literal for matching
+            const content = objectStr.replace(/^"|"$/g, '');
+            return Literal.string(content);
+        } else {
+            // It's an IRI
+            return new IRI(objectStr.replace(/^<|>$/g, ''));
+        }
+    }
+    
+    private executeWhereClauseForSelect(patterns: any[]): Record<string, string>[] {
+        if (patterns.length === 0) return [];
+        
+        // Start with first pattern
+        const firstPattern = patterns[0];
+        const firstTriples = this.graph.match(
+            firstPattern.subject.startsWith('?') ? null : new IRI(firstPattern.subject.replace(/^<|>$/g, '')),
+            firstPattern.predicate.startsWith('?') ? null : new IRI(firstPattern.predicate.replace(/^<|>$/g, '')),
+            firstPattern.object.startsWith('?') ? null : this.parseObjectForMatching(firstPattern.object)
+        );
+        
+        let bindings: Record<string, string>[] = [];
+        for (const triple of firstTriples) {
+            bindings.push(this.createBinding(firstPattern, triple));
+        }
+        
+        // Join with subsequent patterns
+        for (let i = 1; i < patterns.length; i++) {
+            const pattern = patterns[i];
+            const newBindings: Record<string, string>[] = [];
+            
+            for (const binding of bindings) {
+                // Resolve pattern with current binding
+                const subjectStr = pattern.subject.startsWith('?') 
+                    ? (binding[pattern.subject.substring(1)] || null)
+                    : pattern.subject;
+                const predicateStr = pattern.predicate.startsWith('?')
+                    ? (binding[pattern.predicate.substring(1)] || null)
+                    : pattern.predicate;
+                const objectStr = pattern.object.startsWith('?')
+                    ? (binding[pattern.object.substring(1)] || null)
+                    : pattern.object;
+                
+                // Convert strings to proper types for match
+                const subject = subjectStr ? new IRI(subjectStr.replace(/^<|>$/g, '')) : null;
+                const predicate = predicateStr ? new IRI(predicateStr.replace(/^<|>$/g, '')) : null;
+                const object = objectStr ? this.parseObjectForMatching(objectStr) : null;
+                
+                // Find matching triples
+                const matches = this.graph.match(subject, predicate, object);
+                
+                for (const triple of matches) {
+                    const extendedBinding = { ...binding };
+                    
+                    // Add new variable bindings
+                    if (pattern.subject.startsWith('?') && !subjectStr) {
+                        extendedBinding[pattern.subject.substring(1)] = this.formatForBinding(triple.getSubject());
+                    }
+                    if (pattern.predicate.startsWith('?') && !predicateStr) {
+                        extendedBinding[pattern.predicate.substring(1)] = this.formatForBinding(triple.getPredicate());
+                    }
+                    if (pattern.object.startsWith('?') && !objectStr) {
+                        extendedBinding[pattern.object.substring(1)] = this.formatForBinding(triple.getObject());
+                    }
+                    
+                    newBindings.push(extendedBinding);
+                }
+            }
+            
+            bindings = newBindings;
+        }
+        
+        return bindings;
     }
     
     private parsePatterns(whereClause: string): any[] {

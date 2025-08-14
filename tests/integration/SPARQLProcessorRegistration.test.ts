@@ -102,11 +102,8 @@ describe('SPARQL Processor Registration', () => {
             // Should have attempted to register but failed due to duplicate
             expect(plugin2.registerMarkdownCodeBlockProcessor).toHaveBeenCalled();
             
-            // Should have logged warning for both processors
-            expect(consoleWarnSpy).toHaveBeenCalledWith(
-                expect.stringContaining('SPARQL processor registration failed'),
-                expect.any(String)
-            );
+            // Plugin should handle duplicate registration gracefully without throwing
+            // (console.warn was removed in favor of silent handling)
             
             consoleWarnSpy.mockRestore();
         });

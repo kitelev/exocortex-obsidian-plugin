@@ -16,7 +16,6 @@ import { ObsidianAssetRepository } from './infrastructure/repositories/ObsidianA
 import { IndexedGraph } from './domain/semantic/core/IndexedGraph';
 import { ExoFocusService } from './application/services/ExoFocusService';
 
-// @ts-ignore
 import manifest from '../manifest.json';
 
 export default class ExocortexPlugin extends Plugin {
@@ -27,7 +26,7 @@ export default class ExocortexPlugin extends Plugin {
     private rdfService: RDFService;
     
     async onload(): Promise<void> {
-        console.log(`🚀 Exocortex: Loading plugin v${manifest.version}...`);
+        // Plugin initialization
         
         // Initialize DI container
         DIContainer.initialize(this.app, this);
@@ -59,7 +58,7 @@ export default class ExocortexPlugin extends Plugin {
                 (source, el, ctx) => this.sparqlProcessor.processCodeBlock(source, el, ctx)
             );
         } catch (error) {
-            console.warn('SPARQL processor registration failed (may already be registered):', error.message);
+            // SPARQL processor may already be registered
         }
         
         // Register Graph Visualization code block processor
@@ -68,7 +67,7 @@ export default class ExocortexPlugin extends Plugin {
                 (source, el, ctx) => this.graphVisualizationProcessor.processCodeBlock(source, el, ctx)
             );
         } catch (error) {
-            console.warn('Graph processor registration failed (may already be registered):', error.message);
+            // Graph processor may already be registered
         }
         
         // Register command: Create new asset
@@ -125,7 +124,7 @@ export default class ExocortexPlugin extends Plugin {
                     this.graph,
                     this.rdfService.getNamespaceManager(),
                     (result) => {
-                        console.log('Knowledge graph exported:', result);
+                        // Graph export completed
                     }
                 );
                 modal.open();
@@ -153,9 +152,9 @@ export default class ExocortexPlugin extends Plugin {
                             // Invalidate SPARQL cache since graph changed
                             this.sparqlProcessor.invalidateCache();
                             
-                            console.log('RDF data imported successfully');
+                            // RDF import completed
                         } catch (error) {
-                            console.error('Failed to import RDF data:', error);
+                            // RDF import failed
                             new Notice(`Import failed: ${error.message}`);
                         }
                     }
@@ -204,7 +203,7 @@ export default class ExocortexPlugin extends Plugin {
                     );
                     modal.open();
                 } catch (error) {
-                    console.error('Failed to open quick task modal:', error);
+                    // Quick task modal error
                     new Notice(`Failed to open task creation: ${error.message}`);
                 }
             }
@@ -244,11 +243,11 @@ export default class ExocortexPlugin extends Plugin {
         );
         
         new Notice('🔍 Exocortex: SPARQL support and graph visualization enabled!');
-        console.log('✅ Exocortex: SPARQL processor and graph visualization registered');
+        // SPARQL and graph processors initialized
     }
     
     private async loadVaultIntoGraph(): Promise<void> {
-        console.log('📊 Loading vault into RDF graph...');
+        // Loading vault data
         const startTime = Date.now();
         
         const files = this.app.vault.getMarkdownFiles();
@@ -264,12 +263,12 @@ export default class ExocortexPlugin extends Plugin {
                     triplesCount++;
                 }
             } catch (err) {
-                console.warn(`Failed to process ${file.path}:`, err);
+                // File processing failed
             }
         }
         
         const loadTime = Date.now() - startTime;
-        console.log(`✅ Loaded ${triplesCount} triples from ${files.length} files in ${loadTime}ms`);
+        // Vault data loaded
     }
     
     private async updateFileInGraph(file: TFile): Promise<void> {
@@ -285,7 +284,7 @@ export default class ExocortexPlugin extends Plugin {
                 this.graph.add(triple);
             }
         } catch (err) {
-            console.warn(`Failed to update ${file.path} in graph:`, err);
+            // File update failed
         }
     }
     
@@ -400,7 +399,7 @@ export default class ExocortexPlugin extends Plugin {
     }
     
     async onunload(): Promise<void> {
-        console.log('👋 Exocortex: Plugin unloaded');
+        // Plugin cleanup completed
         if (this.graph) {
             this.graph.clear();
         }

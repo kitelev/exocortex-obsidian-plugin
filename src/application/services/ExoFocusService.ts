@@ -160,24 +160,29 @@ export class ExoFocusService {
             return;
         }
         
-        const configs = Array.from(this.allFocuses.values()).map(f => f.toJSON());
-        
-        await this.app.vault.adapter.write(
-            this.focusConfigPath,
-            JSON.stringify(configs, null, 2)
-        );
-        
-        // Save active focus separately for quick access
-        if (this.activeFocus) {
+        try {
+            const configs = Array.from(this.allFocuses.values()).map(f => f.toJSON());
+            
             await this.app.vault.adapter.write(
-                this.focusFilePath,
-                JSON.stringify({
-                    activeId: this.activeFocus.id,
-                    name: this.activeFocus.name,
-                    filters: this.activeFocus.filters,
-                    timestamp: new Date().toISOString()
-                }, null, 2)
+                this.focusConfigPath,
+                JSON.stringify(configs, null, 2)
             );
+            
+            // Save active focus separately for quick access
+            if (this.activeFocus) {
+                await this.app.vault.adapter.write(
+                    this.focusFilePath,
+                    JSON.stringify({
+                        activeId: this.activeFocus.id,
+                        name: this.activeFocus.name,
+                        filters: this.activeFocus.filters,
+                        timestamp: new Date().toISOString()
+                    }, null, 2)
+                );
+            }
+        } catch (error) {
+            // Log error but don't throw - allow operation to continue
+            console.error('Failed to save focus configuration:', error);
         }
     }
     

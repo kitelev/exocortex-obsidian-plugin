@@ -1,4 +1,4 @@
-import { ButtonComponent, Modal, App, Setting } from 'obsidian';
+import { ButtonComponent, Modal, App, Setting, Notice } from 'obsidian';
 import { RenderClassButtonsUseCase, ButtonRenderData } from '../../application/use-cases/RenderClassButtonsUseCase';
 import { ExecuteButtonCommandUseCase } from '../../application/use-cases/ExecuteButtonCommandUseCase';
 import { CommandParameter } from '../../domain/entities/ButtonCommand';
@@ -148,7 +148,6 @@ export class ButtonRenderer {
      */
     private showNotification(message: string, type: 'success' | 'error' | 'info'): void {
         // In Obsidian, we use Notice for notifications
-        // @ts-ignore - Notice is available in Obsidian
         new Notice(message, type === 'error' ? 5000 : 3000);
     }
 }
@@ -352,7 +351,6 @@ class CommandInputModal extends Modal {
     private showErrors(errors: string[]): void {
         // Show errors in a notice
         const errorMessage = 'Please fix the following errors:\n' + errors.join('\n');
-        // @ts-ignore
         new Notice(errorMessage, 5000);
     }
 

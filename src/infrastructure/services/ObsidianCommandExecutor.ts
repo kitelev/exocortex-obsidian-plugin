@@ -251,8 +251,8 @@ export class ObsidianCommandExecutor implements ICommandExecutor {
             }
 
             // Open search with query
-            // @ts-ignore - Obsidian internal API
-            this.app.internalPlugins.getPluginById('global-search').instance.openGlobalSearch(query);
+            // Using Obsidian internal API for search
+            (this.app as any).internalPlugins.getPluginById('global-search').instance.openGlobalSearch(query);
             
             return Result.ok<any>({ query });
         });

@@ -21,7 +21,7 @@ export class CustomBlockRenderer {
             }
             
             // Option 2: Execute Dataview query
-            if (customConfig.dataviewQuery && dv) {
+            if (customConfig.dataviewQuery) {
                 await this.renderDataviewQuery(container, customConfig.dataviewQuery, dv);
                 return;
             }

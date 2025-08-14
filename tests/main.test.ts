@@ -1,5 +1,5 @@
-import { App, TFile, Notice, MarkdownPostProcessorContext } from 'obsidian';
-import ExocortexPlugin from '../main';
+import { App, TFile, Notice, MarkdownPostProcessorContext, Plugin } from 'obsidian';
+import ExocortexPlugin from '../src/main';
 
 // Mock DIContainer
 jest.mock('../src/infrastructure/container/DIContainer', () => {
