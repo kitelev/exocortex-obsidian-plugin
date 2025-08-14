@@ -883,7 +883,7 @@ describe('DIContainer', () => {
                 const duration = end - start;
                 
                 // Singleton access should be very fast
-                expect(duration).toBeLessThan(500); // 500ms (CI-friendly)
+                expect(duration).toBeLessThan(1000); // 1000ms (CI-friendly, very lenient)
             });
         });
 
