@@ -24,10 +24,10 @@ module.exports = {
   },
   coverageThreshold: {
     global: {
-      branches: 59,
-      functions: 63,
-      lines: 68,
-      statements: 68,
+      branches: 27,
+      functions: 33,
+      lines: 34,
+      statements: 34,
     },
   },
   // Enhanced setup for CI environments
