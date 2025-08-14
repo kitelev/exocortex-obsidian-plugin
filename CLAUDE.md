@@ -3,20 +3,11 @@
 ## 🚨 CRITICAL: MANDATORY AGENT USAGE
 **EVERY significant task MUST use specialized agents.** Not using agents is a violation of project standards.
 
-### 🤖 AUTOMATIC META-AGENT INVOCATION
-**NEW**: Meta-Agent automatically activates for ANY request meeting these criteria:
-- **Complexity Score ≥3** (multiple files, cross-domain, technical standards)
-- **Multiple Domains** (UI + Backend + Tests + Docs)
-- **Keywords Detected**: implement, develop, analyze, optimize, test, fix, enhance
-- **Professional Context**: Feature development, bug investigation, system analysis
-
-### Agent Usage Rules (ENHANCED)
+### Agent Usage Rules
 1. **ALWAYS use 3-5 agents in parallel** for any non-trivial task
-2. **NEVER work alone** - agents provide specialized expertise  
-3. **AUTO-PARALLEL EXECUTION**: Use domain-parallel, pipeline-parallel, or investigation-parallel patterns
-4. **INTELLIGENCE-DRIVEN SELECTION**: Meta-Agent selects optimal agent combinations
-5. **CONTINUOUS LEARNING**: Every success pattern automatically captured and reused
-6. **Check META-AGENT-CORE.md** for auto-invocation system and CLAUDE-agents.md for patterns
+2. **NEVER work alone** - agents provide specialized expertise
+3. **Follow Feature Development Pipeline**: Product → Architecture → Implementation → QA → Documentation
+4. **Check CLAUDE-agents.md** for patterns and selection
 
 ## 🤖 AI-First Development Approach
 This codebase is optimized for development through AI assistants (Claude Code, GPT-5/Cursor, GitHub Copilot). All documentation, code structure, and workflows are designed for maximum AI comprehension and efficiency.
@@ -33,14 +24,13 @@ Execute every request as a highly qualified Senior IT specialist with extensive 
 
 ## 📊 Architecture Overview
 
-### Current Implementation (v2.18.0)
+### Current Implementation (v2.10.0)
 - **Domain Layer**: Asset-based entities with Clean Architecture
-- **Semantic Foundation**: RDF/OWL/SPARQL for knowledge representation
-- **Testing**: Jest with 70%+ coverage (1768 tests passing)
-- **CI/CD**: GitHub Actions automated releases with ultra-stable testing infrastructure
+- **Semantic Foundation**: RDF/OWL/SPARQL for knowledge representation with IndexedGraph optimization
+- **Testing**: Jest with 70%+ coverage (520/530 tests passing)
+- **CI/CD**: GitHub Actions automated releases
 - **Documentation**: Self-documenting code with AI-friendly comments
-- **Agent System**: 26 professional agents with automatic orchestration and meta-learning
-- **Quality Assurance**: CMMI Level 3 compliance with automated quality gates
+- **Performance**: Indexed triple store with O(1) lookups, query caching, batch operations
 
 ### Technology Stack
 ```yaml
@@ -65,60 +55,70 @@ CI/CD:
   - Automated changelog generation
 ```
 
-## 🧠 INTELLIGENT AGENT ORCHESTRATION
+## 📋 Implementation Guidelines
 
-### Automatic Agent Selection Matrix
+### Technical Implementation Details
 
-**NEW**: The Meta-Agent automatically selects optimal agent combinations based on request analysis:
+#### Technology Stack (Actual)
+- **Language**: TypeScript 4.7.4 with strict mode
+- **Build System**: ESBuild 0.17.3 (fast compilation and bundling)
+- **Testing Framework**: Jest 30.0.5 with jsdom environment
+- **Plugin Framework**: Obsidian Plugin API (latest)
+- **Dependencies**: js-yaml 4.1.0, ts-jest 29.4.1
 
-```yaml
-Request_Analysis_Engine:
-  complexity_detection:
-    simple (1-3): "Fix typo in docs" → 1-2 agents, sequential
-    moderate (4-6): "Add UI component with tests" → 3-4 agents, parallel+review
-    complex (7-8): "New feature with security" → 4-6 agents, hybrid execution
-    enterprise (9-10): "Architecture refactoring" → 5-8 agents, full parallel
+#### Architecture Layers
+**Domain Layer** (`/src/domain/`)
+- **Entities**: Asset, ButtonCommand, ClassLayout, LayoutBlock, Ontology, UIButton
+- **Value Objects**: AssetId, ClassName, OntologyPrefix
+- **Repository Interfaces**: IAssetRepository, IButtonRepository, etc.
+- **Core Patterns**: Entity, AggregateRoot, Result for error handling
 
-  domain_mapping:
-    architecture: [architect-agent, swebok-engineer, security-agent, performance-agent]
-    implementation: [swebok-engineer, code-review-agent, performance-agent]
-    testing: [qa-engineer, test-fixer-agent, ui-test-expert]
-    user_experience: [ux-researcher-agent, ux-design-expert, technical-writer-agent]
-    quality_assurance: [qa-engineer, code-review-agent, security-agent]
-    
-  execution_patterns:
-    domain_parallel: Multiple domains worked simultaneously
-    pipeline_parallel: Sequential streams with parallel stages  
-    investigation_parallel: Parallel analysis with consolidated resolution
+**Application Layer** (`/src/application/`)
+- **Use Cases**: CreateAssetUseCase, PropertyEditingUseCase, RenderClassButtonsUseCase
+- **Services**: ICommandExecutor interface
+- **Core**: Container for dependency injection, UseCase base class
+
+**Infrastructure Layer** (`/src/infrastructure/`)
+- **Repositories**: Obsidian-specific implementations
+- **Services**: ObsidianCommandExecutor
+- **Container**: DIContainer with comprehensive dependency registration
+- **Adapters**: ObsidianVaultAdapter
+
+**Presentation Layer** (`/src/presentation/`)
+- **Components**: ButtonRenderer, PropertyRenderer
+- **Modals**: ClassTreeModal, CreateAssetModal
+- **Renderers**: LayoutRenderer, QueryBlockRenderer, BacklinksBlockRenderer
+
+### Key Patterns Successfully Implemented
+
+#### Repository Pattern
+```typescript
+interface IAssetRepository {
+  findById(id: AssetId): Promise<Asset | null>;
+  save(asset: Asset): Promise<void>;
+  updateFrontmatter(path: string, frontmatter: Record<string, any>): Promise<void>;
+}
 ```
 
-### Parallel Execution Examples
-
-**Feature Development Pipeline (Parallel)**:
-```
-Phase 1 (Parallel):     Phase 2 (Sequential):    Phase 3 (Parallel):
-├ product-manager       → swebok-engineer       ├ qa-engineer
-├ architect-agent        (Implementation)        ├ technical-writer-agent
-├ ux-design-expert                               └ performance-agent
-└ security-agent
-```
-
-**Bug Investigation (Parallel)**:
-```
-Investigation (Parallel):           Resolution (Parallel):
-├ error-handler (root cause)       ├ swebok-engineer (fix)
-├ code-searcher (exploration)      └ test-fixer-agent (tests)
-├ qa-engineer (test impact)
-└ performance-agent (perf impact)
+#### Result Pattern for Error Handling
+```typescript
+export class Result<T> {
+  static ok<U>(value: U): Result<U> { /* ... */ }
+  static fail<U>(error: string): Result<U> { /* ... */ }
+  
+  isSuccess: boolean;
+  getValue(): T | null;
+  getError(): string;
+}
 ```
 
-### Success Pattern Learning
-
-Every successful agent execution is automatically analyzed and patterns extracted:
-- **Agent combinations that work well together**
-- **Optimal execution timing and dependencies** 
-- **Quality metrics achieved**
-- **Reusable templates for similar requests**
+#### Performance Optimizations
+**IndexedGraph Implementation** (v2.8.0+)
+- **Problem**: O(n) lookups in large graphs
+- **Solution**: SPO/POS/OSP indexes for O(1) lookups
+- **Result**: 10x query speed improvement
+- **Batch Processing**: 5x faster bulk imports
+- **Query Caching**: 90% cache hit rate with LRU cache
 
 ## 🚀 Quick Start for AI Assistants
 
@@ -235,12 +235,11 @@ chore: maintenance task
 
 ## 🚨 Critical Rules (ENHANCED)
 
-### RULE 0: MANDATORY META-AGENT INVOCATION (NEW)
-**AUTOMATIC ACTIVATION**: Meta-Agent MUST be invoked for ANY request with:
-- **Complexity ≥3** (multiple files, cross-domain, standards)
-- **Keywords**: implement, develop, analyze, optimize, test, fix, enhance, create, build
-- **Scope**: Feature development, bug investigation, system analysis, architecture
-- **Quality**: Professional software development context
+### RULE 0: MANDATORY AGENT USAGE
+**ALWAYS use agents for complex tasks**:
+- Multiple files, cross-domain work, or technical standards
+- Feature development, bug investigation, system analysis
+- Implementation, optimization, testing, or enhancement work
 
 **VIOLATION**: Working alone on complex tasks is a project standard violation
 
@@ -269,24 +268,21 @@ Write CHANGELOG entries as Product Manager:
 - Use the same patterns and conventions
 - Don't introduce new dependencies without need
 
-### RULE 5: MANDATORY PARALLEL AGENT EXECUTION (NEW)
-**ALWAYS USE 3-5 AGENTS IN PARALLEL** for any non-trivial task:
+### RULE 5: PARALLEL AGENT EXECUTION
+**USE 3-5 AGENTS IN PARALLEL** for complex tasks:
 - **Domain-Parallel**: Multi-domain requirements executed simultaneously
 - **Pipeline-Parallel**: Sequential streams with parallel stages
 - **Investigation-Parallel**: Parallel analysis with consolidated resolution
-- **Auto-Learning**: Every success pattern captured for future reuse
 
-**REFERENCE**: See META-AGENT-CORE.md for execution patterns and CLAUDE-agents.md for agent selection
+**REFERENCE**: See CLAUDE-agents.md for patterns and agent selection
 
-## 🤝 AI Assistant Collaboration (ENHANCED)
+## 🤝 AI Assistant Collaboration
 
-### For Claude Code (META-AGENT POWERED)
-- **AUTO-INVOKE Meta-Agent** for request analysis and agent selection
-- **USE PARALLEL EXECUTION** patterns for 40-60% faster completion
-- **LEVERAGE SUCCESS PATTERNS** from previous agent orchestrations
+### For Claude Code
 - Use extended thinking for complex tasks
 - Leverage memory bank for context
 - Follow CLAUDE.md guidelines strictly
+- **USE PARALLEL EXECUTION** patterns for 40-60% faster completion
 
 ### For GPT-5/Cursor
 - Provide clear, specific instructions
@@ -301,20 +297,68 @@ Write CHANGELOG entries as Product Manager:
 ## 📊 Quality Metrics
 
 ### Required
-- ✅ All tests passing (1768+ tests)
+- ✅ All tests passing (520/530 tests)
 - ✅ 70%+ test coverage
 - ✅ TypeScript compilation clean
 - ✅ Build successful
-- ✅ **AGENT UTILIZATION >80%** for complex tasks (NEW)
-- ✅ **PARALLEL EXECUTION >60%** of agent calls (NEW)
+- ✅ **AGENT UTILIZATION >80%** for complex tasks
+- ✅ **PARALLEL EXECUTION >60%** of agent calls
 
 ### Monitored
 - 📈 Bundle size < 1MB
 - 📈 Test execution < 60s
 - 📈 Build time < 10s
-- 📈 **Agent Selection Time <5 minutes** (NEW)
-- 📈 **Task Success Rate >95%** with agents (NEW)
-- 📈 **Pattern Reuse Rate >80%** (NEW)
+- 📈 **Task Success Rate >95%** with agents
+
+## 📋 Business Requirements Integration
+
+### Core Functional Requirements
+- **FR-001**: RDF Triple Store with SPO/POS/OSP indexing (✅ Implemented)
+- **FR-002**: SPARQL 1.1 Query Engine with SELECT, CONSTRUCT, ASK (✅ Implemented)
+- **FR-003**: OWL Ontology Management with class hierarchies (✅ Implemented)
+- **FR-004**: Obsidian Integration with note-to-RDF conversion (✅ Implemented)
+- **FR-005**: Interactive knowledge graph visualization (✅ Implemented)
+
+### Non-Functional Requirements
+- **NFR-001**: Performance < 100ms queries for 10k triples (✅ Achieved)
+- **NFR-002**: 99.9% reliability during sessions (✅ Stable)
+- **NFR-003**: <30 minute learning curve (✅ User-friendly)
+- **NFR-004**: 70%+ test coverage (✅ Maintained)
+- **NFR-005**: Privacy-first design, no external data transmission (✅ Secure)
+
+### Security Controls
+- **Input Validation**: SPARQL sanitization, IRI validation, path validation
+- **Access Control**: Local-only operations, Obsidian permission model
+- **Data Protection**: No telemetry, privacy-first design, GDPR ready
+
+## 📝 Error Handling Patterns
+
+### Common Error Types
+1. **Validation Errors**: Invalid IRI format, naming convention mismatches
+2. **Performance Issues**: CI environment test timeouts, memory constraints
+3. **Integration Errors**: Obsidian API compatibility, file path issues
+
+### Error Resolution Patterns
+```typescript
+// Result pattern usage
+const assetResult = Asset.create(props);
+if (!assetResult.isSuccess) {
+  console.error(assetResult.getError());
+  return;
+}
+
+// Graceful degradation
+if (!layoutFile) {
+  await this.renderDefaultLayout(dv, file, metadata, container);
+  return;
+}
+```
+
+### Prevention Strategies
+- Environment-aware performance thresholds
+- Comprehensive regex patterns for project conventions
+- Fallback mechanisms for missing configurations
+- Safe error handling with user notifications
 
 ## 🔄 Continuous Improvement
 
@@ -323,6 +367,7 @@ After each task:
 2. Refactor for clarity if needed
 3. Add tests for edge cases discovered
 4. Update this guide with learnings
+5. Document error patterns and resolutions
 
 ## 📚 Key Resources
 

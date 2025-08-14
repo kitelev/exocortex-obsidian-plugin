@@ -1,4 +1,0 @@
-
-> exocortex-obsidian-plugin@0.9.0 build
-> tsc -noEmit -skipLibCheck && node esbuild.config.mjs production
-

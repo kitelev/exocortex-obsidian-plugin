@@ -1,34 +1,52 @@
-# vscode
-.vscode 
-
-# Intellij
-*.iml
-.idea
-
-# npm
-node_modules
-
-# Don't include the compiled main.js file in the repo.
-# They should be uploaded to GitHub releases instead.
+# Build artifacts
 main.js
+main.js.map
+styles.css
+*.log
 
-# Exclude sourcemaps
-*.map
+# Development dependencies
+node_modules/
 
-# obsidian
-data.json
-
-# Exclude macOS Finder (System Explorer) View States
-.DS_Store
-
-# Test coverage reports
+# Testing artifacts
 coverage/
-*.lcov
-
-# Obsidian test cache
-.obsidian-cache/
-test-obsidian/
-
-# Test artifacts
 screenshots/
 wdio-logs/
+test-obsidian/
+.obsidian-cache/
+test-notes/
+~/ExocortexTestVault/
+
+# Debug files
+debug-main.js
+debug-main.ts
+*.backup
+*.old
+*.backup.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Obsidian plugin dev
+data.json
+.hotreload
+
+# Archive
+.archive/
+
+# Environment
+.env
+.env.local
+
+# Temporary test files
+test-*.js
+test-*.ts
+!tests/**/*.js
+!tests/**/*.ts
+
+# Performance cache
+.jest-cache/
