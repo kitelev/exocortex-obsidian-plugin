@@ -847,6 +847,22 @@ describe('DIContainer', () => {
         });
 
         describe('Resolution Performance', () => {
+            // Adaptive timeouts for different environments
+            const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+            const isMacOS = process.platform === 'darwin';
+            
+            // macOS in CI is particularly slow, so we need different thresholds
+            const getPerformanceThreshold = (baseTime: number): number => {
+                if (isCI && isMacOS) {
+                    return baseTime * 5; // 5x for macOS in CI (very lenient)
+                } else if (isCI) {
+                    return baseTime * 3; // 3x for other CI environments
+                } else if (isMacOS) {
+                    return baseTime * 2; // 2x for local macOS
+                }
+                return baseTime; // Base time for local Linux/Windows
+            };
+
             it('should resolve services efficiently', () => {
                 container = DIContainer.initialize(app, mockPlugin);
                 
@@ -863,7 +879,8 @@ describe('DIContainer', () => {
                 const duration = end - start;
                 
                 // Should complete within reasonable time (adjust threshold as needed)
-                expect(duration).toBeLessThan(2000); // 2 seconds (CI-friendly)
+                const threshold = getPerformanceThreshold(1000); // Base: 1 second
+                expect(duration).toBeLessThan(threshold);
             });
 
             it('should handle repeated singleton access efficiently', () => {
@@ -883,7 +900,8 @@ describe('DIContainer', () => {
                 const duration = end - start;
                 
                 // Singleton access should be very fast
-                expect(duration).toBeLessThan(1000); // 1000ms (CI-friendly, very lenient)
+                const threshold = getPerformanceThreshold(500); // Base: 500ms for singleton access
+                expect(duration).toBeLessThan(threshold);
             });
         });
 
