@@ -50,7 +50,14 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
                     /['"];\s*(DROP|DELETE|INSERT|UPDATE|ALTER)\s+/gi,
                     /UNION\s+SELECT.*FROM/gi, // SQL UNION pattern
                     /--\s*[^\r\n]*?(DROP|DELETE|INSERT)/gi, // SQL comments with dangerous commands
-                    /\/\*.*?(DROP|DELETE|INSERT).*?\*\//gi  // SQL block comments with dangerous commands
+                    /\/\*.*?(DROP|DELETE|INSERT).*?\*\//gi,  // SQL block comments with dangerous commands
+                    /['"];\s*DROP\s+TABLE/gi, // Basic DROP TABLE injection
+                    /['"];\s*INSERT\s+INTO/gi, // Basic INSERT injection
+                    /['"];\s*DELETE\s+FROM/gi, // Basic DELETE injection
+                    // URL encoded patterns
+                    /%27%3B%20DROP%20TABLE/gi, // URL encoded '; DROP TABLE
+                    /%22%3B%20DROP%20TABLE/gi, // URL encoded "; DROP TABLE
+                    /%3B%20DROP%20TABLE/gi     // URL encoded ; DROP TABLE
                 ];
                 return sqlPatterns.some(pattern => pattern.test(query));
             },
@@ -60,26 +67,39 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
         },
         {
             name: 'SPARQL_INJECTION_NESTED',
-            pattern: /\{\s*(SELECT|CONSTRUCT|ASK|DESCRIBE)\s+.*\{\s*(SELECT|CONSTRUCT|ASK|DESCRIBE)/gi,
-            severity: 'critical',
+            pattern: (query: string) => {
+                // Look for nested queries that could be injection attempts
+                // Check for } followed by UNION and then another query structure
+                const nestedPatterns = [
+                    /\}\s*UNION\s*\{\s*(SELECT|CONSTRUCT|ASK|DESCRIBE)/gi,
+                    /['"].*\}\s*UNION\s*\{\s*(SELECT|CONSTRUCT|ASK|DESCRIBE)/gi,
+                    /\{\s*(SELECT|CONSTRUCT|ASK|DESCRIBE)\s+.*\{\s*(SELECT|CONSTRUCT|ASK|DESCRIBE)/gi
+                ];
+                return nestedPatterns.some(pattern => pattern.test(query));
+            },
+            severity: 'error',
             message: 'Potentially malicious nested query structure',
             recommendation: 'Validate subquery legitimacy'
         },
         {
             name: 'COMMAND_INJECTION',
             pattern: (query: string) => {
-                // Only flag command injection if we see shell-like patterns
-                // Allow normal SPARQL syntax that might contain semicolons, braces, etc.
+                // Detect command injection patterns including basic shell commands
                 const suspiciousPatterns = [
                     /&&\s*[a-zA-Z_]/,  // Shell AND
                     /\|\|\s*[a-zA-Z_]/, // Shell OR  
                     /`[^`]*`/,         // Backticks (command substitution)
                     /\$\([^)]*\)/,     // Command substitution
-                    /;\s*(rm|cat|ls|echo|curl|wget|bash|sh)\s/i // Shell commands after semicolon
+                    /;\s*(rm|cat|ls|echo|curl|wget|bash|sh)\s/i, // Shell commands after semicolon
+                    /['"];\s*rm\s+-rf\s+\//i, // Dangerous rm command
+                    /['"];\s*cat\s+\/etc\/passwd/i, // File reading attempt
+                    /\|\s*cat\s+\/etc\/passwd/i, // Pipe to cat
+                    /['"];?\s*whoami/i, // whoami command
+                    /['"];?\s*\$\(/i // Command substitution with quotes
                 ];
                 return suspiciousPatterns.some(pattern => pattern.test(query));
             },
-            severity: 'critical',
+            severity: 'error',
             message: 'Command injection patterns detected',
             recommendation: 'Remove or escape special shell characters'
         },
@@ -105,29 +125,35 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
             message: 'Unix path traversal pattern detected'
         },
         
-        // Resource enumeration attempts (reduced severity)
+        // Resource enumeration attempts
         {
             name: 'RESOURCE_ENUMERATION',
             pattern: (query: string) => {
-                // Only flag if there are many enumeration patterns without any LIMIT
+                // Flag queries with multiple enumeration patterns
                 const enumerationPatterns = query.match(/\?\w+\s+(rdf:type|rdfs:label|owl:sameAs)\s+\?\w+/gi);
                 const hasLimit = /LIMIT\s+\d+/i.test(query);
-                return !!(enumerationPatterns && enumerationPatterns.length > 3 && !hasLimit);
+                // Also check for metadata enumeration
+                const metadataPatterns = query.match(/(owl:Ontology|rdf:Property|rdfs:Class)/gi);
+                return !!(enumerationPatterns && enumerationPatterns.length >= 2) || 
+                       !!(metadataPatterns && metadataPatterns.length >= 1);
             },
-            severity: 'info',
-            message: 'Multiple resource enumeration patterns without LIMIT',
+            severity: 'warning',
+            message: 'Resource enumeration patterns detected',
             recommendation: 'Consider adding LIMIT clause for better performance'
         },
         {
             name: 'BROAD_PROPERTY_SCAN',
             pattern: (query: string) => {
-                // Only flag very broad scans without any specificity and without LIMIT
-                const broadPatterns = query.match(/\?\w+\s+\?\w+\s+\?\w+/g);
-                const hasSpecificConstraints = /\.\s*\?\w+\s+(\w+:|<[^>]+>)/i.test(query);
+                // Flag very broad scans - simple ?s ?p ?o patterns
+                const normalizedQuery = query.toLowerCase().trim();
+                const hasBroadPattern = /\?\w+\s+\?\w+\s+\?\w+/g.test(normalizedQuery);
                 const hasLimit = /LIMIT\s+\d+/i.test(query);
-                return !!(broadPatterns && broadPatterns.length > 1 && !hasSpecificConstraints && !hasLimit);
+                const hasSpecificConstraints = /\w+:\w+|<[^>]+>/i.test(query);
+                
+                // Flag if it's a simple broad scan without constraints
+                return hasBroadPattern && !hasLimit && !hasSpecificConstraints;
             },
-            severity: 'info',
+            severity: 'warning',
             message: 'Very broad triple patterns without constraints or LIMIT'
         },
         
@@ -147,8 +173,15 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
         
         // Protocol abuse patterns
         {
+            name: 'DANGEROUS_PROTOCOL',
+            pattern: /(javascript:|data:|vbscript:|file:\/\/)/gi,
+            severity: 'critical',
+            message: 'Dangerous protocol detected in IRI',
+            recommendation: 'Remove dangerous protocol references'
+        },
+        {
             name: 'EXTERNAL_RESOURCE_ACCESS',
-            pattern: /(http:\/\/|https:\/\/|ftp:\/\/|file:\/\/|ldap:\/\/)/gi,
+            pattern: /(http:\/\/|https:\/\/|ftp:\/\/|ldap:\/\/)/gi,
             severity: 'warning',
             message: 'External resource reference detected',
             recommendation: 'Restrict to allowed domains only'
@@ -163,15 +196,64 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
         // Query structure attacks
         {
             name: 'EXCESSIVE_OPTIONALS',
-            pattern: /OPTIONAL\s*\{[^}]*\}\s*OPTIONAL/gi,
+            pattern: (query: string) => {
+                const optionalMatches = query.match(/OPTIONAL\s*\{/gi);
+                return !!(optionalMatches && optionalMatches.length >= 4);
+            },
             severity: 'warning',
             message: 'Excessive OPTIONAL clauses may indicate DoS attempt'
         },
         {
             name: 'RECURSIVE_PATTERN',
-            pattern: /\?\w+\s+[^?]*\s+\?\w+.*\?\w+\s+[^?]*\s+\?\w+/gi,
+            pattern: (query: string) => {
+                // Look for patterns that could create cycles
+                const recursivePatterns = [
+                    /\?\w+\s+\w+\s+\?\w+\s*\.\s*\?\w+\s+\w+\s+\?\w+/gi, // Basic cycle pattern
+                    /\?\w+\s+(\w+:)?relates\s+\?\w+\s*\.\s*\?\w+\s+(\w+:)?relates\s+\?\w+/gi, // Relations cycle
+                    /\?\w+\s+(\w+:)?parent\s+\?\w+\s*\.\s*\?\w+\s+(\w+:)?parent\s+\?\w+/gi, // Parent cycle
+                    /\?\w+\s+(\w+:)?depends\s+\?\w+\s*\.\s*\?\w+\s+(\w+:)?depends\s+\?\w+/gi, // Dependency cycle
+                    // Look for potential circular dependencies (A->B->C->D->A pattern)
+                    /\?\w+\s+\w+\s+\?\w+\s*\.\s*\?\w+\s+\w+\s+\?\w+\s*\.\s*\?\w+\s+\w+\s+\?\w+\s*\.\s*\?\w+\s+\w+\s+\?\w+/gi,
+                    // Property path recursion patterns
+                    /\w+\+.*\w+\+/gi, // Transitive closure patterns
+                    /\?\w+\s+\w+:connects\+\s+\?\w+\s*\.\s*\?\w+\s+\w+:connects\+\s+\?\w+/gi, // Path recursion
+                    /\?\w+\s+\w+:references\*\s+\?\w+/gi // Self-reference patterns
+                ];
+                return recursivePatterns.some(pattern => pattern.test(query));
+            },
             severity: 'warning',
             message: 'Potentially recursive pattern detected'
+        },
+        // DoS Attack patterns
+        {
+            name: 'EXPONENTIAL_UNION',
+            pattern: (query: string) => {
+                const unionCount = (query.match(/UNION/gi) || []).length;
+                return unionCount >= 6; // Large number of UNIONs can cause exponential growth
+            },
+            severity: 'error',
+            message: 'Excessive UNION operations may cause resource exhaustion'
+        },
+        {
+            name: 'CARTESIAN_PRODUCT',
+            pattern: (query: string) => {
+                // Count separate triple patterns without FILTER constraints
+                const triplePatterns = query.match(/\?\w+\d*\s+\?\w+\d*\s+\?\w+\d*/gi);
+                const hasFilters = /FILTER/gi.test(query);
+                return !!(triplePatterns && triplePatterns.length >= 5 && !hasFilters);
+            },
+            severity: 'error',
+            message: 'Multiple unfiltered triple patterns may cause Cartesian product explosion'
+        },
+        {
+            name: 'NESTED_OPTIONALS',
+            pattern: (query: string) => {
+                // Detect deeply nested OPTIONAL clauses
+                const nestedOptionals = /OPTIONAL\s*\{\s*OPTIONAL\s*\{\s*OPTIONAL/gi;
+                return nestedOptionals.test(query);
+            },
+            severity: 'error',
+            message: 'Deeply nested OPTIONAL clauses may cause exponential complexity'
         }
     ];
 
@@ -234,7 +316,7 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
                 const evidence = Array.isArray(matches) ? matches[0] : 'Pattern detected';
                 threats.push({
                     type: this.categorizeRule(rule.name),
-                    severity: rule.severity as ThreatDetection['severity'],
+                    severity: this.mapSeverity(rule.severity),
                     description: rule.message,
                     evidence,
                     mitigation: rule.recommendation || 'Review and sanitize query'
@@ -251,10 +333,24 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
     private categorizeRule(ruleName: string): ThreatDetection['type'] {
         if (ruleName.includes('INJECTION')) return 'injection';
         if (ruleName.includes('TRAVERSAL')) return 'traversal';
-        if (ruleName.includes('ENUMERATION')) return 'enumeration';
-        if (ruleName.includes('DOS') || ruleName.includes('EXCESSIVE')) return 'dos';
+        if (ruleName.includes('ENUMERATION') || ruleName.includes('SCAN')) return 'enumeration';
+        if (ruleName.includes('DOS') || ruleName.includes('EXCESSIVE') || ruleName.includes('RECURSIVE') || 
+            ruleName.includes('UNION') || ruleName.includes('CARTESIAN') || ruleName.includes('NESTED')) return 'dos';
         if (ruleName.includes('DISCLOSURE') || ruleName.includes('SYSTEM')) return 'information_disclosure';
         return 'injection'; // Default
+    }
+
+    /**
+     * Map ValidationRule severity to ThreatDetection severity
+     */
+    private mapSeverity(severity: ValidationRule['severity']): ThreatDetection['severity'] {
+        switch (severity) {
+            case 'critical': return 'critical';
+            case 'error': return 'high';
+            case 'warning': return 'medium';
+            case 'info': return 'low';
+            default: return 'low';
+        }
     }
 
     /**
@@ -283,13 +379,23 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
         }
 
         // Check for data exfiltration patterns
-        if (normalizedQuery.includes('construct') && normalizedQuery.includes('*')) {
+        if (normalizedQuery.includes('construct') && (normalizedQuery.includes('*') || /\?\w+\s+\?\w+\s+\?\w+/.test(normalizedQuery))) {
             warnings.push('CONSTRUCT with wildcard may expose sensitive data');
         }
 
         // Check for timing attack patterns
         if (normalizedQuery.includes('regex') && normalizedQuery.includes('filter')) {
             warnings.push('Complex REGEX in FILTER may be vulnerable to timing attacks');
+        }
+
+        // Check for Unicode exploitation attempts
+        if (/[\u0300-\u036f\u200b-\u200d\u202e\u0430]/g.test(query)) {
+            warnings.push('Unicode exploitation characters detected - potential encoding attack');
+        }
+
+        // Check for mixed content types
+        if (normalizedQuery.includes('content') || normalizedQuery.includes('charset') || normalizedQuery.includes('encoding')) {
+            warnings.push('Mixed content type references detected - review for content injection');
         }
 
         return warnings;
@@ -305,8 +411,7 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
         const delimiters = [
             { open: '{', close: '}', name: 'braces' },
             { open: '(', close: ')', name: 'parentheses' },
-            { open: '<', close: '>', name: 'angle brackets' },
-            { open: '"', close: '"', name: 'double quotes' }
+            { open: '<', close: '>', name: 'angle brackets' }
         ];
 
         for (const delimiter of delimiters) {
@@ -315,6 +420,30 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
             
             if (openCount !== closeCount) {
                 issues.push(`Unbalanced ${delimiter.name}: ${openCount} open, ${closeCount} close`);
+            }
+        }
+
+        // Special handling for quotes - look for unclosed strings
+        const quoteMatches = query.match(/"[^"]*$/g); // String that starts but doesn't end
+        if (quoteMatches && quoteMatches.length > 0) {
+            issues.push('Unclosed string literal detected');
+        }
+
+        // Check for invalid bracket nesting
+        const brackets = /[\{\}\(\)\[\]]/g;
+        const stack: string[] = [];
+        let match;
+        while ((match = brackets.exec(query)) !== null) {
+            const char = match[0];
+            if (char === '{' || char === '(' || char === '[') {
+                stack.push(char);
+            } else {
+                const expected = stack.pop();
+                const pairs: { [key: string]: string } = { '}': '{', ')': '(', ']': '[' };
+                if (!expected || expected !== pairs[char]) {
+                    issues.push(`Mismatched bracket/brace structure detected`);
+                    break;
+                }
             }
         }
 
@@ -328,9 +457,33 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
         const iris = query.match(iriPattern) || [];
         
         for (const iri of iris) {
-            if (!this.isValidIRI(iri.slice(1, -1))) {
+            const iriContent = iri.slice(1, -1);
+            if (!this.isValidIRI(iriContent)) {
                 issues.push(`Malformed IRI: ${iri}`);
             }
+            if (iriContent.length > 2048) {
+                issues.push(`IRI too long: ${iri.substring(0, 50)}...`);
+            }
+        }
+
+        // Check for extremely large literals
+        const stringLiterals = query.match(/"[^"]*"/g) || [];
+        for (const literal of stringLiterals) {
+            if (literal.length > 10000) {
+                issues.push(`String literal too large: ${literal.substring(0, 50)}...`);
+            }
+        }
+
+        // Check for numeric literals that are too large
+        const numericLiterals = query.match(/\d{20,}/g) || [];
+        if (numericLiterals.length > 0) {
+            issues.push('Extremely large numeric literals detected - potential resource exhaustion');
+        }
+
+        // Check for malformed escape sequences
+        const escapeIssues = query.match(/\\[^"'\\\/bfnrt]|\\u[^0-9a-fA-F]{4}|\\x[^0-9a-fA-F]{2}/g);
+        if (escapeIssues) {
+            issues.push('Malformed escape sequences detected in string literals');
         }
 
         return issues;
@@ -404,20 +557,20 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
     private calculateSecurityScore(query: string, threats: ThreatDetection[]): number {
         let score = 100;
 
-        // Deduct points for threats
+        // Deduct points for threats (more aggressive scoring)
         for (const threat of threats) {
             switch (threat.severity) {
                 case 'critical':
-                    score -= 30;
+                    score -= 40;  // Increased from 30
                     break;
                 case 'high':
-                    score -= 20;
+                    score -= 25;  // Increased from 20
                     break;
                 case 'medium':
-                    score -= 10;
+                    score -= 15;  // Increased from 10
                     break;
                 case 'low':
-                    score -= 5;
+                    score -= 8;   // Increased from 5
                     break;
             }
         }
@@ -507,8 +660,11 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
         // Apply automatic fixes for common issues
         for (const threat of validation.detectedThreats) {
             if (threat.type === 'injection') {
-                // Remove or escape dangerous characters
-                safeQuery = safeQuery.replace(/[;&|`$(){}[\]<>]/g, '');
+                // Remove dangerous SQL commands
+                safeQuery = safeQuery.replace(/DROP\s+TABLE[^"']*/gi, '***');
+                safeQuery = safeQuery.replace(/DELETE\s+FROM[^"']*/gi, '***');
+                safeQuery = safeQuery.replace(/INSERT\s+INTO[^"']*/gi, '***');
+                safeQuery = safeQuery.replace(/[;&|`$()]/g, '');
             }
             
             if (threat.type === 'traversal') {
@@ -524,5 +680,38 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
         }
 
         return Result.ok(safeQuery);
+    }
+
+    /**
+     * Escape string literals to prevent injection
+     */
+    escapeStringLiteral(input: string): string {
+        return input
+            .replace(/\\/g, '\\\\')
+            .replace(/'/g, "\\'")
+            .replace(/"/g, '\\"')
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t');
+    }
+
+    /**
+     * Create safe IRI from user input
+     */
+    createSafeIRI(input: string): string {
+        // Remove dangerous characters
+        const cleaned = input
+            .replace(/[<>"'`\x00-\x1f\x7f-\x9f]/g, '')
+            .replace(/\.\./g, '')
+            .replace(/javascript:/gi, '')
+            .replace(/data:/gi, '')
+            .replace(/file:/gi, '');
+        
+        // Ensure it starts with valid namespace
+        if (!/^[a-zA-Z][a-zA-Z0-9_]*:/.test(cleaned)) {
+            return `safe:${cleaned.replace(/[^a-zA-Z0-9_]/g, '_')}`;
+        }
+        
+        return cleaned;
     }
 }
