@@ -112,7 +112,7 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
                 // Only flag if there are many enumeration patterns without any LIMIT
                 const enumerationPatterns = query.match(/\?\w+\s+(rdf:type|rdfs:label|owl:sameAs)\s+\?\w+/gi);
                 const hasLimit = /LIMIT\s+\d+/i.test(query);
-                return enumerationPatterns && enumerationPatterns.length > 3 && !hasLimit;
+                return !!(enumerationPatterns && enumerationPatterns.length > 3 && !hasLimit);
             },
             severity: 'info',
             message: 'Multiple resource enumeration patterns without LIMIT',
@@ -125,7 +125,7 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
                 const broadPatterns = query.match(/\?\w+\s+\?\w+\s+\?\w+/g);
                 const hasSpecificConstraints = /\.\s*\?\w+\s+(\w+:|<[^>]+>)/i.test(query);
                 const hasLimit = /LIMIT\s+\d+/i.test(query);
-                return broadPatterns && broadPatterns.length > 1 && !hasSpecificConstraints && !hasLimit;
+                return !!(broadPatterns && broadPatterns.length > 1 && !hasSpecificConstraints && !hasLimit);
             },
             severity: 'info',
             message: 'Very broad triple patterns without constraints or LIMIT'
