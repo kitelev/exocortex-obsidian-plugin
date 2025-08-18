@@ -37,11 +37,12 @@ module.exports = {
     'node_modules/(?!(chai)/)'
   ],
   // Additional environment settings for CI
-  testTimeout: 30000,
+  testTimeout: process.env.CI ? 60000 : 30000,
   maxWorkers: process.env.CI ? 2 : '50%', // Increased for better CI performance
   // Optimize for performance and stability
   verbose: false,
   silent: process.env.CI ? true : false, // Allow local debugging
+  bail: process.env.CI ? 5 : false, // Stop after 5 failures in CI
   // Cache for faster subsequent runs
   cache: true,
   cacheDirectory: '<rootDir>/.jest-cache',
