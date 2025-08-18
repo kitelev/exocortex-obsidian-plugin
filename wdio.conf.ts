@@ -36,7 +36,17 @@ export const config = {
       ],
       // Increase timeout for slower environments
       startupTimeout: process.env.CI ? 60000 : 30000,
-      headless: process.env.CI ? true : false
+      headless: process.env.CI ? true : false,
+      // Fix DevToolsActivePort issues
+      electronArgs: [
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--remote-debugging-port=0',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding'
+      ]
     }
   }],
   

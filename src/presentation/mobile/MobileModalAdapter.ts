@@ -690,4 +690,39 @@ export class MobileModalAdapter extends Modal {
         const { contentEl } = this;
         contentEl.empty();
     }
+
+    /**
+     * Adapt modal dimensions for different screen sizes
+     */
+    adaptModalDimensions(dimensions: { width: number; height: number }): { width: number; height: number } {
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+        
+        // Mobile adaptations
+        if (PlatformDetector.isMobile()) {
+            return {
+                width: Math.min(dimensions.width, screenWidth * 0.95),
+                height: Math.min(dimensions.height, screenHeight * 0.9)
+            };
+        }
+        
+        // Tablet adaptations
+        if (screenWidth < 1024) {
+            return {
+                width: Math.min(dimensions.width, screenWidth * 0.8),
+                height: Math.min(dimensions.height, screenHeight * 0.8)
+            };
+        }
+        
+        // Desktop - use original dimensions
+        return dimensions;
+    }
+
+    /**
+     * Ensure minimum touch target size (44px on iOS)
+     */
+    ensureMinimumTouchTarget(size: number): number {
+        const minTouchTarget = 44; // iOS Human Interface Guidelines
+        return Math.max(size, minTouchTarget);
+    }
 }

@@ -38,11 +38,16 @@ module.exports = {
   ],
   // Additional environment settings for CI
   testTimeout: 30000,
-  maxWorkers: process.env.CI ? 1 : '50%',
+  maxWorkers: process.env.CI ? 2 : '50%', // Increased for better CI performance
   // Optimize for performance and stability
   verbose: false,
-  silent: true,
+  silent: process.env.CI ? true : false, // Allow local debugging
   // Cache for faster subsequent runs
   cache: true,
   cacheDirectory: '<rootDir>/.jest-cache',
+  // CI-specific optimizations
+  forceExit: process.env.CI ? true : false,
+  detectOpenHandles: process.env.CI ? false : true,
+  // Memory management for CI
+  workerIdleMemoryLimit: process.env.CI ? '512MB' : '1GB',
 };

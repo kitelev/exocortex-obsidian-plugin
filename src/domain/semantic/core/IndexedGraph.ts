@@ -46,9 +46,11 @@ export class IndexedGraph extends Graph {
   private cacheHits = 0;
   private cacheMisses = 0;
   
-  // Batch operation buffer
+  // Optimized batch operation buffer with chunking
   private batchBuffer: Triple[] = [];
   private batchMode = false;
+  private readonly BATCH_CHUNK_SIZE = 500; // Process in smaller chunks
+  private readonly MAX_BATCH_SIZE = 10000; // Auto-commit threshold
   
   /**
    * Enable batch mode for bulk operations
@@ -60,14 +62,26 @@ export class IndexedGraph extends Graph {
   }
   
   /**
-   * Commit batch operations and rebuild indexes
+   * Commit batch operations with memory optimization
    */
   commitBatch(): void {
     const startTime = performance.now();
     
-    // Add all buffered triples at once
-    for (const triple of this.batchBuffer) {
-      super.add(triple);
+    // Process in chunks to reduce memory spikes
+    const totalTriples = this.batchBuffer.length;
+    
+    for (let i = 0; i < totalTriples; i += this.BATCH_CHUNK_SIZE) {
+      const chunk = this.batchBuffer.slice(i, i + this.BATCH_CHUNK_SIZE);
+      
+      // Add chunk
+      for (const triple of chunk) {
+        super.add(triple);
+      }
+      
+      // Trigger GC hint for large batches
+      if (i > 0 && i % (this.BATCH_CHUNK_SIZE * 4) === 0) {
+        this.triggerGCHint();
+      }
     }
     
     this.batchBuffer = [];
@@ -86,11 +100,17 @@ export class IndexedGraph extends Graph {
   }
   
   /**
-   * Override add to support batch mode
+   * Override add to support batch mode with auto-commit
    */
   add(triple: Triple): void {
     if (this.batchMode) {
       this.batchBuffer.push(triple);
+      
+      // Auto-commit if buffer gets too large
+      if (this.batchBuffer.length >= this.MAX_BATCH_SIZE) {
+        this.commitBatch();
+        this.beginBatch(); // Restart batch mode
+      }
       return;
     }
     
@@ -429,6 +449,126 @@ export class IndexedGraph extends Graph {
   
   protected getOSPIndex(): Map<string, Map<string, Set<string>>> {
     return (this as any).osp;
+  }
+  
+  /**
+   * Trigger garbage collection hint
+   */
+  private triggerGCHint(): void {
+    if (typeof global !== 'undefined' && global.gc) {
+      global.gc();
+    } else if (typeof window !== 'undefined' && (window as any).gc) {
+      (window as any).gc();
+    }
+  }
+  
+  /**
+   * Get current memory usage
+   */
+  getMemoryUsage(): number {
+    if (typeof performance !== 'undefined' && 
+        'memory' in performance && 
+        (performance as any).memory) {
+      return (performance as any).memory.usedJSHeapSize;
+    }
+    return 0;
+  }
+  
+  /**
+   * Get detailed memory statistics
+   */
+  getMemoryStatistics(): {
+    used: number;
+    total: number;
+    limit: number;
+    utilization: number;
+  } {
+    if (typeof performance !== 'undefined' && 
+        'memory' in performance && 
+        (performance as any).memory) {
+      const memory = (performance as any).memory;
+      const used = memory.usedJSHeapSize;
+      const total = memory.totalJSHeapSize;
+      const limit = memory.jsHeapSizeLimit;
+      
+      return {
+        used,
+        total,
+        limit,
+        utilization: (used / limit) * 100
+      };
+    }
+    
+    return {
+      used: 0,
+      total: 0,
+      limit: 0,
+      utilization: 0
+    };
+  }
+  
+  /**
+   * Optimize memory usage
+   */
+  optimizeMemory(): void {
+    // Clear query cache
+    this.invalidateCache();
+    
+    // Trigger GC
+    this.triggerGCHint();
+    
+    // Defragment indexes if memory usage is high
+    const memStats = this.getMemoryStatistics();
+    if (memStats.utilization > 80) {
+      this.defragmentIndexes();
+    }
+  }
+  
+  /**
+   * Defragment indexes to reduce memory fragmentation
+   */
+  private defragmentIndexes(): void {
+    const triples = this.getAllTriples();
+    
+    // Clear indexes
+    (this as any).spo = new Map();
+    (this as any).pos = new Map();
+    (this as any).osp = new Map();
+    
+    // Rebuild indexes in optimized order
+    for (const triple of triples) {
+      // Re-add to rebuild indexes
+      const subject = triple.getSubject().toString();
+      const predicate = triple.getPredicate().toString();
+      const object = triple.getObject().toString();
+      
+      // SPO index
+      if (!this.getSPOIndex().has(subject)) {
+        this.getSPOIndex().set(subject, new Map());
+      }
+      if (!this.getSPOIndex().get(subject)!.has(predicate)) {
+        this.getSPOIndex().get(subject)!.set(predicate, new Set());
+      }
+      this.getSPOIndex().get(subject)!.get(predicate)!.add(object);
+      
+      // POS index  
+      if (!this.getPOSIndex().has(predicate)) {
+        this.getPOSIndex().set(predicate, new Map());
+      }
+      if (!this.getPOSIndex().get(predicate)!.has(object)) {
+        this.getPOSIndex().get(predicate)!.set(object, new Set());
+      }
+      this.getPOSIndex().get(predicate)!.get(object)!.add(subject);
+      
+      // OSP index
+      if (!this.getOSPIndex().has(object)) {
+        this.getOSPIndex().set(object, new Map());
+      }
+      if (!this.getOSPIndex().get(object)!.has(subject)) {
+        this.getOSPIndex().get(object)!.set(subject, new Set());
+      }
+      this.getOSPIndex().get(object)!.get(subject)!.add(predicate);
+    }
   }
 }
 

@@ -157,9 +157,22 @@ export class NativeQueryEngine implements IQueryEngine {
             };
         }
         
-        const files = this.vault.getMarkdownFiles();
+        // Parse query to determine which files to check
+        let targetFiles: TFile[] = [];
         
-        for (const file of files) {
+        if (query.includes('from "')) {
+            // Extract source from query
+            const sourceMatch = query.match(/from\s+"([^"]+)"/);
+            if (sourceMatch) {
+                const source = sourceMatch[1];
+                targetFiles = await this.getFilesFromSource(source);
+            }
+        } else {
+            // Check all files if no source specified
+            targetFiles = this.vault.getMarkdownFiles();
+        }
+        
+        for (const file of targetFiles) {
             try {
                 const content = await this.vault.cachedRead(file);
                 const taskRegex = /^[\s]*- \[(.)\] (.+)$/gm;
@@ -175,7 +188,8 @@ export class NativeQueryEngine implements IQueryEngine {
                     });
                 }
             } catch (error) {
-                // Skip files that can't be read
+                // Skip files that can't be read and return empty tasks for that file
+                console.warn(`Failed to read file ${file.path} for task query:`, error);
                 continue;
             }
         }
@@ -293,7 +307,18 @@ export class NativeQueryEngine implements IQueryEngine {
         
         for (const file of allFiles) {
             const metadata = this.metadataCache.getFileCache(file);
-            if (metadata?.tags?.some(t => t.tag === `#${tag}`)) {
+            // Check both explicit tags and hashtags in metadata
+            const hasTag = metadata?.tags?.some(t => 
+                t.tag === `#${tag}` || t.tag === tag
+            ) || false;
+            
+            // Also check frontmatter tags
+            const frontmatterTags = metadata?.frontmatter?.tags || [];
+            const hasFrontmatterTag = Array.isArray(frontmatterTags) 
+                ? frontmatterTags.includes(tag) || frontmatterTags.includes(`#${tag}`)
+                : false;
+            
+            if (hasTag || hasFrontmatterTag) {
                 files.push(file);
             }
         }
@@ -553,6 +578,13 @@ export class NativeQueryEngine implements IQueryEngine {
             }
 
             const queryResult = result.getValue();
+            
+            // Check if result is empty and render appropriate message
+            if (!queryResult || !queryResult.data || (Array.isArray(queryResult.data) && queryResult.data.length === 0)) {
+                container.innerHTML = '<div class="exo-native-empty">No results found</div>';
+                return Result.ok();
+            }
+            
             if (queryResult?.metadata?.renderHtml) {
                 container.innerHTML = queryResult.metadata.renderHtml;
             } else {
@@ -598,12 +630,12 @@ export class NativeQueryEngine implements IQueryEngine {
      */
     async getPageMetadata(path: string): Promise<Result<Record<string, any>>> {
         try {
-            const file = this.vault.getAbstractFileByPath(path);
+            const file = this.vault?.getAbstractFileByPath(path);
             if (!file || !(file instanceof TFile)) {
                 return Result.fail(`File not found: ${path}`);
             }
 
-            const metadata = this.metadataCache.getFileCache(file);
+            const metadata = this.metadataCache?.getFileCache(file);
             const result = {
                 file: {
                     path: file.path,
@@ -668,11 +700,16 @@ export class NativeQueryEngine implements IQueryEngine {
     }
 
     private renderFallback(queryResult: QueryResult | null): string {
-        if (!queryResult || !queryResult.data) {
+        if (!queryResult || !queryResult.data || (Array.isArray(queryResult.data) && queryResult.data.length === 0)) {
             return '<div class="exo-native-empty">No results found</div>';
         }
 
         const items = Array.isArray(queryResult.data) ? queryResult.data : [queryResult.data];
+        
+        if (items.length === 0) {
+            return '<div class="exo-native-empty">No results found</div>';
+        }
+        
         return `
             <div class="exo-native-fallback">
                 ${items.map(item => `<div class="result-item">${JSON.stringify(item)}</div>`).join('')}

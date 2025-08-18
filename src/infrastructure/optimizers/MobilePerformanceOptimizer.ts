@@ -14,6 +14,32 @@ export interface MobilePerformanceOptimizerConfig {
     virtualScrollThreshold?: number;
 }
 
+export interface OptimizationConfig {
+    enableBatching?: boolean;
+    enableCaching?: boolean;
+    enableVirtualScrolling?: boolean;
+    enableImageOptimization?: boolean;
+    enableMemoryManagement?: boolean;
+    batchSize?: number;
+    cacheSize?: number;
+    imageQuality?: number;
+    memoryThreshold?: number;
+    debounceDelay?: number;
+}
+
+export interface PerformanceMetrics {
+    batchProcessingEnabled: boolean;
+    effectiveBatchSize: number;
+    cacheEnabled: boolean;
+    effectiveCacheSize: number;
+    virtualScrollingEnabled: boolean;
+    imageOptimizationEnabled: boolean;
+    memoryManagementEnabled: boolean;
+    operations: Record<string, { count: number; totalTime: number; averageTime: number }>;
+    cacheStats: Record<string, { hits: number; misses: number; size: number }>;
+    memoryUsage: { used: number; total: number; percentage: number };
+}
+
 export class MobilePerformanceOptimizer {
     private static instance: MobilePerformanceOptimizer;
     
@@ -450,6 +476,228 @@ export class MobilePerformanceOptimizer {
         }
     }
 
+    // Performance tracking
+    private operations: Map<string, { count: number; totalTime: number }> = new Map();
+    private caches: Map<string, Map<any, any>> = new Map();
+    private cacheStats: Map<string, { hits: number; misses: number }> = new Map();
+    private pendingCallbacks: Set<number> = new Set();
+
+
+    /**
+     * Clear all managed caches
+     */
+    public clearAllCaches(): void {
+        this.caches.forEach(cache => cache.clear());
+        this.cacheStats.forEach(stats => {
+            stats.hits = 0;
+            stats.misses = 0;
+        });
+    }
+
+    /**
+     * Get cache statistics for all caches
+     */
+    public getCacheStats(): Record<string, { hits: number; misses: number; size: number }> {
+        const stats: Record<string, { hits: number; misses: number; size: number }> = {};
+        
+        this.cacheStats.forEach((stat, name) => {
+            const cache = this.caches.get(name);
+            stats[name] = {
+                ...stat,
+                size: cache?.size || 0
+            };
+        });
+        
+        return stats;
+    }
+
+    /**
+     * Track operation timing
+     */
+    public trackOperation<T>(name: string, operation: () => T): T {
+        const start = performance.now();
+        const result = operation();
+        const duration = performance.now() - start;
+        
+        const existing = this.operations.get(name) || { count: 0, totalTime: 0 };
+        this.operations.set(name, {
+            count: existing.count + 1,
+            totalTime: existing.totalTime + duration
+        });
+        
+        return result;
+    }
+
+    /**
+     * Create virtual scroll container
+     */
+    public createVirtualScroll<T>(
+        container: HTMLElement,
+        items: T[],
+        renderItem: (item: T) => HTMLElement,
+        options?: {
+            itemHeight?: number;
+            containerHeight?: number;
+            overscan?: number;
+        }
+    ): { destroy: () => void } {
+        const itemHeight = options?.itemHeight || 50;
+        const containerHeight = options?.containerHeight || 400;
+        const overscan = options?.overscan || 5;
+
+        container.style.height = `${containerHeight}px`;
+        container.style.overflow = 'auto';
+
+        let startIndex = 0;
+        let endIndex = Math.min(items.length, Math.ceil(containerHeight / itemHeight) + overscan);
+
+        const render = () => {
+            container.innerHTML = '';
+            for (let i = startIndex; i < endIndex; i++) {
+                if (items[i]) {
+                    const element = renderItem(items[i]);
+                    container.appendChild(element);
+                }
+            }
+        };
+
+        const handleScroll = () => {
+            const scrollTop = container.scrollTop;
+            startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
+            endIndex = Math.min(items.length, startIndex + Math.ceil(containerHeight / itemHeight) + 2 * overscan);
+            render();
+        };
+
+        container.addEventListener('scroll', handleScroll);
+        render();
+
+        return {
+            destroy: () => {
+                container.removeEventListener('scroll', handleScroll);
+                container.innerHTML = '';
+            }
+        };
+    }
+
+    /**
+     * Optimize image file
+     */
+    public async optimizeImage(
+        file: File,
+        options?: { maxWidth?: number; maxHeight?: number; quality?: number }
+    ): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = document.createElement('img');
+
+            if (!ctx) {
+                reject(new Error('Canvas not supported'));
+                return;
+            }
+
+            img.onload = () => {
+                const maxWidth = options?.maxWidth || 1024;
+                const maxHeight = options?.maxHeight || 1024;
+                const quality = options?.quality || (this.config as any).imageQuality || 0.8;
+
+                // Calculate new dimensions
+                let { width, height } = img;
+                if (width > maxWidth || height > maxHeight) {
+                    const ratio = Math.min(maxWidth / width, maxHeight / height);
+                    width *= ratio;
+                    height *= ratio;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                resolve(dataUrl);
+            };
+
+            img.onerror = () => reject(new Error('Failed to load image'));
+            img.src = URL.createObjectURL(file);
+        });
+    }
+
+    /**
+     * Schedule memory cleanup during idle time
+     */
+    public scheduleMemoryCleanup(callback: () => void): void {
+        const scheduleCallback = (global as any).requestIdleCallback || setTimeout;
+        const callbackId = scheduleCallback(callback, { timeout: 5000 });
+        this.pendingCallbacks.add(callbackId);
+    }
+
+    /**
+     * Force garbage collection if available
+     */
+    public forceGarbageCollection(): void {
+        if ((global as any).gc) {
+            (global as any).gc();
+        }
+    }
+
+    /**
+     * Update configuration
+     */
+    public updateConfig(newConfig: Partial<OptimizationConfig>): void {
+        this.config = { ...this.config, ...newConfig };
+    }
+
+    /**
+     * Get comprehensive performance metrics
+     */
+    public getMetrics(): PerformanceMetrics {
+        const operationMetrics: Record<string, { count: number; totalTime: number; averageTime: number }> = {};
+        
+        this.operations.forEach((data, name) => {
+            operationMetrics[name] = {
+                ...data,
+                averageTime: data.totalTime / data.count
+            };
+        });
+
+        return {
+            batchProcessingEnabled: true,
+            effectiveBatchSize: this.getBatchSize(),
+            cacheEnabled: true,
+            effectiveCacheSize: this.getCacheSize(),
+            virtualScrollingEnabled: this.config.enableLazyLoading || false,
+            imageOptimizationEnabled: true,
+            memoryManagementEnabled: this.isMobile(),
+            operations: operationMetrics,
+            cacheStats: this.getCacheStats(),
+            memoryUsage: this.getMemoryUsage()
+        };
+    }
+
+    /**
+     * Get current memory usage statistics
+     */
+    public getMemoryUsage(): { used: number; total: number; percentage: number } {
+        if ('memory' in performance) {
+            const memory = (performance as any).memory;
+            return {
+                used: memory.usedJSHeapSize || 0,
+                total: memory.totalJSHeapSize || 0,
+                percentage: memory.totalJSHeapSize ? 
+                    Math.round((memory.usedJSHeapSize / memory.totalJSHeapSize) * 100) : 0
+            };
+        }
+        
+        return { used: 0, total: 0, percentage: 0 };
+    }
+
+    /**
+     * Clean up resources (alias for destroy for test compatibility)
+     */
+    public cleanup(): void {
+        this.destroy();
+    }
+
     /**
      * Clean up resources and stop monitoring
      */
@@ -461,9 +709,81 @@ export class MobilePerformanceOptimizer {
         this.loadingQueue.clear();
         this.isProcessingQueue = false;
         
+        // Cancel pending callbacks
+        this.pendingCallbacks.forEach(id => {
+            const cancelCallback = (global as any).cancelIdleCallback || clearTimeout;
+            cancelCallback(id);
+        });
+        this.pendingCallbacks.clear();
+        
+        // Clear caches
+        this.clearAllCaches();
+        
+        // Clear operation tracking
+        this.operations.clear();
+        
         // Clear static instance if this is the singleton
         if (MobilePerformanceOptimizer.instance === this) {
             MobilePerformanceOptimizer.instance = null as any;
+        }
+    }
+
+    /**
+     * Register out-of-memory handler
+     */
+    onOutOfMemory(handler: () => void): void {
+        this.oomHandler = handler;
+    }
+
+    private oomHandler?: () => void;
+
+    /**
+     * Get loading strategy based on connection and device capabilities
+     */
+    async getLoadingStrategy(): Promise<{ isSuccess: boolean; getValue: () => any }> {
+        try {
+            const strategy = {
+                batchSize: Platform.isMobile ? this.MOBILE_BATCH_SIZE : this.DESKTOP_BATCH_SIZE,
+                useVirtualScrolling: Platform.isMobile,
+                enableImageOptimization: Platform.isMobile,
+                enableBackgroundLoading: !Platform.isMobile,
+                adaptiveLoading: Platform.isMobile
+            };
+
+            return {
+                isSuccess: true,
+                getValue: () => strategy
+            };
+        } catch (error) {
+            return {
+                isSuccess: false,
+                getValue: () => null
+            };
+        }
+    }
+
+    /**
+     * Handle offline mode scenarios
+     */
+    async handleOfflineMode(): Promise<{ isSuccess: boolean; getValue: () => any }> {
+        try {
+            const offlineStrategy = {
+                enableCaching: true,
+                cacheSize: Platform.isMobile ? this.MOBILE_CACHE_SIZE : this.DESKTOP_CACHE_SIZE,
+                enableOfflineStorage: true,
+                enableQueuedOperations: true,
+                enableDegradedMode: true
+            };
+
+            return {
+                isSuccess: true,
+                getValue: () => offlineStrategy
+            };
+        } catch (error) {
+            return {
+                isSuccess: false,
+                getValue: () => null
+            };
         }
     }
 }

@@ -40,6 +40,10 @@ export class Result<T> {
         return this.error;
     }
 
+    public getError(): string {
+        return this.error;
+    }
+
     public static ok<U>(value?: U): Result<U> {
         return new Result<U>(true, undefined, value);
     }

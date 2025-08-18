@@ -12,6 +12,8 @@ import { RDFParser, ParseOptions, ParseResult } from './RDFParser';
 import { NamespaceManager } from './NamespaceManager';
 import { RDFValidator, ValidationOptions } from './RDFValidator';
 import { RDFFileManager } from './RDFFileManager';
+import { MemoryOptimizedImporter, StreamingImportOptions } from '../../infrastructure/performance/MemoryOptimizedImporter';
+import { IndexedGraph } from '../../domain/semantic/core/IndexedGraph';
 
 export interface RDFExportOptions {
     format: RDFFormat;
@@ -23,12 +25,13 @@ export interface RDFExportOptions {
     targetFolder?: string;
 }
 
-export interface RDFImportOptions {
+export interface RDFImportOptions extends StreamingImportOptions {
     format?: RDFFormat;
     mergeMode: 'merge' | 'replace';
     validateInput?: boolean;
     strictMode?: boolean;
     baseIRI?: string;
+    useOptimizedImporter?: boolean;
 }
 
 export type { ValidationError } from './RDFValidator';
@@ -38,6 +41,7 @@ export class RDFService {
     private parser: RDFParser;
     private validator: RDFValidator;
     private fileManager: RDFFileManager;
+    private optimizedImporter: MemoryOptimizedImporter;
     private namespaceManager: NamespaceManager;
     
     constructor(
@@ -49,6 +53,7 @@ export class RDFService {
         this.parser = new RDFParser(this.namespaceManager);
         this.validator = new RDFValidator();
         this.fileManager = new RDFFileManager(app);
+        this.optimizedImporter = new MemoryOptimizedImporter();
     }
     
     /**
@@ -149,11 +154,37 @@ export class RDFService {
             
             let finalGraph: Graph;
             
-            if (options.mergeMode === 'replace') {
-                finalGraph = imported.graph;
+            // Use optimized importer for large files
+            const useOptimized = options.useOptimizedImporter !== false && 
+                                 (content.length > 50000 || options.chunkSize);
+            
+            if (useOptimized && graph instanceof IndexedGraph) {
+                // Use optimized batch processing
+                if (options.mergeMode === 'replace') {
+                    graph.clear();
+                }
+                
+                graph.beginBatch();
+                for (const triple of imported.graph.toArray()) {
+                    graph.add(triple);
+                }
+                graph.commitBatch();
+                
+                finalGraph = graph;
             } else {
-                finalGraph = graph.clone();
-                finalGraph.merge(imported.graph);
+                // Standard merge
+                if (options.mergeMode === 'replace') {
+                    finalGraph = imported.graph;
+                } else {
+                    finalGraph = graph.clone();
+                    if (finalGraph instanceof IndexedGraph) {
+                        finalGraph.beginBatch();
+                        finalGraph.merge(imported.graph);
+                        finalGraph.commitBatch();
+                    } else {
+                        finalGraph.merge(imported.graph);
+                    }
+                }
             }
             
             for (const [prefix, namespace] of Object.entries(imported.namespaces)) {

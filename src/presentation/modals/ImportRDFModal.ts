@@ -5,16 +5,19 @@
 
 import { App, Modal, Setting, Notice, TFile } from 'obsidian';
 import { Graph } from '../../domain/semantic/core/Graph';
+import { IndexedGraph } from '../../domain/semantic/core/IndexedGraph';
 import { RDFParser, ParseOptions } from '../../application/services/RDFParser';
 import { RDFFormat } from '../../application/services/RDFSerializer';
 import { NamespaceManager } from '../../application/services/NamespaceManager';
+import { MemoryOptimizedImporter, StreamingImportOptions } from '../../infrastructure/performance/MemoryOptimizedImporter';
 
-export interface ImportOptions {
+export interface ImportOptions extends StreamingImportOptions {
     format?: RDFFormat;
     mergeMode: 'merge' | 'replace';
     validateInput: boolean;
     strictMode: boolean;
     baseIRI?: string;
+    useOptimizedImporter?: boolean;
 }
 
 export class ImportRDFModal extends Modal {
@@ -22,9 +25,13 @@ export class ImportRDFModal extends Modal {
     private options: ImportOptions = {
         mergeMode: 'merge',
         validateInput: true,
-        strictMode: false
+        strictMode: false,
+        useOptimizedImporter: true,
+        chunkSize: 1000,
+        enableMemoryPooling: false
     };
     private parser: RDFParser;
+    private optimizedImporter: MemoryOptimizedImporter;
     private namespaceManager: NamespaceManager;
     private selectedFile: File | TFile | null = null;
     private fileContent: string = '';
@@ -40,6 +47,7 @@ export class ImportRDFModal extends Modal {
         this.graph = graph;
         this.namespaceManager = namespaceManager || new NamespaceManager();
         this.parser = new RDFParser(this.namespaceManager);
+        this.optimizedImporter = new MemoryOptimizedImporter();
         this.onImport = onImport;
     }
     
@@ -165,6 +173,47 @@ export class ImportRDFModal extends Modal {
                     .setValue(this.options.strictMode)
                     .onChange(value => {
                         this.options.strictMode = value;
+                    });
+            });
+        
+        // Memory optimization settings
+        contentEl.createEl('h3', { text: 'Memory Optimization' });
+        
+        new Setting(contentEl)
+            .setName('Use optimized importer')
+            .setDesc('Enable memory-optimized importing for large files')
+            .addToggle(toggle => {
+                toggle
+                    .setValue(this.options.useOptimizedImporter ?? true)
+                    .onChange(value => {
+                        this.options.useOptimizedImporter = value;
+                        this.updateOptimizationSettings();
+                    });
+            });
+        
+        const optimizationContainer = contentEl.createDiv('optimization-settings');
+        
+        new Setting(optimizationContainer)
+            .setName('Chunk size')
+            .setDesc('Number of triples to process at once')
+            .addSlider(slider => {
+                slider
+                    .setLimits(100, 5000, 100)
+                    .setValue(this.options.chunkSize || 1000)
+                    .setDynamicTooltip()
+                    .onChange(value => {
+                        this.options.chunkSize = value;
+                    });
+            });
+        
+        new Setting(optimizationContainer)
+            .setName('Memory pooling')
+            .setDesc('Reuse objects to reduce memory allocation')
+            .addToggle(toggle => {
+                toggle
+                    .setValue(this.options.enableMemoryPooling ?? false)
+                    .onChange(value => {
+                        this.options.enableMemoryPooling = value;
                     });
             });
         
@@ -427,57 +476,144 @@ export class ImportRDFModal extends Modal {
         }
         
         try {
-            const parseOptions: ParseOptions = {
-                format: this.options.format,
-                baseIRI: this.options.baseIRI,
-                namespaceManager: this.namespaceManager,
-                validateInput: this.options.validateInput,
-                strictMode: this.options.strictMode
-            };
-            
-            const result = this.parser.parse(this.fileContent, parseOptions);
-            
-            if (result.isFailure) {
-                new Notice(`Import failed: ${result.errorValue()}`);
-                return;
-            }
-            
-            const parseResult = result.getValue();
-            
-            // Handle merge mode
             let finalGraph: Graph;
+            let importedTripleCount = 0;
+            let importTime = 0;
             
-            if (this.options.mergeMode === 'replace') {
-                finalGraph = parseResult.graph;
+            if (this.options.useOptimizedImporter && this.fileContent.length > 50000) {
+                // Use optimized importer for large files
+                const startTime = performance.now();
+                
+                // Convert graph to IndexedGraph if needed
+                const targetGraph = this.graph instanceof IndexedGraph 
+                    ? this.graph 
+                    : this.convertToIndexedGraph(this.graph);
+                
+                if (this.options.mergeMode === 'replace') {
+                    targetGraph.clear();
+                }
+                
+                // Configure optimized import options
+                const importOptions: StreamingImportOptions = {
+                    format: this.options.format,
+                    baseIRI: this.options.baseIRI,
+                    namespaceManager: this.namespaceManager,
+                    validateInput: this.options.validateInput,
+                    strictMode: this.options.strictMode,
+                    chunkSize: this.options.chunkSize || 1000,
+                    enableMemoryPooling: this.options.enableMemoryPooling,
+                    enableGCHints: true,
+                    progressCallback: (processed, total) => {
+                        const progress = Math.round((processed / total) * 100);
+                        console.log(`Import progress: ${progress}%`);
+                    }
+                };
+                
+                const result = await this.optimizedImporter.importRDF(
+                    this.fileContent, 
+                    targetGraph, 
+                    importOptions
+                );
+                
+                importTime = performance.now() - startTime;
+                
+                if (result.isFailure) {
+                    new Notice(`Optimized import failed: ${result.getError()}`);
+                    return;
+                }
+                
+                const memoryReport = result.getValue();
+                finalGraph = targetGraph;
+                importedTripleCount = targetGraph.size();
+                
+                // Show memory optimization results
+                const memoryReduction = Math.round(memoryReport.memoryReduction / 1024 / 1024 * 10) / 10;
+                if (memoryReduction > 0) {
+                    new Notice(`Memory saved: ${memoryReduction}MB`, 2000);
+                }
+                
             } else {
-                // Merge with existing graph
-                finalGraph = this.graph.clone();
-                finalGraph.merge(parseResult.graph);
+                // Use standard parser for small files
+                const startTime = performance.now();
+                
+                const parseOptions: ParseOptions = {
+                    format: this.options.format,
+                    baseIRI: this.options.baseIRI,
+                    namespaceManager: this.namespaceManager,
+                    validateInput: this.options.validateInput,
+                    strictMode: this.options.strictMode
+                };
+                
+                const result = this.parser.parse(this.fileContent, parseOptions);
+                
+                if (result.isFailure) {
+                    new Notice(`Import failed: ${result.getError()}`);
+                    return;
+                }
+                
+                const parseResult = result.getValue();
+                importTime = performance.now() - startTime;
+                
+                // Handle merge mode
+                if (this.options.mergeMode === 'replace') {
+                    finalGraph = parseResult.graph;
+                } else {
+                    // Merge with existing graph
+                    finalGraph = this.graph.clone();
+                    finalGraph.merge(parseResult.graph);
+                }
+                
+                importedTripleCount = parseResult.tripleCount;
+                
+                if (parseResult.warnings?.length) {
+                    new Notice(`Warnings: ${parseResult.warnings.length} warnings found`, 3000);
+                }
+                
+                if (parseResult.errors?.length) {
+                    new Notice(`Errors: ${parseResult.errors.length} errors found`, 3000);
+                }
             }
             
             // Call onImport callback
             if (this.onImport) {
-                this.onImport(parseResult.graph, this.options);
+                this.onImport(finalGraph, this.options);
             }
             
             const message = this.options.mergeMode === 'replace'
-                ? `Replaced graph with ${parseResult.tripleCount} triples`
-                : `Added ${parseResult.tripleCount} triples to graph`;
+                ? `Replaced graph with ${importedTripleCount} triples in ${importTime.toFixed(0)}ms`
+                : `Added ${importedTripleCount} triples to graph in ${importTime.toFixed(0)}ms`;
             
             new Notice(message);
-            
-            if (parseResult.warnings?.length) {
-                new Notice(`Warnings: ${parseResult.warnings.length} warnings found`, 3000);
-            }
-            
-            if (parseResult.errors?.length) {
-                new Notice(`Errors: ${parseResult.errors.length} errors found`, 3000);
-            }
             
             this.close();
             
         } catch (error) {
             new Notice(`Import error: ${error.message}`);
+        }
+    }
+    
+    /**
+     * Convert regular Graph to IndexedGraph
+     */
+    private convertToIndexedGraph(graph: Graph): IndexedGraph {
+        const indexedGraph = new IndexedGraph();
+        
+        indexedGraph.beginBatch();
+        for (const triple of graph.toArray()) {
+            indexedGraph.add(triple);
+        }
+        indexedGraph.commitBatch();
+        
+        return indexedGraph;
+    }
+    
+    /**
+     * Update optimization settings visibility
+     */
+    private updateOptimizationSettings(): void {
+        const container = this.contentEl.querySelector('.optimization-settings') as HTMLElement;
+        if (container) {
+            container.style.display = this.options.useOptimizedImporter ? 'block' : 'none';
         }
     }
     
