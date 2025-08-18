@@ -1,15 +1,20 @@
 import { App, TFile } from 'obsidian';
-import { CustomBlockConfig } from '../../domain/entities/LayoutBlock';
+import { CustomBlockConfig, QueryEngineQuery } from '../../domain/entities/LayoutBlock';
+import { QueryEngineService } from '../../application/services/QueryEngineService';
+import { QueryContext } from '../../domain/ports/IQueryEngine';
 
 export class CustomBlockRenderer {
-    constructor(private app: App) {}
+    constructor(
+        private app: App,
+        private queryEngineService?: QueryEngineService
+    ) {}
 
     async render(
         container: HTMLElement,
         config: any,
         file: TFile,
         frontmatter: any,
-        dv: any
+        dv?: any // @deprecated - kept for backward compatibility
     ): Promise<void> {
         const customConfig = config as CustomBlockConfig;
         
@@ -20,9 +25,15 @@ export class CustomBlockRenderer {
                 return;
             }
             
-            // Option 2: Execute Dataview query
+            // Option 2: Execute query using new query engine abstraction
+            if (customConfig.queryEngineQuery) {
+                await this.renderQueryEngineQuery(container, customConfig.queryEngineQuery, file, frontmatter);
+                return;
+            }
+            
+            // Option 2b: Legacy Dataview query support (backward compatibility)
             if (customConfig.dataviewQuery) {
-                await this.renderDataviewQuery(container, customConfig.dataviewQuery, dv);
+                await this.renderLegacyDataviewQuery(container, customConfig.dataviewQuery, file, frontmatter, dv);
                 return;
             }
             
@@ -51,7 +62,7 @@ export class CustomBlockRenderer {
         templatePath: string,
         file: TFile,
         frontmatter: any,
-        dv: any
+        dv?: any
     ): Promise<void> {
         // Find template file
         const templateFile = this.app.vault.getAbstractFileByPath(templatePath);
@@ -84,11 +95,67 @@ export class CustomBlockRenderer {
         );
     }
 
-    private async renderDataviewQuery(
+    /**
+     * Render query using the new query engine abstraction
+     */
+    private async renderQueryEngineQuery(
+        container: HTMLElement,
+        queryConfig: QueryEngineQuery,
+        file: TFile,
+        frontmatter: any
+    ): Promise<void> {
+        if (!this.queryEngineService) {
+            container.createEl('p', {
+                text: 'Query engine service not available',
+                cls: 'exocortex-error'
+            });
+            return;
+        }
+
+        const context: QueryContext = {
+            currentFile: file.path,
+            currentPath: file.path,
+            frontmatter,
+            metadata: { basename: file.basename }
+        };
+
+        const result = await this.queryEngineService.renderQuery(
+            container,
+            queryConfig.query,
+            context,
+            queryConfig.engineType
+        );
+
+        if (!result.isSuccess) {
+            container.createEl('p', {
+                text: `Query execution error: ${result.error}`,
+                cls: 'exocortex-error'
+            });
+        }
+    }
+
+    /**
+     * Legacy Dataview query support for backward compatibility
+     * @deprecated Use renderQueryEngineQuery instead
+     */
+    private async renderLegacyDataviewQuery(
         container: HTMLElement,
         query: string,
-        dv: any
+        file: TFile,
+        frontmatter: any,
+        dv?: any
     ): Promise<void> {
+        // Try new query engine service first if available
+        if (this.queryEngineService) {
+            const queryConfig: QueryEngineQuery = {
+                query,
+                engineType: 'dataview'
+            };
+            await this.renderQueryEngineQuery(container, queryConfig, file, frontmatter);
+            return;
+        }
+
+        // Fallback to legacy direct Dataview API usage
         if (!dv) {
             container.createEl('p', {
                 text: 'Dataview is not available',
@@ -101,9 +168,7 @@ export class CustomBlockRenderer {
             // Create a wrapper for Dataview output
             const dvContainer = container.createDiv({ cls: 'exocortex-dataview-container' });
             
-            // Execute the query
-            // Note: This is a simplified version. Real implementation would need
-            // to properly integrate with Dataview API
+            // Execute the query using the old implementation
             const queryLines = query.trim().split('\n');
             
             if (queryLines[0].startsWith('table')) {
@@ -160,7 +225,7 @@ export class CustomBlockRenderer {
         script: string,
         file: TFile,
         frontmatter: any,
-        dv: any
+        dv?: any
     ): Promise<void> {
         try {
             // Create a sandboxed context for the script
@@ -168,7 +233,8 @@ export class CustomBlockRenderer {
                 app: this.app,
                 file,
                 frontmatter,
-                dv,
+                dv, // @deprecated but kept for backward compatibility
+                queryEngine: this.queryEngineService, // New query engine access
                 container,
                 console: {
                     log: (...args: any[]) => console.log('[Custom Block]', ...args),

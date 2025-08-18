@@ -7,6 +7,7 @@ import { CustomBlockRenderer } from './CustomBlockRenderer';
 import { GetLayoutForClassUseCase } from '../../application/use-cases/GetLayoutForClassUseCase';
 import { IClassLayoutRepository } from '../../domain/repositories/IClassLayoutRepository';
 import { PropertyRenderer } from '../components/PropertyRenderer';
+import { QueryEngineService } from '../../application/services/QueryEngineService';
 
 export class LayoutRenderer {
     private queryRenderer: QueryBlockRenderer;
@@ -18,13 +19,14 @@ export class LayoutRenderer {
     constructor(
         private app: App,
         layoutRepository: IClassLayoutRepository,
-        propertyRenderer: PropertyRenderer
+        propertyRenderer: PropertyRenderer,
+        private queryEngineService?: QueryEngineService
     ) {
         this.getLayoutUseCase = new GetLayoutForClassUseCase(layoutRepository);
         this.queryRenderer = new QueryBlockRenderer(app);
         this.propertiesRenderer = new PropertiesBlockRenderer(app, propertyRenderer);
         this.backlinksRenderer = new BacklinksBlockRenderer(app);
-        this.customRenderer = new CustomBlockRenderer(app);
+        this.customRenderer = new CustomBlockRenderer(app, this.queryEngineService);
     }
 
     // Method signature for tests - renders a ClassLayout directly

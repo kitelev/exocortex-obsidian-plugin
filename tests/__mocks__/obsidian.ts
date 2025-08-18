@@ -4,6 +4,9 @@ declare global {
     createEl?: (tag: string, options?: any) => HTMLElement;
     createDiv?: (options?: any) => HTMLElement;
     empty?: () => void;
+    addClass?: (cls: string) => void;
+    removeClass?: (cls: string) => void;
+    hasClass?: (cls: string) => boolean;
   }
 }
 
@@ -15,6 +18,11 @@ if (typeof document !== 'undefined') {
       const el = document.createElement(tag);
       if (options?.text) el.textContent = options.text;
       if (options?.cls) el.className = options.cls;
+      if (options?.attr) {
+        for (const [key, value] of Object.entries(options.attr)) {
+          el.setAttribute(key, String(value));
+        }
+      }
       this.appendChild(el);
       return el;
     };
@@ -23,6 +31,7 @@ if (typeof document !== 'undefined') {
     proto.createDiv = function(options?: any) {
       const el = document.createElement('div');
       if (options?.cls) el.className = options.cls;
+      if (options?.text) el.textContent = options.text;
       this.appendChild(el);
       return el;
     };
@@ -32,6 +41,21 @@ if (typeof document !== 'undefined') {
       while (this.firstChild) {
         this.removeChild(this.firstChild);
       }
+    };
+  }
+  if (!proto.addClass) {
+    proto.addClass = function(cls: string) {
+      this.classList.add(cls);
+    };
+  }
+  if (!proto.removeClass) {
+    proto.removeClass = function(cls: string) {
+      this.classList.remove(cls);
+    };
+  }
+  if (!proto.hasClass) {
+    proto.hasClass = function(cls: string) {
+      return this.classList.contains(cls);
     };
   }
 }
@@ -98,10 +122,55 @@ export class Plugin {
 export class Modal {
   app: App;
   contentEl: HTMLElement;
+  modalEl: HTMLElement;
   
   constructor(app: App) {
     this.app = app;
     this.contentEl = document.createElement('div');
+    this.modalEl = document.createElement('div');
+    
+    // Set up Obsidian-style DOM methods on modalEl
+    this.setupObsidianMethods(this.contentEl);
+    this.setupObsidianMethods(this.modalEl);
+  }
+  
+  private setupObsidianMethods(el: HTMLElement): void {
+    if (!el.addClass) {
+      (el as any).addClass = function(cls: string) {
+        this.classList.add(cls);
+      };
+    }
+    if (!el.removeClass) {
+      (el as any).removeClass = function(cls: string) {
+        this.classList.remove(cls);
+      };
+    }
+    if (!el.hasClass) {
+      (el as any).hasClass = function(cls: string) {
+        return this.classList.contains(cls);
+      };
+    }
+    if (!el.createEl) {
+      (el as any).createEl = function(tag: string, options?: any) {
+        const element = document.createElement(tag);
+        if (options?.text) element.textContent = options.text;
+        if (options?.cls) element.className = options.cls;
+        if (options?.attr) {
+          for (const [key, value] of Object.entries(options.attr)) {
+            element.setAttribute(key, String(value));
+          }
+        }
+        this.appendChild(element);
+        return element;
+      };
+    }
+    if (!el.empty) {
+      (el as any).empty = function() {
+        while (this.firstChild) {
+          this.removeChild(this.firstChild);
+        }
+      };
+    }
   }
   
   open(): void {}
@@ -617,4 +686,17 @@ export const moment = {
   unix: (timestamp: number) => ({
     format: (format?: string) => new Date(timestamp * 1000).toISOString()
   })
+};
+
+// Mock Platform API
+export const Platform = {
+  isMobile: false,
+  isMobileApp: false,
+  isIosApp: false,
+  isAndroidApp: false,
+  isTablet: false,
+  isDesktop: true,
+  isWin: false,
+  isMacOS: true,
+  isLinux: false
 };

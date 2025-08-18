@@ -249,7 +249,8 @@ export class ObsidianClassLayoutRepository implements IClassLayoutRepository {
                 return {
                     type: 'custom',
                     templatePath: config.templatePath,
-                    dataviewQuery: config.dataviewQuery,
+                    dataviewQuery: config.dataviewQuery, // Keep for backward compatibility
+                    queryEngineQuery: config.queryEngineQuery, // New query engine support
                     customScript: config.customScript
                 };
 

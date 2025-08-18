@@ -1,5 +1,6 @@
 import { Entity } from '../core/Entity';
 import { Result } from '../core/Result';
+import { QueryEngineType } from '../ports/IQueryEngine';
 
 export type BlockType = 'query' | 'properties' | 'relations' | 'backlinks' | 'custom';
 
@@ -42,10 +43,17 @@ export interface BacklinksBlockConfig {
     maxResults?: number;
 }
 
+export interface QueryEngineQuery {
+    query: string;
+    engineType?: QueryEngineType;
+    enginePreference?: QueryEngineType[];
+}
+
 export interface CustomBlockConfig {
     type: 'custom';
     templatePath?: string;
-    dataviewQuery?: string;
+    dataviewQuery?: string; // @deprecated - use queryEngineQuery instead
+    queryEngineQuery?: QueryEngineQuery;
     customScript?: string;
 }
 
@@ -105,7 +113,7 @@ export class LayoutBlock extends Entity<LayoutBlockProps> {
             
             case 'custom':
                 const customConfig = config as CustomBlockConfig;
-                return !!customConfig.templatePath || !!customConfig.dataviewQuery || !!customConfig.customScript;
+                return !!customConfig.templatePath || !!customConfig.dataviewQuery || !!customConfig.queryEngineQuery || !!customConfig.customScript;
             
             default:
                 return false;
