@@ -1,3 +1,26 @@
+## [3.1.3] - 2025-08-19
+
+### 🎯 Obsidian Compatibility Update
+
+#### Minimum Version Requirements
+Update **minimum Obsidian version** from ancient 1.0.0 to modern 1.5.0 for better compatibility!
+
+#### Compatibility Improvements
+- **📱 Modern API Support**: Now requires Obsidian 1.5.0+ for access to latest plugin APIs
+- **🚀 Performance Features**: Leverages newer Obsidian performance optimizations
+- **🔧 Mobile Support**: Better compatibility with Obsidian mobile features (iOS/Android)
+- **📊 Enhanced Stability**: Uses stable APIs available in Obsidian 1.5.0+
+
+#### User Experience
+Experience **enhanced plugin functionality** with modern Obsidian versions!
+
+- **Better Performance**: Optimized for Obsidian 1.5.0+ rendering engine
+- **Mobile Compatibility**: Full support for Obsidian mobile platforms
+- **API Stability**: Uses stable, well-tested Obsidian APIs
+- **Future Ready**: Prepared for upcoming Obsidian features
+
+Note: Plugin package uses Obsidian 1.8.7 for development, ensuring compatibility with latest features while maintaining support for 1.5.0+ users.
+
 ## [3.1.2] - 2025-08-19
 
 ### 🔧 CI/CD Mobile Tests Fix
