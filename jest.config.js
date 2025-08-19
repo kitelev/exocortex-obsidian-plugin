@@ -27,29 +27,41 @@ module.exports = {
       statements: 34,
     },
   },
-  // Enhanced setup for CI environments
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts', '<rootDir>/tests/mobile-setup.ts'],
+  // Note: setupFilesAfterEnv moved to memory optimization section above
   // Handle ES modules and other transformations in CI
   transformIgnorePatterns: [
     'node_modules/(?!(chai)/)'
   ],
   // Optimized CI/CD performance settings
   testTimeout: process.env.CI ? 90000 : 30000, // Increased for CI stability
-  maxWorkers: process.env.CI ? 4 : '75%', // Optimized for CI parallelization
+  // maxWorkers moved to memory management section above
   // Performance optimizations
   verbose: false,
   silent: process.env.CI ? true : false, // Reduce CI noise
   bail: process.env.CI ? 3 : false, // Fail fast in CI after 3 failures
-  // Enhanced caching
-  cache: true,
-  cacheDirectory: '<rootDir>/.jest-cache',
+  // Note: Cache settings moved to memory optimization section above
   // CI-specific optimizations
-  forceExit: process.env.CI ? true : false,
+  forceExit: true, // Always force exit to prevent hangs
   detectOpenHandles: process.env.CI ? false : true,
-  // Enhanced memory management for CI
-  workerIdleMemoryLimit: process.env.CI ? '512MB' : '1GB',
-  // Remove workerOptions as it's not supported in Jest 30
-  // Heap size is handled via NODE_OPTIONS environment variable
+  // Critical memory optimizations for CI/CD stability
+  clearMocks: true,
+  restoreMocks: true,
+  resetMocks: true,
+  // Aggressive memory management for CI
+  workerIdleMemoryLimit: process.env.CI ? '64MB' : '128MB', // Further reduce memory per worker
+  maxWorkers: 1, // Force single worker always for stability
+  // Memory leak detection - CRITICAL for stability
+  detectLeaks: false, // Disabled due to performance impact
+  logHeapUsage: false, // Disabled for CI performance
+  // Force garbage collection between tests
+  setupFilesAfterEnv: [
+    '<rootDir>/tests/setup.ts',
+    '<rootDir>/tests/memory-optimization-setup.ts', // New memory optimization setup
+    '<rootDir>/tests/test-cleanup.ts'
+  ],
+  // Reduce cache to prevent memory buildup
+  cacheDirectory: '<rootDir>/.jest-cache',
+  cache: process.env.CI ? false : true, // Disable cache in CI to prevent memory issues
   // Coverage optimization
   collectCoverage: process.env.CI && process.env.COVERAGE ? true : false,
   coverageReporters: process.env.CI ? ['lcov', 'text-summary'] : ['text', 'html'],

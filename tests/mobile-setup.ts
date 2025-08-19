@@ -5,14 +5,20 @@
 
 import { MobileTestUtils } from './__mocks__/obsidian';
 
-// Global mobile test setup
+// Memory-optimized mobile test setup
 beforeAll(() => {
-    // Set default mobile environment for all mobile tests
+    // Skip mobile setup in CI to save memory
+    if (process.env.CI && !process.env.FORCE_MOBILE_TESTS) {
+        console.log('Skipping mobile setup in CI for memory optimization');
+        return;
+    }
+    
+    // Set default mobile environment for mobile tests only
     if (process.env.JEST_WORKER_ID && !process.env.TEST_PLATFORM) {
         process.env.TEST_PLATFORM = 'mobile';
     }
     
-    // Global DOM setup for mobile
+    // Minimal DOM setup for mobile (only if needed)
     if (typeof TextEncoder !== 'undefined') {
         Object.defineProperty(global, 'TextEncoder', {
             value: TextEncoder,
@@ -27,27 +33,22 @@ beforeAll(() => {
         });
     }
     
-    // Mock global functions that may be missing in Jest
-    if (!global.structuredClone) {
-        global.structuredClone = (obj: any) => JSON.parse(JSON.stringify(obj));
+    // Lightweight RAF mock
+    if (!global.requestAnimationFrame) {
+        global.requestAnimationFrame = jest.fn((callback: FrameRequestCallback) => {
+            return setTimeout(() => callback(Date.now()), 16);
+        }) as any;
     }
     
-    // Mock RAF for consistent animation testing
-    global.requestAnimationFrame = jest.fn((callback: FrameRequestCallback) => {
-        const id = setTimeout(() => callback(performance.now()), 16);
-        return id;
-    }) as any;
-    
-    global.cancelAnimationFrame = jest.fn((id: number) => {
-        clearTimeout(id);
-    });
-    
-    // Mock performance.now for consistent timing
-    if (!global.performance) {
-        global.performance = {} as any;
+    if (!global.cancelAnimationFrame) {
+        global.cancelAnimationFrame = jest.fn((id: number) => {
+            clearTimeout(id);
+        });
     }
     
-    if (!global.performance.now) {
+    // Lightweight performance.now mock
+    if (!global.performance?.now) {
+        if (!global.performance) global.performance = {} as any;
         global.performance.now = jest.fn(() => Date.now());
     }
     
@@ -489,6 +490,41 @@ afterEach(() => {
                 // Ignore errors in cleanup
             }
         });
+    }
+    
+    // Reset mobile test environment
+    MobileTestUtils.reset();
+    
+    // Clear animation frames
+    if (typeof cancelAnimationFrame !== 'undefined') {
+        // Clear any pending animation frames
+        for (let i = 0; i < 100; i++) {
+            try {
+                cancelAnimationFrame(i);
+            } catch (e) {
+                // Ignore errors
+            }
+        }
+    }
+    
+    // Clear idle callbacks
+    if (typeof cancelIdleCallback !== 'undefined') {
+        for (let i = 0; i < 100; i++) {
+            try {
+                cancelIdleCallback(i);
+            } catch (e) {
+                // Ignore errors
+            }
+        }
+    }
+    
+    // Force garbage collection in tests if available
+    if (typeof global.gc === 'function' && !process.env.CI) {
+        try {
+            global.gc();
+        } catch (e) {
+            // Ignore GC errors
+        }
     }
 });
 

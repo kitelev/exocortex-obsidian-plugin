@@ -30,6 +30,15 @@ describe('PropertyEditingUseCase Integration', () => {
         useCase = new PropertyEditingUseCase(mockRepository, mockPlugin);
     });
 
+    afterEach(() => {
+        jest.clearAllMocks();
+        jest.clearAllTimers();
+        // Clear references to prevent memory leaks
+        mockRepository = null as any;
+        mockPlugin = null as any;
+        useCase = null as any;
+    });
+
     describe('execute with different asset identifiers', () => {
         const testAsset = Asset.create({
             id: AssetId.generate(),
