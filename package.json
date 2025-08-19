@@ -29,7 +29,7 @@
     "test:ui:headless": "CI=true wdio run wdio.conf.ts",
     "test:ui:macos": "wdio run wdio.conf.macos.ts",
     "test:ui:with-fallback": "bash scripts/run-ui-tests-with-fallback.sh",
-    "test:mobile": "jest --config jest.mobile.config.js",
+    "test:mobile": "./scripts/run-mobile-tests.sh",
     "test:security": "jest --config jest.security.config.js",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e:all",
     "test:all:local": "npm run test:unit && npm run test:integration && npm run test:e2e:all && npm run test:ui",

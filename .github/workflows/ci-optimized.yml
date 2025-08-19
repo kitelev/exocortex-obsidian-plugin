@@ -209,7 +209,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: validation
-    if: contains(github.event.head_commit.message, '[mobile]') || github.event_name == 'workflow_dispatch'
+    if: contains(github.event.head_commit.message, '[mobile]') || contains(github.event.head_commit.message, 'mobile') || github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
     
     steps:
       - name: Checkout code
@@ -230,7 +230,10 @@ jobs:
         run: npm run build
       
       - name: Run mobile-specific tests
-        run: npm run test:unit -- --testPathPattern=mobile
+        run: |
+          echo "📱 Starting mobile test execution..."
+          echo "Mobile tests include touch controllers, responsive UI, and platform detection"
+          npm run test:mobile
         env:
           CI: true
           NODE_ENV: test
@@ -256,12 +259,14 @@ jobs:
           validation_result="${{ needs.validation.result }}"
           core_result="${{ needs.core-tests.result }}"
           security_result="${{ needs.security-tests.result }}"
+          mobile_result="${{ needs.mobile-tests.result }}"
           
           echo "| Test Suite | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|------------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| 🔍 Validation | $validation_result |" >> $GITHUB_STEP_SUMMARY
           echo "| 🧪 Core Tests | $core_result |" >> $GITHUB_STEP_SUMMARY
           echo "| 🔒 Security Tests | $security_result |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📱 Mobile Tests | $mobile_result |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Overall status - Ultra-safe mode for emergency stabilization
@@ -269,6 +274,9 @@ jobs:
             echo "✅ **Critical CI tests passed successfully!**" >> $GITHUB_STEP_SUMMARY
             if [ "$security_result" != "success" ]; then
               echo "⚠️ **Security tests completed with warnings but not blocking**" >> $GITHUB_STEP_SUMMARY
+            fi
+            if [ "$mobile_result" != "success" ] && [ "$mobile_result" != "skipped" ]; then
+              echo "⚠️ **Mobile tests completed with warnings but not blocking**" >> $GITHUB_STEP_SUMMARY
             fi
             exit 0
           else
@@ -280,6 +288,7 @@ jobs:
             [ "$validation_result" != "success" ] && echo "- 🔍 Validation: $validation_result" >> $GITHUB_STEP_SUMMARY
             [ "$core_result" != "success" ] && echo "- 🧪 Core Tests: $core_result" >> $GITHUB_STEP_SUMMARY
             [ "$security_result" != "success" ] && echo "- 🔒 Security Tests: $security_result (non-blocking)" >> $GITHUB_STEP_SUMMARY
+            [ "$mobile_result" != "success" ] && [ "$mobile_result" != "skipped" ] && echo "- 📱 Mobile Tests: $mobile_result (non-blocking)" >> $GITHUB_STEP_SUMMARY
             
             # Only fail if critical tests fail
             if [ "$validation_result" != "success" ] || [ "$core_result" != "success" ]; then
