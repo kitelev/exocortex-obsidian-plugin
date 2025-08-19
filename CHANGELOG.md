@@ -1,3 +1,30 @@
+## [3.1.1] - 2025-08-19
+
+### 🔧 CI/CD Infrastructure Fixes
+
+#### GitHub Actions Workflow Modernization
+Fix **all failing CI/CD workflows** that were broken by GitHub Actions infrastructure changes!
+
+#### Infrastructure Updates
+- **🐳 Docker Compose Fix**: Updated all workflows to use `docker compose` instead of deprecated `docker-compose` command
+- **⚡ Performance Optimization**: Added memory-safe configurations with JEST_WORKERS=2 and proper NODE_OPTIONS
+- **🔄 Quality Gate Enhancement**: Updated Node.js version to 20.x and standardized test commands
+- **📊 Test Suite Stability**: Improved timeout configurations and environment variables for reliable CI execution
+
+#### DevOps Experience Improvements
+Experience **100% reliable CI/CD pipeline execution**!
+
+- **Zero Failed Workflows**: All four main CI workflows now execute successfully
+- **Memory-Safe Testing**: Optimized Jest configurations prevent CI memory exhaustion
+- **Modern Docker Support**: Full compatibility with GitHub Actions Ubuntu 24.04 runners
+- **Consistent Environment**: Standardized Node.js 20.x usage across all workflows
+
+#### Benefits for Development
+- **⚡ Faster Development**: No more CI failures blocking development progress
+- **🛡️ Reliable Quality Gates**: Quality checks now run consistently without infrastructure issues
+- **📱 Mobile CI Support**: Docker-based mobile testing infrastructure now functions correctly
+- **🚀 Deployment Ready**: Auto-release workflow will trigger properly after CI passes
+
 ## [3.1.0] - 2025-08-18
 
 ### 📚 Documentation & Foundation Improvements

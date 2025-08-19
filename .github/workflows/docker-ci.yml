@@ -216,13 +216,13 @@ jobs:
       
     - name: Run Docker Compose CI pipeline
       run: |
-        docker-compose --project-name exocortex-ci --profile ci up --abort-on-container-exit
+        docker compose --project-name exocortex-ci --profile ci up --abort-on-container-exit
         
     - name: Collect Docker Compose results
       if: always()
       run: |
-        docker-compose --project-name exocortex-ci logs > docker-compose-logs.txt
-        docker-compose --project-name exocortex-ci down --volumes
+        docker compose --project-name exocortex-ci logs > docker-compose-logs.txt
+        docker compose --project-name exocortex-ci down --volumes
         
     - name: Upload Docker Compose artifacts
       if: always()
@@ -253,7 +253,7 @@ jobs:
       
     - name: Run performance tests in Docker
       run: |
-        docker-compose --project-name exocortex-perf --profile performance up --abort-on-container-exit
+        docker compose --project-name exocortex-perf --profile performance up --abort-on-container-exit
         
     - name: Upload performance results
       uses: actions/upload-artifact@v4
@@ -279,7 +279,7 @@ jobs:
       
     - name: Run security tests in Docker
       run: |
-        docker-compose --project-name exocortex-security --profile security up --abort-on-container-exit
+        docker compose --project-name exocortex-security --profile security up --abort-on-container-exit
         
     - name: Run Docker security scan
       uses: docker/scout-action@v1

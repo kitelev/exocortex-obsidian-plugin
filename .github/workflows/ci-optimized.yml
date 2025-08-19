@@ -9,6 +9,8 @@ on:
 
 env:
   NODE_OPTIONS: --max-old-space-size=4096
+  CI: true
+  JEST_WORKERS: 2
 
 jobs:
   # =============================================================================

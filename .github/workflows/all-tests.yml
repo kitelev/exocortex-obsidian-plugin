@@ -10,6 +10,8 @@ on:
 env:
   NODE_OPTIONS: --max-old-space-size=6144
   FORCE_COLOR: 1
+  CI: true
+  JEST_WORKERS: 2
 
 jobs:
   # ==========================================
