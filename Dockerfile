@@ -125,10 +125,10 @@ RUN mkdir -p dist && \
     cp main.js manifest.json styles.css dist/
 
 # Validate plugin structure
-RUN node -e "
-const fs = require('fs');
-const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
-console.log('✅ Plugin validated:', manifest.id, 'v' + manifest.version);
+RUN node -e "\
+const fs = require('fs');\
+const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));\
+console.log('✅ Plugin validated:', manifest.id, 'v' + manifest.version);\
 "
 
 # =============================================================================
