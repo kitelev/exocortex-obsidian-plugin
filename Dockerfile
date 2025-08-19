@@ -74,10 +74,10 @@ RUN mkdir -p /app/coverage \
 # Run TypeScript compilation check
 RUN npx tsc --noEmit --skipLibCheck
 
-# Run unit tests with coverage
-RUN npm run test:coverage
+# Run tests using our batched memory-safe approach
+RUN ./scripts/test-ci-batched.sh
 
-# Run integration tests
+# Run integration tests (batched)
 RUN npm run test:integration
 
 # Run E2E tests
@@ -102,8 +102,8 @@ FROM test AS mobile-test
 ENV MOBILE_TEST=true \
     PLATFORM_MOBILE=true
 
-# Run mobile-specific tests (subset of full test suite)
-RUN npm run test:unit -- --testNamePattern="mobile|touch|platform"
+# Run mobile-specific tests using safe batched approach
+RUN NODE_OPTIONS="--max-old-space-size=512 --expose-gc" jest --testNamePattern="mobile|touch|platform" --runInBand --workerIdleMemoryLimit=64MB --forceExit
 
 # =============================================================================
 # Production stage - Clean production build

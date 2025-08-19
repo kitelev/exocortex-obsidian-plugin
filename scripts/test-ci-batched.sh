@@ -38,7 +38,7 @@ for pattern in "${test_patterns[@]}"; do
     
     # Run this batch of tests
     if npx jest \
-        --testPathPattern="$pattern" \
+        --testPathPatterns="$pattern" \
         --runInBand \
         --workerIdleMemoryLimit=32MB \
         --forceExit \

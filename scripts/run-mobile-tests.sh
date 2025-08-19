@@ -25,7 +25,7 @@ run_platform_tests() {
     # Run mobile-specific tests
     npx jest \
         --testNamePattern="(Mobile|Touch|Platform|Performance|Battery|Gesture)" \
-        --testPathPattern="(mobile|touch|platform)" \
+        --testPathPatterns="(mobile|touch|platform)" \
         --verbose \
         --coverage=false \
         --maxWorkers=2 \

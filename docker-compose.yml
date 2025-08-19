@@ -24,7 +24,7 @@ services:
       - NODE_ENV=test
       - CI=true
       - JEST_WORKERS=2
-    command: npm run test:all
+    command: sh -c "./scripts/test-ci-batched.sh && npm run test:integration && npm run test:e2e:all"
     profiles:
       - test
       - all
@@ -70,7 +70,7 @@ services:
       - CI=true
       - MOBILE_TEST=true
       - PLATFORM_MOBILE=true
-    command: npm run test:unit -- --testNamePattern="mobile|touch|platform"
+    command: sh -c "NODE_OPTIONS='--max-old-space-size=512 --expose-gc' jest --testNamePattern='mobile|touch|platform' --runInBand --workerIdleMemoryLimit=64MB --forceExit"
     profiles:
       - mobile
       - all
@@ -91,7 +91,7 @@ services:
       - NODE_ENV=test
       - CI=true
       - JEST_WORKERS=2
-    command: npm run test:ci
+    command: sh -c "./scripts/test-ci-batched.sh && npm run test:integration && npm run test:e2e:all && npm run test:ui:ci"
     profiles:
       - ci
       - all
