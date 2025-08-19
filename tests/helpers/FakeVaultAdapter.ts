@@ -57,6 +57,30 @@ export class FakeVaultAdapter implements IVaultAdapter {
     return this.metadata.get(path) || null;
   }
 
+  /**
+   * Get all files in the vault
+   */
+  async getFiles(): Promise<any[]> {
+    return Array.from(this.files.keys()).map(path => ({
+      path,
+      basename: path.split('/').pop()?.replace(/\.[^/.]+$/, '') || '',
+      extension: path.split('.').pop() || ''
+    }));
+  }
+
+  /**
+   * Get metadata for a specific file object
+   */
+  async getFileMetadata(file: any): Promise<any> {
+    if (typeof file === 'string') {
+      return this.getMetadata(file);
+    }
+    if (file && file.path) {
+      return this.getMetadata(file.path);
+    }
+    return null;
+  }
+
   // Helper methods for testing
   getFileCount(): number {
     return this.files.size;

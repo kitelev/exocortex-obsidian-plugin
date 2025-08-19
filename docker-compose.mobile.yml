@@ -1,0 +1,256 @@
+# Mobile Testing Docker Compose Configuration
+# Specialized setup for mobile environment testing
+
+version: '3.8'
+
+services:
+  # =============================================================================
+  # Mobile Test Environment - iOS/Android simulation
+  # =============================================================================
+  mobile-test-env:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: mobile-test
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - ./mobile-test-results:/app/mobile-test-results
+      - ./touch-test-logs:/app/touch-test-logs
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - MOBILE_TEST=true
+      - PLATFORM_MOBILE=true
+      # Mobile-specific environment variables
+      - VIEWPORT_WIDTH=375
+      - VIEWPORT_HEIGHT=667
+      - DEVICE_PIXEL_RATIO=2
+      - TOUCH_ENABLED=true
+      - MOBILE_BREAKPOINT=768
+    command: >
+      sh -c "
+        echo 'Starting mobile environment tests...' &&
+        npm run test:unit -- --testNamePattern='mobile|touch|platform|responsive' &&
+        npm run test:integration -- --testNamePattern='mobile|touch' &&
+        echo 'Mobile tests completed'
+      "
+    profiles:
+      - mobile
+      - all
+
+  # =============================================================================
+  # iOS-like Environment Testing
+  # =============================================================================
+  ios-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: mobile-test
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - ./ios-test-results:/app/ios-test-results
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - MOBILE_TEST=true
+      - PLATFORM_MOBILE=true
+      - MOBILE_PLATFORM=ios
+      # iOS-specific settings
+      - VIEWPORT_WIDTH=375
+      - VIEWPORT_HEIGHT=812
+      - DEVICE_PIXEL_RATIO=3
+      - USER_AGENT=Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)
+    command: >
+      sh -c "
+        echo 'Starting iOS environment tests...' &&
+        npm run test:unit -- --testNamePattern='ios|iPhone|safari|webkit' &&
+        echo 'iOS tests completed'
+      "
+    profiles:
+      - ios
+      - mobile
+      - all
+
+  # =============================================================================
+  # Android-like Environment Testing
+  # =============================================================================
+  android-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: mobile-test
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - ./android-test-results:/app/android-test-results
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - MOBILE_TEST=true
+      - PLATFORM_MOBILE=true
+      - MOBILE_PLATFORM=android
+      # Android-specific settings
+      - VIEWPORT_WIDTH=360
+      - VIEWPORT_HEIGHT=640
+      - DEVICE_PIXEL_RATIO=3
+      - USER_AGENT=Mozilla/5.0 (Linux; Android 13)
+    command: >
+      sh -c "
+        echo 'Starting Android environment tests...' &&
+        npm run test:unit -- --testNamePattern='android|chrome|mobile' &&
+        echo 'Android tests completed'
+      "
+    profiles:
+      - android
+      - mobile
+      - all
+
+  # =============================================================================
+  # Touch Interface Testing
+  # =============================================================================
+  touch-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - ./touch-test-results:/app/touch-test-results
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - MOBILE_TEST=true
+      - TOUCH_TEST=true
+      - DISPLAY=:99
+    command: >
+      sh -c "
+        echo 'Starting touch interface tests...' &&
+        Xvfb :99 -screen 0 1024x768x24 -ac +extension GLX +render -noreset & 
+        sleep 3 &&
+        npm run test:unit -- --testNamePattern='touch|gesture|swipe|pinch|tap' &&
+        echo 'Touch interface tests completed'
+      "
+    profiles:
+      - touch
+      - mobile
+      - all
+
+  # =============================================================================
+  # Mobile Performance Testing
+  # =============================================================================
+  mobile-performance:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - ./mobile-performance-results:/app/mobile-performance-results
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - MOBILE_TEST=true
+      - PERFORMANCE_TEST=true
+      # Memory constraints simulation
+      - NODE_OPTIONS=--max-old-space-size=512
+    command: >
+      sh -c "
+        echo 'Starting mobile performance tests...' &&
+        npm run test:unit -- --testNamePattern='performance.*mobile|mobile.*performance|memory|battery' &&
+        echo 'Mobile performance tests completed'
+      "
+    profiles:
+      - performance
+      - mobile
+      - all
+
+  # =============================================================================
+  # Mobile UI Testing with WebDriver
+  # =============================================================================
+  mobile-ui-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ui-test
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - ./mobile-screenshots:/app/mobile-screenshots
+      - ./mobile-wdio-logs:/app/mobile-wdio-logs
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - MOBILE_TEST=true
+      - DISPLAY=:99
+      - CHROME_BIN=/usr/bin/chromium-browser
+      # Mobile Chrome options
+      - CHROME_MOBILE_EMULATION=true
+      - MOBILE_DEVICE_NAME=iPhone 12 Pro
+    command: >
+      sh -c "
+        echo 'Starting mobile UI tests...' &&
+        Xvfb :99 -screen 0 375x812x24 -ac +extension GLX +render -noreset & 
+        sleep 3 &&
+        npm run test:ui:headless -- --spec='**/mobile*.spec.ts' &&
+        echo 'Mobile UI tests completed'
+      "
+    profiles:
+      - mobile-ui
+      - mobile
+      - all
+
+  # =============================================================================
+  # Mobile Test Aggregator - Runs all mobile tests
+  # =============================================================================
+  mobile-all:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: mobile-test
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - ./mobile-test-results:/app/mobile-test-results
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - MOBILE_TEST=true
+      - PLATFORM_MOBILE=true
+    depends_on:
+      - mobile-test-env
+      - ios-test
+      - android-test
+      - touch-test
+      - mobile-performance
+    command: >
+      sh -c "
+        echo 'Running comprehensive mobile test suite...' &&
+        npm run test:unit -- --testNamePattern='mobile|touch|platform|responsive|ios|android' &&
+        npm run test:integration -- --testNamePattern='mobile|touch|platform' &&
+        echo 'All mobile tests completed successfully!'
+      "
+    profiles:
+      - mobile-all
+      - all
+
+# =============================================================================
+# Mobile-specific volumes
+# =============================================================================
+volumes:
+  node_modules:
+  mobile_test_cache:
+
+# =============================================================================
+# Mobile testing network
+# =============================================================================
+networks:
+  mobile-test:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.0.0/16

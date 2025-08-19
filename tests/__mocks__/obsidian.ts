@@ -688,15 +688,410 @@ export const moment = {
   })
 };
 
-// Mock Platform API
+// Mock Platform API - Enhanced for Mobile Testing
 export const Platform = {
-  isMobile: false,
-  isMobileApp: false,
-  isIosApp: false,
-  isAndroidApp: false,
-  isTablet: false,
-  isDesktop: true,
+  isMobile: process.env.TEST_PLATFORM === 'mobile' || false,
+  isMobileApp: process.env.TEST_PLATFORM === 'mobile' || false,
+  isIosApp: process.env.TEST_PLATFORM === 'ios' || false,
+  isAndroidApp: process.env.TEST_PLATFORM === 'android' || false,
+  isTablet: process.env.TEST_PLATFORM === 'tablet' || false,
+  isDesktop: process.env.TEST_PLATFORM !== 'mobile' && process.env.TEST_PLATFORM !== 'tablet',
   isWin: false,
   isMacOS: true,
   isLinux: false
+};
+
+// Mobile Environment Mocks
+declare global {
+  interface Window {
+    TouchEvent: typeof TouchEvent;
+    PointerEvent?: typeof PointerEvent;
+    Capacitor?: any;
+    ObsidianMobile?: any;
+  }
+  
+  interface Navigator {
+    vibrate?: (pattern: number | number[]) => boolean;
+    deviceMemory?: number;
+    connection?: {
+      effectiveType?: string;
+      type?: string;
+      downlink?: number;
+    };
+    maxTouchPoints: number;
+    msMaxTouchPoints?: number;
+    getBattery?: () => Promise<{
+      level: number;
+      charging: boolean;
+      chargingTime: number;
+      dischargingTime: number;
+    }>;
+  }
+}
+
+// Setup mobile environment mocks
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  // Touch Event Support
+  if (!window.TouchEvent) {
+    class MockTouchEvent extends Event {
+      touches: TouchList;
+      changedTouches: TouchList;
+      targetTouches: TouchList;
+      
+      constructor(type: string, eventInitDict?: TouchEventInit) {
+        super(type, eventInitDict);
+        
+        const createTouchList = (touches?: Touch[]): TouchList => {
+          const list = (touches || []) as any;
+          list.item = (index: number) => list[index] || null;
+          return list as TouchList;
+        };
+        
+        this.touches = createTouchList(eventInitDict?.touches as Touch[]);
+        this.changedTouches = createTouchList(eventInitDict?.changedTouches as Touch[]);
+        this.targetTouches = createTouchList(eventInitDict?.targetTouches as Touch[]);
+      }
+    }
+    
+    window.TouchEvent = MockTouchEvent as any;
+  }
+  
+  // Pointer Event Support
+  if (!window.PointerEvent) {
+    class MockPointerEvent extends Event {
+      pointerId: number;
+      pointerType: string;
+      clientX: number;
+      clientY: number;
+      
+      constructor(type: string, eventInitDict?: PointerEventInit) {
+        super(type, eventInitDict);
+        this.pointerId = eventInitDict?.pointerId || 0;
+        this.pointerType = eventInitDict?.pointerType || 'touch';
+        this.clientX = eventInitDict?.clientX || 0;
+        this.clientY = eventInitDict?.clientY || 0;
+      }
+    }
+    
+    window.PointerEvent = MockPointerEvent as any;
+  }
+  
+  // Touch capability detection
+  if (!('ontouchstart' in window)) {
+    Object.defineProperty(window, 'ontouchstart', {
+      value: null,
+      configurable: true,
+      writable: true
+    });
+  }
+  
+  // Navigator enhancements for mobile testing
+  Object.defineProperty(navigator, 'maxTouchPoints', {
+    value: process.env.TEST_PLATFORM === 'mobile' ? 10 : 0,
+    configurable: true
+  });
+  
+  Object.defineProperty(navigator, 'msMaxTouchPoints', {
+    value: process.env.TEST_PLATFORM === 'mobile' ? 10 : 0,
+    configurable: true
+  });
+  
+  // Vibration API mock
+  if (!navigator.vibrate) {
+    Object.defineProperty(navigator, 'vibrate', {
+      value: jest.fn((pattern: number | number[]) => {
+        console.log(`Mock vibrate called with:`, pattern);
+        return true;
+      }),
+      configurable: true,
+      writable: true
+    });
+  }
+  
+  // Device Memory API mock
+  Object.defineProperty(navigator, 'deviceMemory', {
+    value: process.env.TEST_PLATFORM === 'mobile' ? 4 : 8, // 4GB for mobile, 8GB for desktop
+    configurable: true
+  });
+  
+  // Network Information API mock
+  Object.defineProperty(navigator, 'connection', {
+    value: {
+      effectiveType: process.env.TEST_PLATFORM === 'mobile' ? '3g' : '4g',
+      type: 'cellular',
+      downlink: process.env.TEST_PLATFORM === 'mobile' ? 1.5 : 10
+    },
+    configurable: true
+  });
+  
+  // Battery API mock
+  Object.defineProperty(navigator, 'getBattery', {
+    value: () => Promise.resolve({
+      level: 0.75,
+      charging: false,
+      chargingTime: Infinity,
+      dischargingTime: 7200
+    }),
+    configurable: true
+  });
+  
+  // Mock Capacitor for Obsidian mobile detection
+  if (process.env.TEST_PLATFORM === 'mobile') {
+    window.Capacitor = {
+      platform: process.env.TEST_PLATFORM === 'ios' ? 'ios' : 'android',
+      isNative: true
+    };
+    
+    window.ObsidianMobile = {
+      version: '1.0.0',
+      platform: process.env.TEST_PLATFORM === 'ios' ? 'ios' : 'android'
+    };
+  }
+  
+  // Performance memory mock
+  if (!performance.memory && process.env.TEST_PLATFORM === 'mobile') {
+    Object.defineProperty(performance, 'memory', {
+      value: {
+        usedJSHeapSize: 50 * 1024 * 1024,  // 50MB
+        totalJSHeapSize: 100 * 1024 * 1024, // 100MB
+        jsHeapSizeLimit: 512 * 1024 * 1024  // 512MB for mobile
+      },
+      configurable: true
+    });
+  }
+  
+  // Mock requestAnimationFrame and cancelAnimationFrame if not present
+  if (!window.requestAnimationFrame) {
+    window.requestAnimationFrame = jest.fn((callback: FrameRequestCallback) => {
+      const id = setTimeout(() => callback(performance.now()), 16);
+      return id;
+    }) as any;
+  }
+  
+  if (!window.cancelAnimationFrame) {
+    window.cancelAnimationFrame = jest.fn((id: number) => {
+      clearTimeout(id);
+    });
+  }
+  
+  // Mock screen orientation API
+  if (!screen.orientation) {
+    Object.defineProperty(screen, 'orientation', {
+      value: {
+        angle: 0,
+        type: 'portrait-primary',
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn()
+      },
+      configurable: true
+    });
+  }
+  
+  // Mock matchMedia for responsive design tests
+  if (!window.matchMedia) {
+    window.matchMedia = jest.fn((query: string) => ({
+      matches: query.includes('max-width: 768px') ? (process.env.TEST_PLATFORM === 'mobile') : false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn()
+    }));
+  }
+  
+  // Mock CSS support detection
+  if (!window.CSS) {
+    Object.defineProperty(window, 'CSS', {
+      value: {
+        supports: jest.fn((property: string) => {
+          // Mock support for safe-area CSS
+          return property.includes('safe-area') || property.includes('env(');
+        })
+      },
+      configurable: true
+    });
+  }
+  
+  // Mock computed style for safe area detection
+  const originalGetComputedStyle = window.getComputedStyle;
+  window.getComputedStyle = jest.fn((element: Element) => {
+    const mockStyle = {
+      getPropertyValue: jest.fn((prop: string) => {
+        // Mock safe area insets for iOS
+        const safeAreaMap: {[key: string]: string} = {
+          'env(safe-area-inset-top)': process.env.TEST_PLATFORM === 'ios' ? '44px' : '0px',
+          'env(safe-area-inset-bottom)': process.env.TEST_PLATFORM === 'ios' ? '34px' : '0px',
+          'env(safe-area-inset-left)': '0px',
+          'env(safe-area-inset-right)': '0px'
+        };
+        return safeAreaMap[prop] || '0px';
+      }),
+      ...(originalGetComputedStyle ? originalGetComputedStyle(element) : {})
+    };
+    return mockStyle as any;
+  });
+  
+  // Mock user agent for mobile detection
+  const mobileUserAgents = {
+    ios: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1',
+    android: 'Mozilla/5.0 (Linux; Android 12; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Mobile Safari/537.36',
+    tablet: 'Mozilla/5.0 (iPad; CPU OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1',
+    desktop: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'
+  };
+  
+  if (process.env.TEST_PLATFORM && process.env.TEST_PLATFORM in mobileUserAgents) {
+    Object.defineProperty(navigator, 'userAgent', {
+      value: mobileUserAgents[process.env.TEST_PLATFORM as keyof typeof mobileUserAgents],
+      configurable: true
+    });
+  }
+  
+  // Mock platform for mobile detection
+  const platformMap: {[key: string]: string} = {
+    ios: 'iPhone',
+    android: 'Linux armv8l',
+    tablet: 'iPad',
+    desktop: 'MacIntel'
+  };
+  
+  if (process.env.TEST_PLATFORM && process.env.TEST_PLATFORM in platformMap) {
+    Object.defineProperty(navigator, 'platform', {
+      value: platformMap[process.env.TEST_PLATFORM],
+      configurable: true
+    });
+  }
+  
+  // Mock inner dimensions for different screen sizes
+  const screenDimensions = {
+    mobile: { width: 375, height: 667 },
+    ios: { width: 375, height: 667 },
+    android: { width: 412, height: 892 },
+    tablet: { width: 768, height: 1024 },
+    desktop: { width: 1920, height: 1080 }
+  };
+  
+  if (process.env.TEST_PLATFORM && process.env.TEST_PLATFORM in screenDimensions) {
+    const dimensions = screenDimensions[process.env.TEST_PLATFORM as keyof typeof screenDimensions];
+    Object.defineProperty(window, 'innerWidth', {
+      value: dimensions.width,
+      configurable: true
+    });
+    Object.defineProperty(window, 'innerHeight', {
+      value: dimensions.height,
+      configurable: true
+    });
+    Object.defineProperty(screen, 'width', {
+      value: dimensions.width,
+      configurable: true
+    });
+    Object.defineProperty(screen, 'height', {
+      value: dimensions.height,
+      configurable: true
+    });
+  }
+}
+
+// Export mobile testing utilities
+export const MobileTestUtils = {
+  /**
+   * Set the test platform for mobile tests
+   */
+  setPlatform(platform: 'mobile' | 'ios' | 'android' | 'tablet' | 'desktop') {
+    process.env.TEST_PLATFORM = platform;
+    // Force refresh of cached values
+    if (typeof window !== 'undefined') {
+      // Trigger platform detection refresh if available
+      (window as any).__PLATFORM_REFRESH__?.();
+    }
+  },
+  
+  /**
+   * Create a mock touch event for testing
+   */
+  createTouchEvent(
+    type: string,
+    touches: Array<{ x: number; y: number; id?: number }>,
+    target?: Element
+  ): TouchEvent {
+    const touchList = touches.map((touch, index) => ({
+      identifier: touch.id || index,
+      clientX: touch.x,
+      clientY: touch.y,
+      pageX: touch.x,
+      pageY: touch.y,
+      screenX: touch.x,
+      screenY: touch.y,
+      target: target || document.body
+    }));
+    
+    const event = new TouchEvent(type, {
+      touches: type === 'touchend' || type === 'touchcancel' ? [] : touchList as any,
+      changedTouches: touchList as any,
+      targetTouches: type === 'touchend' || type === 'touchcancel' ? [] : touchList as any,
+      bubbles: true,
+      cancelable: true
+    });
+    
+    (event as any).preventDefault = jest.fn();
+    (event as any).stopPropagation = jest.fn();
+    
+    return event;
+  },
+  
+  /**
+   * Mock device capabilities for testing
+   */
+  mockDeviceCapabilities(capabilities: {
+    vibration?: boolean;
+    geolocation?: boolean;
+    battery?: boolean;
+    memory?: number;
+    connection?: string;
+  }) {
+    if (capabilities.vibration !== undefined) {
+      Object.defineProperty(navigator, 'vibrate', {
+        value: capabilities.vibration ? jest.fn() : undefined,
+        configurable: true
+      });
+    }
+    
+    if (capabilities.geolocation !== undefined) {
+      Object.defineProperty(navigator, 'geolocation', {
+        value: capabilities.geolocation ? {
+          getCurrentPosition: jest.fn(),
+          watchPosition: jest.fn(),
+          clearWatch: jest.fn()
+        } : undefined,
+        configurable: true
+      });
+    }
+    
+    if (capabilities.memory !== undefined) {
+      Object.defineProperty(navigator, 'deviceMemory', {
+        value: capabilities.memory,
+        configurable: true
+      });
+    }
+    
+    if (capabilities.connection !== undefined) {
+      Object.defineProperty(navigator, 'connection', {
+        value: {
+          effectiveType: capabilities.connection,
+          type: 'cellular',
+          downlink: capabilities.connection === '4g' ? 10 : 1.5
+        },
+        configurable: true
+      });
+    }
+  },
+  
+  /**
+   * Reset all mobile mocks to default state
+   */
+  reset() {
+    delete process.env.TEST_PLATFORM;
+    // Reset other mock states as needed
+  }
 };

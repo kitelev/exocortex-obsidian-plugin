@@ -37,7 +37,7 @@ export class QueryEngineService {
         // Get appropriate engine
         const engineResult = await this.getQueryEngine(enginePreference);
         if (!engineResult.isSuccess) {
-            return Result.fail<QueryResult>(engineResult.error);
+            return Result.fail<QueryResult>(engineResult.getError());
         }
 
         const engine = engineResult.getValue()!;
@@ -65,10 +65,10 @@ export class QueryEngineService {
         const engineResult = await this.getQueryEngine(enginePreference);
         if (!engineResult.isSuccess) {
             container.createEl('p', {
-                text: `Query Engine Error: ${engineResult.error}`,
+                text: `Query Engine Error: ${engineResult.getError()}`,
                 cls: 'exocortex-error'
             });
-            return Result.fail<void>(engineResult.error);
+            return Result.fail<void>(engineResult.getError());
         }
 
         const engine = engineResult.getValue()!;
@@ -84,7 +84,7 @@ export class QueryEngineService {
     ): Promise<Result<any[]>> {
         const engineResult = await this.getQueryEngine(enginePreference);
         if (!engineResult.isSuccess) {
-            return Result.fail<any[]>(engineResult.error);
+            return Result.fail<any[]>(engineResult.getError());
         }
 
         const engine = engineResult.getValue()!;
@@ -100,7 +100,7 @@ export class QueryEngineService {
     ): Promise<Result<Record<string, any>>> {
         const engineResult = await this.getQueryEngine(enginePreference);
         if (!engineResult.isSuccess) {
-            return Result.fail<Record<string, any>>(engineResult.error);
+            return Result.fail<Record<string, any>>(engineResult.getError());
         }
 
         const engine = engineResult.getValue()!;
@@ -116,7 +116,7 @@ export class QueryEngineService {
     ): Promise<Result<boolean>> {
         const engineResult = await this.getQueryEngine(engineType);
         if (!engineResult.isSuccess) {
-            return Result.fail<boolean>(engineResult.error);
+            return Result.fail<boolean>(engineResult.getError());
         }
 
         const engine = engineResult.getValue()!;

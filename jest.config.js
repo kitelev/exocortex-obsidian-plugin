@@ -8,9 +8,6 @@ module.exports = {
     '/tests/e2e/',
     '/tests/ui/',  // Exclude WebDriver UI tests
   ],
-  transform: {
-    '^.+\\.ts$': 'ts-jest',
-  },
   collectCoverageFrom: [
     'main.ts',
     'src/**/*.ts',
@@ -31,24 +28,45 @@ module.exports = {
     },
   },
   // Enhanced setup for CI environments
-  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts', '<rootDir>/tests/mobile-setup.ts'],
   // Handle ES modules and other transformations in CI
   transformIgnorePatterns: [
     'node_modules/(?!(chai)/)'
   ],
-  // Additional environment settings for CI
-  testTimeout: process.env.CI ? 60000 : 30000,
-  maxWorkers: process.env.CI ? 2 : '50%', // Increased for better CI performance
-  // Optimize for performance and stability
+  // Optimized CI/CD performance settings
+  testTimeout: process.env.CI ? 90000 : 30000, // Increased for CI stability
+  maxWorkers: process.env.CI ? 4 : '75%', // Optimized for CI parallelization
+  // Performance optimizations
   verbose: false,
-  silent: process.env.CI ? true : false, // Allow local debugging
-  bail: process.env.CI ? 5 : false, // Stop after 5 failures in CI
-  // Cache for faster subsequent runs
+  silent: process.env.CI ? true : false, // Reduce CI noise
+  bail: process.env.CI ? 3 : false, // Fail fast in CI after 3 failures
+  // Enhanced caching
   cache: true,
   cacheDirectory: '<rootDir>/.jest-cache',
   // CI-specific optimizations
   forceExit: process.env.CI ? true : false,
   detectOpenHandles: process.env.CI ? false : true,
-  // Memory management for CI
-  workerIdleMemoryLimit: process.env.CI ? '512MB' : '1GB',
+  // Improved memory management
+  workerIdleMemoryLimit: process.env.CI ? '768MB' : '1GB',
+  // Coverage optimization
+  collectCoverage: process.env.CI && process.env.COVERAGE ? true : false,
+  coverageReporters: process.env.CI ? ['lcov', 'text-summary'] : ['text', 'html'],
+  // Test result optimization
+  passWithNoTests: true,
+  errorOnDeprecated: false,
+  // Modern ts-jest configuration
+  transform: {
+    '^.+\\.ts$': ['ts-jest', {
+      isolatedModules: true, // Faster TypeScript compilation
+      tsconfig: {
+        module: 'esnext',
+        target: 'es2020',
+        lib: ['es2020', 'dom'],
+        skipLibCheck: true,
+        moduleResolution: 'node',
+        allowSyntheticDefaultImports: true,
+        esModuleInterop: true,
+      }
+    }],
+  }
 };

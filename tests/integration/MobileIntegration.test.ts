@@ -511,7 +511,33 @@ describe('Mobile Integration Tests', () => {
                 configurable: true
             });
 
+            Object.defineProperty(window, 'innerHeight', {
+                value: 1080,
+                configurable: true
+            });
+
+            // Remove touch support
             delete (window as any).ontouchstart;
+            Object.defineProperty(navigator, 'maxTouchPoints', {
+                value: 0,
+                configurable: true
+            });
+
+            // Set desktop memory (8GB+)
+            Object.defineProperty(navigator, 'deviceMemory', {
+                value: 8,
+                configurable: true
+            });
+
+            // Mock performance.memory for desktop (jsHeapSizeLimit in bytes, deviceMemory in GB)
+            Object.defineProperty(performance, 'memory', {
+                value: {
+                    jsHeapSizeLimit: 8 * 1024 * 1024 * 1024, // 8GB heap limit in bytes
+                    usedJSHeapSize: 1 * 1024 * 1024 * 1024,  // 1GB used
+                    totalJSHeapSize: 2 * 1024 * 1024 * 1024  // 2GB total
+                },
+                configurable: true
+            });
             
             PlatformDetector.refresh();
 

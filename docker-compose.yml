@@ -1,0 +1,264 @@
+# Docker Compose for Exocortex Obsidian Plugin Testing
+# Supports development, testing, and CI/CD workflows
+
+version: '3.8'
+
+services:
+  # =============================================================================
+  # Base test service - Unit and Integration Tests
+  # =============================================================================
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    volumes:
+      # Mount source for development
+      - .:/app
+      - node_modules:/app/node_modules
+      - test_cache:/app/.jest-cache
+      # Mount test outputs
+      - ./coverage:/app/coverage
+      - ./test-results:/app/test-results
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - JEST_WORKERS=2
+    command: npm run test:all
+    profiles:
+      - test
+      - all
+
+  # =============================================================================
+  # UI Test service - WebDriver tests with display server
+  # =============================================================================
+  ui-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ui-test
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - ./screenshots:/app/screenshots
+      - ./wdio-logs:/app/wdio-logs
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - DISPLAY=:99
+      - CHROME_BIN=/usr/bin/chromium-browser
+      - CHROME_PATH=/usr/bin/chromium-browser
+    command: npm run test:ui:headless
+    profiles:
+      - ui
+      - all
+
+  # =============================================================================
+  # Mobile Test service - Mobile-specific testing
+  # =============================================================================
+  mobile-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: mobile-test
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - ./coverage:/app/coverage
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - MOBILE_TEST=true
+      - PLATFORM_MOBILE=true
+    command: npm run test:unit -- --testNamePattern="mobile|touch|platform"
+    profiles:
+      - mobile
+      - all
+
+  # =============================================================================
+  # CI service - Complete CI pipeline
+  # =============================================================================
+  ci:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ci
+    volumes:
+      - ./coverage:/app/coverage
+      - ./test-results:/app/test-results
+      - ./ci-reports:/app/ci-reports
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - JEST_WORKERS=2
+    command: npm run test:ci
+    profiles:
+      - ci
+      - all
+
+  # =============================================================================
+  # Development service - Hot reload development
+  # =============================================================================
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+    ports:
+      - "8080:8080"
+    command: npm run dev
+    profiles:
+      - dev
+
+  # =============================================================================
+  # Watch service - Continuous testing during development
+  # =============================================================================
+  test-watch:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dependencies
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - test_cache:/app/.jest-cache
+    environment:
+      - NODE_ENV=test
+    command: npm run test:watch
+    profiles:
+      - watch
+      - dev
+
+  # =============================================================================
+  # Coverage service - Generate and serve coverage reports
+  # =============================================================================
+  coverage:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - ./coverage:/app/coverage
+    environment:
+      - NODE_ENV=test
+    command: >
+      sh -c "npm run test:coverage && 
+             npx http-server coverage/lcov-report -p 8080 -o"
+    ports:
+      - "8080:8080"
+    profiles:
+      - coverage
+
+  # =============================================================================
+  # Performance Test service - Performance and load testing
+  # =============================================================================
+  perf-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - ./performance-results:/app/performance-results
+    environment:
+      - NODE_ENV=test
+      - PERFORMANCE_TEST=true
+    command: >
+      sh -c "npm run test:unit -- --testNamePattern='performance|benchmark' &&
+             npm run test:e2e -- --testNamePattern='performance'"
+    profiles:
+      - performance
+
+  # =============================================================================
+  # Security Test service - Security scanning and validation
+  # =============================================================================
+  security-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - ./security-reports:/app/security-reports
+    environment:
+      - NODE_ENV=test
+    command: >
+      sh -c "npm audit --audit-level=high &&
+             npm run test:unit -- --testNamePattern='security|validator' &&
+             npm run validate"
+    profiles:
+      - security
+
+  # =============================================================================
+  # Matrix Test service - Multi-version testing
+  # =============================================================================
+  test-node18:
+    build:
+      context: .
+      dockerfile: Dockerfile.matrix
+      target: test
+      args:
+        NODE_VERSION: "18.20-alpine"
+    volumes:
+      - .:/app
+      - node_modules_18:/app/node_modules
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - NODE_VERSION=18
+    command: npm run test:all
+    profiles:
+      - matrix
+
+  test-node20:
+    build:
+      context: .
+      dockerfile: Dockerfile.matrix
+      target: test
+      args:
+        NODE_VERSION: "20.18-alpine"
+    volumes:
+      - .:/app
+      - node_modules_20:/app/node_modules
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - NODE_VERSION=20
+    command: npm run test:all
+    profiles:
+      - matrix
+
+# =============================================================================
+# Named Volumes for caching and persistence
+# =============================================================================
+volumes:
+  # Node modules cache per version
+  node_modules:
+  node_modules_18:
+  node_modules_20:
+  
+  # Test cache for faster subsequent runs
+  test_cache:
+  
+  # Build cache
+  build_cache:
+
+# =============================================================================
+# Networks for service isolation
+# =============================================================================
+networks:
+  default:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16

@@ -208,9 +208,15 @@ export class PlatformDetector {
 
         // Get memory information if available
         let memory: number | undefined;
-        const memoryInfo = (navigator as any).deviceMemory || (performance as any).memory?.jsHeapSizeLimit;
-        if (memoryInfo) {
-            memory = typeof memoryInfo === 'number' ? memoryInfo : memoryInfo / 1024 / 1024;
+        const deviceMemory = (navigator as any).deviceMemory; // in GB
+        const performanceMemory = (performance as any).memory?.jsHeapSizeLimit; // in bytes
+        
+        if (deviceMemory) {
+            // deviceMemory is in GB, convert to MB for consistent comparison
+            memory = deviceMemory * 1024;
+        } else if (performanceMemory) {
+            // performanceMemory is in bytes, convert to MB
+            memory = performanceMemory / 1024 / 1024;
         }
 
         // Get connection information if available
@@ -265,8 +271,8 @@ export class PlatformDetector {
         }
         
         // Check for specific mobile app characteristics
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-        const isFullscreen = window.matchMedia('(display-mode: fullscreen)').matches;
+        const isStandalone = window.matchMedia?.('(display-mode: standalone)')?.matches || false;
+        const isFullscreen = window.matchMedia?.('(display-mode: fullscreen)')?.matches || false;
         
         if ((isStandalone || isFullscreen) && isMobileEnvironment) {
             return true;
@@ -293,14 +299,14 @@ export class PlatformDetector {
      * Check if reduced motion is preferred
      */
     public static prefersReducedMotion(): boolean {
-        return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        return window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches || false;
     }
 
     /**
      * Check if dark mode is preferred
      */
     public static prefersDarkMode(): boolean {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        return window.matchMedia?.('(prefers-color-scheme: dark)')?.matches || false;
     }
 
     /**
@@ -326,6 +332,11 @@ export class PlatformDetector {
      * Create a media query listener for platform changes
      */
     public static createPlatformListener(callback: (info: PlatformInfo) => void): () => void {
+        if (!window.matchMedia) {
+            // Return no-op cleanup function if matchMedia is not available
+            return () => {};
+        }
+
         const mediaQueries = [
             window.matchMedia('(max-width: 768px)'),
             window.matchMedia('(orientation: portrait)'),
@@ -337,11 +348,11 @@ export class PlatformDetector {
             callback(this.getPlatformInfo());
         };
 
-        mediaQueries.forEach(mq => mq.addEventListener('change', handleChange));
+        mediaQueries.forEach(mq => mq?.addEventListener?.('change', handleChange));
 
         // Return cleanup function
         return () => {
-            mediaQueries.forEach(mq => mq.removeEventListener('change', handleChange));
+            mediaQueries.forEach(mq => mq?.removeEventListener?.('change', handleChange));
         };
     }
 }

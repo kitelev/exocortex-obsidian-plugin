@@ -8,7 +8,8 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_OPTIONS: --max-old-space-size=4096
+  NODE_OPTIONS: --max-old-space-size=6144
+  FORCE_COLOR: 1
 
 jobs:
   # ==========================================
@@ -40,7 +41,7 @@ jobs:
             jest-cache-${{ runner.os }}-
       
       - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit
+        run: npm ci --prefer-offline --no-audit --no-fund
       
       - name: Run TypeScript compiler check
         run: npx tsc --noEmit --skipLibCheck
@@ -92,7 +93,7 @@ jobs:
             jest-cache-${{ matrix.os }}-
       
       - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit
+        run: npm ci --prefer-offline --no-audit --no-fund
       
       - name: Build plugin
         run: npm run build
@@ -101,16 +102,19 @@ jobs:
         run: npm run test:coverage
         env:
           NODE_ENV: test
+          CI: true
       
       - name: Run integration tests
         run: npm run test:integration
         env:
           NODE_ENV: test
+          CI: true
       
       - name: Run E2E tests
         run: npm run test:e2e:all
         env:
           NODE_ENV: test
+          CI: true
       
       - name: Upload test coverage
         if: success() && matrix.node-version == '20.x' && matrix.os == 'ubuntu-latest'
@@ -155,7 +159,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit
+        run: npm ci --prefer-offline --no-audit --no-fund
       
       - name: Build plugin
         run: npm run build
