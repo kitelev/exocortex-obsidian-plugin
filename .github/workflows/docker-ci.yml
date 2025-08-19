@@ -1,10 +1,6 @@
-name: Docker CI Tests
+name: Docker CI Tests (Disabled - Use Simplified)
 
 on:
-  push:
-    branches: [ main, master, develop ]
-  pull_request:
-    branches: [ main, master, develop ]
   workflow_dispatch:
     inputs:
       test_type:
