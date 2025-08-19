@@ -21,7 +21,7 @@ echo "📦 Running emergency test suite..."
 # Test 1: Simplest possible test
 echo "✅ Testing basic functionality..."
 if npx jest \
-    --testPathPattern="PropertyEditingUseCase.test.ts" \
+    --testPathPatterns="PropertyEditingUseCase.test.ts" \
     --runInBand \
     --workerIdleMemoryLimit=32MB \
     --forceExit \
