@@ -66,24 +66,37 @@ jobs:
       run: npm run build
       
     - name: Run unit tests
-      run: npm run test:unit
+      run: |
+        # Set Node.js memory limit for CI
+        export NODE_OPTIONS="--max-old-space-size=2048 --max-heap-size=2048"
+        npm run test:unit
       env:
         CI: true
         
     - name: Run integration tests
-      run: npm run test:integration
+      run: |
+        # Set Node.js memory limit for CI
+        export NODE_OPTIONS="--max-old-space-size=2048 --max-heap-size=2048"
+        npm run test:integration
       env:
         CI: true
         
     - name: Run E2E tests
-      run: npm run test:e2e:all
+      run: |
+        # Set Node.js memory limit for CI
+        export NODE_OPTIONS="--max-old-space-size=2048 --max-heap-size=2048"
+        npm run test:e2e:all
       env:
         CI: true
         
     - name: Generate test coverage
-      run: npm run test:coverage
+      run: |
+        # Set Node.js memory limit for CI
+        export NODE_OPTIONS="--max-old-space-size=2048 --max-heap-size=2048"
+        npm run test:coverage
       env:
         CI: true
+        COVERAGE: true
         
     - name: Upload coverage to Codecov
       if: matrix.node-version == '18.x'

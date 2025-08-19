@@ -59,7 +59,9 @@ jobs:
       - name: Run Tests
         if: steps.check.outputs.needs_release == 'true'
         run: |
-          timeout 60s npm test || true
+          # Set Node.js memory limit for tests
+          export NODE_OPTIONS="--max-old-space-size=2048"
+          timeout 120s npm test || true
       
       - name: Extract Changelog
         if: steps.check.outputs.needs_release == 'true'

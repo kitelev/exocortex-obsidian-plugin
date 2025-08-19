@@ -46,8 +46,10 @@ module.exports = {
   // CI-specific optimizations
   forceExit: process.env.CI ? true : false,
   detectOpenHandles: process.env.CI ? false : true,
-  // Improved memory management
-  workerIdleMemoryLimit: process.env.CI ? '768MB' : '1GB',
+  // Enhanced memory management for CI
+  workerIdleMemoryLimit: process.env.CI ? '512MB' : '1GB',
+  // Remove workerOptions as it's not supported in Jest 30
+  // Heap size is handled via NODE_OPTIONS environment variable
   // Coverage optimization
   collectCoverage: process.env.CI && process.env.COVERAGE ? true : false,
   coverageReporters: process.env.CI ? ['lcov', 'text-summary'] : ['text', 'html'],
@@ -57,15 +59,17 @@ module.exports = {
   // Modern ts-jest configuration
   transform: {
     '^.+\\.ts$': ['ts-jest', {
-      isolatedModules: true, // Faster TypeScript compilation
+      // Use isolatedModules from tsconfig instead of here
+      useESM: false,
       tsconfig: {
-        module: 'esnext',
+        module: 'commonjs', // Use CommonJS for better Jest compatibility
         target: 'es2020',
         lib: ['es2020', 'dom'],
         skipLibCheck: true,
         moduleResolution: 'node',
         allowSyntheticDefaultImports: true,
         esModuleInterop: true,
+        isolatedModules: true, // Move isolatedModules here
       }
     }],
   }
