@@ -16,6 +16,7 @@
     "test": "npm run test:unit",
     "test:unit": "./scripts/test-ci-batched.sh",
     "test:unit:safe": "NODE_OPTIONS=\"--max-old-space-size=512 --expose-gc\" jest --testPathIgnorePatterns='/tests/ui/' '/tests/e2e/' --runInBand --workerIdleMemoryLimit=64MB --forceExit",
+    "test:unit:emergency": "./scripts/run-tests-memory-safe.sh",
     "test:integration": "jest -c jest.integration.config.js",
     "test:watch": "jest --watch --testPathIgnorePatterns='/tests/ui/' '/tests/e2e/'",
     "test:coverage": "jest --coverage --testPathIgnorePatterns='/tests/ui/' '/tests/e2e/'",
