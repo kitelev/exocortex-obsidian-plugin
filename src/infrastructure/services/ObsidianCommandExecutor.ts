@@ -7,6 +7,7 @@ import { Asset } from '../../domain/entities/Asset';
 import { AssetId } from '../../domain/value-objects/AssetId';
 import { ClassName } from '../../domain/value-objects/ClassName';
 import { OntologyPrefix } from '../../domain/value-objects/OntologyPrefix';
+import { CreateChildTaskUseCase } from '../../application/use-cases/CreateChildTaskUseCase';
 
 /**
  * Obsidian implementation of command executor
@@ -17,7 +18,8 @@ export class ObsidianCommandExecutor implements ICommandExecutor {
 
     constructor(
         private app: App,
-        private assetRepository: IAssetRepository
+        private assetRepository: IAssetRepository,
+        private createChildTaskUseCase?: CreateChildTaskUseCase
     ) {
         this.handlers = new Map();
         this.registerDefaultHandlers();
@@ -288,6 +290,45 @@ export class ObsidianCommandExecutor implements ICommandExecutor {
             // - Potential data exfiltration
             // Please use predefined commands or safe templating instead
             return Result.fail<any>('Script execution is disabled for security. Use predefined commands instead.');
+        });
+
+        // CREATE_CHILD_TASK handler
+        this.registerHandler(CommandType.CREATE_CHILD_TASK, async (request) => {
+            const projectAssetId = request.context.assetId;
+            
+            if (!projectAssetId) {
+                return Result.fail<any>('Project asset ID is required for CREATE_CHILD_TASK command');
+            }
+
+            if (!this.createChildTaskUseCase) {
+                return Result.fail<any>('CreateChildTaskUseCase not initialized');
+            }
+
+            const result = await this.createChildTaskUseCase.execute({
+                projectAssetId,
+                context: {
+                    activeFile: request.context.currentView,
+                    selection: request.context.selection?.join('\n')
+                }
+            });
+
+            if (!result.success) {
+                return Result.fail<any>(result.message);
+            }
+
+            // Open the new task file
+            if (result.taskFilePath) {
+                const file = this.app.vault.getAbstractFileByPath(result.taskFilePath);
+                if (file instanceof TFile) {
+                    await this.app.workspace.getLeaf(true).openFile(file);
+                }
+            }
+
+            new Notice(result.message);
+            return Result.ok<any>({ 
+                taskId: result.taskId,
+                taskFilePath: result.taskFilePath
+            });
         });
     }
 

@@ -1,5 +1,23 @@
 # 🎯 CLAUDE EXECUTE COMMAND - Универсальная команда выполнения задач
 
+## 🚀 Slash Commands (v3.4.0 IMPLEMENTED)
+
+**Quick Access Commands:**
+- `/execute` (или `/выполни`, `/exec`, `/run`) - Execute with full compliance and agent coordination
+- `/status` (или `/st`, `/статус`) - Check current progress and TodoWrite status
+- `/agents` (или `/ag`, `/агенты`) - List available agents and their capabilities
+- `/release` (или `/rel`, `/релиз`) - Create new release with current changes
+- `/test` (или `/t`, `/тест`) - Run tests and check coverage
+
+**Example Usage:**
+```
+/execute добавить поддержку экспорта в CSV
+/status
+/agents
+```
+
+*See .claude/SLASH-COMMANDS.md for complete implementation details*
+
 ## Команда для вызова
 
 ```

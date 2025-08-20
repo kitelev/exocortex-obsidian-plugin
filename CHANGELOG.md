@@ -1,3 +1,78 @@
+## [3.5.0] - 2025-08-20
+
+### 🚀 Create Child Task - Streamlined Project Task Management
+
+#### Accelerate Your Project Workflow
+Transform how you break down projects into manageable tasks with the new **Create Child Task** feature! Now when viewing any `ems__Project` asset, you can instantly create child tasks with a single click, complete with automatic relationship linking and proper task structure.
+
+#### One-Click Task Creation
+- **Create Child Task Button**: New button appears automatically on all `ems__Project` asset views
+- **Instant Task Generation**: Creates fully-structured tasks in seconds with UUID-based naming
+- **Automatic Relationships**: Child tasks are automatically linked to their parent project
+- **Smart Properties**: Tasks inherit project ontology and get proper default settings
+
+#### Intelligent Task Structure
+- **Automatic UUID Generation**: Each task gets a unique identifier for clean organization
+- **Project Inheritance**: Tasks automatically reference the same ontology as their parent project
+- **Default Task Properties**: New tasks start with sensible defaults:
+  - **Status**: Set to "TODO" for immediate action clarity
+  - **Priority**: Set to "Medium" for balanced workflow planning
+  - **Parent Reference**: Automatic link back to the originating project
+- **Proper Relationships**: Uses `exo__Effort_parent` to establish clear hierarchical structure
+
+#### Perfect for Agile Project Management
+- **Project Decomposition**: Break large projects into manageable tasks effortlessly
+- **Maintains Context**: Each task knows its parent project and organizational structure  
+- **Consistent Structure**: All tasks follow the same property schema for predictable workflows
+- **Quick Navigation**: Tasks include links back to parent projects for easy context switching
+
+#### What This Looks Like in Practice
+
+**Before v3.5.0:**
+- Manual task creation required multiple steps and careful property setup
+- Risk of inconsistent task structures and missing relationships
+- Time-consuming process to decompose projects into tasks
+- Easy to forget essential task properties or parent linkages
+
+**After v3.5.0:**
+- **One-Click Creation**: See "Create Child Task" button when viewing any project
+- **Automatic Structure**: Tasks created with proper UUID, relationships, and default properties
+- **Instant Linking**: Parent-child relationships established automatically
+- **Consistent Results**: Every task follows the same professional structure
+
+#### Example Task Creation Flow
+1. **Open Any Project**: Navigate to an `ems__Project` asset
+2. **Click Create Child Task**: Use the new button in the project view
+3. **Task Auto-Created**: New task file appears with:
+   - Unique UUID identifier
+   - Link to parent project  
+   - Default status and priority
+   - Proper ontology references
+   - Ready for immediate use
+
+#### Technical Excellence
+- **8 Comprehensive Tests**: Complete test coverage for task creation and validation
+- **Robust Error Handling**: Validates project existence and proper asset types
+- **Clean Architecture**: Uses established CreateAssetUseCase pattern for consistency
+- **Dependency Injection**: Properly wired through DIContainer for maintainability
+
+#### Security & Validation  
+- **Project Validation**: Ensures only valid `ems__Project` assets can create child tasks
+- **Asset ID Validation**: Proper validation of project identifiers before task creation
+- **Error Recovery**: Graceful handling of edge cases with clear user feedback
+- **Type Safety**: Full TypeScript coverage for reliable operation
+
+#### Getting Started
+The Create Child Task button appears automatically when viewing any `ems__Project` asset. Simply:
+1. **Navigate to a Project**: Open any file with `ems__Project` class
+2. **Find the Button**: Look for "Create Child Task" in the project view
+3. **Click to Create**: Instant task creation with proper structure and relationships
+4. **Start Working**: New task is ready with sensible defaults and project linkage
+
+Perfect for teams doing project-based work, sprint planning, or anyone who needs to break large efforts into manageable pieces!
+
+---
+
 ## [3.4.0] - 2025-08-20
 
 ### 📋 Children Efforts Enhanced - Professional Table Display

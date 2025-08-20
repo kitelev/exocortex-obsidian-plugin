@@ -7,6 +7,7 @@ import { Result } from '../core/Result';
  */
 export enum CommandType {
     CREATE_ASSET = 'CREATE_ASSET',
+    CREATE_CHILD_TASK = 'CREATE_CHILD_TASK',
     OPEN_ASSET = 'OPEN_ASSET',
     DELETE_ASSET = 'DELETE_ASSET',
     RUN_TEMPLATE = 'RUN_TEMPLATE',

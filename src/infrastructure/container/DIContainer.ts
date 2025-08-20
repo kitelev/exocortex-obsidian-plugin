@@ -15,6 +15,7 @@ import { ObsidianClassLayoutRepository } from '../repositories/ObsidianClassLayo
 
 // Use Cases
 import { CreateAssetUseCase } from '../../application/use-cases/CreateAssetUseCase';
+import { CreateChildTaskUseCase } from '../../application/use-cases/CreateChildTaskUseCase';
 import { RenderClassButtonsUseCase } from '../../application/use-cases/RenderClassButtonsUseCase';
 import { ExecuteButtonCommandUseCase } from '../../application/use-cases/ExecuteButtonCommandUseCase';
 import { PropertyEditingUseCase } from '../../application/use-cases/PropertyEditingUseCase';
@@ -149,7 +150,8 @@ export class DIContainer {
             'ICommandExecutor',
             () => new ObsidianCommandExecutor(
                 this.app,
-                this.container.resolve<IAssetRepository>('IAssetRepository')
+                this.container.resolve<IAssetRepository>('IAssetRepository'),
+                this.container.resolve<CreateChildTaskUseCase>('CreateChildTaskUseCase')
             )
         );
 
@@ -221,6 +223,14 @@ export class DIContainer {
             () => new CreateAssetUseCase(
                 this.container.resolve<IAssetRepository>('IAssetRepository'),
                 this.container.resolve<IOntologyRepository>('IOntologyRepository')
+            )
+        );
+
+        this.container.register<CreateChildTaskUseCase>(
+            'CreateChildTaskUseCase',
+            () => new CreateChildTaskUseCase(
+                this.container.resolve<IAssetRepository>('IAssetRepository'),
+                this.container.resolve<CreateAssetUseCase>('CreateAssetUseCase')
             )
         );
 

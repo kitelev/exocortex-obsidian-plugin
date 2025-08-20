@@ -6,6 +6,19 @@ ui__ClassLayout_targetClass: "[[ems__Project]]"
 ui__ClassLayout_priority: 10
 ui__ClassLayout_enabled: true
 ui__ClassLayout_blocks:
+  - id: "project-actions"
+    type: "buttons"
+    title: "🚀 Project Actions"
+    order: 0.5
+    isVisible: true
+    config:
+      type: "buttons"
+      buttons:
+        - id: "create-child-task"
+          label: "➕ Create Child Task"
+          commandType: "CREATE_CHILD_TASK"
+          tooltip: "Create a new task for this project"
+          style: "primary"
   - id: "project-info"
     type: "properties"
     title: "📋 Project Information"
