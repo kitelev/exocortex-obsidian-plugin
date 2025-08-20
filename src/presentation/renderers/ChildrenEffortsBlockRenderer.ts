@@ -55,7 +55,7 @@ export class ChildrenEffortsBlockRenderer {
         // Show count
         const info = container.createDiv({ cls: 'exocortex-children-efforts-info' });
         info.createEl('span', { 
-            text: `${totalCount} child effort${totalCount !== 1 ? 's' : ''}${childrenFiles.length < totalCount ? `, showing ${childrenFiles.length}` : ''}`,
+            text: `${totalCount} child effort${totalCount !== 1 ? 's' : ''}${childrenFiles.length < totalCount ? `, showing ${childrenFiles.length}` : ''} (table view)`,
             cls: 'exocortex-children-efforts-count'
         });
 
@@ -108,36 +108,67 @@ export class ChildrenEffortsBlockRenderer {
         files: TFile[], 
         config: ChildrenEffortsBlockConfig
     ): void {
-        const list = container.createEl('ul', { cls: 'exocortex-children-efforts-list' });
+        const table = container.createEl('table', { cls: 'exocortex-children-efforts-table' });
+        
+        // Create table header
+        const thead = table.createEl('thead');
+        const headerRow = thead.createEl('tr');
+        headerRow.createEl('th', { text: 'Asset Name', cls: 'exocortex-table-header-asset' });
+        headerRow.createEl('th', { text: 'Status', cls: 'exocortex-table-header-status' });
+        
+        // Add parent path header if enabled
+        if (config.showParentPath) {
+            headerRow.createEl('th', { text: 'Parent', cls: 'exocortex-table-header-parent' });
+        }
+        
+        // Create table body
+        const tbody = table.createEl('tbody');
         
         files.forEach(file => {
             const metadata = this.app.metadataCache.getFileCache(file);
             const frontmatter = metadata?.frontmatter || {};
             
-            const item = list.createEl('li');
-            const link = item.createEl('a', {
+            const row = tbody.createEl('tr', { cls: 'exocortex-efforts-row' });
+            
+            // Asset Name column
+            const assetCell = row.createEl('td', { cls: 'exocortex-table-cell-asset' });
+            const link = assetCell.createEl('a', {
                 text: frontmatter['exo__Asset_label'] || file.basename,
                 href: file.path,
                 cls: 'internal-link'
             });
             
-            // Add class info
+            // Add class info as subtitle
             const instanceClass = frontmatter['exo__Instance_class'];
             if (instanceClass) {
-                item.createEl('span', {
-                    text: ` (${this.cleanClassName(instanceClass)})`,
-                    cls: 'exocortex-class-info'
+                assetCell.createEl('div', {
+                    text: this.cleanClassName(instanceClass),
+                    cls: 'exocortex-class-info-subtitle'
                 });
             }
             
-            // Show parent path if enabled
+            // Status column
+            const statusCell = row.createEl('td', { cls: 'exocortex-table-cell-status' });
+            const status = this.extractEffortStatus(frontmatter);
+            statusCell.createEl('span', {
+                text: status,
+                cls: status === 'Unknown' ? 'exocortex-status-unknown' : 'exocortex-status-known'
+            });
+            
+            // Parent path column if enabled
             if (config.showParentPath) {
+                const parentCell = row.createEl('td', { cls: 'exocortex-table-cell-parent' });
                 const effortParent = frontmatter['ems__Effort_parent'];
                 if (effortParent) {
                     const parentPath = Array.isArray(effortParent) ? effortParent[0] : effortParent;
-                    item.createEl('span', {
-                        text: ` → ${this.cleanClassName(parentPath)}`,
-                        cls: 'exocortex-parent-path'
+                    parentCell.createEl('span', {
+                        text: this.cleanClassName(parentPath),
+                        cls: 'exocortex-parent-ref'
+                    });
+                } else {
+                    parentCell.createEl('span', {
+                        text: '-',
+                        cls: 'exocortex-parent-empty'
                     });
                 }
             }
@@ -177,28 +208,59 @@ export class ChildrenEffortsBlockRenderer {
                 cls: 'children-efforts-group-header'
             });
             
-            // Group content
-            const list = groupContainer.createEl('ul', { cls: 'exocortex-children-efforts-list' });
+            // Group table
+            const table = groupContainer.createEl('table', { cls: 'exocortex-children-efforts-table' });
+            
+            // Create table header
+            const thead = table.createEl('thead');
+            const headerRow = thead.createEl('tr');
+            headerRow.createEl('th', { text: 'Asset Name', cls: 'exocortex-table-header-asset' });
+            headerRow.createEl('th', { text: 'Status', cls: 'exocortex-table-header-status' });
+            
+            // Add parent path header if enabled
+            if (config.showParentPath) {
+                headerRow.createEl('th', { text: 'Parent', cls: 'exocortex-table-header-parent' });
+            }
+            
+            // Create table body
+            const tbody = table.createEl('tbody');
             
             groupFiles.forEach(file => {
                 const metadata = this.app.metadataCache.getFileCache(file);
                 const frontmatter = metadata?.frontmatter || {};
                 
-                const item = list.createEl('li');
-                item.createEl('a', {
+                const row = tbody.createEl('tr', { cls: 'exocortex-efforts-row' });
+                
+                // Asset Name column
+                const assetCell = row.createEl('td', { cls: 'exocortex-table-cell-asset' });
+                assetCell.createEl('a', {
                     text: frontmatter['exo__Asset_label'] || file.basename,
                     href: file.path,
                     cls: 'internal-link'
                 });
                 
-                // Show parent path if enabled
+                // Status column
+                const statusCell = row.createEl('td', { cls: 'exocortex-table-cell-status' });
+                const status = this.extractEffortStatus(frontmatter);
+                statusCell.createEl('span', {
+                    text: status,
+                    cls: status === 'Unknown' ? 'exocortex-status-unknown' : 'exocortex-status-known'
+                });
+                
+                // Parent path column if enabled
                 if (config.showParentPath) {
+                    const parentCell = row.createEl('td', { cls: 'exocortex-table-cell-parent' });
                     const effortParent = frontmatter['ems__Effort_parent'];
                     if (effortParent) {
                         const parentPath = Array.isArray(effortParent) ? effortParent[0] : effortParent;
-                        item.createEl('span', {
-                            text: ` → ${this.cleanClassName(parentPath)}`,
-                            cls: 'exocortex-parent-path'
+                        parentCell.createEl('span', {
+                            text: this.cleanClassName(parentPath),
+                            cls: 'exocortex-parent-ref'
+                        });
+                    } else {
+                        parentCell.createEl('span', {
+                            text: '-',
+                            cls: 'exocortex-parent-empty'
                         });
                     }
                 }
@@ -206,6 +268,24 @@ export class ChildrenEffortsBlockRenderer {
         });
     }
 
+    private extractEffortStatus(frontmatter: Record<string, any>): string {
+        const status = frontmatter['ems__Effort_status'];
+        if (!status) return 'Unknown';
+        
+        // Handle array format
+        const statusValue = Array.isArray(status) ? status[0] : status;
+        if (!statusValue) return 'Unknown';
+        
+        // Clean up the status value - remove brackets and prefixes
+        let cleanStatus = statusValue.toString().replace(/\[\[|\]\]/g, '');
+        
+        // Remove common prefixes like 'ems__EffortStatus'
+        cleanStatus = cleanStatus.replace(/^ems__EffortStatus/i, '');
+        
+        // If we have a remaining value, use it, otherwise return 'Unknown'
+        return cleanStatus.trim() || 'Unknown';
+    }
+    
     private cleanClassName(className: any): string {
         if (!className) return '';
         const str = Array.isArray(className) ? className[0] : className;

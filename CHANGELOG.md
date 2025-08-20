@@ -1,3 +1,59 @@
+## [3.4.0] - 2025-08-20
+
+### 📋 Children Efforts Enhanced - Professional Table Display
+
+#### Transform Your Effort Hierarchy Visibility
+Experience **crystal-clear project organization** with the new professional table display for Children Efforts! Your hierarchical effort structures are now presented in a clean, organized table format that makes parent-child relationships instantly understandable.
+
+#### New Professional Table Format
+- **Structured Table Display**: Children Efforts now appear in a professional table with clear columns instead of a simple list
+- **Asset Name Column**: Shows the effort name with class information for complete context
+- **Status Column**: Displays the effort status with color-coded badges for immediate recognition
+- **Visual Status Indicators**: Green badges for known statuses (like "Doing", "Done") and orange for unknown statuses
+- **Mobile Responsive Design**: Table automatically adapts to different screen sizes for optimal viewing
+
+#### Enhanced Status Visibility
+- **Smart Status Extraction**: Automatically detects and formats status from the `ems__Effort_status` property
+- **Clean Status Display**: Removes technical prefixes and presents user-friendly status labels
+- **Color-Coded Recognition**: Instant visual feedback with green for active statuses, orange for undefined states
+- **Professional Styling**: Status badges match Obsidian's design language for consistency
+
+#### Perfect for Project Management
+- **Hierarchical Overview**: See your entire effort hierarchy structure at a glance
+- **Status Tracking**: Instantly understand the status of all child efforts without clicking through
+- **Quick Navigation**: Click effort names to navigate directly to child tasks and sub-projects
+- **Organizational Clarity**: Clear separation between effort names and their current status
+
+#### What This Looks Like in Practice
+
+**Before v3.4.0:**
+- Children Efforts displayed as a simple bulleted list
+- Status information mixed with effort names
+- Difficult to quickly scan status across multiple efforts
+- Less professional appearance for project reviews
+
+**After v3.4.0:**
+- **Professional Table Layout**: Clean, organized display with proper columns
+- **Status Badges**: Color-coded status indicators for instant recognition
+- **Better Scanning**: Quick visual assessment of effort status across your hierarchy
+- **Enhanced Navigation**: Clear structure makes it easy to understand and navigate project relationships
+
+#### Technical Excellence
+- **7 New Comprehensive Tests**: Complete test coverage for table functionality and status extraction
+- **Robust Status Processing**: Handles various status formats and provides graceful fallbacks
+- **Maintained Compatibility**: All existing features (filtering, grouping, parent paths) preserved
+- **Performance Optimized**: Clean rendering with semantic HTML for accessibility and performance
+
+#### Getting Started
+The enhanced Children Efforts table appears automatically in any asset that has child efforts. No configuration needed - open any parent effort and you'll see:
+1. **Professional Table Format**: Clean columns for effort names and status
+2. **Color-Coded Status**: Green and orange badges for immediate status recognition  
+3. **Complete Context**: Asset names with class information for full understanding
+
+**Transform your effort management with professional visibility and organizational clarity!** 📋✨
+
+---
+
 ## [3.3.2] - 2025-08-20
 
 ### 🔧 Hotfix: Complete Implementation Included

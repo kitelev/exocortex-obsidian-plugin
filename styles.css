@@ -250,6 +250,165 @@
     }
 }
 
+/* Children Efforts Table Styles */
+.exocortex-children-efforts-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75em 0;
+    font-size: 0.9em;
+    background: var(--background-primary);
+}
+
+.exocortex-children-efforts-table th,
+.exocortex-children-efforts-table td {
+    border: 1px solid var(--background-modifier-border);
+    padding: 0.5em 0.75em;
+    text-align: left;
+    vertical-align: top;
+}
+
+.exocortex-children-efforts-table th {
+    background: var(--background-secondary);
+    font-weight: 600;
+    color: var(--text-normal);
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.exocortex-children-efforts-table tr:nth-child(even) {
+    background: var(--background-secondary-alt);
+}
+
+.exocortex-children-efforts-table tr:hover {
+    background: var(--background-modifier-hover);
+}
+
+/* Asset Name Column Styling */
+.exocortex-table-cell-asset {
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.exocortex-table-cell-asset .internal-link {
+    color: var(--link-color);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    display: block;
+    margin-bottom: 0.2em;
+}
+
+.exocortex-table-cell-asset .internal-link:hover {
+    color: var(--link-color-hover);
+    text-decoration: underline;
+}
+
+.exocortex-class-info-subtitle {
+    font-size: 0.8em;
+    color: var(--text-muted);
+    font-style: italic;
+    line-height: 1.2;
+}
+
+/* Status Column Styling */
+.exocortex-table-cell-status {
+    min-width: 100px;
+    text-align: center;
+}
+
+.exocortex-status-known {
+    background: var(--color-green-rgb);
+    background: rgba(var(--color-green-rgb), 0.15);
+    color: var(--color-green);
+    padding: 0.25em 0.5em;
+    border-radius: var(--radius-s);
+    font-size: 0.85em;
+    font-weight: 500;
+    display: inline-block;
+    min-width: 60px;
+    border: 1px solid rgba(var(--color-green-rgb), 0.3);
+}
+
+.exocortex-status-unknown {
+    background: var(--color-orange-rgb);
+    background: rgba(var(--color-orange-rgb), 0.15);
+    color: var(--color-orange);
+    padding: 0.25em 0.5em;
+    border-radius: var(--radius-s);
+    font-size: 0.85em;
+    font-weight: 500;
+    display: inline-block;
+    min-width: 60px;
+    border: 1px solid rgba(var(--color-orange-rgb), 0.3);
+}
+
+/* Parent Column Styling */
+.exocortex-table-cell-parent {
+    min-width: 120px;
+    color: var(--text-muted);
+}
+
+.exocortex-parent-ref {
+    background: var(--background-secondary);
+    padding: 0.2em 0.4em;
+    border-radius: var(--radius-s);
+    font-size: 0.8em;
+    font-family: var(--font-monospace);
+    border: 1px solid var(--background-modifier-border);
+}
+
+.exocortex-parent-empty {
+    color: var(--text-faint);
+    font-style: italic;
+}
+
+/* Children Efforts Info Styling */
+.exocortex-children-efforts-info {
+    margin-bottom: 0.5em;
+    padding-bottom: 0.5em;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.exocortex-children-efforts-count {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Group Headers */
+.exocortex-children-efforts-group {
+    margin-bottom: 1.5em;
+}
+
+.children-efforts-group-header {
+    color: var(--text-accent);
+    font-size: 1.1em;
+    font-weight: 600;
+    margin: 1em 0 0.75em 0;
+    padding-bottom: 0.25em;
+    border-bottom: 2px solid var(--text-accent);
+    display: flex;
+    align-items: center;
+}
+
+.children-efforts-group-header::before {
+    content: "📋";
+    margin-right: 0.5em;
+    font-size: 0.9em;
+}
+
+/* Empty State */
+.exocortex-empty {
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    padding: 2em;
+    background: var(--background-secondary);
+    border-radius: var(--radius-m);
+    border: 1px dashed var(--background-modifier-border);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .exocortex-graph-container svg {
@@ -273,5 +432,40 @@
     
     .autocomplete-item-description {
         display: none;
+    }
+    
+    /* Mobile table adjustments */
+    .exocortex-children-efforts-table {
+        font-size: 0.8em;
+    }
+    
+    .exocortex-children-efforts-table th,
+    .exocortex-children-efforts-table td {
+        padding: 0.4em 0.5em;
+    }
+    
+    .exocortex-table-cell-asset {
+        min-width: 150px;
+        max-width: 200px;
+    }
+    
+    .exocortex-class-info-subtitle {
+        font-size: 0.75em;
+    }
+    
+    .exocortex-status-known,
+    .exocortex-status-unknown {
+        padding: 0.2em 0.4em;
+        font-size: 0.8em;
+        min-width: 50px;
+    }
+    
+    .exocortex-table-cell-parent {
+        min-width: 100px;
+    }
+    
+    .exocortex-parent-ref {
+        font-size: 0.75em;
+        padding: 0.15em 0.3em;
     }
 }
