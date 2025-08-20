@@ -15,6 +15,11 @@ import { ObsidianTaskRepository } from './infrastructure/repositories/ObsidianTa
 import { ObsidianAssetRepository } from './infrastructure/repositories/ObsidianAssetRepository';
 import { IndexedGraph } from './domain/semantic/core/IndexedGraph';
 import { ExoFocusService } from './application/services/ExoFocusService';
+import { LayoutRenderer } from './presentation/renderers/LayoutRenderer';
+import { PropertyRenderer } from './presentation/components/PropertyRenderer';
+import { ObsidianClassLayoutRepository } from './infrastructure/repositories/ObsidianClassLayoutRepository';
+import { QueryEngineService } from './application/services/QueryEngineService';
+import { PropertyEditingUseCase } from './application/use-cases/PropertyEditingUseCase';
 
 import manifest from '../manifest.json';
 
@@ -24,6 +29,7 @@ export default class ExocortexPlugin extends Plugin {
     private graphVisualizationProcessor: GraphVisualizationProcessor;
     private container: DIContainer;
     private rdfService: RDFService;
+    private layoutRenderer: LayoutRenderer;
     
     async onload(): Promise<void> {
         // Plugin initialization
@@ -56,6 +62,44 @@ export default class ExocortexPlugin extends Plugin {
         
         // Initialize Graph Visualization processor
         this.graphVisualizationProcessor = new GraphVisualizationProcessor(this, this.graph);
+        
+        // Initialize Layout Renderer with proper dependencies
+        const layoutRepository = new ObsidianClassLayoutRepository(this.app, 'layouts');
+        
+        // Get PropertyEditingUseCase from DI container
+        const propertyEditingUseCase = this.container.getPropertyEditingUseCase();
+        const propertyRenderer = new PropertyRenderer(this.app, propertyEditingUseCase);
+        
+        const queryEngineService = new QueryEngineService(this.app);
+        this.layoutRenderer = new LayoutRenderer(
+            this.app,
+            layoutRepository,
+            propertyRenderer,
+            queryEngineService
+        );
+        
+        // Export ExoUIRender function to global window object for DataviewJS integration
+        (window as any).ExoUIRender = async (dv: any, ctx: any) => {
+            try {
+                const file = this.app.workspace.getActiveFile();
+                if (!file) {
+                    ctx.container.createEl('p', { 
+                        text: 'Error: No active file found',
+                        cls: 'exocortex-error'
+                    });
+                    return;
+                }
+                
+                const metadata = this.app.metadataCache.getFileCache(file);
+                await this.layoutRenderer.renderLayout(ctx.container, file, metadata, dv);
+            } catch (error) {
+                console.error('ExoUIRender error:', error);
+                ctx.container.createEl('p', { 
+                    text: `Error rendering layout: ${error.message}`,
+                    cls: 'exocortex-error'
+                });
+            }
+        };
         
         // Register SPARQL code block processor
         try {
@@ -419,6 +463,10 @@ export default class ExocortexPlugin extends Plugin {
         }
         if (this.sparqlProcessor) {
             this.sparqlProcessor.destroy();
+        }
+        // Clean up global ExoUIRender function
+        if ((window as any).ExoUIRender) {
+            delete (window as any).ExoUIRender;
         }
     }
 }

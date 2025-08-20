@@ -1,3 +1,42 @@
+## [3.2.1] - 2025-08-20
+
+### 🔧 Critical DataviewJS Integration Fix
+
+#### Fixed ExoUIRender Function Export
+Resolved a critical bug where the `window.ExoUIRender` function was not properly accessible in DataviewJS blocks, causing "ExoUIRender is not a function" errors when trying to render class layouts.
+
+#### What This Fixes
+- **DataviewJS Integration**: The `ExoUIRender` function is now correctly exported to the global window object during plugin initialization
+- **Layout Rendering**: DataviewJS blocks can now properly call `await window.ExoUIRender(dv, this)` to render class-based layouts
+- **Error Prevention**: Eliminates the "ExoUIRender is not a function" error that was preventing layout rendering
+- **Clean Unload**: Function is properly removed from global scope when plugin is unloaded
+
+#### How DataviewJS Integration Works
+```javascript
+// In your DataviewJS blocks, you can now reliably use:
+await window.ExoUIRender(dv, this);
+```
+
+This function:
+- Detects the current active file context
+- Loads the appropriate class layout based on the file's `exo__Instance_class` property  
+- Renders properties, queries, backlinks, and custom blocks defined in your layout
+- Provides graceful error handling with user-friendly messages
+
+#### Technical Details
+- Added proper export of `ExoUIRender` function to `window` object during plugin initialization
+- Function is available immediately after plugin loads for all DataviewJS blocks
+- Added cleanup on plugin unload to remove the global function
+- Enhanced error handling for missing files and malformed layouts
+- Comprehensive test coverage ensures reliability across different scenarios
+
+#### User Impact
+Users who were experiencing "ExoUIRender is not a function" errors in their DataviewJS blocks will now find that their layouts render properly without any code changes needed.
+
+**Perfect for knowledge management workflows that combine Dataview queries with Exocortex class-based layouts!** 🎯📊
+
+---
+
 ## [3.2.0] - 2025-08-20
 
 ### 📋 Mandatory Asset Properties - Enhanced Data Quality
