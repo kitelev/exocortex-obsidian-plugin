@@ -90,10 +90,16 @@ export class ChildrenEffortsBlockRenderer {
         // Check if any parent reference matches our current file
         return parentRefs.some(ref => {
             const cleanRef = this.cleanClassName(ref);
-            // Match against basename (without extension), full basename, or path
-            return cleanRef === parentFile.basename || 
-                   cleanRef === parentFile.basename.replace(/\.md$/, '') ||
-                   cleanRef === parentFile.path;
+            const parentName = parentFile.basename.replace(/\.md$/, '');
+            
+            // Match against various possible reference formats
+            return cleanRef === parentName || 
+                   cleanRef === parentFile.basename ||
+                   cleanRef === parentFile.path ||
+                   cleanRef === parentFile.path.replace(/\.md$/, '') ||
+                   // Also check if the reference contains the parent name (for partial matches)
+                   ref.includes(`[[${parentName}]]`) ||
+                   ref.includes(parentName);
         });
     }
 

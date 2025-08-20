@@ -263,6 +263,18 @@ export class LayoutRenderer {
             });
         }
         
+        // Children Efforts section
+        const childrenContainer = container.createDiv({ cls: 'exocortex-block exocortex-block-children-efforts' });
+        childrenContainer.createEl('h3', { text: '👶 Children Efforts' });
+        const childrenContent = childrenContainer.createDiv({ cls: 'exocortex-block-content' });
+        
+        await this.childrenEffortsRenderer.render(
+            childrenContent,
+            { type: 'children-efforts' },
+            file,
+            dv
+        );
+        
         // Backlinks section
         const backlinksContainer = container.createDiv({ cls: 'exocortex-block exocortex-block-backlinks' });
         backlinksContainer.createEl('h3', { text: '📎 Referenced By' });
