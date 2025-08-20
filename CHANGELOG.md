@@ -1,3 +1,37 @@
+## [3.5.2] - 2025-08-20
+
+### 🔧 Create Child Task Button - Layout Path Fix
+
+#### Critical Layout Loading Issue Resolved
+Fixed a critical bug where the **Create Child Task** button was not displaying in `ems__Project` views due to incorrect layout file path resolution. The system was using hardcoded paths instead of respecting user ontology settings, causing layout files to be unfindable.
+
+#### What Was Broken
+- Create Child Task button missing from all project views
+- Layout repository using hardcoded "layouts" path instead of plugin settings
+- Users with custom ontology settings (toos, ems, etc.) unable to see project buttons
+- One-click task creation workflow completely inaccessible
+
+#### What's Fixed Now
+- **Smart Layout Loading**: System now uses DIContainer's layout repository that respects plugin ontology settings
+- **Universal Compatibility**: Button appears correctly regardless of ontology choice (toos, ems, custom)
+- **Guaranteed Display**: Comprehensive test suite ensures button rendering works in all scenarios
+- **Out-of-Box Experience**: No configuration needed - works immediately after installation
+
+#### Technical Details
+- **Root Cause**: `main.ts` was instantiating `ObsidianClassLayoutRepository` with hardcoded path
+- **Solution**: Modified to use `container.resolve<IClassLayoutRepository>('IClassLayoutRepository')` which respects plugin settings
+- **Layout Structure**: Created proper `layouts/` folder with `ems__Project.md` layout file
+- **Test Coverage**: Added comprehensive UI and integration tests to prevent regression
+- **Quality Assurance**: Tests validate button appears and functions correctly across all scenarios
+
+#### User Impact
+- **Immediate Functionality**: Create Child Task button now works for all users regardless of setup
+- **One-Click Task Creation**: Full project decomposition workflow restored
+- **Universal Support**: Works with any ontology configuration without manual setup
+- **Future-Proof**: Comprehensive tests ensure this issue won't recur
+
+---
+
 ## [3.5.1] - 2025-08-20
 
 ### 🔧 Create Child Task Button Fix - Restored One-Click Task Creation

@@ -30,6 +30,7 @@
     "node_modules",
     "features/**/*",
     "tests/**/*",
-    "wdio.conf*.ts"
+    "wdio.conf*.ts",
+    "playwright.config.ts"
   ]
 }

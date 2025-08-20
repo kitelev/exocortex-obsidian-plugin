@@ -17,7 +17,7 @@ import { IndexedGraph } from './domain/semantic/core/IndexedGraph';
 import { ExoFocusService } from './application/services/ExoFocusService';
 import { LayoutRenderer } from './presentation/renderers/LayoutRenderer';
 import { PropertyRenderer } from './presentation/components/PropertyRenderer';
-import { ObsidianClassLayoutRepository } from './infrastructure/repositories/ObsidianClassLayoutRepository';
+import { IClassLayoutRepository } from './domain/repositories/IClassLayoutRepository';
 import { QueryEngineService } from './application/services/QueryEngineService';
 import { PropertyEditingUseCase } from './application/use-cases/PropertyEditingUseCase';
 
@@ -64,7 +64,8 @@ export default class ExocortexPlugin extends Plugin {
         this.graphVisualizationProcessor = new GraphVisualizationProcessor(this, this.graph);
         
         // Initialize Layout Renderer with proper dependencies
-        const layoutRepository = new ObsidianClassLayoutRepository(this.app, 'layouts');
+        // Use the repository from DI container which respects plugin settings
+        const layoutRepository = this.container.resolve<IClassLayoutRepository>('IClassLayoutRepository');
         
         // Get PropertyEditingUseCase from DI container
         const propertyEditingUseCase = this.container.getPropertyEditingUseCase();
