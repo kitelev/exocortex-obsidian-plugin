@@ -1,5 +1,13 @@
 # AI Assistant Development Guidelines for Exocortex Plugin
 
+## 🎯 UNIVERSAL EXECUTION COMMAND
+```
+EXECUTE-WITH-META-OPTIMIZATION:
+ЗАДАЧА: [описание]
+РЕЖИМ: FULL-COMPLIANCE-WITH-META-LEARNING
+```
+**See CLAUDE-EXECUTE-COMMAND.md for full command reference**
+
 ## 🚨 CRITICAL: MANDATORY AGENT USAGE
 **EVERY significant task MUST use specialized agents.** Not using agents is a violation of project standards.
 
