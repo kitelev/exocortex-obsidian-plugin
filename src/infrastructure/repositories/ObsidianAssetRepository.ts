@@ -18,8 +18,11 @@ export class ObsidianAssetRepository implements IAssetRepository {
         for (const file of files) {
             const cache = this.app.metadataCache.getFileCache(file);
             if (cache?.frontmatter?.['exo__Asset_uid'] === id.toString()) {
-                const content = await this.app.vault.read(file);
-                return Asset.fromFrontmatter(cache.frontmatter, file.basename);
+                const asset = Asset.fromFrontmatter(cache.frontmatter, file.basename);
+                // Only return valid assets - invalid ones are silently ignored
+                if (asset) {
+                    return asset;
+                }
             }
         }
         
@@ -38,6 +41,7 @@ export class ObsidianAssetRepository implements IAssetRepository {
                 
                 if (classArray.some(c => c === className.toWikiLink() || c === className.toString())) {
                     const asset = Asset.fromFrontmatter(cache.frontmatter, file.basename);
+                    // Only include valid assets - invalid ones are silently ignored
                     if (asset) {
                         assets.push(asset);
                     }
@@ -60,6 +64,7 @@ export class ObsidianAssetRepository implements IAssetRepository {
                 
                 if (ontologyValue === prefix.toString()) {
                     const asset = Asset.fromFrontmatter(cache.frontmatter, file.basename);
+                    // Only include valid assets - invalid ones are silently ignored
                     if (asset) {
                         assets.push(asset);
                     }
@@ -177,6 +182,7 @@ export class ObsidianAssetRepository implements IAssetRepository {
             const cache = this.app.metadataCache.getFileCache(file);
             if (cache?.frontmatter?.['exo__Asset_uid']) {
                 const asset = Asset.fromFrontmatter(cache.frontmatter, file.basename);
+                // Only include valid assets - invalid ones are silently ignored
                 if (asset) {
                     assets.push(asset);
                 }
@@ -208,6 +214,7 @@ export class ObsidianAssetRepository implements IAssetRepository {
             const cache = this.app.metadataCache.getFileCache(file);
             if (cache?.frontmatter) {
                 const asset = Asset.fromFrontmatter(cache.frontmatter, file.basename);
+                // Only return valid assets - invalid ones are silently ignored
                 if (asset) {
                     // Store the file path for later use in save
                     (asset as any).props.filePath = file.path;

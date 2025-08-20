@@ -116,10 +116,12 @@ Follow the same steps as manual installation with the latest source code.
 
 ```yaml
 ---
+exo__Asset_uid: f47ac10b-58cc-4372-a567-0e02b2c3d479
+exo__Asset_isDefinedBy: "[[Ontology - Exocortex]]"
+exo__Asset_createdAt: 2025-08-20T10:30:00
 exo__Instance_class: "[[exo__Asset]]"
 exo__Asset_label: "My Knowledge Asset"
 exo__Asset_description: "This is my first semantic asset"
-tags: [exocortex, tutorial]
 ---
 
 # My First Asset
@@ -145,6 +147,9 @@ Create a complete task management system with semantic relationships:
 ```yaml
 ---
 # Task Definition
+exo__Asset_uid: e28a3c15-7b4d-4e8a-9f2e-1c3d4e5f6a7b
+exo__Asset_isDefinedBy: "[[!ems]]"
+exo__Asset_createdAt: 2025-08-20T10:30:00
 exo__Instance_class: "[[ems__Task]]"
 exo__Asset_label: "Implement User Authentication"
 ems__Task_status: "in-progress"
@@ -165,6 +170,9 @@ await window.ExoUIRender(dv, this);
 
 ```yaml
 ---
+exo__Asset_uid: d1e5f8c2-4a7b-4c9e-8f1a-2b3c4d5e6f7g
+exo__Asset_isDefinedBy: "[[!kb]]"
+exo__Asset_createdAt: 2025-08-20T10:30:00
 exo__Instance_class: "[[kb__Article]]"
 exo__Asset_label: "RDF Triple Store Architecture"
 kb__Article_category: "[[Technical Documentation]]"
@@ -190,6 +198,9 @@ await window.ExoUIRender(dv, this);
 
 ```yaml
 ---
+exo__Asset_uid: c3f7e9a1-6d8b-4f2e-9c5a-7b8c9d0e1f2g
+exo__Asset_isDefinedBy: "[[!pm]]"
+exo__Asset_createdAt: 2025-08-20T10:30:00
 exo__Instance_class: "[[pm__Project]]"
 exo__Asset_label: "Q1 2025 Roadmap"
 pm__Project_status: "active"
@@ -229,6 +240,9 @@ await window.ExoUIRender(dv, this);
 ```yaml
 ---
 # First, create your ontology
+exo__Asset_uid: b2d6c8e4-5a9f-4e7c-8d1b-6e7f8a9b0c1d
+exo__Asset_isDefinedBy: "[[!exo]]"
+exo__Asset_createdAt: 2025-08-20T10:30:00
 exo__Instance_class: "[[exo__Ontology]]"
 exo__Ontology_prefix: "research"
 exo__Asset_label: "Research Ontology"
@@ -241,7 +255,9 @@ Then use it in your research notes:
 
 ```yaml
 ---
+exo__Asset_uid: a1b5d7f3-4c8e-4f9a-7e2d-5f6a7b8c9d0e
 exo__Asset_isDefinedBy: "[[!research]]"
+exo__Asset_createdAt: 2025-08-20T10:30:00
 exo__Instance_class: "[[research__Paper]]"
 research__Paper_title: "Effects of Knowledge Graphs on Learning"
 research__Paper_authors: ["Smith, J.", "Doe, A."]
@@ -279,6 +295,48 @@ Access plugin settings through Settings → Plugin options → Exocortex:
 - **Touch Target Size**: Adjust button sizes for better touch interaction (44pt recommended)
 - **Enable Haptic Feedback**: Vibration feedback for touch interactions
 - **Performance Mode**: Optimize for older devices with reduced animations
+
+## Asset Requirements
+
+### Mandatory Properties
+
+**Every Exocortex Asset must include these three mandatory fields:**
+
+1. **`exo__Asset_uid`** - Unique identifier in UUID format
+   - Must be a valid UUID (e.g., `f47ac10b-58cc-4372-a567-0e02b2c3d479`)
+   - Cannot be changed after creation
+   - Used for internal asset identification and relationships
+
+2. **`exo__Asset_isDefinedBy`** - Ontology reference
+   - Must reference an ontology using `[[Ontology Name]]` or `[[!prefix]]` format
+   - Examples: `[[!exo]]`, `[[Ontology - Exocortex]]`, `[[!custom_ontology]]`
+   - Defines which ontology governs this asset's properties
+
+3. **`exo__Asset_createdAt`** - Creation timestamp
+   - Must be in ISO 8601 format: `YYYY-MM-DDTHH:mm:ss`
+   - Optional timezone suffix (Z, +00:00, -05:00)
+   - Examples: `2025-08-20T10:30:00`, `2025-08-20T10:30:00.123Z`
+
+**Assets missing any of these mandatory fields will be silently ignored by the plugin.**
+
+### Example Valid Asset
+
+```yaml
+---
+exo__Asset_uid: f47ac10b-58cc-4372-a567-0e02b2c3d479
+exo__Asset_isDefinedBy: "[[!exo]]"
+exo__Asset_createdAt: 2025-08-20T10:30:00
+exo__Instance_class: "[[exo__Asset]]"
+exo__Asset_label: "My Valid Asset"
+---
+```
+
+### Optional Properties
+
+- **`exo__Asset_label`** - Human-readable name for the asset
+- **`exo__Asset_description`** - Detailed description
+- **`exo__Instance_class`** - Asset type/class definition
+- Any domain-specific properties defined by your ontology
 
 ## Ontology Structure
 
