@@ -1,3 +1,20 @@
+## [3.3.2] - 2025-08-20
+
+### 🔧 Hotfix: Complete Implementation Included
+
+#### **Implementation Now Complete**
+This hotfix includes the complete implementation that was accidentally missing from version 3.3.1. All Children Efforts functionality is now fully operational.
+
+#### **What's Included**
+- Complete Children Efforts display logic with proper parent-child relationship matching
+- Default layout integration ensuring Children Efforts appear automatically
+- Obsidian link format handling for [[Project - Name]] style references
+- Comprehensive test coverage for real-world usage scenarios
+
+**Note**: This release completes the Children Efforts feature that was announced in 3.3.1 but missing the actual implementation code.
+
+---
+
 ## [3.3.1] - 2025-08-20
 
 ### 🚨 Critical Hotfix: Children Efforts Display Fixed
