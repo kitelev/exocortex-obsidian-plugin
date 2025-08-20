@@ -1,37 +1,10 @@
-import { App } from 'obsidian';
+import { App, Plugin } from 'obsidian';
 import ExocortexPlugin from '../../src/main';
 import { CreateAssetModal } from '../../src/presentation/modals/CreateAssetModal';
+import { DIContainer } from '../../src/infrastructure/container/DIContainer';
 
 // Mock CreateAssetModal
 jest.mock('../../src/presentation/modals/CreateAssetModal');
-
-// Mock DIContainer
-jest.mock('../../src/infrastructure/container/DIContainer', () => {
-  const mockContainer = {
-    getCreateAssetUseCase: jest.fn().mockReturnValue({
-      execute: jest.fn().mockResolvedValue({
-        success: true,
-        message: 'Asset created'
-      })
-    }),
-    getPropertyEditingUseCase: jest.fn().mockReturnValue({
-      execute: jest.fn().mockResolvedValue({
-        success: true,
-        message: 'Property edited'
-      })
-    }),
-    resolve: jest.fn().mockImplementation(() => ({})),
-    dispose: jest.fn()
-  };
-
-  return {
-    DIContainer: {
-      initialize: jest.fn((app, plugin) => mockContainer),
-      getInstance: jest.fn(() => mockContainer),
-      instance: mockContainer
-    }
-  };
-});
 
 describe('Command Registration Integration Tests', () => {
   let app: App;
@@ -44,13 +17,26 @@ describe('Command Registration Integration Tests', () => {
     app = {
       vault: {
         getMarkdownFiles: jest.fn().mockReturnValue([]),
+        getFiles: jest.fn().mockReturnValue([]),
+        getAbstractFileByPath: jest.fn(),
         read: jest.fn().mockResolvedValue(''),
-        on: jest.fn()
+        modify: jest.fn().mockResolvedValue(undefined),
+        create: jest.fn().mockResolvedValue({}),
+        delete: jest.fn().mockResolvedValue(undefined),
+        rename: jest.fn().mockResolvedValue(undefined),
+        on: jest.fn().mockReturnValue({ event: 'mock', callback: jest.fn() })
       },
       workspace: {
+        getActiveFile: jest.fn(),
         openLinkText: jest.fn()
+      },
+      metadataCache: {
+        getFileCache: jest.fn()
       }
     } as unknown as App;
+
+    // Initialize DIContainer before creating plugin
+    DIContainer.initialize(app, {} as Plugin);
 
     // Create plugin instance
     plugin = new ExocortexPlugin(app, {
@@ -68,12 +54,15 @@ describe('Command Registration Integration Tests', () => {
     addCommandSpy = jest.spyOn(plugin, 'addCommand');
     addRibbonIconSpy = jest.spyOn(plugin, 'addRibbonIcon');
 
-    // DIContainer is already mocked at the module level
+    // Mock Plugin methods
+    plugin.registerEvent = jest.fn();
+    plugin.registerMarkdownCodeBlockProcessor = jest.fn();
   });
 
   afterEach(() => {
     jest.clearAllMocks();
-    jest.resetModules();
+    // Reset DIContainer between tests
+    (DIContainer as any).reset();
   });
 
   describe('Create ExoAsset Command Registration', () => {
