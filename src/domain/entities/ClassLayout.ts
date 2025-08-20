@@ -2,10 +2,11 @@ import { Entity } from '../core/Entity';
 import { AssetId } from '../value-objects/AssetId';
 import { ClassName } from '../value-objects/ClassName';
 import { Result } from '../core/Result';
+import { BlockType } from './LayoutBlock';
 
 export interface LayoutBlockConfig {
     id: string;
-    type: 'query' | 'properties' | 'relations' | 'backlinks' | 'custom';
+    type: BlockType;
     title: string;
     order: number;
     config: Record<string, any>;

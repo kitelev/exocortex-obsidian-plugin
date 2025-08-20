@@ -1,3 +1,83 @@
+## [3.3.0] - 2025-08-20
+
+### 🔗 Hierarchical Effort Organization - Children Efforts Block
+
+#### Transform Your Effort Management Experience
+Organize your hierarchical effort structures with **crystal clarity**! The new Children Efforts block revolutionizes how you visualize and navigate parent-child relationships in your knowledge base.
+
+#### New Children Efforts Block
+- **Smart Separation**: Children Efforts now display separately from general backlinks for cleaner organization
+- **Hierarchical Clarity**: See parent-child effort relationships at a glance with dedicated visualization
+- **Parent Path Display**: Instantly understand the hierarchical context of each child effort
+- **Intelligent Filtering**: Only shows assets that reference the current asset via `ems__Effort_parent` property
+- **Consistent UI**: Follows the same familiar design patterns as other Exocortex blocks
+
+#### Enhanced Referenced By Block
+- **Cleaner Results**: Referenced By block now excludes parent-child relationships (shown in Children Efforts instead)
+- **Focused Content**: See only genuine references and relationships, not structural hierarchy
+- **Better Organization**: Clear separation between hierarchical structure and cross-references
+- **Improved Clarity**: Reduced cognitive load with more focused, relevant information
+
+#### Perfect for Complex Project Hierarchies
+
+##### Project Managers
+- **Visual Project Structure**: See complete effort hierarchies with parent-child relationships clearly displayed
+- **Instant Navigation**: Click through from parent efforts to child tasks and sub-projects
+- **Organizational Clarity**: Understand project breakdown structure at any level
+- **Context Awareness**: Never lose sight of where you are in the project hierarchy
+
+##### Knowledge Workers
+- **Learning Hierarchies**: Organize learning materials with clear parent-child relationships
+- **Research Structure**: Build nested research projects with visible organizational structure
+- **Task Management**: Break down complex tasks into manageable hierarchies
+- **Knowledge Architecture**: Create clear organizational structures for any domain
+
+#### Seamless Integration Experience
+- **Zero Configuration**: Works automatically with existing `ems__Effort_parent` properties
+- **Backward Compatible**: All existing layouts continue working without changes
+- **Consistent Styling**: Matches existing Exocortex design language perfectly
+- **Performance Optimized**: Fast rendering even with deep hierarchical structures
+
+#### What This Looks Like in Practice
+
+Before v3.3.0:
+- Parent-child relationships mixed with other backlinks
+- Difficult to distinguish structural hierarchy from references
+- Cognitive overhead trying to parse relationship types
+
+After v3.3.0:
+- **Children Efforts block**: Shows only direct child efforts with parent path context
+- **Referenced By block**: Shows only genuine references and cross-links
+- **Clear Visual Separation**: Immediate understanding of information architecture
+- **Hierarchical Navigation**: Smooth traversal up and down effort hierarchies
+
+#### Technical Excellence
+- **17 New Tests**: Comprehensive test coverage for both Children Efforts and enhanced Referenced By blocks
+- **Zero Breaking Changes**: Maintains 100% backward compatibility with existing configurations
+- **Robust Implementation**: Proper error handling and graceful degradation
+- **Performance Optimized**: Efficient filtering algorithms for fast rendering
+
+#### Getting Started
+The Children Efforts block appears automatically in any asset that has child efforts (other assets that reference it via `ems__Effort_parent`). No configuration needed - it just works!
+
+Example: Open any parent effort in your project hierarchy and you'll now see:
+1. **Children Efforts block**: Lists all child efforts with clear hierarchical context
+2. **Referenced By block**: Shows other references excluding the parent-child relationships
+3. **Crystal Clear Organization**: Immediately understand your project structure
+
+### 🎯 Why This Release Matters
+
+This release addresses a core user experience challenge in hierarchical knowledge management:
+
+- **Cognitive Clarity**: Users can now instantly distinguish between structural hierarchy and content references
+- **Navigation Efficiency**: Faster traversal of complex project structures
+- **Visual Organization**: Clear separation of relationship types reduces mental overhead
+- **Professional Workflows**: Supports complex project management and knowledge architecture patterns
+
+**Transform your hierarchical effort management with visual clarity and organizational excellence!** 🔗📊
+
+---
+
 ## [3.2.1] - 2025-08-20
 
 ### 🔧 Critical DataviewJS Integration Fix

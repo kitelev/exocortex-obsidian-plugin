@@ -1,8 +1,10 @@
 import { App, TFile } from 'obsidian';
 import { ClassLayout } from '../../domain/entities/ClassLayout';
+import { BlockType } from '../../domain/entities/LayoutBlock';
 import { QueryBlockRenderer } from './QueryBlockRenderer';
 import { PropertiesBlockRenderer } from './PropertiesBlockRenderer';
 import { BacklinksBlockRenderer } from './BacklinksBlockRenderer';
+import { ChildrenEffortsBlockRenderer } from './ChildrenEffortsBlockRenderer';
 import { CustomBlockRenderer } from './CustomBlockRenderer';
 import { GetLayoutForClassUseCase } from '../../application/use-cases/GetLayoutForClassUseCase';
 import { IClassLayoutRepository } from '../../domain/repositories/IClassLayoutRepository';
@@ -13,6 +15,7 @@ export class LayoutRenderer {
     private queryRenderer: QueryBlockRenderer;
     private propertiesRenderer: PropertiesBlockRenderer;
     private backlinksRenderer: BacklinksBlockRenderer;
+    private childrenEffortsRenderer: ChildrenEffortsBlockRenderer;
     private customRenderer: CustomBlockRenderer;
     private getLayoutUseCase: GetLayoutForClassUseCase;
 
@@ -26,6 +29,7 @@ export class LayoutRenderer {
         this.queryRenderer = new QueryBlockRenderer(app);
         this.propertiesRenderer = new PropertiesBlockRenderer(app, propertyRenderer);
         this.backlinksRenderer = new BacklinksBlockRenderer(app);
+        this.childrenEffortsRenderer = new ChildrenEffortsBlockRenderer(app);
         this.customRenderer = new CustomBlockRenderer(app, this.queryEngineService);
     }
 
@@ -171,6 +175,15 @@ export class LayoutRenderer {
                         
                     case 'backlinks':
                         await this.backlinksRenderer.render(
+                            contentContainer,
+                            block.config,
+                            file,
+                            dv
+                        );
+                        break;
+                        
+                    case 'children-efforts':
+                        await this.childrenEffortsRenderer.render(
                             contentContainer,
                             block.config,
                             file,

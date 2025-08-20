@@ -2,7 +2,7 @@ import { Entity } from '../core/Entity';
 import { Result } from '../core/Result';
 import { QueryEngineType } from '../ports/IQueryEngine';
 
-export type BlockType = 'query' | 'properties' | 'relations' | 'backlinks' | 'custom';
+export type BlockType = 'query' | 'properties' | 'relations' | 'backlinks' | 'children-efforts' | 'custom';
 
 export interface QueryBlockConfig {
     type: 'query';
@@ -43,6 +43,14 @@ export interface BacklinksBlockConfig {
     maxResults?: number;
 }
 
+export interface ChildrenEffortsBlockConfig {
+    type: 'children-efforts';
+    filterByClass?: string;
+    groupByClass?: boolean;
+    maxResults?: number;
+    showParentPath?: boolean;
+}
+
 export interface QueryEngineQuery {
     query: string;
     engineType?: QueryEngineType;
@@ -57,7 +65,7 @@ export interface CustomBlockConfig {
     customScript?: string;
 }
 
-export type BlockConfig = QueryBlockConfig | PropertiesBlockConfig | RelationsBlockConfig | BacklinksBlockConfig | CustomBlockConfig;
+export type BlockConfig = QueryBlockConfig | PropertiesBlockConfig | RelationsBlockConfig | BacklinksBlockConfig | ChildrenEffortsBlockConfig | CustomBlockConfig;
 
 export interface LayoutBlockProps {
     id: string;
@@ -109,6 +117,9 @@ export class LayoutBlock extends Entity<LayoutBlockProps> {
                 return !!relConfig.relationProperty;
             
             case 'backlinks':
+                return true;
+            
+            case 'children-efforts':
                 return true;
             
             case 'custom':
