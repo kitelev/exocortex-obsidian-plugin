@@ -14,9 +14,10 @@ argument-hint: [task description]
 
 #### Stage 1: Task Analysis & Agent Deployment
 1. **Analyze task complexity** and domain requirements
-2. **Deploy 3-5 specialized agents** in parallel formation
+2. **Deploy 3-5 specialized agents** in CONTROLLED parallel formation (MAX 5 agents)
 3. **Execute implementation** with continuous quality monitoring
 4. **Validate implementation** meets all requirements
+5. **IMPORTANT**: Wait for ALL agents to complete before proceeding to next stage
 
 #### Stage 2: Quality Gate Validation (WITH RETRY LOGIC)
 1. **Run comprehensive tests** - RETRY up to 3 times if failures
@@ -31,15 +32,16 @@ argument-hint: [task description]
 4. **Commit changes** with conventional commit message
 5. **VERIFY**: Local git state is clean and ready for push
 
-#### Stage 4: GitHub Release & CI/CD Pipeline (MONITORED)
+#### Stage 4: GitHub Release & CI/CD Pipeline (MONITORED - SINGLE DEVOPS AGENT)
 1. **Push to main branch** triggering auto-release workflow
-2. **Monitor GitHub Actions** until ALL workflows complete:
+2. **Deploy SINGLE devops-engineer agent** to monitor GitHub Actions:
    - auto-release.yml (REQUIRED: SUCCESS)
    - ci.yml (REQUIRED: SUCCESS) 
    - quality-gate.yml (REQUIRED: SUCCESS)
    - all-tests.yml (REQUIRED: SUCCESS)
 3. **Verify GitHub Release** created with correct assets
 4. **RETRY FAILED WORKFLOWS** up to 2 times with fixes
+5. **IMPORTANT**: Only ONE devops-engineer agent at a time for CI/CD monitoring
 
 #### Stage 5: Production Validation (COMPLETION GATE)
 1. **Confirm GitHub Release** is published and accessible
@@ -73,7 +75,7 @@ while [ $timeout -gt 0 ]; do
 done
 ```
 
-### AGENT SELECTION MATRIX:
+### AGENT SELECTION MATRIX (MAXIMUM 5 CONCURRENT AGENTS):
 
 | Task Type | Required Agents (3-5) | Parallel Execution |
 |-----------|----------------------|-------------------|
@@ -82,7 +84,7 @@ done
 | **Performance** | performance-agent, swebok-engineer, qa-engineer, devops-engineer | ✅ Domain parallel |
 | **Documentation** | technical-writer-agent, ux-researcher-agent, qa-engineer | ✅ Content parallel |
 | **Infrastructure** | devops-engineer, architect-agent, swebok-engineer, meta-agent | ✅ Layer parallel |
-| **Release** | release-agent, devops-engineer, qa-engineer, meta-agent | ✅ Sequential gates |
+| **Release** | release-agent, devops-engineer (SINGLE), qa-engineer | ⚠️ Sequential gates (NO PARALLEL) |
 
 ### QUALITY GATES (NON-NEGOTIABLE):
 
