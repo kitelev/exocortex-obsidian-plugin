@@ -2,7 +2,7 @@ import { Entity } from '../core/Entity';
 import { Result } from '../core/Result';
 import { QueryEngineType } from '../ports/IQueryEngine';
 
-export type BlockType = 'query' | 'properties' | 'relations' | 'backlinks' | 'children-efforts' | 'custom';
+export type BlockType = 'query' | 'properties' | 'relations' | 'backlinks' | 'children-efforts' | 'buttons' | 'custom';
 
 export interface QueryBlockConfig {
     type: 'query';
@@ -57,6 +57,20 @@ export interface QueryEngineQuery {
     enginePreference?: QueryEngineType[];
 }
 
+export interface ButtonsBlockConfig {
+    type: 'buttons';
+    buttons: Array<{
+        id: string;
+        label: string;
+        commandType: string;
+        tooltip?: string;
+        style?: 'primary' | 'default' | 'danger';
+        parameters?: Record<string, any>;
+    }>;
+    position?: 'top' | 'bottom' | 'inline';
+    style?: string;
+}
+
 export interface CustomBlockConfig {
     type: 'custom';
     templatePath?: string;
@@ -65,7 +79,7 @@ export interface CustomBlockConfig {
     customScript?: string;
 }
 
-export type BlockConfig = QueryBlockConfig | PropertiesBlockConfig | RelationsBlockConfig | BacklinksBlockConfig | ChildrenEffortsBlockConfig | CustomBlockConfig;
+export type BlockConfig = QueryBlockConfig | PropertiesBlockConfig | RelationsBlockConfig | BacklinksBlockConfig | ChildrenEffortsBlockConfig | ButtonsBlockConfig | CustomBlockConfig;
 
 export interface LayoutBlockProps {
     id: string;

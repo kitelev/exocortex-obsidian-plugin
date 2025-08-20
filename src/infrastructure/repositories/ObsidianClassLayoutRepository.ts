@@ -245,6 +245,21 @@ export class ObsidianClassLayoutRepository implements IClassLayoutRepository {
                     maxResults: config.maxResults || 50
                 };
 
+            case 'buttons':
+                return {
+                    type: 'buttons',
+                    buttons: Array.isArray(config.buttons) ? config.buttons.map((btn: any) => ({
+                        id: btn.id || '',
+                        label: btn.label || '',
+                        commandType: btn.commandType || '',
+                        tooltip: btn.tooltip,
+                        style: btn.style || 'default',
+                        parameters: btn.parameters || {}
+                    })) : [],
+                    position: config.position || 'top',
+                    style: config.style || 'default'
+                };
+
             case 'custom':
                 return {
                     type: 'custom',

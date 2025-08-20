@@ -5,6 +5,7 @@ import { QueryBlockRenderer } from './QueryBlockRenderer';
 import { PropertiesBlockRenderer } from './PropertiesBlockRenderer';
 import { BacklinksBlockRenderer } from './BacklinksBlockRenderer';
 import { ChildrenEffortsBlockRenderer } from './ChildrenEffortsBlockRenderer';
+import { ButtonsBlockRenderer } from './ButtonsBlockRenderer';
 import { CustomBlockRenderer } from './CustomBlockRenderer';
 import { GetLayoutForClassUseCase } from '../../application/use-cases/GetLayoutForClassUseCase';
 import { IClassLayoutRepository } from '../../domain/repositories/IClassLayoutRepository';
@@ -16,6 +17,7 @@ export class LayoutRenderer {
     private propertiesRenderer: PropertiesBlockRenderer;
     private backlinksRenderer: BacklinksBlockRenderer;
     private childrenEffortsRenderer: ChildrenEffortsBlockRenderer;
+    private buttonsRenderer: ButtonsBlockRenderer;
     private customRenderer: CustomBlockRenderer;
     private getLayoutUseCase: GetLayoutForClassUseCase;
 
@@ -30,6 +32,7 @@ export class LayoutRenderer {
         this.propertiesRenderer = new PropertiesBlockRenderer(app, propertyRenderer);
         this.backlinksRenderer = new BacklinksBlockRenderer(app);
         this.childrenEffortsRenderer = new ChildrenEffortsBlockRenderer(app);
+        this.buttonsRenderer = new ButtonsBlockRenderer(app);
         this.customRenderer = new CustomBlockRenderer(app, this.queryEngineService);
     }
 
@@ -188,6 +191,15 @@ export class LayoutRenderer {
                             block.config,
                             file,
                             dv
+                        );
+                        break;
+                        
+                    case 'buttons':
+                        await this.buttonsRenderer.render(
+                            contentContainer,
+                            block.config,
+                            file,
+                            frontmatter
                         );
                         break;
                         

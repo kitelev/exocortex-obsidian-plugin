@@ -1,3 +1,33 @@
+## [3.5.1] - 2025-08-20
+
+### 🔧 Create Child Task Button Fix - Restored One-Click Task Creation
+
+#### Button Display Issue Resolved
+Fixed a critical bug where the **Create Child Task** button was not appearing in `ems__Project` asset views, preventing users from accessing the streamlined task creation workflow introduced in v3.5.0.
+
+#### What Was Broken
+- Create Child Task button missing from project views
+- Users unable to access one-click task creation feature
+- Project management workflow interrupted
+
+#### What's Fixed Now
+- **Button Visibility Restored**: Create Child Task button now appears correctly in all `ems__Project` views
+- **One-Click Access**: Full task creation functionality available again
+- **Streamlined Workflow**: Project decomposition workflow fully operational
+
+#### Technical Details
+- **Root Cause**: Missing integration between layout system and button rendering components
+- **Solution**: Added proper button block type support to layout rendering engine
+- **Components Fixed**: BlockType enum, ButtonsBlockRenderer, LayoutRenderer integration
+- **Quality Assurance**: Full test suite validates button display and functionality
+
+#### User Impact
+- **Immediate Access**: Create Child Task button works on all existing and new projects
+- **Workflow Continuity**: Project management efficiency restored
+- **No Data Loss**: All existing projects and tasks remain intact and functional
+
+---
+
 ## [3.5.0] - 2025-08-20
 
 ### 🚀 Create Child Task - Streamlined Project Task Management
