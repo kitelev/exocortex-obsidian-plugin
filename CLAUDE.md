@@ -1,12 +1,27 @@
 # AI Assistant Development Guidelines for Exocortex Plugin
 
 ## 🎯 UNIVERSAL EXECUTION COMMAND
+
+### Quick Access via Slash Command:
+```
+/execute [task description]
+```
+
+### Full Command:
 ```
 EXECUTE-WITH-META-OPTIMIZATION:
 ЗАДАЧА: [описание]
 РЕЖИМ: FULL-COMPLIANCE-WITH-META-LEARNING
 ```
-**See CLAUDE-EXECUTE-COMMAND.md for full command reference**
+
+**Available slash commands:**
+- `/execute` (или `/выполни`) - Execute with full compliance
+- `/status` - Check current progress
+- `/agents` - List available agents
+- `/release` - Create new release
+- `/test` - Run tests
+
+**See CLAUDE-EXECUTE-COMMAND.md and .claude/SLASH-COMMANDS.md for details**
 
 ## 🚨 CRITICAL: MANDATORY AGENT USAGE
 **EVERY significant task MUST use specialized agents.** Not using agents is a violation of project standards.
