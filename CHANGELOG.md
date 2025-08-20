@@ -1,3 +1,27 @@
+## [3.3.1] - 2025-08-20
+
+### 🚨 Critical Hotfix: Children Efforts Display Fixed
+
+#### **Children Efforts Now Display Correctly**
+Fixed critical issues preventing Children Efforts from appearing in your hierarchical project structures. Your effort hierarchies now work as intended!
+
+#### **What We Fixed**
+- **Children Efforts Block Visibility**: Fixed matching logic so Children Efforts now display properly for all parent-child relationships
+- **Default Layout Support**: Children Efforts now appear automatically even without custom layouts - no configuration needed
+- **Reference Matching Improved**: Fixed handling of Obsidian link formats like "[[Project - Name]]" for accurate relationship detection
+- **Real-World Compatibility**: Enhanced matching logic handles various naming patterns and link formats you actually use
+
+#### **Why This Matters**
+- **See Your Project Structure**: Finally view your hierarchical efforts the way you organized them
+- **Navigate Hierarchies**: Click through parent-child relationships with confidence they'll actually show up
+- **Zero Configuration**: Works immediately with your existing effort structures
+- **Better Organization**: Clear separation between structural hierarchy and general references
+
+#### **Immediate Impact**
+If you've been wondering why your Children Efforts weren't showing up, this hotfix resolves those display issues. Your carefully structured effort hierarchies will now be visible and navigable as designed.
+
+---
+
 ## [3.3.0] - 2025-08-20
 
 ### 🔗 Hierarchical Effort Organization - Children Efforts Block
