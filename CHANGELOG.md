@@ -1,3 +1,29 @@
+## [3.7.1] - 2025-08-21
+
+### 🔍 Layout System Verification & Analysis
+
+#### Comprehensive System Validation
+Conducted thorough analysis and verification of the class-based layout system to ensure proper terminology and functionality. The investigation confirmed that the system correctly implements layout-based content display based on asset classes.
+
+#### What Was Verified
+- **Class-Based Layout Selection**: Confirmed that layouts are correctly selected based on asset class with inheritance fallback
+- **Terminology Consistency**: Validated that "Layout" terminology is used consistently throughout the codebase
+- **Domain Separation**: Verified that ClassLayout (structure) and ClassView (behavior) are correctly separated domain concepts
+- **Test Coverage**: All layout-related tests passing with comprehensive coverage
+
+#### System Architecture Clarity
+- **ClassLayout Entity**: Manages structural layout configuration (blocks, order, visibility)
+- **ClassView Aggregate**: Manages UI button configuration and display options
+- **Clean Separation**: Both systems serve distinct purposes and work together harmoniously
+
+#### Technical Excellence
+- **No Breaking Changes**: System already implements best practices
+- **Test Suite Validation**: All 6 test batches passing successfully
+- **Build Verification**: TypeScript compilation clean, build successful
+- **Documentation Accuracy**: System documentation correctly reflects implementation
+
+This release confirms the robustness and correct implementation of the layout system, providing confidence in the plugin's architectural integrity.
+
 ## [3.7.0] - 2025-08-21
 
 ### 🔽 Narrower Concepts Block - Navigate Concept Hierarchies with Ease

@@ -12,12 +12,19 @@ argument-hint: [task description]
 
 ### CRITICAL: This command does NOT stop until ALL delivery stages are complete:
 
-#### Stage 1: Task Analysis & Agent Deployment
-1. **Analyze task complexity** and domain requirements
-2. **Deploy 3-5 specialized agents** in CONTROLLED parallel formation (MAX 5 agents)
-3. **Execute implementation** with continuous quality monitoring
+#### Stage 0: Meta-Agent Orchestration (MANDATORY FIRST STEP)
+1. **ALWAYS invoke meta-agent FIRST** for intelligent agent selection
+2. **Meta-agent analyzes task** and determines optimal agent configuration
+3. **If no suitable agent exists**, meta-agent delegates to agent-factory for creation
+4. **Meta-agent monitors execution** and captures performance metrics
+5. **Post-execution improvement** - meta-agent analyzes results and enhances agents
+
+#### Stage 1: Task Analysis & Agent Deployment  
+1. **Meta-agent determines complexity** and domain requirements
+2. **Meta-agent deploys 3-5 specialized agents** selected or created dynamically
+3. **Execute implementation** with continuous quality monitoring by meta-agent
 4. **Validate implementation** meets all requirements
-5. **IMPORTANT**: Wait for ALL agents to complete before proceeding to next stage
+5. **Meta-agent collects feedback** for continuous improvement
 
 #### Stage 2: Quality Gate Validation (WITH RETRY LOGIC)
 1. **Run comprehensive tests** - RETRY up to 3 times if failures
@@ -75,16 +82,181 @@ while [ $timeout -gt 0 ]; do
 done
 ```
 
-### AGENT SELECTION MATRIX (MAXIMUM 5 CONCURRENT AGENTS):
+### PARALLEL EXECUTION CONFIGURATION:
 
-| Task Type | Required Agents (3-5) | Parallel Execution |
-|-----------|----------------------|-------------------|
-| **Bug fixes** | error-handler, technical-stabilization-agent, qa-engineer, meta-agent | ✅ Parallel investigation |
-| **Features** | product-manager, architect-agent, swebok-engineer, qa-engineer, meta-agent | ✅ Pipeline parallel |
-| **Performance** | performance-agent, swebok-engineer, qa-engineer, devops-engineer | ✅ Domain parallel |
-| **Documentation** | technical-writer-agent, ux-researcher-agent, qa-engineer | ✅ Content parallel |
-| **Infrastructure** | devops-engineer, architect-agent, swebok-engineer, meta-agent | ✅ Layer parallel |
-| **Release** | release-agent, devops-engineer (SINGLE), qa-engineer | ⚠️ Sequential gates (NO PARALLEL) |
+```yaml
+Thread_Pool_Architecture:
+  max_parallel_agents: 5
+  thread_allocation:
+    domain_parallel: 3    # Multi-domain requirements
+    pipeline_parallel: 2  # Sequential stages with parallel substeps
+    investigation_parallel: 4  # Analysis tasks
+    
+  resource_management:
+    memory_per_agent: "256MB"
+    cpu_allocation: "20% per agent"
+    file_lock_coordination: "active"
+    
+  conflict_detection:
+    file_access_monitor: "enabled"
+    dependency_graph: "real-time"
+    resource_contention: "auto-resolve"
+    
+Real_Time_Monitoring:
+  status_refresh_interval: "2s"
+  progress_granularity: "10%"
+  performance_tracking: "agent_level"
+  bottleneck_detection: "automatic"
+```
+
+### CONSOLE STATUS DISPLAY:
+
+```bash
+# Live Progress Tracking Format
+┌─────────────────────────────────────────────────────────┐
+│ EXECUTE Pipeline Status - Real-Time Monitoring         │
+├─────────────────────────────────────────────────────────┤
+│ Stage 1: Task Analysis    [██████████] 100% ✅         │
+│ Stage 2: Agent Deploy     [████████▒▒] 80%  🔄         │
+│   ├─ architect-agent      [██████████] 100% ✅         │
+│   ├─ implementer-agent    [██████▒▒▒▒] 60%  🔄         │
+│   ├─ qa-agent            [▒▒▒▒▒▒▒▒▒▒] 0%   ⏳         │
+│   └─ devops-agent        [▒▒▒▒▒▒▒▒▒▒] 0%   ⏳         │
+│ Stage 3: Quality Gate     [▒▒▒▒▒▒▒▒▒▒] 0%   ⏳         │
+│ Stage 4: Release Prep     [▒▒▒▒▒▒▒▒▒▒] 0%   ⏳         │
+│ Stage 5: CI/CD Pipeline   [▒▒▒▒▒▒▒▒▒▒] 0%   ⏳         │
+├─────────────────────────────────────────────────────────┤
+│ Performance Metrics:                                    │
+│ • Execution Time: 2m 14s                               │
+│ • Agents Active: 2/5                                   │
+│ • Memory Usage: 512MB/1GB                              │
+│ • Conflict Detection: 0 conflicts                      │
+│ • Auto-Resolves: 3 successful                          │
+└─────────────────────────────────────────────────────────┘
+
+# Agent Status Indicators
+✅ Complete    🔄 In Progress    ⏳ Pending    ❌ Failed    🔧 Retrying
+```
+
+### PARALLEL EXECUTION RULES:
+
+```yaml
+Parallel_vs_Sequential_Decision_Matrix:
+  parallel_execution_criteria:
+    - Independent file modifications
+    - Non-overlapping domain expertise
+    - No shared resource dependencies
+    - Task complexity >3 subtasks
+    - Estimated duration >5 minutes
+    
+  sequential_execution_criteria:
+    - File system conflicts detected
+    - Sequential dependencies identified
+    - Single-threaded operations required
+    - Resource constraints present
+    - Risk level: HIGH
+    
+Safety_Checks_Before_Parallelization:
+  pre_flight_validation:
+    - Dependency graph analysis
+    - Resource availability check
+    - File lock status verification
+    - Agent capability assessment
+    
+  conflict_prevention:
+    - Exclusive file access locks
+    - Shared state coordination
+    - Race condition detection
+    - Rollback mechanisms
+    
+  resource_allocation:
+    - CPU usage monitoring
+    - Memory threshold enforcement
+    - I/O bandwidth management
+    - Network request limiting
+```
+
+### META-AGENT ORCHESTRATION PROTOCOL (ENHANCED WITH PARALLEL EXECUTION):
+
+```yaml
+Meta_Agent_Invocation:
+  priority: HIGHEST
+  timing: ALWAYS_FIRST
+  
+  responsibilities:
+    task_analysis:
+      - Parse user requirements
+      - Identify domain and complexity
+      - Determine agent needs
+      - Analyze parallelization potential
+      
+    execution_strategy_selection:
+      - Evaluate task for parallel execution eligibility
+      - Identify independent work streams
+      - Calculate optimal thread allocation
+      - Assess resource requirements and conflicts
+      
+    agent_selection:
+      - Query existing agent capabilities
+      - Calculate fitness scores (SOLID/GRASP metrics)
+      - Select optimal agent configuration
+      - Plan parallel vs sequential execution
+      
+    agent_creation:
+      - If fitness < 0.60, invoke agent-factory
+      - Validate new agent specifications
+      - Deploy experimental agents with monitoring
+      - Configure parallel execution parameters
+      
+    parallel_execution_monitoring:
+      - Real-time status tracking across all agents
+      - Performance metrics collection (throughput, latency)
+      - Bottleneck identification and auto-resolution
+      - Resource contention monitoring and prevention
+      - Inter-agent communication coordination
+      
+    conflict_resolution:
+      - File access conflict detection
+      - Dependency chain validation
+      - Resource allocation arbitration
+      - Automatic rollback on deadlocks
+      
+    continuous_improvement:
+      - Analyze task completion metrics
+      - Extract success patterns from parallel execution
+      - Update agent instructions and coordination rules
+      - Document learnings in CLAUDE-knowledge.md
+      - Optimize thread pool configuration based on performance
+      
+Parallel_Execution_Directives:
+  default_mode: "intelligent_parallel"
+  fallback_mode: "validated_sequential"
+  
+  parallel_coordination:
+    - Deploy 3-5 agents simultaneously when conditions are met
+    - Monitor real-time progress with 2s refresh intervals
+    - Implement automatic conflict detection and resolution
+    - Provide live console status updates
+    - Collect performance metrics for optimization
+    
+  sequential_fallback:
+    - Triggered by resource conflicts or high-risk operations
+    - Maintains agent coordination but enforces serial execution
+    - Preserves all monitoring and quality gate functionality
+    - Provides clear reasoning for execution mode selection
+```
+
+### AGENT SELECTION MATRIX (DYNAMICALLY DETERMINED BY META-AGENT):
+
+| Task Type | Meta-Agent Selected Configuration | Execution Pattern |
+|-----------|----------------------------------|-------------------|
+| **Bug fixes** | Based on error analysis and system state | ✅ Adaptive parallel |
+| **Features** | Based on requirements and architecture | ✅ Intelligent pipeline |
+| **Performance** | Based on bottleneck identification | ✅ Targeted optimization |
+| **Documentation** | Based on content type and audience | ✅ Context-aware |
+| **Infrastructure** | Based on system dependencies | ✅ Risk-managed |
+| **Release** | Based on change scope and risk | ⚠️ Validated sequential |
+| **Novel Tasks** | Agent-factory creates specialized agent | 🆕 Dynamic creation |
 
 ### QUALITY GATES (NON-NEGOTIABLE):
 
