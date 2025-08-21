@@ -1,3 +1,78 @@
+## [3.10.0] - 2025-08-21
+
+### 🎯 New Feature: Instances Block for Class Layouts
+
+#### Powerful Instances Discovery for Class Assets
+Experience **intelligent instance discovery** with the new `instances` block type! Perfect for **Class assets** to automatically find and display all assets that reference them through their `exo__Instance_class` property.
+
+#### What You Get
+- **Automatic Discovery**: Find all assets referencing your class through `exo__Instance_class` property
+- **Multiple Display Formats**: Choose from table, list, or cards presentation
+- **Smart Filtering**: Filter instances by class or limit result counts
+- **Flexible Grouping**: Group instances by their class for better organization
+- **Rich Instance Info**: Show detailed metadata including class and description
+
+#### Usage Scenarios
+- **Class Management**: View all instances of your classes at a glance
+- **Instance Tracking**: Monitor which assets belong to specific classes
+- **Hierarchy Visualization**: Understand class-instance relationships
+- **Data Organization**: Group and filter instances by various criteria
+
+#### Configuration Examples
+
+**Basic Instances Block**:
+```yaml
+- id: "class-instances"
+  type: "instances"
+  title: "📦 Instances"
+  order: 2
+  config:
+    type: "instances"
+    displayAs: "table"
+    showInstanceInfo: true
+    maxResults: 100
+```
+
+**Advanced Configuration**:
+```yaml
+- id: "filtered-instances"
+  type: "instances"
+  title: "🎯 Filtered Instances"
+  order: 2
+  config:
+    type: "instances"
+    targetProperty: "exo__Instance_class"
+    displayAs: "cards"
+    groupByClass: true
+    filterByClass: "SpecificClass"
+    showInstanceInfo: true
+```
+
+#### Display Options
+- **Table Display**: Professional structured view with columns for name, class, and description
+- **List Display**: Compact bulleted list with clickable links
+- **Cards Display**: Modern card-based layout perfect for browsing
+
+#### Smart Reference Detection
+Supports multiple reference formats:
+- Wiki links: `[[ClassName]]`
+- Direct names: `ClassName`
+- Array format: `["[[Class1]]", "[[Class2]]"]`
+- File paths: `ClassName.md`
+
+#### Integration Points
+- **Layout Configuration**: Add to any class layout in `ui__ClassLayout_blocks`
+- **BlockRendererFactory**: Integrated with existing renderer architecture
+- **SOLID Architecture**: Built with strategy pattern for extensibility
+
+#### Developer Notes
+- New `InstancesBlockConfig` interface for type safety
+- `InstancesBlockRenderer` follows existing patterns
+- Comprehensive test coverage with domain and presentation tests
+- Full backward compatibility maintained
+
+---
+
 ## [3.9.0] - 2025-08-21
 
 ### 🏗️ Layout Rendering Architecture Refactoring - SOLID Principles Excellence

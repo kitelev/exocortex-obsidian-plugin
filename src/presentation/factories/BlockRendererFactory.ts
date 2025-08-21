@@ -7,6 +7,7 @@ import { PropertiesBlockRenderer } from '../renderers/PropertiesBlockRenderer';
 import { BacklinksBlockRenderer } from '../renderers/BacklinksBlockRenderer';
 import { ChildrenEffortsBlockRenderer } from '../renderers/ChildrenEffortsBlockRenderer';
 import { NarrowerBlockRenderer } from '../renderers/NarrowerBlockRenderer';
+import { InstancesBlockRenderer } from '../renderers/InstancesBlockRenderer';
 import { ButtonsBlockRenderer } from '../renderers/ButtonsBlockRenderer';
 import { CustomBlockRenderer } from '../renderers/CustomBlockRenderer';
 import { PropertyRenderer } from '../components/PropertyRenderer';
@@ -50,6 +51,7 @@ export class BlockRendererFactory implements IBlockRendererFactory {
         this.renderers.set('backlinks', new BacklinksBlockRenderer(app));
         this.renderers.set('children-efforts', new ChildrenEffortsBlockRenderer(app));
         this.renderers.set('narrower', new NarrowerBlockRenderer(app));
+        this.renderers.set('instances', new InstancesBlockRenderer(app));
         this.renderers.set('buttons', new ButtonsBlockRenderer(app));
         this.renderers.set('custom', new CustomBlockRenderer(app, queryEngineService));
     }

@@ -2,7 +2,7 @@ import { Entity } from '../core/Entity';
 import { Result } from '../core/Result';
 import { QueryEngineType } from '../ports/IQueryEngine';
 
-export type BlockType = 'query' | 'properties' | 'relations' | 'backlinks' | 'children-efforts' | 'buttons' | 'custom' | 'narrower';
+export type BlockType = 'query' | 'properties' | 'relations' | 'backlinks' | 'children-efforts' | 'buttons' | 'custom' | 'narrower' | 'instances';
 
 export interface QueryBlockConfig {
     type: 'query';
@@ -79,6 +79,16 @@ export interface NarrowerBlockConfig {
     displayAs?: 'list' | 'table' | 'cards';
 }
 
+export interface InstancesBlockConfig {
+    type: 'instances';
+    targetProperty?: string;
+    filterByClass?: string;
+    groupByClass?: boolean;
+    maxResults?: number;
+    displayAs?: 'list' | 'table' | 'cards';
+    showInstanceInfo?: boolean;
+}
+
 export interface CustomBlockConfig {
     type: 'custom';
     templatePath?: string;
@@ -87,7 +97,7 @@ export interface CustomBlockConfig {
     customScript?: string;
 }
 
-export type BlockConfig = QueryBlockConfig | PropertiesBlockConfig | RelationsBlockConfig | BacklinksBlockConfig | ChildrenEffortsBlockConfig | ButtonsBlockConfig | CustomBlockConfig | NarrowerBlockConfig;
+export type BlockConfig = QueryBlockConfig | PropertiesBlockConfig | RelationsBlockConfig | BacklinksBlockConfig | ChildrenEffortsBlockConfig | ButtonsBlockConfig | CustomBlockConfig | NarrowerBlockConfig | InstancesBlockConfig;
 
 export interface LayoutBlockProps {
     id: string;
@@ -145,6 +155,9 @@ export class LayoutBlock extends Entity<LayoutBlockProps> {
                 return true;
             
             case 'narrower':
+                return true;
+            
+            case 'instances':
                 return true;
             
             case 'buttons':
