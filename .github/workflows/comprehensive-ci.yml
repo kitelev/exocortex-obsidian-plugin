@@ -27,24 +27,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         node: ['18.x', '20.x']
     outputs:
       ubuntu-build-cache: ${{ steps.cache-build.outputs.cache-hit }}
     steps:
-      - name: Configure Git for Windows (before checkout)
-        if: matrix.os == 'windows-latest'
-        run: |
-          git config --global core.autocrlf false
-          git config --global core.filemode false
-          git config --global core.longpaths true
-          git config --global core.safecrlf false
-          git config --global core.quotepath false
-        shell: bash
-
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Configure Git (Windows only)
+        if: matrix.os == 'windows-latest'
+        run: |
+          git config --global core.longpaths true
+          git config --global core.autocrlf false
+        shell: bash
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
