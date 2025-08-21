@@ -23,16 +23,12 @@ export class BacklinksBlockRenderer {
             return;
         }
 
-        // Convert backlinks to file array, excluding ems__Effort_parent relationships
+        // Convert backlinks to file array
         let backlinkFiles: TFile[] = [];
         for (const [path] of backlinks.data) {
             const backlinkFile = this.app.vault.getAbstractFileByPath(path);
             if (backlinkFile && backlinkFile.path) {
-                const tFile = backlinkFile as TFile;
-                // Exclude files that reference this file via ems__Effort_parent
-                if (!this.isChildEffortReference(tFile, file)) {
-                    backlinkFiles.push(tFile);
-                }
+                backlinkFiles.push(backlinkFile as TFile);
             }
         }
 
@@ -146,33 +142,6 @@ export class BacklinksBlockRenderer {
         });
     }
 
-    private isChildEffortReference(childFile: TFile, parentFile: TFile): boolean {
-        const metadata = this.app.metadataCache.getFileCache(childFile);
-        const frontmatter = metadata?.frontmatter;
-        
-        if (!frontmatter) return false;
-        
-        const effortParent = frontmatter['ems__Effort_parent'];
-        if (!effortParent) return false;
-        
-        // Handle both string and array formats
-        const parentRefs = Array.isArray(effortParent) ? effortParent : [effortParent];
-        
-        // Check if any parent reference matches our current file
-        return parentRefs.some(ref => {
-            const cleanRef = this.cleanClassName(ref);
-            const parentName = parentFile.basename.replace(/\.md$/, '');
-            
-            // Match against various possible reference formats
-            return cleanRef === parentName || 
-                   cleanRef === parentFile.basename ||
-                   cleanRef === parentFile.path ||
-                   cleanRef === parentFile.path.replace(/\.md$/, '') ||
-                   // Also check if the reference contains the parent name (for partial matches)
-                   ref.includes(`[[${parentName}]]`) ||
-                   ref.includes(parentName);
-        });
-    }
 
     private cleanClassName(className: any): string {
         if (!className) return '';

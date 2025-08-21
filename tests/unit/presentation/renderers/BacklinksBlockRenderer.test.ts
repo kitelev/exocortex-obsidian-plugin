@@ -50,10 +50,9 @@ describe('BacklinksBlockRenderer', () => {
             expect(mockContainer.querySelector('.exocortex-empty')).toBeTruthy();
         });
 
-        it('should exclude ems__Effort_parent relationships from backlinks', async () => {
+        it('should include all backlinks without filtering by relationship type', async () => {
             const config: BacklinksBlockConfig = { type: 'backlinks' };
 
-            // Mock backlinks including both regular and parent-child relationships
             const backlinkPaths = new Map([
                 ['child-effort.md', {}],
                 ['regular-backlink.md', {}],
@@ -64,7 +63,6 @@ describe('BacklinksBlockRenderer', () => {
                 data: backlinkPaths
             });
 
-            // Mock files
             const childEffortFile = createMockTFile('child-effort.md');
             const regularFile1 = createMockTFile('regular-backlink.md');
             const regularFile2 = createMockTFile('another-regular.md');
@@ -74,7 +72,6 @@ describe('BacklinksBlockRenderer', () => {
                 .mockReturnValueOnce(regularFile1)
                 .mockReturnValueOnce(regularFile2);
 
-            // Mock metadata - child effort has ems__Effort_parent, others don't
             mockApp.metadataCache.getFileCache
                 .mockImplementation((file: TFile) => {
                     if (file.path === 'child-effort.md') {
@@ -107,15 +104,13 @@ describe('BacklinksBlockRenderer', () => {
 
             await renderer.render(mockContainer, config, mockFile, null);
 
-            // Should show count of only non-parent-child backlinks
-            expect(mockContainer.textContent).toContain('2 backlinks');
+            // Should show all backlinks now (no filtering)
+            expect(mockContainer.textContent).toContain('3 backlinks');
             
-            // Should display regular backlinks
+            // Should display all backlinks including child effort
+            expect(mockContainer.textContent).toContain('Child Effort');
             expect(mockContainer.textContent).toContain('Regular Reference');
             expect(mockContainer.textContent).toContain('Another Reference');
-            
-            // Should NOT display child effort
-            expect(mockContainer.textContent).not.toContain('Child Effort');
         });
 
         it('should show all backlinks when no ems__Effort_parent relationships exist', async () => {
@@ -152,7 +147,7 @@ describe('BacklinksBlockRenderer', () => {
             expect(mockContainer.textContent).toContain('Reference backlink2');
         });
 
-        it('should handle array format ems__Effort_parent correctly', async () => {
+        it('should handle all backlinks including those with array properties', async () => {
             const config: BacklinksBlockConfig = { type: 'backlinks' };
 
             const backlinkPaths = new Map([
@@ -193,12 +188,12 @@ describe('BacklinksBlockRenderer', () => {
 
             await renderer.render(mockContainer, config, mockFile, null);
 
-            expect(mockContainer.textContent).toContain('1 backlink');
+            expect(mockContainer.textContent).toContain('2 backlinks');
             expect(mockContainer.textContent).toContain('Regular Reference');
-            expect(mockContainer.textContent).not.toContain('Multi Parent Child');
+            expect(mockContainer.textContent).toContain('Multi Parent Child');
         });
 
-        it('should filter by class and exclude ems__Effort_parent relationships', async () => {
+        it('should filter by class while including all relationship types', async () => {
             const config: BacklinksBlockConfig = { 
                 type: 'backlinks',
                 filterByClass: 'Note'
@@ -255,14 +250,14 @@ describe('BacklinksBlockRenderer', () => {
 
             await renderer.render(mockContainer, config, mockFile, null);
 
-            // Should show only regular Note (not child effort, not Task)
-            expect(mockContainer.textContent).toContain('1 backlink');
+            // Should show all Note class files (including child)
+            expect(mockContainer.textContent).toContain('2 backlinks');
             expect(mockContainer.textContent).toContain('Note Regular');
-            expect(mockContainer.textContent).not.toContain('Note Child');
+            expect(mockContainer.textContent).toContain('Note Child');
             expect(mockContainer.textContent).not.toContain('Task Regular');
         });
 
-        it('should group by class and exclude ems__Effort_parent relationships', async () => {
+        it('should group by class including all relationship types', async () => {
             const config: BacklinksBlockConfig = { 
                 type: 'backlinks',
                 groupByClass: true
@@ -323,11 +318,11 @@ describe('BacklinksBlockRenderer', () => {
 
             await renderer.render(mockContainer, config, mockFile, null);
 
-            // Should show Note (2) and Task (1) - excluding the child effort
+            // Should show Note (2) and Task (2) - including all tasks
             expect(mockContainer.textContent).toContain('Note (2)');
-            expect(mockContainer.textContent).toContain('Task (1)');
+            expect(mockContainer.textContent).toContain('Task (2)');
             expect(mockContainer.textContent).toContain('Task Regular');
-            expect(mockContainer.textContent).not.toContain('Task Child');
+            expect(mockContainer.textContent).toContain('Task Child');
         });
 
         it('should handle missing frontmatter gracefully', async () => {
@@ -351,32 +346,4 @@ describe('BacklinksBlockRenderer', () => {
         });
     });
 
-    describe('isChildEffortReference', () => {
-        it('should correctly identify ems__Effort_parent relationships', () => {
-            const childFile = createMockTFile('child.md');
-            const parentFile = createMockTFile('parent.md');
-
-            // Setup metadata with ems__Effort_parent
-            mockApp.metadataCache.getFileCache.mockReturnValue({
-                frontmatter: {
-                    'ems__Effort_parent': ['parent']
-                }
-            });
-
-            // We need to access the private method for testing
-            // In a real scenario, this would be tested through the render method
-            const config: BacklinksBlockConfig = { type: 'backlinks' };
-            const backlinkPaths = new Map([['child.md', {}]]);
-
-            mockApp.metadataCache.getBacklinksForFile.mockReturnValue({
-                data: backlinkPaths
-            });
-            mockApp.vault.getAbstractFileByPath.mockReturnValueOnce(childFile);
-
-            renderer.render(mockContainer, config, parentFile, null);
-
-            // Since child has ems__Effort_parent pointing to parent, it should be excluded
-            expect(mockContainer.textContent).toContain('No matching backlinks found');
-        });
-    });
 });

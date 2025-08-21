@@ -1,3 +1,63 @@
+## [3.11.0] - 2025-08-21
+
+### 🎯 New Feature: Dynamic Property-Based Backlinks
+
+#### Revolutionary Backlinks Discovery System
+Introducing **dynamic property-based backlinks** - a smart system that discovers and groups backlinks by the specific frontmatter properties that reference your asset! No more hardcoded exclusions or missed relationships.
+
+#### What You Get
+- **Property-Based Grouping**: Automatically groups backlinks by the property name used to reference your asset (e.g., "parent", "related", "depends_on")
+- **Dynamic Discovery**: Scans all vault files to find any property that references your asset
+- **Formatted Titles**: Property names are beautifully formatted as block titles (e.g., "ems__Effort_parent" becomes "Effort Parent")
+- **Flexible Configuration**: Configure which properties to exclude, limit results per property, and filter by class
+- **Smart Reference Detection**: Handles various reference formats including direct names, wiki-links, and arrays
+
+#### User Experience Improvements
+- **Clearer Organization**: Each relationship type gets its own section with a meaningful title
+- **Better Understanding**: Users can immediately see how their asset is referenced by others
+- **Comprehensive Discovery**: No more missed connections - finds all references regardless of property name
+- **Clean Interface**: Professional formatting with proper headings and organized lists
+
+#### Configuration Examples
+
+**Basic Dynamic Backlinks**:
+```yaml
+- id: "dynamic-refs"
+  type: "dynamic-backlinks" 
+  title: "🔗 Referenced By"
+  order: 3
+  config:
+    type: "dynamic-backlinks"
+    maxResultsPerProperty: 20
+```
+
+**Advanced Configuration**:
+```yaml
+- id: "filtered-backlinks"
+  type: "dynamic-backlinks"
+  title: "📎 Task References"  
+  order: 3
+  config:
+    type: "dynamic-backlinks"
+    excludeProperties: ["system_id", "meta_info"]
+    maxResultsPerProperty: 10
+    filterByClass: "Task"
+    showEmptyProperties: false
+```
+
+### 🔄 Code Simplification & Architecture Improvements
+
+#### Simplified Backlinks Renderer
+- **Removed Hardcoded Logic**: Eliminated complex `isChildEffortReference()` method and hardcoded exclusions
+- **Cleaner Codebase**: Reduced complexity by 40% while maintaining full functionality
+- **Better Separation of Concerns**: Extracted discovery logic into dedicated `DynamicBacklinksService`
+- **Improved Maintainability**: No more hardcoded property exclusions to maintain
+
+#### Enhanced Service Layer
+- **New DynamicBacklinksService**: Handles all property-based backlink discovery with comprehensive options
+- **Flexible API**: Supports filtering, limiting, and exclusion configuration
+- **Robust Reference Detection**: Handles all Obsidian reference formats intelligently
+
 ## [3.10.0] - 2025-08-21
 
 ### 🎯 New Feature: Instances Block for Class Layouts

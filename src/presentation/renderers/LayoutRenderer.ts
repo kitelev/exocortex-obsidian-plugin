@@ -4,6 +4,7 @@ import { BlockType } from '../../domain/entities/LayoutBlock';
 import { QueryBlockRenderer } from './QueryBlockRenderer';
 import { PropertiesBlockRenderer } from './PropertiesBlockRenderer';
 import { BacklinksBlockRenderer } from './BacklinksBlockRenderer';
+import { DynamicBacklinksBlockRenderer } from './DynamicBacklinksBlockRenderer';
 import { ChildrenEffortsBlockRenderer } from './ChildrenEffortsBlockRenderer';
 import { NarrowerBlockRenderer } from './NarrowerBlockRenderer';
 import { ButtonsBlockRenderer } from './ButtonsBlockRenderer';
@@ -17,6 +18,7 @@ export class LayoutRenderer {
     private queryRenderer: QueryBlockRenderer;
     private propertiesRenderer: PropertiesBlockRenderer;
     private backlinksRenderer: BacklinksBlockRenderer;
+    private dynamicBacklinksRenderer: DynamicBacklinksBlockRenderer;
     private childrenEffortsRenderer: ChildrenEffortsBlockRenderer;
     private narrowerRenderer: NarrowerBlockRenderer;
     private buttonsRenderer: ButtonsBlockRenderer;
@@ -33,6 +35,7 @@ export class LayoutRenderer {
         this.queryRenderer = new QueryBlockRenderer(app);
         this.propertiesRenderer = new PropertiesBlockRenderer(app, propertyRenderer);
         this.backlinksRenderer = new BacklinksBlockRenderer(app);
+        this.dynamicBacklinksRenderer = new DynamicBacklinksBlockRenderer(app);
         this.childrenEffortsRenderer = new ChildrenEffortsBlockRenderer(app);
         this.narrowerRenderer = new NarrowerBlockRenderer(app);
         this.buttonsRenderer = new ButtonsBlockRenderer(app);
@@ -183,6 +186,15 @@ export class LayoutRenderer {
                         await this.backlinksRenderer.render(
                             contentContainer,
                             block.config,
+                            file,
+                            dv
+                        );
+                        break;
+                        
+                    case 'dynamic-backlinks':
+                        await this.dynamicBacklinksRenderer.render(
+                            contentContainer,
+                            block.config as any,
                             file,
                             dv
                         );
