@@ -6,22 +6,26 @@ import { AssetId } from '../../../../src/domain/value-objects/AssetId';
 
 // Mock the ClassLayout.create static method
 jest.mock('../../../../src/domain/entities/ClassLayout', () => {
+    const mockCreate = jest.fn().mockImplementation((params: any) => {
+        const mockClassLayout = {
+            id: params.id || { equals: jest.fn(), toString: () => 'test-id' },
+            targetClass: params.targetClass || { equals: jest.fn(), value: 'test__Class' },
+            isEnabled: params.isEnabled !== undefined ? params.isEnabled : true,
+            priority: params.priority !== undefined ? params.priority : 1,
+            blocks: params.blocks || []
+        };
+        
+        return {
+            isSuccess: true,
+            isFailure: false,
+            getValue: () => mockClassLayout,
+            getError: () => ''
+        };
+    });
+
     return {
-        ClassLayout: {
-            create: jest.fn().mockImplementation((params: any) => {
-                const mockClassLayout = {
-                    id: params.id || { equals: jest.fn(), toString: () => 'test-id' },
-                    targetClass: params.targetClass || { equals: jest.fn(), value: 'TestClass' },
-                    isEnabled: params.isEnabled !== undefined ? params.isEnabled : true,
-                    priority: params.priority !== undefined ? params.priority : 1,
-                    blocks: params.blocks || []
-                };
-                
-                return {
-                    isSuccess: true,
-                    getValue: () => mockClassLayout
-                };
-            })
+        ClassLayout: class {
+            static create = mockCreate;
         }
     };
 });
@@ -144,7 +148,7 @@ describe('ObsidianClassLayoutRepository', () => {
     });
 
     describe('findByClass', () => {
-        const mockClassName = ClassName.create('TestClass').getValue();
+        const mockClassName = ClassName.create('test__Class').getValue();
 
         beforeEach(() => {
             setupMockLayoutFiles();
@@ -205,7 +209,7 @@ describe('ObsidianClassLayoutRepository', () => {
 
     describe('findById', () => {
         const mockId = AssetId.create('test-id').getValue();
-        const mockClassName = ClassName.create('TestClass').getValue();
+        const mockClassName = ClassName.create('test__Class').getValue();
 
         beforeEach(() => {
             setupMockLayoutFiles();
@@ -254,7 +258,7 @@ describe('ObsidianClassLayoutRepository', () => {
     });
 
     describe('findEnabledByClass', () => {
-        const mockClassName = ClassName.create('TestClass').getValue();
+        const mockClassName = ClassName.create('test__Class').getValue();
 
         it('should return only enabled layouts', async () => {
             const enabledLayout = createMockLayout('enabled', mockClassName, true);
@@ -280,7 +284,7 @@ describe('ObsidianClassLayoutRepository', () => {
     });
 
     describe('save', () => {
-        const mockClassName = ClassName.create('TestClass').getValue();
+        const mockClassName = ClassName.create('test__Class').getValue();
 
         it('should save new layout to cache', async () => {
             const layout = createMockLayout('new-id', mockClassName);
@@ -318,7 +322,7 @@ describe('ObsidianClassLayoutRepository', () => {
     });
 
     describe('delete', () => {
-        const mockClassName = ClassName.create('TestClass').getValue();
+        const mockClassName = ClassName.create('test__Class').getValue();
 
         it('should remove layout from cache', async () => {
             const layout = createMockLayout('to-delete', mockClassName);
@@ -352,14 +356,14 @@ describe('ObsidianClassLayoutRepository', () => {
     });
 
     describe('Layout File Parsing', () => {
-        const mockFile = new TFile('layouts/Layout - TestClass.md');
+        const mockFile = new TFile('layouts/Layout - test__Class.md');
 
         it('should identify layout files correctly', async () => {
             mockVault.getFiles.mockReturnValue([mockFile]);
             mockMetadataCache.getFileCache.mockReturnValue({
                 frontmatter: {
                     'exo__Instance_class': '[[ui__ClassLayout]]',
-                    'ui__ClassLayout_targetClass': '[[TestClass]]'
+                    'ui__ClassLayout_targetClass': '[[test__Class]]'
                 }
             });
             
@@ -397,7 +401,7 @@ describe('ObsidianClassLayoutRepository', () => {
             mockMetadataCache.getFileCache.mockReturnValue({
                 frontmatter: {
                     'exo__Instance_class': 'ui__ClassLayout',
-                    'ui__ClassLayout_targetClass': 'TestClass',
+                    'ui__ClassLayout_targetClass': 'test__Class',
                     'ui__ClassLayout_blocks': mockBlocks,
                     'exo__Asset_uid': 'test-uid'
                 }
@@ -527,9 +531,9 @@ describe('ObsidianClassLayoutRepository', () => {
 
         it('should clean class names correctly', async () => {
             const testCases = [
-                { input: '[[TestClass]]', expected: 'TestClass' },
-                { input: 'TestClass', expected: 'TestClass' },
-                { input: ['[[TestClass]]'], expected: 'TestClass' },
+                { input: '[[test__Class]]', expected: 'test__Class' },
+                { input: 'test__Class', expected: 'test__Class' },
+                { input: ['[[test__Class]]'], expected: 'test__Class' },
                 { input: null, expected: '' },
                 { input: undefined, expected: '' }
             ];
@@ -560,7 +564,7 @@ describe('ObsidianClassLayoutRepository', () => {
         });
 
         it('should handle concurrent save operations', async () => {
-            const className = ClassName.create('TestClass').getValue();
+            const className = ClassName.create('test__Class').getValue();
             const layouts = [
                 createMockLayout('concurrent1', className),
                 createMockLayout('concurrent2', className),

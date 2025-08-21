@@ -1,3 +1,75 @@
+## [3.7.0] - 2025-08-21
+
+### 🔽 Narrower Concepts Block - Navigate Concept Hierarchies with Ease
+
+#### Transform Your Concept Navigation Experience
+Navigate complex concept hierarchies with crystal clarity using the new **Narrower Concepts Block**! When viewing any `ims__Concept` asset, instantly see all narrower (more specific) concepts that reference the current concept as their broader category.
+
+#### Intelligent Concept Hierarchy Display
+- **Automatic Detection**: Finds all concepts that reference the current concept via `ims__Concept_broader` property
+- **Smart Filtering**: Shows only `ims__Concept` instances for clean, focused results
+- **Multiple Display Formats**: Choose from list, table, or card views to match your workflow
+- **Professional Table View**: Clean table with concept names, classes, and descriptions
+- **Result Counting**: Shows total narrower concepts with intelligent result limiting
+
+#### Perfect for Knowledge Management
+- **Concept Hierarchies**: Build and navigate taxonomies, ontologies, and knowledge structures
+- **Learning Materials**: Organize educational content from broad topics to specific details
+- **Research Organization**: Create hierarchical research categories and subcategories
+- **Domain Modeling**: Structure complex domains with clear broader/narrower relationships
+
+#### Flexible Display Options
+- **Table Format**: Professional display with columns for concept, class, and description
+- **List Format**: Simple, clean list with concept names and class information
+- **Card Format**: Rich cards showing key properties and relationships
+- **Result Limits**: Configure maximum results (default 50) for optimal performance
+
+#### What This Looks Like in Practice
+
+**Before v3.7.0:**
+- No dedicated way to see concept hierarchies
+- Manual searching through vault to find narrower concepts
+- Difficulty understanding concept relationships at a glance
+- Time-consuming navigation between related concepts
+
+**After v3.7.0:**
+- **Instant Hierarchy Visibility**: See all narrower concepts in one organized block
+- **Multiple View Options**: Choose table, list, or card display based on your needs
+- **Smart Relationship Detection**: Automatic discovery of broader/narrower relationships
+- **Professional Presentation**: Clean, organized display that makes hierarchies clear
+
+#### Example Usage Scenario
+When viewing a broad concept like "Machine Learning":
+1. **Narrower Concepts Block** automatically appears
+2. **Shows subconcepts** like "Supervised Learning", "Neural Networks", "Deep Learning"
+3. **Table view** displays concept names, classes, and descriptions
+4. **Click any concept** to navigate deeper into the hierarchy
+5. **Clear structure** helps understand the knowledge domain organization
+
+#### Technical Excellence
+- **Flexible Configuration**: Customizable broader property, class filtering, and display options
+- **Performance Optimized**: Smart result limiting and efficient relationship detection
+- **Multiple Reference Formats**: Handles various wiki link formats and path structures
+- **Clean Architecture**: Follows established Exocortex patterns for maintainability
+
+#### Getting Started
+The Narrower Concepts Block appears automatically in `ims__Concept` assets when using the provided layout:
+1. **Enable Class Layouts** in plugin settings
+2. **Open any Concept asset** with `ims__Concept` class
+3. **View Narrower Concepts** section showing all more specific concepts
+4. **Navigate hierarchies** by clicking concept links
+
+#### Layout Configuration
+The block can be customized in your layout files:
+- **broaderProperty**: Property that defines broader/narrower relationships (default: `ims__Concept_broader`)
+- **filterByClass**: Only show concepts of specific class (default: `ims__Concept`)
+- **displayAs**: Display format - `table`, `list`, or `cards` (default: `table`)
+- **maxResults**: Maximum results to display (default: 50)
+
+**Transform your concept navigation with hierarchical clarity and professional organization!** 🔽📊
+
+---
+
 ## [3.6.0] - 2025-08-21
 
 ### 🎨 Plugin Settings UI & Docker Testing Infrastructure

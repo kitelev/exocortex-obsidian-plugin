@@ -5,6 +5,7 @@ import { QueryBlockRenderer } from './QueryBlockRenderer';
 import { PropertiesBlockRenderer } from './PropertiesBlockRenderer';
 import { BacklinksBlockRenderer } from './BacklinksBlockRenderer';
 import { ChildrenEffortsBlockRenderer } from './ChildrenEffortsBlockRenderer';
+import { NarrowerBlockRenderer } from './NarrowerBlockRenderer';
 import { ButtonsBlockRenderer } from './ButtonsBlockRenderer';
 import { CustomBlockRenderer } from './CustomBlockRenderer';
 import { GetLayoutForClassUseCase } from '../../application/use-cases/GetLayoutForClassUseCase';
@@ -17,6 +18,7 @@ export class LayoutRenderer {
     private propertiesRenderer: PropertiesBlockRenderer;
     private backlinksRenderer: BacklinksBlockRenderer;
     private childrenEffortsRenderer: ChildrenEffortsBlockRenderer;
+    private narrowerRenderer: NarrowerBlockRenderer;
     private buttonsRenderer: ButtonsBlockRenderer;
     private customRenderer: CustomBlockRenderer;
     private getLayoutUseCase: GetLayoutForClassUseCase;
@@ -32,6 +34,7 @@ export class LayoutRenderer {
         this.propertiesRenderer = new PropertiesBlockRenderer(app, propertyRenderer);
         this.backlinksRenderer = new BacklinksBlockRenderer(app);
         this.childrenEffortsRenderer = new ChildrenEffortsBlockRenderer(app);
+        this.narrowerRenderer = new NarrowerBlockRenderer(app);
         this.buttonsRenderer = new ButtonsBlockRenderer(app);
         this.customRenderer = new CustomBlockRenderer(app, this.queryEngineService);
     }
@@ -187,6 +190,15 @@ export class LayoutRenderer {
                         
                     case 'children-efforts':
                         await this.childrenEffortsRenderer.render(
+                            contentContainer,
+                            block.config,
+                            file,
+                            dv
+                        );
+                        break;
+                        
+                    case 'narrower':
+                        await this.narrowerRenderer.render(
                             contentContainer,
                             block.config,
                             file,

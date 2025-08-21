@@ -178,7 +178,7 @@ export class ObsidianClassLayoutRepository implements IClassLayoutRepository {
             priority
         });
 
-        return layoutResult.isSuccess ? layoutResult.getValue() : null;
+        return layoutResult?.isSuccess ? layoutResult.getValue() : null;
     }
 
     private parseBlocks(blocksData: any[]): LayoutBlockConfig[] {
@@ -258,6 +258,15 @@ export class ObsidianClassLayoutRepository implements IClassLayoutRepository {
                     })) : [],
                     position: config.position || 'top',
                     style: config.style || 'default'
+                };
+
+            case 'narrower':
+                return {
+                    type: 'narrower',
+                    broaderProperty: config.broaderProperty || 'ims__Concept_broader',
+                    filterByClass: config.filterByClass,
+                    displayAs: config.displayAs || 'list',
+                    maxResults: config.maxResults || 50
                 };
 
             case 'custom':
