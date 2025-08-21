@@ -252,6 +252,7 @@ Parallel_Execution_Directives:
 |-----------|----------------------------------|-------------------|
 | **Bug fixes** | Based on error analysis and system state | ✅ Adaptive parallel |
 | **Features** | Based on requirements and architecture | ✅ Intelligent pipeline |
+| **Refactoring** | refactoring-specialist for SOLID/Clean Code | ✅ Systematic improvement |
 | **Performance** | Based on bottleneck identification | ✅ Targeted optimization |
 | **Documentation** | Based on content type and audience | ✅ Context-aware |
 | **Infrastructure** | Based on system dependencies | ✅ Risk-managed |

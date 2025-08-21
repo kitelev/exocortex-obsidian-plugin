@@ -10,6 +10,7 @@ orchestrator:Coordinate complex multi-domain tasks
 performance-agent:Performance optimization
 product-manager:Product planning and requirements
 qa-engineer:Quality assurance and testing
+refactoring-specialist:SOLID principles and Clean Architecture refactoring
 result-pattern-agent:Result pattern and functional programming
 security-agent:Security analysis and compliance
 swebok-engineer:Software engineering best practices

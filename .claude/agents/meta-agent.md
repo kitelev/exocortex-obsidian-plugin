@@ -24,6 +24,11 @@ interface TaskAnalysis {
     const complexity = this.assessComplexity(requirements);
     const domains = this.identifyDomains(requirements);
     
+    // 2a. Check for refactoring keywords
+    if (this.isRefactoringTask(userRequest)) {
+      domains.push('refactoring');
+    }
+    
     // 3. Analyze parallel execution potential
     const parallelPotential = this.analyzeParallelizationOpportunities(requirements);
     
@@ -45,6 +50,20 @@ interface TaskAnalysis {
     }
   }
   
+  // Refactoring task detection
+  isRefactoringTask(userRequest: string): boolean {
+    const refactoringKeywords = [
+      'refactor', 'refactoring', 'clean code', 'clean architecture',
+      'SOLID', 'GRASP', 'DRY', 'KISS', 'coupling', 'cohesion',
+      'improve code', 'technical debt', 'code quality', 'pattern',
+      'extract method', 'extract class', 'simplify', 'reorganize',
+      'restructure', 'optimize structure', 'design pattern'
+    ];
+    
+    const lowerRequest = userRequest.toLowerCase();
+    return refactoringKeywords.some(keyword => lowerRequest.includes(keyword));
+  }
+  
   // Parallel execution analysis
   analyzeParallelizationOpportunities(requirements: Requirements): ParallelPotential {
     return {
@@ -54,6 +73,22 @@ interface TaskAnalysis {
       riskLevel: this.assessParallelRisk(requirements),
       recommendedPattern: this.selectParallelPattern(requirements)
     };
+  }
+  
+  // Select optimal agents based on domain
+  selectOptimalAgents(agents: Agent[], requirements: Requirements): AgentConfiguration {
+    // Check for refactoring domain
+    if (requirements.domains && requirements.domains.includes('refactoring')) {
+      return {
+        primary: 'refactoring-specialist',
+        supporting: ['architect-agent', 'test-fixer-agent', 'qa-engineer'],
+        pattern: 'refactoring_cluster',
+        parallel: true
+      };
+    }
+    
+    // Default selection logic
+    return this.defaultAgentSelection(agents, requirements);
   }
   
   // Agent fitness calculation using SOLID/GRASP principles
@@ -201,6 +236,7 @@ Parallel_Safe_Combinations:
     - frontend-agent + backend-agent + database-agent
     - testing-agent + qa-engineer + integration-agent
     - api-agent + service-agent + monitoring-agent
+    - refactoring-specialist + architect-agent + test-fixer-agent
     
   # Infrastructure & Deployment (Low Compatibility)
   infrastructure_cluster:
@@ -553,6 +589,13 @@ interface AgentCompatibilityRules {
       conflicts: [],
       shared_resources: ["documentation", "code analysis"],
       max_parallel: 3
+    },
+    {
+      name: "refactoring_cluster",
+      agents: ["refactoring-specialist", "architect-agent", "test-fixer-agent", "qa-engineer"],
+      conflicts: [],
+      shared_resources: ["code analysis", "test suite", "architecture docs"],
+      max_parallel: 4
     },
     {
       name: "documentation_cluster",
