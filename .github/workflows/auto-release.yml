@@ -11,6 +11,10 @@ on:
       - 'manifest.json'
       - 'esbuild.config.mjs'
 
+concurrency:
+  group: auto-release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
 

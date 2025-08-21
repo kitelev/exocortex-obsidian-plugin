@@ -65,6 +65,55 @@ From swebok-engineer analysis:
 4. **Synthesize** results from all agents
 5. **Document** patterns and learnings
 
+## 📊 Enhanced Agent Output Display (v3.4.1)
+
+### Verbose Execution Modes
+When using agents, you can now control the level of output detail:
+
+```bash
+# Environment variables
+export CLAUDE_VERBOSE=verbose        # verbose|basic|silent|debug
+export CLAUDE_SHOW_TIMING=true       # Show execution timing
+export CLAUDE_SHOW_PARALLEL=true     # Highlight parallel execution
+export CLAUDE_SHOW_DECISIONS=true    # Show agent reasoning
+export CLAUDE_SHOW_PROGRESS=true     # Display progress bars
+```
+
+### Visual Agent Execution Format
+```
+🚀 orchestrator: Decompose and coordinate task
+  🔀 Starting parallel group (3 agents):
+    • code-searcher: Find relevant implementations
+    • architect-agent: Design technical solution
+    • qa-engineer: Prepare test scenarios
+  
+  ⚡ code-searcher [33%]: Searching codebase...
+  🤔 code-searcher decided: Focus on domain layer
+    Reasoning: Most business logic resides there
+  📝 code-searcher output: Found 5 relevant files
+  ✅ code-searcher completed (1.2s)
+  
+  [Similar format for other agents...]
+  
+📊 Session Summary:
+  • Total execution: 3m 45s
+  • Parallel efficiency: 85%
+  • Success rate: 100%
+```
+
+### Monitoring Scripts
+Use `.claude/scripts/agent-verbose-logger.sh` for enhanced output:
+```bash
+# Start monitoring
+.claude/scripts/agent-verbose-logger.sh start
+
+# Test the enhanced display
+.claude/scripts/agent-verbose-logger.sh test
+
+# View session summary
+.claude/scripts/agent-verbose-logger.sh summary
+```
+
 ## Available Agents (27+ Total with Dynamic Creation)
 
 ### Core Development Agents

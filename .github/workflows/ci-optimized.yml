@@ -7,6 +7,10 @@ on:
     branches: [ main, master, develop ]
   workflow_dispatch:
 
+concurrency:
+  group: ci-optimized-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   NODE_OPTIONS: --max-old-space-size=4096
   CI: true
@@ -15,9 +19,15 @@ env:
 
 jobs:
   # =============================================================================
+  # WORKFLOW DISABLED - Migrated to fast-feedback.yml
+  # See .github/workflows/MIGRATION_NOTICE.md for details
+  # =============================================================================
+  
+  # =============================================================================
   # Quick validation (lint, typecheck, build)
   # =============================================================================
   validation:
+    if: false  # DISABLED - functionality moved to fast-feedback.yml
     name: 🔍 Quick Validation
     runs-on: ubuntu-latest
     timeout-minutes: 8

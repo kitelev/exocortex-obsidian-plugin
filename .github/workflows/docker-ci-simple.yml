@@ -6,8 +6,15 @@ on:
   pull_request:
     branches: [ main, master, develop ]
 
+concurrency:
+  group: docker-ci-simple-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # WORKFLOW DISABLED - Migrated to comprehensive-ci.yml
+  # See .github/workflows/MIGRATION_NOTICE.md for details
   docker-test:
+    if: false  # DISABLED - functionality moved to comprehensive-ci.yml
     runs-on: ubuntu-latest
     
     steps:

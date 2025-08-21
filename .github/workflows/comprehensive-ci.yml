@@ -32,13 +32,7 @@ jobs:
     outputs:
       ubuntu-build-cache: ${{ steps.cache-build.outputs.cache-hit }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          # Fix Windows Git checkout issues with special characters
-          autocrlf: false
-
-      - name: Configure Git for Windows
+      - name: Configure Git for Windows (before checkout)
         if: matrix.os == 'windows-latest'
         run: |
           git config --global core.autocrlf false
@@ -46,9 +40,11 @@ jobs:
           git config --global core.longpaths true
           git config --global core.safecrlf false
           git config --global core.quotepath false
-          # Clean up any problematic files
-          git clean -fd || true
         shell: bash
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

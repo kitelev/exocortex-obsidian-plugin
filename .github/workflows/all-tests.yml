@@ -7,6 +7,10 @@ on:
     branches: [ main, master, develop ]
   workflow_dispatch:
 
+concurrency:
+  group: all-tests-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   NODE_OPTIONS: --max-old-space-size=6144
   FORCE_COLOR: 1
@@ -15,9 +19,15 @@ env:
 
 jobs:
   # ==========================================
+  # WORKFLOW DISABLED - Migrated to comprehensive-ci.yml
+  # See .github/workflows/MIGRATION_NOTICE.md for details
+  # ==========================================
+  
+  # ==========================================
   # JOB 1: Quick Validation (Lint, TypeCheck, Build)
   # ==========================================
   quick-validation:
+    if: false  # DISABLED - functionality moved to comprehensive-ci.yml
     name: 🔍 Quick Validation
     runs-on: ubuntu-latest
     timeout-minutes: 10

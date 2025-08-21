@@ -7,6 +7,10 @@ on:
     branches: [ main, master, develop ]
   workflow_dispatch:
 
+concurrency:
+  group: emergency-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   NODE_OPTIONS: --max-old-space-size=1024
   CI: true
