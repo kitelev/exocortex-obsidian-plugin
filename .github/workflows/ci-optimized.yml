@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_OPTIONS: --max-old-space-size=4096 --expose-gc
+  NODE_OPTIONS: --max-old-space-size=4096
   CI: true
   CI_EMERGENCY_MODE: true
   JEST_WORKERS: 1
