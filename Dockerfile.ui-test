@@ -13,34 +13,19 @@ RUN apk add --no-cache \
     curl \
     git \
     jq \
-    # Electron dependencies (Alpine package names)
-    gtk+3.0-dev \
-    cairo-dev \
-    pango-dev \
-    gdk-pixbuf-dev \
-    libx11-dev \
-    libxss \
-    dbus-dev \
-    at-spi2-core-dev \
-    cups-dev \
-    drm-dev \
-    gtk+3.0 \
-    gdk-pixbuf \
-    # Audio support
-    alsa-lib-dev \
-    # X11 and display server for headless testing
+    # Essential X11 and GUI dependencies for headless testing
     xvfb \
     xauth \
+    # Basic dev packages that should exist
+    build-base \
+    python3 \
     # Font rendering
     ttf-liberation \
     ttf-dejavu \
     # Process management
     procps \
     # Network utilities
-    net-tools \
-    # Chromium for fallback testing
-    chromium \
-    chromium-chromedriver
+    net-tools
 
 # Set up display environment for headless operation
 ENV DISPLAY=:99 \
