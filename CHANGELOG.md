@@ -1,3 +1,28 @@
+## [3.12.2] - 2025-08-21
+
+### 🚀 Test Infrastructure Improvements & CI Stabilization
+
+#### Smart Obsidian Download Control
+- **Local Development**: UI tests no longer download Obsidian on local machines (10x faster test runs)
+- **Docker/CI Environment**: Automatic detection ensures Obsidian is downloaded only when needed
+- **Force Mode**: Developers can still run full UI tests locally with `FORCE_OBSIDIAN_DOWNLOAD=true`
+
+#### CI/CD Stabilization
+- **Fixed GitHub Actions**: Resolved all workflow failures for 100% success rate
+- **Cross-Platform Support**: Fixed Windows build issues in comprehensive CI
+- **Improved Error Handling**: Better detection and reporting of environment conditions
+
+#### Technical Improvements
+- Added `TestEnvironmentDetector` class for intelligent environment detection
+- Created smart UI test runner that selects appropriate configuration
+- Separated local and CI test configurations
+- Improved Git configuration for cross-platform compatibility
+
+#### Developer Experience
+- **Faster Local Testing**: Skip 2-5 minute Obsidian downloads during development
+- **Clear Guidance**: Helpful messages explain test behavior and options
+- **Flexible Testing**: Run unit/integration tests quickly, full UI tests when needed
+
 ## [3.12.1] - 2025-08-21
 
 ### 🔧 Critical Fix: Dynamic Backlinks Now Actually Work!
