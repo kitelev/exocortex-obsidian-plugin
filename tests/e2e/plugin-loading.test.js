@@ -76,6 +76,20 @@ const ObsidianMock = {
             this.codeBlockProcessor = processor;
         }
         
+        addSettingTab(tab) {
+            console.log(`    ⚙️ Registered settings tab`);
+            this.settingTab = tab;
+        }
+        
+        async loadData() {
+            console.log(`    💾 Loading plugin data`);
+            return {};
+        }
+        
+        async saveData(data) {
+            console.log(`    💾 Saving plugin data`);
+        }
+        
         async onload() {
             // Override in actual plugin
         }
@@ -107,6 +121,15 @@ const ObsidianMock = {
         }
         open() {}
         close() {}
+    },
+    
+    PluginSettingTab: class PluginSettingTab {
+        constructor(app, plugin) {
+            this.app = app;
+            this.plugin = plugin;
+        }
+        display() {}
+        hide() {}
     }
 };
 
