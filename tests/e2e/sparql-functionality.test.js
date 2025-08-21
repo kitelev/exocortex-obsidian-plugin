@@ -105,6 +105,18 @@ const ObsidianMock = {
             this.codeBlockProcessor = processor;
         }
         
+        addSettingTab(tab) {
+            this.settingTab = tab;
+        }
+        
+        async loadData() {
+            return {};
+        }
+        
+        async saveData(data) {
+            // Mock implementation
+        }
+        
         async onload() {
             // Override in actual plugin
         }
@@ -134,6 +146,15 @@ const ObsidianMock = {
         }
         open() {}
         close() {}
+    },
+    
+    PluginSettingTab: class PluginSettingTab {
+        constructor(app, plugin) {
+            this.app = app;
+            this.plugin = plugin;
+        }
+        display() {}
+        hide() {}
     },
     
     MarkdownView: class MarkdownView {
