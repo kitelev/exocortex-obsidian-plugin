@@ -13,17 +13,21 @@ RUN apk add --no-cache \
     curl \
     git \
     jq \
-    # Electron dependencies
+    # Electron dependencies (Alpine package names)
+    gtk+3.0-dev \
+    cairo-dev \
+    pango-dev \
+    gdk-pixbuf-dev \
+    libx11-dev \
+    libxss \
+    dbus-dev \
+    at-spi2-core-dev \
+    cups-dev \
+    drm-dev \
     gtk+3.0 \
-    libxss1 \
-    gconf-service \
-    libasound2 \
-    libatk1.0-0 \
-    libc6 \
-    libcairo-gobject2 \
-    libdrm2 \
-    libgtk-3-0 \
-    libgdk-pixbuf2.0-0 \
+    gdk-pixbuf \
+    # Audio support
+    alsa-lib-dev \
     # X11 and display server for headless testing
     xvfb \
     xauth \

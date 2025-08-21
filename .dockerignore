@@ -46,6 +46,11 @@ Thumbs.db
 # Git
 .git/
 .gitignore
+.gitattributes
+
+# Claude Code hooks and configs (may contain ANSI codes)
+.claude/hooks/
+.claude/agent-*
 
 # Docker files (avoid recursive copying)
 Dockerfile*

@@ -35,6 +35,20 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # Fix Windows Git checkout issues with special characters
+          autocrlf: false
+
+      - name: Configure Git for Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.filemode false
+          git config --global core.longpaths true
+          git config --global core.safecrlf false
+          git config --global core.quotepath false
+          # Clean up any problematic files
+          git clean -fd || true
+        shell: bash
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
