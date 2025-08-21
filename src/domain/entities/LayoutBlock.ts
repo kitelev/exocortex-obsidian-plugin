@@ -136,6 +136,10 @@ export class LayoutBlock extends Entity<LayoutBlockProps> {
             case 'children-efforts':
                 return true;
             
+            case 'buttons':
+                const buttonsConfig = config as ButtonsBlockConfig;
+                return Array.isArray(buttonsConfig.buttons);
+            
             case 'custom':
                 const customConfig = config as CustomBlockConfig;
                 return !!customConfig.templatePath || !!customConfig.dataviewQuery || !!customConfig.queryEngineQuery || !!customConfig.customScript;

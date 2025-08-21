@@ -1,0 +1,226 @@
+# Docker Compose for Obsidian UI Testing
+# Provides isolated test environment for developers
+version: '3.8'
+
+services:
+  # =============================================================================
+  # Main UI Test Runner - Complete test suite execution
+  # =============================================================================
+  ui-test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui-test
+      target: ui-test
+    volumes:
+      # Mount source code for live testing
+      - .:/app:ro
+      # Preserve node_modules in container
+      - /app/node_modules
+      # Output directories for results
+      - ./test-output/ui-results:/app/test-results
+      - ./test-output/screenshots:/app/screenshots
+      - ./test-output/wdio-logs:/app/wdio-logs
+      - ./test-output/coverage:/app/coverage
+    environment:
+      # Test environment configuration
+      - NODE_ENV=test
+      - CI=true
+      - HEADLESS=true
+      - DISPLAY=:99
+      # Obsidian-specific settings
+      - ELECTRON_DISABLE_SANDBOX=1
+      - ELECTRON_ENABLE_LOGGING=0
+      # Test timeouts
+      - WDIO_TIMEOUT=45000
+      - MOCHA_TIMEOUT=90000
+    shm_size: 2gb  # Increased shared memory for Electron
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+    networks:
+      - ui-test-network
+    profiles:
+      - ui-tests
+      - all-tests
+
+  # =============================================================================
+  # Interactive Development Environment
+  # =============================================================================
+  ui-test-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui-test
+      target: ui-test-dev
+    volumes:
+      # Live code mounting for development
+      - .:/app
+      # Preserve dependencies
+      - ui-test-node-modules:/app/node_modules
+      # Test outputs
+      - ./test-output:/app/test-output
+    environment:
+      - NODE_ENV=development
+      - DEBUG=true
+      - HEADLESS=false  # Can run headed for debugging
+      - DISPLAY=:99
+    ports:
+      - "9229:9229"  # Node.js debugging port
+      - "4444:4444"  # WebDriver port
+    stdin_open: true
+    tty: true
+    networks:
+      - ui-test-network
+    profiles:
+      - development
+      - debug
+
+  # =============================================================================
+  # Basic UI Test Suite - Quick validation tests
+  # =============================================================================
+  ui-test-basic:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui-test
+      target: ui-test
+    volumes:
+      - .:/app:ro
+      - /app/node_modules
+      - ./test-output/basic:/app/test-output
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - HEADLESS=true
+      - DISPLAY=:99
+      - TEST_SUITE=basic
+    command: ["basic"]
+    networks:
+      - ui-test-network
+    profiles:
+      - basic-tests
+
+  # =============================================================================
+  # SPARQL Feature Tests - Specific feature testing
+  # =============================================================================
+  ui-test-sparql:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui-test
+      target: ui-test
+    volumes:
+      - .:/app:ro
+      - /app/node_modules
+      - ./test-output/sparql:/app/test-output
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - HEADLESS=true
+      - DISPLAY=:99
+      - TEST_SUITE=sparql
+    command: ["sparql"]
+    networks:
+      - ui-test-network
+    profiles:
+      - feature-tests
+
+  # =============================================================================
+  # CI Test Runner - Optimized for CI/CD environments
+  # =============================================================================
+  ui-test-ci:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui-test
+      target: ui-test-ci
+    volumes:
+      - .:/app:ro
+      - /app/node_modules
+      - ./test-output/ci:/app/test-output
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - HEADLESS=true
+      - NO_SANDBOX=true
+      - DISABLE_DEV_SHM_USAGE=true
+      - DISPLAY=:99
+      # Reduced timeouts for CI
+      - WDIO_TIMEOUT=30000
+      - MOCHA_TIMEOUT=60000
+    shm_size: 1gb
+    networks:
+      - ui-test-network
+    profiles:
+      - ci
+      - production
+
+  # =============================================================================
+  # Test Result Aggregator - Combines and reports results
+  # =============================================================================
+  test-aggregator:
+    image: node:20.18-alpine
+    volumes:
+      - ./test-output:/app/test-output
+      - ./scripts:/app/scripts:ro
+    working_dir: /app
+    command: >
+      sh -c "
+        echo '📊 Aggregating test results...';
+        apk add --no-cache jq;
+        if [ -f test-output/ui-results/wdio-0-0-json-reporter.json ]; then
+          echo '✅ UI test results found';
+          jq '.stats' test-output/ui-results/wdio-0-0-json-reporter.json || true;
+        fi;
+        if [ -f test-output/screenshots/*.png ]; then
+          echo '📸 Screenshots captured:' && ls -la test-output/screenshots/ || true;
+        fi;
+        echo '📋 Test summary complete';
+      "
+    depends_on:
+      - ui-test-runner
+    networks:
+      - ui-test-network
+    profiles:
+      - reporting
+      - all-tests
+
+  # =============================================================================
+  # Performance Monitor - Tracks resource usage during tests
+  # =============================================================================
+  performance-monitor:
+    image: alpine:3.20
+    volumes:
+      - ./test-output/performance:/app/performance
+    command: >
+      sh -c "
+        echo '📈 Starting performance monitoring...';
+        apk add --no-cache procps;
+        mkdir -p /app/performance;
+        while true; do
+          echo \"\$(date): \$(free -m | grep Mem:)\" >> /app/performance/memory.log;
+          echo \"\$(date): \$(ps aux | head -10)\" >> /app/performance/process.log;
+          sleep 5;
+        done
+      "
+    networks:
+      - ui-test-network
+    profiles:
+      - monitoring
+      - performance
+
+# =============================================================================
+# Network Configuration
+# =============================================================================
+networks:
+  ui-test-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# =============================================================================
+# Volume Configuration
+# =============================================================================
+volumes:
+  ui-test-node-modules:
+    driver: local
+  test-results:
+    driver: local
+  obsidian-config:
+    driver: local

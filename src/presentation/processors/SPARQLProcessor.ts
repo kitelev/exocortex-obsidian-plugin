@@ -299,6 +299,13 @@ export class SPARQLProcessor {
     }
 
     /**
+     * Update cache configuration
+     */
+    updateCacheConfig(config: Partial<QueryCacheConfig>): void {
+        this.engine.updateCacheConfig(config);
+    }
+
+    /**
      * Destroy cache and cleanup resources
      */
     destroy(): void {

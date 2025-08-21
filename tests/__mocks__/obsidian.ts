@@ -340,17 +340,44 @@ export class ButtonComponent {
   constructor(containerEl: HTMLElement) {
     this.containerEl = containerEl;
     this.buttonEl = document.createElement('button');
+    
+    // Add Obsidian DOM extensions to button element
+    if (!this.buttonEl.addClass) {
+      (this.buttonEl as any).addClass = function(cls: string) {
+        this.classList.add(cls);
+      };
+    }
+    if (!this.buttonEl.removeClass) {
+      (this.buttonEl as any).removeClass = function(cls: string) {
+        this.classList.remove(cls);
+      };
+    }
+    
+    containerEl.appendChild(this.buttonEl);
   }
   
   setButtonText(text: string): this {
+    this.buttonEl.textContent = text;
     return this;
   }
   
   setCta(): this {
+    this.buttonEl.addClass('mod-cta');
     return this;
   }
   
   onClick(callback: () => void): this {
+    this.buttonEl.addEventListener('click', callback);
+    return this;
+  }
+  
+  setTooltip(tooltip: string): this {
+    this.buttonEl.setAttribute('title', tooltip);
+    return this;
+  }
+  
+  setClass(cls: string): this {
+    this.buttonEl.className = cls;
     return this;
   }
 }

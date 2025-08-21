@@ -1,0 +1,272 @@
+# Multi-stage Dockerfile for Obsidian UI Testing
+# Optimized for containerized testing without interrupting development work
+
+# =============================================================================
+# Base stage - Common dependencies and system setup
+# =============================================================================
+FROM node:20.18-alpine AS base
+
+# Install system dependencies for UI testing
+RUN apk add --no-cache \
+    # Core utilities
+    bash \
+    curl \
+    git \
+    jq \
+    # Electron dependencies
+    gtk+3.0 \
+    libxss1 \
+    gconf-service \
+    libasound2 \
+    libatk1.0-0 \
+    libc6 \
+    libcairo-gobject2 \
+    libdrm2 \
+    libgtk-3-0 \
+    libgdk-pixbuf2.0-0 \
+    # X11 and display server for headless testing
+    xvfb \
+    xauth \
+    # Font rendering
+    ttf-liberation \
+    ttf-dejavu \
+    # Process management
+    procps \
+    # Network utilities
+    net-tools \
+    # Chromium for fallback testing
+    chromium \
+    chromium-chromedriver
+
+# Set up display environment for headless operation
+ENV DISPLAY=:99 \
+    ELECTRON_DISABLE_SANDBOX=1 \
+    ELECTRON_ENABLE_LOGGING=1 \
+    NODE_ENV=test \
+    CI=true
+
+# Create app directory and test user for security
+WORKDIR /app
+RUN addgroup -g 1001 testuser && \
+    adduser -D -u 1001 -G testuser testuser
+
+# =============================================================================
+# Dependencies stage - Install Node.js dependencies
+# =============================================================================
+FROM base AS dependencies
+
+# Copy package files
+COPY package*.json ./
+COPY tsconfig*.json ./
+
+# Install dependencies including dev dependencies for testing
+RUN npm ci --include=dev --no-audit --no-fund
+
+# Install additional testing utilities
+RUN npm install -g wait-port concurrently
+
+# =============================================================================
+# Obsidian Setup stage - Download and configure Obsidian
+# =============================================================================
+FROM dependencies AS obsidian-setup
+
+# Create Obsidian directory structure
+RUN mkdir -p /app/obsidian-app \
+    /app/obsidian-config \
+    /app/test-vault
+
+# Copy Obsidian download script and configure
+COPY scripts/download-obsidian.sh ./scripts/
+RUN chmod +x ./scripts/download-obsidian.sh
+
+# Download Obsidian for testing (using cached version if available)
+ARG OBSIDIAN_VERSION=1.8.10
+ENV OBSIDIAN_VERSION=${OBSIDIAN_VERSION}
+RUN ./scripts/download-obsidian.sh || true
+
+# Set Obsidian path for testing
+ENV OBSIDIAN_APP_PATH="/app/obsidian-app/Obsidian"
+
+# =============================================================================
+# Build stage - Build the plugin
+# =============================================================================
+FROM obsidian-setup AS build
+
+# Copy source code
+COPY . .
+
+# Build the plugin
+RUN npm run build
+
+# Verify build artifacts exist
+RUN test -f main.js && test -s main.js && \
+    test -f manifest.json && test -s manifest.json
+
+# =============================================================================
+# Test Environment stage - Setup isolated test environment
+# =============================================================================
+FROM build AS test-env
+
+# Create test directories with proper permissions
+RUN mkdir -p \
+    /app/test-results \
+    /app/screenshots \
+    /app/wdio-logs \
+    /app/coverage \
+    /app/tmp && \
+    chown -R testuser:testuser /app
+
+# Copy test configuration files
+COPY wdio*.conf.ts ./
+COPY tests/ui/ ./tests/ui/
+COPY jest*.config.js ./
+
+# Create test runner scripts
+COPY <<'EOF' /app/scripts/run-ui-tests-docker.sh
+#!/bin/bash
+set -e
+
+echo "🐳 Starting containerized UI test environment..."
+
+# Function to cleanup on exit
+cleanup() {
+    echo "🧹 Cleaning up test environment..."
+    pkill Xvfb || true
+    pkill node || true
+    pkill Obsidian || true
+    rm -rf /tmp/.X99-lock || true
+    echo "✅ Cleanup completed"
+}
+
+# Set trap for cleanup on exit
+trap cleanup EXIT SIGINT SIGTERM
+
+# Start Xvfb for headless display
+echo "🖥️  Starting virtual display server..."
+Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset &
+XVFB_PID=$!
+
+# Wait for display server to be ready
+sleep 3
+
+# Verify display is available
+if ! xset -display :99 q >/dev/null 2>&1; then
+    echo "❌ Virtual display server failed to start"
+    exit 1
+fi
+
+echo "✅ Virtual display server ready on :99"
+
+# Set test environment variables
+export DISPLAY=:99
+export CI=true
+export HEADLESS=true
+export NODE_ENV=test
+
+# Run the specific test suite based on argument
+TEST_SUITE=${1:-all}
+
+case $TEST_SUITE in
+    "ui")
+        echo "🧪 Running UI tests..."
+        npm run test:ui:headless
+        ;;
+    "basic")
+        echo "🧪 Running basic UI functionality tests..."
+        npx wdio run wdio.conf.ts --spec tests/ui/specs/activate.spec.ts
+        ;;
+    "sparql")
+        echo "🧪 Running SPARQL processing tests..."
+        npx wdio run wdio.conf.ts --spec tests/ui/specs/sparql-*.spec.ts
+        ;;
+    "all"|*)
+        echo "🧪 Running complete UI test suite..."
+        npm run test:ui:headless
+        ;;
+esac
+
+TEST_EXIT_CODE=$?
+
+# Generate test report
+if [ -f /app/wdio-logs/wdio-0-0-json-reporter.json ]; then
+    echo "📊 Generating test report..."
+    node -e "
+        const fs = require('fs');
+        const report = JSON.parse(fs.readFileSync('/app/wdio-logs/wdio-0-0-json-reporter.json', 'utf8'));
+        console.log('📈 Test Summary:');
+        console.log('  Tests:', report.stats.tests);
+        console.log('  Passes:', report.stats.passes);
+        console.log('  Failures:', report.stats.failures);
+        console.log('  Duration:', (report.stats.end - report.stats.start) / 1000, 'seconds');
+    " || true
+fi
+
+# Copy results for external access
+if [ -d /app/test-output ]; then
+    cp -r /app/test-results/* /app/test-output/ 2>/dev/null || true
+    cp -r /app/screenshots/* /app/test-output/ 2>/dev/null || true
+    cp -r /app/wdio-logs/* /app/test-output/ 2>/dev/null || true
+fi
+
+echo "🎯 UI tests completed with exit code: $TEST_EXIT_CODE"
+exit $TEST_EXIT_CODE
+EOF
+
+RUN chmod +x /app/scripts/run-ui-tests-docker.sh
+
+# =============================================================================
+# UI Test stage - Final testing stage
+# =============================================================================
+FROM test-env AS ui-test
+
+# Switch to test user for security
+USER testuser
+
+# Set working directory
+WORKDIR /app
+
+# Health check to ensure environment is ready
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD pgrep Xvfb >/dev/null || exit 1
+
+# Default command runs the test suite
+ENTRYPOINT ["/app/scripts/run-ui-tests-docker.sh"]
+CMD ["all"]
+
+# =============================================================================
+# Development stage - For interactive debugging
+# =============================================================================
+FROM test-env AS ui-test-dev
+
+# Install additional development tools
+RUN apk add --no-cache \
+    vim \
+    htop \
+    tree
+
+# Keep container running for interactive use
+ENTRYPOINT ["/bin/bash"]
+CMD ["-c", "while true; do sleep 30; done"]
+
+# =============================================================================
+# CI stage - Optimized for CI/CD pipelines
+# =============================================================================
+FROM test-env AS ui-test-ci
+
+# Set CI-specific environment variables
+ENV CI=true \
+    HEADLESS=true \
+    NO_SANDBOX=true \
+    DISABLE_DEV_SHM_USAGE=true
+
+# Reduce timeout values for faster CI runs
+ENV WDIO_TIMEOUT=30000 \
+    MOCHA_TIMEOUT=60000 \
+    CONNECTION_RETRY_TIMEOUT=120000
+
+# Switch to test user
+USER testuser
+
+# Run tests with CI optimizations
+ENTRYPOINT ["/app/scripts/run-ui-tests-docker.sh"]
+CMD ["all"]

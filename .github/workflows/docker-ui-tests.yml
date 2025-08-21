@@ -1,0 +1,307 @@
+# Docker UI Tests Workflow
+# Runs Obsidian UI tests in containerized environment for consistent testing
+
+name: Docker UI Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - 'tests/ui/**'
+      - 'wdio*.conf.ts'
+      - 'package*.json'
+      - 'Dockerfile.ui-test'
+      - 'docker-compose.ui-test.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'tests/ui/**'
+      - 'wdio*.conf.ts'
+      - 'package*.json'
+      - 'Dockerfile.ui-test'
+      - 'docker-compose.ui-test.yml'
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - basic
+          - sparql
+          - ui
+      debug_mode:
+        description: 'Enable debug output'
+        required: false
+        default: false
+        type: boolean
+
+# Prevent concurrent runs on the same branch
+concurrency:
+  group: docker-ui-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Docker configuration
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  
+  # Test configuration
+  CI: true
+  NODE_ENV: test
+  HEADLESS: true
+  NO_SANDBOX: true
+  DISABLE_DEV_SHM_USAGE: true
+  
+  # Timeouts for CI environment
+  WDIO_TIMEOUT: 45000
+  MOCHA_TIMEOUT: 90000
+  CONNECTION_RETRY_TIMEOUT: 180000
+
+jobs:
+  # =============================================================================
+  # Docker UI Test Matrix - Multiple test suites in parallel
+  # =============================================================================
+  docker-ui-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        test-suite: 
+          - basic
+          - sparql
+        node-version: [20]
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: 🐳 Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        driver-opts: |
+          network=host
+    
+    - name: 💾 Cache Docker layers
+      uses: actions/cache@v4
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-ui-test-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-ui-test-
+          ${{ runner.os }}-buildx-
+    
+    - name: 🏗️ Build UI Test Image
+      run: |
+        docker buildx build \
+          --target ui-test-ci \
+          --cache-from type=local,src=/tmp/.buildx-cache \
+          --cache-to type=local,dest=/tmp/.buildx-cache-new,mode=max \
+          --load \
+          --tag exocortex-ui-test:${{ matrix.test-suite }} \
+          --file Dockerfile.ui-test \
+          .
+    
+    - name: 📁 Create Test Output Directories
+      run: |
+        mkdir -p test-output/{ui-results,screenshots,wdio-logs,coverage,performance}
+        chmod -R 755 test-output/
+    
+    - name: 🧪 Run ${{ matrix.test-suite }} UI Tests
+      run: |
+        # Set test suite specific environment
+        export TEST_SUITE=${{ matrix.test-suite }}
+        export COMPOSE_PROJECT_NAME="exocortex-ui-test-${{ matrix.test-suite }}"
+        
+        # Run tests with appropriate profile
+        case "${{ matrix.test-suite }}" in
+          "basic")
+            docker-compose -f docker-compose.ui-test.yml --profile basic-tests up \
+              --build --exit-code-from ui-test-basic ui-test-basic
+            ;;
+          "sparql")
+            docker-compose -f docker-compose.ui-test.yml --profile feature-tests up \
+              --build --exit-code-from ui-test-sparql ui-test-sparql
+            ;;
+          "all"|*)
+            docker-compose -f docker-compose.ui-test.yml --profile ci up \
+              --build --exit-code-from ui-test-ci ui-test-ci
+            ;;
+        esac
+    
+    - name: 📊 Generate Test Report
+      if: always()
+      run: |
+        echo "## 🧪 UI Test Results (${{ matrix.test-suite }})" >> $GITHUB_STEP_SUMMARY
+        
+        # Check for test results
+        if [ -f test-output/*/wdio-*-json-reporter.json ]; then
+          echo "### Test Summary" >> $GITHUB_STEP_SUMMARY
+          
+          # Extract test statistics
+          for report in test-output/*/wdio-*-json-reporter.json; do
+            if [ -f "$report" ]; then
+              echo "Processing report: $report"
+              
+              # Use jq to extract stats if available, otherwise use basic parsing
+              if command -v jq >/dev/null 2>&1; then
+                TESTS=$(jq -r '.stats.tests // 0' "$report" 2>/dev/null || echo "0")
+                PASSES=$(jq -r '.stats.passes // 0' "$report" 2>/dev/null || echo "0")
+                FAILURES=$(jq -r '.stats.failures // 0' "$report" 2>/dev/null || echo "0")
+                DURATION=$(jq -r '(.stats.end - .stats.start) / 1000 // 0' "$report" 2>/dev/null || echo "0")
+                
+                echo "- **Tests:** $TESTS" >> $GITHUB_STEP_SUMMARY
+                echo "- **Passes:** $PASSES ✅" >> $GITHUB_STEP_SUMMARY
+                echo "- **Failures:** $FAILURES ❌" >> $GITHUB_STEP_SUMMARY
+                echo "- **Duration:** ${DURATION}s ⏱️" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "- Test report found but jq not available for parsing" >> $GITHUB_STEP_SUMMARY
+              fi
+              break
+            fi
+          done
+        else
+          echo "- No test results found ⚠️" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Check for screenshots
+        if ls test-output/*/screenshots/*.png >/dev/null 2>&1; then
+          SCREENSHOT_COUNT=$(ls test-output/*/screenshots/*.png 2>/dev/null | wc -l || echo "0")
+          echo "- **Screenshots captured:** $SCREENSHOT_COUNT 📸" >> $GITHUB_STEP_SUMMARY
+        fi
+    
+    - name: 📸 Upload Test Artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ui-test-results-${{ matrix.test-suite }}-node${{ matrix.node-version }}
+        path: |
+          test-output/
+          !test-output/**/*.log
+        retention-days: 30
+        if-no-files-found: warn
+    
+    - name: 📸 Upload Screenshots on Failure
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: ui-test-screenshots-${{ matrix.test-suite }}-node${{ matrix.node-version }}
+        path: test-output/*/screenshots/
+        retention-days: 7
+        if-no-files-found: ignore
+    
+    - name: 🧹 Cleanup Docker Resources
+      if: always()
+      run: |
+        # Cleanup containers and networks
+        docker-compose -f docker-compose.ui-test.yml down --remove-orphans || true
+        
+        # Cleanup build cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache || true
+        
+        # Remove test images to save space
+        docker image rm exocortex-ui-test:${{ matrix.test-suite }} || true
+        docker image prune -f || true
+
+  # =============================================================================
+  # Complete UI Test Suite - Comprehensive testing
+  # =============================================================================
+  complete-ui-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.test_suite == 'all'
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+    
+    - name: 🐳 Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: 🏗️ Build Complete Test Suite
+      run: |
+        docker buildx build \
+          --target ui-test-ci \
+          --load \
+          --tag exocortex-ui-test:complete \
+          --file Dockerfile.ui-test \
+          .
+    
+    - name: 📁 Prepare Test Environment
+      run: |
+        mkdir -p test-output/{complete,performance}
+        chmod -R 755 test-output/
+    
+    - name: 🧪 Run Complete UI Test Suite
+      run: |
+        export COMPOSE_PROJECT_NAME="exocortex-ui-test-complete"
+        
+        # Run complete test suite with monitoring
+        docker-compose -f docker-compose.ui-test.yml \
+          --profile ci \
+          --profile monitoring \
+          up --build \
+          --exit-code-from ui-test-ci \
+          ui-test-ci performance-monitor
+    
+    - name: 📊 Generate Comprehensive Report
+      if: always()
+      run: |
+        echo "## 🎯 Complete UI Test Suite Results" >> $GITHUB_STEP_SUMMARY
+        
+        # Performance metrics
+        if [ -f test-output/performance/memory.log ]; then
+          echo "### Performance Metrics" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          tail -5 test-output/performance/memory.log >> $GITHUB_STEP_SUMMARY || true
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        fi
+    
+    - name: 📸 Upload Complete Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: complete-ui-test-results
+        path: test-output/
+        retention-days: 30
+
+  # =============================================================================
+  # Test Result Summary - Aggregate results from all test runs
+  # =============================================================================
+  test-summary:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [docker-ui-tests]
+    
+    steps:
+    - name: 📊 Aggregate Test Results
+      run: |
+        echo "## 🎯 Docker UI Tests Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Job results summary
+        echo "### Test Job Results" >> $GITHUB_STEP_SUMMARY
+        echo "| Test Suite | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|------------|--------|" >> $GITHUB_STEP_SUMMARY
+        
+        # Check job results
+        echo "| Basic UI Tests | ${{ needs.docker-ui-tests.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📁 Artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "- Test results and logs are available in the workflow artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "- Screenshots from failed tests (if any) are uploaded separately" >> $GITHUB_STEP_SUMMARY
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🐳 Docker Environment" >> $GITHUB_STEP_SUMMARY
+        echo "- Tests run in isolated containers with Xvfb display server" >> $GITHUB_STEP_SUMMARY
+        echo "- Electron/Obsidian simulation in headless mode" >> $GITHUB_STEP_SUMMARY
+        echo "- No interference with developer workflows" >> $GITHUB_STEP_SUMMARY

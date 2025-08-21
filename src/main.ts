@@ -20,6 +20,8 @@ import { PropertyRenderer } from './presentation/components/PropertyRenderer';
 import { IClassLayoutRepository } from './domain/repositories/IClassLayoutRepository';
 import { QueryEngineService } from './application/services/QueryEngineService';
 import { PropertyEditingUseCase } from './application/use-cases/PropertyEditingUseCase';
+import { ExocortexSettings, DEFAULT_SETTINGS } from './domain/entities/ExocortexSettings';
+import { ExocortexSettingTab } from './presentation/settings/ExocortexSettingTab';
 
 import manifest from '../manifest.json';
 
@@ -30,9 +32,16 @@ export default class ExocortexPlugin extends Plugin {
     private container: DIContainer;
     private rdfService: RDFService;
     private layoutRenderer: LayoutRenderer;
+    public settings: ExocortexSettings;
     
     async onload(): Promise<void> {
         // Plugin initialization
+        
+        // Load settings
+        await this.loadSettings();
+        
+        // Add settings tab
+        this.addSettingTab(new ExocortexSettingTab(this.app, this));
         
         // Initialize DI container
         DIContainer.initialize(this.app, this);
@@ -52,11 +61,11 @@ export default class ExocortexPlugin extends Plugin {
             console.warn('Failed to load vault into graph:', error);
         }
         
-        // Initialize SPARQL processor with cache configuration
+        // Initialize SPARQL processor with cache configuration from settings
         const cacheConfig = {
-            maxSize: 500,           // Reasonable cache size for Obsidian plugin
-            defaultTTL: 5 * 60 * 1000,  // 5 minutes TTL
-            enabled: true
+            maxSize: this.settings.get('sparqlCacheMaxSize'),
+            defaultTTL: this.settings.get('sparqlCacheTTLMinutes') * 60 * 1000,
+            enabled: this.settings.get('enableSPARQLCache')
         };
         this.sparqlProcessor = new SPARQLProcessor(this, this.graph, undefined, cacheConfig);
         
@@ -455,6 +464,61 @@ export default class ExocortexPlugin extends Plugin {
         }
         
         return result;
+    }
+    
+    /**
+     * Load plugin settings from data.json
+     */
+    async loadSettings(): Promise<void> {
+        try {
+            const data = await this.loadData();
+            const settingsResult = ExocortexSettings.create(data || {});
+            
+            if (settingsResult.isFailure) {
+                console.error('Failed to load settings:', settingsResult.getError());
+                this.settings = new ExocortexSettings(DEFAULT_SETTINGS);
+            } else {
+                this.settings = settingsResult.getValue()!;
+            }
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            this.settings = new ExocortexSettings(DEFAULT_SETTINGS);
+        }
+    }
+    
+    /**
+     * Save plugin settings to data.json
+     */
+    async saveSettings(): Promise<void> {
+        try {
+            await this.saveData(this.settings.toJSON());
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            new Notice('Failed to save settings');
+        }
+    }
+    
+    /**
+     * Update DI container with new settings
+     */
+    updateContainer(): void {
+        try {
+            // Re-initialize DI container to pick up new settings
+            DIContainer.initialize(this.app, this);
+            this.container = DIContainer.getInstance();
+            
+            // Update cache configuration if SPARQL processor exists
+            if (this.sparqlProcessor) {
+                const cacheConfig = {
+                    maxSize: this.settings.get('sparqlCacheMaxSize'),
+                    defaultTTL: this.settings.get('sparqlCacheTTLMinutes') * 60 * 1000,
+                    enabled: this.settings.get('enableSPARQLCache')
+                };
+                this.sparqlProcessor.updateCacheConfig(cacheConfig);
+            }
+        } catch (error) {
+            console.error('Error updating container:', error);
+        }
     }
     
     async onunload(): Promise<void> {

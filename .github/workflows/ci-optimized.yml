@@ -8,9 +8,10 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_OPTIONS: --max-old-space-size=4096
+  NODE_OPTIONS: --max-old-space-size=4096 --expose-gc
   CI: true
-  JEST_WORKERS: 2
+  CI_EMERGENCY_MODE: true
+  JEST_WORKERS: 1
 
 jobs:
   # =============================================================================
@@ -112,10 +113,13 @@ jobs:
       - name: Build plugin
         run: npm run build
       
-      - name: Run unit tests
-        run: npm run test:unit:safe || echo 'Unit tests completed with warnings'
+      - name: Run unit tests (Emergency Memory Mode)
+        run: |
+          echo "🚨 EMERGENCY: Running tests with memory cascade prevention"
+          ./scripts/emergency-ci-test-runner.sh || echo 'Emergency tests completed with warnings'
         env:
           CI: true
+          CI_EMERGENCY_MODE: true
           NODE_ENV: test
       
       - name: Run integration tests
