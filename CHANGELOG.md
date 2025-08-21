@@ -1,3 +1,57 @@
+## [3.6.0] - 2025-08-21
+
+### 🎨 Plugin Settings UI & Docker Testing Infrastructure
+
+#### Complete Settings Management System
+Implemented a comprehensive settings UI that gives users full control over plugin configuration through Obsidian's native settings interface. All plugin behaviors are now customizable without editing config files.
+
+#### What's New
+- **Native Settings Tab**: Full settings UI accessible via Obsidian Settings → Community plugins → Exocortex
+- **Docker UI Testing**: Non-intrusive testing infrastructure that runs in isolated containers
+- **Memory Optimizations**: Improved CI/CD stability with 4GB heap configuration
+- **Cross-Platform Support**: Settings work seamlessly on desktop and mobile devices
+
+#### Settings Features
+- **Folder Paths Configuration**
+  - Layouts folder path customization
+  - Templates path management
+  - Template usage data path control
+  
+- **Query Engine Selection**
+  - Auto-detect mode for optimal performance
+  - Manual selection: Dataview, Datacore, or Native
+  - Automatic fallback on query failures
+  
+- **Performance Tuning**
+  - SPARQL cache size control (100-10,000 entries)
+  - Batch processing size adjustment
+  - Maximum graph size limits
+  - Cache TTL configuration
+  
+- **Developer Options**
+  - Debug mode toggle
+  - Verbose logging controls
+  - Performance monitoring tools
+
+#### Docker Testing Benefits
+- **Zero Interruption**: Tests run in containers without opening Obsidian windows
+- **Parallel Execution**: Multiple test suites run simultaneously
+- **Consistent Environment**: Identical test conditions across local and CI
+- **Quick Iteration**: `make test-ui` for rapid testing cycles
+
+#### Technical Improvements
+- **ExocortexSettings Entity**: Domain-driven settings management with validation
+- **ExocortexSettingTab**: Full-featured settings UI with real-time updates
+- **Docker Multi-Stage Build**: Optimized containers for fast test execution
+- **E2E Test Fixes**: Updated mocks for PluginSettingTab compatibility
+- **CI Memory Fix**: Resolved Node 18.x compatibility issues
+
+#### User Impact
+- **Full Control**: Complete plugin customization through familiar UI
+- **Better Performance**: Tune settings for your vault size and hardware
+- **Easier Debugging**: Built-in tools for troubleshooting issues
+- **Professional Experience**: Enterprise-grade settings management
+
 ## [3.5.2] - 2025-08-20
 
 ### 🔧 Create Child Task Button - Layout Path Fix
