@@ -7,45 +7,85 @@ export enum PriorityLevel {
   URGENT = 'urgent'
 }
 
+type PriorityInput = string | PriorityLevel | null | undefined;
+
 /**
  * Value object representing task priority
  * Immutable and self-validating with business rules
+ * Follows Clean Architecture principles with comprehensive validation
  */
 export class Priority {
+  private static readonly VALID_LEVELS = new Set(Object.values(PriorityLevel));
+  private static readonly LEVEL_CACHE = new Map<PriorityLevel, Priority>();
+  private static readonly NUMERIC_VALUES = new Map<PriorityLevel, number>([
+    [PriorityLevel.LOW, 1],
+    [PriorityLevel.MEDIUM, 2],
+    [PriorityLevel.HIGH, 3],
+    [PriorityLevel.URGENT, 4]
+  ]);
+
   private readonly level: PriorityLevel;
 
   private constructor(level: PriorityLevel) {
     this.level = level;
   }
 
-  static create(value: string | PriorityLevel): Result<Priority> {
-    if (!value) {
-      return Result.fail<Priority>('Priority cannot be empty');
+  static create(value: PriorityInput): Result<Priority> {
+    const validationResult = this.validateInput(value);
+    if (!validationResult.isSuccess) {
+      return Result.fail<Priority>(validationResult.getError());
     }
 
-    const normalizedValue = typeof value === 'string' ? value.toLowerCase() : value;
-    
-    if (!Object.values(PriorityLevel).includes(normalizedValue as PriorityLevel)) {
-      return Result.fail<Priority>('Priority must be one of: low, medium, high, urgent');
+    const normalizedLevel = this.normalizeValue(value as string | PriorityLevel);
+    if (!this.isValidLevel(normalizedLevel)) {
+      return Result.fail<Priority>(
+        `Priority must be one of: ${Array.from(this.VALID_LEVELS).join(', ')}`
+      );
     }
 
-    return Result.ok<Priority>(new Priority(normalizedValue as PriorityLevel));
+    return Result.ok<Priority>(this.getOrCreateInstance(normalizedLevel));
+  }
+
+  private static validateInput(value: PriorityInput): Result<void> {
+    if (value === null || value === undefined || value === '') {
+      return Result.fail<void>('Priority cannot be empty');
+    }
+    return Result.ok<void>(undefined);
+  }
+
+  private static normalizeValue(value: string | PriorityLevel): string {
+    return typeof value === 'string' ? value.toLowerCase().trim() : value;
+  }
+
+  private static isValidLevel(value: string): value is PriorityLevel {
+    return this.VALID_LEVELS.has(value as PriorityLevel);
+  }
+
+  private static getOrCreateInstance(level: PriorityLevel): Priority {
+    if (!this.LEVEL_CACHE.has(level)) {
+      this.LEVEL_CACHE.set(level, new Priority(level));
+    }
+    return this.LEVEL_CACHE.get(level)!;
   }
 
   static low(): Priority {
-    return new Priority(PriorityLevel.LOW);
+    return this.getOrCreateInstance(PriorityLevel.LOW);
   }
 
   static medium(): Priority {
-    return new Priority(PriorityLevel.MEDIUM);
+    return this.getOrCreateInstance(PriorityLevel.MEDIUM);
   }
 
   static high(): Priority {
-    return new Priority(PriorityLevel.HIGH);
+    return this.getOrCreateInstance(PriorityLevel.HIGH);
   }
 
   static urgent(): Priority {
-    return new Priority(PriorityLevel.URGENT);
+    return this.getOrCreateInstance(PriorityLevel.URGENT);
+  }
+
+  static getAllLevels(): readonly PriorityLevel[] {
+    return Object.values(PriorityLevel);
   }
 
   getLevel(): PriorityLevel {
@@ -56,20 +96,23 @@ export class Priority {
     return this.level;
   }
 
-  equals(other: Priority): boolean {
-    return this.level === other.level;
+  equals(other: Priority | null | undefined): boolean {
+    return other !== null && other !== undefined && this.level === other.level;
+  }
+
+  /**
+   * Returns hash code for use in collections
+   */
+  hashCode(): number {
+    return this.getNumericValue();
   }
 
   /**
    * Returns numeric value for sorting (higher number = higher priority)
+   * Uses cached values for optimal performance
    */
   getNumericValue(): number {
-    switch (this.level) {
-      case PriorityLevel.LOW: return 1;
-      case PriorityLevel.MEDIUM: return 2;
-      case PriorityLevel.HIGH: return 3;
-      case PriorityLevel.URGENT: return 4;
-    }
+    return Priority.NUMERIC_VALUES.get(this.level)!;
   }
 
   /**

@@ -137,4 +137,5 @@ export class TaskStatus {
     
     return Result.fail<TaskStatus>('Invalid markdown checkbox format');
   }
+
 }

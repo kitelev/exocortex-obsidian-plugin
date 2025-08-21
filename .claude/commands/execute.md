@@ -32,12 +32,13 @@ argument-hint: [task description]
 3. **Build verification** - RETRY build if compilation errors
 4. **Code quality checks** - ADDRESS all quality issues before proceeding
 
-#### Stage 3: Local Release Preparation (MANDATORY)
+#### Stage 3: Local Release Preparation (MANDATORY FOR ALL CODE CHANGES)
 1. **Version bump** in package.json (patch/minor/major based on changes)
 2. **Update CHANGELOG.md** with user-focused release notes
 3. **Validate manifest.json** version sync
-4. **Commit changes** with conventional commit message
+4. **Stage all changes** and commit with conventional commit message
 5. **VERIFY**: Local git state is clean and ready for push
+6. **CRITICAL**: Any code modification REQUIRES immediate release preparation
 
 #### Stage 4: GitHub Release & CI/CD Pipeline (MONITORED - SINGLE DEVOPS AGENT)
 1. **Push to main branch** triggering auto-release workflow
