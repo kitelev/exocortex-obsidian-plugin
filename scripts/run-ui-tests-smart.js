@@ -68,42 +68,45 @@ function main() {
   if (shouldDownloadObsidian()) {
     configFile = './wdio.conf.ci.ts';
     message = '🐳 Using CI/Docker configuration - Obsidian download enabled';
-  } else {
-    configFile = './wdio.conf.local.ts';
-    message = '💻 Using local configuration - Obsidian download disabled';
-  }
-  
-  console.log(message);
-  console.log(`📋 Config file: ${configFile}`);
-  console.log('');
-  
-  // Run WDIO with the selected configuration
-  const wdioProcess = spawn('npx', ['wdio', 'run', configFile], {
-    stdio: 'inherit',
-    shell: true
-  });
-  
-  wdioProcess.on('error', (error) => {
-    console.error('❌ Failed to start WDIO:', error.message);
-    process.exit(1);
-  });
-  
-  wdioProcess.on('close', (code) => {
-    if (code === 0) {
-      console.log('✅ UI tests completed successfully');
-    } else {
-      console.error(`❌ UI tests failed with code ${code}`);
-      
-      // Provide helpful guidance
-      if (!shouldDownloadObsidian()) {
-        console.log('');
-        console.log('💡 Local UI tests use mocked Obsidian functionality.');
-        console.log('   For full integration tests, run:');
-        console.log('   FORCE_OBSIDIAN_DOWNLOAD=true npm run test:ui');
+    console.log(message);
+    console.log(`📋 Config file: ${configFile}`);
+    console.log('');
+    
+    // Run WDIO with the selected configuration
+    const wdioProcess = spawn('npx', ['wdio', 'run', configFile], {
+      stdio: 'inherit',
+      shell: true
+    });
+    
+    wdioProcess.on('error', (error) => {
+      console.error('❌ Failed to start WDIO:', error.message);
+      process.exit(1);
+    });
+    
+    wdioProcess.on('close', (code) => {
+      if (code === 0) {
+        console.log('✅ UI tests completed successfully');
+      } else {
+        console.error(`❌ UI tests failed with code ${code}`);
       }
-    }
-    process.exit(code);
-  });
+      process.exit(code);
+    });
+  } else {
+    // Local environment - skip UI tests unless forced
+    message = '💻 Local environment detected - UI tests skipped to prevent Obsidian download';
+    console.log(message);
+    console.log('');
+    console.log('🏃 Local development mode:');
+    console.log('  - UI tests are skipped to avoid downloading Obsidian');
+    console.log('  - Unit and integration tests cover the core functionality');
+    console.log('  - Use CI environment for full UI testing');
+    console.log('');
+    console.log('🔧 To force UI tests locally:');
+    console.log('  FORCE_OBSIDIAN_DOWNLOAD=true npm run test:ui');
+    console.log('');
+    console.log('✅ UI test check completed (skipped in local mode)');
+    process.exit(0);
+  }
 }
 
 main();

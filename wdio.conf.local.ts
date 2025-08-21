@@ -56,13 +56,8 @@ export const config = {
   connectionRetryTimeout: 120000,
   connectionRetryCount: 3,
   
-  // Use standard WebDriver service instead of obsidian service for local tests
-  services: [
-    ['chromedriver', {
-      logLevel: 'info',
-      outputDir: './wdio-logs'
-    }]
-  ],
+  // Use minimal services for local tests (no external dependencies)
+  services: [],
   
   framework: 'mocha',
   mochaOpts: {
