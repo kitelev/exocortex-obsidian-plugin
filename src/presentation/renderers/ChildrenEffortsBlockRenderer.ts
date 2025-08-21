@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { ChildrenEffortsBlockConfig } from '../../domain/entities/LayoutBlock';
+import { ChildrenEffortsBlockConfig } from "../../domain/entities/LayoutBlockStubs";
 
 export class ChildrenEffortsBlockRenderer {
     constructor(private app: App) {}

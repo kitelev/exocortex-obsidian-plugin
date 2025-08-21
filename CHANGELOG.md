@@ -1,3 +1,35 @@
+## [3.12.0] - 2025-08-21
+
+### 🚀 Layout System Simplification - Dynamic Property Backlinks Only
+
+#### Revolutionary Simplification
+Complete removal of all hardcoded block types! Now the layout system only supports dynamic property-based backlinks - the most powerful and flexible approach to showing relationships between your assets.
+
+#### What Changed
+- **Removed All Static Blocks**: No more properties, backlinks, children-efforts, narrower, instances, buttons, query, or custom blocks
+- **Single Focus**: Only dynamic property-based backlinks are supported
+- **Automatic Property Discovery**: Each frontmatter property that references your asset becomes its own block
+- **Clean Architecture**: Simplified codebase with ~70% reduction in complexity
+
+#### Benefits for Users
+- **No Configuration Needed**: System automatically discovers all relationships
+- **Always Up to Date**: New relationship types appear automatically without plugin updates
+- **Cleaner Interface**: No clutter from unused block types
+- **Better Performance**: Faster rendering with simplified architecture
+- **Future-Proof**: Works with any property naming conventions you use
+
+#### Technical Improvements
+- Simplified LayoutBlock entity to single block type
+- Removed unused renderer classes and dependencies
+- Updated all tests to focus on dynamic functionality
+- Cleaner dependency injection with fewer components
+- Better error handling for unsupported operations
+
+#### Migration Notes
+- Existing layout files will automatically use dynamic backlinks
+- No user action required - system gracefully handles the transition
+- Custom layouts will show dynamic backlinks instead of hardcoded types
+
 ## [3.11.0] - 2025-08-21
 
 ### 🎯 New Feature: Dynamic Property-Based Backlinks

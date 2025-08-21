@@ -2,46 +2,8 @@ import { Entity } from '../core/Entity';
 import { Result } from '../core/Result';
 import { QueryEngineType } from '../ports/IQueryEngine';
 
-export type BlockType = 'query' | 'properties' | 'relations' | 'backlinks' | 'dynamic-backlinks' | 'children-efforts' | 'buttons' | 'custom' | 'narrower' | 'instances';
+export type BlockType = 'dynamic-backlinks';
 
-export interface QueryBlockConfig {
-    type: 'query';
-    query: string;
-    className?: string;
-    propertyFilters?: Array<{
-        property: string;
-        operator: 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'notEquals';
-        value: string;
-    }>;
-    relationProperty?: string;
-    maxResults?: number;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-    displayAs?: 'list' | 'table' | 'cards';
-}
-
-export interface PropertiesBlockConfig {
-    type: 'properties';
-    includedProperties?: string[];
-    excludedProperties?: string[];
-    editableProperties?: string[];
-    groupBy?: string;
-}
-
-export interface RelationsBlockConfig {
-    type: 'relations';
-    relationProperty: string;
-    showBacklinks?: boolean;
-    showForwardLinks?: boolean;
-    maxDepth?: number;
-}
-
-export interface BacklinksBlockConfig {
-    type: 'backlinks';
-    filterByClass?: string;
-    groupByClass?: boolean;
-    maxResults?: number;
-}
 
 export interface DynamicBacklinksBlockConfig {
     type: 'dynamic-backlinks';
@@ -51,61 +13,8 @@ export interface DynamicBacklinksBlockConfig {
     showEmptyProperties?: boolean;
 }
 
-export interface ChildrenEffortsBlockConfig {
-    type: 'children-efforts';
-    filterByClass?: string;
-    groupByClass?: boolean;
-    maxResults?: number;
-    showParentPath?: boolean;
-}
 
-export interface QueryEngineQuery {
-    query: string;
-    engineType?: QueryEngineType;
-    enginePreference?: QueryEngineType[];
-}
-
-export interface ButtonsBlockConfig {
-    type: 'buttons';
-    buttons: Array<{
-        id: string;
-        label: string;
-        commandType: string;
-        tooltip?: string;
-        style?: 'primary' | 'default' | 'danger';
-        parameters?: Record<string, any>;
-    }>;
-    position?: 'top' | 'bottom' | 'inline';
-    style?: string;
-}
-
-export interface NarrowerBlockConfig {
-    type: 'narrower';
-    broaderProperty?: string;
-    filterByClass?: string;
-    maxResults?: number;
-    displayAs?: 'list' | 'table' | 'cards';
-}
-
-export interface InstancesBlockConfig {
-    type: 'instances';
-    targetProperty?: string;
-    filterByClass?: string;
-    groupByClass?: boolean;
-    maxResults?: number;
-    displayAs?: 'list' | 'table' | 'cards';
-    showInstanceInfo?: boolean;
-}
-
-export interface CustomBlockConfig {
-    type: 'custom';
-    templatePath?: string;
-    dataviewQuery?: string; // @deprecated - use queryEngineQuery instead
-    queryEngineQuery?: QueryEngineQuery;
-    customScript?: string;
-}
-
-export type BlockConfig = QueryBlockConfig | PropertiesBlockConfig | RelationsBlockConfig | BacklinksBlockConfig | DynamicBacklinksBlockConfig | ChildrenEffortsBlockConfig | ButtonsBlockConfig | CustomBlockConfig | NarrowerBlockConfig | InstancesBlockConfig;
+export type BlockConfig = DynamicBacklinksBlockConfig;
 
 export interface LayoutBlockProps {
     id: string;
@@ -144,44 +53,8 @@ export class LayoutBlock extends Entity<LayoutBlockProps> {
             return false;
         }
 
-        switch (type) {
-            case 'query':
-                const queryConfig = config as QueryBlockConfig;
-                return !!queryConfig.query || !!queryConfig.className;
-            
-            case 'properties':
-                return true;
-            
-            case 'relations':
-                const relConfig = config as RelationsBlockConfig;
-                return !!relConfig.relationProperty;
-            
-            case 'backlinks':
-                return true;
-            
-            case 'dynamic-backlinks':
-                return true;
-            
-            case 'children-efforts':
-                return true;
-            
-            case 'narrower':
-                return true;
-            
-            case 'instances':
-                return true;
-            
-            case 'buttons':
-                const buttonsConfig = config as ButtonsBlockConfig;
-                return Array.isArray(buttonsConfig.buttons);
-            
-            case 'custom':
-                const customConfig = config as CustomBlockConfig;
-                return !!customConfig.templatePath || !!customConfig.dataviewQuery || !!customConfig.queryEngineQuery || !!customConfig.customScript;
-            
-            default:
-                return false;
-        }
+        // Only dynamic-backlinks is supported
+        return type === 'dynamic-backlinks';
     }
 
     get id(): string {

@@ -80,12 +80,9 @@ export default class ExocortexPlugin extends Plugin {
         const propertyEditingUseCase = this.container.getPropertyEditingUseCase();
         const propertyRenderer = new PropertyRenderer(this.app, propertyEditingUseCase);
         
-        const queryEngineService = new QueryEngineService(this.app);
         this.layoutRenderer = new LayoutRenderer(
             this.app,
-            layoutRepository,
-            propertyRenderer,
-            queryEngineService
+            layoutRepository
         );
         
         // Export ExoUIRender function to global window object for DataviewJS integration

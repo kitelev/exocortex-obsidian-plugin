@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { CustomBlockConfig, QueryEngineQuery } from '../../domain/entities/LayoutBlock';
+import { CustomBlockConfig, QueryEngineQuery } from "../../domain/entities/LayoutBlockStubs";
 import { QueryEngineService } from '../../application/services/QueryEngineService';
 import { QueryContext } from '../../domain/ports/IQueryEngine';
 

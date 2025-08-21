@@ -2,16 +2,7 @@ import { App } from 'obsidian';
 import { BlockType } from '../../domain/entities/LayoutBlock';
 import { Result } from '../../domain/core/Result';
 import { IBlockRendererFactory, IBlockRenderer, BlockRenderingContext } from './IBlockRendererFactory';
-import { QueryBlockRenderer } from '../renderers/QueryBlockRenderer';
-import { PropertiesBlockRenderer } from '../renderers/PropertiesBlockRenderer';
-import { BacklinksBlockRenderer } from '../renderers/BacklinksBlockRenderer';
-import { ChildrenEffortsBlockRenderer } from '../renderers/ChildrenEffortsBlockRenderer';
-import { NarrowerBlockRenderer } from '../renderers/NarrowerBlockRenderer';
-import { InstancesBlockRenderer } from '../renderers/InstancesBlockRenderer';
-import { ButtonsBlockRenderer } from '../renderers/ButtonsBlockRenderer';
-import { CustomBlockRenderer } from '../renderers/CustomBlockRenderer';
-import { PropertyRenderer } from '../components/PropertyRenderer';
-import { QueryEngineService } from '../../application/services/QueryEngineService';
+import { DynamicBacklinksBlockRenderer } from '../renderers/DynamicBacklinksBlockRenderer';
 
 // Adapter pattern to bridge old block renderers to new interface
 class BlockRendererAdapter implements IBlockRenderer {
@@ -41,19 +32,10 @@ export class BlockRendererFactory implements IBlockRendererFactory {
     private readonly renderers: Map<BlockType, any> = new Map();
 
     constructor(
-        private readonly app: App,
-        propertyRenderer: PropertyRenderer,
-        queryEngineService?: QueryEngineService
+        private readonly app: App
     ) {
-        // Initialize all block renderers
-        this.renderers.set('query', new QueryBlockRenderer(app));
-        this.renderers.set('properties', new PropertiesBlockRenderer(app, propertyRenderer));
-        this.renderers.set('backlinks', new BacklinksBlockRenderer(app));
-        this.renderers.set('children-efforts', new ChildrenEffortsBlockRenderer(app));
-        this.renderers.set('narrower', new NarrowerBlockRenderer(app));
-        this.renderers.set('instances', new InstancesBlockRenderer(app));
-        this.renderers.set('buttons', new ButtonsBlockRenderer(app));
-        this.renderers.set('custom', new CustomBlockRenderer(app, queryEngineService));
+        // Initialize only dynamic backlinks renderer
+        this.renderers.set('dynamic-backlinks', new DynamicBacklinksBlockRenderer(app));
     }
 
     createRenderer(blockType: BlockType): Result<IBlockRenderer> {

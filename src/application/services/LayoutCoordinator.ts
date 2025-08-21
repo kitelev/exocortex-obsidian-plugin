@@ -174,31 +174,15 @@ export class LayoutCoordinator implements ILayoutCoordinator {
         const blocks: Array<{ result: Result<LayoutBlock> }> = [
             { 
                 result: LayoutBlock.create({
-                    id: 'default-properties',
-                    type: 'properties',
-                    title: '📝 Properties',
+                    id: 'default-dynamic-backlinks',
+                    type: 'dynamic-backlinks',
+                    title: '🔗 Property-based Backlinks',
                     order: 1,
-                    config: { type: 'properties' },
-                    isVisible: true
-                })
-            },
-            {
-                result: LayoutBlock.create({
-                    id: 'default-children-efforts',
-                    type: 'children-efforts',
-                    title: '👶 Children Efforts',
-                    order: 2,
-                    config: { type: 'children-efforts' },
-                    isVisible: true
-                })
-            },
-            {
-                result: LayoutBlock.create({
-                    id: 'default-backlinks',
-                    type: 'backlinks',
-                    title: '📎 Referenced By',
-                    order: 3,
-                    config: { type: 'backlinks' },
+                    config: { 
+                        type: 'dynamic-backlinks',
+                        excludeProperties: ['exo__Asset_id', 'exo__Instance_class'],
+                        showEmptyProperties: false
+                    },
                     isVisible: true
                 })
             }

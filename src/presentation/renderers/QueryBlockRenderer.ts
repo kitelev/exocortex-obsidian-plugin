@@ -1,6 +1,6 @@
 import { App, TFile } from 'obsidian';
 import { ExecuteQueryBlockUseCase } from '../../application/use-cases/ExecuteQueryBlockUseCase';
-import { QueryBlockConfig } from '../../domain/entities/LayoutBlock';
+import { QueryBlockConfig } from "../../domain/entities/LayoutBlockStubs";
 
 export class QueryBlockRenderer {
     private executeQueryUseCase: ExecuteQueryBlockUseCase;

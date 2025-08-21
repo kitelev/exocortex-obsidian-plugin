@@ -1,45 +1,22 @@
 import { App, TFile } from 'obsidian';
 import { ClassLayout } from '../../domain/entities/ClassLayout';
 import { BlockType } from '../../domain/entities/LayoutBlock';
-import { QueryBlockRenderer } from './QueryBlockRenderer';
-import { PropertiesBlockRenderer } from './PropertiesBlockRenderer';
-import { BacklinksBlockRenderer } from './BacklinksBlockRenderer';
 import { DynamicBacklinksBlockRenderer } from './DynamicBacklinksBlockRenderer';
-import { ChildrenEffortsBlockRenderer } from './ChildrenEffortsBlockRenderer';
-import { NarrowerBlockRenderer } from './NarrowerBlockRenderer';
-import { ButtonsBlockRenderer } from './ButtonsBlockRenderer';
-import { CustomBlockRenderer } from './CustomBlockRenderer';
 import { GetLayoutForClassUseCase } from '../../application/use-cases/GetLayoutForClassUseCase';
 import { IClassLayoutRepository } from '../../domain/repositories/IClassLayoutRepository';
 import { PropertyRenderer } from '../components/PropertyRenderer';
 import { QueryEngineService } from '../../application/services/QueryEngineService';
 
 export class LayoutRenderer {
-    private queryRenderer: QueryBlockRenderer;
-    private propertiesRenderer: PropertiesBlockRenderer;
-    private backlinksRenderer: BacklinksBlockRenderer;
     private dynamicBacklinksRenderer: DynamicBacklinksBlockRenderer;
-    private childrenEffortsRenderer: ChildrenEffortsBlockRenderer;
-    private narrowerRenderer: NarrowerBlockRenderer;
-    private buttonsRenderer: ButtonsBlockRenderer;
-    private customRenderer: CustomBlockRenderer;
     private getLayoutUseCase: GetLayoutForClassUseCase;
 
     constructor(
         private app: App,
-        layoutRepository: IClassLayoutRepository,
-        propertyRenderer: PropertyRenderer,
-        private queryEngineService?: QueryEngineService
+        layoutRepository: IClassLayoutRepository
     ) {
         this.getLayoutUseCase = new GetLayoutForClassUseCase(layoutRepository);
-        this.queryRenderer = new QueryBlockRenderer(app);
-        this.propertiesRenderer = new PropertiesBlockRenderer(app, propertyRenderer);
-        this.backlinksRenderer = new BacklinksBlockRenderer(app);
         this.dynamicBacklinksRenderer = new DynamicBacklinksBlockRenderer(app);
-        this.childrenEffortsRenderer = new ChildrenEffortsBlockRenderer(app);
-        this.narrowerRenderer = new NarrowerBlockRenderer(app);
-        this.buttonsRenderer = new ButtonsBlockRenderer(app);
-        this.customRenderer = new CustomBlockRenderer(app, this.queryEngineService);
     }
 
     // Method signature for tests - renders a ClassLayout directly
@@ -161,87 +138,19 @@ export class LayoutRenderer {
             const contentContainer = blockContainer.createDiv({ cls: 'exocortex-block-content' });
             
             try {
-                switch (block.type) {
-                    case 'query':
-                        await this.queryRenderer.render(
-                            contentContainer,
-                            block.config,
-                            file,
-                            frontmatter,
-                            dv
-                        );
-                        break;
-                        
-                    case 'properties':
-                        await this.propertiesRenderer.render(
-                            contentContainer,
-                            block.config,
-                            file,
-                            frontmatter,
-                            dv
-                        );
-                        break;
-                        
-                    case 'backlinks':
-                        await this.backlinksRenderer.render(
-                            contentContainer,
-                            block.config,
-                            file,
-                            dv
-                        );
-                        break;
-                        
-                    case 'dynamic-backlinks':
-                        await this.dynamicBacklinksRenderer.render(
-                            contentContainer,
-                            block.config as any,
-                            file,
-                            dv
-                        );
-                        break;
-                        
-                    case 'children-efforts':
-                        await this.childrenEffortsRenderer.render(
-                            contentContainer,
-                            block.config,
-                            file,
-                            dv
-                        );
-                        break;
-                        
-                    case 'narrower':
-                        await this.narrowerRenderer.render(
-                            contentContainer,
-                            block.config,
-                            file,
-                            dv
-                        );
-                        break;
-                        
-                    case 'buttons':
-                        await this.buttonsRenderer.render(
-                            contentContainer,
-                            block.config,
-                            file,
-                            frontmatter
-                        );
-                        break;
-                        
-                    case 'custom':
-                        await this.customRenderer.render(
-                            contentContainer,
-                            block.config,
-                            file,
-                            frontmatter,
-                            dv
-                        );
-                        break;
-                        
-                    default:
-                        contentContainer.createEl('p', { 
-                            text: `Unknown block type: ${block.type}`,
-                            cls: 'exocortex-error'
-                        });
+                // Only dynamic-backlinks is supported
+                if (block.type === 'dynamic-backlinks') {
+                    await this.dynamicBacklinksRenderer.render(
+                        contentContainer,
+                        block.config as any,
+                        file,
+                        dv
+                    );
+                } else {
+                    contentContainer.createEl('p', { 
+                        text: `Unsupported block type: ${block.type}. Only dynamic-backlinks is supported.`,
+                        cls: 'exocortex-error'
+                    });
                 }
             } catch (error) {
                 contentContainer.createEl('p', { 
@@ -259,66 +168,22 @@ export class LayoutRenderer {
         metadata: any,
         dv: any
     ): Promise<void> {
-        const frontmatter = metadata.frontmatter;
+        // Default layout now only shows dynamic property-based backlinks
+        const dynamicBacklinksContainer = container.createDiv({ 
+            cls: 'exocortex-block exocortex-block-dynamic-backlinks' 
+        });
         
-        // Properties section
-        const propsContainer = container.createDiv({ cls: 'exocortex-block exocortex-block-properties' });
-        propsContainer.createEl('h3', { text: '📝 Properties' });
-        const propsContent = propsContainer.createDiv({ cls: 'exocortex-block-content' });
+        const dynamicBacklinksContent = dynamicBacklinksContainer.createDiv({ 
+            cls: 'exocortex-block-content' 
+        });
         
-        await this.propertiesRenderer.render(
-            propsContent,
+        await this.dynamicBacklinksRenderer.render(
+            dynamicBacklinksContent,
             { 
-                type: 'properties',
-                editableProperties: Object.keys(frontmatter).filter(k => !k.startsWith('exo__'))
-            },
-            file,
-            frontmatter,
-            dv
-        );
-        
-        // Relations section
-        if (frontmatter['exo__Asset_relates']) {
-            const relContainer = container.createDiv({ cls: 'exocortex-block exocortex-block-relations' });
-            relContainer.createEl('h3', { text: '🔗 Related Assets' });
-            const relContent = relContainer.createDiv({ cls: 'exocortex-block-content' });
-            
-            const relates = Array.isArray(frontmatter['exo__Asset_relates']) 
-                ? frontmatter['exo__Asset_relates'] 
-                : [frontmatter['exo__Asset_relates']];
-            
-            const list = relContent.createEl('ul');
-            relates.forEach((rel: string) => {
-                const item = list.createEl('li');
-                const link = this.cleanClassName(rel);
-                item.createEl('a', { 
-                    text: link,
-                    href: link,
-                    cls: 'internal-link'
-                });
-            });
-        }
-        
-        // Children Efforts section
-        const childrenContainer = container.createDiv({ cls: 'exocortex-block exocortex-block-children-efforts' });
-        childrenContainer.createEl('h3', { text: '👶 Children Efforts' });
-        const childrenContent = childrenContainer.createDiv({ cls: 'exocortex-block-content' });
-        
-        await this.childrenEffortsRenderer.render(
-            childrenContent,
-            { type: 'children-efforts' },
-            file,
-            dv
-        );
-        
-        // Backlinks section
-        const backlinksContainer = container.createDiv({ cls: 'exocortex-block exocortex-block-backlinks' });
-        backlinksContainer.createEl('h3', { text: '📎 Referenced By' });
-        const backlinksContent = backlinksContainer.createDiv({ cls: 'exocortex-block-content' });
-        
-        await this.backlinksRenderer.render(
-            backlinksContent,
-            { type: 'backlinks' },
+                type: 'dynamic-backlinks',
+                excludeProperties: ['exo__Asset_id', 'exo__Instance_class'],
+                showEmptyProperties: false
+            } as any,
             file,
             dv
         );

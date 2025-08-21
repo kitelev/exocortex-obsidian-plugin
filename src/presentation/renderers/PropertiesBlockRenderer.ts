@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { PropertiesBlockConfig } from '../../domain/entities/LayoutBlock';
+import { PropertiesBlockConfig } from "../../domain/entities/LayoutBlockStubs";
 import { PropertyRenderer } from '../components/PropertyRenderer';
 
 export class PropertiesBlockRenderer {

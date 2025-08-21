@@ -1,47 +1,34 @@
 import { App } from 'obsidian';
 import { BlockRendererFactory } from '../../../../src/presentation/factories/BlockRendererFactory';
-import { PropertyRenderer } from '../../../../src/presentation/components/PropertyRenderer';
-import { QueryEngineService } from '../../../../src/application/services/QueryEngineService';
 
 // Mock Obsidian API
 jest.mock('obsidian', () => ({
     App: jest.fn(),
 }));
 
-// Mock all the renderer dependencies
-jest.mock('../../../../src/presentation/renderers/InstancesBlockRenderer');
-jest.mock('../../../../src/presentation/renderers/QueryBlockRenderer');
-jest.mock('../../../../src/presentation/renderers/PropertiesBlockRenderer');
-jest.mock('../../../../src/presentation/renderers/BacklinksBlockRenderer');
-jest.mock('../../../../src/presentation/renderers/ChildrenEffortsBlockRenderer');
-jest.mock('../../../../src/presentation/renderers/NarrowerBlockRenderer');
-jest.mock('../../../../src/presentation/renderers/ButtonsBlockRenderer');
-jest.mock('../../../../src/presentation/renderers/CustomBlockRenderer');
+// Mock the dynamic backlinks renderer dependency
+jest.mock('../../../../src/presentation/renderers/DynamicBacklinksBlockRenderer');
 
-describe('BlockRendererFactory - Instances Block Integration', () => {
+describe('BlockRendererFactory - Dynamic Backlinks Integration', () => {
     let factory: BlockRendererFactory;
     let mockApp: jest.Mocked<App>;
-    let mockPropertyRenderer: jest.Mocked<PropertyRenderer>;
-    let mockQueryEngineService: jest.Mocked<QueryEngineService>;
 
     beforeEach(() => {
         mockApp = {} as jest.Mocked<App>;
-        mockPropertyRenderer = {} as jest.Mocked<PropertyRenderer>;
-        mockQueryEngineService = {} as jest.Mocked<QueryEngineService>;
 
-        factory = new BlockRendererFactory(mockApp, mockPropertyRenderer, mockQueryEngineService);
+        factory = new BlockRendererFactory(mockApp);
     });
 
-    describe('instances block type support', () => {
-        it('should include instances in supported block types', () => {
+    describe('dynamic-backlinks block type support', () => {
+        it('should only include dynamic-backlinks in supported block types', () => {
             const supportedTypes = factory.getSupportedBlockTypes();
             
-            expect(supportedTypes).toContain('instances');
-            expect(supportedTypes.length).toBeGreaterThan(7); // Should have all block types
+            expect(supportedTypes).toContain('dynamic-backlinks');
+            expect(supportedTypes.length).toBe(1); // Should have only dynamic-backlinks
         });
 
-        it('should create renderer for instances block type', () => {
-            const result = factory.createRenderer('instances');
+        it('should create renderer for dynamic-backlinks block type', () => {
+            const result = factory.createRenderer('dynamic-backlinks');
             
             expect(result.isSuccess).toBe(true);
             
@@ -49,19 +36,18 @@ describe('BlockRendererFactory - Instances Block Integration', () => {
             expect(renderer).toBeDefined();
         });
 
-        it('should create different renderers for different block types', () => {
-            const instancesResult = factory.createRenderer('instances');
-            const queryResult = factory.createRenderer('query');
-            const backlinksResult = factory.createRenderer('backlinks');
+        it('should fail for unsupported block types', () => {
+            const queryResult = factory.createRenderer('query' as any);
+            const backlinksResult = factory.createRenderer('backlinks' as any);
+            const instancesResult = factory.createRenderer('instances' as any);
 
-            expect(instancesResult.isSuccess).toBe(true);
-            expect(queryResult.isSuccess).toBe(true);
-            expect(backlinksResult.isSuccess).toBe(true);
+            expect(queryResult.isSuccess).toBe(false);
+            expect(backlinksResult.isSuccess).toBe(false);
+            expect(instancesResult.isSuccess).toBe(false);
 
-            // All should be valid but different instances
-            expect(instancesResult.getValue()).toBeDefined();
-            expect(queryResult.getValue()).toBeDefined();
-            expect(backlinksResult.getValue()).toBeDefined();
+            expect(queryResult.getError()).toContain('No renderer found for block type: query');
+            expect(backlinksResult.getError()).toContain('No renderer found for block type: backlinks');
+            expect(instancesResult.getError()).toContain('No renderer found for block type: instances');
         });
 
         it('should fail for unsupported block types', () => {
@@ -77,36 +63,36 @@ describe('BlockRendererFactory - Instances Block Integration', () => {
             };
 
             // Register custom renderer
-            factory.registerRenderer('custom-instances' as any, customRenderer);
+            factory.registerRenderer('custom-dynamic-backlinks' as any, customRenderer);
 
             // Should now be able to create the custom renderer
-            const result = factory.createRenderer('custom-instances' as any);
+            const result = factory.createRenderer('custom-dynamic-backlinks' as any);
             expect(result.isSuccess).toBe(true);
         });
 
         it('should allow unregistering renderers', () => {
-            // Should initially have instances renderer
-            const beforeResult = factory.createRenderer('instances');
+            // Should initially have dynamic-backlinks renderer
+            const beforeResult = factory.createRenderer('dynamic-backlinks');
             expect(beforeResult.isSuccess).toBe(true);
 
-            // Unregister instances renderer
-            const unregistered = factory.unregisterRenderer('instances');
+            // Unregister dynamic-backlinks renderer
+            const unregistered = factory.unregisterRenderer('dynamic-backlinks');
             expect(unregistered).toBe(true);
 
-            // Should now fail to create instances renderer
-            const afterResult = factory.createRenderer('instances');
+            // Should now fail to create dynamic-backlinks renderer
+            const afterResult = factory.createRenderer('dynamic-backlinks');
             expect(afterResult.isSuccess).toBe(false);
         });
     });
 
     describe('renderer adapter functionality', () => {
         it('should wrap legacy renderers with adapter pattern', async () => {
-            const renderer = factory.createRenderer('instances').getValue()!;
+            const renderer = factory.createRenderer('dynamic-backlinks').getValue()!;
 
             // Mock context for rendering
             const mockContext = {
                 container: document.createElement('div'),
-                config: { type: 'instances' },
+                config: { type: 'dynamic-backlinks' },
                 file: { basename: 'TestFile' } as any,
                 frontmatter: {},
                 dataviewApi: null

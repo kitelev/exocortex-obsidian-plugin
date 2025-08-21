@@ -1,5 +1,5 @@
 import { App, TFile, ButtonComponent, Notice } from 'obsidian';
-import { ButtonsBlockConfig } from '../../domain/entities/LayoutBlock';
+import { ButtonsBlockConfig } from "../../domain/entities/LayoutBlockStubs";
 import { CommandType } from '../../domain/entities/ButtonCommand';
 import { DIContainer } from '../../infrastructure/container/DIContainer';
 import { CreateChildTaskUseCase } from '../../application/use-cases/CreateChildTaskUseCase';

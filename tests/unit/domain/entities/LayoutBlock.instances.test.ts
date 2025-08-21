@@ -1,20 +1,19 @@
-import { LayoutBlock, InstancesBlockConfig } from '../../../../src/domain/entities/LayoutBlock';
+import { LayoutBlock, DynamicBacklinksBlockConfig } from '../../../../src/domain/entities/LayoutBlock';
 
-describe('LayoutBlock - Instances Block', () => {
-    describe('create with instances block type', () => {
-        it('should create a valid instances block', () => {
-            const config: InstancesBlockConfig = {
-                type: 'instances',
-                targetProperty: 'exo__Instance_class',
-                displayAs: 'table',
-                showInstanceInfo: true,
-                maxResults: 100
+describe('LayoutBlock - Dynamic Backlinks Block', () => {
+    describe('create with dynamic-backlinks block type', () => {
+        it('should create a valid dynamic-backlinks block', () => {
+            const config: DynamicBacklinksBlockConfig = {
+                type: 'dynamic-backlinks',
+                excludeProperties: ['exo__Asset_id', 'exo__Instance_class'],
+                maxResultsPerProperty: 100,
+                showEmptyProperties: false
             };
 
             const result = LayoutBlock.create({
-                id: 'instances-block-001',
-                type: 'instances',
-                title: 'Instances',
+                id: 'dynamic-backlinks-block-001',
+                type: 'dynamic-backlinks',
+                title: 'Dynamic Property Backlinks',
                 order: 1,
                 config: config,
                 isVisible: true,
@@ -25,25 +24,24 @@ describe('LayoutBlock - Instances Block', () => {
             
             const block = result.getValue();
             expect(block).toBeDefined();
-            expect(block?.type).toBe('instances');
-            expect(block?.config.type).toBe('instances');
+            expect(block?.type).toBe('dynamic-backlinks');
+            expect(block?.config.type).toBe('dynamic-backlinks');
             
-            const instancesConfig = block?.config as InstancesBlockConfig;
-            expect(instancesConfig.targetProperty).toBe('exo__Instance_class');
-            expect(instancesConfig.displayAs).toBe('table');
-            expect(instancesConfig.showInstanceInfo).toBe(true);
-            expect(instancesConfig.maxResults).toBe(100);
+            const dynamicConfig = block?.config as DynamicBacklinksBlockConfig;
+            expect(dynamicConfig.excludeProperties).toEqual(['exo__Asset_id', 'exo__Instance_class']);
+            expect(dynamicConfig.maxResultsPerProperty).toBe(100);
+            expect(dynamicConfig.showEmptyProperties).toBe(false);
         });
 
-        it('should create instances block with minimal config', () => {
-            const config: InstancesBlockConfig = {
-                type: 'instances'
+        it('should create dynamic-backlinks block with minimal config', () => {
+            const config: DynamicBacklinksBlockConfig = {
+                type: 'dynamic-backlinks'
             };
 
             const result = LayoutBlock.create({
-                id: 'instances-block-002',
-                type: 'instances',
-                title: 'Simple Instances',
+                id: 'dynamic-backlinks-block-002',
+                type: 'dynamic-backlinks',
+                title: 'Simple Dynamic Backlinks',
                 order: 2,
                 config: config,
                 isVisible: true
@@ -52,27 +50,25 @@ describe('LayoutBlock - Instances Block', () => {
             expect(result.isSuccess).toBe(true);
             
             const block = result.getValue();
-            const instancesConfig = block?.config as InstancesBlockConfig;
-            expect(instancesConfig.targetProperty).toBeUndefined();
-            expect(instancesConfig.displayAs).toBeUndefined();
-            expect(instancesConfig.showInstanceInfo).toBeUndefined();
+            const dynamicConfig = block?.config as DynamicBacklinksBlockConfig;
+            expect(dynamicConfig.excludeProperties).toBeUndefined();
+            expect(dynamicConfig.maxResultsPerProperty).toBeUndefined();
+            expect(dynamicConfig.showEmptyProperties).toBeUndefined();
         });
 
-        it('should create instances block with all optional properties', () => {
-            const config: InstancesBlockConfig = {
-                type: 'instances',
-                targetProperty: 'custom__Instance_class',
+        it('should create dynamic-backlinks block with all optional properties', () => {
+            const config: DynamicBacklinksBlockConfig = {
+                type: 'dynamic-backlinks',
+                excludeProperties: ['custom__Property'],
+                maxResultsPerProperty: 50,
                 filterByClass: 'CustomClass',
-                groupByClass: true,
-                maxResults: 50,
-                displayAs: 'cards',
-                showInstanceInfo: false
+                showEmptyProperties: true
             };
 
             const result = LayoutBlock.create({
-                id: 'instances-block-003',
-                type: 'instances',
-                title: 'Custom Instances',
+                id: 'dynamic-backlinks-block-003',
+                type: 'dynamic-backlinks',
+                title: 'Custom Dynamic Backlinks',
                 order: 3,
                 config: config,
                 isVisible: true,
@@ -82,26 +78,24 @@ describe('LayoutBlock - Instances Block', () => {
             expect(result.isSuccess).toBe(true);
             
             const block = result.getValue();
-            const instancesConfig = block?.config as InstancesBlockConfig;
-            expect(instancesConfig.targetProperty).toBe('custom__Instance_class');
-            expect(instancesConfig.filterByClass).toBe('CustomClass');
-            expect(instancesConfig.groupByClass).toBe(true);
-            expect(instancesConfig.maxResults).toBe(50);
-            expect(instancesConfig.displayAs).toBe('cards');
-            expect(instancesConfig.showInstanceInfo).toBe(false);
+            const dynamicConfig = block?.config as DynamicBacklinksBlockConfig;
+            expect(dynamicConfig.excludeProperties).toEqual(['custom__Property']);
+            expect(dynamicConfig.maxResultsPerProperty).toBe(50);
+            expect(dynamicConfig.filterByClass).toBe('CustomClass');
+            expect(dynamicConfig.showEmptyProperties).toBe(true);
         });
 
-        it('should fail with mismatched type and config', () => {
-            const config: InstancesBlockConfig = {
-                type: 'instances'
+        it('should fail with unsupported block type', () => {
+            const config: DynamicBacklinksBlockConfig = {
+                type: 'dynamic-backlinks'
             };
 
             const result = LayoutBlock.create({
-                id: 'instances-block-004',
-                type: 'query', // Wrong type!
-                title: 'Mismatched Block',
+                id: 'unsupported-block-004',
+                type: 'dynamic-backlinks',
+                title: 'Valid Block',
                 order: 4,
-                config: config,
+                config: { type: 'query' } as any, // Wrong config type
                 isVisible: true
             });
 
@@ -109,16 +103,16 @@ describe('LayoutBlock - Instances Block', () => {
             expect(result.getError()).toContain('Invalid configuration for block type');
         });
 
-        it('should update instances block config', () => {
-            const initialConfig: InstancesBlockConfig = {
-                type: 'instances',
-                displayAs: 'list'
+        it('should update dynamic-backlinks block config', () => {
+            const initialConfig: DynamicBacklinksBlockConfig = {
+                type: 'dynamic-backlinks',
+                showEmptyProperties: false
             };
 
             const blockResult = LayoutBlock.create({
-                id: 'instances-block-005',
-                type: 'instances',
-                title: 'Updateable Instances',
+                id: 'dynamic-backlinks-block-005',
+                type: 'dynamic-backlinks',
+                title: 'Updateable Dynamic Backlinks',
                 order: 5,
                 config: initialConfig,
                 isVisible: true
@@ -128,35 +122,40 @@ describe('LayoutBlock - Instances Block', () => {
             
             const block = blockResult.getValue()!;
             
-            const newConfig: InstancesBlockConfig = {
-                type: 'instances',
-                displayAs: 'table',
-                showInstanceInfo: true,
-                maxResults: 25
+            const newConfig: DynamicBacklinksBlockConfig = {
+                type: 'dynamic-backlinks',
+                excludeProperties: ['test__Property'],
+                maxResultsPerProperty: 25,
+                showEmptyProperties: true
             };
 
             const updateResult = block.updateConfig(newConfig);
             expect(updateResult.isSuccess).toBe(true);
             
-            const updatedConfig = block.config as InstancesBlockConfig;
-            expect(updatedConfig.displayAs).toBe('table');
-            expect(updatedConfig.showInstanceInfo).toBe(true);
-            expect(updatedConfig.maxResults).toBe(25);
+            const updatedConfig = block.config as DynamicBacklinksBlockConfig;
+            expect(updatedConfig.excludeProperties).toEqual(['test__Property']);
+            expect(updatedConfig.maxResultsPerProperty).toBe(25);
+            expect(updatedConfig.showEmptyProperties).toBe(true);
         });
 
-        it('should validate display format options', () => {
-            const validFormats: Array<'list' | 'table' | 'cards'> = ['list', 'table', 'cards'];
+        it('should validate config options', () => {
+            const validConfigs = [
+                { excludeProperties: ['prop1'] },
+                { maxResultsPerProperty: 10 },
+                { filterByClass: 'TestClass' },
+                { showEmptyProperties: true }
+            ];
 
-            validFormats.forEach(format => {
-                const config: InstancesBlockConfig = {
-                    type: 'instances',
-                    displayAs: format
+            validConfigs.forEach((configProps, index) => {
+                const config: DynamicBacklinksBlockConfig = {
+                    type: 'dynamic-backlinks',
+                    ...configProps
                 };
 
                 const result = LayoutBlock.create({
-                    id: `instances-block-${format}`,
-                    type: 'instances',
-                    title: `${format} Instances`,
+                    id: `dynamic-backlinks-block-${index}`,
+                    type: 'dynamic-backlinks',
+                    title: `Config Test ${index}`,
                     order: 1,
                     config: config,
                     isVisible: true
@@ -167,15 +166,15 @@ describe('LayoutBlock - Instances Block', () => {
         });
 
         it('should handle block visibility and collapsibility', () => {
-            const config: InstancesBlockConfig = {
-                type: 'instances',
-                displayAs: 'table'
+            const config: DynamicBacklinksBlockConfig = {
+                type: 'dynamic-backlinks',
+                showEmptyProperties: false
             };
 
             const result = LayoutBlock.create({
-                id: 'instances-block-visibility',
-                type: 'instances',
-                title: 'Collapsible Instances',
+                id: 'dynamic-backlinks-block-visibility',
+                type: 'dynamic-backlinks',
+                title: 'Collapsible Dynamic Backlinks',
                 order: 1,
                 config: config,
                 isVisible: false,

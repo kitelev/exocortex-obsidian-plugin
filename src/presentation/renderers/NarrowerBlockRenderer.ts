@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { NarrowerBlockConfig } from '../../domain/entities/LayoutBlock';
+import { NarrowerBlockConfig } from "../../domain/entities/LayoutBlockStubs";
 
 export class NarrowerBlockRenderer {
     constructor(private app: App) {}

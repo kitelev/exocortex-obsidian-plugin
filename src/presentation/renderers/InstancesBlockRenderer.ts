@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { InstancesBlockConfig } from '../../domain/entities/LayoutBlock';
+import { InstancesBlockConfig } from "../../domain/entities/LayoutBlockStubs";
 
 export class InstancesBlockRenderer {
     constructor(private app: App) {}

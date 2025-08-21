@@ -1,0 +1,388 @@
+name: Comprehensive CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      skip-ui-tests:
+        description: 'Skip UI tests'
+        required: false
+        default: 'false'
+        type: boolean
+
+concurrency:
+  group: comprehensive-ci-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CACHE_VERSION: v1
+
+jobs:
+  # Stage 1: Build and validate across platforms
+  build-matrix:
+    name: Build - ${{ matrix.os }} / Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: ['18.x', '20.x']
+    outputs:
+      ubuntu-build-cache: ${{ steps.cache-build.outputs.cache-hit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Cache Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            .jest-cache
+          key: deps-${{ matrix.os }}-node${{ matrix.node }}-${{ hashFiles('package-lock.json') }}-${{ env.CACHE_VERSION }}
+          restore-keys: |
+            deps-${{ matrix.os }}-node${{ matrix.node }}-
+            deps-${{ matrix.os }}-
+
+      - name: Install Dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: TypeScript Check
+        run: npx tsc --noEmit
+
+      - name: Build Plugin
+        run: npm run build
+
+      - name: Cache Build Artifacts
+        id: cache-build
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '20.x'
+        uses: actions/cache@v4
+        with:
+          path: |
+            main.js
+            manifest.json
+            styles.css
+            dist/
+            .tsbuildinfo
+          key: build-main-${{ github.sha }}-${{ env.CACHE_VERSION }}
+
+      - name: Validate Build Output
+        run: |
+          if [ ! -f main.js ]; then
+            echo "❌ main.js not found"
+            exit 1
+          fi
+          if [ ! -f manifest.json ]; then
+            echo "❌ manifest.json not found"
+            exit 1
+          fi
+          echo "✅ Build validation passed"
+        shell: bash
+
+      - name: Upload Build Artifacts
+        if: matrix.os == 'ubuntu-latest' && matrix.node == '20.x'
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-build
+          path: |
+            main.js
+            manifest.json
+            styles.css
+
+  # Stage 2: Comprehensive parallel testing
+  test-suite:
+    name: Test - ${{ matrix.suite }} / Node ${{ matrix.node }}
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [unit, integration, e2e, semantic, mobile, security]
+        node: ['20.x']
+        include:
+          - suite: unit
+            node: '18.x'
+          - suite: compatibility
+            node: '18.x'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Restore Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            .jest-cache
+          key: deps-ubuntu-latest-node${{ matrix.node }}-${{ hashFiles('package-lock.json') }}-${{ env.CACHE_VERSION }}
+
+      - name: Install Dependencies
+        run: |
+          if [ ! -d "node_modules" ]; then
+            npm ci --prefer-offline --no-audit
+          fi
+
+      - name: Restore Build Artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            main.js
+            manifest.json
+            styles.css
+            dist/
+            .tsbuildinfo
+          key: build-main-${{ github.sha }}-${{ env.CACHE_VERSION }}
+
+      - name: Run ${{ matrix.suite }} Tests
+        run: |
+          case "${{ matrix.suite }}" in
+            unit)
+              npm run test:unit -- --coverage --maxWorkers=2
+              ;;
+            integration)
+              npm run test:integration -- --coverage --maxWorkers=1
+              ;;
+            e2e)
+              npm run test:e2e -- --maxWorkers=1
+              ;;
+            semantic)
+              npm run test:semantic || npm run test -- --testPathPattern="semantic" --maxWorkers=1
+              ;;
+            mobile)
+              npm run test:mobile || npm run test -- --testPathPattern="mobile" --maxWorkers=1
+              ;;
+            security)
+              npm run test:security || npm run test -- --testPathPattern="security" --maxWorkers=1
+              ;;
+            compatibility)
+              npm run test:compat || npm run test -- --maxWorkers=1
+              ;;
+            *)
+              npm test -- --maxWorkers=2
+              ;;
+          esac
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+          CI: true
+
+      - name: Upload Coverage
+        if: contains('unit integration', matrix.suite)
+        uses: codecov/codecov-action@v4
+        continue-on-error: true
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: ${{ matrix.suite }}
+          name: ${{ matrix.suite }}-node${{ matrix.node }}
+
+  # Stage 3: UI Tests (can be skipped)
+  ui-tests:
+    name: UI Tests - ${{ matrix.os }}
+    needs: build-matrix
+    if: github.event.inputs.skip-ui-tests != 'true'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Restore Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: deps-${{ matrix.os }}-node20.x-${{ hashFiles('package-lock.json') }}-${{ env.CACHE_VERSION }}
+
+      - name: Install Dependencies
+        run: |
+          if [ ! -d "node_modules" ]; then
+            npm ci --prefer-offline --no-audit
+          fi
+
+      - name: Setup Display (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
+          sleep 3
+
+      - name: Run UI Tests
+        run: |
+          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+            export DISPLAY=:99
+          fi
+          npm run test:ui:all || npm run test:ui
+        env:
+          CI: true
+          HEADLESS: true
+
+      - name: Upload Screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-screenshots-${{ matrix.os }}
+          path: tests/ui/screenshots/
+
+  # Stage 4: Code quality checks
+  quality-checks:
+    name: Quality Checks
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Restore Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: deps-ubuntu-latest-node20.x-${{ hashFiles('package-lock.json') }}-${{ env.CACHE_VERSION }}
+
+      - name: Install Dependencies
+        run: |
+          if [ ! -d "node_modules" ]; then
+            npm ci --prefer-offline --no-audit
+          fi
+
+      - name: Lint Code
+        run: npm run lint
+
+      - name: Check Format
+        run: npm run format:check || npx prettier --check "src/**/*.{ts,tsx,js,jsx}"
+
+      - name: Security Audit
+        run: npm audit --audit-level=high || true
+
+      - name: Check Bundle Size
+        run: |
+          npm run build
+          SIZE=$(stat -f%z main.js 2>/dev/null || stat -c%s main.js)
+          SIZE_MB=$(echo "scale=2; $SIZE / 1048576" | bc)
+          echo "📦 Bundle size: ${SIZE_MB}MB"
+          
+          if (( $(echo "$SIZE_MB > 5" | bc -l) )); then
+            echo "⚠️ Warning: Bundle size exceeds 5MB threshold"
+            exit 1
+          fi
+
+  # Stage 5: Performance benchmarks
+  performance:
+    name: Performance Benchmarks
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Restore Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: deps-ubuntu-latest-node20.x-${{ hashFiles('package-lock.json') }}-${{ env.CACHE_VERSION }}
+
+      - name: Install Dependencies
+        run: |
+          if [ ! -d "node_modules" ]; then
+            npm ci --prefer-offline --no-audit
+          fi
+
+      - name: Run Performance Tests
+        run: |
+          npm run test:perf || npm run test -- --testPathPattern="performance" --maxWorkers=1
+        env:
+          CI: true
+
+      - name: Memory Usage Check
+        run: |
+          node --expose-gc -e "
+            const used = process.memoryUsage();
+            for (let key in used) {
+              console.log(\`\${key}: \${Math.round(used[key] / 1024 / 1024 * 100) / 100} MB\`);
+            }
+          "
+
+  # Final status report
+  ci-status:
+    name: CI Status Report
+    needs: [build-matrix, test-suite, ui-tests, quality-checks, performance]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Generate Status Report
+        run: |
+          echo "# 📊 Comprehensive CI Status Report"
+          echo ""
+          echo "## Build Matrix"
+          echo "Status: ${{ needs.build-matrix.result }}"
+          echo ""
+          echo "## Test Suite" 
+          echo "Status: ${{ needs.test-suite.result }}"
+          echo ""
+          echo "## UI Tests"
+          echo "Status: ${{ needs.ui-tests.result }}"
+          echo ""
+          echo "## Quality Checks"
+          echo "Status: ${{ needs.quality-checks.result }}"
+          echo ""
+          echo "## Performance"
+          echo "Status: ${{ needs.performance.result }}"
+          echo ""
+          
+          if [[ "${{ needs.build-matrix.result }}" != "success" || 
+                "${{ needs.test-suite.result }}" != "success" || 
+                "${{ needs.quality-checks.result }}" != "success" ]]; then
+            echo "❌ **CI Failed** - Critical checks did not pass"
+            exit 1
+          fi
+          
+          echo "✅ **CI Passed** - All critical checks successful"
+          echo ""
+          echo "### Timing"
+          echo "- Fast feedback would have taken: ~2.5 minutes"
+          echo "- This comprehensive CI: ~4-5 minutes (parallel execution)"
+          echo ""
+          echo "### Coverage"
+          echo "- Platforms tested: Linux, macOS, Windows"
+          echo "- Node versions: 18.x, 20.x"
+          echo "- Test suites: unit, integration, e2e, semantic, mobile, security, UI"

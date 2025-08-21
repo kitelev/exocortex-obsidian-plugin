@@ -24,11 +24,8 @@ export class DefaultLayoutRenderingStrategy implements ILayoutRenderingStrategy 
         try {
             const frontmatter = context.metadata.frontmatter;
             
-            // Render default layout blocks
-            await this.renderPropertiesBlock(context, frontmatter);
-            await this.renderRelationsBlock(context, frontmatter);
-            await this.renderChildrenEffortsBlock(context);
-            await this.renderBacklinksBlock(context);
+            // Render only dynamic backlinks in simplified system
+            await this.renderDynamicBacklinksBlock(context);
 
             return Result.ok();
 
@@ -37,97 +34,22 @@ export class DefaultLayoutRenderingStrategy implements ILayoutRenderingStrategy 
         }
     }
 
-    private async renderPropertiesBlock(
-        context: LayoutRenderingContext,
-        frontmatter: Record<string, any>
-    ): Promise<void> {
-        const propsContainer = context.container.createDiv({ 
-            cls: 'exocortex-block exocortex-block-properties' 
-        });
-        propsContainer.createEl('h3', { text: '📝 Properties' });
-        const propsContent = propsContainer.createDiv({ cls: 'exocortex-block-content' });
-        
-        const rendererResult = this.blockRendererFactory.createRenderer('properties');
-        if (rendererResult.isSuccess) {
-            const renderer = rendererResult.getValue();
-            const blockContext: BlockRenderingContext = {
-                container: propsContent,
-                config: { 
-                    type: 'properties',
-                    editableProperties: Object.keys(frontmatter).filter(k => !k.startsWith('exo__'))
-                },
-                file: context.file,
-                frontmatter,
-                dataviewApi: context.dataviewApi
-            };
-            
-            await renderer.render(blockContext);
-        }
-    }
-
-    private async renderRelationsBlock(
-        context: LayoutRenderingContext,
-        frontmatter: Record<string, any>
-    ): Promise<void> {
-        if (!frontmatter['exo__Asset_relates']) return;
-        
-        const relContainer = context.container.createDiv({ 
-            cls: 'exocortex-block exocortex-block-relations' 
-        });
-        relContainer.createEl('h3', { text: '🔗 Related Assets' });
-        const relContent = relContainer.createDiv({ cls: 'exocortex-block-content' });
-        
-        const relates = Array.isArray(frontmatter['exo__Asset_relates']) 
-            ? frontmatter['exo__Asset_relates'] 
-            : [frontmatter['exo__Asset_relates']];
-        
-        const list = relContent.createEl('ul');
-        relates.forEach((rel: string) => {
-            const item = list.createEl('li');
-            const link = this.cleanClassName(rel);
-            item.createEl('a', { 
-                text: link,
-                href: link,
-                cls: 'internal-link'
-            });
-        });
-    }
-
-    private async renderChildrenEffortsBlock(context: LayoutRenderingContext): Promise<void> {
-        const childrenContainer = context.container.createDiv({ 
-            cls: 'exocortex-block exocortex-block-children-efforts' 
-        });
-        childrenContainer.createEl('h3', { text: '👶 Children Efforts' });
-        const childrenContent = childrenContainer.createDiv({ cls: 'exocortex-block-content' });
-        
-        const rendererResult = this.blockRendererFactory.createRenderer('children-efforts');
-        if (rendererResult.isSuccess) {
-            const renderer = rendererResult.getValue();
-            const blockContext: BlockRenderingContext = {
-                container: childrenContent,
-                config: { type: 'children-efforts' },
-                file: context.file,
-                frontmatter: context.metadata.frontmatter,
-                dataviewApi: context.dataviewApi
-            };
-            
-            await renderer.render(blockContext);
-        }
-    }
-
-    private async renderBacklinksBlock(context: LayoutRenderingContext): Promise<void> {
+    private async renderDynamicBacklinksBlock(context: LayoutRenderingContext): Promise<void> {
         const backlinksContainer = context.container.createDiv({ 
-            cls: 'exocortex-block exocortex-block-backlinks' 
+            cls: 'exocortex-block exocortex-block-dynamic-backlinks' 
         });
-        backlinksContainer.createEl('h3', { text: '📎 Referenced By' });
         const backlinksContent = backlinksContainer.createDiv({ cls: 'exocortex-block-content' });
         
-        const rendererResult = this.blockRendererFactory.createRenderer('backlinks');
+        const rendererResult = this.blockRendererFactory.createRenderer('dynamic-backlinks');
         if (rendererResult.isSuccess) {
             const renderer = rendererResult.getValue();
             const blockContext: BlockRenderingContext = {
                 container: backlinksContent,
-                config: { type: 'backlinks' },
+                config: { 
+                    type: 'dynamic-backlinks',
+                    excludeProperties: ['exo__Asset_id', 'exo__Instance_class'],
+                    showEmptyProperties: false
+                },
                 file: context.file,
                 frontmatter: context.metadata.frontmatter,
                 dataviewApi: context.dataviewApi
@@ -136,6 +58,9 @@ export class DefaultLayoutRenderingStrategy implements ILayoutRenderingStrategy 
             await renderer.render(blockContext);
         }
     }
+
+
+
 
     private renderError(container: HTMLElement, error: string): Result<void> {
         container.createEl('div', { 

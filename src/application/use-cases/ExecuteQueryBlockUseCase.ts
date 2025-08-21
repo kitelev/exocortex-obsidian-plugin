@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { QueryBlockConfig } from '../../domain/entities/LayoutBlock';
+import { QueryBlockConfig } from '../../domain/entities/LayoutBlockStubs';
 import { Result } from '../../domain/core/Result';
 
 export interface ExecuteQueryBlockRequest {

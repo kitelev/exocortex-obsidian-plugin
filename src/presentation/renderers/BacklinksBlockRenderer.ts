@@ -1,5 +1,5 @@
 import { App, TFile } from 'obsidian';
-import { BacklinksBlockConfig } from '../../domain/entities/LayoutBlock';
+import { BacklinksBlockConfig } from "../../domain/entities/LayoutBlockStubs";
 
 export class BacklinksBlockRenderer {
     constructor(private app: App) {}

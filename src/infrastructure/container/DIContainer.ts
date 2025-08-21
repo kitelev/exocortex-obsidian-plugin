@@ -287,9 +287,7 @@ export class DIContainer {
             'LayoutRenderer',
             () => new LayoutRenderer(
                 this.app,
-                this.container.resolve<IClassLayoutRepository>('IClassLayoutRepository'),
-                this.container.resolve<PropertyRenderer>('PropertyRenderer'),
-                this.container.resolve<QueryEngineService>('QueryEngineService')
+                this.container.resolve<IClassLayoutRepository>('IClassLayoutRepository')
             )
         );
 

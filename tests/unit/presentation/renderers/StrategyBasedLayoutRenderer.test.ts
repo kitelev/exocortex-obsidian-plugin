@@ -107,7 +107,7 @@ describe('StrategyBasedLayoutRenderer', () => {
                 
                 // Block renderer factory should only handle block rendering
                 expect(factory.getSupportedBlockTypes()).toEqual(
-                    expect.arrayContaining(['properties', 'backlinks', 'children-efforts'])
+                    expect.arrayContaining(['dynamic-backlinks'])
                 );
             });
         });

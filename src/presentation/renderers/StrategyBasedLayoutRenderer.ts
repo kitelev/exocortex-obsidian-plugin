@@ -38,7 +38,7 @@ export class StrategyBasedLayoutRenderer {
     ) {
         // Initialize dependencies using dependency injection
         this.getLayoutUseCase = new GetLayoutForClassUseCase(layoutRepository);
-        this.blockRendererFactory = new BlockRendererFactory(app, propertyRenderer, queryEngineService);
+        this.blockRendererFactory = new BlockRendererFactory(app);
         
         // Initialize strategies in priority order (first match wins)
         this.strategies = [
