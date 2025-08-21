@@ -1,3 +1,27 @@
+## [3.12.1] - 2025-08-21
+
+### 🔧 Critical Fix: Dynamic Backlinks Now Actually Work!
+
+#### Fixed Issues
+- **UUID-Based References**: Dynamic backlinks now properly handle UUID-based references like `[[82c74542-1b14-4217-b852-d84730484b25]]`
+- **Path-Based Link Resolution**: Links like `[[Area - My]]` now correctly resolve to target files through Obsidian's link resolution system  
+- **Mixed Reference Formats**: Support for all reference formats in the same vault (filenames, UUIDs, display names)
+- **Real Exocortex Structure**: Verified to work with actual user vault structure (Areas, Efforts, Projects)
+
+#### Technical Improvements
+- Enhanced `DynamicBacklinksService.isReferencingTarget()` method with comprehensive reference matching
+- Added link resolution via `metadataCache.getFirstLinkpathDest()` for proper path-based matching
+- Comprehensive test coverage with real-world scenarios from user's vault
+- Integration tests verify behavior with actual exocortex file structures
+
+#### What Users Will See
+- **Effort Area** sections now appear with all Projects and Tasks that reference the Area
+- **Project Area** sections show related Projects
+- Property-based grouping works correctly with `ems__Effort_area`, `ems__Project_area`, etc.
+- No more empty "No property-based backlinks found" messages
+
+This fixes the critical issue where users saw no dynamic property blocks even though relationships existed in their vault.
+
 ## [3.12.0] - 2025-08-21
 
 ### 🚀 Layout System Simplification - Dynamic Property Backlinks Only

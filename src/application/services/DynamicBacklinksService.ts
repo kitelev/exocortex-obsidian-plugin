@@ -21,7 +21,6 @@ export class DynamicBacklinksService {
     ): Promise<Result<PropertyBasedBacklink[]>> {
         try {
             const propertyBacklinks = new Map<string, TFile[]>();
-            const targetFileName = targetFile.basename;
             
             // Scan all markdown files in the vault
             const allFiles = this.app.vault.getMarkdownFiles();
@@ -43,7 +42,7 @@ export class DynamicBacklinksService {
                     // Skip excluded properties
                     if (options.excludeProperties?.includes(propertyName)) continue;
                     
-                    if (this.isReferencingTarget(value, targetFileName)) {
+                    if (this.isReferencingTarget(value, targetFile)) {
                         if (!propertyBacklinks.has(propertyName)) {
                             propertyBacklinks.set(propertyName, []);
                         }
@@ -74,27 +73,51 @@ export class DynamicBacklinksService {
         }
     }
 
-    private isReferencingTarget(value: any, targetFileName: string): boolean {
+    private isReferencingTarget(value: any, targetFile: TFile): boolean {
         if (!value) return false;
         
         // Handle arrays
         if (Array.isArray(value)) {
-            return value.some(item => this.isReferencingTarget(item, targetFileName));
+            return value.some(item => this.isReferencingTarget(item, targetFile));
         }
         
         // Convert to string and check various reference formats
         const strValue = value.toString();
+        const targetFileName = targetFile.basename;
+        const targetPath = targetFile.path;
         
-        return (
-            // Direct basename match
-            strValue === targetFileName ||
-            // Wiki-link format
-            strValue.includes(`[[${targetFileName}]]`) ||
-            // Wiki-link with display text
-            strValue.includes(`[[${targetFileName}|`) ||
-            // Partial match within string (for composite references)
-            strValue.includes(targetFileName)
-        );
+        // Get target file's UUID for UUID-based matching
+        const targetMetadata = this.app.metadataCache.getFileCache(targetFile);
+        const targetUuid = targetMetadata?.frontmatter?.['exo__Asset_uid'];
+        
+        // Direct basename match
+        if (strValue === targetFileName) return true;
+        
+        // Wiki-link format exact match
+        if (strValue.includes(`[[${targetFileName}]]`)) return true;
+        
+        // Wiki-link with display text
+        if (strValue.includes(`[[${targetFileName}|`)) return true;
+        
+        // Path-based matching for references like [[Area - My]]
+        if (strValue.startsWith('[[') && strValue.endsWith(']]')) {
+            const linkText = strValue.slice(2, -2).split('|')[0]; // Remove [[ ]] and display text
+            
+            // Try to resolve the link to see if it points to our target file
+            const linkedFile = this.app.metadataCache.getFirstLinkpathDest(linkText, targetFile.path);
+            if (linkedFile && linkedFile.path === targetPath) return true;
+            
+            // Also check if the link text partially matches the target filename
+            if (targetFileName.includes(linkText) || linkText.includes(targetFileName)) return true;
+        }
+        
+        // UUID-based matching
+        if (targetUuid && strValue.includes(targetUuid)) return true;
+        
+        // Partial match within string (for composite references)
+        if (strValue.includes(targetFileName)) return true;
+        
+        return false;
     }
 
     private cleanClassName(className: any): string {

@@ -209,6 +209,182 @@ describe('DynamicBacklinksService', () => {
             expect(backlinks[0].referencingFiles).toHaveLength(4); // All should match
         });
 
+        it('should handle exocortex Area/Effort/Project structure with UUID matching', async () => {
+            const areaUuid = '82c74542-1b14-4217-b852-d84730484b25';
+            const areaFile = createMockFile('02 Ontology/2 Custom/ems/ems__Area.md', {
+                'exo__Asset_uid': areaUuid,
+                'exo__Asset_label': 'Area',
+                'exo__Instance_class': '[[exo__Class]]'
+            });
+            
+            const effortFile = createMockFile('03 Knowledge/toos/Project - Test Project.md', {
+                'exo__Asset_uid': 'project-uuid-123',
+                'exo__Instance_class': ['[[ems__Project]]'],
+                'ems__Effort_area': '[[Area - My]]', // This should resolve to the area file
+                'ems__Effort_status': '[[ems__EffortStatusTodo]]'
+            });
+
+            const taskFile = createMockFile('03 Knowledge/toos/Task - Test Task.md', {
+                'exo__Asset_uid': 'task-uuid-456',
+                'exo__Instance_class': ['[[ems__Task]]'],
+                'ems__Effort_area': `[[${areaUuid}]]`, // UUID-based reference
+                'ems__Task_project': '[[Project - Test Project]]'
+            });
+
+            mockApp.vault.getMarkdownFiles.mockReturnValue([areaFile, effortFile, taskFile]);
+            
+            // Mock link resolution to make [[Area - My]] resolve to the area file
+            mockApp.metadataCache.getFirstLinkpathDest = jest.fn().mockImplementation((linkText: string, sourcePath: string) => {
+                if (linkText === 'Area - My') {
+                    return areaFile; // [[Area - My]] resolves to our area file
+                }
+                return null;
+            });
+            
+            mockApp.metadataCache.getFileCache = jest.fn().mockImplementation((file: TFile) => {
+                switch (file.path) {
+                    case '02 Ontology/2 Custom/ems/ems__Area.md':
+                        return { frontmatter: { 'exo__Asset_uid': areaUuid, 'exo__Asset_label': 'Area', 'exo__Instance_class': '[[exo__Class]]' } };
+                    case '03 Knowledge/toos/Project - Test Project.md':
+                        return { frontmatter: { 'exo__Asset_uid': 'project-uuid-123', 'exo__Instance_class': ['[[ems__Project]]'], 'ems__Effort_area': '[[Area - My]]', 'ems__Effort_status': '[[ems__EffortStatusTodo]]' } };
+                    case '03 Knowledge/toos/Task - Test Task.md':
+                        return { frontmatter: { 'exo__Asset_uid': 'task-uuid-456', 'exo__Instance_class': ['[[ems__Task]]'], 'ems__Effort_area': `[[${areaUuid}]]`, 'ems__Task_project': '[[Project - Test Project]]' } };
+                    default:
+                        return { frontmatter: {} };
+                }
+            });
+
+            const result = await service.discoverPropertyBasedBacklinks(areaFile, {
+                excludeProperties: ['exo__Asset_id', 'exo__Instance_class']
+            });
+
+            expect(result.isSuccess).toBe(true);
+            const backlinks = result.getValue();
+            
+            expect(backlinks).toHaveLength(1);
+            expect(backlinks[0].propertyName).toBe('ems__Effort_area');
+            expect(backlinks[0].referencingFiles).toHaveLength(2); // Both effort and task should reference the area
+            
+            const referencingPaths = backlinks[0].referencingFiles.map(f => f.path);
+            expect(referencingPaths).toContain('03 Knowledge/toos/Project - Test Project.md');
+            expect(referencingPaths).toContain('03 Knowledge/toos/Task - Test Task.md');
+        });
+
+        it('should handle path-based link resolution for Area references', async () => {
+            const areaFile = createMockFile('Areas/My Work Area.md', {
+                'exo__Asset_uid': 'area-uuid-789',
+                'exo__Asset_label': 'My Work Area',
+                'exo__Instance_class': '[[ems__Area]]'
+            });
+            
+            const projectFile = createMockFile('Projects/Important Project.md', {
+                'exo__Instance_class': ['[[ems__Project]]'],
+                'ems__Effort_area': '[[My Work Area]]' // Should resolve via link resolution
+            });
+
+            mockApp.vault.getMarkdownFiles.mockReturnValue([areaFile, projectFile]);
+            
+            // Mock link resolution
+            mockApp.metadataCache.getFirstLinkpathDest = jest.fn().mockImplementation((linkText: string) => {
+                if (linkText === 'My Work Area') {
+                    return areaFile;
+                }
+                return null;
+            });
+            
+            mockApp.metadataCache.getFileCache = jest.fn().mockImplementation((file: TFile) => {
+                switch (file.path) {
+                    case 'Areas/My Work Area.md':
+                        return { frontmatter: { 'exo__Asset_uid': 'area-uuid-789', 'exo__Asset_label': 'My Work Area', 'exo__Instance_class': '[[ems__Area]]' } };
+                    case 'Projects/Important Project.md':
+                        return { frontmatter: { 'exo__Instance_class': ['[[ems__Project]]'], 'ems__Effort_area': '[[My Work Area]]' } };
+                    default:
+                        return { frontmatter: {} };
+                }
+            });
+
+            const result = await service.discoverPropertyBasedBacklinks(areaFile);
+
+            expect(result.isSuccess).toBe(true);
+            const backlinks = result.getValue();
+            
+            expect(backlinks).toHaveLength(1);
+            expect(backlinks[0].propertyName).toBe('ems__Effort_area');
+            expect(backlinks[0].referencingFiles).toHaveLength(1);
+            expect(backlinks[0].referencingFiles[0].path).toBe('Projects/Important Project.md');
+        });
+
+        it('should handle realistic exocortex structure with multiple property types', async () => {
+            const areaFile = createMockFile('02 Ontology/2 Custom/ems/ems__Area.md', {
+                'exo__Asset_uid': '82c74542-1b14-4217-b852-d84730484b25',
+                'exo__Asset_label': 'Area',
+                'exo__Instance_class': '[[exo__Class]]'
+            });
+            
+            const effort1 = createMockFile('03 Knowledge/toos/Project - Business Trip.md', {
+                'exo__Instance_class': ['[[ems__Project]]'],
+                'ems__Effort_area': '[[Area - My]]'
+            });
+            
+            const effort2 = createMockFile('03 Knowledge/kitelev/Task - Review Code.md', {
+                'exo__Instance_class': ['[[ems__Task]]'],
+                'ems__Effort_area': '[[Area - My]]'
+            });
+            
+            const effort3 = createMockFile('03 Knowledge/kitelev/Project - Plugin Development.md', {
+                'exo__Instance_class': ['[[ems__Project]]'],
+                'ems__Project_area': '[[Area - My]]' // Different property name
+            });
+
+            mockApp.vault.getMarkdownFiles.mockReturnValue([areaFile, effort1, effort2, effort3]);
+            
+            // Mock link resolution for [[Area - My]] references
+            mockApp.metadataCache.getFirstLinkpathDest = jest.fn().mockImplementation((linkText: string) => {
+                if (linkText === 'Area - My') {
+                    return areaFile;
+                }
+                return null;
+            });
+            
+            mockApp.metadataCache.getFileCache = jest.fn().mockImplementation((file: TFile) => {
+                switch (file.path) {
+                    case '02 Ontology/2 Custom/ems/ems__Area.md':
+                        return { frontmatter: { 'exo__Asset_uid': '82c74542-1b14-4217-b852-d84730484b25', 'exo__Asset_label': 'Area', 'exo__Instance_class': '[[exo__Class]]' } };
+                    case '03 Knowledge/toos/Project - Business Trip.md':
+                        return { frontmatter: { 'exo__Instance_class': ['[[ems__Project]]'], 'ems__Effort_area': '[[Area - My]]' } };
+                    case '03 Knowledge/kitelev/Task - Review Code.md':
+                        return { frontmatter: { 'exo__Instance_class': ['[[ems__Task]]'], 'ems__Effort_area': '[[Area - My]]' } };
+                    case '03 Knowledge/kitelev/Project - Plugin Development.md':
+                        return { frontmatter: { 'exo__Instance_class': ['[[ems__Project]]'], 'ems__Project_area': '[[Area - My]]' } };
+                    default:
+                        return { frontmatter: {} };
+                }
+            });
+
+            const result = await service.discoverPropertyBasedBacklinks(areaFile, {
+                excludeProperties: ['exo__Asset_id', 'exo__Instance_class']
+            });
+
+            expect(result.isSuccess).toBe(true);
+            const backlinks = result.getValue();
+            
+            // Should have 2 property groups: ems__Effort_area and ems__Project_area
+            expect(backlinks).toHaveLength(2);
+            
+            // Should be sorted alphabetically
+            expect(backlinks[0].propertyName).toBe('ems__Effort_area');
+            expect(backlinks[0].referencingFiles).toHaveLength(2); // Project and Task
+            
+            expect(backlinks[1].propertyName).toBe('ems__Project_area');
+            expect(backlinks[1].referencingFiles).toHaveLength(1); // Only the plugin project
+            
+            const effortAreaFiles = backlinks[0].referencingFiles.map(f => f.path);
+            expect(effortAreaFiles).toContain('03 Knowledge/toos/Project - Business Trip.md');
+            expect(effortAreaFiles).toContain('03 Knowledge/kitelev/Task - Review Code.md');
+            
+            expect(backlinks[1].referencingFiles[0].path).toBe('03 Knowledge/kitelev/Project - Plugin Development.md');
+        });
+
         it('should skip target file itself', async () => {
             const file1 = createMockFile('file1.md', { 'parent': 'target' });
 
