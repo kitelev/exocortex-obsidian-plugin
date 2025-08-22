@@ -1,3 +1,31 @@
+## [3.16.1] - 2025-08-22
+
+### 🔧 Plugin Initialization Fix - Smoother Startup Experience
+
+#### Critical Bug Fix for Reliable Plugin Loading
+
+Fixed a critical plugin initialization issue that could prevent Exocortex from starting properly in certain scenarios. This bug affected users who had recently created new child areas or were using advanced semantic features.
+
+#### What Was Fixed
+
+- **Dependency Injection Registration**: Resolved "Service not found: RDFService" error that occurred during plugin startup
+- **CreateChildAreaUseCase Integration**: Fixed missing service registration in the dependency injection container
+- **Improved Error Handling**: Better error messages when service registration fails
+
+#### User Benefits
+
+- **Seamless Plugin Activation**: Exocortex now starts consistently without dependency errors
+- **Reliable Child Area Creation**: The "Create Child Zone" functionality works smoothly across all scenarios  
+- **Better Error Recovery**: If issues occur, you'll get clearer error messages to help troubleshoot
+
+#### For Power Users
+
+- **Clean Architecture Maintained**: Fixed registration follows proper dependency injection patterns
+- **Zero Breaking Changes**: Existing functionality remains unchanged - this is purely a stability fix
+- **Test Coverage**: Added tests to prevent similar registration issues in the future
+
+If you experienced plugin startup errors or "Service not found" messages, this update resolves those issues completely.
+
 ## [3.16.0] - 2025-08-22
 
 ### 🔍 Semantic Vault Analyzer - Advanced Knowledge Discovery
