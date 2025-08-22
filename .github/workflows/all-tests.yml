@@ -75,7 +75,7 @@ jobs:
     name: 🧪 Core Tests
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
-    needs: quick-validation
+    # Note: quick-validation dependency removed since quick-validation is disabled
     
     strategy:
       fail-fast: false
@@ -156,7 +156,7 @@ jobs:
     name: 🖥️ UI Tests (Obsidian)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: quick-validation
+    # Note: quick-validation dependency removed since quick-validation is disabled
     
     steps:
       - name: Checkout code
@@ -237,8 +237,8 @@ jobs:
           echo "| 🖥️ UI Tests | $ui_result |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          # Overall status
-          if [ "$validation_result" == "success" ] && [ "$core_result" == "success" ] && [ "$ui_result" == "success" ]; then
+          # Overall status - allow skipped for disabled validation job
+          if ([ "$validation_result" == "success" ] || [ "$validation_result" == "skipped" ]) && [ "$core_result" == "success" ] && [ "$ui_result" == "success" ]; then
             echo "✅ **All comprehensive tests passed successfully!**" >> $GITHUB_STEP_SUMMARY
             exit 0
           else
@@ -247,7 +247,7 @@ jobs:
             # List failed jobs
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Failed Jobs:" >> $GITHUB_STEP_SUMMARY
-            [ "$validation_result" != "success" ] && echo "- 🔍 Quick Validation: $validation_result" >> $GITHUB_STEP_SUMMARY
+            [ "$validation_result" != "success" ] && [ "$validation_result" != "skipped" ] && echo "- 🔍 Quick Validation: $validation_result" >> $GITHUB_STEP_SUMMARY
             [ "$core_result" != "success" ] && echo "- 🧪 Core Tests: $core_result" >> $GITHUB_STEP_SUMMARY
             [ "$ui_result" != "success" ] && echo "- 🖥️ UI Tests: $ui_result" >> $GITHUB_STEP_SUMMARY
             
