@@ -26,7 +26,29 @@ interface TaskProps {
  */
 export class Task extends Entity<TaskProps> {
   private constructor(props: TaskProps) {
-    super(props);
+    super(props, props.id.toString());
+  }
+
+  protected generateId(): string {
+    return this.props.id.toString();
+  }
+
+  protected validate(): void {
+    if (!this.props.id) {
+      throw new Error("Task must have a valid ID");
+    }
+    
+    if (!this.props.title || this.props.title.trim().length === 0) {
+      throw new Error("Task must have a non-empty title");
+    }
+    
+    if (!this.props.priority) {
+      throw new Error("Task must have a valid priority");
+    }
+    
+    if (!this.props.status) {
+      throw new Error("Task must have a valid status");
+    }
   }
 
   static create(params: {

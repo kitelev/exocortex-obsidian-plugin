@@ -18,7 +18,29 @@ export interface QueryEngineConfigProps {
  */
 export class QueryEngineConfig extends Entity<QueryEngineConfigProps> {
   private constructor(props: QueryEngineConfigProps) {
-    super(props);
+    super(props, props.id);
+  }
+
+  protected generateId(): string {
+    return this.props.id;
+  }
+
+  protected validate(): void {
+    if (!this.props.id || this.props.id.trim().length === 0) {
+      throw new Error("QueryEngineConfig must have a valid ID");
+    }
+    
+    if (!this.props.preferredEngine) {
+      throw new Error("QueryEngineConfig must have a preferred engine");
+    }
+    
+    if (this.props.cacheTimeout && this.props.cacheTimeout <= 0) {
+      throw new Error("Cache timeout must be positive");
+    }
+    
+    if (this.props.maxCacheSize && this.props.maxCacheSize <= 0) {
+      throw new Error("Max cache size must be positive");
+    }
   }
 
   public static create(

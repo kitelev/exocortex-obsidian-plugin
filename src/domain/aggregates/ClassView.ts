@@ -130,6 +130,7 @@ export class ClassView extends AggregateRoot<ClassViewProps> {
     this.addDomainEvent({
       aggregateId: this.id.toString(),
       eventType: "ButtonAddedToClassView",
+      occurredOn: new Date(),
       eventData: {
         classViewId: this.id.toString(),
         className: this.className.value,
@@ -159,6 +160,7 @@ export class ClassView extends AggregateRoot<ClassViewProps> {
     this.addDomainEvent({
       aggregateId: this.id.toString(),
       eventType: "ButtonRemovedFromClassView",
+      occurredOn: new Date(),
       eventData: {
         classViewId: this.id.toString(),
         className: this.className.value,
@@ -203,6 +205,7 @@ export class ClassView extends AggregateRoot<ClassViewProps> {
     this.addDomainEvent({
       aggregateId: this.id.toString(),
       eventType: "ButtonsReordered",
+      occurredOn: new Date(),
       eventData: {
         classViewId: this.id.toString(),
         className: this.className.value,
@@ -226,6 +229,7 @@ export class ClassView extends AggregateRoot<ClassViewProps> {
     this.addDomainEvent({
       aggregateId: this.id.toString(),
       eventType: "DisplayOptionsUpdated",
+      occurredOn: new Date(),
       eventData: {
         classViewId: this.id.toString(),
         className: this.className.value,

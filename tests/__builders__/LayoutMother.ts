@@ -9,7 +9,7 @@ import { Result } from '../../src/domain/core/Result';
  * Follows Test Data Builder pattern for flexible test setup
  */
 export class LayoutMother {
-    private id: string = 'test-layout-id';
+    private id: string = '00000000-0000-4000-8000-000000000001';
     private targetClass: string = 'TestClass';
     private blocks: LayoutBlockConfig[] = [];
     private isEnabled: boolean = true;
@@ -21,7 +21,7 @@ export class LayoutMother {
 
     static simple(): ClassLayout {
         return LayoutMother.create()
-            .withId('simple-layout')
+            .withId('00000000-0000-4000-8000-000000000002')
             .withTargetClass('SimpleClass')
             .withPropertiesBlock()
             .build();
@@ -29,7 +29,7 @@ export class LayoutMother {
 
     static complex(): ClassLayout {
         return LayoutMother.create()
-            .withId('complex-layout')
+            .withId('00000000-0000-4000-8000-000000000003')
             .withTargetClass('ComplexClass')
             .withPropertiesBlock()
             .withBacklinksBlock()
@@ -41,14 +41,14 @@ export class LayoutMother {
 
     static empty(): ClassLayout {
         return LayoutMother.create()
-            .withId('empty-layout')
+            .withId('00000000-0000-4000-8000-000000000004')
             .withTargetClass('EmptyClass')
             .build();
     }
 
     static disabled(): ClassLayout {
         return LayoutMother.create()
-            .withId('disabled-layout')
+            .withId('00000000-0000-4000-8000-000000000005')
             .withTargetClass('DisabledClass')
             .disabled()
             .build();
@@ -56,7 +56,7 @@ export class LayoutMother {
 
     static withCollapsibleBlocks(): ClassLayout {
         return LayoutMother.create()
-            .withId('collapsible-layout')
+            .withId('00000000-0000-4000-8000-000000000006')
             .withTargetClass('CollapsibleClass')
             .withCollapsibleBlock('collapsible-1', 'properties', 'Collapsible Properties')
             .withCollapsibleBlock('collapsible-2', 'backlinks', 'Collapsible Backlinks', true)

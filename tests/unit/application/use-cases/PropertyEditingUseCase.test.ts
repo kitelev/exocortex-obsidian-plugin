@@ -530,9 +530,11 @@ describe('PropertyEditingUseCase', () => {
             const useCaseWithoutDirectUpdate = new PropertyEditingUseCase(repoWithoutDirectUpdate, mockPlugin);
 
             // Mock asset creation and retrieval
+            const validUUID = '123e4567-e89b-12d3-a456-426614174000';
+            const assetIdResult = AssetId.create(validUUID);
             const mockAsset = {
-                setProperty: jest.fn(),
-                getId: jest.fn().mockReturnValue(AssetId.create('valid-uuid').getValue())
+                setProperty: jest.fn().mockReturnValue(Result.ok()),
+                getId: jest.fn().mockReturnValue(assetIdResult.getValue())
             } as any;
 
             repoWithoutDirectUpdate.findByFilename.mockResolvedValue(mockAsset);
@@ -549,9 +551,10 @@ describe('PropertyEditingUseCase', () => {
     describe('Asset ID Based Updates', () => {
         test('should update asset by UUID', async () => {
             const validUUID = '123e4567-e89b-12d3-a456-426614174000';
+            const assetIdResult = AssetId.create(validUUID);
             const mockAsset = {
-                setProperty: jest.fn(),
-                getId: jest.fn().mockReturnValue(AssetId.create(validUUID).getValue())
+                setProperty: jest.fn().mockReturnValue(Result.ok()),
+                getId: jest.fn().mockReturnValue(assetIdResult.getValue())
             } as any;
 
             mockAssetRepository.findById.mockResolvedValue(mockAsset);
@@ -578,9 +581,11 @@ describe('PropertyEditingUseCase', () => {
         });
 
         test('should fallback to filename lookup when UUID lookup fails', async () => {
+            const validUUID = '123e4567-e89b-12d3-a456-426614174000';
+            const assetIdResult = AssetId.create(validUUID);
             const mockAsset = {
-                setProperty: jest.fn(),
-                getId: jest.fn().mockReturnValue(AssetId.create('123e4567-e89b-12d3-a456-426614174000').getValue())
+                setProperty: jest.fn().mockReturnValue(Result.ok()),
+                getId: jest.fn().mockReturnValue(assetIdResult.getValue())
             } as any;
 
             mockAssetRepository.findById.mockResolvedValue(null);
@@ -631,8 +636,9 @@ describe('PropertyEditingUseCase', () => {
         test('should handle repository errors during asset lookup', async () => {
             mockAssetRepository.findById.mockRejectedValue(new Error('Database error'));
 
+            const validUUID = '123e4567-e89b-12d3-a456-426614174000';
             const request: UpdatePropertyRequest = {
-                assetId: 'test-id',
+                assetId: validUUID,
                 propertyName: 'title',
                 value: 'New Title',
                 propertyDefinition: {
@@ -650,9 +656,11 @@ describe('PropertyEditingUseCase', () => {
         });
 
         test('should handle save errors', async () => {
+            const validUUID = '123e4567-e89b-12d3-a456-426614174000';
+            const assetIdResult = AssetId.create(validUUID);
             const mockAsset = {
-                setProperty: jest.fn(),
-                getId: jest.fn().mockReturnValue(AssetId.create('123e4567-e89b-12d3-a456-426614174000').getValue())
+                setProperty: jest.fn().mockReturnValue(Result.ok()),
+                getId: jest.fn().mockReturnValue(assetIdResult.getValue())
             } as any;
 
             mockAssetRepository.findByFilename.mockResolvedValue(mockAsset);

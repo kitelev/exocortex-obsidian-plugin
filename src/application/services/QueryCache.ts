@@ -40,7 +40,7 @@ export class QueryCache {
   private cache: Map<string, CacheEntry<any>>;
   private stats: CacheStatistics;
   private config: QueryCacheConfig;
-  private cleanupTimer?: NodeJS.Timeout;
+  private cleanupTimer?: ReturnType<typeof setTimeout>;
 
   constructor(config: Partial<QueryCacheConfig> = {}) {
     this.config = { ...DEFAULT_CACHE_CONFIG, ...config };

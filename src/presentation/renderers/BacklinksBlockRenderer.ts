@@ -1,8 +1,12 @@
 import { App, TFile } from "obsidian";
 import { BacklinksBlockConfig } from "../../domain/entities/LayoutBlockStubs";
+import { BaseRenderer } from "../../shared/BaseRenderer";
+import { RenderingUtils } from "../../shared/utils/RenderingUtils";
 
-export class BacklinksBlockRenderer {
-  constructor(private app: App) {}
+export class BacklinksBlockRenderer extends BaseRenderer {
+  constructor(app: App) {
+    super(app);
+  }
 
   async render(
     container: HTMLElement,
@@ -11,20 +15,46 @@ export class BacklinksBlockRenderer {
     dv: any,
   ): Promise<void> {
     const backlinksConfig = config as BacklinksBlockConfig;
+    
+    const { totalFiles, filteredFiles, displayFiles } = await this.preprocess(
+      container,
+      config,
+      file
+    );
 
-    // Get backlinks for current file
-    const backlinks = (this.app.metadataCache as any).getBacklinksForFile(file);
-
-    if (!backlinks || !backlinks.data || backlinks.data.size === 0) {
-      container.createEl("p", {
-        text: "No backlinks found",
-        cls: "exocortex-empty",
-      });
+    if (totalFiles.length === 0) {
+      this.renderEmptyState(container, "No backlinks found");
       return;
     }
 
-    // Convert backlinks to file array
-    let backlinkFiles: TFile[] = [];
+    this.renderCountInfo(
+      container,
+      filteredFiles.length,
+      displayFiles.length,
+      "backlink"
+    );
+
+    if (displayFiles.length === 0) {
+      this.renderEmptyState(container, "No matching backlinks found");
+      return;
+    }
+
+    // Group by class if specified
+    if (backlinksConfig.groupByClass) {
+      this.renderGroupedFiles(container, displayFiles, config, "backlinks");
+    } else {
+      this.renderFlatFiles(container, displayFiles, config);
+    }
+  }
+
+  protected getRelevantFiles(config: any, file: TFile): Promise<TFile[]> {
+    const backlinks = (this.app.metadataCache as any).getBacklinksForFile(file);
+    
+    if (!backlinks || !backlinks.data || backlinks.data.size === 0) {
+      return Promise.resolve([]);
+    }
+
+    const backlinkFiles: TFile[] = [];
     for (const [path] of backlinks.data) {
       const backlinkFile = this.app.vault.getAbstractFileByPath(path);
       if (backlinkFile && backlinkFile.path) {
@@ -32,124 +62,41 @@ export class BacklinksBlockRenderer {
       }
     }
 
-    // Filter by class if specified
-    if (backlinksConfig.filterByClass) {
-      const targetClass = this.cleanClassName(backlinksConfig.filterByClass);
-      backlinkFiles = backlinkFiles.filter((f) => {
-        const metadata = this.app.metadataCache.getFileCache(f);
-        const instanceClass = metadata?.frontmatter?.["exo__Instance_class"];
-        return this.cleanClassName(instanceClass) === targetClass;
-      });
-    }
-
-    // Limit results if specified
-    const totalCount = backlinkFiles.length;
-    if (backlinksConfig.maxResults && backlinksConfig.maxResults > 0) {
-      backlinkFiles = backlinkFiles.slice(0, backlinksConfig.maxResults);
-    }
-
-    // Show count
-    const info = container.createDiv({ cls: "exocortex-backlinks-info" });
-    info.createEl("span", {
-      text: `${totalCount} backlink${totalCount !== 1 ? "s" : ""}${backlinkFiles.length < totalCount ? `, showing ${backlinkFiles.length}` : ""}`,
-      cls: "exocortex-backlinks-count",
-    });
-
-    if (backlinkFiles.length === 0) {
-      container.createEl("p", {
-        text: "No matching backlinks found",
-        cls: "exocortex-empty",
-      });
-      return;
-    }
-
-    // Group by class if specified
-    if (backlinksConfig.groupByClass) {
-      this.renderGroupedBacklinks(container, backlinkFiles);
-    } else {
-      this.renderFlatBacklinks(container, backlinkFiles);
-    }
+    return Promise.resolve(backlinkFiles);
   }
 
-  private renderFlatBacklinks(container: HTMLElement, files: TFile[]): void {
-    const list = container.createEl("ul", { cls: "exocortex-backlinks-list" });
-
-    files.forEach((file) => {
-      const metadata = this.app.metadataCache.getFileCache(file);
-      const frontmatter = metadata?.frontmatter || {};
-
-      const item = list.createEl("li");
-      const link = item.createEl("a", {
-        text: frontmatter["exo__Asset_label"] || file.basename,
-        href: file.path,
-        cls: "internal-link",
-      });
-
-      // Add class info
-      const instanceClass = frontmatter["exo__Instance_class"];
-      if (instanceClass) {
-        const classSpan = item.createEl("span", {
-          text: ` (${this.cleanClassName(instanceClass)})`,
-          cls: "exocortex-class-info",
-        });
-      }
-    });
+  protected getItemType(): string {
+    return "backlink";
   }
 
-  private renderGroupedBacklinks(container: HTMLElement, files: TFile[]): void {
-    // Group files by class
-    const groups = new Map<string, TFile[]>();
+  protected getTableHeaders(config: any): string[] {
+    return ["Name", "Class"];
+  }
 
-    files.forEach((file) => {
-      const metadata = this.app.metadataCache.getFileCache(file);
-      const instanceClass = metadata?.frontmatter?.["exo__Instance_class"];
-      const className = this.cleanClassName(instanceClass) || "Unclassified";
+  protected renderTableRow(row: HTMLElement, file: TFile, config: any): void {
+    // Name column
+    const nameCell = row.createEl("td", { cls: "exocortex-table-cell-name" });
+    const displayLabel = this.getDisplayLabel(file);
+    RenderingUtils.createInternalLink(nameCell, displayLabel, file.path);
 
-      if (!groups.has(className)) {
-        groups.set(className, []);
-      }
-      groups.get(className)!.push(file);
-    });
-
-    // Sort groups by name
-    const sortedGroups = Array.from(groups.entries()).sort(([a], [b]) =>
-      a.localeCompare(b),
+    // Class column
+    const classCell = row.createEl("td", { cls: "exocortex-table-cell-class" });
+    const instanceClass = RenderingUtils.extractFrontmatterData(
+      this.app,
+      file,
+      "exo__Instance_class"
     );
-
-    // Render each group
-    sortedGroups.forEach(([className, groupFiles]) => {
-      const groupContainer = container.createDiv({
-        cls: "exocortex-backlinks-group",
+    if (instanceClass) {
+      classCell.createEl("span", {
+        text: this.cleanClassName(instanceClass),
+        cls: "exocortex-class-ref",
       });
-
-      // Group header
-      groupContainer.createEl("h4", {
-        text: `${className} (${groupFiles.length})`,
-        cls: "backlinks-group-header",
+    } else {
+      classCell.createEl("span", {
+        text: "-",
+        cls: "exocortex-class-empty",
       });
-
-      // Group content
-      const list = groupContainer.createEl("ul", {
-        cls: "exocortex-backlinks-list",
-      });
-
-      groupFiles.forEach((file) => {
-        const metadata = this.app.metadataCache.getFileCache(file);
-        const frontmatter = metadata?.frontmatter || {};
-
-        const item = list.createEl("li");
-        item.createEl("a", {
-          text: frontmatter["exo__Asset_label"] || file.basename,
-          href: file.path,
-          cls: "internal-link",
-        });
-      });
-    });
+    }
   }
 
-  private cleanClassName(className: any): string {
-    if (!className) return "";
-    const str = Array.isArray(className) ? className[0] : className;
-    return str?.toString().replace(/\[\[|\]\]/g, "") || "";
-  }
 }

@@ -27,7 +27,25 @@ export class ClassLayout extends Entity<ClassLayoutProps> {
   private static readonly MAX_BLOCKS = 20;
 
   private constructor(props: ClassLayoutProps) {
-    super(props);
+    super(props, props.id.toString());
+  }
+
+  protected generateId(): string {
+    return this.props.id.toString();
+  }
+
+  protected validate(): void {
+    if (!this.props.id) {
+      throw new Error("ClassLayout must have a valid ID");
+    }
+    
+    if (!this.props.targetClass) {
+      throw new Error("ClassLayout must have a valid target class");
+    }
+    
+    if (this.props.blocks.length > ClassLayout.MAX_BLOCKS) {
+      throw new Error(`ClassLayout cannot have more than ${ClassLayout.MAX_BLOCKS} blocks`);
+    }
   }
 
   public static create(props: ClassLayoutProps): Result<ClassLayout> {

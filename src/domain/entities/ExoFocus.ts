@@ -29,11 +29,11 @@ export class ExoFocus extends Entity<ExoFocusProps> {
   private _focusId: string;
 
   private constructor(props: ExoFocusProps, id?: string) {
-    super(props);
-    this._focusId = id || this.generateId();
+    super(props, id);
+    this._focusId = this.id;
   }
 
-  private generateId(): string {
+  protected generateId(): string {
     return (
       "focus-" + Date.now() + "-" + Math.random().toString(36).substring(2, 9)
     );

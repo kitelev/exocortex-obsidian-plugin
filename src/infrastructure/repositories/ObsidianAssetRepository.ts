@@ -4,13 +4,17 @@ import { Asset } from "../../domain/entities/Asset";
 import { AssetId } from "../../domain/value-objects/AssetId";
 import { ClassName } from "../../domain/value-objects/ClassName";
 import { OntologyPrefix } from "../../domain/value-objects/OntologyPrefix";
+import { AbstractFileRepository } from "../../shared/AbstractFileRepository";
+import { FileOperationUtils } from "../../shared/utils/FileOperationUtils";
 
 /**
  * Obsidian implementation of IAssetRepository
  * Handles asset persistence using Obsidian vault
  */
-export class ObsidianAssetRepository implements IAssetRepository {
-  constructor(private app: App) {}
+export class ObsidianAssetRepository extends AbstractFileRepository implements IAssetRepository {
+  constructor(app: App) {
+    super(app);
+  }
 
   async findById(id: AssetId): Promise<Asset | null> {
     const files = this.app.vault.getMarkdownFiles();
@@ -80,104 +84,47 @@ export class ObsidianAssetRepository implements IAssetRepository {
   }
 
   async save(asset: Asset): Promise<void> {
+    await this.saveEntityWithFrontmatter(
+      asset,
+      (a) => a.getTitle(),
+      (a) => a.toFrontmatter(),
+      (a) => this.findExistingAssetFile(a),
+      "Asset"
+    );
+  }
+
+  private findExistingAssetFile(asset: Asset): TFile | null {
     const frontmatter = asset.toFrontmatter();
-
-    // Try to find the existing file by asset ID, stored path, or filename
-    let targetFile: TFile | null = null;
-
-    // First check if asset has a stored file path
     const storedPath = (asset as any).props?.filePath;
-    if (storedPath) {
-      const file = this.app.vault.getAbstractFileByPath(storedPath);
-      if (file instanceof TFile) {
-        targetFile = file;
-      }
-    }
+    const assetId = frontmatter["exo__Asset_uid"];
+    const filename = asset.getTitle();
 
-    // If not found by stored path, try by asset ID
-    if (!targetFile) {
-      const assetId = frontmatter["exo__Asset_uid"];
-      if (assetId) {
-        const files = this.app.vault.getMarkdownFiles();
-        for (const file of files) {
-          const cache = this.app.metadataCache.getFileCache(file);
-          if (cache?.frontmatter?.["exo__Asset_uid"] === assetId) {
-            targetFile = file;
-            break;
-          }
-        }
-      }
-    }
-
-    // If not found by ID, try by filename
-    if (!targetFile) {
-      const fileName = `${asset.getTitle()}.md`;
-      const file = this.app.vault.getAbstractFileByPath(fileName);
-      if (file instanceof TFile) {
-        targetFile = file;
-      }
-    }
-
-    // Build YAML frontmatter
-    const yamlLines = ["---"];
-    for (const [key, value] of Object.entries(frontmatter)) {
-      if (Array.isArray(value)) {
-        yamlLines.push(`${key}:`);
-        for (const item of value) {
-          // Check if item contains wikilinks that need quotes
-          const itemStr = String(item);
-          if (itemStr.includes("[[") && itemStr.includes("]]")) {
-            yamlLines.push(`  - "${itemStr}"`);
-          } else {
-            yamlLines.push(`  - ${itemStr}`);
-          }
-        }
-      } else if (typeof value === "object" && value !== null) {
-        yamlLines.push(`${key}: ${JSON.stringify(value)}`);
-      } else {
-        // Check if value contains wikilinks that need quotes
-        const valueStr = String(value);
-        if (valueStr.includes("[[") && valueStr.includes("]]")) {
-          yamlLines.push(`${key}: "${valueStr}"`);
-        } else {
-          yamlLines.push(`${key}: ${valueStr}`);
-        }
-      }
-    }
-    yamlLines.push("---");
-
-    if (targetFile) {
-      // Preserve existing content after frontmatter
-      const existingContent = await this.app.vault.read(targetFile);
-      const contentMatch = existingContent.match(
-        /^---\n[\s\S]*?\n---\n([\s\S]*)$/,
-      );
-      const bodyContent = contentMatch ? contentMatch[1] : "";
-
-      const newContent = yamlLines.join("\n") + "\n" + bodyContent;
-      await this.app.vault.modify(targetFile, newContent);
-    } else {
-      // Create new file if it doesn't exist
-      const fileName = `${asset.getTitle()}.md`;
-      const content = yamlLines.join("\n") + "\n";
-      await this.app.vault.create(fileName, content);
-    }
+    return this.findFileWithFallback({
+      uid: assetId,
+      storedPath,
+      filename,
+    });
   }
 
   async delete(id: AssetId): Promise<void> {
     const asset = await this.findById(id);
     if (asset) {
-      const fileName = `${asset.getTitle()}.md`;
-      const file = this.app.vault.getAbstractFileByPath(fileName);
-      if (file) {
-        await this.app.vault.delete(file);
-      }
+      await this.deleteFileByEntity(
+        asset,
+        (a) => a.getTitle(),
+        "Asset"
+      );
     }
   }
 
   async exists(id: AssetId): Promise<boolean> {
-    const asset = await this.findById(id);
-    return asset !== null;
+    try {
+      const found = await this.findById(id);
+      return found !== null;
+    } catch (error) {
+      console.error("Error checking asset existence:", error);
+      return false;
+    }
   }
 
   async findAll(): Promise<Asset[]> {
@@ -241,88 +188,6 @@ export class ObsidianAssetRepository implements IAssetRepository {
     filePath: string,
     updates: Record<string, any>,
   ): Promise<void> {
-    const file = this.app.vault.getAbstractFileByPath(filePath);
-
-    if (!(file instanceof TFile)) {
-      throw new Error(`File not found: ${filePath}`);
-    }
-
-    const content = await this.app.vault.read(file);
-    const cache = this.app.metadataCache.getFileCache(file);
-    const currentFrontmatter = cache?.frontmatter || {};
-
-    // Merge updates with current frontmatter
-    const newFrontmatter = { ...currentFrontmatter, ...updates };
-
-    // Build new YAML frontmatter
-    const yamlLines = ["---"];
-    for (const [key, value] of Object.entries(newFrontmatter)) {
-      if (value === undefined || value === null) continue; // Skip undefined/null values
-
-      if (Array.isArray(value)) {
-        yamlLines.push(`${key}:`);
-        for (const item of value) {
-          const itemStr = String(item);
-          if (itemStr.includes("[[") && itemStr.includes("]]")) {
-            yamlLines.push(`  - "${itemStr}"`);
-          } else {
-            yamlLines.push(`  - ${itemStr}`);
-          }
-        }
-      } else if (typeof value === "object" && value !== null) {
-        yamlLines.push(`${key}: ${JSON.stringify(value)}`);
-      } else if (typeof value === "boolean") {
-        yamlLines.push(`${key}: ${value}`);
-      } else if (typeof value === "number") {
-        yamlLines.push(`${key}: ${value}`);
-      } else {
-        const valueStr = String(value);
-        // Check if value needs quoting
-        if (
-          valueStr.includes(":") ||
-          valueStr.includes("#") ||
-          valueStr.includes("[") ||
-          valueStr.includes("]") ||
-          valueStr.includes("{") ||
-          valueStr.includes("}") ||
-          valueStr.includes("|") ||
-          valueStr.includes(">") ||
-          valueStr.includes("@") ||
-          valueStr.includes("`") ||
-          valueStr.includes('"') ||
-          valueStr.includes("'") ||
-          valueStr.startsWith(" ") ||
-          valueStr.endsWith(" ")
-        ) {
-          // Escape quotes and wrap in quotes
-          yamlLines.push(`${key}: "${valueStr.replace(/"/g, '\\"')}"`);
-        } else {
-          yamlLines.push(`${key}: ${valueStr}`);
-        }
-      }
-    }
-    yamlLines.push("---");
-
-    // Extract body content - handle multiple cases
-    let bodyContent = "";
-
-    // Check if content has frontmatter
-    if (content.startsWith("---\n")) {
-      // Find the end of frontmatter
-      const endOfFrontmatter = content.indexOf("\n---\n", 4);
-      if (endOfFrontmatter !== -1) {
-        // Extract content after frontmatter
-        bodyContent = content.substring(endOfFrontmatter + 5);
-      } else {
-        // Malformed frontmatter, preserve original content
-        bodyContent = content;
-      }
-    } else {
-      // No frontmatter, entire content is body
-      bodyContent = content;
-    }
-
-    const newContent = yamlLines.join("\n") + "\n" + bodyContent;
-    await this.app.vault.modify(file, newContent);
+    await super.updateFrontmatterByPath(filePath, updates);
   }
 }

@@ -313,4 +313,25 @@ export class Graph {
 
     return true;
   }
+
+  /**
+   * Alias for add method - used by some services
+   */
+  addTriple(triple: Triple): void {
+    this.add(triple);
+  }
+
+  /**
+   * Get all triples (alias for toArray)
+   */
+  getTriples(): Triple[] {
+    return this.toArray();
+  }
+
+  /**
+   * Alias for has method - used by some services
+   */
+  hasTriple(triple: Triple): boolean {
+    return this.has(triple);
+  }
 }

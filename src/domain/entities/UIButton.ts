@@ -17,7 +17,25 @@ export interface UIButtonProps {
 
 export class UIButton extends Entity<UIButtonProps> {
   private constructor(props: UIButtonProps) {
-    super(props);
+    super(props, props.id.toString());
+  }
+
+  protected generateId(): string {
+    return this.props.id.toString();
+  }
+
+  protected validate(): void {
+    if (!this.props.id) {
+      throw new Error("UIButton must have a valid ID");
+    }
+    
+    if (!this.props.label || this.props.label.trim().length === 0) {
+      throw new Error("UIButton must have a non-empty label");
+    }
+    
+    if (!this.props.commandId) {
+      throw new Error("UIButton must have a valid command ID");
+    }
   }
 
   /**
@@ -90,6 +108,7 @@ export class UIButton extends Entity<UIButtonProps> {
     this.addDomainEvent({
       aggregateId: this.id.toString(),
       eventType: "ButtonClicked",
+      occurredOn: new Date(),
       eventData: {
         buttonId: this.id.toString(),
         commandId: this.commandId.toString(),

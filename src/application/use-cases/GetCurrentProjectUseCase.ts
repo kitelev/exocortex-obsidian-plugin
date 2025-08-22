@@ -83,7 +83,7 @@ export class GetCurrentProjectUseCase {
       const projects = projectAssets
         .filter((asset) => {
           if (!includeCompleted) {
-            const status = asset.getProperty("status");
+            const status = asset.getPropertyValue("status");
             return status !== "completed" && status !== "cancelled";
           }
           return true;
@@ -91,12 +91,12 @@ export class GetCurrentProjectUseCase {
         .map((asset) => ({
           id: asset.getId().toString(),
           title: asset.getTitle(),
-          status: asset.getProperty("status") || "active",
-          priority: asset.getProperty("priority") || "medium",
-          description: asset.getProperty("description"),
-          isActive: asset.getProperty("status") === "active",
+          status: asset.getPropertyValue("status") || "active",
+          priority: asset.getPropertyValue("priority") || "medium",
+          description: asset.getPropertyValue("description"),
+          isActive: asset.getPropertyValue("status") === "active",
           lastUpdated:
-            asset.getProperty("updatedAt") || new Date().toISOString(),
+            asset.getPropertyValue("updatedAt") || new Date().toISOString(),
         }))
         .sort((a, b) => {
           // Sort by active status first, then by last updated
@@ -343,9 +343,9 @@ export class GetCurrentProjectUseCase {
     return {
       id: asset.getId().toString(),
       title: asset.getTitle(),
-      status: asset.getProperty("status") || "active",
-      priority: asset.getProperty("priority") || "medium",
-      description: asset.getProperty("description"),
+      status: asset.getPropertyValue("status") || "active",
+      priority: asset.getPropertyValue("priority") || "medium",
+      description: asset.getPropertyValue("description"),
     };
   }
 }

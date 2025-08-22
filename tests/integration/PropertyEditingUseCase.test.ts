@@ -40,13 +40,27 @@ describe('PropertyEditingUseCase Integration', () => {
     });
 
     describe('execute with different asset identifiers', () => {
-        const testAsset = Asset.create({
-            id: AssetId.generate(),
-            label: 'Test Asset',
-            className: ClassName.create('TestClass').getValue()!,
-            ontology: OntologyPrefix.create('test').getValue()!,
-            properties: { testProp: 'oldValue' }
-        }).getValue()!;
+        let testAsset: Asset;
+        
+        beforeEach(() => {
+            const assetId = AssetId.generate();
+            const className = ClassName.create('TestClass').getValue()!;
+            const ontology = OntologyPrefix.create('test').getValue()!;
+            
+            const assetResult = Asset.create({
+                id: assetId,
+                label: 'Test Asset',
+                className: className,
+                ontology: ontology,
+                properties: { testProp: 'oldValue' }
+            });
+            
+            if (!assetResult.isSuccess) {
+                throw new Error(`Failed to create test asset: ${assetResult.getError()}`);
+            }
+            
+            testAsset = assetResult.getValue()!;
+        });
 
         it('should find asset by UUID and update property', async () => {
             mockRepository.findById.mockResolvedValue(testAsset);
@@ -73,6 +87,10 @@ describe('PropertyEditingUseCase Integration', () => {
             mockRepository.findById.mockResolvedValue(null);
             mockRepository.findByFilename.mockResolvedValue(testAsset);
             mockRepository.save.mockResolvedValue(undefined);
+            
+            // Mock the updateFrontmatterByPath method for file path handling
+            const mockUpdateFrontmatterByPath = jest.fn().mockResolvedValue(undefined);
+            (mockRepository as any).updateFrontmatterByPath = mockUpdateFrontmatterByPath;
 
             const result = await useCase.execute({
                 assetId: 'MyAsset.md',
@@ -87,9 +105,10 @@ describe('PropertyEditingUseCase Integration', () => {
             });
 
             expect(result.isSuccess).toBe(true);
-            expect(mockRepository.findById).toHaveBeenCalled();
-            expect(mockRepository.findByFilename).toHaveBeenCalledWith('MyAsset.md');
-            expect(mockRepository.save).toHaveBeenCalled();
+            // For .md files, it should use the direct path update method
+            expect(mockUpdateFrontmatterByPath).toHaveBeenCalledWith('MyAsset.md', {
+                testProp: 'newValue'
+            });
         });
 
         it('should handle filename without extension', async () => {
@@ -134,9 +153,9 @@ describe('PropertyEditingUseCase Integration', () => {
         });
 
         it('should handle file paths as identifiers', async () => {
-            mockRepository.findById.mockResolvedValue(null);
-            mockRepository.findByFilename.mockResolvedValue(testAsset);
-            mockRepository.save.mockResolvedValue(undefined);
+            // Mock the updateFrontmatterByPath method for file path handling
+            const mockUpdateFrontmatterByPath = jest.fn().mockResolvedValue(undefined);
+            (mockRepository as any).updateFrontmatterByPath = mockUpdateFrontmatterByPath;
 
             const result = await useCase.execute({
                 assetId: 'folder/subfolder/MyAsset.md',
@@ -151,7 +170,10 @@ describe('PropertyEditingUseCase Integration', () => {
             });
 
             expect(result.isSuccess).toBe(true);
-            expect(mockRepository.findByFilename).toHaveBeenCalledWith('folder/subfolder/MyAsset.md');
+            // For file paths with slashes, it should use the direct path update method
+            expect(mockUpdateFrontmatterByPath).toHaveBeenCalledWith('folder/subfolder/MyAsset.md', {
+                testProp: 'newValue'
+            });
         });
     });
 
@@ -167,11 +189,15 @@ describe('PropertyEditingUseCase Integration', () => {
         beforeEach(() => {
             mockRepository.findById.mockResolvedValue(testAsset);
             mockRepository.save.mockResolvedValue(undefined);
+            // Mock the updateFrontmatterByPath method for property validation tests
+            (mockRepository as any).updateFrontmatterByPath = jest.fn().mockResolvedValue(undefined);
         });
 
         it('should validate required fields', async () => {
+            const validUuid = testAsset.getId().toString();
+            
             const result = await useCase.execute({
-                assetId: 'test-id',
+                assetId: validUuid,
                 propertyName: 'requiredProp',
                 value: '',
                 propertyDefinition: {
@@ -187,8 +213,11 @@ describe('PropertyEditingUseCase Integration', () => {
         });
 
         it('should allow empty values for optional fields', async () => {
+            // Use a valid UUID as assetId and set up proper mocks
+            const validUuid = testAsset.getId().toString();
+            
             const result = await useCase.execute({
-                assetId: 'test-id',
+                assetId: validUuid,
                 propertyName: 'optionalProp',
                 value: '',
                 propertyDefinition: {
@@ -203,8 +232,10 @@ describe('PropertyEditingUseCase Integration', () => {
         });
 
         it('should validate enum values', async () => {
+            const validUuid = testAsset.getId().toString();
+            
             const result = await useCase.execute({
-                assetId: 'test-id',
+                assetId: validUuid,
                 propertyName: 'statusProp',
                 value: 'invalid',
                 propertyDefinition: {
@@ -220,8 +251,10 @@ describe('PropertyEditingUseCase Integration', () => {
         });
 
         it('should validate date format', async () => {
+            const validUuid = testAsset.getId().toString();
+            
             const result = await useCase.execute({
-                assetId: 'test-id',
+                assetId: validUuid,
                 propertyName: 'dateProp',
                 value: 'not-a-date',
                 propertyDefinition: {
@@ -237,8 +270,10 @@ describe('PropertyEditingUseCase Integration', () => {
         });
 
         it('should validate custom regex patterns', async () => {
+            const validUuid = testAsset.getId().toString();
+            
             const result = await useCase.execute({
-                assetId: 'test-id',
+                assetId: validUuid,
                 propertyName: 'emailProp',
                 value: 'invalid-email',
                 propertyDefinition: {

@@ -180,23 +180,23 @@ export class CreateTaskFromProjectUseCase {
       const templateRequest = { ...request };
 
       // Override with template values if not explicitly set
-      if (!templateRequest.description && template.getProperty("description")) {
-        templateRequest.description = template.getProperty("description");
+      if (!templateRequest.description && template.getPropertyValue("description")) {
+        templateRequest.description = template.getPropertyValue("description");
       }
 
-      if (!templateRequest.priority && template.getProperty("priority")) {
-        templateRequest.priority = template.getProperty("priority");
+      if (!templateRequest.priority && template.getPropertyValue("priority")) {
+        templateRequest.priority = template.getPropertyValue("priority");
       }
 
       if (
         !templateRequest.estimatedHours &&
-        template.getProperty("estimatedHours")
+        template.getPropertyValue("estimatedHours")
       ) {
-        templateRequest.estimatedHours = template.getProperty("estimatedHours");
+        templateRequest.estimatedHours = template.getPropertyValue("estimatedHours");
       }
 
       if (!templateRequest.tags || templateRequest.tags.length === 0) {
-        const templateTags = template.getProperty("tags");
+        const templateTags = template.getPropertyValue("tags");
         if (templateTags && Array.isArray(templateTags)) {
           templateRequest.tags = templateTags;
         }

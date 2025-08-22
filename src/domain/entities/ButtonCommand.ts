@@ -46,7 +46,25 @@ export interface ButtonCommandProps {
 
 export class ButtonCommand extends Entity<ButtonCommandProps> {
   private constructor(props: ButtonCommandProps) {
-    super(props);
+    super(props, props.id.toString());
+  }
+
+  protected generateId(): string {
+    return this.props.id.toString();
+  }
+
+  protected validate(): void {
+    if (!this.props.id) {
+      throw new Error("ButtonCommand must have a valid ID");
+    }
+    
+    if (!this.props.name || this.props.name.trim().length === 0) {
+      throw new Error("ButtonCommand must have a non-empty name");
+    }
+    
+    if (!this.props.type) {
+      throw new Error("ButtonCommand must have a valid type");
+    }
   }
 
   /**
