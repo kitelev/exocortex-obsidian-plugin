@@ -1,6 +1,18 @@
 import { App } from "obsidian";
 import { Container } from "../../application/core/Container";
 
+// Port Interfaces
+import { INotificationService } from "../../application/ports/INotificationService";
+import { IFileSystemAdapter } from "../../application/ports/IFileSystemAdapter";
+import { IUIAdapter } from "../../application/ports/IUIAdapter";
+import { IVaultAdapter } from "../../application/ports/IVaultAdapter";
+
+// Infrastructure Adapters
+import { ObsidianNotificationService } from "../adapters/ObsidianNotificationService";
+import { ObsidianFileSystemAdapter } from "../adapters/ObsidianFileSystemAdapter";
+import { ObsidianUIAdapter } from "../adapters/ObsidianUIAdapter";
+import { ObsidianVaultAdapter } from "../adapters/ObsidianVaultAdapter";
+
 // Repositories
 import { IAssetRepository } from "../../domain/repositories/IAssetRepository";
 import { IOntologyRepository } from "../../domain/repositories/IOntologyRepository";
@@ -109,6 +121,27 @@ export class DIContainer {
     // Register Obsidian App
     this.container.register("App", () => this.app);
 
+    // Register Port Implementations
+    this.container.register<INotificationService>(
+      "INotificationService",
+      () => new ObsidianNotificationService(),
+    );
+
+    this.container.register<IFileSystemAdapter>(
+      "IFileSystemAdapter",
+      () => new ObsidianFileSystemAdapter(this.app),
+    );
+
+    this.container.register<IUIAdapter>(
+      "IUIAdapter",
+      () => new ObsidianUIAdapter(this.app),
+    );
+
+    this.container.register<IVaultAdapter>(
+      "IVaultAdapter",
+      () => new ObsidianVaultAdapter(this.app.vault, this.app.metadataCache),
+    );
+
     // Register Repositories
     this.container.register<IAssetRepository>(
       "IAssetRepository",
@@ -167,12 +200,15 @@ export class DIContainer {
     this.container.register<ErrorHandlerService>(
       "ErrorHandlerService",
       () =>
-        new ErrorHandlerService({
-          showUserNotification: true,
-          logToConsole: true,
-          trackMetrics: true,
-          autoRecover: false,
-        }),
+        new ErrorHandlerService(
+          {
+            showUserNotification: true,
+            logToConsole: true,
+            trackMetrics: true,
+            autoRecover: false,
+          },
+          this.container.resolve<INotificationService>("INotificationService"),
+        ),
     );
 
     // Register Autocomplete Services

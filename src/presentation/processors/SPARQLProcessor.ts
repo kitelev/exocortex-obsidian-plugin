@@ -11,6 +11,7 @@ import { RDFService } from "../../application/services/RDFService";
 import { ExportRDFModal } from "../modals/ExportRDFModal";
 import { RDFFormat } from "../../application/services/RDFSerializer";
 import { SPARQLSanitizer } from "../../application/services/SPARQLSanitizer";
+import { DIContainer } from "../../infrastructure/container/DIContainer";
 
 export class SPARQLProcessor {
   private plugin: Plugin;
@@ -30,7 +31,9 @@ export class SPARQLProcessor {
     this.graph = graph;
     this.engine = new SPARQLEngine(graph, cacheConfig);
     this.focusService = focusService;
-    this.rdfService = new RDFService(plugin.app);
+    // Get RDFService from DI container
+    const container = DIContainer.getInstance();
+    this.rdfService = container.resolve<RDFService>('RDFService');
     this.sanitizer = new SPARQLSanitizer();
   }
 

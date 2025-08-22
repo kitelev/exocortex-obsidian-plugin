@@ -8,6 +8,7 @@ import { ObsidianAssetRepository } from "../../infrastructure/repositories/Obsid
 import { IndexedGraph } from "../../domain/semantic/core/IndexedGraph";
 import { ExoFocusService } from "../../application/services/ExoFocusService";
 import { QuickTaskModal } from "../modals/QuickTaskModal";
+import { DIContainer } from "../../infrastructure/container/DIContainer";
 
 /**
  * Task Command Controller following Controller Pattern (GRASP)
@@ -35,7 +36,9 @@ export class TaskCommandController implements ICommandController {
           const taskRepository = new ObsidianTaskRepository(this.plugin.app);
           const assetRepository = new ObsidianAssetRepository(this.plugin.app);
           const indexedGraph = new IndexedGraph();
-          const focusService = new ExoFocusService(this.plugin.app, this.graph);
+          // Get focusService from container
+          const container = DIContainer.getInstance();
+          const focusService = container.resolve<ExoFocusService>('ExoFocusService');
 
           // Create use cases
           const getCurrentProjectUseCase = new GetCurrentProjectUseCase(

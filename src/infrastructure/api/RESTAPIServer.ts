@@ -6,6 +6,7 @@ import { ExoAgent } from "../../application/services/ExoAgent";
 import { RelationOntologizer } from "../../application/services/RelationOntologizer";
 import { RDFService } from "../../application/services/RDFService";
 import { RDFFormat } from "../../application/services/RDFSerializer";
+import { DIContainer } from "../container/DIContainer";
 
 /**
  * REST API Server for external AI agents
@@ -33,7 +34,9 @@ export class RESTAPIServer {
     this.sparqlProcessor = new SPARQLProcessor(plugin, graph);
     this.exoAgent = new ExoAgent(app, graph);
     this.relationOntologizer = new RelationOntologizer(app);
-    this.rdfService = new RDFService(app);
+    // Get RDFService from DI container
+    const container = DIContainer.getInstance();
+    this.rdfService = container.resolve<RDFService>('RDFService');
   }
 
   /**

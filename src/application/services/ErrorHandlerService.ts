@@ -7,7 +7,7 @@ import {
 } from "../../domain/errors/ExocortexError";
 import { ErrorAnalyzer } from "../../domain/errors/ErrorAnalyzer";
 import { EnhancedResult } from "../../domain/core/EnhancedResult";
-import { Notice } from "obsidian";
+import { INotificationService } from "../ports/INotificationService";
 
 export interface ErrorHandlerOptions {
   showUserNotification?: boolean;
@@ -48,7 +48,10 @@ export class ErrorHandlerService {
   private maxHistorySize = 100;
   private errorStartTimes = new Map<string, number>();
 
-  constructor(private options: ErrorHandlerOptions = {}) {
+  constructor(
+    private options: ErrorHandlerOptions = {},
+    private notificationService?: INotificationService
+  ) {
     this.options = {
       showUserNotification: true,
       logToConsole: true,
@@ -215,7 +218,7 @@ export class ErrorHandlerService {
     const duration = this.getNotificationDuration(error.severity);
     const message = this.formatErrorForUser(error);
 
-    new Notice(message, duration);
+    this.notificationService?.showError(message, duration);
   }
 
   private getNotificationDuration(severity: ErrorSeverity): number {
@@ -264,7 +267,7 @@ export class ErrorHandlerService {
     if (autoFixSuggestion && autoFixSuggestion.action) {
       try {
         await autoFixSuggestion.action.handler();
-        new Notice(`Auto-recovery: ${autoFixSuggestion.title}`, 3000);
+        this.notificationService?.showSuccess(`Auto-recovery: ${autoFixSuggestion.title}`, 3000);
       } catch (recoveryError) {
         console.error("Auto-recovery failed:", recoveryError);
       }

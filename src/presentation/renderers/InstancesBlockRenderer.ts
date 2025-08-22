@@ -3,10 +3,14 @@ import { InstancesBlockConfig } from "../../domain/entities/LayoutBlockStubs";
 import { BaseRenderer } from "../../shared/BaseRenderer";
 import { RenderingUtils } from "../../shared/utils/RenderingUtils";
 import { FileOperationUtils } from "../../shared/utils/FileOperationUtils";
+import { CompatibilityWrapper } from "../../infrastructure/adapters/CompatibilityWrapper";
 
 export class InstancesBlockRenderer extends BaseRenderer {
+  private app: App;
+  
   constructor(app: App) {
-    super(app);
+    super(CompatibilityWrapper.wrapAppAsUIAdapter(app));
+    this.app = app;
   }
 
   async render(

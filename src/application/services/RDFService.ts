@@ -3,7 +3,6 @@
  * Follows Single Responsibility Principle by delegating to specific services
  */
 
-import { App, Notice, TFile } from "obsidian";
 import { Graph } from "../../domain/semantic/core/Graph";
 import {
   Triple,
@@ -21,7 +20,8 @@ import {
 import { RDFParser, ParseOptions, ParseResult } from "./RDFParser";
 import { NamespaceManager } from "./NamespaceManager";
 import { RDFValidator, ValidationOptions } from "./RDFValidator";
-import { RDFFileManager } from "./RDFFileManager";
+import { INotificationService } from "../ports/INotificationService";
+import { IFileSystemAdapter } from "../ports/IFileSystemAdapter";
 import {
   MemoryOptimizedImporter,
   StreamingImportOptions,
@@ -53,19 +53,18 @@ export class RDFService {
   private serializer: RDFSerializer;
   private parser: RDFParser;
   private validator: RDFValidator;
-  private fileManager: RDFFileManager;
   private optimizedImporter: MemoryOptimizedImporter;
   private namespaceManager: NamespaceManager;
 
   constructor(
-    private app: App,
+    private notificationService: INotificationService,
+    private fileSystemAdapter: IFileSystemAdapter,
     namespaceManager?: NamespaceManager,
   ) {
     this.namespaceManager = namespaceManager || new NamespaceManager();
     this.serializer = new RDFSerializer(this.namespaceManager);
     this.parser = new RDFParser(this.namespaceManager);
     this.validator = new RDFValidator();
-    this.fileManager = new RDFFileManager(app);
     this.optimizedImporter = new MemoryOptimizedImporter();
   }
 
@@ -98,23 +97,23 @@ export class RDFService {
       const serializedData = result.getValue();
 
       if (options.saveToVault) {
-        const fileName = this.fileManager.generateFileName(
+        const fileName = this.fileSystemAdapter.generateFileName(
           options.fileName,
-          options.format,
+          this.getFormatInfo(options.format).extension.slice(1),
         );
         const filePath = options.targetFolder
           ? `${options.targetFolder}/${fileName}`
           : fileName;
 
-        const saveResult = await this.fileManager.saveToVault(
-          serializedData.content,
+        const saveResult = await this.fileSystemAdapter.writeFile(
           filePath,
+          serializedData.content,
         );
         if (saveResult.isFailure) {
           return Result.fail(saveResult.errorValue());
         }
 
-        new Notice(
+        this.notificationService.showSuccess(
           `Exported ${serializedData.tripleCount} triples to ${filePath}`,
         );
       }
@@ -183,7 +182,7 @@ export class RDFService {
         }
 
         if (validation.warnings.length > 0) {
-          new Notice(
+          this.notificationService.showWarning(
             `Import completed with ${validation.warnings.length} warnings`,
           );
         }
@@ -241,18 +240,19 @@ export class RDFService {
    * Import RDF from vault file
    */
   async importFromVaultFile(
-    file: TFile,
+    filePath: string,
     graph: Graph,
     options: RDFImportOptions,
   ): Promise<Result<{ graph: Graph; imported: ParseResult }>> {
     try {
-      const contentResult = await this.fileManager.readFromVault(file.path);
+      const contentResult = await this.fileSystemAdapter.readFile(filePath);
       if (contentResult.isFailure) {
         return Result.fail(contentResult.errorValue());
       }
 
       if (!options.format) {
-        options.format = this.fileManager.detectFormatFromExtension(file.name);
+        const fileName = filePath.split('/').pop() || filePath;
+        options.format = this.fileSystemAdapter.detectFormatFromExtension(fileName) as RDFFormat;
       }
 
       return await this.importRDF(contentResult.getValue(), graph, options);
@@ -301,8 +301,8 @@ export class RDFService {
   /**
    * List RDF files in vault
    */
-  async listRDFFiles(folder?: string): Promise<Result<TFile[]>> {
-    return this.fileManager.listRDFFiles(folder);
+  async listRDFFiles(folder?: string): Promise<Result<any[]>> {
+    return this.fileSystemAdapter.listFiles(folder, 'ttl');
   }
 
   /**

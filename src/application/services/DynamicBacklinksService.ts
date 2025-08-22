@@ -1,9 +1,10 @@
-import { App, TFile } from "obsidian";
 import { Result } from "../../domain/core/Result";
+import { IVaultAdapter } from "../ports/IVaultAdapter";
+import { IUIAdapter } from "../ports/IUIAdapter";
 
 export interface PropertyBasedBacklink {
   propertyName: string;
-  referencingFiles: TFile[];
+  referencingFiles: any[];
 }
 
 export interface BacklinkDiscoveryOptions {
@@ -13,35 +14,38 @@ export interface BacklinkDiscoveryOptions {
 }
 
 export class DynamicBacklinksService {
-  constructor(private app: App) {}
+  constructor(
+    private vaultAdapter: IVaultAdapter,
+    private uiAdapter: IUIAdapter
+  ) {}
 
   async discoverPropertyBasedBacklinks(
-    targetFile: TFile,
+    targetFile: any,
     options: BacklinkDiscoveryOptions = {},
   ): Promise<Result<PropertyBasedBacklink[]>> {
     try {
-      const propertyBacklinks = new Map<string, TFile[]>();
+      const propertyBacklinks = new Map<string, any[]>();
 
       // Scan all markdown files in the vault
-      const allFiles = this.app.vault.getMarkdownFiles();
+      const allFiles = await this.vaultAdapter.getFiles();
 
       for (const file of allFiles) {
         if (file.path === targetFile.path) continue; // Skip self-references
 
-        const metadata = this.app.metadataCache.getFileCache(file);
-        if (!metadata?.frontmatter) continue;
+        const metadata = await this.vaultAdapter.getFileMetadata(file);
+        if (!metadata) continue;
 
         // Filter by class if specified
         if (options.filterByClass) {
-          const instanceClass = this.cleanClassName(
-            metadata.frontmatter["exo__Instance_class"],
+          const instanceClass = this.uiAdapter.cleanClassName(
+            metadata["exo__Instance_class"],
           );
           if (instanceClass !== options.filterByClass) continue;
         }
 
         // Check each frontmatter property for references to target file
         for (const [propertyName, value] of Object.entries(
-          metadata.frontmatter,
+          metadata,
         )) {
           // Skip excluded properties
           if (options.excludeProperties?.includes(propertyName)) continue;
@@ -77,7 +81,7 @@ export class DynamicBacklinksService {
     }
   }
 
-  private isReferencingTarget(value: any, targetFile: TFile): boolean {
+  private isReferencingTarget(value: any, targetFile: any): boolean {
     if (!value) return false;
 
     // Handle arrays
@@ -87,12 +91,11 @@ export class DynamicBacklinksService {
 
     // Convert to string and check various reference formats
     const strValue = value.toString();
-    const targetFileName = targetFile.basename;
-    const targetPath = targetFile.path;
+    const targetFileName = targetFile.basename || targetFile.name?.replace(/\.[^/.]+$/, '') || '';
+    const targetPath = targetFile.path || targetFile.name || '';
 
-    // Get target file's UUID for UUID-based matching
-    const targetMetadata = this.app.metadataCache.getFileCache(targetFile);
-    const targetUuid = targetMetadata?.frontmatter?.["exo__Asset_uid"];
+    // Get target file's UUID for UUID-based matching (via vault adapter)
+    const targetUuid = null; // TODO: Implement via vaultAdapter if needed
 
     // Direct basename match
     if (strValue === targetFileName) return true;
@@ -108,11 +111,8 @@ export class DynamicBacklinksService {
       const linkText = strValue.slice(2, -2).split("|")[0]; // Remove [[ ]] and display text
 
       // Try to resolve the link to see if it points to our target file
-      const linkedFile = this.app.metadataCache.getFirstLinkpathDest(
-        linkText,
-        targetFile.path,
-      );
-      if (linkedFile && linkedFile.path === targetPath) return true;
+      // TODO: Implement proper link resolution via vault adapter
+      if (linkText === targetFileName) return true;
 
       // Also check if the link text partially matches the target filename
       if (

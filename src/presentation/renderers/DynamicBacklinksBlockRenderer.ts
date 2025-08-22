@@ -4,12 +4,16 @@ import {
   DynamicBacklinksService,
   PropertyBasedBacklink,
 } from "../../application/services/DynamicBacklinksService";
+import { ObsidianVaultAdapter } from "../../infrastructure/adapters/ObsidianVaultAdapter";
+import { ObsidianUIAdapter } from "../../infrastructure/adapters/ObsidianUIAdapter";
 
 export class DynamicBacklinksBlockRenderer {
   private dynamicBacklinksService: DynamicBacklinksService;
 
   constructor(private app: App) {
-    this.dynamicBacklinksService = new DynamicBacklinksService(app);
+    const vaultAdapter = new ObsidianVaultAdapter(this.app.vault, this.app.metadataCache);
+    const uiAdapter = new ObsidianUIAdapter(this.app);
+    this.dynamicBacklinksService = new DynamicBacklinksService(vaultAdapter, uiAdapter);
   }
 
   async render(

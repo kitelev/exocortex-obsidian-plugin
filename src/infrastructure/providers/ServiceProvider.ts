@@ -28,8 +28,8 @@ export class ServiceProvider implements IServiceProvider {
     DIContainer.initialize(this.plugin.app, this.plugin as any);
     this.container = DIContainer.getInstance();
 
-    // Initialize RDF service
-    const rdfService = new RDFService(this.plugin.app);
+    // Initialize RDF service from container
+    const rdfService = this.container.resolve<RDFService>('RDFService');
     this.services.set("RDFService", rdfService);
 
     // Initialize Layout Renderer with proper dependencies

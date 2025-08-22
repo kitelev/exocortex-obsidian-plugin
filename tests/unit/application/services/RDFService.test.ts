@@ -16,6 +16,26 @@ import { Graph } from '../../../../src/domain/semantic/core/Graph';
 import { Triple, IRI, BlankNode, Literal } from '../../../../src/domain/semantic/core/Triple';
 import { Result } from '../../../../src/domain/core/Result';
 import { TFile } from 'obsidian';
+import { INotificationService } from '../../../../src/application/ports/INotificationService';
+import { IFileSystemAdapter } from '../../../../src/application/ports/IFileSystemAdapter';
+
+// Mock implementations for ports
+const mockNotificationService: INotificationService = {
+    showNotice: jest.fn(),
+    showError: jest.fn(),
+    showSuccess: jest.fn(),
+    showWarning: jest.fn()
+};
+
+const mockFileSystemAdapter: IFileSystemAdapter = {
+    readFile: jest.fn(),
+    writeFile: jest.fn(),
+    fileExists: jest.fn(),
+    listFiles: jest.fn(),
+    generateFileName: jest.fn(),
+    detectFormatFromExtension: jest.fn(),
+    ensureDirectory: jest.fn()
+};
 
 // Mock Obsidian App with comprehensive vault operations
 const mockApp = {
@@ -249,7 +269,7 @@ describe('RDFService', () => {
             error: ''
         });
         
-        rdfService = new RDFService(mockApp);
+        rdfService = new RDFService(mockNotificationService, mockFileSystemAdapter);
         graph = new Graph();
         
         // Add some test data
@@ -514,7 +534,7 @@ describe('RDFService', () => {
                 errorValue: () => null
             });
             
-            const result = await rdfService.importFromVaultFile(mockFile, graph, {
+            const result = await rdfService.importFromVaultFile(mockFile.path, graph, {
                 mergeMode: 'merge'
             });
             
@@ -566,7 +586,7 @@ describe('RDFService', () => {
                 errorValue: () => null
             });
             
-            const result = await rdfService.importFromVaultFile(mockFile, graph, {
+            const result = await rdfService.importFromVaultFile(mockFile.path, graph, {
                 mergeMode: 'merge'
             });
             
@@ -581,14 +601,11 @@ describe('RDFService', () => {
             } as any;
             
             // Mock file read failure
-            mockRDFFileManager.readFromVault.mockResolvedValue({
-                isSuccess: false,
-                isFailure: true,
-                getValue: () => null,
-                errorValue: () => 'File not found: nonexistent.ttl'
-            });
+            (mockFileSystemAdapter.readFile as jest.Mock).mockResolvedValue(
+                Result.fail('File not found: nonexistent.ttl')
+            );
             
-            const result = await rdfService.importFromVaultFile(mockFile, graph, {
+            const result = await rdfService.importFromVaultFile(mockFile.path, graph, {
                 mergeMode: 'merge'
             });
             
@@ -968,7 +985,7 @@ describe('RDFService', () => {
             const customNamespaceManager = new NamespaceManager();
             customNamespaceManager.addBinding('custom', 'http://custom.example.org/');
             
-            const customRDFService = new RDFService(mockApp, customNamespaceManager);
+            const customRDFService = new RDFService(mockNotificationService, mockFileSystemAdapter, customNamespaceManager);
             const nsManager = customRDFService.getNamespaceManager();
             
             expect(nsManager.hasPrefix('custom')).toBe(true);
@@ -1017,9 +1034,17 @@ describe('RDFService', () => {
     
     describe('export with file operations', () => {
         beforeEach(() => {
-            mockApp.vault.getAbstractFileByPath.mockReturnValue(null); // File doesn't exist
-            mockApp.vault.create.mockResolvedValue();
-            mockApp.vault.createFolder.mockResolvedValue();
+            (mockFileSystemAdapter.writeFile as jest.Mock).mockResolvedValue(Result.ok(undefined));
+            (mockFileSystemAdapter.generateFileName as jest.Mock).mockImplementation((baseName, extension) => {
+                if (baseName) {
+                    // If baseName already has extension, don't add another one
+                    if (baseName.includes('.')) {
+                        return baseName;
+                    }
+                    return `${baseName}.${extension || 'ttl'}`;
+                }
+                return `export-${Date.now()}.${extension || 'ttl'}`;
+            });
         });
         
         it('should save to vault with custom filename', async () => {
@@ -1030,7 +1055,7 @@ describe('RDFService', () => {
             });
             
             expect(result.isSuccess).toBe(true);
-            expect(mockApp.vault.create).toHaveBeenCalledWith(
+            expect(mockFileSystemAdapter.writeFile).toHaveBeenCalledWith(
                 'custom-name.ttl',
                 expect.any(String)
             );
@@ -1045,7 +1070,7 @@ describe('RDFService', () => {
             });
             
             expect(result.isSuccess).toBe(true);
-            expect(mockApp.vault.create).toHaveBeenCalledWith(
+            expect(mockFileSystemAdapter.writeFile).toHaveBeenCalledWith(
                 'exports/test.ttl',
                 expect.any(String)
             );
@@ -1058,7 +1083,7 @@ describe('RDFService', () => {
             });
             
             expect(result.isSuccess).toBe(true);
-            expect(mockApp.vault.create).toHaveBeenCalledWith(
+            expect(mockFileSystemAdapter.writeFile).toHaveBeenCalledWith(
                 expect.stringMatching(/.*\.ttl$/),
                 expect.any(String)
             );

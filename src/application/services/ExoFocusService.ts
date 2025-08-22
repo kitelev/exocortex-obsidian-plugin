@@ -1,8 +1,9 @@
-import { App, TFile } from "obsidian";
 import { ExoFocus, FocusFilter } from "../../domain/entities/ExoFocus";
 import { Graph } from "../../domain/semantic/core/Graph";
 import { Triple } from "../../domain/semantic/core/Triple";
 import { Result } from "../../domain/core/Result";
+import { IFileSystemAdapter } from "../ports/IFileSystemAdapter";
+import { IVaultAdapter } from "../ports/IVaultAdapter";
 
 export class ExoFocusService {
   private activeFocus: ExoFocus | null = null;
@@ -11,26 +12,26 @@ export class ExoFocusService {
   private focusConfigPath = ".exocortex/focus-configs.json";
 
   constructor(
-    private app: App,
+    private fileSystemAdapter: IFileSystemAdapter,
+    private vaultAdapter: IVaultAdapter,
     private graph: Graph,
   ) {
-    // Only load focuses if vault adapter is available
-    if (this.app?.vault?.adapter) {
-      this.loadFocuses();
-    }
+    this.loadFocuses();
   }
 
   /**
    * Load all focus configurations from vault
    */
   private async loadFocuses(): Promise<void> {
-    if (!this.app?.vault?.adapter) {
-      return;
-    }
-
     try {
-      const content = await this.app.vault.adapter.read(this.focusConfigPath);
-      const configs = JSON.parse(content);
+      const contentResult = await this.fileSystemAdapter.readFile(this.focusConfigPath);
+      if (contentResult.isFailure) {
+        // File doesn't exist, create default focuses
+        await this.createDefaultFocuses();
+        return;
+      }
+
+      const configs = JSON.parse(contentResult.getValue());
 
       for (const config of configs) {
         const focusResult = ExoFocus.fromJSON(config);
@@ -53,9 +54,6 @@ export class ExoFocusService {
    * Create default focus configurations
    */
   private async createDefaultFocuses(): Promise<void> {
-    if (!this.app?.vault?.adapter) {
-      return;
-    }
 
     const defaults = [
       {
@@ -153,23 +151,19 @@ export class ExoFocusService {
    * Save all focus configurations
    */
   private async saveFocuses(): Promise<void> {
-    if (!this.app?.vault?.adapter) {
-      return;
-    }
-
     try {
       const configs = Array.from(this.allFocuses.values()).map((f) =>
         f.toJSON(),
       );
 
-      await this.app.vault.adapter.write(
+      await this.fileSystemAdapter.writeFile(
         this.focusConfigPath,
         JSON.stringify(configs, null, 2),
       );
 
       // Save active focus separately for quick access
       if (this.activeFocus) {
-        await this.app.vault.adapter.write(
+        await this.fileSystemAdapter.writeFile(
           this.focusFilePath,
           JSON.stringify(
             {
@@ -346,17 +340,17 @@ export class ExoFocusService {
   /**
    * Filter files based on active focus
    */
-  async filterFiles(files: TFile[]): Promise<TFile[]> {
+  async filterFiles(files: any[]): Promise<any[]> {
     if (!this.activeFocus) {
       return files;
     }
 
-    const filteredFiles: TFile[] = [];
+    const filteredFiles: any[] = [];
 
     for (const file of files) {
-      const cache = this.app.metadataCache.getFileCache(file);
-      if (cache?.frontmatter) {
-        if (this.activeFocus.matchesAsset(cache.frontmatter)) {
+      const metadata = await this.vaultAdapter.getFileMetadata(file);
+      if (metadata) {
+        if (this.activeFocus.matchesAsset(metadata)) {
           filteredFiles.push(file);
         }
       }
@@ -394,7 +388,7 @@ export class ExoFocusService {
     filteredTriples: number;
     activeFocus: string;
   }> {
-    const files = this.app.vault.getMarkdownFiles();
+    const files = await this.vaultAdapter.getFiles();
     const allAssets = files.length;
 
     const filteredFiles = await this.filterFiles(files);

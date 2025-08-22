@@ -1,17 +1,13 @@
-import { App, TFile } from "obsidian";
 import { RenderingUtils } from "./utils/RenderingUtils";
 import { ErrorHandlingUtils } from "./utils/ErrorHandlingUtils";
+import { IUIAdapter } from "../application/ports/IUIAdapter";
 
 /**
  * Base renderer class that provides common functionality for all block renderers
  * Implements DRY principle by extracting common rendering patterns
  */
 export abstract class BaseRenderer {
-  protected app: App;
-
-  constructor(app: App) {
-    this.app = app;
-  }
+  constructor(protected uiAdapter: IUIAdapter) {}
 
   /**
    * Main render method that all renderers must implement
@@ -19,7 +15,7 @@ export abstract class BaseRenderer {
   abstract render(
     container: HTMLElement,
     config: any,
-    file: TFile,
+    file: any,
     dv: any,
   ): Promise<void>;
 
@@ -29,25 +25,24 @@ export abstract class BaseRenderer {
   protected async preprocess(
     container: HTMLElement,
     config: any,
-    file: TFile
+    file: any
   ): Promise<{
-    totalFiles: TFile[];
-    filteredFiles: TFile[];
-    displayFiles: TFile[];
+    totalFiles: any[];
+    filteredFiles: any[];
+    displayFiles: any[];
   }> {
     try {
       // Get initial file list (subclasses implement this)
       const totalFiles = await this.getRelevantFiles(config, file);
       
       // Apply class filter if specified
-      const filteredFiles = RenderingUtils.filterFilesByClass(
-        this.app,
+      const filteredFiles = this.uiAdapter.filterFilesByClass(
         totalFiles,
         config.filterByClass
       );
       
       // Apply result limit if specified
-      const displayFiles = RenderingUtils.applyResultLimit(
+      const displayFiles = this.uiAdapter.applyResultLimit(
         filteredFiles,
         config.maxResults
       );
@@ -99,7 +94,7 @@ export abstract class BaseRenderer {
    */
   protected renderFlatFiles(
     container: HTMLElement,
-    files: TFile[],
+    files: any[],
     config: any
   ): void {
     const displayAs = config.displayAs || "table";
@@ -122,11 +117,11 @@ export abstract class BaseRenderer {
    */
   protected renderGroupedFiles(
     container: HTMLElement,
-    files: TFile[],
+    files: any[],
     config: any,
     itemType: string
   ): void {
-    const groups = RenderingUtils.groupFilesByClass(this.app, files);
+    const groups = this.uiAdapter.groupFilesByClass(files);
     const sortedGroups = RenderingUtils.sortGroupsByName(groups);
 
     sortedGroups.forEach(([className, groupFiles]) => {
@@ -154,7 +149,7 @@ export abstract class BaseRenderer {
    */
   protected renderFilesList(
     container: HTMLElement,
-    files: TFile[],
+    files: any[],
     config: any
   ): void {
     const list = RenderingUtils.createList(
@@ -168,8 +163,8 @@ export abstract class BaseRenderer {
       });
 
       // Create main link
-      const displayLabel = RenderingUtils.getDisplayLabel(this.app, file);
-      RenderingUtils.createInternalLink(item, displayLabel, file.path);
+      const displayLabel = this.uiAdapter.getDisplayLabel(file);
+      this.uiAdapter.createInternalLink(item, displayLabel, file.path);
 
       // Add additional info if enabled
       if (config.showInstanceInfo || config.showClassInfo) {
@@ -183,7 +178,7 @@ export abstract class BaseRenderer {
    */
   protected renderFilesCards(
     container: HTMLElement,
-    files: TFile[],
+    files: any[],
     config: any
   ): void {
     const cardsContainer = container.createDiv({
@@ -197,7 +192,7 @@ export abstract class BaseRenderer {
 
       // Card title
       const title = card.createEl("h4", { cls: "exocortex-card-title" });
-      const displayLabel = RenderingUtils.getDisplayLabel(this.app, file);
+      const displayLabel = this.uiAdapter.getDisplayLabel(file);
       RenderingUtils.createInternalLink(title, displayLabel, file.path);
 
       // Card content
@@ -212,7 +207,7 @@ export abstract class BaseRenderer {
    */
   protected renderFilesTable(
     container: HTMLElement,
-    files: TFile[],
+    files: any[],
     config: any
   ): void {
     const headers = this.getTableHeaders(config);
@@ -234,14 +229,14 @@ export abstract class BaseRenderer {
    * Clean class name using utility
    */
   protected cleanClassName(className: any): string {
-    return RenderingUtils.cleanClassName(className);
+    return this.uiAdapter.cleanClassName(className);
   }
 
   /**
    * Get display label for file using utility
    */
-  protected getDisplayLabel(file: TFile): string {
-    return RenderingUtils.getDisplayLabel(this.app, file);
+  protected getDisplayLabel(file: any): string {
+    return this.uiAdapter.getDisplayLabel(file);
   }
 
   // Abstract methods that subclasses must implement
@@ -249,7 +244,7 @@ export abstract class BaseRenderer {
   /**
    * Get the list of files relevant to this renderer
    */
-  protected abstract getRelevantFiles(config: any, file: TFile): Promise<TFile[]>;
+  protected abstract getRelevantFiles(config: any, file: any): Promise<any[]>;
 
   /**
    * Get the item type for this renderer (e.g., "backlink", "instance")
@@ -264,25 +259,24 @@ export abstract class BaseRenderer {
   /**
    * Render a single table row for this renderer
    */
-  protected abstract renderTableRow(row: HTMLElement, file: TFile, config: any): void;
+  protected abstract renderTableRow(row: HTMLElement, file: any, config: any): void;
 
   /**
    * Render additional file info (optional override)
    */
   protected renderAdditionalFileInfo(
     container: HTMLElement,
-    file: TFile,
+    file: any,
     config: any
   ): void {
     // Default implementation - subclasses can override
-    const instanceClass = RenderingUtils.extractFrontmatterData(
-      this.app,
+    const instanceClass = this.uiAdapter.extractFrontmatterData(
       file,
       "exo__Instance_class"
     );
     
     if (instanceClass) {
-      container.createEl("span", {
+      this.uiAdapter.createElement(container, "span", {
         text: ` (${this.cleanClassName(instanceClass)})`,
         cls: "exocortex-class-info",
       });
@@ -294,31 +288,29 @@ export abstract class BaseRenderer {
    */
   protected renderCardContent(
     card: HTMLElement,
-    file: TFile,
+    file: any,
     config: any
   ): void {
     // Default implementation - subclasses can override
-    const instanceClass = RenderingUtils.extractFrontmatterData(
-      this.app,
+    const instanceClass = this.uiAdapter.extractFrontmatterData(
       file,
       "exo__Instance_class"
     );
     
     if (instanceClass) {
-      card.createEl("p", {
+      this.uiAdapter.createElement(card, "p", {
         text: `Class: ${this.cleanClassName(instanceClass)}`,
         cls: "exocortex-card-class",
       });
     }
 
-    const description = RenderingUtils.extractFrontmatterData(
-      this.app,
+    const description = this.uiAdapter.extractFrontmatterData(
       file,
       "exo__Asset_description"
     );
     
     if (description) {
-      card.createEl("p", {
+      this.uiAdapter.createElement(card, "p", {
         text: description,
         cls: "exocortex-card-description",
       });

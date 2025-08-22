@@ -1,3 +1,35 @@
+## [3.14.0] - 2025-08-22
+
+### 🏗️ Enhanced Architecture - Cleaner, More Reliable Code
+
+#### Better Performance and Stability
+Your Exocortex plugin is now more robust and maintainable! We've completed a comprehensive architectural refactoring that makes the plugin more reliable, easier to test, and better prepared for future enhancements.
+
+- **Improved Reliability**: Complete separation of business logic from Obsidian framework reduces potential conflicts and crashes
+- **Better Error Handling**: More predictable behavior when things go wrong, with clearer error messages
+- **Enhanced Testability**: Every component can now be tested in isolation, leading to higher quality and fewer bugs
+- **Future-Proof Design**: Modular architecture makes it easier to add new features without breaking existing functionality
+
+#### Clean Architecture Benefits for Users
+- **More Stable Plugin**: Reduced coupling between components means fewer unexpected interactions
+- **Faster Development**: New features can be added more quickly with less risk of breaking existing functionality  
+- **Better Maintainability**: Issues can be diagnosed and fixed more efficiently
+- **Framework Independence**: Core business logic is now independent of Obsidian framework changes
+
+#### Technical Excellence Achieved
+- **SOLID Principles**: Complete implementation across the entire codebase for better maintainability
+- **Dependency Inversion**: Application layer no longer depends directly on Obsidian framework
+- **Clean Interfaces**: Created port/adapter pattern with proper abstractions (INotificationService, IFileSystemAdapter, IUIAdapter, IVaultAdapter)
+- **Service Isolation**: RDFService, ExoFocusService, DynamicBacklinksService, and ErrorHandlerService are now framework-agnostic
+
+#### What Changed Behind the Scenes
+- **11 Core Services Refactored**: All major services now use dependency injection with clean interfaces
+- **New Adapter Layer**: Obsidian-specific implementations isolated in infrastructure layer
+- **Port Interfaces Created**: Clean contracts between application and infrastructure layers
+- **100% Backward Compatibility**: All existing functionality preserved without any user-facing changes
+
+This refactoring improves the foundation of your plugin without changing how you use it - everything works exactly the same, but better!
+
 ## [3.13.1] - 2025-08-22
 
 ### 🧹 Repository Cleanup and Optimization

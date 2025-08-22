@@ -2,10 +2,14 @@ import { App, TFile } from "obsidian";
 import { BacklinksBlockConfig } from "../../domain/entities/LayoutBlockStubs";
 import { BaseRenderer } from "../../shared/BaseRenderer";
 import { RenderingUtils } from "../../shared/utils/RenderingUtils";
+import { CompatibilityWrapper } from "../../infrastructure/adapters/CompatibilityWrapper";
 
 export class BacklinksBlockRenderer extends BaseRenderer {
+  private app: App;
+  
   constructor(app: App) {
-    super(app);
+    super(CompatibilityWrapper.wrapAppAsUIAdapter(app));
+    this.app = app;
   }
 
   async render(

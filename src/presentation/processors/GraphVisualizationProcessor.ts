@@ -5,6 +5,7 @@ import { Triple, IRI, Literal } from "../../domain/semantic/core/Triple";
 import { RDFService } from "../../application/services/RDFService";
 import { ExportRDFModal } from "../modals/ExportRDFModal";
 import { RDFFormat } from "../../application/services/RDFSerializer";
+import { DIContainer } from "../../infrastructure/container/DIContainer";
 
 interface GraphNode {
   id: string;
@@ -49,7 +50,9 @@ export class GraphVisualizationProcessor {
     this.plugin = plugin;
     this.graph = graph;
     this.engine = new SPARQLEngine(graph);
-    this.rdfService = new RDFService(plugin.app);
+    // Get RDFService from DI container
+    const container = DIContainer.getInstance();
+    this.rdfService = container.resolve<RDFService>('RDFService');
   }
 
   /**
