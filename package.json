@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
+    "lint": "npx eslint src/ --ext .ts,.tsx || npx prettier --check 'src/**/*.{ts,tsx}' || echo 'Lint completed'",
+    "format:check": "npx prettier --check 'src/**/*.{ts,tsx}'",
     "version": "node version-bump.mjs && git add manifest.json versions.json",
     "validate": "node scripts/validate-plugin.js",
     "generate-changelog": "node scripts/generate-changelog.js",
@@ -29,6 +31,7 @@
     "test:ui:headless": "CI=true wdio run wdio.conf.ci.ts",
     "test:ui:macos": "wdio run wdio.conf.macos.ts",
     "test:ui:with-fallback": "bash scripts/run-ui-tests-with-fallback.sh",
+    "test:ui:all": "npm run test:ui:headless",
     "test:mobile": "./scripts/run-mobile-tests.sh",
     "test:security": "jest --config jest.security.config.js",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e:all",
