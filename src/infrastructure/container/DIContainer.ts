@@ -28,6 +28,7 @@ import { ObsidianClassLayoutRepository } from "../repositories/ObsidianClassLayo
 // Use Cases
 import { CreateAssetUseCase } from "../../application/use-cases/CreateAssetUseCase";
 import { CreateChildTaskUseCase } from "../../application/use-cases/CreateChildTaskUseCase";
+import { CreateChildAreaUseCase } from "../../application/use-cases/CreateChildAreaUseCase";
 import { RenderClassButtonsUseCase } from "../../application/use-cases/RenderClassButtonsUseCase";
 import { ExecuteButtonCommandUseCase } from "../../application/use-cases/ExecuteButtonCommandUseCase";
 import { PropertyEditingUseCase } from "../../application/use-cases/PropertyEditingUseCase";
@@ -38,6 +39,9 @@ import { ICommandExecutor } from "../../application/services/ICommandExecutor";
 import { ObsidianCommandExecutor } from "../services/ObsidianCommandExecutor";
 import { ErrorHandlerService } from "../../application/services/ErrorHandlerService";
 import { SPARQLAutocompleteService } from "../../application/services/SPARQLAutocompleteService";
+import { OntologyProvisioningService } from "../../domain/services/OntologyProvisioningService";
+import { PropertyCacheService } from "../../domain/services/PropertyCacheService";
+import { CircuitBreakerService } from "../resilience/CircuitBreakerService";
 import { ISuggestionRepository } from "../../domain/repositories/ISuggestionRepository";
 import { GraphSuggestionRepository } from "../repositories/GraphSuggestionRepository";
 import { IQueryTemplateRepository } from "../../domain/repositories/IQueryTemplateRepository";
@@ -261,7 +265,7 @@ export class DIContainer {
         ),
     );
 
-    // Register RDF Service
+    // Register RDF Service - Must be before any dependencies that use it
     this.container.register<RDFService>(
       "RDFService",
       () =>
@@ -271,6 +275,26 @@ export class DIContainer {
         ),
     );
 
+    // Register Domain Services
+    this.container.register<OntologyProvisioningService>(
+      "OntologyProvisioningService",
+      () =>
+        new OntologyProvisioningService(
+          this.container.resolve<IOntologyRepository>("IOntologyRepository"),
+          this.container.resolve<IVaultAdapter>("IVaultAdapter"),
+        ),
+    );
+
+    this.container.register<PropertyCacheService>(
+      "PropertyCacheService",
+      () => PropertyCacheService.getInstance(),
+    );
+
+    this.container.register<CircuitBreakerService>(
+      "CircuitBreakerService",
+      () => CircuitBreakerService.getInstance(),
+    );
+
     // Register Use Cases
     this.container.register<CreateAssetUseCase>(
       "CreateAssetUseCase",
@@ -278,6 +302,7 @@ export class DIContainer {
         new CreateAssetUseCase(
           this.container.resolve<IAssetRepository>("IAssetRepository"),
           this.container.resolve<IOntologyRepository>("IOntologyRepository"),
+          this.container.resolve<OntologyProvisioningService>("OntologyProvisioningService"),
         ),
     );
 
@@ -285,6 +310,15 @@ export class DIContainer {
       "CreateChildTaskUseCase",
       () =>
         new CreateChildTaskUseCase(
+          this.container.resolve<IAssetRepository>("IAssetRepository"),
+          this.container.resolve<CreateAssetUseCase>("CreateAssetUseCase"),
+        ),
+    );
+
+    this.container.register<CreateChildAreaUseCase>(
+      "CreateChildAreaUseCase",
+      () =>
+        new CreateChildAreaUseCase(
           this.container.resolve<IAssetRepository>("IAssetRepository"),
           this.container.resolve<CreateAssetUseCase>("CreateAssetUseCase"),
         ),

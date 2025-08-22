@@ -12,6 +12,7 @@ import { AssetId } from "../../domain/value-objects/AssetId";
 import { ClassName } from "../../domain/value-objects/ClassName";
 import { OntologyPrefix } from "../../domain/value-objects/OntologyPrefix";
 import { CreateChildTaskUseCase } from "../../application/use-cases/CreateChildTaskUseCase";
+import { CreateChildAreaUseCase } from "../../application/use-cases/CreateChildAreaUseCase";
 
 /**
  * Obsidian implementation of command executor
@@ -27,6 +28,7 @@ export class ObsidianCommandExecutor implements ICommandExecutor {
     private app: App,
     private assetRepository: IAssetRepository,
     private createChildTaskUseCase?: CreateChildTaskUseCase,
+    private createChildAreaUseCase?: CreateChildAreaUseCase,
   ) {
     this.handlers = new Map();
     this.registerDefaultHandlers();
@@ -364,6 +366,47 @@ export class ObsidianCommandExecutor implements ICommandExecutor {
       return Result.ok<any>({
         taskId: result.taskId,
         taskFilePath: result.taskFilePath,
+      });
+    });
+
+    // CREATE_CHILD_AREA handler
+    this.registerHandler(CommandType.CREATE_CHILD_AREA, async (request) => {
+      const parentAreaId = request.context.assetId;
+
+      if (!parentAreaId) {
+        return Result.fail<any>(
+          "Parent area ID is required for CREATE_CHILD_AREA command",
+        );
+      }
+
+      if (!this.createChildAreaUseCase) {
+        return Result.fail<any>("CreateChildAreaUseCase not initialized");
+      }
+
+      const result = await this.createChildAreaUseCase.execute({
+        parentAreaId,
+        context: {
+          activeFile: request.context.currentView,
+          selection: request.context.selection?.join("\n"),
+        },
+      });
+
+      if (!result.success) {
+        return Result.fail<any>(result.message);
+      }
+
+      // Open the new area file
+      if (result.areaFilePath) {
+        const file = this.app.vault.getAbstractFileByPath(result.areaFilePath);
+        if (file instanceof TFile) {
+          await this.app.workspace.getLeaf(true).openFile(file);
+        }
+      }
+
+      new Notice(result.message);
+      return Result.ok<any>({
+        areaId: result.areaId,
+        areaFilePath: result.areaFilePath,
       });
     });
   }
