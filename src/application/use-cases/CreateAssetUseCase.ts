@@ -4,6 +4,8 @@ import { ClassName } from "../../domain/value-objects/ClassName";
 import { OntologyPrefix } from "../../domain/value-objects/OntologyPrefix";
 import { IAssetRepository } from "../../domain/repositories/IAssetRepository";
 import { IOntologyRepository } from "../../domain/repositories/IOntologyRepository";
+import { OntologyProvisioningService } from "../../domain/services/OntologyProvisioningService";
+import { Result } from "../../domain/core/Result";
 
 /**
  * Use case for creating a new asset
@@ -13,67 +15,111 @@ export class CreateAssetUseCase {
   constructor(
     private readonly assetRepository: IAssetRepository,
     private readonly ontologyRepository: IOntologyRepository,
+    private readonly ontologyProvisioningService: OntologyProvisioningService,
   ) {}
 
   async execute(request: CreateAssetRequest): Promise<CreateAssetResponse> {
-    // Validate the request
-    this.validateRequest(request);
+    try {
+      // Validate the request
+      const validationResult = this.validateRequest(request);
+      if (!validationResult.isSuccess) {
+        return {
+          success: false,
+          assetId: "",
+          message: validationResult.getError(),
+          error: validationResult.getError(),
+        };
+      }
 
-    // Verify ontology exists
-    const ontologyPrefixResult = OntologyPrefix.create(request.ontologyPrefix);
-    if (ontologyPrefixResult.isFailure) {
-      throw new Error(ontologyPrefixResult.error);
+      // Ensure ontology exists (auto-provision if needed)
+      await this.ontologyProvisioningService.ensureOntologyExists(
+        request.ontologyPrefix,
+      );
+      
+      // Create ontology prefix
+      const ontologyPrefixResult = OntologyPrefix.create(request.ontologyPrefix);
+      if (ontologyPrefixResult.isFailure) {
+        return {
+          success: false,
+          assetId: "",
+          message: `Invalid ontology prefix: ${ontologyPrefixResult.error}`,
+          error: ontologyPrefixResult.error,
+        };
+      }
+      const ontologyPrefix = ontologyPrefixResult.getValue();
+
+      // Create class name
+      const classNameResult = ClassName.create(request.className);
+      if (!classNameResult.isSuccess) {
+        return {
+          success: false,
+          assetId: "",
+          message: `Invalid class name: ${classNameResult.getError()}`,
+          error: classNameResult.getError(),
+        };
+      }
+      const className = classNameResult.getValue()!;
+
+      // Create the asset
+      const assetResult = Asset.create({
+        id: AssetId.generate(),
+        label: request.title,
+        className: className,
+        ontology: ontologyPrefix,
+        properties: request.properties || {},
+      });
+
+      if (!assetResult.isSuccess) {
+        return {
+          success: false,
+          assetId: "",
+          message: `Asset creation failed: ${assetResult.getError()}`,
+          error: assetResult.getError(),
+        };
+      }
+      const asset = assetResult.getValue()!;
+
+      // Save the asset
+      await this.assetRepository.save(asset);
+
+      return {
+        success: true,
+        assetId: asset.getId().toString(),
+        message: `Created asset: ${asset.getTitle()}`,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return {
+        success: false,
+        assetId: "",
+        message: `Unexpected error: ${errorMessage}`,
+        error: errorMessage,
+      };
     }
-    const ontologyPrefix = ontologyPrefixResult.getValue();
-
-    const ontology = await this.ontologyRepository.findByPrefix(ontologyPrefix);
-    if (!ontology) {
-      throw new Error(`Ontology ${request.ontologyPrefix} not found`);
-    }
-
-    // Create class name
-    const classNameResult = ClassName.create(request.className);
-    if (classNameResult.isFailure) {
-      throw new Error(classNameResult.error);
-    }
-    const className = classNameResult.getValue();
-
-    // Create the asset
-    const assetResult = Asset.create({
-      id: AssetId.generate(),
-      label: request.title,
-      className: className,
-      ontology: ontologyPrefix,
-      properties: request.properties || {},
-    });
-
-    if (assetResult.isFailure) {
-      throw new Error(assetResult.error);
-    }
-    const asset = assetResult.getValue();
-
-    // Save the asset
-    await this.assetRepository.save(asset);
-
-    return {
-      success: true,
-      assetId: asset.getId().toString(),
-      message: `Created asset: ${asset.getTitle()}`,
-    };
   }
 
-  private validateRequest(request: CreateAssetRequest): void {
+  private validateRequest(request: CreateAssetRequest): Result<void> {
     if (!request.title || request.title.trim().length === 0) {
-      throw new Error("Asset title is required");
+      return Result.fail<void>("Asset title is required");
+    }
+
+    if (request.title.length > 200) {
+      return Result.fail<void>("Asset title cannot exceed 200 characters");
     }
 
     if (!request.className) {
-      throw new Error("Asset class is required");
+      return Result.fail<void>("Asset class is required");
     }
 
     if (!request.ontologyPrefix) {
-      throw new Error("Ontology prefix is required");
+      return Result.fail<void>("Ontology prefix is required");
     }
+
+    if (request.ontologyPrefix.trim().length === 0) {
+      return Result.fail<void>("Ontology prefix cannot be empty");
+    }
+
+    return Result.ok<void>();
   }
 }
 
@@ -88,4 +134,5 @@ export interface CreateAssetResponse {
   success: boolean;
   assetId: string;
   message: string;
+  error?: string;
 }

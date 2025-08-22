@@ -278,11 +278,7 @@ export class DIContainer {
     // Register Domain Services
     this.container.register<OntologyProvisioningService>(
       "OntologyProvisioningService",
-      () =>
-        new OntologyProvisioningService(
-          this.container.resolve<IOntologyRepository>("IOntologyRepository"),
-          this.container.resolve<IVaultAdapter>("IVaultAdapter"),
-        ),
+      () => new OntologyProvisioningService(),
     );
 
     this.container.register<PropertyCacheService>(
@@ -302,7 +298,7 @@ export class DIContainer {
         new CreateAssetUseCase(
           this.container.resolve<IAssetRepository>("IAssetRepository"),
           this.container.resolve<IOntologyRepository>("IOntologyRepository"),
-          this.container.resolve<OntologyProvisioningService>("OntologyProvisioningService"),
+          this.container.resolve<OntologyProvisioningService>("OntologyProvisioningService")
         ),
     );
 
