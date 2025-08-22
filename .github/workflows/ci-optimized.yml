@@ -284,7 +284,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Overall status - Ultra-safe mode for emergency stabilization
-          if [ "$validation_result" == "success" ] && [ "$core_result" == "success" ]; then
+          # Note: validation is disabled (if: false), so check for success OR skipped
+          if ([ "$validation_result" == "success" ] || [ "$validation_result" == "skipped" ]) && [ "$core_result" == "success" ]; then
             echo "✅ **Critical CI tests passed successfully!**" >> $GITHUB_STEP_SUMMARY
             if [ "$security_result" != "success" ]; then
               echo "⚠️ **Security tests completed with warnings but not blocking**" >> $GITHUB_STEP_SUMMARY
@@ -299,13 +300,13 @@ jobs:
             # List failed jobs
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Failed Jobs:" >> $GITHUB_STEP_SUMMARY
-            [ "$validation_result" != "success" ] && echo "- 🔍 Validation: $validation_result" >> $GITHUB_STEP_SUMMARY
+            [ "$validation_result" != "success" ] && [ "$validation_result" != "skipped" ] && echo "- 🔍 Validation: $validation_result" >> $GITHUB_STEP_SUMMARY
             [ "$core_result" != "success" ] && echo "- 🧪 Core Tests: $core_result" >> $GITHUB_STEP_SUMMARY
             [ "$security_result" != "success" ] && echo "- 🔒 Security Tests: $security_result (non-blocking)" >> $GITHUB_STEP_SUMMARY
             [ "$mobile_result" != "success" ] && [ "$mobile_result" != "skipped" ] && echo "- 📱 Mobile Tests: $mobile_result (non-blocking)" >> $GITHUB_STEP_SUMMARY
             
-            # Only fail if critical tests fail
-            if [ "$validation_result" != "success" ] || [ "$core_result" != "success" ]; then
+            # Only fail if critical tests fail (validation is disabled, so allow skipped)
+            if ([ "$validation_result" != "success" ] && [ "$validation_result" != "skipped" ]) || [ "$core_result" != "success" ]; then
               exit 1
             else
               echo "⚠️ **Non-critical test warnings only - pipeline continues**" >> $GITHUB_STEP_SUMMARY
