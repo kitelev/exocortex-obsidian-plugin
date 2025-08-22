@@ -130,6 +130,7 @@ export class Modal {
   app: App;
   contentEl: HTMLElement;
   modalEl: HTMLElement;
+  private backdrop?: HTMLElement;
 
   constructor(app: App) {
     this.app = app;
@@ -180,8 +181,35 @@ export class Modal {
     }
   }
 
-  open(): void {}
-  close(): void {}
+  open(): void {
+    // Create backdrop and add modal to DOM
+    this.backdrop = document.createElement("div");
+    this.backdrop.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      transition: opacity 0.3s ease;
+    `;
+    document.body.appendChild(this.backdrop);
+    this.backdrop.appendChild(this.modalEl);
+    this.onOpen();
+  }
+  
+  close(): void {
+    this.onClose();
+    if (this.backdrop) {
+      document.body.removeChild(this.backdrop);
+      this.backdrop = undefined;
+    }
+  }
+  
   onOpen(): void {}
   onClose(): void {}
 }
@@ -525,6 +553,24 @@ export class Vault {
     if (index > -1) {
       this.mockFiles.splice(index, 1);
     }
+    return Promise.resolve();
+  }
+
+  async rename(file: TFile, newPath: string): Promise<void> {
+    const targetFile = this.mockFiles.find(f => f === file);
+    if (targetFile) {
+      targetFile.path = newPath;
+      targetFile.name = newPath.split('/').pop() || '';
+    }
+    return Promise.resolve();
+  }
+
+  getAllLoadedFiles(): TFile[] {
+    return this.mockFiles;
+  }
+
+  async createFolder(path: string): Promise<void> {
+    // Mock folder creation
     return Promise.resolve();
   }
 

@@ -47,4 +47,9 @@ export interface IVaultAdapter {
    * Get metadata for a specific file object
    */
   getFileMetadata(file: any): Promise<any>;
+
+  /**
+   * Resolve a wiki-link to a file
+   */
+  resolveLinkToFile?(linkText: string, sourcePath?: string): Promise<any>;
 }

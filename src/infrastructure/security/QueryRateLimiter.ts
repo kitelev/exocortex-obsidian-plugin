@@ -441,4 +441,14 @@ export class QueryRateLimiter {
       circuitBreakersOpen,
     };
   }
+
+  /**
+   * Cancel all active executions (for compatibility with tests)
+   * Note: This rate limiter doesn't track executions, only rate limits
+   */
+  cancelAllExecutions(): Result<number> {
+    // Rate limiter doesn't track active executions, only limits
+    // Return success with 0 cancellations for compatibility
+    return Result.ok(0);
+  }
 }

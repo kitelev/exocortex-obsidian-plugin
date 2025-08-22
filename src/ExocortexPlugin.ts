@@ -102,6 +102,13 @@ export default class ExocortexPlugin extends Plugin {
     this.processorManager?.updateCacheConfig(this.settings);
   }
 
+  /**
+   * Get SPARQL processor (exposed for testing)
+   */
+  get sparqlProcessor() {
+    return this.processorManager?.getSPARQLProcessor();
+  }
+
   private async initializeLifecycleManagers(): Promise<void> {
     // Create and register lifecycle managers
     this.settingsManager = new SettingsLifecycleManager(this);

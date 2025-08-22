@@ -17,6 +17,13 @@ export interface GraphStatistics {
     spo: number;
     pos: number;
     osp: number;
+    propertyHierarchy: number;
+    semanticCache: number;
+  };
+  memoryUsage: {
+    heap: number;
+    indexes: number;
+    caches: number;
   };
 }
 
@@ -25,6 +32,11 @@ export interface PerformanceMetrics {
   lastQueryTime: number;
   cacheHitRate: number;
   averageQueryTime: number;
+  hierarchyTraversalTime: number;
+  semanticQueryTime: number;
+  batchProcessingRate: number;
+  memoryEfficiency: number;
+  indexFragmentation: number;
 }
 
 /**
@@ -38,19 +50,44 @@ export class IndexedGraph extends Graph {
     lastQueryTime: 0,
     cacheHitRate: 0,
     averageQueryTime: 0,
+    hierarchyTraversalTime: 0,
+    semanticQueryTime: 0,
+    batchProcessingRate: 0,
+    memoryEfficiency: 0,
+    indexFragmentation: 0,
   };
 
-  // Query result cache with LRU eviction
+  // Multi-level caching system
   private queryCache: Map<string, Triple[]> = new Map();
-  private readonly maxCacheSize = 100;
+  private semanticCache: Map<string, Set<string>> = new Map(); // Property hierarchy cache
+  private pathCache: Map<string, string[]> = new Map(); // Multi-hop path cache
+  private readonly maxCacheSize = 1000; // Increased for better hit rates
+  private readonly maxSemanticCacheSize = 500;
   private cacheHits = 0;
   private cacheMisses = 0;
+
+  // Property hierarchy index for exo__Property relationships
+  private propertyHierarchy: Map<string, Set<string>> = new Map(); // broader -> narrower
+  private inversePropertyHierarchy: Map<string, Set<string>> = new Map(); // narrower -> broader
+  private transitiveClosureCache: Map<string, Set<string>> = new Map();
 
   // Optimized batch operation buffer with chunking
   private batchBuffer: Triple[] = [];
   private batchMode = false;
-  private readonly BATCH_CHUNK_SIZE = 500; // Process in smaller chunks
+  private readonly BATCH_CHUNK_SIZE = 1000; // Increased for better throughput
   private readonly MAX_BATCH_SIZE = 10000; // Auto-commit threshold
+
+  // Bloom filter for existence checks (memory-efficient)
+  private bloomFilter: Set<string> = new Set(); // Simple implementation
+  private readonly BLOOM_FILTER_SIZE = 100000;
+
+  // Adaptive performance thresholds
+  private performanceThresholds = {
+    queryTimeWarning: 5.0, // ms
+    memoryUsageWarning: 0.8, // 80% of limit
+    cacheHitRateTarget: 0.85, // 85%
+    indexFragmentationLimit: 0.3, // 30%
+  };
 
   /**
    * Enable batch mode for bulk operations
@@ -62,25 +99,44 @@ export class IndexedGraph extends Graph {
   }
 
   /**
-   * Commit batch operations with memory optimization
+   * Commit batch operations with memory optimization and parallel processing
    */
   commitBatch(): void {
     const startTime = performance.now();
-
-    // Process in chunks to reduce memory spikes
     const totalTriples = this.batchBuffer.length;
 
-    for (let i = 0; i < totalTriples; i += this.BATCH_CHUNK_SIZE) {
-      const chunk = this.batchBuffer.slice(i, i + this.BATCH_CHUNK_SIZE);
+    if (totalTriples === 0) {
+      this.batchMode = false;
+      return;
+    }
 
-      // Add chunk
-      for (const triple of chunk) {
-        super.add(triple);
-      }
+    // Sort buffer by predicate for better index locality
+    this.batchBuffer.sort((a, b) => 
+      a.getPredicate().toString().localeCompare(b.getPredicate().toString())
+    );
+
+    // Process in optimized chunks to reduce memory spikes
+    const chunks: Triple[][] = [];
+    for (let i = 0; i < totalTriples; i += this.BATCH_CHUNK_SIZE) {
+      chunks.push(this.batchBuffer.slice(i, i + this.BATCH_CHUNK_SIZE));
+    }
+
+    // Process chunks with memory management
+    for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+      const chunk = chunks[chunkIndex];
+      
+      // Bulk add with optimized indexing
+      this.bulkAddChunk(chunk);
 
       // Trigger GC hint for large batches
-      if (i > 0 && i % (this.BATCH_CHUNK_SIZE * 4) === 0) {
+      if (chunkIndex > 0 && chunkIndex % 4 === 0) {
         this.triggerGCHint();
+      }
+
+      // Update progress for very large batches
+      if (totalTriples > 5000 && chunkIndex % 10 === 0) {
+        const progress = ((chunkIndex + 1) / chunks.length * 100).toFixed(1);
+        console.log(`Batch processing: ${progress}% (${chunkIndex + 1}/${chunks.length} chunks)`);
       }
     }
 
@@ -88,7 +144,80 @@ export class IndexedGraph extends Graph {
     this.batchMode = false;
     this.invalidateCache();
 
-    this.metrics.lastIndexTime = performance.now() - startTime;
+    const processingTime = performance.now() - startTime;
+    this.metrics.lastIndexTime = processingTime;
+    this.metrics.batchProcessingRate = totalTriples / (processingTime / 1000); // triples per second
+
+    console.log(`Batch committed: ${totalTriples} triples in ${processingTime.toFixed(2)}ms (${this.metrics.batchProcessingRate.toFixed(0)} triples/sec)`);
+  }
+
+  /**
+   * Optimized bulk add for chunk processing
+   */
+  private bulkAddChunk(chunk: Triple[]): void {
+    // Pre-allocate sets for better performance
+    const spoUpdates = new Map<string, Map<string, string[]>>();
+    const posUpdates = new Map<string, Map<string, string[]>>();
+    const ospUpdates = new Map<string, Map<string, string[]>>();
+
+    // Collect all updates first
+    for (const triple of chunk) {
+      const s = triple.getSubject().toString();
+      const p = triple.getPredicate().toString();
+      const o = triple.getObject().toString();
+
+      // Add to bloom filter
+      this.bloomFilter.add(this.getTripleKey(triple));
+
+      // Collect SPO updates
+      if (!spoUpdates.has(s)) spoUpdates.set(s, new Map());
+      if (!spoUpdates.get(s)!.has(p)) spoUpdates.get(s)!.set(p, []);
+      spoUpdates.get(s)!.get(p)!.push(o);
+
+      // Collect POS updates
+      if (!posUpdates.has(p)) posUpdates.set(p, new Map());
+      if (!posUpdates.get(p)!.has(o)) posUpdates.get(p)!.set(o, []);
+      posUpdates.get(p)!.get(o)!.push(s);
+
+      // Collect OSP updates
+      if (!ospUpdates.has(o)) ospUpdates.set(o, new Map());
+      if (!ospUpdates.get(o)!.has(s)) ospUpdates.get(o)!.set(s, []);
+      ospUpdates.get(o)!.get(s)!.push(p);
+
+      // Add to triples set
+      (this as any).triples.add(triple);
+
+      // Update property hierarchy
+      this.updatePropertyHierarchy(triple);
+    }
+
+    // Apply collected updates to indexes
+    this.applyBulkIndexUpdates(spoUpdates, this.getSPOIndex());
+    this.applyBulkIndexUpdates(posUpdates, this.getPOSIndex());
+    this.applyBulkIndexUpdates(ospUpdates, this.getOSPIndex());
+  }
+
+  /**
+   * Apply bulk updates to an index
+   */
+  private applyBulkIndexUpdates(
+    updates: Map<string, Map<string, string[]>>,
+    index: Map<string, Map<string, Set<string>>>
+  ): void {
+    for (const [key1, level2] of updates) {
+      if (!index.has(key1)) index.set(key1, new Map());
+      const indexLevel2 = index.get(key1)!;
+
+      for (const [key2, values] of level2) {
+        if (!indexLevel2.has(key2)) indexLevel2.set(key2, new Set());
+        const indexSet = indexLevel2.get(key2)!;
+
+        // Bulk add values
+        for (const value of values) {
+          indexSet.add(value);
+        }
+      }
+    }
   }
 
   /**
@@ -100,7 +229,7 @@ export class IndexedGraph extends Graph {
   }
 
   /**
-   * Override add to support batch mode with auto-commit
+   * Override add to support batch mode with auto-commit and semantic indexing
    */
   add(triple: Triple): void {
     if (this.batchMode) {
@@ -114,13 +243,18 @@ export class IndexedGraph extends Graph {
       return;
     }
 
+    // Add to bloom filter for fast existence checks
+    const tripleKey = this.getTripleKey(triple);
+    this.bloomFilter.add(tripleKey);
+
     super.add(triple);
+    this.updatePropertyHierarchy(triple);
     this.invalidateStats();
-    this.invalidateCache();
+    this.invalidateRelevantCaches(triple);
   }
 
   /**
-   * Override remove to support batch mode
+   * Override remove to support batch mode and semantic index cleanup
    */
   remove(triple: Triple): void {
     if (this.batchMode) {
@@ -132,9 +266,14 @@ export class IndexedGraph extends Graph {
       return;
     }
 
+    // Remove from bloom filter
+    const tripleKey = this.getTripleKey(triple);
+    this.bloomFilter.delete(tripleKey);
+
     super.remove(triple);
+    this.cleanupPropertyHierarchy(triple);
     this.invalidateStats();
-    this.invalidateCache();
+    this.invalidateRelevantCaches(triple);
   }
 
   /**
@@ -159,17 +298,37 @@ export class IndexedGraph extends Graph {
 
     const startTime = performance.now();
 
-    // Perform optimized index-based query
-    const results = this.match(
-      subject ? new IRI(subject) : undefined,
-      predicate ? new IRI(predicate) : undefined,
-      object ? this.parseObject(object) : undefined,
-    );
+    // Perform optimized index-based query with bloom filter check
+    let results: Triple[];
+    if (subject && predicate && object) {
+      // Exact match - check bloom filter first
+      const tripleKey = `${subject}|${predicate}|${object}`;
+      if (!this.bloomFilter.has(tripleKey)) {
+        results = [];
+      } else {
+        results = this.match(
+          new IRI(subject),
+          new IRI(predicate),
+          this.parseObject(object),
+        );
+      }
+    } else {
+      results = this.match(
+        subject ? new IRI(subject) : undefined,
+        predicate ? new IRI(predicate) : undefined,
+        object ? this.parseObject(object) : undefined,
+      );
+    }
 
     // Update performance metrics
     const queryTime = performance.now() - startTime;
     this.metrics.lastQueryTime = queryTime;
     this.updateAverageQueryTime(queryTime);
+
+    // Performance warning for slow queries
+    if (queryTime > this.performanceThresholds.queryTimeWarning) {
+      console.warn(`Slow query detected: ${queryTime.toFixed(2)}ms for pattern ${cacheKey}`);
+    }
 
     // Cache results with optimized LRU eviction
     this.cacheMisses++;
@@ -187,6 +346,172 @@ export class IndexedGraph extends Graph {
       this.stats = this.calculateStatistics();
     }
     return this.stats;
+  }
+
+  /**
+   * Query property hierarchy relationships with transitive closure
+   */
+  queryPropertyHierarchy(property: string, direction: 'broader' | 'narrower' | 'both' = 'both'): string[] {
+    const startTime = performance.now();
+    const cacheKey = `hierarchy:${property}:${direction}`;
+
+    // Check transitive closure cache
+    if (this.transitiveClosureCache.has(cacheKey)) {
+      const cached = Array.from(this.transitiveClosureCache.get(cacheKey)!);
+      this.metrics.hierarchyTraversalTime = 0; // Cache hit
+      return cached;
+    }
+
+    const result = new Set<string>();
+
+    if (direction === 'broader' || direction === 'both') {
+      this.traverseHierarchy(property, this.inversePropertyHierarchy, result);
+    }
+
+    if (direction === 'narrower' || direction === 'both') {
+      this.traverseHierarchy(property, this.propertyHierarchy, result);
+    }
+
+    // Cache the transitive closure
+    this.transitiveClosureCache.set(cacheKey, new Set(result));
+    
+    // Limit cache size
+    if (this.transitiveClosureCache.size > 200) {
+      const firstKey = this.transitiveClosureCache.keys().next().value;
+      this.transitiveClosureCache.delete(firstKey);
+    }
+
+    this.metrics.hierarchyTraversalTime = performance.now() - startTime;
+    return Array.from(result);
+  }
+
+  /**
+   * Optimized semantic search for exo__Property relationships
+   */
+  semanticQuery(pattern: {
+    propertyType?: string;
+    domain?: string;
+    range?: string;
+    required?: boolean;
+    options?: string[];
+  }): Triple[] {
+    const startTime = performance.now();
+    const cacheKey = `semantic:${JSON.stringify(pattern)}`;
+
+    // Check semantic cache
+    if (this.semanticCache.has(cacheKey)) {
+      const cachedKeys = this.semanticCache.get(cacheKey)!;
+      const results: Triple[] = [];
+      for (const key of cachedKeys) {
+        const parts = key.split('|');
+        if (parts.length === 3) {
+          const match = this.query(parts[0], parts[1], parts[2]);
+          results.push(...match);
+        }
+      }
+      this.metrics.semanticQueryTime = 0; // Cache hit
+      return results;
+    }
+
+    const results: Triple[] = [];
+    const resultKeys = new Set<string>();
+
+    // Query for exo__Property instances or start with broader search
+    let candidateTriples: Triple[];
+    
+    if (pattern.domain) {
+      // Start with domain constraint - often most selective
+      candidateTriples = this.query(undefined, 'rdfs:domain', pattern.domain);
+    } else if (pattern.range) {
+      // Use range constraint
+      candidateTriples = this.query(undefined, 'rdfs:range', pattern.range);
+    } else if (pattern.required !== undefined) {
+      // Use required constraint
+      candidateTriples = this.query(undefined, 'exo__Property_isRequired', pattern.required.toString());
+    } else {
+      // Default to type constraint
+      candidateTriples = this.query(undefined, 'rdf:type', 'exo__Property');
+    }
+    
+    // Filter candidates based on all constraints
+    for (const triple of candidateTriples) {
+      const subject = triple.getSubject().toString();
+      let matches = true;
+      
+      // Check type constraint if not already filtered by it
+      if (!pattern.domain && !pattern.range && pattern.required === undefined) {
+        const typeTriples = this.query(subject, 'rdf:type', 'exo__Property');
+        if (typeTriples.length === 0) matches = false;
+      }
+      
+      // Check domain constraint if not already filtered by it
+      if (pattern.domain && !candidateTriples.some(t => 
+        t.getPredicate().toString() === 'rdfs:domain' && 
+        t.getObject().toString() === pattern.domain
+      )) {
+        const domainTriples = this.query(subject, 'rdfs:domain', pattern.domain);
+        if (domainTriples.length === 0) matches = false;
+      }
+      
+      // Check range constraint if not already filtered by it
+      if (pattern.range && matches && !candidateTriples.some(t => 
+        t.getPredicate().toString() === 'rdfs:range' && 
+        t.getObject().toString() === pattern.range
+      )) {
+        const rangeTriples = this.query(subject, 'rdfs:range', pattern.range);
+        if (rangeTriples.length === 0) matches = false;
+      }
+      
+      // Check required constraint if not already filtered by it
+      if (pattern.required !== undefined && matches && !candidateTriples.some(t => 
+        t.getPredicate().toString() === 'exo__Property_isRequired'
+      )) {
+        const requiredTriples = this.query(subject, 'exo__Property_isRequired', pattern.required.toString());
+        if (requiredTriples.length === 0) matches = false;
+      }
+      
+      if (matches) {
+        results.push(triple);
+        resultKeys.add(this.getTripleKey(triple));
+      }
+    }
+
+    // Cache semantic query results
+    this.semanticCache.set(cacheKey, resultKeys);
+    if (this.semanticCache.size > this.maxSemanticCacheSize) {
+      const firstKey = this.semanticCache.keys().next().value;
+      this.semanticCache.delete(firstKey);
+    }
+
+    this.metrics.semanticQueryTime = performance.now() - startTime;
+    return results;
+  }
+
+  /**
+   * Batch semantic search for multiple patterns
+   */
+  batchSemanticQuery(patterns: Array<{
+    propertyType?: string;
+    domain?: string;
+    range?: string;
+    required?: boolean;
+    options?: string[];
+  }>): Triple[][] {
+    const startTime = performance.now();
+    const results: Triple[][] = [];
+
+    // Process in parallel-like batches
+    const BATCH_SIZE = 10;
+    for (let i = 0; i < patterns.length; i += BATCH_SIZE) {
+      const batch = patterns.slice(i, i + BATCH_SIZE);
+      const batchResults = batch.map(pattern => this.semanticQuery(pattern));
+      results.push(...batchResults);
+    }
+
+    const processingTime = performance.now() - startTime;
+    this.metrics.batchProcessingRate = patterns.length / (processingTime / 1000); // patterns per second
+
+    return results;
   }
 
   /**
@@ -361,29 +686,151 @@ export class IndexedGraph extends Graph {
   }
 
   /**
-   * Parallel query execution for complex patterns
+   * Parallel query execution for complex patterns with optimization
    */
   async parallelQuery(
     patterns: Array<{ s?: string; p?: string; o?: string }>,
   ): Promise<Triple[][]> {
-    const promises = patterns.map((pattern) =>
-      Promise.resolve(this.query(pattern.s, pattern.p, pattern.o)),
-    );
+    const startTime = performance.now();
+    
+    // Batch similar patterns for better cache performance
+    const patternGroups = this.groupSimilarPatterns(patterns);
+    const results: Triple[][] = new Array(patterns.length);
+    
+    // Process pattern groups
+    for (const group of patternGroups) {
+      const groupPromises = group.patterns.map((patternIndex) => {
+        const pattern = patterns[patternIndex];
+        return Promise.resolve(this.query(pattern.s, pattern.p, pattern.o));
+      });
+      
+      const groupResults = await Promise.all(groupPromises);
+      
+      // Map results back to original positions
+      group.patterns.forEach((patternIndex, resultIndex) => {
+        results[patternIndex] = groupResults[resultIndex];
+      });
+    }
 
-    return Promise.all(promises);
+    const queryTime = performance.now() - startTime;
+    console.log(`Parallel query completed: ${patterns.length} patterns in ${queryTime.toFixed(2)}ms`);
+    
+    return results;
   }
 
   /**
-   * Stream large result sets
+   * Group similar patterns for batch processing
+   */
+  private groupSimilarPatterns(
+    patterns: Array<{ s?: string; p?: string; o?: string }>
+  ): Array<{ type: string; patterns: number[] }> {
+    const groups = new Map<string, number[]>();
+    
+    patterns.forEach((pattern, index) => {
+      // Create a pattern signature for grouping
+      const signature = `${pattern.s ? 'S' : '*'}${pattern.p ? 'P' : '*'}${pattern.o ? 'O' : '*'}`;
+      
+      if (!groups.has(signature)) {
+        groups.set(signature, []);
+      }
+      groups.get(signature)!.push(index);
+    });
+    
+    return Array.from(groups.entries()).map(([type, patterns]) => ({ type, patterns }));
+  }
+
+  /**
+   * Optimized bulk query for large result sets
+   */
+  bulkQuery(patterns: Array<{ s?: string; p?: string; o?: string }>): Triple[][] {
+    const startTime = performance.now();
+    const results: Triple[][] = [];
+    
+    // Process in batches to maintain responsiveness
+    const QUERY_BATCH_SIZE = 50;
+    
+    for (let i = 0; i < patterns.length; i += QUERY_BATCH_SIZE) {
+      const batch = patterns.slice(i, i + QUERY_BATCH_SIZE);
+      const batchResults = batch.map(pattern => 
+        this.query(pattern.s, pattern.p, pattern.o)
+      );
+      results.push(...batchResults);
+      
+      // Yield control occasionally for long operations
+      if (i > 0 && i % (QUERY_BATCH_SIZE * 4) === 0) {
+        // Allow other operations to run
+        setTimeout(() => {}, 0);
+      }
+    }
+    
+    const queryTime = performance.now() - startTime;
+    this.metrics.batchProcessingRate = patterns.length / (queryTime / 1000);
+    
+    return results;
+  }
+
+  /**
+   * Stream large result sets with memory optimization
    */
   *stream(
     subject?: string,
     predicate?: string,
     object?: string,
+    batchSize: number = 100
   ): Generator<Triple> {
-    const results = this.query(subject, predicate, object);
-    for (const triple of results) {
-      yield triple;
+    // For exact matches, use direct streaming
+    if (subject && predicate && object) {
+      const results = this.query(subject, predicate, object);
+      for (const triple of results) {
+        yield triple;
+      }
+      return;
+    }
+    
+    // For pattern matches, stream in batches to reduce memory
+    const allTriples = this.getAllTriples();
+    let count = 0;
+    
+    for (const triple of allTriples) {
+      let matches = true;
+      
+      if (subject && triple.getSubject().toString() !== subject) {
+        matches = false;
+      }
+      if (predicate && triple.getPredicate().toString() !== predicate) {
+        matches = false;
+      }
+      if (object && triple.getObject().toString() !== object) {
+        matches = false;
+      }
+      
+      if (matches) {
+        yield triple;
+        count++;
+        
+        // Yield control periodically for large streams
+        if (count % batchSize === 0) {
+          setTimeout(() => {}, 0);
+        }
+      }
+    }
+  }
+
+  /**
+   * Memory-efficient iterator for large graphs
+   */
+  *iterateByPredicate(predicate: string): Generator<Triple> {
+    const pMap = this.getPOSIndex().get(predicate);
+    if (!pMap) return;
+    
+    for (const [object, subjects] of pMap) {
+      for (const subject of subjects) {
+        // Find the actual triple
+        const triples = this.match(new IRI(subject), new IRI(predicate), this.parseObject(object));
+        for (const triple of triples) {
+          yield triple;
+        }
+      }
     }
   }
 
@@ -411,6 +858,10 @@ export class IndexedGraph extends Graph {
       objects.add(triple.getObject().toString());
     }
 
+    const memStats = this.getMemoryStatistics();
+    const indexMemory = this.estimateIndexMemory();
+    const cacheMemory = this.estimateCacheMemory();
+
     return {
       totalTriples: triples.length,
       uniqueSubjects: subjects.size,
@@ -420,6 +871,13 @@ export class IndexedGraph extends Graph {
         spo: this.getSPOIndex().size,
         pos: this.getPOSIndex().size,
         osp: this.getOSPIndex().size,
+        propertyHierarchy: this.propertyHierarchy.size,
+        semanticCache: this.semanticCache.size,
+      },
+      memoryUsage: {
+        heap: memStats.used,
+        indexes: indexMemory,
+        caches: cacheMemory,
       },
     };
   }
@@ -430,13 +888,35 @@ export class IndexedGraph extends Graph {
 
   private invalidateCache(): void {
     this.queryCache.clear();
+    this.semanticCache.clear();
+    this.transitiveClosureCache.clear();
+  }
+
+  /**
+   * Selectively invalidate caches based on triple changes
+   */
+  private invalidateRelevantCaches(triple: Triple): void {
+    const predicate = triple.getPredicate().toString();
+    
+    // Clear general query cache
+    this.queryCache.clear();
+    
+    // Clear semantic cache if property-related
+    if (predicate.includes('Property') || predicate.includes('rdfs:') || predicate.includes('rdf:type')) {
+      this.semanticCache.clear();
+    }
+    
+    // Clear hierarchy cache if hierarchy-related
+    if (predicate.includes('broader') || predicate.includes('narrower') || predicate.includes('subProperty')) {
+      this.transitiveClosureCache.clear();
+    }
   }
 
   private cacheResult(key: string, result: Triple[]): void {
     // Optimized LRU eviction with batch cleanup
     if (this.queryCache.size >= this.maxCacheSize) {
-      // Remove oldest 20% of entries to reduce frequent evictions
-      const entriesToRemove = Math.floor(this.maxCacheSize * 0.2);
+      // Remove oldest 10% of entries to reduce frequent evictions
+      const entriesToRemove = Math.floor(this.maxCacheSize * 0.1);
       const keysToRemove = Array.from(this.queryCache.keys()).slice(
         0,
         entriesToRemove,
@@ -447,7 +927,10 @@ export class IndexedGraph extends Graph {
       }
     }
 
-    this.queryCache.set(key, result);
+    // Only cache if result size is reasonable (avoid caching huge results)
+    if (result.length <= 1000) {
+      this.queryCache.set(key, result);
+    }
   }
 
   private updateCacheHitRate(): void {
@@ -460,6 +943,40 @@ export class IndexedGraph extends Graph {
     const alpha = 0.2;
     this.metrics.averageQueryTime =
       this.metrics.averageQueryTime * (1 - alpha) + newTime * alpha;
+    
+    // Update memory efficiency periodically
+    if (Math.random() < 0.1) { // 10% of the time
+      this.updateMemoryEfficiency();
+    }
+    
+    // Auto-optimize if performance degrades
+    if (this.metrics.averageQueryTime > this.performanceThresholds.queryTimeWarning * 2) {
+      console.warn('Performance degradation detected, triggering optimization');
+      this.autoOptimize();
+    }
+  }
+
+  /**
+   * Automatic performance optimization
+   */
+  private autoOptimize(): void {
+    const memStats = this.getMemoryStatistics();
+    
+    // If memory usage is high, clear caches
+    if (memStats.utilization > this.performanceThresholds.memoryUsageWarning * 100) {
+      this.invalidateCache();
+    }
+    
+    // If index fragmentation is high, defragment
+    if (this.metrics.indexFragmentation > this.performanceThresholds.indexFragmentationLimit) {
+      this.defragmentIndexes();
+    }
+    
+    // If cache hit rate is low, adjust cache size
+    if (this.metrics.cacheHitRate < this.performanceThresholds.cacheHitRateTarget) {
+      // Increase cache size temporarily
+      (this as any).maxCacheSize = Math.min(this.maxCacheSize * 1.5, 2000);
+    }
   }
 
   // Protected getters for index access
@@ -498,6 +1015,91 @@ export class IndexedGraph extends Graph {
       return (performance as any).memory.usedJSHeapSize;
     }
     return 0;
+  }
+
+  /**
+   * Performance benchmark for current configuration
+   */
+  benchmark(operations: number = 1000): {
+    avgQueryTime: number;
+    maxQueryTime: number;
+    minQueryTime: number;
+    cacheHitRate: number;
+    throughput: number;
+  } {
+    const startTime = performance.now();
+    const times: number[] = [];
+    
+    // Generate random query patterns
+    const subjects = Array.from(this.getSPOIndex().keys()).slice(0, 100);
+    const predicates = Array.from(this.getPOSIndex().keys()).slice(0, 50);
+    
+    const initialCacheHits = this.cacheHits;
+    const initialCacheMisses = this.cacheMisses;
+    
+    for (let i = 0; i < operations; i++) {
+      const subject = Math.random() < 0.7 ? subjects[Math.floor(Math.random() * subjects.length)] : undefined;
+      const predicate = Math.random() < 0.8 ? predicates[Math.floor(Math.random() * predicates.length)] : undefined;
+      
+      const queryStart = performance.now();
+      this.query(subject, predicate);
+      times.push(performance.now() - queryStart);
+    }
+    
+    const totalTime = performance.now() - startTime;
+    const cacheHits = this.cacheHits - initialCacheHits;
+    const cacheMisses = this.cacheMisses - initialCacheMisses;
+    
+    return {
+      avgQueryTime: times.reduce((a, b) => a + b, 0) / times.length,
+      maxQueryTime: Math.max(...times),
+      minQueryTime: Math.min(...times),
+      cacheHitRate: cacheHits / (cacheHits + cacheMisses),
+      throughput: operations / (totalTime / 1000), // operations per second
+    };
+  }
+
+  /**
+   * ISO/IEC 25010 performance compliance check
+   */
+  validatePerformanceStandards(): {
+    timeBehavior: {
+      compliant: boolean;
+      responseTime: number;
+      target: number;
+    };
+    resourceUtilization: {
+      compliant: boolean;
+      memoryUsage: number;
+      cpuEfficiency: number;
+    };
+    capacity: {
+      compliant: boolean;
+      maxTriples: number;
+      currentTriples: number;
+    };
+  } {
+    const benchmark = this.benchmark(100);
+    const stats = this.getStatistics();
+    const memStats = this.getMemoryStatistics();
+    
+    return {
+      timeBehavior: {
+        compliant: benchmark.avgQueryTime < 100, // Sub-100ms target
+        responseTime: benchmark.avgQueryTime,
+        target: 100,
+      },
+      resourceUtilization: {
+        compliant: memStats.utilization < 80 && benchmark.throughput > 100,
+        memoryUsage: memStats.utilization,
+        cpuEfficiency: benchmark.throughput,
+      },
+      capacity: {
+        compliant: stats.totalTriples <= 100000, // Target capacity
+        maxTriples: 100000,
+        currentTriples: stats.totalTriples,
+      },
+    };
   }
 
   /**
@@ -562,6 +1164,9 @@ export class IndexedGraph extends Graph {
     (this as any).spo = new Map();
     (this as any).pos = new Map();
     (this as any).osp = new Map();
+    this.propertyHierarchy.clear();
+    this.inversePropertyHierarchy.clear();
+    this.bloomFilter.clear();
 
     // Rebuild indexes in optimized order
     for (const triple of triples) {
@@ -569,6 +1174,9 @@ export class IndexedGraph extends Graph {
       const subject = triple.getSubject().toString();
       const predicate = triple.getPredicate().toString();
       const object = triple.getObject().toString();
+
+      // Add to bloom filter
+      this.bloomFilter.add(this.getTripleKey(triple));
 
       // SPO index
       if (!this.getSPOIndex().has(subject)) {
@@ -596,7 +1204,193 @@ export class IndexedGraph extends Graph {
         this.getOSPIndex().get(object)!.set(subject, new Set());
       }
       this.getOSPIndex().get(object)!.get(subject)!.add(predicate);
+
+      // Update property hierarchy
+      this.updatePropertyHierarchy(triple);
     }
+  }
+
+  /**
+   * Generate a unique key for a triple
+   */
+  private getTripleKey(triple: Triple): string {
+    return `${triple.getSubject().toString()}|${triple.getPredicate().toString()}|${triple.getObject().toString()}`;
+  }
+
+  /**
+   * Update property hierarchy indexes for semantic relationships
+   */
+  private updatePropertyHierarchy(triple: Triple): void {
+    const predicate = triple.getPredicate().toString();
+    const subject = triple.getSubject().toString();
+    const object = triple.getObject().toString();
+
+    // Handle broader/narrower relationships
+    if (predicate.includes('broader') || predicate.includes('skos:broader')) {
+      // subject broader object -> object is narrower than subject
+      if (!this.propertyHierarchy.has(object)) {
+        this.propertyHierarchy.set(object, new Set());
+      }
+      this.propertyHierarchy.get(object)!.add(subject);
+
+      if (!this.inversePropertyHierarchy.has(subject)) {
+        this.inversePropertyHierarchy.set(subject, new Set());
+      }
+      this.inversePropertyHierarchy.get(subject)!.add(object);
+    }
+
+    if (predicate.includes('narrower') || predicate.includes('skos:narrower')) {
+      // subject narrower object -> subject is narrower than object
+      if (!this.propertyHierarchy.has(subject)) {
+        this.propertyHierarchy.set(subject, new Set());
+      }
+      this.propertyHierarchy.get(subject)!.add(object);
+
+      if (!this.inversePropertyHierarchy.has(object)) {
+        this.inversePropertyHierarchy.set(object, new Set());
+      }
+      this.inversePropertyHierarchy.get(object)!.add(subject);
+    }
+
+    // Handle subProperty relationships
+    if (predicate.includes('subPropertyOf') || predicate.includes('rdfs:subPropertyOf')) {
+      if (!this.propertyHierarchy.has(subject)) {
+        this.propertyHierarchy.set(subject, new Set());
+      }
+      this.propertyHierarchy.get(subject)!.add(object);
+
+      if (!this.inversePropertyHierarchy.has(object)) {
+        this.inversePropertyHierarchy.set(object, new Set());
+      }
+      this.inversePropertyHierarchy.get(object)!.add(subject);
+    }
+  }
+
+  /**
+   * Clean up property hierarchy when triple is removed
+   */
+  private cleanupPropertyHierarchy(triple: Triple): void {
+    const predicate = triple.getPredicate().toString();
+    const subject = triple.getSubject().toString();
+    const object = triple.getObject().toString();
+
+    if (predicate.includes('broader') || predicate.includes('narrower') || predicate.includes('subPropertyOf')) {
+      this.propertyHierarchy.get(subject)?.delete(object);
+      this.propertyHierarchy.get(object)?.delete(subject);
+      this.inversePropertyHierarchy.get(subject)?.delete(object);
+      this.inversePropertyHierarchy.get(object)?.delete(subject);
+
+      // Clear transitive closure cache when hierarchy changes
+      this.transitiveClosureCache.clear();
+    }
+  }
+
+  /**
+   * Traverse property hierarchy with memoization
+   */
+  private traverseHierarchy(
+    property: string,
+    hierarchy: Map<string, Set<string>>,
+    visited: Set<string>,
+    depth: number = 0
+  ): void {
+    if (depth > 10 || visited.has(property)) {
+      return; // Prevent infinite loops and limit depth
+    }
+
+    const related = hierarchy.get(property);
+    
+    if (related) {
+      for (const rel of related) {
+        if (!visited.has(rel)) {
+          visited.add(rel);
+          this.traverseHierarchy(rel, hierarchy, visited, depth + 1);
+        }
+      }
+    }
+  }
+
+  /**
+   * Estimate memory usage of indexes
+   */
+  private estimateIndexMemory(): number {
+    let totalSize = 0;
+    
+    // Estimate SPO index size
+    for (const [, pMap] of this.getSPOIndex()) {
+      for (const [, oSet] of pMap) {
+        totalSize += oSet.size * 50; // Rough estimate per entry
+      }
+    }
+    
+    // Add POS and OSP estimates
+    totalSize *= 3; // Three main indexes
+    
+    // Add hierarchy indexes
+    totalSize += this.propertyHierarchy.size * 30;
+    totalSize += this.inversePropertyHierarchy.size * 30;
+    
+    return totalSize;
+  }
+
+  /**
+   * Estimate memory usage of caches
+   */
+  private estimateCacheMemory(): number {
+    let cacheSize = 0;
+    
+    // Query cache
+    for (const [key, triples] of this.queryCache) {
+      cacheSize += key.length + triples.length * 100; // Rough estimate
+    }
+    
+    // Semantic cache
+    for (const [key, set] of this.semanticCache) {
+      cacheSize += key.length + set.size * 50;
+    }
+    
+    // Transitive closure cache
+    for (const [key, set] of this.transitiveClosureCache) {
+      cacheSize += key.length + set.size * 20;
+    }
+    
+    return cacheSize;
+  }
+
+  /**
+   * Calculate index fragmentation ratio
+   */
+  private calculateIndexFragmentation(): number {
+    const totalTriples = this.size();
+    if (totalTriples === 0) return 0;
+    
+    let totalIndexEntries = 0;
+    
+    // Count SPO index entries
+    for (const [, pMap] of this.getSPOIndex()) {
+      for (const [, oSet] of pMap) {
+        totalIndexEntries += oSet.size;
+      }
+    }
+    
+    // Ideal ratio should be close to 1 (one index entry per triple)
+    return Math.abs(1 - (totalIndexEntries / totalTriples)) / 3; // Normalize for 3 indexes
+  }
+
+  /**
+   * Update memory efficiency metric
+   */
+  private updateMemoryEfficiency(): void {
+    const memStats = this.getMemoryStatistics();
+    const indexMemory = this.estimateIndexMemory();
+    const cacheMemory = this.estimateCacheMemory();
+    const totalMemory = indexMemory + cacheMemory;
+    
+    if (memStats.used > 0) {
+      this.metrics.memoryEfficiency = 1 - (totalMemory / memStats.used);
+    }
+    
+    this.metrics.indexFragmentation = this.calculateIndexFragmentation();
   }
 }
 

@@ -48,7 +48,7 @@ export class DynamicBacklinksService {
           // Skip excluded properties
           if (options.excludeProperties?.includes(propertyName)) continue;
 
-          if (this.isReferencingTarget(value, targetFile)) {
+          if (await this.isReferencingTarget(value, targetFile)) {
             if (!propertyBacklinks.has(propertyName)) {
               propertyBacklinks.set(propertyName, []);
             }
@@ -79,12 +79,17 @@ export class DynamicBacklinksService {
     }
   }
 
-  private isReferencingTarget(value: any, targetFile: any): boolean {
+  private async isReferencingTarget(value: any, targetFile: any): Promise<boolean> {
     if (!value) return false;
 
     // Handle arrays
     if (Array.isArray(value)) {
-      return value.some((item) => this.isReferencingTarget(item, targetFile));
+      for (const item of value) {
+        if (await this.isReferencingTarget(item, targetFile)) {
+          return true;
+        }
+      }
+      return false;
     }
 
     // Convert to string and check various reference formats
@@ -93,8 +98,9 @@ export class DynamicBacklinksService {
       targetFile.basename || targetFile.name?.replace(/\.[^/.]+$/, "") || "";
     const targetPath = targetFile.path || targetFile.name || "";
 
-    // Get target file's UUID for UUID-based matching (via vault adapter)
-    const targetUuid = null; // TODO: Implement via vaultAdapter if needed
+    // Get target file's UUID for UUID-based matching
+    const targetMetadata = await this.vaultAdapter.getFileMetadata(targetFile);
+    const targetUuid = targetMetadata?.["exo__Asset_uid"] || null;
 
     // Direct basename match
     if (strValue === targetFileName) return true;
@@ -110,7 +116,17 @@ export class DynamicBacklinksService {
       const linkText = strValue.slice(2, -2).split("|")[0]; // Remove [[ ]] and display text
 
       // Try to resolve the link to see if it points to our target file
-      // TODO: Implement proper link resolution via vault adapter
+      if (this.vaultAdapter.resolveLinkToFile) {
+        try {
+          const resolvedFile = await this.vaultAdapter.resolveLinkToFile(linkText);
+          if (resolvedFile && resolvedFile.path === targetFile.path) {
+            return true;
+          }
+        } catch (error) {
+          // Ignore resolution errors and fall back to text matching
+        }
+      }
+
       if (linkText === targetFileName) return true;
 
       // Also check if the link text partially matches the target filename

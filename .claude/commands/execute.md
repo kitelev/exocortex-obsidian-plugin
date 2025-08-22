@@ -12,13 +12,46 @@ argument-hint: [task description]
 
 ### CRITICAL: This command does NOT stop until ALL delivery stages are complete:
 
-#### Stage 0: Meta-Agent Orchestration (MANDATORY FIRST STEP)
+#### Stage 0: Requirements Elicitation & Planning (MANDATORY FIRST STEP)
 
-1. **ALWAYS invoke meta-agent FIRST** for intelligent agent selection
-2. **Meta-agent analyzes task** and determines optimal agent configuration
-3. **If no suitable agent exists**, meta-agent delegates to agent-factory for creation
-4. **Meta-agent monitors execution** and captures performance metrics
-5. **Post-execution improvement** - meta-agent analyzes results and enhances agents
+##### 0.1: BABOK Requirements Interview (FOR PLUGIN ENHANCEMENTS)
+
+**For plugin development tasks, ALWAYS start with BABOK agent:**
+
+1. **Deploy babok-agent FIRST** for requirements clarification
+2. **Conduct structured interview** to understand:
+   - Functional requirements (what it should do)
+   - Non-functional requirements (performance, quality)
+   - Acceptance criteria (definition of done)
+   - Priorities and constraints
+3. **Document requirements** and get user confirmation
+4. **Create Requirements Traceability Matrix** for validation
+
+##### 0.2: PMBOK Project Planning
+
+**After requirements approval, deploy pmbok-agent:**
+
+1. **Create project charter** from requirements
+2. **Develop Work Breakdown Structure (WBS)**
+3. **Identify risks** and mitigation strategies
+4. **Plan resource allocation** and agent selection
+
+##### 0.3: SWEBOK Engineering Design
+
+**With approved plan, deploy swebok-engineer:**
+
+1. **Design technical solution** aligned with requirements
+2. **Create architectural decisions** (ADRs)
+3. **Define implementation approach** with patterns
+4. **Establish quality criteria** and metrics
+
+##### 0.4: Meta-Agent Orchestration
+
+1. **Meta-agent receives** requirements, plan, and design
+2. **Analyzes and selects** optimal agent configuration
+3. **If no suitable agent exists**, delegates to agent-factory
+4. **Monitors execution** with requirements traceability
+5. **Post-execution validation** against acceptance criteria
 
 #### Stage 1: Task Analysis & Agent Deployment
 
@@ -213,18 +246,47 @@ Safety_Checks_Before_Parallelization:
     - CPU affinity binding for performance isolation
 ```
 
-### META-AGENT ORCHESTRATION PROTOCOL (ENHANCED WITH PARALLEL EXECUTION):
+### REQUIREMENTS-DRIVEN ORCHESTRATION PROTOCOL:
 
 ```yaml
+Requirements_First_Pipeline:
+  priority: HIGHEST
+  timing: SEQUENTIAL_WITH_GATES
+  
+  phase_0_requirements:
+    babok_agent:
+      - Conduct requirements interview
+      - Clarify functional/non-functional needs
+      - Define acceptance criteria
+      - Get user confirmation
+    
+    pmbok_agent:
+      - Create project charter
+      - Develop WBS from requirements
+      - Risk assessment and planning
+      - Resource allocation strategy
+    
+    swebok_engineer:
+      - Technical design from requirements
+      - Architecture decision records
+      - Implementation patterns selection
+      - Quality metrics definition
+
 Meta_Agent_Invocation:
   priority: HIGHEST
-  timing: ALWAYS_FIRST
+  timing: AFTER_REQUIREMENTS_PLANNING
 
   responsibilities:
+    requirements_integration:
+      - Receive BABOK/PMBOK/SWEBOK outputs
+      - Validate requirements coverage
+      - Map requirements to agent capabilities
+      - Ensure traceability throughout
+    
     task_analysis:
-      - Parse user requirements
+      - Parse validated requirements
       - Identify domain and complexity
-      - Determine agent needs
+      - Determine agent needs from WBS
       - Analyze parallelization potential
 
     execution_strategy_selection:

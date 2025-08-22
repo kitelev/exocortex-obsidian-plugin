@@ -1,6 +1,6 @@
 {
   "name": "exocortex-obsidian-plugin",
-  "version": "3.15.0",
+  "version": "3.16.0",
   "description": "Exocortex: A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
   "main": "main.js",
   "engines": {
@@ -40,7 +40,9 @@
     "test:all:headless": "npm run test:unit && npm run test:integration && npm run test:e2e:all && npm run test:ui:headless",
     "test:all:interactive": "./scripts/run-all-tests.sh",
     "test:all:parallel": "./scripts/run-tests-parallel.sh",
-    "test:ci": "npm run test:unit && npm run test:integration && npm run test:e2e:all && npm run test:ui:ci"
+    "test:ci": "npm run test:unit && npm run test:integration && npm run test:e2e:all && npm run test:ui:ci",
+    "test:contract": "jest tests/contract/*.test.ts",
+    "test:mutation": "./scripts/run-mutation-tests.sh"
   },
   "keywords": [
     "obsidian",

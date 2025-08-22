@@ -8,11 +8,18 @@ Custom slash commands are now available in `.claude/commands/` directory:
 
 **Available commands:**
 
-- `/execute [task]` - Execute with full compliance and parallel agents
+- `/execute [task]` - Execute with BABOK requirements interview, PMBOK planning, and full delivery pipeline
 - `/status` - Check current progress and project health
 - `/agents` - List available agents and capabilities
 - `/release [type] [desc]` - Create new release (major/minor/patch)
 - `/test [pattern]` - Run tests and check coverage
+
+**Enhanced Execution Flow (v3.5.0):**
+1. **BABOK Requirements Interview** - Structured requirements elicitation
+2. **PMBOK Project Planning** - WBS, risk analysis, resource planning
+3. **SWEBOK Engineering Design** - Technical architecture and patterns
+4. **Parallel Agent Execution** - Orchestrated implementation
+5. **Quality Gates & Release** - Automated validation and deployment
 
 **Usage:** Type `/` in Claude Code to see available commands
 

@@ -1,5 +1,7 @@
 import { DynamicBacklinksService } from "../../../../src/application/services/DynamicBacklinksService";
 import { App, TFile } from "../../../__mocks__/obsidian";
+import { IVaultAdapter } from "../../../../src/application/ports/IVaultAdapter";
+import { IUIAdapter } from "../../../../src/application/ports/IUIAdapter";
 
 describe("DynamicBacklinksService", () => {
   let service: DynamicBacklinksService;
@@ -29,7 +31,38 @@ describe("DynamicBacklinksService", () => {
 
   beforeEach(() => {
     mockApp = new App();
-    service = new DynamicBacklinksService(mockApp);
+    
+    // Create mock vault adapter
+    const mockVaultAdapter: IVaultAdapter = {
+      create: jest.fn(),
+      read: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      exists: jest.fn(),
+      list: jest.fn(),
+      getMetadata: jest.fn(),
+      getFiles: () => Promise.resolve(mockApp.vault.getMarkdownFiles()),
+      getFileMetadata: (file: any) => Promise.resolve(mockApp.metadataCache.getFileCache(file)?.frontmatter || null),
+      resolveLinkToFile: (linkText: string, sourcePath?: string) => Promise.resolve(mockApp.metadataCache.getFirstLinkpathDest(linkText, sourcePath))
+    };
+    
+    // Create mock UI adapter
+    const mockUIAdapter: IUIAdapter = {
+      getDisplayLabel: jest.fn(),
+      extractFrontmatterData: jest.fn(),
+      createInternalLink: jest.fn(),
+      createElement: jest.fn(),
+      cleanClassName: (className: any): string => {
+        if (!className) return "";
+        const str = Array.isArray(className) ? className[0] : className;
+        return str?.toString().replace(/\[\[|\]\]/g, "") || "";
+      },
+      groupFilesByClass: jest.fn(),
+      filterFilesByClass: jest.fn(),
+      applyResultLimit: jest.fn()
+    };
+    
+    service = new DynamicBacklinksService(mockVaultAdapter, mockUIAdapter);
 
     targetFile = createMockFile("target.md");
 

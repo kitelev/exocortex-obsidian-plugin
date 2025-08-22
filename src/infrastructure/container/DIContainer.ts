@@ -45,6 +45,7 @@ import { ObsidianQueryTemplateRepository } from "../repositories/ObsidianQueryTe
 import { QueryEngineFactory } from "../query-engines/QueryEngineFactory";
 import { QueryEngineService } from "../../application/services/QueryEngineService";
 import { QueryEngineConfig } from "../../domain/entities/QueryEngineConfig";
+import { RDFService } from "../../application/services/RDFService";
 
 // Presentation
 import { ButtonRenderer } from "../../presentation/components/ButtonRenderer";
@@ -260,6 +261,16 @@ export class DIContainer {
         ),
     );
 
+    // Register RDF Service
+    this.container.register<RDFService>(
+      "RDFService",
+      () =>
+        new RDFService(
+          this.container.resolve<INotificationService>("INotificationService"),
+          this.container.resolve<IFileSystemAdapter>("IFileSystemAdapter"),
+        ),
+    );
+
     // Register Use Cases
     this.container.register<CreateAssetUseCase>(
       "CreateAssetUseCase",
@@ -461,6 +472,10 @@ export class DIContainer {
 
   public getQueryEngineFactory(): QueryEngineFactory {
     return this.resolve<QueryEngineFactory>("QueryEngineFactory");
+  }
+
+  public getRDFService(): RDFService {
+    return this.resolve<RDFService>("RDFService");
   }
 
   // Mobile Components Getters

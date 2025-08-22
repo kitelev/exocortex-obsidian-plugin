@@ -21,10 +21,10 @@ module.exports = {
   },
   coverageThreshold: {
     global: {
-      branches: 27,
-      functions: 33,
-      lines: 34,
-      statements: 34,
+      branches: 70,
+      functions: 70,
+      lines: 70,
+      statements: 70,
     },
   },
   // Note: setupFilesAfterEnv moved to memory optimization section above
