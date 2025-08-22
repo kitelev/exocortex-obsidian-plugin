@@ -4,273 +4,277 @@
 
 /* Safe areas support for modern mobile devices */
 @supports (padding: env(safe-area-inset-top)) {
-    .modal.exocortex-asset-modal .modal-title {
-        padding-top: calc(16px + env(safe-area-inset-top));
-    }
+  .modal.exocortex-asset-modal .modal-title {
+    padding-top: calc(16px + env(safe-area-inset-top));
+  }
 
-    .modal.exocortex-asset-modal .modal-button-container {
-        padding-bottom: calc(12px + env(safe-area-inset-bottom));
-    }
+  .modal.exocortex-asset-modal .modal-button-container {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
 
-    .modal.exocortex-asset-modal .modal-form {
-        padding-left: calc(16px + env(safe-area-inset-left));
-        padding-right: calc(16px + env(safe-area-inset-right));
-    }
+  .modal.exocortex-asset-modal .modal-form {
+    padding-left: calc(16px + env(safe-area-inset-left));
+    padding-right: calc(16px + env(safe-area-inset-right));
+  }
 
-    @media screen and (max-width: 428px) {
-        .modal-container {
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
-        }
+  @media screen and (max-width: 428px) {
+    .modal-container {
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
     }
+  }
 }
 
 /* iOS-specific fixes */
 @supports (-webkit-touch-callout: none) {
-    /* Prevent text selection issues */
-    .exocortex-ui-button,
-    .class-selector-button {
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-    }
-    
-    /* Smooth scrolling */
-    .exocortex-properties-container,
-    .class-tree-container,
-    .modal.exocortex-asset-modal .modal-form {
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    /* Fix for iOS keyboard issues */
-    input, textarea, select {
-        -webkit-appearance: none;
-        -webkit-border-radius: 0;
-    }
+  /* Prevent text selection issues */
+  .exocortex-ui-button,
+  .class-selector-button {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+  }
+
+  /* Smooth scrolling */
+  .exocortex-properties-container,
+  .class-tree-container,
+  .modal.exocortex-asset-modal .modal-form {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Fix for iOS keyboard issues */
+  input,
+  textarea,
+  select {
+    -webkit-appearance: none;
+    -webkit-border-radius: 0;
+  }
 }
 
 /* Touch gesture enhancements */
 @media (pointer: coarse) {
-    /* Larger hit areas for touch */
-    .exocortex-ui-button,
-    .class-tree-node-content,
-    .exocortex-property-value-readonly {
-        position: relative;
-    }
-    
-    .exocortex-ui-button::before,
-    .class-tree-node-content::before,
-    .exocortex-property-value-readonly::before {
-        content: '';
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        bottom: -8px;
-        left: -8px;
-    }
-    
-    /* Visual feedback for touch */
-    .exocortex-ui-button:active,
-    .class-selector-button:active,
-    .exocortex-property-value-readonly:active {
-        transform: scale(0.98);
-        opacity: 0.9;
-    }
+  /* Larger hit areas for touch */
+  .exocortex-ui-button,
+  .class-tree-node-content,
+  .exocortex-property-value-readonly {
+    position: relative;
+  }
+
+  .exocortex-ui-button::before,
+  .class-tree-node-content::before,
+  .exocortex-property-value-readonly::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -8px;
+  }
+
+  /* Visual feedback for touch */
+  .exocortex-ui-button:active,
+  .class-selector-button:active,
+  .exocortex-property-value-readonly:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
 }
 
 /* Swipe-friendly modal navigation */
 @media screen and (max-width: 428px) {
-    /* Add swipe indicator */
-    .modal.exocortex-asset-modal .modal-title::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 40px;
-        height: 4px;
-        background-color: var(--text-muted);
-        border-radius: 2px;
-        opacity: 0.3;
-    }
-    
-    /* Improve form navigation */
-    .modal.exocortex-asset-modal .modal-form {
-        scroll-snap-type: y proximity;
-        scroll-padding-top: 20px;
-    }
-    
-    .modal.exocortex-asset-modal .setting-item {
-        scroll-snap-align: start;
-    }
+  /* Add swipe indicator */
+  .modal.exocortex-asset-modal .modal-title::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    background-color: var(--text-muted);
+    border-radius: 2px;
+    opacity: 0.3;
+  }
+
+  /* Improve form navigation */
+  .modal.exocortex-asset-modal .modal-form {
+    scroll-snap-type: y proximity;
+    scroll-padding-top: 20px;
+  }
+
+  .modal.exocortex-asset-modal .setting-item {
+    scroll-snap-align: start;
+  }
 }
 
 /* Mobile-optimized focus styles */
 @media (hover: none) and (pointer: coarse) {
-    input:focus,
-    textarea:focus,
-    select:focus {
-        outline: 3px solid var(--interactive-accent);
-        outline-offset: 2px;
-    }
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: 3px solid var(--interactive-accent);
+    outline-offset: 2px;
+  }
 }
 
 /* Floating action button for mobile */
 @media screen and (max-width: 428px) {
-    .exocortex-mobile-fab {
-        position: fixed;
-        bottom: calc(20px + env(safe-area-inset-bottom));
-        right: calc(20px + env(safe-area-inset-right));
-        width: 56px;
-        height: 56px;
-        border-radius: 28px;
-        background-color: var(--interactive-accent);
-        color: var(--text-on-accent);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        z-index: 100;
-        transition: transform 0.2s ease;
-    }
-    
-    .exocortex-mobile-fab:active {
-        transform: scale(0.95);
-    }
+  .exocortex-mobile-fab {
+    position: fixed;
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    right: calc(20px + env(safe-area-inset-right));
+    width: 56px;
+    height: 56px;
+    border-radius: 28px;
+    background-color: var(--interactive-accent);
+    color: var(--text-on-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    transition: transform 0.2s ease;
+  }
+
+  .exocortex-mobile-fab:active {
+    transform: scale(0.95);
+  }
 }
 
 /* Improved mobile typography */
 @media screen and (max-width: 428px) {
-    /* Better readability on small screens */
-    body {
-        -webkit-text-size-adjust: 100%;
-        text-size-adjust: 100%;
-    }
-    
-    .exocortex-property-description,
-    .class-tree-label {
-        line-height: 1.5;
-        letter-spacing: 0.01em;
-    }
-    
-    /* Prevent orphaned text */
-    .exocortex-property-label,
-    .setting-item-name {
-        hyphens: auto;
-        word-wrap: break-word;
-    }
+  /* Better readability on small screens */
+  body {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  .exocortex-property-description,
+  .class-tree-label {
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+  }
+
+  /* Prevent orphaned text */
+  .exocortex-property-label,
+  .setting-item-name {
+    hyphens: auto;
+    word-wrap: break-word;
+  }
 }
 
 /* Mobile table improvements */
 @media screen and (max-width: 428px) {
-    /* Convert table to cards on mobile */
-    .exocortex-property-table {
-        display: block;
-    }
-    
-    .exocortex-property-table thead {
-        display: none;
-    }
-    
-    .exocortex-property-table tbody {
-        display: block;
-    }
-    
-    .exocortex-property-table tr {
-        display: block;
-        margin-bottom: 12px;
-        padding: 12px;
-        background-color: var(--background-secondary);
-        border-radius: 8px;
-        border: 1px solid var(--background-modifier-border);
-    }
-    
-    .exocortex-property-table td {
-        display: block;
-        padding: 4px 0;
-        border: none;
-        position: relative;
-        padding-left: 40%;
-    }
-    
-    .exocortex-property-table td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 0;
-        width: 35%;
-        font-weight: 600;
-        color: var(--text-muted);
-    }
+  /* Convert table to cards on mobile */
+  .exocortex-property-table {
+    display: block;
+  }
+
+  .exocortex-property-table thead {
+    display: none;
+  }
+
+  .exocortex-property-table tbody {
+    display: block;
+  }
+
+  .exocortex-property-table tr {
+    display: block;
+    margin-bottom: 12px;
+    padding: 12px;
+    background-color: var(--background-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--background-modifier-border);
+  }
+
+  .exocortex-property-table td {
+    display: block;
+    padding: 4px 0;
+    border: none;
+    position: relative;
+    padding-left: 40%;
+  }
+
+  .exocortex-property-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    width: 35%;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
 }
 
 /* Mobile dropdown improvements */
 @media screen and (max-width: 428px) {
-    /* Custom mobile dropdown */
-    .exocortex-mobile-select {
-        position: relative;
-    }
-    
-    .exocortex-mobile-select select {
-        width: 100%;
-        padding: 12px 40px 12px 12px;
-        font-size: 16px;
-        background-color: var(--background-modifier-form-field);
-        border: 2px solid var(--background-modifier-border);
-        border-radius: 8px;
-        appearance: none;
-        -webkit-appearance: none;
-    }
-    
-    .exocortex-mobile-select::after {
-        content: '▼';
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        pointer-events: none;
-        color: var(--text-muted);
-    }
-    
-    .exocortex-mobile-select select:focus {
-        border-color: var(--interactive-accent);
-        outline: none;
-    }
+  /* Custom mobile dropdown */
+  .exocortex-mobile-select {
+    position: relative;
+  }
+
+  .exocortex-mobile-select select {
+    width: 100%;
+    padding: 12px 40px 12px 12px;
+    font-size: 16px;
+    background-color: var(--background-modifier-form-field);
+    border: 2px solid var(--background-modifier-border);
+    border-radius: 8px;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .exocortex-mobile-select::after {
+    content: "▼";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--text-muted);
+  }
+
+  .exocortex-mobile-select select:focus {
+    border-color: var(--interactive-accent);
+    outline: none;
+  }
 }
 
 /* Loading states for mobile */
 @media screen and (max-width: 428px) {
-    .exocortex-loading {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 40px;
+  .exocortex-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+
+  .exocortex-loading::after {
+    content: "";
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--background-modifier-border);
+    border-top-color: var(--interactive-accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
     }
-    
-    .exocortex-loading::after {
-        content: '';
-        width: 32px;
-        height: 32px;
-        border: 3px solid var(--background-modifier-border);
-        border-top-color: var(--interactive-accent);
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
+  }
 }
 
 /* Pull-to-refresh area (for future implementation) */
 @media screen and (max-width: 428px) {
-    .exocortex-pull-refresh {
-        position: absolute;
-        top: -50px;
-        left: 0;
-        right: 0;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: transform 0.3s ease;
-    }
+  .exocortex-pull-refresh {
+    position: absolute;
+    top: -50px;
+    left: 0;
+    right: 0;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+  }
 }

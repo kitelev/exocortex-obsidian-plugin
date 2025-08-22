@@ -50,12 +50,12 @@ chmod +x scripts/docker-test.sh
 
 ### Test Images
 
-| Image Target | Purpose | Size | Features |
-|--------------|---------|------|----------|
-| `test` | Unit/Integration tests | ~350MB | Jest, jsdom, coverage tools |
-| `ui-test` | WebDriver UI tests | ~450MB | Chromium, Xvfb, WebDriverIO |
-| `mobile-test` | Mobile environment | ~350MB | Mobile simulation, touch events |
-| `ci` | Complete CI pipeline | ~400MB | All test suites + validation |
+| Image Target  | Purpose                | Size   | Features                        |
+| ------------- | ---------------------- | ------ | ------------------------------- |
+| `test`        | Unit/Integration tests | ~350MB | Jest, jsdom, coverage tools     |
+| `ui-test`     | WebDriver UI tests     | ~450MB | Chromium, Xvfb, WebDriverIO     |
+| `mobile-test` | Mobile environment     | ~350MB | Mobile simulation, touch events |
+| `ci`          | Complete CI pipeline   | ~400MB | All test suites + validation    |
 
 ## Docker Compose Profiles
 
@@ -173,14 +173,14 @@ docker-compose -f docker-compose.mobile.yml up mobile-performance
 
 ### Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `CI` | `false` | Enable CI optimizations |
-| `JEST_WORKERS` | `50%` | Jest worker processes |
-| `NODE_ENV` | `test` | Node.js environment |
-| `MOBILE_TEST` | `false` | Enable mobile testing mode |
-| `PLATFORM_MOBILE` | `false` | Mobile platform detection |
-| `DISPLAY` | `:99` | X11 display for UI tests |
+| Variable          | Default | Description                |
+| ----------------- | ------- | -------------------------- |
+| `CI`              | `false` | Enable CI optimizations    |
+| `JEST_WORKERS`    | `50%`   | Jest worker processes      |
+| `NODE_ENV`        | `test`  | Node.js environment        |
+| `MOBILE_TEST`     | `false` | Enable mobile testing mode |
+| `PLATFORM_MOBILE` | `false` | Mobile platform detection  |
+| `DISPLAY`         | `:99`   | X11 display for UI tests   |
 
 ### Custom Test Commands
 
@@ -233,9 +233,9 @@ Named volumes provide persistent caching:
 
 ```yaml
 volumes:
-  node_modules:      # Shared node_modules cache
-  test_cache:        # Jest cache persistence
-  build_cache:       # Build artifact cache
+  node_modules: # Shared node_modules cache
+  test_cache: # Jest cache persistence
+  build_cache: # Build artifact cache
 ```
 
 ### GitHub Actions Caching
@@ -355,12 +355,12 @@ docker run --rm -e NODE_OPTIONS="--max-old-space-size=1024" \
 
 ### CI/CD Resource Usage
 
-| Test Suite | Duration | Memory | CPU |
-|------------|----------|--------|-----|
-| Unit Tests | 2-3 min | 1GB | 1 core |
-| UI Tests | 5-8 min | 2GB | 2 cores |
-| Mobile Tests | 3-5 min | 1.5GB | 1 core |
-| All Tests | 10-15 min | 2.5GB | 2 cores |
+| Test Suite   | Duration  | Memory | CPU     |
+| ------------ | --------- | ------ | ------- |
+| Unit Tests   | 2-3 min   | 1GB    | 1 core  |
+| UI Tests     | 5-8 min   | 2GB    | 2 cores |
+| Mobile Tests | 3-5 min   | 1.5GB  | 1 core  |
+| All Tests    | 10-15 min | 2.5GB  | 2 cores |
 
 ## Security Considerations
 

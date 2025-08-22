@@ -15,17 +15,9 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "types": ["jest", "node"],
-    "lib": [
-      "DOM",
-      "ES5",
-      "ES6",
-      "ES7",
-      "ESNext"
-    ]
+    "lib": ["DOM", "ES5", "ES6", "ES7", "ESNext"]
   },
-  "include": [
-    "**/*.ts"
-  ],
+  "include": ["**/*.ts"],
   "exclude": [
     "node_modules",
     "features/**/*",

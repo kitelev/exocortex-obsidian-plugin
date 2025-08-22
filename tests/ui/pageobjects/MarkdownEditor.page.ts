@@ -6,14 +6,14 @@ export class MarkdownEditorPage {
    * Get the CodeMirror editor element
    */
   get editor() {
-    return $('.cm-editor');
+    return $(".cm-editor");
   }
 
   /**
    * Get editor content element
    */
   get editorContent() {
-    return $('.cm-content');
+    return $(".cm-content");
   }
 
   /**
@@ -28,7 +28,9 @@ export class MarkdownEditorPage {
    */
   async insertText(text: string): Promise<void> {
     await browser.executeObsidian(({ app }, content: string) => {
-      const view = app.workspace.getActiveViewOfType(app.constructor.MarkdownView);
+      const view = app.workspace.getActiveViewOfType(
+        app.constructor.MarkdownView,
+      );
       if (view && view.editor) {
         const cursor = view.editor.getCursor();
         view.editor.replaceRange(content, cursor);
@@ -41,11 +43,13 @@ export class MarkdownEditorPage {
    */
   async getContent(): Promise<string> {
     return await browser.executeObsidian(({ app }) => {
-      const view = app.workspace.getActiveViewOfType(app.constructor.MarkdownView);
+      const view = app.workspace.getActiveViewOfType(
+        app.constructor.MarkdownView,
+      );
       if (view && view.editor) {
         return view.editor.getValue();
       }
-      return '';
+      return "";
     });
   }
 
@@ -54,7 +58,9 @@ export class MarkdownEditorPage {
    */
   async setContent(content: string): Promise<void> {
     await browser.executeObsidian(({ app }, text: string) => {
-      const view = app.workspace.getActiveViewOfType(app.constructor.MarkdownView);
+      const view = app.workspace.getActiveViewOfType(
+        app.constructor.MarkdownView,
+      );
       if (view && view.editor) {
         view.editor.setValue(text);
       }
@@ -66,12 +72,17 @@ export class MarkdownEditorPage {
    */
   async appendText(text: string): Promise<void> {
     await browser.executeObsidian(({ app }, content: string) => {
-      const view = app.workspace.getActiveViewOfType(app.constructor.MarkdownView);
+      const view = app.workspace.getActiveViewOfType(
+        app.constructor.MarkdownView,
+      );
       if (view && view.editor) {
         const doc = view.editor.getDoc();
         const lastLine = doc.lastLine();
         const lastLineLength = doc.getLine(lastLine).length;
-        view.editor.replaceRange(content, { line: lastLine, ch: lastLineLength });
+        view.editor.replaceRange(content, {
+          line: lastLine,
+          ch: lastLineLength,
+        });
       }
     }, text);
   }
@@ -89,7 +100,9 @@ export class MarkdownEditorPage {
    */
   async getLineCount(): Promise<number> {
     return await browser.executeObsidian(({ app }) => {
-      const view = app.workspace.getActiveViewOfType(app.constructor.MarkdownView);
+      const view = app.workspace.getActiveViewOfType(
+        app.constructor.MarkdownView,
+      );
       if (view && view.editor) {
         return view.editor.lineCount();
       }
@@ -102,7 +115,9 @@ export class MarkdownEditorPage {
    */
   async getCursorPosition(): Promise<{ line: number; ch: number }> {
     return await browser.executeObsidian(({ app }) => {
-      const view = app.workspace.getActiveViewOfType(app.constructor.MarkdownView);
+      const view = app.workspace.getActiveViewOfType(
+        app.constructor.MarkdownView,
+      );
       if (view && view.editor) {
         return view.editor.getCursor();
       }
@@ -114,12 +129,17 @@ export class MarkdownEditorPage {
    * Set cursor position
    */
   async setCursorPosition(line: number, ch: number): Promise<void> {
-    await browser.executeObsidian(({ app }, pos: { line: number; ch: number }) => {
-      const view = app.workspace.getActiveViewOfType(app.constructor.MarkdownView);
-      if (view && view.editor) {
-        view.editor.setCursor(pos);
-      }
-    }, { line, ch });
+    await browser.executeObsidian(
+      ({ app }, pos: { line: number; ch: number }) => {
+        const view = app.workspace.getActiveViewOfType(
+          app.constructor.MarkdownView,
+        );
+        if (view && view.editor) {
+          view.editor.setCursor(pos);
+        }
+      },
+      { line, ch },
+    );
   }
 
   /**
@@ -129,19 +149,27 @@ export class MarkdownEditorPage {
     fromLine: number,
     fromCh: number,
     toLine: number,
-    toCh: number
+    toCh: number,
   ): Promise<void> {
     await browser.executeObsidian(
-      ({ app }, range: { from: { line: number; ch: number }; to: { line: number; ch: number } }) => {
-        const view = app.workspace.getActiveViewOfType(app.constructor.MarkdownView);
+      (
+        { app },
+        range: {
+          from: { line: number; ch: number };
+          to: { line: number; ch: number };
+        },
+      ) => {
+        const view = app.workspace.getActiveViewOfType(
+          app.constructor.MarkdownView,
+        );
         if (view && view.editor) {
           view.editor.setSelection(range.from, range.to);
         }
       },
       {
         from: { line: fromLine, ch: fromCh },
-        to: { line: toLine, ch: toCh }
-      }
+        to: { line: toLine, ch: toCh },
+      },
     );
   }
 
@@ -150,11 +178,13 @@ export class MarkdownEditorPage {
    */
   async getSelectedText(): Promise<string> {
     return await browser.executeObsidian(({ app }) => {
-      const view = app.workspace.getActiveViewOfType(app.constructor.MarkdownView);
+      const view = app.workspace.getActiveViewOfType(
+        app.constructor.MarkdownView,
+      );
       if (view && view.editor) {
         return view.editor.getSelection();
       }
-      return '';
+      return "";
     });
   }
 
@@ -163,9 +193,11 @@ export class MarkdownEditorPage {
    */
   async isSourceMode(): Promise<boolean> {
     return await browser.executeObsidian(({ app }) => {
-      const view = app.workspace.getActiveViewOfType(app.constructor.MarkdownView);
+      const view = app.workspace.getActiveViewOfType(
+        app.constructor.MarkdownView,
+      );
       if (view) {
-        return view.getMode() === 'source';
+        return view.getMode() === "source";
       }
       return false;
     });
@@ -176,9 +208,11 @@ export class MarkdownEditorPage {
    */
   async isPreviewMode(): Promise<boolean> {
     return await browser.executeObsidian(({ app }) => {
-      const view = app.workspace.getActiveViewOfType(app.constructor.MarkdownView);
+      const view = app.workspace.getActiveViewOfType(
+        app.constructor.MarkdownView,
+      );
       if (view) {
-        return view.getMode() === 'preview';
+        return view.getMode() === "preview";
       }
       return false;
     });

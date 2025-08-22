@@ -38,13 +38,15 @@ export class ClassLayout extends Entity<ClassLayoutProps> {
     if (!this.props.id) {
       throw new Error("ClassLayout must have a valid ID");
     }
-    
+
     if (!this.props.targetClass) {
       throw new Error("ClassLayout must have a valid target class");
     }
-    
+
     if (this.props.blocks.length > ClassLayout.MAX_BLOCKS) {
-      throw new Error(`ClassLayout cannot have more than ${ClassLayout.MAX_BLOCKS} blocks`);
+      throw new Error(
+        `ClassLayout cannot have more than ${ClassLayout.MAX_BLOCKS} blocks`,
+      );
     }
   }
 

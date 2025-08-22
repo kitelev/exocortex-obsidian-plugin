@@ -63,7 +63,7 @@ export class PropertyEditingUseCase
         const repo = this.assetRepository as any;
         if (repo.updateFrontmatterByPath) {
           // Log property update for debugging
-        // console.log(`Updating property ${request.propertyName} to ${request.value} for file ${request.assetId}`);
+          // console.log(`Updating property ${request.propertyName} to ${request.value} for file ${request.assetId}`);
           await repo.updateFrontmatterByPath(request.assetId, {
             [request.propertyName]: request.value,
           });

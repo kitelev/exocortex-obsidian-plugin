@@ -73,33 +73,40 @@ This layout configuration defines how `exo__Class` assets are displayed in the E
 ## Features
 
 ### Class Properties Block
+
 Shows key class properties with inline editing for:
+
 - Description
 - Class definition
 - Superclass relationships
 
 ### Instances Block
+
 Displays all assets that reference this class through their `exo__Instance_class` property:
+
 - Table format showing instance name, class, and description
 - Shows instance metadata when `showInstanceInfo` is enabled
 - Limited to 100 results for performance
 - Uses `exo__Instance_class` property for instance detection
 
-### Subclasses Block  
+### Subclasses Block
+
 Shows classes that inherit from this class through `exo__Class_superclass` property (collapsed by default).
 
 ### Referenced In Block
+
 Shows backlinks from other notes that reference this class (collapsed by default).
 
 ## Usage
 
 1. Place this file in your configured layouts folder
-2. Enable "Class-Based Layouts" in plugin settings  
+2. Enable "Class-Based Layouts" in plugin settings
 3. Open any class asset to see this layout applied
 
 ## Instances Block Configuration
 
 The Instances block uses the following configuration:
+
 - **targetProperty**: `exo__Instance_class` - Property that defines class membership
 - **displayAs**: `table` - Display format (list, table, or cards)
 - **showInstanceInfo**: `true` - Show additional instance metadata
@@ -109,6 +116,7 @@ The Instances block uses the following configuration:
 ## Customization
 
 Modify the `ui__ClassLayout_blocks` frontmatter to:
+
 - Add/remove blocks
 - Change block order
 - Adjust filters and sorting

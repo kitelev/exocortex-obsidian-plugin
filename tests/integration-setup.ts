@@ -33,35 +33,35 @@ afterEach(() => {
     clearTimeout(i);
     clearInterval(i);
   }
-  
+
   // Clear any event listeners on global objects
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     // Remove all event listeners from window
     const clonedWindow = window.cloneNode ? window.cloneNode(false) : window;
     if (clonedWindow !== window) {
       Object.setPrototypeOf(window, Object.getPrototypeOf(clonedWindow));
     }
   }
-  
+
   // Force DOM cleanup
-  if (typeof document !== 'undefined') {
-    document.body.innerHTML = '';
-    document.head.innerHTML = '';
+  if (typeof document !== "undefined") {
+    document.body.innerHTML = "";
+    document.head.innerHTML = "";
   }
 });
 
 // Prevent memory leaks from unhandled promises
-process.on('unhandledRejection', (reason, promise) => {
-  console.warn('Unhandled Rejection at:', promise, 'reason:', reason);
+process.on("unhandledRejection", (reason, promise) => {
+  console.warn("Unhandled Rejection at:", promise, "reason:", reason);
 });
 
 // Enhanced platform mock reset for integration tests
 beforeEach(() => {
   // Reset platform mocks to default state
   delete process.env.TEST_PLATFORM;
-  
+
   // Reset any cached platform detection
-  if (typeof window !== 'undefined' && (window as any).__PLATFORM_REFRESH__) {
+  if (typeof window !== "undefined" && (window as any).__PLATFORM_REFRESH__) {
     (window as any).__PLATFORM_REFRESH__();
   }
 });
@@ -71,7 +71,7 @@ const originalError = console.error;
 beforeEach(() => {
   console.error = jest.fn((message, ...args) => {
     // Only suppress expected test errors, log unexpected ones
-    if (typeof message === 'string' && message.includes('Warning:')) {
+    if (typeof message === "string" && message.includes("Warning:")) {
       return; // Suppress React/JSDOM warnings
     }
     originalError(message, ...args);

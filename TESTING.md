@@ -7,11 +7,13 @@ The Exocortex plugin has a comprehensive testing architecture with both unit tes
 ## Test Architecture
 
 ### Unit Tests (Jest)
+
 - **Location**: `/tests/unit/`
 - **Framework**: Jest with TypeScript
 - **Coverage**: Core plugin functionality, SPARQL processing
 
 ### E2E UI Tests (WebdriverIO)
+
 - **Location**: `/tests/ui/`
 - **Framework**: WebdriverIO with wdio-obsidian-service
 - **Coverage**: Full plugin interaction in real Obsidian environment
@@ -19,16 +21,19 @@ The Exocortex plugin has a comprehensive testing architecture with both unit tes
 ## Quick Start
 
 ### 1. Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 2. Build Plugin
+
 ```bash
 npm run build
 ```
 
 ### 3. Run Unit Tests
+
 ```bash
 # Run all unit tests
 npm test
@@ -43,6 +48,7 @@ npm run test:watch
 ### 4. Run E2E UI Tests
 
 #### First Time Setup
+
 ```bash
 # Download Obsidian for testing
 ./scripts/download-obsidian.sh
@@ -52,6 +58,7 @@ export OBSIDIAN_APP_PATH="/path/to/Obsidian.app"
 ```
 
 #### Run Tests
+
 ```bash
 # Run all UI tests
 npm run test:ui
@@ -66,6 +73,7 @@ npx wdio run wdio.conf.ts --logLevel debug
 ## Test Categories
 
 ### Unit Tests
+
 1. **Plugin Loading** (`plugin-loading.test.js`)
    - Plugin initialization
    - Configuration handling
@@ -77,6 +85,7 @@ npx wdio run wdio.conf.ts --logLevel debug
    - Result formatting
 
 ### E2E UI Tests
+
 1. **Activation Tests** (`activate.spec.ts`)
    - Plugin activation/deactivation
    - Workspace initialization
@@ -97,6 +106,7 @@ npx wdio run wdio.conf.ts --logLevel debug
 ## CI/CD Integration
 
 Tests run automatically on GitHub Actions:
+
 - On push to main/master/develop
 - On pull requests
 - Manual workflow dispatch
@@ -109,24 +119,26 @@ The UI tests use Page Object pattern for maintainability:
 
 ```typescript
 // Example usage
-import { ObsidianAppPage } from '../pageobjects/ObsidianApp.page';
-import { SparqlBlockPage } from '../pageobjects/SparqlBlock.page';
+import { ObsidianAppPage } from "../pageobjects/ObsidianApp.page";
+import { SparqlBlockPage } from "../pageobjects/SparqlBlock.page";
 
 const app = new ObsidianAppPage();
 const sparql = new SparqlBlockPage();
 
-await app.openFile('test.md');
+await app.openFile("test.md");
 await sparql.waitForResults();
 ```
 
 ## Test Data
 
 ### Unit Test Fixtures
+
 - Mock Obsidian API
 - Sample markdown files
 - Test frontmatter data
 
 ### UI Test Vault
+
 - **Location**: `/tests/ui/fixtures/vault/`
 - Pre-configured `.obsidian` settings
 - Sample markdown files with SPARQL queries
@@ -135,6 +147,7 @@ await sparql.waitForResults();
 ## Debugging Tests
 
 ### Unit Tests
+
 ```bash
 # Run specific test file
 npm test -- plugin-loading.test.js
@@ -147,6 +160,7 @@ npm test -- --verbose
 ```
 
 ### UI Tests
+
 ```bash
 # Run with headed browser (see what's happening)
 npx wdio run wdio.conf.ts --headless false
@@ -161,13 +175,14 @@ npx wdio run wdio.conf.ts --mochaOpts.timeout 300000
 ## Writing New Tests
 
 ### Unit Test Template
+
 ```javascript
-describe('Feature Name', () => {
+describe("Feature Name", () => {
   beforeEach(() => {
     // Setup
   });
 
-  it('should do something', () => {
+  it("should do something", () => {
     // Test implementation
     expect(result).toBe(expected);
   });
@@ -179,17 +194,18 @@ describe('Feature Name', () => {
 ```
 
 ### UI Test Template
+
 ```typescript
-describe('Feature Name', () => {
+describe("Feature Name", () => {
   let app: ObsidianAppPage;
 
   before(() => {
     app = new ObsidianAppPage();
   });
 
-  it('should interact with UI', async () => {
+  it("should interact with UI", async () => {
     await app.waitForWorkspaceReady();
-    await app.openFile('test.md');
+    await app.openFile("test.md");
     // Test implementation
     expect(await element.isDisplayed()).to.be.true;
   });
@@ -199,6 +215,7 @@ describe('Feature Name', () => {
 ## Common Issues
 
 ### Obsidian Not Found
+
 ```bash
 # Re-run download script
 ./scripts/download-obsidian.sh
@@ -208,6 +225,7 @@ echo $OBSIDIAN_APP_PATH
 ```
 
 ### TypeScript Errors
+
 ```bash
 # Check TypeScript compilation
 npx tsc --project tsconfig.wdio.json --noEmit
@@ -218,6 +236,7 @@ npm install
 ```
 
 ### Tests Timing Out
+
 - Increase timeout in test configuration
 - Check if Obsidian is actually launching
 - Verify no modal dialogs blocking

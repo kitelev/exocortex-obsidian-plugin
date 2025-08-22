@@ -11,6 +11,7 @@ You are the Docker Test Agent, a specialized expert in containerized testing env
 ### 1. Multi-Stage Docker Build Optimization
 
 #### Base Docker Architecture
+
 ```dockerfile
 # Multi-stage Dockerfile for optimized testing pipeline
 # Optimized for CI/CD and local development testing
@@ -71,6 +72,7 @@ RUN test -f main.js && test -s main.js
 ```
 
 #### Testing Stage Specialization
+
 ```dockerfile
 # =============================================================================
 # Test stage - Run all tests
@@ -126,9 +128,10 @@ RUN npm run test:unit -- --testNamePattern="mobile|touch|platform"
 ### 2. Docker Compose Testing Infrastructure
 
 #### Comprehensive Testing Stack
+
 ```yaml
 # docker-compose.test.yml
-version: '3.8'
+version: "3.8"
 
 services:
   # Main test runner
@@ -221,6 +224,7 @@ networks:
 ```
 
 #### Test Result Aggregation Container
+
 ```dockerfile
 # Dockerfile.aggregator
 FROM node:20.18-alpine AS aggregator
@@ -244,15 +248,16 @@ CMD ["aggregate-results.sh"]
 ### 3. CI/CD Pipeline Integration
 
 #### GitHub Actions Docker Integration
+
 ```yaml
 # .github/workflows/docker-tests.yml
 name: Docker Test Suite
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   docker-tests:
@@ -260,46 +265,46 @@ jobs:
     strategy:
       matrix:
         test-type: [unit, integration, ui, mobile]
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    
-    - name: Build test image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        target: test
-        load: true
-        tags: exocortex-test:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-    
-    - name: Run ${{ matrix.test-type }} tests
-      run: |
-        docker-compose -f docker-compose.test.yml run --rm ${{ matrix.test-type }}-test-runner
-    
-    - name: Upload test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: test-results-${{ matrix.test-type }}
-        path: |
-          coverage/
-          test-results/
-          screenshots/
-          wdio-logs/
-    
-    - name: Upload coverage to Codecov
-      if: matrix.test-type == 'unit'
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage/lcov.info
-        flags: unittests
-        name: codecov-umbrella
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build test image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: test
+          load: true
+          tags: exocortex-test:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run ${{ matrix.test-type }} tests
+        run: |
+          docker-compose -f docker-compose.test.yml run --rm ${{ matrix.test-type }}-test-runner
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.test-type }}
+          path: |
+            coverage/
+            test-results/
+            screenshots/
+            wdio-logs/
+
+      - name: Upload coverage to Codecov
+        if: matrix.test-type == 'unit'
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
 
   docker-build-matrix:
     runs-on: ubuntu-latest
@@ -307,28 +312,29 @@ jobs:
       matrix:
         node-version: [18, 20, 22]
         os: [alpine, ubuntu]
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Build matrix test
-      run: |
-        docker build \
-          --build-arg NODE_VERSION=${{ matrix.node-version }} \
-          --build-arg OS_VARIANT=${{ matrix.os }} \
-          --target test \
-          -t exocortex-test:node${{ matrix.node-version }}-${{ matrix.os }} \
-          .
-    
-    - name: Run tests in matrix
-      run: |
-        docker run --rm \
-          exocortex-test:node${{ matrix.node-version }}-${{ matrix.os }} \
-          npm test
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build matrix test
+        run: |
+          docker build \
+            --build-arg NODE_VERSION=${{ matrix.node-version }} \
+            --build-arg OS_VARIANT=${{ matrix.os }} \
+            --target test \
+            -t exocortex-test:node${{ matrix.node-version }}-${{ matrix.os }} \
+            .
+
+      - name: Run tests in matrix
+        run: |
+          docker run --rm \
+            exocortex-test:node${{ matrix.node-version }}-${{ matrix.os }} \
+            npm test
 ```
 
 #### Docker Matrix Testing
+
 ```dockerfile
 # Dockerfile.matrix - Multi-platform testing
 ARG NODE_VERSION=20
@@ -363,6 +369,7 @@ CMD ["npm", "test"]
 ### 4. Performance and Resource Optimization
 
 #### Resource-Aware Container Configuration
+
 ```dockerfile
 # Performance-optimized testing container
 FROM node:20.18-alpine AS performance-test
@@ -394,6 +401,7 @@ CMD ["monitor-performance.sh", "npm", "test"]
 ```
 
 #### Performance Monitoring Scripts
+
 ```bash
 #!/bin/bash
 # scripts/monitor-performance.sh
@@ -425,9 +433,10 @@ exit $EXIT_CODE
 ### 5. Cross-Platform Testing
 
 #### Platform-Specific Test Configurations
+
 ```yaml
 # docker-compose.platform.yml
-version: '3.8'
+version: "3.8"
 
 services:
   # Linux (Alpine) testing
@@ -476,10 +485,11 @@ services:
 ```
 
 #### Platform Detection in Tests
+
 ```javascript
 // scripts/platform-detection.js
-const os = require('os');
-const fs = require('fs');
+const os = require("os");
+const fs = require("fs");
 
 class PlatformDetector {
   static detectContainer() {
@@ -488,34 +498,34 @@ class PlatformDetector {
       arch: os.arch(),
       cpus: os.cpus().length,
       memory: Math.round(os.totalmem() / 1024 / 1024 / 1024), // GB
-      isContainer: fs.existsSync('/.dockerenv'),
-      isAlpine: fs.existsSync('/etc/alpine-release'),
+      isContainer: fs.existsSync("/.dockerenv"),
+      isAlpine: fs.existsSync("/etc/alpine-release"),
       nodeVersion: process.version,
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || "development",
     };
   }
-  
+
   static configureTestsForPlatform(platform) {
     const config = {
       timeout: 30000, // Default timeout
       retries: 1,
-      parallel: true
+      parallel: true,
     };
-    
+
     // Adjust for platform constraints
     if (platform.isContainer) {
       config.timeout = 60000; // Longer timeout in containers
     }
-    
+
     if (platform.memory < 4) {
       config.parallel = false; // No parallel tests on low memory
       config.retries = 0; // No retries on constrained systems
     }
-    
+
     if (platform.isAlpine) {
       config.timeout = 45000; // Alpine can be slower
     }
-    
+
     return config;
   }
 }
@@ -526,6 +536,7 @@ module.exports = PlatformDetector;
 ### 6. Test Environment Management
 
 #### Environment Isolation and Cleanup
+
 ```dockerfile
 # Test environment with proper cleanup
 FROM node:20.18-alpine AS clean-test
@@ -569,18 +580,18 @@ CMD ["npm", "test"]
 # Cleanup function
 cleanup() {
   echo "Cleaning up test environment..."
-  
+
   # Remove temporary files
   rm -rf /app/test-tmp/*
-  
+
   # Kill any remaining processes
   pkill -f node || true
   pkill -f chromium || true
   pkill -f Xvfb || true
-  
+
   # Clear shared memory
   rm -rf /dev/shm/* 2>/dev/null || true
-  
+
   echo "Cleanup completed"
 }
 
@@ -594,6 +605,7 @@ exec "$@"
 ### 7. Security and Vulnerability Testing
 
 #### Security-Focused Test Container
+
 ```dockerfile
 # Security testing container
 FROM node:20.18-alpine AS security-test
@@ -631,9 +643,10 @@ CMD ["npm", "test"]
 ```
 
 #### Vulnerability Scanning Integration
+
 ```yaml
 # docker-compose.security.yml
-version: '3.8'
+version: "3.8"
 
 services:
   security-test:
@@ -671,6 +684,7 @@ services:
 ### 8. Debugging and Development Tools
 
 #### Debug-Enabled Test Container
+
 ```dockerfile
 # Debug container for test development
 FROM node:20.18-alpine AS debug-test
@@ -708,9 +722,10 @@ CMD ["npm", "run", "test:debug"]
 ```
 
 #### Development Workflow Integration
+
 ```yaml
 # docker-compose.dev.yml
-version: '3.8'
+version: "3.8"
 
 services:
   test-dev:
@@ -744,6 +759,7 @@ services:
 ### 9. Performance Benchmarking
 
 #### Benchmark Test Container
+
 ```dockerfile
 # Performance benchmarking container
 FROM node:20.18-alpine AS benchmark
@@ -804,6 +820,7 @@ echo "Benchmarks completed. Results in /app/benchmark-results/"
 ### 10. Test Reporting and Analytics
 
 #### Test Result Analysis Container
+
 ```dockerfile
 # Test analytics container
 FROM node:20.18-alpine AS analytics
@@ -837,6 +854,7 @@ CMD ["python3", "analyze-results.py"]
 ## Best Practices
 
 ### Docker Testing Standards
+
 1. **Use multi-stage builds** - Optimize for different test types
 2. **Implement proper cleanup** - Prevent resource leaks
 3. **Cache dependencies efficiently** - Minimize rebuild times
@@ -844,6 +862,7 @@ CMD ["python3", "analyze-results.py"]
 5. **Monitor resource usage** - Prevent container overflow
 
 ### CI/CD Integration Guidelines
+
 1. **Use build caching** - Leverage Docker layer caching
 2. **Parallel test execution** - Maximize CI throughput
 3. **Artifact collection** - Preserve test outputs
@@ -851,6 +870,7 @@ CMD ["python3", "analyze-results.py"]
 5. **Security scanning** - Integrate vulnerability checks
 
 ### Performance Optimization
+
 1. **Layer optimization** - Minimize Docker layer size
 2. **Resource constraints** - Set appropriate limits
 3. **Parallel processing** - Utilize multi-core systems

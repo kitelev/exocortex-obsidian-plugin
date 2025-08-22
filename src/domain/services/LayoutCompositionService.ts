@@ -1,4 +1,9 @@
-import { LayoutConfiguration, LayoutBlockType, LayoutDisplayMode, BlockConfiguration } from "../value-objects/LayoutConfiguration";
+import {
+  LayoutConfiguration,
+  LayoutBlockType,
+  LayoutDisplayMode,
+  BlockConfiguration,
+} from "../value-objects/LayoutConfiguration";
 import { ClassName } from "../value-objects/ClassName";
 import { Asset } from "../entities/Asset";
 import { Result } from "../core/Result";
@@ -63,29 +68,39 @@ export class LayoutCompositionService {
   /**
    * Compose optimal layout for a given context
    */
-  composeLayout(context: LayoutCompositionContext): Result<LayoutConfiguration> {
+  composeLayout(
+    context: LayoutCompositionContext,
+  ): Result<LayoutConfiguration> {
     try {
       // Find best matching template
       const template = this.findBestTemplate(context);
-      
+
       if (!template) {
         // Create default layout if no template matches
         return this.createDefaultLayout(context);
       }
 
       // Customize template for context
-      const customizedLayout = this.customizeLayoutForContext(template.configuration, context);
-      
+      const customizedLayout = this.customizeLayoutForContext(
+        template.configuration,
+        context,
+      );
+
       if (!customizedLayout.isSuccess) {
         return customizedLayout;
       }
 
       // Apply optimizations
-      const optimizedLayout = this.applyOptimizations(customizedLayout.getValue()!, context);
-      
+      const optimizedLayout = this.applyOptimizations(
+        customizedLayout.getValue()!,
+        context,
+      );
+
       return optimizedLayout;
     } catch (error) {
-      return Result.fail<LayoutConfiguration>(`Layout composition failed: ${error}`);
+      return Result.fail<LayoutConfiguration>(
+        `Layout composition failed: ${error}`,
+      );
     }
   }
 
@@ -93,23 +108,25 @@ export class LayoutCompositionService {
    * Optimize existing layout configuration
    */
   optimizeLayout(
-    layout: LayoutConfiguration, 
-    context: LayoutCompositionContext
+    layout: LayoutConfiguration,
+    context: LayoutCompositionContext,
   ): Result<LayoutConfiguration> {
     try {
       let currentLayout = layout;
       const optimizations = this.analyzeLayoutOptimizations(layout, context);
 
       // Apply high-impact optimizations
-      const highImpactOptimizations = optimizations.filter(opt => opt.impact === "high");
-      
+      const highImpactOptimizations = optimizations.filter(
+        (opt) => opt.impact === "high",
+      );
+
       for (const optimization of highImpactOptimizations) {
         if (optimization.targetBlock) {
           const optimizedResult = currentLayout.withUpdatedBlock(
             optimization.targetBlock,
-            optimization.suggestedChange
+            optimization.suggestedChange,
           );
-          
+
           if (optimizedResult.isSuccess) {
             currentLayout = optimizedResult.getValue()!;
           }
@@ -118,7 +135,9 @@ export class LayoutCompositionService {
 
       return Result.ok(currentLayout);
     } catch (error) {
-      return Result.fail<LayoutConfiguration>(`Layout optimization failed: ${error}`);
+      return Result.fail<LayoutConfiguration>(
+        `Layout optimization failed: ${error}`,
+      );
     }
   }
 
@@ -127,7 +146,7 @@ export class LayoutCompositionService {
    */
   analyzeLayoutOptimizations(
     layout: LayoutConfiguration,
-    context: LayoutCompositionContext
+    context: LayoutCompositionContext,
   ): LayoutOptimization[] {
     const optimizations: LayoutOptimization[] = [];
 
@@ -154,11 +173,12 @@ export class LayoutCompositionService {
     const visibleBlocks = layout.getVisibleBlocks();
 
     // Calculate estimated render time based on block complexity
-    const estimatedRenderTime = this.calculateEstimatedRenderTime(visibleBlocks);
-    
+    const estimatedRenderTime =
+      this.calculateEstimatedRenderTime(visibleBlocks);
+
     // Calculate complexity score
     const complexityScore = this.calculateComplexityScore(blocks);
-    
+
     // Calculate accessibility score
     const accessibilityScore = this.calculateAccessibilityScore(layout);
 
@@ -168,7 +188,7 @@ export class LayoutCompositionService {
       estimatedRenderTime,
       complexityScore,
       accessibilityScore,
-      responsiveness: layout.isResponsive()
+      responsiveness: layout.isResponsive(),
     };
   }
 
@@ -178,7 +198,7 @@ export class LayoutCompositionService {
   createLayoutFromAsset(asset: Asset): Result<LayoutConfiguration> {
     const context: LayoutCompositionContext = {
       targetClass: asset.getClassName(),
-      availableProperties: Array.from(asset.getProperties().keys())
+      availableProperties: Array.from(asset.getProperties().keys()),
     };
 
     return this.composeLayout(context);
@@ -189,10 +209,12 @@ export class LayoutCompositionService {
    */
   mergeLayouts(
     layouts: LayoutConfiguration[],
-    name: string
+    name: string,
   ): Result<LayoutConfiguration> {
     if (layouts.length === 0) {
-      return Result.fail<LayoutConfiguration>("Cannot merge empty layout array");
+      return Result.fail<LayoutConfiguration>(
+        "Cannot merge empty layout array",
+      );
     }
 
     if (layouts.length === 1) {
@@ -206,15 +228,15 @@ export class LayoutCompositionService {
       // Merge blocks from all layouts
       for (const layout of layouts) {
         const blocks = layout.getBlocks();
-        
+
         for (const block of blocks) {
           // Check if block type already exists
-          const existingBlock = allBlocks.find(b => b.type === block.type);
-          
+          const existingBlock = allBlocks.find((b) => b.type === block.type);
+
           if (!existingBlock) {
             allBlocks.push({
               ...block,
-              order: orderCounter++
+              order: orderCounter++,
             });
           } else {
             // Merge properties for duplicate blocks
@@ -223,10 +245,10 @@ export class LayoutCompositionService {
               visible: existingBlock.visible || block.visible,
               properties: [
                 ...(existingBlock.properties || []),
-                ...(block.properties || [])
-              ].filter((prop, index, arr) => arr.indexOf(prop) === index)
+                ...(block.properties || []),
+              ].filter((prop, index, arr) => arr.indexOf(prop) === index),
             };
-            
+
             const existingIndex = allBlocks.indexOf(existingBlock);
             allBlocks[existingIndex] = mergedBlock;
           }
@@ -237,7 +259,7 @@ export class LayoutCompositionService {
         name,
         description: `Merged layout from ${layouts.length} layouts`,
         blocks: allBlocks,
-        responsive: layouts.every(l => l.isResponsive())
+        responsive: layouts.every((l) => l.isResponsive()),
       });
     } catch (error) {
       return Result.fail<LayoutConfiguration>(`Layout merge failed: ${error}`);
@@ -262,27 +284,29 @@ export class LayoutCompositionService {
    * Get templates applicable to a specific class
    */
   getTemplatesForClass(className: ClassName): LayoutTemplate[] {
-    return Array.from(this.templates.values())
-      .filter(template => 
+    return Array.from(this.templates.values()).filter(
+      (template) =>
         template.applicableClasses.length === 0 || // Universal template
-        template.applicableClasses.some(cls => cls.equals(className))
-      );
+        template.applicableClasses.some((cls) => cls.equals(className)),
+    );
   }
 
   /**
    * Find best matching template for context
    */
-  private findBestTemplate(context: LayoutCompositionContext): LayoutTemplate | null {
+  private findBestTemplate(
+    context: LayoutCompositionContext,
+  ): LayoutTemplate | null {
     const applicableTemplates = this.getTemplatesForClass(context.targetClass);
-    
+
     if (applicableTemplates.length === 0) {
       return null;
     }
 
     // Score templates based on context match
-    const scoredTemplates = applicableTemplates.map(template => ({
+    const scoredTemplates = applicableTemplates.map((template) => ({
       template,
-      score: this.scoreTemplateForContext(template, context)
+      score: this.scoreTemplateForContext(template, context),
     }));
 
     // Return highest scoring template
@@ -295,28 +319,35 @@ export class LayoutCompositionService {
    */
   private scoreTemplateForContext(
     template: LayoutTemplate,
-    context: LayoutCompositionContext
+    context: LayoutCompositionContext,
   ): number {
     let score = 0;
 
     // Class specificity bonus
-    if (template.applicableClasses.some(cls => cls.equals(context.targetClass))) {
+    if (
+      template.applicableClasses.some((cls) => cls.equals(context.targetClass))
+    ) {
       score += 10;
     }
 
     // Property coverage bonus
     const templateBlocks = template.configuration.getBlocks();
-    const propertiesBlock = templateBlocks.find(b => b.type === LayoutBlockType.PROPERTIES);
-    
+    const propertiesBlock = templateBlocks.find(
+      (b) => b.type === LayoutBlockType.PROPERTIES,
+    );
+
     if (propertiesBlock && propertiesBlock.properties) {
-      const coveredProperties = propertiesBlock.properties.filter(prop => 
-        context.availableProperties.includes(prop)
+      const coveredProperties = propertiesBlock.properties.filter((prop) =>
+        context.availableProperties.includes(prop),
       );
       score += coveredProperties.length;
     }
 
     // Device compatibility bonus
-    if (context.deviceType === "mobile" && template.configuration.isResponsive()) {
+    if (
+      context.deviceType === "mobile" &&
+      template.configuration.isResponsive()
+    ) {
       score += 5;
     }
 
@@ -328,19 +359,20 @@ export class LayoutCompositionService {
    */
   private customizeLayoutForContext(
     layout: LayoutConfiguration,
-    context: LayoutCompositionContext
+    context: LayoutCompositionContext,
   ): Result<LayoutConfiguration> {
     let customizedLayout = layout;
 
     // Customize properties block
     const propertiesBlock = layout.getBlockByType(LayoutBlockType.PROPERTIES);
     if (propertiesBlock) {
-      const relevantProperties = context.availableProperties
-        .filter(prop => !prop.startsWith('exo__')); // Filter system properties
+      const relevantProperties = context.availableProperties.filter(
+        (prop) => !prop.startsWith("exo__"),
+      ); // Filter system properties
 
       const updatedResult = customizedLayout.withUpdatedBlock(
         LayoutBlockType.PROPERTIES,
-        { properties: relevantProperties }
+        { properties: relevantProperties },
       );
 
       if (updatedResult.isSuccess) {
@@ -352,14 +384,13 @@ export class LayoutCompositionService {
     if (context.deviceType === "mobile") {
       // Make mobile-friendly adjustments
       const blocks = customizedLayout.getBlocks();
-      
+
       for (const block of blocks) {
         if (block.displayMode === LayoutDisplayMode.TABLE) {
-          const mobileResult = customizedLayout.withUpdatedBlock(
-            block.type,
-            { displayMode: LayoutDisplayMode.LIST }
-          );
-          
+          const mobileResult = customizedLayout.withUpdatedBlock(block.type, {
+            displayMode: LayoutDisplayMode.LIST,
+          });
+
           if (mobileResult.isSuccess) {
             customizedLayout = mobileResult.getValue()!;
           }
@@ -375,23 +406,23 @@ export class LayoutCompositionService {
    */
   private applyOptimizations(
     layout: LayoutConfiguration,
-    context: LayoutCompositionContext
+    context: LayoutCompositionContext,
   ): Result<LayoutConfiguration> {
     const optimizations = this.analyzeLayoutOptimizations(layout, context);
     let optimizedLayout = layout;
 
     // Apply only safe, high-confidence optimizations
-    const safeOptimizations = optimizations.filter(opt => 
-      opt.impact === "high" && opt.type === "performance"
+    const safeOptimizations = optimizations.filter(
+      (opt) => opt.impact === "high" && opt.type === "performance",
     );
 
     for (const optimization of safeOptimizations) {
       if (optimization.targetBlock) {
         const result = optimizedLayout.withUpdatedBlock(
           optimization.targetBlock,
-          optimization.suggestedChange
+          optimization.suggestedChange,
         );
-        
+
         if (result.isSuccess) {
           optimizedLayout = result.getValue()!;
         }
@@ -404,7 +435,9 @@ export class LayoutCompositionService {
   /**
    * Create default layout for context
    */
-  private createDefaultLayout(context: LayoutCompositionContext): Result<LayoutConfiguration> {
+  private createDefaultLayout(
+    context: LayoutCompositionContext,
+  ): Result<LayoutConfiguration> {
     const blocks: BlockConfiguration[] = [
       {
         type: LayoutBlockType.PROPERTIES,
@@ -412,37 +445,41 @@ export class LayoutCompositionService {
         displayMode: LayoutDisplayMode.TABLE,
         visible: true,
         order: 1,
-        properties: context.availableProperties.filter(prop => !prop.startsWith('exo__'))
+        properties: context.availableProperties.filter(
+          (prop) => !prop.startsWith("exo__"),
+        ),
       },
       {
         type: LayoutBlockType.CHILDREN_EFFORTS,
         title: "Related Items",
         displayMode: LayoutDisplayMode.TABLE,
         visible: true,
-        order: 2
+        order: 2,
       },
       {
         type: LayoutBlockType.BACKLINKS,
         title: "Backlinks",
         displayMode: LayoutDisplayMode.LIST,
         visible: true,
-        order: 3
-      }
+        order: 3,
+      },
     ];
 
     return LayoutConfiguration.create({
       name: `Default-${context.targetClass.toString()}`,
       description: "Default generated layout",
-      blocks
+      blocks,
     });
   }
 
   /**
    * Calculate estimated render time
    */
-  private calculateEstimatedRenderTime(blocks: ReadonlyArray<BlockConfiguration>): number {
+  private calculateEstimatedRenderTime(
+    blocks: ReadonlyArray<BlockConfiguration>,
+  ): number {
     let time = 0;
-    
+
     for (const block of blocks) {
       switch (block.type) {
         case LayoutBlockType.PROPERTIES:
@@ -469,13 +506,18 @@ export class LayoutCompositionService {
   /**
    * Calculate complexity score
    */
-  private calculateComplexityScore(blocks: ReadonlyArray<BlockConfiguration>): number {
+  private calculateComplexityScore(
+    blocks: ReadonlyArray<BlockConfiguration>,
+  ): number {
     let score = 0;
-    
+
     score += blocks.length * 10; // Base complexity
-    score += blocks.filter(b => b.type === LayoutBlockType.CUSTOM_QUERY).length * 30;
-    score += blocks.filter(b => b.displayMode === LayoutDisplayMode.TABLE).length * 15;
-    
+    score +=
+      blocks.filter((b) => b.type === LayoutBlockType.CUSTOM_QUERY).length * 30;
+    score +=
+      blocks.filter((b) => b.displayMode === LayoutDisplayMode.TABLE).length *
+      15;
+
     return Math.min(score, 100); // Cap at 100
   }
 
@@ -485,18 +527,18 @@ export class LayoutCompositionService {
   private calculateAccessibilityScore(layout: LayoutConfiguration): number {
     let score = 100;
     const blocks = layout.getBlocks();
-    
+
     // Deduct points for accessibility issues
     for (const block of blocks) {
       if (!block.title) {
         score -= 10; // Missing titles hurt accessibility
       }
     }
-    
+
     if (!layout.isResponsive()) {
       score -= 20; // Non-responsive layouts hurt mobile accessibility
     }
-    
+
     return Math.max(score, 0);
   }
 
@@ -512,22 +554,22 @@ export class LayoutCompositionService {
         displayMode: LayoutDisplayMode.TABLE,
         visible: true,
         order: 1,
-        properties: ["firstName", "lastName", "email", "phone", "organization"]
+        properties: ["firstName", "lastName", "email", "phone", "organization"],
       },
       {
         type: LayoutBlockType.CHILDREN_EFFORTS,
         title: "Related Projects",
         displayMode: LayoutDisplayMode.TABLE,
         visible: true,
-        order: 2
+        order: 2,
       },
       {
         type: LayoutBlockType.BACKLINKS,
         title: "Mentions",
         displayMode: LayoutDisplayMode.LIST,
         visible: true,
-        order: 3
-      }
+        order: 3,
+      },
     ];
 
     const personTemplate: LayoutTemplate = {
@@ -536,8 +578,8 @@ export class LayoutCompositionService {
       applicableClasses: [ClassName.create("exo__Person").getValue()!],
       configuration: LayoutConfiguration.create({
         name: "Person Template",
-        blocks: personBlocks
-      }).getValue()!
+        blocks: personBlocks,
+      }).getValue()!,
     };
 
     this.registerTemplate(personTemplate);
@@ -550,29 +592,29 @@ export class LayoutCompositionService {
         displayMode: LayoutDisplayMode.TABLE,
         visible: true,
         order: 1,
-        properties: ["status", "priority", "startDate", "endDate", "budget"]
+        properties: ["status", "priority", "startDate", "endDate", "budget"],
       },
       {
         type: LayoutBlockType.CHILDREN_EFFORTS,
         title: "Tasks & Deliverables",
         displayMode: LayoutDisplayMode.TABLE,
         visible: true,
-        order: 2
+        order: 2,
       },
       {
         type: LayoutBlockType.BACKLINKS,
         title: "References",
         displayMode: LayoutDisplayMode.LIST,
         visible: true,
-        order: 3
+        order: 3,
       },
       {
         type: LayoutBlockType.BUTTONS,
         title: "Actions",
         displayMode: LayoutDisplayMode.LIST,
         visible: true,
-        order: 4
-      }
+        order: 4,
+      },
     ];
 
     const projectTemplate: LayoutTemplate = {
@@ -581,8 +623,8 @@ export class LayoutCompositionService {
       applicableClasses: [ClassName.create("exo__Project").getValue()!],
       configuration: LayoutConfiguration.create({
         name: "Project Template",
-        blocks: projectBlocks
-      }).getValue()!
+        blocks: projectBlocks,
+      }).getValue()!,
     };
 
     this.registerTemplate(projectTemplate);
@@ -594,19 +636,22 @@ export class LayoutCompositionService {
   private initializeOptimizationRules(): void {
     // Performance optimization rule
     this.optimizationRules.push({
-      analyze: (layout: LayoutConfiguration, context: LayoutCompositionContext): LayoutOptimization[] => {
+      analyze: (
+        layout: LayoutConfiguration,
+        context: LayoutCompositionContext,
+      ): LayoutOptimization[] => {
         const optimizations: LayoutOptimization[] = [];
         const blocks = layout.getBlocks();
 
         // Too many visible blocks
-        const visibleBlocks = blocks.filter(b => b.visible);
+        const visibleBlocks = blocks.filter((b) => b.visible);
         if (visibleBlocks.length > 5) {
           optimizations.push({
             type: "performance",
             description: "Too many visible blocks may impact performance",
             impact: "medium",
             suggestedChange: { visible: false },
-            targetBlock: visibleBlocks[visibleBlocks.length - 1].type
+            targetBlock: visibleBlocks[visibleBlocks.length - 1].type,
           });
         }
 
@@ -618,18 +663,21 @@ export class LayoutCompositionService {
               description: "Custom queries should have item limits",
               impact: "high",
               suggestedChange: { maxItems: 50 },
-              targetBlock: block.type
+              targetBlock: block.type,
             });
           }
         }
 
         return optimizations;
-      }
+      },
     });
 
     // Usability optimization rule
     this.optimizationRules.push({
-      analyze: (layout: LayoutConfiguration, context: LayoutCompositionContext): LayoutOptimization[] => {
+      analyze: (
+        layout: LayoutConfiguration,
+        context: LayoutCompositionContext,
+      ): LayoutOptimization[] => {
         const optimizations: LayoutOptimization[] = [];
         const blocks = layout.getBlocks();
 
@@ -641,13 +689,13 @@ export class LayoutCompositionService {
               description: "Blocks should have descriptive titles",
               impact: "medium",
               suggestedChange: { title: this.getDefaultBlockTitle(block.type) },
-              targetBlock: block.type
+              targetBlock: block.type,
             });
           }
         }
 
         return optimizations;
-      }
+      },
     });
   }
 
@@ -680,5 +728,8 @@ export class LayoutCompositionService {
  * Layout optimization rule interface
  */
 interface LayoutOptimizationRule {
-  analyze(layout: LayoutConfiguration, context: LayoutCompositionContext): LayoutOptimization[];
+  analyze(
+    layout: LayoutConfiguration,
+    context: LayoutCompositionContext,
+  ): LayoutOptimization[];
 }

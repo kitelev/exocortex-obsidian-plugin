@@ -41,16 +41,19 @@ export class ObsidianFileSystemAdapter implements IFileSystemAdapter {
     return file instanceof TFile;
   }
 
-  async listFiles(directory?: string, extension?: string): Promise<Result<TFile[]>> {
+  async listFiles(
+    directory?: string,
+    extension?: string,
+  ): Promise<Result<TFile[]>> {
     try {
       let files = this.app.vault.getFiles();
 
       if (directory) {
-        files = files.filter(file => file.path.startsWith(directory));
+        files = files.filter((file) => file.path.startsWith(directory));
       }
 
       if (extension) {
-        files = files.filter(file => file.extension === extension);
+        files = files.filter((file) => file.extension === extension);
       }
 
       return Result.ok(files);
@@ -66,15 +69,15 @@ export class ObsidianFileSystemAdapter implements IFileSystemAdapter {
   }
 
   detectFormatFromExtension(fileName: string): string {
-    const extension = fileName.split('.').pop()?.toLowerCase();
+    const extension = fileName.split(".").pop()?.toLowerCase();
     const formatMap: Record<string, string> = {
-      'ttl': 'turtle',
-      'nt': 'n-triples',
-      'jsonld': 'json-ld',
-      'rdf': 'rdf-xml',
-      'xml': 'rdf-xml'
+      ttl: "turtle",
+      nt: "n-triples",
+      jsonld: "json-ld",
+      rdf: "rdf-xml",
+      xml: "rdf-xml",
     };
-    return formatMap[extension || ''] || 'turtle';
+    return formatMap[extension || ""] || "turtle";
   }
 
   async ensureDirectory(path: string): Promise<Result<void>> {
@@ -85,7 +88,9 @@ export class ObsidianFileSystemAdapter implements IFileSystemAdapter {
       }
       return Result.ok(undefined);
     } catch (error) {
-      return Result.fail(`Failed to create directory ${path}: ${error.message}`);
+      return Result.fail(
+        `Failed to create directory ${path}: ${error.message}`,
+      );
     }
   }
 }

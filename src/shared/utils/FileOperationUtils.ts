@@ -5,13 +5,12 @@ import { App, TFile } from "obsidian";
  * Implements DRY principle for file handling, YAML processing, and frontmatter operations
  */
 export class FileOperationUtils {
-  
   /**
    * Build YAML frontmatter with consistent formatting
    */
   static buildYamlFrontmatter(frontmatter: Record<string, any>): string[] {
     const yamlLines = ["---"];
-    
+
     for (const [key, value] of Object.entries(frontmatter)) {
       if (value === undefined || value === null) continue;
 
@@ -38,7 +37,7 @@ export class FileOperationUtils {
         }
       }
     }
-    
+
     yamlLines.push("---");
     return yamlLines;
   }
@@ -48,7 +47,7 @@ export class FileOperationUtils {
    */
   private static needsQuotes(valueStr: string): boolean {
     return (
-      valueStr.includes("[[") && valueStr.includes("]]") ||
+      (valueStr.includes("[[") && valueStr.includes("]]")) ||
       valueStr.includes(":") ||
       valueStr.includes("#") ||
       valueStr.includes("[") ||
@@ -100,7 +99,7 @@ export class FileOperationUtils {
       uid?: string;
       storedPath?: string;
       filename?: string;
-    }
+    },
   ): TFile | null {
     // First check if asset has a stored file path
     if (criteria.storedPath) {
@@ -123,8 +122,8 @@ export class FileOperationUtils {
 
     // If not found by ID, try by filename
     if (criteria.filename) {
-      const fileName = criteria.filename.endsWith(".md") 
-        ? criteria.filename 
+      const fileName = criteria.filename.endsWith(".md")
+        ? criteria.filename
         : `${criteria.filename}.md`;
       const file = app.vault.getAbstractFileByPath(fileName);
       if (file instanceof TFile) {
@@ -141,13 +140,13 @@ export class FileOperationUtils {
   static async updateFileWithFrontmatter(
     app: App,
     file: TFile,
-    frontmatter: Record<string, any>
+    frontmatter: Record<string, any>,
   ): Promise<void> {
     const existingContent = await app.vault.read(file);
     const bodyContent = this.extractBodyContent(existingContent);
     const yamlLines = this.buildYamlFrontmatter(frontmatter);
     const newContent = yamlLines.join("\n") + "\n" + bodyContent;
-    
+
     await app.vault.modify(file, newContent);
   }
 
@@ -157,7 +156,7 @@ export class FileOperationUtils {
   static async createFileWithFrontmatter(
     app: App,
     filename: string,
-    frontmatter: Record<string, any>
+    frontmatter: Record<string, any>,
   ): Promise<void> {
     const yamlLines = this.buildYamlFrontmatter(frontmatter);
     const content = yamlLines.join("\n") + "\n";
@@ -170,21 +169,21 @@ export class FileOperationUtils {
   static getFilesWithProperty(
     app: App,
     propertyKey: string,
-    propertyValue?: any
+    propertyValue?: any,
   ): TFile[] {
     const files = app.vault.getMarkdownFiles();
-    return files.filter(file => {
+    return files.filter((file) => {
       const cache = app.metadataCache.getFileCache(file);
       const frontmatter = cache?.frontmatter;
-      
+
       if (!frontmatter || !frontmatter[propertyKey]) {
         return false;
       }
-      
+
       if (propertyValue === undefined) {
         return true; // Just check property exists
       }
-      
+
       return frontmatter[propertyKey] === propertyValue;
     });
   }
@@ -194,7 +193,7 @@ export class FileOperationUtils {
    */
   static mergeFrontmatter(
     existing: Record<string, any>,
-    updates: Record<string, any>
+    updates: Record<string, any>,
   ): Record<string, any> {
     return { ...existing, ...updates };
   }
@@ -202,14 +201,13 @@ export class FileOperationUtils {
   /**
    * Check if reference matches current asset in various formats
    */
-  static isReferencingAsset(
-    referenceValue: any,
-    assetName: string
-  ): boolean {
+  static isReferencingAsset(referenceValue: any, assetName: string): boolean {
     if (!referenceValue) return false;
 
     // Handle both string and array formats
-    const refs = Array.isArray(referenceValue) ? referenceValue : [referenceValue];
+    const refs = Array.isArray(referenceValue)
+      ? referenceValue
+      : [referenceValue];
 
     return refs.some((ref) => {
       const cleanRef = String(ref).replace(/\[\[|\]\]/g, "");

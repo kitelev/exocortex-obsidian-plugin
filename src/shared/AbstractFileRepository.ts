@@ -29,12 +29,12 @@ export abstract class AbstractFileRepository {
    */
   protected getFilesWithProperty(
     propertyKey: string,
-    propertyValue?: any
+    propertyValue?: any,
   ): TFile[] {
     return FileOperationUtils.getFilesWithProperty(
       this.app,
       propertyKey,
-      propertyValue
+      propertyValue,
     );
   }
 
@@ -43,19 +43,19 @@ export abstract class AbstractFileRepository {
    */
   protected async updateFileFrontmatter(
     file: TFile,
-    frontmatter: Record<string, any>
+    frontmatter: Record<string, any>,
   ): Promise<void> {
     try {
       await FileOperationUtils.updateFileWithFrontmatter(
         this.app,
         file,
-        frontmatter
+        frontmatter,
       );
     } catch (error) {
       ErrorHandlingUtils.handleRepositoryError(
         "Update file frontmatter",
         error,
-        { filePath: file.path, frontmatter }
+        { filePath: file.path, frontmatter },
       );
       throw error;
     }
@@ -66,19 +66,19 @@ export abstract class AbstractFileRepository {
    */
   protected async createFileWithFrontmatter(
     filename: string,
-    frontmatter: Record<string, any>
+    frontmatter: Record<string, any>,
   ): Promise<void> {
     try {
       await FileOperationUtils.createFileWithFrontmatter(
         this.app,
         filename,
-        frontmatter
+        frontmatter,
       );
     } catch (error) {
       ErrorHandlingUtils.handleRepositoryError(
         "Create file with frontmatter",
         error,
-        { filename, frontmatter }
+        { filename, frontmatter },
       );
       throw error;
     }
@@ -89,7 +89,7 @@ export abstract class AbstractFileRepository {
    */
   protected async updateFrontmatterByPath(
     filePath: string,
-    updates: Record<string, any>
+    updates: Record<string, any>,
   ): Promise<void> {
     try {
       const file = this.app.vault.getAbstractFileByPath(filePath);
@@ -97,7 +97,7 @@ export abstract class AbstractFileRepository {
       if (!(file instanceof TFile)) {
         throw ErrorHandlingUtils.createError(
           "FILE_NOT_FOUND",
-          `File not found: ${filePath}`
+          `File not found: ${filePath}`,
         );
       }
 
@@ -108,7 +108,7 @@ export abstract class AbstractFileRepository {
       // Merge updates with current frontmatter
       const newFrontmatter = FileOperationUtils.mergeFrontmatter(
         currentFrontmatter,
-        updates
+        updates,
       );
 
       await this.updateFileFrontmatter(file, newFrontmatter);
@@ -116,7 +116,7 @@ export abstract class AbstractFileRepository {
       ErrorHandlingUtils.handleRepositoryError(
         "Update frontmatter by path",
         error,
-        { filePath, updates }
+        { filePath, updates },
       );
       throw error;
     }
@@ -127,8 +127,11 @@ export abstract class AbstractFileRepository {
    */
   protected extractEntityFromFrontmatter<T>(
     file: TFile,
-    extractorFn: (frontmatter: Record<string, any>, basename: string) => T | null,
-    entityType: string
+    extractorFn: (
+      frontmatter: Record<string, any>,
+      basename: string,
+    ) => T | null,
+    entityType: string,
   ): T | null {
     try {
       const cache = this.app.metadataCache.getFileCache(file);
@@ -141,7 +144,7 @@ export abstract class AbstractFileRepository {
       ErrorHandlingUtils.handleRepositoryError(
         `Extract ${entityType} from frontmatter`,
         error,
-        { filePath: file.path }
+        { filePath: file.path },
       );
       return null;
     }
@@ -155,7 +158,7 @@ export abstract class AbstractFileRepository {
     getTitle: (entity: T) => string,
     toFrontmatter: (entity: T) => Record<string, any>,
     findExistingFile: (entity: T) => TFile | null,
-    entityType: string
+    entityType: string,
   ): Promise<void> {
     try {
       const frontmatter = toFrontmatter(entity);
@@ -168,11 +171,9 @@ export abstract class AbstractFileRepository {
         await this.createFileWithFrontmatter(fileName, frontmatter);
       }
     } catch (error) {
-      ErrorHandlingUtils.handleRepositoryError(
-        `Save ${entityType}`,
-        error,
-        { entity }
-      );
+      ErrorHandlingUtils.handleRepositoryError(`Save ${entityType}`, error, {
+        entity,
+      });
       throw error;
     }
   }
@@ -183,21 +184,19 @@ export abstract class AbstractFileRepository {
   protected async deleteFileByEntity<T>(
     entity: T,
     getTitle: (entity: T) => string,
-    entityType: string
+    entityType: string,
   ): Promise<void> {
     try {
       const fileName = `${getTitle(entity)}.md`;
       const file = this.app.vault.getAbstractFileByPath(fileName);
-      
+
       if (file) {
         await this.app.vault.delete(file);
       }
     } catch (error) {
-      ErrorHandlingUtils.handleRepositoryError(
-        `Delete ${entityType}`,
-        error,
-        { entity }
-      );
+      ErrorHandlingUtils.handleRepositoryError(`Delete ${entityType}`, error, {
+        entity,
+      });
       throw error;
     }
   }
@@ -208,7 +207,7 @@ export abstract class AbstractFileRepository {
   protected async entityExists<T>(
     entity: T,
     findEntity: (entity: T) => Promise<T | null>,
-    entityType: string
+    entityType: string,
   ): Promise<boolean> {
     try {
       const found = await findEntity(entity);
@@ -217,7 +216,7 @@ export abstract class AbstractFileRepository {
       ErrorHandlingUtils.handleRepositoryError(
         `Check ${entityType} existence`,
         error,
-        { entity }
+        { entity },
       );
       return false;
     }
@@ -228,9 +227,12 @@ export abstract class AbstractFileRepository {
    */
   protected async findAllEntities<T>(
     propertyKey: string,
-    extractorFn: (frontmatter: Record<string, any>, basename: string) => T | null,
+    extractorFn: (
+      frontmatter: Record<string, any>,
+      basename: string,
+    ) => T | null,
     entityType: string,
-    additionalFilter?: (file: TFile) => boolean
+    additionalFilter?: (file: TFile) => boolean,
   ): Promise<T[]> {
     try {
       const files = this.getFilesWithProperty(propertyKey);
@@ -244,9 +246,9 @@ export abstract class AbstractFileRepository {
         const entity = this.extractEntityFromFrontmatter(
           file,
           extractorFn,
-          entityType
+          entityType,
         );
-        
+
         if (entity) {
           entities.push(entity);
         }
@@ -257,7 +259,7 @@ export abstract class AbstractFileRepository {
       ErrorHandlingUtils.handleRepositoryError(
         `Find all ${entityType}s`,
         error,
-        { propertyKey }
+        { propertyKey },
       );
       return [];
     }
@@ -266,7 +268,10 @@ export abstract class AbstractFileRepository {
   /**
    * Check if reference value matches target asset
    */
-  protected isReferencingAsset(referenceValue: any, assetName: string): boolean {
+  protected isReferencingAsset(
+    referenceValue: any,
+    assetName: string,
+  ): boolean {
     return FileOperationUtils.isReferencingAsset(referenceValue, assetName);
   }
 }

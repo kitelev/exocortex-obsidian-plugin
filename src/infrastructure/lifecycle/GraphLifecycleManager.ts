@@ -132,7 +132,7 @@ export class GraphLifecycleManager implements ILifecycleManager {
       for (const triple of triples) {
         this.graph.add(triple);
       }
-      
+
       // Invalidate cache when graph changes
       this.cacheInvalidationCallback?.();
     } catch (err) {
@@ -147,7 +147,7 @@ export class GraphLifecycleManager implements ILifecycleManager {
     for (const triple of triplesToRemove) {
       this.graph.remove(triple);
     }
-    
+
     // Invalidate cache when graph changes
     this.cacheInvalidationCallback?.();
   }

@@ -25,7 +25,7 @@ export abstract class BaseRenderer {
   protected async preprocess(
     container: HTMLElement,
     config: any,
-    file: any
+    file: any,
   ): Promise<{
     totalFiles: any[];
     filteredFiles: any[];
@@ -34,28 +34,28 @@ export abstract class BaseRenderer {
     try {
       // Get initial file list (subclasses implement this)
       const totalFiles = await this.getRelevantFiles(config, file);
-      
+
       // Apply class filter if specified
       const filteredFiles = this.uiAdapter.filterFilesByClass(
         totalFiles,
-        config.filterByClass
+        config.filterByClass,
       );
-      
+
       // Apply result limit if specified
       const displayFiles = this.uiAdapter.applyResultLimit(
         filteredFiles,
-        config.maxResults
+        config.maxResults,
       );
-      
+
       return { totalFiles, filteredFiles, displayFiles };
     } catch (error) {
       ErrorHandlingUtils.handleRenderingError(
         this.constructor.name,
         error,
         container,
-        "Unable to load content"
+        "Unable to load content",
       );
-      
+
       return { totalFiles: [], filteredFiles: [], displayFiles: [] };
     }
   }
@@ -75,17 +75,17 @@ export abstract class BaseRenderer {
     totalCount: number,
     displayCount: number,
     itemType: string,
-    additionalInfo?: string
+    additionalInfo?: string,
   ): void {
     const className = `exocortex-${itemType.toLowerCase().replace(/ /g, "-")}-info`;
     const suffix = additionalInfo ? ` ${additionalInfo}` : "";
-    
+
     RenderingUtils.createCountInfo(
       container,
       totalCount,
       displayCount,
       itemType + suffix,
-      className
+      className,
     );
   }
 
@@ -95,7 +95,7 @@ export abstract class BaseRenderer {
   protected renderFlatFiles(
     container: HTMLElement,
     files: any[],
-    config: any
+    config: any,
   ): void {
     const displayAs = config.displayAs || "table";
 
@@ -119,7 +119,7 @@ export abstract class BaseRenderer {
     container: HTMLElement,
     files: any[],
     config: any,
-    itemType: string
+    itemType: string,
   ): void {
     const groups = this.uiAdapter.groupFilesByClass(files);
     const sortedGroups = RenderingUtils.sortGroupsByName(groups);
@@ -133,7 +133,7 @@ export abstract class BaseRenderer {
         groupContainer,
         className,
         groupFiles.length,
-        `${itemType.toLowerCase()}-group-header`
+        `${itemType.toLowerCase()}-group-header`,
       );
 
       // Render group contents without grouping
@@ -150,16 +150,16 @@ export abstract class BaseRenderer {
   protected renderFilesList(
     container: HTMLElement,
     files: any[],
-    config: any
+    config: any,
   ): void {
     const list = RenderingUtils.createList(
       container,
-      `exocortex-${this.getItemType().toLowerCase()}-list`
+      `exocortex-${this.getItemType().toLowerCase()}-list`,
     );
 
     files.forEach((file) => {
-      const item = list.createEl("li", { 
-        cls: `exocortex-${this.getItemType().toLowerCase()}-item` 
+      const item = list.createEl("li", {
+        cls: `exocortex-${this.getItemType().toLowerCase()}-item`,
       });
 
       // Create main link
@@ -179,15 +179,15 @@ export abstract class BaseRenderer {
   protected renderFilesCards(
     container: HTMLElement,
     files: any[],
-    config: any
+    config: any,
   ): void {
     const cardsContainer = container.createDiv({
       cls: `exocortex-${this.getItemType().toLowerCase()}-cards`,
     });
 
     files.forEach((file) => {
-      const card = cardsContainer.createDiv({ 
-        cls: `exocortex-${this.getItemType().toLowerCase()}-card` 
+      const card = cardsContainer.createDiv({
+        cls: `exocortex-${this.getItemType().toLowerCase()}-card`,
       });
 
       // Card title
@@ -208,18 +208,18 @@ export abstract class BaseRenderer {
   protected renderFilesTable(
     container: HTMLElement,
     files: any[],
-    config: any
+    config: any,
   ): void {
     const headers = this.getTableHeaders(config);
     const { table, thead, tbody } = RenderingUtils.createTable(
       container,
       headers,
-      `exocortex-${this.getItemType().toLowerCase()}-table`
+      `exocortex-${this.getItemType().toLowerCase()}-table`,
     );
 
     files.forEach((file) => {
-      const row = tbody.createEl("tr", { 
-        cls: `exocortex-${this.getItemType().toLowerCase()}-row` 
+      const row = tbody.createEl("tr", {
+        cls: `exocortex-${this.getItemType().toLowerCase()}-row`,
       });
       this.renderTableRow(row, file, config);
     });
@@ -259,7 +259,11 @@ export abstract class BaseRenderer {
   /**
    * Render a single table row for this renderer
    */
-  protected abstract renderTableRow(row: HTMLElement, file: any, config: any): void;
+  protected abstract renderTableRow(
+    row: HTMLElement,
+    file: any,
+    config: any,
+  ): void;
 
   /**
    * Render additional file info (optional override)
@@ -267,14 +271,14 @@ export abstract class BaseRenderer {
   protected renderAdditionalFileInfo(
     container: HTMLElement,
     file: any,
-    config: any
+    config: any,
   ): void {
     // Default implementation - subclasses can override
     const instanceClass = this.uiAdapter.extractFrontmatterData(
       file,
-      "exo__Instance_class"
+      "exo__Instance_class",
     );
-    
+
     if (instanceClass) {
       this.uiAdapter.createElement(container, "span", {
         text: ` (${this.cleanClassName(instanceClass)})`,
@@ -286,17 +290,13 @@ export abstract class BaseRenderer {
   /**
    * Render card content (optional override)
    */
-  protected renderCardContent(
-    card: HTMLElement,
-    file: any,
-    config: any
-  ): void {
+  protected renderCardContent(card: HTMLElement, file: any, config: any): void {
     // Default implementation - subclasses can override
     const instanceClass = this.uiAdapter.extractFrontmatterData(
       file,
-      "exo__Instance_class"
+      "exo__Instance_class",
     );
-    
+
     if (instanceClass) {
       this.uiAdapter.createElement(card, "p", {
         text: `Class: ${this.cleanClassName(instanceClass)}`,
@@ -306,9 +306,9 @@ export abstract class BaseRenderer {
 
     const description = this.uiAdapter.extractFrontmatterData(
       file,
-      "exo__Asset_description"
+      "exo__Asset_description",
     );
-    
+
     if (description) {
       this.uiAdapter.createElement(card, "p", {
         text: description,

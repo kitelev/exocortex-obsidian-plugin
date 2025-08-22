@@ -1,11 +1,11 @@
-import { ClassName } from '../../../../src/domain/value-objects/ClassName';
-import { Result } from '../../../../src/domain/core/Result';
+import { ClassName } from "../../../../src/domain/value-objects/ClassName";
+import { Result } from "../../../../src/domain/core/Result";
 
-describe('ClassName', () => {
-  describe('create', () => {
-    it('should create valid simple class name', () => {
+describe("ClassName", () => {
+  describe("create", () => {
+    it("should create valid simple class name", () => {
       // Given
-      const value = 'TestClass';
+      const value = "TestClass";
 
       // When
       const result = ClassName.create(value);
@@ -13,13 +13,13 @@ describe('ClassName', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const className = result.getValue();
-      expect(className.value).toBe('TestClass');
-      expect(className.toString()).toBe('TestClass');
+      expect(className.value).toBe("TestClass");
+      expect(className.toString()).toBe("TestClass");
     });
 
-    it('should create valid class name with prefix', () => {
+    it("should create valid class name with prefix", () => {
       // Given
-      const value = 'exo__Asset';
+      const value = "exo__Asset";
 
       // When
       const result = ClassName.create(value);
@@ -27,13 +27,13 @@ describe('ClassName', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const className = result.getValue();
-      expect(className.value).toBe('exo__Asset');
-      expect(className.toString()).toBe('exo__Asset');
+      expect(className.value).toBe("exo__Asset");
+      expect(className.toString()).toBe("exo__Asset");
     });
 
-    it('should create valid class name with underscores', () => {
+    it("should create valid class name with underscores", () => {
       // Given
-      const value = '_PrivateClass';
+      const value = "_PrivateClass";
 
       // When
       const result = ClassName.create(value);
@@ -41,12 +41,12 @@ describe('ClassName', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const className = result.getValue();
-      expect(className.value).toBe('_PrivateClass');
+      expect(className.value).toBe("_PrivateClass");
     });
 
-    it('should create valid class name with numbers', () => {
+    it("should create valid class name with numbers", () => {
       // Given
-      const value = 'Class123';
+      const value = "Class123";
 
       // When
       const result = ClassName.create(value);
@@ -54,12 +54,12 @@ describe('ClassName', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const className = result.getValue();
-      expect(className.value).toBe('Class123');
+      expect(className.value).toBe("Class123");
     });
 
-    it('should create valid complex prefixed class name', () => {
+    it("should create valid complex prefixed class name", () => {
       // Given
-      const value = 'ems__Task123';
+      const value = "ems__Task123";
 
       // When
       const result = ClassName.create(value);
@@ -67,12 +67,12 @@ describe('ClassName', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const className = result.getValue();
-      expect(className.value).toBe('ems__Task123');
+      expect(className.value).toBe("ems__Task123");
     });
 
-    it('should remove wiki link brackets if present', () => {
+    it("should remove wiki link brackets if present", () => {
       // Given
-      const value = '[[exo__Asset]]';
+      const value = "[[exo__Asset]]";
 
       // When
       const result = ClassName.create(value);
@@ -80,13 +80,13 @@ describe('ClassName', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const className = result.getValue();
-      expect(className.value).toBe('exo__Asset');
-      expect(className.toString()).toBe('exo__Asset');
+      expect(className.value).toBe("exo__Asset");
+      expect(className.toString()).toBe("exo__Asset");
     });
 
-    it('should remove partial wiki link brackets', () => {
+    it("should remove partial wiki link brackets", () => {
       // Given
-      const value = '[[TestClass';
+      const value = "[[TestClass";
 
       // When
       const result = ClassName.create(value);
@@ -94,12 +94,12 @@ describe('ClassName', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const className = result.getValue();
-      expect(className.value).toBe('TestClass');
+      expect(className.value).toBe("TestClass");
     });
 
-    it('should handle multiple bracket pairs', () => {
+    it("should handle multiple bracket pairs", () => {
       // Given
-      const value = '[[[[TestClass]]]]';
+      const value = "[[[[TestClass]]]]";
 
       // When
       const result = ClassName.create(value);
@@ -107,22 +107,22 @@ describe('ClassName', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const className = result.getValue();
-      expect(className.value).toBe('TestClass');
+      expect(className.value).toBe("TestClass");
     });
 
-    it('should fail for empty string', () => {
+    it("should fail for empty string", () => {
       // Given
-      const value = '';
+      const value = "";
 
       // When
       const result = ClassName.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('ClassName cannot be empty');
+      expect(result.error).toBe("ClassName cannot be empty");
     });
 
-    it('should fail for null value', () => {
+    it("should fail for null value", () => {
       // Given
       const value = null as any;
 
@@ -131,10 +131,10 @@ describe('ClassName', () => {
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('ClassName cannot be empty');
+      expect(result.error).toBe("ClassName cannot be empty");
     });
 
-    it('should fail for undefined value', () => {
+    it("should fail for undefined value", () => {
       // Given
       const value = undefined as any;
 
@@ -143,96 +143,96 @@ describe('ClassName', () => {
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('ClassName cannot be empty');
+      expect(result.error).toBe("ClassName cannot be empty");
     });
 
-    it('should fail for whitespace-only string', () => {
+    it("should fail for whitespace-only string", () => {
       // Given
-      const value = '   ';
+      const value = "   ";
 
       // When
       const result = ClassName.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('ClassName cannot be empty');
+      expect(result.error).toBe("ClassName cannot be empty");
     });
 
-    it('should fail for string that becomes empty after bracket removal', () => {
+    it("should fail for string that becomes empty after bracket removal", () => {
       // Given
-      const value = '[[]]';
+      const value = "[[]]";
 
       // When
       const result = ClassName.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid class name format: [[]]');
+      expect(result.error).toBe("Invalid class name format: [[]]");
     });
 
-    it('should fail for class name starting with number', () => {
+    it("should fail for class name starting with number", () => {
       // Given
-      const value = '123Class';
+      const value = "123Class";
 
       // When
       const result = ClassName.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid class name format: 123Class');
+      expect(result.error).toBe("Invalid class name format: 123Class");
     });
 
-    it('should fail for class name with special characters', () => {
+    it("should fail for class name with special characters", () => {
       // Given
-      const value = 'Test@Class';
+      const value = "Test@Class";
 
       // When
       const result = ClassName.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid class name format: Test@Class');
+      expect(result.error).toBe("Invalid class name format: Test@Class");
     });
 
-    it('should fail for class name with spaces', () => {
+    it("should fail for class name with spaces", () => {
       // Given
-      const value = 'Test Class';
+      const value = "Test Class";
 
       // When
       const result = ClassName.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid class name format: Test Class');
+      expect(result.error).toBe("Invalid class name format: Test Class");
     });
 
-    it('should fail for class name with hyphens', () => {
+    it("should fail for class name with hyphens", () => {
       // Given
-      const value = 'Test-Class';
+      const value = "Test-Class";
 
       // When
       const result = ClassName.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid class name format: Test-Class');
+      expect(result.error).toBe("Invalid class name format: Test-Class");
     });
 
-    it('should fail for invalid prefix format', () => {
+    it("should fail for invalid prefix format", () => {
       // Given
-      const value = 'ex o__Asset'; // space in prefix
+      const value = "ex o__Asset"; // space in prefix
 
       // When
       const result = ClassName.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid class name format: ex o__Asset');
+      expect(result.error).toBe("Invalid class name format: ex o__Asset");
     });
 
-    it('should allow multiple underscores in name part', () => {
+    it("should allow multiple underscores in name part", () => {
       // Given
-      const value = 'ex__test_Asset';
+      const value = "ex__test_Asset";
 
       // When
       const result = ClassName.create(value);
@@ -240,12 +240,12 @@ describe('ClassName', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const className = result.getValue();
-      expect(className.value).toBe('ex__test_Asset');
+      expect(className.value).toBe("ex__test_Asset");
     });
 
-    it('should allow class name ending with underscore', () => {
+    it("should allow class name ending with underscore", () => {
       // Given
-      const value = 'exo_';
+      const value = "exo_";
 
       // When
       const result = ClassName.create(value);
@@ -253,233 +253,233 @@ describe('ClassName', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const className = result.getValue();
-      expect(className.value).toBe('exo_');
+      expect(className.value).toBe("exo_");
     });
 
-    it('should fail for prefix starting with number', () => {
+    it("should fail for prefix starting with number", () => {
       // Given
-      const value = '1ex__Asset';
+      const value = "1ex__Asset";
 
       // When
       const result = ClassName.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid class name format: 1ex__Asset');
+      expect(result.error).toBe("Invalid class name format: 1ex__Asset");
     });
   });
 
-  describe('toString', () => {
-    it('should return the class name value', () => {
+  describe("toString", () => {
+    it("should return the class name value", () => {
       // Given
-      const className = ClassName.create('TestClass').getValue();
+      const className = ClassName.create("TestClass").getValue();
 
       // When
       const stringValue = className.toString();
 
       // Then
-      expect(stringValue).toBe('TestClass');
+      expect(stringValue).toBe("TestClass");
     });
 
-    it('should return prefixed class name value', () => {
+    it("should return prefixed class name value", () => {
       // Given
-      const className = ClassName.create('exo__Asset').getValue();
+      const className = ClassName.create("exo__Asset").getValue();
 
       // When
       const stringValue = className.toString();
 
       // Then
-      expect(stringValue).toBe('exo__Asset');
+      expect(stringValue).toBe("exo__Asset");
     });
 
-    it('should match value property', () => {
+    it("should match value property", () => {
       // Given
-      const className = ClassName.create('ems__Task').getValue();
+      const className = ClassName.create("ems__Task").getValue();
 
       // When & Then
       expect(className.toString()).toBe(className.value);
     });
   });
 
-  describe('toWikiLink', () => {
-    it('should return wiki link format for simple class name', () => {
+  describe("toWikiLink", () => {
+    it("should return wiki link format for simple class name", () => {
       // Given
-      const className = ClassName.create('TestClass').getValue();
+      const className = ClassName.create("TestClass").getValue();
 
       // When
       const wikiLink = className.toWikiLink();
 
       // Then
-      expect(wikiLink).toBe('[[TestClass]]');
+      expect(wikiLink).toBe("[[TestClass]]");
     });
 
-    it('should return wiki link format for prefixed class name', () => {
+    it("should return wiki link format for prefixed class name", () => {
       // Given
-      const className = ClassName.create('exo__Asset').getValue();
+      const className = ClassName.create("exo__Asset").getValue();
 
       // When
       const wikiLink = className.toWikiLink();
 
       // Then
-      expect(wikiLink).toBe('[[exo__Asset]]');
+      expect(wikiLink).toBe("[[exo__Asset]]");
     });
 
-    it('should handle class name with underscores', () => {
+    it("should handle class name with underscores", () => {
       // Given
-      const className = ClassName.create('_Private_Class').getValue();
+      const className = ClassName.create("_Private_Class").getValue();
 
       // When
       const wikiLink = className.toWikiLink();
 
       // Then
-      expect(wikiLink).toBe('[[_Private_Class]]');
+      expect(wikiLink).toBe("[[_Private_Class]]");
     });
 
-    it('should not double-wrap if value was created from wiki link', () => {
+    it("should not double-wrap if value was created from wiki link", () => {
       // Given
-      const className = ClassName.create('[[TestClass]]').getValue();
+      const className = ClassName.create("[[TestClass]]").getValue();
 
       // When
       const wikiLink = className.toWikiLink();
 
       // Then
-      expect(wikiLink).toBe('[[TestClass]]');
-      expect(wikiLink).not.toBe('[[[[TestClass]]]]');
+      expect(wikiLink).toBe("[[TestClass]]");
+      expect(wikiLink).not.toBe("[[[[TestClass]]]]");
     });
   });
 
-  describe('getPrefix', () => {
-    it('should return prefix for prefixed class name', () => {
+  describe("getPrefix", () => {
+    it("should return prefix for prefixed class name", () => {
       // Given
-      const className = ClassName.create('exo__Asset').getValue();
+      const className = ClassName.create("exo__Asset").getValue();
 
       // When
       const prefix = className.getPrefix();
 
       // Then
-      expect(prefix).toBe('exo');
+      expect(prefix).toBe("exo");
     });
 
-    it('should return different prefix for different class name', () => {
+    it("should return different prefix for different class name", () => {
       // Given
-      const className = ClassName.create('ems__Task').getValue();
+      const className = ClassName.create("ems__Task").getValue();
 
       // When
       const prefix = className.getPrefix();
 
       // Then
-      expect(prefix).toBe('ems');
+      expect(prefix).toBe("ems");
     });
 
-    it('should return empty string for non-prefixed class name', () => {
+    it("should return empty string for non-prefixed class name", () => {
       // Given
-      const className = ClassName.create('SimpleClass').getValue();
+      const className = ClassName.create("SimpleClass").getValue();
 
       // When
       const prefix = className.getPrefix();
 
       // Then
-      expect(prefix).toBe('');
+      expect(prefix).toBe("");
     });
 
-    it('should handle class name with underscore but no prefix', () => {
+    it("should handle class name with underscore but no prefix", () => {
       // Given
-      const className = ClassName.create('Class_Name').getValue();
+      const className = ClassName.create("Class_Name").getValue();
 
       // When
       const prefix = className.getPrefix();
 
       // Then
-      expect(prefix).toBe('');
+      expect(prefix).toBe("");
     });
 
-    it('should return first part only for valid prefix format', () => {
+    it("should return first part only for valid prefix format", () => {
       // Given
-      const className = ClassName.create('very_long__ClassName').getValue();
+      const className = ClassName.create("very_long__ClassName").getValue();
 
       // When
       const prefix = className.getPrefix();
 
       // Then
-      expect(prefix).toBe('very_long');
+      expect(prefix).toBe("very_long");
     });
   });
 
-  describe('getName', () => {
-    it('should return name part for prefixed class name', () => {
+  describe("getName", () => {
+    it("should return name part for prefixed class name", () => {
       // Given
-      const className = ClassName.create('exo__Asset').getValue();
+      const className = ClassName.create("exo__Asset").getValue();
 
       // When
       const name = className.getName();
 
       // Then
-      expect(name).toBe('Asset');
+      expect(name).toBe("Asset");
     });
 
-    it('should return different name for different class', () => {
+    it("should return different name for different class", () => {
       // Given
-      const className = ClassName.create('ems__Task').getValue();
+      const className = ClassName.create("ems__Task").getValue();
 
       // When
       const name = className.getName();
 
       // Then
-      expect(name).toBe('Task');
+      expect(name).toBe("Task");
     });
 
-    it('should return full name for non-prefixed class name', () => {
+    it("should return full name for non-prefixed class name", () => {
       // Given
-      const className = ClassName.create('SimpleClass').getValue();
+      const className = ClassName.create("SimpleClass").getValue();
 
       // When
       const name = className.getName();
 
       // Then
-      expect(name).toBe('SimpleClass');
+      expect(name).toBe("SimpleClass");
     });
 
-    it('should handle class name with underscores in name part', () => {
+    it("should handle class name with underscores in name part", () => {
       // Given
-      const className = ClassName.create('exo__Complex_Name').getValue();
+      const className = ClassName.create("exo__Complex_Name").getValue();
 
       // When
       const name = className.getName();
 
       // Then
-      expect(name).toBe('Complex_Name');
+      expect(name).toBe("Complex_Name");
     });
 
-    it('should return second part for prefixed class name', () => {
+    it("should return second part for prefixed class name", () => {
       // Given
-      const className = ClassName.create('prefix123__ClassName456').getValue();
+      const className = ClassName.create("prefix123__ClassName456").getValue();
 
       // When
       const name = className.getName();
 
       // Then
-      expect(name).toBe('ClassName456');
+      expect(name).toBe("ClassName456");
     });
 
-    it('should handle edge case with underscore-only name', () => {
+    it("should handle edge case with underscore-only name", () => {
       // Given - this would fail validation, but test the split logic
-      const className = ClassName.create('ValidClass').getValue(); 
+      const className = ClassName.create("ValidClass").getValue();
       // Manually modify the value to test edge case
-      (className as any).value = 'prefix__';
+      (className as any).value = "prefix__";
 
       // When
       const name = className.getName();
 
       // Then
-      expect(name).toBe('');
+      expect(name).toBe("");
     });
   });
 
-  describe('equals', () => {
-    it('should return true for same class names', () => {
+  describe("equals", () => {
+    it("should return true for same class names", () => {
       // Given
-      const className1 = ClassName.create('TestClass').getValue();
-      const className2 = ClassName.create('TestClass').getValue();
+      const className1 = ClassName.create("TestClass").getValue();
+      const className2 = ClassName.create("TestClass").getValue();
 
       // When
       const result = className1.equals(className2);
@@ -488,10 +488,10 @@ describe('ClassName', () => {
       expect(result).toBe(true);
     });
 
-    it('should return true for same prefixed class names', () => {
+    it("should return true for same prefixed class names", () => {
       // Given
-      const className1 = ClassName.create('exo__Asset').getValue();
-      const className2 = ClassName.create('exo__Asset').getValue();
+      const className1 = ClassName.create("exo__Asset").getValue();
+      const className2 = ClassName.create("exo__Asset").getValue();
 
       // When
       const result = className1.equals(className2);
@@ -500,10 +500,10 @@ describe('ClassName', () => {
       expect(result).toBe(true);
     });
 
-    it('should return false for different class names', () => {
+    it("should return false for different class names", () => {
       // Given
-      const className1 = ClassName.create('TestClass1').getValue();
-      const className2 = ClassName.create('TestClass2').getValue();
+      const className1 = ClassName.create("TestClass1").getValue();
+      const className2 = ClassName.create("TestClass2").getValue();
 
       // When
       const result = className1.equals(className2);
@@ -512,10 +512,10 @@ describe('ClassName', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false for different prefixed class names', () => {
+    it("should return false for different prefixed class names", () => {
       // Given
-      const className1 = ClassName.create('exo__Asset').getValue();
-      const className2 = ClassName.create('ems__Task').getValue();
+      const className1 = ClassName.create("exo__Asset").getValue();
+      const className2 = ClassName.create("ems__Task").getValue();
 
       // When
       const result = className1.equals(className2);
@@ -524,10 +524,10 @@ describe('ClassName', () => {
       expect(result).toBe(false);
     });
 
-    it('should return true for class names created from wiki links', () => {
+    it("should return true for class names created from wiki links", () => {
       // Given
-      const className1 = ClassName.create('[[TestClass]]').getValue();
-      const className2 = ClassName.create('TestClass').getValue();
+      const className1 = ClassName.create("[[TestClass]]").getValue();
+      const className2 = ClassName.create("TestClass").getValue();
 
       // When
       const result = className1.equals(className2);
@@ -536,9 +536,9 @@ describe('ClassName', () => {
       expect(result).toBe(true);
     });
 
-    it('should return true when comparing with itself', () => {
+    it("should return true when comparing with itself", () => {
       // Given
-      const className = ClassName.create('TestClass').getValue();
+      const className = ClassName.create("TestClass").getValue();
 
       // When
       const result = className.equals(className);
@@ -547,10 +547,10 @@ describe('ClassName', () => {
       expect(result).toBe(true);
     });
 
-    it('should be case-sensitive', () => {
+    it("should be case-sensitive", () => {
       // Given
-      const className1 = ClassName.create('TestClass').getValue();
-      const className2 = ClassName.create('testclass').getValue();
+      const className1 = ClassName.create("TestClass").getValue();
+      const className2 = ClassName.create("testclass").getValue();
 
       // When
       const result = className1.equals(className2);
@@ -559,11 +559,11 @@ describe('ClassName', () => {
       expect(result).toBe(false);
     });
 
-    it('should handle whitespace differences', () => {
+    it("should handle whitespace differences", () => {
       // Given - These would both be invalid, but test the comparison
-      const className1 = ClassName.create('ValidClass').getValue();
-      const className2 = ClassName.create('ValidClass').getValue();
-      
+      const className1 = ClassName.create("ValidClass").getValue();
+      const className2 = ClassName.create("ValidClass").getValue();
+
       // When
       const result = className1.equals(className2);
 
@@ -572,10 +572,10 @@ describe('ClassName', () => {
     });
   });
 
-  describe('Value Object Properties', () => {
-    it('should be immutable', () => {
+  describe("Value Object Properties", () => {
+    it("should be immutable", () => {
       // Given
-      const className = ClassName.create('TestClass').getValue();
+      const className = ClassName.create("TestClass").getValue();
       const originalValue = className.value;
 
       // When - attempt to modify (should not be possible with readonly)
@@ -585,17 +585,17 @@ describe('ClassName', () => {
       expect(className.value).toBe(originalValue);
     });
 
-    it('should have consistent toString and value', () => {
+    it("should have consistent toString and value", () => {
       // Given
-      const className = ClassName.create('exo__Asset').getValue();
+      const className = ClassName.create("exo__Asset").getValue();
 
       // When & Then
       expect(className.toString()).toBe(className.value);
     });
 
-    it('should maintain identity through transformations', () => {
+    it("should maintain identity through transformations", () => {
       // Given
-      const original = 'exo__Asset';
+      const original = "exo__Asset";
       const className = ClassName.create(`[[${original}]]`).getValue();
 
       // When & Then
@@ -605,10 +605,10 @@ describe('ClassName', () => {
     });
   });
 
-  describe('Edge Cases and Complex Scenarios', () => {
-    it('should handle maximum length class names', () => {
+  describe("Edge Cases and Complex Scenarios", () => {
+    it("should handle maximum length class names", () => {
       // Given
-      const longName = 'A'.repeat(100);
+      const longName = "A".repeat(100);
       const longPrefixedName = `prefix__${longName}`;
 
       // When
@@ -618,15 +618,15 @@ describe('ClassName', () => {
       expect(result.isSuccess).toBe(true);
       const className = result.getValue();
       expect(className.getName()).toBe(longName);
-      expect(className.getPrefix()).toBe('prefix');
+      expect(className.getPrefix()).toBe("prefix");
     });
 
-    it('should handle class names with numbers in various positions', () => {
+    it("should handle class names with numbers in various positions", () => {
       // Given
-      const testCases = ['Class123', 'C1lass', 'ex1__A2sset', '_123Class'];
+      const testCases = ["Class123", "C1lass", "ex1__A2sset", "_123Class"];
 
       // When & Then
-      testCases.forEach(testCase => {
+      testCases.forEach((testCase) => {
         const result = ClassName.create(testCase);
         expect(result.isSuccess).toBe(true);
         const className = result.getValue();
@@ -634,24 +634,24 @@ describe('ClassName', () => {
       });
     });
 
-    it('should handle minimum valid class names', () => {
+    it("should handle minimum valid class names", () => {
       // Given
-      const minimalNames = ['A', '_', 'a__B', '_1'];
+      const minimalNames = ["A", "_", "a__B", "_1"];
 
       // When & Then
-      minimalNames.forEach(name => {
+      minimalNames.forEach((name) => {
         const result = ClassName.create(name);
         expect(result.isSuccess).toBe(true);
         expect(result.getValue().value).toBe(name);
       });
     });
 
-    it('should preserve exact format in edge valid cases', () => {
+    it("should preserve exact format in edge valid cases", () => {
       // Given
-      const edgeCases = ['_', 'A1', 'z9__B8'];
+      const edgeCases = ["_", "A1", "z9__B8"];
 
       // When & Then
-      edgeCases.forEach(edgeCase => {
+      edgeCases.forEach((edgeCase) => {
         const result = ClassName.create(edgeCase);
         expect(result.isSuccess).toBe(true);
         const className = result.getValue();
@@ -660,27 +660,27 @@ describe('ClassName', () => {
       });
     });
 
-    it('should handle unicode characters appropriately', () => {
+    it("should handle unicode characters appropriately", () => {
       // Given - These should fail since regex only allows a-zA-Z
-      const unicodeNames = ['Tëst', '测试', 'Тест'];
+      const unicodeNames = ["Tëst", "测试", "Тест"];
 
       // When & Then
-      unicodeNames.forEach(unicodeName => {
+      unicodeNames.forEach((unicodeName) => {
         const result = ClassName.create(unicodeName);
         expect(result.isFailure).toBe(true);
-        expect(result.error).toContain('Invalid class name format');
+        expect(result.error).toContain("Invalid class name format");
       });
     });
 
-    it('should maintain consistency in complex workflows', () => {
+    it("should maintain consistency in complex workflows", () => {
       // Given
-      const originalName = 'exo__ComplexAsset123';
-      
+      const originalName = "exo__ComplexAsset123";
+
       // When - create, convert to wiki link, and create again
       const className1 = ClassName.create(originalName).getValue();
       const wikiLink = className1.toWikiLink();
       const className2 = ClassName.create(wikiLink).getValue();
-      
+
       // Then
       expect(className1.equals(className2)).toBe(true);
       expect(className1.value).toBe(className2.value);

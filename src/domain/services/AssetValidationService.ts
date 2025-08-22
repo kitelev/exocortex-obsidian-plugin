@@ -1,5 +1,8 @@
 import { Asset } from "../entities/Asset";
-import { PropertyValue, PropertyValueType } from "../value-objects/PropertyValue";
+import {
+  PropertyValue,
+  PropertyValueType,
+} from "../value-objects/PropertyValue";
 import { ClassName } from "../value-objects/ClassName";
 import { OntologyPrefix } from "../value-objects/OntologyPrefix";
 import { Result } from "../core/Result";
@@ -51,7 +54,8 @@ export interface PropertyValidationConfig {
  */
 export class AssetValidationService {
   private readonly rules: ValidationRule[] = [];
-  private readonly propertyConfigs: Map<string, PropertyValidationConfig> = new Map();
+  private readonly propertyConfigs: Map<string, PropertyValidationConfig> =
+    new Map();
 
   constructor() {
     this.initializeDefaultRules();
@@ -71,7 +75,7 @@ export class AssetValidationService {
       try {
         const result = rule.validate(asset);
         appliedRules.push(rule.name);
-        
+
         errors.push(...result.errors);
         warnings.push(...result.warnings);
       } catch (error) {
@@ -83,7 +87,7 @@ export class AssetValidationService {
       isValid: errors.length === 0,
       errors,
       warnings,
-      appliedRules
+      appliedRules,
     };
   }
 
@@ -104,8 +108,12 @@ export class AssetValidationService {
 
       if (properties.has(propertyName)) {
         const value = properties.get(propertyName);
-        const propertyValidation = this.validatePropertyValue(propertyName, value, config);
-        
+        const propertyValidation = this.validatePropertyValue(
+          propertyName,
+          value,
+          config,
+        );
+
         errors.push(...propertyValidation.errors);
         warnings.push(...propertyValidation.warnings);
       }
@@ -113,8 +121,13 @@ export class AssetValidationService {
 
     // Check for unknown properties (optional warning)
     for (const [propertyName] of properties) {
-      if (!this.propertyConfigs.has(propertyName) && !propertyName.startsWith('exo__')) {
-        warnings.push(`Unknown property '${propertyName}' - consider adding validation configuration`);
+      if (
+        !this.propertyConfigs.has(propertyName) &&
+        !propertyName.startsWith("exo__")
+      ) {
+        warnings.push(
+          `Unknown property '${propertyName}' - consider adding validation configuration`,
+        );
       }
     }
 
@@ -127,7 +140,7 @@ export class AssetValidationService {
   private validatePropertyValue(
     propertyName: string,
     value: any,
-    config: PropertyValidationConfig
+    config: PropertyValidationConfig,
   ): ValidationResult {
     const errors: string[] = [];
     const warnings: string[] = [];
@@ -138,31 +151,43 @@ export class AssetValidationService {
       if (propertyValueResult.isSuccess) {
         const propertyValue = propertyValueResult.getValue()!;
         if (propertyValue.getType() !== config.type) {
-          errors.push(`Property '${propertyName}' has type ${propertyValue.getType()}, expected ${config.type}`);
+          errors.push(
+            `Property '${propertyName}' has type ${propertyValue.getType()}, expected ${config.type}`,
+          );
         }
       } else {
-        errors.push(`Property '${propertyName}' has invalid value: ${propertyValueResult.getError()}`);
+        errors.push(
+          `Property '${propertyName}' has invalid value: ${propertyValueResult.getError()}`,
+        );
       }
     }
 
     // String-specific validations
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       if (config.minLength && value.length < config.minLength) {
-        errors.push(`Property '${propertyName}' is too short (minimum ${config.minLength} characters)`);
+        errors.push(
+          `Property '${propertyName}' is too short (minimum ${config.minLength} characters)`,
+        );
       }
-      
+
       if (config.maxLength && value.length > config.maxLength) {
-        errors.push(`Property '${propertyName}' is too long (maximum ${config.maxLength} characters)`);
+        errors.push(
+          `Property '${propertyName}' is too long (maximum ${config.maxLength} characters)`,
+        );
       }
-      
+
       if (config.pattern && !config.pattern.test(value)) {
-        errors.push(`Property '${propertyName}' does not match required pattern`);
+        errors.push(
+          `Property '${propertyName}' does not match required pattern`,
+        );
       }
     }
 
     // Allowed values validation
     if (config.allowedValues && !config.allowedValues.includes(value)) {
-      errors.push(`Property '${propertyName}' has invalid value. Allowed: ${config.allowedValues.join(', ')}`);
+      errors.push(
+        `Property '${propertyName}' has invalid value. Allowed: ${config.allowedValues.join(", ")}`,
+      );
     }
 
     return { isValid: errors.length === 0, errors, warnings };
@@ -173,11 +198,11 @@ export class AssetValidationService {
    */
   addValidationRule(rule: ValidationRule): void {
     // Remove existing rule with same name
-    const existingIndex = this.rules.findIndex(r => r.name === rule.name);
+    const existingIndex = this.rules.findIndex((r) => r.name === rule.name);
     if (existingIndex >= 0) {
       this.rules.splice(existingIndex, 1);
     }
-    
+
     this.rules.push(rule);
   }
 
@@ -195,22 +220,25 @@ export class AssetValidationService {
     // Asset label validation rule
     this.addValidationRule({
       name: "AssetLabelValidation",
-      description: "Validates asset label is not empty and meets format requirements",
+      description:
+        "Validates asset label is not empty and meets format requirements",
       validate: (asset: Asset): ValidationResult => {
         const errors: string[] = [];
         const warnings: string[] = [];
-        
+
         const title = asset.getTitle();
         if (!title || title.trim().length === 0) {
           errors.push("Asset title cannot be empty");
         } else if (title.length > 200) {
           errors.push("Asset title cannot exceed 200 characters");
         } else if (title.length < 3) {
-          warnings.push("Asset title is very short - consider a more descriptive name");
+          warnings.push(
+            "Asset title is very short - consider a more descriptive name",
+          );
         }
-        
+
         return { isValid: errors.length === 0, errors, warnings };
-      }
+      },
     });
 
     // Class consistency validation rule
@@ -220,23 +248,27 @@ export class AssetValidationService {
       validate: (asset: Asset): ValidationResult => {
         const errors: string[] = [];
         const warnings: string[] = [];
-        
+
         const className = asset.getClassName();
         const properties = asset.getProperties();
-        
+
         // Check if class-specific properties are present
         if (className.toString() === "exo__Person") {
           if (!properties.has("firstName") && !properties.has("lastName")) {
-            warnings.push("Person assets typically have firstName or lastName properties");
+            warnings.push(
+              "Person assets typically have firstName or lastName properties",
+            );
           }
         } else if (className.toString() === "exo__Organization") {
           if (!properties.has("organizationName")) {
-            warnings.push("Organization assets typically have organizationName property");
+            warnings.push(
+              "Organization assets typically have organizationName property",
+            );
           }
         }
-        
+
         return { isValid: errors.length === 0, errors, warnings };
-      }
+      },
     });
 
     // Ontology validation rule
@@ -246,18 +278,18 @@ export class AssetValidationService {
       validate: (asset: Asset): ValidationResult => {
         const errors: string[] = [];
         const warnings: string[] = [];
-        
+
         const ontology = asset.getOntologyPrefix();
-        
+
         // Basic ontology validation
         if (!ontology || ontology.toString().length === 0) {
           errors.push("Asset must have a valid ontology");
         } else if (ontology.toString().length > 50) {
           errors.push("Ontology prefix cannot exceed 50 characters");
         }
-        
+
         return { isValid: errors.length === 0, errors, warnings };
-      }
+      },
     });
 
     // Property consistency validation rule
@@ -267,24 +299,28 @@ export class AssetValidationService {
       validate: (asset: Asset): ValidationResult => {
         const errors: string[] = [];
         const warnings: string[] = [];
-        
+
         const properties = asset.getProperties();
-        
+
         // Check for empty property values
         for (const [key, propertyValue] of properties) {
           const value = propertyValue ? propertyValue.getValue() : undefined;
           if (value === null || value === undefined || value === "") {
-            warnings.push(`Property '${key}' has empty value - consider removing or providing a value`);
+            warnings.push(
+              `Property '${key}' has empty value - consider removing or providing a value`,
+            );
           }
-          
+
           // Check for very long property values
-          if (typeof value === 'string' && value.length > 1000) {
-            warnings.push(`Property '${key}' has very long value - consider using references or shorter content`);
+          if (typeof value === "string" && value.length > 1000) {
+            warnings.push(
+              `Property '${key}' has very long value - consider using references or shorter content`,
+            );
           }
         }
-        
+
         return { isValid: errors.length === 0, errors, warnings };
-      }
+      },
     });
   }
 
@@ -297,47 +333,47 @@ export class AssetValidationService {
       propertyName: "status",
       required: false,
       type: PropertyValueType.STRING,
-      allowedValues: ["active", "inactive", "draft", "published", "archived"]
+      allowedValues: ["active", "inactive", "draft", "published", "archived"],
     });
 
     this.addPropertyConfiguration({
       propertyName: "priority",
       required: false,
       type: PropertyValueType.STRING,
-      allowedValues: ["high", "medium", "low", "critical"]
+      allowedValues: ["high", "medium", "low", "critical"],
     });
 
     this.addPropertyConfiguration({
       propertyName: "description",
       required: false,
       type: PropertyValueType.STRING,
-      maxLength: 2000
+      maxLength: 2000,
     });
 
     this.addPropertyConfiguration({
       propertyName: "tags",
       required: false,
-      type: PropertyValueType.ARRAY
+      type: PropertyValueType.ARRAY,
     });
 
     this.addPropertyConfiguration({
       propertyName: "url",
       required: false,
-      type: PropertyValueType.IRI
+      type: PropertyValueType.IRI,
     });
 
     this.addPropertyConfiguration({
       propertyName: "email",
       required: false,
       type: PropertyValueType.STRING,
-      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     });
 
     this.addPropertyConfiguration({
       propertyName: "phone",
       required: false,
       type: PropertyValueType.STRING,
-      pattern: /^[\+]?[1-9][\d]{0,15}$/
+      pattern: /^[\+]?[1-9][\d]{0,15}$/,
     });
   }
 
@@ -360,19 +396,21 @@ export class AssetValidationService {
    */
   static createWithConfiguration(
     rules: ValidationRule[],
-    propertyConfigs: PropertyValidationConfig[]
+    propertyConfigs: PropertyValidationConfig[],
   ): AssetValidationService {
     const service = new AssetValidationService();
-    
+
     // Clear default rules if custom ones provided
     if (rules.length > 0) {
       (service as any).rules = [];
-      rules.forEach(rule => service.addValidationRule(rule));
+      rules.forEach((rule) => service.addValidationRule(rule));
     }
-    
+
     // Add custom property configurations
-    propertyConfigs.forEach(config => service.addPropertyConfiguration(config));
-    
+    propertyConfigs.forEach((config) =>
+      service.addPropertyConfiguration(config),
+    );
+
     return service;
   }
 }

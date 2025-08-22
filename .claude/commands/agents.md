@@ -60,6 +60,7 @@ Please provide a comprehensive list of all available agents with their capabilit
    - result-pattern-agent: Functional programming patterns
 
 For each agent category, show:
+
 - Agent name and primary purpose
 - Key capabilities
 - When to use the agent

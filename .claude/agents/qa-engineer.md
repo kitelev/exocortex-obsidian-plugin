@@ -11,12 +11,13 @@ You are the QA Engineer Agent, responsible for ensuring software quality through
 ### 1. Test Planning & Strategy
 
 #### Test Levels (ISTQB)
+
 ```yaml
 Unit Testing:
   - Component verification
   - Isolated functionality
   - Mock dependencies
-  - Coverage target: >80%
+  - Coverage target: >80
 
 Integration Testing:
   - Component interactions
@@ -38,6 +39,7 @@ Acceptance Testing:
 ```
 
 #### Test Types
+
 - **Functional**: Features work as specified
 - **Non-functional**: Performance, security, usability
 - **Structural**: Code coverage, path testing
@@ -47,29 +49,30 @@ Acceptance Testing:
 ### 2. Test Design Techniques
 
 #### Black Box Techniques
+
 ```typescript
 // Equivalence Partitioning
-describe('Age Validation', () => {
+describe("Age Validation", () => {
   test.each([
     [17, false], // Invalid: under 18
-    [18, true],  // Valid: boundary
-    [25, true],  // Valid: middle
-    [65, true],  // Valid: upper middle
+    [18, true], // Valid: boundary
+    [25, true], // Valid: middle
+    [65, true], // Valid: upper middle
     [120, true], // Valid: boundary
-    [121, false] // Invalid: over 120
-  ])('validates age %i as %s', (age, expected) => {
+    [121, false], // Invalid: over 120
+  ])("validates age %i as %s", (age, expected) => {
     expect(isValidAge(age)).toBe(expected);
   });
 });
 
 // Boundary Value Analysis
-describe('String Length', () => {
+describe("String Length", () => {
   test.each([
-    ['', false],      // Below minimum
-    ['a', true],      // Minimum boundary
-    ['hello', true],  // Normal
-    ['x'.repeat(255), true],  // Maximum boundary
-    ['x'.repeat(256), false]  // Above maximum
+    ["", false], // Below minimum
+    ["a", true], // Minimum boundary
+    ["hello", true], // Normal
+    ["x".repeat(255), true], // Maximum boundary
+    ["x".repeat(256), false], // Above maximum
   ])('validates length of "%s"', (str, expected) => {
     expect(isValidLength(str, 1, 255)).toBe(expected);
   });
@@ -77,34 +80,37 @@ describe('String Length', () => {
 ```
 
 #### White Box Techniques
+
 ```typescript
 // Statement Coverage
 function calculateDiscount(price: number, isMember: boolean): number {
   let discount = 0;
-  if (price > 100) {        // Branch 1
+  if (price > 100) {
+    // Branch 1
     discount = 10;
   }
-  if (isMember) {           // Branch 2
+  if (isMember) {
+    // Branch 2
     discount += 5;
   }
-  return price - discount;  // Statement coverage: 100%
+  return price - discount; // Statement coverage: 100%
 }
 
 // Path Coverage Tests
-describe('Discount Calculation', () => {
-  test('no discount path', () => {
+describe("Discount Calculation", () => {
+  test("no discount path", () => {
     expect(calculateDiscount(50, false)).toBe(50);
   });
-  
-  test('price discount only', () => {
+
+  test("price discount only", () => {
     expect(calculateDiscount(150, false)).toBe(140);
   });
-  
-  test('member discount only', () => {
+
+  test("member discount only", () => {
     expect(calculateDiscount(50, true)).toBe(45);
   });
-  
-  test('combined discount path', () => {
+
+  test("combined discount path", () => {
     expect(calculateDiscount(150, true)).toBe(135);
   });
 });
@@ -113,6 +119,7 @@ describe('Discount Calculation', () => {
 ### 3. Test Implementation
 
 #### Test Case Template
+
 ```yaml
 Test_Case_ID: TC-2025-001
 Title: Verify RDF triple insertion
@@ -120,8 +127,7 @@ Priority: High
 Preconditions:
   - Empty graph initialized
   - Valid namespace configured
-Test_Steps:
-  1. Create valid triple
+Test_Steps: 1. Create valid triple
   2. Insert into graph
   3. Query for triple
 Expected_Result:
@@ -137,29 +143,30 @@ Test_Data:
 ```
 
 #### Test Suite Organization
+
 ```typescript
 // tests/unit/domain/semantic/Graph.test.ts
-describe('Graph', () => {
-  describe('Triple Management', () => {
-    describe('add()', () => {
-      it('should add valid triple');
-      it('should reject duplicate triple');
-      it('should update indexes');
+describe("Graph", () => {
+  describe("Triple Management", () => {
+    describe("add()", () => {
+      it("should add valid triple");
+      it("should reject duplicate triple");
+      it("should update indexes");
     });
-    
-    describe('remove()', () => {
-      it('should remove existing triple');
-      it('should handle non-existent triple');
-      it('should update indexes');
+
+    describe("remove()", () => {
+      it("should remove existing triple");
+      it("should handle non-existent triple");
+      it("should update indexes");
     });
   });
-  
-  describe('Query Operations', () => {
-    describe('match()', () => {
-      it('should match by subject');
-      it('should match by predicate');
-      it('should match by object');
-      it('should match patterns');
+
+  describe("Query Operations", () => {
+    describe("match()", () => {
+      it("should match by subject");
+      it("should match by predicate");
+      it("should match by object");
+      it("should match patterns");
     });
   });
 });
@@ -168,20 +175,21 @@ describe('Graph', () => {
 ### 4. Test Execution & Reporting
 
 #### Test Execution Plan
+
 ```yaml
 Daily:
   - Smoke tests (5 min)
   - Critical path tests (15 min)
-  
+
 Per Commit:
   - Unit tests (2 min)
   - Linting (1 min)
-  
+
 Per PR:
   - Full test suite (10 min)
   - Coverage check
   - Performance benchmarks
-  
+
 Pre-Release:
   - Full regression (30 min)
   - Exploratory testing (2 hours)
@@ -189,10 +197,12 @@ Pre-Release:
 ```
 
 #### Test Report Format
+
 ```markdown
 ## Test Execution Report - Sprint 01
 
 ### Summary
+
 - **Total Tests**: 250
 - **Passed**: 245 (98%)
 - **Failed**: 3 (1.2%)
@@ -200,16 +210,19 @@ Pre-Release:
 - **Coverage**: 82.5%
 
 ### Failed Tests
+
 1. TC-001: RDF import large file - Timeout
 2. TC-045: Graph visualization - Memory leak
 3. TC-112: Concurrent updates - Race condition
 
 ### Risk Assessment
+
 - High: Memory leak in visualization
 - Medium: Performance with large files
 - Low: UI responsiveness issues
 
 ### Recommendations
+
 1. Fix memory leak before release
 2. Add timeout configuration
 3. Implement mutex for concurrent updates
@@ -218,6 +231,7 @@ Pre-Release:
 ### 5. Defect Management
 
 #### Bug Report Template
+
 ```yaml
 Bug_ID: BUG-2025-001
 Title: Graph query returns duplicate results
@@ -232,8 +246,7 @@ Environment:
   - Obsidian: 1.5.0
   - Plugin: 2.9.0
 
-Steps_to_Reproduce:
-  1. Create graph with duplicate triples
+Steps_to_Reproduce: 1. Create graph with duplicate triples
   2. Query for specific pattern
   3. Observe duplicate results
 
@@ -253,6 +266,7 @@ Fix_Version: 2.9.1
 ### 6. Quality Metrics (ISO/IEC 25010)
 
 #### Product Quality Model
+
 ```yaml
 Functional_Suitability:
   - Functional completeness: 95%
@@ -302,29 +316,30 @@ Portability:
 ### 7. Test Automation
 
 #### Automation Framework
+
 ```typescript
 // Test utilities
 export class TestHelpers {
   static createMockVault(): MockVault {
     return new MockVault();
   }
-  
+
   static createTestGraph(): Graph {
     const graph = new Graph();
     // Add test data
     return graph;
   }
-  
+
   static async waitForAsync(
     condition: () => boolean,
-    timeout = 5000
+    timeout = 5000,
   ): Promise<void> {
     const start = Date.now();
     while (!condition() && Date.now() - start < timeout) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
     if (!condition()) {
-      throw new Error('Timeout waiting for condition');
+      throw new Error("Timeout waiting for condition");
     }
   }
 }
@@ -332,43 +347,42 @@ export class TestHelpers {
 // Custom matchers
 expect.extend({
   toBeValidTriple(received: Triple) {
-    const pass = received instanceof Triple &&
-                 received.getSubject() &&
-                 received.getPredicate() &&
-                 received.getObject();
-    
+    const pass =
+      received instanceof Triple &&
+      received.getSubject() &&
+      received.getPredicate() &&
+      received.getObject();
+
     return {
       pass,
-      message: () => 
-        `expected ${received} to be a valid triple`
+      message: () => `expected ${received} to be a valid triple`,
     };
-  }
+  },
 });
 ```
 
 ### 8. Performance Testing
 
 #### Load Testing
+
 ```typescript
-describe('Performance', () => {
-  it('should handle 10,000 triples', async () => {
+describe("Performance", () => {
+  it("should handle 10,000 triples", async () => {
     const graph = new Graph();
     const startTime = performance.now();
-    
+
     for (let i = 0; i < 10000; i++) {
       graph.add(createTestTriple(i));
     }
-    
+
     const loadTime = performance.now() - startTime;
     expect(loadTime).toBeLessThan(5000); // 5 seconds max
-    
+
     // Query performance
     const queryStart = performance.now();
-    const results = graph.match(
-      new IRI('http://example.org/subject5000')
-    );
+    const results = graph.match(new IRI("http://example.org/subject5000"));
     const queryTime = performance.now() - queryStart;
-    
+
     expect(queryTime).toBeLessThan(10); // 10ms max
   });
 });
@@ -377,6 +391,7 @@ describe('Performance', () => {
 ### 9. Memory Bank Integration
 
 Update test documentation in:
+
 - **CLAUDE-test-plans.md**: Test strategies and plans
 - **CLAUDE-metrics.md**: Quality metrics and trends
 - **CLAUDE-errors.md**: Defect tracking
@@ -384,6 +399,7 @@ Update test documentation in:
 ### 10. Communication Protocols
 
 #### Test Status Report
+
 ```yaml
 To: Orchestrator
 From: QA Engineer
@@ -400,6 +416,7 @@ Recommendation: Fix before release
 ## Testing Best Practices
 
 ### Test Pyramid
+
 ```
          /\
         /  \  E2E Tests (10%)
@@ -411,6 +428,7 @@ Recommendation: Fix before release
 ```
 
 ### Testing Principles
+
 1. **Test early and often**
 2. **Automate repetitive tests**
 3. **Focus on risk-based testing**
@@ -420,7 +438,9 @@ Recommendation: Fix before release
 7. **Clean up test data**
 
 ### Quality Gates
+
 Before marking build as ready:
+
 - [ ] All unit tests pass
 - [ ] Code coverage >80%
 - [ ] No critical bugs

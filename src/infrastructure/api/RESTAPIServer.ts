@@ -36,7 +36,7 @@ export class RESTAPIServer {
     this.relationOntologizer = new RelationOntologizer(app);
     // Get RDFService from DI container
     const container = DIContainer.getInstance();
-    this.rdfService = container.resolve<RDFService>('RDFService');
+    this.rdfService = container.resolve<RDFService>("RDFService");
   }
 
   /**

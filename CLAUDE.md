@@ -3,9 +3,11 @@
 ## 🎯 UNIVERSAL EXECUTION COMMAND
 
 ### Quick Access via Slash Commands:
+
 Custom slash commands are now available in `.claude/commands/` directory:
 
 **Available commands:**
+
 - `/execute [task]` - Execute with full compliance and parallel agents
 - `/status` - Check current progress and project health
 - `/agents` - List available agents and capabilities
@@ -17,18 +19,22 @@ Custom slash commands are now available in `.claude/commands/` directory:
 **See `.claude/commands/` directory for command definitions**
 
 ## 🚨 CRITICAL: MANDATORY AGENT USAGE
+
 **EVERY significant task MUST use specialized agents.** Not using agents is a violation of project standards.
 
 ### Agent Usage Rules
+
 1. **ALWAYS use 3-5 agents in parallel** for any non-trivial task
 2. **NEVER work alone** - agents provide specialized expertise
 3. **Follow Feature Development Pipeline**: Product → Architecture → Implementation → QA → Documentation
 4. **Check CLAUDE-agents.md** for patterns and selection
 
 ## 🤖 AI-First Development Approach
+
 This codebase is optimized for development through AI assistants (Claude Code, GPT-5/Cursor, GitHub Copilot). All documentation, code structure, and workflows are designed for maximum AI comprehension and efficiency.
 
 ### 🧠 ENHANCED MULTI-AGENT INTELLIGENCE
+
 - **27+ Specialized Agents**: Complete professional software development coverage with dynamic agent creation
 - **Slash Command Integration**: Quick access via /execute, /status, /agents, /release, /test commands
 - **Automatic Request Analysis**: NLP-powered complexity and domain detection
@@ -37,11 +43,13 @@ This codebase is optimized for development through AI assistants (Claude Code, G
 - **Quality Gate Integration**: CMMI/ISO standards embedded in every agent interaction
 
 ## 🎯 Mission Statement
+
 Execute every request as a highly qualified Senior IT specialist with extensive experience in knowledge management systems, semantic web technologies, and Obsidian plugin development.
 
 ## 📊 Architecture Overview
 
 ### Current Implementation (v3.4.0)
+
 - **Mobile/iOS Support**: Complete mobile experience with touch-optimized UI and platform-specific optimizations
 - **Query Engine Abstraction**: Multi-engine support (Dataview, Datacore, Native) with automatic fallback
 - **Domain Layer**: Asset-based entities with Clean Architecture and mobile performance optimizations
@@ -54,22 +62,23 @@ Execute every request as a highly qualified Senior IT specialist with extensive 
 - **Architecture**: Clean Architecture with comprehensive test infrastructure and security validation
 
 ### Technology Stack
+
 ```yaml
 Core:
   - TypeScript 4.9+ with strict mode
   - Obsidian Plugin API 1.5.0+
   - ESBuild for bundling
-  
+
 Domain:
   - RDF triple store with SPO/POS/OSP indexing
   - SPARQL 1.1 query engine
   - OWL ontology management
-  
+
 Testing:
   - Jest with comprehensive mocks
   - 70% coverage threshold
   - Integration tests with FakeVaultAdapter
-  
+
 CI/CD:
   - GitHub Actions automated releases
   - Semantic versioning
@@ -81,6 +90,7 @@ CI/CD:
 ### Technical Implementation Details
 
 #### Technology Stack (v3.0.0)
+
 - **Language**: TypeScript 4.7.4 with strict mode
 - **Build System**: ESBuild 0.17.3 (fast compilation and bundling)
 - **Testing Framework**: Jest 30.0.5 with jsdom, WebdriverIO for UI tests
@@ -90,24 +100,29 @@ CI/CD:
 - **Query Engines**: Dataview, Datacore, and Native query engine abstraction layer
 
 #### Architecture Layers
+
 **Domain Layer** (`/src/domain/`)
+
 - **Entities**: Asset, ButtonCommand, ClassLayout, LayoutBlock, Ontology, UIButton
 - **Value Objects**: AssetId, ClassName, OntologyPrefix
 - **Repository Interfaces**: IAssetRepository, IButtonRepository, etc.
 - **Core Patterns**: Entity, AggregateRoot, Result for error handling
 
 **Application Layer** (`/src/application/`)
+
 - **Use Cases**: CreateAssetUseCase, PropertyEditingUseCase, RenderClassButtonsUseCase
 - **Services**: ICommandExecutor interface
 - **Core**: Container for dependency injection, UseCase base class
 
 **Infrastructure Layer** (`/src/infrastructure/`)
+
 - **Repositories**: Obsidian-specific implementations
 - **Services**: ObsidianCommandExecutor
 - **Container**: DIContainer with comprehensive dependency registration
 - **Adapters**: ObsidianVaultAdapter
 
 **Presentation Layer** (`/src/presentation/`)
+
 - **Components**: ButtonRenderer, PropertyRenderer
 - **Modals**: ClassTreeModal, CreateAssetModal
 - **Renderers**: LayoutRenderer, QueryBlockRenderer, BacklinksBlockRenderer
@@ -115,43 +130,55 @@ CI/CD:
 ### Key Patterns Successfully Implemented
 
 #### Repository Pattern
+
 ```typescript
 interface IAssetRepository {
   findById(id: AssetId): Promise<Asset | null>;
   save(asset: Asset): Promise<void>;
-  updateFrontmatter(path: string, frontmatter: Record<string, any>): Promise<void>;
+  updateFrontmatter(
+    path: string,
+    frontmatter: Record<string, any>,
+  ): Promise<void>;
 }
 ```
 
 #### Query Engine Abstraction Pattern (v3.0.0)
+
 ```typescript
 interface IQueryEngine {
-  executeQuery(query: string, context: QueryContext): Promise<Result<QueryResult>>;
+  executeQuery(
+    query: string,
+    context: QueryContext,
+  ): Promise<Result<QueryResult>>;
   renderQuery(container: HTMLElement, query: string): Promise<Result<void>>;
   getPages(options: GetPagesOptions): Promise<Result<PageData[]>>;
 }
 
 // Factory with automatic fallback
 class QueryEngineFactory {
-  async createQueryEngine(preferred?: QueryEngineType): Promise<Result<IQueryEngine>> {
+  async createQueryEngine(
+    preferred?: QueryEngineType,
+  ): Promise<Result<IQueryEngine>> {
     // Auto-detection with fallback logic
   }
 }
 ```
 
 #### Mobile Performance Optimization Pattern (v3.0.0)
+
 ```typescript
 class MobilePerformanceOptimizer {
   // Platform-aware performance tuning
   private readonly MOBILE_BATCH_SIZE = 10;
   private readonly DESKTOP_BATCH_SIZE = 50;
-  
+
   // Adaptive caching based on device capabilities
   optimizeForDevice(operation: Operation): OptimizedOperation;
 }
 ```
 
 #### Touch Controller Pattern (v3.0.0)
+
 ```typescript
 class TouchGraphController {
   // Gesture recognition with momentum and haptic feedback
@@ -162,11 +189,16 @@ class TouchGraphController {
 ```
 
 #### Result Pattern for Error Handling
+
 ```typescript
 export class Result<T> {
-  static ok<U>(value: U): Result<U> { /* ... */ }
-  static fail<U>(error: string): Result<U> { /* ... */ }
-  
+  static ok<U>(value: U): Result<U> {
+    /* ... */
+  }
+  static fail<U>(error: string): Result<U> {
+    /* ... */
+  }
+
   isSuccess: boolean;
   getValue(): T | null;
   getError(): string;
@@ -174,7 +206,9 @@ export class Result<T> {
 ```
 
 #### Performance Optimizations
+
 **IndexedGraph Implementation** (v2.8.0+)
+
 - **Problem**: O(n) lookups in large graphs
 - **Solution**: SPO/POS/OSP indexes for O(1) lookups
 - **Result**: 10x query speed improvement
@@ -184,12 +218,14 @@ export class Result<T> {
 ## 🚀 Quick Start for AI Assistants
 
 ### Understanding the Codebase
+
 1. Start with `/src/main.ts` - plugin entry point
 2. Review `/src/domain/` - core business logic
 3. Check `/src/infrastructure/container/DIContainer.ts` - dependency wiring
 4. Read test files for usage examples
 
 ### Making Changes
+
 ```bash
 # 1. Run tests to verify current state
 npm test
@@ -220,21 +256,21 @@ git push origin main
     /entities       - Asset, Ontology, ClassLayout
     /semantic       - RDF/OWL implementation
     /repositories   - Repository interfaces
-    
+
   /application      - Use cases and services
     /use-cases      - Business operations
     /services       - Application services
     /ports          - External interfaces
-    
+
   /infrastructure   - External adapters
     /container      - Dependency injection
     /repositories   - Obsidian implementations
     /services       - Command execution
-    
+
   /presentation     - UI components
     /components     - Renderers
     /modals         - User dialogs
-    
+
 /tests              - Test suite
   /unit             - Unit tests with mocks
   /integration      - Integration tests
@@ -244,24 +280,28 @@ git push origin main
 ## 🔧 Development Guidelines
 
 ### 1. Code Style
+
 - **NO COMMENTS** unless explicitly requested
 - Self-documenting code with clear naming
 - Follow existing patterns in the codebase
 - Use TypeScript strict mode
 
 ### 2. Testing Requirements
+
 - Write tests for all new code
 - Maintain 70%+ coverage
 - Use existing mock infrastructure
 - Follow AAA pattern (Arrange, Act, Assert)
 
 ### 3. Architecture Principles
+
 - **Clean Architecture**: Separate concerns by layer
 - **SOLID**: Single responsibility, Open-closed, etc.
 - **DDD**: Rich domain models
 - **Privacy-First**: UUID-based public identifiers
 
 ### 4. Git Workflow
+
 ```bash
 # Feature development
 git checkout -b feature/description
@@ -283,6 +323,7 @@ git push origin main
 ```
 
 ## 📝 Commit Message Format
+
 ```
 feat: new feature
 fix: bug fix
@@ -297,7 +338,9 @@ chore: maintenance task
 ## 🚨 Critical Rules (ENHANCED)
 
 ### RULE 0: MANDATORY AGENT USAGE
+
 **ALWAYS use agents for complex tasks**:
+
 - Multiple files, cross-domain work, or technical standards
 - Feature development, bug investigation, system analysis
 - Implementation, optimization, testing, or enhancement work
@@ -305,7 +348,9 @@ chore: maintenance task
 **VIOLATION**: Working alone on complex tasks is a project standard violation
 
 ### RULE 1: Always Release After Changes
+
 Every code change MUST:
+
 1. Update version in package.json
 2. Update CHANGELOG.md with user-focused description
 3. Commit with conventional message
@@ -314,23 +359,29 @@ Every code change MUST:
 **AUTOMATED RELEASE**: Use `.claude/agents/release.sh` script or follow `.claude/agents/release-agent.md` checklist
 
 ### RULE 2: User-Focused Release Notes
+
 Write CHANGELOG entries as Product Manager:
+
 - Focus on user benefits, not technical details
 - Include usage scenarios
 - Use clear, non-technical language
 
 ### RULE 3: Test Before Push
+
 - Run `npm test` before ANY commit
 - Fix all test failures
 - Maintain 70%+ coverage
 
 ### RULE 4: Follow Existing Patterns
+
 - Study existing code before adding new features
 - Use the same patterns and conventions
 - Don't introduce new dependencies without need
 
 ### RULE 5: PARALLEL AGENT EXECUTION
+
 **USE 3-5 AGENTS IN PARALLEL** for complex tasks:
+
 - **Domain-Parallel**: Multi-domain requirements executed simultaneously
 - **Pipeline-Parallel**: Sequential streams with parallel stages
 - **Investigation-Parallel**: Parallel analysis with consolidated resolution
@@ -340,17 +391,20 @@ Write CHANGELOG entries as Product Manager:
 ## 🤝 AI Assistant Collaboration
 
 ### For Claude Code
+
 - Use extended thinking for complex tasks
 - Leverage memory bank for context
 - Follow CLAUDE.md guidelines strictly
 - **USE PARALLEL EXECUTION** patterns for 40-60% faster completion
 
 ### For GPT-5/Cursor
+
 - Provide clear, specific instructions
 - Reference existing patterns in codebase
 - Use type hints and interfaces
 
 ### For GitHub Copilot
+
 - Write descriptive function signatures
 - Use clear variable names
 - Add JSDoc comments when needed
@@ -358,6 +412,7 @@ Write CHANGELOG entries as Product Manager:
 ## 📊 Quality Metrics
 
 ### Required
+
 - ✅ Comprehensive test suite (80+ test files) with robust coverage
 - ✅ High test coverage maintained across all modules
 - ✅ TypeScript compilation clean
@@ -367,6 +422,7 @@ Write CHANGELOG entries as Product Manager:
 - ✅ **SLASH COMMANDS** implemented for efficient workflow
 
 ### Current Features Status
+
 - ✅ Children Efforts table implementation with professional display
 - ✅ Platform detection working
 - ✅ Mobile performance optimizer implemented
@@ -374,6 +430,7 @@ Write CHANGELOG entries as Product Manager:
 - ✅ Slash commands system operational
 
 ### Monitored
+
 - 📈 Bundle size < 1MB
 - 📈 Test execution < 60s
 - 📈 Build time < 10s
@@ -382,6 +439,7 @@ Write CHANGELOG entries as Product Manager:
 ## 📋 Business Requirements Integration
 
 ### Core Functional Requirements
+
 - **FR-001**: RDF Triple Store with SPO/POS/OSP indexing (✅ Implemented)
 - **FR-002**: SPARQL 1.1 Query Engine with SELECT, CONSTRUCT, ASK (✅ Implemented)
 - **FR-003**: OWL Ontology Management with class hierarchies (✅ Implemented)
@@ -389,6 +447,7 @@ Write CHANGELOG entries as Product Manager:
 - **FR-005**: Interactive knowledge graph visualization (✅ Implemented)
 
 ### Non-Functional Requirements
+
 - **NFR-001**: Performance < 100ms queries for 10k triples (✅ Achieved)
 - **NFR-002**: 99.9% reliability during sessions (✅ Stable)
 - **NFR-003**: <30 minute learning curve (✅ User-friendly)
@@ -396,6 +455,7 @@ Write CHANGELOG entries as Product Manager:
 - **NFR-005**: Privacy-first design, no external data transmission (✅ Secure)
 
 ### Security Controls
+
 - **Input Validation**: SPARQL sanitization, IRI validation, path validation
 - **Access Control**: Local-only operations, Obsidian permission model
 - **Data Protection**: No telemetry, privacy-first design, GDPR ready
@@ -403,11 +463,13 @@ Write CHANGELOG entries as Product Manager:
 ## 📝 Error Handling Patterns
 
 ### Common Error Types
+
 1. **Validation Errors**: Invalid IRI format, naming convention mismatches
 2. **Performance Issues**: CI environment test timeouts, memory constraints
 3. **Integration Errors**: Obsidian API compatibility, file path issues
 
 ### Error Resolution Patterns
+
 ```typescript
 // Result pattern usage
 const assetResult = Asset.create(props);
@@ -424,6 +486,7 @@ if (!layoutFile) {
 ```
 
 ### Prevention Strategies
+
 - Environment-aware performance thresholds
 - Comprehensive regex patterns for project conventions
 - Fallback mechanisms for missing configurations
@@ -432,6 +495,7 @@ if (!layoutFile) {
 ## 🔄 Continuous Improvement
 
 After each task:
+
 1. Update documentation if patterns change
 2. Refactor for clarity if needed
 3. Add tests for edge cases discovered
@@ -441,15 +505,17 @@ After each task:
 ## 📚 Key Resources
 
 ### Internal
+
 - `/ARCHITECTURE.md` - System design
 - `/docs/` - Requirements and ADRs
 - `/tests/` - Usage examples
 - **`CLAUDE-test-patterns.md`** - Comprehensive test infrastructure patterns and best practices
-- **`CLAUDE-agents.md`** - Agent usage patterns and parallel execution strategies  
+- **`CLAUDE-agents.md`** - Agent usage patterns and parallel execution strategies
 - **`CLAUDE-tasks.md`** - Task tracking and sprint management
 - **`CLAUDE-roadmap.md`** - Product roadmap and technical milestones
 
 ### External
+
 - [Obsidian Plugin API](https://docs.obsidian.md/)
 - [RDF Primer](https://www.w3.org/TR/rdf-primer/)
 - [SPARQL Specification](https://www.w3.org/TR/sparql11-query/)
@@ -457,12 +523,14 @@ After each task:
 ## 🆘 Troubleshooting
 
 ### Common Issues
+
 1. **Tests failing**: Check mock setup in `__mocks__/obsidian.ts`
 2. **Build errors**: Run `npm run build` for detailed output
 3. **Coverage low**: Add tests for uncovered branches
 4. **Release failed**: Check GitHub Actions logs
 
 ### Getting Help
+
 - Review existing test files for patterns
 - Check ARCHITECTURE.md for design decisions
 - Look for similar features in codebase

@@ -5,6 +5,7 @@ This directory contains the comprehensive security framework for the Exocortex p
 ## 🔒 Security Architecture
 
 ### Overview
+
 The security framework implements a multi-layered defense strategy:
 
 1. **Query Complexity Analysis** - Prevents resource exhaustion attacks
@@ -30,6 +31,7 @@ The security framework implements a multi-layered defense strategy:
 **Purpose**: Analyzes SPARQL queries to prevent DoS attacks through resource exhaustion.
 
 **Key Features**:
+
 - Cost estimation algorithms with O(n) complexity analysis
 - Memory usage prediction and limits
 - Time complexity classification
@@ -37,27 +39,29 @@ The security framework implements a multi-layered defense strategy:
 - Automatic query optimization recommendations
 
 **Security Controls**:
+
 ```typescript
 interface ComplexityThresholds {
-    maxCost: number;                    // Default: 1000
-    maxTriplePatterns: number;          // Default: 50
-    maxJoinComplexity: number;          // Default: 25
-    maxSubqueryDepth: number;           // Default: 3
-    maxEstimatedMemoryMB: number;       // Default: 100
-    maxExecutionTimeMs: number;         // Default: 30000
-    allowedTimeComplexity: string[];    // Default: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)']
+  maxCost: number; // Default: 1000
+  maxTriplePatterns: number; // Default: 50
+  maxJoinComplexity: number; // Default: 25
+  maxSubqueryDepth: number; // Default: 3
+  maxEstimatedMemoryMB: number; // Default: 100
+  maxExecutionTimeMs: number; // Default: 30000
+  allowedTimeComplexity: string[]; // Default: ['O(1)', 'O(log n)', 'O(n)', 'O(n log n)']
 }
 ```
 
 **Usage Example**:
+
 ```typescript
 const analyzer = new QueryComplexityAnalyzer();
 const result = analyzer.analyzeQuery(query);
 
 if (!result.getValue().allowed) {
-    // Block dangerous query
-    console.log('Violations:', result.getValue().violations);
-    console.log('Recommendations:', result.getValue().recommendations);
+  // Block dangerous query
+  console.log("Violations:", result.getValue().violations);
+  console.log("Recommendations:", result.getValue().recommendations);
 }
 ```
 
@@ -68,6 +72,7 @@ if (!result.getValue().allowed) {
 **Purpose**: Implements sliding window rate limiting with circuit breaker patterns.
 
 **Key Features**:
+
 - Sliding window algorithm for accurate rate limiting
 - Separate limits for simple vs complex queries
 - Circuit breaker pattern for persistent violators
@@ -76,25 +81,27 @@ if (!result.getValue().allowed) {
 - Adaptive limits based on user behavior
 
 **Security Controls**:
+
 ```typescript
 interface RateLimitConfig {
-    windowSizeMs: number;               // Default: 60000 (1 minute)
-    maxRequests: number;                // Default: 100
-    maxComplexRequests: number;         // Default: 10
-    burstAllowance: number;             // Default: 20
-    circuitBreakerThreshold: number;    // Default: 5
-    circuitBreakerResetTimeMs: number;  // Default: 300000 (5 minutes)
+  windowSizeMs: number; // Default: 60000 (1 minute)
+  maxRequests: number; // Default: 100
+  maxComplexRequests: number; // Default: 10
+  burstAllowance: number; // Default: 20
+  circuitBreakerThreshold: number; // Default: 5
+  circuitBreakerResetTimeMs: number; // Default: 300000 (5 minutes)
 }
 ```
 
 **Usage Example**:
+
 ```typescript
 const rateLimiter = new QueryRateLimiter();
 const result = rateLimiter.checkRateLimit(userId, isComplex, queryCost);
 
 if (!result.getValue().allowed) {
-    const retryAfter = result.getValue().retryAfterMs;
-    throw new Error(`Rate limit exceeded. Retry after ${retryAfter}ms`);
+  const retryAfter = result.getValue().retryAfterMs;
+  throw new Error(`Rate limit exceeded. Retry after ${retryAfter}ms`);
 }
 ```
 
@@ -105,6 +112,7 @@ if (!result.getValue().allowed) {
 **Purpose**: Advanced validation with injection prevention and threat detection.
 
 **Key Features**:
+
 - Multi-layer injection detection (SQL, SPARQL, Command)
 - Path traversal prevention
 - Resource enumeration detection
@@ -114,6 +122,7 @@ if (!result.getValue().allowed) {
 - Automatic query sanitization
 
 **Threat Detection**:
+
 - **Injection Attacks**: SQL injection, SPARQL injection, command injection
 - **Path Traversal**: Directory traversal, file access attempts
 - **Enumeration**: Resource scanning, metadata enumeration
@@ -121,12 +130,13 @@ if (!result.getValue().allowed) {
 - **Information Disclosure**: System property access, sensitive data exposure
 
 **Usage Example**:
+
 ```typescript
 const validator = new EnhancedSPARQLValidator();
 const result = validator.enhancedValidate(query);
 
 if (result.getValue().securityScore < 70) {
-    console.log('Security concerns detected:', result.getValue().detectedThreats);
+  console.log("Security concerns detected:", result.getValue().detectedThreats);
 }
 ```
 
@@ -137,6 +147,7 @@ if (result.getValue().securityScore < 70) {
 **Purpose**: Manages query timeouts with resource monitoring and automatic cancellation.
 
 **Key Features**:
+
 - Configurable timeouts based on query complexity
 - Real-time resource monitoring (memory, CPU)
 - Automatic timeout adjustment based on system load
@@ -144,29 +155,34 @@ if (result.getValue().securityScore < 70) {
 - Performance metrics collection
 
 **Security Controls**:
+
 ```typescript
 interface TimeoutConfig {
-    defaultTimeoutMs: number;           // Default: 30000
-    maxTimeoutMs: number;               // Default: 300000
-    complexQueryTimeoutMs: number;      // Default: 60000
-    resourceCheckIntervalMs: number;    // Default: 1000
-    memoryThresholdMB: number;          // Default: 100
-    cpuThresholdPercent: number;        // Default: 80
-    adaptiveTimeouts: boolean;          // Default: true
+  defaultTimeoutMs: number; // Default: 30000
+  maxTimeoutMs: number; // Default: 300000
+  complexQueryTimeoutMs: number; // Default: 60000
+  resourceCheckIntervalMs: number; // Default: 1000
+  memoryThresholdMB: number; // Default: 100
+  cpuThresholdPercent: number; // Default: 80
+  adaptiveTimeouts: boolean; // Default: true
 }
 ```
 
 **Usage Example**:
+
 ```typescript
 const timeoutManager = new QueryTimeoutManager();
-const execution = timeoutManager.startExecution(queryId, query, 'complex');
+const execution = timeoutManager.startExecution(queryId, query, "complex");
 
 // Query execution with automatic timeout and resource monitoring
 try {
-    const result = await executeQueryWithTimeout(query, execution.getValue().abortController.signal);
-    timeoutManager.completeExecution(queryId);
+  const result = await executeQueryWithTimeout(
+    query,
+    execution.getValue().abortController.signal,
+  );
+  timeoutManager.completeExecution(queryId);
 } catch (error) {
-    timeoutManager.cancelExecution(queryId, 'error');
+  timeoutManager.cancelExecution(queryId, "error");
 }
 ```
 
@@ -177,6 +193,7 @@ try {
 **Purpose**: Real-time security monitoring with incident logging and alerting.
 
 **Key Features**:
+
 - Comprehensive security event logging
 - Real-time threat detection and correlation
 - Automated incident response
@@ -185,6 +202,7 @@ try {
 - Forensic data export
 
 **Event Types**:
+
 - `query_blocked` - Malicious queries blocked
 - `rate_limit_exceeded` - Rate limiting violations
 - `injection_attempt` - Injection attack attempts
@@ -194,17 +212,18 @@ try {
 - `circuit_breaker_triggered` - Circuit breaker activations
 
 **Usage Example**:
+
 ```typescript
 const monitor = new SecurityMonitor();
 
 // Log security events
-monitor.logQueryBlocked(query, 'injection_attempt', threatDetails, userId);
-monitor.logRateLimitExceeded(userId, 'complex_queries', 15, 10);
+monitor.logQueryBlocked(query, "injection_attempt", threatDetails, userId);
+monitor.logRateLimitExceeded(userId, "complex_queries", 15, 10);
 
 // Set up real-time monitoring
-monitor.addEventListener('injection_attempt', (event) => {
-    // Immediate response to critical threats
-    alertSecurityTeam(event);
+monitor.addEventListener("injection_attempt", (event) => {
+  // Immediate response to critical threats
+  alertSecurityTeam(event);
 });
 
 // Generate security reports
@@ -216,15 +235,17 @@ const report = monitor.generateSecurityReport();
 ### Identified Threats
 
 #### 1. DoS Attacks (STRIDE: Denial of Service)
+
 - **Threat**: Resource exhaustion through complex queries
 - **Impact**: Service unavailability, system overload
-- **Mitigations**: 
+- **Mitigations**:
   - Query complexity analysis
   - Resource monitoring and limits
   - Automatic query cancellation
   - Rate limiting
 
 #### 2. Injection Attacks (STRIDE: Tampering)
+
 - **Threat**: SQL/SPARQL/Command injection
 - **Impact**: Data corruption, unauthorized access, system compromise
 - **Mitigations**:
@@ -234,6 +255,7 @@ const report = monitor.generateSecurityReport();
   - Context-aware filtering
 
 #### 3. Information Disclosure (STRIDE: Information Disclosure)
+
 - **Threat**: Unauthorized data access through queries
 - **Impact**: Sensitive data exposure, privacy violations
 - **Mitigations**:
@@ -243,6 +265,7 @@ const report = monitor.generateSecurityReport();
   - Access logging
 
 #### 4. Resource Enumeration (STRIDE: Information Disclosure)
+
 - **Threat**: System reconnaissance through queries
 - **Impact**: Architecture exposure, attack surface mapping
 - **Mitigations**:
@@ -252,6 +275,7 @@ const report = monitor.generateSecurityReport();
   - Behavioral monitoring
 
 #### 5. Privilege Escalation (STRIDE: Elevation of Privilege)
+
 - **Threat**: Bypassing security controls
 - **Impact**: Unauthorized system access
 - **Mitigations**:
@@ -263,6 +287,7 @@ const report = monitor.generateSecurityReport();
 ### Attack Vectors
 
 1. **Complex Query DoS**
+
    ```sparql
    # Cartesian product attack
    SELECT * WHERE {
@@ -274,6 +299,7 @@ const report = monitor.generateSecurityReport();
    ```
 
 2. **SPARQL Injection**
+
    ```sparql
    # Injection attempt
    SELECT * WHERE {
@@ -282,6 +308,7 @@ const report = monitor.generateSecurityReport();
    ```
 
 3. **Path Traversal**
+
    ```sparql
    # File system access
    SELECT * WHERE {
@@ -302,55 +329,60 @@ const report = monitor.generateSecurityReport();
 ### Environment-Specific Settings
 
 **Development**:
+
 ```typescript
 const devConfig = {
-    complexity: {
-        maxCost: 500,
-        maxTriplePatterns: 20
-    },
-    rateLimiting: {
-        maxRequests: 50,
-        windowSizeMs: 30000
-    },
-    monitoring: {
-        enableRealTimeAlerts: false
-    }
+  complexity: {
+    maxCost: 500,
+    maxTriplePatterns: 20,
+  },
+  rateLimiting: {
+    maxRequests: 50,
+    windowSizeMs: 30000,
+  },
+  monitoring: {
+    enableRealTimeAlerts: false,
+  },
 };
 ```
 
 **Production**:
+
 ```typescript
 const prodConfig = {
-    complexity: {
-        maxCost: 1000,
-        maxTriplePatterns: 50
-    },
-    rateLimiting: {
-        maxRequests: 100,
-        windowSizeMs: 60000
-    },
-    monitoring: {
-        enableRealTimeAlerts: true,
-        enableForensicLogging: true
-    }
+  complexity: {
+    maxCost: 1000,
+    maxTriplePatterns: 50,
+  },
+  rateLimiting: {
+    maxRequests: 100,
+    windowSizeMs: 60000,
+  },
+  monitoring: {
+    enableRealTimeAlerts: true,
+    enableForensicLogging: true,
+  },
 };
 ```
 
 ### Security Levels
 
 **Strict Mode** (High Security):
+
 - Low complexity thresholds
 - Aggressive rate limiting
 - Comprehensive validation
 - Real-time monitoring
 
 **Normal Mode** (Balanced):
+
 - Standard thresholds
 - Moderate rate limiting
 - Enhanced validation
 - Periodic monitoring
 
 **Permissive Mode** (Development):
+
 - High thresholds
 - Lenient rate limiting
 - Basic validation
@@ -374,18 +406,18 @@ The SecurityMonitor provides comprehensive reporting capabilities:
 ```typescript
 // Real-time metrics
 const metrics = monitor.getSecurityMetrics();
-console.log('Security Score:', metrics.securityScore);
-console.log('Threats Detected:', metrics.totalThreats);
+console.log("Security Score:", metrics.securityScore);
+console.log("Threats Detected:", metrics.totalThreats);
 
 // Historical analysis
 const report = monitor.generateSecurityReport(24 * 60 * 60 * 1000); // 24 hours
-console.log('Critical Incidents:', report.criticalEvents.length);
-console.log('Recommendations:', report.recommendations);
+console.log("Critical Incidents:", report.criticalEvents.length);
+console.log("Recommendations:", report.recommendations);
 
 // Forensic export
 const events = monitor.exportEvents(startTime, endTime, {
-    severity: 'critical',
-    type: 'injection_attempt'
+  severity: "critical",
+  type: "injection_attempt",
 });
 ```
 
@@ -489,6 +521,7 @@ npm run test:security -- --testNamePattern="rate"
 ### Version Management
 
 Security components follow semantic versioning:
+
 - **Major**: Breaking changes to security interfaces
 - **Minor**: New security features or enhancements
 - **Patch**: Bug fixes and security patches
@@ -496,12 +529,14 @@ Security components follow semantic versioning:
 ## 📚 References
 
 ### Standards and Guidelines
+
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
 - [ISO 27001](https://www.iso.org/isoiec-27001-information-security.html)
 - [SPARQL 1.1 Specification](https://www.w3.org/TR/sparql11-query/)
 
 ### Security Resources
+
 - [OWASP Query Injection Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Injection_Prevention_Cheat_Sheet.html)
 - [NIST Guide to Application Security](https://csrc.nist.gov/publications/detail/sp/800-163/rev-1/final)
 - [W3C RDF Security Considerations](https://www.w3.org/TR/rdf11-concepts/#section-security)
@@ -518,6 +553,7 @@ Security components follow semantic versioning:
 ### Reporting Security Issues
 
 Please report security vulnerabilities through the appropriate channels:
+
 - Critical issues: Immediate escalation
 - Standard issues: GitHub security advisory
 - Enhancement requests: Standard issue process

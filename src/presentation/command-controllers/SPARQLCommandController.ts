@@ -9,7 +9,7 @@ import { SPARQLProcessor } from "../processors/SPARQLProcessor";
 export class SPARQLCommandController implements ICommandController {
   constructor(
     private readonly plugin: Plugin,
-    private readonly sparqlProcessor: SPARQLProcessor
+    private readonly sparqlProcessor: SPARQLProcessor,
   ) {}
 
   async registerCommands(): Promise<void> {

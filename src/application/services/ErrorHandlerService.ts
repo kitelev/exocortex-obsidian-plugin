@@ -50,7 +50,7 @@ export class ErrorHandlerService {
 
   constructor(
     private options: ErrorHandlerOptions = {},
-    private notificationService?: INotificationService
+    private notificationService?: INotificationService,
   ) {
     this.options = {
       showUserNotification: true,
@@ -267,7 +267,10 @@ export class ErrorHandlerService {
     if (autoFixSuggestion && autoFixSuggestion.action) {
       try {
         await autoFixSuggestion.action.handler();
-        this.notificationService?.showSuccess(`Auto-recovery: ${autoFixSuggestion.title}`, 3000);
+        this.notificationService?.showSuccess(
+          `Auto-recovery: ${autoFixSuggestion.title}`,
+          3000,
+        );
       } catch (recoveryError) {
         console.error("Auto-recovery failed:", recoveryError);
       }

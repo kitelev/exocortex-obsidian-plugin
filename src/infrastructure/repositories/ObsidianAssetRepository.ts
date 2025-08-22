@@ -11,7 +11,10 @@ import { FileOperationUtils } from "../../shared/utils/FileOperationUtils";
  * Obsidian implementation of IAssetRepository
  * Handles asset persistence using Obsidian vault
  */
-export class ObsidianAssetRepository extends AbstractFileRepository implements IAssetRepository {
+export class ObsidianAssetRepository
+  extends AbstractFileRepository
+  implements IAssetRepository
+{
   constructor(app: App) {
     super(app);
   }
@@ -89,7 +92,7 @@ export class ObsidianAssetRepository extends AbstractFileRepository implements I
       (a) => a.getTitle(),
       (a) => a.toFrontmatter(),
       (a) => this.findExistingAssetFile(a),
-      "Asset"
+      "Asset",
     );
   }
 
@@ -109,11 +112,7 @@ export class ObsidianAssetRepository extends AbstractFileRepository implements I
   async delete(id: AssetId): Promise<void> {
     const asset = await this.findById(id);
     if (asset) {
-      await this.deleteFileByEntity(
-        asset,
-        (a) => a.getTitle(),
-        "Asset"
-      );
+      await this.deleteFileByEntity(asset, (a) => a.getTitle(), "Asset");
     }
   }
 

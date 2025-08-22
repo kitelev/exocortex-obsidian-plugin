@@ -5,6 +5,7 @@
 This document outlines a comprehensive product strategy for bringing Exocortex semantic knowledge management capabilities to iOS Obsidian users. The strategy addresses technical constraints while maintaining our core value proposition through progressive enhancement and mobile-first design principles.
 
 ### Strategic Context - v3.4.0 ACHIEVED ✅
+
 - **Current Status**: ✅ COMPLETED - Full mobile/iOS semantic knowledge management plugin with enhanced table displays
 - **Opportunity**: ✅ CAPTURED - Complete mobile experience for 40% of Obsidian mobile users with professional interface
 - **Challenge**: ✅ SOLVED - iOS limitations overcome with native query engine, platform optimization, and responsive design
@@ -15,6 +16,7 @@ This document outlines a comprehensive product strategy for bringing Exocortex s
 ### Primary Personas on Mobile
 
 #### P1: Mobile Knowledge Consumer
+
 ```yaml
 Persona: Dr. Sarah Chen (Researcher)
 Context: Reviewing research on-the-go
@@ -26,6 +28,7 @@ Primary_Needs:
 ```
 
 #### P2: Mobile Knowledge Creator
+
 ```yaml
 Persona: Alex Johnson (Consultant)
 Context: Capturing insights during meetings
@@ -39,13 +42,16 @@ Primary_Needs:
 ### Core User Stories
 
 #### Epic 1: Semantic Navigation on Mobile
+
 ```markdown
 ## US-001: Touch-Optimized Graph Navigation
+
 **As a** mobile researcher
 **I want** to explore my knowledge graph with touch gestures
 **So that** I can discover connections while away from my desk
 
 ### Acceptance Criteria - v3.0.0 STATUS
+
 - [x] Pinch-to-zoom on graph visualization ✅ IMPLEMENTED
 - [x] Tap to expand node connections ✅ IMPLEMENTED
 - [x] Swipe navigation between connected notes ✅ IMPLEMENTED
@@ -53,25 +59,30 @@ Primary_Needs:
 - [x] Sub-second response time on graph interactions ✅ ACHIEVED
 
 ### Technical Notes
+
 - Use lightweight Canvas API instead of complex libraries
 - Implement gesture recognition with Hammer.js
 - Cache graph layouts in IndexedDB
 - Progressive loading for large graphs (>1000 nodes)
 
 ### Success Metrics
+
 - Graph interaction completion rate >80%
 - Average session length >5 minutes
 - User satisfaction score >4.2/5
 ```
 
 #### Epic 2: Offline-First Semantic Operations
+
 ```markdown
 ## US-002: Offline Semantic Query Execution
+
 **As a** mobile knowledge worker
 **I want** to execute SPARQL queries without internet connection
 **So that** I can access insights during travel or in low-connectivity areas
 
 ### Acceptance Criteria - v3.0.0 STATUS
+
 - [x] Native SPARQL queries execute offline ✅ IMPLEMENTED
 - [x] Query results cached with LRU eviction ✅ IMPLEMENTED
 - [x] Query engine abstraction with fallback ✅ IMPLEMENTED
@@ -79,25 +90,30 @@ Primary_Needs:
 - [x] Battery optimization achieved ✅ IMPLEMENTED
 
 ### Technical Notes
+
 - Implement lite SPARQL engine without Dataview dependency
 - Use WebSQL fallback for older iOS versions
 - Compress graph data with gzip
 - Implement query result pagination
 
 ### Success Metrics
+
 - Offline query success rate >95%
 - Query response time <500ms
 - Data sync completion rate >99%
 ```
 
 #### Epic 3: Voice-Powered Semantic Capture
+
 ```markdown
 ## US-003: Voice-to-Semantic Note Creation
+
 **As a** mobile user in a meeting
 **I want** to create semantically-tagged notes using voice input
 **So that** I can capture insights without typing on mobile
 
 ### Acceptance Criteria
+
 - [ ] Voice recording with speech-to-text conversion
 - [ ] Automatic entity extraction from transcription
 - [ ] Suggested semantic relationships
@@ -105,25 +121,30 @@ Primary_Needs:
 - [ ] Integration with existing knowledge graph
 
 ### Technical Notes
+
 - Use Web Speech API with fallback to device speech recognition
 - Implement client-side NLP for entity extraction
 - Leverage existing ontology system for classification
 - Store voice recordings locally with metadata
 
 ### Success Metrics
+
 - Transcription accuracy >90%
 - Entity extraction precision >75%
 - User adoption of voice features >30%
 ```
 
 #### Epic 4: Simplified Semantic Authoring
+
 ```markdown
 ## US-004: Mobile-Optimized Property Editing
+
 **As a** mobile note creator
 **I want** to add semantic properties through mobile-friendly interfaces
 **So that** I can maintain rich knowledge structures on mobile
 
 ### Acceptance Criteria
+
 - [ ] Swipe-based property addition
 - [ ] Auto-complete for property values
 - [ ] Template-based note creation
@@ -131,25 +152,30 @@ Primary_Needs:
 - [ ] Keyboard shortcuts for common operations
 
 ### Technical Notes
+
 - Implement custom mobile keyboard with semantic shortcuts
 - Use predictive text for property values
 - Store frequently-used templates locally
 - Optimize for thumb navigation patterns
 
 ### Success Metrics
+
 - Property creation speed 2x faster than typing
 - Error rate <5% for property assignment
 - Template usage rate >60%
 ```
 
 #### Epic 5: Cross-Device Synchronization
+
 ```markdown
 ## US-005: Seamless Desktop-Mobile Sync
+
 **As a** knowledge worker using multiple devices
 **I want** my semantic structures to sync instantly
 **So that** I have consistent access regardless of device
 
 ### Acceptance Criteria
+
 - [ ] Real-time sync of graph changes
 - [ ] Conflict resolution for simultaneous edits
 - [ ] Offline change queuing
@@ -157,12 +183,14 @@ Primary_Needs:
 - [ ] Cross-platform compatibility
 
 ### Technical Notes
+
 - Implement CRDT (Conflict-free Replicated Data Types)
 - Use WebSocket for real-time updates
 - Compress sync payloads with differential updates
 - Fallback to pull-based sync for unreliable connections
 
 ### Success Metrics
+
 - Sync latency <2 seconds
 - Conflict resolution accuracy >99%
 - Data consistency score 100%
@@ -172,42 +200,45 @@ Primary_Needs:
 
 ### Priority 1: MVP Features (Q1 2025)
 
-| Feature | Reach | Impact | Confidence | Effort | RICE Score |
-|---------|-------|--------|------------|--------|------------|
-| Offline Graph Viewing | 8000 | 2.0 | 0.9 | 3 weeks | 4800 |
-| Basic SPARQL Queries | 6000 | 2.5 | 0.8 | 4 weeks | 3000 |
-| Touch Graph Navigation | 10000 | 1.5 | 1.0 | 2 weeks | 7500 |
-| Property Quick-Add | 7000 | 2.0 | 0.9 | 2 weeks | 6300 |
+| Feature                | Reach | Impact | Confidence | Effort  | RICE Score |
+| ---------------------- | ----- | ------ | ---------- | ------- | ---------- |
+| Offline Graph Viewing  | 8000  | 2.0    | 0.9        | 3 weeks | 4800       |
+| Basic SPARQL Queries   | 6000  | 2.5    | 0.8        | 4 weeks | 3000       |
+| Touch Graph Navigation | 10000 | 1.5    | 1.0        | 2 weeks | 7500       |
+| Property Quick-Add     | 7000  | 2.0    | 0.9        | 2 weeks | 6300       |
 
 ### Priority 2: Enhanced Features (Q2 2025)
 
-| Feature | Reach | Impact | Confidence | Effort | RICE Score |
-|---------|-------|--------|------------|--------|------------|
-| Voice Note Creation | 4000 | 3.0 | 0.6 | 6 weeks | 1200 |
-| Advanced Visualization | 6000 | 2.0 | 0.7 | 5 weeks | 1680 |
-| Template System | 5000 | 1.5 | 0.8 | 3 weeks | 2000 |
-| Collaborative Features | 3000 | 2.5 | 0.5 | 8 weeks | 469 |
+| Feature                | Reach | Impact | Confidence | Effort  | RICE Score |
+| ---------------------- | ----- | ------ | ---------- | ------- | ---------- |
+| Voice Note Creation    | 4000  | 3.0    | 0.6        | 6 weeks | 1200       |
+| Advanced Visualization | 6000  | 2.0    | 0.7        | 5 weeks | 1680       |
+| Template System        | 5000  | 1.5    | 0.8        | 3 weeks | 2000       |
+| Collaborative Features | 3000  | 2.5    | 0.5        | 8 weeks | 469        |
 
 ### Priority 3: Advanced Features (Q3-Q4 2025)
 
-| Feature | Reach | Impact | Confidence | Effort | RICE Score |
-|---------|-------|--------|------------|--------|------------|
-| AI-Powered Insights | 8000 | 3.0 | 0.4 | 12 weeks | 800 |
-| AR Knowledge Graph | 2000 | 3.0 | 0.3 | 16 weeks | 113 |
-| Multi-modal Capture | 5000 | 2.0 | 0.6 | 10 weeks | 600 |
+| Feature             | Reach | Impact | Confidence | Effort   | RICE Score |
+| ------------------- | ----- | ------ | ---------- | -------- | ---------- |
+| AI-Powered Insights | 8000  | 3.0    | 0.4        | 12 weeks | 800        |
+| AR Knowledge Graph  | 2000  | 3.0    | 0.3        | 16 weeks | 113        |
+| Multi-modal Capture | 5000  | 2.0    | 0.6        | 10 weeks | 600        |
 
 ## 3. Phased Rollout Plan
 
 ### Phase 1: Foundation (Q1 2025)
+
 **Theme**: Core Compatibility & Offline Access
 
 #### Technical Deliverables
+
 - **Mobile-Optimized Graph Engine**: Lightweight IndexedGraph implementation
 - **Offline SPARQL Processor**: Dataview-independent query execution
 - **Touch UI Components**: Mobile-first interface design
 - **Local Storage Strategy**: Efficient data persistence
 
 #### Success Criteria
+
 ```yaml
 Technical:
   - Bundle size <500KB (vs 1MB desktop)
@@ -223,21 +254,25 @@ Business:
 ```
 
 #### Key Features
+
 1. **Core Graph Viewing**: Read-only graph exploration
 2. **Basic Search**: Text-based semantic search
 3. **Note Navigation**: Touch-optimized note browsing
 4. **Offline Sync**: Local-first data management
 
 ### Phase 2: Enhancement (Q2 2025)
+
 **Theme**: Content Creation & Rich Interactions
 
 #### Technical Deliverables
+
 - **Mobile Property Editor**: Touch-optimized semantic authoring
 - **Voice Integration**: Speech-to-text with semantic tagging
 - **Advanced Visualizations**: Interactive graph layouts
 - **Template System**: Mobile-optimized note templates
 
 #### Success Criteria
+
 ```yaml
 Technical:
   - Voice transcription accuracy >90%
@@ -253,21 +288,25 @@ Business:
 ```
 
 #### Key Features
+
 1. **Voice Notes**: Speech-to-semantic conversion
 2. **Quick Property Add**: Streamlined semantic authoring
 3. **Graph Interactions**: Zoom, pan, filter capabilities
 4. **Smart Templates**: Context-aware note creation
 
 ### Phase 3: Intelligence (Q3-Q4 2025)
+
 **Theme**: AI-Powered Knowledge Discovery
 
 #### Technical Deliverables
+
 - **Semantic AI Engine**: Local knowledge inference
 - **Predictive Suggestions**: Context-aware recommendations
 - **Cross-Device Intelligence**: Multi-platform insights
 - **Advanced Analytics**: Knowledge usage patterns
 
 #### Success Criteria
+
 ```yaml
 Technical:
   - AI response time <2 seconds
@@ -283,6 +322,7 @@ Business:
 ```
 
 #### Key Features
+
 1. **Smart Connections**: AI-suggested relationships
 2. **Knowledge Insights**: Usage pattern analysis
 3. **Predictive Search**: Contextual query suggestions
@@ -293,7 +333,9 @@ Business:
 ### Technical Risks
 
 #### R1: iOS Platform Limitations
+
 **Risk**: Dynamic code execution restrictions limit advanced features
+
 ```yaml
 Probability: High (90%)
 Impact: High
@@ -307,7 +349,9 @@ Owner: Technical Architecture Lead
 ```
 
 #### R2: Memory Constraints
+
 **Risk**: Large knowledge graphs exceed mobile memory limits
+
 ```yaml
 Probability: Medium (60%)
 Impact: High
@@ -321,7 +365,9 @@ Owner: Performance Engineering Team
 ```
 
 #### R3: Dataview Dependency
+
 **Risk**: Dataview plugin unavailable on iOS breaks core functionality
+
 ```yaml
 Probability: High (95%)
 Impact: Medium
@@ -337,7 +383,9 @@ Owner: Backend Development Team
 ### Business Risks
 
 #### R4: User Experience Degradation
+
 **Risk**: Mobile limitations disappoint desktop users
+
 ```yaml
 Probability: Medium (50%)
 Impact: High
@@ -351,7 +399,9 @@ Owner: Product Management
 ```
 
 #### R5: Platform Fragmentation
+
 **Risk**: iOS-specific development diverts resources from core product
+
 ```yaml
 Probability: Medium (40%)
 Impact: Medium
@@ -367,7 +417,9 @@ Owner: Engineering Management
 ### Market Risks
 
 #### R6: Competitor Advantage
+
 **Risk**: Competitors launch mobile semantic features first
+
 ```yaml
 Probability: Low (30%)
 Impact: Medium
@@ -385,6 +437,7 @@ Owner: Business Development
 ### User Engagement Metrics
 
 #### Primary KPIs
+
 ```yaml
 Mobile_Adoption:
   Metric: Mobile DAU / Total DAU
@@ -409,6 +462,7 @@ Session_Quality:
 ```
 
 #### Secondary KPIs
+
 ```yaml
 User_Satisfaction:
   - App Store rating >4.2/5
@@ -429,6 +483,7 @@ Cross_Platform_Usage:
 ### Technical Performance Metrics
 
 #### Core Performance KPIs
+
 ```yaml
 Reliability:
   - App crash rate <1%
@@ -450,6 +505,7 @@ Scalability:
 ### Business Success Metrics
 
 #### Growth Metrics
+
 ```yaml
 User_Acquisition:
   - Mobile user growth rate: 20% MoM
@@ -470,6 +526,7 @@ Market_Position:
 ### Tracking Methodology
 
 #### Analytics Infrastructure
+
 ```yaml
 Data_Collection:
   Platform: Custom telemetry + App Store Analytics
@@ -495,13 +552,14 @@ Dashboard_Access:
 ### Mobile-Specific Optimizations
 
 #### Graph Storage Strategy
+
 ```typescript
 interface MobileGraphOptimization {
   // Hierarchical storage for memory management
   L1_Cache: "Active viewport (50-100 nodes)";
   L2_Storage: "IndexedDB for frequent access";
   L3_Archive: "Compressed cold storage";
-  
+
   // Streaming strategy
   lazyLoading: boolean;
   progressiveEnhancement: boolean;
@@ -514,16 +572,17 @@ interface MobileGraphOptimization {
 ```
 
 #### Query Processing Pipeline
+
 ```typescript
 interface MobileQueryEngine {
   // Simplified SPARQL subset for mobile
   supportedFeatures: [
     "SELECT basic patterns",
-    "FILTER text operations", 
+    "FILTER text operations",
     "LIMIT/OFFSET pagination",
-    "Property paths (limited depth)"
+    "Property paths (limited depth)",
   ];
-  
+
   // Performance optimizations
   queryCache: "LRU 50 queries";
   indexStrategy: "Minimal SPO for mobile";
@@ -534,12 +593,13 @@ interface MobileQueryEngine {
 ### Cross-Platform Synchronization
 
 #### Conflict Resolution Strategy
+
 ```yaml
 CRDT_Implementation:
   Type: "State-based CRDTs for RDF triples"
   Conflict_Resolution: "Last-write-wins with vector clocks"
   Merge_Strategy: "Automatic for data, manual for structure"
-  
+
 Sync_Protocol:
   Transport: "WebSocket + HTTP fallback"
   Compression: "Delta sync with gzip"
@@ -552,6 +612,7 @@ Sync_Protocol:
 ### Mobile Knowledge Management Landscape
 
 #### Direct Competitors
+
 ```yaml
 Obsidian_Mobile:
   Strengths: [Native app, Fast sync, Plugin ecosystem]
@@ -570,6 +631,7 @@ Roam_Research:
 ```
 
 #### Positioning Strategy
+
 ```yaml
 Unique_Value_Proposition:
   Primary: "Professional semantic knowledge management for mobile"
@@ -589,6 +651,7 @@ Differentiation_Factors:
 ### Launch Sequence
 
 #### Phase 1: Soft Launch (Q1 2025)
+
 ```yaml
 Target_Audience: Existing desktop users (Beta)
 Distribution: Direct invitation, community forums
@@ -603,6 +666,7 @@ Marketing_Channels:
 ```
 
 #### Phase 2: Public Launch (Q2 2025)
+
 ```yaml
 Target_Audience: Mobile-first knowledge workers
 Distribution: App stores, content marketing
@@ -617,6 +681,7 @@ Marketing_Channels:
 ```
 
 #### Phase 3: Market Expansion (Q3-Q4 2025)
+
 ```yaml
 Target_Audience: Enterprise teams, researchers
 Distribution: Enterprise sales, academic partnerships
@@ -633,12 +698,13 @@ Marketing_Channels:
 ## 9. Resource Requirements
 
 ### Development Team Structure
+
 ```yaml
 Mobile_Development_Track:
   iOS_Developer: 1 FTE (Sr. level)
   Mobile_UX_Designer: 0.5 FTE
   Mobile_QA_Engineer: 0.5 FTE
-  
+
 Shared_Resources:
   Backend_Engineer: 0.5 FTE allocation
   Product_Manager: 0.3 FTE allocation
@@ -649,6 +715,7 @@ Budget_Estimate: $420K development + $80K tools/services
 ```
 
 ### Technology Investment
+
 ```yaml
 Required_Tools:
   - iOS development environment
@@ -667,6 +734,7 @@ External_Services:
 ## 10. Success Criteria & Exit Conditions
 
 ### Success Thresholds (Go Decision)
+
 ```yaml
 Quantitative_Criteria:
   - Mobile DAU reaches 25% of total users
@@ -683,6 +751,7 @@ Qualitative_Criteria:
 ```
 
 ### Pivot Conditions (Course Correction)
+
 ```yaml
 Warning_Signals:
   - User adoption <50% of targets for 2 consecutive quarters
@@ -698,6 +767,7 @@ Response_Strategy:
 ```
 
 ### Exit Conditions (Stop Decision)
+
 ```yaml
 Failure_Criteria:
   - Unable to achieve basic functionality due to platform limitations
@@ -722,12 +792,13 @@ This iOS strategy positions Exocortex to capture the growing mobile knowledge wo
 The key to success will be balancing mobile constraints with user expectations, maintaining our technical differentiation, and executing a flawless user experience that makes semantic knowledge management accessible and powerful on mobile devices.
 
 **Next Steps**:
+
 1. Secure development resources and team structure
 2. Begin Phase 1 technical foundation work
 3. Establish beta user program for early feedback
 4. Create detailed technical specifications for mobile-optimized graph engine
 5. Develop comprehensive testing strategy for iOS platform
 
-*Document Version: 1.0*  
-*Last Updated: January 14, 2025*  
-*Owner: Product Manager Agent*
+_Document Version: 1.0_  
+_Last Updated: January 14, 2025_  
+_Owner: Product Manager Agent_

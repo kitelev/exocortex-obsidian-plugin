@@ -24,7 +24,9 @@ export class ExoFocusService {
    */
   private async loadFocuses(): Promise<void> {
     try {
-      const contentResult = await this.fileSystemAdapter.readFile(this.focusConfigPath);
+      const contentResult = await this.fileSystemAdapter.readFile(
+        this.focusConfigPath,
+      );
       if (contentResult.isFailure) {
         // File doesn't exist, create default focuses
         await this.createDefaultFocuses();
@@ -54,7 +56,6 @@ export class ExoFocusService {
    * Create default focus configurations
    */
   private async createDefaultFocuses(): Promise<void> {
-
     const defaults = [
       {
         name: "All",

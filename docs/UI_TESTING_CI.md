@@ -21,19 +21,20 @@ The base configuration automatically detects CI environment and adjusts settings
 
 ```typescript
 // Automatically enables headless mode when CI=true
-capabilities: [{
-  'goog:chromeOptions': {
-    args: process.env.CI ? [
-      '--headless=new',
-      '--no-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu'
-    ] : [
-      '--disable-web-security',
-      '--window-size=1920,1080'
-    ]
-  }
-}]
+capabilities: [
+  {
+    "goog:chromeOptions": {
+      args: process.env.CI
+        ? [
+            "--headless=new",
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+          ]
+        : ["--disable-web-security", "--window-size=1920,1080"],
+    },
+  },
+];
 ```
 
 ### 2. `wdio.conf.ci.ts` - CI-Specific Configuration
@@ -83,10 +84,10 @@ DEBUG=true npm run test:ui:ci
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `CI` | Enables CI optimizations | `false` |
-| `DEBUG` | Enable debug logging | `false` |
+| Variable           | Description              | Default                               |
+| ------------------ | ------------------------ | ------------------------------------- |
+| `CI`               | Enables CI optimizations | `false`                               |
+| `DEBUG`            | Enable debug logging     | `false`                               |
 | `TAKE_SCREENSHOTS` | Force screenshot capture | `false` (enabled automatically in CI) |
 
 ## Key Features
@@ -183,18 +184,21 @@ Enhanced commands for better CI testing:
 
 ```typescript
 // Wait for Obsidian to be ready
-browser.addCommand('waitForObsidianReady', async function(timeout) {
-  await this.waitUntil(async () => {
-    const ready = await this.executeObsidian(({ app }) => {
-      return app && app.workspace && app.workspace.layoutReady;
-    });
-    return ready === true;
-  }, { timeout, timeoutMsg: 'Obsidian failed to become ready' });
+browser.addCommand("waitForObsidianReady", async function (timeout) {
+  await this.waitUntil(
+    async () => {
+      const ready = await this.executeObsidian(({ app }) => {
+        return app && app.workspace && app.workspace.layoutReady;
+      });
+      return ready === true;
+    },
+    { timeout, timeoutMsg: "Obsidian failed to become ready" },
+  );
 });
 
 // Enhanced screenshot capture
-browser.addCommand('takeScreenshotOnFailure', async function(testName) {
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+browser.addCommand("takeScreenshotOnFailure", async function (testName) {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const filename = `failure-${testName}-${timestamp}.png`;
   const filepath = `screenshots/${filename}`;
   await this.saveScreenshot(filepath);
@@ -230,6 +234,7 @@ DEBUG=true npm run test:ui:ci
 ```
 
 This will provide detailed logs of:
+
 - Browser startup process
 - Obsidian plugin loading
 - Test execution steps
@@ -238,6 +243,7 @@ This will provide detailed logs of:
 ### Artifact Collection
 
 GitHub Actions automatically collects:
+
 - WebdriverIO logs (`wdio-logs/`)
 - Failure screenshots (`screenshots/`)
 - Xvfb logs (`/tmp/xvfb.log`)
@@ -279,6 +285,7 @@ node scripts/test-ui-setup.js
 ```
 
 This script validates:
+
 - ✅ All required files exist
 - ✅ Package.json scripts are configured
 - ✅ Dependencies are installed

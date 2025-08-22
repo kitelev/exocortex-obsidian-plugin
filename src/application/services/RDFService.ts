@@ -251,8 +251,10 @@ export class RDFService {
       }
 
       if (!options.format) {
-        const fileName = filePath.split('/').pop() || filePath;
-        options.format = this.fileSystemAdapter.detectFormatFromExtension(fileName) as RDFFormat;
+        const fileName = filePath.split("/").pop() || filePath;
+        options.format = this.fileSystemAdapter.detectFormatFromExtension(
+          fileName,
+        ) as RDFFormat;
       }
 
       return await this.importRDF(contentResult.getValue(), graph, options);
@@ -302,7 +304,7 @@ export class RDFService {
    * List RDF files in vault
    */
   async listRDFFiles(folder?: string): Promise<Result<any[]>> {
-    return this.fileSystemAdapter.listFiles(folder, 'ttl');
+    return this.fileSystemAdapter.listFiles(folder, "ttl");
   }
 
   /**

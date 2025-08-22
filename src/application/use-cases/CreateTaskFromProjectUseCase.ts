@@ -180,7 +180,10 @@ export class CreateTaskFromProjectUseCase {
       const templateRequest = { ...request };
 
       // Override with template values if not explicitly set
-      if (!templateRequest.description && template.getPropertyValue("description")) {
+      if (
+        !templateRequest.description &&
+        template.getPropertyValue("description")
+      ) {
         templateRequest.description = template.getPropertyValue("description");
       }
 
@@ -192,7 +195,8 @@ export class CreateTaskFromProjectUseCase {
         !templateRequest.estimatedHours &&
         template.getPropertyValue("estimatedHours")
       ) {
-        templateRequest.estimatedHours = template.getPropertyValue("estimatedHours");
+        templateRequest.estimatedHours =
+          template.getPropertyValue("estimatedHours");
       }
 
       if (!templateRequest.tags || templateRequest.tags.length === 0) {

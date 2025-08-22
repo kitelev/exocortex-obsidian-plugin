@@ -7,7 +7,7 @@ import { CompatibilityWrapper } from "../../infrastructure/adapters/Compatibilit
 
 export class InstancesBlockRenderer extends BaseRenderer {
   private app: App;
-  
+
   constructor(app: App) {
     super(CompatibilityWrapper.wrapAppAsUIAdapter(app));
     this.app = app;
@@ -20,11 +20,11 @@ export class InstancesBlockRenderer extends BaseRenderer {
     dv: any,
   ): Promise<void> {
     const instancesConfig = config as InstancesBlockConfig;
-    
+
     const { totalFiles, filteredFiles, displayFiles } = await this.preprocess(
       container,
       config,
-      file
+      file,
     );
 
     if (totalFiles.length === 0) {
@@ -36,7 +36,7 @@ export class InstancesBlockRenderer extends BaseRenderer {
       container,
       filteredFiles.length,
       displayFiles.length,
-      "instance"
+      "instance",
     );
 
     if (displayFiles.length === 0) {
@@ -54,7 +54,8 @@ export class InstancesBlockRenderer extends BaseRenderer {
 
   protected getRelevantFiles(config: any, file: TFile): Promise<TFile[]> {
     const instancesConfig = config as InstancesBlockConfig;
-    const targetProperty = instancesConfig.targetProperty || "exo__Instance_class";
+    const targetProperty =
+      instancesConfig.targetProperty || "exo__Instance_class";
     const currentAssetName = file.basename;
     const instanceFiles: TFile[] = [];
 
@@ -70,7 +71,12 @@ export class InstancesBlockRenderer extends BaseRenderer {
       if (!frontmatter) continue;
 
       const instanceClassValue = frontmatter[targetProperty];
-      if (FileOperationUtils.isReferencingAsset(instanceClassValue, currentAssetName)) {
+      if (
+        FileOperationUtils.isReferencingAsset(
+          instanceClassValue,
+          currentAssetName,
+        )
+      ) {
         instanceFiles.push(otherFile);
       }
     }
@@ -95,7 +101,10 @@ export class InstancesBlockRenderer extends BaseRenderer {
     instanceClassValue: any,
     currentAssetName: string,
   ): boolean {
-    return FileOperationUtils.isReferencingAsset(instanceClassValue, currentAssetName);
+    return FileOperationUtils.isReferencingAsset(
+      instanceClassValue,
+      currentAssetName,
+    );
   }
 
   protected renderTableRow(row: HTMLElement, file: TFile, config: any): void {
@@ -106,11 +115,13 @@ export class InstancesBlockRenderer extends BaseRenderer {
 
     if (config.showInstanceInfo) {
       // Class column
-      const classCell = row.createEl("td", { cls: "exocortex-table-cell-class" });
+      const classCell = row.createEl("td", {
+        cls: "exocortex-table-cell-class",
+      });
       const instanceClass = RenderingUtils.extractFrontmatterData(
         this.app,
         file,
-        "exo__Instance_class"
+        "exo__Instance_class",
       );
       if (instanceClass) {
         classCell.createEl("span", {
@@ -125,16 +136,19 @@ export class InstancesBlockRenderer extends BaseRenderer {
       }
 
       // Description column
-      const descCell = row.createEl("td", { cls: "exocortex-table-cell-description" });
+      const descCell = row.createEl("td", {
+        cls: "exocortex-table-cell-description",
+      });
       const description = RenderingUtils.extractFrontmatterData(
         this.app,
         file,
-        "exo__Asset_description"
+        "exo__Asset_description",
       );
       if (description) {
-        const truncated = description.length > 100
-          ? description.substring(0, 100) + "..."
-          : description;
+        const truncated =
+          description.length > 100
+            ? description.substring(0, 100) + "..."
+            : description;
         descCell.createEl("span", {
           text: truncated,
           cls: "exocortex-description-text",
@@ -147,7 +161,4 @@ export class InstancesBlockRenderer extends BaseRenderer {
       }
     }
   }
-
-
-
 }

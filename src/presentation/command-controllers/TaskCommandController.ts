@@ -17,7 +17,7 @@ import { DIContainer } from "../../infrastructure/container/DIContainer";
 export class TaskCommandController implements ICommandController {
   constructor(
     private readonly plugin: Plugin,
-    private readonly graph: Graph
+    private readonly graph: Graph,
   ) {}
 
   async registerCommands(): Promise<void> {
@@ -38,7 +38,8 @@ export class TaskCommandController implements ICommandController {
           const indexedGraph = new IndexedGraph();
           // Get focusService from container
           const container = DIContainer.getInstance();
-          const focusService = container.resolve<ExoFocusService>('ExoFocusService');
+          const focusService =
+            container.resolve<ExoFocusService>("ExoFocusService");
 
           // Create use cases
           const getCurrentProjectUseCase = new GetCurrentProjectUseCase(

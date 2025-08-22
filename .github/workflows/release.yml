@@ -23,7 +23,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "18.x"
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: package-lock.json
 
       - name: Configure npm for release
@@ -54,22 +54,22 @@ jobs:
           name: Release ${{ github.ref_name }}
           body: |
             # Release ${{ github.ref_name }}
-            
+
             ## Installation
-            
+
             ### From this release
             1. Download `main.js`, `manifest.json`, and `styles.css`
             2. Create a folder named `exocortex-obsidian-plugin` in your vault's plugins folder
             3. Move the downloaded files into this folder
             4. Reload Obsidian
             5. Enable the plugin in Settings → Community plugins
-            
+
             ### From ZIP
             1. Download the `exocortex-obsidian-plugin.zip` file
             2. Extract it into your vault's plugins folder
             3. Reload Obsidian
             4. Enable the plugin
-            
+
             ## What's New
             See [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
           draft: false

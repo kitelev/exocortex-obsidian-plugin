@@ -10,8 +10,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20.x'
-  CACHE_VERSION: v1
+  NODE_VERSION: "20.x"
+  CACHE_VERSION: v2
+  JEST_CACHE_TIMEOUT: 300000
 
 jobs:
   # Stage 1: Quick validation (30s)
@@ -47,7 +48,9 @@ jobs:
 
       - name: Install Dependencies
         if: steps.deps-cache.outputs.cache-hit != 'true'
-        run: npm ci --prefer-offline --no-audit
+        run: |
+          npm ci --prefer-offline --no-audit --silent
+          npm ls --depth=0 || true
 
       - name: TypeScript Check
         run: npx tsc --noEmit
@@ -73,7 +76,7 @@ jobs:
             echo "❌ manifest.json not found"
             exit 1
           fi
-          
+
           # Check required fields
           node -e "
             const manifest = require('./manifest.json');
@@ -91,7 +94,7 @@ jobs:
           SIZE=$(stat -f%z main.js 2>/dev/null || stat -c%s main.js)
           SIZE_MB=$(echo "scale=2; $SIZE / 1048576" | bc)
           echo "📦 Bundle size: ${SIZE_MB}MB"
-          
+
           if (( $(echo "$SIZE_MB > 5" | bc -l) )); then
             echo "⚠️ Warning: Bundle size exceeds 5MB"
           fi
@@ -108,10 +111,10 @@ jobs:
         test-type: [unit, integration, lint]
         include:
           - test-type: unit
-            command: "npm run test:unit -- --maxWorkers=2"
+            command: "npm run test:unit -- --maxWorkers=2 --silent --cache"
             coverage: true
-          - test-type: integration  
-            command: "npm run test:integration -- --maxWorkers=1"
+          - test-type: integration
+            command: "npm run test:integration -- --maxWorkers=1 --silent --cache"
             coverage: true
           - test-type: lint
             command: "npm run lint"
@@ -159,6 +162,7 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=4096
           CI: true
+          JEST_WORKERS: 2
 
       - name: Upload Coverage
         if: matrix.coverage && success()
@@ -191,11 +195,35 @@ jobs:
             node_modules
             .jest-cache
           key: deps-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ env.CACHE_VERSION }}
+          restore-keys: |
+            deps-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+            deps-${{ runner.os }}-
 
       - name: Install Dependencies
         run: |
           if [ ! -d "node_modules" ]; then
             npm ci --prefer-offline --no-audit
+          fi
+
+      - name: Restore Build Artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            main.js
+            manifest.json
+            styles.css
+            dist/
+            .tsbuildinfo
+          key: build-${{ runner.os }}-${{ github.sha }}-${{ env.CACHE_VERSION }}
+
+      - name: Verify Build Artifacts
+        run: |
+          if [ ! -f main.js ]; then
+            echo "❌ main.js not found in cache, rebuilding..."
+            npm run build
+          else
+            echo "✅ Build artifacts restored from cache"
+            ls -la main.js manifest.json styles.css 2>/dev/null || true
           fi
 
       - name: Setup Display
@@ -213,6 +241,7 @@ jobs:
         env:
           CI: true
           DISPLAY: :99
+          FORCE_OBSIDIAN_DOWNLOAD: true
 
   # Final status check
   status-check:

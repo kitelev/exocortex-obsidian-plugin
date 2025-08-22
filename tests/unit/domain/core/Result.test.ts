@@ -1,19 +1,19 @@
-import { Result } from '../../../../src/domain/core/Result';
+import { Result } from "../../../../src/domain/core/Result";
 
-describe('Result', () => {
-  describe('Construction', () => {
-    it('should create successful result with value', () => {
+describe("Result", () => {
+  describe("Construction", () => {
+    it("should create successful result with value", () => {
       // When
-      const result = Result.ok('test value');
+      const result = Result.ok("test value");
 
       // Then
       expect(result.isSuccess).toBe(true);
       expect(result.isFailure).toBe(false);
-      expect(result.getValue()).toBe('test value');
+      expect(result.getValue()).toBe("test value");
       expect(result.error).toBeUndefined();
     });
 
-    it('should create successful result without value', () => {
+    it("should create successful result without value", () => {
       // When
       const result = Result.ok();
 
@@ -24,9 +24,9 @@ describe('Result', () => {
       expect(result.error).toBeUndefined();
     });
 
-    it('should create failed result with error message', () => {
+    it("should create failed result with error message", () => {
       // Given
-      const errorMessage = 'Something went wrong';
+      const errorMessage = "Something went wrong";
 
       // When
       const result = Result.fail(errorMessage);
@@ -38,35 +38,41 @@ describe('Result', () => {
       expect(result.errorValue()).toBe(errorMessage);
     });
 
-    it('should throw error when creating successful result with error message', () => {
+    it("should throw error when creating successful result with error message", () => {
       // When & Then
       expect(() => {
         // Use Reflect.construct to bypass TypeScript restrictions
-        Reflect.construct(Result, [true, 'error message']);
-      }).toThrow('InvalidOperation: A result cannot be successful and contain an error');
+        Reflect.construct(Result, [true, "error message"]);
+      }).toThrow(
+        "InvalidOperation: A result cannot be successful and contain an error",
+      );
     });
 
-    it('should throw error when creating failed result without error message', () => {
+    it("should throw error when creating failed result without error message", () => {
       // When & Then
       expect(() => {
         // Use Reflect.construct to bypass TypeScript restrictions
         Reflect.construct(Result, [false]);
-      }).toThrow('InvalidOperation: A failing result needs to contain an error message');
+      }).toThrow(
+        "InvalidOperation: A failing result needs to contain an error message",
+      );
     });
 
-    it('should throw error when creating failed result with empty error message', () => {
+    it("should throw error when creating failed result with empty error message", () => {
       // When & Then
       expect(() => {
         // Use Reflect.construct to bypass TypeScript restrictions
-        Reflect.construct(Result, [false, '']);
-      }).toThrow('InvalidOperation: A failing result needs to contain an error message');
+        Reflect.construct(Result, [false, ""]);
+      }).toThrow(
+        "InvalidOperation: A failing result needs to contain an error message",
+      );
     });
   });
 
-  describe('getValue', () => {
-    it('should return value for successful result', () => {
+  describe("getValue", () => {
+    it("should return value for successful result", () => {
       // Given
-      const value = { data: 'test', number: 42 };
+      const value = { data: "test", number: 42 };
       const result = Result.ok(value);
 
       // When
@@ -74,10 +80,10 @@ describe('Result', () => {
 
       // Then
       expect(retrievedValue).toBe(value);
-      expect(retrievedValue).toEqual({ data: 'test', number: 42 });
+      expect(retrievedValue).toEqual({ data: "test", number: 42 });
     });
 
-    it('should return undefined for successful result without value', () => {
+    it("should return undefined for successful result without value", () => {
       // Given
       const result = Result.ok();
 
@@ -88,33 +94,35 @@ describe('Result', () => {
       expect(value).toBeUndefined();
     });
 
-    it('should throw error when getting value from failed result', () => {
+    it("should throw error when getting value from failed result", () => {
       // Given
-      const result = Result.fail('Test error');
+      const result = Result.fail("Test error");
 
       // When & Then
-      expect(() => result.getValue()).toThrow("Can't get the value of an error result. Use 'errorValue' instead.");
+      expect(() => result.getValue()).toThrow(
+        "Can't get the value of an error result. Use 'errorValue' instead.",
+      );
     });
 
-    it('should handle null and zero values correctly', () => {
+    it("should handle null and zero values correctly", () => {
       // Given
       const nullResult = Result.ok(null);
       const zeroResult = Result.ok(0);
-      const emptyStringResult = Result.ok('');
+      const emptyStringResult = Result.ok("");
       const falseResult = Result.ok(false);
 
       // When & Then
       expect(nullResult.getValue()).toBe(null);
       expect(zeroResult.getValue()).toBe(0);
-      expect(emptyStringResult.getValue()).toBe('');
+      expect(emptyStringResult.getValue()).toBe("");
       expect(falseResult.getValue()).toBe(false);
     });
   });
 
-  describe('errorValue', () => {
-    it('should return error message for failed result', () => {
+  describe("errorValue", () => {
+    it("should return error message for failed result", () => {
       // Given
-      const errorMessage = 'Detailed error message';
+      const errorMessage = "Detailed error message";
       const result = Result.fail(errorMessage);
 
       // When
@@ -124,9 +132,9 @@ describe('Result', () => {
       expect(error).toBe(errorMessage);
     });
 
-    it('should return error message for successful result (edge case)', () => {
+    it("should return error message for successful result (edge case)", () => {
       // Given
-      const result = Result.ok('success value');
+      const result = Result.ok("success value");
 
       // When
       const error = result.errorValue();
@@ -136,13 +144,13 @@ describe('Result', () => {
     });
   });
 
-  describe('Result.combine', () => {
-    it('should return success when all results are successful', () => {
+  describe("Result.combine", () => {
+    it("should return success when all results are successful", () => {
       // Given
       const results = [
-        Result.ok('value1'),
-        Result.ok('value2'),
-        Result.ok('value3')
+        Result.ok("value1"),
+        Result.ok("value2"),
+        Result.ok("value3"),
       ];
 
       // When
@@ -153,13 +161,13 @@ describe('Result', () => {
       expect(combined.isFailure).toBe(false);
     });
 
-    it('should return first failure when any result fails', () => {
+    it("should return first failure when any result fails", () => {
       // Given
       const results = [
-        Result.ok('value1'),
-        Result.fail('First error'),
-        Result.ok('value3'),
-        Result.fail('Second error')
+        Result.ok("value1"),
+        Result.fail("First error"),
+        Result.ok("value3"),
+        Result.fail("Second error"),
       ];
 
       // When
@@ -168,10 +176,10 @@ describe('Result', () => {
       // Then
       expect(combined.isSuccess).toBe(false);
       expect(combined.isFailure).toBe(true);
-      expect(combined.errorValue()).toBe('First error');
+      expect(combined.errorValue()).toBe("First error");
     });
 
-    it('should handle empty array', () => {
+    it("should handle empty array", () => {
       // Given
       const results: Result<any>[] = [];
 
@@ -183,9 +191,9 @@ describe('Result', () => {
       expect(combined.isFailure).toBe(false);
     });
 
-    it('should handle array with single successful result', () => {
+    it("should handle array with single successful result", () => {
       // Given
-      const results = [Result.ok('single value')];
+      const results = [Result.ok("single value")];
 
       // When
       const combined = Result.combine(results);
@@ -195,9 +203,9 @@ describe('Result', () => {
       expect(combined.isFailure).toBe(false);
     });
 
-    it('should handle array with single failed result', () => {
+    it("should handle array with single failed result", () => {
       // Given
-      const results = [Result.fail('single error')];
+      const results = [Result.fail("single error")];
 
       // When
       const combined = Result.combine(results);
@@ -205,38 +213,38 @@ describe('Result', () => {
       // Then
       expect(combined.isSuccess).toBe(false);
       expect(combined.isFailure).toBe(true);
-      expect(combined.errorValue()).toBe('single error');
+      expect(combined.errorValue()).toBe("single error");
     });
 
-    it('should short-circuit on first failure', () => {
+    it("should short-circuit on first failure", () => {
       // Given
       let processedCount = 0;
       const results = [
-        Result.ok('value1'),
-        Result.fail('First error'),
+        Result.ok("value1"),
+        Result.fail("First error"),
         // This should not be processed due to short-circuit
         (() => {
           processedCount++;
-          return Result.ok('value3');
-        })()
+          return Result.ok("value3");
+        })(),
       ];
 
       // When
       const combined = Result.combine(results);
 
       // Then
-      expect(combined.errorValue()).toBe('First error');
+      expect(combined.errorValue()).toBe("First error");
       expect(processedCount).toBe(1); // Verify short-circuit behavior
     });
 
-    it('should handle mixed result types', () => {
+    it("should handle mixed result types", () => {
       // Given
       const results = [
-        Result.ok('string'),
+        Result.ok("string"),
         Result.ok(42),
-        Result.ok({ complex: 'object' }),
+        Result.ok({ complex: "object" }),
         Result.ok(null),
-        Result.ok(undefined)
+        Result.ok(undefined),
       ];
 
       // When
@@ -246,14 +254,10 @@ describe('Result', () => {
       expect(combined.isSuccess).toBe(true);
     });
 
-    it('should preserve result references', () => {
+    it("should preserve result references", () => {
       // Given
-      const failureResult = Result.fail('Test error');
-      const results = [
-        Result.ok('value1'),
-        failureResult,
-        Result.ok('value3')
-      ];
+      const failureResult = Result.fail("Test error");
+      const results = [Result.ok("value1"), failureResult, Result.ok("value3")];
 
       // When
       const combined = Result.combine(results);
@@ -263,14 +267,14 @@ describe('Result', () => {
     });
   });
 
-  describe('Immutability', () => {
-    it('should freeze result object', () => {
+  describe("Immutability", () => {
+    it("should freeze result object", () => {
       // Given
-      const result = Result.ok('test value');
+      const result = Result.ok("test value");
 
       // When & Then
       expect(Object.isFrozen(result)).toBe(true);
-      
+
       // In strict mode, modification attempts will throw
       // In non-strict mode, they fail silently
       try {
@@ -278,60 +282,60 @@ describe('Result', () => {
       } catch (error) {
         // Expected in strict mode
       }
-      
+
       // Value should remain unchanged regardless
       expect(result.isSuccess).toBe(true);
     });
 
-    it('should freeze failed result object', () => {
+    it("should freeze failed result object", () => {
       // Given
-      const result = Result.fail('test error');
+      const result = Result.fail("test error");
 
       // When & Then
       expect(Object.isFrozen(result)).toBe(true);
-      
+
       // In strict mode, modification attempts will throw
       try {
-        (result as any).error = 'modified error';
+        (result as any).error = "modified error";
       } catch (error) {
         // Expected in strict mode
       }
-      
+
       // Value should remain unchanged
-      expect(result.error).toBe('test error');
+      expect(result.error).toBe("test error");
     });
   });
 
-  describe('Type Safety', () => {
-    it('should work with different value types', () => {
+  describe("Type Safety", () => {
+    it("should work with different value types", () => {
       // Given & When
-      const stringResult = Result.ok('string');
+      const stringResult = Result.ok("string");
       const numberResult = Result.ok(42);
       const booleanResult = Result.ok(true);
-      const objectResult = Result.ok({ key: 'value' });
+      const objectResult = Result.ok({ key: "value" });
       const arrayResult = Result.ok([1, 2, 3]);
 
       // Then
-      expect(stringResult.getValue()).toBe('string');
+      expect(stringResult.getValue()).toBe("string");
       expect(numberResult.getValue()).toBe(42);
       expect(booleanResult.getValue()).toBe(true);
-      expect(objectResult.getValue()).toEqual({ key: 'value' });
+      expect(objectResult.getValue()).toEqual({ key: "value" });
       expect(arrayResult.getValue()).toEqual([1, 2, 3]);
     });
 
-    it('should handle complex nested objects', () => {
+    it("should handle complex nested objects", () => {
       // Given
       const complexValue = {
         user: {
           id: 123,
-          name: 'John Doe',
+          name: "John Doe",
           preferences: {
-            theme: 'dark',
-            notifications: true
-          }
+            theme: "dark",
+            notifications: true,
+          },
         },
-        timestamp: new Date('2024-01-01'),
-        tags: ['important', 'user-data']
+        timestamp: new Date("2024-01-01"),
+        tags: ["important", "user-data"],
       };
 
       // When
@@ -340,31 +344,39 @@ describe('Result', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const value = result.getValue();
-      expect(value.user.name).toBe('John Doe');
-      expect(value.user.preferences.theme).toBe('dark');
-      expect(value.tags).toEqual(['important', 'user-data']);
+      expect(value.user.name).toBe("John Doe");
+      expect(value.user.preferences.theme).toBe("dark");
+      expect(value.tags).toEqual(["important", "user-data"]);
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle various error message formats', () => {
+  describe("Error Handling", () => {
+    it("should handle various error message formats", () => {
       // Given & When
-      const simpleError = Result.fail('Simple error');
-      const detailedError = Result.fail('Error: Operation failed with code 500');
-      const multilineError = Result.fail('Error occurred:\nLine 1\nLine 2');
-      const jsonError = Result.fail(JSON.stringify({ error: 'API Error', code: 404 }));
+      const simpleError = Result.fail("Simple error");
+      const detailedError = Result.fail(
+        "Error: Operation failed with code 500",
+      );
+      const multilineError = Result.fail("Error occurred:\nLine 1\nLine 2");
+      const jsonError = Result.fail(
+        JSON.stringify({ error: "API Error", code: 404 }),
+      );
 
       // Then
-      expect(simpleError.errorValue()).toBe('Simple error');
-      expect(detailedError.errorValue()).toBe('Error: Operation failed with code 500');
-      expect(multilineError.errorValue()).toContain('Line 1');
-      expect(multilineError.errorValue()).toContain('Line 2');
-      expect(jsonError.errorValue()).toContain('API Error');
+      expect(simpleError.errorValue()).toBe("Simple error");
+      expect(detailedError.errorValue()).toBe(
+        "Error: Operation failed with code 500",
+      );
+      expect(multilineError.errorValue()).toContain("Line 1");
+      expect(multilineError.errorValue()).toContain("Line 2");
+      expect(jsonError.errorValue()).toContain("API Error");
     });
 
-    it('should handle special characters in error messages', () => {
+    it("should handle special characters in error messages", () => {
       // Given
-      const specialCharError = Result.fail('Error with "quotes", \'apostrophes\', and \n newlines');
+      const specialCharError = Result.fail(
+        "Error with \"quotes\", 'apostrophes', and \n newlines",
+      );
 
       // When
       const errorMessage = specialCharError.errorValue();
@@ -372,14 +384,14 @@ describe('Result', () => {
       // Then
       expect(errorMessage).toContain('"quotes"');
       expect(errorMessage).toContain("'apostrophes'");
-      expect(errorMessage).toContain('\n');
+      expect(errorMessage).toContain("\n");
     });
   });
 
-  describe('Edge Cases and Performance', () => {
-    it('should handle very long error messages', () => {
+  describe("Edge Cases and Performance", () => {
+    it("should handle very long error messages", () => {
       // Given
-      const longError = 'Error: ' + 'x'.repeat(10000);
+      const longError = "Error: " + "x".repeat(10000);
 
       // When
       const result = Result.fail(longError);
@@ -389,14 +401,15 @@ describe('Result', () => {
       expect(result.errorValue().length).toBeGreaterThan(10000);
     });
 
-    it('should handle rapid creation of many results', () => {
+    it("should handle rapid creation of many results", () => {
       // Given
       const count = 1000;
       // Adaptive thresholds for different environments
-      const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
-      const isMacOS = process.platform === 'darwin';
-      const performanceThreshold = (isCI && isMacOS) ? 500 : (isCI ? 200 : 100); // More lenient for macOS CI
-      
+      const isCI =
+        process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
+      const isMacOS = process.platform === "darwin";
+      const performanceThreshold = isCI && isMacOS ? 500 : isCI ? 200 : 100; // More lenient for macOS CI
+
       const start = performance.now();
 
       // When
@@ -412,10 +425,12 @@ describe('Result', () => {
       expect(duration).toBeLessThan(performanceThreshold); // Adaptive threshold
     });
 
-    it('should handle combine with large arrays', () => {
+    it("should handle combine with large arrays", () => {
       // Given
-      const largeArray = Array.from({ length: 1000 }, (_, i) => Result.ok(`value-${i}`));
-      
+      const largeArray = Array.from({ length: 1000 }, (_, i) =>
+        Result.ok(`value-${i}`),
+      );
+
       // When
       const start = performance.now();
       const combined = Result.combine(largeArray);
@@ -426,13 +441,13 @@ describe('Result', () => {
       expect(duration).toBeLessThan(50); // Should be reasonably fast
     });
 
-    it('should maintain consistency across multiple operations', () => {
+    it("should maintain consistency across multiple operations", () => {
       // Given
-      const result = Result.ok('consistent value');
+      const result = Result.ok("consistent value");
 
       // When & Then - multiple calls should return same value
       for (let i = 0; i < 100; i++) {
-        expect(result.getValue()).toBe('consistent value');
+        expect(result.getValue()).toBe("consistent value");
         expect(result.isSuccess).toBe(true);
         expect(result.isFailure).toBe(false);
       }

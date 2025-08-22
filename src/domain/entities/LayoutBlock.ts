@@ -38,11 +38,11 @@ export class LayoutBlock extends Entity<LayoutBlockProps> {
     if (!this.props.id || this.props.id.trim().length === 0) {
       throw new Error("LayoutBlock must have a valid ID");
     }
-    
+
     if (!this.props.title || this.props.title.trim().length === 0) {
       throw new Error("LayoutBlock must have a non-empty title");
     }
-    
+
     if (this.props.order < 0) {
       throw new Error("LayoutBlock order must be non-negative");
     }

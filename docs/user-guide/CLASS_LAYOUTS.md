@@ -18,10 +18,10 @@ Layout configurations are regular Obsidian notes with special frontmatter:
 ```yaml
 ---
 exo__Instance_class: "[[ui__ClassLayout]]"
-ui__ClassLayout_targetClass: "[[ems__Project]]"  # Which class this layout is for
-ui__ClassLayout_priority: 10                      # Higher priority wins
-ui__ClassLayout_enabled: true                     # Enable/disable layout
-ui__ClassLayout_blocks:                           # Define blocks to display
+ui__ClassLayout_targetClass: "[[ems__Project]]" # Which class this layout is for
+ui__ClassLayout_priority: 10 # Higher priority wins
+ui__ClassLayout_enabled: true # Enable/disable layout
+ui__ClassLayout_blocks: # Define blocks to display
   - id: "block-1"
     type: "query"
     title: "Active Items"
@@ -34,6 +34,7 @@ ui__ClassLayout_blocks:                           # Define blocks to display
 ## Block Types
 
 ### 1. Query Block
+
 Displays filtered lists of assets:
 
 ```yaml
@@ -49,10 +50,11 @@ Displays filtered lists of assets:
         value: "{{current_asset}}"
     sortBy: "ems__Task_priority"
     sortOrder: "desc"
-    displayAs: "list"  # or "table", "cards"
+    displayAs: "list" # or "table", "cards"
 ```
 
 **Operators:**
+
 - `equals`: Exact match
 - `notEquals`: Not equal
 - `contains`: Contains substring
@@ -62,10 +64,12 @@ Displays filtered lists of assets:
 - `notExists`: Property doesn't exist
 
 **Variables:**
+
 - `{{current_asset}}`: Current asset path
 - `{{fm.property}}`: Any frontmatter property
 
 ### 2. Properties Block
+
 Shows and allows editing of properties:
 
 ```yaml
@@ -79,10 +83,11 @@ Shows and allows editing of properties:
       - "ems__Project_deadline"
     editableProperties:
       - "ems__Project_status"
-    groupBy: "category"  # or "prefix"
+    groupBy: "category" # or "prefix"
 ```
 
 ### 3. Relations Block
+
 Shows linked assets:
 
 ```yaml
@@ -97,6 +102,7 @@ Shows linked assets:
 ```
 
 ### 4. Backlinks Block
+
 Shows incoming links:
 
 ```yaml
@@ -111,6 +117,7 @@ Shows incoming links:
 ```
 
 ### 5. Custom Block
+
 For advanced users - custom Dataview or JavaScript:
 
 ```yaml
@@ -128,6 +135,7 @@ For advanced users - custom Dataview or JavaScript:
 ## Block Options
 
 All blocks support:
+
 - `id`: Unique identifier
 - `type`: Block type
 - `title`: Display title
@@ -139,7 +147,9 @@ All blocks support:
 ## Examples
 
 ### Project Layout
+
 Shows incomplete tasks, milestones, and project status:
+
 ```yaml
 ui__ClassLayout_blocks:
   - id: "status"
@@ -160,7 +170,9 @@ ui__ClassLayout_blocks:
 ```
 
 ### Area Layout
+
 Shows sub-areas and area projects:
+
 ```yaml
 ui__ClassLayout_blocks:
   - id: "subareas"
@@ -178,6 +190,7 @@ ui__ClassLayout_blocks:
 ## Priority System
 
 When multiple layouts exist for a class:
+
 1. Layouts with higher `priority` values win
 2. Disabled layouts are ignored
 3. Falls back to parent class layouts
@@ -193,18 +206,21 @@ When multiple layouts exist for a class:
 ## Troubleshooting
 
 ### Layout not appearing
+
 - Check layout is in configured folder
 - Verify `ui__ClassLayout_enabled: true`
 - Confirm target class matches exactly
 - Check for syntax errors in YAML
 
 ### Queries returning no results
+
 - Verify property names are correct
 - Check filter operators
 - Test with simpler filters first
 - Use console for debug info
 
 ### Performance issues
+
 - Reduce `maxResults` values
 - Simplify complex queries
 - Use table/list instead of cards
@@ -213,12 +229,16 @@ When multiple layouts exist for a class:
 ## Advanced Features
 
 ### Layout Inheritance
+
 Layouts can inherit from parent classes:
+
 - `ems__Task` → `ems__Effort` → `exo__Asset`
 - Child class layouts override parent layouts
 
 ### Dynamic Variables
+
 Use frontmatter values in queries:
+
 ```yaml
 propertyFilters:
   - property: "ems__Task_sprint"
@@ -227,6 +247,7 @@ propertyFilters:
 ```
 
 ### Conditional Visibility
+
 Show/hide blocks based on conditions (future feature).
 
 ## Best Practices
@@ -240,6 +261,7 @@ Show/hide blocks based on conditions (future feature).
 ## Migration from Old System
 
 If upgrading from the old layout system:
+
 1. Enable class-based layouts in settings
 2. Old layouts continue to work as fallback
 3. Gradually create new layout configurations

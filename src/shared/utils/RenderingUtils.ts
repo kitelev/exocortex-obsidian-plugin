@@ -5,7 +5,6 @@ import { App, TFile } from "obsidian";
  * Implements DRY principle for repeated DOM creation and data processing
  */
 export class RenderingUtils {
-  
   /**
    * Clean className by removing wiki link brackets and handling arrays
    */
@@ -29,16 +28,17 @@ export class RenderingUtils {
    * Create count information display
    */
   static createCountInfo(
-    container: HTMLElement, 
+    container: HTMLElement,
     totalCount: number,
     displayCount: number,
     itemType: string,
-    className?: string
+    className?: string,
   ): void {
     const info = container.createDiv({ cls: className || "exocortex-info" });
     const suffix = totalCount !== 1 ? "s" : "";
-    const showing = displayCount < totalCount ? `, showing ${displayCount}` : "";
-    
+    const showing =
+      displayCount < totalCount ? `, showing ${displayCount}` : "";
+
     info.createEl("span", {
       text: `${totalCount} ${itemType}${suffix}${showing}`,
       cls: `exocortex-${itemType}-count`,
@@ -52,7 +52,7 @@ export class RenderingUtils {
     container: HTMLElement,
     text: string,
     href: string,
-    className?: string
+    className?: string,
   ): HTMLElement {
     return container.createEl("a", {
       text,
@@ -68,7 +68,7 @@ export class RenderingUtils {
     app: App,
     file: TFile,
     key: string,
-    fallback: any = null
+    fallback: any = null,
   ): any {
     const metadata = app.metadataCache.getFileCache(file);
     return metadata?.frontmatter?.[key] || fallback;
@@ -77,7 +77,11 @@ export class RenderingUtils {
   /**
    * Create table with header and consistent styling
    */
-  static createTable(container: HTMLElement, headers: string[], className: string): {
+  static createTable(
+    container: HTMLElement,
+    headers: string[],
+    className: string,
+  ): {
     table: HTMLElement;
     thead: HTMLElement;
     tbody: HTMLElement;
@@ -85,13 +89,13 @@ export class RenderingUtils {
     const table = container.createEl("table", { cls: className });
     const thead = table.createEl("thead");
     const headerRow = thead.createEl("tr");
-    
-    headers.forEach(header => {
+
+    headers.forEach((header) => {
       headerRow.createEl("th", { text: header });
     });
-    
+
     const tbody = table.createEl("tbody");
-    
+
     return { table, thead, tbody };
   }
 
@@ -105,10 +109,7 @@ export class RenderingUtils {
   /**
    * Group files by class with consistent logic
    */
-  static groupFilesByClass(
-    app: App,
-    files: TFile[]
-  ): Map<string, TFile[]> {
+  static groupFilesByClass(app: App, files: TFile[]): Map<string, TFile[]> {
     const groups = new Map<string, TFile[]>();
 
     files.forEach((file) => {
@@ -139,7 +140,7 @@ export class RenderingUtils {
     container: HTMLElement,
     title: string,
     count: number,
-    className: string
+    className: string,
   ): HTMLElement {
     return container.createEl("h4", {
       text: `${title} (${count})`,
@@ -163,10 +164,10 @@ export class RenderingUtils {
   static filterFilesByClass(
     app: App,
     files: TFile[],
-    targetClass?: string
+    targetClass?: string,
   ): TFile[] {
     if (!targetClass) return files;
-    
+
     const cleanTargetClass = this.cleanClassName(targetClass);
     return files.filter((file) => {
       const metadata = app.metadataCache.getFileCache(file);

@@ -1,11 +1,11 @@
 {
-	"id": "exocortex",
-	"name": "Exocortex",
-	"version": "3.14.0",
-	"minAppVersion": "1.5.0",
-	"description": "SPARQL queries in Obsidian - Semantic knowledge management",
-	"author": "A. Kitelev",
-	"authorUrl": "https://github.com/kitelev",
-	"isDesktopOnly": false,
-	"main": "main.js"
+  "id": "exocortex",
+  "name": "Exocortex",
+  "version": "3.15.0",
+  "minAppVersion": "1.5.0",
+  "description": "SPARQL queries in Obsidian - Semantic knowledge management",
+  "author": "A. Kitelev",
+  "authorUrl": "https://github.com/kitelev",
+  "isDesktopOnly": false,
+  "main": "main.js"
 }

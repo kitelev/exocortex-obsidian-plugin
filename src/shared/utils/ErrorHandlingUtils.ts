@@ -5,18 +5,17 @@ import { Notice } from "obsidian";
  * Implements DRY principle for error processing and user notifications
  */
 export class ErrorHandlingUtils {
-  
   /**
    * Handle repository operation errors with consistent logging and user notification
    */
   static handleRepositoryError(
     operation: string,
     error: Error,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ): void {
     const message = `${operation} failed: ${error.message}`;
     console.error(message, { error, context });
-    
+
     new Notice(`Error: ${message}`, 5000);
   }
 
@@ -27,11 +26,11 @@ export class ErrorHandlingUtils {
     component: string,
     error: Error,
     container?: HTMLElement,
-    fallbackMessage?: string
+    fallbackMessage?: string,
   ): void {
     const message = `${component} rendering failed: ${error.message}`;
     console.error(message, error);
-    
+
     if (container) {
       container.empty();
       container.createEl("div", {
@@ -39,7 +38,7 @@ export class ErrorHandlingUtils {
         cls: "exocortex-error-fallback",
       });
     }
-    
+
     new Notice(`Rendering error in ${component}`, 3000);
   }
 
@@ -49,12 +48,12 @@ export class ErrorHandlingUtils {
   static handleValidationError(
     field: string,
     value: any,
-    expectedFormat?: string
+    expectedFormat?: string,
   ): void {
     const message = expectedFormat
       ? `Invalid ${field}: "${value}". Expected format: ${expectedFormat}`
       : `Invalid ${field}: "${value}"`;
-    
+
     console.warn(message);
     new Notice(message, 4000);
   }
@@ -65,17 +64,17 @@ export class ErrorHandlingUtils {
   static async safeAsync<T>(
     operation: () => Promise<T>,
     errorContext: string,
-    fallback?: T
+    fallback?: T,
   ): Promise<T | undefined> {
     try {
       return await operation();
     } catch (error) {
       console.error(`${errorContext} failed:`, error);
-      
+
       if (fallback !== undefined) {
         return fallback;
       }
-      
+
       return undefined;
     }
   }
@@ -86,17 +85,17 @@ export class ErrorHandlingUtils {
   static safeSync<T>(
     operation: () => T,
     errorContext: string,
-    fallback?: T
+    fallback?: T,
   ): T | undefined {
     try {
       return operation();
     } catch (error) {
       console.error(`${errorContext} failed:`, error);
-      
+
       if (fallback !== undefined) {
         return fallback;
       }
-      
+
       return undefined;
     }
   }
@@ -107,7 +106,7 @@ export class ErrorHandlingUtils {
   static createError(
     code: string,
     message: string,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ): Error {
     const error = new Error(message);
     (error as any).code = code;
@@ -127,7 +126,7 @@ export class ErrorHandlingUtils {
    */
   static formatErrorForLogging(
     error: Error,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ): Record<string, any> {
     return {
       message: error.message,

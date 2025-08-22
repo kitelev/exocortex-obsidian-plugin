@@ -9,33 +9,39 @@ The Exocortex plugin brings a revolutionary approach to knowledge management in 
 ## Key Features
 
 ### 🧠 Ontology-Driven Architecture
+
 - Define custom ontologies for your knowledge domains
 - Create semantic relationships between assets
 - Use RDF-compatible triple structures for maximum interoperability
 
 ### 📐 Universal Layout System
+
 - Configurable layouts for different asset types
 - Dynamic blocks that adapt to your content
 - Query-based content aggregation using multiple query engines
 
 ### 🔄 Dynamic Rendering
+
 - Real-time updates based on asset metadata
 - Automatic layout selection based on asset class
 - Customizable display templates for each ontology
 
 ### 📱 Mobile/iOS Support
+
 - **Touch-Optimized UI**: Native iOS gestures and haptic feedback
 - **Performance Optimization**: Intelligent mobile performance management
 - **Native Query Engine**: Lightweight querying without external dependencies
 - **Offline-First**: Works seamlessly without internet connectivity
 
 ### 🔧 Multi-Engine Query Support
+
 - **Dataview Integration**: Full backward compatibility with existing Dataview queries
 - **Datacore Support**: Native support for the new Datacore plugin
 - **Automatic Fallback**: Intelligent engine selection with graceful degradation
 - **Query Abstraction**: Unified interface across different query engines
 
 ### 🎯 Core Capabilities
+
 - **Universal Renderer**: Single entry point for all UI rendering
 - **Layout as Asset**: Layouts are assets themselves, fully configurable
 - **Composable Queries**: Build complex queries from reusable components
@@ -64,6 +70,7 @@ The Exocortex plugin is currently in beta and can be installed using BRAT (Beta 
 6. Enable "Exocortex" in your Community plugins list
 
 #### Benefits of Using BRAT
+
 - **Auto-updates**: Automatically receive the latest beta updates
 - **Easy rollback**: Switch between versions if needed
 - **No manual file management**: BRAT handles all file operations
@@ -94,11 +101,13 @@ Then reload Obsidian and enable the plugin in Settings → Community plugins.
 ### Updating the Plugin
 
 #### Via BRAT
+
 1. Open Settings → **BRAT**
 2. Click **"Check for updates"**
 3. BRAT will automatically update all beta plugins
 
 #### Manual Update
+
 Follow the same steps as manual installation with the latest source code.
 
 ## Quick Start Guide
@@ -123,7 +132,6 @@ exo__Instance_class: "[[exo__Asset]]"
 exo__Asset_label: "My Knowledge Asset"
 exo__Asset_description: "This is my first semantic asset"
 ---
-
 # My First Asset
 
 This note is now a semantic asset in your knowledge graph!
@@ -158,7 +166,6 @@ ems__Task_assignee: "[[John Doe]]"
 ems__Task_dueDate: "2025-01-15"
 ems__Task_project: "[[Website Redesign]]"
 ---
-
 ## Task Details
 
 \`\`\`dataviewjs
@@ -183,7 +190,6 @@ kb__Article_relatedTo:
 kb__Article_author: "[[Your Name]]"
 kb__Article_lastReviewed: "2025-01-10"
 ---
-
 # RDF Triple Store Architecture
 
 ## Overview
@@ -211,23 +217,22 @@ pm__Project_team:
   - "[[Bob]]"
   - "[[Charlie]]"
 ---
-
 # Project Dashboard
 
 \`\`\`dataviewjs
 // Custom dashboard showing all related tasks
 const tasks = dv.pages()
-  .where(p => p.ems__Task_project?.path === dv.current().file.path)
-  .sort(p => p.ems__Task_priority, 'desc');
+.where(p => p.ems__Task_project?.path === dv.current().file.path)
+.sort(p => p.ems__Task_priority, 'desc');
 
 dv.table(
-  ["Task", "Status", "Priority", "Due Date"],
-  tasks.map(t => [
-    t.file.link,
-    t.ems__Task_status,
-    t.ems__Task_priority,
-    t.ems__Task_dueDate
-  ])
+["Task", "Status", "Priority", "Due Date"],
+tasks.map(t => [
+t.file.link,
+t.ems__Task_status,
+t.ems__Task_priority,
+t.ems__Task_dueDate
+])
 );
 
 // Render the standard layout below
@@ -247,7 +252,6 @@ exo__Instance_class: "[[exo__Ontology]]"
 exo__Ontology_prefix: "research"
 exo__Asset_label: "Research Ontology"
 ---
-
 # Research Ontology Definition
 ```
 
@@ -270,7 +274,6 @@ research__Paper_relatedWorks:
   - "[[Previous Study 2023]]"
   - "[[Foundational Work 2020]]"
 ---
-
 \`\`\`dataviewjs
 await window.ExoUIRender(dv, this);
 \`\`\`
@@ -292,6 +295,7 @@ Access plugin settings through Settings → Plugin options → Exocortex:
 - **Debug Mode**: Enable detailed console logging
 
 #### Mobile-Specific Settings
+
 - **Touch Target Size**: Adjust button sizes for better touch interaction (44pt recommended)
 - **Enable Haptic Feedback**: Vibration feedback for touch interactions
 - **Performance Mode**: Optimize for older devices with reduced animations
@@ -396,6 +400,7 @@ ui__LayoutBlock_query: |
 **Symptom**: Exocortex doesn't appear in the Community plugins list
 
 **Solutions**:
+
 - Ensure you've installed via BRAT or manually copied all files
 - Check that `manifest.json`, `main.js`, and `styles.css` are in the plugin folder
 - Restart Obsidian completely (Cmd/Ctrl + Q, then reopen)
@@ -406,6 +411,7 @@ ui__LayoutBlock_query: |
 **Symptom**: `ExoUIRender is not defined` error or blank render
 
 **Solutions**:
+
 ```javascript
 // Ensure Dataview is installed and enabled first
 // Use this diagnostic code block:
@@ -429,16 +435,18 @@ if (typeof window.ExoUIRender === 'undefined') {
 **Symptom**: Asset metadata not showing or layout broken
 
 **Solutions**:
+
 - Verify frontmatter syntax (must be valid YAML)
 - Check that class references use double brackets: `[[exo__Asset]]`
 - Ensure you're in Reading view, not Edit view
 - Validate property names follow the pattern: `prefix__Class_property`
 
 **Debug frontmatter**:
+
 ```yaml
 ---
 # This will help identify issues
-exo__Instance_class: "[[exo__Asset]]"  # Correct
+exo__Instance_class: "[[exo__Asset]]" # Correct
 # exo__Instance_class: exo__Asset       # Wrong - missing brackets
 # exo__Instance_class: [[exo__Asset]]   # Wrong - missing quotes
 ---
@@ -449,6 +457,7 @@ exo__Instance_class: "[[exo__Asset]]"  # Correct
 **Symptom**: Slow rendering or Obsidian freezing
 
 **Solutions**:
+
 - Limit the number of ExoUIRender blocks per note (max 3-5)
 - Reduce query complexity in Dataview blocks
 - Disable auto-refresh in settings if not needed
@@ -468,7 +477,9 @@ const filtered = dv.pages('"specific-folder"')
 **Symptom**: Custom ontology prefix not working
 
 **Solutions**:
+
 1. Create the ontology asset first:
+
 ```yaml
 ---
 exo__Instance_class: "[[exo__Ontology]]"
@@ -477,9 +488,10 @@ exo__Ontology_prefix: "myprefix"
 ```
 
 2. Reference it correctly in other assets:
+
 ```yaml
 ---
-exo__Asset_isDefinedBy: "[[!myprefix]]"  # Note the ! prefix
+exo__Asset_isDefinedBy: "[[!myprefix]]" # Note the ! prefix
 ---
 ```
 
@@ -488,6 +500,7 @@ exo__Asset_isDefinedBy: "[[!myprefix]]"  # Note the ! prefix
 **Symptom**: Changes to layout definitions not reflected
 
 **Solutions**:
+
 - Use the "Refresh Exocortex Layouts" command (Cmd/Ctrl + P)
 - Clear the cache: Settings → Files & Links → Clear cache
 - Ensure layout asset follows naming convention: `Layout - ClassName`
@@ -497,12 +510,13 @@ exo__Asset_isDefinedBy: "[[!myprefix]]"  # Note the ! prefix
 **Symptom**: BRAT not updating to latest version
 
 **Solutions**:
+
 ```bash
 # Manual BRAT update process:
 1. Settings → BRAT → "Check for updates"
 2. If that fails, remove and re-add:
    - Click "Delete" next to the plugin
-   - Click "Add Beta plugin" 
+   - Click "Add Beta plugin"
    - Re-enter the GitHub URL
 ```
 
@@ -510,12 +524,12 @@ exo__Asset_isDefinedBy: "[[!myprefix]]"  # Note the ! prefix
 
 **Common errors and fixes**:
 
-| Error | Solution |
-|-------|----------|
-| `Cannot read property 'exo__Instance_class' of undefined` | Add frontmatter to your note |
-| `Maximum call stack size exceeded` | Check for circular references in assets |
-| `Failed to load plugin` | Reinstall via BRAT or check file permissions |
-| `Dataview API not found` | Install and enable Dataview plugin |
+| Error                                                     | Solution                                     |
+| --------------------------------------------------------- | -------------------------------------------- |
+| `Cannot read property 'exo__Instance_class' of undefined` | Add frontmatter to your note                 |
+| `Maximum call stack size exceeded`                        | Check for circular references in assets      |
+| `Failed to load plugin`                                   | Reinstall via BRAT or check file permissions |
+| `Dataview API not found`                                  | Install and enable Dataview plugin           |
 
 ### Getting Help
 
@@ -547,16 +561,16 @@ Run these in the Developer Console (Cmd/Ctrl + Shift + I):
 
 ```javascript
 // Check if plugin is loaded
-app.plugins.plugins['exocortex-obsidian-plugin']
+app.plugins.plugins["exocortex-obsidian-plugin"];
 
 // Check Dataview availability
-app.plugins.plugins['dataview']
+app.plugins.plugins["dataview"];
 
 // List all available commands
-app.commands.listCommands().filter(c => c.id.includes('exocortex'))
+app.commands.listCommands().filter((c) => c.id.includes("exocortex"));
 
 // Check plugin version
-app.plugins.plugins['exocortex-obsidian-plugin']?.manifest?.version
+app.plugins.plugins["exocortex-obsidian-plugin"]?.manifest?.version;
 ```
 
 ## Development
@@ -598,12 +612,14 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 ## Recent Updates
 
 ### Version 3.0 (Current)
+
 - ✅ **Mobile/iOS Support**: Complete touch-optimized interface with native gestures
 - ✅ **Query Engine Abstraction**: Support for both Dataview and Datacore plugins
 - ✅ **Offline-First Architecture**: Works without internet connectivity
 - ✅ **Performance Optimizations**: 40% faster on mobile devices
 
 ### Upcoming Features
+
 - [ ] Visual layout editor
 - [ ] SPARQL query support
 - [ ] Import/export of ontologies

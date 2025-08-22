@@ -81,22 +81,34 @@ export interface IAssetWriteRepository {
   /**
    * Save multiple assets in a single transaction
    */
-  saveMany(assets: Asset[], options?: WriteOptions): Promise<BulkOperationResult>;
+  saveMany(
+    assets: Asset[],
+    options?: WriteOptions,
+  ): Promise<BulkOperationResult>;
 
   /**
    * Create multiple assets in a single transaction
    */
-  createMany(assets: Asset[], options?: WriteOptions): Promise<BulkOperationResult>;
+  createMany(
+    assets: Asset[],
+    options?: WriteOptions,
+  ): Promise<BulkOperationResult>;
 
   /**
    * Update multiple assets in a single transaction
    */
-  updateMany(assets: Asset[], options?: WriteOptions): Promise<BulkOperationResult>;
+  updateMany(
+    assets: Asset[],
+    options?: WriteOptions,
+  ): Promise<BulkOperationResult>;
 
   /**
    * Delete multiple assets in a single transaction
    */
-  deleteMany(ids: AssetId[], options?: WriteOptions): Promise<BulkOperationResult>;
+  deleteMany(
+    ids: AssetId[],
+    options?: WriteOptions,
+  ): Promise<BulkOperationResult>;
 
   /**
    * Update asset frontmatter directly (bypass domain logic)
@@ -105,7 +117,7 @@ export interface IAssetWriteRepository {
   updateFrontmatter(
     path: string,
     frontmatter: Record<string, any>,
-    options?: WriteOptions
+    options?: WriteOptions,
   ): Promise<Result<void>>;
 
   /**
@@ -127,7 +139,7 @@ export interface IAssetWriteRepository {
    * Execute operations within a transaction
    */
   executeInTransaction<T>(
-    operation: (context: TransactionContext) => Promise<T>
+    operation: (context: TransactionContext) => Promise<T>,
   ): Promise<Result<T>>;
 
   /**
@@ -175,7 +187,7 @@ export interface IAssetWriteRepository {
    */
   migrateAssets(
     migrationFunction: (asset: Asset) => Promise<Asset | null>,
-    options?: WriteOptions
+    options?: WriteOptions,
   ): Promise<BulkOperationResult>;
 
   /**
@@ -228,7 +240,7 @@ export interface IDomainEventDispatcher {
   dispatch(event: DomainEvent): Promise<void>;
   register<T extends DomainEvent>(
     eventType: string,
-    handler: IDomainEventHandler<T>
+    handler: IDomainEventHandler<T>,
   ): void;
   unregister(eventType: string, handler: IDomainEventHandler<any>): void;
 }
@@ -240,15 +252,15 @@ export interface AssetChangeTracker {
   trackChange(
     assetId: AssetId,
     changeType: "created" | "updated" | "deleted",
-    changes: Record<string, { oldValue: any; newValue: any }>
+    changes: Record<string, { oldValue: any; newValue: any }>,
   ): void;
-  
+
   getChanges(assetId: AssetId): Array<{
     timestamp: Date;
     changeType: string;
     changes: Record<string, { oldValue: any; newValue: any }>;
   }>;
-  
+
   clearChanges(assetId: AssetId): void;
 }
 

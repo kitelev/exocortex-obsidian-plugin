@@ -28,7 +28,7 @@ export class LifecycleRegistry {
       } catch (error) {
         console.error(
           `Failed to initialize manager ${manager.getManagerId()}:`,
-          error
+          error,
         );
       }
     }
@@ -47,7 +47,7 @@ export class LifecycleRegistry {
       } catch (error) {
         console.error(
           `Failed to cleanup manager ${manager.getManagerId()}:`,
-          error
+          error,
         );
       }
     }
@@ -56,8 +56,13 @@ export class LifecycleRegistry {
   /**
    * Get a specific manager by type
    */
-  getManager<T extends ILifecycleManager>(managerType: new (...args: any[]) => T): T | null {
-    return this.managers.find(manager => manager instanceof managerType) as T || null;
+  getManager<T extends ILifecycleManager>(
+    managerType: new (...args: any[]) => T,
+  ): T | null {
+    return (
+      (this.managers.find((manager) => manager instanceof managerType) as T) ||
+      null
+    );
   }
 
   /**

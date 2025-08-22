@@ -70,13 +70,13 @@ export abstract class Entity<T> {
 
   protected createDomainEvent(
     eventType: string,
-    eventData: Record<string, any> = {}
+    eventData: Record<string, any> = {},
   ): DomainEvent {
     return {
       eventType,
       aggregateId: this._id.toString(),
       occurredOn: new Date(),
-      eventData
+      eventData,
     };
   }
 

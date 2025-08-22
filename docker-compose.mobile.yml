@@ -1,7 +1,7 @@
 # Mobile Testing Docker Compose Configuration
 # Specialized setup for mobile environment testing
 
-version: '3.8'
+version: "3.8"
 
 services:
   # =============================================================================

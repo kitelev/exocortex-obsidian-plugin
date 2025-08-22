@@ -5,6 +5,7 @@ This document describes the containerized UI testing setup for the Exocortex Obs
 ## 🎯 Overview
 
 The Docker UI testing environment provides:
+
 - **Isolated Testing**: Tests run in containers, never interrupting your development
 - **Consistent Environment**: Same test environment across all machines and CI/CD
 - **Headless Operation**: No popups, window stealing, or visual disruptions
@@ -14,10 +15,12 @@ The Docker UI testing environment provides:
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Docker and Docker Compose installed
 - Node.js 18+ (for local development)
 
 ### Run Tests Immediately
+
 ```bash
 # Quick test run (basic validation)
 ./scripts/docker-test-quick.sh
@@ -30,6 +33,7 @@ The Docker UI testing environment provides:
 ```
 
 ### Development Workflow
+
 ```bash
 # Start development environment (with debugging capabilities)
 ./scripts/docker-ui-test.sh dev
@@ -47,6 +51,7 @@ The Docker UI testing environment provides:
 ## 📁 Architecture
 
 ### Container Structure
+
 ```
 Dockerfile.ui-test (Multi-stage build)
 ├── base          → Alpine Linux + system dependencies
@@ -60,6 +65,7 @@ Dockerfile.ui-test (Multi-stage build)
 ```
 
 ### Service Architecture
+
 ```
 docker-compose.ui-test.yml
 ├── ui-test-runner      → Complete test suite
@@ -74,9 +80,11 @@ docker-compose.ui-test.yml
 ## 🧪 Test Suites
 
 ### 1. Basic Tests (`basic`)
+
 **Purpose**: Quick validation and smoke tests
 **Duration**: ~2-5 minutes
 **Coverage**:
+
 - Plugin activation
 - Workspace initialization
 - SPARQL processor registration
@@ -91,9 +99,11 @@ docker-compose.ui-test.yml
 ```
 
 ### 2. SPARQL Tests (`sparql`)
+
 **Purpose**: SPARQL functionality validation
 **Duration**: ~5-10 minutes
 **Coverage**:
+
 - SPARQL query execution
 - Results rendering
 - Error handling
@@ -106,9 +116,11 @@ docker-compose.ui-test.yml
 ```
 
 ### 3. UI Tests (`ui`)
+
 **Purpose**: Complete UI interaction testing
 **Duration**: ~10-15 minutes
 **Coverage**:
+
 - Modal interactions
 - Button functionality
 - Editor integration
@@ -121,6 +133,7 @@ docker-compose.ui-test.yml
 ```
 
 ### 4. Complete Suite (`all`)
+
 **Purpose**: Comprehensive testing
 **Duration**: ~15-25 minutes
 **Coverage**: All of the above plus edge cases
@@ -133,6 +146,7 @@ docker-compose.ui-test.yml
 ## 🛠️ Development Features
 
 ### Interactive Development Environment
+
 ```bash
 # Start interactive container
 ./scripts/docker-ui-test.sh dev
@@ -145,6 +159,7 @@ npx wdio run wdio.conf.ts --spec tests/ui/specs/activate.spec.ts
 ```
 
 ### Debug Mode
+
 ```bash
 # Enable debug output
 ./scripts/docker-ui-test.sh -v run basic
@@ -156,7 +171,9 @@ npx wdio run wdio.conf.ts --spec tests/ui/specs/activate.spec.ts
 ```
 
 ### Live Code Testing
+
 The development environment mounts your source code as a volume:
+
 ```bash
 # Changes to these directories are reflected immediately:
 # - src/
@@ -167,6 +184,7 @@ The development environment mounts your source code as a volume:
 ## 📊 Test Output
 
 ### Directory Structure
+
 ```
 test-output/
 ├── ui-results/           → WebdriverIO JSON reports
@@ -180,6 +198,7 @@ test-output/
 ```
 
 ### Accessing Results
+
 ```bash
 # View latest test results
 cat test-output/ui-results/wdio-0-0-json-reporter.json | jq '.stats'
@@ -194,6 +213,7 @@ tail -f test-output/performance/memory.log
 ## 🔧 Configuration
 
 ### Environment Variables
+
 ```bash
 # Test behavior
 export HEADLESS=true          # Run in headless mode
@@ -210,6 +230,7 @@ export NODE_OPTIONS="--max-old-space-size=4096"
 ```
 
 ### Docker Compose Profiles
+
 ```bash
 # Available profiles:
 --profile ui-tests           # Standard UI testing
@@ -222,6 +243,7 @@ export NODE_OPTIONS="--max-old-space-size=4096"
 ```
 
 ### Custom Configuration
+
 ```bash
 # Custom output directory
 ./scripts/docker-ui-test.sh -o ./my-test-output run
@@ -236,13 +258,16 @@ export NODE_OPTIONS="--max-old-space-size=4096"
 ## 🤖 CI/CD Integration
 
 ### GitHub Actions
+
 The workflow `.github/workflows/docker-ui-tests.yml` provides:
+
 - Automatic test execution on PRs and pushes
 - Matrix testing across multiple Node.js versions
 - Test result reporting in PR comments
 - Artifact collection (screenshots, logs, reports)
 
 ### Manual Workflow Dispatch
+
 ```bash
 # Trigger from GitHub UI or CLI
 gh workflow run docker-ui-tests.yml \
@@ -251,6 +276,7 @@ gh workflow run docker-ui-tests.yml \
 ```
 
 ### Local CI Simulation
+
 ```bash
 # Run tests exactly as CI does
 ./scripts/docker-ui-test.sh ci
@@ -265,6 +291,7 @@ export CI=true HEADLESS=true NO_SANDBOX=true
 ### Common Issues
 
 #### "Virtual display server failed to start"
+
 ```bash
 # Solution 1: Check X11 dependencies
 docker-compose -f docker-compose.ui-test.yml build --no-cache
@@ -275,6 +302,7 @@ privileged: true
 ```
 
 #### "Obsidian workspace failed to become ready"
+
 ```bash
 # Increase timeout
 export WDIO_TIMEOUT=60000
@@ -287,6 +315,7 @@ docker-compose -f docker-compose.ui-test.yml run ui-test-dev ls -la /app/obsidia
 ```
 
 #### "Tests fail only in Docker"
+
 ```bash
 # Compare environments
 ./scripts/docker-ui-test.sh -v run basic 2>&1 | tee docker-debug.log
@@ -297,6 +326,7 @@ export HEADLESS=false
 ```
 
 #### Container exits immediately
+
 ```bash
 # Check container logs
 docker-compose -f docker-compose.ui-test.yml logs ui-test-runner
@@ -306,6 +336,7 @@ docker-compose -f docker-compose.ui-test.yml run ui-test-runner /bin/bash
 ```
 
 ### Debug Commands
+
 ```bash
 # Container status
 docker-compose -f docker-compose.ui-test.yml ps
@@ -323,6 +354,7 @@ docker network ls | grep ui-test
 ## 🎛️ Advanced Usage
 
 ### Custom Test Execution
+
 ```bash
 # Run specific spec file
 docker-compose -f docker-compose.ui-test.yml run ui-test-dev \
@@ -334,6 +366,7 @@ docker-compose -f docker-compose.ui-test.yml run ui-test-dev \
 ```
 
 ### Performance Testing
+
 ```bash
 # Start performance monitoring
 ./scripts/docker-ui-test.sh --profile monitoring run all
@@ -344,6 +377,7 @@ docker exec -it $(docker-compose -f docker-compose.ui-test.yml ps -q performance
 ```
 
 ### Parallel Test Execution
+
 ```bash
 # Run multiple test suites in parallel
 ./scripts/docker-ui-test.sh run basic &
@@ -354,6 +388,7 @@ wait  # Wait for all to complete
 ## 🔄 Maintenance
 
 ### Container Updates
+
 ```bash
 # Force rebuild with latest dependencies
 ./scripts/docker-ui-test.sh --build run
@@ -364,6 +399,7 @@ docker-compose -f docker-compose.ui-test.yml build --no-cache obsidian-setup
 ```
 
 ### Cleanup
+
 ```bash
 # Clean up all containers and volumes
 ./scripts/docker-ui-test.sh clean --all
@@ -374,6 +410,7 @@ docker volume prune -f
 ```
 
 ### Resource Management
+
 ```bash
 # Check Docker space usage
 docker system df
@@ -385,18 +422,21 @@ docker image prune --filter "label=com.docker.compose.project=exocortex-ui-test"
 ## 📚 Best Practices
 
 ### For Developers
+
 1. **Use Quick Runner**: Start with `./scripts/docker-test-quick.sh` for rapid feedback
 2. **Background Testing**: Run tests in background while developing
 3. **Incremental Testing**: Use specific test suites (`basic`, `sparql`) during development
 4. **Debug Mode**: Use interactive mode for test development and debugging
 
 ### For CI/CD
+
 1. **Use CI Profile**: Always use `--profile ci` for optimized CI runs
 2. **Artifact Collection**: Collect screenshots and logs for failed tests
 3. **Timeout Management**: Set appropriate timeouts for CI environment
 4. **Resource Limits**: Monitor container resource usage
 
 ### For Test Development
+
 1. **Page Objects**: Follow existing page object patterns in `tests/ui/pageobjects/`
 2. **Test Isolation**: Ensure tests don't depend on each other
 3. **Error Handling**: Handle both success and failure scenarios
@@ -412,6 +452,7 @@ docker image prune --filter "label=com.docker.compose.project=exocortex-ui-test"
 ## 🆘 Support
 
 ### Getting Help
+
 1. Check the troubleshooting section above
 2. Review container logs: `./scripts/docker-ui-test.sh logs`
 3. Run in debug mode: `./scripts/docker-ui-test.sh debug`
@@ -422,6 +463,7 @@ docker image prune --filter "label=com.docker.compose.project=exocortex-ui-test"
    - Test command that failed
 
 ### Contributing
+
 1. Test new features with Docker environment
 2. Update documentation for any configuration changes
 3. Ensure CI workflow still passes

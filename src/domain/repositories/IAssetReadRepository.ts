@@ -62,7 +62,7 @@ export interface IAssetReadRepository {
    */
   findBySpecification(
     specification: AssetSpecification,
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -70,7 +70,7 @@ export interface IAssetReadRepository {
    */
   findByClass(
     className: ClassName,
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -78,7 +78,7 @@ export interface IAssetReadRepository {
    */
   findByOntology(
     prefix: OntologyPrefix,
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -87,7 +87,7 @@ export interface IAssetReadRepository {
   findByPropertyValue(
     propertyName: string,
     value: any,
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -95,7 +95,7 @@ export interface IAssetReadRepository {
    */
   findWithProperty(
     propertyName: string,
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -103,7 +103,7 @@ export interface IAssetReadRepository {
    */
   findByTitlePattern(
     pattern: string | RegExp,
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -112,7 +112,7 @@ export interface IAssetReadRepository {
   findCreatedBetween(
     startDate: Date,
     endDate: Date,
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -121,7 +121,7 @@ export interface IAssetReadRepository {
   findUpdatedBetween(
     startDate: Date,
     endDate: Date,
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -129,7 +129,7 @@ export interface IAssetReadRepository {
    */
   findRecentlyCreated(
     daysBack?: number,
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -137,7 +137,7 @@ export interface IAssetReadRepository {
    */
   findRecentlyUpdated(
     daysBack?: number,
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -145,7 +145,7 @@ export interface IAssetReadRepository {
    */
   findByTag(
     tag: string,
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -153,7 +153,7 @@ export interface IAssetReadRepository {
    */
   findByAnyTag(
     tags: string[],
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -161,7 +161,7 @@ export interface IAssetReadRepository {
    */
   findByAllTags(
     tags: string[],
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -222,17 +222,14 @@ export interface IAssetReadRepository {
   /**
    * Search assets by full-text query
    */
-  search(
-    query: string,
-    options?: AssetQueryOptions
-  ): Promise<AssetQueryResult>;
+  search(query: string, options?: AssetQueryOptions): Promise<AssetQueryResult>;
 
   /**
    * Find related assets (assets that reference or are referenced by the given asset)
    */
   findRelatedAssets(
     id: AssetId,
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -240,7 +237,7 @@ export interface IAssetReadRepository {
    */
   findReferencingAssets(
     id: AssetId,
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**
@@ -248,7 +245,7 @@ export interface IAssetReadRepository {
    */
   findReferencedAssets(
     id: AssetId,
-    options?: AssetQueryOptions
+    options?: AssetQueryOptions,
   ): Promise<AssetQueryResult>;
 
   /**

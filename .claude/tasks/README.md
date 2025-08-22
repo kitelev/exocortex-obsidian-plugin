@@ -1,6 +1,7 @@
 # 📋 Claude Task Tracker System
 
 ## Overview
+
 Персистентная система управления задачами для AI-агентов, интегрированная с memory-bank для полной трассируемости.
 
 ## Directory Structure
@@ -24,6 +25,7 @@
 ## Task Format
 
 ### Task File Structure
+
 ```yaml
 # TASK-{ID}-{SHORT-NAME}.md
 
@@ -65,6 +67,7 @@ Output and deliverables...
 ## Integration with Memory Bank
 
 ### Automatic Sync Points
+
 1. **Task Creation** → Updates CLAUDE-roadmap.md
 2. **Task Completion** → Updates CLAUDE-features.md
 3. **Sprint Planning** → Updates CLAUDE-sprints.md
@@ -72,6 +75,7 @@ Output and deliverables...
 5. **Bug Reports** → Updates CLAUDE-errors.md
 
 ### Traceability Matrix
+
 ```
 Task → Requirement → Feature → Test → Release
 ```
@@ -93,12 +97,14 @@ graph LR
 ## Agent Task Protocols
 
 ### Creating Tasks
+
 ```bash
 # Agent creates new task
 echo "task content" > .claude/tasks/backlog/{category}/TASK-{ID}.md
 ```
 
 ### Moving to Active
+
 ```bash
 # During sprint planning
 mv .claude/tasks/backlog/{category}/TASK-{ID}.md \
@@ -106,6 +112,7 @@ mv .claude/tasks/backlog/{category}/TASK-{ID}.md \
 ```
 
 ### Completing Tasks
+
 ```bash
 # Mark as done and archive
 mv .claude/tasks/active/*/TASK-{ID}.md \
@@ -115,12 +122,14 @@ mv .claude/tasks/active/*/TASK-{ID}.md \
 ## Metrics Tracking
 
 ### Velocity Metrics
+
 - Tasks completed per sprint
 - Story points delivered
 - Cycle time per task type
 - Agent productivity metrics
 
 ### Quality Metrics
+
 - Bugs per feature
 - Rework percentage
 - Test coverage impact
@@ -132,17 +141,21 @@ mv .claude/tasks/active/*/TASK-{ID}.md \
 # Daily Standup - {DATE}
 
 ## Yesterday
+
 - Completed: [TASK-001, TASK-002]
 - Blocked: [TASK-003]
 
 ## Today
+
 - In Progress: [TASK-004, TASK-005]
 - Planned: [TASK-006]
 
 ## Blockers
+
 - TASK-003: Waiting for API access
 
 ## Metrics
+
 - Sprint Progress: 45%
 - Velocity: On Track
 ```
@@ -153,21 +166,26 @@ mv .claude/tasks/active/*/TASK-{ID}.md \
 # Sprint {N} Planning
 
 ## Sprint Goal
+
 Main objective for this sprint
 
 ## Committed Tasks
+
 - TASK-001: 3 points
 - TASK-002: 5 points
 - TASK-003: 2 points
-Total: 10 points
+  Total: 10 points
 
 ## Stretch Goals
+
 - TASK-004: 3 points
 
 ## Risks
+
 - Risk 1: Mitigation plan
 
 ## Success Criteria
+
 - All committed tasks completed
 - Test coverage maintained
 - Documentation updated
@@ -179,43 +197,52 @@ Total: 10 points
 # EPIC-{ID}: {Epic Title}
 
 ## Vision
+
 High-level goal and value proposition
 
 ## Success Metrics
+
 - KPI 1: Target value
 - KPI 2: Target value
 
 ## Milestones
+
 - [ ] Milestone 1: Date
 - [ ] Milestone 2: Date
 
 ## Tasks
+
 - [ ] TASK-001: Task title
 - [ ] TASK-002: Task title
 
 ## Dependencies
+
 - External dependencies
 - Internal dependencies
 
 ## Risks
+
 - Risk assessment and mitigation
 ```
 
 ## Automation Scripts
 
 ### Task Status Update
+
 ```bash
 # Update task status
 sed -i 's/status: .*/status: in_progress/' TASK-{ID}.md
 ```
 
 ### Generate Sprint Report
+
 ```bash
 # Count tasks by status
 find .claude/tasks/active -name "*.md" -exec grep "status:" {} \; | sort | uniq -c
 ```
 
 ### Archive Old Tasks
+
 ```bash
 # Move completed tasks older than 30 days
 find .claude/tasks/completed -mtime +30 -type f -exec mv {} .claude/tasks/archive/ \;
@@ -224,12 +251,14 @@ find .claude/tasks/completed -mtime +30 -type f -exec mv {} .claude/tasks/archiv
 ## Integration Points
 
 ### With Agents
+
 - Orchestrator: Creates and assigns tasks
 - Scrum Master: Manages sprints
 - Product Manager: Maintains backlog
 - Meta Agent: Analyzes metrics
 
 ### With Memory Bank
+
 - Requirements → Tasks
 - Tasks → Features
 - Features → Documentation

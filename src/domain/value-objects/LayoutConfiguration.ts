@@ -5,12 +5,12 @@ import { Result } from "../core/Result";
  */
 export enum LayoutBlockType {
   PROPERTIES = "properties",
-  CHILDREN_EFFORTS = "children_efforts", 
+  CHILDREN_EFFORTS = "children_efforts",
   CUSTOM_QUERY = "custom_query",
   BACKLINKS = "backlinks",
   NARROWER = "narrower",
   BUTTONS = "buttons",
-  MARKDOWN = "markdown"
+  MARKDOWN = "markdown",
 }
 
 /**
@@ -20,7 +20,7 @@ export enum LayoutDisplayMode {
   TABLE = "table",
   LIST = "list",
   CARDS = "cards",
-  TREE = "tree"
+  TREE = "tree",
 }
 
 /**
@@ -28,7 +28,7 @@ export enum LayoutDisplayMode {
  */
 export enum LayoutOrientation {
   VERTICAL = "vertical",
-  HORIZONTAL = "horizontal"
+  HORIZONTAL = "horizontal",
 }
 
 /**
@@ -91,16 +91,20 @@ export class LayoutConfiguration {
     }
 
     if (props.name.length > 100) {
-      return Result.fail<LayoutConfiguration>("Layout name cannot exceed 100 characters");
+      return Result.fail<LayoutConfiguration>(
+        "Layout name cannot exceed 100 characters",
+      );
     }
 
     // Validate blocks
     if (!props.blocks || props.blocks.length === 0) {
-      return Result.fail<LayoutConfiguration>("Layout must have at least one block");
+      return Result.fail<LayoutConfiguration>(
+        "Layout must have at least one block",
+      );
     }
 
     // Validate block order uniqueness
-    const orders = props.blocks.map(b => b.order);
+    const orders = props.blocks.map((b) => b.order);
     const uniqueOrders = new Set(orders);
     if (orders.length !== uniqueOrders.size) {
       return Result.fail<LayoutConfiguration>("Block orders must be unique");
@@ -110,24 +114,28 @@ export class LayoutConfiguration {
     for (const block of props.blocks) {
       if (block.type === LayoutBlockType.CUSTOM_QUERY) {
         if (!block.customQuery || block.customQuery.trim().length === 0) {
-          return Result.fail<LayoutConfiguration>("Custom query blocks must have a query");
+          return Result.fail<LayoutConfiguration>(
+            "Custom query blocks must have a query",
+          );
         }
       }
     }
 
     // Validate CSS if provided
     if (props.customCss && props.customCss.length > 10000) {
-      return Result.fail<LayoutConfiguration>("Custom CSS cannot exceed 10000 characters");
+      return Result.fail<LayoutConfiguration>(
+        "Custom CSS cannot exceed 10000 characters",
+      );
     }
 
     const configProps: LayoutConfigurationProps = {
       name: props.name.trim(),
       description: props.description?.trim(),
       orientation: props.orientation ?? LayoutOrientation.VERTICAL,
-      blocks: props.blocks.map(block => ({ ...block })), // Deep copy
+      blocks: props.blocks.map((block) => ({ ...block })), // Deep copy
       responsive: props.responsive ?? true,
       theme: props.theme?.trim(),
-      customCss: props.customCss?.trim()
+      customCss: props.customCss?.trim(),
     };
 
     return Result.ok<LayoutConfiguration>(new LayoutConfiguration(configProps));
@@ -143,29 +151,29 @@ export class LayoutConfiguration {
         title: "Properties",
         displayMode: LayoutDisplayMode.TABLE,
         visible: true,
-        order: 1
+        order: 1,
       },
       {
         type: LayoutBlockType.CHILDREN_EFFORTS,
         title: "Children Efforts",
         displayMode: LayoutDisplayMode.TABLE,
         visible: true,
-        order: 2
+        order: 2,
       },
       {
         type: LayoutBlockType.BACKLINKS,
         title: "Backlinks",
         displayMode: LayoutDisplayMode.LIST,
         visible: true,
-        order: 3
-      }
+        order: 3,
+      },
     ];
 
     return new LayoutConfiguration({
       name,
       orientation: LayoutOrientation.VERTICAL,
       blocks: defaultBlocks,
-      responsive: true
+      responsive: true,
     });
   }
 
@@ -201,14 +209,14 @@ export class LayoutConfiguration {
    * Get visible blocks only
    */
   getVisibleBlocks(): ReadonlyArray<BlockConfiguration> {
-    return this.getBlocks().filter(block => block.visible);
+    return this.getBlocks().filter((block) => block.visible);
   }
 
   /**
    * Get block by type
    */
   getBlockByType(type: LayoutBlockType): BlockConfiguration | undefined {
-    return this.props.blocks.find(block => block.type === type);
+    return this.props.blocks.find((block) => block.type === type);
   }
 
   /**
@@ -236,25 +244,32 @@ export class LayoutConfiguration {
    * Create a new configuration with additional block
    */
   withBlock(block: BlockConfiguration): Result<LayoutConfiguration> {
-    const existingBlock = this.props.blocks.find(b => b.type === block.type);
+    const existingBlock = this.props.blocks.find((b) => b.type === block.type);
     if (existingBlock) {
-      return Result.fail<LayoutConfiguration>(`Block of type ${block.type} already exists`);
+      return Result.fail<LayoutConfiguration>(
+        `Block of type ${block.type} already exists`,
+      );
     }
 
     const newBlocks = [...this.props.blocks, block];
     return LayoutConfiguration.create({
       ...this.props,
-      blocks: newBlocks
+      blocks: newBlocks,
     });
   }
 
   /**
    * Create a new configuration with updated block
    */
-  withUpdatedBlock(type: LayoutBlockType, updates: Partial<BlockConfiguration>): Result<LayoutConfiguration> {
-    const blockIndex = this.props.blocks.findIndex(b => b.type === type);
+  withUpdatedBlock(
+    type: LayoutBlockType,
+    updates: Partial<BlockConfiguration>,
+  ): Result<LayoutConfiguration> {
+    const blockIndex = this.props.blocks.findIndex((b) => b.type === type);
     if (blockIndex === -1) {
-      return Result.fail<LayoutConfiguration>(`Block of type ${type} not found`);
+      return Result.fail<LayoutConfiguration>(
+        `Block of type ${type} not found`,
+      );
     }
 
     const newBlocks = [...this.props.blocks];
@@ -262,7 +277,7 @@ export class LayoutConfiguration {
 
     return LayoutConfiguration.create({
       ...this.props,
-      blocks: newBlocks
+      blocks: newBlocks,
     });
   }
 
@@ -270,30 +285,34 @@ export class LayoutConfiguration {
    * Create a new configuration without a specific block
    */
   withoutBlock(type: LayoutBlockType): Result<LayoutConfiguration> {
-    const newBlocks = this.props.blocks.filter(b => b.type !== type);
-    
+    const newBlocks = this.props.blocks.filter((b) => b.type !== type);
+
     if (newBlocks.length === 0) {
-      return Result.fail<LayoutConfiguration>("Cannot remove all blocks from layout");
+      return Result.fail<LayoutConfiguration>(
+        "Cannot remove all blocks from layout",
+      );
     }
 
     return LayoutConfiguration.create({
       ...this.props,
-      blocks: newBlocks
+      blocks: newBlocks,
     });
   }
 
   /**
    * Create a new configuration with reordered blocks
    */
-  withReorderedBlocks(typeOrderMap: Record<LayoutBlockType, number>): Result<LayoutConfiguration> {
-    const newBlocks = this.props.blocks.map(block => ({
+  withReorderedBlocks(
+    typeOrderMap: Record<LayoutBlockType, number>,
+  ): Result<LayoutConfiguration> {
+    const newBlocks = this.props.blocks.map((block) => ({
       ...block,
-      order: typeOrderMap[block.type] ?? block.order
+      order: typeOrderMap[block.type] ?? block.order,
     }));
 
     return LayoutConfiguration.create({
       ...this.props,
-      blocks: newBlocks
+      blocks: newBlocks,
     });
   }
 
@@ -305,10 +324,10 @@ export class LayoutConfiguration {
       name: this.props.name,
       description: this.props.description,
       orientation: this.props.orientation,
-      blocks: this.props.blocks.map(block => ({ ...block })),
+      blocks: this.props.blocks.map((block) => ({ ...block })),
       responsive: this.props.responsive,
       theme: this.props.theme,
-      customCss: this.props.customCss
+      customCss: this.props.customCss,
     };
   }
 
@@ -324,10 +343,12 @@ export class LayoutConfiguration {
         blocks: obj.blocks || [],
         responsive: obj.responsive,
         theme: obj.theme,
-        customCss: obj.customCss
+        customCss: obj.customCss,
       });
     } catch (error) {
-      return Result.fail<LayoutConfiguration>(`Invalid layout configuration: ${error}`);
+      return Result.fail<LayoutConfiguration>(
+        `Invalid layout configuration: ${error}`,
+      );
     }
   }
 
@@ -341,11 +362,13 @@ export class LayoutConfiguration {
   /**
    * Create a copy with new properties
    */
-  withProperties(updates: Partial<LayoutConfigurationProps>): Result<LayoutConfiguration> {
+  withProperties(
+    updates: Partial<LayoutConfigurationProps>,
+  ): Result<LayoutConfiguration> {
     return LayoutConfiguration.create({
       ...this.props,
       ...updates,
-      blocks: [...(updates.blocks || this.props.blocks)] // Convert to mutable array
+      blocks: [...(updates.blocks || this.props.blocks)], // Convert to mutable array
     });
   }
 
@@ -356,7 +379,7 @@ export class LayoutConfiguration {
     const errors: string[] = [];
 
     // Ensure at least one visible block
-    const visibleBlocks = this.props.blocks.filter(b => b.visible);
+    const visibleBlocks = this.props.blocks.filter((b) => b.visible);
     if (visibleBlocks.length === 0) {
       errors.push("Layout must have at least one visible block");
     }

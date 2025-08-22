@@ -74,34 +74,41 @@ This layout configuration defines how `ims__Concept` assets are displayed in the
 ## Features
 
 ### Concept Properties Block
+
 Shows key concept properties with inline editing for:
+
 - Description
-- Broader concept relationships  
+- Broader concept relationships
 - Definition
 - Notes
 
 ### Narrower Concepts Block
+
 Displays all concepts that reference this concept as their broader concept:
+
 - Table format showing concept name, class, and description
 - Filtered to show only `ims__Concept` instances
 - Limited to 50 results for performance
 - Uses `ims__Concept_broader` property for hierarchy detection
 
-### Related Concepts Block  
+### Related Concepts Block
+
 Shows concepts explicitly related through `ims__Concept_relates` property (collapsed by default).
 
 ### Referenced In Block
+
 Shows backlinks from other notes that reference this concept (collapsed by default).
 
 ## Usage
 
 1. Place this file in your configured layouts folder
-2. Enable "Class-Based Layouts" in plugin settings  
+2. Enable "Class-Based Layouts" in plugin settings
 3. Open any concept asset to see this layout applied
 
 ## Narrower Block Configuration
 
 The Narrower block uses the following configuration:
+
 - **broaderProperty**: `ims__Concept_broader` - Property that defines broader/narrower relationships
 - **filterByClass**: `ims__Concept` - Only show concepts of this class
 - **displayAs**: `table` - Display format (list, table, or cards)
@@ -110,6 +117,7 @@ The Narrower block uses the following configuration:
 ## Customization
 
 Modify the `ui__ClassLayout_blocks` frontmatter to:
+
 - Add/remove blocks
 - Change block order
 - Adjust filters and sorting

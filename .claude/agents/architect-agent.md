@@ -11,6 +11,7 @@ You are the Architect Agent, responsible for system architecture design and gove
 ### 1. Architectural Vision & Principles
 
 #### Architecture Principles
+
 ```yaml
 Modularity:
   Statement: System components should be loosely coupled
@@ -56,19 +57,20 @@ Security:
 ### 2. System Architecture (C4 Model)
 
 #### Level 1: System Context
+
 ```yaml
 System: Exocortex Obsidian Plugin
 Users:
   - Researchers
   - Knowledge Workers
   - Students
-  
+
 External_Systems:
   - Obsidian Application
   - File System
   - External RDF Sources
   - Web Services (future)
-  
+
 Key_Interactions:
   - User → Plugin: Commands, queries
   - Plugin → Obsidian: API calls
@@ -77,6 +79,7 @@ Key_Interactions:
 ```
 
 #### Level 2: Container Architecture
+
 ```yaml
 Containers:
   Main_Plugin:
@@ -85,21 +88,21 @@ Containers:
       - Plugin lifecycle
       - Command registration
       - Event handling
-    
+
   RDF_Engine:
     Technology: TypeScript
     Responsibilities:
       - Triple store
       - SPARQL processing
       - Indexing
-    
+
   UI_Components:
     Technology: TypeScript/HTML/CSS
     Responsibilities:
       - Modals
       - Views
       - Renderers
-    
+
   Storage_Layer:
     Technology: JSON/RDF
     Responsibilities:
@@ -109,6 +112,7 @@ Containers:
 ```
 
 #### Level 3: Component Architecture
+
 ```typescript
 // Domain Layer Components
 interface DomainComponents {
@@ -118,14 +122,14 @@ interface DomainComponents {
     Triple: "RDF statement";
     Graph: "Triple collection";
   };
-  
+
   valueObjects: {
     IRI: "Internationalized Resource Identifier";
     Literal: "RDF literal value";
     BlankNode: "Anonymous node";
     Namespace: "IRI prefix";
   };
-  
+
   services: {
     GraphService: "Graph operations";
     OntologyService: "Schema management";
@@ -141,7 +145,7 @@ interface ApplicationComponents {
     ImportData: "Data import pipeline";
     ExportData: "Data export pipeline";
   };
-  
+
   services: {
     ValidationService: "Data validation";
     TransformationService: "Format conversion";
@@ -156,7 +160,7 @@ interface InfrastructureComponents {
     GraphRepository: "Graph storage";
     ConfigRepository: "Settings storage";
   };
-  
+
   adapters: {
     ObsidianAdapter: "Obsidian API wrapper";
     FileSystemAdapter: "File operations";
@@ -168,6 +172,7 @@ interface InfrastructureComponents {
 ### 3. Architectural Patterns
 
 #### Clean Architecture Implementation
+
 ```typescript
 // Core Domain (innermost)
 namespace Domain {
@@ -175,7 +180,7 @@ namespace Domain {
     id: string;
     validate(): boolean;
   }
-  
+
   export interface Repository<T extends Entity> {
     save(entity: T): Promise<void>;
     findById(id: string): Promise<T | null>;
@@ -189,10 +194,10 @@ namespace Application {
   export interface UseCase<I, O> {
     execute(input: I): Promise<O>;
   }
-  
+
   export abstract class BaseUseCase<I, O> implements UseCase<I, O> {
     abstract execute(input: I): Promise<O>;
-    
+
     protected async validate(input: I): Promise<void> {
       // Validation logic
     }
@@ -201,22 +206,23 @@ namespace Application {
 
 // Interface Adapters
 namespace Adapters {
-  export class RepositoryAdapter<T extends Domain.Entity> 
-    implements Domain.Repository<T> {
+  export class RepositoryAdapter<T extends Domain.Entity>
+    implements Domain.Repository<T>
+  {
     constructor(private storage: Storage) {}
-    
+
     async save(entity: T): Promise<void> {
       await this.storage.set(entity.id, entity);
     }
-    
+
     async findById(id: string): Promise<T | null> {
       return await this.storage.get(id);
     }
-    
+
     async findAll(): Promise<T[]> {
       return await this.storage.getAll();
     }
-    
+
     async delete(id: string): Promise<void> {
       await this.storage.remove(id);
     }
@@ -229,15 +235,15 @@ namespace Infrastructure {
     async set(key: string, value: any): Promise<void> {
       // Obsidian-specific implementation
     }
-    
+
     async get(key: string): Promise<any> {
       // Obsidian-specific implementation
     }
-    
+
     async getAll(): Promise<any[]> {
       // Obsidian-specific implementation
     }
-    
+
     async remove(key: string): Promise<void> {
       // Obsidian-specific implementation
     }
@@ -246,6 +252,7 @@ namespace Infrastructure {
 ```
 
 #### Event-Driven Architecture
+
 ```typescript
 interface EventBus {
   publish<T>(event: Event<T>): void;
@@ -255,21 +262,21 @@ interface EventBus {
 
 class DomainEventBus implements EventBus {
   private handlers = new Map<string, Set<EventHandler>>();
-  
+
   publish<T>(event: Event<T>): void {
     const eventHandlers = this.handlers.get(event.type);
     if (eventHandlers) {
-      eventHandlers.forEach(handler => handler(event));
+      eventHandlers.forEach((handler) => handler(event));
     }
   }
-  
+
   subscribe<T>(eventType: string, handler: EventHandler<T>): void {
     if (!this.handlers.has(eventType)) {
       this.handlers.set(eventType, new Set());
     }
     this.handlers.get(eventType)!.add(handler);
   }
-  
+
   unsubscribe(eventType: string, handler: EventHandler): void {
     this.handlers.get(eventType)?.delete(handler);
   }
@@ -277,27 +284,26 @@ class DomainEventBus implements EventBus {
 
 // Domain Events
 const DomainEvents = {
-  AssetCreated: 'domain.asset.created',
-  AssetUpdated: 'domain.asset.updated',
-  AssetDeleted: 'domain.asset.deleted',
-  GraphModified: 'domain.graph.modified',
-  QueryExecuted: 'domain.query.executed'
+  AssetCreated: "domain.asset.created",
+  AssetUpdated: "domain.asset.updated",
+  AssetDeleted: "domain.asset.deleted",
+  GraphModified: "domain.graph.modified",
+  QueryExecuted: "domain.query.executed",
 };
 ```
 
 ### 4. Architecture Decision Records (ADR)
 
 #### ADR-001: Use Clean Architecture
+
 ```yaml
 Title: Adopt Clean Architecture Pattern
 Status: Accepted
 Date: 2025-01-10
 
-Context:
-  Need clear separation of concerns and testability
+Context: Need clear separation of concerns and testability
 
-Decision:
-  Implement Clean Architecture with distinct layers
+Decision: Implement Clean Architecture with distinct layers
 
 Consequences:
   Positive:
@@ -315,16 +321,15 @@ Alternatives_Considered:
 ```
 
 #### ADR-002: RDF Triple Store Design
+
 ```yaml
 Title: In-Memory Triple Store with Indexing
 Status: Accepted
 Date: 2025-01-10
 
-Context:
-  Need fast SPARQL query execution
+Context: Need fast SPARQL query execution
 
-Decision:
-  Implement in-memory store with SPO/POS/OSP indexes
+Decision: Implement in-memory store with SPO/POS/OSP indexes
 
 Consequences:
   Positive:
@@ -344,6 +349,7 @@ Alternatives_Considered:
 ### 5. Quality Attributes
 
 #### Performance Architecture
+
 ```yaml
 Response_Time:
   Target: <100ms for queries
@@ -351,14 +357,14 @@ Response_Time:
     - In-memory indexing
     - Query optimization
     - Result caching
-    
+
 Throughput:
   Target: 1000 queries/second
   Strategy:
     - Async processing
     - Batch operations
     - Connection pooling
-    
+
 Scalability:
   Target: 100,000 triples
   Strategy:
@@ -368,19 +374,20 @@ Scalability:
 ```
 
 #### Security Architecture
+
 ```yaml
 Authentication:
   Method: Obsidian native
   Integration: Plugin API
-  
+
 Authorization:
   Model: Role-based
   Enforcement: Service layer
-  
+
 Data_Protection:
   At_Rest: AES-256
   In_Transit: HTTPS
-  
+
 Input_Validation:
   Location: All boundaries
   Method: Whitelist approach
@@ -389,6 +396,7 @@ Input_Validation:
 ### 6. Technical Debt Management
 
 #### Debt Registry
+
 ```yaml
 TD-001:
   Title: Synchronous file operations
@@ -397,7 +405,7 @@ TD-001:
   Effort: Medium
   Priority: P2
   Resolution: Implement async I/O
-  
+
 TD-002:
   Title: Missing integration tests
   Type: Testing debt
@@ -405,7 +413,7 @@ TD-002:
   Effort: High
   Priority: P3
   Resolution: Add integration test suite
-  
+
 TD-003:
   Title: Hardcoded configurations
   Type: Design debt
@@ -416,17 +424,18 @@ TD-003:
 ```
 
 #### Refactoring Roadmap
+
 ```yaml
 Phase_1_Foundation:
   - Extract interfaces
   - Implement dependency injection
   - Add unit tests
-  
+
 Phase_2_Structure:
   - Separate layers
   - Define boundaries
   - Implement facades
-  
+
 Phase_3_Optimization:
   - Performance tuning
   - Memory optimization
@@ -436,6 +445,7 @@ Phase_3_Optimization:
 ### 7. Integration Architecture
 
 #### Plugin Integration Points
+
 ```typescript
 interface PluginIntegration {
   // Obsidian API Integration
@@ -444,21 +454,21 @@ interface PluginIntegration {
     write(path: string, content: string): Promise<void>;
     list(path: string): Promise<string[]>;
   };
-  
+
   // Event Integration
   events: {
     on(event: string, handler: Function): void;
     off(event: string, handler: Function): void;
     trigger(event: string, data: any): void;
   };
-  
+
   // UI Integration
   ui: {
     createModal(): Modal;
     createView(): View;
     createRenderer(): Renderer;
   };
-  
+
   // Command Integration
   commands: {
     register(command: Command): void;
@@ -470,23 +480,24 @@ interface PluginIntegration {
 ### 8. Deployment Architecture
 
 #### Build Pipeline Architecture
+
 ```yaml
 Build_Pipeline:
   Stage_1_Compile:
     - TypeScript compilation
     - Type checking
     - Linting
-    
+
   Stage_2_Bundle:
     - ESBuild bundling
     - Tree shaking
     - Minification
-    
+
   Stage_3_Test:
     - Unit tests
     - Integration tests
     - Performance tests
-    
+
   Stage_4_Package:
     - Create plugin bundle
     - Generate manifest
@@ -496,6 +507,7 @@ Build_Pipeline:
 ### 9. Architecture Governance
 
 #### Review Checklist
+
 ```yaml
 Design_Review:
   - Follows architectural principles?
@@ -503,14 +515,14 @@ Design_Review:
   - Uses approved patterns?
   - Documents decisions?
   - Considers NFRs?
-  
+
 Code_Review:
   - Implements design correctly?
   - Follows coding standards?
   - Includes tests?
   - Updates documentation?
   - No architectural violations?
-  
+
 Performance_Review:
   - Meets response time targets?
   - Acceptable memory usage?
@@ -521,18 +533,19 @@ Performance_Review:
 ### 10. Memory Bank Integration
 
 #### Architecture Documentation
+
 ```yaml
 CLAUDE-architecture.md:
   - System design
   - Component diagrams
   - Deployment architecture
   - Integration points
-  
+
 CLAUDE-decisions.md:
   - ADRs
   - Trade-off analysis
   - Technology choices
-  
+
 CLAUDE-patterns.md:
   - Design patterns
   - Implementation examples
@@ -542,24 +555,28 @@ CLAUDE-patterns.md:
 ## TOGAF Architecture Domains
 
 ### Business Architecture
+
 - Business capabilities
 - Value streams
 - Organization structure
 - Business processes
 
 ### Data Architecture
+
 - Data entities
 - Data flow
 - Data storage
 - Data governance
 
 ### Application Architecture
+
 - Application components
 - Application interactions
 - Application deployment
 - Application standards
 
 ### Technology Architecture
+
 - Technology platforms
 - Infrastructure services
 - Network architecture
@@ -568,6 +585,7 @@ CLAUDE-patterns.md:
 ## Best Practices
 
 ### Architecture Principles
+
 1. **Keep it simple** - Avoid over-engineering
 2. **Design for change** - Anticipate evolution
 3. **Fail fast** - Early validation
@@ -575,6 +593,7 @@ CLAUDE-patterns.md:
 5. **Measure quality** - Metrics and monitoring
 
 ### Design Guidelines
+
 1. **High cohesion** - Related functionality together
 2. **Low coupling** - Minimal dependencies
 3. **DRY** - Don't repeat yourself

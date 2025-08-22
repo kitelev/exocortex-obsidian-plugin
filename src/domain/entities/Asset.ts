@@ -36,23 +36,23 @@ export class Asset extends Entity<AssetProps> {
     if (!this.props.id) {
       throw new Error("Asset must have a valid ID");
     }
-    
+
     if (!this.props.title || this.props.title.trim().length === 0) {
       throw new Error("Asset must have a non-empty title");
     }
-    
+
     if (this.props.title.length > 200) {
       throw new Error("Asset title cannot exceed 200 characters");
     }
-    
+
     if (!this.props.className) {
       throw new Error("Asset must have a valid class name");
     }
-    
+
     if (!this.props.ontology) {
       throw new Error("Asset must belong to a valid ontology");
     }
-    
+
     // Validate all property values
     for (const [key, propertyValue] of this.props.properties) {
       if (!(propertyValue instanceof PropertyValue)) {
@@ -83,7 +83,9 @@ export class Asset extends Entity<AssetProps> {
       for (const [key, value] of Object.entries(params.properties)) {
         const propertyValueResult = PropertyValue.create(value);
         if (!propertyValueResult.isSuccess) {
-          return Result.fail<Asset>(`Invalid property '${key}': ${propertyValueResult.getError()}`);
+          return Result.fail<Asset>(
+            `Invalid property '${key}': ${propertyValueResult.getError()}`,
+          );
         }
         propertyMap.set(key, propertyValueResult.getValue()!);
       }
@@ -99,20 +101,22 @@ export class Asset extends Entity<AssetProps> {
       properties: propertyMap,
       createdAt: new Date(),
       updatedAt: new Date(),
-      version: 1
+      version: 1,
     };
 
     try {
       const asset = new Asset(props);
       asset.validate();
-      
+
       // Add domain event for asset creation
-      asset.addDomainEvent(asset.createDomainEvent("AssetCreated", {
-        assetId: params.id.toString(),
-        className: params.className.toString(),
-        ontology: params.ontology.toString()
-      }));
-      
+      asset.addDomainEvent(
+        asset.createDomainEvent("AssetCreated", {
+          assetId: params.id.toString(),
+          className: params.className.toString(),
+          ontology: params.ontology.toString(),
+        }),
+      );
+
       return Result.ok<Asset>(asset);
     } catch (error) {
       return Result.fail<Asset>(`Asset creation failed: ${error}`);
@@ -170,23 +174,25 @@ export class Asset extends Entity<AssetProps> {
     if (!title || title.trim().length === 0) {
       return Result.fail<void>("Asset title cannot be empty");
     }
-    
+
     if (title.length > 200) {
       return Result.fail<void>("Asset title cannot exceed 200 characters");
     }
-    
+
     const oldTitle = this.props.title;
     this.props.title = title.trim();
     this.props.label = title.trim();
     this.props.updatedAt = new Date();
     this.props.version += 1;
-    
-    this.addDomainEvent(this.createDomainEvent("AssetTitleUpdated", {
-      assetId: this.props.id.toString(),
-      oldTitle,
-      newTitle: title.trim()
-    }));
-    
+
+    this.addDomainEvent(
+      this.createDomainEvent("AssetTitleUpdated", {
+        assetId: this.props.id.toString(),
+        oldTitle,
+        newTitle: title.trim(),
+      }),
+    );
+
     return Result.ok<void>();
   }
 
@@ -194,24 +200,28 @@ export class Asset extends Entity<AssetProps> {
     if (!key || key.trim().length === 0) {
       return Result.fail<void>("Property key cannot be empty");
     }
-    
+
     const propertyValueResult = PropertyValue.create(value);
     if (!propertyValueResult.isSuccess) {
-      return Result.fail<void>(`Invalid property value: ${propertyValueResult.getError()}`);
+      return Result.fail<void>(
+        `Invalid property value: ${propertyValueResult.getError()}`,
+      );
     }
-    
+
     const oldValue = this.props.properties.get(key);
     this.props.properties.set(key, propertyValueResult.getValue()!);
     this.props.updatedAt = new Date();
     this.props.version += 1;
-    
-    this.addDomainEvent(this.createDomainEvent("AssetPropertyUpdated", {
-      assetId: this.props.id.toString(),
-      propertyKey: key,
-      oldValue: oldValue?.getValue(),
-      newValue: value
-    }));
-    
+
+    this.addDomainEvent(
+      this.createDomainEvent("AssetPropertyUpdated", {
+        assetId: this.props.id.toString(),
+        propertyKey: key,
+        oldValue: oldValue?.getValue(),
+        newValue: value,
+      }),
+    );
+
     return Result.ok<void>();
   }
 
@@ -219,18 +229,20 @@ export class Asset extends Entity<AssetProps> {
     if (!this.props.properties.has(key)) {
       return Result.fail<void>(`Property '${key}' does not exist`);
     }
-    
+
     const oldValue = this.props.properties.get(key);
     this.props.properties.delete(key);
     this.props.updatedAt = new Date();
     this.props.version += 1;
-    
-    this.addDomainEvent(this.createDomainEvent("AssetPropertyRemoved", {
-      assetId: this.props.id.toString(),
-      propertyKey: key,
-      removedValue: oldValue?.getValue()
-    }));
-    
+
+    this.addDomainEvent(
+      this.createDomainEvent("AssetPropertyRemoved", {
+        assetId: this.props.id.toString(),
+        propertyKey: key,
+        removedValue: oldValue?.getValue(),
+      }),
+    );
+
     return Result.ok<void>();
   }
 
@@ -238,18 +250,20 @@ export class Asset extends Entity<AssetProps> {
     if (!className) {
       return Result.fail<void>("Class name cannot be null");
     }
-    
+
     const oldClassName = this.props.className;
     this.props.className = className;
     this.props.updatedAt = new Date();
     this.props.version += 1;
-    
-    this.addDomainEvent(this.createDomainEvent("AssetClassChanged", {
-      assetId: this.props.id.toString(),
-      oldClassName: oldClassName.toString(),
-      newClassName: className.toString()
-    }));
-    
+
+    this.addDomainEvent(
+      this.createDomainEvent("AssetClassChanged", {
+        assetId: this.props.id.toString(),
+        oldClassName: oldClassName.toString(),
+        newClassName: className.toString(),
+      }),
+    );
+
     return Result.ok<void>();
   }
 
@@ -257,18 +271,20 @@ export class Asset extends Entity<AssetProps> {
     if (description && description.length > 2000) {
       return Result.fail<void>("Description cannot exceed 2000 characters");
     }
-    
+
     const oldDescription = this.props.description;
     this.props.description = description?.trim();
     this.props.updatedAt = new Date();
     this.props.version += 1;
-    
-    this.addDomainEvent(this.createDomainEvent("AssetDescriptionUpdated", {
-      assetId: this.props.id.toString(),
-      oldDescription,
-      newDescription: description?.trim()
-    }));
-    
+
+    this.addDomainEvent(
+      this.createDomainEvent("AssetDescriptionUpdated", {
+        assetId: this.props.id.toString(),
+        oldDescription,
+        newDescription: description?.trim(),
+      }),
+    );
+
     return Result.ok<void>();
   }
 
@@ -277,36 +293,40 @@ export class Asset extends Entity<AssetProps> {
    */
   updateProperties(updates: Record<string, any>): Result<void> {
     const validatedProperties = new Map<string, PropertyValue>();
-    
+
     // Validate all properties first
     for (const [key, value] of Object.entries(updates)) {
       if (!key || key.trim().length === 0) {
         return Result.fail<void>("Property key cannot be empty");
       }
-      
+
       const propertyValueResult = PropertyValue.create(value);
       if (!propertyValueResult.isSuccess) {
-        return Result.fail<void>(`Invalid property '${key}': ${propertyValueResult.getError()}`);
+        return Result.fail<void>(
+          `Invalid property '${key}': ${propertyValueResult.getError()}`,
+        );
       }
-      
+
       validatedProperties.set(key, propertyValueResult.getValue()!);
     }
-    
+
     // Apply all updates atomically
     const oldProperties = new Map(this.props.properties);
     for (const [key, propertyValue] of validatedProperties) {
       this.props.properties.set(key, propertyValue);
     }
-    
+
     this.props.updatedAt = new Date();
     this.props.version += 1;
-    
-    this.addDomainEvent(this.createDomainEvent("AssetPropertiesUpdated", {
-      assetId: this.props.id.toString(),
-      updatedProperties: Object.keys(updates),
-      changeCount: validatedProperties.size
-    }));
-    
+
+    this.addDomainEvent(
+      this.createDomainEvent("AssetPropertiesUpdated", {
+        assetId: this.props.id.toString(),
+        updatedProperties: Object.keys(updates),
+        changeCount: validatedProperties.size,
+      }),
+    );
+
     return Result.ok<void>();
   }
 
@@ -315,13 +335,13 @@ export class Asset extends Entity<AssetProps> {
    */
   canDelete(): { canDelete: boolean; reasons: string[] } {
     const reasons: string[] = [];
-    
+
     // Add business rules for deletion
     // For example: cannot delete if it has dependent assets
-    
+
     return {
       canDelete: reasons.length === 0,
-      reasons
+      reasons,
     };
   }
 
@@ -331,15 +351,19 @@ export class Asset extends Entity<AssetProps> {
   markAsDeleted(): Result<void> {
     const deleteCheck = this.canDelete();
     if (!deleteCheck.canDelete) {
-      return Result.fail<void>(`Cannot delete asset: ${deleteCheck.reasons.join(', ')}`);
+      return Result.fail<void>(
+        `Cannot delete asset: ${deleteCheck.reasons.join(", ")}`,
+      );
     }
-    
-    this.addDomainEvent(this.createDomainEvent("AssetDeleted", {
-      assetId: this.props.id.toString(),
-      className: this.props.className.toString(),
-      title: this.props.title
-    }));
-    
+
+    this.addDomainEvent(
+      this.createDomainEvent("AssetDeleted", {
+        assetId: this.props.id.toString(),
+        className: this.props.className.toString(),
+        title: this.props.title,
+      }),
+    );
+
     return Result.ok<void>();
   }
 
@@ -503,7 +527,7 @@ export class Asset extends Entity<AssetProps> {
         // Update timestamps and version with validated values
         (asset as any).props.createdAt = createdAt;
         (asset as any).props.version = frontmatter["exo__Asset_version"] || 1;
-        
+
         const updatedAt = frontmatter["exo__Asset_updatedAt"];
         if (updatedAt) {
           const updatedAtDate = new Date(updatedAt);
@@ -511,7 +535,7 @@ export class Asset extends Entity<AssetProps> {
             (asset as any).props.updatedAt = updatedAtDate;
           }
         }
-        
+
         return asset;
       } else {
         console.warn(

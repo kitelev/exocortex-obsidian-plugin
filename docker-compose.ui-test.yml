@@ -1,6 +1,6 @@
 # Docker Compose for Obsidian UI Testing
 # Provides isolated test environment for developers
-version: '3.8'
+version: "3.8"
 
 services:
   # =============================================================================
@@ -33,7 +33,7 @@ services:
       # Test timeouts
       - WDIO_TIMEOUT=45000
       - MOCHA_TIMEOUT=90000
-    shm_size: 2gb  # Increased shared memory for Electron
+    shm_size: 2gb # Increased shared memory for Electron
     tmpfs:
       - /tmp:noexec,nosuid,size=100m
     networks:
@@ -60,11 +60,11 @@ services:
     environment:
       - NODE_ENV=development
       - DEBUG=true
-      - HEADLESS=false  # Can run headed for debugging
+      - HEADLESS=false # Can run headed for debugging
       - DISPLAY=:99
     ports:
-      - "9229:9229"  # Node.js debugging port
-      - "4444:4444"  # WebDriver port
+      - "9229:9229" # Node.js debugging port
+      - "4444:4444" # WebDriver port
     stdin_open: true
     tty: true
     networks:

@@ -52,7 +52,7 @@ export class GraphVisualizationProcessor {
     this.engine = new SPARQLEngine(graph);
     // Get RDFService from DI container
     const container = DIContainer.getInstance();
-    this.rdfService = container.resolve<RDFService>('RDFService');
+    this.rdfService = container.resolve<RDFService>("RDFService");
   }
 
   /**

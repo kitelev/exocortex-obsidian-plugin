@@ -33,7 +33,7 @@ export class SPARQLProcessor {
     this.focusService = focusService;
     // Get RDFService from DI container
     const container = DIContainer.getInstance();
-    this.rdfService = container.resolve<RDFService>('RDFService');
+    this.rdfService = container.resolve<RDFService>("RDFService");
     this.sanitizer = new SPARQLSanitizer();
   }
 

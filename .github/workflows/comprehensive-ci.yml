@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       skip-ui-tests:
-        description: 'Skip UI tests'
+        description: "Skip UI tests"
         required: false
-        default: 'false'
+        default: "false"
         type: boolean
 
 concurrency:
@@ -16,7 +16,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  CACHE_VERSION: v1
+  CACHE_VERSION: v2
+  NODE_OPTIONS: --max-old-space-size=4096
 
 jobs:
   # Stage 1: Build and validate across platforms
@@ -28,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node: ['18.x', '20.x']
+        node: ["18.x", "20.x"]
     outputs:
       ubuntu-build-cache: ${{ steps.cache-build.outputs.cache-hit }}
     steps:
@@ -61,7 +62,9 @@ jobs:
             deps-${{ matrix.os }}-
 
       - name: Install Dependencies
-        run: npm ci --prefer-offline --no-audit
+        run: |
+          npm ci --prefer-offline --no-audit --silent
+          npm ls --depth=0 || true
 
       - name: TypeScript Check
         run: npx tsc --noEmit
@@ -115,12 +118,12 @@ jobs:
       fail-fast: false
       matrix:
         suite: [unit, integration, e2e, semantic, mobile, security]
-        node: ['20.x']
+        node: ["20.x"]
         include:
           - suite: unit
-            node: '18.x'
+            node: "18.x"
           - suite: compatibility
-            node: '18.x'
+            node: "18.x"
     steps:
       - uses: actions/checkout@v4
 
@@ -140,8 +143,10 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci --prefer-offline --no-audit
+          if [ ! -d "node_modules" ] || [ ! -f "node_modules/.package-lock.json" ]; then
+            npm ci --prefer-offline --no-audit --silent
+          else
+            echo "✅ Dependencies cached and available"
           fi
 
       - name: Restore Build Artifacts
@@ -159,33 +164,34 @@ jobs:
         run: |
           case "${{ matrix.suite }}" in
             unit)
-              npm run test:unit -- --coverage --maxWorkers=2
+              npm run test:unit -- --coverage --maxWorkers=2 --silent --cache
               ;;
             integration)
-              npm run test:integration -- --coverage --maxWorkers=1
+              npm run test:integration -- --coverage --maxWorkers=1 --silent --cache
               ;;
             e2e)
-              npm run test:e2e -- --maxWorkers=1
+              npm run test:e2e -- --maxWorkers=1 --silent
               ;;
             semantic)
-              npm run test:semantic || npm run test -- --testPathPattern="semantic" --maxWorkers=1
+              npm run test:semantic || npm run test -- --testPathPattern="semantic" --maxWorkers=1 --silent
               ;;
             mobile)
-              npm run test:mobile || npm run test -- --testPathPattern="mobile" --maxWorkers=1
+              npm run test:mobile || npm run test -- --testPathPattern="mobile" --maxWorkers=1 --silent
               ;;
             security)
-              npm run test:security || npm run test -- --testPathPattern="security" --maxWorkers=1
+              npm run test:security || npm run test -- --testPathPattern="security" --maxWorkers=1 --silent
               ;;
             compatibility)
-              npm run test:compat || npm run test -- --maxWorkers=1
+              npm run test:compat || npm run test -- --maxWorkers=1 --silent
               ;;
             *)
-              npm test -- --maxWorkers=2
+              npm test -- --maxWorkers=2 --silent
               ;;
           esac
         env:
           NODE_OPTIONS: --max-old-space-size=4096
           CI: true
+          JEST_WORKERS: ${{ matrix.node == '18.x' && '1' || '2' }}
 
       - name: Upload Coverage
         if: contains('unit integration', matrix.suite)
@@ -213,7 +219,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: "20.x"
 
       - name: Restore Dependencies
         uses: actions/cache@v4
@@ -221,12 +227,39 @@ jobs:
           path: |
             ~/.npm
             node_modules
+            .jest-cache
           key: deps-${{ matrix.os }}-node20.x-${{ hashFiles('package-lock.json') }}-${{ env.CACHE_VERSION }}
+          restore-keys: |
+            deps-${{ matrix.os }}-node20.x-
+            deps-${{ matrix.os }}-
 
       - name: Install Dependencies
         run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci --prefer-offline --no-audit
+          if [ ! -d "node_modules" ] || [ ! -f "node_modules/.package-lock.json" ]; then
+            npm ci --prefer-offline --no-audit --silent
+          else
+            echo "✅ Dependencies cached and available"
+          fi
+
+      - name: Restore Build Artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            main.js
+            manifest.json
+            styles.css
+            dist/
+            .tsbuildinfo
+          key: build-main-${{ github.sha }}-${{ env.CACHE_VERSION }}
+
+      - name: Verify Build Artifacts
+        run: |
+          if [ ! -f main.js ]; then
+            echo "❌ main.js not found in cache, rebuilding..."
+            npm run build
+          else
+            echo "✅ Build artifacts restored from cache"
+            ls -la main.js manifest.json styles.css 2>/dev/null || true
           fi
 
       - name: Setup Display (Linux)
@@ -247,6 +280,7 @@ jobs:
         env:
           CI: true
           HEADLESS: true
+          FORCE_OBSIDIAN_DOWNLOAD: true
 
       - name: Upload Screenshots
         if: failure()
@@ -267,7 +301,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: "20.x"
 
       - name: Restore Dependencies
         uses: actions/cache@v4
@@ -279,8 +313,10 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci --prefer-offline --no-audit
+          if [ ! -d "node_modules" ] || [ ! -f "node_modules/.package-lock.json" ]; then
+            npm ci --prefer-offline --no-audit --silent
+          else
+            echo "✅ Dependencies cached and available"
           fi
 
       - name: Lint Code
@@ -290,15 +326,32 @@ jobs:
         run: npm run format:check || npx prettier --check "src/**/*.{ts,tsx,js,jsx}"
 
       - name: Security Audit
-        run: npm audit --audit-level=high || true
+        run: |
+          npm audit --audit-level=high --omit=dev || true
+          echo "Security audit completed"
+
+      - name: Restore Build Artifacts for Bundle Check
+        uses: actions/cache@v4
+        with:
+          path: |
+            main.js
+            manifest.json
+            styles.css
+            dist/
+            .tsbuildinfo
+          key: build-main-${{ github.sha }}-${{ env.CACHE_VERSION }}
 
       - name: Check Bundle Size
         run: |
-          npm run build
+          if [ ! -f main.js ]; then
+            echo "❌ main.js not found, rebuilding..."
+            npm run build
+          fi
+
           SIZE=$(stat -f%z main.js 2>/dev/null || stat -c%s main.js)
           SIZE_MB=$(echo "scale=2; $SIZE / 1048576" | bc)
           echo "📦 Bundle size: ${SIZE_MB}MB"
-          
+
           if (( $(echo "$SIZE_MB > 5" | bc -l) )); then
             echo "⚠️ Warning: Bundle size exceeds 5MB threshold"
             exit 1
@@ -317,7 +370,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: "20.x"
 
       - name: Restore Dependencies
         uses: actions/cache@v4
@@ -329,8 +382,10 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          if [ ! -d "node_modules" ]; then
-            npm ci --prefer-offline --no-audit
+          if [ ! -d "node_modules" ] || [ ! -f "node_modules/.package-lock.json" ]; then
+            npm ci --prefer-offline --no-audit --silent
+          else
+            echo "✅ Dependencies cached and available"
           fi
 
       - name: Run Performance Tests
@@ -375,14 +430,14 @@ jobs:
           echo "## Performance"
           echo "Status: ${{ needs.performance.result }}"
           echo ""
-          
+
           if [[ "${{ needs.build-matrix.result }}" != "success" || 
                 "${{ needs.test-suite.result }}" != "success" || 
                 "${{ needs.quality-checks.result }}" != "success" ]]; then
             echo "❌ **CI Failed** - Critical checks did not pass"
             exit 1
           fi
-          
+
           echo "✅ **CI Passed** - All critical checks successful"
           echo ""
           echo "### Timing"

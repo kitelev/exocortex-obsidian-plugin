@@ -3,6 +3,7 @@
 ## 🚀 Slash Commands (v3.4.0 IMPLEMENTED)
 
 **Quick Access Commands:**
+
 - `/execute` (или `/выполни`, `/exec`, `/run`) - Execute with full compliance and agent coordination
 - `/status` (или `/st`, `/статус`) - Check current progress and TodoWrite status
 - `/agents` (или `/ag`, `/агенты`) - List available agents and their capabilities
@@ -10,6 +11,7 @@
 - `/test` (или `/t`, `/тест`) - Run tests and check coverage
 
 **Enhanced Execution with Verbose Output:**
+
 ```
 /execute --verbose [task]     # Detailed agent execution logging
 /execute --debug [task]       # Full debug output with decisions
@@ -19,6 +21,7 @@
 ```
 
 **Example Usage:**
+
 ```
 /execute --verbose добавить поддержку экспорта в CSV
 /execute --debug --timing оптимизировать производительность
@@ -26,17 +29,19 @@
 /agents --active --metrics
 ```
 
-*See .claude/SLASH-COMMANDS.md for complete implementation details*
+_See .claude/SLASH-COMMANDS.md for complete implementation details_
 
 ## 📊 Enhanced Agent Output Display (NEW)
 
 ### Verbosity Levels
+
 - **silent**: Only critical errors and final results
 - **basic**: Agent start/complete/error messages (default)
 - **verbose**: All agent activities including progress and decisions
 - **debug**: Full trace including internal agent reasoning
 
 ### Visual Indicators
+
 ```
 🚀 Starting agent         - Agent initialization
 🔀 Parallel execution     - Multiple agents running simultaneously
@@ -50,6 +55,7 @@
 ```
 
 ### Environment Variables for Agent Output
+
 ```bash
 export CLAUDE_VERBOSE=verbose        # Set verbosity level
 export CLAUDE_SHOW_TIMING=true       # Show execution timing
@@ -127,6 +133,7 @@ EXECUTE-WITH-META-OPTIMIZATION:
 ## 🚀 Примеры использования с расширенным выводом
 
 ### Пример 1: Добавление новой функциональности с verbose output
+
 ```
 EXECUTE-WITH-META-OPTIMIZATION:
 
@@ -140,17 +147,17 @@ EXECUTE-WITH-META-OPTIMIZATION:
     • qa-engineer
     • ux-design-expert
     • technical-writer-agent
-  
+
   ⚡ swebok-engineer: Analyzing existing export patterns
   🤔 swebok-engineer decided: Use Factory pattern for exporters
   📝 swebok-engineer output: Generated CSVExporter class
-  
+
   ⚡ qa-engineer: Creating test scenarios
   ⚡ ux-design-expert: Designing export UI
   ⚡ technical-writer-agent: Preparing documentation
-  
+
   ✅ All agents completed (execution time: 3m 45s)
-  
+
 📊 Session Summary:
   • Total execution: 3m 45s
   • Parallel efficiency: 85%
@@ -158,6 +165,7 @@ EXECUTE-WITH-META-OPTIMIZATION:
 ```
 
 ### Пример 2: Debug режим для исследования проблемы
+
 ```
 /execute --debug --timing Исправить баг с отображением Children Efforts
 
@@ -173,13 +181,13 @@ EXECUTE-WITH-META-OPTIMIZATION:
       ⚡ Progress [75%]: Validating hypothesis
       📝 Output: Root cause analysis document
       ✅ Completed (1245ms)
-    
+
     🚀 code-searcher (15ms): Locating relevant code
       ⚡ Progress [33%]: Searching query implementations
       ⚡ Progress [66%]: Analyzing cache mechanisms
       📝 Output: 5 files identified for review
       ✅ Completed (892ms)
-  
+
   🔀 Parallel execution batch 2:
     🚀 swebok-engineer (1260ms): Implementing fix
       ⚡ Progress [20%]: Reviewing patterns
@@ -187,7 +195,7 @@ EXECUTE-WITH-META-OPTIMIZATION:
       ⚡ Progress [60%]: Writing fix
       ⚡ Progress [100%]: Adding cleanup hooks
       ✅ Completed (2150ms)
-    
+
     🚀 qa-engineer (1260ms): Creating tests
       ⚡ Progress [50%]: Writing memory leak tests
       ⚡ Progress [100%]: Validating fix
@@ -250,6 +258,7 @@ EXECUTE-WITH-META-OPTIMIZATION:
 ## 🔄 Автоматические улучшения вывода
 
 Meta-agent должен после каждой задачи:
+
 1. Анализировать эффективность отображения информации
 2. Предлагать улучшения для verbose output
 3. Обновлять паттерны логирования в CLAUDE-agents.md
@@ -267,6 +276,7 @@ Meta-agent должен после каждой задачи:
 ## 🎨 Форматирование вывода агентов
 
 ### Стандартный формат для агента:
+
 ```
 🚀 agent-name: Task description
   ⚡ Step 1: Action being performed [25%]
@@ -279,6 +289,7 @@ Meta-agent должен после каждой задачи:
 ```
 
 ### Формат для параллельной группы:
+
 ```
 🔀 Parallel execution group (3 agents):
   • agent-1: Task 1

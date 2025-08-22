@@ -19,8 +19,8 @@ export class ObsidianAppPage {
       },
       {
         timeout,
-        timeoutMsg: 'Obsidian workspace failed to become ready'
-      }
+        timeoutMsg: "Obsidian workspace failed to become ready",
+      },
     );
   }
 
@@ -29,12 +29,14 @@ export class ObsidianAppPage {
    */
   async openFile(filePath: string): Promise<void> {
     await browser.executeObsidian(({ app }, path: string) => {
-      const file = app.vault.getMarkdownFiles().find((f: any) => f.path === path || f.name === path);
+      const file = app.vault
+        .getMarkdownFiles()
+        .find((f: any) => f.path === path || f.name === path);
       if (file) {
-        app.workspace.openLinkText(file.path, '', false);
+        app.workspace.openLinkText(file.path, "", false);
       }
     }, filePath);
-    
+
     // Wait for file to open
     await (browser as any).pause(500);
   }
@@ -91,7 +93,7 @@ export class ObsidianAppPage {
       const leaf = app.workspace.activeLeaf;
       if (leaf) {
         const state = leaf.getViewState();
-        state.state.mode = 'source';
+        state.state.mode = "source";
         leaf.setViewState(state);
       }
     });
@@ -105,7 +107,7 @@ export class ObsidianAppPage {
       const leaf = app.workspace.activeLeaf;
       if (leaf) {
         const state = leaf.getViewState();
-        state.state.mode = 'preview';
+        state.state.mode = "preview";
         leaf.setViewState(state);
       }
     });

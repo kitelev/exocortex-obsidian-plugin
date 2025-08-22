@@ -9,9 +9,11 @@ export class ObsidianUIAdapter implements IUIAdapter {
 
   getDisplayLabel(file: TFile): string {
     const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
-    return frontmatter?.["exo__Asset_title"] || 
-           frontmatter?.["title"] || 
-           file.basename;
+    return (
+      frontmatter?.["exo__Asset_title"] ||
+      frontmatter?.["title"] ||
+      file.basename
+    );
   }
 
   extractFrontmatterData(file: TFile, key: string): any {
@@ -23,9 +25,9 @@ export class ObsidianUIAdapter implements IUIAdapter {
     const link = container.createEl("a", {
       text,
       cls: "internal-link",
-      href: `#`
+      href: `#`,
     });
-    
+
     link.addEventListener("click", (e) => {
       e.preventDefault();
       this.app.workspace.openLinkText(path, "", false);
@@ -39,56 +41,61 @@ export class ObsidianUIAdapter implements IUIAdapter {
       cls?: string;
       text?: string;
       attrs?: Record<string, string>;
-    }
+    },
   ): HTMLElement {
     const element = parent.createEl(tag as keyof HTMLElementTagNameMap, {
       cls: options?.cls,
       text: options?.text,
-      attr: options?.attrs
+      attr: options?.attrs,
     });
     return element;
   }
 
   cleanClassName(className: any): string {
     if (!className) return "";
-    
+
     let clean = String(className);
-    
+
     // Remove namespace prefixes
-    if (clean.includes('#')) {
-      clean = clean.split('#').pop() || clean;
+    if (clean.includes("#")) {
+      clean = clean.split("#").pop() || clean;
     }
-    
+
     // Replace underscores with spaces for display
-    clean = clean.replace(/_/g, ' ');
-    
+    clean = clean.replace(/_/g, " ");
+
     // Capitalize first letter of each word
-    clean = clean.replace(/\b\w/g, l => l.toUpperCase());
-    
+    clean = clean.replace(/\b\w/g, (l) => l.toUpperCase());
+
     return clean;
   }
 
   groupFilesByClass(files: TFile[]): Map<string, TFile[]> {
     const groups = new Map<string, TFile[]>();
-    
-    files.forEach(file => {
-      const className = this.extractFrontmatterData(file, "exo__Instance_class") || "Unclassified";
+
+    files.forEach((file) => {
+      const className =
+        this.extractFrontmatterData(file, "exo__Instance_class") ||
+        "Unclassified";
       const cleanName = this.cleanClassName(className);
-      
+
       if (!groups.has(cleanName)) {
         groups.set(cleanName, []);
       }
       groups.get(cleanName)!.push(file);
     });
-    
+
     return groups;
   }
 
   filterFilesByClass(files: TFile[], className?: string): TFile[] {
     if (!className) return files;
-    
-    return files.filter(file => {
-      const fileClass = this.extractFrontmatterData(file, "exo__Instance_class");
+
+    return files.filter((file) => {
+      const fileClass = this.extractFrontmatterData(
+        file,
+        "exo__Instance_class",
+      );
       return this.cleanClassName(fileClass) === className;
     });
   }

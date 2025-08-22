@@ -11,7 +11,7 @@ export enum PropertyValueType {
   ARRAY = "array",
   OBJECT = "object",
   REFERENCE = "reference", // For WikiLinks like [[AssetName]]
-  IRI = "iri" // For semantic web IRIs
+  IRI = "iri", // For semantic web IRIs
 }
 
 /**
@@ -26,7 +26,7 @@ export class PropertyValue {
   private constructor(
     value: any,
     type: PropertyValueType,
-    constraints: PropertyConstraints = {}
+    constraints: PropertyConstraints = {},
   ) {
     this._value = value;
     this._type = type;
@@ -36,19 +36,30 @@ export class PropertyValue {
   /**
    * Create a PropertyValue with automatic type detection
    */
-  static create(value: any, constraints: PropertyConstraints = {}): Result<PropertyValue> {
+  static create(
+    value: any,
+    constraints: PropertyConstraints = {},
+  ): Result<PropertyValue> {
     if (value === null || value === undefined) {
-      return Result.fail<PropertyValue>("Property value cannot be null or undefined");
+      return Result.fail<PropertyValue>(
+        "Property value cannot be null or undefined",
+      );
     }
 
     const type = PropertyValue.detectType(value);
-    const validationResult = PropertyValue.validateValue(value, type, constraints);
-    
+    const validationResult = PropertyValue.validateValue(
+      value,
+      type,
+      constraints,
+    );
+
     if (!validationResult.isValid) {
       return Result.fail<PropertyValue>(validationResult.error);
     }
 
-    return Result.ok<PropertyValue>(new PropertyValue(value, type, constraints));
+    return Result.ok<PropertyValue>(
+      new PropertyValue(value, type, constraints),
+    );
   }
 
   /**
@@ -57,16 +68,22 @@ export class PropertyValue {
   static createTyped(
     value: any,
     type: PropertyValueType,
-    constraints: PropertyConstraints = {}
+    constraints: PropertyConstraints = {},
   ): Result<PropertyValue> {
-    const validationResult = PropertyValue.validateValue(value, type, constraints);
-    
+    const validationResult = PropertyValue.validateValue(
+      value,
+      type,
+      constraints,
+    );
+
     if (!validationResult.isValid) {
       return Result.fail<PropertyValue>(validationResult.error);
     }
 
     const convertedValue = PropertyValue.convertValue(value, type);
-    return Result.ok<PropertyValue>(new PropertyValue(convertedValue, type, constraints));
+    return Result.ok<PropertyValue>(
+      new PropertyValue(convertedValue, type, constraints),
+    );
   }
 
   /**
@@ -88,23 +105,23 @@ export class PropertyValue {
       }
       return PropertyValueType.STRING;
     }
-    
+
     if (typeof value === "number") {
       return PropertyValueType.NUMBER;
     }
-    
+
     if (typeof value === "boolean") {
       return PropertyValueType.BOOLEAN;
     }
-    
+
     if (value instanceof Date) {
       return PropertyValueType.DATE;
     }
-    
+
     if (Array.isArray(value)) {
       return PropertyValueType.ARRAY;
     }
-    
+
     return PropertyValueType.OBJECT;
   }
 
@@ -137,23 +154,35 @@ export class PropertyValue {
   private static validateValue(
     value: any,
     type: PropertyValueType,
-    constraints: PropertyConstraints
+    constraints: PropertyConstraints,
   ): { isValid: boolean; error: string } {
     switch (type) {
       case PropertyValueType.STRING:
       case PropertyValueType.REFERENCE:
       case PropertyValueType.IRI:
         if (typeof value !== "string") {
-          return { isValid: false, error: `Expected string, got ${typeof value}` };
+          return {
+            isValid: false,
+            error: `Expected string, got ${typeof value}`,
+          };
         }
         if (constraints.minLength && value.length < constraints.minLength) {
-          return { isValid: false, error: `String too short, minimum ${constraints.minLength}` };
+          return {
+            isValid: false,
+            error: `String too short, minimum ${constraints.minLength}`,
+          };
         }
         if (constraints.maxLength && value.length > constraints.maxLength) {
-          return { isValid: false, error: `String too long, maximum ${constraints.maxLength}` };
+          return {
+            isValid: false,
+            error: `String too long, maximum ${constraints.maxLength}`,
+          };
         }
         if (constraints.pattern && !constraints.pattern.test(value)) {
-          return { isValid: false, error: "String does not match required pattern" };
+          return {
+            isValid: false,
+            error: "String does not match required pattern",
+          };
         }
         break;
 
@@ -163,10 +192,16 @@ export class PropertyValue {
           return { isValid: false, error: "Invalid number" };
         }
         if (constraints.min !== undefined && num < constraints.min) {
-          return { isValid: false, error: `Number too small, minimum ${constraints.min}` };
+          return {
+            isValid: false,
+            error: `Number too small, minimum ${constraints.min}`,
+          };
         }
         if (constraints.max !== undefined && num > constraints.max) {
-          return { isValid: false, error: `Number too large, maximum ${constraints.max}` };
+          return {
+            isValid: false,
+            error: `Number too large, maximum ${constraints.max}`,
+          };
         }
         break;
 
@@ -182,10 +217,16 @@ export class PropertyValue {
           return { isValid: false, error: "Expected array" };
         }
         if (constraints.minItems && value.length < constraints.minItems) {
-          return { isValid: false, error: `Array too short, minimum ${constraints.minItems} items` };
+          return {
+            isValid: false,
+            error: `Array too short, minimum ${constraints.minItems} items`,
+          };
         }
         if (constraints.maxItems && value.length > constraints.maxItems) {
-          return { isValid: false, error: `Array too long, maximum ${constraints.maxItems} items` };
+          return {
+            isValid: false,
+            error: `Array too long, maximum ${constraints.maxItems} items`,
+          };
         }
         break;
     }
@@ -265,7 +306,10 @@ export class PropertyValue {
     }
 
     // For complex types, use JSON comparison
-    if (this._type === PropertyValueType.ARRAY || this._type === PropertyValueType.OBJECT) {
+    if (
+      this._type === PropertyValueType.ARRAY ||
+      this._type === PropertyValueType.OBJECT
+    ) {
       return JSON.stringify(this._value) === JSON.stringify(other._value);
     }
 
@@ -278,7 +322,7 @@ export class PropertyValue {
   withConstraints(constraints: PropertyConstraints): Result<PropertyValue> {
     return PropertyValue.createTyped(this._value, this._type, {
       ...this._constraints,
-      ...constraints
+      ...constraints,
     });
   }
 }

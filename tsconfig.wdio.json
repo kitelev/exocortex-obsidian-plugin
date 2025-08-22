@@ -22,7 +22,5 @@
     "tests/ui/**/*.ts",
     "tests/ui/**/*.d.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

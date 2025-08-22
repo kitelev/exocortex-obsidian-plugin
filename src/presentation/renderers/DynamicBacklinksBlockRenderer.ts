@@ -11,9 +11,15 @@ export class DynamicBacklinksBlockRenderer {
   private dynamicBacklinksService: DynamicBacklinksService;
 
   constructor(private app: App) {
-    const vaultAdapter = new ObsidianVaultAdapter(this.app.vault, this.app.metadataCache);
+    const vaultAdapter = new ObsidianVaultAdapter(
+      this.app.vault,
+      this.app.metadataCache,
+    );
     const uiAdapter = new ObsidianUIAdapter(this.app);
-    this.dynamicBacklinksService = new DynamicBacklinksService(vaultAdapter, uiAdapter);
+    this.dynamicBacklinksService = new DynamicBacklinksService(
+      vaultAdapter,
+      uiAdapter,
+    );
   }
 
   async render(

@@ -6,7 +6,7 @@ import { CompatibilityWrapper } from "../../infrastructure/adapters/Compatibilit
 
 export class BacklinksBlockRenderer extends BaseRenderer {
   private app: App;
-  
+
   constructor(app: App) {
     super(CompatibilityWrapper.wrapAppAsUIAdapter(app));
     this.app = app;
@@ -19,11 +19,11 @@ export class BacklinksBlockRenderer extends BaseRenderer {
     dv: any,
   ): Promise<void> {
     const backlinksConfig = config as BacklinksBlockConfig;
-    
+
     const { totalFiles, filteredFiles, displayFiles } = await this.preprocess(
       container,
       config,
-      file
+      file,
     );
 
     if (totalFiles.length === 0) {
@@ -35,7 +35,7 @@ export class BacklinksBlockRenderer extends BaseRenderer {
       container,
       filteredFiles.length,
       displayFiles.length,
-      "backlink"
+      "backlink",
     );
 
     if (displayFiles.length === 0) {
@@ -53,7 +53,7 @@ export class BacklinksBlockRenderer extends BaseRenderer {
 
   protected getRelevantFiles(config: any, file: TFile): Promise<TFile[]> {
     const backlinks = (this.app.metadataCache as any).getBacklinksForFile(file);
-    
+
     if (!backlinks || !backlinks.data || backlinks.data.size === 0) {
       return Promise.resolve([]);
     }
@@ -88,7 +88,7 @@ export class BacklinksBlockRenderer extends BaseRenderer {
     const instanceClass = RenderingUtils.extractFrontmatterData(
       this.app,
       file,
-      "exo__Instance_class"
+      "exo__Instance_class",
     );
     if (instanceClass) {
       classCell.createEl("span", {
@@ -102,5 +102,4 @@ export class BacklinksBlockRenderer extends BaseRenderer {
       });
     }
   }
-
 }

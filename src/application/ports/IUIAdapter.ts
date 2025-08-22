@@ -28,7 +28,7 @@ export interface IUIAdapter {
       cls?: string;
       text?: string;
       attrs?: Record<string, string>;
-    }
+    },
   ): HTMLElement;
 
   /**

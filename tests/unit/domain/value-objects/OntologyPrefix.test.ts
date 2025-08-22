@@ -1,11 +1,11 @@
-import { OntologyPrefix } from '../../../../src/domain/value-objects/OntologyPrefix';
-import { Result } from '../../../../src/domain/core/Result';
+import { OntologyPrefix } from "../../../../src/domain/value-objects/OntologyPrefix";
+import { Result } from "../../../../src/domain/core/Result";
 
-describe('OntologyPrefix', () => {
-  describe('create', () => {
-    it('should create valid simple prefix', () => {
+describe("OntologyPrefix", () => {
+  describe("create", () => {
+    it("should create valid simple prefix", () => {
       // Given
-      const value = 'exo';
+      const value = "exo";
 
       // When
       const result = OntologyPrefix.create(value);
@@ -13,12 +13,12 @@ describe('OntologyPrefix', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const prefix = result.getValue();
-      expect(prefix.toString()).toBe('exo');
+      expect(prefix.toString()).toBe("exo");
     });
 
-    it('should create valid prefix with numbers', () => {
+    it("should create valid prefix with numbers", () => {
       // Given
-      const value = 'exo123';
+      const value = "exo123";
 
       // When
       const result = OntologyPrefix.create(value);
@@ -26,12 +26,12 @@ describe('OntologyPrefix', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const prefix = result.getValue();
-      expect(prefix.toString()).toBe('exo123');
+      expect(prefix.toString()).toBe("exo123");
     });
 
-    it('should create valid single letter prefix', () => {
+    it("should create valid single letter prefix", () => {
       // Given
-      const value = 'e';
+      const value = "e";
 
       // When
       const result = OntologyPrefix.create(value);
@@ -39,12 +39,12 @@ describe('OntologyPrefix', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const prefix = result.getValue();
-      expect(prefix.toString()).toBe('e');
+      expect(prefix.toString()).toBe("e");
     });
 
-    it('should create valid long prefix', () => {
+    it("should create valid long prefix", () => {
       // Given
-      const value = 'verylongprefix123';
+      const value = "verylongprefix123";
 
       // When
       const result = OntologyPrefix.create(value);
@@ -52,12 +52,12 @@ describe('OntologyPrefix', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const prefix = result.getValue();
-      expect(prefix.toString()).toBe('verylongprefix123');
+      expect(prefix.toString()).toBe("verylongprefix123");
     });
 
-    it('should create valid prefix with all lowercase letters', () => {
+    it("should create valid prefix with all lowercase letters", () => {
       // Given
-      const value = 'abcdefghijklmnop';
+      const value = "abcdefghijklmnop";
 
       // When
       const result = OntologyPrefix.create(value);
@@ -65,12 +65,12 @@ describe('OntologyPrefix', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const prefix = result.getValue();
-      expect(prefix.toString()).toBe('abcdefghijklmnop');
+      expect(prefix.toString()).toBe("abcdefghijklmnop");
     });
 
-    it('should create valid prefix with numbers at end', () => {
+    it("should create valid prefix with numbers at end", () => {
       // Given
-      const value = 'prefix0123456789';
+      const value = "prefix0123456789";
 
       // When
       const result = OntologyPrefix.create(value);
@@ -78,22 +78,22 @@ describe('OntologyPrefix', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const prefix = result.getValue();
-      expect(prefix.toString()).toBe('prefix0123456789');
+      expect(prefix.toString()).toBe("prefix0123456789");
     });
 
-    it('should fail for empty string', () => {
+    it("should fail for empty string", () => {
       // Given
-      const value = '';
+      const value = "";
 
       // When
       const result = OntologyPrefix.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('OntologyPrefix cannot be empty');
+      expect(result.error).toBe("OntologyPrefix cannot be empty");
     });
 
-    it('should fail for null value', () => {
+    it("should fail for null value", () => {
       // Given
       const value = null as any;
 
@@ -102,10 +102,10 @@ describe('OntologyPrefix', () => {
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('OntologyPrefix cannot be empty');
+      expect(result.error).toBe("OntologyPrefix cannot be empty");
     });
 
-    it('should fail for undefined value', () => {
+    it("should fail for undefined value", () => {
       // Given
       const value = undefined as any;
 
@@ -114,259 +114,281 @@ describe('OntologyPrefix', () => {
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('OntologyPrefix cannot be empty');
+      expect(result.error).toBe("OntologyPrefix cannot be empty");
     });
 
-    it('should fail for whitespace-only string', () => {
+    it("should fail for whitespace-only string", () => {
       // Given
-      const value = '   ';
+      const value = "   ";
 
       // When
       const result = OntologyPrefix.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('OntologyPrefix cannot be empty');
+      expect(result.error).toBe("OntologyPrefix cannot be empty");
     });
 
-    it('should fail for prefix starting with uppercase letter', () => {
+    it("should fail for prefix starting with uppercase letter", () => {
       // Given
-      const value = 'Exo';
+      const value = "Exo";
 
       // When
       const result = OntologyPrefix.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid ontology prefix format: Exo. Must be lowercase alphanumeric starting with a letter');
+      expect(result.error).toBe(
+        "Invalid ontology prefix format: Exo. Must be lowercase alphanumeric starting with a letter",
+      );
     });
 
-    it('should fail for prefix starting with number', () => {
+    it("should fail for prefix starting with number", () => {
       // Given
-      const value = '1exo';
+      const value = "1exo";
 
       // When
       const result = OntologyPrefix.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid ontology prefix format: 1exo. Must be lowercase alphanumeric starting with a letter');
+      expect(result.error).toBe(
+        "Invalid ontology prefix format: 1exo. Must be lowercase alphanumeric starting with a letter",
+      );
     });
 
-    it('should fail for prefix with uppercase letters', () => {
+    it("should fail for prefix with uppercase letters", () => {
       // Given
-      const value = 'exoTest';
+      const value = "exoTest";
 
       // When
       const result = OntologyPrefix.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid ontology prefix format: exoTest. Must be lowercase alphanumeric starting with a letter');
+      expect(result.error).toBe(
+        "Invalid ontology prefix format: exoTest. Must be lowercase alphanumeric starting with a letter",
+      );
     });
 
-    it('should fail for prefix with special characters', () => {
+    it("should fail for prefix with special characters", () => {
       // Given
-      const value = 'exo-test';
+      const value = "exo-test";
 
       // When
       const result = OntologyPrefix.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid ontology prefix format: exo-test. Must be lowercase alphanumeric starting with a letter');
+      expect(result.error).toBe(
+        "Invalid ontology prefix format: exo-test. Must be lowercase alphanumeric starting with a letter",
+      );
     });
 
-    it('should fail for prefix with underscores', () => {
+    it("should fail for prefix with underscores", () => {
       // Given
-      const value = 'exo_test';
+      const value = "exo_test";
 
       // When
       const result = OntologyPrefix.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid ontology prefix format: exo_test. Must be lowercase alphanumeric starting with a letter');
+      expect(result.error).toBe(
+        "Invalid ontology prefix format: exo_test. Must be lowercase alphanumeric starting with a letter",
+      );
     });
 
-    it('should fail for prefix with spaces', () => {
+    it("should fail for prefix with spaces", () => {
       // Given
-      const value = 'exo test';
+      const value = "exo test";
 
       // When
       const result = OntologyPrefix.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid ontology prefix format: exo test. Must be lowercase alphanumeric starting with a letter');
+      expect(result.error).toBe(
+        "Invalid ontology prefix format: exo test. Must be lowercase alphanumeric starting with a letter",
+      );
     });
 
-    it('should fail for prefix with dots', () => {
+    it("should fail for prefix with dots", () => {
       // Given
-      const value = 'exo.test';
+      const value = "exo.test";
 
       // When
       const result = OntologyPrefix.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid ontology prefix format: exo.test. Must be lowercase alphanumeric starting with a letter');
+      expect(result.error).toBe(
+        "Invalid ontology prefix format: exo.test. Must be lowercase alphanumeric starting with a letter",
+      );
     });
 
-    it('should fail for prefix with colon', () => {
+    it("should fail for prefix with colon", () => {
       // Given
-      const value = 'exo:test';
+      const value = "exo:test";
 
       // When
       const result = OntologyPrefix.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid ontology prefix format: exo:test. Must be lowercase alphanumeric starting with a letter');
+      expect(result.error).toBe(
+        "Invalid ontology prefix format: exo:test. Must be lowercase alphanumeric starting with a letter",
+      );
     });
 
-    it('should fail for prefix with unicode characters', () => {
+    it("should fail for prefix with unicode characters", () => {
       // Given
-      const value = 'exö';
+      const value = "exö";
 
       // When
       const result = OntologyPrefix.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid ontology prefix format: exö. Must be lowercase alphanumeric starting with a letter');
+      expect(result.error).toBe(
+        "Invalid ontology prefix format: exö. Must be lowercase alphanumeric starting with a letter",
+      );
     });
 
-    it('should fail for prefix with emoji', () => {
+    it("should fail for prefix with emoji", () => {
       // Given
-      const value = 'exo😀';
+      const value = "exo😀";
 
       // When
       const result = OntologyPrefix.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid ontology prefix format: exo😀. Must be lowercase alphanumeric starting with a letter');
+      expect(result.error).toBe(
+        "Invalid ontology prefix format: exo😀. Must be lowercase alphanumeric starting with a letter",
+      );
     });
 
-    it('should fail for single number', () => {
+    it("should fail for single number", () => {
       // Given
-      const value = '1';
+      const value = "1";
 
       // When
       const result = OntologyPrefix.create(value);
 
       // Then
       expect(result.isFailure).toBe(true);
-      expect(result.error).toBe('Invalid ontology prefix format: 1. Must be lowercase alphanumeric starting with a letter');
+      expect(result.error).toBe(
+        "Invalid ontology prefix format: 1. Must be lowercase alphanumeric starting with a letter",
+      );
     });
   });
 
-  describe('toString', () => {
-    it('should return the prefix value', () => {
+  describe("toString", () => {
+    it("should return the prefix value", () => {
       // Given
-      const prefix = OntologyPrefix.create('exo').getValue();
+      const prefix = OntologyPrefix.create("exo").getValue();
 
       // When
       const stringValue = prefix.toString();
 
       // Then
-      expect(stringValue).toBe('exo');
+      expect(stringValue).toBe("exo");
     });
 
-    it('should return prefix value with numbers', () => {
+    it("should return prefix value with numbers", () => {
       // Given
-      const prefix = OntologyPrefix.create('exo123').getValue();
+      const prefix = OntologyPrefix.create("exo123").getValue();
 
       // When
       const stringValue = prefix.toString();
 
       // Then
-      expect(stringValue).toBe('exo123');
+      expect(stringValue).toBe("exo123");
     });
 
-    it('should return single character prefix', () => {
+    it("should return single character prefix", () => {
       // Given
-      const prefix = OntologyPrefix.create('e').getValue();
+      const prefix = OntologyPrefix.create("e").getValue();
 
       // When
       const stringValue = prefix.toString();
 
       // Then
-      expect(stringValue).toBe('e');
+      expect(stringValue).toBe("e");
     });
 
-    it('should return long prefix', () => {
+    it("should return long prefix", () => {
       // Given
-      const prefix = OntologyPrefix.create('verylongprefix').getValue();
+      const prefix = OntologyPrefix.create("verylongprefix").getValue();
 
       // When
       const stringValue = prefix.toString();
 
       // Then
-      expect(stringValue).toBe('verylongprefix');
+      expect(stringValue).toBe("verylongprefix");
     });
 
-    it('should be consistent with value property', () => {
+    it("should be consistent with value property", () => {
       // Given
-      const prefix = OntologyPrefix.create('ems').getValue();
+      const prefix = OntologyPrefix.create("ems").getValue();
 
       // When & Then
       expect(prefix.toString()).toBe((prefix as any).value);
     });
   });
 
-  describe('toFileName', () => {
-    it('should return filename format for simple prefix', () => {
+  describe("toFileName", () => {
+    it("should return filename format for simple prefix", () => {
       // Given
-      const prefix = OntologyPrefix.create('exo').getValue();
+      const prefix = OntologyPrefix.create("exo").getValue();
 
       // When
       const fileName = prefix.toFileName();
 
       // Then
-      expect(fileName).toBe('!exo');
+      expect(fileName).toBe("!exo");
     });
 
-    it('should return filename format for prefix with numbers', () => {
+    it("should return filename format for prefix with numbers", () => {
       // Given
-      const prefix = OntologyPrefix.create('exo123').getValue();
+      const prefix = OntologyPrefix.create("exo123").getValue();
 
       // When
       const fileName = prefix.toFileName();
 
       // Then
-      expect(fileName).toBe('!exo123');
+      expect(fileName).toBe("!exo123");
     });
 
-    it('should return filename format for single character prefix', () => {
+    it("should return filename format for single character prefix", () => {
       // Given
-      const prefix = OntologyPrefix.create('e').getValue();
+      const prefix = OntologyPrefix.create("e").getValue();
 
       // When
       const fileName = prefix.toFileName();
 
       // Then
-      expect(fileName).toBe('!e');
+      expect(fileName).toBe("!e");
     });
 
-    it('should return filename format for long prefix', () => {
+    it("should return filename format for long prefix", () => {
       // Given
-      const prefix = OntologyPrefix.create('verylongprefix').getValue();
+      const prefix = OntologyPrefix.create("verylongprefix").getValue();
 
       // When
       const fileName = prefix.toFileName();
 
       // Then
-      expect(fileName).toBe('!verylongprefix');
+      expect(fileName).toBe("!verylongprefix");
     });
 
-    it('should always prepend exclamation mark', () => {
+    it("should always prepend exclamation mark", () => {
       // Given
-      const testPrefixes = ['exo', 'ems', 'test', 'a', 'z9'];
+      const testPrefixes = ["exo", "ems", "test", "a", "z9"];
 
       // When & Then
-      testPrefixes.forEach(prefixValue => {
+      testPrefixes.forEach((prefixValue) => {
         const prefix = OntologyPrefix.create(prefixValue).getValue();
         const fileName = prefix.toFileName();
         expect(fileName).toMatch(/^!/);
@@ -374,27 +396,27 @@ describe('OntologyPrefix', () => {
       });
     });
 
-    it('should create distinct filenames for different prefixes', () => {
+    it("should create distinct filenames for different prefixes", () => {
       // Given
-      const prefix1 = OntologyPrefix.create('exo').getValue();
-      const prefix2 = OntologyPrefix.create('ems').getValue();
+      const prefix1 = OntologyPrefix.create("exo").getValue();
+      const prefix2 = OntologyPrefix.create("ems").getValue();
 
       // When
       const fileName1 = prefix1.toFileName();
       const fileName2 = prefix2.toFileName();
 
       // Then
-      expect(fileName1).toBe('!exo');
-      expect(fileName2).toBe('!ems');
+      expect(fileName1).toBe("!exo");
+      expect(fileName2).toBe("!ems");
       expect(fileName1).not.toBe(fileName2);
     });
   });
 
-  describe('equals', () => {
-    it('should return true for same prefixes', () => {
+  describe("equals", () => {
+    it("should return true for same prefixes", () => {
       // Given
-      const prefix1 = OntologyPrefix.create('exo').getValue();
-      const prefix2 = OntologyPrefix.create('exo').getValue();
+      const prefix1 = OntologyPrefix.create("exo").getValue();
+      const prefix2 = OntologyPrefix.create("exo").getValue();
 
       // When
       const result = prefix1.equals(prefix2);
@@ -403,10 +425,10 @@ describe('OntologyPrefix', () => {
       expect(result).toBe(true);
     });
 
-    it('should return false for different prefixes', () => {
+    it("should return false for different prefixes", () => {
       // Given
-      const prefix1 = OntologyPrefix.create('exo').getValue();
-      const prefix2 = OntologyPrefix.create('ems').getValue();
+      const prefix1 = OntologyPrefix.create("exo").getValue();
+      const prefix2 = OntologyPrefix.create("ems").getValue();
 
       // When
       const result = prefix1.equals(prefix2);
@@ -415,9 +437,9 @@ describe('OntologyPrefix', () => {
       expect(result).toBe(false);
     });
 
-    it('should return true when comparing with itself', () => {
+    it("should return true when comparing with itself", () => {
       // Given
-      const prefix = OntologyPrefix.create('test').getValue();
+      const prefix = OntologyPrefix.create("test").getValue();
 
       // When
       const result = prefix.equals(prefix);
@@ -426,10 +448,10 @@ describe('OntologyPrefix', () => {
       expect(result).toBe(true);
     });
 
-    it('should return false for similar but different prefixes', () => {
+    it("should return false for similar but different prefixes", () => {
       // Given
-      const prefix1 = OntologyPrefix.create('test').getValue();
-      const prefix2 = OntologyPrefix.create('test1').getValue();
+      const prefix1 = OntologyPrefix.create("test").getValue();
+      const prefix2 = OntologyPrefix.create("test1").getValue();
 
       // When
       const result = prefix1.equals(prefix2);
@@ -438,13 +460,13 @@ describe('OntologyPrefix', () => {
       expect(result).toBe(false);
     });
 
-    it('should be case-sensitive for internal comparison', () => {
+    it("should be case-sensitive for internal comparison", () => {
       // Given - Note: we can't create uppercase prefixes, but test the equals method
-      const prefix1 = OntologyPrefix.create('test').getValue();
-      const prefix2 = OntologyPrefix.create('test').getValue();
-      
+      const prefix1 = OntologyPrefix.create("test").getValue();
+      const prefix2 = OntologyPrefix.create("test").getValue();
+
       // Simulate case difference by modifying internal value (for testing)
-      (prefix2 as any).value = 'TEST';
+      (prefix2 as any).value = "TEST";
 
       // When
       const result = prefix1.equals(prefix2);
@@ -453,11 +475,11 @@ describe('OntologyPrefix', () => {
       expect(result).toBe(false);
     });
 
-    it('should handle numeric suffixes correctly', () => {
+    it("should handle numeric suffixes correctly", () => {
       // Given
-      const prefix1 = OntologyPrefix.create('test1').getValue();
-      const prefix2 = OntologyPrefix.create('test2').getValue();
-      const prefix3 = OntologyPrefix.create('test1').getValue();
+      const prefix1 = OntologyPrefix.create("test1").getValue();
+      const prefix2 = OntologyPrefix.create("test2").getValue();
+      const prefix3 = OntologyPrefix.create("test1").getValue();
 
       // When & Then
       expect(prefix1.equals(prefix2)).toBe(false);
@@ -465,23 +487,23 @@ describe('OntologyPrefix', () => {
       expect(prefix2.equals(prefix3)).toBe(false);
     });
 
-    it('should handle single character prefixes', () => {
+    it("should handle single character prefixes", () => {
       // Given
-      const prefix1 = OntologyPrefix.create('a').getValue();
-      const prefix2 = OntologyPrefix.create('b').getValue();
-      const prefix3 = OntologyPrefix.create('a').getValue();
+      const prefix1 = OntologyPrefix.create("a").getValue();
+      const prefix2 = OntologyPrefix.create("b").getValue();
+      const prefix3 = OntologyPrefix.create("a").getValue();
 
       // When & Then
       expect(prefix1.equals(prefix2)).toBe(false);
       expect(prefix1.equals(prefix3)).toBe(true);
     });
 
-    it('should handle long prefixes', () => {
+    it("should handle long prefixes", () => {
       // Given
-      const longPrefix = 'verylongprefixname123';
+      const longPrefix = "verylongprefixname123";
       const prefix1 = OntologyPrefix.create(longPrefix).getValue();
       const prefix2 = OntologyPrefix.create(longPrefix).getValue();
-      const prefix3 = OntologyPrefix.create(longPrefix + '4').getValue();
+      const prefix3 = OntologyPrefix.create(longPrefix + "4").getValue();
 
       // When & Then
       expect(prefix1.equals(prefix2)).toBe(true);
@@ -489,10 +511,10 @@ describe('OntologyPrefix', () => {
     });
   });
 
-  describe('Value Object Properties', () => {
-    it('should be immutable', () => {
+  describe("Value Object Properties", () => {
+    it("should be immutable", () => {
       // Given
-      const prefix = OntologyPrefix.create('exo').getValue();
+      const prefix = OntologyPrefix.create("exo").getValue();
       const originalValue = prefix.toString();
 
       // When - attempt to modify (should not be possible with private readonly)
@@ -502,41 +524,43 @@ describe('OntologyPrefix', () => {
       expect(prefix.toString()).toBe(originalValue);
     });
 
-    it('should have consistent string representation', () => {
+    it("should have consistent string representation", () => {
       // Given
-      const prefix = OntologyPrefix.create('ems').getValue();
+      const prefix = OntologyPrefix.create("ems").getValue();
 
       // When & Then
-      expect(prefix.toString()).toBe('ems');
+      expect(prefix.toString()).toBe("ems");
       expect(prefix.toString()).toBe((prefix as any).value);
     });
 
-    it('should maintain identity through operations', () => {
+    it("should maintain identity through operations", () => {
       // Given
-      const original = 'test123';
+      const original = "test123";
       const prefix = OntologyPrefix.create(original).getValue();
 
       // When & Then
       expect(prefix.toString()).toBe(original);
       expect(prefix.toFileName()).toBe(`!${original}`);
-      expect(prefix.equals(OntologyPrefix.create(original).getValue())).toBe(true);
+      expect(prefix.equals(OntologyPrefix.create(original).getValue())).toBe(
+        true,
+      );
     });
 
-    it('should encapsulate value properly', () => {
+    it("should encapsulate value properly", () => {
       // Given
-      const prefix = OntologyPrefix.create('private').getValue();
+      const prefix = OntologyPrefix.create("private").getValue();
 
       // When & Then
       // Value should not be directly accessible from outside
       expect((prefix as any).value).toBeDefined();
-      expect(prefix.toString()).toBe('private');
+      expect(prefix.toString()).toBe("private");
     });
   });
 
-  describe('Edge Cases and Complex Scenarios', () => {
-    it('should handle minimum valid prefix', () => {
+  describe("Edge Cases and Complex Scenarios", () => {
+    it("should handle minimum valid prefix", () => {
       // Given
-      const minPrefix = 'a';
+      const minPrefix = "a";
 
       // When
       const result = OntologyPrefix.create(minPrefix);
@@ -544,13 +568,13 @@ describe('OntologyPrefix', () => {
       // Then
       expect(result.isSuccess).toBe(true);
       const prefix = result.getValue();
-      expect(prefix.toString()).toBe('a');
-      expect(prefix.toFileName()).toBe('!a');
+      expect(prefix.toString()).toBe("a");
+      expect(prefix.toFileName()).toBe("!a");
     });
 
-    it('should handle maximum reasonable length prefix', () => {
+    it("should handle maximum reasonable length prefix", () => {
       // Given
-      const maxPrefix = 'a'.repeat(100);
+      const maxPrefix = "a".repeat(100);
 
       // When
       const result = OntologyPrefix.create(maxPrefix);
@@ -562,9 +586,9 @@ describe('OntologyPrefix', () => {
       expect(prefix.toFileName()).toBe(`!${maxPrefix}`);
     });
 
-    it('should handle all valid lowercase letters', () => {
+    it("should handle all valid lowercase letters", () => {
       // Given
-      const allLetters = 'abcdefghijklmnopqrstuvwxyz';
+      const allLetters = "abcdefghijklmnopqrstuvwxyz";
 
       // When
       const result = OntologyPrefix.create(allLetters);
@@ -575,9 +599,9 @@ describe('OntologyPrefix', () => {
       expect(prefix.toString()).toBe(allLetters);
     });
 
-    it('should handle all valid numbers at end', () => {
+    it("should handle all valid numbers at end", () => {
       // Given
-      const withNumbers = 'prefix0123456789';
+      const withNumbers = "prefix0123456789";
 
       // When
       const result = OntologyPrefix.create(withNumbers);
@@ -588,65 +612,89 @@ describe('OntologyPrefix', () => {
       expect(prefix.toString()).toBe(withNumbers);
     });
 
-    it('should handle prefix patterns used in real ontologies', () => {
+    it("should handle prefix patterns used in real ontologies", () => {
       // Given
       const realWorldPrefixes = [
-        'rdf', 'rdfs', 'owl', 'xsd', 'foaf', 'dc', 'skos', 
-        'geo', 'time', 'prov', 'void', 'dcat', 'org', 'vcard'
+        "rdf",
+        "rdfs",
+        "owl",
+        "xsd",
+        "foaf",
+        "dc",
+        "skos",
+        "geo",
+        "time",
+        "prov",
+        "void",
+        "dcat",
+        "org",
+        "vcard",
       ];
 
       // When & Then
-      realWorldPrefixes.forEach(prefixValue => {
+      realWorldPrefixes.forEach((prefixValue) => {
         const result = OntologyPrefix.create(prefixValue);
         expect(result.isSuccess).toBe(true);
-        
+
         const prefix = result.getValue();
         expect(prefix.toString()).toBe(prefixValue);
         expect(prefix.toFileName()).toBe(`!${prefixValue}`);
       });
     });
 
-    it('should maintain consistency across multiple operations', () => {
+    it("should maintain consistency across multiple operations", () => {
       // Given
-      const originalValue = 'complex123';
-      
+      const originalValue = "complex123";
+
       // When
       const prefix1 = OntologyPrefix.create(originalValue).getValue();
       const fileName = prefix1.toFileName();
       const prefix2 = OntologyPrefix.create(originalValue).getValue();
-      
+
       // Then
       expect(prefix1.equals(prefix2)).toBe(true);
       expect(prefix1.toString()).toBe(prefix2.toString());
       expect(fileName).toBe(prefix2.toFileName());
     });
 
-    it('should handle boundary conditions for regex', () => {
+    it("should handle boundary conditions for regex", () => {
       // Given - test edge cases of the regex pattern
-      const validEdgeCases = ['z', 'a0', 'test999'];
-      const invalidEdgeCases = ['A', '0a', 'test-1'];
+      const validEdgeCases = ["z", "a0", "test999"];
+      const invalidEdgeCases = ["A", "0a", "test-1"];
 
       // When & Then
-      validEdgeCases.forEach(validCase => {
+      validEdgeCases.forEach((validCase) => {
         const result = OntologyPrefix.create(validCase);
         expect(result.isSuccess).toBe(true);
       });
 
-      invalidEdgeCases.forEach(invalidCase => {
+      invalidEdgeCases.forEach((invalidCase) => {
         const result = OntologyPrefix.create(invalidCase);
         expect(result.isFailure).toBe(true);
-        expect(result.error).toContain('Invalid ontology prefix format');
+        expect(result.error).toContain("Invalid ontology prefix format");
       });
     });
 
-    it('should provide clear error messages for common mistakes', () => {
+    it("should provide clear error messages for common mistakes", () => {
       // Given
       const commonMistakes = [
-        { input: 'Exo', expectedError: 'Invalid ontology prefix format: Exo. Must be lowercase alphanumeric starting with a letter' },
-        { input: '1exo', expectedError: 'Invalid ontology prefix format: 1exo. Must be lowercase alphanumeric starting with a letter' },
-        { input: 'exo_test', expectedError: 'Invalid ontology prefix format: exo_test. Must be lowercase alphanumeric starting with a letter' },
-        { input: '', expectedError: 'OntologyPrefix cannot be empty' },
-        { input: '   ', expectedError: 'OntologyPrefix cannot be empty' }
+        {
+          input: "Exo",
+          expectedError:
+            "Invalid ontology prefix format: Exo. Must be lowercase alphanumeric starting with a letter",
+        },
+        {
+          input: "1exo",
+          expectedError:
+            "Invalid ontology prefix format: 1exo. Must be lowercase alphanumeric starting with a letter",
+        },
+        {
+          input: "exo_test",
+          expectedError:
+            "Invalid ontology prefix format: exo_test. Must be lowercase alphanumeric starting with a letter",
+        },
+        { input: "", expectedError: "OntologyPrefix cannot be empty" },
+        { input: "   ", expectedError: "OntologyPrefix cannot be empty" },
       ];
 
       // When & Then
@@ -657,7 +705,7 @@ describe('OntologyPrefix', () => {
       });
     });
 
-    it('should be performant with many prefix operations', () => {
+    it("should be performant with many prefix operations", () => {
       // Given
       const prefixCount = 1000;
       const start = performance.now();
@@ -667,7 +715,7 @@ describe('OntologyPrefix', () => {
         const prefixValue = `prefix${i}`;
         const result = OntologyPrefix.create(prefixValue);
         expect(result.isSuccess).toBe(true);
-        
+
         const prefix = result.getValue();
         prefix.toString();
         prefix.toFileName();

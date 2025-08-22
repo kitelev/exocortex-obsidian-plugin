@@ -6,7 +6,7 @@ export class SparqlBlockPage {
    * Get all SPARQL result containers on the page
    */
   get resultContainers() {
-    return $$('.exocortex-sparql-container');
+    return $$(".exocortex-sparql-container");
   }
 
   /**
@@ -21,11 +21,13 @@ export class SparqlBlockPage {
    * Wait for SPARQL results to appear
    */
   async waitForResults(timeout = 30000): Promise<void> {
-    const isCI = process.env.CI === 'true';
+    const isCI = process.env.CI === "true";
     const actualTimeout = isCI ? Math.max(timeout, 30000) : timeout;
-    
-    console.log(`⏳ Waiting for SPARQL results (timeout: ${actualTimeout}ms, CI: ${isCI})...`);
-    
+
+    console.log(
+      `⏳ Waiting for SPARQL results (timeout: ${actualTimeout}ms, CI: ${isCI})...`,
+    );
+
     await (browser as any).waitUntil(
       async () => {
         try {
@@ -37,15 +39,15 @@ export class SparqlBlockPage {
           }
           return false;
         } catch (error: any) {
-          console.warn('⏳ Still waiting for SPARQL results...', error.message);
+          console.warn("⏳ Still waiting for SPARQL results...", error.message);
           return false;
         }
       },
       {
         timeout: actualTimeout,
         interval: isCI ? 2000 : 1000,
-        timeoutMsg: `SPARQL results container did not appear within ${actualTimeout}ms (CI: ${isCI})`
-      }
+        timeoutMsg: `SPARQL results container did not appear within ${actualTimeout}ms (CI: ${isCI})`,
+      },
     );
   }
 
@@ -54,7 +56,7 @@ export class SparqlBlockPage {
    */
   async getResultTitle(containerIndex = 0): Promise<string> {
     const container = await this.getResultContainer(containerIndex);
-    const title = await container.$('h3');
+    const title = await container.$("h3");
     return await title.getText();
   }
 
@@ -63,7 +65,7 @@ export class SparqlBlockPage {
    */
   async getQueryText(containerIndex = 0): Promise<string> {
     const container = await this.getResultContainer(containerIndex);
-    const queryPre = await container.$('pre');
+    const queryPre = await container.$("pre");
     return await queryPre.getText();
   }
 
@@ -72,7 +74,7 @@ export class SparqlBlockPage {
    */
   async hasResultsTable(containerIndex = 0): Promise<boolean> {
     const container = await this.getResultContainer(containerIndex);
-    const table = await container.$('table');
+    const table = await container.$("table");
     return await table.isExisting();
   }
 
@@ -81,7 +83,7 @@ export class SparqlBlockPage {
    */
   async getTableHeaders(containerIndex = 0): Promise<string[]> {
     const container = await this.getResultContainer(containerIndex);
-    const headers = await container.$$('thead th');
+    const headers = await container.$$("thead th");
     const headerTexts: string[] = [];
     for (const header of headers) {
       headerTexts.push(await header.getText());
@@ -94,18 +96,18 @@ export class SparqlBlockPage {
    */
   async getTableRows(containerIndex = 0): Promise<string[][]> {
     const container = await this.getResultContainer(containerIndex);
-    const rows = await container.$$('tbody tr');
+    const rows = await container.$$("tbody tr");
     const rowData: string[][] = [];
-    
+
     for (const row of rows) {
-      const cells = await row.$$('td');
+      const cells = await row.$$("td");
       const cellTexts: string[] = [];
       for (const cell of cells) {
         cellTexts.push(await cell.getText());
       }
       rowData.push(cellTexts);
     }
-    
+
     return rowData;
   }
 
@@ -114,15 +116,15 @@ export class SparqlBlockPage {
    */
   async getExecutionTime(containerIndex = 0): Promise<string | null> {
     const container = await this.getResultContainer(containerIndex);
-    const statsElements = await container.$$('div');
-    
+    const statsElements = await container.$$("div");
+
     for (const element of statsElements) {
       const text = await element.getText();
-      if (text.includes('Executed in')) {
+      if (text.includes("Executed in")) {
         return text;
       }
     }
-    
+
     return null;
   }
 
@@ -141,11 +143,11 @@ export class SparqlBlockPage {
   async getErrorMessage(containerIndex = 0): Promise<string | null> {
     const container = await this.getResultContainer(containerIndex);
     const errorDiv = await container.$('div[style*="background: #ffebee"]');
-    
+
     if (await errorDiv.isExisting()) {
       return await errorDiv.getText();
     }
-    
+
     return null;
   }
 
@@ -154,9 +156,9 @@ export class SparqlBlockPage {
    */
   async hasNoResultsMessage(containerIndex = 0): Promise<boolean> {
     const container = await this.getResultContainer(containerIndex);
-    const noResultsDiv = await container.$('div');
+    const noResultsDiv = await container.$("div");
     const text = await noResultsDiv.getText();
-    return text.includes('No results found');
+    return text.includes("No results found");
   }
 
   /**
@@ -164,8 +166,8 @@ export class SparqlBlockPage {
    */
   async clickFileLink(fileName: string, containerIndex = 0): Promise<void> {
     const container = await this.getResultContainer(containerIndex);
-    const links = await container.$$('a');
-    
+    const links = await container.$$("a");
+
     for (const link of links) {
       const text = await link.getText();
       if (text.includes(fileName)) {
@@ -173,7 +175,7 @@ export class SparqlBlockPage {
         return;
       }
     }
-    
+
     throw new Error(`File link "${fileName}" not found in results`);
   }
 
@@ -182,7 +184,7 @@ export class SparqlBlockPage {
    */
   async getResultCount(containerIndex = 0): Promise<number> {
     const container = await this.getResultContainer(containerIndex);
-    const rows = await container.$$('tbody tr');
+    const rows = await container.$$("tbody tr");
     return rows.length;
   }
 
@@ -195,13 +197,13 @@ export class SparqlBlockPage {
     backgroundColor: string;
   }> {
     const container = await this.getResultContainer(containerIndex);
-    
-    const style = await container.getAttribute('style');
-    
+
+    const style = await container.getAttribute("style");
+
     return {
-      hasBorder: style?.includes('border:') || false,
-      borderColor: style?.match(/border:.*?(#[0-9a-f]+)/i)?.[1] || '',
-      backgroundColor: style?.match(/background:.*?(#[0-9a-f]+)/i)?.[1] || ''
+      hasBorder: style?.includes("border:") || false,
+      borderColor: style?.match(/border:.*?(#[0-9a-f]+)/i)?.[1] || "",
+      backgroundColor: style?.match(/background:.*?(#[0-9a-f]+)/i)?.[1] || "",
     };
   }
 }

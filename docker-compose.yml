@@ -1,7 +1,7 @@
 # Docker Compose for Exocortex Obsidian Plugin Testing
 # Supports development, testing, and CI/CD workflows
 
-version: '3.8'
+version: "3.8"
 
 services:
   # =============================================================================
@@ -245,10 +245,10 @@ volumes:
   node_modules:
   node_modules_18:
   node_modules_20:
-  
+
   # Test cache for faster subsequent runs
   test_cache:
-  
+
   # Build cache
   build_cache:
 

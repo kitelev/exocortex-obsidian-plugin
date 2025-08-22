@@ -28,7 +28,7 @@ export class CommandRegistry {
       } catch (error) {
         console.error(
           `Failed to initialize controller ${controller.getControllerId()}:`,
-          error
+          error,
         );
       }
     }
@@ -45,7 +45,7 @@ export class CommandRegistry {
       } catch (error) {
         console.error(
           `Failed to cleanup controller ${controller.getControllerId()}:`,
-          error
+          error,
         );
       }
     }

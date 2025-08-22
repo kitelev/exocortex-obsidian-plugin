@@ -1,11 +1,13 @@
 # Release Agent for Exocortex Plugin
 
 ## Purpose
+
 Automated release agent that ensures all quality checks pass before creating a GitHub release, following the strict guidelines in CLAUDE.md.
 
 ## Pre-Release Checklist
 
 ### 1. Code Quality Verification
+
 - [ ] Run `npm test` - ALL tests must pass (currently 518 tests)
 - [ ] Check test coverage - Must be ≥70%
 - [ ] Run `npm run build` - Build must succeed without errors
@@ -13,6 +15,7 @@ Automated release agent that ensures all quality checks pass before creating a G
 - [ ] Verify bundle size < 1MB
 
 ### 2. Version Management
+
 - [ ] Determine version bump type (patch/minor/major)
   - `patch`: Bug fixes only
   - `minor`: New features, backwards compatible
@@ -22,6 +25,7 @@ Automated release agent that ensures all quality checks pass before creating a G
 - [ ] Verify all version files are in sync
 
 ### 3. Documentation Updates
+
 - [ ] Update CHANGELOG.md with user-focused release notes
   - Focus on user benefits, not technical details
   - Include usage scenarios
@@ -30,6 +34,7 @@ Automated release agent that ensures all quality checks pass before creating a G
 - [ ] Sections: Major Improvements, Bug Fixes, Breaking Changes (if any)
 
 ### 4. Git Operations
+
 - [ ] Stage all changes: `git add -A`
 - [ ] Commit with conventional message format:
   ```
@@ -45,6 +50,7 @@ Automated release agent that ensures all quality checks pass before creating a G
 - [ ] Push to main: `git push origin main`
 
 ### 5. GitHub Release Creation
+
 - [ ] Create release with `gh release create`
 - [ ] Tag format: `vX.Y.Z`
 - [ ] Title format: `vX.Y.Z - Brief Description`
@@ -137,11 +143,13 @@ echo "🔗 View at: https://github.com/kitelev/exocortex-obsidian-plugin/release
 ## Usage Instructions
 
 ### Manual Process
+
 1. Run each checklist item manually
 2. Verify each step passes before proceeding
 3. Stop if any step fails
 
 ### Automated Process
+
 1. Save the script as `release.sh`
 2. Make executable: `chmod +x release.sh`
 3. Run: `./release.sh`
@@ -149,26 +157,31 @@ echo "🔗 View at: https://github.com/kitelev/exocortex-obsidian-plugin/release
 ## Common Issues & Solutions
 
 ### Tests Failing
+
 - Check `__mocks__/obsidian.ts` for mock setup
 - Run `npm test -- --verbose` for detailed output
 - Fix individual test files before full suite
 
 ### Build Errors
+
 - Run `npm run build` for detailed TypeScript errors
 - Check for missing imports or type issues
 - Ensure all dependencies are installed
 
 ### Coverage Too Low
+
 - Run `npm run test:coverage` to see uncovered lines
 - Add tests for uncovered branches
 - Focus on critical business logic
 
 ### Version Conflicts
+
 - Ensure package.json, manifest.json, versions.json are in sync
 - Use `npm run version` to update all files
 - Check git status for uncommitted changes
 
 ### Release Already Exists
+
 - Check existing releases: `gh release list`
 - Delete draft releases if needed
 - Ensure version was properly incremented
@@ -176,6 +189,7 @@ echo "🔗 View at: https://github.com/kitelev/exocortex-obsidian-plugin/release
 ## Critical Reminders
 
 ⚠️ **NEVER** release without:
+
 - All tests passing (518+ tests)
 - Test coverage ≥70%
 - Successful build
@@ -183,12 +197,14 @@ echo "🔗 View at: https://github.com/kitelev/exocortex-obsidian-plugin/release
 - Proper version bump
 
 ⚠️ **ALWAYS** write release notes as Product Manager:
+
 - Focus on user benefits
 - Include usage scenarios
 - Avoid technical jargon
 - Highlight breaking changes
 
 ⚠️ **FOLLOW** commit message conventions:
+
 - feat: new features
 - fix: bug fixes
 - docs: documentation
@@ -226,6 +242,7 @@ gh release delete    # Delete release
 ## Success Criteria
 
 ✅ Release is successful when:
+
 1. All tests pass (100% success rate)
 2. Coverage is ≥70%
 3. Build completes without errors
@@ -239,6 +256,7 @@ gh release delete    # Delete release
 ## Contact for Issues
 
 If automated release fails:
+
 1. Check GitHub Actions logs
 2. Review error messages
 3. Fix issues locally

@@ -9,12 +9,14 @@
 ### ABSOLUTE REQUIREMENTS
 
 #### 1. AGENT USAGE IS MANDATORY
+
 - **Minimum**: 3-5 agents per task
 - **Pattern**: Parallel execution when possible
 - **Documentation**: Follow CLAUDE-agents.md patterns
 - **Violation**: Not using agents = project standard violation
 
 #### 2. CURRENT PROJECT STATE (as of 2025-08-20)
+
 - **Version**: v3.4.0 deployed (Latest Release)
 - **Tests**: Comprehensive test suite with 80+ test files and robust coverage
 - **Coverage**: High coverage maintained across all modules
@@ -24,7 +26,9 @@
 - **Slash Commands**: Implemented /execute, /status, /agents, /release, /test for efficient workflow
 
 #### 3. V3.0.0 FOUNDATION STATUS
+
 ✅ **COMPLETE** - Revolutionary mobile experience achieved:
+
 - Note-to-RDF conversion: WORKING
 - Graph visualization: IMPLEMENTED with touch support
 - Ontology support: AVAILABLE with mobile optimization
@@ -34,7 +38,9 @@
 - Performance optimization: 40% faster loading, 50% memory reduction
 
 #### 4. V3.0.0 ACHIEVEMENTS (Q3 2025)
+
 Major features completed:
+
 1. **Mobile/iOS Support** - ✅ COMPLETED: Native mobile experience with touch optimization
 2. **Query Engine Abstraction** - ✅ COMPLETED: Multi-engine support with automatic fallback
 3. **Better Error Messages** - ✅ COMPLETED (RICE: 15000)
@@ -42,13 +48,16 @@ Major features completed:
 5. **Graph Export** - ✅ COMPLETED (RICE: 5400)
 
 #### 5. ARCHITECTURAL ISSUES TO ADDRESS
+
 From swebok-engineer analysis:
+
 - Business logic in presentation layer (main.ts)
 - Need Domain Service for RDF conversion
 - Missing unit tests for conversion logic
 - SOLID principle violations
 
 ### 📋 Session Start Checklist
+
 - [ ] Read CLAUDE.md (especially agent rules and slash commands)
 - [ ] Read CLAUDE-agents.md (patterns and selection)
 - [ ] Check current TodoWrite status for active tasks
@@ -59,6 +68,7 @@ From swebok-engineer analysis:
 ### 🎯 Task Execution Protocol
 
 #### For EVERY Non-Trivial Task:
+
 1. **Identify** task complexity and domain
 2. **Select** 3-5 appropriate agents
 3. **Launch** agents in parallel when possible
@@ -68,6 +78,7 @@ From swebok-engineer analysis:
 ## 📊 Enhanced Agent Output Display (v3.4.1)
 
 ### Verbose Execution Modes
+
 When using agents, you can now control the level of output detail:
 
 ```bash
@@ -80,21 +91,22 @@ export CLAUDE_SHOW_PROGRESS=true     # Display progress bars
 ```
 
 ### Visual Agent Execution Format
+
 ```
 🚀 orchestrator: Decompose and coordinate task
   🔀 Starting parallel group (3 agents):
     • code-searcher: Find relevant implementations
     • architect-agent: Design technical solution
     • qa-engineer: Prepare test scenarios
-  
+
   ⚡ code-searcher [33%]: Searching codebase...
   🤔 code-searcher decided: Focus on domain layer
     Reasoning: Most business logic resides there
   📝 code-searcher output: Found 5 relevant files
   ✅ code-searcher completed (1.2s)
-  
+
   [Similar format for other agents...]
-  
+
 📊 Session Summary:
   • Total execution: 3m 45s
   • Parallel efficiency: 85%
@@ -102,7 +114,9 @@ export CLAUDE_SHOW_PROGRESS=true     # Display progress bars
 ```
 
 ### Monitoring Scripts
+
 Use `.claude/scripts/agent-verbose-logger.sh` for enhanced output:
+
 ```bash
 # Start monitoring
 .claude/scripts/agent-verbose-logger.sh start
@@ -117,6 +131,7 @@ Use `.claude/scripts/agent-verbose-logger.sh` for enhanced output:
 ## Available Agents (27+ Total with Dynamic Creation)
 
 ### Core Development Agents
+
 - **swebok-engineer**: Software architecture and design (IEEE SWEBOK v3)
 - **architect-agent**: System architecture (TOGAF, IEEE 1471)
 - **qa-engineer**: Testing and quality (ISTQB, ISO/IEC 25010)
@@ -124,6 +139,7 @@ Use `.claude/scripts/agent-verbose-logger.sh` for enhanced output:
 - **security-agent**: Security analysis (OWASP, ISO 27001)
 
 ### Process Management Agents
+
 - **orchestrator**: Multi-agent coordination
 - **product-manager**: Feature prioritization (Pragmatic Marketing)
 - **scrum-master-agent**: Agile processes (Scrum Guide 2020)
@@ -131,6 +147,7 @@ Use `.claude/scripts/agent-verbose-logger.sh` for enhanced output:
 - **babok-agent**: Business analysis (IIBA BABOK v3)
 
 ### Specialized Agents
+
 - **code-searcher**: Codebase exploration
 - **error-handler**: Error diagnosis and resolution
 - **test-fixer-agent**: Automated test fixing (TDD/BDD) - **See CLAUDE-test-patterns.md**
@@ -139,6 +156,7 @@ Use `.claude/scripts/agent-verbose-logger.sh` for enhanced output:
 - **state-persistence-agent**: Automatic work state preservation (NEW)
 
 ### Support Agents
+
 - **technical-writer-agent**: Documentation (DITA, IEEE)
 - **ux-design-expert**: UX/UI design and optimization
 - **devops-engineer**: CI/CD and infrastructure (DORA, SRE)
@@ -152,12 +170,14 @@ Use `.claude/scripts/agent-verbose-logger.sh` for enhanced output:
 - **release-agent**: Release management and versioning
 
 ### Emergency Response Agents (NEW)
+
 - **technical-stabilization-agent**: Critical system stabilization (proven 15-min CI recovery)
 - **emergency-coordinator**: Crisis management and rapid response orchestration
 
 ## Task-to-Agent Mapping
 
 ### Feature Development
+
 ```yaml
 Pattern: Feature Development Pipeline
 Agents: [product-manager, swebok-engineer, qa-engineer, technical-writer-agent]
@@ -166,6 +186,7 @@ Example: Implementing Better Error Messages
 ```
 
 ### Bug Fixing
+
 ```yaml
 Pattern: Debug and Fix
 Agents: [error-handler, code-searcher, test-fixer-agent, qa-engineer]
@@ -174,6 +195,7 @@ Example: Fixing flaky tests (achieved 100% pass rate - see CLAUDE-test-patterns.
 ```
 
 ### Architecture Review
+
 ```yaml
 Pattern: Architecture Analysis
 Agents: [architect-agent, swebok-engineer, security-agent, performance-agent]
@@ -182,6 +204,7 @@ Example: Reviewing RDF conversion architecture
 ```
 
 ### Code Quality
+
 ```yaml
 Pattern: Quality Assessment
 Agents: [code-review-agent, qa-engineer, performance-agent, security-agent]
@@ -190,15 +213,18 @@ Example: Pre-release code review
 ```
 
 ### Memory/Performance Issues (NEW)
+
 ```yaml
 Pattern: Performance Optimization
-Agents: [performance-agent, qa-engineer, devops-engineer, error-handler, meta-agent]
+Agents:
+  [performance-agent, qa-engineer, devops-engineer, error-handler, meta-agent]
 Parallel: Yes (investigation), Sequential (implementation)
 Example: CI memory issues - 50% reduction, 100% test success
 Success Rate: 98.5%
 ```
 
 ### Infrastructure Tasks (NEW)
+
 ```yaml
 Pattern: Single Specialist
 Agents: [devops-engineer] OR [security-agent] (domain-specific)
@@ -208,6 +234,7 @@ Success Rate: 100% first-attempt
 ```
 
 ### Error Pattern Analysis (NEW)
+
 ```yaml
 Pattern: Error Analysis
 Agents: [error-handler, performance-agent, qa-engineer, meta-agent]
@@ -217,6 +244,7 @@ Documentation: CLAUDE-errors.md pattern database
 ```
 
 ### Work Continuity (NEW)
+
 ```yaml
 Pattern: State Persistence
 Agents: [state-persistence-agent, meta-agent]
@@ -226,9 +254,19 @@ Benefit: Zero work loss during interruptions
 ```
 
 ### Emergency Response (PROVEN - 2025-08-19)
+
 ```yaml
 Pattern: Emergency Sprint (Maximum Parallel Deployment)
-Agents: [technical-stabilization-agent, error-handler, qa-engineer, performance-agent, devops-engineer, meta-agent, state-persistence-agent]
+Agents:
+  [
+    technical-stabilization-agent,
+    error-handler,
+    qa-engineer,
+    performance-agent,
+    devops-engineer,
+    meta-agent,
+    state-persistence-agent,
+  ]
 Parallel: Yes (7+ agents simultaneous)
 Example: CI memory cascade failure → 15-minute full stabilization
 Success_Rate: 100%
@@ -238,6 +276,7 @@ Innovation: Safe degradation (warnings vs failures)
 ## Parallel Execution Patterns
 
 ### Pattern 1: Feature Development Pipeline
+
 ```
 Stage 1: [product-manager] → Requirements
 Stage 2: [babok-agent, architect-agent] → Design (PARALLEL)
@@ -247,6 +286,7 @@ Stage 5: [technical-writer-agent] → Documentation
 ```
 
 ### Pattern 2: Bug Investigation
+
 ```
 Parallel Execution:
 - error-handler: Root cause analysis
@@ -256,6 +296,7 @@ Parallel Execution:
 ```
 
 ### Pattern 3: System Analysis
+
 ```
 Parallel Execution:
 - architect-agent: Architecture assessment
@@ -265,6 +306,7 @@ Parallel Execution:
 ```
 
 ### Pattern 4: Emergency Sprint (NEW - PROVEN)
+
 ```
 Maximum Parallel Deployment (7+ Agents):
 - technical-stabilization-agent: Primary emergency coordinator
@@ -288,7 +330,7 @@ IF critical_system_failure OR emergency_situation:
     USE Emergency Sprint Pattern (Pattern 4)
     DEPLOY 7+ agents in maximum parallel formation
     TIMELINE: 0-15 minutes target resolution
-    
+
 ELIF task involves multiple files OR complexity > simple:
     IF feature_development:
         USE Feature Development Pipeline
@@ -303,10 +345,10 @@ ELIF task involves multiple files OR complexity > simple:
     ELSE:
         SELECT 3-5 most relevant agents
         EXECUTE in parallel where possible
-        
+
 ELSE:
     MAY work without agents (simple, single-file tasks)
-    
+
 # Emergency Detection Criteria:
 critical_system_failure = (
     CI_failure_rate > 90% OR
@@ -319,6 +361,7 @@ critical_system_failure = (
 ## Performance Metrics
 
 ### Target Metrics
+
 - **Agent Utilization Rate**: >80% for complex tasks (Current: 85%)
 - **Parallel Execution Rate**: >60% of agent calls (Current: 72%)
 - **Task Success Rate**: >95% with agents (Current: 98.5%)
@@ -328,6 +371,7 @@ critical_system_failure = (
 - **CI Performance**: 40% faster build times
 
 ### Monitoring
+
 - Track agent usage per session
 - Measure task completion time
 - Monitor quality improvements
@@ -356,6 +400,7 @@ critical_system_failure = (
 ## Examples from Current Session
 
 ### EXCEPTIONAL Example: Emergency CI Stabilization (2025-08-19)
+
 ```
 Task: Critical CI memory cascade failure - complete system breakdown
 Agents Used (Maximum Parallel Deployment):
@@ -366,7 +411,7 @@ Agents Used (Maximum Parallel Deployment):
 - devops-engineer: CI/CD infrastructure emergency fixes
 - meta-agent: Real-time pattern learning and documentation
 - state-persistence-agent: Work state preservation during crisis
-Result: 
+Result:
 - 15-minute COMPLETE system stabilization (vs 2-4 hours typical)
 - 100% test pass rate achieved from 0%
 - Emergency workflow innovation (safe degradation)
@@ -380,6 +425,7 @@ Innovation: Safe degradation pattern allowing warnings vs failures
 ```
 
 ### Excellent Example: Memory Optimization (2025-08-19)
+
 ```
 Task: Resolve CI memory issues and test failures
 Agents Used (Parallel):
@@ -388,7 +434,7 @@ Agents Used (Parallel):
 - devops-engineer: CI/CD pipeline fixes
 - error-handler: Root cause analysis of heap errors
 - meta-agent: Pattern documentation and learning
-Result: 
+Result:
 - 100% test pass rate achieved
 - 50% memory reduction in CI
 - 40% faster build times
@@ -398,6 +444,7 @@ Time: 2 hours (estimated 4-6 hours for single agent)
 ```
 
 ### Good Example (Continued Success)
+
 ```
 Task: Analyze system state
 Agents Used (Parallel):
@@ -410,6 +457,7 @@ Result: Comprehensive analysis in 40% less time
 ```
 
 ### Bad Example (Initial Approach)
+
 ```
 Task: Analyze system state
 Agents Used: orchestrator (1 agent only)
@@ -417,11 +465,12 @@ Result: Superficial analysis, missed critical issues
 ```
 
 ### New Pattern: Specialized Single-Agent Tasks
+
 ```
 Task: Fix GitHub Actions workflow conflicts
 Agents Used: devops-engineer (single specialist)
 Reason: Deep infrastructure expertise required
-Result: 
+Result:
 - 100% success on first attempt
 - Complex CI/CD issues resolved
 - No coordination overhead needed
@@ -431,6 +480,7 @@ Learning: Some tasks benefit from specialist depth over parallel breadth
 ## Recovery Protocol
 
 If you realize you haven't been using agents:
+
 1. STOP current approach
 2. Identify appropriate agents for the task
 3. Launch 3-5 agents in parallel
@@ -440,35 +490,44 @@ If you realize you haven't been using agents:
 ## 💡 Key Learnings
 
 ### From User Feedback (2025-01-10):
+
 > "Мне показалось, что ты практически не использовал агентов. Почему? Мы с тобой договаривались, что практически на каждую задачу должен вступать в работу агент"
 
 **Response**: Immediately corrected by using 5 agents in parallel, achieving:
+
 - 5x more comprehensive analysis
 - Multiple expert perspectives
 - 40-60% time savings
 - Higher quality solutions
 
 ### Success Pattern:
+
 ```
 Bad: 1 agent (orchestrator) → Superficial analysis
 Good: 5 agents (parallel) → Deep, multi-faceted insights
 ```
 
 ### Test Infrastructure Success (2025-08-19):
+
 **Achievement**: 100% test pass rate using parallel agent execution
+
 - **qa-engineer + test-fixer-agent**: Achieved adaptive CI thresholds
-- **performance-agent + security-agent**: Optimized test infrastructure 
+- **performance-agent + security-agent**: Optimized test infrastructure
 - **meta-agent**: Documented patterns in CLAUDE-test-patterns.md
 - **Result**: 40% faster CI, 50% memory reduction, perfect test reliability
 
 ### CI/CD Optimization Success (2025-08-19):
+
 **Achievement**: DevOps-engineer resolved GitHub Actions issues in single pass
+
 - **Pattern**: Direct single-agent execution for specialized infrastructure tasks
 - **Efficiency**: 100% success rate on first attempt
 - **Learning**: Some tasks benefit from deep specialist knowledge over parallel coordination
 
 ### State Persistence Success (2025-08-19):
+
 **Achievement**: Created state-persistence-agent for automatic work tracking
+
 - **Innovation**: New agent category for meta-system capabilities
 - **Integration**: Seamless coordination with existing agent ecosystem
 - **Impact**: Zero work loss, improved session continuity
@@ -476,6 +535,7 @@ Good: 5 agents (parallel) → Deep, multi-faceted insights
 ## 🔄 Continuous Improvement
 
 ### After Each Session:
+
 1. Update CLAUDE-agents.md with new patterns
 2. Document agent effectiveness metrics
 3. Refine agent selection algorithm
@@ -486,6 +546,7 @@ Good: 5 agents (parallel) → Deep, multi-faceted insights
 8. **New**: Identify opportunities for new specialized agents
 
 ### Weekly Meta-Analysis:
+
 1. **Performance Trending**: Analyze week-over-week agent metrics
 2. **Pattern Evolution**: Identify emerging successful patterns
 3. **Agent Optimization**: Update underperforming agent instructions
@@ -493,6 +554,7 @@ Good: 5 agents (parallel) → Deep, multi-faceted insights
 5. **Predictive Insights**: Forecast bottlenecks and optimization opportunities
 
 ### Meta-Agent Recommendations:
+
 - Monitor agent utilization rate (target: >80%, current: 85%)
 - Track parallel execution rate (target: >60%, current: 72%)
 - Measure task success rate (target: >95%, current: 98.5%)
@@ -521,6 +583,7 @@ npm test
 ## 📝 Commitment
 
 **I commit to:**
+
 - Using specialized agents for ALL non-trivial tasks
 - Following documented patterns in CLAUDE-agents.md
 - Executing agents in parallel when possible

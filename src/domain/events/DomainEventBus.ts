@@ -51,7 +51,10 @@ export class DomainEventBus {
   private eventHistory: DomainEvent[] = [];
   private maxHistorySize: number = 1000;
   private isProcessing: boolean = false;
-  private eventQueue: Array<{ event: DomainEvent; options?: EventProcessingOptions }> = [];
+  private eventQueue: Array<{
+    event: DomainEvent;
+    options?: EventProcessingOptions;
+  }> = [];
 
   /**
    * Subscribe to a specific event type
@@ -59,7 +62,7 @@ export class DomainEventBus {
   subscribe<T extends DomainEvent>(
     eventType: string,
     handler: IDomainEventHandler<T>,
-    priority: number = 0
+    priority: number = 0,
   ): void {
     if (!this.subscriptions.has(eventType)) {
       this.subscriptions.set(eventType, []);
@@ -68,7 +71,7 @@ export class DomainEventBus {
     const subscription: EventSubscription = {
       eventType,
       handler: handler as IDomainEventHandler,
-      priority
+      priority,
     };
 
     const subscriptions = this.subscriptions.get(eventType)!;
@@ -85,7 +88,7 @@ export class DomainEventBus {
     const subscriptions = this.subscriptions.get(eventType);
     if (!subscriptions) return;
 
-    const index = subscriptions.findIndex(sub => sub.handler === handler);
+    const index = subscriptions.findIndex((sub) => sub.handler === handler);
     if (index >= 0) {
       subscriptions.splice(index, 1);
     }
@@ -100,7 +103,7 @@ export class DomainEventBus {
    */
   async publish(
     event: DomainEvent,
-    options: EventProcessingOptions = {}
+    options: EventProcessingOptions = {},
   ): Promise<EventProcessingResult> {
     // Add to history
     this.addToHistory(event);
@@ -110,7 +113,7 @@ export class DomainEventBus {
       eventType: event.eventType,
       success: true,
       processingTime: 0,
-      handlerResults: []
+      handlerResults: [],
     };
 
     if (options.async) {
@@ -136,7 +139,7 @@ export class DomainEventBus {
    */
   async publishBatch(
     events: DomainEvent[],
-    options: EventProcessingOptions = {}
+    options: EventProcessingOptions = {},
   ): Promise<EventProcessingResult[]> {
     const results: EventProcessingResult[] = [];
 
@@ -158,7 +161,7 @@ export class DomainEventBus {
    */
   getSubscribers(eventType: string): IDomainEventHandler[] {
     const subscriptions = this.subscriptions.get(eventType) || [];
-    return subscriptions.map(sub => sub.handler);
+    return subscriptions.map((sub) => sub.handler);
   }
 
   /**
@@ -173,7 +176,7 @@ export class DomainEventBus {
    */
   getEventHistory(eventType?: string): DomainEvent[] {
     if (eventType) {
-      return this.eventHistory.filter(event => event.eventType === eventType);
+      return this.eventHistory.filter((event) => event.eventType === eventType);
     }
     return [...this.eventHistory];
   }
@@ -195,15 +198,17 @@ export class DomainEventBus {
     queueSize: number;
     isProcessing: boolean;
   } {
-    const totalSubscriptions = Array.from(this.subscriptions.values())
-      .reduce((total, subs) => total + subs.length, 0);
+    const totalSubscriptions = Array.from(this.subscriptions.values()).reduce(
+      (total, subs) => total + subs.length,
+      0,
+    );
 
     return {
       totalSubscriptions,
       eventTypes: this.subscriptions.size,
       historySize: this.eventHistory.length,
       queueSize: this.eventQueue.length,
-      isProcessing: this.isProcessing
+      isProcessing: this.isProcessing,
     };
   }
 
@@ -212,7 +217,7 @@ export class DomainEventBus {
    */
   async waitForCompletion(): Promise<void> {
     while (this.eventQueue.length > 0 || this.isProcessing) {
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
     }
   }
 
@@ -231,7 +236,7 @@ export class DomainEventBus {
   private async processEvent(
     event: DomainEvent,
     options: EventProcessingOptions,
-    result: EventProcessingResult
+    result: EventProcessingResult,
   ): Promise<void> {
     const subscriptions = this.subscriptions.get(event.eventType) || [];
 
@@ -245,14 +250,14 @@ export class DomainEventBus {
       } = {
         handlerName: subscription.handler.constructor.name,
         success: true,
-        executionTime: 0
+        executionTime: 0,
       };
 
       try {
         const timeout = options.timeout || 5000;
         await this.executeWithTimeout(
           () => subscription.handler.handle(event),
-          timeout
+          timeout,
         );
       } catch (error) {
         handlerResult.success = false;
@@ -265,9 +270,9 @@ export class DomainEventBus {
             subscription.handler,
             event,
             options.retryCount,
-            options.retryDelay || 1000
+            options.retryDelay || 1000,
           );
-          
+
           if (retrySuccess) {
             handlerResult.success = true;
             delete handlerResult.error;
@@ -298,7 +303,7 @@ export class DomainEventBus {
           eventType: event.eventType,
           success: true,
           processingTime: 0,
-          handlerResults: []
+          handlerResults: [],
         };
 
         try {
@@ -317,7 +322,7 @@ export class DomainEventBus {
    */
   private async executeWithTimeout<T>(
     operation: () => Promise<T>,
-    timeoutMs: number
+    timeoutMs: number,
   ): Promise<T> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
@@ -325,11 +330,11 @@ export class DomainEventBus {
       }, timeoutMs);
 
       operation()
-        .then(result => {
+        .then((result) => {
           clearTimeout(timeout);
           resolve(result);
         })
-        .catch(error => {
+        .catch((error) => {
           clearTimeout(timeout);
           reject(error);
         });
@@ -343,15 +348,18 @@ export class DomainEventBus {
     handler: IDomainEventHandler,
     event: DomainEvent,
     retryCount: number,
-    retryDelay: number
+    retryDelay: number,
   ): Promise<boolean> {
     for (let i = 0; i < retryCount; i++) {
       try {
-        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
         await handler.handle(event);
         return true;
       } catch (error) {
-        console.warn(`Retry ${i + 1}/${retryCount} failed for handler ${handler.constructor.name}:`, error);
+        console.warn(
+          `Retry ${i + 1}/${retryCount} failed for handler ${handler.constructor.name}:`,
+          error,
+        );
       }
     }
     return false;

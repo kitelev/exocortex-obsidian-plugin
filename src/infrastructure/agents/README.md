@@ -42,7 +42,7 @@ AgentFactory
 ### Basic Usage
 
 ```typescript
-import { AgentFactory } from '@/infrastructure/agents';
+import { AgentFactory } from "@/infrastructure/agents";
 
 // Initialize the factory
 const factory = new AgentFactory({
@@ -50,22 +50,22 @@ const factory = new AgentFactory({
   evolutionEnabled: true,
   orchestrationEnabled: true,
   lifecycleEnabled: true,
-  qualityThreshold: 0.8
+  qualityThreshold: 0.8,
 });
 
 // Create an agent
 const request = {
   requirements: {
-    domain: 'testing',
+    domain: "testing",
     complexity: 7,
-    urgency: 'medium',
-    capabilities: ['unit-testing', 'integration-testing'],
-    constraints: ['performance'],
-    expectedLoad: 100
+    urgency: "medium",
+    capabilities: ["unit-testing", "integration-testing"],
+    constraints: ["performance"],
+    expectedLoad: 100,
   },
-  urgency: 'medium',
-  requesterId: 'user-123',
-  context: { source: 'manual-request' }
+  urgency: "medium",
+  requesterId: "user-123",
+  context: { source: "manual-request" },
 };
 
 const result = await factory.createAgent(request);
@@ -85,7 +85,7 @@ const performance = {
   successRate: 0.95,
   errorRate: 0.02,
   memoryUsage: 512,
-  cpuUsage: 35
+  cpuUsage: 35,
   // ... other metrics
 };
 
@@ -106,7 +106,9 @@ const evolutionResult = await factory.evolveAgent(agentId);
 if (evolutionResult.isSuccess) {
   const proposal = evolutionResult.getValue();
   console.log(`Evolution confidence: ${proposal.confidence}`);
-  console.log(`Expected improvement: ${proposal.expectedImpact.performanceGain}`);
+  console.log(
+    `Expected improvement: ${proposal.expectedImpact.performanceGain}`,
+  );
 }
 ```
 
@@ -115,10 +117,10 @@ if (evolutionResult.isSuccess) {
 ```typescript
 // Orchestrate complex task across multiple agents
 const complexTask = {
-  domain: 'full-stack-development',
+  domain: "full-stack-development",
   complexity: 9,
-  capabilities: ['frontend', 'backend', 'testing', 'deployment'],
-  expectedLoad: 500
+  capabilities: ["frontend", "backend", "testing", "deployment"],
+  expectedLoad: 500,
 };
 
 const plan = await factory.orchestrateExecution(complexTask);
@@ -146,12 +148,12 @@ graph LR
 
 ### State Characteristics
 
-| State | Duration | Monitoring | Scope | Success Criteria |
-|-------|----------|------------|-------|------------------|
-| **Experimental** | 7 days | Intensive (5min) | Limited | Error rate < 5%, Success > 80% |
-| **Validation** | 14 days | Regular (10min) | Expanded | Error rate < 2%, Success > 90% |
-| **Production** | Indefinite | Standard (30min) | Full | Continuous optimization |
-| **Optimization** | Variable | Analysis-driven | Full | Performance improvements |
+| State            | Duration   | Monitoring       | Scope    | Success Criteria               |
+| ---------------- | ---------- | ---------------- | -------- | ------------------------------ |
+| **Experimental** | 7 days     | Intensive (5min) | Limited  | Error rate < 5%, Success > 80% |
+| **Validation**   | 14 days    | Regular (10min)  | Expanded | Error rate < 2%, Success > 90% |
+| **Production**   | Indefinite | Standard (30min) | Full     | Continuous optimization        |
+| **Optimization** | Variable   | Analysis-driven  | Full     | Performance improvements       |
 
 ## 🎯 Decision Framework
 
@@ -169,15 +171,15 @@ The system evaluates agent creation needs using SOLID principles:
 
 ```typescript
 interface GRASPMetrics {
-  informationExpert: number;     // 0-1: Domain knowledge fit
-  creator: number;               // 0-1: Creation responsibility fit
-  controller: number;            // 0-1: Coordination capability
-  lowCoupling: number;          // 0-1: Independence level
-  highCohesion: number;         // 0-1: Internal relatedness
-  polymorphism: number;         // 0-1: Behavioral variation support
-  pureDesign: number;           // 0-1: Side-effect freedom
-  indirection: number;          // 0-1: Abstraction appropriateness
-  protectedVariations: number;  // 0-1: Change isolation
+  informationExpert: number; // 0-1: Domain knowledge fit
+  creator: number; // 0-1: Creation responsibility fit
+  controller: number; // 0-1: Coordination capability
+  lowCoupling: number; // 0-1: Independence level
+  highCohesion: number; // 0-1: Internal relatedness
+  polymorphism: number; // 0-1: Behavioral variation support
+  pureDesign: number; // 0-1: Side-effect freedom
+  indirection: number; // 0-1: Abstraction appropriateness
+  protectedVariations: number; // 0-1: Change isolation
 }
 ```
 
@@ -204,34 +206,34 @@ interface GRASPMetrics {
 
 ```typescript
 const customPattern: EvolutionPattern = {
-  id: 'custom-optimization',
-  name: 'Custom Optimization Pattern',
+  id: "custom-optimization",
+  name: "Custom Optimization Pattern",
   trigger: {
-    type: 'performance',
-    condition: 'customMetric > threshold',
+    type: "performance",
+    condition: "customMetric > threshold",
     threshold: 100,
-    timeWindow: 3600000
+    timeWindow: 3600000,
   },
   transformation: {
-    type: 'optimize',
-    target: [{ component: 'workflows' }],
+    type: "optimize",
+    target: [{ component: "workflows" }],
     changes: [
       {
-        action: 'add',
-        content: 'Custom optimization logic',
-        rationale: 'Improve specific metric',
-        impact: 'medium'
-      }
-    ]
+        action: "add",
+        content: "Custom optimization logic",
+        rationale: "Improve specific metric",
+        impact: "medium",
+      },
+    ],
   },
   successMetrics: [
     {
-      metric: 'customMetric',
-      expectedChange: 'decrease',
+      metric: "customMetric",
+      expectedChange: "decrease",
       minimumImprovement: 0.2,
-      timeframe: 3600000
-    }
-  ]
+      timeframe: 3600000,
+    },
+  ],
 };
 ```
 
@@ -263,18 +265,18 @@ const customPattern: EvolutionPattern = {
 
 ```typescript
 const customPattern: OrchestrationPattern = {
-  id: 'custom-pattern',
-  name: 'Custom Orchestration',
-  type: 'hybrid',
+  id: "custom-pattern",
+  name: "Custom Orchestration",
+  type: "hybrid",
   applicability: [
-    { condition: 'high_complexity', weight: 0.8, required: true }
+    { condition: "high_complexity", weight: 0.8, required: true },
   ],
   coordination: {
-    communicationPattern: 'publish-subscribe',
-    synchronization: 'hybrid',
-    errorHandling: 'graceful-degradation',
-    resourceSharing: 'queued'
-  }
+    communicationPattern: "publish-subscribe",
+    synchronization: "hybrid",
+    errorHandling: "graceful-degradation",
+    resourceSharing: "queued",
+  },
 };
 ```
 
@@ -312,13 +314,13 @@ Based on ISO/IEC 25010:
 
 ```typescript
 const config: AgentFactoryConfig = {
-  templatePath: '/custom/templates',
+  templatePath: "/custom/templates",
   monitoringEnabled: true,
   evolutionEnabled: true,
   orchestrationEnabled: true,
   lifecycleEnabled: true,
   maxAgentsPerDomain: 10,
-  qualityThreshold: 0.8
+  qualityThreshold: 0.8,
 };
 ```
 
@@ -327,12 +329,12 @@ const config: AgentFactoryConfig = {
 ```typescript
 const thresholds: PerformanceThresholds = {
   responseTime: { target: 30, warning: 60, critical: 120 },
-  errorRate: { target: 0.02, warning: 0.05, critical: 0.10 },
-  successRate: { target: 0.95, warning: 0.90, critical: 0.80 },
+  errorRate: { target: 0.02, warning: 0.05, critical: 0.1 },
+  successRate: { target: 0.95, warning: 0.9, critical: 0.8 },
   resourceUsage: {
     memory: { target: 512, warning: 1024, critical: 2048 },
-    cpu: { target: 50, warning: 75, critical: 90 }
-  }
+    cpu: { target: 50, warning: 75, critical: 90 },
+  },
 };
 ```
 
@@ -393,18 +395,18 @@ npm test -- --coverage src/infrastructure/agents
 
 ```typescript
 // Integration with Obsidian Plugin
-import { AgentFactory } from '@/infrastructure/agents';
-import { DIContainer } from '@/infrastructure/container/DIContainer';
+import { AgentFactory } from "@/infrastructure/agents";
+import { DIContainer } from "@/infrastructure/container/DIContainer";
 
 // Register with DI container
-container.register('AgentFactory', AgentFactory);
+container.register("AgentFactory", AgentFactory);
 
 // Use in plugin services
 class ExocortexPlugin {
   private agentFactory: AgentFactory;
-  
+
   async onload() {
-    this.agentFactory = container.resolve('AgentFactory');
+    this.agentFactory = container.resolve("AgentFactory");
     await this.initializeAgentSystem();
   }
 }
@@ -414,15 +416,15 @@ class ExocortexPlugin {
 
 ```typescript
 // Listen to agent events
-factory.on('agentCreated', (agent) => {
+factory.on("agentCreated", (agent) => {
   console.log(`New agent created: ${agent.name}`);
 });
 
-factory.on('agentEvolved', (evolution) => {
+factory.on("agentEvolved", (evolution) => {
   console.log(`Agent evolved: ${evolution.agentId}`);
 });
 
-factory.on('performanceAlert', (alert) => {
+factory.on("performanceAlert", (alert) => {
   console.log(`Performance alert: ${alert.message}`);
 });
 ```
@@ -457,7 +459,7 @@ factory.on('performanceAlert', (alert) => {
 const factory = new AgentFactory({
   ...config,
   debugMode: true,
-  logLevel: 'verbose'
+  logLevel: "verbose",
 });
 ```
 

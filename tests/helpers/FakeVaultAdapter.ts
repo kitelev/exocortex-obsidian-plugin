@@ -1,4 +1,4 @@
-import { IVaultAdapter } from '../../src/application/ports/IVaultAdapter';
+import { IVaultAdapter } from "../../src/application/ports/IVaultAdapter";
 
 /**
  * Fake implementation of IVaultAdapter for testing
@@ -50,7 +50,7 @@ export class FakeVaultAdapter implements IVaultAdapter {
       return paths;
     }
     const regex = new RegExp(pattern);
-    return paths.filter(p => regex.test(p));
+    return paths.filter((p) => regex.test(p));
   }
 
   async getMetadata(path: string): Promise<Record<string, any> | null> {
@@ -61,10 +61,14 @@ export class FakeVaultAdapter implements IVaultAdapter {
    * Get all files in the vault
    */
   async getFiles(): Promise<any[]> {
-    return Array.from(this.files.keys()).map(path => ({
+    return Array.from(this.files.keys()).map((path) => ({
       path,
-      basename: path.split('/').pop()?.replace(/\.[^/.]+$/, '') || '',
-      extension: path.split('.').pop() || ''
+      basename:
+        path
+          .split("/")
+          .pop()
+          ?.replace(/\.[^/.]+$/, "") || "",
+      extension: path.split(".").pop() || "",
     }));
   }
 
@@ -72,7 +76,7 @@ export class FakeVaultAdapter implements IVaultAdapter {
    * Get metadata for a specific file object
    */
   async getFileMetadata(file: any): Promise<any> {
-    if (typeof file === 'string') {
+    if (typeof file === "string") {
       return this.getMetadata(file);
     }
     if (file && file.path) {
@@ -107,20 +111,20 @@ export class FakeVaultAdapter implements IVaultAdapter {
       try {
         // Simple YAML parsing (in real implementation, use proper YAML parser)
         const frontmatter: Record<string, any> = {};
-        const lines = match[1].split('\n');
-        
+        const lines = match[1].split("\n");
+
         for (const line of lines) {
-          const colonIndex = line.indexOf(':');
+          const colonIndex = line.indexOf(":");
           if (colonIndex > 0) {
             const key = line.substring(0, colonIndex).trim();
             const value = line.substring(colonIndex + 1).trim();
-            
+
             // Handle quoted strings
             if (value.startsWith('"') && value.endsWith('"')) {
               frontmatter[key] = value.slice(1, -1);
-            } else if (value === 'true') {
+            } else if (value === "true") {
               frontmatter[key] = true;
-            } else if (value === 'false') {
+            } else if (value === "false") {
               frontmatter[key] = false;
             } else if (!isNaN(Number(value))) {
               frontmatter[key] = Number(value);
@@ -129,7 +133,7 @@ export class FakeVaultAdapter implements IVaultAdapter {
             }
           }
         }
-        
+
         this.metadata.set(path, frontmatter);
       } catch (error) {
         console.warn(`Failed to parse metadata for ${path}:`, error);

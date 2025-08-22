@@ -15,7 +15,7 @@ export class RDFCommandController implements ICommandController {
     private readonly plugin: Plugin,
     private readonly graph: Graph,
     private readonly rdfService: RDFService,
-    private readonly sparqlProcessor: SPARQLProcessor
+    private readonly sparqlProcessor: SPARQLProcessor,
   ) {}
 
   async registerCommands(): Promise<void> {

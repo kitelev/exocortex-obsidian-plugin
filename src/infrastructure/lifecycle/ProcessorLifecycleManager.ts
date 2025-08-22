@@ -16,7 +16,7 @@ export class ProcessorLifecycleManager implements ILifecycleManager {
   constructor(
     private readonly plugin: Plugin,
     private readonly graph: Graph,
-    private readonly settings: ExocortexSettings
+    private readonly settings: ExocortexSettings,
   ) {}
 
   async initialize(): Promise<void> {
@@ -79,8 +79,10 @@ export class ProcessorLifecycleManager implements ILifecycleManager {
   private async registerProcessors(): Promise<void> {
     // Register SPARQL code block processor
     try {
-      this.plugin.registerMarkdownCodeBlockProcessor("sparql", (source, el, ctx) =>
-        this.sparqlProcessor.processCodeBlock(source, el, ctx),
+      this.plugin.registerMarkdownCodeBlockProcessor(
+        "sparql",
+        (source, el, ctx) =>
+          this.sparqlProcessor.processCodeBlock(source, el, ctx),
       );
     } catch (error) {
       // SPARQL processor may already be registered (hot reload scenario)
@@ -92,8 +94,10 @@ export class ProcessorLifecycleManager implements ILifecycleManager {
 
     // Register Graph Visualization code block processor
     try {
-      this.plugin.registerMarkdownCodeBlockProcessor("graph", (source, el, ctx) =>
-        this.graphVisualizationProcessor.processCodeBlock(source, el, ctx),
+      this.plugin.registerMarkdownCodeBlockProcessor(
+        "graph",
+        (source, el, ctx) =>
+          this.graphVisualizationProcessor.processCodeBlock(source, el, ctx),
       );
     } catch (error) {
       // Graph processor may already be registered (hot reload scenario)

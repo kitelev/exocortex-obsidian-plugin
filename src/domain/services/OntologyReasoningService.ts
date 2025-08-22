@@ -63,7 +63,7 @@ export class OntologyReasoningService {
     try {
       const className = asset.getClassName();
       const hierarchy = this.getClassHierarchy(className);
-      
+
       if (!hierarchy) {
         return Result.ok(asset); // No hierarchy information available
       }
@@ -71,13 +71,16 @@ export class OntologyReasoningService {
       // Get inherited properties
       const inheritedProperties = this.getInheritedProperties(className, graph);
       const currentProperties = asset.getProperties();
-      
+
       // Apply inherited properties that are missing
       const newProperties = new Map(currentProperties);
       let hasChanges = false;
 
       for (const inheritance of inheritedProperties) {
-        if (!currentProperties.has(inheritance.propertyName) && inheritance.required) {
+        if (
+          !currentProperties.has(inheritance.propertyName) &&
+          inheritance.required
+        ) {
           // Set default value based on type
           const defaultValue = this.getDefaultValueForType(inheritance.type);
           if (defaultValue !== null) {
@@ -97,7 +100,7 @@ export class OntologyReasoningService {
         className: asset.getClassName(),
         ontology: asset.getOntologyPrefix(),
         label: asset.getTitle(),
-        properties: Object.fromEntries(newProperties)
+        properties: Object.fromEntries(newProperties),
       });
 
       return assetResult;
@@ -114,8 +117,10 @@ export class OntologyReasoningService {
     const allInferences: string[] = [];
     const allConflicts: string[] = [];
 
-    const strategiesToApply = strategyNames 
-      ? strategyNames.map(name => this.strategies.get(name)).filter(s => s !== undefined) as ReasoningStrategy[]
+    const strategiesToApply = strategyNames
+      ? (strategyNames
+          .map((name) => this.strategies.get(name))
+          .filter((s) => s !== undefined) as ReasoningStrategy[])
       : Array.from(this.strategies.values());
 
     for (const strategy of strategiesToApply) {
@@ -137,7 +142,7 @@ export class OntologyReasoningService {
     return {
       newTriples: allTriples,
       inferencesApplied: allInferences,
-      conflicts: allConflicts
+      conflicts: allConflicts,
     };
   }
 
@@ -155,24 +160,28 @@ export class OntologyReasoningService {
     this.classHierarchies.clear();
 
     // Find all class definitions
-    const classTriples = graph.getTriples()
-      .filter(triple => 
-        triple.getPredicate().toString().includes('rdf:type') && 
-        triple.getObject().toString().includes('owl:Class')
+    const classTriples = graph
+      .getTriples()
+      .filter(
+        (triple) =>
+          triple.getPredicate().toString().includes("rdf:type") &&
+          triple.getObject().toString().includes("owl:Class"),
       );
 
     for (const classTriple of classTriples) {
-      const classNameResult = ClassName.create(classTriple.getSubject().toString());
+      const classNameResult = ClassName.create(
+        classTriple.getSubject().toString(),
+      );
       if (!classNameResult.isSuccess) continue;
 
       const className = classNameResult.getValue()!;
-      
+
       // Find superclasses
       const superClasses = this.findSuperClasses(className, graph);
-      
+
       // Find subclasses
       const subClasses = this.findSubClasses(className, graph);
-      
+
       // Calculate depth in hierarchy
       const depth = this.calculateClassDepth(className, graph);
 
@@ -180,7 +189,7 @@ export class OntologyReasoningService {
         className,
         superClasses,
         subClasses,
-        depth
+        depth,
       });
     }
   }
@@ -188,10 +197,13 @@ export class OntologyReasoningService {
   /**
    * Get inherited properties for a class
    */
-  getInheritedProperties(className: ClassName, graph: Graph): PropertyInheritance[] {
+  getInheritedProperties(
+    className: ClassName,
+    graph: Graph,
+  ): PropertyInheritance[] {
     const inherited: PropertyInheritance[] = [];
     const hierarchy = this.getClassHierarchy(className);
-    
+
     if (!hierarchy) {
       return inherited;
     }
@@ -199,14 +211,14 @@ export class OntologyReasoningService {
     // Traverse up the hierarchy
     for (const superClass of hierarchy.superClasses) {
       const properties = this.getClassProperties(superClass, graph);
-      
+
       for (const property of properties) {
         inherited.push({
           propertyName: property.name,
           inheritedFrom: superClass,
           required: property.required,
           type: property.type,
-          constraints: property.constraints
+          constraints: property.constraints,
         });
       }
 
@@ -226,7 +238,7 @@ export class OntologyReasoningService {
     if (!hierarchy) return false;
 
     // Direct superclass check
-    if (hierarchy.superClasses.some(sc => sc.equals(superClass))) {
+    if (hierarchy.superClasses.some((sc) => sc.equals(superClass))) {
       return true;
     }
 
@@ -255,8 +267,8 @@ export class OntologyReasoningService {
 
     // Find candidates that are superclasses of all input classes
     for (const candidate of candidates) {
-      const isCommonSuperClass = classes.every(cls => 
-        cls.equals(candidate) || this.isSubClassOf(cls, candidate)
+      const isCommonSuperClass = classes.every(
+        (cls) => cls.equals(candidate) || this.isSubClassOf(cls, candidate),
       );
 
       if (isCommonSuperClass) {
@@ -295,8 +307,11 @@ export class OntologyReasoningService {
         const conflicts: string[] = [];
 
         // Find all subclass relationships
-        const subclassTriples = graph.getTriples()
-          .filter(triple => triple.getPredicate().toString().includes('rdfs:subClassOf'));
+        const subclassTriples = graph
+          .getTriples()
+          .filter((triple) =>
+            triple.getPredicate().toString().includes("rdfs:subClassOf"),
+          );
 
         // Apply transitivity: if A subClassOf B and B subClassOf C, then A subClassOf C
         for (const triple1 of subclassTriples) {
@@ -305,34 +320,39 @@ export class OntologyReasoningService {
             const obj1 = triple1.getObject();
             const subj2 = triple2.getSubject();
             let isEqual = false;
-            
+
             if (obj1 instanceof IRI && subj2 instanceof IRI) {
               isEqual = obj1.equals(subj2);
-            } else if (obj1 instanceof BlankNode && subj2 instanceof BlankNode) {
+            } else if (
+              obj1 instanceof BlankNode &&
+              subj2 instanceof BlankNode
+            ) {
               isEqual = obj1.equals(subj2);
             } else if (obj1 === subj2) {
               isEqual = true;
             }
-            
+
             if (isEqual) {
               // Create transitive triple
               const transitiveTriple = new Triple(
                 triple1.getSubject(),
                 triple1.getPredicate(),
-                triple2.getObject()
+                triple2.getObject(),
               );
 
               // Check if it doesn't already exist
               if (!graph.hasTriple(transitiveTriple)) {
                 newTriples.push(transitiveTriple);
-                inferences.push(`Transitive subclass: ${triple1.getSubject()} -> ${triple2.getObject()}`);
+                inferences.push(
+                  `Transitive subclass: ${triple1.getSubject()} -> ${triple2.getObject()}`,
+                );
               }
             }
           }
         }
 
         return { newTriples, inferencesApplied: inferences, conflicts };
-      }
+      },
     });
 
     // Property domain/range inference
@@ -347,7 +367,7 @@ export class OntologyReasoningService {
         // This would need actual property domain/range definitions in the graph
         // For now, return empty result
         return { newTriples, inferencesApplied: inferences, conflicts };
-      }
+      },
     });
 
     // Inverse property inference
@@ -362,7 +382,7 @@ export class OntologyReasoningService {
         // Find inverse property definitions and create inverse triples
         // This would need owl:inverseOf definitions in the graph
         return { newTriples, inferencesApplied: inferences, conflicts };
-      }
+      },
     });
   }
 
@@ -371,11 +391,13 @@ export class OntologyReasoningService {
    */
   private findSuperClasses(className: ClassName, graph: Graph): ClassName[] {
     const superClasses: ClassName[] = [];
-    
-    const subclassTriples = graph.getTriples()
-      .filter(triple => 
-        triple.getSubject().toString() === className.toString() &&
-        triple.getPredicate().toString().includes('rdfs:subClassOf')
+
+    const subclassTriples = graph
+      .getTriples()
+      .filter(
+        (triple) =>
+          triple.getSubject().toString() === className.toString() &&
+          triple.getPredicate().toString().includes("rdfs:subClassOf"),
       );
 
     for (const triple of subclassTriples) {
@@ -393,11 +415,13 @@ export class OntologyReasoningService {
    */
   private findSubClasses(className: ClassName, graph: Graph): ClassName[] {
     const subClasses: ClassName[] = [];
-    
-    const subclassTriples = graph.getTriples()
-      .filter(triple => 
-        triple.getObject().toString() === className.toString() &&
-        triple.getPredicate().toString().includes('rdfs:subClassOf')
+
+    const subclassTriples = graph
+      .getTriples()
+      .filter(
+        (triple) =>
+          triple.getObject().toString() === className.toString() &&
+          triple.getPredicate().toString().includes("rdfs:subClassOf"),
       );
 
     for (const triple of subclassTriples) {
@@ -415,7 +439,7 @@ export class OntologyReasoningService {
    */
   private calculateClassDepth(className: ClassName, graph: Graph): number {
     const superClasses = this.findSuperClasses(className, graph);
-    
+
     if (superClasses.length === 0) {
       return 0; // Root class
     }
@@ -432,7 +456,10 @@ export class OntologyReasoningService {
   /**
    * Get properties defined for a specific class
    */
-  private getClassProperties(className: ClassName, graph: Graph): Array<{
+  private getClassProperties(
+    className: ClassName,
+    graph: Graph,
+  ): Array<{
     name: string;
     required: boolean;
     type?: string;

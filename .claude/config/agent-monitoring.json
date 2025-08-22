@@ -12,7 +12,7 @@
     "outputFormat": "console",
     "logFile": ".claude/logs/agent-execution.log"
   },
-  
+
   "verbosityLevels": {
     "silent": {
       "showStart": false,
@@ -52,7 +52,7 @@
       "showInternalState": true
     }
   },
-  
+
   "visualization": {
     "icons": {
       "start": "🚀",
@@ -70,7 +70,7 @@
       "analysis": "🔍",
       "collaboration": "🤝"
     },
-    
+
     "colors": {
       "start": "green",
       "progress": "yellow",
@@ -82,7 +82,7 @@
       "warning": "yellow",
       "dim": "gray"
     },
-    
+
     "progressBar": {
       "width": 30,
       "filledChar": "█",
@@ -91,7 +91,7 @@
       "showNumbers": true
     }
   },
-  
+
   "parallelExecution": {
     "showGroups": true,
     "showConcurrency": true,
@@ -99,7 +99,7 @@
     "trackDependencies": true,
     "highlightBottlenecks": true
   },
-  
+
   "agentMetrics": {
     "trackExecutionTime": true,
     "trackMemoryUsage": false,
@@ -107,7 +107,7 @@
     "trackDecisionQuality": true,
     "trackOutputQuality": true
   },
-  
+
   "reporting": {
     "generateSummary": true,
     "includeTimeline": true,
@@ -116,7 +116,7 @@
     "exportFormats": ["markdown", "json", "html"],
     "autoExport": false
   },
-  
+
   "alerts": {
     "onError": true,
     "onSlowExecution": true,
@@ -128,7 +128,7 @@
       "errorRate": 0.1
     }
   },
-  
+
   "customPatterns": {
     "orchestrator": {
       "icon": "🎯",
@@ -149,7 +149,7 @@
       "indentLevel": 0
     }
   },
-  
+
   "sessionManagement": {
     "autoStartSession": true,
     "sessionIdFormat": "session-{timestamp}",
@@ -157,14 +157,14 @@
     "maxHistorySessions": 100,
     "compressOldSessions": true
   },
-  
+
   "performance": {
     "bufferFlushInterval": 100,
     "maxConcurrentLogs": 1000,
     "throttleOutput": false,
     "aggregateSmallUpdates": true
   },
-  
+
   "integration": {
     "claudeCode": {
       "interceptOutput": true,

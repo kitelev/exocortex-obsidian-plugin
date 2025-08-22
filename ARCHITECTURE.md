@@ -1,6 +1,7 @@
 # Exocortex Plugin Architecture
 
 ## Overview
+
 This plugin follows Clean Architecture principles with a clear separation of concerns and dependency inversion.
 
 ## System Architecture
@@ -24,12 +25,15 @@ This plugin follows Clean Architecture principles with a clear separation of con
 ```
 
 ### Dependency Rule
+
 Dependencies only point inward. Inner layers know nothing about outer layers.
 
 ## Architecture Principles
 
 ### 1. Clean Architecture
+
 The plugin is organized in concentric layers:
+
 - **Domain Layer** (innermost): Business logic and entities
 - **Application Layer**: Use cases and application services
 - **Infrastructure Layer**: External dependencies and adapters
@@ -40,38 +44,50 @@ Dependencies flow inward only - outer layers depend on inner layers, never the r
 ### 2. SOLID Principles
 
 #### Single Responsibility Principle (SRP)
+
 Each class has one reason to change:
+
 - `Asset` entity manages asset data
 - `OntologyRepository` handles ontology persistence
 - `CreateAssetUseCase` orchestrates asset creation
 
 #### Open/Closed Principle (OCP)
+
 Classes are open for extension, closed for modification:
+
 - New asset types extend `Asset` base class
 - New repositories implement `IRepository` interface
 
 #### Liskov Substitution Principle (LSP)
+
 Derived classes can substitute base classes:
+
 - Any `IRepository` implementation works with use cases
 - Any `ILayoutRenderer` can render layouts
 
 #### Interface Segregation Principle (ISP)
+
 Clients depend only on interfaces they use:
+
 - `IAssetRepository` for asset operations
 - `IOntologyRepository` for ontology operations
 - `IVaultAdapter` for vault access
 
 #### Dependency Inversion Principle (DIP)
+
 High-level modules don't depend on low-level modules:
+
 - Use cases depend on repository interfaces, not implementations
 - Domain entities don't know about Obsidian API
 
 ### 3. DRY (Don't Repeat Yourself)
+
 - Shared logic extracted to utility functions
 - Common patterns implemented once in base classes
 - Configuration centralized in settings
 
 ### 4. KISS (Keep It Simple, Stupid)
+
 - Simple, clear method names
 - Minimal method parameters
 - Straightforward control flow
@@ -79,35 +95,47 @@ High-level modules don't depend on low-level modules:
 ### 5. GRASP (General Responsibility Assignment Software Patterns)
 
 #### Information Expert
+
 Objects with the data perform operations on that data:
+
 - `Asset` validates its own properties
 - `Ontology` manages its prefixes
 
 #### Creator
+
 Objects create instances they closely use:
+
 - `AssetFactory` creates assets
 - `RepositoryFactory` creates repositories
 
 #### Controller
+
 Controllers coordinate and delegate:
+
 - `ExocortexPlugin` coordinates plugin lifecycle
 - `CreateAssetUseCase` coordinates asset creation
 
 #### Low Coupling
+
 Minimal dependencies between classes:
+
 - Use interfaces instead of concrete classes
 - Dependency injection for loose coupling
 
 #### High Cohesion
+
 Related functionality grouped together:
+
 - All asset operations in `AssetService`
 - All UI components in presentation layer
 
 ### 6. Executable Specifications
+
 Tests serve as living documentation:
+
 ```typescript
-describe('CreateAssetUseCase', () => {
-  it('should create an asset with valid properties', async () => {
+describe("CreateAssetUseCase", () => {
+  it("should create an asset with valid properties", async () => {
     // Given a valid asset request
     // When creating the asset
     // Then the asset is persisted with correct properties
@@ -118,11 +146,13 @@ describe('CreateAssetUseCase', () => {
 ### 7. Test Principles
 
 #### Fake Objects
+
 Test doubles that provide working implementations:
+
 ```typescript
 class FakeVaultAdapter implements IVaultAdapter {
   private files = new Map<string, string>();
-  
+
   async create(path: string, content: string): Promise<void> {
     this.files.set(path, content);
   }
@@ -130,12 +160,14 @@ class FakeVaultAdapter implements IVaultAdapter {
 ```
 
 #### Test Context
+
 Encapsulated test setup and utilities:
+
 ```typescript
 class TestContext {
   public vault: FakeVaultAdapter;
   public repository: AssetRepository;
-  
+
   constructor() {
     this.vault = new FakeVaultAdapter();
     this.repository = new AssetRepository(this.vault);
@@ -144,6 +176,7 @@ class TestContext {
 ```
 
 #### FIRST Principles
+
 - **Fast**: Tests run in milliseconds
 - **Independent**: Tests don't depend on each other
 - **Repeatable**: Same results every run
@@ -210,7 +243,9 @@ Infrastructure ←───┘
 ## Key Patterns
 
 ### Repository Pattern
+
 Abstracts data access:
+
 ```typescript
 interface IAssetRepository {
   findById(id: AssetId): Promise<Asset | null>;
@@ -220,7 +255,9 @@ interface IAssetRepository {
 ```
 
 ### Factory Pattern
+
 Creates complex objects:
+
 ```typescript
 class AssetFactory {
   static create(props: AssetProps): Asset {
@@ -231,11 +268,13 @@ class AssetFactory {
 ```
 
 ### Adapter Pattern
+
 Adapts external APIs to our interfaces:
+
 ```typescript
 class ObsidianVaultAdapter implements IVaultAdapter {
   constructor(private vault: Vault) {}
-  
+
   async create(path: string, content: string): Promise<void> {
     await this.vault.create(path, content);
   }
@@ -243,15 +282,17 @@ class ObsidianVaultAdapter implements IVaultAdapter {
 ```
 
 ### Dependency Injection
+
 Inverts control for testability:
+
 ```typescript
 class Container {
   private services = new Map();
-  
+
   register<T>(token: string, factory: () => T): void {
     this.services.set(token, factory);
   }
-  
+
   resolve<T>(token: string): T {
     return this.services.get(token)();
   }
@@ -261,19 +302,25 @@ class Container {
 ## Testing Strategy
 
 ### Unit Tests
+
 Test individual components in isolation:
+
 - Domain entities and value objects
 - Use cases with mocked dependencies
 - Pure functions and utilities
 
 ### Integration Tests
+
 Test component interactions:
+
 - Repository with fake adapters
 - Use cases with real repositories
 - Modal with test context
 
 ### End-to-End Tests
+
 Test complete workflows:
+
 - Create asset from UI to persistence
 - Load and render layouts
 - Settings changes and effects
@@ -289,14 +336,19 @@ Test complete workflows:
 ## Latest Implementation Features (v3.4.0)
 
 ### Children Efforts Professional Table Display
+
 The Children Efforts Block Renderer provides hierarchical effort visualization with professional table formatting:
 
 ```typescript
 // Presentation Layer Implementation
 class ChildrenEffortsBlockRenderer {
   // Professional table rendering with status badges
-  private renderFlatChildrenEfforts(container: HTMLElement, files: TFile[], config: ChildrenEffortsBlockConfig): void
-  
+  private renderFlatChildrenEfforts(
+    container: HTMLElement,
+    files: TFile[],
+    config: ChildrenEffortsBlockConfig,
+  ): void;
+
   // Features:
   // - Asset Name column with class information
   // - Status column with color-coded badges (green/orange)
@@ -307,6 +359,7 @@ class ChildrenEffortsBlockRenderer {
 ```
 
 #### Key Features:
+
 - **Professional Table Layout**: Structured display with Asset Name and Status columns
 - **Status Badge System**: Color-coded status indicators (green for known, orange for unknown)
 - **Hierarchical Organization**: Clear parent-child effort relationships
@@ -314,7 +367,9 @@ class ChildrenEffortsBlockRenderer {
 - **Configuration Options**: Filtering, grouping, and display customization
 
 ### Slash Commands System
+
 Quick execution workflow implemented in v3.4.0:
+
 - `/execute` - Full compliance task execution with agent coordination
 - `/status` - Current progress and TodoWrite status checking
 - `/agents` - Available agents listing
@@ -326,24 +381,26 @@ Quick execution workflow implemented in v3.4.0:
 ### Triple Store Design
 
 #### IndexedGraph Implementation
+
 ```typescript
 class IndexedGraph {
   // Triple storage
-  private triples: Set<Triple>
-  
+  private triples: Set<Triple>;
+
   // Optimized indexes for O(1) lookups
-  private spo: Map<Subject, Map<Predicate, Set<Object>>>
-  private pos: Map<Predicate, Map<Object, Set<Subject>>>
-  private osp: Map<Object, Map<Subject, Set<Predicate>>>
-  
+  private spo: Map<Subject, Map<Predicate, Set<Object>>>;
+  private pos: Map<Predicate, Map<Object, Set<Subject>>>;
+  private osp: Map<Object, Map<Subject, Set<Predicate>>>;
+
   // Performance optimizations
-  private queryCache: LRU<QueryKey, Result[]>
-  private batchBuffer: Triple[]
-  private statistics: GraphStatistics
+  private queryCache: LRU<QueryKey, Result[]>;
+  private batchBuffer: Triple[];
+  private statistics: GraphStatistics;
 }
 ```
 
 #### Performance Characteristics
+
 - **Insert**: O(1) amortized
 - **Delete**: O(1) amortized
 - **Lookup**: O(1) with index
@@ -351,6 +408,7 @@ class IndexedGraph {
 - **Batch Insert**: O(n) for n triples
 
 #### Optimization Strategies
+
 1. **Batch Operations**: Buffer inserts for bulk processing
 2. **Query Caching**: LRU cache for frequent queries
 3. **Lazy Statistics**: Calculate stats on demand
@@ -360,6 +418,7 @@ class IndexedGraph {
 ### SPARQL Query Engine
 
 #### Query Processing Pipeline
+
 ```
 1. Parse Query → AST
 2. Optimize Query Plan
@@ -370,6 +429,7 @@ class IndexedGraph {
 ```
 
 #### Supported Features
+
 - SELECT queries with WHERE, FILTER, OPTIONAL
 - CONSTRUCT for graph building
 - ASK for existence checking
@@ -380,6 +440,7 @@ class IndexedGraph {
 ### Ontology Management
 
 #### Ontology Hierarchy
+
 ```
 Meta Level (0)
 ├── RDF/RDFS/OWL vocabularies
@@ -402,39 +463,44 @@ Domain Level (2)
 ### Current Optimizations
 
 #### 1. Indexed Triple Store (v2.8.0)
+
 - **Problem**: O(n) lookups in large graphs
 - **Solution**: SPO/POS/OSP indexes
 - **Result**: O(1) lookups, 10x query speed improvement
 
 #### 2. Batch Processing (v2.9.0)
+
 - **Problem**: Individual insert overhead
 - **Solution**: Batch buffer with deferred indexing
 - **Result**: 5x faster bulk imports
 
 #### 3. Query Caching (v2.9.0)
+
 - **Problem**: Repeated identical queries
 - **Solution**: LRU cache with 100 entry limit
 - **Result**: 90% cache hit rate for typical usage
 
 ### Performance Benchmarks
 
-| Operation | Small Vault (100 notes) | Large Vault (1000 notes) | Huge Vault (10000 notes) |
-|-----------|-------------------------|--------------------------|---------------------------|
-| Initial Load | 50ms | 450ms | 4500ms |
-| Single Query | 0.5ms | 0.8ms | 1.2ms |
-| Complex Query | 5ms | 8ms | 15ms |
-| Batch Insert (1000) | 100ms | 100ms | 100ms |
-| Memory Usage | 10MB | 80MB | 750MB |
+| Operation           | Small Vault (100 notes) | Large Vault (1000 notes) | Huge Vault (10000 notes) |
+| ------------------- | ----------------------- | ------------------------ | ------------------------ |
+| Initial Load        | 50ms                    | 450ms                    | 4500ms                   |
+| Single Query        | 0.5ms                   | 0.8ms                    | 1.2ms                    |
+| Complex Query       | 5ms                     | 8ms                      | 15ms                     |
+| Batch Insert (1000) | 100ms                   | 100ms                    | 100ms                    |
+| Memory Usage        | 10MB                    | 80MB                     | 750MB                    |
 
 ## Security Considerations
 
 ### Privacy-First Design
+
 - UUID-based identifiers (no PII exposure)
 - No external data transmission
 - Local-only processing
 - No telemetry or analytics
 
 ### Input Validation
+
 - Strict YAML parsing
 - IRI validation
 - Query sanitization
@@ -443,11 +509,13 @@ Domain Level (2)
 ## Scalability Considerations
 
 ### Current Limits
+
 - Tested up to 10,000 notes
 - 100,000 triples manageable
 - Query complexity O(n²) worst case
 
 ### Future Improvements
+
 - Persistent indexes (SQLite)
 - Incremental updates
 - Parallel query execution
@@ -456,16 +524,19 @@ Domain Level (2)
 ## Technical Debt
 
 ### High Priority
+
 1. Add persistent caching layer
 2. Implement query optimization
 3. Add comprehensive error recovery
 
 ### Medium Priority
+
 1. Refactor UI rendering pipeline
 2. Improve test coverage (currently 70%)
 3. Add performance monitoring
 
 ### Low Priority
+
 1. Migrate to Web Workers for processing
 2. Add graph visualization options
 3. Implement SPARQL UPDATE
@@ -473,24 +544,28 @@ Domain Level (2)
 ## Architecture Decision Records
 
 ### ADR-001: Clean Architecture
+
 - **Date**: 2024-06-01
 - **Status**: Accepted
 - **Decision**: Use Clean Architecture for separation of concerns
 - **Rationale**: Maintainability, testability, framework independence
 
 ### ADR-002: TypeScript Strict Mode
+
 - **Date**: 2024-06-15
 - **Status**: Accepted
 - **Decision**: Enable TypeScript strict mode
 - **Rationale**: Type safety, fewer runtime errors
 
 ### ADR-003: In-Memory Triple Store
+
 - **Date**: 2024-07-01
 - **Status**: Accepted
 - **Decision**: Use in-memory indexing vs persistent database
 - **Rationale**: Simplicity, performance, no external dependencies
 
 ### ADR-004: Indexed Graph Optimization
+
 - **Date**: 2025-01-10
 - **Status**: Accepted
 - **Decision**: Implement SPO/POS/OSP indexing with caching
@@ -500,10 +575,12 @@ Domain Level (2)
 ## Dependencies
 
 ### Runtime Dependencies
+
 - Obsidian API 1.5.0+
 - Dataview Plugin (for queries)
 
 ### Development Dependencies
+
 - TypeScript 4.9+
 - ESBuild (bundling)
 - Jest (testing)
@@ -511,6 +588,7 @@ Domain Level (2)
 ## Monitoring & Metrics
 
 ### Performance Metrics
+
 ```typescript
 interface PerformanceMetrics {
   lastIndexTime: number;
@@ -521,6 +599,7 @@ interface PerformanceMetrics {
 ```
 
 ### Health Checks
+
 - Triple store integrity
 - Index consistency
 - Memory usage
@@ -535,5 +614,6 @@ interface PerformanceMetrics {
 5. **Document decisions**: Explain non-obvious choices
 
 ---
-*Maintained by SWEBOK Engineer Agent*
-*Last Updated: 2025-01-10*
+
+_Maintained by SWEBOK Engineer Agent_
+_Last Updated: 2025-01-10_

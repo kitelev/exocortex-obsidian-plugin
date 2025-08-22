@@ -12,15 +12,15 @@ graph TB
     B --> C[QueryEngineFactory]
     C --> D[DataviewQueryEngine]
     C --> E[DatacoreQueryEngine]
-    
+
     B --> F[QueryEngineConfig]
     F --> G[User Preferences]
     F --> H[Auto-Detection]
     F --> I[Caching Policy]
-    
+
     D --> J[Dataview Plugin API]
     E --> K[Datacore Plugin API]
-    
+
     B --> L[Query Cache]
     B --> M[Fallback Logic]
 ```
@@ -30,42 +30,54 @@ graph TB
 ### 1. Domain Layer (`/src/domain/ports/`)
 
 #### IQueryEngine Interface
+
 ```typescript
 interface IQueryEngine {
-    getType(): QueryEngineType;
-    isAvailable(): boolean;
-    executeQuery(query: string, context?: QueryContext): Promise<Result<QueryResult>>;
-    renderQuery(container: HTMLElement, query: string, context?: QueryContext): Promise<Result<void>>;
-    getPages(source: string): Promise<Result<any[]>>;
-    getPageMetadata(path: string): Promise<Result<Record<string, any>>>;
-    validateQuery(query: string): Result<boolean>;
+  getType(): QueryEngineType;
+  isAvailable(): boolean;
+  executeQuery(
+    query: string,
+    context?: QueryContext,
+  ): Promise<Result<QueryResult>>;
+  renderQuery(
+    container: HTMLElement,
+    query: string,
+    context?: QueryContext,
+  ): Promise<Result<void>>;
+  getPages(source: string): Promise<Result<any[]>>;
+  getPageMetadata(path: string): Promise<Result<Record<string, any>>>;
+  validateQuery(query: string): Result<boolean>;
 }
 ```
 
 #### IQueryEngineFactory Interface
+
 ```typescript
 interface IQueryEngineFactory {
-    createQueryEngine(preferred?: QueryEngineType): Promise<Result<IQueryEngine>>;
-    getAvailableEngines(): QueryEngineType[];
-    isEngineAvailable(type: QueryEngineType): boolean;
+  createQueryEngine(preferred?: QueryEngineType): Promise<Result<IQueryEngine>>;
+  getAvailableEngines(): QueryEngineType[];
+  isEngineAvailable(type: QueryEngineType): boolean;
 }
 ```
 
 ### 2. Infrastructure Layer (`/src/infrastructure/query-engines/`)
 
 #### DataviewQueryEngine
+
 - Adapts the Dataview plugin API to the generic interface
 - Supports all Dataview query types: table, list, task, calendar
 - Provides backward compatibility with existing Dataview queries
 - Handles error cases gracefully
 
 #### DatacoreQueryEngine
+
 - Adapts the Datacore plugin API to the generic interface
 - Converts Dataview-style queries to Datacore format when possible
 - Supports native Datacore queries and JavaScript execution
 - Future-proofed for Datacore feature evolution
 
 #### QueryEngineFactory
+
 - Detects available query engines at runtime
 - Manages engine creation and caching
 - Handles fallback scenarios when preferred engine is unavailable
@@ -74,6 +86,7 @@ interface IQueryEngineFactory {
 ### 3. Application Layer (`/src/application/services/`)
 
 #### QueryEngineService
+
 - High-level service orchestrating query execution
 - Implements caching with configurable TTL and LRU eviction
 - Provides fallback and auto-detection capabilities
@@ -82,11 +95,13 @@ interface IQueryEngineFactory {
 ### 4. Domain Entities (`/src/domain/entities/`)
 
 #### QueryEngineConfig
+
 - Manages user preferences and settings
 - Supports preferred engine, fallback engine, and auto-detection
 - Configures caching behavior and performance settings
 
 #### Updated LayoutBlock
+
 - Extended CustomBlockConfig to support new `queryEngineQuery` property
 - Maintains backward compatibility with `dataviewQuery`
 - Provides migration path for existing configurations
@@ -104,12 +119,12 @@ interface IQueryEngineFactory {
 
 ```typescript
 interface QueryEngineConfigProps {
-    preferredEngine: 'dataview' | 'datacore';
-    fallbackEngine?: 'dataview' | 'datacore';
-    autoDetect: boolean;
-    enableCache: boolean;
-    cacheTimeout: number; // minutes
-    maxCacheSize: number; // entries
+  preferredEngine: "dataview" | "datacore";
+  fallbackEngine?: "dataview" | "datacore";
+  autoDetect: boolean;
+  enableCache: boolean;
+  cacheTimeout: number; // minutes
+  maxCacheSize: number; // entries
 }
 ```
 
@@ -192,8 +207,8 @@ Users can switch engines by:
 ```typescript
 // Engine not available
 if (!queryEngine.isAvailable()) {
-    // Automatically tries fallback engine
-    // Shows user-friendly error if all engines fail
+  // Automatically tries fallback engine
+  // Shows user-friendly error if all engines fail
 }
 ```
 
@@ -203,8 +218,8 @@ if (!queryEngine.isAvailable()) {
 // Invalid query syntax
 const result = await queryEngine.executeQuery(invalidQuery);
 if (!result.isSuccess) {
-    console.error('Query failed:', result.error);
-    // Error displayed to user with context
+  console.error("Query failed:", result.error);
+  // Error displayed to user with context
 }
 ```
 
@@ -269,8 +284,10 @@ The abstraction makes it easy to add support for other query engines:
 ```typescript
 // Example: Custom engine implementation
 class CustomQueryEngine implements IQueryEngine {
-    getType(): QueryEngineType { return 'custom'; }
-    // ... implement interface methods
+  getType(): QueryEngineType {
+    return "custom";
+  }
+  // ... implement interface methods
 }
 ```
 
@@ -312,9 +329,9 @@ class CustomQueryEngine implements IQueryEngine {
 ```typescript
 // Get engine diagnostics
 const diagnostics = queryEngineService.getDiagnostics();
-console.log('Available engines:', diagnostics.availableEngines);
-console.log('Current engine:', diagnostics.currentEngine);
-console.log('Cache stats:', diagnostics.cache);
+console.log("Available engines:", diagnostics.availableEngines);
+console.log("Current engine:", diagnostics.currentEngine);
+console.log("Cache stats:", diagnostics.cache);
 ```
 
 ## Summary

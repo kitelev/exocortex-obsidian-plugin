@@ -14,7 +14,7 @@ import { ExocortexSettings } from "./domain/entities/ExocortexSettings";
 /**
  * Main Plugin Class following Single Responsibility Principle
  * Single Responsibility: Coordinate plugin initialization and cleanup
- * 
+ *
  * This refactored version demonstrates:
  * - Single Responsibility Principle: Only handles plugin coordination
  * - Open/Closed Principle: Extensible through registries
@@ -26,7 +26,7 @@ export default class ExocortexPlugin extends Plugin {
   private lifecycleRegistry: LifecycleRegistry;
   private commandRegistry: CommandRegistry;
   private serviceProvider: ServiceProvider;
-  
+
   // Managers
   private settingsManager: SettingsLifecycleManager;
   private graphManager: GraphLifecycleManager;
@@ -88,7 +88,7 @@ export default class ExocortexPlugin extends Plugin {
    */
   async saveSettings(): Promise<void> {
     await this.settingsManager?.saveSettings();
-    
+
     // Update dependent services
     this.serviceProvider?.updateServices(this.settings);
     this.processorManager?.updateCacheConfig(this.settings);
@@ -106,7 +106,7 @@ export default class ExocortexPlugin extends Plugin {
     // Create and register lifecycle managers
     this.settingsManager = new SettingsLifecycleManager(this);
     this.graphManager = new GraphLifecycleManager(this);
-    
+
     this.lifecycleRegistry.registerManager(this.settingsManager);
     this.lifecycleRegistry.registerManager(this.graphManager);
 
@@ -117,7 +117,7 @@ export default class ExocortexPlugin extends Plugin {
     this.processorManager = new ProcessorLifecycleManager(
       this,
       this.graphManager.getGraph(),
-      this.settingsManager.getSettings()
+      this.settingsManager.getSettings(),
     );
     this.lifecycleRegistry.registerManager(this.processorManager);
   }
@@ -126,7 +126,7 @@ export default class ExocortexPlugin extends Plugin {
     this.serviceProvider = new ServiceProvider(
       this,
       this.graphManager.getGraph(),
-      this.settingsManager.getSettings()
+      this.settingsManager.getSettings(),
     );
     await this.serviceProvider.initializeServices();
   }
@@ -136,17 +136,17 @@ export default class ExocortexPlugin extends Plugin {
     const assetController = new AssetCommandController(this);
     const sparqlController = new SPARQLCommandController(
       this,
-      this.processorManager.getSPARQLProcessor()
+      this.processorManager.getSPARQLProcessor(),
     );
     const rdfController = new RDFCommandController(
       this,
       this.graphManager.getGraph(),
       this.serviceProvider.getService("RDFService"),
-      this.processorManager.getSPARQLProcessor()
+      this.processorManager.getSPARQLProcessor(),
     );
     const taskController = new TaskCommandController(
       this,
-      this.graphManager.getGraph()
+      this.graphManager.getGraph(),
     );
 
     this.commandRegistry.registerController(assetController);

@@ -111,21 +111,27 @@ This layout configuration defines how `ems__Project` assets are displayed in the
 ## Features
 
 ### Project Information Block
+
 Shows key project properties with inline editing for:
+
 - Status
 - Deadline
 - Priority
 
 ### Active Tasks Block
+
 Displays all incomplete tasks associated with this project, sorted by priority.
 
 ### Completed Tasks Block
+
 Shows recently completed tasks (collapsed by default).
 
 ### Milestones Block
+
 Displays project milestones in a table format.
 
 ### Related Documents Block
+
 Shows all documents related to this project.
 
 ## Usage
@@ -137,6 +143,7 @@ Shows all documents related to this project.
 ## Customization
 
 Modify the `ui__ClassLayout_blocks` frontmatter to:
+
 - Add/remove blocks
 - Change block order
 - Adjust filters and sorting

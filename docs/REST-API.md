@@ -19,13 +19,14 @@ The Exocortex plugin provides a REST API that allows external applications and A
 ### 1. Enable the REST API
 
 Use the Command Palette (Cmd/Ctrl + P) and run:
+
 - `Exocortex: Start REST API Server` - Starts the API server
 - `Exocortex: Show REST API Key` - Copies your API key to clipboard
 - `Exocortex: Stop REST API Server` - Stops the API server
 
 ### 2. Configuration
 
-The API server runs on port **27124** by default. 
+The API server runs on port **27124** by default.
 
 ### 3. Authentication
 
@@ -46,6 +47,7 @@ GET /api/health
 Returns server status and statistics.
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -69,6 +71,7 @@ POST /api/sparql
 Execute SPARQL queries against the knowledge graph.
 
 **Request Body:**
+
 ```json
 {
   "query": "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10"
@@ -76,6 +79,7 @@ Execute SPARQL queries against the knowledge graph.
 ```
 
 **Response:**
+
 ```json
 {
   "results": [...],
@@ -93,6 +97,7 @@ POST /api/nlp
 Process natural language questions.
 
 **Request Body:**
+
 ```json
 {
   "q": "What are my tasks for today?"
@@ -100,6 +105,7 @@ Process natural language questions.
 ```
 
 **Response:**
+
 ```json
 {
   "intent": "query_tasks",
@@ -118,11 +124,13 @@ GET /api/assets?q=keyword&class=ems__Task&limit=20
 Search for assets in the knowledge base.
 
 **Parameters:**
+
 - `q` - Search keyword (optional)
 - `class` - Filter by asset class (optional)
 - `limit` - Maximum results (default: 20)
 
 **Response:**
+
 ```json
 {
   "assets": [
@@ -146,6 +154,7 @@ POST /api/assets/create
 Create a new knowledge asset.
 
 **Request Body:**
+
 ```json
 {
   "name": "New Project",
@@ -158,6 +167,7 @@ Create a new knowledge asset.
 ```
 
 **Response:**
+
 ```json
 {
   "uid": "asset-1234567890-abc",
@@ -177,12 +187,14 @@ POST /api/graph
 Query or modify RDF triples.
 
 **GET Parameters:**
+
 - `s` - Filter by subject
 - `p` - Filter by predicate
 - `o` - Filter by object
 - `limit` - Maximum results
 
 **POST Body (Add Triple):**
+
 ```json
 {
   "operation": "add",
@@ -201,6 +213,7 @@ POST /api/relations/ontologize
 Convert asset properties to semantic relations.
 
 **Request Body:**
+
 ```json
 {
   "assetPath": "03 Knowledge/Project.md"
@@ -208,6 +221,7 @@ Convert asset properties to semantic relations.
 ```
 
 **Response:**
+
 ```json
 {
   "relationsCreated": 5,
@@ -225,6 +239,7 @@ POST /api/focus
 Manage knowledge context and filtering.
 
 **POST Body:**
+
 ```json
 {
   "context": "work",
@@ -238,11 +253,13 @@ Manage knowledge context and filtering.
 ### Vault Operations
 
 #### List Files
+
 ```http
 GET /api/vault/files
 ```
 
 #### Search Content
+
 ```http
 GET /api/vault/search?q=search_term
 ```
@@ -264,19 +281,19 @@ results = client.sparql_query("SELECT ?s WHERE { ?s a ems__Task }")
 ### JavaScript/TypeScript
 
 ```javascript
-const apiKey = 'your-api-key';
-const baseUrl = 'http://localhost:27124/api';
+const apiKey = "your-api-key";
+const baseUrl = "http://localhost:27124/api";
 
 async function queryExocortex(query) {
   const response = await fetch(`${baseUrl}/sparql`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'X-API-Key': apiKey,
-      'Content-Type': 'application/json'
+      "X-API-Key": apiKey,
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify({ query })
+    body: JSON.stringify({ query }),
   });
-  
+
   return response.json();
 }
 ```

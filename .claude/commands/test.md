@@ -42,6 +42,7 @@ Please execute comprehensive testing:
    - Propose test improvements
 
 Format output with clear sections:
+
 - ✅ Passing tests
 - ❌ Failing tests (with details)
 - 📊 Coverage report

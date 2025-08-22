@@ -7,6 +7,7 @@ This document describes the memory optimization techniques implemented to reduce
 ## Problem Analysis
 
 ### Original Issues
+
 1. **Memory Spikes**: Batch processing created large arrays in memory before committing
 2. **No Streaming**: Parser loaded entire file content into memory
 3. **Object Creation Overhead**: Many temporary objects during parsing
@@ -14,6 +15,7 @@ This document describes the memory optimization techniques implemented to reduce
 5. **Index Rebuilding**: Full index reconstruction caused memory spikes
 
 ### Memory Usage Patterns
+
 - **Small files (<50KB)**: Standard parsing sufficient
 - **Medium files (50KB-1MB)**: Benefit from chunked processing
 - **Large files (>1MB)**: Require streaming and aggressive optimization
@@ -35,14 +37,14 @@ commitBatch(): void {
 // After: Chunked processing with GC hints
 commitBatch(): void {
     const totalTriples = this.batchBuffer.length;
-    
+
     for (let i = 0; i < totalTriples; i += this.BATCH_CHUNK_SIZE) {
         const chunk = this.batchBuffer.slice(i, i + this.BATCH_CHUNK_SIZE);
-        
+
         for (const triple of chunk) {
             super.add(triple);
         }
-        
+
         // Trigger GC hint for large batches
         if (i > 0 && i % (this.BATCH_CHUNK_SIZE * 4) === 0) {
             this.triggerGCHint();
@@ -52,6 +54,7 @@ commitBatch(): void {
 ```
 
 **Benefits**:
+
 - Reduces peak memory usage
 - Prevents memory spikes
 - Allows garbage collection between chunks
@@ -71,12 +74,12 @@ async importLargeFile(
     for (let i = 0; i < totalLines; i += chunkSize) {
         const chunk = lines.slice(i, i + chunkSize);
         const chunkContent = chunk.join('\n');
-        
+
         // Check memory usage
         if (currentMemory > memoryLimit) {
             this.triggerGC();
         }
-        
+
         // Parse chunk
         const result = this.parser.parse(chunkContent, options);
         // ... process results
@@ -85,6 +88,7 @@ async importLargeFile(
 ```
 
 **Benefits**:
+
 - Processes files larger than available memory
 - Maintains constant memory usage
 - Provides progress feedback
@@ -95,28 +99,29 @@ async importLargeFile(
 
 ```typescript
 class TriplePool implements ObjectPool<Triple> {
-    private available: Triple[] = [];
-    private inUse = new Set<Triple>();
-    
-    acquire(): Triple {
-        let triple = this.available.pop();
-        if (!triple) {
-            triple = new Triple(/* ... */);
-        }
-        this.inUse.add(triple);
-        return triple;
+  private available: Triple[] = [];
+  private inUse = new Set<Triple>();
+
+  acquire(): Triple {
+    let triple = this.available.pop();
+    if (!triple) {
+      triple = new Triple(/* ... */);
     }
-    
-    release(triple: Triple): void {
-        this.inUse.delete(triple);
-        if (this.available.length < this.maxSize) {
-            this.available.push(triple);
-        }
+    this.inUse.add(triple);
+    return triple;
+  }
+
+  release(triple: Triple): void {
+    this.inUse.delete(triple);
+    if (this.available.length < this.maxSize) {
+      this.available.push(triple);
     }
+  }
 }
 ```
 
 **Benefits**:
+
 - Reduces object allocation overhead
 - Minimizes garbage collection pressure
 - Improves performance for repeated operations
@@ -136,6 +141,7 @@ private triggerGCHint(): void {
 ```
 
 **When Triggered**:
+
 - Every 2000 triples processed
 - When memory usage exceeds 80% of limit
 - Before large index operations
@@ -155,7 +161,7 @@ getMemoryStatistics(): {
         const used = performance.memory.usedJSHeapSize;
         const total = performance.memory.totalJSHeapSize;
         const limit = performance.memory.jsHeapSizeLimit;
-        
+
         return {
             used,
             total,
@@ -168,6 +174,7 @@ getMemoryStatistics(): {
 ```
 
 **Benefits**:
+
 - Visibility into memory usage
 - Early warning for memory issues
 - Data for optimization decisions
@@ -179,12 +186,12 @@ getMemoryStatistics(): {
 ```typescript
 private defragmentIndexes(): void {
     const triples = this.getAllTriples();
-    
+
     // Clear indexes
     (this as any).spo = new Map();
     (this as any).pos = new Map();
     (this as any).osp = new Map();
-    
+
     // Rebuild indexes efficiently
     for (const triple of triples) {
         // Rebuild SPO, POS, OSP indexes
@@ -193,6 +200,7 @@ private defragmentIndexes(): void {
 ```
 
 **When Used**:
+
 - Memory utilization > 80%
 - After large deletions
 - During optimization operations
@@ -204,26 +212,27 @@ private defragmentIndexes(): void {
 The system automatically detects when to use optimizations:
 
 ```typescript
-const useOptimized = options.useOptimizedImporter !== false && 
-                     (content.length > 50000 || options.chunkSize);
+const useOptimized =
+  options.useOptimizedImporter !== false &&
+  (content.length > 50000 || options.chunkSize);
 ```
 
 ### Manual Configuration
 
 ```typescript
 const importOptions: StreamingImportOptions = {
-    chunkSize: 1000,              // Triples per chunk
-    memoryLimit: 100 * 1024 * 1024, // 100MB limit
-    enableMemoryPooling: true,     // Use object pools
-    enableGCHints: true,          // Trigger GC strategically
-    progressCallback: (p, t) => console.log(`${p}/${t}`)
+  chunkSize: 1000, // Triples per chunk
+  memoryLimit: 100 * 1024 * 1024, // 100MB limit
+  enableMemoryPooling: true, // Use object pools
+  enableGCHints: true, // Trigger GC strategically
+  progressCallback: (p, t) => console.log(`${p}/${t}`),
 };
 ```
 
 ### Recommended Settings
 
 | File Size | Chunk Size | Memory Pooling | GC Hints |
-|-----------|------------|----------------|----------|
+| --------- | ---------- | -------------- | -------- |
 | < 50KB    | N/A        | No             | No       |
 | 50KB-1MB  | 1000       | Yes            | Yes      |
 | 1MB-10MB  | 500        | Yes            | Yes      |
@@ -233,19 +242,19 @@ const importOptions: StreamingImportOptions = {
 
 ### Memory Usage Reduction
 
-| Test Case | Original (MB) | Optimized (MB) | Reduction |
-|-----------|---------------|----------------|-----------|
-| 10K triples | 15.2 | 7.8 | 48.7% |
-| 50K triples | 78.5 | 35.2 | 55.2% |
-| 100K triples | 156.8 | 72.1 | 54.0% |
+| Test Case    | Original (MB) | Optimized (MB) | Reduction |
+| ------------ | ------------- | -------------- | --------- |
+| 10K triples  | 15.2          | 7.8            | 48.7%     |
+| 50K triples  | 78.5          | 35.2           | 55.2%     |
+| 100K triples | 156.8         | 72.1           | 54.0%     |
 
 ### Import Performance
 
-| Test Case | Original (ms) | Optimized (ms) | Improvement |
-|-----------|---------------|----------------|-------------|
-| 10K triples | 1,250 | 1,180 | 5.6% |
-| 50K triples | 6,800 | 5,950 | 12.5% |
-| 100K triples | 15,200 | 11,800 | 22.4% |
+| Test Case    | Original (ms) | Optimized (ms) | Improvement |
+| ------------ | ------------- | -------------- | ----------- |
+| 10K triples  | 1,250         | 1,180          | 5.6%        |
+| 50K triples  | 6,800         | 5,950          | 12.5%       |
+| 100K triples | 15,200        | 11,800         | 22.4%       |
 
 ### Memory Efficiency
 
@@ -263,18 +272,18 @@ const importer = new MemoryOptimizedImporter();
 const graph = new IndexedGraph();
 
 const result = await importer.importRDF(rdfContent, graph, {
-    chunkSize: 1000,
-    enableMemoryPooling: true,
-    enableGCHints: true,
-    progressCallback: (processed, total) => {
-        console.log(`Progress: ${Math.round(processed/total*100)}%`);
-    }
+  chunkSize: 1000,
+  enableMemoryPooling: true,
+  enableGCHints: true,
+  progressCallback: (processed, total) => {
+    console.log(`Progress: ${Math.round((processed / total) * 100)}%`);
+  },
 });
 
 if (result.isSuccess) {
-    const report = result.getValue();
-    console.log(`Memory saved: ${report.memoryReduction/1024/1024}MB`);
-    console.log(`Chunks processed: ${report.chunksProcessed}`);
+  const report = result.getValue();
+  console.log(`Memory saved: ${report.memoryReduction / 1024 / 1024}MB`);
+  console.log(`Chunks processed: ${report.chunksProcessed}`);
 }
 ```
 
@@ -283,12 +292,17 @@ if (result.isSuccess) {
 The ImportRDFModal automatically uses optimization for large files:
 
 ```typescript
-const modal = new ImportRDFModal(app, graph, namespaceManager, (importedGraph, options) => {
+const modal = new ImportRDFModal(
+  app,
+  graph,
+  namespaceManager,
+  (importedGraph, options) => {
     console.log(`Imported ${importedGraph.size()} triples`);
     if (options.useOptimizedImporter) {
-        console.log('Used memory optimization');
+      console.log("Used memory optimization");
     }
-});
+  },
+);
 ```
 
 ### Benchmarking
@@ -312,7 +326,7 @@ console.log(`Memory usage: ${stats.utilization}%`);
 console.log(`Used: ${stats.used / 1024 / 1024}MB`);
 
 if (stats.utilization > 80) {
-    graph.optimizeMemory();
+  graph.optimizeMemory();
 }
 ```
 
@@ -327,14 +341,16 @@ console.log(`Avg query time: ${metrics.averageQueryTime}ms`);
 ### Benchmark Reports
 
 ```typescript
-import { MemoryBenchmarkRunner } from './infrastructure/performance/MemoryBenchmark';
+import { MemoryBenchmarkRunner } from "./infrastructure/performance/MemoryBenchmark";
 
 // Quick test
 await MemoryBenchmarkRunner.runQuickTest();
 
 // Full benchmark suite
 const suite = await MemoryBenchmarkRunner.runFullSuite();
-console.log(`Average memory reduction: ${suite.summary.averageMemoryReduction}%`);
+console.log(
+  `Average memory reduction: ${suite.summary.averageMemoryReduction}%`,
+);
 ```
 
 ## Best Practices
@@ -411,17 +427,17 @@ src/presentation/modals/
 ```typescript
 // Before
 const result = await rdfService.importRDF(content, graph, {
-    format: 'turtle',
-    mergeMode: 'merge'
+  format: "turtle",
+  mergeMode: "merge",
 });
 
 // After (automatic optimization)
 const result = await rdfService.importRDF(content, graph, {
-    format: 'turtle',
-    mergeMode: 'merge',
-    useOptimizedImporter: true,  // Default for large files
-    chunkSize: 1000,             // Optional customization
-    enableMemoryPooling: true    // Optional optimization
+  format: "turtle",
+  mergeMode: "merge",
+  useOptimizedImporter: true, // Default for large files
+  chunkSize: 1000, // Optional customization
+  enableMemoryPooling: true, // Optional optimization
 });
 ```
 

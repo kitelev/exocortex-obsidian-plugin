@@ -20,7 +20,7 @@ export class ServiceProvider implements IServiceProvider {
   constructor(
     private readonly plugin: Plugin,
     private readonly graph: Graph,
-    private readonly settings: ExocortexSettings
+    private readonly settings: ExocortexSettings,
   ) {}
 
   async initializeServices(): Promise<void> {
@@ -29,14 +29,17 @@ export class ServiceProvider implements IServiceProvider {
     this.container = DIContainer.getInstance();
 
     // Initialize RDF service from container
-    const rdfService = this.container.resolve<RDFService>('RDFService');
+    const rdfService = this.container.resolve<RDFService>("RDFService");
     this.services.set("RDFService", rdfService);
 
     // Initialize Layout Renderer with proper dependencies
     const layoutRepository = this.container.resolve<IClassLayoutRepository>(
       "IClassLayoutRepository",
     );
-    const layoutRenderer = new LayoutRenderer(this.plugin.app, layoutRepository);
+    const layoutRenderer = new LayoutRenderer(
+      this.plugin.app,
+      layoutRepository,
+    );
     this.services.set("LayoutRenderer", layoutRenderer);
 
     // Initialize Property Renderer
@@ -101,12 +104,7 @@ export class ServiceProvider implements IServiceProvider {
         }
 
         const metadata = this.plugin.app.metadataCache.getFileCache(file);
-        await layoutRenderer.renderLayout(
-          ctx.container,
-          file,
-          metadata,
-          dv,
-        );
+        await layoutRenderer.renderLayout(ctx.container, file, metadata, dv);
       } catch (error) {
         console.error("ExoUIRender error:", error);
         ctx.container.createEl("p", {

@@ -5,7 +5,6 @@ import { App, TFile } from "obsidian";
  * Implements DRY principle for test setup and data creation
  */
 export class TestUtils {
-  
   /**
    * Create mock App instance for testing
    */
@@ -33,7 +32,7 @@ export class TestUtils {
   static createMockFile(
     path: string,
     basename?: string,
-    frontmatter?: Record<string, any>
+    frontmatter?: Record<string, any>,
   ): jest.Mocked<TFile> {
     const mockFile = {
       path,
@@ -62,18 +61,20 @@ export class TestUtils {
    */
   static createMockContainer(): HTMLElement {
     const container = document.createElement("div");
-    
+
     // Mock common methods used in renderers
-    container.createEl = jest.fn().mockImplementation((tag: string, attrs?: any) => {
-      const element = document.createElement(tag);
-      if (attrs) {
-        if (attrs.text) element.textContent = attrs.text;
-        if (attrs.cls) element.className = attrs.cls;
-        if (attrs.href) element.setAttribute("href", attrs.href);
-      }
-      container.appendChild(element);
-      return element;
-    });
+    container.createEl = jest
+      .fn()
+      .mockImplementation((tag: string, attrs?: any) => {
+        const element = document.createElement(tag);
+        if (attrs) {
+          if (attrs.text) element.textContent = attrs.text;
+          if (attrs.cls) element.className = attrs.cls;
+          if (attrs.href) element.setAttribute("href", attrs.href);
+        }
+        container.appendChild(element);
+        return element;
+      });
 
     container.createDiv = jest.fn().mockImplementation((attrs?: any) => {
       return container.createEl("div", attrs);
@@ -89,13 +90,15 @@ export class TestUtils {
   /**
    * Create test data builders for common entities
    */
-  static createAssetData(overrides?: Partial<Record<string, any>>): Record<string, any> {
+  static createAssetData(
+    overrides?: Partial<Record<string, any>>,
+  ): Record<string, any> {
     return {
-      "exo__Asset_uid": "test-uuid-123",
-      "exo__Asset_label": "Test Asset",
-      "exo__Asset_description": "Test description",
-      "exo__Instance_class": "[[exo__Asset]]",
-      "exo__Asset_isDefinedBy": "[[!exo]]",
+      exo__Asset_uid: "test-uuid-123",
+      exo__Asset_label: "Test Asset",
+      exo__Asset_description: "Test description",
+      exo__Instance_class: "[[exo__Asset]]",
+      exo__Asset_isDefinedBy: "[[!exo]]",
       ...overrides,
     };
   }
@@ -103,12 +106,14 @@ export class TestUtils {
   /**
    * Create ontology test data
    */
-  static createOntologyData(overrides?: Partial<Record<string, any>>): Record<string, any> {
+  static createOntologyData(
+    overrides?: Partial<Record<string, any>>,
+  ): Record<string, any> {
     return {
-      "exo__Ontology_prefix": "test",
-      "exo__Ontology_namespace": "http://example.com/test#",
-      "rdfs__label": "Test Ontology",
-      "rdfs__comment": "Test ontology description",
+      exo__Ontology_prefix: "test",
+      exo__Ontology_namespace: "http://example.com/test#",
+      rdfs__label: "Test Ontology",
+      rdfs__comment: "Test ontology description",
       ...overrides,
     };
   }
@@ -116,17 +121,19 @@ export class TestUtils {
   /**
    * Create class layout test data
    */
-  static createClassLayoutData(overrides?: Partial<Record<string, any>>): Record<string, any> {
+  static createClassLayoutData(
+    overrides?: Partial<Record<string, any>>,
+  ): Record<string, any> {
     return {
-      "exo__Asset_uid": "layout-uuid-123",
-      "exo__Asset_label": "Test Layout",
-      "exo__Instance_class": "[[exo__ClassLayout]]",
-      "exo__ClassLayout_targetClass": "[[exo__Asset]]",
-      "exo__ClassLayout_blocks": [
+      exo__Asset_uid: "layout-uuid-123",
+      exo__Asset_label: "Test Layout",
+      exo__Instance_class: "[[exo__ClassLayout]]",
+      exo__ClassLayout_targetClass: "[[exo__Asset]]",
+      exo__ClassLayout_blocks: [
         {
           type: "properties",
-          config: { showAllProperties: true }
-        }
+          config: { showAllProperties: true },
+        },
       ],
       ...overrides,
     };
@@ -137,7 +144,7 @@ export class TestUtils {
    */
   static createBacklinksData(filePaths: string[]): Map<string, any> {
     const backlinksMap = new Map();
-    filePaths.forEach(path => {
+    filePaths.forEach((path) => {
       backlinksMap.set(path, {});
     });
     return backlinksMap;
@@ -194,13 +201,13 @@ export class TestUtils {
    */
   static createTestFileWithFrontmatter(
     path: string,
-    frontmatter: Record<string, any>
+    frontmatter: Record<string, any>,
   ): jest.Mocked<TFile> {
     const file = this.createMockFile(path);
-    
+
     // Setup the file cache mock to return the frontmatter
     const cache = this.createMockFileCache(frontmatter);
-    
+
     return file;
   }
 
@@ -214,7 +221,10 @@ export class TestUtils {
   /**
    * Assert that a container has child elements
    */
-  static assertContainerHasChildren(container: HTMLElement, count: number): void {
+  static assertContainerHasChildren(
+    container: HTMLElement,
+    count: number,
+  ): void {
     expect(container.children.length).toBe(count);
   }
 
@@ -232,7 +242,7 @@ export class TestUtils {
    * Create a promise that resolves after a delay (for async testing)
    */
   static delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -245,19 +255,27 @@ export class TestUtils {
   /**
    * Create multiple test files for bulk testing
    */
-  static createTestFiles(count: number, frontmatterGenerator?: (index: number) => Record<string, any>): jest.Mocked<TFile>[] {
+  static createTestFiles(
+    count: number,
+    frontmatterGenerator?: (index: number) => Record<string, any>,
+  ): jest.Mocked<TFile>[] {
     const files: jest.Mocked<TFile>[] = [];
-    
+
     for (let i = 0; i < count; i++) {
-      const frontmatter = frontmatterGenerator ? frontmatterGenerator(i) : this.createAssetData({
-        "exo__Asset_uid": `test-uuid-${i}`,
-        "exo__Asset_label": `Test Asset ${i}`,
-      });
-      
-      const file = this.createTestFileWithFrontmatter(`test-file-${i}.md`, frontmatter);
+      const frontmatter = frontmatterGenerator
+        ? frontmatterGenerator(i)
+        : this.createAssetData({
+            exo__Asset_uid: `test-uuid-${i}`,
+            exo__Asset_label: `Test Asset ${i}`,
+          });
+
+      const file = this.createTestFileWithFrontmatter(
+        `test-file-${i}.md`,
+        frontmatter,
+      );
       files.push(file);
     }
-    
+
     return files;
   }
 
@@ -273,17 +291,20 @@ export class TestUtils {
     const { app, container } = this.setupStandardMocks();
     const file = this.createMockFile("test.md");
     const dv = {}; // Mock dataview object
-    
+
     return { app, container, file, dv };
   }
 
   /**
    * Verify that error handling was triggered
    */
-  static assertErrorHandled(consoleSpy: jest.SpyInstance, expectedMessage: string): void {
+  static assertErrorHandled(
+    consoleSpy: jest.SpyInstance,
+    expectedMessage: string,
+  ): void {
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining(expectedMessage),
-      expect.any(Error)
+      expect.any(Error),
     );
   }
 }

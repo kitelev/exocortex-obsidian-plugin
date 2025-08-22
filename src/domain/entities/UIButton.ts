@@ -28,11 +28,11 @@ export class UIButton extends Entity<UIButtonProps> {
     if (!this.props.id) {
       throw new Error("UIButton must have a valid ID");
     }
-    
+
     if (!this.props.label || this.props.label.trim().length === 0) {
       throw new Error("UIButton must have a non-empty label");
     }
-    
+
     if (!this.props.commandId) {
       throw new Error("UIButton must have a valid command ID");
     }

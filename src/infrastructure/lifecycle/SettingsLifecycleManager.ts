@@ -1,6 +1,9 @@
 import { Plugin, Notice } from "obsidian";
 import { ILifecycleManager } from "../../application/ports/ILifecycleManager";
-import { ExocortexSettings, DEFAULT_SETTINGS } from "../../domain/entities/ExocortexSettings";
+import {
+  ExocortexSettings,
+  DEFAULT_SETTINGS,
+} from "../../domain/entities/ExocortexSettings";
 import { ExocortexSettingTab } from "../../presentation/settings/ExocortexSettingTab";
 
 /**
@@ -17,7 +20,9 @@ export class SettingsLifecycleManager implements ILifecycleManager {
     await this.loadSettings();
 
     // Add settings tab
-    this.plugin.addSettingTab(new ExocortexSettingTab(this.plugin.app, this.plugin as any));
+    this.plugin.addSettingTab(
+      new ExocortexSettingTab(this.plugin.app, this.plugin as any),
+    );
   }
 
   async cleanup(): Promise<void> {

@@ -16,7 +16,7 @@ export interface BacklinkDiscoveryOptions {
 export class DynamicBacklinksService {
   constructor(
     private vaultAdapter: IVaultAdapter,
-    private uiAdapter: IUIAdapter
+    private uiAdapter: IUIAdapter,
   ) {}
 
   async discoverPropertyBasedBacklinks(
@@ -44,9 +44,7 @@ export class DynamicBacklinksService {
         }
 
         // Check each frontmatter property for references to target file
-        for (const [propertyName, value] of Object.entries(
-          metadata,
-        )) {
+        for (const [propertyName, value] of Object.entries(metadata)) {
           // Skip excluded properties
           if (options.excludeProperties?.includes(propertyName)) continue;
 
@@ -91,8 +89,9 @@ export class DynamicBacklinksService {
 
     // Convert to string and check various reference formats
     const strValue = value.toString();
-    const targetFileName = targetFile.basename || targetFile.name?.replace(/\.[^/.]+$/, '') || '';
-    const targetPath = targetFile.path || targetFile.name || '';
+    const targetFileName =
+      targetFile.basename || targetFile.name?.replace(/\.[^/.]+$/, "") || "";
+    const targetPath = targetFile.path || targetFile.name || "";
 
     // Get target file's UUID for UUID-based matching (via vault adapter)
     const targetUuid = null; // TODO: Implement via vaultAdapter if needed

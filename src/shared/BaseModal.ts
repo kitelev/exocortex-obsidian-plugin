@@ -19,7 +19,7 @@ export abstract class BaseModal extends Modal {
   async onOpen() {
     const { contentEl } = this;
     contentEl.empty();
-    
+
     try {
       await this.setupModal(contentEl);
     } catch (error) {
@@ -27,7 +27,7 @@ export abstract class BaseModal extends Modal {
         this.constructor.name,
         error,
         contentEl,
-        "Failed to load modal content"
+        "Failed to load modal content",
       );
     }
   }
@@ -75,7 +75,7 @@ export abstract class BaseModal extends Modal {
       initialValue?: string;
       validator?: (value: string) => boolean;
       validationMessage?: string;
-    }
+    },
   ): Setting {
     const setting = new Setting(containerEl)
       .setName(config.label)
@@ -87,10 +87,10 @@ export abstract class BaseModal extends Modal {
           text.setValue(config.initialValue);
           this.formData.set(config.name, config.initialValue);
         }
-        
+
         text.onChange((value) => {
           this.formData.set(config.name, value);
-          
+
           // Real-time validation if validator provided
           if (config.validator && !config.validator(value)) {
             text.inputEl.addClass("exocortex-input-error");
@@ -124,7 +124,7 @@ export abstract class BaseModal extends Modal {
       options: { value: string; label: string }[];
       initialValue?: string;
       required?: boolean;
-    }
+    },
   ): Setting {
     const setting = new Setting(containerEl)
       .setName(config.label)
@@ -160,7 +160,7 @@ export abstract class BaseModal extends Modal {
       label: string;
       description?: string;
       initialValue?: boolean;
-    }
+    },
   ): Setting {
     const setting = new Setting(containerEl)
       .setName(config.label)
@@ -187,7 +187,7 @@ export abstract class BaseModal extends Modal {
    */
   protected createDynamicContainer(
     containerEl: HTMLElement,
-    className: string
+    className: string,
   ): HTMLElement {
     return containerEl.createDiv({ cls: className });
   }
@@ -197,9 +197,11 @@ export abstract class BaseModal extends Modal {
    */
   protected createActionButtons(
     containerEl: HTMLElement,
-    submitText: string = "Create"
+    submitText: string = "Create",
   ): void {
-    const buttonContainer = containerEl.createDiv({ cls: "exocortex-modal-buttons" });
+    const buttonContainer = containerEl.createDiv({
+      cls: "exocortex-modal-buttons",
+    });
 
     // Cancel button
     const cancelButton = buttonContainer.createEl("button", {
@@ -229,14 +231,14 @@ export abstract class BaseModal extends Modal {
         ErrorHandlingUtils.handleValidationError(
           "Form",
           this.formData,
-          validation.errors.join(", ")
+          validation.errors.join(", "),
         );
         return;
       }
 
       // Handle submission
       await this.handleSubmit();
-      
+
       // Close modal on success
       this.close();
     } catch (error) {
@@ -244,7 +246,7 @@ export abstract class BaseModal extends Modal {
         "Form submission",
         error,
         undefined,
-        "Failed to submit form"
+        "Failed to submit form",
       );
     }
   }
@@ -255,7 +257,7 @@ export abstract class BaseModal extends Modal {
   private showFieldError(setting: Setting, message: string): void {
     // Remove existing error message
     this.clearFieldError(setting);
-    
+
     // Add error message
     const errorEl = setting.settingEl.createDiv({
       text: message,
@@ -267,7 +269,9 @@ export abstract class BaseModal extends Modal {
    * Clear field-specific error message
    */
   private clearFieldError(setting: Setting): void {
-    const existingError = setting.settingEl.querySelector(".exocortex-field-error");
+    const existingError = setting.settingEl.querySelector(
+      ".exocortex-field-error",
+    );
     if (existingError) {
       existingError.remove();
     }
@@ -290,16 +294,19 @@ export abstract class BaseModal extends Modal {
   /**
    * Check if required fields are filled
    */
-  protected validateRequiredFields(requiredFields: string[]): { isValid: boolean; errors: string[] } {
+  protected validateRequiredFields(requiredFields: string[]): {
+    isValid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
-    
+
     for (const field of requiredFields) {
       const value = this.formData.get(field);
       if (!ValidationUtils.isNonEmptyString(value)) {
         errors.push(`${field} is required`);
       }
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors,
