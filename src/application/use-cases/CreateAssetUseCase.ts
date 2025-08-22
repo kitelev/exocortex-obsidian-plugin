@@ -1,9 +1,9 @@
-import { Asset } from '../../domain/entities/Asset';
-import { AssetId } from '../../domain/value-objects/AssetId';
-import { ClassName } from '../../domain/value-objects/ClassName';
-import { OntologyPrefix } from '../../domain/value-objects/OntologyPrefix';
-import { IAssetRepository } from '../../domain/repositories/IAssetRepository';
-import { IOntologyRepository } from '../../domain/repositories/IOntologyRepository';
+import { Asset } from "../../domain/entities/Asset";
+import { AssetId } from "../../domain/value-objects/AssetId";
+import { ClassName } from "../../domain/value-objects/ClassName";
+import { OntologyPrefix } from "../../domain/value-objects/OntologyPrefix";
+import { IAssetRepository } from "../../domain/repositories/IAssetRepository";
+import { IOntologyRepository } from "../../domain/repositories/IOntologyRepository";
 
 /**
  * Use case for creating a new asset
@@ -12,7 +12,7 @@ import { IOntologyRepository } from '../../domain/repositories/IOntologyReposito
 export class CreateAssetUseCase {
   constructor(
     private readonly assetRepository: IAssetRepository,
-    private readonly ontologyRepository: IOntologyRepository
+    private readonly ontologyRepository: IOntologyRepository,
   ) {}
 
   async execute(request: CreateAssetRequest): Promise<CreateAssetResponse> {
@@ -25,7 +25,7 @@ export class CreateAssetUseCase {
       throw new Error(ontologyPrefixResult.error);
     }
     const ontologyPrefix = ontologyPrefixResult.getValue();
-    
+
     const ontology = await this.ontologyRepository.findByPrefix(ontologyPrefix);
     if (!ontology) {
       throw new Error(`Ontology ${request.ontologyPrefix} not found`);
@@ -44,9 +44,9 @@ export class CreateAssetUseCase {
       label: request.title,
       className: className,
       ontology: ontologyPrefix,
-      properties: request.properties || {}
+      properties: request.properties || {},
     });
-    
+
     if (assetResult.isFailure) {
       throw new Error(assetResult.error);
     }
@@ -58,21 +58,21 @@ export class CreateAssetUseCase {
     return {
       success: true,
       assetId: asset.getId().toString(),
-      message: `Created asset: ${asset.getTitle()}`
+      message: `Created asset: ${asset.getTitle()}`,
     };
   }
 
   private validateRequest(request: CreateAssetRequest): void {
     if (!request.title || request.title.trim().length === 0) {
-      throw new Error('Asset title is required');
+      throw new Error("Asset title is required");
     }
 
     if (!request.className) {
-      throw new Error('Asset class is required');
+      throw new Error("Asset class is required");
     }
 
     if (!request.ontologyPrefix) {
-      throw new Error('Ontology prefix is required');
+      throw new Error("Ontology prefix is required");
     }
   }
 }

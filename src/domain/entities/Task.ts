@@ -1,9 +1,9 @@
-import { TaskId } from '../value-objects/TaskId';
-import { Priority } from '../value-objects/Priority';
-import { TaskStatus } from '../value-objects/TaskStatus';
-import { AssetId } from '../value-objects/AssetId';
-import { Entity } from '../core/Entity';
-import { Result } from '../core/Result';
+import { TaskId } from "../value-objects/TaskId";
+import { Priority } from "../value-objects/Priority";
+import { TaskStatus } from "../value-objects/TaskStatus";
+import { AssetId } from "../value-objects/AssetId";
+import { Entity } from "../core/Entity";
+import { Result } from "../core/Result";
 
 interface TaskProps {
   id: TaskId;
@@ -25,7 +25,6 @@ interface TaskProps {
  * Follows domain-driven design principles with business rules
  */
 export class Task extends Entity<TaskProps> {
-
   private constructor(props: TaskProps) {
     super(props);
   }
@@ -40,23 +39,22 @@ export class Task extends Entity<TaskProps> {
     estimatedHours?: number;
     tags?: string[];
   }): Result<Task> {
-    
     // Validate required fields
     if (!params.title || params.title.trim().length === 0) {
-      return Result.fail<Task>('Task title cannot be empty');
+      return Result.fail<Task>("Task title cannot be empty");
     }
 
     if (params.title.length > 200) {
-      return Result.fail<Task>('Task title cannot exceed 200 characters');
+      return Result.fail<Task>("Task title cannot exceed 200 characters");
     }
 
     if (params.estimatedHours !== undefined && params.estimatedHours < 0) {
-      return Result.fail<Task>('Estimated hours cannot be negative');
+      return Result.fail<Task>("Estimated hours cannot be negative");
     }
 
     if (params.dueDate && params.dueDate < new Date()) {
       // Only warn for past due dates, don't fail creation
-      console.warn('Task created with past due date:', params.dueDate);
+      console.warn("Task created with past due date:", params.dueDate);
     }
 
     const props: TaskProps = {
@@ -70,7 +68,7 @@ export class Task extends Entity<TaskProps> {
       estimatedHours: params.estimatedHours,
       tags: params.tags || [],
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     return Result.ok<Task>(new Task(props));
@@ -145,11 +143,11 @@ export class Task extends Entity<TaskProps> {
   // Business methods
   updateTitle(title: string): Result<void> {
     if (!title || title.trim().length === 0) {
-      return Result.fail<void>('Task title cannot be empty');
+      return Result.fail<void>("Task title cannot be empty");
     }
 
     if (title.length > 200) {
-      return Result.fail<void>('Task title cannot exceed 200 characters');
+      return Result.fail<void>("Task title cannot exceed 200 characters");
     }
 
     this.props.title = title.trim();
@@ -169,7 +167,9 @@ export class Task extends Entity<TaskProps> {
 
   updateStatus(status: TaskStatus): Result<void> {
     if (!this.props.status.canTransitionTo(status)) {
-      return Result.fail<void>(`Cannot transition from ${this.props.status.toString()} to ${status.toString()}`);
+      return Result.fail<void>(
+        `Cannot transition from ${this.props.status.toString()} to ${status.toString()}`,
+      );
     }
 
     this.props.status = status;
@@ -208,7 +208,7 @@ export class Task extends Entity<TaskProps> {
 
   setEstimatedHours(hours: number): Result<void> {
     if (hours < 0) {
-      return Result.fail<void>('Estimated hours cannot be negative');
+      return Result.fail<void>("Estimated hours cannot be negative");
     }
 
     this.props.estimatedHours = hours;
@@ -239,20 +239,24 @@ export class Task extends Entity<TaskProps> {
 
   // Query methods
   isOverdue(): boolean {
-    return this.props.dueDate !== undefined && 
-           this.props.dueDate < new Date() && 
-           this.props.status.isActive();
+    return (
+      this.props.dueDate !== undefined &&
+      this.props.dueDate < new Date() &&
+      this.props.status.isActive()
+    );
   }
 
   isDueToday(): boolean {
     if (!this.props.dueDate) return false;
-    
+
     const today = new Date();
     const due = this.props.dueDate;
-    
-    return today.getFullYear() === due.getFullYear() &&
-           today.getMonth() === due.getMonth() &&
-           today.getDate() === due.getDate();
+
+    return (
+      today.getFullYear() === due.getFullYear() &&
+      today.getMonth() === due.getMonth() &&
+      today.getDate() === due.getDate()
+    );
   }
 
   isHighPriority(): boolean {
@@ -262,73 +266,95 @@ export class Task extends Entity<TaskProps> {
   // Serialization methods
   toFrontmatter(): Record<string, any> {
     const frontmatter: Record<string, any> = {
-      'exo__Task_uid': this.props.id.toString(),
-      'exo__Task_title': this.props.title,
-      'exo__Task_priority': this.props.priority.toString(),
-      'exo__Task_status': this.props.status.toString(),
-      'exo__Task_createdAt': this.props.createdAt.toISOString(),
-      'exo__Task_updatedAt': this.props.updatedAt.toISOString()
+      exo__Task_uid: this.props.id.toString(),
+      exo__Task_title: this.props.title,
+      exo__Task_priority: this.props.priority.toString(),
+      exo__Task_status: this.props.status.toString(),
+      exo__Task_createdAt: this.props.createdAt.toISOString(),
+      exo__Task_updatedAt: this.props.updatedAt.toISOString(),
     };
 
     if (this.props.description) {
-      frontmatter['exo__Task_description'] = this.props.description;
+      frontmatter["exo__Task_description"] = this.props.description;
     }
 
     if (this.props.projectId) {
-      frontmatter['exo__Effort_parent'] = `[[${this.props.projectId.toString()}]]`;
+      frontmatter["exo__Effort_parent"] =
+        `[[${this.props.projectId.toString()}]]`;
     }
 
     if (this.props.dueDate) {
-      frontmatter['exo__Task_dueDate'] = this.props.dueDate.toISOString().split('T')[0];
+      frontmatter["exo__Task_dueDate"] = this.props.dueDate
+        .toISOString()
+        .split("T")[0];
     }
 
     if (this.props.estimatedHours !== undefined) {
-      frontmatter['exo__Task_estimatedHours'] = this.props.estimatedHours;
+      frontmatter["exo__Task_estimatedHours"] = this.props.estimatedHours;
     }
 
     if (this.props.tags.length > 0) {
-      frontmatter['exo__Task_tags'] = this.props.tags;
+      frontmatter["exo__Task_tags"] = this.props.tags;
     }
 
     if (this.props.completedAt) {
-      frontmatter['exo__Task_completedAt'] = this.props.completedAt.toISOString();
+      frontmatter["exo__Task_completedAt"] =
+        this.props.completedAt.toISOString();
     }
 
     return frontmatter;
   }
 
-  static fromFrontmatter(frontmatter: Record<string, any>, fileName: string): Task | null {
+  static fromFrontmatter(
+    frontmatter: Record<string, any>,
+    fileName: string,
+  ): Task | null {
     try {
-      const idResult = TaskId.create(frontmatter['exo__Task_uid'] || TaskId.generate().toString());
+      const idResult = TaskId.create(
+        frontmatter["exo__Task_uid"] || TaskId.generate().toString(),
+      );
       const id = idResult.isSuccess ? idResult.getValue() : TaskId.generate();
-      
-      const title = frontmatter['exo__Task_title'] || fileName.replace('.md', '');
-      const description = frontmatter['exo__Task_description'];
-      
-      const priorityResult = Priority.create(frontmatter['exo__Task_priority'] || 'medium');
-      const priority = priorityResult.isSuccess ? priorityResult.getValue() : Priority.medium();
-      
-      const statusResult = TaskStatus.create(frontmatter['exo__Task_status'] || 'todo');
-      const status = statusResult.isSuccess ? statusResult.getValue() : TaskStatus.todo();
-      
+
+      const title =
+        frontmatter["exo__Task_title"] || fileName.replace(".md", "");
+      const description = frontmatter["exo__Task_description"];
+
+      const priorityResult = Priority.create(
+        frontmatter["exo__Task_priority"] || "medium",
+      );
+      const priority = priorityResult.isSuccess
+        ? priorityResult.getValue()
+        : Priority.medium();
+
+      const statusResult = TaskStatus.create(
+        frontmatter["exo__Task_status"] || "todo",
+      );
+      const status = statusResult.isSuccess
+        ? statusResult.getValue()
+        : TaskStatus.todo();
+
       let projectId: AssetId | undefined;
-      const parentValue = frontmatter['exo__Effort_parent'];
+      const parentValue = frontmatter["exo__Effort_parent"];
       if (parentValue) {
-        const cleanParent = parentValue.toString().replace(/\[\[|\]\]/g, '');
+        const cleanParent = parentValue.toString().replace(/\[\[|\]\]/g, "");
         const projectIdResult = AssetId.create(cleanParent);
         if (projectIdResult.isSuccess) {
           projectId = projectIdResult.getValue();
         }
       }
-      
-      const dueDate = frontmatter['exo__Task_dueDate'] ? new Date(frontmatter['exo__Task_dueDate']) : undefined;
-      const estimatedHours = frontmatter['exo__Task_estimatedHours'];
-      const tags = Array.isArray(frontmatter['exo__Task_tags']) ? frontmatter['exo__Task_tags'] : [];
-      
-      const createdAt = frontmatter['exo__Task_createdAt'] 
-        ? new Date(frontmatter['exo__Task_createdAt']) 
+
+      const dueDate = frontmatter["exo__Task_dueDate"]
+        ? new Date(frontmatter["exo__Task_dueDate"])
+        : undefined;
+      const estimatedHours = frontmatter["exo__Task_estimatedHours"];
+      const tags = Array.isArray(frontmatter["exo__Task_tags"])
+        ? frontmatter["exo__Task_tags"]
+        : [];
+
+      const createdAt = frontmatter["exo__Task_createdAt"]
+        ? new Date(frontmatter["exo__Task_createdAt"])
         : new Date();
-      
+
       const result = Task.create({
         title,
         description,
@@ -337,27 +363,29 @@ export class Task extends Entity<TaskProps> {
         projectId,
         dueDate,
         estimatedHours,
-        tags
+        tags,
       });
-      
+
       if (result.isSuccess) {
         const task = result.getValue()!;
         // Update timestamps and completion date
         (task as any).props.id = id;
         (task as any).props.createdAt = createdAt;
-        
-        if (frontmatter['exo__Task_completedAt']) {
-          (task as any).props.completedAt = new Date(frontmatter['exo__Task_completedAt']);
+
+        if (frontmatter["exo__Task_completedAt"]) {
+          (task as any).props.completedAt = new Date(
+            frontmatter["exo__Task_completedAt"],
+          );
         }
-        
+
         return task;
       } else {
-        console.warn('Failed to create task from frontmatter:', result.error);
+        console.warn("Failed to create task from frontmatter:", result.error);
       }
-      
+
       return null;
     } catch (error) {
-      console.warn('Failed to create task from frontmatter:', error);
+      console.warn("Failed to create task from frontmatter:", error);
       return null;
     }
   }
@@ -367,39 +395,39 @@ export class Task extends Entity<TaskProps> {
    */
   toMarkdown(): string {
     let content = `# ${this.props.title}\n\n`;
-    
+
     if (this.props.description) {
       content += `${this.props.description}\n\n`;
     }
-    
+
     content += `## Task Details\n\n`;
     content += `${this.props.status.toMarkdownCheckbox()} **Status**: ${this.props.status.toString()}\n`;
     content += `- **Priority**: ${this.props.priority.toString()}\n`;
-    
+
     if (this.props.dueDate) {
-      content += `- **Due Date**: ${this.props.dueDate.toISOString().split('T')[0]}\n`;
+      content += `- **Due Date**: ${this.props.dueDate.toISOString().split("T")[0]}\n`;
     }
-    
+
     if (this.props.estimatedHours) {
       content += `- **Estimated Hours**: ${this.props.estimatedHours}\n`;
     }
-    
+
     if (this.props.projectId) {
       content += `- **Project**: [[${this.props.projectId.toString()}]]\n`;
     }
-    
+
     if (this.props.tags.length > 0) {
-      content += `- **Tags**: ${this.props.tags.map(tag => `#${tag}`).join(' ')}\n`;
+      content += `- **Tags**: ${this.props.tags.map((tag) => `#${tag}`).join(" ")}\n`;
     }
-    
+
     content += `\n---\n\n`;
     content += `*Created: ${this.props.createdAt.toISOString()}*\n`;
     content += `*Updated: ${this.props.updatedAt.toISOString()}*\n`;
-    
+
     if (this.props.completedAt) {
       content += `*Completed: ${this.props.completedAt.toISOString()}*\n`;
     }
-    
+
     return content;
   }
 }

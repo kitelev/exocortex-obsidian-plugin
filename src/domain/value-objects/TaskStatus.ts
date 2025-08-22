@@ -1,11 +1,11 @@
-import { Result } from '../core/Result';
+import { Result } from "../core/Result";
 
 export enum TaskStatusType {
-  TODO = 'todo',
-  IN_PROGRESS = 'in-progress',
-  WAITING = 'waiting',
-  DONE = 'done',
-  CANCELLED = 'cancelled'
+  TODO = "todo",
+  IN_PROGRESS = "in-progress",
+  WAITING = "waiting",
+  DONE = "done",
+  CANCELLED = "cancelled",
 }
 
 /**
@@ -21,16 +21,23 @@ export class TaskStatus {
 
   static create(value: string | TaskStatusType): Result<TaskStatus> {
     if (!value) {
-      return Result.fail<TaskStatus>('TaskStatus cannot be empty');
+      return Result.fail<TaskStatus>("TaskStatus cannot be empty");
     }
 
-    const normalizedValue = typeof value === 'string' ? value.toLowerCase().replace('_', '-') : value;
-    
-    if (!Object.values(TaskStatusType).includes(normalizedValue as TaskStatusType)) {
-      return Result.fail<TaskStatus>('TaskStatus must be one of: todo, in-progress, waiting, done, cancelled');
+    const normalizedValue =
+      typeof value === "string" ? value.toLowerCase().replace("_", "-") : value;
+
+    if (
+      !Object.values(TaskStatusType).includes(normalizedValue as TaskStatusType)
+    ) {
+      return Result.fail<TaskStatus>(
+        "TaskStatus must be one of: todo, in-progress, waiting, done, cancelled",
+      );
     }
 
-    return Result.ok<TaskStatus>(new TaskStatus(normalizedValue as TaskStatusType));
+    return Result.ok<TaskStatus>(
+      new TaskStatus(normalizedValue as TaskStatusType),
+    );
   }
 
   static todo(): TaskStatus {
@@ -70,11 +77,26 @@ export class TaskStatus {
    */
   canTransitionTo(newStatus: TaskStatus): boolean {
     const validTransitions: Record<TaskStatusType, TaskStatusType[]> = {
-      [TaskStatusType.TODO]: [TaskStatusType.IN_PROGRESS, TaskStatusType.WAITING, TaskStatusType.DONE, TaskStatusType.CANCELLED],
-      [TaskStatusType.IN_PROGRESS]: [TaskStatusType.TODO, TaskStatusType.WAITING, TaskStatusType.DONE, TaskStatusType.CANCELLED],
-      [TaskStatusType.WAITING]: [TaskStatusType.TODO, TaskStatusType.IN_PROGRESS, TaskStatusType.DONE, TaskStatusType.CANCELLED],
+      [TaskStatusType.TODO]: [
+        TaskStatusType.IN_PROGRESS,
+        TaskStatusType.WAITING,
+        TaskStatusType.DONE,
+        TaskStatusType.CANCELLED,
+      ],
+      [TaskStatusType.IN_PROGRESS]: [
+        TaskStatusType.TODO,
+        TaskStatusType.WAITING,
+        TaskStatusType.DONE,
+        TaskStatusType.CANCELLED,
+      ],
+      [TaskStatusType.WAITING]: [
+        TaskStatusType.TODO,
+        TaskStatusType.IN_PROGRESS,
+        TaskStatusType.DONE,
+        TaskStatusType.CANCELLED,
+      ],
       [TaskStatusType.DONE]: [TaskStatusType.TODO], // Can reopen completed tasks
-      [TaskStatusType.CANCELLED]: [TaskStatusType.TODO] // Can reactivate cancelled tasks
+      [TaskStatusType.CANCELLED]: [TaskStatusType.TODO], // Can reactivate cancelled tasks
     };
 
     return validTransitions[this.status].includes(newStatus.status);
@@ -84,9 +106,11 @@ export class TaskStatus {
    * Returns if the task is in an active state (not done or cancelled)
    */
   isActive(): boolean {
-    return this.status === TaskStatusType.TODO || 
-           this.status === TaskStatusType.IN_PROGRESS || 
-           this.status === TaskStatusType.WAITING;
+    return (
+      this.status === TaskStatusType.TODO ||
+      this.status === TaskStatusType.IN_PROGRESS ||
+      this.status === TaskStatusType.WAITING
+    );
   }
 
   /**
@@ -115,11 +139,16 @@ export class TaskStatus {
    */
   toMarkdownCheckbox(): string {
     switch (this.status) {
-      case TaskStatusType.TODO: return '- [ ]';
-      case TaskStatusType.IN_PROGRESS: return '- [/]';
-      case TaskStatusType.WAITING: return '- [-]';
-      case TaskStatusType.DONE: return '- [x]';
-      case TaskStatusType.CANCELLED: return '- [~]';
+      case TaskStatusType.TODO:
+        return "- [ ]";
+      case TaskStatusType.IN_PROGRESS:
+        return "- [/]";
+      case TaskStatusType.WAITING:
+        return "- [-]";
+      case TaskStatusType.DONE:
+        return "- [x]";
+      case TaskStatusType.CANCELLED:
+        return "- [~]";
     }
   }
 
@@ -128,14 +157,14 @@ export class TaskStatus {
    */
   static fromMarkdownCheckbox(checkbox: string): Result<TaskStatus> {
     const trimmed = checkbox.trim();
-    
-    if (trimmed === '- [ ]') return Result.ok(TaskStatus.todo());
-    if (trimmed === '- [/]') return Result.ok(TaskStatus.inProgress());
-    if (trimmed === '- [-]') return Result.ok(TaskStatus.waiting());
-    if (trimmed === '- [x]' || trimmed === '- [X]') return Result.ok(TaskStatus.done());
-    if (trimmed === '- [~]') return Result.ok(TaskStatus.cancelled());
-    
-    return Result.fail<TaskStatus>('Invalid markdown checkbox format');
-  }
 
+    if (trimmed === "- [ ]") return Result.ok(TaskStatus.todo());
+    if (trimmed === "- [/]") return Result.ok(TaskStatus.inProgress());
+    if (trimmed === "- [-]") return Result.ok(TaskStatus.waiting());
+    if (trimmed === "- [x]" || trimmed === "- [X]")
+      return Result.ok(TaskStatus.done());
+    if (trimmed === "- [~]") return Result.ok(TaskStatus.cancelled());
+
+    return Result.fail<TaskStatus>("Invalid markdown checkbox format");
+  }
 }

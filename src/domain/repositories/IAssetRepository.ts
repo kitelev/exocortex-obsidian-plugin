@@ -1,7 +1,7 @@
-import { Asset } from '../entities/Asset';
-import { AssetId } from '../value-objects/AssetId';
-import { ClassName } from '../value-objects/ClassName';
-import { OntologyPrefix } from '../value-objects/OntologyPrefix';
+import { Asset } from "../entities/Asset";
+import { AssetId } from "../value-objects/AssetId";
+import { ClassName } from "../value-objects/ClassName";
+import { OntologyPrefix } from "../value-objects/OntologyPrefix";
 
 /**
  * Repository interface for Asset persistence

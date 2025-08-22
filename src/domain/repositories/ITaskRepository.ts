@@ -1,8 +1,8 @@
-import { Task } from '../entities/Task';
-import { TaskId } from '../value-objects/TaskId';
-import { AssetId } from '../value-objects/AssetId';
-import { TaskStatus } from '../value-objects/TaskStatus';
-import { Priority } from '../value-objects/Priority';
+import { Task } from "../entities/Task";
+import { TaskId } from "../value-objects/TaskId";
+import { AssetId } from "../value-objects/AssetId";
+import { TaskStatus } from "../value-objects/TaskStatus";
+import { Priority } from "../value-objects/Priority";
 
 /**
  * Repository interface for Task persistence

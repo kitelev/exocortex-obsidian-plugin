@@ -3,10 +3,18 @@
  * Represents any piece of knowledge with RDF-based properties and relationships
  */
 
-import { Entity } from '../../core/Entity';
-import { Result } from '../../core/Result';
-import { Graph } from '../core/Graph';
-import { Triple, IRI, Literal, BlankNode, RDF, RDFS, EXO } from '../core/Triple';
+import { Entity } from "../../core/Entity";
+import { Result } from "../../core/Result";
+import { Graph } from "../core/Graph";
+import {
+  Triple,
+  IRI,
+  Literal,
+  BlankNode,
+  RDF,
+  RDFS,
+  EXO,
+} from "../core/Triple";
 
 export type UUID = string;
 export type MarkdownContent = string;
@@ -22,7 +30,7 @@ export interface KnowledgeObjectProps {
 
 /**
  * KnowledgeObject - Core domain entity for semantic knowledge management
- * 
+ *
  * Design principles:
  * 1. Privacy-first: Only UUID is public, all other data is private
  * 2. Semantic: All properties are RDF triples with formal semantics
@@ -40,21 +48,23 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
   static create(
     type: IRI,
     initialProperties?: Map<IRI, any>,
-    content?: MarkdownContent
+    content?: MarkdownContent,
   ): Result<KnowledgeObject> {
-    const uuid = crypto.randomUUID ? crypto.randomUUID() : KnowledgeObject.generateUUID();
+    const uuid = crypto.randomUUID
+      ? crypto.randomUUID()
+      : KnowledgeObject.generateUUID();
     const now = new Date();
     const graph = new Graph();
-    
+
     // Create subject IRI from UUID
     const subject = new IRI(`urn:uuid:${uuid}`);
-    
+
     // Add core triples
     graph.add(new Triple(subject, RDF.type, type));
     graph.add(new Triple(subject, EXO.uuid, Literal.string(uuid)));
     graph.add(new Triple(subject, EXO.createdAt, Literal.dateTime(now)));
     graph.add(new Triple(subject, EXO.updatedAt, Literal.dateTime(now)));
-    
+
     // Add initial properties
     if (initialProperties) {
       for (const [predicate, value] of initialProperties) {
@@ -65,16 +75,16 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
         graph.add(new Triple(subject, predicate, literal.getValue()));
       }
     }
-    
+
     const props: KnowledgeObjectProps = {
       uuid,
       type,
       graph,
       content,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
-    
+
     return Result.ok(new KnowledgeObject(props));
   }
 
@@ -84,43 +94,43 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
   static fromGraph(
     uuid: UUID,
     graph: Graph,
-    content?: MarkdownContent
+    content?: MarkdownContent,
   ): Result<KnowledgeObject> {
     const subject = new IRI(`urn:uuid:${uuid}`);
-    
+
     // Get type
     const typeTriples = graph.match(subject, RDF.type, null);
     if (typeTriples.length === 0) {
-      return Result.fail('Knowledge object has no type');
+      return Result.fail("Knowledge object has no type");
     }
     const type = typeTriples[0].getObject() as IRI;
-    
+
     // Get timestamps
     const createdTriples = graph.match(subject, EXO.createdAt, null);
     const updatedTriples = graph.match(subject, EXO.updatedAt, null);
-    
+
     let createdAt = new Date();
     let updatedAt = new Date();
-    
+
     if (createdTriples.length > 0) {
       const literal = createdTriples[0].getObject() as Literal;
       createdAt = new Date(literal.getValue());
     }
-    
+
     if (updatedTriples.length > 0) {
       const literal = updatedTriples[0].getObject() as Literal;
       updatedAt = new Date(literal.getValue());
     }
-    
+
     const props: KnowledgeObjectProps = {
       uuid,
       type,
       graph,
       content,
       createdAt,
-      updatedAt
+      updatedAt,
     };
-    
+
     return Result.ok(new KnowledgeObject(props));
   }
 
@@ -174,19 +184,21 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
     if (literal.isFailure) {
       return Result.fail(literal.error);
     }
-    
+
     // Remove existing values for this predicate
     const existing = this.props.graph.match(this.subject, predicate, null);
     for (const triple of existing) {
       this.props.graph.remove(triple);
     }
-    
+
     // Add new value
-    this.props.graph.add(new Triple(this.subject, predicate, literal.getValue()));
-    
+    this.props.graph.add(
+      new Triple(this.subject, predicate, literal.getValue()),
+    );
+
     // Update timestamp
     this.updateTimestamp();
-    
+
     return Result.ok();
   }
 
@@ -196,7 +208,7 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
   getProperty(predicate: IRI): any | undefined {
     const triples = this.props.graph.match(this.subject, predicate, null);
     if (triples.length === 0) return undefined;
-    
+
     const object = triples[0].getObject();
     if (object instanceof Literal) {
       return KnowledgeObject.literalToValue(object);
@@ -209,7 +221,7 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
    */
   getProperties(predicate: IRI): any[] {
     const triples = this.props.graph.match(this.subject, predicate, null);
-    return triples.map(t => {
+    return triples.map((t) => {
       const object = t.getObject();
       if (object instanceof Literal) {
         return KnowledgeObject.literalToValue(object);
@@ -226,10 +238,12 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
     if (literal.isFailure) {
       return Result.fail(literal.error);
     }
-    
-    this.props.graph.add(new Triple(this.subject, predicate, literal.getValue()));
+
+    this.props.graph.add(
+      new Triple(this.subject, predicate, literal.getValue()),
+    );
     this.updateTimestamp();
-    
+
     return Result.ok();
   }
 
@@ -249,13 +263,17 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
       if (literal.isFailure) {
         return Result.fail(literal.error);
       }
-      
-      const triples = this.props.graph.match(this.subject, predicate, literal.getValue());
+
+      const triples = this.props.graph.match(
+        this.subject,
+        predicate,
+        literal.getValue(),
+      );
       for (const triple of triples) {
         this.props.graph.remove(triple);
       }
     }
-    
+
     this.updateTimestamp();
     return Result.ok();
   }
@@ -289,17 +307,17 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
   getRelations(predicate: IRI): UUID[] {
     const triples = this.props.graph.match(this.subject, predicate, null);
     const uuids: UUID[] = [];
-    
+
     for (const triple of triples) {
       const object = triple.getObject();
       if (object instanceof IRI) {
         const iri = object.toString();
-        if (iri.startsWith('urn:uuid:')) {
+        if (iri.startsWith("urn:uuid:")) {
           uuids.push(iri.substring(9));
         }
       }
     }
-    
+
     return uuids;
   }
 
@@ -318,27 +336,27 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
   getAllProperties(): Map<IRI, any[]> {
     const properties = new Map<IRI, any[]>();
     const triples = this.props.graph.match(this.subject, null, null);
-    
+
     for (const triple of triples) {
       const predicate = triple.getPredicate();
       const object = triple.getObject();
-      
+
       if (!properties.has(predicate)) {
         properties.set(predicate, []);
       }
-      
+
       if (object instanceof Literal) {
         properties.get(predicate)!.push(KnowledgeObject.literalToValue(object));
       } else if (object instanceof IRI) {
         const iri = object.toString();
-        if (iri.startsWith('urn:uuid:')) {
+        if (iri.startsWith("urn:uuid:")) {
           properties.get(predicate)!.push(iri.substring(9));
         } else {
           properties.get(predicate)!.push(iri);
         }
       }
     }
-    
+
     return properties;
   }
 
@@ -366,9 +384,9 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
       graph: this.props.graph.clone(),
       content: this.props.content,
       createdAt: this.props.createdAt,
-      updatedAt: this.props.updatedAt
+      updatedAt: this.props.updatedAt,
     };
-    
+
     return new KnowledgeObject(props);
   }
 
@@ -378,13 +396,15 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
   private updateTimestamp(): void {
     const now = new Date();
     this.props.updatedAt = now;
-    
+
     // Update in graph
     const existing = this.props.graph.match(this.subject, EXO.updatedAt, null);
     for (const triple of existing) {
       this.props.graph.remove(triple);
     }
-    this.props.graph.add(new Triple(this.subject, EXO.updatedAt, Literal.dateTime(now)));
+    this.props.graph.add(
+      new Triple(this.subject, EXO.updatedAt, Literal.dateTime(now)),
+    );
   }
 
   /**
@@ -392,16 +412,24 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
    */
   private static valueToLiteral(value: any): Result<Literal | IRI> {
     if (value === null || value === undefined) {
-      return Result.fail('Cannot convert null/undefined to literal');
+      return Result.fail("Cannot convert null/undefined to literal");
     }
-    
-    if (typeof value === 'string') {
+
+    if (typeof value === "string") {
       // Check if it's a UUID reference
-      if (value.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      if (
+        value.match(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+        )
+      ) {
         return Result.ok(new IRI(`urn:uuid:${value}`));
       }
       // Check if it's an IRI
-      if (value.startsWith('http://') || value.startsWith('https://') || value.includes(':')) {
+      if (
+        value.startsWith("http://") ||
+        value.startsWith("https://") ||
+        value.includes(":")
+      ) {
         try {
           return Result.ok(new IRI(value));
         } catch {
@@ -410,30 +438,30 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
       }
       return Result.ok(Literal.string(value));
     }
-    
-    if (typeof value === 'boolean') {
+
+    if (typeof value === "boolean") {
       return Result.ok(Literal.boolean(value));
     }
-    
-    if (typeof value === 'number') {
+
+    if (typeof value === "number") {
       if (Number.isInteger(value)) {
         return Result.ok(Literal.integer(value));
       }
       return Result.ok(Literal.double(value));
     }
-    
+
     if (value instanceof Date) {
       return Result.ok(Literal.dateTime(value));
     }
-    
+
     if (value instanceof IRI) {
       return Result.ok(value);
     }
-    
+
     if (value instanceof Literal) {
       return Result.ok(value);
     }
-    
+
     // Convert object to JSON string
     return Result.ok(Literal.string(JSON.stringify(value)));
   }
@@ -444,38 +472,38 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
   private static literalToValue(literal: Literal): any {
     const datatype = literal.getDatatype();
     const value = literal.getValue();
-    
+
     if (!datatype) {
       return value;
     }
-    
+
     const dt = datatype.toString();
-    
-    if (dt === 'http://www.w3.org/2001/XMLSchema#boolean') {
-      return value === 'true';
+
+    if (dt === "http://www.w3.org/2001/XMLSchema#boolean") {
+      return value === "true";
     }
-    
-    if (dt === 'http://www.w3.org/2001/XMLSchema#integer') {
+
+    if (dt === "http://www.w3.org/2001/XMLSchema#integer") {
       return parseInt(value, 10);
     }
-    
-    if (dt === 'http://www.w3.org/2001/XMLSchema#double') {
+
+    if (dt === "http://www.w3.org/2001/XMLSchema#double") {
       return parseFloat(value);
     }
-    
-    if (dt === 'http://www.w3.org/2001/XMLSchema#dateTime') {
+
+    if (dt === "http://www.w3.org/2001/XMLSchema#dateTime") {
       return new Date(value);
     }
-    
+
     // Try to parse JSON
-    if (value.startsWith('{') || value.startsWith('[')) {
+    if (value.startsWith("{") || value.startsWith("[")) {
       try {
         return JSON.parse(value);
       } catch {
         // Not JSON, return as string
       }
     }
-    
+
     return value;
   }
 
@@ -483,10 +511,13 @@ export class KnowledgeObject extends Entity<KnowledgeObjectProps> {
    * Fallback UUID generator if crypto.randomUUID is not available
    */
   private static generateUUID(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      },
+    );
   }
 }

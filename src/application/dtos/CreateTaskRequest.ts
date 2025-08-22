@@ -19,13 +19,13 @@ export interface CreateTaskRequest {
    * Priority level (low, medium, high, urgent)
    * Defaults to medium if not specified
    */
-  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  priority?: "low" | "medium" | "high" | "urgent";
 
   /**
    * Task status (todo, in-progress, done, cancelled)
    * Defaults to todo if not specified
    */
-  status?: 'todo' | 'in-progress' | 'done' | 'cancelled';
+  status?: "todo" | "in-progress" | "done" | "cancelled";
 
   /**
    * Project ID to associate the task with
@@ -72,17 +72,17 @@ export interface CreateTaskRequest {
      * Current active file path
      */
     activeFile?: string;
-    
+
     /**
      * Current selection or cursor position
      */
     selection?: string;
-    
+
     /**
      * Current focus context
      */
     focusContext?: string;
-    
+
     /**
      * Related entities from current context
      */
@@ -160,16 +160,16 @@ export interface GetCurrentProjectRequest {
      * Include completed projects in results
      */
     includeCompleted?: boolean;
-    
+
     /**
      * Maximum number of projects to return
      */
     maxResults?: number;
-    
+
     /**
      * Preferred project selection strategy
      */
-    selectionStrategy?: 'recent' | 'active' | 'priority' | 'context';
+    selectionStrategy?: "recent" | "active" | "priority" | "context";
   };
 }
 
@@ -214,12 +214,12 @@ export interface GetCurrentProjectResponse {
      * Detection strategy used
      */
     strategy: string;
-    
+
     /**
      * Confidence score (0-1) for current project detection
      */
     confidence: number;
-    
+
     /**
      * Reasoning for project selection
      */

@@ -1,17 +1,17 @@
 export enum ErrorSeverity {
-  CRITICAL = 'critical',
-  ERROR = 'error',
-  WARNING = 'warning',
-  INFO = 'info'
+  CRITICAL = "critical",
+  ERROR = "error",
+  WARNING = "warning",
+  INFO = "info",
 }
 
 export enum ErrorCategory {
-  SYNTAX = 'syntax',
-  SEMANTIC = 'semantic',
-  VALIDATION = 'validation',
-  SYSTEM = 'system',
-  NETWORK = 'network',
-  PERMISSION = 'permission'
+  SYNTAX = "syntax",
+  SEMANTIC = "semantic",
+  VALIDATION = "validation",
+  SYSTEM = "system",
+  NETWORK = "network",
+  PERMISSION = "permission",
 }
 
 export interface ErrorLocation {
@@ -98,8 +98,8 @@ export class ErrorBuilder {
   withLocation(location: ErrorLocation): ErrorBuilder {
     if (!this.error.context) {
       this.error.context = {
-        operation: 'Unknown',
-        timestamp: new Date()
+        operation: "Unknown",
+        timestamp: new Date(),
       };
     }
     this.error.context.location = location;
@@ -142,15 +142,15 @@ export class ErrorBuilder {
       this.error.category = ErrorCategory.SYSTEM;
     }
     if (!this.error.title) {
-      this.error.title = 'Error';
+      this.error.title = "Error";
     }
     if (!this.error.message) {
-      this.error.message = 'An error occurred';
+      this.error.message = "An error occurred";
     }
     if (!this.error.context) {
       this.error.context = {
-        operation: 'Unknown',
-        timestamp: new Date()
+        operation: "Unknown",
+        timestamp: new Date(),
       };
     }
 

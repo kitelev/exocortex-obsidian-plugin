@@ -1,6 +1,6 @@
 /**
  * FindAllOntologiesUseCase - Discovers and manages all ontology definitions in the vault
- * 
+ *
  * Business Logic:
  * - Scans vault for ontology definition files
  * - Validates ontology metadata structure
@@ -8,10 +8,10 @@
  * - Handles template folder exclusions
  */
 
-import { UseCase } from '../../core/UseCase';
-import { Result } from '../../../domain/core/Result';
-import { IVaultAdapter } from '../../ports/IVaultAdapter';
-import { IOntologyRepository } from '../../../domain/repositories/IOntologyRepository';
+import { UseCase } from "../../core/UseCase";
+import { Result } from "../../../domain/core/Result";
+import { IVaultAdapter } from "../../ports/IVaultAdapter";
+import { IOntologyRepository } from "../../../domain/repositories/IOntologyRepository";
 
 export interface OntologyInfo {
   file: any | null;
@@ -29,21 +29,22 @@ export interface FindAllOntologiesResponse {
   ontologies: OntologyInfo[];
 }
 
-export class FindAllOntologiesUseCase implements UseCase<FindAllOntologiesRequest, FindAllOntologiesResponse> {
+export class FindAllOntologiesUseCase
+  implements UseCase<FindAllOntologiesRequest, FindAllOntologiesResponse>
+{
   constructor(
     private vaultAdapter: IVaultAdapter,
-    private ontologyRepository: IOntologyRepository
+    private ontologyRepository: IOntologyRepository,
   ) {}
 
-  async execute(request: FindAllOntologiesRequest): Promise<Result<FindAllOntologiesResponse>> {
+  async execute(
+    request: FindAllOntologiesRequest,
+  ): Promise<Result<FindAllOntologiesResponse>> {
     try {
-      const { 
-        includeDefaults = true, 
-        excludeTemplates = true 
-      } = request;
+      const { includeDefaults = true, excludeTemplates = true } = request;
 
       const ontologies: OntologyInfo[] = [];
-      
+
       // Get default/core ontologies if requested
       if (includeDefaults) {
         const coreOntologies = this.getCoreOntologies();
@@ -52,7 +53,7 @@ export class FindAllOntologiesUseCase implements UseCase<FindAllOntologiesReques
 
       // Scan vault for ontology files
       const files = await this.vaultAdapter.getFiles();
-      
+
       for (const file of files) {
         // Skip template folders if configured
         if (excludeTemplates && this.isInTemplateFolder(file.path)) {
@@ -71,10 +72,15 @@ export class FindAllOntologiesUseCase implements UseCase<FindAllOntologiesReques
           continue;
         }
 
-        const ontologyInfo = this.extractOntologyInfo(file, metadata.frontmatter);
+        const ontologyInfo = this.extractOntologyInfo(
+          file,
+          metadata.frontmatter,
+        );
         if (ontologyInfo) {
           // Check for duplicate prefix
-          const existingIndex = ontologies.findIndex(o => o.prefix === ontologyInfo.prefix);
+          const existingIndex = ontologies.findIndex(
+            (o) => o.prefix === ontologyInfo.prefix,
+          );
           if (existingIndex >= 0) {
             // Replace default with discovered ontology
             if (ontologies[existingIndex].file === null) {
@@ -102,28 +108,28 @@ export class FindAllOntologiesUseCase implements UseCase<FindAllOntologiesReques
     return [
       {
         file: null,
-        prefix: 'exo',
-        label: 'Exocortex Core',
-        fileName: 'core-ontology'
+        prefix: "exo",
+        label: "Exocortex Core",
+        fileName: "core-ontology",
       },
       {
         file: null,
-        prefix: 'ems',
-        label: 'Effort Management System',
-        fileName: 'ems-ontology'
+        prefix: "ems",
+        label: "Effort Management System",
+        fileName: "ems-ontology",
       },
       {
         file: null,
-        prefix: 'ims',
-        label: 'Information Management System',
-        fileName: 'ims-ontology'
+        prefix: "ims",
+        label: "Information Management System",
+        fileName: "ims-ontology",
       },
       {
         file: null,
-        prefix: 'ztlk',
-        label: 'Zettelkasten',
-        fileName: 'ztlk-ontology'
-      }
+        prefix: "ztlk",
+        label: "Zettelkasten",
+        fileName: "ztlk-ontology",
+      },
     ];
   }
 
@@ -143,30 +149,34 @@ export class FindAllOntologiesUseCase implements UseCase<FindAllOntologiesReques
     }
 
     const fm = metadata.frontmatter;
-    
+
     // Check for ontology-specific properties
     return !!(
-      fm['exo__Ontology_prefix'] ||
-      fm['exo__Ontology_namespace'] ||
-      fm['ontology_prefix'] ||
-      fm['rdf_type'] === 'owl:Ontology' ||
-      (fm['exo__Instance_class'] && 
-       Array.isArray(fm['exo__Instance_class']) && 
-       fm['exo__Instance_class'].some((c: string) => 
-         c.includes('Ontology') || c.includes('Vocabulary')
-       ))
+      fm["exo__Ontology_prefix"] ||
+      fm["exo__Ontology_namespace"] ||
+      fm["ontology_prefix"] ||
+      fm["rdf_type"] === "owl:Ontology" ||
+      (fm["exo__Instance_class"] &&
+        Array.isArray(fm["exo__Instance_class"]) &&
+        fm["exo__Instance_class"].some(
+          (c: string) => c.includes("Ontology") || c.includes("Vocabulary"),
+        ))
     );
   }
 
   /**
    * Extract ontology information from file metadata
    */
-  private extractOntologyInfo(file: any, frontmatter: any): OntologyInfo | null {
+  private extractOntologyInfo(
+    file: any,
+    frontmatter: any,
+  ): OntologyInfo | null {
     // Try to extract prefix
-    let prefix = frontmatter['exo__Ontology_prefix'] || 
-                 frontmatter['ontology_prefix'] ||
-                 frontmatter['prefix'];
-    
+    let prefix =
+      frontmatter["exo__Ontology_prefix"] ||
+      frontmatter["ontology_prefix"] ||
+      frontmatter["prefix"];
+
     // Try to extract from file name if no prefix in metadata
     if (!prefix) {
       const nameMatch = file.basename.match(/^([a-z]+)[-_]ontology$/i);
@@ -180,17 +190,18 @@ export class FindAllOntologiesUseCase implements UseCase<FindAllOntologiesReques
     }
 
     // Extract label
-    const label = frontmatter['exo__Asset_label'] || 
-                  frontmatter['exo__Ontology_label'] ||
-                  frontmatter['label'] ||
-                  frontmatter['title'] ||
-                  file.basename;
+    const label =
+      frontmatter["exo__Asset_label"] ||
+      frontmatter["exo__Ontology_label"] ||
+      frontmatter["label"] ||
+      frontmatter["title"] ||
+      file.basename;
 
     return {
       file,
       prefix,
       label,
-      fileName: file.basename
+      fileName: file.basename,
     };
   }
 
@@ -199,17 +210,17 @@ export class FindAllOntologiesUseCase implements UseCase<FindAllOntologiesReques
    */
   private isInTemplateFolder(path: string): boolean {
     const templatePatterns = [
-      '/templates/',
-      '/Templates/',
-      '/template/',
-      '/Template/',
-      '/_templates/',
-      '/scaffolds/',
-      '/Scaffolds/',
-      '/archetypes/',
-      '/Archetypes/'
+      "/templates/",
+      "/Templates/",
+      "/template/",
+      "/Template/",
+      "/_templates/",
+      "/scaffolds/",
+      "/Scaffolds/",
+      "/archetypes/",
+      "/Archetypes/",
     ];
 
-    return templatePatterns.some(pattern => path.includes(pattern));
+    return templatePatterns.some((pattern) => path.includes(pattern));
   }
 }

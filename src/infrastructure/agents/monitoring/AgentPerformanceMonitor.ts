@@ -1,4 +1,4 @@
-import { Result } from '../../../domain/core/Result';
+import { Result } from "../../../domain/core/Result";
 import {
   AgentPerformanceMetrics,
   AgentQualityMetrics,
@@ -6,8 +6,8 @@ import {
   TrendAnalysis,
   Alert,
   AgentSummary,
-  AgentState
-} from '../types/AgentTypes';
+  AgentState,
+} from "../types/AgentTypes";
 
 export interface PerformanceSnapshot {
   agentId: string;
@@ -42,15 +42,15 @@ export interface PerformanceThresholds {
     critical: number;
   };
   resourceUsage: {
-    memory: { target: number; warning: number; critical: number; };
-    cpu: { target: number; warning: number; critical: number; };
+    memory: { target: number; warning: number; critical: number };
+    cpu: { target: number; warning: number; critical: number };
   };
 }
 
 export interface MetricTrend {
   metric: string;
   values: { timestamp: Date; value: number }[];
-  trend: 'increasing' | 'decreasing' | 'stable' | 'volatile';
+  trend: "increasing" | "decreasing" | "stable" | "volatile";
   slope: number;
   confidence: number;
 }
@@ -65,23 +65,23 @@ export class AgentPerformanceMonitor {
       responseTime: {
         target: 30,
         warning: 60,
-        critical: 120
+        critical: 120,
       },
       errorRate: {
         target: 0.02,
         warning: 0.05,
-        critical: 0.10
+        critical: 0.1,
       },
       successRate: {
         target: 0.95,
-        warning: 0.90,
-        critical: 0.80
+        warning: 0.9,
+        critical: 0.8,
       },
       resourceUsage: {
         memory: { target: 512, warning: 1024, critical: 2048 },
-        cpu: { target: 50, warning: 75, critical: 90 }
+        cpu: { target: 50, warning: 75, critical: 90 },
       },
-      ...thresholds
+      ...thresholds,
     };
   }
 
@@ -89,7 +89,7 @@ export class AgentPerformanceMonitor {
     agentId: string,
     metrics: AgentPerformanceMetrics,
     quality: AgentQualityMetrics,
-    context: PerformanceContext
+    context: PerformanceContext,
   ): Result<void> {
     try {
       const snapshot: PerformanceSnapshot = {
@@ -97,14 +97,14 @@ export class AgentPerformanceMonitor {
         timestamp: new Date(),
         metrics,
         quality,
-        context
+        context,
       };
 
       // Store snapshot
       if (!this.snapshots.has(agentId)) {
         this.snapshots.set(agentId, []);
       }
-      
+
       const agentSnapshots = this.snapshots.get(agentId)!;
       agentSnapshots.push(snapshot);
 
@@ -121,30 +121,36 @@ export class AgentPerformanceMonitor {
 
       return Result.ok(undefined);
     } catch (error) {
-      return Result.fail(`Failed to record performance: ${error instanceof Error ? error.message : String(error)}`);
+      return Result.fail(
+        `Failed to record performance: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   analyzePerformance(
     agentId: string,
-    timeWindow: number = 3600000 // 1 hour default
+    timeWindow: number = 3600000, // 1 hour default
   ): Result<PerformanceAnalysis> {
     try {
       const snapshots = this.getRecentSnapshots(agentId, timeWindow);
       if (snapshots.length === 0) {
-        return Result.fail(`No performance data available for agent ${agentId}`);
+        return Result.fail(
+          `No performance data available for agent ${agentId}`,
+        );
       }
 
       const analysis: PerformanceAnalysis = {
         bottlenecks: this.identifyBottlenecks(snapshots),
         optimizations: this.suggestOptimizations(snapshots),
         trends: this.analyzeTrends(snapshots),
-        alerts: this.getActiveAlerts(agentId)
+        alerts: this.getActiveAlerts(agentId),
       };
 
       return Result.ok(analysis);
     } catch (error) {
-      return Result.fail(`Performance analysis failed: ${error instanceof Error ? error.message : String(error)}`);
+      return Result.fail(
+        `Performance analysis failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -160,15 +166,20 @@ export class AgentPerformanceMonitor {
 
       return Result.ok(healthScore);
     } catch (error) {
-      return Result.fail(`Health score calculation failed: ${error instanceof Error ? error.message : String(error)}`);
+      return Result.fail(
+        `Health score calculation failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  generatePerformanceReport(agentId: string, period: 'hour' | 'day' | 'week'): Result<string> {
+  generatePerformanceReport(
+    agentId: string,
+    period: "hour" | "day" | "week",
+  ): Result<string> {
     try {
       const timeWindow = this.getTimeWindow(period);
       const snapshots = this.getRecentSnapshots(agentId, timeWindow);
-      
+
       if (snapshots.length === 0) {
         return Result.fail(`No data available for the specified period`);
       }
@@ -176,28 +187,38 @@ export class AgentPerformanceMonitor {
       const report = this.buildPerformanceReport(agentId, snapshots, period);
       return Result.ok(report);
     } catch (error) {
-      return Result.fail(`Report generation failed: ${error instanceof Error ? error.message : String(error)}`);
+      return Result.fail(
+        `Report generation failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
   predictPerformance(
     agentId: string,
-    horizon: number = 3600000 // 1 hour
+    horizon: number = 3600000, // 1 hour
   ): Result<AgentPerformanceMetrics> {
     try {
       const historicalData = this.getRecentSnapshots(agentId, horizon * 24); // Use 24x horizon for prediction
       if (historicalData.length < 10) {
-        return Result.fail('Insufficient data for performance prediction');
+        return Result.fail("Insufficient data for performance prediction");
       }
 
-      const prediction = this.generatePerformancePrediction(historicalData, horizon);
+      const prediction = this.generatePerformancePrediction(
+        historicalData,
+        horizon,
+      );
       return Result.ok(prediction);
     } catch (error) {
-      return Result.fail(`Performance prediction failed: ${error instanceof Error ? error.message : String(error)}`);
+      return Result.fail(
+        `Performance prediction failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  compareAgents(agentIds: string[], timeWindow: number = 3600000): Result<Record<string, number>> {
+  compareAgents(
+    agentIds: string[],
+    timeWindow: number = 3600000,
+  ): Result<Record<string, number>> {
     try {
       const comparison: Record<string, number> = {};
 
@@ -210,15 +231,20 @@ export class AgentPerformanceMonitor {
 
       return Result.ok(comparison);
     } catch (error) {
-      return Result.fail(`Agent comparison failed: ${error instanceof Error ? error.message : String(error)}`);
+      return Result.fail(
+        `Agent comparison failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  private getRecentSnapshots(agentId: string, timeWindow: number): PerformanceSnapshot[] {
+  private getRecentSnapshots(
+    agentId: string,
+    timeWindow: number,
+  ): PerformanceSnapshot[] {
     const allSnapshots = this.snapshots.get(agentId) || [];
     const cutoff = new Date(Date.now() - timeWindow);
-    
-    return allSnapshots.filter(snapshot => snapshot.timestamp >= cutoff);
+
+    return allSnapshots.filter((snapshot) => snapshot.timestamp >= cutoff);
   }
 
   private checkThresholds(snapshot: PerformanceSnapshot): Alert[] {
@@ -227,49 +253,107 @@ export class AgentPerformanceMonitor {
 
     // Response time alerts
     if (metrics.averageResponseTime > this.thresholds.responseTime.critical) {
-      alerts.push(this.createAlert('critical', 'Response time critical', 'averageResponseTime', 
-        this.thresholds.responseTime.critical, metrics.averageResponseTime, 'Investigate performance bottlenecks'));
-    } else if (metrics.averageResponseTime > this.thresholds.responseTime.warning) {
-      alerts.push(this.createAlert('warning', 'Response time elevated', 'averageResponseTime',
-        this.thresholds.responseTime.warning, metrics.averageResponseTime, 'Monitor for degradation'));
+      alerts.push(
+        this.createAlert(
+          "critical",
+          "Response time critical",
+          "averageResponseTime",
+          this.thresholds.responseTime.critical,
+          metrics.averageResponseTime,
+          "Investigate performance bottlenecks",
+        ),
+      );
+    } else if (
+      metrics.averageResponseTime > this.thresholds.responseTime.warning
+    ) {
+      alerts.push(
+        this.createAlert(
+          "warning",
+          "Response time elevated",
+          "averageResponseTime",
+          this.thresholds.responseTime.warning,
+          metrics.averageResponseTime,
+          "Monitor for degradation",
+        ),
+      );
     }
 
     // Error rate alerts
     if (metrics.errorRate > this.thresholds.errorRate.critical) {
-      alerts.push(this.createAlert('critical', 'Error rate critical', 'errorRate',
-        this.thresholds.errorRate.critical, metrics.errorRate, 'Immediate investigation required'));
+      alerts.push(
+        this.createAlert(
+          "critical",
+          "Error rate critical",
+          "errorRate",
+          this.thresholds.errorRate.critical,
+          metrics.errorRate,
+          "Immediate investigation required",
+        ),
+      );
     } else if (metrics.errorRate > this.thresholds.errorRate.warning) {
-      alerts.push(this.createAlert('warning', 'Error rate elevated', 'errorRate',
-        this.thresholds.errorRate.warning, metrics.errorRate, 'Review recent changes'));
+      alerts.push(
+        this.createAlert(
+          "warning",
+          "Error rate elevated",
+          "errorRate",
+          this.thresholds.errorRate.warning,
+          metrics.errorRate,
+          "Review recent changes",
+        ),
+      );
     }
 
     // Success rate alerts
     if (metrics.successRate < this.thresholds.successRate.critical) {
-      alerts.push(this.createAlert('critical', 'Success rate critical', 'successRate',
-        this.thresholds.successRate.critical, metrics.successRate, 'Investigate failures'));
+      alerts.push(
+        this.createAlert(
+          "critical",
+          "Success rate critical",
+          "successRate",
+          this.thresholds.successRate.critical,
+          metrics.successRate,
+          "Investigate failures",
+        ),
+      );
     }
 
     // Resource usage alerts
     if (metrics.memoryUsage > this.thresholds.resourceUsage.memory.critical) {
-      alerts.push(this.createAlert('critical', 'Memory usage critical', 'memoryUsage',
-        this.thresholds.resourceUsage.memory.critical, metrics.memoryUsage, 'Check for memory leaks'));
+      alerts.push(
+        this.createAlert(
+          "critical",
+          "Memory usage critical",
+          "memoryUsage",
+          this.thresholds.resourceUsage.memory.critical,
+          metrics.memoryUsage,
+          "Check for memory leaks",
+        ),
+      );
     }
 
     if (metrics.cpuUsage > this.thresholds.resourceUsage.cpu.critical) {
-      alerts.push(this.createAlert('critical', 'CPU usage critical', 'cpuUsage',
-        this.thresholds.resourceUsage.cpu.critical, metrics.cpuUsage, 'Optimize processing efficiency'));
+      alerts.push(
+        this.createAlert(
+          "critical",
+          "CPU usage critical",
+          "cpuUsage",
+          this.thresholds.resourceUsage.cpu.critical,
+          metrics.cpuUsage,
+          "Optimize processing efficiency",
+        ),
+      );
     }
 
     return alerts;
   }
 
   private createAlert(
-    level: Alert['level'],
+    level: Alert["level"],
     message: string,
     metric: string,
     threshold: number,
     current: number,
-    action: string
+    action: string,
   ): Alert {
     return {
       level,
@@ -277,7 +361,7 @@ export class AgentPerformanceMonitor {
       metric,
       threshold,
       current,
-      action
+      action,
     };
   }
 
@@ -285,7 +369,7 @@ export class AgentPerformanceMonitor {
     if (!this.alertHistory.has(agentId)) {
       this.alertHistory.set(agentId, []);
     }
-    
+
     const agentAlerts = this.alertHistory.get(agentId)!;
     agentAlerts.push(...alerts);
 
@@ -298,9 +382,9 @@ export class AgentPerformanceMonitor {
   private getActiveAlerts(agentId: string): Alert[] {
     const alerts = this.alertHistory.get(agentId) || [];
     const oneHourAgo = new Date(Date.now() - 3600000);
-    
+
     // Return alerts from the last hour
-    return alerts.filter(alert => {
+    return alerts.filter((alert) => {
       // Since alerts don't have timestamps in the interface, we'll return recent ones
       return true; // In real implementation, add timestamp to Alert interface
     });
@@ -308,20 +392,36 @@ export class AgentPerformanceMonitor {
 
   private identifyBottlenecks(snapshots: PerformanceSnapshot[]): string[] {
     const bottlenecks: string[] = [];
-    
+
     if (snapshots.length === 0) return bottlenecks;
 
-    const avgResponseTime = this.calculateAverage(snapshots, s => s.metrics.averageResponseTime);
-    const avgErrorRate = this.calculateAverage(snapshots, s => s.metrics.errorRate);
-    const avgMemoryUsage = this.calculateAverage(snapshots, s => s.metrics.memoryUsage);
-    const avgCpuUsage = this.calculateAverage(snapshots, s => s.metrics.cpuUsage);
+    const avgResponseTime = this.calculateAverage(
+      snapshots,
+      (s) => s.metrics.averageResponseTime,
+    );
+    const avgErrorRate = this.calculateAverage(
+      snapshots,
+      (s) => s.metrics.errorRate,
+    );
+    const avgMemoryUsage = this.calculateAverage(
+      snapshots,
+      (s) => s.metrics.memoryUsage,
+    );
+    const avgCpuUsage = this.calculateAverage(
+      snapshots,
+      (s) => s.metrics.cpuUsage,
+    );
 
     if (avgResponseTime > this.thresholds.responseTime.warning) {
-      bottlenecks.push(`Response time (${avgResponseTime.toFixed(1)}s) exceeds target`);
+      bottlenecks.push(
+        `Response time (${avgResponseTime.toFixed(1)}s) exceeds target`,
+      );
     }
 
     if (avgErrorRate > this.thresholds.errorRate.warning) {
-      bottlenecks.push(`Error rate (${(avgErrorRate * 100).toFixed(1)}%) above acceptable threshold`);
+      bottlenecks.push(
+        `Error rate (${(avgErrorRate * 100).toFixed(1)}%) above acceptable threshold`,
+      );
     }
 
     if (avgMemoryUsage > this.thresholds.resourceUsage.memory.warning) {
@@ -337,36 +437,47 @@ export class AgentPerformanceMonitor {
 
   private suggestOptimizations(snapshots: PerformanceSnapshot[]): string[] {
     const optimizations: string[] = [];
-    
+
     if (snapshots.length === 0) return optimizations;
 
-    const avgResponseTime = this.calculateAverage(snapshots, s => s.metrics.averageResponseTime);
-    const avgRetryRate = this.calculateAverage(snapshots, s => s.metrics.retryRate);
-    const avgMemoryUsage = this.calculateAverage(snapshots, s => s.metrics.memoryUsage);
+    const avgResponseTime = this.calculateAverage(
+      snapshots,
+      (s) => s.metrics.averageResponseTime,
+    );
+    const avgRetryRate = this.calculateAverage(
+      snapshots,
+      (s) => s.metrics.retryRate,
+    );
+    const avgMemoryUsage = this.calculateAverage(
+      snapshots,
+      (s) => s.metrics.memoryUsage,
+    );
 
     if (avgResponseTime > this.thresholds.responseTime.target) {
-      optimizations.push('Implement caching to reduce response times');
-      optimizations.push('Optimize query complexity and indexing');
+      optimizations.push("Implement caching to reduce response times");
+      optimizations.push("Optimize query complexity and indexing");
     }
 
     if (avgRetryRate > 0.05) {
-      optimizations.push('Improve error handling to reduce retry attempts');
-      optimizations.push('Add circuit breaker pattern for external dependencies');
+      optimizations.push("Improve error handling to reduce retry attempts");
+      optimizations.push(
+        "Add circuit breaker pattern for external dependencies",
+      );
     }
 
     if (avgMemoryUsage > this.thresholds.resourceUsage.memory.target) {
-      optimizations.push('Implement memory pooling for object reuse');
-      optimizations.push('Review data structures for memory efficiency');
+      optimizations.push("Implement memory pooling for object reuse");
+      optimizations.push("Review data structures for memory efficiency");
     }
 
     // Quality-based optimizations
     const latestQuality = snapshots[snapshots.length - 1].quality;
     if (latestQuality.maintainability.testability < 0.8) {
-      optimizations.push('Increase test coverage for better maintainability');
+      optimizations.push("Increase test coverage for better maintainability");
     }
 
     if (latestQuality.efficiency.timeBehavior < 0.8) {
-      optimizations.push('Profile and optimize algorithmic complexity');
+      optimizations.push("Profile and optimize algorithmic complexity");
     }
 
     return optimizations;
@@ -376,18 +487,18 @@ export class AgentPerformanceMonitor {
     if (snapshots.length < 10) return [];
 
     const trends: TrendAnalysis[] = [];
-    
+
     // Analyze response time trend
-    const responseTimes = snapshots.map(s => s.metrics.averageResponseTime);
-    trends.push(this.calculateTrend('averageResponseTime', responseTimes));
+    const responseTimes = snapshots.map((s) => s.metrics.averageResponseTime);
+    trends.push(this.calculateTrend("averageResponseTime", responseTimes));
 
     // Analyze error rate trend
-    const errorRates = snapshots.map(s => s.metrics.errorRate);
-    trends.push(this.calculateTrend('errorRate', errorRates));
+    const errorRates = snapshots.map((s) => s.metrics.errorRate);
+    trends.push(this.calculateTrend("errorRate", errorRates));
 
     // Analyze success rate trend
-    const successRates = snapshots.map(s => s.metrics.successRate);
-    trends.push(this.calculateTrend('successRate', successRates));
+    const successRates = snapshots.map((s) => s.metrics.successRate);
+    trends.push(this.calculateTrend("successRate", successRates));
 
     return trends;
   }
@@ -413,19 +524,19 @@ export class AgentPerformanceMonitor {
       const predicted = slope * x[i] + intercept;
       return sum + Math.pow(yi - predicted, 2);
     }, 0);
-    const rSquared = 1 - (ssResidual / ssTotal);
+    const rSquared = 1 - ssResidual / ssTotal;
 
     // Predict next value
     const prediction = slope * n + intercept;
 
-    let direction: TrendAnalysis['direction'];
+    let direction: TrendAnalysis["direction"];
     if (Math.abs(slope) < 0.01) {
-      direction = 'stable';
+      direction = "stable";
     } else {
-      direction = slope > 0 ? 'improving' : 'degrading';
+      direction = slope > 0 ? "improving" : "degrading";
       // Note: for metrics like errorRate, positive slope means degrading
-      if (metric === 'errorRate' || metric === 'averageResponseTime') {
-        direction = slope > 0 ? 'degrading' : 'improving';
+      if (metric === "errorRate" || metric === "averageResponseTime") {
+        direction = slope > 0 ? "degrading" : "improving";
       }
     }
 
@@ -433,52 +544,99 @@ export class AgentPerformanceMonitor {
       metric,
       direction,
       rate: Math.abs(slope),
-      prediction
+      prediction,
     };
   }
 
   private calculateHealthScore(snapshot: PerformanceSnapshot): number {
     const { metrics, quality } = snapshot;
-    
-    // Performance score (0-1)
-    const responseTimeScore = Math.max(0, 1 - (metrics.averageResponseTime / this.thresholds.responseTime.critical));
-    const errorRateScore = Math.max(0, 1 - (metrics.errorRate / this.thresholds.errorRate.critical));
-    const successRateScore = metrics.successRate;
-    const memoryScore = Math.max(0, 1 - (metrics.memoryUsage / this.thresholds.resourceUsage.memory.critical));
-    const cpuScore = Math.max(0, 1 - (metrics.cpuUsage / this.thresholds.resourceUsage.cpu.critical));
 
-    const performanceScore = (responseTimeScore + errorRateScore + successRateScore + memoryScore + cpuScore) / 5;
+    // Performance score (0-1)
+    const responseTimeScore = Math.max(
+      0,
+      1 - metrics.averageResponseTime / this.thresholds.responseTime.critical,
+    );
+    const errorRateScore = Math.max(
+      0,
+      1 - metrics.errorRate / this.thresholds.errorRate.critical,
+    );
+    const successRateScore = metrics.successRate;
+    const memoryScore = Math.max(
+      0,
+      1 - metrics.memoryUsage / this.thresholds.resourceUsage.memory.critical,
+    );
+    const cpuScore = Math.max(
+      0,
+      1 - metrics.cpuUsage / this.thresholds.resourceUsage.cpu.critical,
+    );
+
+    const performanceScore =
+      (responseTimeScore +
+        errorRateScore +
+        successRateScore +
+        memoryScore +
+        cpuScore) /
+      5;
 
     // Quality score (0-1)
-    const qualityScore = (
-      (quality.functionality.completeness + quality.functionality.correctness + quality.functionality.appropriateness) / 3 +
-      (quality.reliability.maturity + quality.reliability.availability + quality.reliability.faultTolerance + quality.reliability.recoverability) / 4 +
-      (quality.usability.understandability + quality.usability.learnability + quality.usability.operability) / 3 +
-      (quality.efficiency.timeBehavior + quality.efficiency.resourceUtilization) / 2 +
-      (quality.maintainability.analyzability + quality.maintainability.changeability + quality.maintainability.stability + quality.maintainability.testability) / 4
-    ) / 5;
+    const qualityScore =
+      ((quality.functionality.completeness +
+        quality.functionality.correctness +
+        quality.functionality.appropriateness) /
+        3 +
+        (quality.reliability.maturity +
+          quality.reliability.availability +
+          quality.reliability.faultTolerance +
+          quality.reliability.recoverability) /
+          4 +
+        (quality.usability.understandability +
+          quality.usability.learnability +
+          quality.usability.operability) /
+          3 +
+        (quality.efficiency.timeBehavior +
+          quality.efficiency.resourceUtilization) /
+          2 +
+        (quality.maintainability.analyzability +
+          quality.maintainability.changeability +
+          quality.maintainability.stability +
+          quality.maintainability.testability) /
+          4) /
+      5;
 
     // Combined health score (weighted average)
-    const healthScore = (performanceScore * 0.6) + (qualityScore * 0.4);
-    
+    const healthScore = performanceScore * 0.6 + qualityScore * 0.4;
+
     return Math.max(0, Math.min(1, healthScore));
   }
 
-  private calculateAverage(snapshots: PerformanceSnapshot[], selector: (s: PerformanceSnapshot) => number): number {
+  private calculateAverage(
+    snapshots: PerformanceSnapshot[],
+    selector: (s: PerformanceSnapshot) => number,
+  ): number {
     if (snapshots.length === 0) return 0;
-    return snapshots.reduce((sum, s) => sum + selector(s), 0) / snapshots.length;
+    return (
+      snapshots.reduce((sum, s) => sum + selector(s), 0) / snapshots.length
+    );
   }
 
-  private getTimeWindow(period: 'hour' | 'day' | 'week'): number {
+  private getTimeWindow(period: "hour" | "day" | "week"): number {
     switch (period) {
-      case 'hour': return 3600000;
-      case 'day': return 86400000;
-      case 'week': return 604800000;
-      default: return 3600000;
+      case "hour":
+        return 3600000;
+      case "day":
+        return 86400000;
+      case "week":
+        return 604800000;
+      default:
+        return 3600000;
     }
   }
 
-  private buildPerformanceReport(agentId: string, snapshots: PerformanceSnapshot[], period: string): string {
+  private buildPerformanceReport(
+    agentId: string,
+    snapshots: PerformanceSnapshot[],
+    period: string,
+  ): string {
     const latest = snapshots[snapshots.length - 1];
     const healthScore = this.calculateHealthScore(latest);
     const analysis = this.analyzePerformance(agentId).getValue();
@@ -497,19 +655,23 @@ export class AgentPerformanceMonitor {
 - **CPU Usage**: ${latest.metrics.cpuUsage.toFixed(1)}%
 
 ## Performance Analysis
-${analysis ? `
+${
+  analysis
+    ? `
 ### Bottlenecks
-${analysis.bottlenecks.map(b => `- ${b}`).join('\n')}
+${analysis.bottlenecks.map((b) => `- ${b}`).join("\n")}
 
 ### Optimization Suggestions
-${analysis.optimizations.map(o => `- ${o}`).join('\n')}
+${analysis.optimizations.map((o) => `- ${o}`).join("\n")}
 
 ### Trends
-${analysis.trends.map(t => `- **${t.metric}**: ${t.direction} (rate: ${t.rate.toFixed(3)})`).join('\n')}
+${analysis.trends.map((t) => `- **${t.metric}**: ${t.direction} (rate: ${t.rate.toFixed(3)})`).join("\n")}
 
 ### Active Alerts
-${analysis.alerts.map(a => `- **${a.level.toUpperCase()}**: ${a.message}`).join('\n')}
-` : 'No analysis available'}
+${analysis.alerts.map((a) => `- **${a.level.toUpperCase()}**: ${a.message}`).join("\n")}
+`
+    : "No analysis available"
+}
 
 ## Data Points
 Total snapshots analyzed: ${snapshots.length}
@@ -519,20 +681,25 @@ Time range: ${snapshots[0].timestamp.toISOString()} to ${latest.timestamp.toISOS
 
   private generatePerformancePrediction(
     historicalData: PerformanceSnapshot[],
-    horizon: number
+    horizon: number,
   ): AgentPerformanceMetrics {
     // Simple prediction based on trend analysis
-    const responseTimes = historicalData.map(s => s.metrics.averageResponseTime);
-    const errorRates = historicalData.map(s => s.metrics.errorRate);
-    const successRates = historicalData.map(s => s.metrics.successRate);
-    const memoryUsage = historicalData.map(s => s.metrics.memoryUsage);
-    const cpuUsage = historicalData.map(s => s.metrics.cpuUsage);
+    const responseTimes = historicalData.map(
+      (s) => s.metrics.averageResponseTime,
+    );
+    const errorRates = historicalData.map((s) => s.metrics.errorRate);
+    const successRates = historicalData.map((s) => s.metrics.successRate);
+    const memoryUsage = historicalData.map((s) => s.metrics.memoryUsage);
+    const cpuUsage = historicalData.map((s) => s.metrics.cpuUsage);
 
-    const responseTimeTrend = this.calculateTrend('averageResponseTime', responseTimes);
-    const errorRateTrend = this.calculateTrend('errorRate', errorRates);
-    const successRateTrend = this.calculateTrend('successRate', successRates);
-    const memoryTrend = this.calculateTrend('memoryUsage', memoryUsage);
-    const cpuTrend = this.calculateTrend('cpuUsage', cpuUsage);
+    const responseTimeTrend = this.calculateTrend(
+      "averageResponseTime",
+      responseTimes,
+    );
+    const errorRateTrend = this.calculateTrend("errorRate", errorRates);
+    const successRateTrend = this.calculateTrend("successRate", successRates);
+    const memoryTrend = this.calculateTrend("memoryUsage", memoryUsage);
+    const cpuTrend = this.calculateTrend("cpuUsage", cpuUsage);
 
     const latest = historicalData[historicalData.length - 1].metrics;
 
@@ -549,7 +716,7 @@ Time range: ${snapshots[0].timestamp.toISOString()} to ${latest.timestamp.toISOS
       apiCalls: latest.apiCalls, // Assume stable
       tasksCompleted: latest.tasksCompleted, // Assume stable
       userSatisfaction: latest.userSatisfaction, // Assume stable
-      valueDelivered: latest.valueDelivered // Assume stable
+      valueDelivered: latest.valueDelivered, // Assume stable
     };
   }
 }

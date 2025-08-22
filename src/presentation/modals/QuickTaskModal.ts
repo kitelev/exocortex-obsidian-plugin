@@ -1,29 +1,35 @@
-import { App, Modal, Setting, Notice } from 'obsidian';
-import { CreateTaskFromProjectUseCase } from '../../application/use-cases/CreateTaskFromProjectUseCase';
-import { GetCurrentProjectUseCase } from '../../application/use-cases/GetCurrentProjectUseCase';
-import { CreateTaskRequest, GetCurrentProjectResponse } from '../../application/dtos/CreateTaskRequest';
+import { App, Modal, Setting, Notice } from "obsidian";
+import { CreateTaskFromProjectUseCase } from "../../application/use-cases/CreateTaskFromProjectUseCase";
+import { GetCurrentProjectUseCase } from "../../application/use-cases/GetCurrentProjectUseCase";
+import {
+  CreateTaskRequest,
+  GetCurrentProjectResponse,
+} from "../../application/dtos/CreateTaskRequest";
 
 /**
  * Modal for quick task creation with project context
  * Provides streamlined UI for creating tasks linked to current project
  */
 export class QuickTaskModal extends Modal {
-  private taskTitle: string = '';
-  private taskDescription: string = '';
-  private taskPriority: 'low' | 'medium' | 'high' | 'urgent' = 'medium';
-  private taskStatus: 'todo' | 'in-progress' | 'done' | 'cancelled' = 'todo';
-  private taskDueDate: string = '';
+  private taskTitle: string = "";
+  private taskDescription: string = "";
+  private taskPriority: "low" | "medium" | "high" | "urgent" = "medium";
+  private taskStatus: "todo" | "in-progress" | "done" | "cancelled" = "todo";
+  private taskDueDate: string = "";
   private taskEstimatedHours: number | undefined;
   private taskTags: string[] = [];
-  private currentProject: GetCurrentProjectResponse['currentProject'] | undefined;
+  private currentProject:
+    | GetCurrentProjectResponse["currentProject"]
+    | undefined;
   private selectedProjectId: string | undefined;
-  private availableProjects: GetCurrentProjectResponse['availableProjects'] = [];
+  private availableProjects: GetCurrentProjectResponse["availableProjects"] =
+    [];
 
   constructor(
     app: App,
     private readonly createTaskUseCase: CreateTaskFromProjectUseCase,
     private readonly getCurrentProjectUseCase: GetCurrentProjectUseCase,
-    private readonly activeFile?: string
+    private readonly activeFile?: string,
   ) {
     super(app);
   }
@@ -33,17 +39,17 @@ export class QuickTaskModal extends Modal {
     contentEl.empty();
 
     // Add modal title
-    contentEl.createEl('h2', { text: 'Create New Task' });
+    contentEl.createEl("h2", { text: "Create New Task" });
 
     // Load current project context
     await this.loadProjectContext();
 
     // Project selection
     if (this.currentProject) {
-      const projectDiv = contentEl.createDiv({ cls: 'quick-task-project' });
-      projectDiv.createEl('div', { 
+      const projectDiv = contentEl.createDiv({ cls: "quick-task-project" });
+      projectDiv.createEl("div", {
         text: `Project: ${this.currentProject.title}`,
-        cls: 'quick-task-project-current'
+        cls: "quick-task-project-current",
       });
       this.selectedProjectId = this.currentProject.id;
     }
@@ -51,18 +57,15 @@ export class QuickTaskModal extends Modal {
     // Show available projects if multiple found
     if (this.availableProjects.length > 1) {
       new Setting(contentEl)
-        .setName('Project')
-        .setDesc('Select the project for this task')
-        .addDropdown(dropdown => {
+        .setName("Project")
+        .setDesc("Select the project for this task")
+        .addDropdown((dropdown) => {
           // Add empty option
-          dropdown.addOption('', 'No project');
-          
+          dropdown.addOption("", "No project");
+
           // Add all available projects
-          this.availableProjects.forEach(project => {
-            dropdown.addOption(
-              project.id,
-              project.title
-            );
+          this.availableProjects.forEach((project) => {
+            dropdown.addOption(project.id, project.title);
           });
 
           // Set current selection
@@ -70,7 +73,7 @@ export class QuickTaskModal extends Modal {
             dropdown.setValue(this.currentProject.id);
           }
 
-          dropdown.onChange(value => {
+          dropdown.onChange((value) => {
             this.selectedProjectId = value || undefined;
           });
         });
@@ -78,12 +81,12 @@ export class QuickTaskModal extends Modal {
 
     // Task title
     new Setting(contentEl)
-      .setName('Title')
-      .setDesc('Enter the task title (required)')
-      .addText(text => {
-        text.inputEl.addClass('quick-task-title-input');
-        text.setPlaceholder('Task title...');
-        text.onChange(value => {
+      .setName("Title")
+      .setDesc("Enter the task title (required)")
+      .addText((text) => {
+        text.inputEl.addClass("quick-task-title-input");
+        text.setPlaceholder("Task title...");
+        text.onChange((value) => {
           this.taskTitle = value;
         });
         // Focus on title input
@@ -94,115 +97,109 @@ export class QuickTaskModal extends Modal {
 
     // Task description
     new Setting(contentEl)
-      .setName('Description')
-      .setDesc('Optional task description')
-      .addTextArea(text => {
-        text.inputEl.addClass('quick-task-description-input');
-        text.setPlaceholder('Task description...');
+      .setName("Description")
+      .setDesc("Optional task description")
+      .addTextArea((text) => {
+        text.inputEl.addClass("quick-task-description-input");
+        text.setPlaceholder("Task description...");
         text.inputEl.rows = 3;
-        text.onChange(value => {
+        text.onChange((value) => {
           this.taskDescription = value;
         });
       });
 
     // Priority and Status row
-    const priorityStatusDiv = contentEl.createDiv({ cls: 'quick-task-row' });
+    const priorityStatusDiv = contentEl.createDiv({ cls: "quick-task-row" });
 
     // Priority
     new Setting(priorityStatusDiv)
-      .setName('Priority')
-      .addDropdown(dropdown => {
+      .setName("Priority")
+      .addDropdown((dropdown) => {
         dropdown
-          .addOption('low', '🟢 Low')
-          .addOption('medium', '🟡 Medium')
-          .addOption('high', '🟠 High')
-          .addOption('urgent', '🔴 Urgent')
+          .addOption("low", "🟢 Low")
+          .addOption("medium", "🟡 Medium")
+          .addOption("high", "🟠 High")
+          .addOption("urgent", "🔴 Urgent")
           .setValue(this.taskPriority)
-          .onChange(value => {
+          .onChange((value) => {
             this.taskPriority = value as any;
           });
       });
 
     // Status
-    new Setting(priorityStatusDiv)
-      .setName('Status')
-      .addDropdown(dropdown => {
-        dropdown
-          .addOption('todo', '📋 Todo')
-          .addOption('in-progress', '🔄 In Progress')
-          .addOption('done', '✅ Done')
-          .addOption('cancelled', '❌ Cancelled')
-          .setValue(this.taskStatus)
-          .onChange(value => {
-            this.taskStatus = value as any;
-          });
-      });
+    new Setting(priorityStatusDiv).setName("Status").addDropdown((dropdown) => {
+      dropdown
+        .addOption("todo", "📋 Todo")
+        .addOption("in-progress", "🔄 In Progress")
+        .addOption("done", "✅ Done")
+        .addOption("cancelled", "❌ Cancelled")
+        .setValue(this.taskStatus)
+        .onChange((value) => {
+          this.taskStatus = value as any;
+        });
+    });
 
     // Due date and estimated hours row
-    const dateHoursDiv = contentEl.createDiv({ cls: 'quick-task-row' });
+    const dateHoursDiv = contentEl.createDiv({ cls: "quick-task-row" });
 
     // Due date
-    new Setting(dateHoursDiv)
-      .setName('Due Date')
-      .addText(text => {
-        text.inputEl.type = 'date';
-        text.onChange(value => {
-          this.taskDueDate = value;
-        });
-        // Set default to tomorrow
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        text.setValue(tomorrow.toISOString().split('T')[0]);
-        this.taskDueDate = tomorrow.toISOString().split('T')[0];
+    new Setting(dateHoursDiv).setName("Due Date").addText((text) => {
+      text.inputEl.type = "date";
+      text.onChange((value) => {
+        this.taskDueDate = value;
       });
+      // Set default to tomorrow
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      text.setValue(tomorrow.toISOString().split("T")[0]);
+      this.taskDueDate = tomorrow.toISOString().split("T")[0];
+    });
 
     // Estimated hours
-    new Setting(dateHoursDiv)
-      .setName('Est. Hours')
-      .addText(text => {
-        text.inputEl.type = 'number';
-        text.inputEl.min = '0';
-        text.inputEl.step = '0.5';
-        text.setPlaceholder('0');
-        text.onChange(value => {
-          const hours = parseFloat(value);
-          this.taskEstimatedHours = isNaN(hours) ? undefined : hours;
-        });
+    new Setting(dateHoursDiv).setName("Est. Hours").addText((text) => {
+      text.inputEl.type = "number";
+      text.inputEl.min = "0";
+      text.inputEl.step = "0.5";
+      text.setPlaceholder("0");
+      text.onChange((value) => {
+        const hours = parseFloat(value);
+        this.taskEstimatedHours = isNaN(hours) ? undefined : hours;
       });
+    });
 
     // Tags
     new Setting(contentEl)
-      .setName('Tags')
-      .setDesc('Enter tags separated by commas')
-      .addText(text => {
-        text.inputEl.addClass('quick-task-tags-input');
-        text.setPlaceholder('tag1, tag2, tag3');
-        text.onChange(value => {
+      .setName("Tags")
+      .setDesc("Enter tags separated by commas")
+      .addText((text) => {
+        text.inputEl.addClass("quick-task-tags-input");
+        text.setPlaceholder("tag1, tag2, tag3");
+        text.onChange((value) => {
           this.taskTags = value
-            .split(',')
-            .map(tag => tag.trim())
-            .filter(tag => tag.length > 0);
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0);
         });
       });
 
     // Action buttons
-    const buttonDiv = contentEl.createDiv({ cls: 'quick-task-buttons' });
+    const buttonDiv = contentEl.createDiv({ cls: "quick-task-buttons" });
 
     // Create button
-    const createBtn = buttonDiv.createEl('button', {
-      text: 'Create Task',
-      cls: 'mod-cta'
+    const createBtn = buttonDiv.createEl("button", {
+      text: "Create Task",
+      cls: "mod-cta",
     });
-    createBtn.addEventListener('click', async () => {
+    createBtn.addEventListener("click", async () => {
       await this.createTask();
     });
 
     // Create and continue button
-    const createContinueBtn = buttonDiv.createEl('button', {
-      text: 'Create & Continue',
-      cls: 'mod-primary'
+    const createContinueBtn = buttonDiv.createEl("button", {
+      text: "Create & Continue",
+      cls: "mod-primary",
     });
-    createContinueBtn.addEventListener('click', async () => {
+    createContinueBtn.addEventListener("click", async () => {
       const success = await this.createTask();
       if (success) {
         // Clear form for next task
@@ -213,10 +210,10 @@ export class QuickTaskModal extends Modal {
     });
 
     // Cancel button
-    const cancelBtn = buttonDiv.createEl('button', {
-      text: 'Cancel'
+    const cancelBtn = buttonDiv.createEl("button", {
+      text: "Cancel",
     });
-    cancelBtn.addEventListener('click', () => {
+    cancelBtn.addEventListener("click", () => {
       this.close();
     });
 
@@ -224,8 +221,8 @@ export class QuickTaskModal extends Modal {
     this.addStyles();
 
     // Handle Enter key to create task
-    contentEl.addEventListener('keydown', async (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && e.ctrlKey) {
+    contentEl.addEventListener("keydown", async (e: KeyboardEvent) => {
+      if (e.key === "Enter" && e.ctrlKey) {
         await this.createTask();
       }
     });
@@ -246,8 +243,8 @@ export class QuickTaskModal extends Modal {
         preferences: {
           includeCompleted: false,
           maxResults: 10,
-          selectionStrategy: 'context'
-        }
+          selectionStrategy: "context",
+        },
       });
 
       if (response.success && response.currentProject) {
@@ -258,7 +255,7 @@ export class QuickTaskModal extends Modal {
         this.availableProjects = response.availableProjects;
       }
     } catch (error) {
-      console.error('Failed to load project context:', error);
+      console.error("Failed to load project context:", error);
     }
   }
 
@@ -268,7 +265,7 @@ export class QuickTaskModal extends Modal {
   private async createTask(): Promise<boolean> {
     // Validate required fields
     if (!this.taskTitle || this.taskTitle.trim().length === 0) {
-      new Notice('Task title is required');
+      new Notice("Task title is required");
       return false;
     }
 
@@ -284,8 +281,8 @@ export class QuickTaskModal extends Modal {
         estimatedHours: this.taskEstimatedHours,
         tags: this.taskTags,
         context: {
-          activeFile: this.activeFile
-        }
+          activeFile: this.activeFile,
+        },
       };
 
       // Execute use case
@@ -297,12 +294,12 @@ export class QuickTaskModal extends Modal {
         return true;
       } else {
         new Notice(`Failed to create task: ${response.message}`);
-        console.error('Task creation failed:', response.errors);
+        console.error("Task creation failed:", response.errors);
         return false;
       }
     } catch (error) {
       new Notice(`Error creating task: ${error.message}`);
-      console.error('Task creation error:', error);
+      console.error("Task creation error:", error);
       return false;
     }
   }
@@ -311,11 +308,11 @@ export class QuickTaskModal extends Modal {
    * Reset form fields
    */
   private resetForm() {
-    this.taskTitle = '';
-    this.taskDescription = '';
-    this.taskPriority = 'medium';
-    this.taskStatus = 'todo';
-    this.taskDueDate = '';
+    this.taskTitle = "";
+    this.taskDescription = "";
+    this.taskPriority = "medium";
+    this.taskStatus = "todo";
+    this.taskDueDate = "";
     this.taskEstimatedHours = undefined;
     this.taskTags = [];
     // Keep project context
@@ -325,7 +322,7 @@ export class QuickTaskModal extends Modal {
    * Add custom styles
    */
   private addStyles() {
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
       .quick-task-project {
         padding: 10px;

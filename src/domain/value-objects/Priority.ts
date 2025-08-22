@@ -1,10 +1,10 @@
-import { Result } from '../core/Result';
+import { Result } from "../core/Result";
 
 export enum PriorityLevel {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  URGENT = 'urgent'
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+  URGENT = "urgent",
 }
 
 type PriorityInput = string | PriorityLevel | null | undefined;
@@ -21,7 +21,7 @@ export class Priority {
     [PriorityLevel.LOW, 1],
     [PriorityLevel.MEDIUM, 2],
     [PriorityLevel.HIGH, 3],
-    [PriorityLevel.URGENT, 4]
+    [PriorityLevel.URGENT, 4],
   ]);
 
   private readonly level: PriorityLevel;
@@ -36,10 +36,12 @@ export class Priority {
       return Result.fail<Priority>(validationResult.getError());
     }
 
-    const normalizedLevel = this.normalizeValue(value as string | PriorityLevel);
+    const normalizedLevel = this.normalizeValue(
+      value as string | PriorityLevel,
+    );
     if (!this.isValidLevel(normalizedLevel)) {
       return Result.fail<Priority>(
-        `Priority must be one of: ${Array.from(this.VALID_LEVELS).join(', ')}`
+        `Priority must be one of: ${Array.from(this.VALID_LEVELS).join(", ")}`,
       );
     }
 
@@ -47,14 +49,14 @@ export class Priority {
   }
 
   private static validateInput(value: PriorityInput): Result<void> {
-    if (value === null || value === undefined || value === '') {
-      return Result.fail<void>('Priority cannot be empty');
+    if (value === null || value === undefined || value === "") {
+      return Result.fail<void>("Priority cannot be empty");
     }
     return Result.ok<void>(undefined);
   }
 
   private static normalizeValue(value: string | PriorityLevel): string {
-    return typeof value === 'string' ? value.toLowerCase().trim() : value;
+    return typeof value === "string" ? value.toLowerCase().trim() : value;
   }
 
   private static isValidLevel(value: string): value is PriorityLevel {

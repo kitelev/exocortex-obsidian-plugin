@@ -1,18 +1,21 @@
-import { App, TFile, Notice } from 'obsidian';
-import { ITaskRepository } from '../../domain/repositories/ITaskRepository';
-import { Task } from '../../domain/entities/Task';
-import { TaskId } from '../../domain/value-objects/TaskId';
-import { AssetId } from '../../domain/value-objects/AssetId';
-import { TaskStatus, TaskStatusType } from '../../domain/value-objects/TaskStatus';
-import { Priority, PriorityLevel } from '../../domain/value-objects/Priority';
-import { Result } from '../../domain/core/Result';
+import { App, TFile, Notice } from "obsidian";
+import { ITaskRepository } from "../../domain/repositories/ITaskRepository";
+import { Task } from "../../domain/entities/Task";
+import { TaskId } from "../../domain/value-objects/TaskId";
+import { AssetId } from "../../domain/value-objects/AssetId";
+import {
+  TaskStatus,
+  TaskStatusType,
+} from "../../domain/value-objects/TaskStatus";
+import { Priority, PriorityLevel } from "../../domain/value-objects/Priority";
+import { Result } from "../../domain/core/Result";
 
 /**
  * Obsidian-specific implementation of ITaskRepository
  * Manages task persistence using Obsidian vault files
  */
 export class ObsidianTaskRepository implements ITaskRepository {
-  private readonly tasksFolder = 'Tasks';
+  private readonly tasksFolder = "Tasks";
   private taskCache: Map<string, Task> = new Map();
 
   constructor(private readonly app: App) {}
@@ -129,7 +132,7 @@ export class ObsidianTaskRepository implements ITaskRepository {
         const metadata = this.app.metadataCache.getFileCache(file);
         if (metadata?.frontmatter?.dueDate) {
           const dueDate = new Date(metadata.frontmatter.dueDate);
-          if (dueDate < now && metadata.frontmatter.status !== 'done') {
+          if (dueDate < now && metadata.frontmatter.status !== "done") {
             const task = await this.loadTaskFromFile(file);
             if (task) {
               tasks.push(task);
@@ -198,21 +201,23 @@ export class ObsidianTaskRepository implements ITaskRepository {
     let tasks = await this.findAll();
 
     if (criteria.status) {
-      tasks = tasks.filter(t => t.getStatus().equals(criteria.status!));
+      tasks = tasks.filter((t) => t.getStatus().equals(criteria.status!));
     }
 
     if (criteria.priority) {
-      tasks = tasks.filter(t => t.getPriority().equals(criteria.priority!));
+      tasks = tasks.filter((t) => t.getPriority().equals(criteria.priority!));
     }
 
     if (criteria.projectId) {
-      tasks = tasks.filter(t => t.getProjectId()?.equals(criteria.projectId!));
+      tasks = tasks.filter((t) =>
+        t.getProjectId()?.equals(criteria.projectId!),
+      );
     }
 
     if (criteria.tags && criteria.tags.length > 0) {
-      tasks = tasks.filter(t => {
+      tasks = tasks.filter((t) => {
         const taskTags = t.getTags();
-        return criteria.tags!.some(tag => taskTags.includes(tag));
+        return criteria.tags!.some((tag) => taskTags.includes(tag));
       });
     }
 
@@ -230,14 +235,14 @@ export class ObsidianTaskRepository implements ITaskRepository {
 
       // Check if file already exists
       let file = this.app.vault.getAbstractFileByPath(filePath);
-      
+
       if (!file) {
         // Create new file
-        file = await this.app.vault.create(filePath, '');
+        file = await this.app.vault.create(filePath, "");
       }
 
       if (!(file instanceof TFile)) {
-        throw new Error('File path exists but is not a file');
+        throw new Error("File path exists but is not a file");
       }
 
       // Generate content
@@ -252,7 +257,7 @@ export class ObsidianTaskRepository implements ITaskRepository {
       // Show success notice
       new Notice(`Task "${task.getTitle()}" saved successfully`);
     } catch (error) {
-      console.error('Failed to save task:', error);
+      console.error("Failed to save task:", error);
       new Notice(`Failed to save task: ${error.message}`);
       throw error;
     }
@@ -260,14 +265,14 @@ export class ObsidianTaskRepository implements ITaskRepository {
 
   async delete(id: TaskId): Promise<void> {
     const files = this.app.vault.getMarkdownFiles();
-    
+
     for (const file of files) {
       if (file.path.startsWith(this.tasksFolder)) {
         const metadata = this.app.metadataCache.getFileCache(file);
         if (metadata?.frontmatter?.id === id.toString()) {
           await this.app.vault.delete(file);
           this.taskCache.delete(id.toString());
-          new Notice('Task deleted successfully');
+          new Notice("Task deleted successfully");
           return;
         }
       }
@@ -282,8 +287,10 @@ export class ObsidianTaskRepository implements ITaskRepository {
   }
 
   async findByFilename(filename: string): Promise<Task | null> {
-    const file = this.app.vault.getAbstractFileByPath(`${this.tasksFolder}/${filename}`);
-    
+    const file = this.app.vault.getAbstractFileByPath(
+      `${this.tasksFolder}/${filename}`,
+    );
+
     if (file instanceof TFile) {
       return await this.loadTaskFromFile(file);
     }
@@ -318,7 +325,7 @@ export class ObsidianTaskRepository implements ITaskRepository {
       dueToday: 0,
       dueThisWeek: 0,
       completed: 0,
-      averageCompletionTime: undefined as number | undefined
+      averageCompletionTime: undefined as number | undefined,
     };
 
     let completionTimes: number[] = [];
@@ -329,9 +336,9 @@ export class ObsidianTaskRepository implements ITaskRepository {
       stats.byStatus[status] = (stats.byStatus[status] || 0) + 1;
 
       // Count completed tasks
-      if (status === 'done') {
+      if (status === "done") {
         stats.completed++;
-        
+
         // Calculate completion time if we have both created and updated dates
         const createdAt = task.getCreatedAt();
         const updatedAt = task.getUpdatedAt();
@@ -348,7 +355,7 @@ export class ObsidianTaskRepository implements ITaskRepository {
       // Due date statistics
       const dueDate = task.getDueDate();
       if (dueDate) {
-        if (dueDate < now && task.getStatus().toString() !== 'done') {
+        if (dueDate < now && task.getStatus().toString() !== "done") {
           stats.overdue++;
         }
         if (dueDate >= today && dueDate < tomorrow) {
@@ -373,20 +380,22 @@ export class ObsidianTaskRepository implements ITaskRepository {
     const tasks = await this.findAll();
     const lowerQuery = query.toLowerCase();
 
-    return tasks.filter(task => {
+    return tasks.filter((task) => {
       const title = task.getTitle().toLowerCase();
-      const description = task.getDescription()?.toLowerCase() || '';
-      const tags = task.getTags().join(' ').toLowerCase();
+      const description = task.getDescription()?.toLowerCase() || "";
+      const tags = task.getTags().join(" ").toLowerCase();
 
-      return title.includes(lowerQuery) ||
-             description.includes(lowerQuery) ||
-             tags.includes(lowerQuery);
+      return (
+        title.includes(lowerQuery) ||
+        description.includes(lowerQuery) ||
+        tags.includes(lowerQuery)
+      );
     });
   }
 
   async findRecentlyUpdated(limit: number = 10): Promise<Task[]> {
     const tasks = await this.findAll();
-    
+
     return tasks
       .sort((a, b) => b.getUpdatedAt().getTime() - a.getUpdatedAt().getTime())
       .slice(0, limit);
@@ -394,7 +403,7 @@ export class ObsidianTaskRepository implements ITaskRepository {
 
   async findRecentlyCreated(limit: number = 10): Promise<Task[]> {
     const tasks = await this.findAll();
-    
+
     return tasks
       .sort((a, b) => b.getCreatedAt().getTime() - a.getCreatedAt().getTime())
       .slice(0, limit);
@@ -407,7 +416,7 @@ export class ObsidianTaskRepository implements ITaskRepository {
     try {
       const content = await this.app.vault.read(file);
       const metadata = this.app.metadataCache.getFileCache(file);
-      
+
       if (!metadata?.frontmatter?.id) {
         return null;
       }
@@ -415,14 +424,14 @@ export class ObsidianTaskRepository implements ITaskRepository {
       const fm = metadata.frontmatter;
 
       // Parse priority
-      const priorityResult = Priority.create(fm.priority || 'medium');
+      const priorityResult = Priority.create(fm.priority || "medium");
       if (priorityResult.isFailure) {
         console.warn(`Invalid priority in task ${fm.id}: ${fm.priority}`);
         return null;
       }
 
       // Parse status
-      const statusResult = TaskStatus.create(fm.status || 'todo');
+      const statusResult = TaskStatus.create(fm.status || "todo");
       if (statusResult.isFailure) {
         console.warn(`Invalid status in task ${fm.id}: ${fm.status}`);
         return null;
@@ -450,17 +459,17 @@ export class ObsidianTaskRepository implements ITaskRepository {
       }
 
       // Extract description from content (everything after frontmatter)
-      const contentLines = content.split('\n');
+      const contentLines = content.split("\n");
       let inFrontmatter = false;
-      let description = '';
-      
+      let description = "";
+
       for (const line of contentLines) {
-        if (line === '---') {
+        if (line === "---") {
           inFrontmatter = !inFrontmatter;
           continue;
         }
-        if (!inFrontmatter && line.trim() && !line.startsWith('#')) {
-          description += line + '\n';
+        if (!inFrontmatter && line.trim() && !line.startsWith("#")) {
+          description += line + "\n";
         }
       }
 
@@ -473,11 +482,13 @@ export class ObsidianTaskRepository implements ITaskRepository {
         projectId,
         dueDate,
         estimatedHours: fm.estimatedHours,
-        tags: fm.tags || []
+        tags: fm.tags || [],
       });
 
       if (taskResult.isFailure) {
-        console.warn(`Failed to create task from file ${file.path}: ${taskResult.error}`);
+        console.warn(
+          `Failed to create task from file ${file.path}: ${taskResult.error}`,
+        );
         return null;
       }
 
@@ -493,10 +504,10 @@ export class ObsidianTaskRepository implements ITaskRepository {
    */
   private generateTaskContent(task: Task): string {
     const frontmatter = task.toFrontmatter();
-    const description = task.getDescription() || '';
+    const description = task.getDescription() || "";
 
     // Build frontmatter YAML
-    let content = '---\n';
+    let content = "---\n";
     for (const [key, value] of Object.entries(frontmatter)) {
       if (value !== undefined && value !== null) {
         if (Array.isArray(value)) {
@@ -506,14 +517,14 @@ export class ObsidianTaskRepository implements ITaskRepository {
               content += `  - ${item}\n`;
             }
           }
-        } else if (typeof value === 'object') {
+        } else if (typeof value === "object") {
           content += `${key}: ${JSON.stringify(value)}\n`;
         } else {
           content += `${key}: ${value}\n`;
         }
       }
     }
-    content += '---\n\n';
+    content += "---\n\n";
 
     // Add title
     content += `# ${task.getTitle()}\n\n`;
@@ -524,18 +535,18 @@ export class ObsidianTaskRepository implements ITaskRepository {
     }
 
     // Add task details section
-    content += '## Details\n\n';
+    content += "## Details\n\n";
     content += `- **Status**: ${task.getStatus().toString()}\n`;
     content += `- **Priority**: ${task.getPriority().toString()}\n`;
-    
+
     if (task.getProjectId()) {
       content += `- **Project**: [[${task.getProjectId()?.toString()}]]\n`;
     }
-    
+
     if (task.getDueDate()) {
-      content += `- **Due Date**: ${task.getDueDate()?.toISOString().split('T')[0]}\n`;
+      content += `- **Due Date**: ${task.getDueDate()?.toISOString().split("T")[0]}\n`;
     }
-    
+
     if (task.getEstimatedHours()) {
       content += `- **Estimated Hours**: ${task.getEstimatedHours()}\n`;
     }
@@ -543,13 +554,13 @@ export class ObsidianTaskRepository implements ITaskRepository {
     // Add tags section
     const tags = task.getTags();
     if (tags.length > 0) {
-      content += '\n## Tags\n\n';
-      content += tags.map(tag => `#${tag}`).join(' ') + '\n';
+      content += "\n## Tags\n\n";
+      content += tags.map((tag) => `#${tag}`).join(" ") + "\n";
     }
 
     // Add notes section
-    content += '\n## Notes\n\n';
-    content += '_Add your notes here..._\n';
+    content += "\n## Notes\n\n";
+    content += "_Add your notes here..._\n";
 
     return content;
   }
@@ -569,8 +580,8 @@ export class ObsidianTaskRepository implements ITaskRepository {
    */
   private sanitizeFileName(title: string): string {
     return title
-      .replace(/[\\/:*?"<>|]/g, '-')
-      .replace(/\s+/g, ' ')
+      .replace(/[\\/:*?"<>|]/g, "-")
+      .replace(/\s+/g, " ")
       .trim()
       .substring(0, 100); // Limit length
   }

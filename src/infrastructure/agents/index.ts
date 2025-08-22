@@ -1,45 +1,56 @@
 // Core Agent Factory System
-export { AgentFactory } from './AgentFactory';
+export { AgentFactory } from "./AgentFactory";
 
 // Core Components
-export { AgentNecessityAnalyzer } from './core/AgentNecessityAnalyzer';
+export { AgentNecessityAnalyzer } from "./core/AgentNecessityAnalyzer";
 
 // Template System
-export { AgentTemplateSystem } from './templates/AgentTemplateSystem';
-export type { AgentTemplate, TemplateCategory, TemplateComponent, TemplateVariable, CompositeTemplate } from './templates/AgentTemplateSystem';
+export { AgentTemplateSystem } from "./templates/AgentTemplateSystem";
+export type {
+  AgentTemplate,
+  TemplateCategory,
+  TemplateComponent,
+  TemplateVariable,
+  CompositeTemplate,
+} from "./templates/AgentTemplateSystem";
 
 // Performance Monitoring
-export { AgentPerformanceMonitor } from './monitoring/AgentPerformanceMonitor';
-export type { PerformanceSnapshot, PerformanceContext, PerformanceThresholds, MetricTrend } from './monitoring/AgentPerformanceMonitor';
+export { AgentPerformanceMonitor } from "./monitoring/AgentPerformanceMonitor";
+export type {
+  PerformanceSnapshot,
+  PerformanceContext,
+  PerformanceThresholds,
+  MetricTrend,
+} from "./monitoring/AgentPerformanceMonitor";
 
 // Evolution Engine
-export { AgentEvolutionEngine } from './evolution/AgentEvolutionEngine';
-export type { 
-  EvolutionPattern, 
-  EvolutionContext, 
-  EvolutionProposal, 
+export { AgentEvolutionEngine } from "./evolution/AgentEvolutionEngine";
+export type {
+  EvolutionPattern,
+  EvolutionContext,
+  EvolutionProposal,
   AgentTransformation,
-  EvolutionInsights
-} from './evolution/AgentEvolutionEngine';
+  EvolutionInsights,
+} from "./evolution/AgentEvolutionEngine";
 
 // Orchestration
-export { AgentOrchestrator } from './orchestration/AgentOrchestrator';
-export type { 
-  OrchestrationPattern, 
-  ExecutionPlan, 
+export { AgentOrchestrator } from "./orchestration/AgentOrchestrator";
+export type {
+  OrchestrationPattern,
+  ExecutionPlan,
   ExecutionResult,
   OrchestrationRecommendations,
-  PatternAnalysis
-} from './orchestration/AgentOrchestrator';
+  PatternAnalysis,
+} from "./orchestration/AgentOrchestrator";
 
 // Lifecycle Management
-export { AgentLifecycleManager } from './lifecycle/AgentLifecycleManager';
-export type { 
-  StateTransition, 
-  StateConfiguration, 
+export { AgentLifecycleManager } from "./lifecycle/AgentLifecycleManager";
+export type {
+  StateTransition,
+  StateConfiguration,
   PromotionRecommendation,
-  LifecycleEvent
-} from './lifecycle/AgentLifecycleManager';
+  LifecycleEvent,
+} from "./lifecycle/AgentLifecycleManager";
 
 // Types
 export type {
@@ -50,19 +61,19 @@ export type {
   AgentSummary,
   TaskRequirements,
   CreateDecision,
-  
+
   // Performance Types
   AgentPerformanceMetrics,
   AgentQualityMetrics,
   PerformanceAnalysis,
   TrendAnalysis,
   Alert,
-  
+
   // Result Types
   ValidationResult,
   RegistrationResult,
   TransitionResult,
-  
+
   // Specification Types
   ResponsibilitySpec,
   StandardSpec,
@@ -72,17 +83,17 @@ export type {
   MetricSpec,
   BestPracticeSpec,
   AgentRequirements,
-  
+
   // Configuration Types
   PerformanceTarget,
   QualityThreshold,
   Constraint,
-  
+
   // Metrics Types
   GRASPMetrics,
   SOLIDMetrics,
-  SuccessCriteria
-} from './types/AgentTypes';
+  SuccessCriteria,
+} from "./types/AgentTypes";
 
 // Factory Configuration Types
 export type {
@@ -95,5 +106,5 @@ export type {
   SystemOverview,
   SystemPerformanceSummary,
   ActivitySummary,
-  SystemRecommendation
-} from './AgentFactory';
+  SystemRecommendation,
+} from "./AgentFactory";

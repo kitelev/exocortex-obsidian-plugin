@@ -1,4 +1,4 @@
-import { Result } from '../core/Result';
+import { Result } from "../core/Result";
 
 /**
  * Value object representing a unique asset identifier
@@ -13,17 +13,20 @@ export class AssetId {
 
   static create(value: string): Result<AssetId> {
     if (!value || value.trim().length === 0) {
-      return Result.fail<AssetId>('AssetId cannot be empty');
+      return Result.fail<AssetId>("AssetId cannot be empty");
     }
     return Result.ok<AssetId>(new AssetId(value));
   }
 
   static generate(): AssetId {
-    const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
+    const uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      (c) => {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      },
+    );
     return new AssetId(uuid);
   }
 

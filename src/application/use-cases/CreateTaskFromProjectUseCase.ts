@@ -1,16 +1,19 @@
-import { Task } from '../../domain/entities/Task';
-import { Asset } from '../../domain/entities/Asset';
-import { TaskId } from '../../domain/value-objects/TaskId';
-import { AssetId } from '../../domain/value-objects/AssetId';
-import { Priority } from '../../domain/value-objects/Priority';
-import { TaskStatus } from '../../domain/value-objects/TaskStatus';
-import { IAssetRepository } from '../../domain/repositories/IAssetRepository';
-import { ITaskRepository } from '../../domain/repositories/ITaskRepository';
-import { IndexedGraph } from '../../domain/semantic/core/IndexedGraph';
-import { Triple, IRI, Literal } from '../../domain/semantic/core/Triple';
-import { GetCurrentProjectUseCase } from './GetCurrentProjectUseCase';
-import { CreateTaskRequest, CreateTaskResponse } from '../dtos/CreateTaskRequest';
-import { Result } from '../../domain/core/Result';
+import { Task } from "../../domain/entities/Task";
+import { Asset } from "../../domain/entities/Asset";
+import { TaskId } from "../../domain/value-objects/TaskId";
+import { AssetId } from "../../domain/value-objects/AssetId";
+import { Priority } from "../../domain/value-objects/Priority";
+import { TaskStatus } from "../../domain/value-objects/TaskStatus";
+import { IAssetRepository } from "../../domain/repositories/IAssetRepository";
+import { ITaskRepository } from "../../domain/repositories/ITaskRepository";
+import { IndexedGraph } from "../../domain/semantic/core/IndexedGraph";
+import { Triple, IRI, Literal } from "../../domain/semantic/core/Triple";
+import { GetCurrentProjectUseCase } from "./GetCurrentProjectUseCase";
+import {
+  CreateTaskRequest,
+  CreateTaskResponse,
+} from "../dtos/CreateTaskRequest";
+import { Result } from "../../domain/core/Result";
 
 /**
  * Use case for creating tasks from project context
@@ -22,7 +25,7 @@ export class CreateTaskFromProjectUseCase {
     private readonly taskRepository: ITaskRepository,
     private readonly assetRepository: IAssetRepository,
     private readonly graph: IndexedGraph,
-    private readonly getCurrentProjectUseCase: GetCurrentProjectUseCase
+    private readonly getCurrentProjectUseCase: GetCurrentProjectUseCase,
   ) {}
 
   async execute(request: CreateTaskRequest): Promise<CreateTaskResponse> {
@@ -33,7 +36,7 @@ export class CreateTaskFromProjectUseCase {
         return {
           success: false,
           message: validationResult.error,
-          errors: { request: [validationResult.error] }
+          errors: { request: [validationResult.error] },
         };
       }
 
@@ -44,12 +47,15 @@ export class CreateTaskFromProjectUseCase {
       const projectContext = await this.resolveProjectContext(processedRequest);
 
       // Create the task
-      const taskResult = await this.createTask(processedRequest, projectContext);
+      const taskResult = await this.createTask(
+        processedRequest,
+        projectContext,
+      );
       if (taskResult.isFailure) {
         return {
           success: false,
           message: taskResult.error,
-          errors: { task: [taskResult.error] }
+          errors: { task: [taskResult.error] },
         };
       }
 
@@ -61,7 +67,7 @@ export class CreateTaskFromProjectUseCase {
       // Also save as asset for compatibility
       const saveResult = await this.saveTaskAsAsset(task, processedRequest);
       if (saveResult.isFailure) {
-        console.warn('Failed to save task as asset:', saveResult.error);
+        console.warn("Failed to save task as asset:", saveResult.error);
         // Continue - task repository save was successful
       }
 
@@ -79,17 +85,16 @@ export class CreateTaskFromProjectUseCase {
           status: task.getStatus().toString(),
           priority: task.getPriority().toString(),
           projectId: task.getProjectId()?.toString(),
-          dueDate: task.getDueDate()?.toISOString().split('T')[0],
-          tags: task.getTags()
+          dueDate: task.getDueDate()?.toISOString().split("T")[0],
+          tags: task.getTags(),
         },
-        rdfTriples
+        rdfTriples,
       };
-
     } catch (error) {
       return {
         success: false,
         message: `Failed to create task: ${error.message}`,
-        errors: { system: [error.message] }
+        errors: { system: [error.message] },
       };
     }
   }
@@ -101,36 +106,45 @@ export class CreateTaskFromProjectUseCase {
     const errors: string[] = [];
 
     if (!request.title || request.title.trim().length === 0) {
-      errors.push('Task title is required');
+      errors.push("Task title is required");
     }
 
     if (request.title && request.title.length > 200) {
-      errors.push('Task title cannot exceed 200 characters');
+      errors.push("Task title cannot exceed 200 characters");
     }
 
     if (request.estimatedHours !== undefined) {
-      if (typeof request.estimatedHours !== 'number' || request.estimatedHours < 0) {
-        errors.push('Estimated hours must be a non-negative number');
+      if (
+        typeof request.estimatedHours !== "number" ||
+        request.estimatedHours < 0
+      ) {
+        errors.push("Estimated hours must be a non-negative number");
       }
     }
 
     if (request.dueDate) {
       const dueDate = new Date(request.dueDate);
       if (isNaN(dueDate.getTime())) {
-        errors.push('Due date must be a valid date');
+        errors.push("Due date must be a valid date");
       }
     }
 
-    if (request.priority && !['low', 'medium', 'high', 'urgent'].includes(request.priority)) {
-      errors.push('Priority must be one of: low, medium, high, urgent');
+    if (
+      request.priority &&
+      !["low", "medium", "high", "urgent"].includes(request.priority)
+    ) {
+      errors.push("Priority must be one of: low, medium, high, urgent");
     }
 
-    if (request.status && !['todo', 'in-progress', 'done', 'cancelled'].includes(request.status)) {
-      errors.push('Status must be one of: todo, in-progress, done, cancelled');
+    if (
+      request.status &&
+      !["todo", "in-progress", "done", "cancelled"].includes(request.status)
+    ) {
+      errors.push("Status must be one of: todo, in-progress, done, cancelled");
     }
 
     if (errors.length > 0) {
-      return Result.fail<void>(errors.join('; '));
+      return Result.fail<void>(errors.join("; "));
     }
 
     return Result.ok<void>();
@@ -139,7 +153,9 @@ export class CreateTaskFromProjectUseCase {
   /**
    * Apply task template if specified
    */
-  private async applyTemplate(request: CreateTaskRequest): Promise<CreateTaskRequest> {
+  private async applyTemplate(
+    request: CreateTaskRequest,
+  ): Promise<CreateTaskRequest> {
     if (!request.templateId) {
       return request;
     }
@@ -148,13 +164,15 @@ export class CreateTaskFromProjectUseCase {
       // Load template from repository
       const templateId = AssetId.create(request.templateId);
       if (templateId.isFailure) {
-        console.warn('Invalid template ID:', request.templateId);
+        console.warn("Invalid template ID:", request.templateId);
         return request;
       }
 
-      const template = await this.assetRepository.findById(templateId.getValue());
+      const template = await this.assetRepository.findById(
+        templateId.getValue(),
+      );
       if (!template) {
-        console.warn('Template not found:', request.templateId);
+        console.warn("Template not found:", request.templateId);
         return request;
       }
 
@@ -162,20 +180,23 @@ export class CreateTaskFromProjectUseCase {
       const templateRequest = { ...request };
 
       // Override with template values if not explicitly set
-      if (!templateRequest.description && template.getProperty('description')) {
-        templateRequest.description = template.getProperty('description');
+      if (!templateRequest.description && template.getProperty("description")) {
+        templateRequest.description = template.getProperty("description");
       }
 
-      if (!templateRequest.priority && template.getProperty('priority')) {
-        templateRequest.priority = template.getProperty('priority');
+      if (!templateRequest.priority && template.getProperty("priority")) {
+        templateRequest.priority = template.getProperty("priority");
       }
 
-      if (!templateRequest.estimatedHours && template.getProperty('estimatedHours')) {
-        templateRequest.estimatedHours = template.getProperty('estimatedHours');
+      if (
+        !templateRequest.estimatedHours &&
+        template.getProperty("estimatedHours")
+      ) {
+        templateRequest.estimatedHours = template.getProperty("estimatedHours");
       }
 
       if (!templateRequest.tags || templateRequest.tags.length === 0) {
-        const templateTags = template.getProperty('tags');
+        const templateTags = template.getProperty("tags");
         if (templateTags && Array.isArray(templateTags)) {
           templateRequest.tags = templateTags;
         }
@@ -183,15 +204,21 @@ export class CreateTaskFromProjectUseCase {
 
       // Apply template variable substitution
       if (request.templateVariables) {
-        templateRequest.title = this.substituteVariables(templateRequest.title, request.templateVariables);
+        templateRequest.title = this.substituteVariables(
+          templateRequest.title,
+          request.templateVariables,
+        );
         if (templateRequest.description) {
-          templateRequest.description = this.substituteVariables(templateRequest.description, request.templateVariables);
+          templateRequest.description = this.substituteVariables(
+            templateRequest.description,
+            request.templateVariables,
+          );
         }
       }
 
       return templateRequest;
     } catch (error) {
-      console.warn('Failed to apply template:', error);
+      console.warn("Failed to apply template:", error);
       return request;
     }
   }
@@ -199,10 +226,13 @@ export class CreateTaskFromProjectUseCase {
   /**
    * Substitute template variables in text
    */
-  private substituteVariables(text: string, variables: Record<string, string>): string {
+  private substituteVariables(
+    text: string,
+    variables: Record<string, string>,
+  ): string {
     let result = text;
     for (const [key, value] of Object.entries(variables)) {
-      const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+      const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
       result = result.replace(regex, value);
     }
     return result;
@@ -211,12 +241,16 @@ export class CreateTaskFromProjectUseCase {
   /**
    * Resolve project context for task association
    */
-  private async resolveProjectContext(request: CreateTaskRequest): Promise<string | undefined> {
+  private async resolveProjectContext(
+    request: CreateTaskRequest,
+  ): Promise<string | undefined> {
     if (request.projectId) {
       // Validate provided project ID
       const projectId = AssetId.create(request.projectId);
       if (projectId.isSuccess) {
-        const project = await this.assetRepository.findById(projectId.getValue());
+        const project = await this.assetRepository.findById(
+          projectId.getValue(),
+        );
         if (project) {
           return request.projectId;
         }
@@ -229,8 +263,8 @@ export class CreateTaskFromProjectUseCase {
       preferences: {
         includeCompleted: false,
         maxResults: 5,
-        selectionStrategy: 'context'
-      }
+        selectionStrategy: "context",
+      },
     });
 
     return projectResponse.currentProject?.id;
@@ -241,7 +275,7 @@ export class CreateTaskFromProjectUseCase {
    */
   private async createTask(
     request: CreateTaskRequest,
-    projectId?: string
+    projectId?: string,
   ): Promise<Result<Task>> {
     // Parse priority
     let priority: Priority;
@@ -281,7 +315,7 @@ export class CreateTaskFromProjectUseCase {
     if (request.dueDate) {
       dueDate = new Date(request.dueDate);
       if (isNaN(dueDate.getTime())) {
-        return Result.fail<Task>('Invalid due date format');
+        return Result.fail<Task>("Invalid due date format");
       }
     }
 
@@ -294,21 +328,24 @@ export class CreateTaskFromProjectUseCase {
       projectId: taskProjectId,
       dueDate,
       estimatedHours: request.estimatedHours,
-      tags: request.tags || []
+      tags: request.tags || [],
     });
   }
 
   /**
    * Save task as an asset in the repository
    */
-  private async saveTaskAsAsset(task: Task, request: CreateTaskRequest): Promise<Result<void>> {
+  private async saveTaskAsAsset(
+    task: Task,
+    request: CreateTaskRequest,
+  ): Promise<Result<void>> {
     try {
       // Create asset from task
       const assetResult = Asset.create({
         id: AssetId.create(task.getId().toString()).getValue(),
         label: task.getTitle(),
-        className: ClassName.create('ems__Task').getValue(),
-        ontology: OntologyPrefix.create('ems').getValue(),
+        className: ClassName.create("ems__Task").getValue(),
+        ontology: OntologyPrefix.create("ems").getValue(),
         properties: {
           ...task.toFrontmatter(),
           // Add context information
@@ -316,13 +353,15 @@ export class CreateTaskFromProjectUseCase {
             activeFile: request.context?.activeFile,
             selection: request.context?.selection,
             focusContext: request.context?.focusContext,
-            timestamp: new Date().toISOString()
-          }
-        }
+            timestamp: new Date().toISOString(),
+          },
+        },
       });
 
       if (assetResult.isFailure) {
-        return Result.fail<void>(`Failed to create asset: ${assetResult.error}`);
+        return Result.fail<void>(
+          `Failed to create asset: ${assetResult.error}`,
+        );
       }
 
       const asset = assetResult.getValue();
@@ -339,46 +378,71 @@ export class CreateTaskFromProjectUseCase {
    */
   private async updateRDFGraph(
     task: Task,
-    projectId?: string
-  ): Promise<CreateTaskResponse['rdfTriples']> {
-    const triples: CreateTaskResponse['rdfTriples'] = [];
+    projectId?: string,
+  ): Promise<CreateTaskResponse["rdfTriples"]> {
+    const triples: CreateTaskResponse["rdfTriples"] = [];
     const taskIRI = this.ensureValidIRI(task.getId().toString());
 
     try {
       // Add basic task triples
-      this.addTriple(triples, taskIRI, 'rdf:type', 'ems:Task');
-      this.addTriple(triples, taskIRI, 'ems:title', task.getTitle());
-      this.addTriple(triples, taskIRI, 'ems:status', task.getStatus().toString());
-      this.addTriple(triples, taskIRI, 'ems:priority', task.getPriority().toString());
-      this.addTriple(triples, taskIRI, 'ems:createdAt', task.getCreatedAt().toISOString());
-      this.addTriple(triples, taskIRI, 'ems:updatedAt', task.getUpdatedAt().toISOString());
+      this.addTriple(triples, taskIRI, "rdf:type", "ems:Task");
+      this.addTriple(triples, taskIRI, "ems:title", task.getTitle());
+      this.addTriple(
+        triples,
+        taskIRI,
+        "ems:status",
+        task.getStatus().toString(),
+      );
+      this.addTriple(
+        triples,
+        taskIRI,
+        "ems:priority",
+        task.getPriority().toString(),
+      );
+      this.addTriple(
+        triples,
+        taskIRI,
+        "ems:createdAt",
+        task.getCreatedAt().toISOString(),
+      );
+      this.addTriple(
+        triples,
+        taskIRI,
+        "ems:updatedAt",
+        task.getUpdatedAt().toISOString(),
+      );
 
       // Add optional properties
       const description = task.getDescription();
       if (description) {
-        this.addTriple(triples, taskIRI, 'ems:description', description);
+        this.addTriple(triples, taskIRI, "ems:description", description);
       }
 
       const dueDate = task.getDueDate();
       if (dueDate) {
-        this.addTriple(triples, taskIRI, 'ems:dueDate', dueDate.toISOString());
+        this.addTriple(triples, taskIRI, "ems:dueDate", dueDate.toISOString());
       }
 
       const estimatedHours = task.getEstimatedHours();
       if (estimatedHours !== undefined) {
-        this.addTriple(triples, taskIRI, 'ems:estimatedHours', estimatedHours.toString());
+        this.addTriple(
+          triples,
+          taskIRI,
+          "ems:estimatedHours",
+          estimatedHours.toString(),
+        );
       }
 
       // Add project relationship
       if (projectId) {
         const projectIRI = this.ensureValidIRI(projectId);
-        this.addTriple(triples, taskIRI, 'ems:belongsToProject', projectIRI);
-        this.addTriple(triples, projectIRI, 'ems:hasTask', taskIRI);
+        this.addTriple(triples, taskIRI, "ems:belongsToProject", projectIRI);
+        this.addTriple(triples, projectIRI, "ems:hasTask", taskIRI);
       }
 
       // Add tags
       for (const tag of task.getTags()) {
-        this.addTriple(triples, taskIRI, 'ems:hasTag', tag);
+        this.addTriple(triples, taskIRI, "ems:hasTag", tag);
       }
 
       // Add all triples to graph
@@ -387,23 +451,23 @@ export class CreateTaskFromProjectUseCase {
           // Ensure valid IRI format for subjects and predicates
           const subjectIRI = this.ensureValidIRI(tripleData.subject);
           const predicateIRI = this.ensureValidIRI(tripleData.predicate);
-          
+
           const triple = new Triple(
             new IRI(subjectIRI),
             new IRI(predicateIRI),
-            tripleData.object.startsWith('"') 
+            tripleData.object.startsWith('"')
               ? new Literal(tripleData.object.slice(1, -1))
-              : new IRI(this.ensureValidIRI(tripleData.object))
+              : new IRI(this.ensureValidIRI(tripleData.object)),
           );
           this.graph.add(triple);
         } catch (error) {
-          console.warn('Failed to create triple:', tripleData, error);
+          console.warn("Failed to create triple:", tripleData, error);
         }
       }
 
       return triples;
     } catch (error) {
-      console.warn('Failed to update RDF graph:', error);
+      console.warn("Failed to update RDF graph:", error);
       return [];
     }
   }
@@ -412,10 +476,10 @@ export class CreateTaskFromProjectUseCase {
    * Helper method to add triple data
    */
   private addTriple(
-    triples: CreateTaskResponse['rdfTriples'],
+    triples: CreateTaskResponse["rdfTriples"],
     subject: string,
     predicate: string,
-    object: string
+    object: string,
   ): void {
     if (!triples) {
       return;
@@ -423,7 +487,10 @@ export class CreateTaskFromProjectUseCase {
     triples.push({
       subject,
       predicate,
-      object: object.includes(' ') || object.includes(':') === false ? `"${object}"` : object
+      object:
+        object.includes(" ") || object.includes(":") === false
+          ? `"${object}"`
+          : object,
     });
   }
 
@@ -432,20 +499,24 @@ export class CreateTaskFromProjectUseCase {
    */
   private ensureValidIRI(value: string): string {
     // If it looks like a UUID, wrap it in a namespace
-    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) {
+    if (
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        value,
+      )
+    ) {
       return `ems:${value}`;
     }
-    
+
     // If it already has a scheme or namespace, return as-is
-    if (value.includes(':')) {
+    if (value.includes(":")) {
       return value;
     }
-    
+
     // Otherwise, add default namespace
     return `ems:${value}`;
   }
 }
 
 // Import required classes that might be missing
-import { ClassName } from '../../domain/value-objects/ClassName';
-import { OntologyPrefix } from '../../domain/value-objects/OntologyPrefix';
+import { ClassName } from "../../domain/value-objects/ClassName";
+import { OntologyPrefix } from "../../domain/value-objects/OntologyPrefix";

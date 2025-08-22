@@ -1,5 +1,5 @@
-import { Ontology } from '../entities/Ontology';
-import { OntologyPrefix } from '../value-objects/OntologyPrefix';
+import { Ontology } from "../entities/Ontology";
+import { OntologyPrefix } from "../value-objects/OntologyPrefix";
 
 /**
  * Repository interface for Ontology persistence

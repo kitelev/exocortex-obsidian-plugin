@@ -1,4 +1,4 @@
-import { Result } from '../core/Result';
+import { Result } from "../core/Result";
 
 /**
  * Value object representing an ontology prefix
@@ -13,13 +13,15 @@ export class OntologyPrefix {
 
   static create(value: string): Result<OntologyPrefix> {
     if (!value || value.trim().length === 0) {
-      return Result.fail<OntologyPrefix>('OntologyPrefix cannot be empty');
+      return Result.fail<OntologyPrefix>("OntologyPrefix cannot be empty");
     }
-    
+
     if (!/^[a-z][a-z0-9]*$/.test(value)) {
-      return Result.fail<OntologyPrefix>(`Invalid ontology prefix format: ${value}. Must be lowercase alphanumeric starting with a letter`);
+      return Result.fail<OntologyPrefix>(
+        `Invalid ontology prefix format: ${value}. Must be lowercase alphanumeric starting with a letter`,
+      );
     }
-    
+
     return Result.ok<OntologyPrefix>(new OntologyPrefix(value));
   }
 

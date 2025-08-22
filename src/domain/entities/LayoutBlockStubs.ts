@@ -2,46 +2,46 @@
 // These are not functional - only dynamic-backlinks is supported
 
 export interface QueryBlockConfig {
-    type: 'query';
-    [key: string]: any;
+  type: "query";
+  [key: string]: any;
 }
 
 export interface PropertiesBlockConfig {
-    type: 'properties';
-    [key: string]: any;
+  type: "properties";
+  [key: string]: any;
 }
 
 export interface BacklinksBlockConfig {
-    type: 'backlinks';
-    [key: string]: any;
+  type: "backlinks";
+  [key: string]: any;
 }
 
 export interface ChildrenEffortsBlockConfig {
-    type: 'children-efforts';
-    [key: string]: any;
+  type: "children-efforts";
+  [key: string]: any;
 }
 
 export interface ButtonsBlockConfig {
-    type: 'buttons';
-    [key: string]: any;
+  type: "buttons";
+  [key: string]: any;
 }
 
 export interface CustomBlockConfig {
-    type: 'custom';
-    [key: string]: any;
+  type: "custom";
+  [key: string]: any;
 }
 
 export interface NarrowerBlockConfig {
-    type: 'narrower';
-    [key: string]: any;
+  type: "narrower";
+  [key: string]: any;
 }
 
 export interface InstancesBlockConfig {
-    type: 'instances';
-    [key: string]: any;
+  type: "instances";
+  [key: string]: any;
 }
 
 export interface QueryEngineQuery {
-    query: string;
-    [key: string]: any;
+  query: string;
+  [key: string]: any;
 }

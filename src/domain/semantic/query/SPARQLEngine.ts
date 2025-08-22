@@ -3,9 +3,9 @@
  * Implements a subset of SPARQL 1.1 for knowledge object queries
  */
 
-import { Graph, Node, Subject, Predicate, Object } from '../core/Graph';
-import { Triple, IRI, BlankNode, Literal } from '../core/Triple';
-import { Result } from '../../core/Result';
+import { Graph, Node, Subject, Predicate, Object } from "../core/Graph";
+import { Triple, IRI, BlankNode, Literal } from "../core/Triple";
+import { Result } from "../../core/Result";
 
 export interface BindingSet {
   [variable: string]: Node;
@@ -46,7 +46,7 @@ export class SPARQLEngine {
 
       return Result.ok({
         variables,
-        bindings
+        bindings,
       });
     } catch (error) {
       return Result.fail(`Query execution failed: ${error.message}`);
@@ -120,7 +120,7 @@ export class SPARQLEngine {
     const selectMatch = query.match(/SELECT\s+(.*?)\s+WHERE/i);
     if (selectMatch) {
       const varString = selectMatch[1];
-      if (varString === '*') {
+      if (varString === "*") {
         // Will extract all variables from patterns
       } else {
         const varMatches = varString.matchAll(/\?(\w+)/g);
@@ -133,7 +133,7 @@ export class SPARQLEngine {
     // Extract WHERE clause
     const whereMatch = query.match(/WHERE\s*\{(.*?)\}/is);
     if (!whereMatch) {
-      return Result.fail('Invalid query: missing WHERE clause');
+      return Result.fail("Invalid query: missing WHERE clause");
     }
 
     const whereClause = whereMatch[1];
@@ -143,18 +143,18 @@ export class SPARQLEngine {
       const trimmed = line.trim();
       if (!trimmed) continue;
 
-      if (trimmed.startsWith('FILTER')) {
+      if (trimmed.startsWith("FILTER")) {
         filters.push(trimmed);
       } else {
         // Parse triple pattern
         const parts = this.parseTriplePattern(trimmed);
         if (parts) {
           patterns.push(parts);
-          
+
           // Extract variables if SELECT *
-          if (selectMatch && selectMatch[1] === '*') {
+          if (selectMatch && selectMatch[1] === "*") {
             for (const part of [parts.subject, parts.predicate, parts.object]) {
-              if (typeof part === 'string' && part.startsWith('?')) {
+              if (typeof part === "string" && part.startsWith("?")) {
                 const varName = part.substring(1);
                 if (!variables.includes(varName)) {
                   variables.push(varName);
@@ -184,7 +184,7 @@ export class SPARQLEngine {
     // Extract CONSTRUCT template
     const constructMatch = query.match(/CONSTRUCT\s*\{(.*?)\}\s*WHERE/is);
     if (!constructMatch) {
-      return Result.fail('Invalid CONSTRUCT query');
+      return Result.fail("Invalid CONSTRUCT query");
     }
 
     const templateClause = constructMatch[1];
@@ -203,7 +203,7 @@ export class SPARQLEngine {
     // Extract WHERE clause
     const whereMatch = query.match(/WHERE\s*\{(.*?)\}/is);
     if (!whereMatch) {
-      return Result.fail('Invalid query: missing WHERE clause');
+      return Result.fail("Invalid query: missing WHERE clause");
     }
 
     const whereClause = whereMatch[1];
@@ -213,7 +213,7 @@ export class SPARQLEngine {
       const trimmed = line.trim();
       if (!trimmed) continue;
 
-      if (trimmed.startsWith('FILTER')) {
+      if (trimmed.startsWith("FILTER")) {
         filters.push(trimmed);
       } else {
         const parts = this.parseTriplePattern(trimmed);
@@ -231,14 +231,14 @@ export class SPARQLEngine {
    */
   private parseTriplePattern(pattern: string): TriplePattern | null {
     // Remove trailing period if present
-    pattern = pattern.replace(/\s*\.\s*$/, '');
-    
+    pattern = pattern.replace(/\s*\.\s*$/, "");
+
     // Simple pattern: subject predicate object
     const parts = pattern.split(/\s+/);
     if (parts.length < 3) return null;
 
     const [subjectStr, predicateStr, ...objectParts] = parts;
-    const objectStr = objectParts.join(' ');
+    const objectStr = objectParts.join(" ");
 
     const subject = this.parseNode(subjectStr);
     const predicate = this.parseNode(predicateStr);
@@ -251,10 +251,10 @@ export class SPARQLEngine {
     const predicateNode = predicate as string | IRI;
     const objectNode = object as string | IRI | BlankNode | Literal;
 
-    return { 
-      subject: subjectNode, 
-      predicate: predicateNode, 
-      object: objectNode 
+    return {
+      subject: subjectNode,
+      predicate: predicateNode,
+      object: objectNode,
     };
   }
 
@@ -265,17 +265,17 @@ export class SPARQLEngine {
     if (!str) return null;
 
     // Variable
-    if (str.startsWith('?')) {
+    if (str.startsWith("?")) {
       return str;
     }
 
     // IRI in angle brackets
-    if (str.startsWith('<') && str.endsWith('>')) {
+    if (str.startsWith("<") && str.endsWith(">")) {
       return new IRI(str.substring(1, str.length - 1));
     }
 
     // Prefixed IRI
-    if (str.includes(':') && !str.startsWith('"')) {
+    if (str.includes(":") && !str.startsWith('"')) {
       // For simplicity, expand common prefixes
       const expanded = this.expandPrefix(str);
       return new IRI(expanded);
@@ -288,15 +288,15 @@ export class SPARQLEngine {
 
     // Number literal
     if (!isNaN(Number(str))) {
-      if (str.includes('.')) {
+      if (str.includes(".")) {
         return Literal.double(parseFloat(str));
       }
       return Literal.integer(parseInt(str, 10));
     }
 
     // Boolean literal
-    if (str === 'true' || str === 'false') {
-      return Literal.boolean(str === 'true');
+    if (str === "true" || str === "false") {
+      return Literal.boolean(str === "true");
     }
 
     // Default to IRI
@@ -308,13 +308,13 @@ export class SPARQLEngine {
    */
   private expandPrefix(prefixed: string): string {
     const prefixMap: Record<string, string> = {
-      'rdf:': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-      'rdfs:': 'http://www.w3.org/2000/01/rdf-schema#',
-      'owl:': 'http://www.w3.org/2002/07/owl#',
-      'xsd:': 'http://www.w3.org/2001/XMLSchema#',
-      'exo:': 'https://exocortex.io/ontology/core#',
-      'ems:': 'https://exocortex.io/ontology/ems#',
-      'ims:': 'https://exocortex.io/ontology/ims#'
+      "rdf:": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+      "rdfs:": "http://www.w3.org/2000/01/rdf-schema#",
+      "owl:": "http://www.w3.org/2002/07/owl#",
+      "xsd:": "http://www.w3.org/2001/XMLSchema#",
+      "exo:": "https://exocortex.io/ontology/core#",
+      "ems:": "https://exocortex.io/ontology/ems#",
+      "ims:": "https://exocortex.io/ontology/ims#",
     };
 
     for (const [prefix, namespace] of Object.entries(prefixMap)) {
@@ -329,7 +329,10 @@ export class SPARQLEngine {
   /**
    * Evaluate triple patterns and return bindings
    */
-  private evaluatePatterns(patterns: TriplePattern[], filters: string[]): BindingSet[] {
+  private evaluatePatterns(
+    patterns: TriplePattern[],
+    filters: string[],
+  ): BindingSet[] {
     if (patterns.length === 0) {
       return [{}];
     }
@@ -360,7 +363,10 @@ export class SPARQLEngine {
   /**
    * Match a single pattern against the graph with existing bindings
    */
-  private matchPattern(pattern: TriplePattern, binding: BindingSet): BindingSet[] {
+  private matchPattern(
+    pattern: TriplePattern,
+    binding: BindingSet,
+  ): BindingSet[] {
     const results: BindingSet[] = [];
 
     // Resolve pattern with existing bindings
@@ -372,14 +378,21 @@ export class SPARQLEngine {
     const triples = this.graph.match(
       subject instanceof IRI || subject instanceof BlankNode ? subject : null,
       predicate instanceof IRI ? predicate : null,
-      object instanceof IRI || object instanceof BlankNode || object instanceof Literal ? object : null
+      object instanceof IRI ||
+        object instanceof BlankNode ||
+        object instanceof Literal
+        ? object
+        : null,
     );
 
     for (const triple of triples) {
       const newBinding: BindingSet = {};
 
       // Bind subject variable
-      if (typeof pattern.subject === 'string' && pattern.subject.startsWith('?')) {
+      if (
+        typeof pattern.subject === "string" &&
+        pattern.subject.startsWith("?")
+      ) {
         const varName = pattern.subject.substring(1);
         if (binding[varName]) {
           if (!this.nodesEqual(binding[varName], triple.getSubject())) {
@@ -391,7 +404,10 @@ export class SPARQLEngine {
       }
 
       // Bind predicate variable
-      if (typeof pattern.predicate === 'string' && pattern.predicate.startsWith('?')) {
+      if (
+        typeof pattern.predicate === "string" &&
+        pattern.predicate.startsWith("?")
+      ) {
         const varName = pattern.predicate.substring(1);
         if (binding[varName]) {
           if (!this.nodesEqual(binding[varName], triple.getPredicate())) {
@@ -403,7 +419,10 @@ export class SPARQLEngine {
       }
 
       // Bind object variable
-      if (typeof pattern.object === 'string' && pattern.object.startsWith('?')) {
+      if (
+        typeof pattern.object === "string" &&
+        pattern.object.startsWith("?")
+      ) {
         const varName = pattern.object.substring(1);
         if (binding[varName]) {
           if (!this.nodesEqual(binding[varName], triple.getObject())) {
@@ -425,9 +444,9 @@ export class SPARQLEngine {
    */
   private resolvePatternNode(
     node: string | IRI | BlankNode | Literal,
-    binding: BindingSet
+    binding: BindingSet,
   ): Node | null {
-    if (typeof node === 'string' && node.startsWith('?')) {
+    if (typeof node === "string" && node.startsWith("?")) {
       const varName = node.substring(1);
       return binding[varName] || null;
     }
@@ -447,7 +466,7 @@ export class SPARQLEngine {
 
     const expression = match[1];
 
-    return bindings.filter(binding => {
+    return bindings.filter((binding) => {
       // Very basic filter evaluation
       // This is a placeholder for demonstration
       return this.evaluateFilterExpression(expression, binding);
@@ -457,12 +476,17 @@ export class SPARQLEngine {
   /**
    * Evaluate a filter expression
    */
-  private evaluateFilterExpression(expression: string, binding: BindingSet): boolean {
+  private evaluateFilterExpression(
+    expression: string,
+    binding: BindingSet,
+  ): boolean {
     // This is a simplified implementation
     // In production, use a proper expression parser/evaluator
 
     // Handle basic comparisons
-    const comparisonMatch = expression.match(/\?(\w+)\s*(>|<|>=|<=|=|!=)\s*(.+)/);
+    const comparisonMatch = expression.match(
+      /\?(\w+)\s*(>|<|>=|<=|=|!=)\s*(.+)/,
+    );
     if (comparisonMatch) {
       const [, varName, operator, valueStr] = comparisonMatch;
       const varValue = binding[varName];
@@ -489,8 +513,8 @@ export class SPARQLEngine {
     if (!isNaN(Number(str))) {
       return Number(str);
     }
-    if (str === 'true' || str === 'false') {
-      return str === 'true';
+    if (str === "true" || str === "false") {
+      return str === "true";
     }
     return str;
   }
@@ -498,21 +522,25 @@ export class SPARQLEngine {
   /**
    * Compare two literals
    */
-  private compareLiterals(literal: Literal, operator: string, value: any): boolean {
+  private compareLiterals(
+    literal: Literal,
+    operator: string,
+    value: any,
+  ): boolean {
     const litValue = literal.getValue();
 
     switch (operator) {
-      case '>':
+      case ">":
         return litValue > value;
-      case '<':
+      case "<":
         return litValue < value;
-      case '>=':
+      case ">=":
         return litValue >= value;
-      case '<=':
+      case "<=":
         return litValue <= value;
-      case '=':
+      case "=":
         return litValue === value;
-      case '!=':
+      case "!=":
         return litValue !== value;
       default:
         return false;
@@ -538,7 +566,10 @@ export class SPARQLEngine {
   /**
    * Instantiate a pattern with bindings to create a triple
    */
-  private instantiatePattern(pattern: TriplePattern, binding: BindingSet): Triple | null {
+  private instantiatePattern(
+    pattern: TriplePattern,
+    binding: BindingSet,
+  ): Triple | null {
     const subject = this.resolvePatternNode(pattern.subject, binding);
     const predicate = this.resolvePatternNode(pattern.predicate, binding);
     const object = this.resolvePatternNode(pattern.object, binding);
@@ -546,7 +577,9 @@ export class SPARQLEngine {
     if (
       (subject instanceof IRI || subject instanceof BlankNode) &&
       predicate instanceof IRI &&
-      (object instanceof IRI || object instanceof BlankNode || object instanceof Literal)
+      (object instanceof IRI ||
+        object instanceof BlankNode ||
+        object instanceof Literal)
     ) {
       return new Triple(subject, predicate, object);
     }
@@ -569,11 +602,11 @@ export class SPARQLBuilder {
 
   constructor() {
     // Add default prefixes
-    this.prefix('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
-    this.prefix('rdfs', 'http://www.w3.org/2000/01/rdf-schema#');
-    this.prefix('exo', 'https://exocortex.io/ontology/core#');
-    this.prefix('ems', 'https://exocortex.io/ontology/ems#');
-    this.prefix('ims', 'https://exocortex.io/ontology/ims#');
+    this.prefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+    this.prefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
+    this.prefix("exo", "https://exocortex.io/ontology/core#");
+    this.prefix("ems", "https://exocortex.io/ontology/ems#");
+    this.prefix("ims", "https://exocortex.io/ontology/ims#");
   }
 
   prefix(prefix: string, namespace: string): SPARQLBuilder {
@@ -625,22 +658,22 @@ export class SPARQLBuilder {
     }
 
     // SELECT clause
-    const vars = this.selectVars.length > 0 ? this.selectVars.join(' ') : '*';
+    const vars = this.selectVars.length > 0 ? this.selectVars.join(" ") : "*";
     lines.push(`SELECT ${vars}`);
 
     // WHERE clause
-    lines.push('WHERE {');
+    lines.push("WHERE {");
     for (const pattern of this.wherePatterns) {
       lines.push(`  ${pattern}`);
     }
     for (const filter of this.filters) {
       lines.push(`  FILTER(${filter})`);
     }
-    lines.push('}');
+    lines.push("}");
 
     // ORDER BY
     if (this.orderBy.length > 0) {
-      lines.push(`ORDER BY ${this.orderBy.join(' ')}`);
+      lines.push(`ORDER BY ${this.orderBy.join(" ")}`);
     }
 
     // LIMIT
@@ -653,6 +686,6 @@ export class SPARQLBuilder {
       lines.push(`OFFSET ${this.offsetValue}`);
     }
 
-    return lines.join('\n');
+    return lines.join("\n");
   }
 }

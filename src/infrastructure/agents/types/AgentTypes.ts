@@ -9,7 +9,12 @@ export interface AgentMetadata {
   tags: string[];
 }
 
-export type AgentState = 'experimental' | 'validation' | 'production' | 'optimization' | 'retirement';
+export type AgentState =
+  | "experimental"
+  | "validation"
+  | "production"
+  | "optimization"
+  | "retirement";
 
 export interface AgentSpecification {
   name: string;
@@ -45,14 +50,14 @@ export interface StandardSpec {
 
 export interface ToolSpec {
   name: string;
-  type: 'required' | 'optional' | 'conditional';
+  type: "required" | "optional" | "conditional";
   usage: string;
   constraints: string[];
 }
 
 export interface ProtocolSpec {
   name: string;
-  type: 'input' | 'output' | 'bidirectional';
+  type: "input" | "output" | "bidirectional";
   format: string;
   schema: Record<string, any>;
 }
@@ -75,7 +80,7 @@ export interface WorkflowStep {
 
 export interface MetricSpec {
   name: string;
-  type: 'efficiency' | 'quality' | 'resource' | 'business';
+  type: "efficiency" | "quality" | "resource" | "business";
   target: number;
   unit: string;
   measurement: string;
@@ -101,7 +106,7 @@ export interface PerformanceTarget {
   metric: string;
   target: number;
   unit: string;
-  priority: 'critical' | 'high' | 'medium' | 'low';
+  priority: "critical" | "high" | "medium" | "low";
 }
 
 export interface QualityThreshold {
@@ -111,7 +116,7 @@ export interface QualityThreshold {
 }
 
 export interface Constraint {
-  type: 'resource' | 'technical' | 'business' | 'security';
+  type: "resource" | "technical" | "business" | "security";
   description: string;
   impact: string;
 }
@@ -137,7 +142,11 @@ export interface SOLIDMetrics {
 }
 
 export interface CreateDecision {
-  decision: 'CREATE_NEW_AGENT' | 'USE_EXISTING' | 'EXTEND_AGENT' | 'ADAPT_EXISTING';
+  decision:
+    | "CREATE_NEW_AGENT"
+    | "USE_EXISTING"
+    | "EXTEND_AGENT"
+    | "ADAPT_EXISTING";
   confidence: number;
   rationale: string;
   specification?: AgentSpecification;
@@ -224,7 +233,7 @@ export interface AgentSummary {
 export interface TaskRequirements {
   domain: string;
   complexity: number;
-  urgency: 'low' | 'medium' | 'high' | 'critical';
+  urgency: "low" | "medium" | "high" | "critical";
   capabilities: string[];
   constraints: string[];
   expectedLoad: number;
@@ -239,13 +248,13 @@ export interface PerformanceAnalysis {
 
 export interface TrendAnalysis {
   metric: string;
-  direction: 'improving' | 'degrading' | 'stable';
+  direction: "improving" | "degrading" | "stable";
   rate: number;
   prediction: number;
 }
 
 export interface Alert {
-  level: 'info' | 'warning' | 'error' | 'critical';
+  level: "info" | "warning" | "error" | "critical";
   message: string;
   metric: string;
   threshold: number;
@@ -255,7 +264,7 @@ export interface Alert {
 
 export interface SuccessCriteria {
   metric: string;
-  operator: '>' | '<' | '=' | '>=' | '<=';
+  operator: ">" | "<" | "=" | ">=" | "<=";
   value: number;
   unit: string;
 }

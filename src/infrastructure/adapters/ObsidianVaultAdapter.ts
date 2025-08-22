@@ -1,5 +1,5 @@
-import { Vault, MetadataCache, TFile } from 'obsidian';
-import { IVaultAdapter } from '../../application/ports/IVaultAdapter';
+import { Vault, MetadataCache, TFile } from "obsidian";
+import { IVaultAdapter } from "../../application/ports/IVaultAdapter";
 
 /**
  * Adapter for Obsidian Vault API
@@ -8,7 +8,7 @@ import { IVaultAdapter } from '../../application/ports/IVaultAdapter';
 export class ObsidianVaultAdapter implements IVaultAdapter {
   constructor(
     private readonly vault: Vault,
-    private readonly metadataCache: MetadataCache
+    private readonly metadataCache: MetadataCache,
   ) {}
 
   async create(path: string, content: string): Promise<void> {
@@ -47,14 +47,12 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
   async list(pattern?: string): Promise<string[]> {
     const files = this.vault.getFiles();
     if (!pattern) {
-      return files.map(f => f.path);
+      return files.map((f) => f.path);
     }
-    
+
     // Simple pattern matching (could be enhanced with glob)
     const regex = new RegExp(pattern);
-    return files
-      .filter(f => regex.test(f.path))
-      .map(f => f.path);
+    return files.filter((f) => regex.test(f.path)).map((f) => f.path);
   }
 
   async getMetadata(path: string): Promise<Record<string, any> | null> {
@@ -62,7 +60,7 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
     if (!file || !(file instanceof TFile)) {
       return null;
     }
-    
+
     const cache = this.metadataCache.getFileCache(file);
     return cache?.frontmatter || null;
   }
@@ -75,7 +73,7 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
     if (!(file instanceof TFile)) {
       return null;
     }
-    
+
     const cache = this.metadataCache.getFileCache(file);
     return cache || null;
   }

@@ -3,8 +3,8 @@
  * Provides efficient querying and manipulation of semantic data
  */
 
-import { Triple, IRI, BlankNode, Literal } from './Triple';
-import { Result } from '../../core/Result';
+import { Triple, IRI, BlankNode, Literal } from "./Triple";
+import { Result } from "../../core/Result";
 
 export type Node = IRI | BlankNode | Literal;
 export type Subject = IRI | BlankNode;
@@ -31,23 +31,23 @@ export class Graph {
    */
   add(triple: Triple): void {
     if (this.has(triple)) return;
-    
+
     this.triples.add(triple);
-    
+
     const s = triple.getSubject().toString();
     const p = triple.getPredicate().toString();
     const o = triple.getObject().toString();
-    
+
     // Update SPO index
     if (!this.spo.has(s)) this.spo.set(s, new Map());
     if (!this.spo.get(s)!.has(p)) this.spo.get(s)!.set(p, new Set());
     this.spo.get(s)!.get(p)!.add(o);
-    
+
     // Update POS index
     if (!this.pos.has(p)) this.pos.set(p, new Map());
     if (!this.pos.get(p)!.has(o)) this.pos.get(p)!.set(o, new Set());
     this.pos.get(p)!.get(o)!.add(s);
-    
+
     // Update OSP index
     if (!this.osp.has(o)) this.osp.set(o, new Map());
     if (!this.osp.get(o)!.has(s)) this.osp.get(o)!.set(s, new Set());
@@ -59,13 +59,13 @@ export class Graph {
    */
   remove(triple: Triple): void {
     if (!this.has(triple)) return;
-    
+
     this.triples.delete(triple);
-    
+
     const s = triple.getSubject().toString();
     const p = triple.getPredicate().toString();
     const o = triple.getObject().toString();
-    
+
     // Update SPO index
     this.spo.get(s)?.get(p)?.delete(o);
     if (this.spo.get(s)?.get(p)?.size === 0) {
@@ -74,7 +74,7 @@ export class Graph {
     if (this.spo.get(s)?.size === 0) {
       this.spo.delete(s);
     }
-    
+
     // Update POS index
     this.pos.get(p)?.get(o)?.delete(s);
     if (this.pos.get(p)?.get(o)?.size === 0) {
@@ -83,7 +83,7 @@ export class Graph {
     if (this.pos.get(p)?.size === 0) {
       this.pos.delete(p);
     }
-    
+
     // Update OSP index
     this.osp.get(o)?.get(s)?.delete(p);
     if (this.osp.get(o)?.get(s)?.size === 0) {
@@ -101,7 +101,7 @@ export class Graph {
     const s = triple.getSubject().toString();
     const p = triple.getPredicate().toString();
     const o = triple.getObject().toString();
-    
+
     return this.spo.get(s)?.get(p)?.has(o) ?? false;
   }
 
@@ -112,10 +112,10 @@ export class Graph {
   match(
     subject: Subject | null = null,
     predicate: Predicate | null = null,
-    object: Object | null = null
+    object: Object | null = null,
   ): Triple[] {
     const results: Triple[] = [];
-    
+
     if (subject && predicate && object) {
       // Exact match
       for (const triple of this.triples) {
@@ -129,7 +129,9 @@ export class Graph {
       }
     } else if (subject && predicate) {
       // S P ?
-      const objects = this.spo.get(subject.toString())?.get(predicate.toString());
+      const objects = this.spo
+        .get(subject.toString())
+        ?.get(predicate.toString());
       if (objects) {
         for (const triple of this.triples) {
           if (
@@ -142,7 +144,9 @@ export class Graph {
       }
     } else if (predicate && object) {
       // ? P O
-      const subjects = this.pos.get(predicate.toString())?.get(object.toString());
+      const subjects = this.pos
+        .get(predicate.toString())
+        ?.get(object.toString());
       if (subjects) {
         for (const triple of this.triples) {
           if (
@@ -155,7 +159,9 @@ export class Graph {
       }
     } else if (subject && object) {
       // S ? O
-      const predicates = this.osp.get(object.toString())?.get(subject.toString());
+      const predicates = this.osp
+        .get(object.toString())
+        ?.get(subject.toString());
       if (predicates) {
         for (const triple of this.triples) {
           if (
@@ -191,7 +197,7 @@ export class Graph {
       // ? ? ? - return all
       return Array.from(this.triples);
     }
-    
+
     return results;
   }
 
@@ -267,7 +273,7 @@ export class Graph {
   filter(
     subject: Subject | null = null,
     predicate: Predicate | null = null,
-    object: Object | null = null
+    object: Object | null = null,
   ): Graph {
     return new Graph(this.match(subject, predicate, object));
   }
@@ -284,8 +290,8 @@ export class Graph {
    */
   toString(): string {
     return Array.from(this.triples)
-      .map(t => t.toString())
-      .join('\n');
+      .map((t) => t.toString())
+      .join("\n");
   }
 
   /**
@@ -295,17 +301,16 @@ export class Graph {
     return new Graph(this.toArray());
   }
 
-
   /**
    * Check if two graphs are equal
    */
   equals(other: Graph): boolean {
     if (this.size() !== other.size()) return false;
-    
+
     for (const triple of this.triples) {
       if (!other.has(triple)) return false;
     }
-    
+
     return true;
   }
 }

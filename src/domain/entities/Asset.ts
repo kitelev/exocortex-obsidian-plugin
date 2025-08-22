@@ -1,8 +1,8 @@
-import { AssetId } from '../value-objects/AssetId';
-import { ClassName } from '../value-objects/ClassName';
-import { OntologyPrefix } from '../value-objects/OntologyPrefix';
-import { Entity } from '../core/Entity';
-import { Result } from '../core/Result';
+import { AssetId } from "../value-objects/AssetId";
+import { ClassName } from "../value-objects/ClassName";
+import { OntologyPrefix } from "../value-objects/OntologyPrefix";
+import { Entity } from "../core/Entity";
+import { Result } from "../core/Result";
 
 interface AssetProps {
   id: AssetId;
@@ -22,7 +22,6 @@ interface AssetProps {
  * Core business logic and invariants
  */
 export class Asset extends Entity<AssetProps> {
-  
   private constructor(props: AssetProps) {
     super(props);
   }
@@ -36,7 +35,7 @@ export class Asset extends Entity<AssetProps> {
     properties?: Record<string, any>;
   }): Result<Asset> {
     if (!params.label || params.label.trim().length === 0) {
-      return Result.fail<Asset>('Asset label cannot be empty');
+      return Result.fail<Asset>("Asset label cannot be empty");
     }
 
     const props: AssetProps = {
@@ -48,7 +47,7 @@ export class Asset extends Entity<AssetProps> {
       description: params.description,
       properties: new Map(Object.entries(params.properties || {})),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     return Result.ok<Asset>(new Asset(props));
@@ -90,7 +89,7 @@ export class Asset extends Entity<AssetProps> {
   // Business methods
   updateTitle(title: string): void {
     if (!title || title.trim().length === 0) {
-      throw new Error('Asset title cannot be empty');
+      throw new Error("Asset title cannot be empty");
     }
     this.props.title = title;
     this.props.updatedAt = new Date();
@@ -114,11 +113,13 @@ export class Asset extends Entity<AssetProps> {
   toFrontmatter(): Record<string, any> {
     // Always ensure mandatory fields are present with proper formats
     const frontmatter: Record<string, any> = {
-      'exo__Asset_uid': this.props.id.toString(),
-      'exo__Asset_label': this.props.title,
-      'exo__Asset_isDefinedBy': `[[!${this.props.ontology.toString()}]]`,
-      'exo__Asset_createdAt': this.props.createdAt.toISOString().replace(/\.\d{3}Z$/, ''), // Remove milliseconds for cleaner format
-      'exo__Instance_class': [this.props.className.toWikiLink()]
+      exo__Asset_uid: this.props.id.toString(),
+      exo__Asset_label: this.props.title,
+      exo__Asset_isDefinedBy: `[[!${this.props.ontology.toString()}]]`,
+      exo__Asset_createdAt: this.props.createdAt
+        .toISOString()
+        .replace(/\.\d{3}Z$/, ""), // Remove milliseconds for cleaner format
+      exo__Instance_class: [this.props.className.toWikiLink()],
     };
 
     // Add custom properties
@@ -136,113 +137,140 @@ export class Asset extends Entity<AssetProps> {
    * @param frontmatter The frontmatter to validate
    * @returns ValidationResult indicating success or failure with details
    */
-  private static validateMandatoryProperties(frontmatter: Record<string, any>): { isValid: boolean; errors: string[] } {
+  private static validateMandatoryProperties(
+    frontmatter: Record<string, any>,
+  ): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
-    
+
     // Check for mandatory exo__Asset_uid (UUID format)
-    const uid = frontmatter['exo__Asset_uid'];
+    const uid = frontmatter["exo__Asset_uid"];
     if (!uid) {
-      errors.push('Missing mandatory field: exo__Asset_uid');
+      errors.push("Missing mandatory field: exo__Asset_uid");
     } else {
       // Validate UUID format
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(uid.toString())) {
-        errors.push('exo__Asset_uid must be a valid UUID format');
+        errors.push("exo__Asset_uid must be a valid UUID format");
       }
     }
-    
+
     // Check for mandatory exo__Asset_isDefinedBy (ontology reference)
-    const isDefinedBy = frontmatter['exo__Asset_isDefinedBy'];
+    const isDefinedBy = frontmatter["exo__Asset_isDefinedBy"];
     if (!isDefinedBy) {
-      errors.push('Missing mandatory field: exo__Asset_isDefinedBy');
+      errors.push("Missing mandatory field: exo__Asset_isDefinedBy");
     } else {
       // Validate format like "[[Ontology - Exocortex]]" or "[[!exo]]"
       const ontologyRegex = /^\[\[(!?[a-zA-Z][a-zA-Z0-9_\- ]*)\]\]$/;
       if (!ontologyRegex.test(isDefinedBy.toString())) {
-        errors.push('exo__Asset_isDefinedBy must be in format [[Ontology Name]] or [[!prefix]]');
+        errors.push(
+          "exo__Asset_isDefinedBy must be in format [[Ontology Name]] or [[!prefix]]",
+        );
       }
     }
-    
+
     // Check for mandatory exo__Asset_createdAt (ISO timestamp)
-    const createdAt = frontmatter['exo__Asset_createdAt'];
+    const createdAt = frontmatter["exo__Asset_createdAt"];
     if (!createdAt) {
-      errors.push('Missing mandatory field: exo__Asset_createdAt');
+      errors.push("Missing mandatory field: exo__Asset_createdAt");
     } else {
       // Validate ISO timestamp format (YYYY-MM-DDTHH:mm:ss or with milliseconds and timezone)
-      const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?$/;
+      const isoRegex =
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?$/;
       if (!isoRegex.test(createdAt.toString())) {
-        errors.push('exo__Asset_createdAt must be in ISO timestamp format (YYYY-MM-DDTHH:mm:ss)');
+        errors.push(
+          "exo__Asset_createdAt must be in ISO timestamp format (YYYY-MM-DDTHH:mm:ss)",
+        );
       }
     }
-    
+
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
-  static fromFrontmatter(frontmatter: Record<string, any>, fileName: string): Asset | null {
+  static fromFrontmatter(
+    frontmatter: Record<string, any>,
+    fileName: string,
+  ): Asset | null {
     // Validate mandatory properties first
     const validation = Asset.validateMandatoryProperties(frontmatter);
     if (!validation.isValid) {
-      console.warn(`Asset validation failed for ${fileName}:`, validation.errors);
+      console.warn(
+        `Asset validation failed for ${fileName}:`,
+        validation.errors,
+      );
       return null; // Silently ignore invalid assets
     }
-    
+
     try {
-      const idResult = AssetId.create(frontmatter['exo__Asset_uid']);
+      const idResult = AssetId.create(frontmatter["exo__Asset_uid"]);
       if (!idResult.isSuccess) {
         console.warn(`Invalid Asset ID for ${fileName}:`, idResult.getError());
         return null;
       }
       const id = idResult.getValue()!;
-      
-      const label = frontmatter['exo__Asset_label'] || fileName.replace('.md', '');
-      
-      const classValue = Array.isArray(frontmatter['exo__Instance_class']) 
-        ? frontmatter['exo__Instance_class'][0] 
-        : frontmatter['exo__Instance_class'];
-      const classNameResult = ClassName.create(classValue || 'exo__Asset');
-      const className = classNameResult.isSuccess ? classNameResult.getValue() : ClassName.create('exo__Asset').getValue()!;
-      
-      const ontologyValue = frontmatter['exo__Asset_isDefinedBy']?.replace(/\[\[!?|\]\]/g, '') || 'exo';
+
+      const label =
+        frontmatter["exo__Asset_label"] || fileName.replace(".md", "");
+
+      const classValue = Array.isArray(frontmatter["exo__Instance_class"])
+        ? frontmatter["exo__Instance_class"][0]
+        : frontmatter["exo__Instance_class"];
+      const classNameResult = ClassName.create(classValue || "exo__Asset");
+      const className = classNameResult.isSuccess
+        ? classNameResult.getValue()
+        : ClassName.create("exo__Asset").getValue()!;
+
+      const ontologyValue =
+        frontmatter["exo__Asset_isDefinedBy"]?.replace(/\[\[!?|\]\]/g, "") ||
+        "exo";
       const ontologyResult = OntologyPrefix.create(ontologyValue);
-      const ontology = ontologyResult.isSuccess ? ontologyResult.getValue() : OntologyPrefix.create('exo').getValue()!;
-      
-      const createdAt = new Date(frontmatter['exo__Asset_createdAt']);
+      const ontology = ontologyResult.isSuccess
+        ? ontologyResult.getValue()
+        : OntologyPrefix.create("exo").getValue()!;
+
+      const createdAt = new Date(frontmatter["exo__Asset_createdAt"]);
       if (isNaN(createdAt.getTime())) {
         console.warn(`Invalid createdAt timestamp for ${fileName}`);
         return null;
       }
-      
+
       const properties: Record<string, any> = {};
       for (const [key, value] of Object.entries(frontmatter)) {
-        if (!key.startsWith('exo__Asset_') && !key.startsWith('exo__Instance_')) {
+        if (
+          !key.startsWith("exo__Asset_") &&
+          !key.startsWith("exo__Instance_")
+        ) {
           properties[key] = value;
         }
       }
-      
+
       // Use the factory method instead of constructor
       const result = Asset.create({
         id,
         label,
         className,
         ontology,
-        properties
+        properties,
       });
-      
+
       if (result.isSuccess) {
         const asset = result.getValue()!;
         // Update timestamps with validated values
         (asset as any).props.createdAt = createdAt;
         return asset;
       } else {
-        console.warn('Failed to create asset from frontmatter:', result.getError());
+        console.warn(
+          "Failed to create asset from frontmatter:",
+          result.getError(),
+        );
       }
-      
+
       return null;
     } catch (error) {
-      console.warn('Failed to create asset from frontmatter:', error);
+      console.warn("Failed to create asset from frontmatter:", error);
       return null;
     }
   }
