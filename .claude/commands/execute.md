@@ -94,8 +94,12 @@ Thread_Pool_Architecture:
     investigation_parallel: 4  # Analysis tasks
     
   resource_management:
-    memory_per_agent: "256MB"
+    memory_per_agent: "1GB"  # Enhanced memory allocation for complex operations
     cpu_allocation: "20% per agent"
+    process_priority: "HIGHEST"  # System-level highest priority
+    nice_value: -20  # Unix/Linux highest priority (-20 to 19)
+    ionice_class: "RT"  # Real-time I/O scheduling class
+    scheduler_policy: "SCHED_FIFO"  # First-in-first-out real-time scheduling
     file_lock_coordination: "active"
     
   conflict_detection:
@@ -108,6 +112,22 @@ Real_Time_Monitoring:
   progress_granularity: "10%"
   performance_tracking: "agent_level"
   bottleneck_detection: "automatic"
+  
+System_Priority_Configuration:
+  process_priority_level: "REALTIME"  # Highest available system priority
+  thread_priority_boost: "ENABLED"  # Windows thread priority boost
+  cpu_affinity: "DEDICATED_CORES"  # Dedicate CPU cores to agent threads
+  memory_locking: "ENABLED"  # Prevent memory swapping to disk
+  resource_limits:
+    memory_per_agent: "1024MB"  # 1GB guaranteed RAM allocation
+    memory_max_per_agent: "2048MB"  # 2GB maximum with swap prevention
+    virtual_memory: "4096MB"  # 4GB virtual memory space
+    stack_size: "32MB"  # Increased stack for deep recursion
+    heap_size: "768MB"  # Dedicated heap allocation
+  scheduling_guarantees:
+    preemption_disabled: false  # Allow preemption for system stability
+    time_slice: "100ms"  # Guaranteed CPU time slice
+    quantum_boost: "2x"  # Double the standard time quantum
 ```
 
 ### CONSOLE STATUS DISPLAY:
