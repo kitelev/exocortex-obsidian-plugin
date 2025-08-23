@@ -186,7 +186,7 @@ export class PropertyValue {
         }
         break;
 
-      case PropertyValueType.NUMBER:
+      case PropertyValueType.NUMBER: {
         const num = Number(value);
         if (isNaN(num)) {
           return { isValid: false, error: "Invalid number" };
@@ -204,13 +204,15 @@ export class PropertyValue {
           };
         }
         break;
+      }
 
-      case PropertyValueType.DATE:
+      case PropertyValueType.DATE: {
         const date = value instanceof Date ? value : new Date(value);
         if (isNaN(date.getTime())) {
           return { isValid: false, error: "Invalid date" };
         }
         break;
+      }
 
       case PropertyValueType.ARRAY:
         if (!Array.isArray(value)) {

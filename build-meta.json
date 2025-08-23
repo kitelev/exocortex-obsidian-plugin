@@ -80,7 +80,7 @@
       "format": "esm"
     },
     "src/infrastructure/adapters/ObsidianUIAdapter.ts": {
-      "bytes": 2691,
+      "bytes": 2667,
       "imports": [
         {
           "path": "obsidian",
@@ -145,7 +145,7 @@
       "format": "esm"
     },
     "src/domain/value-objects/PropertyValue.ts": {
-      "bytes": 8775,
+      "bytes": 8795,
       "imports": [
         {
           "path": "src/domain/core/Result.ts",
@@ -551,7 +551,7 @@
       "format": "esm"
     },
     "src/application/use-cases/CreateAssetUseCase.ts": {
-      "bytes": 4262,
+      "bytes": 4281,
       "imports": [
         {
           "path": "src/domain/entities/Asset.ts",
@@ -638,7 +638,7 @@
       "format": "esm"
     },
     "src/application/use-cases/CreateChildAreaUseCase.ts": {
-      "bytes": 3292,
+      "bytes": 3283,
       "imports": [
         {
           "path": "../../domain/entities/Asset",
@@ -1000,17 +1000,17 @@
       "format": "esm"
     },
     "src/domain/services/OntologyProvisioningService.ts": {
-      "bytes": 902,
+      "bytes": 904,
       "imports": [],
       "format": "esm"
     },
     "src/domain/services/PropertyCacheService.ts": {
-      "bytes": 869,
+      "bytes": 872,
       "imports": [],
       "format": "esm"
     },
     "src/infrastructure/resilience/CircuitBreakerService.ts": {
-      "bytes": 1978,
+      "bytes": 1962,
       "imports": [],
       "format": "esm"
     },
@@ -1433,7 +1433,7 @@
       "format": "esm"
     },
     "src/domain/semantic/core/IndexedGraph.ts": {
-      "bytes": 42847,
+      "bytes": 43238,
       "imports": [
         {
           "path": "src/domain/semantic/core/Graph.ts",
@@ -1562,7 +1562,7 @@
       "format": "esm"
     },
     "src/application/services/DynamicBacklinksService.ts": {
-      "bytes": 5049,
+      "bytes": 5074,
       "imports": [
         {
           "path": "src/domain/core/Result.ts",
@@ -1750,7 +1750,7 @@
       "format": "esm"
     },
     "src/infrastructure/container/DIContainer.ts": {
-      "bytes": 18716,
+      "bytes": 18735,
       "imports": [
         {
           "path": "obsidian",
@@ -2213,7 +2213,7 @@
       "format": "esm"
     },
     "src/application/services/SPARQLSanitizer.ts": {
-      "bytes": 7902,
+      "bytes": 7950,
       "imports": [
         {
           "path": "src/domain/core/Result.ts",
@@ -2362,7 +2362,7 @@
       "format": "esm"
     },
     "src/presentation/modals/CreateAssetModal.ts": {
-      "bytes": 17654,
+      "bytes": 17702,
       "imports": [
         {
           "path": "obsidian",
@@ -3143,7 +3143,7 @@
           "bytesInOutput": 377
         },
         "src/domain/value-objects/PropertyValue.ts": {
-          "bytesInOutput": 2823
+          "bytesInOutput": 2825
         },
         "src/domain/core/Entity.ts": {
           "bytesInOutput": 652
@@ -3377,7 +3377,7 @@
           "bytesInOutput": 7784
         },
         "src/application/services/SPARQLSanitizer.ts": {
-          "bytesInOutput": 3067
+          "bytesInOutput": 3066
         },
         "src/presentation/processors/GraphVisualizationProcessor.ts": {
           "bytesInOutput": 19551
@@ -3428,7 +3428,7 @@
           "bytesInOutput": 5748
         }
       },
-      "bytes": 414770
+      "bytes": 414771
     }
   }
 }

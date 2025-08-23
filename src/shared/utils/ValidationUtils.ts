@@ -25,7 +25,7 @@ export class ValidationUtils {
 
     return requiredProps.every(
       (prop) =>
-        obj.hasOwnProperty(prop) &&
+        Object.prototype.hasOwnProperty.call(obj, prop) &&
         obj[prop] !== undefined &&
         obj[prop] !== null,
     );
@@ -38,6 +38,7 @@ export class ValidationUtils {
     if (!this.isNonEmptyString(filename)) return false;
 
     // Check for invalid characters in filename
+    // eslint-disable-next-line no-control-regex
     const invalidChars = /[<>:"/\\|?*\x00-\x1f]/;
     return !invalidChars.test(filename);
   }
@@ -114,6 +115,7 @@ export class ValidationUtils {
 
     // Remove control characters and normalize whitespace
     return input
+      // eslint-disable-next-line no-control-regex
       .replace(/[\x00-\x1f\x7f]/g, "")
       .replace(/\s+/g, " ")
       .trim();
@@ -154,7 +156,7 @@ export class ValidationUtils {
     // Check property types if specified
     if (schema.types) {
       for (const [prop, expectedType] of Object.entries(schema.types)) {
-        if (obj.hasOwnProperty(prop)) {
+        if (Object.prototype.hasOwnProperty.call(obj, prop)) {
           const actualType = typeof obj[prop];
           if (actualType !== expectedType) {
             return false;

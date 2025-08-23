@@ -328,9 +328,10 @@ export class ExoFocus extends Entity<ExoFocusProps> {
           return date >= start && date <= end;
         }
         return false;
-      case "equals":
+      case "equals": {
         const filterDate = new Date(filterValue);
         return date.toDateString() === filterDate.toDateString();
+      }
       default:
         return true;
     }

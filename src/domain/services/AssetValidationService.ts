@@ -373,7 +373,7 @@ export class AssetValidationService {
       propertyName: "phone",
       required: false,
       type: PropertyValueType.STRING,
-      pattern: /^[\+]?[1-9][\d]{0,15}$/,
+      pattern: /^[+]?[1-9][\d]{0,15}$/,
     });
   }
 

@@ -43,7 +43,7 @@ export class ObsidianUIAdapter implements IUIAdapter {
       attrs?: Record<string, string>;
     },
   ): HTMLElement {
-    const element = parent.createEl(tag as keyof HTMLElementTagNameMap, {
+    const element = parent.createEl(tag as any, {
       cls: options?.cls,
       text: options?.text,
       attr: options?.attrs,

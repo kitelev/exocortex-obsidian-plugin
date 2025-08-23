@@ -25,9 +25,10 @@ export class SPARQLSanitizer {
     /;\s*CLEAR/gi,
 
     // Path traversal
-    /\.\.[\/\\]/g,
+    /\.\.[/\\]/g,
 
     // Null byte injection
+    // eslint-disable-next-line no-control-regex
     /\x00/g,
 
     // Script injection
