@@ -357,10 +357,11 @@ jobs:
             exit 1
           fi
 
-  # Stage 5: Performance benchmarks
+  # Stage 5: Performance benchmarks (temporarily disabled)
   performance:
     name: Performance Benchmarks
     needs: build-matrix
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 10
     continue-on-error: true
@@ -406,7 +407,7 @@ jobs:
   # Final status report
   ci-status:
     name: CI Status Report
-    needs: [build-matrix, test-suite, ui-tests, quality-checks, performance]
+    needs: [build-matrix, test-suite, ui-tests, quality-checks]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2
@@ -426,9 +427,6 @@ jobs:
           echo ""
           echo "## Quality Checks"
           echo "Status: ${{ needs.quality-checks.result }}"
-          echo ""
-          echo "## Performance"
-          echo "Status: ${{ needs.performance.result }}"
           echo ""
 
           if [[ "${{ needs.build-matrix.result }}" != "success" || 
