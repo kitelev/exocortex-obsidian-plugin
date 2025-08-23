@@ -66,5 +66,5 @@ jobs:
       - name: Check test files compilation
         run: |
           echo "Checking test files..."
-          npx tsc tests/**/*.ts --noEmit --skipLibCheck --allowJs
+          npx tsc --noEmit --skipLibCheck
           echo "✅ All test files compile successfully"
