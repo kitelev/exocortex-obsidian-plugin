@@ -1,6 +1,6 @@
 {
   "name": "exocortex-obsidian-plugin",
-  "version": "3.17.1",
+  "version": "3.18.0",
   "description": "Exocortex: A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
   "main": "main.js",
   "engines": {
@@ -28,6 +28,11 @@
     "test:ui": "node scripts/run-ui-tests-smart.js",
     "test:ui:ci": "FORCE_OBSIDIAN_DOWNLOAD=true wdio run wdio.conf.ci.ts",
     "test:ui:local": "wdio run wdio.conf.local.ts",
+    "test:bdd": "./scripts/run-bdd-tests.sh all",
+    "test:bdd:smoke": "./scripts/run-bdd-tests.sh smoke",
+    "test:bdd:security": "./scripts/run-bdd-tests.sh security",
+    "test:bdd:api": "./scripts/run-bdd-tests.sh api",
+    "cucumber": "cucumber-js",
     "test:ui:headless": "CI=true wdio run wdio.conf.ci.ts",
     "test:ui:macos": "wdio run wdio.conf.macos.ts",
     "test:ui:with-fallback": "bash scripts/run-ui-tests-with-fallback.sh",
@@ -55,6 +60,8 @@
   "author": "A. Kitelev",
   "license": "MIT",
   "devDependencies": {
+    "@cucumber/cucumber": "^11.3.0",
+    "@cucumber/pretty-formatter": "^2.1.0",
     "@types/chai": "^5.2.2",
     "@types/jest": "^30.0.0",
     "@types/js-yaml": "^4.0.9",
@@ -73,6 +80,7 @@
     "@wdio/spec-reporter": "^9.0.8",
     "builtin-modules": "3.3.0",
     "chai": "^5.2.1",
+    "cucumber-html-reporter": "^7.2.0",
     "esbuild": "0.17.3",
     "expect-webdriverio": "^5.4.1",
     "jest": "^30.0.5",

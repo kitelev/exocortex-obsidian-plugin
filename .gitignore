@@ -15,6 +15,7 @@ test-obsidian/
 .obsidian-cache/
 test-notes/
 ~/ExocortexTestVault/
+reports/
 
 # Debug files
 debug-main.js
@@ -49,5 +50,6 @@ test-*.ts
 !tests/**/*.ts
 
 # Performance cache
-.jest-cache/.turbo-cache/
+.jest-cache/
+.turbo-cache/
 Makefile.bak.*
