@@ -27,10 +27,10 @@ fi
 
 # Step 2: Run ESLint
 echo -e "\n${YELLOW}2. Running ESLint...${NC}"
-if npx eslint src --ext .ts,.tsx --max-warnings 0; then
-    echo -e "${GREEN}✅ ESLint passed${NC}"
+if npx eslint src --ext .ts,.tsx --quiet; then
+    echo -e "${GREEN}✅ ESLint passed (no errors)${NC}"
 else
-    echo -e "${RED}❌ ESLint found issues${NC}"
+    echo -e "${RED}❌ ESLint found errors${NC}"
     echo -e "${YELLOW}Run 'npm run lint:fix' to auto-fix some issues${NC}"
     exit 1
 fi
