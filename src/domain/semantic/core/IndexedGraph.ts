@@ -111,8 +111,8 @@ export class IndexedGraph extends Graph {
     }
 
     // Sort buffer by predicate for better index locality
-    this.batchBuffer.sort((a, b) => 
-      a.getPredicate().toString().localeCompare(b.getPredicate().toString())
+    this.batchBuffer.sort((a, b) =>
+      a.getPredicate().toString().localeCompare(b.getPredicate().toString()),
     );
 
     // Process in optimized chunks to reduce memory spikes
@@ -124,7 +124,7 @@ export class IndexedGraph extends Graph {
     // Process chunks with memory management
     for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
       const chunk = chunks[chunkIndex];
-      
+
       // Bulk add with optimized indexing
       this.bulkAddChunk(chunk);
 
@@ -135,8 +135,10 @@ export class IndexedGraph extends Graph {
 
       // Update progress for very large batches
       if (totalTriples > 5000 && chunkIndex % 10 === 0) {
-        const progress = ((chunkIndex + 1) / chunks.length * 100).toFixed(1);
-        console.log(`Batch processing: ${progress}% (${chunkIndex + 1}/${chunks.length} chunks)`);
+        const progress = (((chunkIndex + 1) / chunks.length) * 100).toFixed(1);
+        console.log(
+          `Batch processing: ${progress}% (${chunkIndex + 1}/${chunks.length} chunks)`,
+        );
       }
     }
 
@@ -148,7 +150,9 @@ export class IndexedGraph extends Graph {
     this.metrics.lastIndexTime = processingTime;
     this.metrics.batchProcessingRate = totalTriples / (processingTime / 1000); // triples per second
 
-    console.log(`Batch committed: ${totalTriples} triples in ${processingTime.toFixed(2)}ms (${this.metrics.batchProcessingRate.toFixed(0)} triples/sec)`);
+    console.log(
+      `Batch committed: ${totalTriples} triples in ${processingTime.toFixed(2)}ms (${this.metrics.batchProcessingRate.toFixed(0)} triples/sec)`,
+    );
   }
 
   /**
@@ -202,7 +206,7 @@ export class IndexedGraph extends Graph {
    */
   private applyBulkIndexUpdates(
     updates: Map<string, Map<string, string[]>>,
-    index: Map<string, Map<string, Set<string>>>
+    index: Map<string, Map<string, Set<string>>>,
   ): void {
     for (const [key1, level2] of updates) {
       if (!index.has(key1)) index.set(key1, new Map());
@@ -327,7 +331,9 @@ export class IndexedGraph extends Graph {
 
     // Performance warning for slow queries
     if (queryTime > this.performanceThresholds.queryTimeWarning) {
-      console.warn(`Slow query detected: ${queryTime.toFixed(2)}ms for pattern ${cacheKey}`);
+      console.warn(
+        `Slow query detected: ${queryTime.toFixed(2)}ms for pattern ${cacheKey}`,
+      );
     }
 
     // Cache results with optimized LRU eviction
@@ -351,7 +357,10 @@ export class IndexedGraph extends Graph {
   /**
    * Query property hierarchy relationships with transitive closure
    */
-  queryPropertyHierarchy(property: string, direction: 'broader' | 'narrower' | 'both' = 'both'): string[] {
+  queryPropertyHierarchy(
+    property: string,
+    direction: "broader" | "narrower" | "both" = "both",
+  ): string[] {
     const startTime = performance.now();
     const cacheKey = `hierarchy:${property}:${direction}`;
 
@@ -364,17 +373,17 @@ export class IndexedGraph extends Graph {
 
     const result = new Set<string>();
 
-    if (direction === 'broader' || direction === 'both') {
+    if (direction === "broader" || direction === "both") {
       this.traverseHierarchy(property, this.inversePropertyHierarchy, result);
     }
 
-    if (direction === 'narrower' || direction === 'both') {
+    if (direction === "narrower" || direction === "both") {
       this.traverseHierarchy(property, this.propertyHierarchy, result);
     }
 
     // Cache the transitive closure
     this.transitiveClosureCache.set(cacheKey, new Set(result));
-    
+
     // Limit cache size
     if (this.transitiveClosureCache.size > 200) {
       const firstKey = this.transitiveClosureCache.keys().next().value;
@@ -403,7 +412,7 @@ export class IndexedGraph extends Graph {
       const cachedKeys = this.semanticCache.get(cacheKey)!;
       const results: Triple[] = [];
       for (const key of cachedKeys) {
-        const parts = key.split('|');
+        const parts = key.split("|");
         if (parts.length === 3) {
           const match = this.query(parts[0], parts[1], parts[2]);
           results.push(...match);
@@ -418,58 +427,83 @@ export class IndexedGraph extends Graph {
 
     // Query for exo__Property instances or start with broader search
     let candidateTriples: Triple[];
-    
+
     if (pattern.domain) {
       // Start with domain constraint - often most selective
-      candidateTriples = this.query(undefined, 'rdfs:domain', pattern.domain);
+      candidateTriples = this.query(undefined, "rdfs:domain", pattern.domain);
     } else if (pattern.range) {
       // Use range constraint
-      candidateTriples = this.query(undefined, 'rdfs:range', pattern.range);
+      candidateTriples = this.query(undefined, "rdfs:range", pattern.range);
     } else if (pattern.required !== undefined) {
       // Use required constraint
-      candidateTriples = this.query(undefined, 'exo__Property_isRequired', pattern.required.toString());
+      candidateTriples = this.query(
+        undefined,
+        "exo__Property_isRequired",
+        pattern.required.toString(),
+      );
     } else {
       // Default to type constraint
-      candidateTriples = this.query(undefined, 'rdf:type', 'exo__Property');
+      candidateTriples = this.query(undefined, "rdf:type", "exo__Property");
     }
-    
+
     // Filter candidates based on all constraints
     for (const triple of candidateTriples) {
       const subject = triple.getSubject().toString();
       let matches = true;
-      
+
       // Check type constraint if not already filtered by it
       if (!pattern.domain && !pattern.range && pattern.required === undefined) {
-        const typeTriples = this.query(subject, 'rdf:type', 'exo__Property');
+        const typeTriples = this.query(subject, "rdf:type", "exo__Property");
         if (typeTriples.length === 0) matches = false;
       }
-      
+
       // Check domain constraint if not already filtered by it
-      if (pattern.domain && !candidateTriples.some(t => 
-        t.getPredicate().toString() === 'rdfs:domain' && 
-        t.getObject().toString() === pattern.domain
-      )) {
-        const domainTriples = this.query(subject, 'rdfs:domain', pattern.domain);
+      if (
+        pattern.domain &&
+        !candidateTriples.some(
+          (t) =>
+            t.getPredicate().toString() === "rdfs:domain" &&
+            t.getObject().toString() === pattern.domain,
+        )
+      ) {
+        const domainTriples = this.query(
+          subject,
+          "rdfs:domain",
+          pattern.domain,
+        );
         if (domainTriples.length === 0) matches = false;
       }
-      
+
       // Check range constraint if not already filtered by it
-      if (pattern.range && matches && !candidateTriples.some(t => 
-        t.getPredicate().toString() === 'rdfs:range' && 
-        t.getObject().toString() === pattern.range
-      )) {
-        const rangeTriples = this.query(subject, 'rdfs:range', pattern.range);
+      if (
+        pattern.range &&
+        matches &&
+        !candidateTriples.some(
+          (t) =>
+            t.getPredicate().toString() === "rdfs:range" &&
+            t.getObject().toString() === pattern.range,
+        )
+      ) {
+        const rangeTriples = this.query(subject, "rdfs:range", pattern.range);
         if (rangeTriples.length === 0) matches = false;
       }
-      
+
       // Check required constraint if not already filtered by it
-      if (pattern.required !== undefined && matches && !candidateTriples.some(t => 
-        t.getPredicate().toString() === 'exo__Property_isRequired'
-      )) {
-        const requiredTriples = this.query(subject, 'exo__Property_isRequired', pattern.required.toString());
+      if (
+        pattern.required !== undefined &&
+        matches &&
+        !candidateTriples.some(
+          (t) => t.getPredicate().toString() === "exo__Property_isRequired",
+        )
+      ) {
+        const requiredTriples = this.query(
+          subject,
+          "exo__Property_isRequired",
+          pattern.required.toString(),
+        );
         if (requiredTriples.length === 0) matches = false;
       }
-      
+
       if (matches) {
         results.push(triple);
         resultKeys.add(this.getTripleKey(triple));
@@ -490,13 +524,15 @@ export class IndexedGraph extends Graph {
   /**
    * Batch semantic search for multiple patterns
    */
-  batchSemanticQuery(patterns: Array<{
-    propertyType?: string;
-    domain?: string;
-    range?: string;
-    required?: boolean;
-    options?: string[];
-  }>): Triple[][] {
+  batchSemanticQuery(
+    patterns: Array<{
+      propertyType?: string;
+      domain?: string;
+      range?: string;
+      required?: boolean;
+      options?: string[];
+    }>,
+  ): Triple[][] {
     const startTime = performance.now();
     const results: Triple[][] = [];
 
@@ -504,12 +540,13 @@ export class IndexedGraph extends Graph {
     const BATCH_SIZE = 10;
     for (let i = 0; i < patterns.length; i += BATCH_SIZE) {
       const batch = patterns.slice(i, i + BATCH_SIZE);
-      const batchResults = batch.map(pattern => this.semanticQuery(pattern));
+      const batchResults = batch.map((pattern) => this.semanticQuery(pattern));
       results.push(...batchResults);
     }
 
     const processingTime = performance.now() - startTime;
-    this.metrics.batchProcessingRate = patterns.length / (processingTime / 1000); // patterns per second
+    this.metrics.batchProcessingRate =
+      patterns.length / (processingTime / 1000); // patterns per second
 
     return results;
   }
@@ -692,20 +729,20 @@ export class IndexedGraph extends Graph {
     patterns: Array<{ s?: string; p?: string; o?: string }>,
   ): Promise<Triple[][]> {
     const startTime = performance.now();
-    
+
     // Batch similar patterns for better cache performance
     const patternGroups = this.groupSimilarPatterns(patterns);
     const results: Triple[][] = new Array(patterns.length);
-    
+
     // Process pattern groups
     for (const group of patternGroups) {
       const groupPromises = group.patterns.map((patternIndex) => {
         const pattern = patterns[patternIndex];
         return Promise.resolve(this.query(pattern.s, pattern.p, pattern.o));
       });
-      
+
       const groupResults = await Promise.all(groupPromises);
-      
+
       // Map results back to original positions
       group.patterns.forEach((patternIndex, resultIndex) => {
         results[patternIndex] = groupResults[resultIndex];
@@ -713,8 +750,10 @@ export class IndexedGraph extends Graph {
     }
 
     const queryTime = performance.now() - startTime;
-    console.log(`Parallel query completed: ${patterns.length} patterns in ${queryTime.toFixed(2)}ms`);
-    
+    console.log(
+      `Parallel query completed: ${patterns.length} patterns in ${queryTime.toFixed(2)}ms`,
+    );
+
     return results;
   }
 
@@ -722,50 +761,55 @@ export class IndexedGraph extends Graph {
    * Group similar patterns for batch processing
    */
   private groupSimilarPatterns(
-    patterns: Array<{ s?: string; p?: string; o?: string }>
+    patterns: Array<{ s?: string; p?: string; o?: string }>,
   ): Array<{ type: string; patterns: number[] }> {
     const groups = new Map<string, number[]>();
-    
+
     patterns.forEach((pattern, index) => {
       // Create a pattern signature for grouping
-      const signature = `${pattern.s ? 'S' : '*'}${pattern.p ? 'P' : '*'}${pattern.o ? 'O' : '*'}`;
-      
+      const signature = `${pattern.s ? "S" : "*"}${pattern.p ? "P" : "*"}${pattern.o ? "O" : "*"}`;
+
       if (!groups.has(signature)) {
         groups.set(signature, []);
       }
       groups.get(signature)!.push(index);
     });
-    
-    return Array.from(groups.entries()).map(([type, patterns]) => ({ type, patterns }));
+
+    return Array.from(groups.entries()).map(([type, patterns]) => ({
+      type,
+      patterns,
+    }));
   }
 
   /**
    * Optimized bulk query for large result sets
    */
-  bulkQuery(patterns: Array<{ s?: string; p?: string; o?: string }>): Triple[][] {
+  bulkQuery(
+    patterns: Array<{ s?: string; p?: string; o?: string }>,
+  ): Triple[][] {
     const startTime = performance.now();
     const results: Triple[][] = [];
-    
+
     // Process in batches to maintain responsiveness
     const QUERY_BATCH_SIZE = 50;
-    
+
     for (let i = 0; i < patterns.length; i += QUERY_BATCH_SIZE) {
       const batch = patterns.slice(i, i + QUERY_BATCH_SIZE);
-      const batchResults = batch.map(pattern => 
-        this.query(pattern.s, pattern.p, pattern.o)
+      const batchResults = batch.map((pattern) =>
+        this.query(pattern.s, pattern.p, pattern.o),
       );
       results.push(...batchResults);
-      
+
       // Yield control occasionally for long operations
       if (i > 0 && i % (QUERY_BATCH_SIZE * 4) === 0) {
         // Allow other operations to run
         setTimeout(() => {}, 0);
       }
     }
-    
+
     const queryTime = performance.now() - startTime;
     this.metrics.batchProcessingRate = patterns.length / (queryTime / 1000);
-    
+
     return results;
   }
 
@@ -776,7 +820,7 @@ export class IndexedGraph extends Graph {
     subject?: string,
     predicate?: string,
     object?: string,
-    batchSize: number = 100
+    batchSize: number = 100,
   ): Generator<Triple> {
     // For exact matches, use direct streaming
     if (subject && predicate && object) {
@@ -786,14 +830,14 @@ export class IndexedGraph extends Graph {
       }
       return;
     }
-    
+
     // For pattern matches, stream in batches to reduce memory
     const allTriples = this.getAllTriples();
     let count = 0;
-    
+
     for (const triple of allTriples) {
       let matches = true;
-      
+
       if (subject && triple.getSubject().toString() !== subject) {
         matches = false;
       }
@@ -803,11 +847,11 @@ export class IndexedGraph extends Graph {
       if (object && triple.getObject().toString() !== object) {
         matches = false;
       }
-      
+
       if (matches) {
         yield triple;
         count++;
-        
+
         // Yield control periodically for large streams
         if (count % batchSize === 0) {
           setTimeout(() => {}, 0);
@@ -822,11 +866,15 @@ export class IndexedGraph extends Graph {
   *iterateByPredicate(predicate: string): Generator<Triple> {
     const pMap = this.getPOSIndex().get(predicate);
     if (!pMap) return;
-    
+
     for (const [object, subjects] of pMap) {
       for (const subject of subjects) {
         // Find the actual triple
-        const triples = this.match(new IRI(subject), new IRI(predicate), this.parseObject(object));
+        const triples = this.match(
+          new IRI(subject),
+          new IRI(predicate),
+          this.parseObject(object),
+        );
         for (const triple of triples) {
           yield triple;
         }
@@ -897,17 +945,25 @@ export class IndexedGraph extends Graph {
    */
   private invalidateRelevantCaches(triple: Triple): void {
     const predicate = triple.getPredicate().toString();
-    
+
     // Clear general query cache
     this.queryCache.clear();
-    
+
     // Clear semantic cache if property-related
-    if (predicate.includes('Property') || predicate.includes('rdfs:') || predicate.includes('rdf:type')) {
+    if (
+      predicate.includes("Property") ||
+      predicate.includes("rdfs:") ||
+      predicate.includes("rdf:type")
+    ) {
       this.semanticCache.clear();
     }
-    
+
     // Clear hierarchy cache if hierarchy-related
-    if (predicate.includes('broader') || predicate.includes('narrower') || predicate.includes('subProperty')) {
+    if (
+      predicate.includes("broader") ||
+      predicate.includes("narrower") ||
+      predicate.includes("subProperty")
+    ) {
       this.transitiveClosureCache.clear();
     }
   }
@@ -943,15 +999,19 @@ export class IndexedGraph extends Graph {
     const alpha = 0.2;
     this.metrics.averageQueryTime =
       this.metrics.averageQueryTime * (1 - alpha) + newTime * alpha;
-    
+
     // Update memory efficiency periodically
-    if (Math.random() < 0.1) { // 10% of the time
+    if (Math.random() < 0.1) {
+      // 10% of the time
       this.updateMemoryEfficiency();
     }
-    
+
     // Auto-optimize if performance degrades
-    if (this.metrics.averageQueryTime > this.performanceThresholds.queryTimeWarning * 2) {
-      console.warn('Performance degradation detected, triggering optimization');
+    if (
+      this.metrics.averageQueryTime >
+      this.performanceThresholds.queryTimeWarning * 2
+    ) {
+      console.warn("Performance degradation detected, triggering optimization");
       this.autoOptimize();
     }
   }
@@ -961,19 +1021,27 @@ export class IndexedGraph extends Graph {
    */
   private autoOptimize(): void {
     const memStats = this.getMemoryStatistics();
-    
+
     // If memory usage is high, clear caches
-    if (memStats.utilization > this.performanceThresholds.memoryUsageWarning * 100) {
+    if (
+      memStats.utilization >
+      this.performanceThresholds.memoryUsageWarning * 100
+    ) {
       this.invalidateCache();
     }
-    
+
     // If index fragmentation is high, defragment
-    if (this.metrics.indexFragmentation > this.performanceThresholds.indexFragmentationLimit) {
+    if (
+      this.metrics.indexFragmentation >
+      this.performanceThresholds.indexFragmentationLimit
+    ) {
       this.defragmentIndexes();
     }
-    
+
     // If cache hit rate is low, adjust cache size
-    if (this.metrics.cacheHitRate < this.performanceThresholds.cacheHitRateTarget) {
+    if (
+      this.metrics.cacheHitRate < this.performanceThresholds.cacheHitRateTarget
+    ) {
       // Increase cache size temporarily
       (this as any).maxCacheSize = Math.min(this.maxCacheSize * 1.5, 2000);
     }
@@ -1029,27 +1097,33 @@ export class IndexedGraph extends Graph {
   } {
     const startTime = performance.now();
     const times: number[] = [];
-    
+
     // Generate random query patterns
     const subjects = Array.from(this.getSPOIndex().keys()).slice(0, 100);
     const predicates = Array.from(this.getPOSIndex().keys()).slice(0, 50);
-    
+
     const initialCacheHits = this.cacheHits;
     const initialCacheMisses = this.cacheMisses;
-    
+
     for (let i = 0; i < operations; i++) {
-      const subject = Math.random() < 0.7 ? subjects[Math.floor(Math.random() * subjects.length)] : undefined;
-      const predicate = Math.random() < 0.8 ? predicates[Math.floor(Math.random() * predicates.length)] : undefined;
-      
+      const subject =
+        Math.random() < 0.7
+          ? subjects[Math.floor(Math.random() * subjects.length)]
+          : undefined;
+      const predicate =
+        Math.random() < 0.8
+          ? predicates[Math.floor(Math.random() * predicates.length)]
+          : undefined;
+
       const queryStart = performance.now();
       this.query(subject, predicate);
       times.push(performance.now() - queryStart);
     }
-    
+
     const totalTime = performance.now() - startTime;
     const cacheHits = this.cacheHits - initialCacheHits;
     const cacheMisses = this.cacheMisses - initialCacheMisses;
-    
+
     return {
       avgQueryTime: times.reduce((a, b) => a + b, 0) / times.length,
       maxQueryTime: Math.max(...times),
@@ -1082,7 +1156,7 @@ export class IndexedGraph extends Graph {
     const benchmark = this.benchmark(100);
     const stats = this.getStatistics();
     const memStats = this.getMemoryStatistics();
-    
+
     return {
       timeBehavior: {
         compliant: benchmark.avgQueryTime < 100, // Sub-100ms target
@@ -1226,7 +1300,7 @@ export class IndexedGraph extends Graph {
     const object = triple.getObject().toString();
 
     // Handle broader/narrower relationships
-    if (predicate.includes('broader') || predicate.includes('skos:broader')) {
+    if (predicate.includes("broader") || predicate.includes("skos:broader")) {
       // subject broader object -> object is narrower than subject
       if (!this.propertyHierarchy.has(object)) {
         this.propertyHierarchy.set(object, new Set());
@@ -1239,7 +1313,7 @@ export class IndexedGraph extends Graph {
       this.inversePropertyHierarchy.get(subject)!.add(object);
     }
 
-    if (predicate.includes('narrower') || predicate.includes('skos:narrower')) {
+    if (predicate.includes("narrower") || predicate.includes("skos:narrower")) {
       // subject narrower object -> subject is narrower than object
       if (!this.propertyHierarchy.has(subject)) {
         this.propertyHierarchy.set(subject, new Set());
@@ -1253,7 +1327,10 @@ export class IndexedGraph extends Graph {
     }
 
     // Handle subProperty relationships
-    if (predicate.includes('subPropertyOf') || predicate.includes('rdfs:subPropertyOf')) {
+    if (
+      predicate.includes("subPropertyOf") ||
+      predicate.includes("rdfs:subPropertyOf")
+    ) {
       if (!this.propertyHierarchy.has(subject)) {
         this.propertyHierarchy.set(subject, new Set());
       }
@@ -1274,7 +1351,11 @@ export class IndexedGraph extends Graph {
     const subject = triple.getSubject().toString();
     const object = triple.getObject().toString();
 
-    if (predicate.includes('broader') || predicate.includes('narrower') || predicate.includes('subPropertyOf')) {
+    if (
+      predicate.includes("broader") ||
+      predicate.includes("narrower") ||
+      predicate.includes("subPropertyOf")
+    ) {
       this.propertyHierarchy.get(subject)?.delete(object);
       this.propertyHierarchy.get(object)?.delete(subject);
       this.inversePropertyHierarchy.get(subject)?.delete(object);
@@ -1292,14 +1373,14 @@ export class IndexedGraph extends Graph {
     property: string,
     hierarchy: Map<string, Set<string>>,
     visited: Set<string>,
-    depth: number = 0
+    depth: number = 0,
   ): void {
     if (depth > 10 || visited.has(property)) {
       return; // Prevent infinite loops and limit depth
     }
 
     const related = hierarchy.get(property);
-    
+
     if (related) {
       for (const rel of related) {
         if (!visited.has(rel)) {
@@ -1315,21 +1396,21 @@ export class IndexedGraph extends Graph {
    */
   private estimateIndexMemory(): number {
     let totalSize = 0;
-    
+
     // Estimate SPO index size
     for (const [, pMap] of this.getSPOIndex()) {
       for (const [, oSet] of pMap) {
         totalSize += oSet.size * 50; // Rough estimate per entry
       }
     }
-    
+
     // Add POS and OSP estimates
     totalSize *= 3; // Three main indexes
-    
+
     // Add hierarchy indexes
     totalSize += this.propertyHierarchy.size * 30;
     totalSize += this.inversePropertyHierarchy.size * 30;
-    
+
     return totalSize;
   }
 
@@ -1338,22 +1419,22 @@ export class IndexedGraph extends Graph {
    */
   private estimateCacheMemory(): number {
     let cacheSize = 0;
-    
+
     // Query cache
     for (const [key, triples] of this.queryCache) {
       cacheSize += key.length + triples.length * 100; // Rough estimate
     }
-    
+
     // Semantic cache
     for (const [key, set] of this.semanticCache) {
       cacheSize += key.length + set.size * 50;
     }
-    
+
     // Transitive closure cache
     for (const [key, set] of this.transitiveClosureCache) {
       cacheSize += key.length + set.size * 20;
     }
-    
+
     return cacheSize;
   }
 
@@ -1363,18 +1444,18 @@ export class IndexedGraph extends Graph {
   private calculateIndexFragmentation(): number {
     const totalTriples = this.size();
     if (totalTriples === 0) return 0;
-    
+
     let totalIndexEntries = 0;
-    
+
     // Count SPO index entries
     for (const [, pMap] of this.getSPOIndex()) {
       for (const [, oSet] of pMap) {
         totalIndexEntries += oSet.size;
       }
     }
-    
+
     // Ideal ratio should be close to 1 (one index entry per triple)
-    return Math.abs(1 - (totalIndexEntries / totalTriples)) / 3; // Normalize for 3 indexes
+    return Math.abs(1 - totalIndexEntries / totalTriples) / 3; // Normalize for 3 indexes
   }
 
   /**
@@ -1385,11 +1466,11 @@ export class IndexedGraph extends Graph {
     const indexMemory = this.estimateIndexMemory();
     const cacheMemory = this.estimateCacheMemory();
     const totalMemory = indexMemory + cacheMemory;
-    
+
     if (memStats.used > 0) {
-      this.metrics.memoryEfficiency = 1 - (totalMemory / memStats.used);
+      this.metrics.memoryEfficiency = 1 - totalMemory / memStats.used;
     }
-    
+
     this.metrics.indexFragmentation = this.calculateIndexFragmentation();
   }
 }

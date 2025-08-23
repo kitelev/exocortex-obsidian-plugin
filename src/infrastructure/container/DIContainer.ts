@@ -281,9 +281,8 @@ export class DIContainer {
       () => new OntologyProvisioningService(),
     );
 
-    this.container.register<PropertyCacheService>(
-      "PropertyCacheService",
-      () => PropertyCacheService.getInstance(),
+    this.container.register<PropertyCacheService>("PropertyCacheService", () =>
+      PropertyCacheService.getInstance(),
     );
 
     this.container.register<CircuitBreakerService>(
@@ -298,7 +297,9 @@ export class DIContainer {
         new CreateAssetUseCase(
           this.container.resolve<IAssetRepository>("IAssetRepository"),
           this.container.resolve<IOntologyRepository>("IOntologyRepository"),
-          this.container.resolve<OntologyProvisioningService>("OntologyProvisioningService")
+          this.container.resolve<OntologyProvisioningService>(
+            "OntologyProvisioningService",
+          ),
         ),
     );
 

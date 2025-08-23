@@ -3,7 +3,7 @@ export class CircuitBreakerService {
   private failures: Map<string, number> = new Map();
   private lastFailureTime: Map<string, number> = new Map();
   private circuitOpen: Map<string, boolean> = new Map();
-  
+
   private readonly threshold: number = 5;
   private readonly timeout: number = 60000; // 1 minute
 
@@ -16,10 +16,7 @@ export class CircuitBreakerService {
     return CircuitBreakerService.instance;
   }
 
-  async execute<T>(
-    key: string,
-    operation: () => Promise<T>
-  ): Promise<T> {
+  async execute<T>(key: string, operation: () => Promise<T>): Promise<T> {
     if (this.isOpen(key)) {
       throw new Error(`Circuit breaker is open for ${key}`);
     }
@@ -41,7 +38,7 @@ export class CircuitBreakerService {
 
     const lastFailure = this.lastFailureTime.get(key) || 0;
     const now = Date.now();
-    
+
     if (now - lastFailure > this.timeout) {
       this.reset(key);
       return false;
@@ -74,7 +71,7 @@ export class CircuitBreakerService {
   getStatus(key: string): { isOpen: boolean; failures: number } {
     return {
       isOpen: this.circuitOpen.get(key) || false,
-      failures: this.failures.get(key) || 0
+      failures: this.failures.get(key) || 0,
     };
   }
 }

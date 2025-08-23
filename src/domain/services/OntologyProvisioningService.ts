@@ -25,7 +25,7 @@ export class OntologyProvisioningService {
       prefix,
       uri: `http://example.org/${prefix}#`,
       label: `${prefix} Ontology`,
-      description: `Ontology for ${prefix} domain`
+      description: `Ontology for ${prefix} domain`,
     };
   }
 }

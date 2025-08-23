@@ -35,9 +35,11 @@ export class CreateAssetUseCase {
       await this.ontologyProvisioningService.ensureOntologyExists(
         request.ontologyPrefix,
       );
-      
+
       // Create ontology prefix
-      const ontologyPrefixResult = OntologyPrefix.create(request.ontologyPrefix);
+      const ontologyPrefixResult = OntologyPrefix.create(
+        request.ontologyPrefix,
+      );
       if (ontologyPrefixResult.isFailure) {
         return {
           success: false,
@@ -88,7 +90,8 @@ export class CreateAssetUseCase {
         message: `Created asset: ${asset.getTitle()}`,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return {
         success: false,
         assetId: "",

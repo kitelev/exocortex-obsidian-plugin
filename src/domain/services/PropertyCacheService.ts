@@ -29,7 +29,7 @@ export class PropertyCacheService {
 
   invalidate(pattern: string): void {
     const keys = Array.from(this.cache.keys());
-    keys.forEach(key => {
+    keys.forEach((key) => {
       if (key.includes(pattern)) {
         this.cache.delete(key);
       }

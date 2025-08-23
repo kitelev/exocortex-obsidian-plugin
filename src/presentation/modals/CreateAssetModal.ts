@@ -489,23 +489,30 @@ export class CreateAssetModal extends Modal {
           if (!response.success) {
             throw new Error(response.error || "Asset creation failed");
           }
-          
+
           return response;
-        }
+        },
       );
 
       new Notice(response.message);
       this.close();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       console.error("Asset creation failed:", error);
-      
+
       // Provide user-friendly error messages
       if (errorMessage.includes("Circuit")) {
-        new Notice("Asset creation is temporarily unavailable. Please try again in a moment.", 5000);
+        new Notice(
+          "Asset creation is temporarily unavailable. Please try again in a moment.",
+          5000,
+        );
       } else if (errorMessage.includes("ontology")) {
         new Notice(`Ontology issue: ${errorMessage}`, 8000);
-      } else if (errorMessage.includes("validation") || errorMessage.includes("Invalid")) {
+      } else if (
+        errorMessage.includes("validation") ||
+        errorMessage.includes("Invalid")
+      ) {
         new Notice(`Validation error: ${errorMessage}`, 6000);
       } else {
         new Notice(`Error: ${errorMessage}`, 5000);

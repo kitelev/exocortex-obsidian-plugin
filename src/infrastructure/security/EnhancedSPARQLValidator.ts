@@ -479,7 +479,10 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
       // Determine if query should be allowed (stricter for security)
       const criticalThreats = threats.filter((t) => t.severity === "critical");
       const highThreats = threats.filter((t) => t.severity === "high");
-      const allowed = criticalThreats.length === 0 && highThreats.length === 0 && securityScore >= 50;
+      const allowed =
+        criticalThreats.length === 0 &&
+        highThreats.length === 0 &&
+        securityScore >= 50;
 
       const enhancedResult: EnhancedValidationResult = {
         ...basicValidation,

@@ -34,9 +34,7 @@ export class CreateChildAreaUseCase {
       }
 
       const parentClassName = parentAsset.getClassName();
-      if (
-        !parentClassName.equals(ClassName.create("ems__Area").getValue())
-      ) {
+      if (!parentClassName.equals(ClassName.create("ems__Area").getValue())) {
         return {
           success: false,
           message: "Parent asset is not an area",
@@ -51,7 +49,8 @@ export class CreateChildAreaUseCase {
       );
 
       const createResult = await this.createAssetUseCase.execute({
-        title: request.areaTitle || `Area - ${areaId.toString().substring(0, 8)}`,
+        title:
+          request.areaTitle || `Area - ${areaId.toString().substring(0, 8)}`,
         className: "ems__Area",
         ontologyPrefix: parentAsset.getOntologyPrefix().toString(),
         properties: areaProperties,
@@ -85,7 +84,7 @@ export class CreateChildAreaUseCase {
   ): Record<string, any> {
     const now = new Date().toISOString().replace(/\.\d{3}Z$/, "");
     const title = areaTitle || `Area - ${areaId.toString().substring(0, 8)}`;
-    
+
     return {
       exo__Asset_uid: areaId.toString(),
       exo__Asset_label: title,

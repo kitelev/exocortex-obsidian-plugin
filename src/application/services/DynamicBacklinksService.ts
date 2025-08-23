@@ -79,7 +79,10 @@ export class DynamicBacklinksService {
     }
   }
 
-  private async isReferencingTarget(value: any, targetFile: any): Promise<boolean> {
+  private async isReferencingTarget(
+    value: any,
+    targetFile: any,
+  ): Promise<boolean> {
     if (!value) return false;
 
     // Handle arrays
@@ -118,7 +121,8 @@ export class DynamicBacklinksService {
       // Try to resolve the link to see if it points to our target file
       if (this.vaultAdapter.resolveLinkToFile) {
         try {
-          const resolvedFile = await this.vaultAdapter.resolveLinkToFile(linkText);
+          const resolvedFile =
+            await this.vaultAdapter.resolveLinkToFile(linkText);
           if (resolvedFile && resolvedFile.path === targetFile.path) {
             return true;
           }
