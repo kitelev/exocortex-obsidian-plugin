@@ -1,0 +1,70 @@
+name: Type Check & Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  type-check:
+    name: TypeScript Compilation & Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Check TypeScript compilation
+        run: npm run check:types
+        
+      - name: Run ESLint
+        run: npm run lint
+        
+      - name: Check code formatting
+        run: npm run format:check
+        
+      - name: Check for unused exports
+        run: npm run check:unused || true
+        
+      - name: Run full compilation check
+        run: npm run check:compile
+        
+      - name: Build plugin
+        run: npm run build
+        
+  test-compilation:
+    name: Test Compilation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Compile all TypeScript files
+        run: |
+          echo "Compiling all TypeScript files..."
+          npx tsc --noEmit --skipLibCheck
+          echo "✅ All TypeScript files compile successfully"
+          
+      - name: Check test files compilation
+        run: |
+          echo "Checking test files..."
+          npx tsc tests/**/*.ts --noEmit --skipLibCheck --allowJs
+          echo "✅ All test files compile successfully"

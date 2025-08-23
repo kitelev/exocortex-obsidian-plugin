@@ -1,0 +1,53 @@
+# Build artifacts
+main.js
+main.js.map
+styles.css
+*.log
+
+# Development dependencies
+node_modules/
+
+# Testing artifacts
+coverage/
+screenshots/
+wdio-logs/
+test-obsidian/
+.obsidian-cache/
+test-notes/
+~/ExocortexTestVault/
+
+# Debug files
+debug-main.js
+debug-main.ts
+*.backup
+*.old
+*.backup.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Obsidian plugin dev
+data.json
+.hotreload
+
+# Archive
+.archive/
+
+# Environment
+.env
+.env.local
+
+# Temporary test files
+test-*.js
+test-*.ts
+!tests/**/*.js
+!tests/**/*.ts
+
+# Performance cache
+.jest-cache/.turbo-cache/
+Makefile.bak.*
