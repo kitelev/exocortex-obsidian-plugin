@@ -933,7 +933,7 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
       );
     } catch {
       // If not a valid URL, check if it's a valid URN or namespace
-      return /^[a-zA-Z][a-zA-Z0-9]*:[a-zA-Z0-9_\\.\-]*$/.test(iri);
+      return /^[a-zA-Z][a-zA-Z0-9]*:[a-zA-Z0-9_\\.-]*$/.test(iri);
     }
   }
 
