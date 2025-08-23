@@ -1,0 +1,3434 @@
+{
+  "inputs": {
+    "src/infrastructure/lifecycle/LifecycleRegistry.ts": {
+      "bytes": 1828,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/ILifecycleManager",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/command-controllers/CommandRegistry.ts": {
+      "bytes": 1560,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/ICommandController",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/core/Container.ts": {
+      "bytes": 1806,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/infrastructure/adapters/ObsidianNotificationService.ts": {
+      "bytes": 683,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/INotificationService",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/core/Result.ts": {
+      "bytes": 1543,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/infrastructure/adapters/ObsidianFileSystemAdapter.ts": {
+      "bytes": 2852,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "../../application/ports/IFileSystemAdapter",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/adapters/ObsidianUIAdapter.ts": {
+      "bytes": 2691,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/IUIAdapter",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/adapters/ObsidianVaultAdapter.ts": {
+      "bytes": 2304,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/IVaultAdapter",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/value-objects/AssetId.ts": {
+      "bytes": 1586,
+      "imports": [
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/value-objects/ClassName.ts": {
+      "bytes": 1196,
+      "imports": [
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/value-objects/OntologyPrefix.ts": {
+      "bytes": 944,
+      "imports": [
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/value-objects/PropertyValue.ts": {
+      "bytes": 8775,
+      "imports": [
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/core/Entity.ts": {
+      "bytes": 2586,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/domain/entities/Asset.ts": {
+      "bytes": 16124,
+      "imports": [
+        {
+          "path": "src/domain/value-objects/AssetId.ts",
+          "kind": "import-statement",
+          "original": "../value-objects/AssetId"
+        },
+        {
+          "path": "src/domain/value-objects/ClassName.ts",
+          "kind": "import-statement",
+          "original": "../value-objects/ClassName"
+        },
+        {
+          "path": "src/domain/value-objects/OntologyPrefix.ts",
+          "kind": "import-statement",
+          "original": "../value-objects/OntologyPrefix"
+        },
+        {
+          "path": "src/domain/value-objects/PropertyValue.ts",
+          "kind": "import-statement",
+          "original": "../value-objects/PropertyValue"
+        },
+        {
+          "path": "src/domain/core/Entity.ts",
+          "kind": "import-statement",
+          "original": "../core/Entity"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/shared/utils/FileOperationUtils.ts": {
+      "bytes": 6324,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/shared/utils/ErrorHandlingUtils.ts": {
+      "bytes": 3205,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/shared/AbstractFileRepository.ts": {
+      "bytes": 6791,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/shared/utils/FileOperationUtils.ts",
+          "kind": "import-statement",
+          "original": "./utils/FileOperationUtils"
+        },
+        {
+          "path": "src/shared/utils/ErrorHandlingUtils.ts",
+          "kind": "import-statement",
+          "original": "./utils/ErrorHandlingUtils"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/repositories/ObsidianAssetRepository.ts": {
+      "bytes": 5739,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IAssetRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/entities/Asset.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/Asset"
+        },
+        {
+          "path": "../../domain/value-objects/AssetId",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/value-objects/ClassName",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/value-objects/OntologyPrefix",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/shared/AbstractFileRepository.ts",
+          "kind": "import-statement",
+          "original": "../../shared/AbstractFileRepository"
+        },
+        {
+          "path": "../../shared/utils/FileOperationUtils",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/entities/Ontology.ts": {
+      "bytes": 2142,
+      "imports": [
+        {
+          "path": "src/domain/value-objects/OntologyPrefix.ts",
+          "kind": "import-statement",
+          "original": "../value-objects/OntologyPrefix"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/repositories/ObsidianOntologyRepository.ts": {
+      "bytes": 2430,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IOntologyRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/entities/Ontology.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/Ontology"
+        },
+        {
+          "path": "../../domain/value-objects/OntologyPrefix",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/core/AggregateRoot.ts": {
+      "bytes": 1031,
+      "imports": [
+        {
+          "path": "src/domain/core/Entity.ts",
+          "kind": "import-statement",
+          "original": "./Entity"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/aggregates/ClassView.ts": {
+      "bytes": 7003,
+      "imports": [
+        {
+          "path": "src/domain/core/AggregateRoot.ts",
+          "kind": "import-statement",
+          "original": "../core/AggregateRoot"
+        },
+        {
+          "path": "../value-objects/AssetId",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../value-objects/ClassName",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        },
+        {
+          "path": "../entities/UIButton",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/entities/UIButton.ts": {
+      "bytes": 3367,
+      "imports": [
+        {
+          "path": "src/domain/core/Entity.ts",
+          "kind": "import-statement",
+          "original": "../core/Entity"
+        },
+        {
+          "path": "../value-objects/AssetId",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/repositories/ObsidianClassViewRepository.ts": {
+      "bytes": 9384,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IClassViewRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/aggregates/ClassView.ts",
+          "kind": "import-statement",
+          "original": "../../domain/aggregates/ClassView"
+        },
+        {
+          "path": "src/domain/value-objects/ClassName.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/ClassName"
+        },
+        {
+          "path": "src/domain/value-objects/AssetId.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/AssetId"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "src/domain/entities/UIButton.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/UIButton"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/entities/ButtonCommand.ts": {
+      "bytes": 7704,
+      "imports": [
+        {
+          "path": "src/domain/core/Entity.ts",
+          "kind": "import-statement",
+          "original": "../core/Entity"
+        },
+        {
+          "path": "../value-objects/AssetId",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/repositories/ObsidianButtonRepository.ts": {
+      "bytes": 11465,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IButtonRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/entities/UIButton.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/UIButton"
+        },
+        {
+          "path": "src/domain/entities/ButtonCommand.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/ButtonCommand"
+        },
+        {
+          "path": "src/domain/value-objects/AssetId.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/AssetId"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/entities/ClassLayout.ts": {
+      "bytes": 4128,
+      "imports": [
+        {
+          "path": "src/domain/core/Entity.ts",
+          "kind": "import-statement",
+          "original": "../core/Entity"
+        },
+        {
+          "path": "../value-objects/AssetId",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../value-objects/ClassName",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        },
+        {
+          "path": "./LayoutBlock",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/repositories/ObsidianClassLayoutRepository.ts": {
+      "bytes": 9985,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IClassLayoutRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/entities/ClassLayout.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/ClassLayout"
+        },
+        {
+          "path": "src/domain/value-objects/ClassName.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/ClassName"
+        },
+        {
+          "path": "src/domain/value-objects/AssetId.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/AssetId"
+        },
+        {
+          "path": "../../domain/core/Result",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/use-cases/CreateAssetUseCase.ts": {
+      "bytes": 4262,
+      "imports": [
+        {
+          "path": "src/domain/entities/Asset.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/Asset"
+        },
+        {
+          "path": "src/domain/value-objects/AssetId.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/AssetId"
+        },
+        {
+          "path": "src/domain/value-objects/ClassName.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/ClassName"
+        },
+        {
+          "path": "src/domain/value-objects/OntologyPrefix.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/OntologyPrefix"
+        },
+        {
+          "path": "../../domain/repositories/IAssetRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IOntologyRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/services/OntologyProvisioningService",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/use-cases/CreateChildTaskUseCase.ts": {
+      "bytes": 3298,
+      "imports": [
+        {
+          "path": "../../domain/entities/Asset",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/value-objects/AssetId.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/AssetId"
+        },
+        {
+          "path": "src/domain/value-objects/ClassName.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/ClassName"
+        },
+        {
+          "path": "../../domain/value-objects/OntologyPrefix",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IAssetRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "./CreateAssetUseCase",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/core/Result",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/use-cases/CreateChildAreaUseCase.ts": {
+      "bytes": 3292,
+      "imports": [
+        {
+          "path": "../../domain/entities/Asset",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/value-objects/AssetId.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/AssetId"
+        },
+        {
+          "path": "src/domain/value-objects/ClassName.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/ClassName"
+        },
+        {
+          "path": "../../domain/repositories/IAssetRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "./CreateAssetUseCase",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/core/Result",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/use-cases/RenderClassButtonsUseCase.ts": {
+      "bytes": 4547,
+      "imports": [
+        {
+          "path": "../core/UseCase",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "../../domain/repositories/IClassViewRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IButtonRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/value-objects/ClassName.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/ClassName"
+        },
+        {
+          "path": "../../domain/entities/UIButton",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/entities/ButtonCommand",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/use-cases/ExecuteButtonCommandUseCase.ts": {
+      "bytes": 4433,
+      "imports": [
+        {
+          "path": "../core/UseCase",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "../../domain/repositories/IButtonRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../services/ICommandExecutor",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/value-objects/AssetId.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/AssetId"
+        },
+        {
+          "path": "../../domain/entities/ButtonCommand",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/use-cases/PropertyEditingUseCase.ts": {
+      "bytes": 5950,
+      "imports": [
+        {
+          "path": "../core/UseCase",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "../../domain/repositories/IAssetRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/value-objects/AssetId.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/AssetId"
+        },
+        {
+          "path": "../../domain/entities/Asset",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/visual/QueryTemplate.ts": {
+      "bytes": 17019,
+      "imports": [
+        {
+          "path": "./VisualQueryNode",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "./VisualQueryEdge",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/visual/VisualQueryNode.ts": {
+      "bytes": 5432,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/domain/visual/VisualQueryEdge.ts": {
+      "bytes": 4716,
+      "imports": [
+        {
+          "path": "./VisualQueryNode",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/use-cases/QueryTemplateUseCase.ts": {
+      "bytes": 8953,
+      "imports": [
+        {
+          "path": "../../domain/repositories/IQueryTemplateRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/visual/QueryTemplate.ts",
+          "kind": "import-statement",
+          "original": "../../domain/visual/QueryTemplate"
+        },
+        {
+          "path": "src/domain/visual/VisualQueryNode.ts",
+          "kind": "import-statement",
+          "original": "../../domain/visual/VisualQueryNode"
+        },
+        {
+          "path": "src/domain/visual/VisualQueryEdge.ts",
+          "kind": "import-statement",
+          "original": "../../domain/visual/VisualQueryEdge"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/services/ObsidianCommandExecutor.ts": {
+      "bytes": 15133,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/services/ICommandExecutor",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "src/domain/entities/ButtonCommand.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/ButtonCommand"
+        },
+        {
+          "path": "../../domain/repositories/IAssetRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/entities/Asset.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/Asset"
+        },
+        {
+          "path": "src/domain/value-objects/AssetId.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/AssetId"
+        },
+        {
+          "path": "src/domain/value-objects/ClassName.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/ClassName"
+        },
+        {
+          "path": "src/domain/value-objects/OntologyPrefix.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/OntologyPrefix"
+        },
+        {
+          "path": "../../application/use-cases/CreateChildTaskUseCase",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/use-cases/CreateChildAreaUseCase",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/errors/ExocortexError.ts": {
+      "bytes": 3425,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/domain/errors/ErrorAnalyzer.ts": {
+      "bytes": 7697,
+      "imports": [
+        {
+          "path": "src/domain/errors/ExocortexError.ts",
+          "kind": "import-statement",
+          "original": "./ExocortexError"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/core/EnhancedResult.ts": {
+      "bytes": 4015,
+      "imports": [
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "./Result"
+        },
+        {
+          "path": "src/domain/errors/ExocortexError.ts",
+          "kind": "import-statement",
+          "original": "../errors/ExocortexError"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/services/ErrorHandlerService.ts": {
+      "bytes": 7966,
+      "imports": [
+        {
+          "path": "src/domain/errors/ExocortexError.ts",
+          "kind": "import-statement",
+          "original": "../../domain/errors/ExocortexError"
+        },
+        {
+          "path": "src/domain/errors/ErrorAnalyzer.ts",
+          "kind": "import-statement",
+          "original": "../../domain/errors/ErrorAnalyzer"
+        },
+        {
+          "path": "src/domain/core/EnhancedResult.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/EnhancedResult"
+        },
+        {
+          "path": "../ports/INotificationService",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/autocomplete/SPARQLSuggestion.ts": {
+      "bytes": 1810,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/domain/autocomplete/QueryContext.ts": {
+      "bytes": 2813,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/application/services/SPARQLAutocompleteService.ts": {
+      "bytes": 12838,
+      "imports": [
+        {
+          "path": "src/domain/autocomplete/SPARQLSuggestion.ts",
+          "kind": "import-statement",
+          "original": "../../domain/autocomplete/SPARQLSuggestion"
+        },
+        {
+          "path": "src/domain/autocomplete/QueryContext.ts",
+          "kind": "import-statement",
+          "original": "../../domain/autocomplete/QueryContext"
+        },
+        {
+          "path": "../../domain/repositories/ISuggestionRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "../../domain/semantic/core/Graph",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/services/OntologyProvisioningService.ts": {
+      "bytes": 902,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/domain/services/PropertyCacheService.ts": {
+      "bytes": 869,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/infrastructure/resilience/CircuitBreakerService.ts": {
+      "bytes": 1978,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/infrastructure/autocomplete/KeywordSuggestionProvider.ts": {
+      "bytes": 9437,
+      "imports": [
+        {
+          "path": "src/domain/autocomplete/SPARQLSuggestion.ts",
+          "kind": "import-statement",
+          "original": "../../domain/autocomplete/SPARQLSuggestion"
+        },
+        {
+          "path": "src/domain/autocomplete/QueryContext.ts",
+          "kind": "import-statement",
+          "original": "../../domain/autocomplete/QueryContext"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/repositories/GraphSuggestionRepository.ts": {
+      "bytes": 16675,
+      "imports": [
+        {
+          "path": "../../domain/repositories/ISuggestionRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/autocomplete/SPARQLSuggestion.ts",
+          "kind": "import-statement",
+          "original": "../../domain/autocomplete/SPARQLSuggestion"
+        },
+        {
+          "path": "src/domain/autocomplete/QueryContext.ts",
+          "kind": "import-statement",
+          "original": "../../domain/autocomplete/QueryContext"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "../../domain/semantic/core/Graph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/autocomplete/KeywordSuggestionProvider.ts",
+          "kind": "import-statement",
+          "original": "../autocomplete/KeywordSuggestionProvider"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/repositories/BuiltInQueryTemplates.ts": {
+      "bytes": 19654,
+      "imports": [
+        {
+          "path": "src/domain/visual/QueryTemplate.ts",
+          "kind": "import-statement",
+          "original": "../../domain/visual/QueryTemplate"
+        },
+        {
+          "path": "src/domain/visual/VisualQueryNode.ts",
+          "kind": "import-statement",
+          "original": "../../domain/visual/VisualQueryNode"
+        },
+        {
+          "path": "src/domain/visual/VisualQueryEdge.ts",
+          "kind": "import-statement",
+          "original": "../../domain/visual/VisualQueryEdge"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/repositories/ObsidianQueryTemplateRepository.ts": {
+      "bytes": 13624,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IQueryTemplateRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/visual/QueryTemplate.ts",
+          "kind": "import-statement",
+          "original": "../../domain/visual/QueryTemplate"
+        },
+        {
+          "path": "src/infrastructure/repositories/BuiltInQueryTemplates.ts",
+          "kind": "import-statement",
+          "original": "./BuiltInQueryTemplates"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/query-engines/DataviewQueryEngine.ts": {
+      "bytes": 9695,
+      "imports": [
+        {
+          "path": "../../domain/ports/IQueryEngine",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/query-engines/DatacoreQueryEngine.ts": {
+      "bytes": 12534,
+      "imports": [
+        {
+          "path": "../../domain/ports/IQueryEngine",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/query-engines/NativeQueryEngine.ts": {
+      "bytes": 21953,
+      "imports": [
+        {
+          "path": "../../domain/ports/IQueryEngine",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/utils/PlatformDetector.ts": {
+      "bytes": 10171,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/infrastructure/optimizers/MobilePerformanceOptimizer.ts": {
+      "bytes": 21781,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/query-engines/QueryEngineFactory.ts": {
+      "bytes": 9701,
+      "imports": [
+        {
+          "path": "../../domain/ports/IQueryEngine",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "src/infrastructure/query-engines/DataviewQueryEngine.ts",
+          "kind": "import-statement",
+          "original": "./DataviewQueryEngine"
+        },
+        {
+          "path": "src/infrastructure/query-engines/DatacoreQueryEngine.ts",
+          "kind": "import-statement",
+          "original": "./DatacoreQueryEngine"
+        },
+        {
+          "path": "src/infrastructure/query-engines/NativeQueryEngine.ts",
+          "kind": "import-statement",
+          "original": "./NativeQueryEngine"
+        },
+        {
+          "path": "src/infrastructure/utils/PlatformDetector.ts",
+          "kind": "import-statement",
+          "original": "../utils/PlatformDetector"
+        },
+        {
+          "path": "src/infrastructure/optimizers/MobilePerformanceOptimizer.ts",
+          "kind": "import-statement",
+          "original": "../optimizers/MobilePerformanceOptimizer"
+        },
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/entities/QueryEngineConfig.ts": {
+      "bytes": 3711,
+      "imports": [
+        {
+          "path": "src/domain/core/Entity.ts",
+          "kind": "import-statement",
+          "original": "../core/Entity"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        },
+        {
+          "path": "../ports/IQueryEngine",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/services/QueryEngineService.ts": {
+      "bytes": 8363,
+      "imports": [
+        {
+          "path": "../../domain/ports/IQueryEngine",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/entities/QueryEngineConfig.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/QueryEngineConfig"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/semantic/core/Graph.ts": {
+      "bytes": 8163,
+      "imports": [
+        {
+          "path": "./Triple",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../core/Result",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/semantic/core/Triple.ts": {
+      "bytes": 8712,
+      "imports": [
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/services/NamespaceManager.ts": {
+      "bytes": 6426,
+      "imports": [
+        {
+          "path": "src/domain/semantic/core/Triple.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Triple"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/services/RDFSerializer.ts": {
+      "bytes": 15590,
+      "imports": [
+        {
+          "path": "../../domain/semantic/core/Graph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/semantic/core/Triple.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Triple"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "src/application/services/NamespaceManager.ts",
+          "kind": "import-statement",
+          "original": "./NamespaceManager"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/services/RDFParser.ts": {
+      "bytes": 19545,
+      "imports": [
+        {
+          "path": "src/domain/semantic/core/Graph.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Graph"
+        },
+        {
+          "path": "src/domain/semantic/core/Triple.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Triple"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "src/application/services/NamespaceManager.ts",
+          "kind": "import-statement",
+          "original": "./NamespaceManager"
+        },
+        {
+          "path": "./RDFSerializer",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/services/RDFValidator.ts": {
+      "bytes": 8392,
+      "imports": [
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "../../domain/semantic/core/Graph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/semantic/core/Triple.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Triple"
+        },
+        {
+          "path": "./RDFSerializer",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/performance/MemoryOptimizedImporter.ts": {
+      "bytes": 10090,
+      "imports": [
+        {
+          "path": "../../domain/semantic/core/Graph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/semantic/core/IndexedGraph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/semantic/core/Triple.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Triple"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "src/application/services/RDFParser.ts",
+          "kind": "import-statement",
+          "original": "../../application/services/RDFParser"
+        },
+        {
+          "path": "../../application/services/NamespaceManager",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/semantic/core/IndexedGraph.ts": {
+      "bytes": 42847,
+      "imports": [
+        {
+          "path": "src/domain/semantic/core/Graph.ts",
+          "kind": "import-statement",
+          "original": "./Graph"
+        },
+        {
+          "path": "src/domain/semantic/core/Triple.ts",
+          "kind": "import-statement",
+          "original": "./Triple"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/services/RDFService.ts": {
+      "bytes": 12276,
+      "imports": [
+        {
+          "path": "src/domain/semantic/core/Graph.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Graph"
+        },
+        {
+          "path": "src/domain/semantic/core/Triple.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Triple"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "src/application/services/RDFSerializer.ts",
+          "kind": "import-statement",
+          "original": "./RDFSerializer"
+        },
+        {
+          "path": "src/application/services/RDFParser.ts",
+          "kind": "import-statement",
+          "original": "./RDFParser"
+        },
+        {
+          "path": "src/application/services/NamespaceManager.ts",
+          "kind": "import-statement",
+          "original": "./NamespaceManager"
+        },
+        {
+          "path": "src/application/services/RDFValidator.ts",
+          "kind": "import-statement",
+          "original": "./RDFValidator"
+        },
+        {
+          "path": "../ports/INotificationService",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../ports/IFileSystemAdapter",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/performance/MemoryOptimizedImporter.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/performance/MemoryOptimizedImporter"
+        },
+        {
+          "path": "src/domain/semantic/core/IndexedGraph.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/IndexedGraph"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/components/ButtonRenderer.ts": {
+      "bytes": 10513,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/use-cases/RenderClassButtonsUseCase",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/use-cases/ExecuteButtonCommandUseCase",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/entities/ButtonCommand",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/components/PropertyRenderer.ts": {
+      "bytes": 14285,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/use-cases/PropertyEditingUseCase",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/core/Result",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/services/DynamicBacklinksService.ts": {
+      "bytes": 5049,
+      "imports": [
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "../ports/IVaultAdapter",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../ports/IUIAdapter",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/renderers/DynamicBacklinksBlockRenderer.ts": {
+      "bytes": 4722,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/entities/LayoutBlock",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/application/services/DynamicBacklinksService.ts",
+          "kind": "import-statement",
+          "original": "../../application/services/DynamicBacklinksService"
+        },
+        {
+          "path": "src/infrastructure/adapters/ObsidianVaultAdapter.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/adapters/ObsidianVaultAdapter"
+        },
+        {
+          "path": "src/infrastructure/adapters/ObsidianUIAdapter.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/adapters/ObsidianUIAdapter"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/use-cases/GetLayoutForClassUseCase.ts": {
+      "bytes": 3059,
+      "imports": [
+        {
+          "path": "../../domain/repositories/IClassLayoutRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/entities/ClassLayout",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/value-objects/ClassName.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/ClassName"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/renderers/LayoutRenderer.ts": {
+      "bytes": 8781,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/entities/ClassLayout",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/entities/LayoutBlock",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/presentation/renderers/DynamicBacklinksBlockRenderer.ts",
+          "kind": "import-statement",
+          "original": "./DynamicBacklinksBlockRenderer"
+        },
+        {
+          "path": "src/application/use-cases/GetLayoutForClassUseCase.ts",
+          "kind": "import-statement",
+          "original": "../../application/use-cases/GetLayoutForClassUseCase"
+        },
+        {
+          "path": "../../domain/repositories/IClassLayoutRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../components/PropertyRenderer",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/services/QueryEngineService",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/components/MobileUIComponents.ts": {
+      "bytes": 19991,
+      "imports": [
+        {
+          "path": "src/infrastructure/utils/PlatformDetector.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/utils/PlatformDetector"
+        },
+        {
+          "path": "../../infrastructure/optimizers/MobilePerformanceOptimizer",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/mobile/TouchGraphController.ts": {
+      "bytes": 23636,
+      "imports": [
+        {
+          "path": "src/infrastructure/utils/PlatformDetector.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/utils/PlatformDetector"
+        },
+        {
+          "path": "../components/VisualQueryCanvas",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/mobile/MobileModalAdapter.ts": {
+      "bytes": 20851,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/utils/PlatformDetector.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/utils/PlatformDetector"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/offline/OfflineDataManager.ts": {
+      "bytes": 18455,
+      "imports": [
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "src/infrastructure/utils/PlatformDetector.ts",
+          "kind": "import-statement",
+          "original": "../utils/PlatformDetector"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/container/DIContainer.ts": {
+      "bytes": 18716,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/application/core/Container.ts",
+          "kind": "import-statement",
+          "original": "../../application/core/Container"
+        },
+        {
+          "path": "../../application/ports/INotificationService",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/IFileSystemAdapter",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/IUIAdapter",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/IVaultAdapter",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/adapters/ObsidianNotificationService.ts",
+          "kind": "import-statement",
+          "original": "../adapters/ObsidianNotificationService"
+        },
+        {
+          "path": "src/infrastructure/adapters/ObsidianFileSystemAdapter.ts",
+          "kind": "import-statement",
+          "original": "../adapters/ObsidianFileSystemAdapter"
+        },
+        {
+          "path": "src/infrastructure/adapters/ObsidianUIAdapter.ts",
+          "kind": "import-statement",
+          "original": "../adapters/ObsidianUIAdapter"
+        },
+        {
+          "path": "src/infrastructure/adapters/ObsidianVaultAdapter.ts",
+          "kind": "import-statement",
+          "original": "../adapters/ObsidianVaultAdapter"
+        },
+        {
+          "path": "../../domain/repositories/IAssetRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IOntologyRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IClassViewRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IButtonRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IClassLayoutRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/repositories/ObsidianAssetRepository.ts",
+          "kind": "import-statement",
+          "original": "../repositories/ObsidianAssetRepository"
+        },
+        {
+          "path": "src/infrastructure/repositories/ObsidianOntologyRepository.ts",
+          "kind": "import-statement",
+          "original": "../repositories/ObsidianOntologyRepository"
+        },
+        {
+          "path": "src/infrastructure/repositories/ObsidianClassViewRepository.ts",
+          "kind": "import-statement",
+          "original": "../repositories/ObsidianClassViewRepository"
+        },
+        {
+          "path": "src/infrastructure/repositories/ObsidianButtonRepository.ts",
+          "kind": "import-statement",
+          "original": "../repositories/ObsidianButtonRepository"
+        },
+        {
+          "path": "src/infrastructure/repositories/ObsidianClassLayoutRepository.ts",
+          "kind": "import-statement",
+          "original": "../repositories/ObsidianClassLayoutRepository"
+        },
+        {
+          "path": "src/application/use-cases/CreateAssetUseCase.ts",
+          "kind": "import-statement",
+          "original": "../../application/use-cases/CreateAssetUseCase"
+        },
+        {
+          "path": "src/application/use-cases/CreateChildTaskUseCase.ts",
+          "kind": "import-statement",
+          "original": "../../application/use-cases/CreateChildTaskUseCase"
+        },
+        {
+          "path": "src/application/use-cases/CreateChildAreaUseCase.ts",
+          "kind": "import-statement",
+          "original": "../../application/use-cases/CreateChildAreaUseCase"
+        },
+        {
+          "path": "src/application/use-cases/RenderClassButtonsUseCase.ts",
+          "kind": "import-statement",
+          "original": "../../application/use-cases/RenderClassButtonsUseCase"
+        },
+        {
+          "path": "src/application/use-cases/ExecuteButtonCommandUseCase.ts",
+          "kind": "import-statement",
+          "original": "../../application/use-cases/ExecuteButtonCommandUseCase"
+        },
+        {
+          "path": "src/application/use-cases/PropertyEditingUseCase.ts",
+          "kind": "import-statement",
+          "original": "../../application/use-cases/PropertyEditingUseCase"
+        },
+        {
+          "path": "src/application/use-cases/QueryTemplateUseCase.ts",
+          "kind": "import-statement",
+          "original": "../../application/use-cases/QueryTemplateUseCase"
+        },
+        {
+          "path": "../../application/services/ICommandExecutor",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/services/ObsidianCommandExecutor.ts",
+          "kind": "import-statement",
+          "original": "../services/ObsidianCommandExecutor"
+        },
+        {
+          "path": "src/application/services/ErrorHandlerService.ts",
+          "kind": "import-statement",
+          "original": "../../application/services/ErrorHandlerService"
+        },
+        {
+          "path": "src/application/services/SPARQLAutocompleteService.ts",
+          "kind": "import-statement",
+          "original": "../../application/services/SPARQLAutocompleteService"
+        },
+        {
+          "path": "src/domain/services/OntologyProvisioningService.ts",
+          "kind": "import-statement",
+          "original": "../../domain/services/OntologyProvisioningService"
+        },
+        {
+          "path": "src/domain/services/PropertyCacheService.ts",
+          "kind": "import-statement",
+          "original": "../../domain/services/PropertyCacheService"
+        },
+        {
+          "path": "src/infrastructure/resilience/CircuitBreakerService.ts",
+          "kind": "import-statement",
+          "original": "../resilience/CircuitBreakerService"
+        },
+        {
+          "path": "../../domain/repositories/ISuggestionRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/repositories/GraphSuggestionRepository.ts",
+          "kind": "import-statement",
+          "original": "../repositories/GraphSuggestionRepository"
+        },
+        {
+          "path": "../../domain/repositories/IQueryTemplateRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/repositories/ObsidianQueryTemplateRepository.ts",
+          "kind": "import-statement",
+          "original": "../repositories/ObsidianQueryTemplateRepository"
+        },
+        {
+          "path": "src/infrastructure/query-engines/QueryEngineFactory.ts",
+          "kind": "import-statement",
+          "original": "../query-engines/QueryEngineFactory"
+        },
+        {
+          "path": "src/application/services/QueryEngineService.ts",
+          "kind": "import-statement",
+          "original": "../../application/services/QueryEngineService"
+        },
+        {
+          "path": "src/domain/entities/QueryEngineConfig.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/QueryEngineConfig"
+        },
+        {
+          "path": "src/application/services/RDFService.ts",
+          "kind": "import-statement",
+          "original": "../../application/services/RDFService"
+        },
+        {
+          "path": "src/presentation/components/ButtonRenderer.ts",
+          "kind": "import-statement",
+          "original": "../../presentation/components/ButtonRenderer"
+        },
+        {
+          "path": "src/presentation/components/PropertyRenderer.ts",
+          "kind": "import-statement",
+          "original": "../../presentation/components/PropertyRenderer"
+        },
+        {
+          "path": "src/presentation/renderers/LayoutRenderer.ts",
+          "kind": "import-statement",
+          "original": "../../presentation/renderers/LayoutRenderer"
+        },
+        {
+          "path": "src/presentation/components/MobileUIComponents.ts",
+          "kind": "import-statement",
+          "original": "../../presentation/components/MobileUIComponents"
+        },
+        {
+          "path": "src/presentation/mobile/TouchGraphController.ts",
+          "kind": "import-statement",
+          "original": "../../presentation/mobile/TouchGraphController"
+        },
+        {
+          "path": "src/presentation/mobile/MobileModalAdapter.ts",
+          "kind": "import-statement",
+          "original": "../../presentation/mobile/MobileModalAdapter"
+        },
+        {
+          "path": "src/infrastructure/optimizers/MobilePerformanceOptimizer.ts",
+          "kind": "import-statement",
+          "original": "../optimizers/MobilePerformanceOptimizer"
+        },
+        {
+          "path": "src/infrastructure/offline/OfflineDataManager.ts",
+          "kind": "import-statement",
+          "original": "../offline/OfflineDataManager"
+        },
+        {
+          "path": "src/infrastructure/utils/PlatformDetector.ts",
+          "kind": "import-statement",
+          "original": "../utils/PlatformDetector"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/providers/ServiceProvider.ts": {
+      "bytes": 4036,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/IServiceProvider",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/semantic/core/Graph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/entities/ExocortexSettings",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/container/DIContainer.ts",
+          "kind": "import-statement",
+          "original": "../container/DIContainer"
+        },
+        {
+          "path": "../../application/services/RDFService",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/presentation/renderers/LayoutRenderer.ts",
+          "kind": "import-statement",
+          "original": "../../presentation/renderers/LayoutRenderer"
+        },
+        {
+          "path": "src/presentation/components/PropertyRenderer.ts",
+          "kind": "import-statement",
+          "original": "../../presentation/components/PropertyRenderer"
+        },
+        {
+          "path": "../../domain/repositories/IClassLayoutRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/use-cases/PropertyEditingUseCase",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/entities/ExocortexSettings.ts": {
+      "bytes": 6270,
+      "imports": [
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        },
+        {
+          "path": "../ports/IQueryEngine",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/settings/ExocortexSettingTab.ts": {
+      "bytes": 16199,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/entities/ExocortexSettings",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/ports/IQueryEngine",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../main",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/lifecycle/SettingsLifecycleManager.ts": {
+      "bytes": 2003,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/ILifecycleManager",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/entities/ExocortexSettings.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/ExocortexSettings"
+        },
+        {
+          "path": "src/presentation/settings/ExocortexSettingTab.ts",
+          "kind": "import-statement",
+          "original": "../../presentation/settings/ExocortexSettingTab"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/lifecycle/GraphLifecycleManager.ts": {
+      "bytes": 7125,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/ILifecycleManager",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/semantic/core/Graph.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Graph"
+        },
+        {
+          "path": "src/domain/semantic/core/Triple.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Triple"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/services/QueryCache.ts": {
+      "bytes": 8414,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/application/SPARQLEngine.ts": {
+      "bytes": 18118,
+      "imports": [
+        {
+          "path": "../domain/semantic/core/Graph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/semantic/core/Triple.ts",
+          "kind": "import-statement",
+          "original": "../domain/semantic/core/Triple"
+        },
+        {
+          "path": "src/application/services/QueryCache.ts",
+          "kind": "import-statement",
+          "original": "./services/QueryCache"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/modals/ExportRDFModal.ts": {
+      "bytes": 12939,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/semantic/core/Graph.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Graph"
+        },
+        {
+          "path": "src/application/services/RDFSerializer.ts",
+          "kind": "import-statement",
+          "original": "../../application/services/RDFSerializer"
+        },
+        {
+          "path": "src/application/services/NamespaceManager.ts",
+          "kind": "import-statement",
+          "original": "../../application/services/NamespaceManager"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/services/SPARQLSanitizer.ts": {
+      "bytes": 7902,
+      "imports": [
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/processors/SPARQLProcessor.ts": {
+      "bytes": 14960,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/application/SPARQLEngine.ts",
+          "kind": "import-statement",
+          "original": "../../application/SPARQLEngine"
+        },
+        {
+          "path": "../../domain/semantic/core/Graph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/services/ExoFocusService",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/services/QueryCache",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/services/RDFService",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/presentation/modals/ExportRDFModal.ts",
+          "kind": "import-statement",
+          "original": "../modals/ExportRDFModal"
+        },
+        {
+          "path": "../../application/services/RDFSerializer",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/application/services/SPARQLSanitizer.ts",
+          "kind": "import-statement",
+          "original": "../../application/services/SPARQLSanitizer"
+        },
+        {
+          "path": "src/infrastructure/container/DIContainer.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/container/DIContainer"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/processors/GraphVisualizationProcessor.ts": {
+      "bytes": 40046,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/application/SPARQLEngine.ts",
+          "kind": "import-statement",
+          "original": "../../application/SPARQLEngine"
+        },
+        {
+          "path": "src/domain/semantic/core/Graph.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Graph"
+        },
+        {
+          "path": "src/domain/semantic/core/Triple.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Triple"
+        },
+        {
+          "path": "../../application/services/RDFService",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/presentation/modals/ExportRDFModal.ts",
+          "kind": "import-statement",
+          "original": "../modals/ExportRDFModal"
+        },
+        {
+          "path": "../../application/services/RDFSerializer",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/container/DIContainer.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/container/DIContainer"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/lifecycle/ProcessorLifecycleManager.ts": {
+      "bytes": 3421,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/ILifecycleManager",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/semantic/core/Graph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/entities/ExocortexSettings",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/presentation/processors/SPARQLProcessor.ts",
+          "kind": "import-statement",
+          "original": "../../presentation/processors/SPARQLProcessor"
+        },
+        {
+          "path": "src/presentation/processors/GraphVisualizationProcessor.ts",
+          "kind": "import-statement",
+          "original": "../../presentation/processors/GraphVisualizationProcessor"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/modals/CreateAssetModal.ts": {
+      "bytes": 17654,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/use-cases/CreateAssetUseCase",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/container/DIContainer.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/container/DIContainer"
+        },
+        {
+          "path": "../../domain/repositories/IOntologyRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IClassViewRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/services/PropertyCacheService",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../infrastructure/resilience/CircuitBreakerService",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/core/Result",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/use-cases/CreateAssetUseCase",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/command-controllers/AssetCommandController.ts": {
+      "bytes": 1112,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/ICommandController",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/presentation/modals/CreateAssetModal.ts",
+          "kind": "import-statement",
+          "original": "../modals/CreateAssetModal"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/command-controllers/SPARQLCommandController.ts": {
+      "bytes": 1715,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/ICommandController",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../processors/SPARQLProcessor",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/modals/ImportRDFModal.ts": {
+      "bytes": 26080,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/semantic/core/Graph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/semantic/core/IndexedGraph.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/IndexedGraph"
+        },
+        {
+          "path": "src/application/services/RDFParser.ts",
+          "kind": "import-statement",
+          "original": "../../application/services/RDFParser"
+        },
+        {
+          "path": "../../application/services/RDFSerializer",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/application/services/NamespaceManager.ts",
+          "kind": "import-statement",
+          "original": "../../application/services/NamespaceManager"
+        },
+        {
+          "path": "src/infrastructure/performance/MemoryOptimizedImporter.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/performance/MemoryOptimizedImporter"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/command-controllers/RDFCommandController.ts": {
+      "bytes": 2425,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/ICommandController",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/semantic/core/Graph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/services/RDFService",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../processors/SPARQLProcessor",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/presentation/modals/ExportRDFModal.ts",
+          "kind": "import-statement",
+          "original": "../modals/ExportRDFModal"
+        },
+        {
+          "path": "src/presentation/modals/ImportRDFModal.ts",
+          "kind": "import-statement",
+          "original": "../modals/ImportRDFModal"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/value-objects/TaskId.ts": {
+      "bytes": 1173,
+      "imports": [
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/value-objects/Priority.ts": {
+      "bytes": 3717,
+      "imports": [
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/value-objects/TaskStatus.ts": {
+      "bytes": 4380,
+      "imports": [
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/domain/entities/Task.ts": {
+      "bytes": 12152,
+      "imports": [
+        {
+          "path": "src/domain/value-objects/TaskId.ts",
+          "kind": "import-statement",
+          "original": "../value-objects/TaskId"
+        },
+        {
+          "path": "src/domain/value-objects/Priority.ts",
+          "kind": "import-statement",
+          "original": "../value-objects/Priority"
+        },
+        {
+          "path": "src/domain/value-objects/TaskStatus.ts",
+          "kind": "import-statement",
+          "original": "../value-objects/TaskStatus"
+        },
+        {
+          "path": "src/domain/value-objects/AssetId.ts",
+          "kind": "import-statement",
+          "original": "../value-objects/AssetId"
+        },
+        {
+          "path": "src/domain/core/Entity.ts",
+          "kind": "import-statement",
+          "original": "../core/Entity"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/use-cases/CreateTaskFromProjectUseCase.ts": {
+      "bytes": 15253,
+      "imports": [
+        {
+          "path": "src/domain/entities/Task.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/Task"
+        },
+        {
+          "path": "src/domain/entities/Asset.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/Asset"
+        },
+        {
+          "path": "../../domain/value-objects/TaskId",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/value-objects/AssetId.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/AssetId"
+        },
+        {
+          "path": "src/domain/value-objects/Priority.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/Priority"
+        },
+        {
+          "path": "src/domain/value-objects/TaskStatus.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/TaskStatus"
+        },
+        {
+          "path": "../../domain/repositories/IAssetRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/ITaskRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/semantic/core/IndexedGraph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/semantic/core/Triple.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Triple"
+        },
+        {
+          "path": "./GetCurrentProjectUseCase",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../dtos/CreateTaskRequest",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../../domain/core/Result"
+        },
+        {
+          "path": "src/domain/value-objects/ClassName.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/ClassName"
+        },
+        {
+          "path": "src/domain/value-objects/OntologyPrefix.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/OntologyPrefix"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/application/use-cases/GetCurrentProjectUseCase.ts": {
+      "bytes": 10764,
+      "imports": [
+        {
+          "path": "../../domain/entities/Asset",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/value-objects/AssetId",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/value-objects/ClassName.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/ClassName"
+        },
+        {
+          "path": "../../domain/repositories/IAssetRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../services/ExoFocusService",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/semantic/core/IndexedGraph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/semantic/core/Triple",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../dtos/CreateTaskRequest",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/repositories/ObsidianTaskRepository.ts": {
+      "bytes": 16844,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/ITaskRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/entities/Task.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/Task"
+        },
+        {
+          "path": "src/domain/value-objects/TaskId.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/TaskId"
+        },
+        {
+          "path": "src/domain/value-objects/AssetId.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/AssetId"
+        },
+        {
+          "path": "src/domain/value-objects/TaskStatus.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/TaskStatus"
+        },
+        {
+          "path": "src/domain/value-objects/Priority.ts",
+          "kind": "import-statement",
+          "original": "../../domain/value-objects/Priority"
+        },
+        {
+          "path": "../../domain/core/Result",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/modals/QuickTaskModal.ts": {
+      "bytes": 10785,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/use-cases/CreateTaskFromProjectUseCase",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/use-cases/GetCurrentProjectUseCase",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/dtos/CreateTaskRequest",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/command-controllers/TaskCommandController.ts": {
+      "bytes": 3052,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/ports/ICommandController",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/semantic/core/Graph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/application/use-cases/CreateTaskFromProjectUseCase.ts",
+          "kind": "import-statement",
+          "original": "../../application/use-cases/CreateTaskFromProjectUseCase"
+        },
+        {
+          "path": "src/application/use-cases/GetCurrentProjectUseCase.ts",
+          "kind": "import-statement",
+          "original": "../../application/use-cases/GetCurrentProjectUseCase"
+        },
+        {
+          "path": "src/infrastructure/repositories/ObsidianTaskRepository.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/repositories/ObsidianTaskRepository"
+        },
+        {
+          "path": "src/infrastructure/repositories/ObsidianAssetRepository.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/repositories/ObsidianAssetRepository"
+        },
+        {
+          "path": "src/domain/semantic/core/IndexedGraph.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/IndexedGraph"
+        },
+        {
+          "path": "../../application/services/ExoFocusService",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/presentation/modals/QuickTaskModal.ts",
+          "kind": "import-statement",
+          "original": "../modals/QuickTaskModal"
+        },
+        {
+          "path": "src/infrastructure/container/DIContainer.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/container/DIContainer"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/ExocortexPlugin.ts": {
+      "bytes": 6192,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/lifecycle/LifecycleRegistry.ts",
+          "kind": "import-statement",
+          "original": "./infrastructure/lifecycle/LifecycleRegistry"
+        },
+        {
+          "path": "src/presentation/command-controllers/CommandRegistry.ts",
+          "kind": "import-statement",
+          "original": "./presentation/command-controllers/CommandRegistry"
+        },
+        {
+          "path": "src/infrastructure/providers/ServiceProvider.ts",
+          "kind": "import-statement",
+          "original": "./infrastructure/providers/ServiceProvider"
+        },
+        {
+          "path": "src/infrastructure/lifecycle/SettingsLifecycleManager.ts",
+          "kind": "import-statement",
+          "original": "./infrastructure/lifecycle/SettingsLifecycleManager"
+        },
+        {
+          "path": "src/infrastructure/lifecycle/GraphLifecycleManager.ts",
+          "kind": "import-statement",
+          "original": "./infrastructure/lifecycle/GraphLifecycleManager"
+        },
+        {
+          "path": "src/infrastructure/lifecycle/ProcessorLifecycleManager.ts",
+          "kind": "import-statement",
+          "original": "./infrastructure/lifecycle/ProcessorLifecycleManager"
+        },
+        {
+          "path": "src/presentation/command-controllers/AssetCommandController.ts",
+          "kind": "import-statement",
+          "original": "./presentation/command-controllers/AssetCommandController"
+        },
+        {
+          "path": "src/presentation/command-controllers/SPARQLCommandController.ts",
+          "kind": "import-statement",
+          "original": "./presentation/command-controllers/SPARQLCommandController"
+        },
+        {
+          "path": "src/presentation/command-controllers/RDFCommandController.ts",
+          "kind": "import-statement",
+          "original": "./presentation/command-controllers/RDFCommandController"
+        },
+        {
+          "path": "src/presentation/command-controllers/TaskCommandController.ts",
+          "kind": "import-statement",
+          "original": "./presentation/command-controllers/TaskCommandController"
+        },
+        {
+          "path": "./domain/entities/ExocortexSettings",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/main.ts": {
+      "bytes": 188,
+      "imports": [
+        {
+          "path": "src/ExocortexPlugin.ts",
+          "kind": "import-statement",
+          "original": "./ExocortexPlugin"
+        }
+      ],
+      "format": "esm"
+    }
+  },
+  "outputs": {
+    "main.js": {
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        }
+      ],
+      "exports": [],
+      "entryPoint": "src/main.ts",
+      "inputs": {
+        "src/main.ts": {
+          "bytesInOutput": 56
+        },
+        "src/ExocortexPlugin.ts": {
+          "bytesInOutput": 2411
+        },
+        "src/infrastructure/lifecycle/LifecycleRegistry.ts": {
+          "bytesInOutput": 406
+        },
+        "src/presentation/command-controllers/CommandRegistry.ts": {
+          "bytesInOutput": 328
+        },
+        "src/application/core/Container.ts": {
+          "bytesInOutput": 586
+        },
+        "src/infrastructure/adapters/ObsidianNotificationService.ts": {
+          "bytesInOutput": 225
+        },
+        "src/infrastructure/adapters/ObsidianFileSystemAdapter.ts": {
+          "bytesInOutput": 1372
+        },
+        "src/domain/core/Result.ts": {
+          "bytesInOutput": 673
+        },
+        "src/infrastructure/adapters/ObsidianUIAdapter.ts": {
+          "bytesInOutput": 1204
+        },
+        "src/infrastructure/adapters/ObsidianVaultAdapter.ts": {
+          "bytesInOutput": 1129
+        },
+        "src/infrastructure/repositories/ObsidianAssetRepository.ts": {
+          "bytesInOutput": 2278
+        },
+        "src/domain/value-objects/AssetId.ts": {
+          "bytesInOutput": 676
+        },
+        "src/domain/value-objects/ClassName.ts": {
+          "bytesInOutput": 528
+        },
+        "src/domain/value-objects/OntologyPrefix.ts": {
+          "bytesInOutput": 377
+        },
+        "src/domain/value-objects/PropertyValue.ts": {
+          "bytesInOutput": 2823
+        },
+        "src/domain/core/Entity.ts": {
+          "bytesInOutput": 652
+        },
+        "src/domain/entities/Asset.ts": {
+          "bytesInOutput": 7360
+        },
+        "src/shared/AbstractFileRepository.ts": {
+          "bytesInOutput": 2192
+        },
+        "src/shared/utils/FileOperationUtils.ts": {
+          "bytesInOutput": 2236
+        },
+        "src/shared/utils/ErrorHandlingUtils.ts": {
+          "bytesInOutput": 949
+        },
+        "src/infrastructure/repositories/ObsidianOntologyRepository.ts": {
+          "bytesInOutput": 1068
+        },
+        "src/domain/entities/Ontology.ts": {
+          "bytesInOutput": 979
+        },
+        "src/infrastructure/repositories/ObsidianClassViewRepository.ts": {
+          "bytesInOutput": 4282
+        },
+        "src/domain/core/AggregateRoot.ts": {
+          "bytesInOutput": 239
+        },
+        "src/domain/aggregates/ClassView.ts": {
+          "bytesInOutput": 3009
+        },
+        "src/domain/entities/UIButton.ts": {
+          "bytesInOutput": 1541
+        },
+        "src/infrastructure/repositories/ObsidianButtonRepository.ts": {
+          "bytesInOutput": 5351
+        },
+        "src/domain/entities/ButtonCommand.ts": {
+          "bytesInOutput": 3085
+        },
+        "src/domain/entities/ClassLayout.ts": {
+          "bytesInOutput": 1844
+        },
+        "src/infrastructure/repositories/ObsidianClassLayoutRepository.ts": {
+          "bytesInOutput": 4545
+        },
+        "src/application/use-cases/CreateAssetUseCase.ts": {
+          "bytesInOutput": 1473
+        },
+        "src/application/use-cases/CreateChildTaskUseCase.ts": {
+          "bytesInOutput": 1342
+        },
+        "src/application/use-cases/CreateChildAreaUseCase.ts": {
+          "bytesInOutput": 1328
+        },
+        "src/application/use-cases/RenderClassButtonsUseCase.ts": {
+          "bytesInOutput": 1199
+        },
+        "src/application/use-cases/ExecuteButtonCommandUseCase.ts": {
+          "bytesInOutput": 1484
+        },
+        "src/application/use-cases/PropertyEditingUseCase.ts": {
+          "bytesInOutput": 1979
+        },
+        "src/domain/visual/QueryTemplate.ts": {
+          "bytesInOutput": 7558
+        },
+        "src/domain/visual/VisualQueryNode.ts": {
+          "bytesInOutput": 2591
+        },
+        "src/domain/visual/VisualQueryEdge.ts": {
+          "bytesInOutput": 2082
+        },
+        "src/application/use-cases/QueryTemplateUseCase.ts": {
+          "bytesInOutput": 3897
+        },
+        "src/infrastructure/services/ObsidianCommandExecutor.ts": {
+          "bytesInOutput": 6548
+        },
+        "src/domain/errors/ExocortexError.ts": {
+          "bytesInOutput": 1187
+        },
+        "src/domain/errors/ErrorAnalyzer.ts": {
+          "bytesInOutput": 4229
+        },
+        "src/domain/core/EnhancedResult.ts": {
+          "bytesInOutput": 1547
+        },
+        "src/application/services/ErrorHandlerService.ts": {
+          "bytesInOutput": 3461
+        },
+        "src/domain/autocomplete/SPARQLSuggestion.ts": {
+          "bytesInOutput": 600
+        },
+        "src/domain/autocomplete/QueryContext.ts": {
+          "bytesInOutput": 1101
+        },
+        "src/application/services/SPARQLAutocompleteService.ts": {
+          "bytesInOutput": 5288
+        },
+        "src/domain/services/OntologyProvisioningService.ts": {
+          "bytesInOutput": 331
+        },
+        "src/domain/services/PropertyCacheService.ts": {
+          "bytesInOutput": 369
+        },
+        "src/infrastructure/resilience/CircuitBreakerService.ts": {
+          "bytesInOutput": 923
+        },
+        "src/infrastructure/autocomplete/KeywordSuggestionProvider.ts": {
+          "bytesInOutput": 5164
+        },
+        "src/infrastructure/repositories/GraphSuggestionRepository.ts": {
+          "bytesInOutput": 8460
+        },
+        "src/infrastructure/repositories/BuiltInQueryTemplates.ts": {
+          "bytesInOutput": 11208
+        },
+        "src/infrastructure/repositories/ObsidianQueryTemplateRepository.ts": {
+          "bytesInOutput": 6710
+        },
+        "src/infrastructure/query-engines/DataviewQueryEngine.ts": {
+          "bytesInOutput": 4248
+        },
+        "src/infrastructure/query-engines/DatacoreQueryEngine.ts": {
+          "bytesInOutput": 5165
+        },
+        "src/infrastructure/query-engines/NativeQueryEngine.ts": {
+          "bytesInOutput": 10042
+        },
+        "src/infrastructure/utils/PlatformDetector.ts": {
+          "bytesInOutput": 4129
+        },
+        "src/infrastructure/optimizers/MobilePerformanceOptimizer.ts": {
+          "bytesInOutput": 8072
+        },
+        "src/infrastructure/query-engines/QueryEngineFactory.ts": {
+          "bytesInOutput": 3541
+        },
+        "src/domain/entities/QueryEngineConfig.ts": {
+          "bytesInOutput": 1888
+        },
+        "src/application/services/QueryEngineService.ts": {
+          "bytesInOutput": 3007
+        },
+        "src/domain/semantic/core/Graph.ts": {
+          "bytesInOutput": 3755
+        },
+        "src/domain/semantic/core/Triple.ts": {
+          "bytesInOutput": 4969
+        },
+        "src/application/services/NamespaceManager.ts": {
+          "bytesInOutput": 2625
+        },
+        "src/application/services/RDFSerializer.ts": {
+          "bytesInOutput": 6053
+        },
+        "src/application/services/RDFParser.ts": {
+          "bytesInOutput": 6662
+        },
+        "src/application/services/RDFValidator.ts": {
+          "bytesInOutput": 3532
+        },
+        "src/infrastructure/performance/MemoryOptimizedImporter.ts": {
+          "bytesInOutput": 3323
+        },
+        "src/domain/semantic/core/IndexedGraph.ts": {
+          "bytesInOutput": 16230
+        },
+        "src/application/services/RDFService.ts": {
+          "bytesInOutput": 4554
+        },
+        "src/presentation/components/ButtonRenderer.ts": {
+          "bytesInOutput": 4317
+        },
+        "src/presentation/components/PropertyRenderer.ts": {
+          "bytesInOutput": 5617
+        },
+        "src/application/services/DynamicBacklinksService.ts": {
+          "bytesInOutput": 1642
+        },
+        "src/presentation/renderers/DynamicBacklinksBlockRenderer.ts": {
+          "bytesInOutput": 1992
+        },
+        "src/application/use-cases/GetLayoutForClassUseCase.ts": {
+          "bytesInOutput": 975
+        },
+        "src/presentation/renderers/LayoutRenderer.ts": {
+          "bytesInOutput": 3036
+        },
+        "src/presentation/components/MobileUIComponents.ts": {
+          "bytesInOutput": 8629
+        },
+        "src/presentation/mobile/TouchGraphController.ts": {
+          "bytesInOutput": 11405
+        },
+        "src/presentation/mobile/MobileModalAdapter.ts": {
+          "bytesInOutput": 10162
+        },
+        "src/infrastructure/offline/OfflineDataManager.ts": {
+          "bytesInOutput": 7256
+        },
+        "src/infrastructure/container/DIContainer.ts": {
+          "bytesInOutput": 6562
+        },
+        "src/infrastructure/providers/ServiceProvider.ts": {
+          "bytesInOutput": 1315
+        },
+        "src/infrastructure/lifecycle/SettingsLifecycleManager.ts": {
+          "bytesInOutput": 584
+        },
+        "src/domain/entities/ExocortexSettings.ts": {
+          "bytesInOutput": 2141
+        },
+        "src/presentation/settings/ExocortexSettingTab.ts": {
+          "bytesInOutput": 9814
+        },
+        "src/infrastructure/lifecycle/GraphLifecycleManager.ts": {
+          "bytesInOutput": 2639
+        },
+        "src/presentation/processors/SPARQLProcessor.ts": {
+          "bytesInOutput": 7107
+        },
+        "src/application/services/QueryCache.ts": {
+          "bytesInOutput": 3092
+        },
+        "src/application/SPARQLEngine.ts": {
+          "bytesInOutput": 6988
+        },
+        "src/presentation/modals/ExportRDFModal.ts": {
+          "bytesInOutput": 7784
+        },
+        "src/application/services/SPARQLSanitizer.ts": {
+          "bytesInOutput": 3067
+        },
+        "src/presentation/processors/GraphVisualizationProcessor.ts": {
+          "bytesInOutput": 19551
+        },
+        "src/infrastructure/lifecycle/ProcessorLifecycleManager.ts": {
+          "bytesInOutput": 1163
+        },
+        "src/presentation/modals/CreateAssetModal.ts": {
+          "bytesInOutput": 7596
+        },
+        "src/presentation/command-controllers/AssetCommandController.ts": {
+          "bytesInOutput": 398
+        },
+        "src/presentation/command-controllers/SPARQLCommandController.ts": {
+          "bytesInOutput": 816
+        },
+        "src/presentation/command-controllers/RDFCommandController.ts": {
+          "bytesInOutput": 767
+        },
+        "src/presentation/modals/ImportRDFModal.ts": {
+          "bytesInOutput": 16178
+        },
+        "src/presentation/command-controllers/TaskCommandController.ts": {
+          "bytesInOutput": 659
+        },
+        "src/domain/value-objects/TaskId.ts": {
+          "bytesInOutput": 493
+        },
+        "src/domain/value-objects/Priority.ts": {
+          "bytesInOutput": 1540
+        },
+        "src/domain/value-objects/TaskStatus.ts": {
+          "bytesInOutput": 1662
+        },
+        "src/domain/entities/Task.ts": {
+          "bytesInOutput": 6071
+        },
+        "src/application/use-cases/CreateTaskFromProjectUseCase.ts": {
+          "bytesInOutput": 5727
+        },
+        "src/application/use-cases/GetCurrentProjectUseCase.ts": {
+          "bytesInOutput": 3743
+        },
+        "src/infrastructure/repositories/ObsidianTaskRepository.ts": {
+          "bytesInOutput": 7716
+        },
+        "src/presentation/modals/QuickTaskModal.ts": {
+          "bytesInOutput": 5748
+        }
+      },
+      "bytes": 414770
+    }
+  }
+}

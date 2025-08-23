@@ -1,0 +1,95 @@
+name: UI Tests
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  ui-tests:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build plugin
+        run: npm run build
+      
+      - name: Setup display server (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y xvfb fluxbox x11-utils x11-xserver-utils
+          # Start Xvfb
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset &
+          # Wait for X server to start
+          sleep 3
+          # Start a lightweight window manager
+          fluxbox -display :99 &
+          sleep 2
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+      
+      - name: Run UI tests with fallback
+        env:
+          DISPLAY: ${{ runner.os == 'Linux' && ':99' || '' }}
+          CI: true
+          DEBUG: ${{ runner.debug == '1' && 'true' || 'false' }}
+        run: npm run test:ui:with-fallback
+        timeout-minutes: 30
+      
+      - name: Upload test results and artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-results-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: |
+            wdio-logs/
+            screenshots/
+            /tmp/xvfb.log
+          retention-days: 7
+          
+      - name: Output test summary
+        if: always()
+        run: |
+          echo "## UI Test Results 📊" >> $GITHUB_STEP_SUMMARY
+          echo "- **Platform:** ${{ runner.os }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Node Version:** ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -d "wdio-logs" ]; then
+            echo "- **Log Files:**" >> $GITHUB_STEP_SUMMARY
+            find wdio-logs -name "*.json" -exec echo "  - {}" \; >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          if [ -d "screenshots" ]; then
+            screenshot_count=$(find screenshots -name "*.png" | wc -l)
+            echo "- **Screenshots Captured:** $screenshot_count" >> $GITHUB_STEP_SUMMARY
+            if [ $screenshot_count -gt 0 ]; then
+              echo "  - Check artifacts for failure screenshots" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+      
+      - name: Upload coverage
+        if: success()
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          flags: ui-tests
+          name: ui-coverage-${{ matrix.os }}-node${{ matrix.node-version }}

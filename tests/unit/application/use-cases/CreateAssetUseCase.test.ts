@@ -11,11 +11,13 @@ import { IAssetRepository } from "../../../../src/domain/repositories/IAssetRepo
 import { IOntologyRepository } from "../../../../src/domain/repositories/IOntologyRepository";
 import { Ontology } from "../../../../src/domain/entities/Ontology";
 import { Result } from "../../../../src/domain/core/Result";
+import { OntologyProvisioningService } from "../../../../src/domain/services/OntologyProvisioningService";
 
 describe("CreateAssetUseCase", () => {
   let useCase: CreateAssetUseCase;
   let mockAssetRepository: jest.Mocked<IAssetRepository>;
   let mockOntologyRepository: jest.Mocked<IOntologyRepository>;
+  let mockProvisioningService: jest.Mocked<OntologyProvisioningService>;
 
   beforeEach(() => {
     // Setup mock repositories
@@ -37,9 +39,15 @@ describe("CreateAssetUseCase", () => {
       exists: jest.fn(),
     };
 
+    mockProvisioningService = {
+      ensureOntologyExists: jest.fn(),
+      canProvisionOntology: jest.fn(),
+    } as jest.Mocked<OntologyProvisioningService>;
+
     useCase = new CreateAssetUseCase(
       mockAssetRepository,
       mockOntologyRepository,
+      mockProvisioningService,
     );
   });
 
@@ -72,6 +80,12 @@ describe("CreateAssetUseCase", () => {
 
       mockOntologyRepository.findByPrefix.mockResolvedValue(mockOntology);
       mockAssetRepository.save.mockResolvedValue(undefined);
+      
+      // Mock successful ontology provisioning
+      const expectedPrefix = OntologyPrefix.create("exo").getValue()!;
+      mockProvisioningService.ensureOntologyExists.mockResolvedValue(
+        Result.ok(expectedPrefix)
+      );
     });
 
     test("should create asset successfully with minimal data", async () => {
@@ -257,9 +271,10 @@ describe("CreateAssetUseCase", () => {
         ontologyPrefix: "exo",
       };
 
-      await expect(useCase.execute(request)).rejects.toThrow(
-        "Asset title is required",
-      );
+      const response = await useCase.execute(request);
+      
+      expect(response.success).toBe(false);
+      expect(response.error).toBe("Asset title is required");
     });
 
     test("should throw error for whitespace-only title", async () => {

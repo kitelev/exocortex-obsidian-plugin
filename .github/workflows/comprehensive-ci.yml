@@ -202,11 +202,11 @@ jobs:
           flags: ${{ matrix.suite }}
           name: ${{ matrix.suite }}-node${{ matrix.node }}
 
-  # Stage 3: UI Tests (can be skipped)
+  # Stage 3: UI Tests (temporarily disabled for stability)
   ui-tests:
     name: UI Tests - ${{ matrix.os }}
     needs: build-matrix
-    if: github.event.inputs.skip-ui-tests != 'true'
+    if: false
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     strategy:

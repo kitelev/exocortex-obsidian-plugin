@@ -49,4 +49,5 @@ test-*.ts
 !tests/**/*.ts
 
 # Performance cache
-.jest-cache/
+.jest-cache/.turbo-cache/
+Makefile.bak.*

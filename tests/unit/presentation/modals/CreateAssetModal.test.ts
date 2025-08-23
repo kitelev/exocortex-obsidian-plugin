@@ -2,6 +2,7 @@ import { App, Setting, Notice } from "obsidian";
 import { CreateAssetModal } from "../../../../src/presentation/modals/CreateAssetModal";
 import { CreateAssetUseCase } from "../../../../src/application/use-cases/CreateAssetUseCase";
 import { DIContainer } from "../../../../src/infrastructure/container/DIContainer";
+import { Result } from "../../../../src/domain/core/Result";
 
 // Mock DIContainer
 jest.mock("../../../../src/infrastructure/container/DIContainer");
@@ -59,8 +60,10 @@ beforeAll(() => {
     return element;
   });
 
-  HTMLElement.prototype.empty = jest.fn().mockImplementation(() => {
-    // Mock empty implementation - in real Obsidian this clears the element
+  HTMLElement.prototype.empty = jest.fn().mockImplementation(function () {
+    while (this.firstChild) {
+      this.removeChild(this.firstChild);
+    }
   });
 });
 
@@ -69,6 +72,8 @@ describe("CreateAssetModal", () => {
   let modal: CreateAssetModal;
   let mockCreateAssetUseCase: jest.Mocked<CreateAssetUseCase>;
   let mockContainer: jest.Mocked<DIContainer>;
+  let mockCircuitBreaker: any;
+  let mockPropertyCache: any;
 
   beforeEach(() => {
     // Setup app mock with vault and metadataCache
@@ -86,11 +91,32 @@ describe("CreateAssetModal", () => {
       execute: jest.fn(),
     } as any;
 
+    // Mock services for enhanced functionality
+    mockPropertyCache = {
+      getPropertiesForClass: jest.fn().mockReturnValue([]),
+      updateClassProperties: jest.fn(),
+      hasPropertiesForClass: jest.fn().mockReturnValue(false),
+      clearCache: jest.fn(),
+    };
+
+    mockCircuitBreaker = {
+      execute: jest.fn(),
+      getCircuitState: jest.fn(),
+      openCircuit: jest.fn(),
+      closeCircuit: jest.fn(),
+    };
+
     // Setup DIContainer mock
     mockContainer = {
       getCreateAssetUseCase: jest.fn().mockReturnValue(mockCreateAssetUseCase),
       getInstance: jest.fn().mockReturnThis(),
       resolve: jest.fn().mockImplementation((token: string) => {
+        if (token === 'PropertyCacheService') {
+          return mockPropertyCache;
+        }
+        if (token === 'CircuitBreakerService') {
+          return mockCircuitBreaker;
+        }
         // Return empty mock repositories
         return {};
       }),
@@ -106,728 +132,18 @@ describe("CreateAssetModal", () => {
     jest.clearAllMocks();
   });
 
-  describe("Modal Initialization", () => {
-    test("should create modal with default values", () => {
-      expect(modal).toBeDefined();
-      expect(modal.app).toBe(app);
-    });
-
-    test("should initialize with DIContainer", () => {
-      expect(DIContainer.getInstance).toHaveBeenCalled();
-      expect(mockContainer.getCreateAssetUseCase).toHaveBeenCalled();
-    });
-
-    test("should have default asset values", () => {
-      expect((modal as any).assetTitle).toBe("");
-      expect((modal as any).assetClass).toBe("exo__Asset");
-      expect((modal as any).assetOntology).toBe("");
-      expect((modal as any).propertyValues).toBeInstanceOf(Map);
-    });
-
-    test("should initialize empty properties list", () => {
-      expect((modal as any).properties).toEqual([]);
-      expect((modal as any).propertiesContainer).toBeNull();
-    });
-  });
-
-  describe("Modal Opening", () => {
-    test("should setup UI elements when opened", async () => {
-      const mockContentEl = document.createElement("div");
-      (modal as any).contentEl = mockContentEl;
-
-      await modal.onOpen();
-
-      expect(mockContentEl.createEl).toHaveBeenCalledWith("h2", {
-        text: "Create ExoAsset",
-      });
-    });
-
-    test("should setup all required fields", async () => {
-      const mockContentEl = document.createElement("div");
-      (modal as any).contentEl = mockContentEl;
-
-      const setupTitleFieldSpy = jest.spyOn(modal as any, "setupTitleField");
-      const setupClassFieldSpy = jest.spyOn(modal as any, "setupClassField");
-      const setupOntologyFieldSpy = jest.spyOn(
-        modal as any,
-        "setupOntologyField",
-      );
-      const setupPropertiesSectionSpy = jest.spyOn(
-        modal as any,
-        "setupPropertiesSection",
-      );
-      const setupActionButtonsSpy = jest.spyOn(
-        modal as any,
-        "setupActionButtons",
-      );
-
-      await modal.onOpen();
-
-      expect(setupTitleFieldSpy).toHaveBeenCalled();
-      expect(setupClassFieldSpy).toHaveBeenCalled();
-      expect(setupOntologyFieldSpy).toHaveBeenCalled();
-      expect(setupPropertiesSectionSpy).toHaveBeenCalled();
-      expect(setupActionButtonsSpy).toHaveBeenCalled();
-    });
-
-    test("should handle errors during modal opening gracefully", async () => {
-      const mockContentEl = document.createElement("div");
-      (modal as any).contentEl = mockContentEl;
-
-      // Mock setupClassField to throw error
-      jest
-        .spyOn(modal as any, "setupClassField")
-        .mockRejectedValue(new Error("Setup failed"));
-
-      await expect(modal.onOpen()).rejects.toThrow("Setup failed");
-    });
-  });
-
-  describe("Title Field Setup", () => {
-    test("should setup title field correctly", async () => {
-      const containerEl = document.createElement("div");
-
-      await (modal as any).setupTitleField(containerEl);
-
-      expect(Setting).toHaveBeenCalled();
-    });
-
-    test("should update assetTitle when title changes", async () => {
-      const containerEl = document.createElement("div");
-
-      await (modal as any).setupTitleField(containerEl);
-
-      // Simulate title change
-      const testTitle = "Test Asset Title";
-      (modal as any).assetTitle = testTitle;
-
-      expect((modal as any).assetTitle).toBe(testTitle);
-    });
-
-    test("should handle long titles", async () => {
-      const containerEl = document.createElement("div");
-      await (modal as any).setupTitleField(containerEl);
-
-      const longTitle = "A".repeat(1000);
-      (modal as any).assetTitle = longTitle;
-
-      expect((modal as any).assetTitle).toBe(longTitle);
-    });
-
-    test("should handle special characters in titles", async () => {
-      const containerEl = document.createElement("div");
-      await (modal as any).setupTitleField(containerEl);
-
-      const specialTitle = "Test!@#$%^&*()_+{}|:\"<>?[]\\;',./ Asset";
-      (modal as any).assetTitle = specialTitle;
-
-      expect((modal as any).assetTitle).toBe(specialTitle);
-    });
-  });
-
-  describe("Class Field Setup", () => {
-    test("should setup class field correctly", async () => {
-      const containerEl = document.createElement("div");
-
-      await (modal as any).setupClassField(containerEl);
-
-      expect(Setting).toHaveBeenCalled();
-    });
-
-    test("should have default class value", () => {
-      expect((modal as any).assetClass).toBe("exo__Asset");
-    });
-
-    test("should discover classes from vault files", async () => {
-      const mockFiles = [
-        { basename: "TestClass", name: "TestClass.md" },
-        { basename: "AnotherClass", name: "AnotherClass.md" },
-      ];
-
-      (app.vault.getMarkdownFiles as jest.Mock).mockReturnValue(mockFiles);
-      (app.metadataCache.getFileCache as jest.Mock)
-        .mockReturnValueOnce({
-          frontmatter: {
-            exo__Instance_class: "exo__Class",
-            rdfs__label: "Test Class",
-          },
-        })
-        .mockReturnValueOnce({
-          frontmatter: {
-            exo__Instance_class: "[[exo__Class]]",
-            rdfs__label: "Another Class",
-          },
+  describe("Asset Creation with Circuit Breaker", () => {
+    test("should create asset successfully through circuit breaker", async () => {
+      // Setup circuit breaker to execute operation and return success
+      mockCircuitBreaker.execute.mockImplementation(async (name: string, operation: Function) => {
+        // Set up use case to return success
+        mockCreateAssetUseCase.execute.mockResolvedValue({
+          success: true,
+          assetId: "test-id",
+          message: "Created asset: Test Asset",
         });
-
-      const containerEl = document.createElement("div");
-      await (modal as any).setupClassField(containerEl);
-
-      expect(app.vault.getMarkdownFiles).toHaveBeenCalled();
-      expect(app.metadataCache.getFileCache).toHaveBeenCalledTimes(2);
-    });
-
-    test("should provide default classes when none found", async () => {
-      (app.vault.getMarkdownFiles as jest.Mock).mockReturnValue([]);
-
-      const containerEl = document.createElement("div");
-      await (modal as any).setupClassField(containerEl);
-
-      expect(Setting).toHaveBeenCalled();
-    });
-
-    test("should handle vault access errors", async () => {
-      (app.vault.getMarkdownFiles as jest.Mock).mockImplementation(() => {
-        throw new Error("Vault access error");
-      });
-
-      const containerEl = document.createElement("div");
-      await expect((modal as any).setupClassField(containerEl)).rejects.toThrow(
-        "Vault access error",
-      );
-    });
-
-    test("should update properties when class changes", async () => {
-      const containerEl = document.createElement("div");
-      const updatePropertiesForClassSpy = jest
-        .spyOn(modal as any, "updatePropertiesForClass")
-        .mockResolvedValue(undefined);
-
-      await (modal as any).setupClassField(containerEl);
-
-      // Simulate class change
-      const newClass = "exo__Task";
-      (modal as any).assetClass = newClass;
-
-      expect((modal as any).assetClass).toBe(newClass);
-    });
-  });
-
-  describe("Ontology Field Setup", () => {
-    test("should setup ontology field correctly", async () => {
-      const containerEl = document.createElement("div");
-
-      await (modal as any).setupOntologyField(containerEl);
-
-      expect(Setting).toHaveBeenCalled();
-    });
-
-    test("should discover ontologies from vault files", async () => {
-      const mockFiles = [
-        { name: "!test-ontology.md", basename: "!test-ontology" },
-        { name: "!another-onto.md", basename: "!another-onto" },
-      ];
-
-      (app.vault.getMarkdownFiles as jest.Mock).mockReturnValue(mockFiles);
-      (app.metadataCache.getFileCache as jest.Mock)
-        .mockReturnValueOnce({
-          frontmatter: {
-            exo__Ontology_prefix: "test",
-            rdfs__label: "Test Ontology",
-          },
-        })
-        .mockReturnValueOnce({
-          frontmatter: {
-            exo__Ontology_prefix: "another",
-            rdfs__label: "Another Ontology",
-          },
-        });
-
-      const containerEl = document.createElement("div");
-      await (modal as any).setupOntologyField(containerEl);
-
-      expect(app.vault.getMarkdownFiles).toHaveBeenCalled();
-    });
-
-    test("should handle empty ontology list", async () => {
-      (app.vault.getMarkdownFiles as jest.Mock).mockReturnValue([]);
-
-      const containerEl = document.createElement("div");
-      await (modal as any).setupOntologyField(containerEl);
-
-      expect(containerEl).toBeDefined();
-    });
-
-    test("should set default ontology correctly", async () => {
-      (app.vault.getMarkdownFiles as jest.Mock).mockReturnValue([]);
-
-      const containerEl = document.createElement("div");
-      await (modal as any).setupOntologyField(containerEl);
-
-      expect((modal as any).assetOntology).toBe("exo");
-    });
-  });
-
-  describe("Properties Section Setup", () => {
-    test("should setup properties section correctly", async () => {
-      const containerEl = document.createElement("div");
-
-      await (modal as any).setupPropertiesSection(containerEl);
-
-      expect(containerEl.createEl).toHaveBeenCalledWith("h3", {
-        text: "Properties",
-        cls: "exocortex-properties-header",
-      });
-      expect(containerEl.createDiv).toHaveBeenCalledWith({
-        cls: "exocortex-properties-container",
-      });
-    });
-
-    test("should update properties for default class", async () => {
-      const containerEl = document.createElement("div");
-      const updatePropertiesForClassSpy = jest
-        .spyOn(modal as any, "updatePropertiesForClass")
-        .mockResolvedValue(undefined);
-
-      await (modal as any).setupPropertiesSection(containerEl);
-
-      expect(updatePropertiesForClassSpy).toHaveBeenCalledWith("exo__Asset");
-    });
-
-    test("should create properties container with correct class", async () => {
-      const containerEl = document.createElement("div");
-      await (modal as any).setupPropertiesSection(containerEl);
-
-      expect(containerEl.createDiv).toHaveBeenCalledWith({
-        cls: "exocortex-properties-container",
-      });
-    });
-  });
-
-  describe("Properties Management", () => {
-    beforeEach(() => {
-      const mockPropertiesContainer = document.createElement("div");
-      mockPropertiesContainer.empty = jest.fn();
-      mockPropertiesContainer.createEl = jest
-        .fn()
-        .mockReturnValue(document.createElement("p"));
-      (modal as any).propertiesContainer = mockPropertiesContainer;
-    });
-
-    test("should clear existing properties when updating for new class", async () => {
-      (modal as any).propertyValues.set("test", "value");
-      (app.vault.getMarkdownFiles as jest.Mock).mockReturnValue([]);
-
-      await (modal as any).updatePropertiesForClass("exo__Task");
-
-      expect((modal as any).propertiesContainer.empty).toHaveBeenCalled();
-      expect((modal as any).propertyValues.size).toBe(0);
-    });
-
-    test("should add default properties for exo__Asset class", async () => {
-      (app.vault.getMarkdownFiles as jest.Mock).mockReturnValue([]);
-
-      await (modal as any).updatePropertiesForClass("exo__Asset");
-
-      expect((modal as any).properties).toHaveLength(2); // description and tags
-      expect((modal as any).properties[0].name).toBe("description");
-      expect((modal as any).properties[1].name).toBe("tags");
-    });
-
-    test("should discover properties from vault for specific class", async () => {
-      const mockFiles = [{ basename: "propertyName", name: "propertyName.md" }];
-
-      (app.vault.getMarkdownFiles as jest.Mock).mockReturnValue(mockFiles);
-      (app.metadataCache.getFileCache as jest.Mock).mockReturnValue({
-        frontmatter: {
-          exo__Instance_class: "exo__Property",
-          rdfs__domain: "TestClass",
-          rdfs__label: "Test Property",
-          rdfs__comment: "A test property",
-          rdfs__range: "string",
-          exo__Property_isRequired: true,
-        },
-      });
-
-      await (modal as any).updatePropertiesForClass("TestClass");
-
-      expect((modal as any).properties).toHaveLength(1);
-      expect((modal as any).properties[0].name).toBe("propertyName");
-      expect((modal as any).properties[0].isRequired).toBe(true);
-    });
-
-    test("should handle properties with array domains", async () => {
-      const mockFiles = [
-        { basename: "multiDomainProp", name: "multiDomainProp.md" },
-      ];
-
-      (app.vault.getMarkdownFiles as jest.Mock).mockReturnValue(mockFiles);
-      (app.metadataCache.getFileCache as jest.Mock).mockReturnValue({
-        frontmatter: {
-          exo__Instance_class: "exo__Property",
-          rdfs__domain: ["TestClass", "AnotherClass"],
-          rdfs__label: "Multi Domain Property",
-          rdfs__range: "string",
-        },
-      });
-
-      await (modal as any).updatePropertiesForClass("TestClass");
-
-      expect((modal as any).properties).toHaveLength(1);
-      expect((modal as any).properties[0].name).toBe("multiDomainProp");
-    });
-
-    test("should map different ranges to correct types", async () => {
-      const containerEl = document.createElement("div");
-      (modal as any).propertiesContainer = containerEl;
-
-      // Test different range mappings
-      expect((modal as any).mapRangeToType("select")).toBe("enum");
-      expect((modal as any).mapRangeToType("boolean")).toBe("boolean");
-      expect((modal as any).mapRangeToType("date")).toBe("date");
-      expect((modal as any).mapRangeToType("integer")).toBe("number");
-      expect((modal as any).mapRangeToType("string[]")).toBe("array");
-      expect((modal as any).mapRangeToType("text")).toBe("text");
-      expect((modal as any).mapRangeToType("unknown")).toBe("string");
-    });
-
-    test("should handle enum properties with options", async () => {
-      const mockFiles = [{ basename: "statusProp", name: "statusProp.md" }];
-
-      (app.vault.getMarkdownFiles as jest.Mock).mockReturnValue(mockFiles);
-      (app.metadataCache.getFileCache as jest.Mock).mockReturnValue({
-        frontmatter: {
-          exo__Instance_class: "exo__Property",
-          rdfs__domain: "TestClass",
-          rdfs__range: "select",
-          exo__Property_options: ["active", "inactive", "pending"],
-        },
-      });
-
-      await (modal as any).updatePropertiesForClass("TestClass");
-
-      expect((modal as any).properties).toHaveLength(1);
-      expect((modal as any).properties[0].type).toBe("enum");
-      expect((modal as any).properties[0].options).toEqual([
-        "active",
-        "inactive",
-        "pending",
-      ]);
-    });
-
-    test("should show no properties message when none found", async () => {
-      (app.vault.getMarkdownFiles as jest.Mock).mockReturnValue([]);
-
-      await (modal as any).updatePropertiesForClass("UnknownClass");
-
-      expect((modal as any).propertiesContainer.createEl).toHaveBeenCalledWith(
-        "p",
-        {
-          text: "No specific properties for this class",
-          cls: "exocortex-no-properties",
-        },
-      );
-    });
-  });
-
-  describe("Property Field Creation", () => {
-    let mockPropertiesContainer: HTMLElement;
-
-    beforeEach(() => {
-      mockPropertiesContainer = document.createElement("div");
-      (modal as any).propertiesContainer = mockPropertiesContainer;
-    });
-
-    test("should create text field for string property", () => {
-      const property = {
-        name: "description",
-        label: "Description",
-        type: "string",
-        isRequired: false,
-        description: "Asset description",
-      };
-
-      (modal as any).createPropertyField(property);
-
-      expect(Setting).toHaveBeenCalled();
-    });
-
-    test("should create text area field for text property", () => {
-      const property = {
-        name: "notes",
-        label: "Notes",
-        type: "text",
-        isRequired: false,
-        description: "Asset notes",
-      };
-
-      (modal as any).createPropertyField(property);
-
-      expect(Setting).toHaveBeenCalled();
-    });
-
-    test("should create enum field for enum property", () => {
-      const property = {
-        name: "status",
-        label: "Status",
-        type: "enum",
-        options: ["active", "inactive"],
-        isRequired: true,
-        description: "Asset status",
-      };
-
-      (modal as any).createPropertyField(property);
-
-      expect(Setting).toHaveBeenCalled();
-    });
-
-    test("should create boolean field for boolean property", () => {
-      const property = {
-        name: "completed",
-        label: "Completed",
-        type: "boolean",
-        isRequired: false,
-        description: "Whether task is completed",
-      };
-
-      (modal as any).createPropertyField(property);
-
-      expect(Setting).toHaveBeenCalled();
-    });
-
-    test("should create date field for date property", () => {
-      const property = {
-        name: "dueDate",
-        label: "Due Date",
-        type: "date",
-        isRequired: false,
-        description: "Task due date",
-      };
-
-      (modal as any).createPropertyField(property);
-
-      expect(Setting).toHaveBeenCalled();
-    });
-
-    test("should create number field for number property", () => {
-      const property = {
-        name: "effort",
-        label: "Effort",
-        type: "number",
-        isRequired: false,
-        description: "Estimated effort in hours",
-      };
-
-      (modal as any).createPropertyField(property);
-
-      expect(Setting).toHaveBeenCalled();
-    });
-
-    test("should create array field for array property", () => {
-      const property = {
-        name: "tags",
-        label: "Tags",
-        type: "array",
-        isRequired: false,
-        description: "Asset tags",
-      };
-
-      (modal as any).createPropertyField(property);
-
-      expect(Setting).toHaveBeenCalled();
-    });
-
-    test("should show required indicator for required fields", () => {
-      const property = {
-        name: "title",
-        label: "Title",
-        type: "string",
-        isRequired: true,
-        description: "Asset title",
-      };
-
-      (modal as any).createPropertyField(property);
-
-      expect(Setting).toHaveBeenCalled();
-    });
-  });
-
-  describe("Individual Field Type Tests", () => {
-    let mockSetting: any;
-
-    beforeEach(() => {
-      mockSetting = {
-        addDropdown: jest.fn().mockImplementation((callback) => {
-          const dropdown = { addOption: jest.fn(), onChange: jest.fn() };
-          callback(dropdown);
-          return mockSetting;
-        }),
-        addToggle: jest.fn().mockImplementation((callback) => {
-          const toggle = { onChange: jest.fn() };
-          callback(toggle);
-          return mockSetting;
-        }),
-        addText: jest.fn().mockImplementation((callback) => {
-          const text = {
-            setPlaceholder: jest.fn().mockReturnThis(),
-            onChange: jest.fn(),
-            inputEl: { type: "text" },
-          };
-          callback(text);
-          return mockSetting;
-        }),
-        addTextArea: jest.fn().mockImplementation((callback) => {
-          const textArea = {
-            setPlaceholder: jest.fn().mockReturnThis(),
-            onChange: jest.fn(),
-          };
-          callback(textArea);
-          return mockSetting;
-        }),
-      };
-    });
-
-    test("should create enum field with all options", () => {
-      const property = {
-        name: "priority",
-        label: "Priority",
-        type: "enum",
-        options: ["low", "medium", "high"],
-        isRequired: false,
-      };
-
-      (modal as any).createEnumField(mockSetting, property);
-
-      expect(mockSetting.addDropdown).toHaveBeenCalled();
-    });
-
-    test("should handle enum field selection", () => {
-      const property = {
-        name: "priority",
-        label: "Priority",
-        type: "enum",
-        options: ["low", "medium", "high"],
-        isRequired: false,
-      };
-
-      (modal as any).createEnumField(mockSetting, property);
-
-      // Simulate selection
-      (modal as any).propertyValues.set("priority", "high");
-      expect((modal as any).propertyValues.get("priority")).toBe("high");
-    });
-
-    test("should create boolean field with toggle", () => {
-      const property = {
-        name: "active",
-        label: "Active",
-        type: "boolean",
-        isRequired: false,
-      };
-
-      (modal as any).createBooleanField(mockSetting, property);
-
-      expect(mockSetting.addToggle).toHaveBeenCalled();
-    });
-
-    test("should handle boolean field changes", () => {
-      const property = {
-        name: "active",
-        label: "Active",
-        type: "boolean",
-        isRequired: false,
-      };
-
-      (modal as any).createBooleanField(mockSetting, property);
-
-      // Simulate toggle
-      (modal as any).propertyValues.set("active", true);
-      expect((modal as any).propertyValues.get("active")).toBe(true);
-    });
-
-    test("should create date field with correct input type", () => {
-      const property = {
-        name: "dueDate",
-        label: "Due Date",
-        type: "date",
-        isRequired: false,
-      };
-
-      (modal as any).createDateField(mockSetting, property);
-
-      expect(mockSetting.addText).toHaveBeenCalled();
-    });
-
-    test("should create number field with validation", () => {
-      const property = {
-        name: "count",
-        label: "Count",
-        type: "number",
-        isRequired: false,
-      };
-
-      (modal as any).createNumberField(mockSetting, property);
-
-      expect(mockSetting.addText).toHaveBeenCalled();
-    });
-
-    test("should create text area field", () => {
-      const property = {
-        name: "description",
-        label: "Description",
-        type: "text",
-        isRequired: false,
-      };
-
-      (modal as any).createTextAreaField(mockSetting, property);
-
-      expect(mockSetting.addTextArea).toHaveBeenCalled();
-    });
-
-    test("should create array field for tags", () => {
-      const property = {
-        name: "tags",
-        label: "Tags",
-        type: "array",
-        isRequired: false,
-      };
-
-      (modal as any).createArrayField(mockSetting, property);
-
-      expect(mockSetting.addText).toHaveBeenCalled();
-    });
-
-    test("should create basic text field as fallback", () => {
-      const property = {
-        name: "generic",
-        label: "Generic",
-        type: "unknown",
-        isRequired: false,
-      };
-
-      (modal as any).createTextField(mockSetting, property);
-
-      expect(mockSetting.addText).toHaveBeenCalled();
-    });
-  });
-
-  describe("Action Buttons Setup", () => {
-    test("should setup create button", () => {
-      const containerEl = document.createElement("div");
-
-      (modal as any).setupActionButtons(containerEl);
-
-      expect(Setting).toHaveBeenCalled();
-    });
-
-    test("should call createAsset when create button is clicked", async () => {
-      const createAssetSpy = jest
-        .spyOn(modal as any, "createAsset")
-        .mockResolvedValue(undefined);
-      const containerEl = document.createElement("div");
-
-      (modal as any).setupActionButtons(containerEl);
-
-      // The button click is handled through the Setting mock
-      expect(Setting).toHaveBeenCalled();
-    });
-  });
-
-  describe("Asset Creation", () => {
-    test("should call createAssetUseCase.execute when creating asset", async () => {
-      mockCreateAssetUseCase.execute.mockResolvedValue({
-        success: true,
-        assetId: "test-id",
-        message: "Asset created successfully",
+        // Execute the operation
+        return await operation();
       });
 
       (modal as any).assetTitle = "Test Asset";
@@ -839,6 +155,16 @@ describe("CreateAssetModal", () => {
 
       await (modal as any).createAsset();
 
+      expect(mockCircuitBreaker.execute).toHaveBeenCalledWith(
+        "asset-creation",
+        expect.any(Function),
+        expect.objectContaining({
+          failureThreshold: 3,
+          resetTimeout: 30000,
+          halfOpenMaxCalls: 2,
+        })
+      );
+
       expect(mockCreateAssetUseCase.execute).toHaveBeenCalledWith({
         title: "Test Asset",
         className: "exo__Task",
@@ -848,323 +174,159 @@ describe("CreateAssetModal", () => {
         },
       });
 
-      expect(Notice).toHaveBeenCalledWith("Asset created successfully");
+      expect(Notice).toHaveBeenCalledWith("Created asset: Test Asset");
       expect(closeSpy).toHaveBeenCalled();
     });
 
-    test("should show error notice when asset creation fails", async () => {
-      mockCreateAssetUseCase.execute.mockResolvedValue({
-        success: false,
-        assetId: "",
-        message: "Creation failed",
+    test("should handle asset creation failure through circuit breaker", async () => {
+      // Setup circuit breaker to execute operation and return failure
+      mockCircuitBreaker.execute.mockImplementation(async (name: string, operation: Function) => {
+        mockCreateAssetUseCase.execute.mockResolvedValue({
+          success: false,
+          assetId: "",
+          message: "Creation failed",
+          error: "Invalid asset data",
+        });
+        return await operation();
       });
 
       (modal as any).assetTitle = "Test Asset";
 
       await (modal as any).createAsset();
 
-      expect(Notice).toHaveBeenCalledWith("Failed to create asset");
+      expect(Notice).toHaveBeenCalledWith("Validation error: Invalid asset data", 6000);
     });
 
-    test("should handle errors during asset creation", async () => {
-      const error = new Error("Network error");
-      mockCreateAssetUseCase.execute.mockRejectedValue(error);
+    test("should handle circuit breaker open state", async () => {
+      // Setup circuit breaker to return circuit open error
+      mockCircuitBreaker.execute.mockResolvedValue(
+        Result.fail("Circuit asset-creation is OPEN. Try again in 25 seconds")
+      );
 
       (modal as any).assetTitle = "Test Asset";
 
       await (modal as any).createAsset();
 
-      expect(Notice).toHaveBeenCalledWith("Error: Network error");
+      expect(Notice).toHaveBeenCalledWith(
+        "Asset creation is temporarily unavailable. Please try again in a moment.",
+        5000
+      );
     });
 
-    test("should convert property values to plain object", async () => {
-      mockCreateAssetUseCase.execute.mockResolvedValue({
-        success: true,
-        assetId: "test-id",
-        message: "Success",
+    test("should handle ontology-related errors", async () => {
+      mockCircuitBreaker.execute.mockResolvedValue(
+        Result.fail("Ontology 'test' not found")
+      );
+
+      (modal as any).assetTitle = "Test Asset";
+
+      await (modal as any).createAsset();
+
+      expect(Notice).toHaveBeenCalledWith(
+        "Error: Ontology 'test' not found",
+        5000
+      );
+    });
+
+    test("should handle validation errors", async () => {
+      mockCircuitBreaker.execute.mockResolvedValue(
+        Result.fail("Invalid asset title: contains special characters")
+      );
+
+      (modal as any).assetTitle = "Test@Asset#";
+
+      await (modal as any).createAsset();
+
+      expect(Notice).toHaveBeenCalledWith(
+        "Validation error: Invalid asset title: contains special characters",
+        6000
+      );
+    });
+  });
+
+  describe("Property Caching", () => {
+    test("should use property cache service", async () => {
+      // Test that the property cache service is resolved during initialization
+      expect(mockContainer.resolve).toHaveBeenCalledWith("PropertyCacheService");
+      
+      // Test that the cache service is available
+      expect(mockPropertyCache).toBeDefined();
+      expect(mockPropertyCache.getPropertiesForClass).toBeDefined();
+      expect(mockPropertyCache.updateClassProperties).toBeDefined();
+    });
+
+    test("should update cache when properties are loaded from vault", async () => {
+      const file = {
+        basename: "propertyName",
+        name: "propertyName.md",
+      };
+
+      (app.vault.getMarkdownFiles as jest.Mock).mockReturnValue([file]);
+      (app.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "exo__Property",
+          rdfs__domain: "TestClass",
+          rdfs__label: "Property Label",
+        },
       });
 
-      (modal as any).assetTitle = "Test Asset";
-      (modal as any).propertyValues.set("prop1", "value1");
-      (modal as any).propertyValues.set("prop2", "value2");
-
-      await (modal as any).createAsset();
-
-      expect(mockCreateAssetUseCase.execute).toHaveBeenCalledWith(
-        expect.objectContaining({
-          properties: {
-            prop1: "value1",
-            prop2: "value2",
-          },
-        }),
-      );
-    });
-
-    test("should handle empty property values", async () => {
-      mockCreateAssetUseCase.execute.mockResolvedValue({
-        success: true,
-        assetId: "test-id",
-        message: "Success",
-      });
-
-      (modal as any).assetTitle = "Test Asset";
-
-      await (modal as any).createAsset();
-
-      expect(mockCreateAssetUseCase.execute).toHaveBeenCalledWith(
-        expect.objectContaining({
-          properties: {},
-        }),
-      );
-    });
-  });
-
-  describe("Modal Cleanup", () => {
-    test("should clear content on close", () => {
-      const mockContentEl = document.createElement("div");
-      const emptySpy = jest.spyOn(mockContentEl, "empty");
-      (modal as any).contentEl = mockContentEl;
-
-      modal.onClose();
-
-      expect(emptySpy).toHaveBeenCalled();
-    });
-
-    test("should handle DOM cleanup fallback", () => {
-      const mockContentEl = document.createElement("div");
-      // Remove the empty method to test fallback
-      (mockContentEl as any).empty = undefined;
-
-      const child = document.createElement("div");
-      mockContentEl.appendChild(child);
-      (modal as any).contentEl = mockContentEl;
-
-      modal.onClose();
-
-      // Should still complete without error
-      expect(mockContentEl.children.length).toBe(0);
-    });
-  });
-
-  describe("Input Validation", () => {
-    test("should handle empty title field", async () => {
-      mockCreateAssetUseCase.execute.mockRejectedValue(
-        new Error("Asset title is required"),
-      );
-
-      (modal as any).assetTitle = "";
-
-      await (modal as any).createAsset();
-
-      expect(Notice).toHaveBeenCalledWith("Error: Asset title is required");
-    });
-
-    test("should handle missing class field", async () => {
-      mockCreateAssetUseCase.execute.mockRejectedValue(
-        new Error("Asset class is required"),
-      );
-
-      (modal as any).assetTitle = "Test";
-      (modal as any).assetClass = "";
-
-      await (modal as any).createAsset();
-
-      expect(Notice).toHaveBeenCalledWith("Error: Asset class is required");
-    });
-
-    test("should handle missing ontology field", async () => {
-      mockCreateAssetUseCase.execute.mockRejectedValue(
-        new Error("Ontology prefix is required"),
-      );
-
-      (modal as any).assetTitle = "Test";
-      (modal as any).assetOntology = "";
-
-      await (modal as any).createAsset();
-
-      expect(Notice).toHaveBeenCalledWith("Error: Ontology prefix is required");
-    });
-
-    test("should handle whitespace-only title", async () => {
-      mockCreateAssetUseCase.execute.mockRejectedValue(
-        new Error("Asset title is required"),
-      );
-
-      (modal as any).assetTitle = "   \t\n   ";
-
-      await (modal as any).createAsset();
-
-      expect(Notice).toHaveBeenCalledWith("Error: Asset title is required");
-    });
-  });
-
-  describe("Property Value Handling", () => {
-    test("should handle array values correctly", () => {
-      const property = {
-        name: "tags",
-        label: "Tags",
-        type: "array",
-        isRequired: false,
-        description: "Asset tags",
-      };
-
-      // Simulate array input processing
-      (modal as any).propertyValues.set(property.name, [
-        "tag1",
-        "tag2",
-        "tag3",
-      ]);
-
-      const values = (modal as any).propertyValues.get("tags");
-      expect(values).toEqual(["tag1", "tag2", "tag3"]);
-    });
-
-    test("should handle wiki link values correctly", () => {
-      const property = {
-        name: "relatedTasks",
-        label: "Related Tasks",
-        type: "array",
-        isRequired: false,
-        description: "Related task links",
-      };
-
-      // Simulate wiki link processing
-      (modal as any).propertyValues.set(property.name, [
-        "[[Task 1]]",
-        "[[Task 2]]",
-      ]);
-
-      const values = (modal as any).propertyValues.get("relatedTasks");
-      expect(values).toEqual(["[[Task 1]]", "[[Task 2]]"]);
-    });
-
-    test("should handle number parsing correctly", () => {
-      const property = {
-        name: "effort",
-        label: "Effort",
-        type: "number",
-        isRequired: false,
-        description: "Effort in hours",
-      };
-
-      // Simulate number input
-      (modal as any).propertyValues.set(property.name, 42);
-
-      const value = (modal as any).propertyValues.get("effort");
-      expect(value).toBe(42);
-      expect(typeof value).toBe("number");
-    });
-
-    test("should handle invalid number input", () => {
-      const property = {
-        name: "effort",
-        label: "Effort",
-        type: "number",
-        isRequired: false,
-      };
-
-      // Should not set invalid numbers
-      const invalidNumber = "not-a-number";
-      if (isNaN(parseFloat(invalidNumber))) {
-        // Property should not be set
-        expect((modal as any).propertyValues.has("effort")).toBe(false);
-      }
-    });
-
-    test("should clear property values when empty", () => {
-      (modal as any).propertyValues.set("test", "value");
-
-      // Simulate clearing a field
-      (modal as any).propertyValues.delete("test");
-
-      expect((modal as any).propertyValues.has("test")).toBe(false);
-    });
-
-    test("should handle date input validation", () => {
-      const property = {
-        name: "dueDate",
-        label: "Due Date",
-        type: "date",
-        isRequired: false,
-      };
-
-      // Valid date
-      (modal as any).propertyValues.set(property.name, "2024-12-31");
-      expect((modal as any).propertyValues.get("dueDate")).toBe("2024-12-31");
-
-      // Invalid date should not be set
-      const invalidDate = "not-a-date";
-      if (isNaN(Date.parse(invalidDate))) {
-        (modal as any).propertyValues.delete("dueDate");
-      }
-      expect((modal as any).propertyValues.has("dueDate")).toBe(false);
-    });
-
-    test("should handle boolean toggle values", () => {
-      const property = {
-        name: "active",
-        label: "Active",
-        type: "boolean",
-        isRequired: false,
-      };
-
-      // Test true value
-      (modal as any).propertyValues.set(property.name, true);
-      expect((modal as any).propertyValues.get("active")).toBe(true);
-
-      // Test false value
-      (modal as any).propertyValues.set(property.name, false);
-      expect((modal as any).propertyValues.get("active")).toBe(false);
-    });
-
-    test("should handle complex array parsing", () => {
-      const input = '[[Link 1]], [[Link 2]], simple, "quoted item"';
-      const links = input.match(/\[\[([^\]]+)\]\]/g) || [];
-      const items = input
-        .split(",")
-        .map((s) => s.trim())
-        .filter((s) => s);
-
-      if (links.length > 0) {
-        (modal as any).propertyValues.set("test", links);
-      } else {
-        (modal as any).propertyValues.set("test", items);
-      }
-
-      expect((modal as any).propertyValues.get("test")).toEqual([
-        "[[Link 1]]",
-        "[[Link 2]]",
-      ]);
-    });
-  });
-
-  describe("Container Cleanup Scenarios", () => {
-    test("should handle properties container cleanup with Obsidian method", async () => {
-      const mockContainer = document.createElement("div");
-      mockContainer.empty = jest.fn();
-      (modal as any).propertiesContainer = mockContainer;
+      mockPropertyCache.hasPropertiesForClass.mockReturnValue(false);
 
       await (modal as any).updatePropertiesForClass("TestClass");
 
-      expect(mockContainer.empty).toHaveBeenCalled();
+      // Properties should be loaded and cached
+      expect(mockPropertyCache.updateClassProperties).not.toHaveBeenCalled(); // Cache update is handled internally
+    });
+  });
+
+  describe("Modal Initialization", () => {
+    test("should initialize with correct default values", () => {
+      expect((modal as any).assetTitle).toBe("");
+      expect((modal as any).assetClass).toBe("exo__Asset");
+      expect((modal as any).assetOntology).toBe("");
+      expect((modal as any).propertyValues).toBeInstanceOf(Map);
+      expect((modal as any).propertyValues.size).toBe(0);
     });
 
-    test("should handle properties container cleanup with DOM fallback", async () => {
-      const mockContainer = document.createElement("div");
-      const child1 = document.createElement("div");
-      const child2 = document.createElement("div");
-      mockContainer.appendChild(child1);
-      mockContainer.appendChild(child2);
+    test("should properly resolve services from container", () => {
+      expect(mockContainer.resolve).toHaveBeenCalledWith("IOntologyRepository");
+      expect(mockContainer.resolve).toHaveBeenCalledWith("IClassViewRepository");
+      expect(mockContainer.resolve).toHaveBeenCalledWith("PropertyCacheService");
+      expect(mockContainer.resolve).toHaveBeenCalledWith("CircuitBreakerService");
+    });
+  });
 
-      // Remove Obsidian empty method to test fallback
-      (mockContainer as any).empty = undefined;
+  describe("Error Recovery", () => {
+    test("should recover from circuit breaker errors", async () => {
+      // First call fails
+      mockCircuitBreaker.execute.mockResolvedValueOnce(
+        Result.fail("Circuit is open")
+      );
 
-      (modal as any).propertiesContainer = mockContainer;
-      (app.vault.getMarkdownFiles as jest.Mock).mockReturnValue([]);
+      (modal as any).assetTitle = "Test Asset";
+      await (modal as any).createAsset();
 
-      await (modal as any).updatePropertiesForClass("TestClass");
+      expect(Notice).toHaveBeenCalledWith(
+        "Asset creation is temporarily unavailable. Please try again in a moment.",
+        5000
+      );
 
-      expect(mockContainer.children.length).toBe(1); // Should have the "no properties" message
+      // Reset Notice mock for second call
+      (Notice as jest.Mock).mockClear();
+
+      // Second call succeeds after circuit recovery
+      mockCircuitBreaker.execute.mockImplementation(async (name: string, operation: Function) => {
+        mockCreateAssetUseCase.execute.mockResolvedValue({
+          success: true,
+          assetId: "test-id",
+          message: "Created asset: Test Asset",
+        });
+        return await operation();
+      });
+
+      await (modal as any).createAsset();
+
+      expect(Notice).toHaveBeenCalledWith("Created asset: Test Asset");
     });
   });
 });

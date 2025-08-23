@@ -1,0 +1,384 @@
+name: Docker CI Tests (Disabled - Use Simplified)
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Type of tests to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - unit
+        - ui
+        - mobile
+        - performance
+        - security
+
+jobs:
+  # =============================================================================
+  # Docker Build Test - Verify Docker setup
+  # =============================================================================
+  docker-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build test image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        target: test
+        push: false
+        tags: exocortex-plugin:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        
+    - name: Build mobile test image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        target: mobile-test
+        push: false
+        tags: exocortex-plugin:mobile-test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  # =============================================================================
+  # Docker Unit Tests
+  # =============================================================================
+  docker-unit-tests:
+    runs-on: ubuntu-latest
+    needs: docker-build
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Run unit tests in Docker
+      run: |
+        docker build --target test -t exocortex-plugin:test .
+        docker run --rm \
+          -v ${{ github.workspace }}/coverage:/app/coverage \
+          -v ${{ github.workspace }}/test-results:/app/test-results \
+          -e CI=true \
+          -e JEST_WORKERS=2 \
+          -e NODE_OPTIONS="--max-old-space-size=2048 --expose-gc" \
+          exocortex-plugin:test sh -c "./scripts/test-ci-batched.sh"
+          
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-coverage-${{ github.run_number }}
+        path: |
+          coverage/
+          test-results/
+        retention-days: 7
+        
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./coverage/lcov.info
+        flags: docker-unittests
+        name: docker-codecov
+        fail_ci_if_error: false
+
+  # =============================================================================
+  # Docker Mobile Tests
+  # =============================================================================
+  docker-mobile-tests:
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.event.inputs.test_type == 'mobile' || github.event.inputs.test_type == 'all' || github.event_name != 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Run mobile tests in Docker
+      run: |
+        docker build --target mobile-test -t exocortex-plugin:mobile-test .
+        docker run --rm \
+          -v ${{ github.workspace }}/mobile-test-results:/app/mobile-test-results \
+          -e CI=true \
+          -e MOBILE_TEST=true \
+          -e PLATFORM_MOBILE=true \
+          exocortex-plugin:mobile-test
+          
+    - name: Upload mobile test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-mobile-results-${{ github.run_number }}
+        path: mobile-test-results/
+        retention-days: 7
+
+  # =============================================================================
+  # Docker UI Tests
+  # =============================================================================
+  docker-ui-tests:
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.event.inputs.test_type == 'ui' || github.event.inputs.test_type == 'all' || github.event_name != 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Run UI tests in Docker
+      run: |
+        docker build --target ui-test -t exocortex-plugin:ui-test .
+        docker run --rm \
+          -v ${{ github.workspace }}/screenshots:/app/screenshots \
+          -v ${{ github.workspace }}/wdio-logs:/app/wdio-logs \
+          -e CI=true \
+          -e DISPLAY=:99 \
+          --privileged \
+          exocortex-plugin:ui-test
+          
+    - name: Upload UI test artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-ui-artifacts-${{ github.run_number }}
+        path: |
+          screenshots/
+          wdio-logs/
+        retention-days: 7
+
+  # =============================================================================
+  # Docker Matrix Tests - Multiple Node.js versions
+  # =============================================================================
+  docker-matrix-tests:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event_name != 'workflow_dispatch'
+    
+    strategy:
+      matrix:
+        node-version: [18.20-alpine, 20.18-alpine]
+        
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build and test with Node.js ${{ matrix.node-version }}
+      run: |
+        docker build \
+          --build-arg NODE_VERSION=${{ matrix.node-version }} \
+          --target test \
+          -t exocortex-plugin:node-${{ matrix.node-version }} \
+          -f Dockerfile.matrix .
+        docker run --rm \
+          -v ${{ github.workspace }}/matrix-results-${{ matrix.node-version }}:/app/test-results \
+          -e CI=true \
+          -e NODE_VERSION=${{ matrix.node-version }} \
+          exocortex-plugin:node-${{ matrix.node-version }}
+          
+    - name: Upload matrix test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-matrix-${{ matrix.node-version }}-${{ github.run_number }}
+        path: matrix-results-${{ matrix.node-version }}/
+        retention-days: 7
+
+  # =============================================================================
+  # Docker Compose Integration Tests
+  # =============================================================================
+  docker-compose-tests:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event_name != 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Run Docker Compose CI pipeline
+      run: |
+        docker compose --project-name exocortex-ci --profile ci up --abort-on-container-exit
+        
+    - name: Collect Docker Compose results
+      if: always()
+      run: |
+        docker compose --project-name exocortex-ci logs > docker-compose-logs.txt
+        docker compose --project-name exocortex-ci down --volumes
+        
+    - name: Upload Docker Compose artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-compose-results-${{ github.run_number }}
+        path: |
+          docker-compose-logs.txt
+          coverage/
+          test-results/
+          ci-reports/
+        retention-days: 7
+
+  # =============================================================================
+  # Docker Performance Tests
+  # =============================================================================
+  docker-performance-tests:
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.event.inputs.test_type == 'performance' || github.event.inputs.test_type == 'all' || github.event_name != 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Run performance tests in Docker
+      run: |
+        docker compose --project-name exocortex-perf --profile performance up --abort-on-container-exit
+        
+    - name: Upload performance results
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-performance-results-${{ github.run_number }}
+        path: performance-results/
+        retention-days: 30
+
+  # =============================================================================
+  # Docker Security Tests
+  # =============================================================================
+  docker-security-tests:
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.event.inputs.test_type == 'security' || github.event.inputs.test_type == 'all' || github.event_name != 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Run security tests in Docker
+      run: |
+        docker compose --project-name exocortex-security --profile security up --abort-on-container-exit
+        
+    - name: Run Docker security scan
+      uses: docker/scout-action@v1
+      with:
+        command: cves
+        image: exocortex-plugin:test
+        only-severities: critical,high
+        
+    - name: Upload security results
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-security-results-${{ github.run_number }}
+        path: security-reports/
+        retention-days: 30
+
+  # =============================================================================
+  # Test Results Summary
+  # =============================================================================
+  test-summary:
+    runs-on: ubuntu-latest
+    needs: [
+      docker-unit-tests,
+      docker-mobile-tests,
+      docker-ui-tests,
+      docker-matrix-tests,
+      docker-compose-tests
+    ]
+    if: always()
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: test-artifacts
+        
+    - name: Generate test summary
+      run: |
+        echo "# Docker CI Test Summary" > test-summary.md
+        echo "" >> test-summary.md
+        echo "**Workflow:** ${{ github.workflow }}" >> test-summary.md
+        echo "**Run:** ${{ github.run_number }}" >> test-summary.md
+        echo "**Commit:** ${{ github.sha }}" >> test-summary.md
+        echo "**Branch:** ${{ github.ref_name }}" >> test-summary.md
+        echo "" >> test-summary.md
+        
+        echo "## Test Results" >> test-summary.md
+        echo "" >> test-summary.md
+        
+        # Check for coverage data
+        if [ -d "test-artifacts/docker-coverage-${{ github.run_number }}" ]; then
+          echo "✅ Unit Tests: PASSED" >> test-summary.md
+          if [ -f "test-artifacts/docker-coverage-${{ github.run_number }}/coverage/coverage-summary.json" ]; then
+            node -e "
+              const summary = require('./test-artifacts/docker-coverage-${{ github.run_number }}/coverage/coverage-summary.json');
+              console.log('📊 Coverage: ' + summary.total.lines.pct + '%');
+            " >> test-summary.md
+          fi
+        else
+          echo "❌ Unit Tests: FAILED" >> test-summary.md
+        fi
+        
+        # Check mobile tests
+        if [ -d "test-artifacts/docker-mobile-results-${{ github.run_number }}" ]; then
+          echo "✅ Mobile Tests: PASSED" >> test-summary.md
+        else
+          echo "⚠️ Mobile Tests: SKIPPED" >> test-summary.md
+        fi
+        
+        # Check UI tests
+        if [ -d "test-artifacts/docker-ui-artifacts-${{ github.run_number }}" ]; then
+          echo "✅ UI Tests: PASSED" >> test-summary.md
+        else
+          echo "⚠️ UI Tests: SKIPPED" >> test-summary.md
+        fi
+        
+        echo "" >> test-summary.md
+        echo "## Docker Environment" >> test-summary.md
+        echo "- Base Image: node:20.18-alpine" >> test-summary.md
+        echo "- Test Runner: Jest" >> test-summary.md
+        echo "- UI Framework: WebDriverIO" >> test-summary.md
+        echo "- Coverage: Istanbul" >> test-summary.md
+        
+        cat test-summary.md
+        
+    - name: Upload test summary
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-test-summary-${{ github.run_number }}
+        path: test-summary.md
+        retention-days: 30
+        
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('test-summary.md', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });

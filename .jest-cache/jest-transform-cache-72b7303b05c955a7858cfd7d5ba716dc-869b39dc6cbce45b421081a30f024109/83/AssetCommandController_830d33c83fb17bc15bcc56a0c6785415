@@ -1,0 +1,37 @@
+d9e32c43fe4665decea6490d17d9384c
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AssetCommandController = void 0;
+const CreateAssetModal_1 = require("../modals/CreateAssetModal");
+/**
+ * Asset Command Controller following Controller Pattern (GRASP)
+ * Single Responsibility: Handle asset-related commands only
+ */
+class AssetCommandController {
+    constructor(plugin) {
+        this.plugin = plugin;
+    }
+    async registerCommands() {
+        // Register command: Create new asset
+        this.plugin.addCommand({
+            id: "create-exo-asset",
+            name: "Create new ExoAsset",
+            hotkeys: [{ modifiers: ["Mod", "Shift"], key: "n" }],
+            callback: () => {
+                new CreateAssetModal_1.CreateAssetModal(this.plugin.app).open();
+            },
+        });
+        // Add ribbon icon for quick access
+        this.plugin.addRibbonIcon("plus-circle", "Create ExoAsset", () => {
+            new CreateAssetModal_1.CreateAssetModal(this.plugin.app).open();
+        });
+    }
+    async cleanup() {
+        // No specific cleanup needed for asset commands
+    }
+    getControllerId() {
+        return "AssetCommandController";
+    }
+}
+exports.AssetCommandController = AssetCommandController;
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiL1VzZXJzL2tpdGVsZXYvRG9jdW1lbnRzL2V4b2NvcnRleC1vYnNpZGlhbi1wbHVnaW4vc3JjL3ByZXNlbnRhdGlvbi9jb21tYW5kLWNvbnRyb2xsZXJzL0Fzc2V0Q29tbWFuZENvbnRyb2xsZXIudHMiLCJtYXBwaW5ncyI6Ijs7O0FBRUEsaUVBQThEO0FBRTlEOzs7R0FHRztBQUNILE1BQWEsc0JBQXNCO0lBQ2pDLFlBQTZCLE1BQWM7UUFBZCxXQUFNLEdBQU4sTUFBTSxDQUFRO0lBQUcsQ0FBQztJQUUvQyxLQUFLLENBQUMsZ0JBQWdCO1FBQ3BCLHFDQUFxQztRQUNyQyxJQUFJLENBQUMsTUFBTSxDQUFDLFVBQVUsQ0FBQztZQUNyQixFQUFFLEVBQUUsa0JBQWtCO1lBQ3RCLElBQUksRUFBRSxxQkFBcUI7WUFDM0IsT0FBTyxFQUFFLENBQUMsRUFBRSxTQUFTLEVBQUUsQ0FBQyxLQUFLLEVBQUUsT0FBTyxDQUFDLEVBQUUsR0FBRyxFQUFFLEdBQUcsRUFBRSxDQUFDO1lBQ3BELFFBQVEsRUFBRSxHQUFHLEVBQUU7Z0JBQ2IsSUFBSSxtQ0FBZ0IsQ0FBQyxJQUFJLENBQUMsTUFBTSxDQUFDLEdBQUcsQ0FBQyxDQUFDLElBQUksRUFBRSxDQUFDO1lBQy9DLENBQUM7U0FDRixDQUFDLENBQUM7UUFFSCxtQ0FBbUM7UUFDbkMsSUFBSSxDQUFDLE1BQU0sQ0FBQyxhQUFhLENBQUMsYUFBYSxFQUFFLGlCQUFpQixFQUFFLEdBQUcsRUFBRTtZQUMvRCxJQUFJLG1DQUFnQixDQUFDLElBQUksQ0FBQyxNQUFNLENBQUMsR0FBRyxDQUFDLENBQUMsSUFBSSxFQUFFLENBQUM7UUFDL0MsQ0FBQyxDQUFDLENBQUM7SUFDTCxDQUFDO0lBRUQsS0FBSyxDQUFDLE9BQU87UUFDWCxnREFBZ0Q7SUFDbEQsQ0FBQztJQUVELGVBQWU7UUFDYixPQUFPLHdCQUF3QixDQUFDO0lBQ2xDLENBQUM7Q0FDRjtBQTNCRCx3REEyQkMiLCJuYW1lcyI6W10sInNvdXJjZXMiOlsiL1VzZXJzL2tpdGVsZXYvRG9jdW1lbnRzL2V4b2NvcnRleC1vYnNpZGlhbi1wbHVnaW4vc3JjL3ByZXNlbnRhdGlvbi9jb21tYW5kLWNvbnRyb2xsZXJzL0Fzc2V0Q29tbWFuZENvbnRyb2xsZXIudHMiXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IHsgUGx1Z2luIH0gZnJvbSBcIm9ic2lkaWFuXCI7XG5pbXBvcnQgeyBJQ29tbWFuZENvbnRyb2xsZXIgfSBmcm9tIFwiLi4vLi4vYXBwbGljYXRpb24vcG9ydHMvSUNvbW1hbmRDb250cm9sbGVyXCI7XG5pbXBvcnQgeyBDcmVhdGVBc3NldE1vZGFsIH0gZnJvbSBcIi4uL21vZGFscy9DcmVhdGVBc3NldE1vZGFsXCI7XG5cbi8qKlxuICogQXNzZXQgQ29tbWFuZCBDb250cm9sbGVyIGZvbGxvd2luZyBDb250cm9sbGVyIFBhdHRlcm4gKEdSQVNQKVxuICogU2luZ2xlIFJlc3BvbnNpYmlsaXR5OiBIYW5kbGUgYXNzZXQtcmVsYXRlZCBjb21tYW5kcyBvbmx5XG4gKi9cbmV4cG9ydCBjbGFzcyBBc3NldENvbW1hbmRDb250cm9sbGVyIGltcGxlbWVudHMgSUNvbW1hbmRDb250cm9sbGVyIHtcbiAgY29uc3RydWN0b3IocHJpdmF0ZSByZWFkb25seSBwbHVnaW46IFBsdWdpbikge31cblxuICBhc3luYyByZWdpc3RlckNvbW1hbmRzKCk6IFByb21pc2U8dm9pZD4ge1xuICAgIC8vIFJlZ2lzdGVyIGNvbW1hbmQ6IENyZWF0ZSBuZXcgYXNzZXRcbiAgICB0aGlzLnBsdWdpbi5hZGRDb21tYW5kKHtcbiAgICAgIGlkOiBcImNyZWF0ZS1leG8tYXNzZXRcIixcbiAgICAgIG5hbWU6IFwiQ3JlYXRlIG5ldyBFeG9Bc3NldFwiLFxuICAgICAgaG90a2V5czogW3sgbW9kaWZpZXJzOiBbXCJNb2RcIiwgXCJTaGlmdFwiXSwga2V5OiBcIm5cIiB9XSxcbiAgICAgIGNhbGxiYWNrOiAoKSA9PiB7XG4gICAgICAgIG5ldyBDcmVhdGVBc3NldE1vZGFsKHRoaXMucGx1Z2luLmFwcCkub3BlbigpO1xuICAgICAgfSxcbiAgICB9KTtcblxuICAgIC8vIEFkZCByaWJib24gaWNvbiBmb3IgcXVpY2sgYWNjZXNzXG4gICAgdGhpcy5wbHVnaW4uYWRkUmliYm9uSWNvbihcInBsdXMtY2lyY2xlXCIsIFwiQ3JlYXRlIEV4b0Fzc2V0XCIsICgpID0+IHtcbiAgICAgIG5ldyBDcmVhdGVBc3NldE1vZGFsKHRoaXMucGx1Z2luLmFwcCkub3BlbigpO1xuICAgIH0pO1xuICB9XG5cbiAgYXN5bmMgY2xlYW51cCgpOiBQcm9taXNlPHZvaWQ+IHtcbiAgICAvLyBObyBzcGVjaWZpYyBjbGVhbnVwIG5lZWRlZCBmb3IgYXNzZXQgY29tbWFuZHNcbiAgfVxuXG4gIGdldENvbnRyb2xsZXJJZCgpOiBzdHJpbmcge1xuICAgIHJldHVybiBcIkFzc2V0Q29tbWFuZENvbnRyb2xsZXJcIjtcbiAgfVxufVxuIl0sInZlcnNpb24iOjN9
