@@ -25,7 +25,7 @@ export class SPARQLSecurityManager {
       return Result.ok({
         isValid: false,
         query,
-        message: "Query is empty"
+        message: "Query is empty",
       });
     }
 
@@ -35,14 +35,14 @@ export class SPARQLSecurityManager {
       return Result.ok({
         isValid: false,
         query,
-        message: "Not a valid SPARQL query"
+        message: "Not a valid SPARQL query",
       });
     }
 
     // All good for MVP
     return Result.ok({
       isValid: true,
-      query
+      query,
     });
   }
 
@@ -51,7 +51,7 @@ export class SPARQLSecurityManager {
    */
   sanitizeQuery(query: string): string {
     // Remove multiple spaces and trim
-    return query.replace(/\s+/g, ' ').trim();
+    return query.replace(/\s+/g, " ").trim();
   }
 }
 
@@ -68,7 +68,7 @@ export class EnhancedSPARQLValidator {
         securityScore: validation.isValid ? 100 : 0,
         detectedThreats: [],
         recommendations: [],
-        sanitizedQuery: this.manager.sanitizeQuery(query)
+        sanitizedQuery: this.manager.sanitizeQuery(query),
       });
     }
     return Result.fail("Validation failed");
