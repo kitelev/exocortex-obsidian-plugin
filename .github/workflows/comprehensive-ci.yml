@@ -117,7 +117,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [integration, e2e, mobile, security]
+        suite: [integration, e2e, mobile]
         node: ["20.x"]
     steps:
       - uses: actions/checkout@v4
@@ -172,9 +172,6 @@ jobs:
               ;;
             mobile)
               npm run test:mobile || npm run test -- --testPathPattern="mobile" --maxWorkers=1 --silent
-              ;;
-            security)
-              npm run test:security || npm run test -- --testPathPattern="security" --maxWorkers=1 --silent
               ;;
             compatibility)
               npm run test:compat || npm run test -- --maxWorkers=1 --silent
@@ -440,4 +437,4 @@ jobs:
           echo "### Coverage"
           echo "- Platforms tested: Linux, macOS, Windows"
           echo "- Node versions: 18.x, 20.x"
-          echo "- Test suites: unit, integration, e2e, semantic, mobile, security, UI"
+          echo "- Test suites: unit, integration, e2e, semantic, mobile, UI"

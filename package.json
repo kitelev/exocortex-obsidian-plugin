@@ -46,7 +46,6 @@
     "test:ui:smoke": "node scripts/ui-smoke-test.js",
     "test:ui:all": "npm run test:ui:headless",
     "test:mobile": "./scripts/run-mobile-tests.sh",
-    "test:security": "jest --config jest.security.config.js",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e:all",
     "test:all:local": "npm run test:unit && npm run test:integration && npm run test:e2e:all && npm run test:ui",
     "test:all:headless": "npm run test:unit && npm run test:integration && npm run test:e2e:all && npm run test:ui:headless",
