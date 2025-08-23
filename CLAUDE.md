@@ -60,7 +60,7 @@ Execute every request as a highly qualified Senior IT specialist with extensive 
 - **Mobile/iOS Support**: Complete mobile experience with touch-optimized UI and platform-specific optimizations
 - **Query Engine Abstraction**: Multi-engine support (Dataview, Datacore, Native) with automatic fallback
 - **Domain Layer**: Asset-based entities with Clean Architecture and mobile performance optimizations
-- **Semantic Foundation**: RDF/OWL/SPARQL with IndexedGraph and mobile-aware caching
+- **Semantic Foundation**: RDF/OWL with IndexedGraph and mobile-aware caching
 - **Children Efforts Enhancement**: Professional table display with status badges and hierarchical organization
 - **EMS Zone Hierarchy**: Child zone creation buttons for ems__Area with automatic parent linking (in progress)
 - **Slash Commands**: Quick execution commands (/execute, /status, /agents, /release, /test, /enterprise) for efficient development workflow
@@ -80,7 +80,7 @@ Core:
 
 Domain:
   - RDF triple store with SPO/POS/OSP indexing
-  - SPARQL 1.1 query engine
+  - Graph query engine
   - OWL ontology management
 
 Testing:
@@ -450,7 +450,7 @@ Write CHANGELOG entries as Product Manager:
 ### Core Functional Requirements
 
 - **FR-001**: RDF Triple Store with SPO/POS/OSP indexing (✅ Implemented)
-- **FR-002**: SPARQL 1.1 Query Engine with SELECT, CONSTRUCT, ASK (✅ Implemented)
+- **FR-002**: Graph Query Engine with SELECT, CONSTRUCT, ASK (✅ Implemented)
 - **FR-003**: OWL Ontology Management with class hierarchies (✅ Implemented)
 - **FR-004**: Obsidian Integration with note-to-RDF conversion (✅ Implemented)
 - **FR-005**: Interactive knowledge graph visualization (✅ Implemented)
@@ -465,7 +465,7 @@ Write CHANGELOG entries as Product Manager:
 
 ### Security Controls
 
-- **Input Validation**: SPARQL sanitization, IRI validation, path validation
+- **Input Validation**: Query sanitization, IRI validation, path validation
 - **Access Control**: Local-only operations, Obsidian permission model
 - **Data Protection**: No telemetry, privacy-first design, GDPR ready
 
@@ -527,7 +527,6 @@ After each task:
 
 - [Obsidian Plugin API](https://docs.obsidian.md/)
 - [RDF Primer](https://www.w3.org/TR/rdf-primer/)
-- [SPARQL Specification](https://www.w3.org/TR/sparql11-query/)
 
 ## 🆘 Troubleshooting
 

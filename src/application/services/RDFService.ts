@@ -264,7 +264,7 @@ export class RDFService {
   }
 
   /**
-   * Export SPARQL query results
+   * Export query results
    */
   async exportQueryResults(
     results: any[],
@@ -277,7 +277,7 @@ export class RDFService {
 
       const options: RDFExportOptions = {
         format,
-        fileName: fileName || "sparql-results",
+        fileName: fileName || "query-results",
         saveToVault,
         includeComments: true,
         prettyPrint: true,
@@ -308,7 +308,7 @@ export class RDFService {
   }
 
   /**
-   * Convert SPARQL query results to graph
+   * Convert query results to graph
    */
   private convertQueryResultsToGraph(results: any[]): Graph {
     const graph = new Graph();

@@ -17,12 +17,10 @@ export interface ExocortexSettingsData {
   enableQueryEngineAutoDetect: boolean;
 
   // Cache Settings
-  enableSPARQLCache: boolean;
-  sparqlCacheMaxSize: number;
-  sparqlCacheTTLMinutes: number;
   enableQueryCache: boolean;
-  queryCacheTimeout: number;
   queryCacheMaxSize: number;
+  queryCacheTTLMinutes: number;
+  queryCacheTimeout: number;
 
   // RDF Export Settings
   defaultRDFFormat: "turtle" | "rdf-xml" | "n-triples" | "json-ld";
@@ -42,7 +40,7 @@ export interface ExocortexSettingsData {
   // Debug Settings
   enableDebugMode: boolean;
   enableVerboseLogging: boolean;
-  logSPARQLQueries: boolean;
+  logQueries: boolean;
   enablePerformanceMetrics: boolean;
 }
 
@@ -61,12 +59,10 @@ export const DEFAULT_SETTINGS: ExocortexSettingsData = {
   enableQueryEngineAutoDetect: true,
 
   // Cache Settings
-  enableSPARQLCache: true,
-  sparqlCacheMaxSize: 500,
-  sparqlCacheTTLMinutes: 5,
   enableQueryCache: true,
+  queryCacheMaxSize: 500,
+  queryCacheTTLMinutes: 5,
   queryCacheTimeout: 30,
-  queryCacheMaxSize: 100,
 
   // RDF Export Settings
   defaultRDFFormat: "turtle",
@@ -86,7 +82,7 @@ export const DEFAULT_SETTINGS: ExocortexSettingsData = {
   // Debug Settings
   enableDebugMode: false,
   enableVerboseLogging: false,
-  logSPARQLQueries: false,
+  logQueries: false,
   enablePerformanceMetrics: false,
 };
 
@@ -143,11 +139,11 @@ export class ExocortexSettings {
     }
 
     // Validate cache settings
-    if (this.data.sparqlCacheMaxSize < 1) {
+    if (this.data.queryCacheMaxSize < 1) {
       return Result.fail<void>("SPARQL cache max size must be at least 1");
     }
 
-    if (this.data.sparqlCacheTTLMinutes < 1) {
+    if (this.data.queryCacheTTLMinutes < 1) {
       return Result.fail<void>("SPARQL cache TTL must be at least 1 minute");
     }
 

@@ -7,7 +7,7 @@ export interface SaveTemplateOptions {
   nodes: Map<string, VisualQueryNode>;
   edges: Map<string, VisualQueryEdge>;
   viewport: { x: number; y: number; zoom: number };
-  sparqlQuery?: string;
+  queryString?: string;
   onSave: (templateData: {
     name: string;
     description: string;
@@ -284,14 +284,14 @@ export class SaveTemplateModal extends Modal {
     edgeCount.innerHTML = `<strong>Edges:</strong> ${this.options.edges.size}`;
     edgeCount.style.cssText = "color: var(--text-muted); font-size: 12px;";
 
-    if (this.options.sparqlQuery) {
+    if (this.options.queryString) {
       const queryPreview = this.previewContainer.createDiv("sparql-preview");
       queryPreview.style.cssText = `
                 margin-top: 8px;
             `;
 
       const queryLabel = queryPreview.createDiv();
-      queryLabel.textContent = "Generated SPARQL:";
+      queryLabel.textContent = "Generated Query:";
       queryLabel.style.cssText = `
                 color: var(--text-normal);
                 font-size: 12px;
@@ -300,7 +300,7 @@ export class SaveTemplateModal extends Modal {
             `;
 
       const queryCode = queryPreview.createEl("pre");
-      queryCode.textContent = this.options.sparqlQuery;
+      queryCode.textContent = this.options.queryString;
       queryCode.style.cssText = `
                 margin: 0;
                 padding: 8px;

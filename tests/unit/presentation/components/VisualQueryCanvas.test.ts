@@ -10,7 +10,6 @@ import {
   VisualQueryEdge,
   EdgeType,
 } from "../../../../src/domain/visual/VisualQueryEdge";
-import { SPARQLProcessor } from "../../../../src/presentation/processors/SPARQLProcessor";
 
 // Mock DOM methods
 Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", {
@@ -72,16 +71,12 @@ Object.defineProperty(document, "createElementNS", {
 describe("VisualQueryCanvas", () => {
   let parentElement: HTMLElement;
   let canvas: VisualQueryCanvas;
-  let mockSparqlProcessor: jest.Mocked<SPARQLProcessor>;
   let mockOptions: CanvasOptions;
 
   beforeEach(() => {
     parentElement = document.createElement("div");
     document.body.appendChild(parentElement);
 
-    mockSparqlProcessor = {
-      executeQuery: jest.fn().mockResolvedValue({ results: [] }),
-    } as any;
 
     mockOptions = {
       width: 800,
@@ -103,8 +98,7 @@ describe("VisualQueryCanvas", () => {
 
     canvas = new VisualQueryCanvas(
       parentElement,
-      mockOptions,
-      mockSparqlProcessor,
+      mockOptions
     );
   });
 
@@ -365,12 +359,12 @@ describe("VisualQueryCanvas", () => {
     });
   });
 
-  describe("SPARQL Generation", () => {
+  describe("Query Generation", () => {
     it("should generate empty query with no nodes or edges", () => {
-      const sparql = canvas.generateSPARQL();
-      expect(sparql).toContain("SELECT *");
-      expect(sparql).toContain("WHERE {");
-      expect(mockOptions.onQueryGenerated).toHaveBeenCalledWith(sparql);
+      const query = canvas.generateQuery();
+      expect(query).toContain("SELECT *");
+      expect(query).toContain("WHERE {");
+      expect(mockOptions.onQueryGenerated).toHaveBeenCalledWith(query);
     });
 
     it("should generate simple triple pattern", () => {
@@ -392,10 +386,10 @@ describe("VisualQueryCanvas", () => {
       canvas.addNode(object);
       canvas.addEdge(edge);
 
-      const sparql = canvas.generateSPARQL();
-      expect(sparql).toContain("SELECT ?subject ?object");
-      expect(sparql).toContain("?subject");
-      expect(sparql).toContain("?object");
+      const query = canvas.generateQuery();
+      expect(query).toContain("SELECT ?subject ?object");
+      expect(query).toContain("?subject");
+      expect(query).toContain("?object");
     });
 
     it("should handle filter nodes", () => {
@@ -411,8 +405,8 @@ describe("VisualQueryCanvas", () => {
       canvas.addNode(variable);
       canvas.addNode(filter);
 
-      const sparql = canvas.generateSPARQL();
-      expect(sparql).toContain("FILTER(?count > 10)");
+      const query = canvas.generateQuery();
+      expect(query).toContain("FILTER(?count > 10)");
     });
 
     it("should handle optional patterns", () => {
@@ -434,16 +428,16 @@ describe("VisualQueryCanvas", () => {
       canvas.addNode(object);
       canvas.addEdge(edge);
 
-      const sparql = canvas.generateSPARQL();
+      const query = canvas.generateQuery();
       // Should generate OPTIONAL pattern
-      expect(sparql).toContain("?subject");
-      expect(sparql).toContain("?object");
+      expect(query).toContain("?subject");
+      expect(query).toContain("?object");
       // Optional patterns are handled in buildSPARQLQuery method
     });
   });
 
   describe("Query Execution", () => {
-    it("should execute generated SPARQL query", async () => {
+    it("should execute generated query", async () => {
       const subject = VisualQueryNode.createVariable("subject", {
         x: 100,
         y: 100,
@@ -462,18 +456,13 @@ describe("VisualQueryCanvas", () => {
       canvas.addNode(object);
       canvas.addEdge(edge);
 
-      // Mock SPARQL processor response
-      mockSparqlProcessor.executeQuery.mockResolvedValue({
-        results: [
-          { subject: "http://example.org/1", object: "http://example.org/2" },
-        ],
-      });
+      // Mock query processor response would go here
 
-      // Test the generateSPARQL method
-      const generatedSparql = canvas.generateSPARQL();
-      expect(generatedSparql).toBeDefined();
+      // Test the generateQuery method
+      const generatedQuery = canvas.generateQuery();
+      expect(generatedQuery).toBeDefined();
       expect(mockOptions.onQueryGenerated).toHaveBeenCalledWith(
-        generatedSparql,
+        generatedQuery,
       );
 
       // Test direct execution through internal method
@@ -663,8 +652,8 @@ describe("VisualQueryCanvas", () => {
       });
       canvas.addNode(node);
 
-      const sparql = canvas.generateSPARQL();
-      expect(sparql).toBeDefined();
+      const query = canvas.generateQuery();
+      expect(query).toBeDefined();
     });
 
     it("should handle nodes outside canvas bounds", () => {

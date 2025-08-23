@@ -39,7 +39,7 @@ export interface TemplateMetadata {
   tags: string[];
   author?: string;
   version?: string;
-  sparqlPattern?: string;
+  queryPattern?: string;
   usageCount?: number;
   lastUsed?: Date;
   createdAt: Date;
@@ -81,7 +81,7 @@ export class QueryTemplate {
   private readonly metadata: TemplateMetadata;
   private readonly layout: TemplateLayout;
   private readonly parameters: TemplateParameter[];
-  private readonly sparqlTemplate: string;
+  private readonly queryTemplate: string;
   private readonly isBuiltIn: boolean;
   private parameterValues: Map<string, string> = new Map();
 
@@ -90,7 +90,7 @@ export class QueryTemplate {
     metadata: TemplateMetadata;
     layout: TemplateLayout;
     parameters?: TemplateParameter[];
-    sparqlTemplate?: string;
+    queryTemplate?: string;
     isBuiltIn?: boolean;
   }) {
     this.id = params.id;
@@ -100,8 +100,8 @@ export class QueryTemplate {
       ...p,
       id: p.id || `param_${p.name}_${Math.random().toString(36).substr(2, 9)}`,
     }));
-    this.sparqlTemplate =
-      params.sparqlTemplate || "SELECT * WHERE { ?s ?p ?o }";
+    this.queryTemplate =
+      params.queryTemplate || "SELECT * WHERE { ?s ?p ?o }";
     this.isBuiltIn = params.isBuiltIn || false;
 
     // Make id property non-writable
@@ -152,8 +152,8 @@ export class QueryTemplate {
     };
   }
 
-  getSparqlTemplate(): string {
-    return this.sparqlTemplate;
+  getQueryTemplate(): string {
+    return this.queryTemplate;
   }
 
   getMetadata(): TemplateMetadata {
@@ -257,7 +257,7 @@ export class QueryTemplate {
       },
       layout: this.layout,
       parameters: this.parameters,
-      sparqlTemplate: this.sparqlTemplate,
+      queryTemplate: this.queryTemplate,
       isBuiltIn: false,
     });
   }
@@ -265,7 +265,7 @@ export class QueryTemplate {
   instantiate(parameterValues?: Record<string, string>): {
     nodes: any[];
     edges: any[];
-    sparql?: string;
+    query?: string;
     layout?: TemplateLayout;
     errors?: string[];
   } {
@@ -295,7 +295,7 @@ export class QueryTemplate {
     // Replace placeholders in layout
     const instantiatedLayout = this.replacePlaceholdersInLayout(allValues);
 
-    // Replace placeholders in SPARQL
+    // Replace placeholders in Query
     const instantiatedSparql = this.replacePlaceholdersInSparql(allValues);
 
     // Convert serialized nodes/edges to mock objects for testing
@@ -321,7 +321,7 @@ export class QueryTemplate {
     return {
       nodes,
       edges,
-      sparql: instantiatedSparql,
+      query: instantiatedSparql,
       layout: instantiatedLayout,
       errors: [],
     };
@@ -377,7 +377,7 @@ export class QueryTemplate {
   }
 
   private replacePlaceholdersInSparql(values: Record<string, string>): string {
-    return this.replacePlaceholders(this.sparqlTemplate, values);
+    return this.replacePlaceholders(this.queryTemplate, values);
   }
 
   private replacePlaceholders(
@@ -420,7 +420,7 @@ export class QueryTemplate {
       metadata: updatedMetadata,
       layout: this.layout,
       parameters: this.parameters,
-      sparqlTemplate: this.sparqlTemplate,
+      queryTemplate: this.queryTemplate,
       isBuiltIn: this.isBuiltIn,
     });
   }
@@ -508,7 +508,7 @@ export class QueryTemplate {
       metadata: this.metadata,
       layout: this.layout,
       parameters: this.parameters,
-      sparqlTemplate: this.sparqlTemplate,
+      queryTemplate: this.queryTemplate,
       isBuiltIn: this.isBuiltIn,
     };
   }
@@ -526,7 +526,7 @@ export class QueryTemplate {
       },
       layout: json.layout,
       parameters: json.parameters || [],
-      sparqlTemplate: json.sparqlTemplate,
+      queryTemplate: json.queryTemplate,
       isBuiltIn: json.isBuiltIn || false,
     });
   }
@@ -573,15 +573,15 @@ export class QueryTemplate {
       ...metadata,
     };
 
-    // Generate a basic SPARQL template
-    const sparql = "SELECT * WHERE { ?s ?p ?o }";
+    // Generate a basic Query template
+    const query = "SELECT * WHERE { ?s ?p ?o }";
 
     return new QueryTemplate({
       id: `template_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       metadata: fullMetadata,
       layout,
       parameters: [],
-      sparqlTemplate: sparql,
+      queryTemplate: query,
       isBuiltIn: false,
     });
   }
@@ -591,7 +591,7 @@ export class QueryTemplate {
     description: string,
     nodes: VisualQueryNode[],
     edges: VisualQueryEdge[],
-    sparql: string,
+    query: string,
     category: TemplateCategory = TemplateCategory.CUSTOM,
     tags: string[] = [],
   ): QueryTemplate {
@@ -621,7 +621,7 @@ export class QueryTemplate {
       category,
       difficulty: TemplateDifficulty.INTERMEDIATE,
       tags,
-      sparqlPattern: sparql,
+      queryPattern: query,
       usageCount: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -632,7 +632,7 @@ export class QueryTemplate {
       metadata,
       layout,
       parameters: [],
-      sparqlTemplate: sparql,
+      queryTemplate: query,
       isBuiltIn: false,
     });
   }

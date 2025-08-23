@@ -93,7 +93,7 @@ export class BuiltInQueryTemplates {
           placeholder: "Optional entity URI",
         },
       ],
-      sparqlTemplate: `SELECT ?property ?related
+      queryTemplate: `SELECT ?property ?related
 WHERE {
   <{{entityUri}}> ?property ?related .
 }`,
@@ -176,7 +176,7 @@ WHERE {
           defaultValue: "hasChild",
         },
       ],
-      sparqlTemplate: `SELECT ?start ?middle ?end
+      queryTemplate: `SELECT ?start ?middle ?end
 WHERE {
   ?start {{property1}} ?middle .
   ?middle {{property2}} ?end .
@@ -237,7 +237,7 @@ WHERE {
           defaultValue: "Person",
         },
       ],
-      sparqlTemplate: `SELECT ?instance
+      queryTemplate: `SELECT ?instance
 WHERE {
   ?instance rdf:type {{typeClass}} .
 }`,
@@ -296,7 +296,7 @@ WHERE {
           required: true,
         },
       ],
-      sparqlTemplate: `SELECT ?property ?value
+      queryTemplate: `SELECT ?property ?value
 WHERE {
   {{entityName}} ?property ?value .
 }`,
@@ -364,7 +364,7 @@ WHERE {
       },
       layout,
       parameters: [],
-      sparqlTemplate: `SELECT ?subject ?name ?description
+      queryTemplate: `SELECT ?subject ?name ?description
 WHERE {
   ?subject rdfs:label ?name .
   OPTIONAL { ?subject rdfs:comment ?description }
@@ -442,7 +442,7 @@ WHERE {
           },
         },
       ],
-      sparqlTemplate: `SELECT ?entity ?value
+      queryTemplate: `SELECT ?entity ?value
 WHERE {
   ?entity {{property}} ?value .
   FILTER (?value > {{threshold}})
@@ -503,7 +503,7 @@ WHERE {
           defaultValue: "Person",
         },
       ],
-      sparqlTemplate: `SELECT (COUNT(?entity) AS ?count)
+      queryTemplate: `SELECT (COUNT(?entity) AS ?count)
 WHERE {
   ?entity rdf:type {{entityType}} .
 }`,
@@ -570,7 +570,7 @@ WHERE {
           placeholder: "Search term",
         },
       ],
-      sparqlTemplate: `SELECT ?entity ?label
+      queryTemplate: `SELECT ?entity ?label
 WHERE {
   ?entity rdfs:label ?label .
   FILTER (regex(?label, "{{searchTerm}}", "i"))
@@ -642,7 +642,7 @@ WHERE {
           defaultValue: "knows",
         },
       ],
-      sparqlTemplate: `SELECT ?path
+      queryTemplate: `SELECT ?path
 WHERE {
   {{sourceEntity}} {{relationship}}+ {{targetEntity}} .
   BIND({{relationship}} AS ?path)
@@ -733,7 +733,7 @@ WHERE {
           defaultValue: "hasExpenses",
         },
       ],
-      sparqlTemplate: `SELECT ?entity ?value1 ?value2
+      queryTemplate: `SELECT ?entity ?value1 ?value2
 WHERE {
   ?entity {{property1}} ?value1 .
   ?entity {{property2}} ?value2 .

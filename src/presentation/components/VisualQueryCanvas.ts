@@ -4,7 +4,6 @@ import {
   NodePosition,
 } from "../../domain/visual/VisualQueryNode";
 import { VisualQueryEdge, EdgeType } from "../../domain/visual/VisualQueryEdge";
-import { SPARQLProcessor } from "../processors/SPARQLProcessor";
 import { Notice } from "obsidian";
 import { QueryTemplate } from "../../domain/visual/QueryTemplate";
 import { TemplateSelectionPanel } from "./TemplateSelectionPanel";
@@ -20,8 +19,8 @@ export interface CanvasOptions {
   zoomMin?: number;
   zoomMax?: number;
   zoomStep?: number;
-  onQueryChange?: (sparql: string) => void;
-  onExecute?: (sparql: string) => void;
+  onQueryChange?: (query: string) => void;
+  onExecute?: (query: string) => void;
   enableTemplates?: boolean;
   templateUseCase?: QueryTemplateUseCase;
   appInstance?: any; // For modal creation
@@ -33,7 +32,7 @@ export interface CanvasOptions {
   onEdgeSelect?: (edge: VisualQueryEdge) => void;
   onNodeEdit?: (node: VisualQueryNode) => void;
   onEdgeEdit?: (edge: VisualQueryEdge) => void;
-  onQueryGenerated?: (sparql: string) => void;
+  onQueryGenerated?: (query: string) => void;
   onExecuteQuery?: () => void;
 }
 
@@ -87,40 +86,40 @@ export class VisualQueryCanvas {
   };
 
   private options: Required<CanvasOptions>;
-  private sparqlProcessor?: SPARQLProcessor;
+  private queryProcessor?: any;
 
   constructor(
     private readonly parentElement: HTMLElement,
-    optionsOrSparqlProcessor?: CanvasOptions | SPARQLProcessor,
-    sparqlProcessorOrOptions?: SPARQLProcessor | CanvasOptions,
+    optionsOrSparqlProcessor?: CanvasOptions | any,
+    queryProcessorOrOptions?: any | CanvasOptions,
   ) {
     // Handle multiple constructor signatures for backward compatibility
     let options: CanvasOptions = {};
-    let sparqlProcessor: SPARQLProcessor | undefined;
+    let queryProcessor: any | undefined;
 
     if (optionsOrSparqlProcessor) {
-      // Check if first param is SPARQLProcessor (old signature)
+      // Check if first param is any (old signature)
       if (
         typeof optionsOrSparqlProcessor === "object" &&
         "executeQuery" in optionsOrSparqlProcessor
       ) {
-        sparqlProcessor = optionsOrSparqlProcessor as SPARQLProcessor;
-        options = (sparqlProcessorOrOptions as CanvasOptions) || {};
+        queryProcessor = optionsOrSparqlProcessor as any;
+        options = (queryProcessorOrOptions as CanvasOptions) || {};
       }
-      // Check if first param is options (new signature: parentElement, options, sparqlProcessor)
+      // Check if first param is options (new signature: parentElement, options, queryProcessor)
       else if (typeof optionsOrSparqlProcessor === "object") {
         options = optionsOrSparqlProcessor as CanvasOptions;
         if (
-          sparqlProcessorOrOptions &&
-          "executeQuery" in sparqlProcessorOrOptions
+          queryProcessorOrOptions &&
+          "executeQuery" in queryProcessorOrOptions
         ) {
-          sparqlProcessor = sparqlProcessorOrOptions as SPARQLProcessor;
+          queryProcessor = queryProcessorOrOptions as any;
         }
       }
     }
 
     this.options = { ...this.defaultOptions, ...options };
-    this.sparqlProcessor = sparqlProcessor;
+    this.queryProcessor = queryProcessor;
     this.createCanvas();
     this.attachEventListeners();
     this.render();
@@ -218,7 +217,7 @@ export class VisualQueryCanvas {
       this.addNode(NodeType.FILTER),
     );
     const generateBtn = this.createControlButton("Generate", () =>
-      this.generateSPARQL(),
+      this.generateQuery(),
     );
     const executeBtn = this.createControlButton(
       "Execute",
@@ -1107,14 +1106,14 @@ export class VisualQueryCanvas {
   }
 
   private updateQuery(): void {
-    const sparql = this.generateSPARQL();
-    this.options.onQueryChange(sparql);
+    const query = this.generateQuery();
+    this.options.onQueryChange(query);
     if ((this.options as any).onQueryGenerated) {
-      (this.options as any).onQueryGenerated(sparql);
+      (this.options as any).onQueryGenerated(query);
     }
   }
 
-  generateSPARQL(): string {
+  generateQuery(): string {
     if (this.nodes.size === 0) {
       const query = "SELECT *\nWHERE {\n  ?s ?p ?o .\n}";
       this.options.onQueryGenerated?.(query);
@@ -1128,7 +1127,7 @@ export class VisualQueryCanvas {
 
     this.nodes.forEach((node) => {
       if (node.getType() === NodeType.VARIABLE) {
-        variables.add(node.toSPARQLElement());
+        variables.add(node.toQueryElement());
       } else if (node.getType() === NodeType.FILTER) {
         filters.push(`FILTER (${node.getLabel()})`);
       }
@@ -1139,7 +1138,7 @@ export class VisualQueryCanvas {
       const target = this.nodes.get(edge.getTargetNodeId());
 
       if (source && target) {
-        const pattern = `${source.toSPARQLElement()} ${edge.toSPARQLPredicate()} ${target.toSPARQLElement()}`;
+        const pattern = `${source.toQueryElement()} ${edge.toQueryPredicate()} ${target.toQueryElement()}`;
 
         if (edge.isOptional()) {
           optionalPatterns.push(pattern);
@@ -1148,10 +1147,10 @@ export class VisualQueryCanvas {
         }
 
         if (source.getType() === NodeType.VARIABLE) {
-          variables.add(source.toSPARQLElement());
+          variables.add(source.toQueryElement());
         }
         if (target.getType() === NodeType.VARIABLE) {
-          variables.add(target.toSPARQLElement());
+          variables.add(target.toQueryElement());
         }
       }
     });
@@ -1182,9 +1181,9 @@ export class VisualQueryCanvas {
   }
 
   async executeQuery(): Promise<void> {
-    const sparql = this.generateSPARQL();
+    const query = this.generateQuery();
 
-    if (!sparql) {
+    if (!query) {
       new Notice("Please create a query first");
       return;
     }
@@ -1192,16 +1191,16 @@ export class VisualQueryCanvas {
     // Call the execute query callback
     this.options.onExecuteQuery?.();
 
-    if (this.sparqlProcessor) {
+    if (this.queryProcessor) {
       try {
-        const result = await this.sparqlProcessor.executeQuery(sparql);
-        this.options.onExecute(sparql);
+        const result = await this.queryProcessor.executeQuery(query);
+        this.options.onExecute(query);
         new Notice(`Query executed: ${result.results.length} results`);
       } catch (error: any) {
         new Notice(`Query error: ${error.message}`);
       }
     } else {
-      this.options.onExecute(sparql);
+      this.options.onExecute(query);
     }
   }
 
@@ -1368,7 +1367,7 @@ export class VisualQueryCanvas {
         y: this.viewportY,
         zoom: this.zoom,
       },
-      sparqlQuery: this.generateSPARQL(),
+      queryString: this.generateQuery(),
       onSave: async (templateData) => {
         try {
           const template =

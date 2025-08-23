@@ -1,7 +1,6 @@
 import { App, Notice, Plugin, requestUrl } from "obsidian";
 import { Graph } from "../../domain/semantic/core/Graph";
 import { Triple, IRI, Literal } from "../../domain/semantic/core/Triple";
-import { SPARQLProcessor } from "../../presentation/processors/SPARQLProcessor";
 import { ExoAgent } from "../../application/services/ExoAgent";
 import { RelationOntologizer } from "../../application/services/RelationOntologizer";
 import { RDFService } from "../../application/services/RDFService";
@@ -10,14 +9,14 @@ import { DIContainer } from "../container/DIContainer";
 
 /**
  * REST API Server for external AI agents
- * Provides endpoints for SPARQL queries, natural language queries, and knowledge management
+ * Provides endpoints for graph queries, natural language queries, and knowledge management
  */
 export class RESTAPIServer {
   private server: any;
   private port: number = 27124;
   private apiKey: string;
   private isRunning: boolean = false;
-  private sparqlProcessor: SPARQLProcessor;
+  private queryProcessor: any;
   private exoAgent: ExoAgent;
   private relationOntologizer: RelationOntologizer;
   private rdfService: RDFService;
@@ -31,7 +30,7 @@ export class RESTAPIServer {
     this.apiKey = this.generateAPIKey();
 
     // Initialize processors
-    this.sparqlProcessor = new SPARQLProcessor(plugin, graph);
+    this.queryProcessor = null; // Removed SPARQL processor
     this.exoAgent = new ExoAgent(app, graph);
     this.relationOntologizer = new RelationOntologizer(app);
     // Get RDFService from DI container
@@ -230,7 +229,7 @@ export class RESTAPIServer {
     }
 
     try {
-      const queryResult = await this.sparqlProcessor.executeQuery(query);
+      const queryResult = await this.queryProcessor?.executeQuery(query);
       return {
         data: queryResult.results,
         status: 200,

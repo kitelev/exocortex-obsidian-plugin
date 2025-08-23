@@ -2,7 +2,6 @@ import { App, Notice, TFile, TFolder } from "obsidian";
 import { Graph } from "../../domain/semantic/core/Graph";
 import { Triple, IRI, Literal } from "../../domain/semantic/core/Triple";
 import { ExoAgent } from "../../application/services/ExoAgent";
-import { SPARQLProcessor } from "../../presentation/processors/SPARQLProcessor";
 
 /**
  * Local File-Based API Server
@@ -15,7 +14,7 @@ export class LocalAPIServer {
   private pollInterval: ReturnType<typeof setInterval> | null = null;
   private apiKey: string;
   private exoAgent: ExoAgent;
-  private sparqlProcessor: SPARQLProcessor;
+  private queryProcessor: any;
   private requestsFolder = ".exocortex-api/requests";
   private responsesFolder = ".exocortex-api/responses";
   private configFile = ".exocortex-api/config.json";
@@ -27,7 +26,7 @@ export class LocalAPIServer {
   ) {
     this.apiKey = this.generateAPIKey();
     this.exoAgent = new ExoAgent(app, graph);
-    this.sparqlProcessor = new SPARQLProcessor(plugin, graph);
+    this.queryProcessor = null; // Removed SPARQL processor
   }
 
   /**
@@ -302,7 +301,7 @@ print(result)
     }
 
     try {
-      const queryResult = await this.sparqlProcessor.executeQuery(params.query);
+      const queryResult = await this.queryProcessor?.executeQuery(params.query);
       return {
         status: 200,
         data: {

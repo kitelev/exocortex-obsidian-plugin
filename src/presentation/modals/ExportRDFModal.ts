@@ -1,6 +1,6 @@
 /**
  * Modal for RDF Export functionality
- * Allows users to export knowledge graph or SPARQL results to various RDF formats
+ * Allows users to export knowledge graph or query results to various RDF formats
  */
 
 import { App, Modal, Setting, Notice, TFile } from "obsidian";

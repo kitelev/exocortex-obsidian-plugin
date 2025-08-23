@@ -2,7 +2,7 @@ import { Plugin, Notice } from "obsidian";
 import { ICommandController } from "../../application/ports/ICommandController";
 import { Graph } from "../../domain/semantic/core/Graph";
 import { RDFService } from "../../application/services/RDFService";
-import { SPARQLProcessor } from "../processors/SPARQLProcessor";
+import { QueryProcessor } from "../processors/QueryProcessor";
 import { ExportRDFModal } from "../modals/ExportRDFModal";
 import { ImportRDFModal } from "../modals/ImportRDFModal";
 
@@ -15,7 +15,7 @@ export class RDFCommandController implements ICommandController {
     private readonly plugin: Plugin,
     private readonly graph: Graph,
     private readonly rdfService: RDFService,
-    private readonly sparqlProcessor: SPARQLProcessor,
+    private readonly sparqlProcessor: QueryProcessor,
   ) {}
 
   async registerCommands(): Promise<void> {

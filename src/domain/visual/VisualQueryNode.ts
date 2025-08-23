@@ -151,7 +151,7 @@ export class VisualQueryNode {
     };
   }
 
-  toSPARQLElement(): string {
+  toQueryElement(): string {
     switch (this.type) {
       case NodeType.ENTITY:
         if (this.uri) {

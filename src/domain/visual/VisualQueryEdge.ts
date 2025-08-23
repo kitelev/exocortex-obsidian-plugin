@@ -95,7 +95,7 @@ export class VisualQueryEdge {
     return this.type === EdgeType.OPTIONAL;
   }
 
-  toSPARQLPredicate(): string {
+  toQueryPredicate(): string {
     if (this.propertyUri) {
       return `<${this.propertyUri}>`;
     }

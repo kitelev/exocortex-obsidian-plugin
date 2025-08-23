@@ -1,8 +1,9 @@
 import { ISuggestionRepository } from "../../domain/repositories/ISuggestionRepository";
 import {
-  SPARQLSuggestion,
+  QuerySuggestion,
+  QuerySuggestionImpl,
   SuggestionType,
-} from "../../domain/autocomplete/SPARQLSuggestion";
+} from "../../domain/autocomplete/QuerySuggestion";
 import {
   QueryContext,
   ClauseType,
@@ -21,8 +22,8 @@ interface UsageStats {
 export class GraphSuggestionRepository implements ISuggestionRepository {
   private keywordProvider = new KeywordSuggestionProvider();
   private usageStats: UsageStats = {};
-  private propertyCache: Map<string, SPARQLSuggestion[]> = new Map();
-  private classCache: Map<string, SPARQLSuggestion[]> = new Map();
+  private propertyCache: Map<string, QuerySuggestion[]> = new Map();
+  private classCache: Map<string, QuerySuggestion[]> = new Map();
   private cacheTimestamp = 0;
   private readonly cacheTTL = 60000; // 1 minute
 
@@ -30,7 +31,7 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
 
   async findKeywordSuggestions(
     context: QueryContext,
-  ): Promise<Result<SPARQLSuggestion[]>> {
+  ): Promise<Result<QuerySuggestion[]>> {
     try {
       const suggestions = this.keywordProvider.getSuggestions(context);
       return Result.ok(suggestions);
@@ -41,25 +42,36 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
 
   async findPropertySuggestions(
     context: QueryContext,
-  ): Promise<Result<SPARQLSuggestion[]>> {
+  ): Promise<Result<QuerySuggestion[]>> {
     try {
       if (this.shouldRefreshCache()) {
-        this.refreshPropertyCache();
+        await this.refreshCaches();
       }
 
-      const cachedSuggestions = this.propertyCache.get(
-        context.getCurrentToken(),
-      );
-      if (cachedSuggestions) {
-        return Result.ok(cachedSuggestions);
+      const cached = this.propertyCache.get("all");
+      if (cached) {
+        const filtered = this.filterSuggestionsByContext(cached, context);
+        return Result.ok(filtered);
       }
 
-      const properties = this.extractPropertiesFromGraph();
-      const suggestions = properties.map((prop) =>
-        this.createPropertySuggestion(prop, context),
-      );
+      // Fallback to basic property suggestions
+      const suggestions: QuerySuggestion[] = [];
+      const basicProperties = ["rdf:type", "rdfs:label", "rdfs:comment"];
+      
+      for (const prop of basicProperties) {
+        suggestions.push(
+          QuerySuggestionImpl.create({
+            id: `property_${prop}`,
+            text: prop,
+            insertText: prop,
+            type: SuggestionType.PROPERTY,
+            confidence: 0.8,
+            contextRelevance: 0.7,
+            description: `Basic RDF property: ${prop}`,
+          }),
+        );
+      }
 
-      this.propertyCache.set(context.getCurrentToken(), suggestions);
       return Result.ok(suggestions);
     } catch (error) {
       return Result.fail(`Failed to get property suggestions: ${error}`);
@@ -68,23 +80,36 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
 
   async findClassSuggestions(
     context: QueryContext,
-  ): Promise<Result<SPARQLSuggestion[]>> {
+  ): Promise<Result<QuerySuggestion[]>> {
     try {
       if (this.shouldRefreshCache()) {
-        this.refreshClassCache();
+        await this.refreshCaches();
       }
 
-      const cachedSuggestions = this.classCache.get(context.getCurrentToken());
-      if (cachedSuggestions) {
-        return Result.ok(cachedSuggestions);
+      const cached = this.classCache.get("all");
+      if (cached) {
+        const filtered = this.filterSuggestionsByContext(cached, context);
+        return Result.ok(filtered);
       }
 
-      const classes = this.extractClassesFromGraph();
-      const suggestions = classes.map((cls) =>
-        this.createClassSuggestion(cls, context),
-      );
+      // Fallback to basic class suggestions
+      const suggestions: QuerySuggestion[] = [];
+      const basicClasses = ["owl:Thing", "rdfs:Resource", "owl:Class"];
+      
+      for (const cls of basicClasses) {
+        suggestions.push(
+          QuerySuggestionImpl.create({
+            id: `class_${cls}`,
+            text: cls,
+            insertText: cls,
+            type: SuggestionType.CLASS,
+            confidence: 0.8,
+            contextRelevance: 0.7,
+            description: `Basic OWL class: ${cls}`,
+          }),
+        );
+      }
 
-      this.classCache.set(context.getCurrentToken(), suggestions);
       return Result.ok(suggestions);
     } catch (error) {
       return Result.fail(`Failed to get class suggestions: ${error}`);
@@ -93,28 +118,25 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
 
   async findVariableSuggestions(
     context: QueryContext,
-  ): Promise<Result<SPARQLSuggestion[]>> {
+  ): Promise<Result<QuerySuggestion[]>> {
     try {
-      const suggestions: SPARQLSuggestion[] = [];
+      const suggestions: QuerySuggestion[] = [];
       const existingVariables = context.getVariablesInScope();
       const currentToken = context.getCurrentToken();
 
-      // Suggest reuse of existing variables
+      // Suggest existing variables
       for (const variable of existingVariables) {
-        const varName = `?${variable}`;
+        const varName = variable.startsWith("?") ? variable : `?${variable}`;
         if (!currentToken || varName.startsWith(currentToken)) {
           suggestions.push(
-            SPARQLSuggestion.create({
+            QuerySuggestionImpl.create({
               id: `var_existing_${variable}`,
               text: varName,
               insertText: varName,
               type: SuggestionType.VARIABLE,
               confidence: 0.9,
-              contextualScore: 0.95,
-              metadata: {
-                description: "Existing variable in query",
-                usage: "Reuse this variable to join patterns",
-              },
+              contextRelevance: 0.95,
+              description: "Existing variable in query",
             }),
           );
         }
@@ -127,11 +149,7 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
         { name: "object", desc: "Object value" },
         { name: "type", desc: "RDF type/class" },
         { name: "label", desc: "Human-readable label" },
-        { name: "value", desc: "Generic value" },
-        { name: "name", desc: "Name property" },
-        { name: "id", desc: "Identifier" },
-        { name: "date", desc: "Date/time value" },
-        { name: "count", desc: "Count aggregate" },
+        { name: "value", desc: "Property value" },
       ];
 
       for (const { name, desc } of commonVariables) {
@@ -141,17 +159,14 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
           (!currentToken || varName.startsWith(currentToken))
         ) {
           suggestions.push(
-            SPARQLSuggestion.create({
+            QuerySuggestionImpl.create({
               id: `var_common_${name}`,
               text: varName,
               insertText: varName,
               type: SuggestionType.VARIABLE,
               confidence: 0.7,
-              contextualScore: 0.6,
-              metadata: {
-                description: desc,
-                usage: `Common variable name for ${desc.toLowerCase()}`,
-              },
+              contextRelevance: 0.6,
+              description: desc,
             }),
           );
         }
@@ -165,37 +180,34 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
 
   async findNamespaceSuggestions(
     context: QueryContext,
-  ): Promise<Result<SPARQLSuggestion[]>> {
+  ): Promise<Result<QuerySuggestion[]>> {
     try {
       const namespaces = [
-        { prefix: "rdf:", uri: "http://www.w3.org/1999/02/22-rdf-syntax-ns#" },
-        { prefix: "rdfs:", uri: "http://www.w3.org/2000/01/rdf-schema#" },
-        { prefix: "owl:", uri: "http://www.w3.org/2002/07/owl#" },
-        { prefix: "xsd:", uri: "http://www.w3.org/2001/XMLSchema#" },
-        { prefix: "skos:", uri: "http://www.w3.org/2004/02/skos/core#" },
-        { prefix: "foaf:", uri: "http://xmlns.com/foaf/0.1/" },
-        { prefix: "dc:", uri: "http://purl.org/dc/elements/1.1/" },
-        { prefix: "exo:", uri: "http://example.org/exocortex#" },
+        { prefix: "rdf", uri: "http://www.w3.org/1999/02/22-rdf-syntax-ns#" },
+        { prefix: "rdfs", uri: "http://www.w3.org/2000/01/rdf-schema#" },
+        { prefix: "owl", uri: "http://www.w3.org/2002/07/owl#" },
+        { prefix: "xsd", uri: "http://www.w3.org/2001/XMLSchema#" },
+        { prefix: "dc", uri: "http://purl.org/dc/elements/1.1/" },
+        { prefix: "foaf", uri: "http://xmlns.com/foaf/0.1/" },
       ];
 
+      const currentToken = context.getCurrentToken();
       const suggestions = namespaces
         .filter(
           (ns) =>
-            !context.getCurrentToken() ||
-            ns.prefix.startsWith(context.getCurrentToken()),
+            !currentToken ||
+            ns.prefix.startsWith(currentToken) ||
+            ns.uri.includes(currentToken),
         )
         .map((ns) =>
-          SPARQLSuggestion.create({
+          QuerySuggestionImpl.create({
             id: `namespace_${ns.prefix}`,
             text: ns.prefix,
-            insertText: `PREFIX ${ns.prefix} <${ns.uri}>`,
+            insertText: `PREFIX ${ns.prefix}: <${ns.uri}>`,
             type: SuggestionType.NAMESPACE,
             confidence: 0.85,
-            contextualScore: 0.8,
-            metadata: {
-              description: `Namespace: ${ns.uri}`,
-              namespace: ns.uri,
-            },
+            contextRelevance: 0.8,
+            description: `Namespace: ${ns.uri}`,
           }),
         );
 
@@ -207,70 +219,64 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
 
   async findFunctionSuggestions(
     context: QueryContext,
-  ): Promise<Result<SPARQLSuggestion[]>> {
+  ): Promise<Result<QuerySuggestion[]>> {
     try {
       const functions = [
-        { name: "STR", desc: "Convert to string", example: "STR(?value)" },
-        { name: "LANG", desc: "Get language tag", example: "LANG(?label)" },
         {
-          name: "DATATYPE",
-          desc: "Get datatype IRI",
-          example: "DATATYPE(?literal)",
+          name: "COUNT",
+          desc: "Count the number of results",
+          example: "COUNT(?item)",
         },
         {
-          name: "BOUND",
-          desc: "Test if variable is bound",
-          example: "BOUND(?var)",
+          name: "DISTINCT",
+          desc: "Remove duplicate results",
+          example: "SELECT DISTINCT ?item",
         },
         {
-          name: "REGEX",
-          desc: "Regular expression match",
-          example: 'REGEX(?text, "pattern")',
+          name: "FILTER",
+          desc: "Filter results based on a condition",
+          example: "FILTER(?age > 18)",
         },
         {
-          name: "CONTAINS",
-          desc: "String contains",
-          example: 'CONTAINS(?str, "substring")',
+          name: "OPTIONAL",
+          desc: "Optional graph pattern",
+          example: "OPTIONAL { ?item rdfs:label ?label }",
         },
         {
-          name: "STRSTARTS",
-          desc: "String starts with",
-          example: 'STRSTARTS(?str, "prefix")',
+          name: "UNION",
+          desc: "Union of graph patterns",
+          example: "{ ?item rdf:type ?type } UNION { ?item rdfs:subClassOf ?type }",
         },
         {
-          name: "STRENDS",
-          desc: "String ends with",
-          example: 'STRENDS(?str, "suffix")',
+          name: "BIND",
+          desc: "Bind a value to a variable",
+          example: "BIND(?price * 1.2 AS ?totalPrice)",
         },
-        { name: "STRLEN", desc: "String length", example: "STRLEN(?str)" },
-        { name: "SUBSTR", desc: "Substring", example: "SUBSTR(?str, 1, 10)" },
-        { name: "UCASE", desc: "Convert to uppercase", example: "UCASE(?str)" },
-        { name: "LCASE", desc: "Convert to lowercase", example: "LCASE(?str)" },
-        { name: "COUNT", desc: "Count aggregate", example: "COUNT(?item)" },
-        { name: "SUM", desc: "Sum aggregate", example: "SUM(?value)" },
-        { name: "AVG", desc: "Average aggregate", example: "AVG(?value)" },
-        { name: "MIN", desc: "Minimum value", example: "MIN(?value)" },
-        { name: "MAX", desc: "Maximum value", example: "MAX(?value)" },
-        { name: "NOW", desc: "Current date/time", example: "NOW()" },
-        { name: "YEAR", desc: "Extract year", example: "YEAR(?date)" },
-        { name: "MONTH", desc: "Extract month", example: "MONTH(?date)" },
+        {
+          name: "EXISTS",
+          desc: "Test whether a graph pattern exists",
+          example: "FILTER EXISTS { ?item rdfs:label ?label }",
+        },
+        {
+          name: "NOT EXISTS",
+          desc: "Test whether a graph pattern does not exist",
+          example: "FILTER NOT EXISTS { ?item rdfs:label ?label }",
+        },
       ];
 
-      const currentToken = context.getCurrentToken().toUpperCase();
+      const currentToken = context.getCurrentToken();
       const suggestions = functions
         .filter((fn) => !currentToken || fn.name.startsWith(currentToken))
         .map((fn) =>
-          SPARQLSuggestion.create({
+          QuerySuggestionImpl.create({
             id: `function_${fn.name.toLowerCase()}`,
             text: fn.name,
-            insertText: fn.name + "(",
+            insertText: `${fn.name} `,
             type: SuggestionType.FUNCTION,
             confidence: 0.8,
-            contextualScore: context.isInClause(ClauseType.FILTER) ? 0.9 : 0.6,
-            metadata: {
-              description: fn.desc,
-              examples: [fn.example],
-            },
+            contextRelevance: 0.7,
+            description: fn.desc,
+            examples: [fn.example],
           }),
         );
 
@@ -282,59 +288,35 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
 
   async findTemplateSuggestions(
     context: QueryContext,
-  ): Promise<Result<SPARQLSuggestion[]>> {
+  ): Promise<Result<QuerySuggestion[]>> {
     try {
       const templates = [
         {
-          name: "Basic SELECT Query",
-          template:
-            "SELECT ?subject ?predicate ?object\nWHERE {\n  ?subject ?predicate ?object .\n}\nLIMIT 100",
-          description: "Simple triple pattern query",
+          name: "Basic SELECT",
+          description: "Basic SELECT query template",
+          pattern: "SELECT ?subject ?predicate ?object WHERE { ?subject ?predicate ?object }",
         },
         {
-          name: "Find All Classes",
-          template:
-            "SELECT DISTINCT ?class\nWHERE {\n  ?instance rdf:type ?class .\n}\nORDER BY ?class",
-          description: "List all classes in the graph",
+          name: "Find by Type",
+          description: "Find all instances of a specific type",
+          pattern: "SELECT ?item WHERE { ?item rdf:type ?type }",
         },
         {
-          name: "Find All Properties",
-          template:
-            "SELECT DISTINCT ?property\nWHERE {\n  ?subject ?property ?object .\n}\nORDER BY ?property",
-          description: "List all properties used in the graph",
-        },
-        {
-          name: "Get Class Instances",
-          template:
-            "SELECT ?instance ?label\nWHERE {\n  ?instance rdf:type <ClassURI> .\n  OPTIONAL { ?instance rdfs:label ?label }\n}",
-          description: "Find all instances of a specific class",
-        },
-        {
-          name: "Count by Type",
-          template:
-            "SELECT ?type (COUNT(?instance) AS ?count)\nWHERE {\n  ?instance rdf:type ?type .\n}\nGROUP BY ?type\nORDER BY DESC(?count)",
-          description: "Count instances per class",
-        },
-        {
-          name: "Search by Label",
-          template:
-            'SELECT ?resource ?label\nWHERE {\n  ?resource rdfs:label ?label .\n  FILTER(CONTAINS(LCASE(?label), "search term"))\n}',
-          description: "Find resources by label text",
+          name: "Count Items",
+          description: "Count items of a specific type",
+          pattern: "SELECT (COUNT(?item) AS ?count) WHERE { ?item rdf:type ?type }",
         },
       ];
 
       const suggestions = templates.map((template, index) =>
-        SPARQLSuggestion.create({
+        QuerySuggestionImpl.create({
           id: `template_${index}`,
           text: template.name,
-          insertText: template.template,
+          insertText: template.pattern,
           type: SuggestionType.TEMPLATE,
-          confidence: 0.75,
-          contextualScore: context.isStartOfQuery() ? 0.9 : 0.3,
-          metadata: {
-            description: template.description,
-            documentation: "Query template - customize as needed",
-          },
+          confidence: 0.9,
+          contextRelevance: 0.8,
+          description: template.description,
         }),
       );
 
@@ -349,16 +331,17 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
     selected: boolean,
   ): Promise<Result<void>> {
     try {
-      if (!this.usageStats[suggestionId]) {
-        this.usageStats[suggestionId] = { count: 0, lastUsed: 0 };
-      }
-
       if (selected) {
-        this.usageStats[suggestionId].count++;
-        this.usageStats[suggestionId].lastUsed = Date.now();
+        const current = this.usageStats[suggestionId] || {
+          count: 0,
+          lastUsed: 0,
+        };
+        this.usageStats[suggestionId] = {
+          count: current.count + 1,
+          lastUsed: Date.now(),
+        };
       }
-
-      return Result.ok();
+      return Result.ok(undefined);
     } catch (error) {
       return Result.fail(`Failed to update usage statistics: ${error}`);
     }
@@ -366,141 +349,42 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
 
   async getPopularSuggestions(
     limit: number,
-  ): Promise<Result<SPARQLSuggestion[]>> {
+  ): Promise<Result<QuerySuggestion[]>> {
     try {
       const sortedIds = Object.entries(this.usageStats)
-        .sort((a, b) => b[1].count - a[1].count)
+        .sort(([, a], [, b]) => b.count - a.count)
         .slice(0, limit)
         .map(([id]) => id);
 
-      // This would need to reconstruct suggestions from IDs
-      // For now, return empty array
-      return Result.ok([]);
+      // For now, return empty array since we don't have a way to recreate suggestions by ID
+      const suggestions: QuerySuggestion[] = [];
+      return Result.ok(suggestions);
     } catch (error) {
       return Result.fail(`Failed to get popular suggestions: ${error}`);
     }
-  }
-
-  private extractPropertiesFromGraph(): Array<{
-    uri: string;
-    frequency: number;
-  }> {
-    const properties = new Map<string, number>();
-
-    try {
-      // Use match with undefined to get all triples
-      const triples = this.graph.match(undefined, undefined, undefined);
-      for (const triple of triples) {
-        const predicate = triple.getPredicate().toString();
-        properties.set(predicate, (properties.get(predicate) || 0) + 1);
-      }
-    } catch (error) {
-      console.warn("Failed to extract properties from graph:", error);
-    }
-
-    return Array.from(properties.entries())
-      .map(([uri, frequency]) => ({ uri, frequency }))
-      .sort((a, b) => b.frequency - a.frequency);
-  }
-
-  private extractClassesFromGraph(): Array<{
-    uri: string;
-    instanceCount: number;
-  }> {
-    const classes = new Map<string, number>();
-    const rdfType = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
-
-    try {
-      // Use match with undefined to get all triples
-      const triples = this.graph.match(undefined, undefined, undefined);
-      for (const triple of triples) {
-        if (triple.getPredicate().toString() === rdfType) {
-          const classUri = triple.getObject().toString();
-          classes.set(classUri, (classes.get(classUri) || 0) + 1);
-        }
-      }
-    } catch (error) {
-      console.warn("Failed to extract classes from graph:", error);
-    }
-
-    return Array.from(classes.entries())
-      .map(([uri, instanceCount]) => ({ uri, instanceCount }))
-      .sort((a, b) => b.instanceCount - a.instanceCount);
-  }
-
-  private createPropertySuggestion(
-    property: { uri: string; frequency: number },
-    context: QueryContext,
-  ): SPARQLSuggestion {
-    const shortName = this.getShortName(property.uri);
-    const confidence = Math.min(0.9, 0.5 + property.frequency / 100);
-
-    return SPARQLSuggestion.create({
-      id: `property_${property.uri}`,
-      text: shortName,
-      insertText: shortName,
-      type: SuggestionType.PROPERTY,
-      confidence,
-      contextualScore: context.isInClause(ClauseType.WHERE) ? 0.9 : 0.5,
-      metadata: {
-        description: `Property (used ${property.frequency} times)`,
-        namespace: property.uri,
-      },
-    });
-  }
-
-  private createClassSuggestion(
-    cls: { uri: string; instanceCount: number },
-    context: QueryContext,
-  ): SPARQLSuggestion {
-    const shortName = this.getShortName(cls.uri);
-    const confidence = Math.min(0.9, 0.5 + cls.instanceCount / 50);
-
-    return SPARQLSuggestion.create({
-      id: `class_${cls.uri}`,
-      text: shortName,
-      insertText: shortName,
-      type: SuggestionType.CLASS,
-      confidence,
-      contextualScore: this.isAfterRdfType(context) ? 0.95 : 0.6,
-      metadata: {
-        description: `Class (${cls.instanceCount} instances)`,
-        namespace: cls.uri,
-      },
-    });
-  }
-
-  private getShortName(uri: string): string {
-    const hashIndex = uri.lastIndexOf("#");
-    const slashIndex = uri.lastIndexOf("/");
-    const splitIndex = Math.max(hashIndex, slashIndex);
-
-    if (splitIndex > 0 && splitIndex < uri.length - 1) {
-      return uri.substring(splitIndex + 1);
-    }
-
-    return uri;
-  }
-
-  private isAfterRdfType(context: QueryContext): boolean {
-    const previousTokens = context.getPreviousTokens();
-    if (previousTokens.length < 2) return false;
-
-    const lastTwo = previousTokens.slice(-2).join(" ").toLowerCase();
-    return lastTwo.includes("rdf:type") || lastTwo.includes(" a ");
   }
 
   private shouldRefreshCache(): boolean {
     return Date.now() - this.cacheTimestamp > this.cacheTTL;
   }
 
-  private refreshPropertyCache(): void {
-    this.propertyCache.clear();
+  private async refreshCaches(): Promise<void> {
+    // Implementation would populate caches from the graph
+    // For now, we'll keep the caches empty
     this.cacheTimestamp = Date.now();
   }
 
-  private refreshClassCache(): void {
-    this.classCache.clear();
-    this.cacheTimestamp = Date.now();
+  private filterSuggestionsByContext(
+    suggestions: QuerySuggestion[],
+    context: QueryContext,
+  ): QuerySuggestion[] {
+    const currentToken = context.getCurrentToken();
+    if (!currentToken) {
+      return suggestions;
+    }
+
+    return suggestions.filter((suggestion) =>
+      suggestion.text.toLowerCase().startsWith(currentToken.toLowerCase()),
+    );
   }
 }

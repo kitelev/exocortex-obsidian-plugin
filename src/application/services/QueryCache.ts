@@ -1,6 +1,6 @@
 /**
- * SPARQL Query Cache Service
- * Provides in-memory caching for SPARQL query results with TTL and cache invalidation
+ * Query Cache Service
+ * Provides in-memory caching for query results with TTL and cache invalidation
  */
 
 export interface CacheEntry<T> {
@@ -131,7 +131,7 @@ export class QueryCache {
   }
 
   /**
-   * Normalize and create cache key from SPARQL query
+   * Normalize and create cache key from query
    */
   createCacheKey(query: string): string {
     // First split on the colon to handle prefix separately if it exists

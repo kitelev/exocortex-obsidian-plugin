@@ -1,6 +1,6 @@
 {
   "name": "exocortex-obsidian-plugin",
-  "version": "3.19.0",
+  "version": "4.0.0",
   "description": "Exocortex: A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
   "main": "main.js",
   "engines": {
@@ -30,8 +30,8 @@
     "test:watch": "jest --watch --testPathIgnorePatterns='/tests/ui/' '/tests/e2e/'",
     "test:coverage": "jest --coverage --testPathIgnorePatterns='/tests/ui/' '/tests/e2e/'",
     "test:e2e": "node tests/e2e/plugin-loading.test.js",
-    "test:e2e:sparql": "node tests/e2e/sparql-functionality.test.js",
-    "test:e2e:all": "npm run test:e2e && npm run test:e2e:sparql",
+    "test:e2e:query": "node tests/e2e/query-functionality.test.js",
+    "test:e2e:all": "npm run test:e2e && npm run test:e2e:query",
     "test:ui": "node scripts/run-ui-tests-smart.js",
     "test:ui:ci": "FORCE_OBSIDIAN_DOWNLOAD=true wdio run wdio.conf.ci.ts",
     "test:ui:local": "wdio run wdio.conf.local.ts",

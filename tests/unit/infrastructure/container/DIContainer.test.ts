@@ -34,7 +34,6 @@ jest.mock(
 );
 jest.mock("../../../../src/infrastructure/services/ObsidianCommandExecutor");
 jest.mock("../../../../src/application/services/ErrorHandlerService");
-jest.mock("../../../../src/application/services/SPARQLAutocompleteService");
 jest.mock("../../../../src/application/use-cases/CreateAssetUseCase");
 jest.mock("../../../../src/application/use-cases/RenderClassButtonsUseCase");
 jest.mock("../../../../src/application/use-cases/ExecuteButtonCommandUseCase");

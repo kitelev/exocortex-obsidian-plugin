@@ -6,9 +6,9 @@ import { SettingsLifecycleManager } from "./infrastructure/lifecycle/SettingsLif
 import { GraphLifecycleManager } from "./infrastructure/lifecycle/GraphLifecycleManager";
 import { ProcessorLifecycleManager } from "./infrastructure/lifecycle/ProcessorLifecycleManager";
 import { AssetCommandController } from "./presentation/command-controllers/AssetCommandController";
-import { SPARQLCommandController } from "./presentation/command-controllers/SPARQLCommandController";
 import { RDFCommandController } from "./presentation/command-controllers/RDFCommandController";
 import { TaskCommandController } from "./presentation/command-controllers/TaskCommandController";
+import { QueryProcessor } from "./presentation/processors/QueryProcessor";
 import { ExocortexSettings } from "./domain/entities/ExocortexSettings";
 
 /**
@@ -102,12 +102,6 @@ export default class ExocortexPlugin extends Plugin {
     this.processorManager?.updateCacheConfig(this.settings);
   }
 
-  /**
-   * Get SPARQL processor (exposed for testing)
-   */
-  get sparqlProcessor() {
-    return this.processorManager?.getSPARQLProcessor();
-  }
 
   private async initializeLifecycleManagers(): Promise<void> {
     // Create and register lifecycle managers
@@ -141,15 +135,11 @@ export default class ExocortexPlugin extends Plugin {
   private async initializeCommandControllers(): Promise<void> {
     // Create and register command controllers
     const assetController = new AssetCommandController(this);
-    const sparqlController = new SPARQLCommandController(
-      this,
-      this.processorManager.getSPARQLProcessor(),
-    );
     const rdfController = new RDFCommandController(
       this,
       this.graphManager.getGraph(),
       this.serviceProvider.getService("RDFService"),
-      this.processorManager.getSPARQLProcessor(),
+      new QueryProcessor(this, this.graphManager.getGraph()),
     );
     const taskController = new TaskCommandController(
       this,
@@ -157,15 +147,11 @@ export default class ExocortexPlugin extends Plugin {
     );
 
     this.commandRegistry.registerController(assetController);
-    this.commandRegistry.registerController(sparqlController);
     this.commandRegistry.registerController(rdfController);
     this.commandRegistry.registerController(taskController);
   }
 
   private setupCacheInvalidation(): void {
-    // Setup cache invalidation callback from graph to SPARQL processor
-    this.graphManager.setCacheInvalidationCallback(() => {
-      this.processorManager.getSPARQLProcessor()?.invalidateCache();
-    });
+    // Cache invalidation setup (placeholder for future use)
   }
 }

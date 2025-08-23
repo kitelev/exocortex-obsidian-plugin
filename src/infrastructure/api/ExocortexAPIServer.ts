@@ -1,7 +1,6 @@
 import { App, Notice, Plugin, requestUrl, RequestUrlParam } from "obsidian";
 import { Graph } from "../../domain/semantic/core/Graph";
 import { Triple, IRI, Literal } from "../../domain/semantic/core/Triple";
-import { SPARQLProcessor } from "../../presentation/processors/SPARQLProcessor";
 import { ExoAgent } from "../../application/services/ExoAgent";
 import { RelationOntologizer } from "../../application/services/RelationOntologizer";
 import { LocalAPIServer } from "./LocalAPIServer";
@@ -20,7 +19,7 @@ export class ExocortexAPIServer {
   private httpServer: any = null;
   private httpsServer: any = null;
   private apiKey: string;
-  private sparqlProcessor: SPARQLProcessor;
+  private queryProcessor: any;
   private exoAgent: ExoAgent;
   private relationOntologizer: RelationOntologizer;
   private settings: APISettings;
@@ -43,7 +42,7 @@ export class ExocortexAPIServer {
     };
 
     this.apiKey = this.settings.apiKey;
-    this.sparqlProcessor = new SPARQLProcessor(plugin, graph);
+    this.queryProcessor = null; // Removed SPARQL processor
     this.exoAgent = new ExoAgent(app, graph);
     this.relationOntologizer = new RelationOntologizer(app);
   }
@@ -331,7 +330,7 @@ export class ExocortexAPIServer {
     }
 
     try {
-      const queryResult = await this.sparqlProcessor.executeQuery(query);
+      const queryResult = await this.queryProcessor?.executeQuery(query);
       this.sendJson(res, {
         results: queryResult.results,
         count: queryResult.results.length,

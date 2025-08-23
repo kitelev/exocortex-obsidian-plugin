@@ -1,6 +1,9 @@
 {
   "permissions": {
-    "allow": ["WebSearch"],
+    "allow": [
+      "WebSearch",
+      "Read(//Users/kitelev/vault-2025/03 Knowledge/kitelev/**)"
+    ],
     "deny": [],
     "ask": []
   }

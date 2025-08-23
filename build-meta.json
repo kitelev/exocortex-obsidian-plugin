@@ -782,7 +782,7 @@
       "format": "esm"
     },
     "src/domain/visual/QueryTemplate.ts": {
-      "bytes": 17019,
+      "bytes": 16991,
       "imports": [
         {
           "path": "./VisualQueryNode",
@@ -798,12 +798,12 @@
       "format": "esm"
     },
     "src/domain/visual/VisualQueryNode.ts": {
-      "bytes": 5432,
+      "bytes": 5431,
       "imports": [],
       "format": "esm"
     },
     "src/domain/visual/VisualQueryEdge.ts": {
-      "bytes": 4716,
+      "bytes": 4715,
       "imports": [
         {
           "path": "./VisualQueryNode",
@@ -814,7 +814,7 @@
       "format": "esm"
     },
     "src/application/use-cases/QueryTemplateUseCase.ts": {
-      "bytes": 8953,
+      "bytes": 8951,
       "imports": [
         {
           "path": "../../domain/repositories/IQueryTemplateRepository",
@@ -958,47 +958,6 @@
       ],
       "format": "esm"
     },
-    "src/domain/autocomplete/SPARQLSuggestion.ts": {
-      "bytes": 1810,
-      "imports": [],
-      "format": "esm"
-    },
-    "src/domain/autocomplete/QueryContext.ts": {
-      "bytes": 2813,
-      "imports": [],
-      "format": "esm"
-    },
-    "src/application/services/SPARQLAutocompleteService.ts": {
-      "bytes": 12838,
-      "imports": [
-        {
-          "path": "src/domain/autocomplete/SPARQLSuggestion.ts",
-          "kind": "import-statement",
-          "original": "../../domain/autocomplete/SPARQLSuggestion"
-        },
-        {
-          "path": "src/domain/autocomplete/QueryContext.ts",
-          "kind": "import-statement",
-          "original": "../../domain/autocomplete/QueryContext"
-        },
-        {
-          "path": "../../domain/repositories/ISuggestionRepository",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/core/Result.ts",
-          "kind": "import-statement",
-          "original": "../../domain/core/Result"
-        },
-        {
-          "path": "../../domain/semantic/core/Graph",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
     "src/domain/services/OntologyProvisioningService.ts": {
       "bytes": 904,
       "imports": [],
@@ -1014,13 +973,23 @@
       "imports": [],
       "format": "esm"
     },
+    "src/domain/autocomplete/QuerySuggestion.ts": {
+      "bytes": 2828,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/domain/autocomplete/QueryContext.ts": {
+      "bytes": 2813,
+      "imports": [],
+      "format": "esm"
+    },
     "src/infrastructure/autocomplete/KeywordSuggestionProvider.ts": {
-      "bytes": 9437,
+      "bytes": 9430,
       "imports": [
         {
-          "path": "src/domain/autocomplete/SPARQLSuggestion.ts",
+          "path": "src/domain/autocomplete/QuerySuggestion.ts",
           "kind": "import-statement",
-          "original": "../../domain/autocomplete/SPARQLSuggestion"
+          "original": "../../domain/autocomplete/QuerySuggestion"
         },
         {
           "path": "src/domain/autocomplete/QueryContext.ts",
@@ -1031,7 +1000,7 @@
       "format": "esm"
     },
     "src/infrastructure/repositories/GraphSuggestionRepository.ts": {
-      "bytes": 16675,
+      "bytes": 11977,
       "imports": [
         {
           "path": "../../domain/repositories/ISuggestionRepository",
@@ -1039,14 +1008,14 @@
           "external": true
         },
         {
-          "path": "src/domain/autocomplete/SPARQLSuggestion.ts",
+          "path": "src/domain/autocomplete/QuerySuggestion.ts",
           "kind": "import-statement",
-          "original": "../../domain/autocomplete/SPARQLSuggestion"
+          "original": "../../domain/autocomplete/QuerySuggestion"
         },
         {
-          "path": "src/domain/autocomplete/QueryContext.ts",
+          "path": "../../domain/autocomplete/QueryContext",
           "kind": "import-statement",
-          "original": "../../domain/autocomplete/QueryContext"
+          "external": true
         },
         {
           "path": "src/domain/core/Result.ts",
@@ -1067,7 +1036,7 @@
       "format": "esm"
     },
     "src/infrastructure/repositories/BuiltInQueryTemplates.ts": {
-      "bytes": 19654,
+      "bytes": 19644,
       "imports": [
         {
           "path": "src/domain/visual/QueryTemplate.ts",
@@ -1088,7 +1057,7 @@
       "format": "esm"
     },
     "src/infrastructure/repositories/ObsidianQueryTemplateRepository.ts": {
-      "bytes": 13624,
+      "bytes": 13617,
       "imports": [
         {
           "path": "obsidian",
@@ -1172,7 +1141,7 @@
       "format": "esm"
     },
     "src/infrastructure/optimizers/MobilePerformanceOptimizer.ts": {
-      "bytes": 21781,
+      "bytes": 21811,
       "imports": [
         {
           "path": "obsidian",
@@ -1454,7 +1423,7 @@
       "format": "esm"
     },
     "src/application/services/RDFService.ts": {
-      "bytes": 12276,
+      "bytes": 12261,
       "imports": [
         {
           "path": "src/domain/semantic/core/Graph.ts",
@@ -1686,7 +1655,7 @@
       "format": "esm"
     },
     "src/presentation/components/MobileUIComponents.ts": {
-      "bytes": 19991,
+      "bytes": 20006,
       "imports": [
         {
           "path": "src/infrastructure/utils/PlatformDetector.ts",
@@ -1734,7 +1703,7 @@
       "format": "esm"
     },
     "src/infrastructure/offline/OfflineDataManager.ts": {
-      "bytes": 18455,
+      "bytes": 18471,
       "imports": [
         {
           "path": "src/domain/core/Result.ts",
@@ -1750,7 +1719,7 @@
       "format": "esm"
     },
     "src/infrastructure/container/DIContainer.ts": {
-      "bytes": 18735,
+      "bytes": 18323,
       "imports": [
         {
           "path": "obsidian",
@@ -1901,11 +1870,6 @@
           "path": "src/application/services/ErrorHandlerService.ts",
           "kind": "import-statement",
           "original": "../../application/services/ErrorHandlerService"
-        },
-        {
-          "path": "src/application/services/SPARQLAutocompleteService.ts",
-          "kind": "import-statement",
-          "original": "../../application/services/SPARQLAutocompleteService"
         },
         {
           "path": "src/domain/services/OntologyProvisioningService.ts",
@@ -2067,7 +2031,7 @@
       "format": "esm"
     },
     "src/domain/entities/ExocortexSettings.ts": {
-      "bytes": 6270,
+      "bytes": 6140,
       "imports": [
         {
           "path": "src/domain/core/Result.ts",
@@ -2083,7 +2047,7 @@
       "format": "esm"
     },
     "src/presentation/settings/ExocortexSettingTab.ts": {
-      "bytes": 16199,
+      "bytes": 16142,
       "imports": [
         {
           "path": "obsidian",
@@ -2160,34 +2124,8 @@
       ],
       "format": "esm"
     },
-    "src/application/services/QueryCache.ts": {
-      "bytes": 8414,
-      "imports": [],
-      "format": "esm"
-    },
-    "src/application/SPARQLEngine.ts": {
-      "bytes": 18118,
-      "imports": [
-        {
-          "path": "../domain/semantic/core/Graph",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/semantic/core/Triple.ts",
-          "kind": "import-statement",
-          "original": "../domain/semantic/core/Triple"
-        },
-        {
-          "path": "src/application/services/QueryCache.ts",
-          "kind": "import-statement",
-          "original": "./services/QueryCache"
-        }
-      ],
-      "format": "esm"
-    },
     "src/presentation/modals/ExportRDFModal.ts": {
-      "bytes": 12939,
+      "bytes": 12938,
       "imports": [
         {
           "path": "obsidian",
@@ -2212,90 +2150,18 @@
       ],
       "format": "esm"
     },
-    "src/application/services/SPARQLSanitizer.ts": {
-      "bytes": 7950,
-      "imports": [
-        {
-          "path": "src/domain/core/Result.ts",
-          "kind": "import-statement",
-          "original": "../../domain/core/Result"
-        }
-      ],
-      "format": "esm"
-    },
-    "src/presentation/processors/SPARQLProcessor.ts": {
-      "bytes": 14960,
+    "src/presentation/processors/GraphVisualizationProcessor.ts": {
+      "bytes": 14096,
       "imports": [
         {
           "path": "obsidian",
           "kind": "import-statement",
           "external": true
-        },
-        {
-          "path": "src/application/SPARQLEngine.ts",
-          "kind": "import-statement",
-          "original": "../../application/SPARQLEngine"
         },
         {
           "path": "../../domain/semantic/core/Graph",
           "kind": "import-statement",
           "external": true
-        },
-        {
-          "path": "../../application/services/ExoFocusService",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../application/services/QueryCache",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../application/services/RDFService",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/presentation/modals/ExportRDFModal.ts",
-          "kind": "import-statement",
-          "original": "../modals/ExportRDFModal"
-        },
-        {
-          "path": "../../application/services/RDFSerializer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/application/services/SPARQLSanitizer.ts",
-          "kind": "import-statement",
-          "original": "../../application/services/SPARQLSanitizer"
-        },
-        {
-          "path": "src/infrastructure/container/DIContainer.ts",
-          "kind": "import-statement",
-          "original": "../../infrastructure/container/DIContainer"
-        }
-      ],
-      "format": "esm"
-    },
-    "src/presentation/processors/GraphVisualizationProcessor.ts": {
-      "bytes": 40046,
-      "imports": [
-        {
-          "path": "obsidian",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/application/SPARQLEngine.ts",
-          "kind": "import-statement",
-          "original": "../../application/SPARQLEngine"
-        },
-        {
-          "path": "src/domain/semantic/core/Graph.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/Graph"
         },
         {
           "path": "src/domain/semantic/core/Triple.ts",
@@ -2326,7 +2192,7 @@
       "format": "esm"
     },
     "src/infrastructure/lifecycle/ProcessorLifecycleManager.ts": {
-      "bytes": 3421,
+      "bytes": 2036,
       "imports": [
         {
           "path": "obsidian",
@@ -2347,11 +2213,6 @@
           "path": "../../domain/entities/ExocortexSettings",
           "kind": "import-statement",
           "external": true
-        },
-        {
-          "path": "src/presentation/processors/SPARQLProcessor.ts",
-          "kind": "import-statement",
-          "original": "../../presentation/processors/SPARQLProcessor"
         },
         {
           "path": "src/presentation/processors/GraphVisualizationProcessor.ts",
@@ -2433,27 +2294,6 @@
       ],
       "format": "esm"
     },
-    "src/presentation/command-controllers/SPARQLCommandController.ts": {
-      "bytes": 1715,
-      "imports": [
-        {
-          "path": "obsidian",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../application/ports/ICommandController",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../processors/SPARQLProcessor",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
     "src/presentation/modals/ImportRDFModal.ts": {
       "bytes": 26080,
       "imports": [
@@ -2496,7 +2336,7 @@
       "format": "esm"
     },
     "src/presentation/command-controllers/RDFCommandController.ts": {
-      "bytes": 2425,
+      "bytes": 2422,
       "imports": [
         {
           "path": "obsidian",
@@ -2519,7 +2359,7 @@
           "external": true
         },
         {
-          "path": "../processors/SPARQLProcessor",
+          "path": "../processors/QueryProcessor",
           "kind": "import-statement",
           "external": true
         },
@@ -2865,8 +2705,29 @@
       ],
       "format": "esm"
     },
+    "src/presentation/processors/QueryProcessor.ts": {
+      "bytes": 4335,
+      "imports": [
+        {
+          "path": "../../domain/semantic/core/Graph",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/core/Result",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
     "src/ExocortexPlugin.ts": {
-      "bytes": 6192,
+      "bytes": 5694,
       "imports": [
         {
           "path": "obsidian",
@@ -2909,11 +2770,6 @@
           "original": "./presentation/command-controllers/AssetCommandController"
         },
         {
-          "path": "src/presentation/command-controllers/SPARQLCommandController.ts",
-          "kind": "import-statement",
-          "original": "./presentation/command-controllers/SPARQLCommandController"
-        },
-        {
           "path": "src/presentation/command-controllers/RDFCommandController.ts",
           "kind": "import-statement",
           "original": "./presentation/command-controllers/RDFCommandController"
@@ -2922,6 +2778,11 @@
           "path": "src/presentation/command-controllers/TaskCommandController.ts",
           "kind": "import-statement",
           "original": "./presentation/command-controllers/TaskCommandController"
+        },
+        {
+          "path": "src/presentation/processors/QueryProcessor.ts",
+          "kind": "import-statement",
+          "original": "./presentation/processors/QueryProcessor"
         },
         {
           "path": "./domain/entities/ExocortexSettings",
@@ -3080,21 +2941,6 @@
           "path": "obsidian",
           "kind": "require-call",
           "external": true
-        },
-        {
-          "path": "obsidian",
-          "kind": "require-call",
-          "external": true
-        },
-        {
-          "path": "obsidian",
-          "kind": "require-call",
-          "external": true
-        },
-        {
-          "path": "obsidian",
-          "kind": "require-call",
-          "external": true
         }
       ],
       "exports": [],
@@ -3104,7 +2950,7 @@
           "bytesInOutput": 56
         },
         "src/ExocortexPlugin.ts": {
-          "bytesInOutput": 2411
+          "bytesInOutput": 2080
         },
         "src/infrastructure/lifecycle/LifecycleRegistry.ts": {
           "bytesInOutput": 406
@@ -3113,7 +2959,7 @@
           "bytesInOutput": 328
         },
         "src/application/core/Container.ts": {
-          "bytesInOutput": 586
+          "bytesInOutput": 578
         },
         "src/infrastructure/adapters/ObsidianNotificationService.ts": {
           "bytesInOutput": 225
@@ -3152,13 +2998,13 @@
           "bytesInOutput": 7360
         },
         "src/shared/AbstractFileRepository.ts": {
-          "bytesInOutput": 2192
+          "bytesInOutput": 2183
         },
         "src/shared/utils/FileOperationUtils.ts": {
           "bytesInOutput": 2236
         },
         "src/shared/utils/ErrorHandlingUtils.ts": {
-          "bytesInOutput": 949
+          "bytesInOutput": 948
         },
         "src/infrastructure/repositories/ObsidianOntologyRepository.ts": {
           "bytesInOutput": 1068
@@ -3209,16 +3055,16 @@
           "bytesInOutput": 1979
         },
         "src/domain/visual/QueryTemplate.ts": {
-          "bytesInOutput": 7558
+          "bytesInOutput": 7541
         },
         "src/domain/visual/VisualQueryNode.ts": {
-          "bytesInOutput": 2591
+          "bytesInOutput": 2590
         },
         "src/domain/visual/VisualQueryEdge.ts": {
-          "bytesInOutput": 2082
+          "bytesInOutput": 2081
         },
         "src/application/use-cases/QueryTemplateUseCase.ts": {
-          "bytesInOutput": 3897
+          "bytesInOutput": 3896
         },
         "src/infrastructure/services/ObsidianCommandExecutor.ts": {
           "bytesInOutput": 6548
@@ -3235,15 +3081,6 @@
         "src/application/services/ErrorHandlerService.ts": {
           "bytesInOutput": 3461
         },
-        "src/domain/autocomplete/SPARQLSuggestion.ts": {
-          "bytesInOutput": 600
-        },
-        "src/domain/autocomplete/QueryContext.ts": {
-          "bytesInOutput": 1101
-        },
-        "src/application/services/SPARQLAutocompleteService.ts": {
-          "bytesInOutput": 5288
-        },
         "src/domain/services/OntologyProvisioningService.ts": {
           "bytesInOutput": 331
         },
@@ -3253,17 +3090,20 @@
         "src/infrastructure/resilience/CircuitBreakerService.ts": {
           "bytesInOutput": 923
         },
+        "src/domain/autocomplete/QuerySuggestion.ts": {
+          "bytesInOutput": 692
+        },
         "src/infrastructure/autocomplete/KeywordSuggestionProvider.ts": {
-          "bytesInOutput": 5164
+          "bytesInOutput": 5154
         },
         "src/infrastructure/repositories/GraphSuggestionRepository.ts": {
-          "bytesInOutput": 8460
+          "bytesInOutput": 5468
         },
         "src/infrastructure/repositories/BuiltInQueryTemplates.ts": {
-          "bytesInOutput": 11208
+          "bytesInOutput": 11198
         },
         "src/infrastructure/repositories/ObsidianQueryTemplateRepository.ts": {
-          "bytesInOutput": 6710
+          "bytesInOutput": 6704
         },
         "src/infrastructure/query-engines/DataviewQueryEngine.ts": {
           "bytesInOutput": 4248
@@ -3278,10 +3118,10 @@
           "bytesInOutput": 4129
         },
         "src/infrastructure/optimizers/MobilePerformanceOptimizer.ts": {
-          "bytesInOutput": 8072
+          "bytesInOutput": 8065
         },
         "src/infrastructure/query-engines/QueryEngineFactory.ts": {
-          "bytesInOutput": 3541
+          "bytesInOutput": 3540
         },
         "src/domain/entities/QueryEngineConfig.ts": {
           "bytesInOutput": 1888
@@ -3290,7 +3130,7 @@
           "bytesInOutput": 3007
         },
         "src/domain/semantic/core/Graph.ts": {
-          "bytesInOutput": 3755
+          "bytesInOutput": 3761
         },
         "src/domain/semantic/core/Triple.ts": {
           "bytesInOutput": 4969
@@ -3299,7 +3139,7 @@
           "bytesInOutput": 2625
         },
         "src/application/services/RDFSerializer.ts": {
-          "bytesInOutput": 6053
+          "bytesInOutput": 6055
         },
         "src/application/services/RDFParser.ts": {
           "bytesInOutput": 6662
@@ -3314,7 +3154,7 @@
           "bytesInOutput": 16230
         },
         "src/application/services/RDFService.ts": {
-          "bytesInOutput": 4554
+          "bytesInOutput": 4553
         },
         "src/presentation/components/ButtonRenderer.ts": {
           "bytesInOutput": 4317
@@ -3347,7 +3187,7 @@
           "bytesInOutput": 7256
         },
         "src/infrastructure/container/DIContainer.ts": {
-          "bytesInOutput": 6562
+          "bytesInOutput": 6387
         },
         "src/infrastructure/providers/ServiceProvider.ts": {
           "bytesInOutput": 1315
@@ -3356,43 +3196,28 @@
           "bytesInOutput": 584
         },
         "src/domain/entities/ExocortexSettings.ts": {
-          "bytesInOutput": 2141
+          "bytesInOutput": 2088
         },
         "src/presentation/settings/ExocortexSettingTab.ts": {
-          "bytesInOutput": 9814
+          "bytesInOutput": 9758
         },
         "src/infrastructure/lifecycle/GraphLifecycleManager.ts": {
           "bytesInOutput": 2639
         },
-        "src/presentation/processors/SPARQLProcessor.ts": {
-          "bytesInOutput": 7107
-        },
-        "src/application/services/QueryCache.ts": {
-          "bytesInOutput": 3092
-        },
-        "src/application/SPARQLEngine.ts": {
-          "bytesInOutput": 6988
-        },
         "src/presentation/modals/ExportRDFModal.ts": {
           "bytesInOutput": 7784
         },
-        "src/application/services/SPARQLSanitizer.ts": {
-          "bytesInOutput": 3066
-        },
         "src/presentation/processors/GraphVisualizationProcessor.ts": {
-          "bytesInOutput": 19551
+          "bytesInOutput": 6382
         },
         "src/infrastructure/lifecycle/ProcessorLifecycleManager.ts": {
-          "bytesInOutput": 1163
+          "bytesInOutput": 517
         },
         "src/presentation/modals/CreateAssetModal.ts": {
           "bytesInOutput": 7596
         },
         "src/presentation/command-controllers/AssetCommandController.ts": {
           "bytesInOutput": 398
-        },
-        "src/presentation/command-controllers/SPARQLCommandController.ts": {
-          "bytesInOutput": 816
         },
         "src/presentation/command-controllers/RDFCommandController.ts": {
           "bytesInOutput": 767
@@ -3404,7 +3229,7 @@
           "bytesInOutput": 659
         },
         "src/domain/value-objects/TaskId.ts": {
-          "bytesInOutput": 493
+          "bytesInOutput": 490
         },
         "src/domain/value-objects/Priority.ts": {
           "bytesInOutput": 1540
@@ -3413,7 +3238,7 @@
           "bytesInOutput": 1662
         },
         "src/domain/entities/Task.ts": {
-          "bytesInOutput": 6071
+          "bytesInOutput": 6067
         },
         "src/application/use-cases/CreateTaskFromProjectUseCase.ts": {
           "bytesInOutput": 5727
@@ -3422,13 +3247,16 @@
           "bytesInOutput": 3743
         },
         "src/infrastructure/repositories/ObsidianTaskRepository.ts": {
-          "bytesInOutput": 7716
+          "bytesInOutput": 7715
         },
         "src/presentation/modals/QuickTaskModal.ts": {
           "bytesInOutput": 5748
+        },
+        "src/presentation/processors/QueryProcessor.ts": {
+          "bytesInOutput": 1505
         }
       },
-      "bytes": 414771
+      "bytes": 371415
     }
   }
 }

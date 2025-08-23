@@ -529,10 +529,10 @@ export class TemplateSelectionPanel {
       content.appendChild(exampleSection);
     }
 
-    if (metadata.sparqlPattern) {
+    if (metadata.queryPattern) {
       const sparqlSection = this.createPreviewSection(
         "SPARQL Pattern",
-        metadata.sparqlPattern,
+        metadata.queryPattern,
         true,
       );
       content.appendChild(sparqlSection);

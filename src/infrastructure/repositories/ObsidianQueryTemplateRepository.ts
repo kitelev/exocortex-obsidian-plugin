@@ -17,7 +17,7 @@ interface StoredTemplateData {
   metadata: TemplateMetadata;
   layout: TemplateLayout;
   parameters: TemplateParameter[];
-  sparqlTemplate: string;
+  queryTemplate: string;
   isBuiltIn: boolean;
   usageCount?: number;
   lastUsed?: string;
@@ -160,7 +160,7 @@ export class ObsidianQueryTemplateRepository
       metadata: template.getMetadata(),
       layout: template.getLayout(),
       parameters: template.getParameters(),
-      sparqlTemplate: template.getSparqlTemplate(),
+      queryTemplate: template.getQueryTemplate(),
       isBuiltIn: template.isBuiltInTemplate(),
     };
 
@@ -195,7 +195,7 @@ export class ObsidianQueryTemplateRepository
       metadata: template.getMetadata(),
       layout: template.getLayout(),
       parameters: template.getParameters(),
-      sparqlTemplate: template.getSparqlTemplate(),
+      queryTemplate: template.getQueryTemplate(),
       isBuiltIn: template.isBuiltInTemplate(),
     };
 
@@ -460,7 +460,7 @@ export class ObsidianQueryTemplateRepository
       metadata: data.metadata,
       layout: data.layout,
       parameters: data.parameters,
-      sparqlTemplate: data.sparqlTemplate || "SELECT * WHERE { ?s ?p ?o }",
+      queryTemplate: data.queryTemplate || "SELECT * WHERE { ?s ?p ?o }",
       isBuiltIn: data.isBuiltIn,
     });
   }

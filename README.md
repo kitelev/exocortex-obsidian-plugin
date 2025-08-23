@@ -184,7 +184,7 @@ exo__Instance_class: "[[kb__Article]]"
 exo__Asset_label: "RDF Triple Store Architecture"
 kb__Article_category: "[[Technical Documentation]]"
 kb__Article_relatedTo:
-  - "[[SPARQL Query Engine]]"
+  - "[[Graph Query Engine]]"
   - "[[Graph Databases]]"
   - "[[Semantic Web]]"
 kb__Article_author: "[[Your Name]]"
@@ -621,7 +621,7 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 ### Upcoming Features
 
 - [ ] Visual layout editor
-- [ ] SPARQL query support
+- [ ] Graph query support
 - [ ] Import/export of ontologies
 - [ ] Multi-vault synchronization
 - [ ] Apple Pencil support for iPad

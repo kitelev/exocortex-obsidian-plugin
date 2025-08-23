@@ -1,3 +1,22 @@
+## [4.0.0] - 2025-08-23
+
+### 🚀 Major Architecture Simplification
+
+#### Streamlined Query System
+The plugin now features a cleaner, more maintainable architecture with the removal of complex query language dependencies. This major version brings significant improvements to performance and reliability.
+
+#### What This Means for You
+- **Faster Performance**: Reduced code complexity means faster plugin loading and execution
+- **Better Stability**: Simplified architecture reduces potential points of failure
+- **Easier Maintenance**: Cleaner codebase enables faster bug fixes and feature additions
+- **Smaller Bundle Size**: Removed unnecessary dependencies for a lighter plugin footprint
+
+#### Technical Improvements
+- **Simplified Query Architecture**: Replaced complex query engine with streamlined graph traversal
+- **Reduced Dependencies**: Removed external query language parsers and validators
+- **Cleaner API Surface**: More intuitive internal APIs for better extensibility
+- **Improved Type Safety**: Enhanced TypeScript coverage across all modules
+
 ## [3.19.0] - 2025-08-23
 
 ### 🧪 Enterprise-Grade Testing & Code Quality Infrastructure

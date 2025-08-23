@@ -245,7 +245,7 @@ export class QueryTemplateUseCase {
   }
 
   async getTemplatePreview(templateId: string): Promise<{
-    sparqlQuery: string;
+    queryString: string;
     nodeCount: number;
     edgeCount: number;
     parameterCount: number;
@@ -273,22 +273,22 @@ export class QueryTemplateUseCase {
       complexity = "complex";
     }
 
-    // Generate example SPARQL if pattern is available
-    let sparqlQuery = template.getMetadata().sparqlPattern || "";
+    // Generate example Query if pattern is available
+    let queryString = template.getMetadata().queryPattern || "";
 
     // Replace parameter placeholders with example values
     parameters.forEach((param) => {
       const paramId = param.id || `param_${param.name}`;
       const placeholder = `{${paramId.toUpperCase()}}`;
       const exampleValue = param.defaultValue || `{${param.name}}`;
-      sparqlQuery = sparqlQuery.replace(
+      queryString = queryString.replace(
         new RegExp(placeholder, "g"),
         exampleValue,
       );
     });
 
     return {
-      sparqlQuery,
+      queryString,
       nodeCount,
       edgeCount,
       parameterCount: parameters.length,

@@ -151,41 +151,41 @@ export class ExocortexSettingTab extends PluginSettingTab {
   private addCacheSettingsSection(containerEl: HTMLElement): void {
     containerEl.createEl("h2", { text: "Cache Settings" });
 
-    // SPARQL Cache
+    // Query Cache
     new Setting(containerEl)
-      .setName("Enable SPARQL cache")
-      .setDesc("Cache SPARQL query results for improved performance")
+      .setName("Enable query cache")
+      .setDesc("Cache query results for improved performance")
       .addToggle((toggle) =>
         toggle
-          .setValue(this.settings.get("enableSPARQLCache"))
+          .setValue(this.settings.get("enableQueryCache"))
           .onChange(async (value) => {
-            await this.updateSetting("enableSPARQLCache", value);
+            await this.updateSetting("enableQueryCache", value);
           }),
       );
 
     new Setting(containerEl)
-      .setName("SPARQL cache max size")
-      .setDesc("Maximum number of cached SPARQL queries")
+      .setName("Query cache max size")
+      .setDesc("Maximum number of cached queries")
       .addSlider((slider) =>
         slider
           .setLimits(10, 2000, 10)
-          .setValue(this.settings.get("sparqlCacheMaxSize"))
+          .setValue(this.settings.get("queryCacheMaxSize"))
           .setDynamicTooltip()
           .onChange(async (value) => {
-            await this.updateSetting("sparqlCacheMaxSize", value);
+            await this.updateSetting("queryCacheMaxSize", value);
           }),
       );
 
     new Setting(containerEl)
-      .setName("SPARQL cache TTL")
-      .setDesc("Time to live for cached SPARQL queries (minutes)")
+      .setName("Query cache TTL")
+      .setDesc("Time to live for cached queries (minutes)")
       .addSlider((slider) =>
         slider
           .setLimits(1, 60, 1)
-          .setValue(this.settings.get("sparqlCacheTTLMinutes"))
+          .setValue(this.settings.get("queryCacheTTLMinutes"))
           .setDynamicTooltip()
           .onChange(async (value) => {
-            await this.updateSetting("sparqlCacheTTLMinutes", value);
+            await this.updateSetting("queryCacheTTLMinutes", value);
           }),
       );
 
@@ -381,13 +381,13 @@ export class ExocortexSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Log SPARQL queries")
-      .setDesc("Log all SPARQL queries to console for debugging")
+      .setName("Log queries")
+      .setDesc("Log all queries to console for debugging")
       .addToggle((toggle) =>
         toggle
-          .setValue(this.settings.get("logSPARQLQueries"))
+          .setValue(this.settings.get("logQueries"))
           .onChange(async (value) => {
-            await this.updateSetting("logSPARQLQueries", value);
+            await this.updateSetting("logQueries", value);
           }),
       );
 

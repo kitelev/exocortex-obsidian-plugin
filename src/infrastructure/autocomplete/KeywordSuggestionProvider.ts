@@ -1,7 +1,8 @@
 import {
-  SPARQLSuggestion,
+  QuerySuggestion,
+  QuerySuggestionImpl,
   SuggestionType,
-} from "../../domain/autocomplete/SPARQLSuggestion";
+} from "../../domain/autocomplete/QuerySuggestion";
 import {
   QueryContext,
   ClauseType,
@@ -184,7 +185,7 @@ export class KeywordSuggestionProvider {
     },
   ];
 
-  getSuggestions(context: QueryContext): SPARQLSuggestion[] {
+  getSuggestions(context: QueryContext): QuerySuggestion[] {
     const contextType = this.determineContextType(context);
     const currentToken = context.getCurrentToken().toUpperCase();
 
@@ -264,20 +265,18 @@ export class KeywordSuggestionProvider {
   private createSuggestion(
     keyword: KeywordDefinition,
     context: QueryContext,
-  ): SPARQLSuggestion {
-    const contextualScore = this.calculateContextualScore(keyword, context);
+  ): QuerySuggestion {
+    const contextRelevance = this.calculateContextualScore(keyword, context);
 
-    return SPARQLSuggestion.create({
+    return QuerySuggestionImpl.create({
       id: `keyword_${keyword.text.toLowerCase().replace(/\s+/g, "_")}`,
       text: keyword.text,
       insertText: keyword.insertText,
       type: SuggestionType.KEYWORD,
       confidence: keyword.confidence,
-      contextualScore,
-      metadata: {
-        description: keyword.description,
-        examples: keyword.examples,
-      },
+      contextRelevance,
+      description: keyword.description,
+      examples: keyword.examples,
     });
   }
 

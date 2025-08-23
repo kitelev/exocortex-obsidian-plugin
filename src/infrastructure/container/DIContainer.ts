@@ -38,7 +38,6 @@ import { QueryTemplateUseCase } from "../../application/use-cases/QueryTemplateU
 import { ICommandExecutor } from "../../application/services/ICommandExecutor";
 import { ObsidianCommandExecutor } from "../services/ObsidianCommandExecutor";
 import { ErrorHandlerService } from "../../application/services/ErrorHandlerService";
-import { SPARQLAutocompleteService } from "../../application/services/SPARQLAutocompleteService";
 import { OntologyProvisioningService } from "../../domain/services/OntologyProvisioningService";
 import { PropertyCacheService } from "../../domain/services/PropertyCacheService";
 import { CircuitBreakerService } from "../resilience/CircuitBreakerService";
@@ -226,16 +225,6 @@ export class DIContainer {
       },
     );
 
-    this.container.register<SPARQLAutocompleteService>(
-      "SPARQLAutocompleteService",
-      () =>
-        new SPARQLAutocompleteService(
-          this.container.resolve<ISuggestionRepository>(
-            "ISuggestionRepository",
-          ),
-          (this.plugin as any)?.graph || null,
-        ),
-    );
 
     // Register Query Engine Services
     this.container.register<QueryEngineFactory>("QueryEngineFactory", () => {
