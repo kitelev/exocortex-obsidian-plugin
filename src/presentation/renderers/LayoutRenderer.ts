@@ -19,16 +19,6 @@ export class LayoutRenderer {
     this.dynamicBacklinksRenderer = new DynamicBacklinksBlockRenderer(app);
   }
 
-  // Method signature for tests - renders a ClassLayout directly
-  renderLayout(layout: ClassLayout | null, container: HTMLElement): void;
-  // Method signature for production - renders based on file metadata
-  async renderLayout(
-    container: HTMLElement,
-    file: TFile,
-    metadata: any,
-    dv: any,
-  ): Promise<void>;
-
   async renderLayout(
     layoutOrContainer: ClassLayout | null | HTMLElement,
     containerOrFile?: HTMLElement | TFile,

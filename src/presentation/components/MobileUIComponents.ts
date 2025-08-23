@@ -84,7 +84,7 @@ export class TouchGestureRecognizer {
   private touchStartPos = { x: 0, y: 0 };
   private lastTapTime = 0;
   private touchCount = 0;
-  private longTapTimer?: NodeJS.Timeout;
+  private longTapTimer?: ReturnType<typeof setTimeout>;
   private isTracking = false;
 
   constructor(element: HTMLElement, handlers: TouchEventHandler) {

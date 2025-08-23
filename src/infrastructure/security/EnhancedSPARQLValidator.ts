@@ -61,7 +61,8 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
         /;\s*DROP/gi,
         /;\s*INSERT/gi,
         /;\s*CLEAR/gi,
-        /\.\.[\/\\]/g,
+        /\\.\\.[/\\\\]/g,
+        // eslint-disable-next-line no-control-regex
         /\x00/g,
         /<script/gi,
         /javascript:/gi,
@@ -191,14 +192,14 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
     // Advanced path traversal patterns
     {
       name: "PATH_TRAVERSAL_ENCODED",
-      pattern: /%2e%2e[%2f%5c]|\.\.[\/%5c]|%252e%252e/gi,
+      pattern: /%2e%2e[%2f%5c]|\\.\\.[/%5c]|%252e%252e/gi,
       severity: "critical",
       message: "Encoded path traversal attempt detected",
       recommendation: "Validate and sanitize all URI components",
     },
     {
       name: "WINDOWS_PATH_TRAVERSAL",
-      pattern: /\.\.[\\\/]|[A-Za-z]:[\\\/]/g,
+      pattern: /\\.\\.[/\\\\]|[A-Za-z]:[/\\\\]/g,
       severity: "critical",
       message: "Windows path traversal pattern detected",
     },
@@ -720,7 +721,7 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
     }
 
     // Enhanced bracket/brace structure validation
-    const brackets = /[\{\}\(\)\[\]]/g;
+    const brackets = /[{}()[\\]]/g;
     const stack: string[] = [];
     let match;
     while ((match = brackets.exec(query)) !== null) {
@@ -751,7 +752,7 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
     // Check for malformed escape sequences in strings
     const escapePatterns = [
       // Unknown escape sequences (not \", \\, \n, \r, \t, \b, \f, \/, \u, \x)
-      /"[^"]*\\(?!["\\nrtbf\/ux])[a-zA-Z][^"]*"/g, // Like \q, \z, etc.
+      /"[^"]*\\(?!["\\nrtbf/ux])[a-zA-Z][^"]*"/g, // Like \q, \z, etc.
       // Trailing backslash
       /"[^"]*\\$/g,
       // Incomplete Unicode escapes (need exactly 4 hex digits)
@@ -915,6 +916,7 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
     }
 
     // Check for suspicious characters
+    // eslint-disable-next-line no-control-regex
     const suspiciousChars = /[<>"'`\x00-\x1f\x7f-\x9f]/;
     if (suspiciousChars.test(iri)) {
       return false;
@@ -931,7 +933,7 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
       );
     } catch {
       // If not a valid URL, check if it's a valid URN or namespace
-      return /^[a-zA-Z][a-zA-Z0-9]*:[a-zA-Z0-9_\-\.]*$/.test(iri);
+      return /^[a-zA-Z][a-zA-Z0-9]*:[a-zA-Z0-9_\\-.]*$/.test(iri);
     }
   }
 
@@ -1077,8 +1079,8 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
 
       if (threat.type === "traversal") {
         // Remove path traversal patterns
-        safeQuery = safeQuery.replace(/\.\.[\/\\]/g, "");
-        safeQuery = safeQuery.replace(/file:\/\/\//g, "");
+        safeQuery = safeQuery.replace(/\\.\\.[/\\\\]/g, "");
+        safeQuery = safeQuery.replace(/file:\/\//g, "");
       }
     }
 
@@ -1109,6 +1111,7 @@ export class EnhancedSPARQLValidator extends SPARQLSanitizer {
   createSafeIRI(input: string): string {
     // Remove dangerous characters
     const cleaned = input
+      // eslint-disable-next-line no-control-regex
       .replace(/[<>"'`\x00-\x1f\x7f-\x9f]/g, "")
       .replace(/\.\./g, "")
       .replace(/javascript:/gi, "")

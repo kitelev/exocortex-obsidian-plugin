@@ -31,7 +31,7 @@ export interface QueryExecution {
   complexity: "simple" | "moderate" | "complex" | "critical";
   resourceSnapshot: ResourceSnapshot;
   abortController: AbortController;
-  resourceMonitor?: NodeJS.Timeout;
+  resourceMonitor?: ReturnType<typeof setInterval>;
 }
 
 export interface ResourceSnapshot {

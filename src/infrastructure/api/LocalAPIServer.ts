@@ -12,7 +12,7 @@ import { SPARQLProcessor } from "../../presentation/processors/SPARQLProcessor";
  */
 export class LocalAPIServer {
   private isRunning: boolean = false;
-  private pollInterval: NodeJS.Timeout | null = null;
+  private pollInterval: ReturnType<typeof setInterval> | null = null;
   private apiKey: string;
   private exoAgent: ExoAgent;
   private sparqlProcessor: SPARQLProcessor;

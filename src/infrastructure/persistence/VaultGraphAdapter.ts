@@ -13,7 +13,7 @@ export class VaultGraphAdapter {
   private graph: Graph;
   private cacheFile = ".obsidian/plugins/exocortex/graph-cache.json";
   private watchedFiles = new Set<string>();
-  private saveTimer: NodeJS.Timeout | null = null;
+  private saveTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(plugin: Plugin) {
     this.plugin = plugin;

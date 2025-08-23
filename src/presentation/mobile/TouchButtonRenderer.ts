@@ -682,7 +682,7 @@ class TouchCommandInputModal extends Modal {
 
     switch (param.type) {
       case "string":
-      case "asset":
+      case "asset": {
         const textInput = inputWrapper.createEl("input", {
           type: "text",
           cls: "touch-input",
@@ -700,8 +700,9 @@ class TouchCommandInputModal extends Modal {
           this.inputValues[param.name] = value;
         });
         break;
+      }
 
-      case "number":
+      case "number": {
         const numberInput = inputWrapper.createEl("input", {
           type: "number",
           cls: "touch-input",
@@ -716,8 +717,9 @@ class TouchCommandInputModal extends Modal {
           );
         });
         break;
+      }
 
-      case "boolean":
+      case "boolean": {
         const toggleWrapper = inputWrapper.createDiv({
           cls: "touch-toggle-wrapper",
         });
@@ -738,8 +740,9 @@ class TouchCommandInputModal extends Modal {
           this.inputValues[param.name] = (e.target as HTMLInputElement).checked;
         });
         break;
+      }
 
-      case "date":
+      case "date": {
         const dateInput = inputWrapper.createEl("input", {
           type: "date",
           cls: "touch-input",
@@ -752,8 +755,9 @@ class TouchCommandInputModal extends Modal {
           this.inputValues[param.name] = (e.target as HTMLInputElement).value;
         });
         break;
+      }
 
-      case "array":
+      case "array": {
         const arrayInput = inputWrapper.createEl("textarea", {
           cls: "touch-textarea",
         });
@@ -774,8 +778,9 @@ class TouchCommandInputModal extends Modal {
             .filter((v) => v.trim());
         });
         break;
+      }
 
-      default:
+      default: {
         const defaultInput = inputWrapper.createEl("input", {
           type: "text",
           cls: "touch-input",
@@ -783,6 +788,7 @@ class TouchCommandInputModal extends Modal {
         defaultInput.addEventListener("input", (e) => {
           this.inputValues[param.name] = (e.target as HTMLInputElement).value;
         });
+      }
     }
 
     // Add common touch input styles

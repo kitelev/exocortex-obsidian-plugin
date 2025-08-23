@@ -588,7 +588,7 @@ export class AgentOrchestrator {
         });
         break;
 
-      case "sequential":
+      case "sequential": {
         let cumulativeTime = 0;
         assignments.forEach((assignment, index) => {
           const duration = assignment.tasks.reduce(
@@ -606,6 +606,7 @@ export class AgentOrchestrator {
           cumulativeTime += duration;
         });
         break;
+      }
 
       case "pipeline":
         // Implementation for pipeline pattern

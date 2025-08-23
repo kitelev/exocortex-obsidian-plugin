@@ -260,7 +260,7 @@ export class OfflineDataManager {
   private config: OfflineConfig;
   private syncQueue: SyncOperation[] = [];
   private isOnline = navigator.onLine;
-  private syncInterval?: NodeJS.Timeout;
+  private syncInterval?: ReturnType<typeof setInterval>;
   private listeners = new Map<string, Set<(data: any) => void>>();
 
   constructor(config?: Partial<OfflineConfig>) {

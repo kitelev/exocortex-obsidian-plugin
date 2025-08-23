@@ -76,6 +76,7 @@
     "dist/",
     "features/",
     "scripts/",
-    ".obsidian/"
+    ".obsidian/",
+    "src/infrastructure/agents/__tests__/**"
   ]
 }

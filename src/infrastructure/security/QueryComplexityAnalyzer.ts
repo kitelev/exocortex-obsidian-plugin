@@ -167,11 +167,11 @@ export class QueryComplexityAnalyzer {
     // Count patterns by looking for subject predicate object sequences
     // This is a simplified heuristic - real implementation would use proper parsing
     const patterns =
-      withoutStrings.match(/\?[a-zA-Z0-9_]+\s+[^\s]+\s+[^\s]+[\s]*[\.;]/g) ||
+      withoutStrings.match(/\?[a-zA-Z0-9_]+\s+[^\s]+\s+[^\s]+[\s]*[.;]/g) ||
       [];
     const explicitPatterns =
       withoutStrings.match(
-        /[<>a-zA-Z0-9_:]+\s+[<>a-zA-Z0-9_:]+\s+[<>a-zA-Z0-9_:?"]+[\s]*[\.;]/g,
+        /[<>a-zA-Z0-9_:]+\s+[<>a-zA-Z0-9_:]+\s+[<>a-zA-Z0-9_:?"]+[\s]*[.;]/g,
       ) || [];
 
     return patterns.length + explicitPatterns.length;

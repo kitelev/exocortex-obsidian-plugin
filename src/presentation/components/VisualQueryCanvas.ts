@@ -1013,9 +1013,6 @@ export class VisualQueryCanvas {
     return isDark ? darkColors[type] : lightColors[type];
   }
 
-  // Overloaded method for adding nodes
-  addNode(node: VisualQueryNode): void;
-  addNode(type: NodeType): void;
   addNode(nodeOrType: VisualQueryNode | NodeType): void {
     if (typeof nodeOrType === "object" && "getId" in nodeOrType) {
       // Direct node addition for testing/programmatic use
@@ -1035,7 +1032,7 @@ export class VisualQueryCanvas {
     let node: VisualQueryNode;
 
     switch (type) {
-      case NodeType.ENTITY:
+      case NodeType.ENTITY: {
         const entityName = prompt("Enter entity name:");
         if (!entityName) return;
         node = VisualQueryNode.createEntity(entityName, undefined, {
@@ -1043,7 +1040,8 @@ export class VisualQueryCanvas {
           y: centerY,
         });
         break;
-      case NodeType.VARIABLE:
+      }
+      case NodeType.VARIABLE: {
         const varName = prompt("Enter variable name (without ?):");
         if (!varName) return;
         node = VisualQueryNode.createVariable(varName, {
@@ -1051,7 +1049,8 @@ export class VisualQueryCanvas {
           y: centerY,
         });
         break;
-      case NodeType.LITERAL:
+      }
+      case NodeType.LITERAL: {
         const literalValue = prompt("Enter literal value:");
         if (!literalValue) return;
         node = VisualQueryNode.createLiteral(literalValue, {
@@ -1059,7 +1058,8 @@ export class VisualQueryCanvas {
           y: centerY,
         });
         break;
-      case NodeType.FILTER:
+      }
+      case NodeType.FILTER: {
         const filterExpr = prompt("Enter filter expression:");
         if (!filterExpr) return;
         node = VisualQueryNode.createFilter(filterExpr, {
@@ -1067,6 +1067,7 @@ export class VisualQueryCanvas {
           y: centerY,
         });
         break;
+      }
       default:
         return;
     }

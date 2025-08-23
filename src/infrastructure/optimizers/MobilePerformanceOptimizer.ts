@@ -373,7 +373,7 @@ export class MobilePerformanceOptimizer {
     wait?: number,
   ): (...args: Parameters<T>) => void {
     const delay = wait ?? this.getDebounceMs();
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     return (...args: Parameters<T>) => {
       clearTimeout(timeoutId);
@@ -390,7 +390,7 @@ export class MobilePerformanceOptimizer {
   ): (...args: Parameters<T>) => void {
     const delay = wait ?? this.getDebounceMs();
     let lastCall = 0;
-    let timeoutId: NodeJS.Timeout | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     return (...args: Parameters<T>) => {
       const now = Date.now();
