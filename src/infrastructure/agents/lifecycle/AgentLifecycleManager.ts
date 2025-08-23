@@ -173,7 +173,8 @@ export class AgentLifecycleManager {
   private stateConfigurations: Map<AgentState, StateConfiguration> = new Map();
   private agentStates: Map<string, AgentState> = new Map();
   private lifecycleHistory: Map<string, LifecycleEvent[]> = new Map();
-  private monitoringTasks: Map<string, ReturnType<typeof setInterval>> = new Map();
+  private monitoringTasks: Map<string, ReturnType<typeof setInterval>> =
+    new Map();
 
   constructor() {
     this.initializeStateTransitions();

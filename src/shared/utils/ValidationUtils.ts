@@ -114,11 +114,13 @@ export class ValidationUtils {
     if (!this.isNonEmptyString(input)) return "";
 
     // Remove control characters and normalize whitespace
-    return input
-      // eslint-disable-next-line no-control-regex
-      .replace(/[\x00-\x1f\x7f]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
+    return (
+      input
+        // eslint-disable-next-line no-control-regex
+        .replace(/[\x00-\x1f\x7f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+    );
   }
 
   /**
