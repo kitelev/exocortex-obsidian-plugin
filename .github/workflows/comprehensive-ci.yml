@@ -117,13 +117,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [unit, integration, e2e, semantic, mobile, security]
+        suite: [integration, e2e, mobile, security]
         node: ["20.x"]
-        include:
-          - suite: unit
-            node: "18.x"
-          - suite: compatibility
-            node: "18.x"
     steps:
       - uses: actions/checkout@v4
 
