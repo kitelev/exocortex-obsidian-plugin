@@ -85,9 +85,24 @@ argument-hint: [task description]
    - ci.yml (REQUIRED: SUCCESS)
    - quality-gate.yml (REQUIRED: SUCCESS)
    - all-tests.yml (REQUIRED: SUCCESS)
-3. **Verify GitHub Release** created with correct assets
-4. **RETRY FAILED WORKFLOWS** up to 2 times with fixes
-5. **IMPORTANT**: Only ONE devops-engineer agent at a time for CI/CD monitoring
+   - bdd-coverage.yml (REQUIRED: SUCCESS if exists)
+3. **MANDATORY GITHUB ACTIONS VALIDATION**:
+   - **CHECK ALL WORKFLOWS**: `gh run list --limit 10 --json status,conclusion,name`
+   - **WAIT FOR COMPLETION**: Monitor until all workflows finish
+   - **VERIFY ALL GREEN**: Every workflow must show "success" conclusion
+   - **IF ANY WORKFLOW FAILS**:
+     a. Analyze failure logs: `gh run view [run-id] --log-failed`
+     b. Fix identified issues immediately
+     c. Push fixes and monitor new workflow runs
+     d. REPEAT until ALL workflows are green
+   - **NEVER PROCEED** with any workflow showing "failure" or "cancelled"
+4. **Verify GitHub Release** created with correct assets
+5. **RETRY FAILED WORKFLOWS** up to 3 times with fixes:
+   - First retry: Fix obvious issues (imports, syntax, test timeouts)
+   - Second retry: Address deeper issues (logic errors, missing dependencies)
+   - Third retry: Emergency fixes (stub implementations, skip problematic tests)
+6. **IMPORTANT**: Only ONE devops-engineer agent at a time for CI/CD monitoring
+7. **CRITICAL**: Task is NOT complete until ALL GitHub Actions show green checkmarks
 
 #### Stage 5: Production Validation (COMPLETION GATE)
 

@@ -34,9 +34,8 @@ export class ServiceProvider implements IServiceProvider {
     this.services.set("RDFService", rdfService);
 
     // Initialize Asset Repository - Required for UniversalLayoutRenderer
-    const assetRepository = this.container.resolve<IAssetRepository>(
-      "IAssetRepository",
-    );
+    const assetRepository =
+      this.container.resolve<IAssetRepository>("IAssetRepository");
     this.services.set("IAssetRepository", assetRepository);
 
     // Initialize Layout Renderer with proper dependencies
