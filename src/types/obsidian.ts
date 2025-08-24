@@ -59,12 +59,19 @@ export interface ObsidianVault {
 
 export interface ObsidianMetadataCache {
   getFileCache(file: ObsidianFile): ObsidianMetadata | null;
-  getFirstLinkpathDest(linkpath: string, sourcePath: string): ObsidianFile | null;
+  getFirstLinkpathDest(
+    linkpath: string,
+    sourcePath: string,
+  ): ObsidianFile | null;
 }
 
 export interface ObsidianWorkspace {
   getActiveFile(): ObsidianFile | null;
-  openLinkText(linktext: string, sourcePath: string, newLeaf?: boolean): Promise<void>;
+  openLinkText(
+    linktext: string,
+    sourcePath: string,
+    newLeaf?: boolean,
+  ): Promise<void>;
 }
 
 export interface DataviewApi {

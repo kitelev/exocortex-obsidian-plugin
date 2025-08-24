@@ -36,8 +36,8 @@ export default class ExocortexPlugin extends Plugin {
     try {
       // Initialize logger first
       this.logger = LoggerFactory.createForClass(ExocortexPlugin);
-      this.logger.startTiming('plugin-onload');
-      
+      this.logger.startTiming("plugin-onload");
+
       // Initialize registries
       this.lifecycleRegistry = new LifecycleRegistry(this);
       this.commandRegistry = new CommandRegistry(this);
@@ -60,36 +60,44 @@ export default class ExocortexPlugin extends Plugin {
       // Initialize all commands
       await this.commandRegistry.initializeAll();
 
-      this.logger.endTiming('plugin-onload');
-      this.logger.info('Exocortex Plugin initialized successfully', {
-        managers: ['lifecycle', 'settings', 'graph'],
-        controllers: ['asset', 'rdf']
+      this.logger.endTiming("plugin-onload");
+      this.logger.info("Exocortex Plugin initialized successfully", {
+        managers: ["lifecycle", "settings", "graph"],
+        controllers: ["asset", "rdf"],
       });
     } catch (error) {
-      this.logger?.error('Failed to initialize Exocortex Plugin', {
-        stage: 'onload'
-      }, error as Error);
+      this.logger?.error(
+        "Failed to initialize Exocortex Plugin",
+        {
+          stage: "onload",
+        },
+        error as Error,
+      );
       throw error;
     }
   }
 
   async onunload(): Promise<void> {
     try {
-      this.logger?.startTiming('plugin-onunload');
-      
+      this.logger?.startTiming("plugin-onunload");
+
       // Cleanup in reverse order
       await this.commandRegistry?.cleanupAll();
       await this.serviceProvider?.cleanup();
       await this.lifecycleRegistry?.cleanupAll();
 
-      this.logger?.endTiming('plugin-onunload');
-      this.logger?.info('Exocortex Plugin cleaned up successfully', {
-        cleanedUp: ['commands', 'services', 'lifecycle']
+      this.logger?.endTiming("plugin-onunload");
+      this.logger?.info("Exocortex Plugin cleaned up successfully", {
+        cleanedUp: ["commands", "services", "lifecycle"],
       });
     } catch (error) {
-      this.logger?.error('Error during plugin cleanup', {
-        stage: 'onunload'
-      }, error as Error);
+      this.logger?.error(
+        "Error during plugin cleanup",
+        {
+          stage: "onunload",
+        },
+        error as Error,
+      );
     }
   }
 

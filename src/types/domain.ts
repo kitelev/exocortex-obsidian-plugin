@@ -2,7 +2,7 @@
  * Domain-specific type definitions
  */
 
-import { PropertyValue } from './properties';
+import { PropertyValue } from "./properties";
 
 export interface AssetLike {
   id: string;
@@ -31,7 +31,14 @@ export interface SerializableExoFocus {
 }
 
 export interface ComparisonOperator {
-  type: 'includes' | 'excludes' | 'equals' | 'contains' | 'before' | 'after' | 'between';
+  type:
+    | "includes"
+    | "excludes"
+    | "equals"
+    | "contains"
+    | "before"
+    | "after"
+    | "between";
 }
 
 export interface FilterValue {

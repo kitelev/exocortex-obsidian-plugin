@@ -139,10 +139,10 @@ export class IndexedGraph extends Graph {
       // Update progress for very large batches
       if (totalTriples > 5000 && chunkIndex % 10 === 0) {
         const progress = (((chunkIndex + 1) / chunks.length) * 100).toFixed(1);
-        this.logger.debug('Batch processing progress', {
+        this.logger.debug("Batch processing progress", {
           progress: `${progress}%`,
           chunk: `${chunkIndex + 1}/${chunks.length}`,
-          totalTriples
+          totalTriples,
         });
       }
     }
@@ -155,11 +155,11 @@ export class IndexedGraph extends Graph {
     this.metrics.lastIndexTime = processingTime;
     this.metrics.batchProcessingRate = totalTriples / (processingTime / 1000); // triples per second
 
-    this.logger.info('Batch processing completed', {
+    this.logger.info("Batch processing completed", {
       totalTriples,
       processingTime: `${processingTime.toFixed(2)}ms`,
       rate: `${this.metrics.batchProcessingRate.toFixed(0)} triples/sec`,
-      chunks: chunks.length
+      chunks: chunks.length,
     });
   }
 
@@ -339,11 +339,11 @@ export class IndexedGraph extends Graph {
 
     // Performance warning for slow queries
     if (queryTime > this.performanceThresholds.queryTimeWarning) {
-      this.logger.warn('Slow query detected', {
+      this.logger.warn("Slow query detected", {
         queryTime: `${queryTime.toFixed(2)}ms`,
         pattern: cacheKey,
         threshold: `${this.performanceThresholds.queryTimeWarning}ms`,
-        resultCount: results.length
+        resultCount: results.length,
       });
     }
 
@@ -761,10 +761,10 @@ export class IndexedGraph extends Graph {
     }
 
     const queryTime = performance.now() - startTime;
-    this.logger.debug('Parallel query completed', {
+    this.logger.debug("Parallel query completed", {
       patternCount: patterns.length,
       queryTime: `${queryTime.toFixed(2)}ms`,
-      totalResults: results.reduce((sum, arr) => sum + arr.length, 0)
+      totalResults: results.reduce((sum, arr) => sum + arr.length, 0),
     });
 
     return results;
@@ -1024,11 +1024,14 @@ export class IndexedGraph extends Graph {
       this.metrics.averageQueryTime >
       this.performanceThresholds.queryTimeWarning * 2
     ) {
-      this.logger.warn('Performance degradation detected, triggering optimization', {
-        averageQueryTime: this.metrics.averageQueryTime,
-        threshold: this.performanceThresholds.queryTimeWarning * 2,
-        cacheHitRate: this.metrics.cacheHitRate
-      });
+      this.logger.warn(
+        "Performance degradation detected, triggering optimization",
+        {
+          averageQueryTime: this.metrics.averageQueryTime,
+          threshold: this.performanceThresholds.queryTimeWarning * 2,
+          cacheHitRate: this.metrics.cacheHitRate,
+        },
+      );
       this.autoOptimize();
     }
   }

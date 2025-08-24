@@ -22,15 +22,15 @@ export class LoggerConfigFactory {
       maxLogSize: 1000000, // 1MB
       performanceThreshold: 100, // 100ms
       sensitiveKeys: [
-        'password',
-        'token',
-        'secret',
-        'key',
-        'auth',
-        'credential',
-        'private',
-        'sensitive'
-      ]
+        "password",
+        "token",
+        "secret",
+        "key",
+        "auth",
+        "credential",
+        "private",
+        "sensitive",
+      ],
     };
   }
 
@@ -45,11 +45,12 @@ export class LoggerConfigFactory {
   }
 
   private static isProduction(): boolean {
-    return process.env.NODE_ENV === 'production';
+    return process.env.NODE_ENV === "production";
   }
 
   private static isTesting(): boolean {
-    return process.env.NODE_ENV === 'test' || 
-           (global as any).jest !== undefined;
+    return (
+      process.env.NODE_ENV === "test" || (global as any).jest !== undefined
+    );
   }
 }

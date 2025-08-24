@@ -211,7 +211,7 @@ export class FileOperationUtils {
 
     return refs.some((ref) => {
       if (!ref) return false;
-      
+
       const refStr = String(ref);
       const cleanRef = refStr.replace(/\[\[|\]\]/g, "");
 

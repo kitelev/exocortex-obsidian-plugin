@@ -23,15 +23,15 @@ export interface ILogger {
   info(message: string, context?: LogContext): void;
   warn(message: string, context?: LogContext): void;
   error(message: string, context?: LogContext, error?: Error): void;
-  
+
   startTiming(label: string): void;
   endTiming(label: string, context?: LogContext): void;
-  
+
   setCorrelationId(id: string): void;
   getCorrelationId(): string | undefined;
-  
+
   setLevel(level: LogLevel): void;
   getLevel(): LogLevel;
-  
+
   createChildLogger(context: LogContext): ILogger;
 }

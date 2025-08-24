@@ -114,9 +114,13 @@ export class ErrorHandlerService {
 
       return EnhancedResult.okEnhanced();
     } catch (handlingError) {
-      this.logger.error('Error in error handler', {
-        stage: 'handling'
-      }, handlingError as Error);
+      this.logger.error(
+        "Error in error handler",
+        {
+          stage: "handling",
+        },
+        handlingError as Error,
+      );
       return EnhancedResult.failEnhanced(
         ErrorBuilder.create()
           .withTitle("Error Handler Failed")
@@ -171,22 +175,27 @@ export class ErrorHandlerService {
       operation: error.context?.operation,
       recoverable: error.recoverable,
       technicalDetails: error.technicalDetails,
-      suggestions: error.suggestions?.length || 0
+      suggestions: error.suggestions?.length || 0,
     };
 
     switch (logLevel) {
       case "error":
-        this.logger.error(error.title + ': ' + error.message, context, 
-          error.technicalDetails ? new Error(error.technicalDetails) : undefined);
+        this.logger.error(
+          error.title + ": " + error.message,
+          context,
+          error.technicalDetails
+            ? new Error(error.technicalDetails)
+            : undefined,
+        );
         break;
       case "warn":
-        this.logger.warn(error.title + ': ' + error.message, context);
+        this.logger.warn(error.title + ": " + error.message, context);
         break;
       case "info":
-        this.logger.info(error.title + ': ' + error.message, context);
+        this.logger.info(error.title + ": " + error.message, context);
         break;
       default:
-        this.logger.debug(error.title + ': ' + error.message, context);
+        this.logger.debug(error.title + ": " + error.message, context);
     }
   }
 
@@ -287,11 +296,15 @@ export class ErrorHandlerService {
           3000,
         );
       } catch (recoveryError) {
-        this.logger.error('Auto-recovery failed', {
-          errorId: error.id,
-          suggestionTitle: autoFixSuggestion.title,
-          confidence: autoFixSuggestion.confidence
-        }, recoveryError as Error);
+        this.logger.error(
+          "Auto-recovery failed",
+          {
+            errorId: error.id,
+            suggestionTitle: autoFixSuggestion.title,
+            confidence: autoFixSuggestion.confidence,
+          },
+          recoveryError as Error,
+        );
       }
     }
   }

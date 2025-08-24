@@ -1,6 +1,11 @@
 import { BlockType } from "../../domain/entities/LayoutBlock";
 import { Result } from "../../domain/core/Result";
-import { ConfigData, FrontmatterData, ObsidianFile, DataviewApi } from "../../types";
+import {
+  ConfigData,
+  FrontmatterData,
+  ObsidianFile,
+  DataviewApi,
+} from "../../types";
 
 export interface BlockRenderingContext {
   readonly container: HTMLElement;

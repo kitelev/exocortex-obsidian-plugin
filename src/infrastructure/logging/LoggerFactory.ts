@@ -35,7 +35,10 @@ export class LoggerFactory {
     return this.create(constructor.name);
   }
 
-  static createWithContext(name: string, context: Record<string, any>): ILogger {
+  static createWithContext(
+    name: string,
+    context: Record<string, any>,
+  ): ILogger {
     const baseLogger = this.create(name);
     return baseLogger.createChildLogger(context);
   }

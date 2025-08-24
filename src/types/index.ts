@@ -4,19 +4,19 @@
  */
 
 // Obsidian types
-export * from './obsidian';
+export * from "./obsidian";
 
 // Property system types
-export * from './properties';
+export * from "./properties";
 
 // Rendering system types
-export * from './rendering';
+export * from "./rendering";
 
 // Type guards and validation
-export * from './guards';
+export * from "./guards";
 
 // Domain-specific types
-export * from './domain';
+export * from "./domain";
 
 // Common utility types
 export type Maybe<T> = T | null | undefined;
@@ -43,7 +43,9 @@ export interface EventHandler<T = unknown> {
   (event: T): void | Promise<void>;
 }
 
-export interface EventEmitter<T extends Record<string, unknown> = Record<string, unknown>> {
+export interface EventEmitter<
+  T extends Record<string, unknown> = Record<string, unknown>,
+> {
   on<K extends keyof T>(event: K, handler: EventHandler<T[K]>): void;
   off<K extends keyof T>(event: K, handler: EventHandler<T[K]>): void;
   emit<K extends keyof T>(event: K, data: T[K]): void;
@@ -62,16 +64,23 @@ export interface PluginSettings {
 
 // Error types
 export class TypeValidationError extends Error {
-  constructor(message: string, public readonly field?: string, public readonly expectedType?: string) {
+  constructor(
+    message: string,
+    public readonly field?: string,
+    public readonly expectedType?: string,
+  ) {
     super(message);
-    this.name = 'TypeValidationError';
+    this.name = "TypeValidationError";
   }
 }
 
 export class ConfigurationError extends Error {
-  constructor(message: string, public readonly configKey?: string) {
+  constructor(
+    message: string,
+    public readonly configKey?: string,
+  ) {
     super(message);
-    this.name = 'ConfigurationError';
+    this.name = "ConfigurationError";
   }
 }
 

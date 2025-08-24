@@ -316,10 +316,14 @@ export class DomainEventBus {
         try {
           await this.processEvent(event, options || {}, result);
         } catch (error) {
-          this.logger.error('Async event processing failed', {
-            eventType: event.eventType,
-            queueSize: this.eventQueue.length
-          }, error as Error);
+          this.logger.error(
+            "Async event processing failed",
+            {
+              eventType: event.eventType,
+              queueSize: this.eventQueue.length,
+            },
+            error as Error,
+          );
         }
       }
     } finally {
@@ -366,10 +370,10 @@ export class DomainEventBus {
         await handler.handle(event);
         return true;
       } catch (error) {
-        this.logger.warn('Event handler retry failed', {
+        this.logger.warn("Event handler retry failed", {
           handlerName: handler.constructor.name,
           retry: `${i + 1}/${retryCount}`,
-          eventType: event.eventType
+          eventType: event.eventType,
         });
       }
     }

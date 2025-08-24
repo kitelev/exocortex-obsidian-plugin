@@ -2,7 +2,15 @@
  * TypeScript type definitions for property and configuration systems
  */
 
-export type PropertyType = 'string' | 'number' | 'boolean' | 'date' | 'array' | 'enum' | 'text' | 'object';
+export type PropertyType =
+  | "string"
+  | "number"
+  | "boolean"
+  | "date"
+  | "array"
+  | "enum"
+  | "text"
+  | "object";
 
 export interface PropertyDefinition {
   name: string;
@@ -20,15 +28,15 @@ export interface PropertyDefinition {
   };
 }
 
-export type PropertyValue = 
-  | string 
-  | number 
-  | boolean 
-  | Date 
-  | string[] 
+export type PropertyValue =
+  | string
+  | number
+  | boolean
+  | Date
+  | string[]
   | number[]
   | Record<string, unknown>
-  | null 
+  | null
   | undefined;
 
 export interface PropertyFieldConfig {

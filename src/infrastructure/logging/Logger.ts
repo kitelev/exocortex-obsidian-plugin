@@ -9,7 +9,7 @@ export class Logger implements ILogger {
 
   constructor(
     private config: LoggerConfig = LoggerConfigFactory.createDefault(),
-    private name?: string
+    private name?: string,
   ) {}
 
   debug(message: string, context?: LogContext): void {
@@ -55,7 +55,7 @@ export class Logger implements ILogger {
       ...context,
       label,
       duration: `${duration.toFixed(2)}ms`,
-      durationMs: duration
+      durationMs: duration,
     };
 
     if (duration > this.config.performanceThreshold) {
@@ -99,13 +99,20 @@ export class Logger implements ILogger {
   }
 
   private isLoggingEnabled(): boolean {
-    const isProduction = process.env.NODE_ENV === 'production';
-    return isProduction ? this.config.enabledInProduction : this.config.enabledInDevelopment;
+    const isProduction = process.env.NODE_ENV === "production";
+    return isProduction
+      ? this.config.enabledInProduction
+      : this.config.enabledInDevelopment;
   }
 
-  private log(level: LogLevel, message: string, context?: LogContext, error?: Error): void {
+  private log(
+    level: LogLevel,
+    message: string,
+    context?: LogContext,
+    error?: Error,
+  ): void {
     const entry = this.createLogEntry(level, message, context, error);
-    
+
     if (this.config.formatJson) {
       this.outputJson(entry);
     } else {
@@ -113,11 +120,16 @@ export class Logger implements ILogger {
     }
   }
 
-  private createLogEntry(level: LogLevel, message: string, context?: LogContext, error?: Error): LogEntry {
+  private createLogEntry(
+    level: LogLevel,
+    message: string,
+    context?: LogContext,
+    error?: Error,
+  ): LogEntry {
     const sanitizedContext = this.sanitizeContext({
       ...this.persistentContext,
       ...context,
-      logger: this.name
+      logger: this.name,
     });
 
     return {
@@ -126,38 +138,38 @@ export class Logger implements ILogger {
       timestamp: new Date().toISOString(),
       context: sanitizedContext,
       correlationId: this.correlationId || this.generateCorrelationId(),
-      error: error ? this.sanitizeError(error) : undefined
+      error: error ? this.sanitizeError(error) : undefined,
     };
   }
 
   private sanitizeContext(context: LogContext): LogContext {
     const sanitized: LogContext = {};
-    
+
     for (const [key, value] of Object.entries(context)) {
       if (this.isSensitiveKey(key)) {
-        sanitized[key] = '[REDACTED]';
-      } else if (typeof value === 'object' && value !== null) {
+        sanitized[key] = "[REDACTED]";
+      } else if (typeof value === "object" && value !== null) {
         sanitized[key] = this.sanitizeNestedObject(value);
       } else {
         sanitized[key] = value;
       }
     }
-    
+
     return sanitized;
   }
 
   private sanitizeNestedObject(obj: any): any {
     if (Array.isArray(obj)) {
-      return obj.map(item => 
-        typeof item === 'object' ? this.sanitizeNestedObject(item) : item
+      return obj.map((item) =>
+        typeof item === "object" ? this.sanitizeNestedObject(item) : item,
       );
     }
-    
+
     const sanitized: any = {};
     for (const [key, value] of Object.entries(obj)) {
       if (this.isSensitiveKey(key)) {
-        sanitized[key] = '[REDACTED]';
-      } else if (typeof value === 'object' && value !== null) {
+        sanitized[key] = "[REDACTED]";
+      } else if (typeof value === "object" && value !== null) {
         sanitized[key] = this.sanitizeNestedObject(value);
       } else {
         sanitized[key] = value;
@@ -168,8 +180,8 @@ export class Logger implements ILogger {
 
   private isSensitiveKey(key: string): boolean {
     const lowerKey = key.toLowerCase();
-    return this.config.sensitiveKeys.some(sensitiveKey => 
-      lowerKey.includes(sensitiveKey.toLowerCase())
+    return this.config.sensitiveKeys.some((sensitiveKey) =>
+      lowerKey.includes(sensitiveKey.toLowerCase()),
     );
   }
 
@@ -177,7 +189,7 @@ export class Logger implements ILogger {
     return {
       name: error.name,
       message: error.message,
-      stack: this.config.includeStackTrace ? error.stack : undefined
+      stack: this.config.includeStackTrace ? error.stack : undefined,
     };
   }
 
@@ -190,13 +202,13 @@ export class Logger implements ILogger {
 
   private outputJson(entry: LogEntry): void {
     const jsonString = JSON.stringify(entry);
-    
+
     // Respect max log size
     if (jsonString.length > this.config.maxLogSize) {
       const truncated = {
         ...entry,
         message: entry.message.substring(0, this.config.maxLogSize - 200),
-        truncated: true
+        truncated: true,
       };
       console.log(JSON.stringify(truncated));
     } else {
@@ -207,14 +219,14 @@ export class Logger implements ILogger {
   private outputPretty(entry: LogEntry): void {
     const timestamp = new Date(entry.timestamp).toLocaleTimeString();
     const level = LogLevel[entry.level].padEnd(5);
-    const correlationId = entry.correlationId?.substring(0, 8) || 'unknown';
-    
+    const correlationId = entry.correlationId?.substring(0, 8) || "unknown";
+
     let output = `[${timestamp}] ${level} [${correlationId}]`;
-    
+
     if (this.name) {
       output += ` [${this.name}]`;
     }
-    
+
     output += ` ${entry.message}`;
 
     if (entry.context && Object.keys(entry.context).length > 0) {

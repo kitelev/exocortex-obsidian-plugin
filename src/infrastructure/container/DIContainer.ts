@@ -112,8 +112,9 @@ export class DIContainer {
     this.container.register("App", () => this.app);
 
     // Register Logger Factory
-    this.container.register<ILogger>("ILogger", () => 
-      LoggerFactory.create("DIContainer"));
+    this.container.register<ILogger>("ILogger", () =>
+      LoggerFactory.create("DIContainer"),
+    );
 
     // Register Logger Factory itself for creating named loggers
     this.container.register("LoggerFactory", () => LoggerFactory);

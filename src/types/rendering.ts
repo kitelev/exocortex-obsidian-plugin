@@ -2,8 +2,8 @@
  * TypeScript type definitions for rendering and UI systems
  */
 
-import { ObsidianFile, DataviewApi } from './obsidian';
-import { PropertyValue, FrontmatterData, ConfigData } from './properties';
+import { ObsidianFile, DataviewApi } from "./obsidian";
+import { PropertyValue, FrontmatterData, ConfigData } from "./properties";
 
 export interface RenderContext {
   file: ObsidianFile;
@@ -21,10 +21,10 @@ export interface BlockRenderer {
 
 export interface LegacyRenderer {
   render(
-    container: HTMLElement, 
-    config: ConfigData, 
-    file: ObsidianFile, 
-    dv?: DataviewApi
+    container: HTMLElement,
+    config: ConfigData,
+    file: ObsidianFile,
+    dv?: DataviewApi,
   ): Promise<void> | void;
 }
 
@@ -65,7 +65,14 @@ export interface ModalOptions {
 export interface FormField {
   name: string;
   label: string;
-  type: 'text' | 'textarea' | 'number' | 'boolean' | 'select' | 'date' | 'array';
+  type:
+    | "text"
+    | "textarea"
+    | "number"
+    | "boolean"
+    | "select"
+    | "date"
+    | "array";
   required?: boolean;
   defaultValue?: PropertyValue;
   options?: Array<{ value: string; label: string }>;
@@ -89,7 +96,7 @@ export interface PropertyInputElement extends HTMLElement {
   selectedOptions?: HTMLOptionElement[];
 }
 
-export type RenderingStrategy = 'default' | 'custom' | 'legacy';
+export type RenderingStrategy = "default" | "custom" | "legacy";
 
 export interface LayoutBlock {
   type: string;
