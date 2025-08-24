@@ -92,6 +92,7 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
   /**
    * Find which property contains the reference to the target file
    * Common logic shared between all renderers
+   * Handles both regular [[Link]] and piped [[Link|Alias]] formats
    */
   protected findReferencingProperty(
     metadata: Record<string, any>,
@@ -102,6 +103,8 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
       if (!value) continue;
 
       const valueStr = String(value);
+      
+      // Check for regular links
       if (
         valueStr.includes(`[[${targetBasename}]]`) ||
         valueStr.includes(`[[${targetPath}]]`) ||
@@ -109,14 +112,34 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
       ) {
         return key;
       }
+      
+      // Check for piped links - [[Target|Alias]] format
+      if (
+        valueStr.includes(`[[${targetBasename}|`) ||
+        valueStr.includes(`[[${targetPath}|`) ||
+        valueStr.includes(`[[${targetPath.replace(".md", "")}|`)
+      ) {
+        return key;
+      }
 
       if (Array.isArray(value)) {
         for (const item of value) {
           const itemStr = String(item);
+          
+          // Check for regular links
           if (
             itemStr.includes(`[[${targetBasename}]]`) ||
             itemStr.includes(`[[${targetPath}]]`) ||
             itemStr.includes(`[[${targetPath.replace(".md", "")}]]`)
+          ) {
+            return key;
+          }
+          
+          // Check for piped links - [[Target|Alias]] format
+          if (
+            itemStr.includes(`[[${targetBasename}|`) ||
+            itemStr.includes(`[[${targetPath}|`) ||
+            itemStr.includes(`[[${targetPath.replace(".md", "")}|`)
           ) {
             return key;
           }

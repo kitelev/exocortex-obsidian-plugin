@@ -1,3 +1,39 @@
+## [5.12.0] - 2025-08-24
+
+### 🔗 Fixed Piped Link Relation Grouping - Consistent Asset Organization
+
+#### Perfect Recognition of All Link Formats
+Experience **flawless asset relation grouping** where piped links like `[[Target|Alias]]` are correctly recognized and grouped with regular `[[Target]]` links, ensuring all related assets appear in their proper relation categories.
+
+#### Complete Link Format Support
+- **Regular Links**: `[[User Interface]]` correctly recognized
+- **Piped Links**: `[[User Interface|UI]]` now properly detected
+- **Path Links**: `[[concepts/User Interface|Custom Text]]` handled perfectly
+- **Mixed Formats**: All formats group together when referencing same property
+- **Array Values**: Multiple link formats in arrays all work correctly
+
+#### Fixed Grouping Issues
+- **Consistent Property Detection**: Piped and regular links to same target now group together
+- **No More Split Groups**: TUI and GUI with different link formats appear in same group
+- **Proper Categorization**: Assets always appear in correct property group
+- **Eliminated False "Untyped"**: Piped links no longer incorrectly marked as untyped
+
+#### Enhanced User Experience  
+- **Cleaner Organization**: All related assets properly grouped by their actual property
+- **Predictable Behavior**: Same property = same group, regardless of link format
+- **Better Navigation**: Find all related assets in one consistent location
+- **Reduced Confusion**: No more wondering why similar assets appear separately
+
+#### BDD Test Coverage
+- **7 Comprehensive Scenarios**: All link format combinations tested
+- **Piped Link Detection**: Validates proper parsing of alias syntax
+- **Group Consistency**: Ensures same property always produces same grouping
+- **Path Handling**: Tests complex paths with spaces and special characters
+
+This update fixes a critical bug where piped wiki links `[[Target|Alias]]` were not recognized as referencing the same property as regular `[[Target]]` links, causing related assets to appear in different layout groups. Now all link formats are correctly parsed and grouped together.
+
+---
+
 ## [5.11.0] - 2025-08-24
 
 ### 🔄 Graceful DynamicLayout Fallback - Seamless UniversalLayout Integration

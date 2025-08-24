@@ -178,6 +178,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
 
   /**
    * Find which frontmatter property contains a reference to the target file
+   * Handles both regular [[Link]] and piped [[Link|Alias]] formats
    */
   private findReferencingProperty(
     metadata: Record<string, any>,
@@ -196,6 +197,15 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       ) {
         return key;
       }
+      
+      // Check for piped links - [[Target|Alias]] format
+      if (
+        valueStr.includes(`[[${targetBasename}|`) ||
+        valueStr.includes(`[[${targetPath}|`) ||
+        valueStr.includes(`[[${targetPath.replace(".md", "")}|`)
+      ) {
+        return key;
+      }
 
       // Check for array values (e.g., tags, related, etc.)
       if (Array.isArray(value)) {
@@ -205,6 +215,15 @@ export class UniversalLayoutRenderer implements IViewRenderer {
             itemStr.includes(`[[${targetBasename}]]`) ||
             itemStr.includes(`[[${targetPath}]]`) ||
             itemStr.includes(`[[${targetPath.replace(".md", "")}]]`)
+          ) {
+            return key;
+          }
+          
+          // Check for piped links - [[Target|Alias]] format
+          if (
+            itemStr.includes(`[[${targetBasename}|`) ||
+            itemStr.includes(`[[${targetPath}|`) ||
+            itemStr.includes(`[[${targetPath.replace(".md", "")}|`)
           ) {
             return key;
           }
