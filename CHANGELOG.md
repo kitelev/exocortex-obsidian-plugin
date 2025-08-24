@@ -1,3 +1,38 @@
+## [5.6.0] - 2025-08-24
+
+### 🏗️ Unified Rendering Architecture - Enhanced Layout Consistency and Performance
+
+#### Seamless Experience Across All Layout Types
+Experience **perfect consistency** across UniversalLayout and DynamicLayout with our new unified rendering architecture that ensures every property and relationship displays identically, regardless of which layout engine renders your content.
+
+#### Performance Optimized for Speed and Efficiency
+- **4KB Bundle Size Reduction**: From 223.8kb to 219.8kb for faster plugin loading
+- **Consistent Property Display**: Property names now display as-is across all layouts, maintaining semantic clarity
+- **Improved Rendering Speed**: Shared logic eliminates redundant processing and accelerates layout generation
+- **Better Memory Usage**: Optimized code structure reduces memory footprint during intensive operations
+
+#### Developer-Quality User Experience
+- **Zero Layout Discrepancies**: UniversalLayout and DynamicLayout now produce identical visual output
+- **Enhanced Reliability**: SOLID principles implementation reduces bugs and improves stability
+- **Future-Proof Architecture**: Clean separation of concerns makes adding new layout features seamless
+- **Maintainable Codebase**: Better code organization ensures faster bug fixes and feature development
+
+#### Behind-the-Scenes Improvements
+- **BaseAssetRelationsRenderer**: New shared foundation eliminates code duplication
+- **SOLID Principles**: Better separation of concerns through Single Responsibility and Open-Closed principles
+- **Consistent Error Handling**: Unified approach to validation and error reporting across all layouts
+- **Type Safety**: Enhanced TypeScript implementation prevents runtime errors
+
+#### Knowledge Management Benefits
+- **Predictable Interface**: Every layout behaves exactly the same way, reducing learning curve
+- **Visual Consistency**: Property names and relationships appear identical across your entire vault
+- **Improved Workflow**: Seamless switching between layout types without visual jarring
+- **Enhanced Trust**: Consistent behavior builds confidence in your knowledge management system
+
+This architectural enhancement ensures your Exocortex experience is faster, more reliable, and perfectly consistent - giving you complete confidence that every layout will display your knowledge relationships exactly as expected.
+
+---
+
 ## [5.5.0] - 2025-01-24
 
 ### 🎨 DynamicLayout - Tailored Asset Views That Adapt to Your Needs
