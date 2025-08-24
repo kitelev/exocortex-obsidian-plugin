@@ -80,7 +80,7 @@ export class ExocortexSettingTab extends PluginSettingTab {
 
   private addResetSection(containerEl: HTMLElement): void {
     containerEl.createEl("h2", { text: "Reset Settings" });
-    
+
     const warningEl = containerEl.createEl("p", {
       text: "⚠️ Warning: Resetting will restore all settings to their default values. This action cannot be undone.",
       cls: "setting-item-description mod-warning",
