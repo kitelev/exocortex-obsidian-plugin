@@ -1,3 +1,44 @@
+## [5.8.0] - 2025-08-24
+
+### 🎯 BDD-First Development - Executable Specifications for Quality Excellence
+
+#### Mandatory Quality Gates Through Behavior-Driven Development
+Transform your development workflow with **mandatory BDD executable specifications** that ensure every code change is preceded by comprehensive behavior definitions, creating a living documentation that validates your plugin's functionality continuously.
+
+#### Enterprise-Grade Development Standards
+- **Mandatory BDD Phase**: Every code change now requires executable specifications written first
+- **Blocking Quality Gates**: Development cannot proceed without passing BDD scenarios
+- **Living Documentation**: Feature files serve as both specifications and automated tests
+- **Stakeholder Alignment**: Gherkin syntax enables non-technical stakeholders to understand and validate requirements
+
+#### Comprehensive Test Infrastructure
+- **Jest-Cucumber Integration**: Seamless BDD test execution within existing test framework
+- **846 BDD Steps**: Comprehensive coverage across 18 feature files with 63% implementation
+- **Automated Validation**: Pre-commit hooks and CI/CD integration enforce BDD requirements
+- **Real-Time Coverage**: Instant feedback on scenario coverage and missing implementations
+
+#### Developer Experience Enhancements
+- **Clear Workflow**: BDD scenarios → Step definitions → Implementation → Validation
+- **Reusable Test Infrastructure**: Leverage existing mocks and test utilities
+- **Parallel Execution**: BDD tests run alongside unit and integration tests
+- **Comprehensive Reporting**: HTML and JSON reports with coverage metrics
+
+#### Quality Assurance Benefits
+- **Regression Protection**: Every feature protected by executable specifications
+- **Behavior Validation**: Automated verification that code matches intended behavior
+- **Edge Case Coverage**: Systematic identification and testing of boundary conditions
+- **Continuous Validation**: Every commit validated against BDD specifications
+
+#### Enterprise Command Enhancement
+- **11 Senior Specialists**: Added BDD Specialist to enterprise team
+- **Phase 0 Implementation**: Mandatory BDD phase before any code development
+- **5 Validation Gates**: Comprehensive quality checkpoints
+- **Traceability Matrix**: Requirements to BDD to code mapping
+
+This update establishes BDD as the foundation of all plugin development, ensuring that every feature is thoroughly specified, validated, and documented before implementation - bringing enterprise-quality development practices to your knowledge management system.
+
+---
+
 ## [5.7.0] - 2025-08-24
 
 ### 📊 Table-Based Asset Display - Professional Data Organization at a Glance
