@@ -7,6 +7,9 @@ import { GraphLifecycleManager } from "./infrastructure/lifecycle/GraphLifecycle
 import { AssetCommandController } from "./presentation/command-controllers/AssetCommandController";
 import { RDFCommandController } from "./presentation/command-controllers/RDFCommandController";
 import { QueryProcessor } from "./presentation/processors/QueryProcessor";
+import { CodeBlockProcessor } from "./presentation/processors/CodeBlockProcessor";
+import { UniversalLayoutRenderer } from "./presentation/renderers/UniversalLayoutRenderer";
+import { AssetListRenderer } from "./presentation/renderers/AssetListRenderer";
 import { ExocortexSettings } from "./domain/entities/ExocortexSettings";
 import { ILogger } from "./infrastructure/logging/ILogger";
 import { LoggerFactory } from "./infrastructure/logging/LoggerFactory";
@@ -27,6 +30,7 @@ export default class ExocortexPlugin extends Plugin {
   private lifecycleRegistry: LifecycleRegistry;
   private commandRegistry: CommandRegistry;
   private serviceProvider: ServiceProvider;
+  private codeBlockProcessor: CodeBlockProcessor;
 
   // Managers
   private settingsManager: SettingsLifecycleManager;
@@ -60,10 +64,14 @@ export default class ExocortexPlugin extends Plugin {
       // Initialize all commands
       await this.commandRegistry.initializeAll();
 
+      // Initialize code block processor
+      await this.initializeCodeBlockProcessor();
+
       this.logger.endTiming("plugin-onload");
       this.logger.info("Exocortex Plugin initialized successfully", {
         managers: ["lifecycle", "settings", "graph"],
         controllers: ["asset", "rdf"],
+        processors: ["codeBlock"],
       });
     } catch (error) {
       this.logger?.error(
@@ -161,5 +169,53 @@ export default class ExocortexPlugin extends Plugin {
 
   private setupCacheInvalidation(): void {
     // Cache invalidation setup (placeholder for future use)
+  }
+
+  /**
+   * Initialize the code block processor for 'exocortex' code blocks
+   */
+  private async initializeCodeBlockProcessor(): Promise<void> {
+    try {
+      // Create the code block processor
+      this.codeBlockProcessor = new CodeBlockProcessor(this.serviceProvider);
+      
+      // Register view renderers
+      const universalLayoutRenderer = new UniversalLayoutRenderer(this.serviceProvider);
+      const assetListRenderer = new AssetListRenderer(this.serviceProvider);
+      
+      this.codeBlockProcessor.registerView("UniversalLayout", universalLayoutRenderer);
+      this.codeBlockProcessor.registerView("AssetList", assetListRenderer);
+      
+      // Register the markdown code block processor with Obsidian
+      this.registerMarkdownCodeBlockProcessor(
+        "exocortex",
+        async (source, el, ctx) => {
+          await this.codeBlockProcessor.processCodeBlock(source, el, ctx);
+        }
+      );
+      
+      // Set up file change listener for live updates
+      this.registerEvent(
+        this.app.vault.on("modify", async () => {
+          await this.codeBlockProcessor.refreshViews();
+        })
+      );
+      
+      // Set up metadata cache change listener
+      this.registerEvent(
+        this.app.metadataCache.on("changed", async () => {
+          await this.codeBlockProcessor.refreshViews();
+        })
+      );
+      
+      this.logger.info("Code block processor initialized with views", {
+        views: ["UniversalLayout", "AssetList"],
+        updateListeners: ["vault.modify", "metadataCache.changed"]
+      });
+      
+    } catch (error) {
+      this.logger.error("Failed to initialize code block processor", { error });
+      throw error;
+    }
   }
 }

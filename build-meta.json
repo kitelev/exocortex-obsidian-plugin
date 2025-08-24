@@ -197,7 +197,7 @@
       "format": "esm"
     },
     "src/shared/utils/FileOperationUtils.ts": {
-      "bytes": 6396,
+      "bytes": 6390,
       "imports": [
         {
           "path": "obsidian",
@@ -788,12 +788,12 @@
       "format": "esm"
     },
     "src/infrastructure/logging/ILogger.ts": {
-      "bytes": 839,
+      "bytes": 832,
       "imports": [],
       "format": "esm"
     },
     "src/infrastructure/logging/LoggerConfig.ts": {
-      "bytes": 1302,
+      "bytes": 1307,
       "imports": [
         {
           "path": "src/infrastructure/logging/ILogger.ts",
@@ -1123,7 +1123,7 @@
       "format": "esm"
     },
     "src/infrastructure/logging/Logger.ts": {
-      "bytes": 6771,
+      "bytes": 6804,
       "imports": [
         {
           "path": "src/infrastructure/logging/ILogger.ts",
@@ -1144,7 +1144,7 @@
       "format": "esm"
     },
     "src/infrastructure/logging/LoggerFactory.ts": {
-      "bytes": 1402,
+      "bytes": 1416,
       "imports": [
         {
           "path": "./ILogger",
@@ -1165,7 +1165,7 @@
       "format": "esm"
     },
     "src/application/services/ErrorHandlerService.ts": {
-      "bytes": 8852,
+      "bytes": 8995,
       "imports": [
         {
           "path": "src/domain/errors/ExocortexError.ts",
@@ -1378,7 +1378,7 @@
       "format": "esm"
     },
     "src/domain/semantic/core/IndexedGraph.ts": {
-      "bytes": 44003,
+      "bytes": 44041,
       "imports": [
         {
           "path": "src/domain/semantic/core/Graph.ts",
@@ -1641,7 +1641,7 @@
       "format": "esm"
     },
     "src/infrastructure/container/DIContainer.ts": {
-      "bytes": 11594,
+      "bytes": 11599,
       "imports": [
         {
           "path": "obsidian",
@@ -2177,8 +2177,111 @@
       ],
       "format": "esm"
     },
+    "src/presentation/processors/CodeBlockProcessor.ts": {
+      "bytes": 4889,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../infrastructure/logging/ILogger",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/logging/LoggerFactory.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/logging/LoggerFactory"
+        },
+        {
+          "path": "../../infrastructure/providers/ServiceProvider",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/renderers/UniversalLayoutRenderer.ts": {
+      "bytes": 12625,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../processors/CodeBlockProcessor",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../infrastructure/logging/ILogger",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/logging/LoggerFactory.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/logging/LoggerFactory"
+        },
+        {
+          "path": "../../infrastructure/providers/ServiceProvider",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IAssetRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/core/Result",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/renderers/AssetListRenderer.ts": {
+      "bytes": 9879,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../processors/CodeBlockProcessor",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../infrastructure/logging/ILogger",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/logging/LoggerFactory.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/logging/LoggerFactory"
+        },
+        {
+          "path": "../../infrastructure/providers/ServiceProvider",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IAssetRepository",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
     "src/ExocortexPlugin.ts": {
-      "bytes": 5598,
+      "bytes": 7791,
       "imports": [
         {
           "path": "obsidian",
@@ -2224,6 +2327,21 @@
           "path": "src/presentation/processors/QueryProcessor.ts",
           "kind": "import-statement",
           "original": "./presentation/processors/QueryProcessor"
+        },
+        {
+          "path": "src/presentation/processors/CodeBlockProcessor.ts",
+          "kind": "import-statement",
+          "original": "./presentation/processors/CodeBlockProcessor"
+        },
+        {
+          "path": "src/presentation/renderers/UniversalLayoutRenderer.ts",
+          "kind": "import-statement",
+          "original": "./presentation/renderers/UniversalLayoutRenderer"
+        },
+        {
+          "path": "src/presentation/renderers/AssetListRenderer.ts",
+          "kind": "import-statement",
+          "original": "./presentation/renderers/AssetListRenderer"
         },
         {
           "path": "./domain/entities/ExocortexSettings",
@@ -2362,6 +2480,21 @@
           "path": "obsidian",
           "kind": "require-call",
           "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
         }
       ],
       "exports": [],
@@ -2371,7 +2504,7 @@
           "bytesInOutput": 56
         },
         "src/ExocortexPlugin.ts": {
-          "bytesInOutput": 2357
+          "bytesInOutput": 3286
         },
         "src/infrastructure/lifecycle/LifecycleRegistry.ts": {
           "bytesInOutput": 406
@@ -2600,9 +2733,18 @@
         },
         "src/presentation/processors/QueryProcessor.ts": {
           "bytesInOutput": 1505
+        },
+        "src/presentation/processors/CodeBlockProcessor.ts": {
+          "bytesInOutput": 1524
+        },
+        "src/presentation/renderers/UniversalLayoutRenderer.ts": {
+          "bytesInOutput": 4963
+        },
+        "src/presentation/renderers/AssetListRenderer.ts": {
+          "bytesInOutput": 3861
         }
       },
-      "bytes": 210039
+      "bytes": 221316
     }
   }
 }

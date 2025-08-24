@@ -47,6 +47,42 @@ The Exocortex plugin brings a revolutionary approach to knowledge management in 
 - **Composable Queries**: Build complex queries from reusable components
 - **Semantic Navigation**: Navigate through knowledge using relationships
 
+### 📝 Custom Code Blocks (v4.3.0)
+
+The plugin now supports custom `exocortex` code blocks that render dynamic content in live preview mode:
+
+#### UniversalLayout - Display Backlinks
+````markdown
+```exocortex
+UniversalLayout
+layout: table
+showProperties: status, priority, due
+sortBy: modified
+sortOrder: desc
+limit: 10
+```
+````
+
+#### AssetList - Filtered Asset Lists
+````markdown
+```exocortex
+AssetList
+class: ems__Project
+folder: Projects
+tags: active, important
+properties: status, owner, deadline
+showCreateButton: true
+sortBy: created
+limit: 20
+```
+````
+
+Available layout options:
+- `list` - Simple list view with properties
+- `table` - Tabular view with sortable columns
+- `cards` - Card grid layout
+- `graph` - Visual graph representation (coming soon)
+
 ## Installation
 
 ### Using BRAT (Recommended for Beta Testing)

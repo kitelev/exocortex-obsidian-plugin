@@ -1,3 +1,53 @@
+## [4.3.0] - 2025-08-24
+
+### 🎯 Custom Code Block Processor - Dynamic Content in Live Preview
+
+#### Revolutionary Content Rendering System
+This release introduces a powerful code block processor that transforms how you view and interact with your knowledge base. Similar to popular plugins like LifeOS, you can now create dynamic, auto-updating views of your content directly in your notes.
+
+#### What This Means for You
+- **See Connections Instantly**: View all notes that link to the current note without leaving the page
+- **Dynamic Content Views**: Create filtered lists of your assets that update automatically
+- **Multiple Layout Options**: Choose between list, table, or card views to match your preference
+- **Live Updates**: Content refreshes automatically when you make changes to your vault
+- **Customizable Displays**: Configure exactly what properties and metadata to show
+
+#### New Features
+- ✅ **Code Block Processor**: Custom `exocortex` code blocks render dynamic content in live preview
+- ✅ **UniversalLayout View**: Display backlinks and related assets with customizable layouts
+- ✅ **AssetList View**: Create filtered lists of assets based on class, folder, or tags
+- ✅ **Real-Time Updates**: Content automatically refreshes when vault changes
+- ✅ **Multiple Layouts**: Choose from list, table, cards, or upcoming graph visualizations
+
+#### How to Use
+
+Create dynamic backlink views:
+````markdown
+```exocortex
+UniversalLayout
+layout: table
+showProperties: status, priority
+sortBy: modified
+```
+````
+
+Create filtered asset lists:
+````markdown
+```exocortex
+AssetList
+class: ems__Project
+folder: Projects
+showCreateButton: true
+```
+````
+
+#### Technical Improvements
+- Modular view renderer architecture for easy extensibility
+- Efficient caching and update mechanisms
+- Full TypeScript support with comprehensive type definitions
+- Mobile-optimized CSS for responsive layouts
+- Comprehensive test coverage for reliability
+
 ## [4.2.0] - 2025-08-24
 
 ### 🏗️ Enhanced Development Foundation
