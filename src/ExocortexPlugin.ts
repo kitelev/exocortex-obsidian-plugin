@@ -8,7 +8,7 @@ import { AssetCommandController } from "./presentation/command-controllers/Asset
 import { RDFCommandController } from "./presentation/command-controllers/RDFCommandController";
 import { QueryProcessor } from "./presentation/processors/QueryProcessor";
 import { CodeBlockProcessor } from "./presentation/processors/CodeBlockProcessor";
-import { UniversalLayoutRenderer } from "./presentation/renderers/UniversalLayoutRenderer";
+import { RefactoredUniversalLayoutRenderer } from "./presentation/renderers/RefactoredUniversalLayoutRenderer";
 import { AssetListRenderer } from "./presentation/renderers/AssetListRenderer";
 import { DynamicLayoutRenderer } from "./presentation/renderers/DynamicLayoutRenderer";
 import { ExocortexSettings } from "./domain/entities/ExocortexSettings";
@@ -181,7 +181,8 @@ export default class ExocortexPlugin extends Plugin {
       this.codeBlockProcessor = new CodeBlockProcessor(this.serviceProvider);
 
       // Register view renderers
-      const universalLayoutRenderer = new UniversalLayoutRenderer(
+      const universalLayoutRenderer = new RefactoredUniversalLayoutRenderer(
+        this.app,
         this.serviceProvider,
       );
       const assetListRenderer = new AssetListRenderer(this.serviceProvider);
