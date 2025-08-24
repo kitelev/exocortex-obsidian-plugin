@@ -1,3 +1,30 @@
+## [5.2.0] - 2025-08-24
+
+### 🚨 Critical Fix - Plugin Now Loads Successfully
+
+#### The Problem is Solved
+If you've been seeing the "Service IAssetRepository not found" error that prevented the Exocortex plugin from enabling in Obsidian, this release completely fixes that issue. Your plugin will now start up properly and all features will work as expected.
+
+#### What Was Fixed
+- **Plugin Initialization**: Fixed a critical dependency registration issue that prevented the plugin from loading
+- **Service Resolution**: The IAssetRepository service is now properly registered in the dependency injection container
+- **Startup Reliability**: Added comprehensive smoke tests to prevent similar initialization failures in the future
+
+#### For Users
+- **Immediate Solution**: Simply update to v5.2.0 and the plugin will work normally
+- **No Data Loss**: All your existing configurations and data remain intact
+- **Full Functionality**: All features from previous versions are now accessible
+
+#### Quality Improvements
+- ✅ **Robust Initialization**: Added BDD scenarios for plugin lifecycle testing
+- ✅ **Smoke Tests**: Comprehensive validation prevents similar failures
+- ✅ **Error Prevention**: Proactive checks ensure services are properly registered
+
+#### Impact
+This is a hotfix release that resolves the blocking issue many users experienced when trying to enable the plugin. All the powerful features from v5.1.0 (custom code blocks, dynamic content views, etc.) are now fully accessible.
+
+---
+
 ## [5.1.0] - 2025-08-24
 
 ### 🎯 Custom Code Block Processor - Dynamic Content in Live Preview
