@@ -2209,7 +2209,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 18345,
+      "bytes": 18321,
       "imports": [
         {
           "path": "obsidian",
@@ -2285,8 +2285,24 @@
       ],
       "format": "esm"
     },
+    "src/presentation/renderers/DynamicLayoutRenderer.ts": {
+      "bytes": 13615,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../processors/CodeBlockProcessor",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
     "src/ExocortexPlugin.ts": {
-      "bytes": 7794,
+      "bytes": 8081,
       "imports": [
         {
           "path": "obsidian",
@@ -2347,6 +2363,11 @@
           "path": "src/presentation/renderers/AssetListRenderer.ts",
           "kind": "import-statement",
           "original": "./presentation/renderers/AssetListRenderer"
+        },
+        {
+          "path": "src/presentation/renderers/DynamicLayoutRenderer.ts",
+          "kind": "import-statement",
+          "original": "./presentation/renderers/DynamicLayoutRenderer"
         },
         {
           "path": "./domain/entities/ExocortexSettings",
@@ -2500,6 +2521,11 @@
           "path": "obsidian",
           "kind": "require-call",
           "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
         }
       ],
       "exports": [],
@@ -2509,7 +2535,7 @@
           "bytesInOutput": 56
         },
         "src/ExocortexPlugin.ts": {
-          "bytesInOutput": 3286
+          "bytesInOutput": 3377
         },
         "src/infrastructure/lifecycle/LifecycleRegistry.ts": {
           "bytesInOutput": 406
@@ -2747,9 +2773,12 @@
         },
         "src/presentation/renderers/AssetListRenderer.ts": {
           "bytesInOutput": 3861
+        },
+        "src/presentation/renderers/DynamicLayoutRenderer.ts": {
+          "bytesInOutput": 5717
         }
       },
-      "bytes": 223319
+      "bytes": 229127
     }
   }
 }

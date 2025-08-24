@@ -1,3 +1,44 @@
+## [5.5.0] - 2025-01-24
+
+### 🎨 DynamicLayout - Tailored Asset Views That Adapt to Your Needs
+
+#### Customizable Relationship Display Without Complexity
+Transform how you view asset relationships with **DynamicLayout** - an intelligent rendering system that shows exactly the information you want, when you want it, without requiring complex configurations.
+
+#### Zero-Friction Personalization
+- **Smart Property Filtering**: Control which relationships appear for each asset class through simple ui__ClassLayout configuration
+- **Ordered Display Control**: Specify the exact order of properties to match your workflow priorities
+- **Instant Configuration**: Add `ui__ClassLayout_relationsToShow` to any class and see immediate results
+- **Universal Fallback**: Gracefully displays helpful guidance when layouts aren't configured yet
+
+#### Enhanced Information Architecture
+- **Focused Views**: Eliminate information overload by showing only relevant relationships for each asset type
+- **Professional Organization**: Properties display in your preferred order, creating consistent navigation patterns
+- **Context-Aware Display**: Different asset classes can have completely different relationship views optimized for their purpose
+- **Flexible Control**: Use "all" or "*" to show everything, or specify exact properties for precise control
+
+#### User Experience Excellence
+- **Immediate Feedback**: Clear error messages guide you toward proper configuration when needed
+- **No Breaking Changes**: Existing layouts continue working exactly as before
+- **Progressive Enhancement**: Start simple with default views, then customize as your needs evolve
+- **Semantic Clarity**: Property names and relationships remain clear and understandable
+
+#### Knowledge Management Benefits
+- **Reduced Cognitive Load**: See only the relationships that matter for each context
+- **Improved Discovery**: Important connections are prominent while noise is filtered out
+- **Workflow Optimization**: Arrange information to match how you actually work with different asset types
+- **Scalable Organization**: Perfect for knowledge bases with diverse asset types and relationship patterns
+
+#### Technical Robustness
+- **Backward Compatible**: All existing UniversalLayout styling and functionality preserved
+- **Error Resilient**: Graceful handling of missing or invalid configurations
+- **Performance Optimized**: Efficient filtering with no impact on rendering speed
+- **Type Safe**: Full TypeScript implementation with comprehensive validation
+
+This release gives you the power to create personalized, focused views of your knowledge relationships while maintaining the robust semantic capabilities you rely on. Your asset views now adapt to your specific needs rather than forcing you to adapt to rigid display patterns.
+
+---
+
 ## [5.4.0] - 2025-01-24
 
 ### 🔗 Smart Asset Relations - Revolutionary Relationship Discovery
