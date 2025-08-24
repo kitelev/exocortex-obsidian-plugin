@@ -1,3 +1,44 @@
+## [5.4.0] - 2025-01-24
+
+### 🔗 Smart Asset Relations - Revolutionary Relationship Discovery
+
+#### Intelligent Semantic Connections Without Configuration
+The UniversalLayout now **automatically discovers and organizes** all relationships between your assets, providing unprecedented insight into your knowledge network's structure without requiring any setup or configuration.
+
+#### Zero-Configuration Smart Grouping
+- **Automatic Property Grouping**: Assets are intelligently organized by HOW they reference the current asset
+- **Semantic Understanding**: The system understands the direction and nature of each relationship
+- **Universal Compatibility**: Works with all existing layouts and asset types immediately
+- **Backward Compatible**: No changes needed to existing configurations
+
+#### Enhanced Relationship Visualization
+- **Property-Based Organization**: Related assets grouped by the specific properties that connect them
+- **Directional Clarity**: Clear indication of which assets point TO the current asset vs which it points to
+- **Untyped Relations Section**: Body links and implicit connections shown in dedicated "Untyped Relations" section
+- **Rich Context**: Each relationship shows the property name, making the connection type immediately clear
+
+#### Navigation & Discovery Benefits
+- **Instant Relationship Mapping**: See all connections to any asset at a glance
+- **Improved Knowledge Discovery**: Discover relationships you might have forgotten about
+- **Enhanced Mental Model**: Better understanding of how concepts connect in your knowledge base
+- **Effortless Exploration**: Navigate between semantically related assets with clear context
+
+#### Technical Excellence
+- **Performance Optimized**: Efficient relationship calculation with minimal impact on rendering speed
+- **Memory Efficient**: Smart caching of relationship data for instant subsequent loads
+- **Type Safe**: Full TypeScript implementation with comprehensive error handling
+- **Test Covered**: Extensive test suite ensuring reliability across all relationship types
+
+#### User Experience Focus
+- **No Learning Curve**: Works immediately with existing knowledge bases
+- **Intuitive Organization**: Relationships grouped in logical, understandable ways
+- **Clean Presentation**: Professional layout that scales from simple to complex relationship networks
+- **Context Preservation**: Always clear why assets are related and how to navigate between them
+
+This release transforms asset navigation from a manual exploration process into an intelligent, guided discovery experience. Your knowledge connections are now visible, organized, and navigable without any additional effort or configuration.
+
+---
+
 ## [5.3.0] - 2025-01-25
 
 ### 🧪 Comprehensive BDD Test Coverage - 462% Improvement
