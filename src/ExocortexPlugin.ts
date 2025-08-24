@@ -142,8 +142,9 @@ export default class ExocortexPlugin extends Plugin {
     this.lifecycleRegistry.registerManager(this.settingsManager);
     this.lifecycleRegistry.registerManager(this.graphManager);
 
-    // Initialize settings first (others depend on it)
-    await this.settingsManager.initialize();
+    // Settings will be initialized later by lifecycleRegistry.initializeAll()
+    // Load settings early so they're available for other components
+    await this.settingsManager.loadSettings();
   }
 
   private async initializeServiceProvider(): Promise<void> {

@@ -1,3 +1,32 @@
+## [5.13.0] - 2025-08-24
+
+### 🔧 Fixed Duplicate Settings Tab - Clean Plugin Configuration
+
+#### Single Settings Tab Display
+Experience **clean and organized plugin settings** with the fix that eliminates duplicate "Exocortex" entries in the Obsidian settings panel, ensuring a professional and polished user experience.
+
+#### Root Cause Resolution
+- **Duplicate Initialization**: Settings tab was being registered twice during plugin startup
+- **First Registration**: Direct call to `settingsManager.initialize()` in initialization chain
+- **Second Registration**: Called again through `lifecycleRegistry.initializeAll()`
+- **Clean Solution**: Removed redundant initialization call, keeping only the registry-managed one
+
+#### Improved Plugin Lifecycle
+- **Consistent Management**: All lifecycle components now initialized through single registry
+- **Early Settings Load**: Settings loaded separately to be available for dependent components
+- **Clean Architecture**: Maintains separation of concerns and single responsibility
+- **No Side Effects**: Settings functionality remains fully intact
+
+#### User Benefits
+- **Cleaner UI**: No more confusing duplicate entries in settings panel
+- **Professional Look**: Plugin appears properly integrated with Obsidian
+- **Easier Navigation**: Find plugin settings without confusion
+- **Consistent Experience**: Matches behavior of other well-designed plugins
+
+This update fixes a bug where the Exocortex plugin appeared twice in Obsidian's settings panel due to duplicate registration of the settings tab during plugin initialization.
+
+---
+
 ## [5.12.0] - 2025-08-24
 
 ### 🔗 Fixed Piped Link Relation Grouping - Consistent Asset Organization

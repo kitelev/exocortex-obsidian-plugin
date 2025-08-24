@@ -40,7 +40,7 @@ export class SettingsLifecycleManager implements ILifecycleManager {
   /**
    * Load plugin settings from data.json
    */
-  private async loadSettings(): Promise<void> {
+  async loadSettings(): Promise<void> {
     try {
       const data = await this.plugin.loadData();
       const settingsResult = ExocortexSettings.create(data || {});
