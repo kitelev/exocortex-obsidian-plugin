@@ -203,7 +203,11 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
 
     // Render "Untyped Relations" last if it exists
     if (untypedRelations) {
-      this.renderRelationGroup(relationsContainer, "Untyped Relations", untypedRelations);
+      this.renderRelationGroup(
+        relationsContainer,
+        "Untyped Relations",
+        untypedRelations,
+      );
     }
   }
 
