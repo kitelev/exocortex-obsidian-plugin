@@ -1,4 +1,6 @@
 import { DomainEvent } from "../core/Entity";
+import { ILogger } from "../../infrastructure/logging/ILogger";
+import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
 
 /**
  * Domain event handler interface
@@ -47,6 +49,7 @@ export interface EventProcessingResult {
  * Implements the Observer pattern for domain events
  */
 export class DomainEventBus {
+  private logger: ILogger;
   private subscriptions: Map<string, EventSubscription[]> = new Map();
   private eventHistory: DomainEvent[] = [];
   private maxHistorySize: number = 1000;
@@ -55,6 +58,10 @@ export class DomainEventBus {
     event: DomainEvent;
     options?: EventProcessingOptions;
   }> = [];
+
+  constructor() {
+    this.logger = LoggerFactory.createForClass(DomainEventBus);
+  }
 
   /**
    * Subscribe to a specific event type
@@ -309,7 +316,10 @@ export class DomainEventBus {
         try {
           await this.processEvent(event, options || {}, result);
         } catch (error) {
-          console.error(`Async event processing failed:`, error);
+          this.logger.error('Async event processing failed', {
+            eventType: event.eventType,
+            queueSize: this.eventQueue.length
+          }, error as Error);
         }
       }
     } finally {
@@ -356,10 +366,11 @@ export class DomainEventBus {
         await handler.handle(event);
         return true;
       } catch (error) {
-        console.warn(
-          `Retry ${i + 1}/${retryCount} failed for handler ${handler.constructor.name}:`,
-          error,
-        );
+        this.logger.warn('Event handler retry failed', {
+          handlerName: handler.constructor.name,
+          retry: `${i + 1}/${retryCount}`,
+          eventType: event.eventType
+        });
       }
     }
     return false;

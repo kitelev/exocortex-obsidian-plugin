@@ -45,6 +45,10 @@ import { ButtonRenderer } from "../../presentation/components/ButtonRenderer";
 import { PropertyRenderer } from "../../presentation/components/PropertyRenderer";
 import { LayoutRenderer } from "../../presentation/renderers/LayoutRenderer";
 
+// Logging
+import { ILogger } from "../logging/ILogger";
+import { LoggerFactory } from "../logging/LoggerFactory";
+
 /**
  * Dependency Injection Container Setup
  * Following Clean Architecture - wires up all dependencies
@@ -106,6 +110,13 @@ export class DIContainer {
   private registerDependencies(): void {
     // Register Obsidian App
     this.container.register("App", () => this.app);
+
+    // Register Logger Factory
+    this.container.register<ILogger>("ILogger", () => 
+      LoggerFactory.create("DIContainer"));
+
+    // Register Logger Factory itself for creating named loggers
+    this.container.register("LoggerFactory", () => LoggerFactory);
 
     // Register Port Implementations
     this.container.register<INotificationService>(

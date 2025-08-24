@@ -586,16 +586,83 @@ npm run dev
 
 # Build for production
 npm run build
+
+# Run comprehensive tests
+npm run test:all
+
+# Run specific test categories
+npm run test:unit          # Unit tests
+npm run test:integration   # Integration tests
+npm run test:bdd           # BDD scenarios
+npm run test:ui            # UI automation
+npm run test:e2e           # End-to-end tests
+npm run test:mobile        # Mobile-specific tests
+
+# Run tests with coverage
+npm run test:coverage
+
+# Development testing commands
+npm run test:watch         # Watch mode for TDD
+npm run test:bdd:watch     # BDD watch mode
+```
+
+### Development Workflow
+
+```bash
+# Start development server with hot reload
+npm run dev
+
+# In another terminal, run tests in watch mode
+npm run test:watch
+
+# Run BDD tests for specific features
+npm run test:bdd:smoke     # Critical scenarios
+npm run test:bdd:security  # Security tests
+npm run test:bdd:api       # API integration
+
+# Performance and quality checks
+npm run check:all          # Type checking, linting, formatting
+npm run test:performance   # Performance benchmarks
 ```
 
 ### Project Structure
 
 ```
-├── main.ts           # Plugin entry point
-├── manifest.json     # Plugin metadata
-├── styles.css        # Plugin styles
-├── esbuild.config.mjs # Build configuration
-└── README.md         # Documentation
+├── src/                           # Source code
+│   ├── domain/                    # Business logic
+│   │   ├── entities/             # Domain entities
+│   │   ├── value-objects/        # Value objects
+│   │   └── semantic/             # RDF/semantic layer
+│   ├── application/              # Use cases and services
+│   │   ├── use-cases/           # Business operations
+│   │   └── services/            # Application services
+│   ├── infrastructure/          # External adapters
+│   │   ├── container/           # Dependency injection
+│   │   ├── logging/             # Logging infrastructure
+│   │   └── repositories/        # Data persistence
+│   └── presentation/            # UI components
+│       ├── components/          # Renderers
+│       ├── modals/             # User dialogs
+│       └── renderers/          # Block renderers
+├── tests/                        # Comprehensive test suite
+│   ├── unit/                    # Unit tests
+│   ├── integration/             # Integration tests
+│   ├── bdd/                     # BDD scenarios
+│   │   ├── features/           # Gherkin feature files
+│   │   ├── step-definitions/   # Step implementations
+│   │   ├── helpers/            # Test utilities
+│   │   └── support/            # World context
+│   ├── ui/                      # UI automation tests
+│   ├── e2e/                     # End-to-end tests
+│   └── __mocks__/               # Mock implementations
+├── docs/                         # Documentation
+│   ├── BDD-TESTING-GUIDE.md     # BDD testing guide
+│   ├── architecture/            # Architecture docs
+│   └── enterprise/              # Enterprise documentation
+├── main.ts                       # Plugin entry point
+├── manifest.json                 # Plugin metadata
+├── styles.css                    # Plugin styles
+└── esbuild.config.mjs           # Build configuration
 ```
 
 ## Contributing
@@ -604,14 +671,53 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 
 ### Development Guidelines
 
-1. Follow TypeScript best practices
-2. Maintain backward compatibility
-3. Add tests for new features
-4. Update documentation
+1. **TypeScript Best Practices**: Use strict mode, proper typing, and interface segregation
+2. **Test-Driven Development**: Write tests before implementation (TDD/BDD)
+3. **Clean Architecture**: Follow dependency inversion and separation of concerns
+4. **Documentation**: Update both technical and user documentation
+5. **Performance**: Include performance tests for new features
+6. **Security**: Add security validation for user inputs
+7. **Logging**: Use structured logging for observability
+8. **Backward Compatibility**: Maintain compatibility with existing features
+
+### Testing Requirements
+
+- **Unit Tests**: Test individual components in isolation
+- **Integration Tests**: Test component interactions
+- **BDD Tests**: Business scenarios in Gherkin format
+- **UI Tests**: User interface automation with WebDriverIO
+- **Performance Tests**: Load testing and benchmarking
+- **Security Tests**: Vulnerability testing and validation
+- **Mobile Tests**: iOS/Android specific testing
+
+### Code Quality Standards
+
+```bash
+# Before committing
+npm run check:all          # Type checking, linting, formatting
+npm run test:all           # All test categories
+npm run build              # Ensure clean build
+
+# Continuous Integration
+- All tests must pass
+- Coverage threshold: 70%+
+- No TypeScript errors
+- ESLint compliance
+- Performance benchmarks within limits
+```
 
 ## Recent Updates
 
-### Version 3.0 (Current)
+### Version 4.1 (Current)
+
+- ✅ **Comprehensive Logging Infrastructure**: Enterprise-grade logging with performance monitoring and security features
+- ✅ **BDD Testing Framework**: Complete Behavior-Driven Development with Gherkin scenarios and advanced test utilities
+- ✅ **Enhanced Test Coverage**: 80+ test files across multiple categories (unit, integration, BDD, UI, E2E)
+- ✅ **Type System Improvements**: Enhanced TypeScript definitions with strict type safety
+- ✅ **Performance Monitoring**: Built-in performance validation and metrics collection
+- ✅ **Security Validation**: Comprehensive security testing with threat detection
+
+### Version 3.0 (Previous)
 
 - ✅ **Mobile/iOS Support**: Complete touch-optimized interface with native gestures
 - ✅ **Query Engine Abstraction**: Support for both Dataview and Datacore plugins
@@ -620,17 +726,79 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 
 ### Upcoming Features
 
-- [ ] Visual layout editor
-- [ ] Graph query support
-- [ ] Import/export of ontologies
-- [ ] Multi-vault synchronization
-- [ ] Apple Pencil support for iPad
-- [ ] Widget support for iOS 14+
+- [ ] Visual layout editor with drag-and-drop interface
+- [ ] Graph query support with visual query builder
+- [ ] Import/export of ontologies in standard formats
+- [ ] Multi-vault synchronization across devices
+- [ ] Apple Pencil support for iPad with drawing capabilities
+- [ ] Widget support for iOS 14+ with live data
+- [ ] Real-time collaboration features
+- [ ] AI-powered content suggestions
+
+## Development and Testing
+
+### Logging Infrastructure
+
+The plugin includes comprehensive logging for development and debugging:
+
+```typescript
+// Using the Logger in your code
+import { LoggerFactory } from './src/infrastructure/logging/LoggerFactory';
+
+class MyService {
+  private logger = LoggerFactory.createForClass(MyService);
+  
+  async processData(data: any) {
+    this.logger.startTiming('data-processing');
+    this.logger.info('Processing data', { recordCount: data.length });
+    
+    try {
+      const result = await this.processInternal(data);
+      this.logger.endTiming('data-processing', { success: true });
+      return result;
+    } catch (error) {
+      this.logger.error('Processing failed', { error: error.message }, error);
+      throw error;
+    }
+  }
+}
+```
+
+### BDD Testing
+
+The project uses Behavior-Driven Development with Gherkin scenarios:
+
+```bash
+# Run BDD tests
+npm run test:bdd
+
+# Run specific test categories
+npm run test:bdd:smoke     # Critical scenarios
+npm run test:bdd:security  # Security validation
+npm run test:bdd:performance # Performance tests
+```
+
+**Example Feature File:**
+
+```gherkin
+Feature: Asset Management
+  As a knowledge worker
+  I want to create and manage assets
+  So that I can organize my knowledge effectively
+
+  Scenario: Creating a new asset
+    Given I have valid asset data
+    When I create an asset
+    Then the asset should be created successfully
+    And it should have the correct properties
+```
 
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/kitelev/exocortex-obsidian-plugin/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/kitelev/exocortex-obsidian-plugin/discussions)
+- **Development**: See `docs/` directory for detailed development guides
+- **Testing**: See `CLAUDE-test-patterns.md` for testing best practices
 
 ## License
 

@@ -8,6 +8,8 @@ import {
 import { ErrorAnalyzer } from "../../domain/errors/ErrorAnalyzer";
 import { EnhancedResult } from "../../domain/core/EnhancedResult";
 import { INotificationService } from "../ports/INotificationService";
+import { ILogger } from "../../infrastructure/logging/ILogger";
+import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
 
 export interface ErrorHandlerOptions {
   showUserNotification?: boolean;
@@ -25,6 +27,7 @@ export interface ErrorMetrics {
 }
 
 export class ErrorHandlerService {
+  private logger: ILogger;
   private errorHistory: ExocortexError[] = [];
   private errorMetrics: ErrorMetrics = {
     totalErrors: 0,
@@ -52,6 +55,7 @@ export class ErrorHandlerService {
     private options: ErrorHandlerOptions = {},
     private notificationService?: INotificationService,
   ) {
+    this.logger = LoggerFactory.createForClass(ErrorHandlerService);
     this.options = {
       showUserNotification: true,
       logToConsole: true,
@@ -110,7 +114,9 @@ export class ErrorHandlerService {
 
       return EnhancedResult.okEnhanced();
     } catch (handlingError) {
-      console.error("Error in error handler:", handlingError);
+      this.logger.error('Error in error handler', {
+        stage: 'handling'
+      }, handlingError as Error);
       return EnhancedResult.failEnhanced(
         ErrorBuilder.create()
           .withTitle("Error Handler Failed")
@@ -158,20 +164,29 @@ export class ErrorHandlerService {
 
   private logError(error: ExocortexError): void {
     const logLevel = this.getLogLevel(error.severity);
-    const logMessage = this.formatErrorForConsole(error);
+    const context = {
+      errorId: error.id,
+      category: error.category,
+      severity: error.severity,
+      operation: error.context?.operation,
+      recoverable: error.recoverable,
+      technicalDetails: error.technicalDetails,
+      suggestions: error.suggestions?.length || 0
+    };
 
     switch (logLevel) {
       case "error":
-        console.error(logMessage, error);
+        this.logger.error(error.title + ': ' + error.message, context, 
+          error.technicalDetails ? new Error(error.technicalDetails) : undefined);
         break;
       case "warn":
-        console.warn(logMessage, error);
+        this.logger.warn(error.title + ': ' + error.message, context);
         break;
       case "info":
-        console.info(logMessage, error);
+        this.logger.info(error.title + ': ' + error.message, context);
         break;
       default:
-        console.log(logMessage, error);
+        this.logger.debug(error.title + ': ' + error.message, context);
     }
   }
 
@@ -272,7 +287,11 @@ export class ErrorHandlerService {
           3000,
         );
       } catch (recoveryError) {
-        console.error("Auto-recovery failed:", recoveryError);
+        this.logger.error('Auto-recovery failed', {
+          errorId: error.id,
+          suggestionTitle: autoFixSuggestion.title,
+          confidence: autoFixSuggestion.confidence
+        }, recoveryError as Error);
       }
     }
   }

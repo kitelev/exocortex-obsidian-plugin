@@ -1,12 +1,13 @@
 import { BlockType } from "../../domain/entities/LayoutBlock";
 import { Result } from "../../domain/core/Result";
+import { ConfigData, FrontmatterData, ObsidianFile, DataviewApi } from "../../types";
 
 export interface BlockRenderingContext {
   readonly container: HTMLElement;
-  readonly config: Record<string, any>;
-  readonly file: any;
-  readonly frontmatter: Record<string, any>;
-  readonly dataviewApi?: any;
+  readonly config: ConfigData;
+  readonly file: ObsidianFile;
+  readonly frontmatter: FrontmatterData;
+  readonly dataviewApi?: DataviewApi;
 }
 
 export interface IBlockRenderer {

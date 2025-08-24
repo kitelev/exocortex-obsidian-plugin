@@ -1,6 +1,6 @@
 {
   "name": "exocortex-obsidian-plugin",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "Exocortex: A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
   "main": "main.js",
   "engines": {
@@ -35,7 +35,9 @@
     "test:ui": "node scripts/run-ui-tests-smart.js",
     "test:ui:ci": "FORCE_OBSIDIAN_DOWNLOAD=true wdio run wdio.conf.ci.ts",
     "test:ui:local": "wdio run wdio.conf.local.ts",
-    "test:bdd": "./scripts/run-bdd-tests.sh all",
+    "test:bdd": "jest -c tests/bdd/jest.config.js",
+    "test:bdd:watch": "jest -c tests/bdd/jest.config.js --watch",
+    "test:bdd:coverage": "jest -c tests/bdd/jest.config.js --coverage",
     "test:bdd:smoke": "./scripts/run-bdd-tests.sh smoke",
     "test:bdd:security": "./scripts/run-bdd-tests.sh security",
     "test:bdd:api": "./scripts/run-bdd-tests.sh api",
@@ -94,6 +96,7 @@
     "expect-webdriverio": "^5.4.1",
     "husky": "^9.1.7",
     "jest": "^30.0.5",
+    "jest-cucumber": "^4.5.0",
     "jest-environment-jsdom": "^30.0.5",
     "jsdom": "^26.1.0",
     "obsidian": "latest",

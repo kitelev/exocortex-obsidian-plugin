@@ -7,6 +7,8 @@
 import { Graph } from "./Graph";
 import { Triple, IRI, BlankNode, Literal } from "./Triple";
 import { Result } from "../../core/Result";
+import { ILogger } from "../../../infrastructure/logging/ILogger";
+import { LoggerFactory } from "../../../infrastructure/logging/LoggerFactory";
 
 export interface GraphStatistics {
   totalTriples: number;
@@ -44,6 +46,7 @@ export interface PerformanceMetrics {
  * Provides O(1) lookups and efficient batch operations
  */
 export class IndexedGraph extends Graph {
+  private logger: ILogger = LoggerFactory.createForClass(IndexedGraph);
   private stats: GraphStatistics | null = null;
   private metrics: PerformanceMetrics = {
     lastIndexTime: 0,
@@ -136,9 +139,11 @@ export class IndexedGraph extends Graph {
       // Update progress for very large batches
       if (totalTriples > 5000 && chunkIndex % 10 === 0) {
         const progress = (((chunkIndex + 1) / chunks.length) * 100).toFixed(1);
-        console.log(
-          `Batch processing: ${progress}% (${chunkIndex + 1}/${chunks.length} chunks)`,
-        );
+        this.logger.debug('Batch processing progress', {
+          progress: `${progress}%`,
+          chunk: `${chunkIndex + 1}/${chunks.length}`,
+          totalTriples
+        });
       }
     }
 
@@ -150,9 +155,12 @@ export class IndexedGraph extends Graph {
     this.metrics.lastIndexTime = processingTime;
     this.metrics.batchProcessingRate = totalTriples / (processingTime / 1000); // triples per second
 
-    console.log(
-      `Batch committed: ${totalTriples} triples in ${processingTime.toFixed(2)}ms (${this.metrics.batchProcessingRate.toFixed(0)} triples/sec)`,
-    );
+    this.logger.info('Batch processing completed', {
+      totalTriples,
+      processingTime: `${processingTime.toFixed(2)}ms`,
+      rate: `${this.metrics.batchProcessingRate.toFixed(0)} triples/sec`,
+      chunks: chunks.length
+    });
   }
 
   /**
@@ -331,9 +339,12 @@ export class IndexedGraph extends Graph {
 
     // Performance warning for slow queries
     if (queryTime > this.performanceThresholds.queryTimeWarning) {
-      console.warn(
-        `Slow query detected: ${queryTime.toFixed(2)}ms for pattern ${cacheKey}`,
-      );
+      this.logger.warn('Slow query detected', {
+        queryTime: `${queryTime.toFixed(2)}ms`,
+        pattern: cacheKey,
+        threshold: `${this.performanceThresholds.queryTimeWarning}ms`,
+        resultCount: results.length
+      });
     }
 
     // Cache results with optimized LRU eviction
@@ -750,9 +761,11 @@ export class IndexedGraph extends Graph {
     }
 
     const queryTime = performance.now() - startTime;
-    console.log(
-      `Parallel query completed: ${patterns.length} patterns in ${queryTime.toFixed(2)}ms`,
-    );
+    this.logger.debug('Parallel query completed', {
+      patternCount: patterns.length,
+      queryTime: `${queryTime.toFixed(2)}ms`,
+      totalResults: results.reduce((sum, arr) => sum + arr.length, 0)
+    });
 
     return results;
   }
@@ -1011,7 +1024,11 @@ export class IndexedGraph extends Graph {
       this.metrics.averageQueryTime >
       this.performanceThresholds.queryTimeWarning * 2
     ) {
-      console.warn("Performance degradation detected, triggering optimization");
+      this.logger.warn('Performance degradation detected, triggering optimization', {
+        averageQueryTime: this.metrics.averageQueryTime,
+        threshold: this.performanceThresholds.queryTimeWarning * 2,
+        cacheHitRate: this.metrics.cacheHitRate
+      });
       this.autoOptimize();
     }
   }

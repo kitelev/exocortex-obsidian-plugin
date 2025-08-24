@@ -210,14 +210,17 @@ export class FileOperationUtils {
       : [referenceValue];
 
     return refs.some((ref) => {
-      const cleanRef = String(ref).replace(/\[\[|\]\]/g, "");
+      if (!ref) return false;
+      
+      const refStr = String(ref);
+      const cleanRef = refStr.replace(/\[\[|\]\]/g, "");
 
       // Match against various possible reference formats
       return (
         cleanRef === assetName ||
         cleanRef === `${assetName}.md` ||
-        ref.includes(`[[${assetName}]]`) ||
-        ref.includes(assetName)
+        refStr.includes(`[[${assetName}]]`) ||
+        refStr.includes(assetName)
       );
     });
   }
