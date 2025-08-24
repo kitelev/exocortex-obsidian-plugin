@@ -3,12 +3,11 @@ import {
   ExocortexSettings,
   ExocortexSettingsData,
 } from "../../domain/entities/ExocortexSettings";
-import { QueryEngineType } from "../../domain/ports/IQueryEngine";
 import ExocortexPlugin from "../../main";
 
 /**
- * Exocortex Settings Tab
- * Provides a comprehensive user interface for plugin configuration
+ * Exocortex Settings Tab - Simplified Version
+ * Provides only essential debug and reset options for the plugin
  */
 export class ExocortexSettingTab extends PluginSettingTab {
   plugin: ExocortexPlugin;
@@ -27,27 +26,9 @@ export class ExocortexSettingTab extends PluginSettingTab {
     // Header
     containerEl.createEl("h1", { text: "Exocortex Settings" });
     containerEl.createEl("p", {
-      text: "Configure your Exocortex plugin to optimize your knowledge management experience.",
+      text: "Essential settings for the Exocortex plugin.",
       cls: "setting-item-description",
     });
-
-    // Folder Paths Section
-    this.addFolderPathsSection(containerEl);
-
-    // Query Engine Section
-    this.addQueryEngineSection(containerEl);
-
-    // Cache Settings Section
-    this.addCacheSettingsSection(containerEl);
-
-    // RDF Export Section
-    this.addRDFExportSection(containerEl);
-
-    // Performance Section
-    this.addPerformanceSection(containerEl);
-
-    // Mobile/Platform Section
-    this.addMobilePlatformSection(containerEl);
 
     // Debug Section
     this.addDebugSection(containerEl);
@@ -56,311 +37,16 @@ export class ExocortexSettingTab extends PluginSettingTab {
     this.addResetSection(containerEl);
   }
 
-  private addFolderPathsSection(containerEl: HTMLElement): void {
-    containerEl.createEl("h2", { text: "Folder Paths" });
-
-    new Setting(containerEl)
-      .setName("Layouts folder")
-      .setDesc("Path to folder containing class layout files")
-      .addText((text) =>
-        text
-          .setPlaceholder("layouts")
-          .setValue(this.settings.get("layoutsFolderPath"))
-          .onChange(async (value) => {
-            await this.updateSetting(
-              "layoutsFolderPath",
-              value.trim() || "layouts",
-            );
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Templates folder")
-      .setDesc("Path to folder containing query templates")
-      .addText((text) =>
-        text
-          .setPlaceholder(".exocortex/templates")
-          .setValue(this.settings.get("templatesFolderPath"))
-          .onChange(async (value) => {
-            await this.updateSetting(
-              "templatesFolderPath",
-              value.trim() || ".exocortex/templates",
-            );
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Template usage data path")
-      .setDesc("Path to file for storing template usage statistics")
-      .addText((text) =>
-        text
-          .setPlaceholder(".exocortex/template-usage.json")
-          .setValue(this.settings.get("templateUsageDataPath"))
-          .onChange(async (value) => {
-            await this.updateSetting(
-              "templateUsageDataPath",
-              value.trim() || ".exocortex/template-usage.json",
-            );
-          }),
-      );
-  }
-
-  private addQueryEngineSection(containerEl: HTMLElement): void {
-    containerEl.createEl("h2", { text: "Query Engine" });
-
-    new Setting(containerEl)
-      .setName("Preferred query engine")
-      .setDesc("Primary query engine to use for data queries")
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOption("dataview", "Dataview")
-          .addOption("datacore", "Datacore")
-          .addOption("native", "Native")
-          .setValue(this.settings.get("preferredQueryEngine"))
-          .onChange(async (value: QueryEngineType) => {
-            await this.updateSetting("preferredQueryEngine", value);
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Fallback query engine")
-      .setDesc("Secondary query engine to use if primary fails")
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOption("dataview", "Dataview")
-          .addOption("datacore", "Datacore")
-          .addOption("native", "Native")
-          .setValue(this.settings.get("fallbackQueryEngine"))
-          .onChange(async (value: QueryEngineType) => {
-            await this.updateSetting("fallbackQueryEngine", value);
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Auto-detect query engines")
-      .setDesc("Automatically detect and use available query engines")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.settings.get("enableQueryEngineAutoDetect"))
-          .onChange(async (value) => {
-            await this.updateSetting("enableQueryEngineAutoDetect", value);
-          }),
-      );
-  }
-
-  private addCacheSettingsSection(containerEl: HTMLElement): void {
-    containerEl.createEl("h2", { text: "Cache Settings" });
-
-    // Query Cache
-    new Setting(containerEl)
-      .setName("Enable query cache")
-      .setDesc("Cache query results for improved performance")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.settings.get("enableQueryCache"))
-          .onChange(async (value) => {
-            await this.updateSetting("enableQueryCache", value);
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Query cache max size")
-      .setDesc("Maximum number of cached queries")
-      .addSlider((slider) =>
-        slider
-          .setLimits(10, 2000, 10)
-          .setValue(this.settings.get("queryCacheMaxSize"))
-          .setDynamicTooltip()
-          .onChange(async (value) => {
-            await this.updateSetting("queryCacheMaxSize", value);
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Query cache TTL")
-      .setDesc("Time to live for cached queries (minutes)")
-      .addSlider((slider) =>
-        slider
-          .setLimits(1, 60, 1)
-          .setValue(this.settings.get("queryCacheTTLMinutes"))
-          .setDynamicTooltip()
-          .onChange(async (value) => {
-            await this.updateSetting("queryCacheTTLMinutes", value);
-          }),
-      );
-
-    // Query Cache
-    new Setting(containerEl)
-      .setName("Enable query cache")
-      .setDesc("Cache general query results for improved performance")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.settings.get("enableQueryCache"))
-          .onChange(async (value) => {
-            await this.updateSetting("enableQueryCache", value);
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Query cache timeout")
-      .setDesc("Query cache timeout (minutes)")
-      .addSlider((slider) =>
-        slider
-          .setLimits(1, 120, 1)
-          .setValue(this.settings.get("queryCacheTimeout"))
-          .setDynamicTooltip()
-          .onChange(async (value) => {
-            await this.updateSetting("queryCacheTimeout", value);
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Query cache max size")
-      .setDesc("Maximum number of cached query results")
-      .addSlider((slider) =>
-        slider
-          .setLimits(10, 500, 10)
-          .setValue(this.settings.get("queryCacheMaxSize"))
-          .setDynamicTooltip()
-          .onChange(async (value) => {
-            await this.updateSetting("queryCacheMaxSize", value);
-          }),
-      );
-  }
-
-  private addRDFExportSection(containerEl: HTMLElement): void {
-    containerEl.createEl("h2", { text: "RDF Export Settings" });
-
-    new Setting(containerEl)
-      .setName("Default RDF format")
-      .setDesc("Default format for RDF exports")
-      .addDropdown((dropdown) =>
-        dropdown
-          .addOption("turtle", "Turtle (.ttl)")
-          .addOption("rdf-xml", "RDF/XML (.rdf)")
-          .addOption("n-triples", "N-Triples (.nt)")
-          .addOption("json-ld", "JSON-LD (.jsonld)")
-          .setValue(this.settings.get("defaultRDFFormat"))
-          .onChange(
-            async (value: "turtle" | "rdf-xml" | "n-triples" | "json-ld") => {
-              await this.updateSetting("defaultRDFFormat", value);
-            },
-          ),
-      );
-
-    new Setting(containerEl)
-      .setName("Include inferred triples")
-      .setDesc("Include inferred/derived triples in exports")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.settings.get("includeInferredTriples"))
-          .onChange(async (value) => {
-            await this.updateSetting("includeInferredTriples", value);
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Export namespaces")
-      .setDesc("Include namespace declarations in exports")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.settings.get("exportNamespaces"))
-          .onChange(async (value) => {
-            await this.updateSetting("exportNamespaces", value);
-          }),
-      );
-  }
-
-  private addPerformanceSection(containerEl: HTMLElement): void {
-    containerEl.createEl("h2", { text: "Performance Settings" });
-
-    new Setting(containerEl)
-      .setName("Max graph size")
-      .setDesc("Maximum number of triples in the knowledge graph")
-      .addSlider((slider) =>
-        slider
-          .setLimits(100, 50000, 100)
-          .setValue(this.settings.get("maxGraphSize"))
-          .setDynamicTooltip()
-          .onChange(async (value) => {
-            await this.updateSetting("maxGraphSize", value);
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Batch processing size")
-      .setDesc("Number of items to process in each batch")
-      .addSlider((slider) =>
-        slider
-          .setLimits(1, 200, 1)
-          .setValue(this.settings.get("batchProcessingSize"))
-          .setDynamicTooltip()
-          .onChange(async (value) => {
-            await this.updateSetting("batchProcessingSize", value);
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Enable lazy loading")
-      .setDesc("Load data on-demand to improve performance")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.settings.get("enableLazyLoading"))
-          .onChange(async (value) => {
-            await this.updateSetting("enableLazyLoading", value);
-          }),
-      );
-  }
-
-  private addMobilePlatformSection(containerEl: HTMLElement): void {
-    containerEl.createEl("h2", { text: "Mobile & Platform Settings" });
-
-    new Setting(containerEl)
-      .setName("Enable mobile optimizations")
-      .setDesc("Apply mobile-specific performance optimizations")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.settings.get("enableMobileOptimizations"))
-          .onChange(async (value) => {
-            await this.updateSetting("enableMobileOptimizations", value);
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Mobile batch size")
-      .setDesc("Batch size optimized for mobile devices")
-      .addSlider((slider) =>
-        slider
-          .setLimits(1, 50, 1)
-          .setValue(this.settings.get("mobileBatchSize"))
-          .setDynamicTooltip()
-          .onChange(async (value) => {
-            await this.updateSetting("mobileBatchSize", value);
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Enable touch controls")
-      .setDesc("Enable touch-based interactions for mobile devices")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.settings.get("enableTouchControls"))
-          .onChange(async (value) => {
-            await this.updateSetting("enableTouchControls", value);
-          }),
-      );
-  }
-
   private addDebugSection(containerEl: HTMLElement): void {
     containerEl.createEl("h2", { text: "Debug Settings" });
     containerEl.createEl("p", {
-      text: "Debug settings help with troubleshooting but may impact performance.",
+      text: "Debug options for troubleshooting plugin issues.",
       cls: "setting-item-description",
     });
 
     new Setting(containerEl)
       .setName("Enable debug mode")
-      .setDesc("Enable general debug features and extended logging")
+      .setDesc("Enable extended logging and debug features")
       .addToggle((toggle) =>
         toggle
           .setValue(this.settings.get("enableDebugMode"))
@@ -370,30 +56,8 @@ export class ExocortexSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Enable verbose logging")
-      .setDesc("Enable detailed console logging for troubleshooting")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.settings.get("enableVerboseLogging"))
-          .onChange(async (value) => {
-            await this.updateSetting("enableVerboseLogging", value);
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Log queries")
-      .setDesc("Log all queries to console for debugging")
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.settings.get("logQueries"))
-          .onChange(async (value) => {
-            await this.updateSetting("logQueries", value);
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Enable performance metrics")
-      .setDesc("Collect and log performance metrics")
+      .setName("Enable performance tracking")
+      .setDesc("Track and log performance metrics")
       .addToggle((toggle) =>
         toggle
           .setValue(this.settings.get("enablePerformanceMetrics"))
@@ -401,18 +65,35 @@ export class ExocortexSettingTab extends PluginSettingTab {
             await this.updateSetting("enablePerformanceMetrics", value);
           }),
       );
+
+    new Setting(containerEl)
+      .setName("Show console logs")
+      .setDesc("Display detailed logs in the developer console")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.settings.get("enableVerboseLogging"))
+          .onChange(async (value) => {
+            await this.updateSetting("enableVerboseLogging", value);
+          }),
+      );
   }
 
   private addResetSection(containerEl: HTMLElement): void {
     containerEl.createEl("h2", { text: "Reset Settings" });
+    
+    const warningEl = containerEl.createEl("p", {
+      text: "⚠️ Warning: Resetting will restore all settings to their default values. This action cannot be undone.",
+      cls: "setting-item-description mod-warning",
+    });
+    warningEl.style.color = "var(--text-error)";
 
     new Setting(containerEl)
       .setName("Reset to defaults")
-      .setDesc("Reset all settings to their default values")
+      .setDesc("Reset all plugin settings to their default values")
       .addButton((button) =>
         button
-          .setButtonText("Reset All Settings")
-          .setCta()
+          .setButtonText("Reset to Defaults")
+          .setWarning()
           .onClick(async () => {
             const confirmed = await this.confirmReset();
             if (confirmed) {
@@ -451,10 +132,18 @@ export class ExocortexSettingTab extends PluginSettingTab {
                     <div class="modal-title">Reset Settings</div>
                     <div class="modal-text">
                         Are you sure you want to reset all settings to their default values?
+                        <br><br>
+                        This will restore:
+                        <ul>
+                            <li>Debug mode (disabled)</li>
+                            <li>Performance tracking (disabled)</li>
+                            <li>Console logging (disabled)</li>
+                        </ul>
+                        <br>
                         This action cannot be undone.
                     </div>
                     <div class="modal-button-container">
-                        <button class="mod-cta" id="confirm-reset">Reset</button>
+                        <button class="mod-warning" id="confirm-reset">Reset to Defaults</button>
                         <button id="cancel-reset">Cancel</button>
                     </div>
                 </div>
@@ -503,6 +192,6 @@ export class ExocortexSettingTab extends PluginSettingTab {
     // Refresh the settings display
     this.display();
 
-    new Notice("All settings have been reset to defaults");
+    new Notice("✅ All settings have been reset to defaults");
   }
 }

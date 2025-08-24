@@ -1,3 +1,41 @@
+## [5.14.0] - 2025-08-24
+
+### 🎯 Simplified Settings Interface - Essential Options Only
+
+#### Streamlined Configuration
+Experience **clean and focused plugin settings** with only the essential options you need, removing all outdated and unnecessary configuration sections for a simplified user experience.
+
+#### Minimal Settings Structure
+- **Debug Settings Only**: Three essential debug toggles for troubleshooting
+- **Reset Functionality**: Clear reset option with confirmation dialog
+- **No Clutter**: Removed 6 outdated configuration sections
+- **Clean Interface**: Just 2 sections instead of 8
+- **Essential Focus**: Only the settings that actually matter
+
+#### Removed Legacy Sections
+- **❌ Folder Paths**: No longer needed with modern architecture
+- **❌ Query Engine**: Automatic detection makes manual config unnecessary
+- **❌ Cache Settings**: Handled automatically by the system
+- **❌ RDF Export**: Obsolete feature removed
+- **❌ Performance Settings**: Adaptive performance makes this redundant
+- **❌ Mobile/Platform**: Auto-detected, no manual config needed
+
+#### Clean Debug Options
+- **Enable Debug Mode**: Toggle comprehensive debug features
+- **Performance Tracking**: Monitor plugin performance when needed
+- **Console Logging**: Control verbosity of console output
+- **All Disabled by Default**: Zero performance impact unless needed
+
+#### Safe Reset Feature
+- **Warning Message**: Clear indication of what will be reset
+- **Confirmation Dialog**: Prevents accidental resets
+- **Visual Feedback**: Success notification after reset
+- **Instant Refresh**: Settings UI updates immediately
+
+This update dramatically simplifies the plugin settings by removing all outdated configuration options, keeping only essential debug settings and reset functionality for a cleaner, more intuitive user experience.
+
+---
+
 ## [5.13.0] - 2025-08-24
 
 ### 🔧 Fixed Duplicate Settings Tab - Clean Plugin Configuration
