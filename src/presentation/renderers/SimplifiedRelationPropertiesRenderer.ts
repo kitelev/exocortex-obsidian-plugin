@@ -157,7 +157,7 @@ export class SimplifiedRelationPropertiesRenderer {
     const displayValue = Array.isArray(value) ? value[0] : value;
 
     switch (formatType) {
-      case "status-badge":
+      case "status-badge": {
         const cleanStatus = this.cleanValue(displayValue);
         const statusClass = this.getStatusClass(cleanStatus);
         container.createEl("span", {
@@ -165,8 +165,9 @@ export class SimplifiedRelationPropertiesRenderer {
           cls: `exocortex-status-badge ${statusClass}`,
         });
         break;
+      }
 
-      case "date":
+      case "date": {
         try {
           const date = new Date(displayValue);
           if (!isNaN(date.getTime())) {
@@ -185,8 +186,9 @@ export class SimplifiedRelationPropertiesRenderer {
           });
         }
         break;
+      }
 
-      case "link":
+      case "link": {
         const linkText = this.cleanValue(displayValue);
         const link = container.createEl("a", {
           text: linkText,
@@ -199,6 +201,7 @@ export class SimplifiedRelationPropertiesRenderer {
           this.app.workspace.openLinkText(linkText, "", false);
         });
         break;
+      }
 
       default:
         container.createEl("span", {
