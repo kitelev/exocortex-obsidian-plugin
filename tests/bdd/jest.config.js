@@ -16,21 +16,19 @@ module.exports = {
     '!<rootDir>/src/**/*.d.ts',
     '!<rootDir>/src/main.ts'
   ],
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   transform: {
     '^.+\\.ts$': ['ts-jest', {
       tsconfig: {
-        compilerOptions: {
-          experimentalDecorators: true,
-          emitDecoratorMetadata: true,
-          skipLibCheck: true,
-          esModuleInterop: true,
-          allowSyntheticDefaultImports: true
-        }
+        experimentalDecorators: true,
+        emitDecoratorMetadata: true,
+        skipLibCheck: true,
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true
       }
     }]
   },
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
   },
   coverageThreshold: {
