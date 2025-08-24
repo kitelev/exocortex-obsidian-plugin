@@ -170,8 +170,8 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
   }
 
   /**
-   * Render a single group of relations with H2 header
-   * Standard format: property name as-is, no formatting
+   * Render a single group of relations as a table
+   * Each asset is displayed as a row with "Name" column
    */
   protected renderRelationGroup(
     container: HTMLElement,
@@ -188,29 +188,44 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
       cls: "exocortex-relation-group-header",
     });
 
-    const listDiv = groupDiv.createDiv({
-      cls: "exocortex-relation-list",
+    // Create table
+    const table = groupDiv.createEl("table", {
+      cls: "exocortex-relation-table",
     });
 
+    // Create table header
+    const thead = table.createEl("thead");
+    const headerRow = thead.createEl("tr");
+    headerRow.createEl("th", {
+      text: "Name",
+      cls: "exocortex-table-header",
+    });
+
+    // Create table body
+    const tbody = table.createEl("tbody");
+
     for (const relation of relations) {
-      this.renderRelationItem(listDiv, relation);
+      this.renderRelationRow(tbody, relation);
     }
   }
 
   /**
-   * Render individual relation item
-   * Standard format with link and metadata
+   * Render individual relation as a table row
    */
-  protected renderRelationItem(
-    container: HTMLElement,
+  protected renderRelationRow(
+    tbody: HTMLElement,
     relation: AssetRelation,
   ): void {
-    const itemDiv = container.createDiv({
-      cls: "exocortex-relation-item",
+    const row = tbody.createEl("tr", {
+      cls: "exocortex-relation-row",
     });
 
-    // Create link
-    const linkEl = itemDiv.createEl("a", {
+    // Name column with link
+    const nameCell = row.createEl("td", {
+      cls: "exocortex-relation-name-cell",
+    });
+
+    const linkEl = nameCell.createEl("a", {
       text: relation.title,
       cls: "exocortex-relation-link internal-link",
       href: relation.path,
@@ -220,30 +235,31 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
       event.preventDefault();
       this.app.workspace.openLinkText(relation.path, "", false);
     });
+  }
 
-    // Add metadata
-    const metaDiv = itemDiv.createDiv({
-      cls: "exocortex-relation-meta",
+  /**
+   * Render individual relation item (legacy method for backward compatibility)
+   * @deprecated Use renderRelationRow instead
+   */
+  protected renderRelationItem(
+    container: HTMLElement,
+    relation: AssetRelation,
+  ): void {
+    // This method is kept for backward compatibility
+    // but the main rendering now uses renderRelationRow
+    const itemDiv = container.createDiv({
+      cls: "exocortex-relation-item",
     });
 
-    // Show class if available
-    const instanceClass = relation.metadata.exo__Instance_class;
-    if (instanceClass) {
-      const className = Array.isArray(instanceClass)
-        ? this.extractBasename(instanceClass[0])
-        : this.extractBasename(instanceClass);
+    const linkEl = itemDiv.createEl("a", {
+      text: relation.title,
+      cls: "exocortex-relation-link internal-link",
+      href: relation.path,
+    });
 
-      metaDiv.createSpan({
-        text: className,
-        cls: "exocortex-relation-class",
-      });
-    }
-
-    // Show modified date
-    const modifiedDate = new Date(relation.modified);
-    metaDiv.createSpan({
-      text: this.formatDate(modifiedDate),
-      cls: "exocortex-relation-date",
+    linkEl.addEventListener("click", (event) => {
+      event.preventDefault();
+      this.app.workspace.openLinkText(relation.path, "", false);
     });
   }
 
