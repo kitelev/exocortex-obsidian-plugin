@@ -1,6 +1,6 @@
 import { Result } from "../../domain/core/Result";
 import { ClassLayout } from "../../domain/entities/ClassLayout";
-import { LayoutBlock } from "../../domain/entities/LayoutBlock";
+import { LayoutBlock, Block } from "../../domain/entities/LayoutBlock";
 import {
   ILayoutCoordinator,
   LayoutRenderResult,
@@ -51,22 +51,14 @@ export class LayoutCoordinator implements ILayoutCoordinator {
       }
 
       // Render each visible block
-      const visibleBlocks = layout
-        .getVisibleBlocks()
-        .map((blockConfig) =>
-          LayoutBlock.create({
-            id: blockConfig.id,
-            type: blockConfig.type,
-            title: blockConfig.title,
-            order: blockConfig.order,
-            config: blockConfig.config as any, // Cast to handle union type
-            isVisible: blockConfig.isVisible,
-            isCollapsible: blockConfig.isCollapsible,
-            isCollapsed: blockConfig.isCollapsed,
-          }),
-        )
-        .filter((result) => result.isSuccess)
-        .map((result) => result.getValue());
+      const visibleBlocks = layout.getVisibleBlocks().map(
+        (blockConfig) =>
+          ({
+            ...blockConfig,
+            isCollapsible: blockConfig.isCollapsible ?? false,
+            isCollapsed: blockConfig.isCollapsed ?? false,
+          }) as Block,
+      );
 
       for (const block of visibleBlocks) {
         const blockResult = await this.renderBlock(block, context);
@@ -132,7 +124,7 @@ export class LayoutCoordinator implements ILayoutCoordinator {
   }
 
   private async renderBlock(
-    block: LayoutBlock,
+    block: Block,
     context: RenderContext,
   ): Promise<Result<BlockRenderResult>> {
     try {
@@ -192,26 +184,24 @@ export class LayoutCoordinator implements ILayoutCoordinator {
     }
   }
 
-  private createDefaultBlocks(): LayoutBlock[] {
-    const blocks: Array<{ result: Result<LayoutBlock> }> = [
+  private createDefaultBlocks(): Block[] {
+    const blocks: Block[] = [
       {
-        result: LayoutBlock.create({
-          id: "default-dynamic-backlinks",
+        id: "default-dynamic-backlinks",
+        type: "dynamic-backlinks",
+        title: "🔗 Property-based Backlinks",
+        order: 1,
+        config: {
           type: "dynamic-backlinks",
-          title: "🔗 Property-based Backlinks",
-          order: 1,
-          config: {
-            type: "dynamic-backlinks",
-            excludeProperties: ["exo__Asset_id", "exo__Instance_class"],
-            showEmptyProperties: false,
-          },
-          isVisible: true,
-        }),
+          excludeProperties: ["exo__Asset_id", "exo__Instance_class"],
+          showEmptyProperties: false,
+        },
+        isVisible: true,
+        isCollapsible: false,
+        isCollapsed: false,
       },
     ];
 
-    return blocks
-      .filter(({ result }) => result.isSuccess)
-      .map(({ result }) => result.getValue());
+    return blocks;
   }
 }

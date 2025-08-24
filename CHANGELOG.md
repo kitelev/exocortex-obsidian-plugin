@@ -1,3 +1,49 @@
+## [5.15.0] - 2025-08-24
+
+### 🎨 UI LayoutBlock - Advanced Property Display for Related Assets
+
+#### Professional Property Tables
+Configure **exactly which properties to display** for related assets with the new `ui__LayoutBlock` feature, enabling rich, informative views of linked content with customizable property columns.
+
+#### Key Capabilities
+- **Property Selection**: Choose specific properties to display for each asset class
+- **Multiple Format Types**: Status badges, dates, links, or raw values
+- **Table and List Views**: Professional table layout or compact list display
+- **Smart Sorting**: Sort by any property in ascending or descending order
+- **Filtering and Limits**: Filter by class and limit result counts
+
+#### Display Formatting
+- **Status Badges**: Colored badges for status properties (green/yellow/red/blue)
+- **Date Formatting**: ISO dates converted to locale-friendly format
+- **Clickable Links**: Properties with asset references become navigation links
+- **Column Configuration**: Set width and alignment for each column
+- **Empty Value Handling**: Clean display of missing properties with dash placeholder
+
+#### Example Use Case
+When viewing a **Project** asset, see all related **Efforts** in a table showing:
+- Status (as colored badge)
+- Priority (as badge)
+- Due Date (formatted)
+- Assignee (as clickable link)
+- Progress percentage
+
+#### Configuration Structure
+```yaml
+ui__LayoutBlock_blocks:
+  - type: "relation-properties"
+    displayProperties:
+      - propertyName: "status"
+        formatType: "status-badge"
+      - propertyName: "due_date"
+        formatType: "date"
+```
+
+#### Integration Benefits
+- **Works with ClassLayout**: Enhances existing layout configurations
+- **Class-Specific**: Different configurations per asset class
+- **Priority System**: Multiple configurations with priority ordering
+- **Live Updates**: Changes reflect immediately without reload
+
 ## [5.14.0] - 2025-08-24
 
 ### 🎯 Simplified Settings Interface - Essential Options Only

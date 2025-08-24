@@ -1568,6 +1568,22 @@
       ],
       "format": "esm"
     },
+    "src/presentation/renderers/RelationPropertiesBlockRenderer.ts": {
+      "bytes": 13647,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/entities/LayoutBlock",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
     "src/application/use-cases/GetLayoutForClassUseCase.ts": {
       "bytes": 3059,
       "imports": [
@@ -1595,7 +1611,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/LayoutRenderer.ts": {
-      "bytes": 8452,
+      "bytes": 8976,
       "imports": [
         {
           "path": "obsidian",
@@ -1616,6 +1632,11 @@
           "path": "src/presentation/renderers/DynamicBacklinksBlockRenderer.ts",
           "kind": "import-statement",
           "original": "./DynamicBacklinksBlockRenderer"
+        },
+        {
+          "path": "src/presentation/renderers/RelationPropertiesBlockRenderer.ts",
+          "kind": "import-statement",
+          "original": "./RelationPropertiesBlockRenderer"
         },
         {
           "path": "src/application/use-cases/GetLayoutForClassUseCase.ts",
@@ -1904,7 +1925,7 @@
       "format": "esm"
     },
     "src/presentation/settings/ExocortexSettingTab.ts": {
-      "bytes": 16142,
+      "bytes": 5991,
       "imports": [
         {
           "path": "obsidian",
@@ -1917,11 +1938,6 @@
           "external": true
         },
         {
-          "path": "../../domain/ports/IQueryEngine",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
           "path": "../../main",
           "kind": "import-statement",
           "external": true
@@ -1930,7 +1946,7 @@
       "format": "esm"
     },
     "src/infrastructure/lifecycle/SettingsLifecycleManager.ts": {
-      "bytes": 2003,
+      "bytes": 1995,
       "imports": [
         {
           "path": "obsidian",
@@ -2209,7 +2225,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
-      "bytes": 11979,
+      "bytes": 12718,
       "imports": [
         {
           "path": "obsidian",
@@ -2297,7 +2313,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/DynamicLayoutRenderer.ts": {
-      "bytes": 9485,
+      "bytes": 9637,
       "imports": [
         {
           "path": "obsidian",
@@ -2313,7 +2329,7 @@
       "format": "esm"
     },
     "src/ExocortexPlugin.ts": {
-      "bytes": 8129,
+      "bytes": 8224,
       "imports": [
         {
           "path": "obsidian",
@@ -2541,7 +2557,7 @@
           "bytesInOutput": 56
         },
         "src/ExocortexPlugin.ts": {
-          "bytesInOutput": 3386
+          "bytesInOutput": 3388
         },
         "src/infrastructure/lifecycle/LifecycleRegistry.ts": {
           "bytesInOutput": 406
@@ -2729,11 +2745,14 @@
         "src/presentation/renderers/DynamicBacklinksBlockRenderer.ts": {
           "bytesInOutput": 1992
         },
+        "src/presentation/renderers/RelationPropertiesBlockRenderer.ts": {
+          "bytesInOutput": 6198
+        },
         "src/application/use-cases/GetLayoutForClassUseCase.ts": {
           "bytesInOutput": 975
         },
         "src/presentation/renderers/LayoutRenderer.ts": {
-          "bytesInOutput": 3036
+          "bytesInOutput": 3158
         },
         "src/infrastructure/container/DIContainer.ts": {
           "bytesInOutput": 3703
@@ -2748,7 +2767,7 @@
           "bytesInOutput": 2084
         },
         "src/presentation/settings/ExocortexSettingTab.ts": {
-          "bytesInOutput": 9758
+          "bytesInOutput": 3612
         },
         "src/infrastructure/lifecycle/GraphLifecycleManager.ts": {
           "bytesInOutput": 2639
@@ -2775,7 +2794,7 @@
           "bytesInOutput": 1524
         },
         "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
-          "bytesInOutput": 4026
+          "bytesInOutput": 4200
         },
         "src/presentation/renderers/RefactoredUniversalLayoutRenderer.ts": {
           "bytesInOutput": 2836
@@ -2784,10 +2803,10 @@
           "bytesInOutput": 3861
         },
         "src/presentation/renderers/DynamicLayoutRenderer.ts": {
-          "bytesInOutput": 2993
+          "bytesInOutput": 2896
         }
       },
-      "bytes": 226397
+      "bytes": 226650
     }
   }
 }

@@ -1,0 +1,205 @@
+/* Relation Properties Block Styles */
+.exocortex-relation-properties-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.9em;
+}
+
+.exocortex-relation-properties-table th,
+.exocortex-relation-properties-table td {
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  text-align: left;
+}
+
+.exocortex-relation-properties-table th {
+  background-color: var(--background-secondary);
+  font-weight: 600;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.exocortex-table-header-asset {
+  min-width: 200px;
+}
+
+.exocortex-table-header-property {
+  white-space: nowrap;
+}
+
+.exocortex-property-row:hover {
+  background-color: var(--background-secondary-alt);
+}
+
+.exocortex-table-cell-asset {
+  font-weight: 500;
+}
+
+.exocortex-table-cell-property {
+  vertical-align: middle;
+}
+
+/* Status Badge Styles */
+.exocortex-status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 500;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.exocortex-status-in-progress,
+.exocortex-status-active,
+.exocortex-status-running {
+  background-color: var(--color-yellow);
+  color: var(--text-on-accent);
+}
+
+.exocortex-status-completed,
+.exocortex-status-done,
+.exocortex-status-success {
+  background-color: var(--color-green);
+  color: var(--text-on-accent);
+}
+
+.exocortex-status-blocked,
+.exocortex-status-failed,
+.exocortex-status-error {
+  background-color: var(--color-red);
+  color: var(--text-on-accent);
+}
+
+.exocortex-status-pending,
+.exocortex-status-waiting,
+.exocortex-status-todo {
+  background-color: var(--color-blue);
+  color: var(--text-on-accent);
+}
+
+.exocortex-status-cancelled,
+.exocortex-status-skipped {
+  background-color: var(--text-muted);
+  color: var(--text-on-accent);
+}
+
+/* Property Display Styles */
+.exocortex-property-empty {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.exocortex-class-info-subtitle {
+  font-size: 0.75em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.exocortex-class-info-inline {
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+.exocortex-property-date {
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+}
+
+.exocortex-property-link {
+  text-decoration: none;
+  color: var(--link-color);
+}
+
+.exocortex-property-link:hover {
+  text-decoration: underline;
+  color: var(--link-color-hover);
+}
+
+.exocortex-property-raw {
+  color: var(--text-normal);
+}
+
+.exocortex-property-custom {
+  color: var(--text-normal);
+}
+
+/* List Format Styles */
+.exocortex-relation-properties-list {
+  margin: 1em 0;
+}
+
+.exocortex-property-list-item {
+  padding: 0.5em 0;
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+}
+
+.exocortex-property-list-item:last-child {
+  border-bottom: none;
+}
+
+.exocortex-property-list-asset {
+  font-weight: 500;
+  margin-right: 0.5em;
+}
+
+.exocortex-property-list-properties {
+  margin-top: 0.25em;
+  margin-left: 1em;
+}
+
+.exocortex-property-list-property {
+  margin: 0.25em 0;
+  font-size: 0.9em;
+}
+
+.exocortex-property-label {
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-right: 0.5em;
+}
+
+.exocortex-property-value {
+  color: var(--text-normal);
+}
+
+/* Grouped Properties Styles */
+.exocortex-property-group {
+  margin: 1.5em 0;
+}
+
+.exocortex-property-group-header {
+  margin: 1em 0 0.5em 0;
+  padding-bottom: 0.25em;
+  border-bottom: 2px solid var(--background-modifier-border);
+  color: var(--text-normal);
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+/* Results Info */
+.exocortex-results-info {
+  margin-top: 0.5em;
+  font-size: 0.85em;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Error Styles */
+.exocortex-error {
+  color: var(--text-error);
+  padding: 0.5em;
+  border: 1px solid var(--text-error);
+  border-radius: 4px;
+  background-color: var(--background-modifier-error);
+}
+
+/* Empty State */
+.exocortex-empty {
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 1em;
+  text-align: center;
+}

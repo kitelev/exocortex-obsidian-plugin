@@ -1,7 +1,11 @@
 import { App, TFile } from "obsidian";
 import { ClassLayout } from "../../domain/entities/ClassLayout";
-import { BlockType } from "../../domain/entities/LayoutBlock";
+import {
+  BlockType,
+  RelationPropertiesBlockConfig,
+} from "../../domain/entities/LayoutBlock";
 import { DynamicBacklinksBlockRenderer } from "./DynamicBacklinksBlockRenderer";
+import { RelationPropertiesBlockRenderer } from "./RelationPropertiesBlockRenderer";
 import { GetLayoutForClassUseCase } from "../../application/use-cases/GetLayoutForClassUseCase";
 import { IClassLayoutRepository } from "../../domain/repositories/IClassLayoutRepository";
 import { PropertyRenderer } from "../components/PropertyRenderer";
@@ -9,6 +13,7 @@ import { QueryEngineService } from "../../application/services/QueryEngineServic
 
 export class LayoutRenderer {
   private dynamicBacklinksRenderer: DynamicBacklinksBlockRenderer;
+  private relationPropertiesRenderer: RelationPropertiesBlockRenderer;
   private getLayoutUseCase: GetLayoutForClassUseCase;
 
   constructor(
@@ -17,6 +22,7 @@ export class LayoutRenderer {
   ) {
     this.getLayoutUseCase = new GetLayoutForClassUseCase(layoutRepository);
     this.dynamicBacklinksRenderer = new DynamicBacklinksBlockRenderer(app);
+    this.relationPropertiesRenderer = new RelationPropertiesBlockRenderer(app);
   }
 
   async renderLayout(
@@ -143,19 +149,30 @@ export class LayoutRenderer {
       });
 
       try {
-        // Only dynamic-backlinks is supported
-        if (block.type === "dynamic-backlinks") {
-          await this.dynamicBacklinksRenderer.render(
-            contentContainer,
-            block.config as any,
-            file,
-            dv,
-          );
-        } else {
-          contentContainer.createEl("p", {
-            text: `Unsupported block type: ${block.type}. Only dynamic-backlinks is supported.`,
-            cls: "exocortex-error",
-          });
+        switch (block.type) {
+          case "dynamic-backlinks":
+            await this.dynamicBacklinksRenderer.render(
+              contentContainer,
+              block.config as any,
+              file,
+              dv,
+            );
+            break;
+
+          case "relation-properties":
+            await this.relationPropertiesRenderer.render(
+              contentContainer,
+              block.config as RelationPropertiesBlockConfig,
+              file,
+              dv,
+            );
+            break;
+
+          default:
+            contentContainer.createEl("p", {
+              text: `Unsupported block type: ${block.type}`,
+              cls: "exocortex-error",
+            });
         }
       } catch (error) {
         contentContainer.createEl("p", {

@@ -1,5 +1,5 @@
 import { Result } from "../../domain/core/Result";
-import { LayoutBlock, BlockConfig } from "../../domain/entities/LayoutBlock";
+import { Block, BlockConfig } from "../../domain/entities/LayoutBlock";
 import {
   IBlockRenderStrategy,
   BlockRenderResult,
@@ -36,7 +36,7 @@ export class BlockRenderingService {
   }
 
   async renderBlock(
-    block: LayoutBlock,
+    block: Block,
     context: RenderContext,
   ): Promise<Result<BlockRenderResult>> {
     const startTime = performance.now();
