@@ -1827,7 +1827,7 @@
       "format": "esm"
     },
     "src/infrastructure/providers/ServiceProvider.ts": {
-      "bytes": 4353,
+      "bytes": 4346,
       "imports": [
         {
           "path": "obsidian",
@@ -2209,7 +2209,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 12671,
+      "bytes": 18345,
       "imports": [
         {
           "path": "obsidian",
@@ -2743,13 +2743,13 @@
           "bytesInOutput": 1524
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 4963
+          "bytesInOutput": 6877
         },
         "src/presentation/renderers/AssetListRenderer.ts": {
           "bytesInOutput": 3861
         }
       },
-      "bytes": 221405
+      "bytes": 223319
     }
   }
 }
