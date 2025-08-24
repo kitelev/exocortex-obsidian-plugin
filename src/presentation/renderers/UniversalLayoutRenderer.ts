@@ -260,16 +260,16 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       }
     }
 
-    // Sort property names alphabetically
+    // Sort property names alphabetically for typed relations
     const sortedProperties = Array.from(groupedRelations.keys()).sort();
 
-    // Render each property group
+    // Render each typed property group first
     for (const propertyName of sortedProperties) {
       const group = groupedRelations.get(propertyName)!;
       await this.renderRelationGroup(container, propertyName, group, config);
     }
 
-    // Render untyped relations last
+    // Always render untyped relations last
     if (untypedRelations.length > 0) {
       await this.renderRelationGroup(
         container,

@@ -187,8 +187,23 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
       cls: "exocortex-asset-relations",
     });
 
-    for (const [propertyName, relations] of groupedRelations) {
-      this.renderRelationGroup(relationsContainer, propertyName, relations);
+    // Separate "Untyped Relations" from other groups
+    const untypedRelations = groupedRelations.get("Untyped Relations");
+    const typedGroups = new Map(groupedRelations);
+    typedGroups.delete("Untyped Relations");
+
+    // Render all typed relation groups first (sorted alphabetically)
+    const sortedTypedKeys = Array.from(typedGroups.keys()).sort();
+    for (const propertyName of sortedTypedKeys) {
+      const relations = typedGroups.get(propertyName);
+      if (relations) {
+        this.renderRelationGroup(relationsContainer, propertyName, relations);
+      }
+    }
+
+    // Render "Untyped Relations" last if it exists
+    if (untypedRelations) {
+      this.renderRelationGroup(relationsContainer, "Untyped Relations", untypedRelations);
     }
   }
 

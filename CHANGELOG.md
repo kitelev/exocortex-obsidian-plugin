@@ -1,3 +1,22 @@
+## [5.17.0] - 2025-08-24
+
+### 📊 Improved UniversalLayout Block Ordering
+
+#### Consistent Display Hierarchy
+The **"Untyped Relations" block now always appears last** in UniversalLayout displays, ensuring a clear and predictable hierarchy of information with typed relationships taking visual priority.
+
+#### Benefits for Users
+- **Better Organization**: Typed relationships (like "manages", "owns", "reports_to") appear first, making structured connections more prominent
+- **Consistent Experience**: Same ordering across all asset classes and views
+- **Cleaner Navigation**: Important semantic relationships are no longer buried under generic backlinks
+- **Predictable Layout**: Users always know where to find untyped references - at the bottom
+
+#### Visual Hierarchy
+1. **Typed Relations First**: All properties that explicitly reference the asset (sorted alphabetically)
+2. **Untyped Relations Last**: Generic backlinks and body references appear at the end
+
+This change improves information architecture by emphasizing intentional, semantic relationships over incidental mentions.
+
 ## [5.16.0] - 2025-08-24
 
 ### 🎯 Simplified UI LayoutBlock - Just List Properties to Display

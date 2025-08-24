@@ -1517,7 +1517,7 @@
       "format": "esm"
     },
     "src/domain/entities/SimplifiedLayoutBlock.ts": {
-      "bytes": 4206,
+      "bytes": 4248,
       "imports": [
         {
           "path": "src/domain/core/Entity.ts",
@@ -1601,7 +1601,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/SimplifiedRelationPropertiesRenderer.ts": {
-      "bytes": 6788,
+      "bytes": 6792,
       "imports": [
         {
           "path": "obsidian",
@@ -1643,7 +1643,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/LayoutRenderer.ts": {
-      "bytes": 12211,
+      "bytes": 12287,
       "imports": [
         {
           "path": "obsidian",
@@ -2267,7 +2267,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
-      "bytes": 12718,
+      "bytes": 13330,
       "imports": [
         {
           "path": "obsidian",
@@ -2842,7 +2842,7 @@
           "bytesInOutput": 1524
         },
         "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
-          "bytesInOutput": 4200
+          "bytesInOutput": 4376
         },
         "src/presentation/renderers/RefactoredUniversalLayoutRenderer.ts": {
           "bytesInOutput": 2836
@@ -2854,7 +2854,7 @@
           "bytesInOutput": 2896
         }
       },
-      "bytes": 232767
+      "bytes": 232943
     }
   }
 }
