@@ -30,7 +30,6 @@ import { CreateAssetUseCase } from "../../application/use-cases/CreateAssetUseCa
 import { RenderClassButtonsUseCase } from "../../application/use-cases/RenderClassButtonsUseCase";
 import { ExecuteButtonCommandUseCase } from "../../application/use-cases/ExecuteButtonCommandUseCase";
 import { PropertyEditingUseCase } from "../../application/use-cases/PropertyEditingUseCase";
-import { QueryTemplateUseCase } from "../../application/use-cases/QueryTemplateUseCase";
 
 // Services
 import { ICommandExecutor } from "../../application/services/ICommandExecutor";
@@ -39,10 +38,6 @@ import { ErrorHandlerService } from "../../application/services/ErrorHandlerServ
 import { OntologyProvisioningService } from "../../domain/services/OntologyProvisioningService";
 import { PropertyCacheService } from "../../domain/services/PropertyCacheService";
 import { CircuitBreakerService } from "../resilience/CircuitBreakerService";
-import { ISuggestionRepository } from "../../domain/repositories/ISuggestionRepository";
-import { GraphSuggestionRepository } from "../repositories/GraphSuggestionRepository";
-import { IQueryTemplateRepository } from "../../domain/repositories/IQueryTemplateRepository";
-import { ObsidianQueryTemplateRepository } from "../repositories/ObsidianQueryTemplateRepository";
 import { RDFService } from "../../application/services/RDFService";
 
 // Presentation
@@ -163,16 +158,6 @@ export class DIContainer {
         ),
     );
 
-    this.container.register<IQueryTemplateRepository>(
-      "IQueryTemplateRepository",
-      () =>
-        new ObsidianQueryTemplateRepository(
-          this.app,
-          this.plugin?.settings?.templatesPath || ".exocortex/templates",
-          this.plugin?.settings?.templateUsageDataPath ||
-            ".exocortex/template-usage.json",
-        ),
-    );
 
     // Register Services
     this.container.register<ICommandExecutor>(
@@ -200,15 +185,6 @@ export class DIContainer {
         ),
     );
 
-    // Register Autocomplete Services
-    this.container.register<ISuggestionRepository>(
-      "ISuggestionRepository",
-      () => {
-        // Need to get graph instance - will be provided by plugin
-        const graph = (this.plugin as any)?.graph || null;
-        return new GraphSuggestionRepository(graph);
-      },
-    );
 
     // Register RDF Service - Must be before any dependencies that use it
     this.container.register<RDFService>(
@@ -275,15 +251,6 @@ export class DIContainer {
         ),
     );
 
-    this.container.register<QueryTemplateUseCase>(
-      "QueryTemplateUseCase",
-      () =>
-        new QueryTemplateUseCase(
-          this.container.resolve<IQueryTemplateRepository>(
-            "IQueryTemplateRepository",
-          ),
-        ),
-    );
 
     // Register Presentation Components
     this.container.register<ButtonRenderer>(
@@ -365,13 +332,6 @@ export class DIContainer {
     return this.resolve<PropertyEditingUseCase>("PropertyEditingUseCase");
   }
 
-  public getQueryTemplateUseCase(): QueryTemplateUseCase {
-    return this.resolve<QueryTemplateUseCase>("QueryTemplateUseCase");
-  }
-
-  public getQueryTemplateRepository(): IQueryTemplateRepository {
-    return this.resolve<IQueryTemplateRepository>("IQueryTemplateRepository");
-  }
 
   public getRDFService(): RDFService {
     return this.resolve<RDFService>("RDFService");

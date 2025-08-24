@@ -4,7 +4,6 @@ import { CommandRegistry } from "./presentation/command-controllers/CommandRegis
 import { ServiceProvider } from "./infrastructure/providers/ServiceProvider";
 import { SettingsLifecycleManager } from "./infrastructure/lifecycle/SettingsLifecycleManager";
 import { GraphLifecycleManager } from "./infrastructure/lifecycle/GraphLifecycleManager";
-import { ProcessorLifecycleManager } from "./infrastructure/lifecycle/ProcessorLifecycleManager";
 import { AssetCommandController } from "./presentation/command-controllers/AssetCommandController";
 import { RDFCommandController } from "./presentation/command-controllers/RDFCommandController";
 import { QueryProcessor } from "./presentation/processors/QueryProcessor";
@@ -29,7 +28,6 @@ export default class ExocortexPlugin extends Plugin {
   // Managers
   private settingsManager: SettingsLifecycleManager;
   private graphManager: GraphLifecycleManager;
-  private processorManager: ProcessorLifecycleManager;
 
   async onload(): Promise<void> {
     try {
@@ -90,7 +88,6 @@ export default class ExocortexPlugin extends Plugin {
 
     // Update dependent services
     this.serviceProvider?.updateServices(this.settings);
-    this.processorManager?.updateCacheConfig(this.settings);
   }
 
   /**
@@ -98,7 +95,6 @@ export default class ExocortexPlugin extends Plugin {
    */
   updateContainer(): void {
     this.serviceProvider?.updateServices(this.settings);
-    this.processorManager?.updateCacheConfig(this.settings);
   }
 
   private async initializeLifecycleManagers(): Promise<void> {
@@ -112,13 +108,6 @@ export default class ExocortexPlugin extends Plugin {
     // Initialize settings first (others depend on it)
     await this.settingsManager.initialize();
 
-    // Create processor manager (depends on settings and graph)
-    this.processorManager = new ProcessorLifecycleManager(
-      this,
-      this.graphManager.getGraph(),
-      this.settingsManager.getSettings(),
-    );
-    this.lifecycleRegistry.registerManager(this.processorManager);
   }
 
   private async initializeServiceProvider(): Promise<void> {

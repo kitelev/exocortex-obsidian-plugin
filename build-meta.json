@@ -704,64 +704,6 @@
       ],
       "format": "esm"
     },
-    "src/domain/visual/QueryTemplate.ts": {
-      "bytes": 16991,
-      "imports": [
-        {
-          "path": "./VisualQueryNode",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "./VisualQueryEdge",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
-    "src/domain/visual/VisualQueryNode.ts": {
-      "bytes": 5431,
-      "imports": [],
-      "format": "esm"
-    },
-    "src/domain/visual/VisualQueryEdge.ts": {
-      "bytes": 4715,
-      "imports": [
-        {
-          "path": "./VisualQueryNode",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
-    "src/application/use-cases/QueryTemplateUseCase.ts": {
-      "bytes": 8951,
-      "imports": [
-        {
-          "path": "../../domain/repositories/IQueryTemplateRepository",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/visual/QueryTemplate.ts",
-          "kind": "import-statement",
-          "original": "../../domain/visual/QueryTemplate"
-        },
-        {
-          "path": "src/domain/visual/VisualQueryNode.ts",
-          "kind": "import-statement",
-          "original": "../../domain/visual/VisualQueryNode"
-        },
-        {
-          "path": "src/domain/visual/VisualQueryEdge.ts",
-          "kind": "import-statement",
-          "original": "../../domain/visual/VisualQueryEdge"
-        }
-      ],
-      "format": "esm"
-    },
     "src/infrastructure/services/ObsidianCommandExecutor.ts": {
       "bytes": 14909,
       "imports": [
@@ -884,115 +826,6 @@
     "src/infrastructure/resilience/CircuitBreakerService.ts": {
       "bytes": 1962,
       "imports": [],
-      "format": "esm"
-    },
-    "src/domain/autocomplete/QuerySuggestion.ts": {
-      "bytes": 2828,
-      "imports": [],
-      "format": "esm"
-    },
-    "src/domain/autocomplete/QueryContext.ts": {
-      "bytes": 2813,
-      "imports": [],
-      "format": "esm"
-    },
-    "src/infrastructure/autocomplete/KeywordSuggestionProvider.ts": {
-      "bytes": 9430,
-      "imports": [
-        {
-          "path": "src/domain/autocomplete/QuerySuggestion.ts",
-          "kind": "import-statement",
-          "original": "../../domain/autocomplete/QuerySuggestion"
-        },
-        {
-          "path": "src/domain/autocomplete/QueryContext.ts",
-          "kind": "import-statement",
-          "original": "../../domain/autocomplete/QueryContext"
-        }
-      ],
-      "format": "esm"
-    },
-    "src/infrastructure/repositories/GraphSuggestionRepository.ts": {
-      "bytes": 11977,
-      "imports": [
-        {
-          "path": "../../domain/repositories/ISuggestionRepository",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/autocomplete/QuerySuggestion.ts",
-          "kind": "import-statement",
-          "original": "../../domain/autocomplete/QuerySuggestion"
-        },
-        {
-          "path": "../../domain/autocomplete/QueryContext",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/core/Result.ts",
-          "kind": "import-statement",
-          "original": "../../domain/core/Result"
-        },
-        {
-          "path": "../../domain/semantic/core/Graph",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/infrastructure/autocomplete/KeywordSuggestionProvider.ts",
-          "kind": "import-statement",
-          "original": "../autocomplete/KeywordSuggestionProvider"
-        }
-      ],
-      "format": "esm"
-    },
-    "src/infrastructure/repositories/BuiltInQueryTemplates.ts": {
-      "bytes": 19644,
-      "imports": [
-        {
-          "path": "src/domain/visual/QueryTemplate.ts",
-          "kind": "import-statement",
-          "original": "../../domain/visual/QueryTemplate"
-        },
-        {
-          "path": "src/domain/visual/VisualQueryNode.ts",
-          "kind": "import-statement",
-          "original": "../../domain/visual/VisualQueryNode"
-        },
-        {
-          "path": "src/domain/visual/VisualQueryEdge.ts",
-          "kind": "import-statement",
-          "original": "../../domain/visual/VisualQueryEdge"
-        }
-      ],
-      "format": "esm"
-    },
-    "src/infrastructure/repositories/ObsidianQueryTemplateRepository.ts": {
-      "bytes": 13617,
-      "imports": [
-        {
-          "path": "obsidian",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../domain/repositories/IQueryTemplateRepository",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/visual/QueryTemplate.ts",
-          "kind": "import-statement",
-          "original": "../../domain/visual/QueryTemplate"
-        },
-        {
-          "path": "src/infrastructure/repositories/BuiltInQueryTemplates.ts",
-          "kind": "import-statement",
-          "original": "./BuiltInQueryTemplates"
-        }
-      ],
       "format": "esm"
     },
     "src/domain/semantic/core/Graph.ts": {
@@ -1411,7 +1244,7 @@
       "format": "esm"
     },
     "src/infrastructure/container/DIContainer.ts": {
-      "bytes": 12917,
+      "bytes": 11218,
       "imports": [
         {
           "path": "obsidian",
@@ -1534,11 +1367,6 @@
           "original": "../../application/use-cases/PropertyEditingUseCase"
         },
         {
-          "path": "src/application/use-cases/QueryTemplateUseCase.ts",
-          "kind": "import-statement",
-          "original": "../../application/use-cases/QueryTemplateUseCase"
-        },
-        {
           "path": "../../application/services/ICommandExecutor",
           "kind": "import-statement",
           "external": true
@@ -1567,26 +1395,6 @@
           "path": "src/infrastructure/resilience/CircuitBreakerService.ts",
           "kind": "import-statement",
           "original": "../resilience/CircuitBreakerService"
-        },
-        {
-          "path": "../../domain/repositories/ISuggestionRepository",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/infrastructure/repositories/GraphSuggestionRepository.ts",
-          "kind": "import-statement",
-          "original": "../repositories/GraphSuggestionRepository"
-        },
-        {
-          "path": "../../domain/repositories/IQueryTemplateRepository",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/infrastructure/repositories/ObsidianQueryTemplateRepository.ts",
-          "kind": "import-statement",
-          "original": "../repositories/ObsidianQueryTemplateRepository"
         },
         {
           "path": "src/application/services/RDFService.ts",
@@ -1761,104 +1569,6 @@
       ],
       "format": "esm"
     },
-    "src/presentation/modals/ExportRDFModal.ts": {
-      "bytes": 12938,
-      "imports": [
-        {
-          "path": "obsidian",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/semantic/core/Graph.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/Graph"
-        },
-        {
-          "path": "src/application/services/RDFSerializer.ts",
-          "kind": "import-statement",
-          "original": "../../application/services/RDFSerializer"
-        },
-        {
-          "path": "src/application/services/NamespaceManager.ts",
-          "kind": "import-statement",
-          "original": "../../application/services/NamespaceManager"
-        }
-      ],
-      "format": "esm"
-    },
-    "src/presentation/processors/GraphVisualizationProcessor.ts": {
-      "bytes": 14096,
-      "imports": [
-        {
-          "path": "obsidian",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../domain/semantic/core/Graph",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/semantic/core/Triple.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/Triple"
-        },
-        {
-          "path": "../../application/services/RDFService",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/presentation/modals/ExportRDFModal.ts",
-          "kind": "import-statement",
-          "original": "../modals/ExportRDFModal"
-        },
-        {
-          "path": "../../application/services/RDFSerializer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/infrastructure/container/DIContainer.ts",
-          "kind": "import-statement",
-          "original": "../../infrastructure/container/DIContainer"
-        }
-      ],
-      "format": "esm"
-    },
-    "src/infrastructure/lifecycle/ProcessorLifecycleManager.ts": {
-      "bytes": 2036,
-      "imports": [
-        {
-          "path": "obsidian",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../application/ports/ILifecycleManager",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../domain/semantic/core/Graph",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../domain/entities/ExocortexSettings",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/presentation/processors/GraphVisualizationProcessor.ts",
-          "kind": "import-statement",
-          "original": "../../presentation/processors/GraphVisualizationProcessor"
-        }
-      ],
-      "format": "esm"
-    },
     "src/presentation/modals/CreateAssetModal.ts": {
       "bytes": 17702,
       "imports": [
@@ -1927,6 +1637,32 @@
           "path": "src/presentation/modals/CreateAssetModal.ts",
           "kind": "import-statement",
           "original": "../modals/CreateAssetModal"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/modals/ExportRDFModal.ts": {
+      "bytes": 12938,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/semantic/core/Graph.ts",
+          "kind": "import-statement",
+          "original": "../../domain/semantic/core/Graph"
+        },
+        {
+          "path": "src/application/services/RDFSerializer.ts",
+          "kind": "import-statement",
+          "original": "../../application/services/RDFSerializer"
+        },
+        {
+          "path": "src/application/services/NamespaceManager.ts",
+          "kind": "import-statement",
+          "original": "../../application/services/NamespaceManager"
         }
       ],
       "format": "esm"
@@ -2014,7 +1750,7 @@
       "format": "esm"
     },
     "src/presentation/processors/QueryProcessor.ts": {
-      "bytes": 4335,
+      "bytes": 4346,
       "imports": [
         {
           "path": "../../domain/semantic/core/Graph",
@@ -2035,7 +1771,7 @@
       "format": "esm"
     },
     "src/ExocortexPlugin.ts": {
-      "bytes": 5425,
+      "bytes": 4862,
       "imports": [
         {
           "path": "obsidian",
@@ -2066,11 +1802,6 @@
           "path": "src/infrastructure/lifecycle/GraphLifecycleManager.ts",
           "kind": "import-statement",
           "original": "./infrastructure/lifecycle/GraphLifecycleManager"
-        },
-        {
-          "path": "src/infrastructure/lifecycle/ProcessorLifecycleManager.ts",
-          "kind": "import-statement",
-          "original": "./infrastructure/lifecycle/ProcessorLifecycleManager"
         },
         {
           "path": "src/presentation/command-controllers/AssetCommandController.ts",
@@ -2223,7 +1954,7 @@
           "bytesInOutput": 56
         },
         "src/ExocortexPlugin.ts": {
-          "bytesInOutput": 1993
+          "bytesInOutput": 1692
         },
         "src/infrastructure/lifecycle/LifecycleRegistry.ts": {
           "bytesInOutput": 406
@@ -2321,18 +2052,6 @@
         "src/application/use-cases/PropertyEditingUseCase.ts": {
           "bytesInOutput": 1979
         },
-        "src/domain/visual/QueryTemplate.ts": {
-          "bytesInOutput": 7541
-        },
-        "src/domain/visual/VisualQueryNode.ts": {
-          "bytesInOutput": 2584
-        },
-        "src/domain/visual/VisualQueryEdge.ts": {
-          "bytesInOutput": 2076
-        },
-        "src/application/use-cases/QueryTemplateUseCase.ts": {
-          "bytesInOutput": 3894
-        },
         "src/infrastructure/services/ObsidianCommandExecutor.ts": {
           "bytesInOutput": 6548
         },
@@ -2352,31 +2071,16 @@
           "bytesInOutput": 331
         },
         "src/domain/services/PropertyCacheService.ts": {
-          "bytesInOutput": 369
+          "bytesInOutput": 364
         },
         "src/infrastructure/resilience/CircuitBreakerService.ts": {
-          "bytesInOutput": 923
-        },
-        "src/domain/autocomplete/QuerySuggestion.ts": {
-          "bytesInOutput": 692
-        },
-        "src/infrastructure/autocomplete/KeywordSuggestionProvider.ts": {
-          "bytesInOutput": 5154
-        },
-        "src/infrastructure/repositories/GraphSuggestionRepository.ts": {
-          "bytesInOutput": 5468
-        },
-        "src/infrastructure/repositories/BuiltInQueryTemplates.ts": {
-          "bytesInOutput": 11198
-        },
-        "src/infrastructure/repositories/ObsidianQueryTemplateRepository.ts": {
-          "bytesInOutput": 6704
+          "bytesInOutput": 918
         },
         "src/domain/semantic/core/Graph.ts": {
           "bytesInOutput": 3761
         },
         "src/domain/semantic/core/Triple.ts": {
-          "bytesInOutput": 4960
+          "bytesInOutput": 4944
         },
         "src/application/services/NamespaceManager.ts": {
           "bytesInOutput": 2625
@@ -2418,7 +2122,7 @@
           "bytesInOutput": 3036
         },
         "src/infrastructure/container/DIContainer.ts": {
-          "bytesInOutput": 4291
+          "bytesInOutput": 3592
         },
         "src/infrastructure/providers/ServiceProvider.ts": {
           "bytesInOutput": 1315
@@ -2435,15 +2139,6 @@
         "src/infrastructure/lifecycle/GraphLifecycleManager.ts": {
           "bytesInOutput": 2639
         },
-        "src/presentation/modals/ExportRDFModal.ts": {
-          "bytesInOutput": 7784
-        },
-        "src/presentation/processors/GraphVisualizationProcessor.ts": {
-          "bytesInOutput": 6382
-        },
-        "src/infrastructure/lifecycle/ProcessorLifecycleManager.ts": {
-          "bytesInOutput": 517
-        },
         "src/presentation/modals/CreateAssetModal.ts": {
           "bytesInOutput": 7596
         },
@@ -2453,6 +2148,9 @@
         "src/presentation/command-controllers/RDFCommandController.ts": {
           "bytesInOutput": 767
         },
+        "src/presentation/modals/ExportRDFModal.ts": {
+          "bytesInOutput": 7784
+        },
         "src/presentation/modals/ImportRDFModal.ts": {
           "bytesInOutput": 16178
         },
@@ -2460,7 +2158,7 @@
           "bytesInOutput": 1505
         }
       },
-      "bytes": 255623
+      "bytes": 202387
     }
   }
 }
