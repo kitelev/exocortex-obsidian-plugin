@@ -1244,7 +1244,7 @@
       "format": "esm"
     },
     "src/infrastructure/container/DIContainer.ts": {
-      "bytes": 11218,
+      "bytes": 11214,
       "imports": [
         {
           "path": "obsidian",
@@ -1771,7 +1771,7 @@
       "format": "esm"
     },
     "src/ExocortexPlugin.ts": {
-      "bytes": 4862,
+      "bytes": 4861,
       "imports": [
         {
           "path": "obsidian",
