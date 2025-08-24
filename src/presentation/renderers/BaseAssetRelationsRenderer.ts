@@ -103,7 +103,7 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
       if (!value) continue;
 
       const valueStr = String(value);
-      
+
       // Check for regular links
       if (
         valueStr.includes(`[[${targetBasename}]]`) ||
@@ -112,7 +112,7 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
       ) {
         return key;
       }
-      
+
       // Check for piped links - [[Target|Alias]] format
       if (
         valueStr.includes(`[[${targetBasename}|`) ||
@@ -125,7 +125,7 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
       if (Array.isArray(value)) {
         for (const item of value) {
           const itemStr = String(item);
-          
+
           // Check for regular links
           if (
             itemStr.includes(`[[${targetBasename}]]`) ||
@@ -134,7 +134,7 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
           ) {
             return key;
           }
-          
+
           // Check for piped links - [[Target|Alias]] format
           if (
             itemStr.includes(`[[${targetBasename}|`) ||

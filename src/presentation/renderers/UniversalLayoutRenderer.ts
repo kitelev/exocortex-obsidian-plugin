@@ -197,7 +197,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       ) {
         return key;
       }
-      
+
       // Check for piped links - [[Target|Alias]] format
       if (
         valueStr.includes(`[[${targetBasename}|`) ||
@@ -218,7 +218,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
           ) {
             return key;
           }
-          
+
           // Check for piped links - [[Target|Alias]] format
           if (
             itemStr.includes(`[[${targetBasename}|`) ||
