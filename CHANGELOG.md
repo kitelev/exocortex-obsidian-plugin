@@ -1,3 +1,39 @@
+## [5.10.0] - 2025-08-24
+
+### 🔍 Enhanced ClassLayout Discovery - Smart Pattern Recognition for Complex Class Names
+
+#### Intelligent Layout Detection for All Class Naming Patterns
+Experience **flawless ClassLayout discovery** that correctly identifies layout configurations for any class name pattern, including complex names with double underscores like `exo__Class`, ensuring your custom layouts always work as expected.
+
+#### Comprehensive File Pattern Support
+- **ClassLayout - ClassName**: Primary pattern for layout files
+- **Layout - ClassName**: Alternative naming convention
+- **Custom Patterns**: Any file with " - ClassName" pattern
+- **Property-Based**: Direct ui__ClassLayout property support
+- **Filename Extraction**: Smart parsing of class names from filenames
+
+#### Fixed Discovery Issues
+- **Double Underscore Classes**: Now correctly handles exo__Class and similar patterns
+- **Multiple Discovery Methods**: Checks properties and filename patterns
+- **Clean Name Extraction**: Removes wiki links and formatting automatically
+- **Improved Error Messages**: Clearer guidance when ClassLayout not found
+
+#### Enhanced Developer Experience
+- **Debug Logging**: Console logs help track ClassLayout discovery process
+- **Better Documentation**: Error messages explain exact file naming requirements
+- **Flexible Configuration**: Multiple ways to specify which class a layout is for
+- **Backward Compatible**: All existing ClassLayout files continue to work
+
+#### BDD Test Coverage
+- **13 Comprehensive Scenarios**: Full coverage of discovery patterns
+- **Performance Testing**: Ensures fast discovery even in large vaults
+- **Edge Case Handling**: Special characters, case sensitivity, and more
+- **Cache Management**: Efficient reuse of discovered configurations
+
+This update ensures that DynamicLayout correctly discovers ClassLayout configurations for all class naming patterns, particularly fixing issues with classes containing double underscores like `exo__Class`, making your custom layouts work reliably across your entire knowledge base.
+
+---
+
 ## [5.9.0] - 2025-08-24
 
 ### 🔗 Standard Link Behavior - Native Navigation with Perfect Plugin Compatibility

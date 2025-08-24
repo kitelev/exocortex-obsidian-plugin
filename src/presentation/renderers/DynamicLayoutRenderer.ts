@@ -52,15 +52,17 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
       }
 
       // Find layout configuration
+      console.log(`DynamicLayout: Looking for ClassLayout for class: ${className}`);
       const layoutConfig = await this.findLayoutConfiguration(className);
       if (!layoutConfig) {
         this.renderError(
           container,
           `No ui__ClassLayout found for class: ${className}`,
-          `Please create a ui__ClassLayout asset for the ${className} class to configure which relations to display.`,
+          `Please create a ClassLayout file named "ClassLayout - ${className}.md" or "Layout - ${className}.md" with an exo__Instance_class of [[ui__ClassLayout]] to configure which relations to display.`,
         );
         return;
       }
+      console.log(`DynamicLayout: Found ClassLayout for ${className}:`, layoutConfig);
 
       // Check if relations are configured
       if (
@@ -122,10 +124,36 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
 
         const instanceClass = metadata.exo__Instance_class;
         if (!this.isLayoutClass(instanceClass)) continue;
+        
+        // Debug: Log ClassLayout files found
+        console.log(`DynamicLayout: Found ClassLayout file: ${file.path}`);
 
-        const layoutFor =
-          metadata.ui__ClassLayout_for ||
-          file.basename.replace("Layout - ", "");
+        // Try to determine which class this layout is for
+        // 1. Check ui__ClassLayout property (exact class name)
+        // 2. Check ui__ClassLayout_for property (explicit declaration)
+        // 3. Extract from filename patterns: "Layout - ClassName" or "ClassLayout - ClassName"
+        let layoutFor = metadata.ui__ClassLayout || metadata.ui__ClassLayout_for;
+        
+        if (!layoutFor) {
+          // Extract class name from filename
+          const basename = file.basename;
+          if (basename.startsWith("ClassLayout - ")) {
+            layoutFor = basename.replace("ClassLayout - ", "");
+          } else if (basename.startsWith("Layout - ")) {
+            layoutFor = basename.replace("Layout - ", "");
+          } else if (basename.includes(" - ")) {
+            // Handle other patterns like "UI ClassLayout - ClassName"
+            const parts = basename.split(" - ");
+            if (parts.length === 2) {
+              layoutFor = parts[1];
+            }
+          }
+        }
+
+        // Clean up the extracted class name (remove wiki links if present)
+        if (layoutFor) {
+          layoutFor = this.extractBasename(layoutFor);
+        }
 
         if (layoutFor === className) {
           const relationsToShow = this.parseRelationsToShow(
