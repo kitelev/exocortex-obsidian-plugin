@@ -38,7 +38,9 @@ jobs:
           timeout 5m npm ci --prefer-offline --no-audit --no-fund
           node esbuild.config.mjs production
           mkdir ${{ github.event.repository.name }}
-          cp main.js manifest.json styles.css ${{ github.event.repository.name }}
+          cp main.js manifest.json ${{ github.event.repository.name }}
+          # Copy styles.css only if it exists
+          [ -f styles.css ] && cp styles.css ${{ github.event.repository.name }}/ || true
           zip -r ${{ github.event.repository.name }}.zip ${{ github.event.repository.name }}
           ls -la
           echo "tag_name=$(git tag --sort version:refname | tail -n 1)" >> $GITHUB_OUTPUT
