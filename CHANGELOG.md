@@ -1,3 +1,35 @@
+## [5.11.0] - 2025-08-24
+
+### 🔄 Graceful DynamicLayout Fallback - Seamless UniversalLayout Integration
+
+#### Intelligent Layout Fallback System
+Experience **uninterrupted content display** with automatic fallback to UniversalLayout when no specific ClassLayout is defined, ensuring you always see your asset relations without errors or disruptions.
+
+#### Smart Fallback Behavior
+- **Informative Messages**: Clear notification showing which class lacks a specific layout
+- **Wikilink Format**: Class names displayed as clickable [[ClassName]] format
+- **Seamless Transition**: Automatic fallback without user intervention
+- **Full Functionality**: All UniversalLayout features available in fallback mode
+- **No Error Messages**: Graceful degradation instead of error states
+
+#### Enhanced User Experience
+- **Always Shows Content**: Never see empty screens when ClassLayout is missing
+- **Clear Communication**: Informative message explains what's happening
+- **Progressive Enhancement**: Start with UniversalLayout, customize when needed
+- **Consistent Behavior**: Same relation display logic across all layouts
+- **Developer Friendly**: Easy to understand which classes need custom layouts
+
+#### BDD-Driven Development
+- **5 Comprehensive Scenarios**: Full coverage of fallback behavior
+- **Message Format Testing**: Ensures proper wikilink formatting
+- **Functionality Preservation**: Verifies UniversalLayout features work correctly
+- **Multiple Asset Support**: Tests fallback with various class configurations
+- **Edge Case Handling**: Covers all possible layout discovery scenarios
+
+This update transforms DynamicLayout error handling into a smooth fallback experience, showing an informative message like "There is no specific Layout for class [[YourClass]] - UniversalLayout will be used" before displaying all asset relations using UniversalLayout's proven functionality.
+
+---
+
 ## [5.10.0] - 2025-08-24
 
 ### 🔍 Enhanced ClassLayout Discovery - Smart Pattern Recognition for Complex Class Names

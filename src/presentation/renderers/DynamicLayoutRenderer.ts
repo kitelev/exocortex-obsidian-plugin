@@ -55,11 +55,13 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
       console.log(`DynamicLayout: Looking for ClassLayout for class: ${className}`);
       const layoutConfig = await this.findLayoutConfiguration(className);
       if (!layoutConfig) {
-        this.renderError(
-          container,
-          `No ui__ClassLayout found for class: ${className}`,
-          `Please create a ClassLayout file named "ClassLayout - ${className}.md" or "Layout - ${className}.md" with an exo__Instance_class of [[ui__ClassLayout]] to configure which relations to display.`,
-        );
+        // Fallback to UniversalLayout with informational message
+        const message = `There is no specific Layout for class [[${className}]] - UniversalLayout will be used`;
+        this.renderMessage(container, message);
+        
+        // Render UniversalLayout content
+        console.log(`DynamicLayout: Falling back to UniversalLayout for class: ${className}`);
+        await this.renderAllRelations(file, container);
         return;
       }
       console.log(`DynamicLayout: Found ClassLayout for ${className}:`, layoutConfig);
