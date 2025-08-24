@@ -1,5 +1,7 @@
 # Exocortex Obsidian Plugin
 
+![BDD Coverage](https://img.shields.io/badge/BDD%20Coverage-65.5%25-red?style=flat-square&logo=cucumber)
+
 A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities.
 
 ## Overview

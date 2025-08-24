@@ -1,0 +1,441 @@
+name: BDD Coverage Validation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run daily at 6 AM UTC to catch coverage drift
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      threshold:
+        description: 'Coverage threshold percentage'
+        required: false
+        default: '80'
+        type: string
+      generate_reports:
+        description: 'Generate detailed reports'
+        required: false
+        default: true
+        type: boolean
+
+concurrency:
+  group: bdd-coverage-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_OPTIONS: --max-old-space-size=4096
+  COVERAGE_THRESHOLD: ${{ github.event.inputs.threshold || '80' }}
+  GENERATE_REPORTS: ${{ github.event.inputs.generate_reports || 'true' }}
+
+jobs:
+  # BDD Coverage Analysis
+  validate-coverage:
+    name: Validate BDD Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      coverage-percentage: ${{ steps.coverage-check.outputs.coverage }}
+      coverage-passed: ${{ steps.coverage-check.outputs.passed }}
+      missing-steps: ${{ steps.coverage-check.outputs.missing }}
+      total-steps: ${{ steps.coverage-check.outputs.total }}
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # Need history for comparison
+
+      - name: 📋 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: |
+          npm ci --prefer-offline --no-audit --silent
+          npm install -g glob
+
+      - name: 🔍 Validate BDD Step Coverage
+        id: coverage-check
+        run: |
+          echo "🎯 Running BDD coverage validation with ${COVERAGE_THRESHOLD}% threshold..."
+          
+          # Run coverage validation
+          node scripts/validate-bdd-coverage.js \
+            --threshold=${COVERAGE_THRESHOLD} \
+            --json > coverage-results.json || true
+          
+          # Extract results
+          if [ -f coverage-results.json ]; then
+            COVERAGE=$(cat coverage-results.json | jq -r '.coverage.percentage // 0')
+            PASSED=$(cat coverage-results.json | jq -r '.passed // false')
+            MISSING=$(cat coverage-results.json | jq -r '.coverage.missingSteps // 0')
+            TOTAL=$(cat coverage-results.json | jq -r '.coverage.totalSteps // 0')
+            
+            echo "coverage=${COVERAGE}" >> $GITHUB_OUTPUT
+            echo "passed=${PASSED}" >> $GITHUB_OUTPUT
+            echo "missing=${MISSING}" >> $GITHUB_OUTPUT
+            echo "total=${TOTAL}" >> $GITHUB_OUTPUT
+            
+            echo "📊 Coverage Results:"
+            echo "   Coverage: ${COVERAGE}%"
+            echo "   Threshold: ${COVERAGE_THRESHOLD}%"
+            echo "   Total Steps: ${TOTAL}"
+            echo "   Missing Steps: ${MISSING}"
+            echo "   Passed: ${PASSED}"
+          else
+            echo "❌ Coverage validation failed to generate results"
+            echo "coverage=0" >> $GITHUB_OUTPUT
+            echo "passed=false" >> $GITHUB_OUTPUT
+            echo "missing=999" >> $GITHUB_OUTPUT
+            echo "total=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 📤 Upload Coverage Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: bdd-coverage-results
+          path: coverage-results.json
+          retention-days: 30
+
+      - name: 🚨 Coverage Validation Status
+        run: |
+          if [ "${{ steps.coverage-check.outputs.passed }}" = "true" ]; then
+            echo "✅ BDD Coverage validation PASSED"
+            echo "   Coverage: ${{ steps.coverage-check.outputs.coverage }}% >= ${COVERAGE_THRESHOLD}%"
+          else
+            echo "❌ BDD Coverage validation FAILED"
+            echo "   Coverage: ${{ steps.coverage-check.outputs.coverage }}% < ${COVERAGE_THRESHOLD}%"
+            echo "   Missing implementations: ${{ steps.coverage-check.outputs.missing }}"
+            
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo ""
+              echo "🔧 To fix this:"
+              echo "1. Run: npm run test:bdd:coverage"
+              echo "2. Implement missing step definitions"
+              echo "3. Push your changes"
+            fi
+            
+            exit 1
+          fi
+
+  # Generate Coverage Reports
+  generate-reports:
+    name: Generate Coverage Reports
+    needs: validate-coverage
+    if: ${{ env.GENERATE_REPORTS == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 📋 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: |
+          npm ci --prefer-offline --no-audit --silent
+          npm install -g glob
+
+      - name: 📥 Download Coverage Results
+        uses: actions/download-artifact@v4
+        with:
+          name: bdd-coverage-results
+
+      - name: 📊 Generate Coverage Reports
+        run: |
+          echo "📝 Generating comprehensive BDD coverage reports..."
+          
+          # Create reports directory
+          mkdir -p reports/bdd-coverage
+          
+          # Generate reports in multiple formats
+          node scripts/generate-bdd-report.js \
+            --output=reports/bdd-coverage \
+            --format=html,json,xml
+          
+          # List generated files
+          echo "Generated reports:"
+          find reports/bdd-coverage -name "*.html" -o -name "*.json" -o -name "*.xml" | sort
+
+      - name: 📤 Upload Coverage Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: bdd-coverage-reports
+          path: reports/bdd-coverage/
+          retention-days: 30
+
+      - name: 📊 Upload Coverage to GitHub Pages
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./reports/bdd-coverage
+          destination_dir: bdd-coverage
+          keep_files: true
+
+  # Update Coverage Badge
+  update-badge:
+    name: Update Coverage Badge
+    needs: validate-coverage
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Generate Coverage Badge
+        run: |
+          COVERAGE="${{ needs.validate-coverage.outputs.coverage-percentage }}"
+          PASSED="${{ needs.validate-coverage.outputs.coverage-passed }}"
+          
+          # Determine badge color
+          if [ "$PASSED" = "true" ]; then
+            if (( $(echo "$COVERAGE >= 90" | bc -l) )); then
+              COLOR="brightgreen"
+            elif (( $(echo "$COVERAGE >= 80" | bc -l) )); then
+              COLOR="green"
+            else
+              COLOR="yellow"
+            fi
+          else
+            COLOR="red"
+          fi
+          
+          # Create badge URL
+          BADGE_URL="https://img.shields.io/badge/BDD%20Coverage-${COVERAGE}%25-${COLOR}?style=flat-square&logo=cucumber"
+          
+          echo "Badge URL: $BADGE_URL"
+          echo "BADGE_URL=$BADGE_URL" >> $GITHUB_ENV
+
+      - name: 📝 Update README Badge
+        run: |
+          # Check if README exists and has a BDD coverage badge
+          if [ -f README.md ]; then
+            # Update existing badge or add new one
+            if grep -q "BDD%20Coverage" README.md; then
+              # Update existing badge
+              sed -i.bak -E 's|!\[BDD Coverage\]\([^)]+\)|![BDD Coverage]('"$BADGE_URL"')|g' README.md
+              echo "✅ Updated existing BDD coverage badge"
+            else
+              # Add new badge after any existing badges
+              if grep -q "!\[.*\](" README.md; then
+                # Add after last badge line
+                awk '/!\[.*\]\(.*\)/ {badges = badges $0 "\n"} 
+                     /!\[.*\]\(.*\)/ && !printed {print badges "![BDD Coverage]('"$BADGE_URL"')"; printed=1} 
+                     !/!\[.*\]\(.*\)/ {if (!printed && badges) {print badges "![BDD Coverage]('"$BADGE_URL"')"; printed=1}; print}' README.md > README.md.tmp
+                mv README.md.tmp README.md
+              else
+                # Add at the top
+                echo "![BDD Coverage]($BADGE_URL)" | cat - README.md > README.md.tmp
+                mv README.md.tmp README.md
+              fi
+              echo "✅ Added new BDD coverage badge"
+            fi
+            
+            # Clean up backup file
+            rm -f README.md.bak
+          else
+            echo "⚠️  No README.md found to update"
+          fi
+
+      - name: 📤 Commit Badge Update
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          if git diff --quiet README.md; then
+            echo "ℹ️  No badge changes to commit"
+          else
+            git add README.md
+            git commit -m "docs: Update BDD coverage badge to ${{ needs.validate-coverage.outputs.coverage-percentage }}%"
+            git push
+            echo "✅ Badge updated and committed"
+          fi
+
+  # PR Status Check
+  pr-status:
+    name: PR Status Check
+    needs: validate-coverage
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: 📊 Post Coverage Summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const coverage = parseFloat('${{ needs.validate-coverage.outputs.coverage-percentage }}');
+            const threshold = parseInt('${{ env.COVERAGE_THRESHOLD }}');
+            const passed = '${{ needs.validate-coverage.outputs.coverage-passed }}' === 'true';
+            const missing = parseInt('${{ needs.validate-coverage.outputs.missing-steps }}');
+            const total = parseInt('${{ needs.validate-coverage.outputs.total-steps }}');
+            
+            const statusIcon = passed ? '✅' : '❌';
+            const trendIcon = coverage >= 90 ? '🚀' : coverage >= 80 ? '📈' : '⚠️';
+            
+            let body = `## ${statusIcon} BDD Coverage Report\n\n`;
+            body += `| Metric | Value |\n`;
+            body += `|--------|-------|\n`;
+            body += `| **Coverage** | ${trendIcon} ${coverage}% |\n`;
+            body += `| **Threshold** | ${threshold}% |\n`;
+            body += `| **Total Steps** | ${total} |\n`;
+            body += `| **Missing Steps** | ${missing} |\n`;
+            body += `| **Status** | ${passed ? 'PASSED' : 'FAILED'} |\n\n`;
+            
+            if (!passed) {
+              body += `### 🔧 Action Required\n\n`;
+              body += `Coverage is below the ${threshold}% threshold. You need to implement ${missing} missing step definitions.\n\n`;
+              body += `**Next steps:**\n`;
+              body += `1. Run \`npm run test:bdd:coverage\` locally\n`;
+              body += `2. Implement the missing step definitions\n`;
+              body += `3. Push your changes to re-trigger validation\n\n`;
+            } else {
+              body += `### 🎉 Great job!\n\n`;
+              body += `All BDD steps have proper implementations and coverage meets the threshold.\n\n`;
+            }
+            
+            body += `<details>\n<summary>📊 View detailed coverage report</summary>\n\n`;
+            body += `- 📄 **Feature files analyzed**: ${Math.ceil(total / 8)}\n`;
+            body += `- 🔧 **Step definitions checked**: ${total - missing}\n`;
+            body += `- 📈 **Coverage trend**: ${coverage >= 80 ? 'Healthy' : 'Needs improvement'}\n`;
+            body += `- 🎯 **Quality score**: ${coverage >= 90 ? 'Excellent' : coverage >= 80 ? 'Good' : 'Poor'}\n\n`;
+            body += `</details>\n`;
+            
+            // Post comment
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: ❌ Fail PR if Coverage Too Low
+        if: needs.validate-coverage.outputs.coverage-passed != 'true'
+        run: |
+          echo "❌ PR blocked due to insufficient BDD coverage"
+          echo "Coverage: ${{ needs.validate-coverage.outputs.coverage-percentage }}% < ${COVERAGE_THRESHOLD}%"
+          exit 1
+
+  # Coverage Monitoring & Alerts
+  coverage-monitoring:
+    name: Coverage Monitoring
+    needs: validate-coverage
+    if: always() && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: 📊 Check Coverage Trend
+        run: |
+          COVERAGE=${{ needs.validate-coverage.outputs.coverage-percentage }}
+          MISSING=${{ needs.validate-coverage.outputs.missing-steps }}
+          
+          echo "Current coverage: ${COVERAGE}%"
+          echo "Missing steps: ${MISSING}"
+          
+          # Alert if coverage drops significantly
+          if (( $(echo "$COVERAGE < 70" | bc -l) )); then
+            echo "🚨 ALERT: BDD coverage critically low (${COVERAGE}%)"
+          elif (( $(echo "$COVERAGE < 80" | bc -l) )); then
+            echo "⚠️  WARNING: BDD coverage below threshold (${COVERAGE}%)"
+          else
+            echo "✅ BDD coverage is healthy (${COVERAGE}%)"
+          fi
+
+      - name: 📧 Send Alert (if needed)
+        if: needs.validate-coverage.outputs.coverage-percentage < '70'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const coverage = '${{ needs.validate-coverage.outputs.coverage-percentage }}';
+            const missing = '${{ needs.validate-coverage.outputs.missing-steps }}';
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Critical BDD Coverage Alert: ${coverage}%`,
+              body: `**BDD test coverage has dropped to critically low levels**
+              
+              📊 **Current Status:**
+              - Coverage: ${coverage}%
+              - Missing implementations: ${missing}
+              - Threshold: ${process.env.COVERAGE_THRESHOLD}%
+              
+              🔧 **Immediate Actions Required:**
+              1. Review and implement missing step definitions
+              2. Ensure all feature scenarios have proper test coverage
+              3. Consider adding regression tests
+              
+              📈 **Impact:**
+              - Reduced confidence in feature reliability
+              - Higher risk of undetected regressions
+              - Potential issues in production
+              
+              🎯 **Target:** Restore coverage to ≥80% within 2 business days
+              `,
+              labels: ['bug', 'high-priority', 'testing', 'bdd-coverage']
+            });
+
+# Final Status Report
+  final-status:
+    name: Final BDD Coverage Status
+    needs: [validate-coverage, generate-reports]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    
+    steps:
+      - name: 📋 Generate Final Report
+        run: |
+          echo "# 🎯 BDD Coverage Validation Summary"
+          echo ""
+          echo "## Results"
+          echo "- **Coverage**: ${{ needs.validate-coverage.outputs.coverage-percentage }}%"
+          echo "- **Threshold**: ${COVERAGE_THRESHOLD}%"
+          echo "- **Status**: ${{ needs.validate-coverage.outputs.coverage-passed == 'true' && '✅ PASSED' || '❌ FAILED' }}"
+          echo "- **Missing Steps**: ${{ needs.validate-coverage.outputs.missing-steps }}"
+          echo "- **Total Steps**: ${{ needs.validate-coverage.outputs.total-steps }}"
+          echo ""
+          
+          if [ "${{ needs.validate-coverage.outputs.coverage-passed }}" = "true" ]; then
+            echo "## ✅ Success!"
+            echo "BDD test coverage meets quality standards."
+            echo "All feature scenarios have proper step implementations."
+          else
+            echo "## ❌ Action Required"
+            echo "BDD test coverage is below acceptable levels."
+            echo "Please implement missing step definitions before merging."
+          fi
+          
+          echo ""
+          echo "## 📊 Coverage Breakdown"
+          echo "| Component | Status |"
+          echo "|-----------|---------|"
+          echo "| Validation | ${{ needs.validate-coverage.result == 'success' && '✅ Success' || '❌ Failed' }} |"
+          echo "| Reports | ${{ needs.generate-reports.result == 'success' && '✅ Generated' || needs.generate-reports.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |"
+          echo "| Threshold | ${{ needs.validate-coverage.outputs.coverage-passed == 'true' && '✅ Met' || '❌ Not Met' }} |"
+          
+          # Set final exit code
+          if [ "${{ needs.validate-coverage.outputs.coverage-passed }}" != "true" ]; then
+            echo ""
+            echo "❌ BDD Coverage validation failed - see details above"
+            exit 1
+          fi
+          
+          echo ""
+          echo "✅ BDD Coverage validation completed successfully"
