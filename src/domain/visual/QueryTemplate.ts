@@ -100,8 +100,7 @@ export class QueryTemplate {
       ...p,
       id: p.id || `param_${p.name}_${Math.random().toString(36).substr(2, 9)}`,
     }));
-    this.queryTemplate =
-      params.queryTemplate || "SELECT * WHERE { ?s ?p ?o }";
+    this.queryTemplate = params.queryTemplate || "SELECT * WHERE { ?s ?p ?o }";
     this.isBuiltIn = params.isBuiltIn || false;
 
     // Make id property non-writable

@@ -57,7 +57,7 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
       // Fallback to basic property suggestions
       const suggestions: QuerySuggestion[] = [];
       const basicProperties = ["rdf:type", "rdfs:label", "rdfs:comment"];
-      
+
       for (const prop of basicProperties) {
         suggestions.push(
           QuerySuggestionImpl.create({
@@ -95,7 +95,7 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
       // Fallback to basic class suggestions
       const suggestions: QuerySuggestion[] = [];
       const basicClasses = ["owl:Thing", "rdfs:Resource", "owl:Class"];
-      
+
       for (const cls of basicClasses) {
         suggestions.push(
           QuerySuggestionImpl.create({
@@ -245,7 +245,8 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
         {
           name: "UNION",
           desc: "Union of graph patterns",
-          example: "{ ?item rdf:type ?type } UNION { ?item rdfs:subClassOf ?type }",
+          example:
+            "{ ?item rdf:type ?type } UNION { ?item rdfs:subClassOf ?type }",
         },
         {
           name: "BIND",
@@ -294,7 +295,8 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
         {
           name: "Basic SELECT",
           description: "Basic SELECT query template",
-          pattern: "SELECT ?subject ?predicate ?object WHERE { ?subject ?predicate ?object }",
+          pattern:
+            "SELECT ?subject ?predicate ?object WHERE { ?subject ?predicate ?object }",
         },
         {
           name: "Find by Type",
@@ -304,7 +306,8 @@ export class GraphSuggestionRepository implements ISuggestionRepository {
         {
           name: "Count Items",
           description: "Count items of a specific type",
-          pattern: "SELECT (COUNT(?item) AS ?count) WHERE { ?item rdf:type ?type }",
+          pattern:
+            "SELECT (COUNT(?item) AS ?count) WHERE { ?item rdf:type ?type }",
         },
       ];
 

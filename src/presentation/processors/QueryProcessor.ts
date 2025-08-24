@@ -81,7 +81,8 @@ export class QueryProcessor {
       return {
         results: [],
         success: false,
-        message: error instanceof Error ? error.message : "Query execution failed",
+        message:
+          error instanceof Error ? error.message : "Query execution failed",
         executionTime,
         resultCount: 0,
       };

@@ -468,12 +468,16 @@ export class GraphVisualizationProcessor {
           : (link.target as GraphNode).id;
 
       triples.push(
-        new Triple(new IRI(sourceNode), new IRI(link.label), new IRI(targetNode)),
+        new Triple(
+          new IRI(sourceNode),
+          new IRI(link.label),
+          new IRI(targetNode),
+        ),
       );
     });
 
     // Add triples to graph and use ExportRDFModal
-    triples.forEach(triple => this.graph.addTriple(triple));
+    triples.forEach((triple) => this.graph.addTriple(triple));
     new ExportRDFModal(this.plugin.app, this.graph).open();
   }
 }

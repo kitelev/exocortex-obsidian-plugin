@@ -7,7 +7,6 @@ import { GraphLifecycleManager } from "./infrastructure/lifecycle/GraphLifecycle
 import { ProcessorLifecycleManager } from "./infrastructure/lifecycle/ProcessorLifecycleManager";
 import { AssetCommandController } from "./presentation/command-controllers/AssetCommandController";
 import { RDFCommandController } from "./presentation/command-controllers/RDFCommandController";
-import { TaskCommandController } from "./presentation/command-controllers/TaskCommandController";
 import { QueryProcessor } from "./presentation/processors/QueryProcessor";
 import { ExocortexSettings } from "./domain/entities/ExocortexSettings";
 
@@ -102,7 +101,6 @@ export default class ExocortexPlugin extends Plugin {
     this.processorManager?.updateCacheConfig(this.settings);
   }
 
-
   private async initializeLifecycleManagers(): Promise<void> {
     // Create and register lifecycle managers
     this.settingsManager = new SettingsLifecycleManager(this);
@@ -141,14 +139,8 @@ export default class ExocortexPlugin extends Plugin {
       this.serviceProvider.getService("RDFService"),
       new QueryProcessor(this, this.graphManager.getGraph()),
     );
-    const taskController = new TaskCommandController(
-      this,
-      this.graphManager.getGraph(),
-    );
-
     this.commandRegistry.registerController(assetController);
     this.commandRegistry.registerController(rdfController);
-    this.commandRegistry.registerController(taskController);
   }
 
   private setupCacheInvalidation(): void {

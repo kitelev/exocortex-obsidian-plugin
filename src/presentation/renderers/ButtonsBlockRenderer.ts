@@ -2,8 +2,6 @@ import { App, TFile, ButtonComponent, Notice } from "obsidian";
 import { ButtonsBlockConfig } from "../../domain/entities/LayoutBlockStubs";
 import { CommandType } from "../../domain/entities/ButtonCommand";
 import { DIContainer } from "../../infrastructure/container/DIContainer";
-import { CreateChildTaskUseCase } from "../../application/use-cases/CreateChildTaskUseCase";
-import { CreateChildAreaUseCase } from "../../application/use-cases/CreateChildAreaUseCase";
 
 export class ButtonsBlockRenderer {
   constructor(private app: App) {}
@@ -72,87 +70,13 @@ export class ButtonsBlockRenderer {
     file: TFile,
     frontmatter: any,
   ): Promise<void> {
-    try {
-      const container = DIContainer.getInstance();
-      const createChildTaskUseCase = container.resolve<CreateChildTaskUseCase>(
-        "CreateChildTaskUseCase",
-      );
-
-      if (!createChildTaskUseCase) {
-        new Notice("Create Child Task functionality not available");
-        return;
-      }
-
-      const assetId = frontmatter["exo__Asset_uid"] || file.basename;
-
-      const result = await createChildTaskUseCase.execute({
-        projectAssetId: assetId,
-      });
-
-      if (result.success) {
-        new Notice(result.message);
-
-        // Open the new task file if created
-        if (result.taskFilePath) {
-          const taskFile = this.app.vault.getAbstractFileByPath(
-            result.taskFilePath,
-          );
-          if (taskFile instanceof TFile) {
-            await this.app.workspace.getLeaf(true).openFile(taskFile);
-          }
-        }
-      } else {
-        new Notice(`Failed to create task: ${result.message}`);
-      }
-    } catch (error) {
-      console.error("Error creating child task:", error);
-      new Notice(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
+    new Notice("Create Child Task functionality has been removed");
   }
 
   private async handleCreateChildArea(
     file: TFile,
     frontmatter: any,
   ): Promise<void> {
-    try {
-      const container = DIContainer.getInstance();
-      const createChildAreaUseCase = container.resolve<CreateChildAreaUseCase>(
-        "CreateChildAreaUseCase",
-      );
-
-      if (!createChildAreaUseCase) {
-        new Notice("Create Child Area functionality not available");
-        return;
-      }
-
-      const assetId = frontmatter["exo__Asset_uid"] || file.basename;
-
-      const result = await createChildAreaUseCase.execute({
-        parentAreaId: assetId,
-      });
-
-      if (result.success) {
-        new Notice(result.message);
-
-        // Open the new area file if created
-        if (result.areaFilePath) {
-          const areaFile = this.app.vault.getAbstractFileByPath(
-            result.areaFilePath,
-          );
-          if (areaFile instanceof TFile) {
-            await this.app.workspace.getLeaf(true).openFile(areaFile);
-          }
-        }
-      } else {
-        new Notice(`Failed to create child area: ${result.message}`);
-      }
-    } catch (error) {
-      console.error("Error creating child area:", error);
-      new Notice(
-        `Error: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
+    new Notice("Create Child Area functionality has been removed");
   }
 }

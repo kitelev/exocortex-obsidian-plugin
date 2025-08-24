@@ -27,8 +27,6 @@ import { ObsidianClassLayoutRepository } from "../repositories/ObsidianClassLayo
 
 // Use Cases
 import { CreateAssetUseCase } from "../../application/use-cases/CreateAssetUseCase";
-import { CreateChildTaskUseCase } from "../../application/use-cases/CreateChildTaskUseCase";
-import { CreateChildAreaUseCase } from "../../application/use-cases/CreateChildAreaUseCase";
 import { RenderClassButtonsUseCase } from "../../application/use-cases/RenderClassButtonsUseCase";
 import { ExecuteButtonCommandUseCase } from "../../application/use-cases/ExecuteButtonCommandUseCase";
 import { PropertyEditingUseCase } from "../../application/use-cases/PropertyEditingUseCase";
@@ -45,23 +43,12 @@ import { ISuggestionRepository } from "../../domain/repositories/ISuggestionRepo
 import { GraphSuggestionRepository } from "../repositories/GraphSuggestionRepository";
 import { IQueryTemplateRepository } from "../../domain/repositories/IQueryTemplateRepository";
 import { ObsidianQueryTemplateRepository } from "../repositories/ObsidianQueryTemplateRepository";
-import { QueryEngineFactory } from "../query-engines/QueryEngineFactory";
-import { QueryEngineService } from "../../application/services/QueryEngineService";
-import { QueryEngineConfig } from "../../domain/entities/QueryEngineConfig";
 import { RDFService } from "../../application/services/RDFService";
 
 // Presentation
 import { ButtonRenderer } from "../../presentation/components/ButtonRenderer";
 import { PropertyRenderer } from "../../presentation/components/PropertyRenderer";
 import { LayoutRenderer } from "../../presentation/renderers/LayoutRenderer";
-
-// Mobile Components
-import { MobileUIComponents } from "../../presentation/components/MobileUIComponents";
-import { TouchGraphController } from "../../presentation/mobile/TouchGraphController";
-import { MobileModalAdapter } from "../../presentation/mobile/MobileModalAdapter";
-import { MobilePerformanceOptimizer } from "../optimizers/MobilePerformanceOptimizer";
-import { OfflineDataManager } from "../offline/OfflineDataManager";
-import { PlatformDetector } from "../utils/PlatformDetector";
 
 /**
  * Dependency Injection Container Setup
@@ -194,9 +181,7 @@ export class DIContainer {
         new ObsidianCommandExecutor(
           this.app,
           this.container.resolve<IAssetRepository>("IAssetRepository"),
-          this.container.resolve<CreateChildTaskUseCase>(
-            "CreateChildTaskUseCase",
-          ),
+          null,
         ),
     );
 
@@ -223,35 +208,6 @@ export class DIContainer {
         const graph = (this.plugin as any)?.graph || null;
         return new GraphSuggestionRepository(graph);
       },
-    );
-
-
-    // Register Query Engine Services
-    this.container.register<QueryEngineFactory>("QueryEngineFactory", () => {
-      const factory = new QueryEngineFactory(this.app);
-
-      // Try to get Dataview and Datacore APIs if available
-      const plugins = (this.app as any).plugins;
-      const dataviewApi = plugins?.plugins?.dataview?.api;
-      const datacoreApi = plugins?.plugins?.datacore?.api;
-
-      factory.updateApis(dataviewApi, datacoreApi);
-      return factory;
-    });
-
-    this.container.register<QueryEngineConfig>("QueryEngineConfig", () => {
-      // Create default config, could be overridden by plugin settings
-      const configResult = QueryEngineConfig.createDefault();
-      return configResult.getValue()!;
-    });
-
-    this.container.register<QueryEngineService>(
-      "QueryEngineService",
-      () =>
-        new QueryEngineService(
-          this.container.resolve<QueryEngineFactory>("QueryEngineFactory"),
-          this.container.resolve<QueryEngineConfig>("QueryEngineConfig"),
-        ),
     );
 
     // Register RDF Service - Must be before any dependencies that use it
@@ -289,24 +245,6 @@ export class DIContainer {
           this.container.resolve<OntologyProvisioningService>(
             "OntologyProvisioningService",
           ),
-        ),
-    );
-
-    this.container.register<CreateChildTaskUseCase>(
-      "CreateChildTaskUseCase",
-      () =>
-        new CreateChildTaskUseCase(
-          this.container.resolve<IAssetRepository>("IAssetRepository"),
-          this.container.resolve<CreateAssetUseCase>("CreateAssetUseCase"),
-        ),
-    );
-
-    this.container.register<CreateChildAreaUseCase>(
-      "CreateChildAreaUseCase",
-      () =>
-        new CreateChildAreaUseCase(
-          this.container.resolve<IAssetRepository>("IAssetRepository"),
-          this.container.resolve<CreateAssetUseCase>("CreateAssetUseCase"),
         ),
     );
 
@@ -385,57 +323,6 @@ export class DIContainer {
     );
 
     // Register Mobile Components
-    this.container.register<MobilePerformanceOptimizer>(
-      "MobilePerformanceOptimizer",
-      () =>
-        MobilePerformanceOptimizer.getInstance({
-          maxMemoryMB: PlatformDetector.isMobile() ? 50 : 200,
-          maxCacheEntries: PlatformDetector.isMobile() ? 100 : 500,
-          batchSize: PlatformDetector.isMobile() ? 10 : 50,
-          debounceMs: PlatformDetector.isMobile() ? 500 : 200,
-          enableGCHints: PlatformDetector.isMobile(),
-          enableLazyLoading: true,
-          virtualScrollThreshold: 100,
-        }),
-    );
-
-    this.container.register<OfflineDataManager>(
-      "OfflineDataManager",
-      () =>
-        new OfflineDataManager({
-          strategy: "indexeddb",
-          maxStorageMB: PlatformDetector.isMobile() ? 50 : 200,
-          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-          autoSync: true,
-          syncIntervalMs: 30000,
-          enableConflictResolution: true,
-          enableCompression: PlatformDetector.isMobile(),
-        }),
-    );
-
-    this.container.register<MobileUIComponents>(
-      "MobileUIComponents",
-      () =>
-        new MobileUIComponents(
-          this.container.resolve<MobilePerformanceOptimizer>(
-            "MobilePerformanceOptimizer",
-          ),
-        ),
-    );
-
-    // TouchGraphController is typically created per graph instance,
-    // so we register a factory function
-    this.container.register<typeof TouchGraphController>(
-      "TouchGraphControllerClass",
-      () => TouchGraphController,
-    );
-
-    // MobileModalAdapter is typically created per modal,
-    // so we register a factory function
-    this.container.register<typeof MobileModalAdapter>(
-      "MobileModalAdapterClass",
-      () => MobileModalAdapter,
-    );
   }
 
   /**
@@ -486,41 +373,8 @@ export class DIContainer {
     return this.resolve<IQueryTemplateRepository>("IQueryTemplateRepository");
   }
 
-  public getQueryEngineService(): QueryEngineService {
-    return this.resolve<QueryEngineService>("QueryEngineService");
-  }
-
-  public getQueryEngineFactory(): QueryEngineFactory {
-    return this.resolve<QueryEngineFactory>("QueryEngineFactory");
-  }
-
   public getRDFService(): RDFService {
     return this.resolve<RDFService>("RDFService");
-  }
-
-  // Mobile Components Getters
-  public getMobilePerformanceOptimizer(): MobilePerformanceOptimizer {
-    return this.resolve<MobilePerformanceOptimizer>(
-      "MobilePerformanceOptimizer",
-    );
-  }
-
-  public getOfflineDataManager(): OfflineDataManager {
-    return this.resolve<OfflineDataManager>("OfflineDataManager");
-  }
-
-  public getMobileUIComponents(): MobileUIComponents {
-    return this.resolve<MobileUIComponents>("MobileUIComponents");
-  }
-
-  public getTouchGraphControllerClass(): typeof TouchGraphController {
-    return this.resolve<typeof TouchGraphController>(
-      "TouchGraphControllerClass",
-    );
-  }
-
-  public getMobileModalAdapterClass(): typeof MobileModalAdapter {
-    return this.resolve<typeof MobileModalAdapter>("MobileModalAdapterClass");
   }
 
   /**

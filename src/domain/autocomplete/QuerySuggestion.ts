@@ -73,10 +73,7 @@ export class QuerySuggestionImpl implements QuerySuggestion {
     );
   }
 
-  static createClass(
-    className: string,
-    description?: string,
-  ): QuerySuggestion {
+  static createClass(className: string, description?: string): QuerySuggestion {
     return new QuerySuggestionImpl(
       className,
       className,

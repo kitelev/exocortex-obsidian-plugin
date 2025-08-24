@@ -11,8 +11,6 @@ import { Asset } from "../../domain/entities/Asset";
 import { AssetId } from "../../domain/value-objects/AssetId";
 import { ClassName } from "../../domain/value-objects/ClassName";
 import { OntologyPrefix } from "../../domain/value-objects/OntologyPrefix";
-import { CreateChildTaskUseCase } from "../../application/use-cases/CreateChildTaskUseCase";
-import { CreateChildAreaUseCase } from "../../application/use-cases/CreateChildAreaUseCase";
 
 /**
  * Obsidian implementation of command executor
@@ -27,8 +25,8 @@ export class ObsidianCommandExecutor implements ICommandExecutor {
   constructor(
     private app: App,
     private assetRepository: IAssetRepository,
-    private createChildTaskUseCase?: CreateChildTaskUseCase,
-    private createChildAreaUseCase?: CreateChildAreaUseCase,
+    private createChildTaskUseCase?: any,
+    private createChildAreaUseCase?: any,
   ) {
     this.handlers = new Map();
     this.registerDefaultHandlers();
