@@ -131,14 +131,14 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         if (sourceFile instanceof TFile) {
           const fileCache = cache.getFileCache(sourceFile);
           const metadata = fileCache?.frontmatter || {};
-          
+
           // Determine how this asset references the current file
           const propertyName = this.findReferencingProperty(
             metadata,
             file.basename,
-            file.path
+            file.path,
           );
-          
+
           const relation: AssetRelation = {
             file: sourceFile,
             path: sourcePath,
@@ -182,32 +182,36 @@ export class UniversalLayoutRenderer implements IViewRenderer {
   private findReferencingProperty(
     metadata: Record<string, any>,
     targetBasename: string,
-    targetPath: string
+    targetPath: string,
   ): string | undefined {
     for (const [key, value] of Object.entries(metadata)) {
       if (!value) continue;
-      
+
       const valueStr = String(value);
       // Check for wiki-link format [[FileName]] or [[path/to/file]]
-      if (valueStr.includes(`[[${targetBasename}]]`) || 
-          valueStr.includes(`[[${targetPath}]]`) ||
-          valueStr.includes(`[[${targetPath.replace('.md', '')}]]`)) {
+      if (
+        valueStr.includes(`[[${targetBasename}]]`) ||
+        valueStr.includes(`[[${targetPath}]]`) ||
+        valueStr.includes(`[[${targetPath.replace(".md", "")}]]`)
+      ) {
         return key;
       }
-      
+
       // Check for array values (e.g., tags, related, etc.)
       if (Array.isArray(value)) {
         for (const item of value) {
           const itemStr = String(item);
-          if (itemStr.includes(`[[${targetBasename}]]`) || 
-              itemStr.includes(`[[${targetPath}]]`) ||
-              itemStr.includes(`[[${targetPath.replace('.md', '')}]]`)) {
+          if (
+            itemStr.includes(`[[${targetBasename}]]`) ||
+            itemStr.includes(`[[${targetPath}]]`) ||
+            itemStr.includes(`[[${targetPath.replace(".md", "")}]]`)
+          ) {
             return key;
           }
         }
       }
     }
-    
+
     return undefined;
   }
 
@@ -221,11 +225,11 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     config: UniversalLayoutConfig,
   ): Promise<void> {
     const container = el.createDiv({ cls: "exocortex-assets-relations" });
-    
+
     // Group relations by property name
     const groupedRelations = new Map<string, AssetRelation[]>();
     const untypedRelations: AssetRelation[] = [];
-    
+
     for (const relation of relations) {
       if (relation.isBodyLink) {
         untypedRelations.push(relation);
@@ -236,21 +240,26 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         groupedRelations.get(relation.propertyName)!.push(relation);
       }
     }
-    
+
     // Sort property names alphabetically
     const sortedProperties = Array.from(groupedRelations.keys()).sort();
-    
+
     // Render each property group
     for (const propertyName of sortedProperties) {
       const group = groupedRelations.get(propertyName)!;
       await this.renderRelationGroup(container, propertyName, group, config);
     }
-    
+
     // Render untyped relations last
     if (untypedRelations.length > 0) {
-      await this.renderRelationGroup(container, "Untyped Relations", untypedRelations, config);
+      await this.renderRelationGroup(
+        container,
+        "Untyped Relations",
+        untypedRelations,
+        config,
+      );
     }
-    
+
     // If no relations found, show message
     if (groupedRelations.size === 0 && untypedRelations.length === 0) {
       this.renderMessage(container, "No asset relations found");
@@ -267,32 +276,32 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     config: UniversalLayoutConfig,
   ): Promise<void> {
     const groupDiv = container.createDiv({ cls: "exocortex-relation-group" });
-    
+
     // Create H2 header for the group
-    groupDiv.createEl("h2", { 
+    groupDiv.createEl("h2", {
       text: groupName,
-      cls: "exocortex-relation-group-header"
+      cls: "exocortex-relation-group-header",
     });
-    
+
     // Render the relations list
     const listEl = groupDiv.createEl("ul", { cls: "exocortex-relation-list" });
-    
+
     for (const relation of relations) {
       const itemEl = listEl.createEl("li", { cls: "exocortex-relation-item" });
-      
+
       // Create link to the file
       const linkEl = itemEl.createEl("a", {
         text: relation.title,
         cls: "internal-link",
         href: relation.path,
       });
-      
+
       // Add click handler
       linkEl.addEventListener("click", (e) => {
         e.preventDefault();
         this.app.workspace.openLinkText(relation.path, "", false);
       });
-      
+
       // Show properties if configured
       if (config.showProperties && config.showProperties.length > 0) {
         const propsEl = itemEl.createDiv({ cls: "exocortex-properties" });
@@ -368,13 +377,13 @@ export class UniversalLayoutRenderer implements IViewRenderer {
 
     const headerRow = thead.createEl("tr");
     headerRow.createEl("th", { text: "Title" });
-    
+
     if (config.showProperties) {
       for (const prop of config.showProperties) {
         headerRow.createEl("th", { text: prop });
       }
     }
-    
+
     headerRow.createEl("th", { text: "Relation Type" });
     headerRow.createEl("th", { text: "Modified" });
 
@@ -399,11 +408,11 @@ export class UniversalLayoutRenderer implements IViewRenderer {
           row.createEl("td", { text: value?.toString() || "" });
         }
       }
-      
+
       // Show relation type
-      row.createEl("td", { 
+      row.createEl("td", {
         text: relation.propertyName || "body",
-        cls: "relation-type"
+        cls: "relation-type",
       });
 
       row.createEl("td", {
@@ -439,12 +448,12 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         e.preventDefault();
         this.app.workspace.openLinkText(relation.path, "", false);
       });
-      
+
       // Show relation type badge
       if (relation.propertyName) {
         card.createDiv({
           text: relation.propertyName,
-          cls: "exocortex-relation-badge"
+          cls: "exocortex-relation-badge",
         });
       }
 
@@ -482,7 +491,9 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     config: UniversalLayoutConfig,
   ): Promise<void> {
     const container = el.createDiv({ cls: "exocortex-backlinks-graph" });
-    container.createEl("h3", { text: `Assets Relations Graph (${relations.length})` });
+    container.createEl("h3", {
+      text: `Assets Relations Graph (${relations.length})`,
+    });
     container.createEl("p", {
       text: "Graph visualization coming soon. Showing grouped relations instead.",
     });
