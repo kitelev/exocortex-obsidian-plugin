@@ -1,4 +1,4 @@
-## [4.3.0] - 2025-08-24
+## [5.1.0] - 2025-08-24
 
 ### 🎯 Custom Code Block Processor - Dynamic Content in Live Preview
 

@@ -1,6 +1,6 @@
 {
   "name": "exocortex-obsidian-plugin",
-  "version": "4.3.0",
+  "version": "5.1.0",
   "description": "Exocortex: A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
   "main": "main.js",
   "engines": {
