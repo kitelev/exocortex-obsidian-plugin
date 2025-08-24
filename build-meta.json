@@ -1827,7 +1827,7 @@
       "format": "esm"
     },
     "src/infrastructure/providers/ServiceProvider.ts": {
-      "bytes": 4036,
+      "bytes": 4353,
       "imports": [
         {
           "path": "obsidian",
@@ -1871,6 +1871,11 @@
         },
         {
           "path": "../../domain/repositories/IClassLayoutRepository",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/repositories/IAssetRepository",
           "kind": "import-statement",
           "external": true
         },
@@ -2178,7 +2183,7 @@
       "format": "esm"
     },
     "src/presentation/processors/CodeBlockProcessor.ts": {
-      "bytes": 4889,
+      "bytes": 4844,
       "imports": [
         {
           "path": "obsidian",
@@ -2204,7 +2209,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 12625,
+      "bytes": 12671,
       "imports": [
         {
           "path": "obsidian",
@@ -2245,7 +2250,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/AssetListRenderer.ts": {
-      "bytes": 9879,
+      "bytes": 9726,
       "imports": [
         {
           "path": "obsidian",
@@ -2281,7 +2286,7 @@
       "format": "esm"
     },
     "src/ExocortexPlugin.ts": {
-      "bytes": 7791,
+      "bytes": 7794,
       "imports": [
         {
           "path": "obsidian",
@@ -2702,7 +2707,7 @@
           "bytesInOutput": 3703
         },
         "src/infrastructure/providers/ServiceProvider.ts": {
-          "bytesInOutput": 1315
+          "bytesInOutput": 1404
         },
         "src/infrastructure/lifecycle/SettingsLifecycleManager.ts": {
           "bytesInOutput": 581
@@ -2744,7 +2749,7 @@
           "bytesInOutput": 3861
         }
       },
-      "bytes": 221316
+      "bytes": 221405
     }
   }
 }

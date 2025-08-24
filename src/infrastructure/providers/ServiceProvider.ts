@@ -7,6 +7,7 @@ import { RDFService } from "../../application/services/RDFService";
 import { LayoutRenderer } from "../../presentation/renderers/LayoutRenderer";
 import { PropertyRenderer } from "../../presentation/components/PropertyRenderer";
 import { IClassLayoutRepository } from "../../domain/repositories/IClassLayoutRepository";
+import { IAssetRepository } from "../../domain/repositories/IAssetRepository";
 import { PropertyEditingUseCase } from "../../application/use-cases/PropertyEditingUseCase";
 
 /**
@@ -31,6 +32,12 @@ export class ServiceProvider implements IServiceProvider {
     // Initialize RDF service from container
     const rdfService = this.container.resolve<RDFService>("RDFService");
     this.services.set("RDFService", rdfService);
+
+    // Initialize Asset Repository - Required for UniversalLayoutRenderer
+    const assetRepository = this.container.resolve<IAssetRepository>(
+      "IAssetRepository",
+    );
+    this.services.set("IAssetRepository", assetRepository);
 
     // Initialize Layout Renderer with proper dependencies
     const layoutRepository = this.container.resolve<IClassLayoutRepository>(
