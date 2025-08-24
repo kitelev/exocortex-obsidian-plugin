@@ -4,8 +4,10 @@ import {
   BlockType,
   RelationPropertiesBlockConfig,
 } from "../../domain/entities/LayoutBlock";
+import { SimplifiedLayoutBlock } from "../../domain/entities/SimplifiedLayoutBlock";
 import { DynamicBacklinksBlockRenderer } from "./DynamicBacklinksBlockRenderer";
 import { RelationPropertiesBlockRenderer } from "./RelationPropertiesBlockRenderer";
+import { SimplifiedRelationPropertiesRenderer } from "./SimplifiedRelationPropertiesRenderer";
 import { GetLayoutForClassUseCase } from "../../application/use-cases/GetLayoutForClassUseCase";
 import { IClassLayoutRepository } from "../../domain/repositories/IClassLayoutRepository";
 import { PropertyRenderer } from "../components/PropertyRenderer";
@@ -14,6 +16,7 @@ import { QueryEngineService } from "../../application/services/QueryEngineServic
 export class LayoutRenderer {
   private dynamicBacklinksRenderer: DynamicBacklinksBlockRenderer;
   private relationPropertiesRenderer: RelationPropertiesBlockRenderer;
+  private simplifiedPropertiesRenderer: SimplifiedRelationPropertiesRenderer;
   private getLayoutUseCase: GetLayoutForClassUseCase;
 
   constructor(
@@ -23,6 +26,8 @@ export class LayoutRenderer {
     this.getLayoutUseCase = new GetLayoutForClassUseCase(layoutRepository);
     this.dynamicBacklinksRenderer = new DynamicBacklinksBlockRenderer(app);
     this.relationPropertiesRenderer = new RelationPropertiesBlockRenderer(app);
+    this.simplifiedPropertiesRenderer =
+      new SimplifiedRelationPropertiesRenderer(app);
   }
 
   async renderLayout(
@@ -109,6 +114,23 @@ export class LayoutRenderer {
   ): Promise<void> {
     const frontmatter = metadata.frontmatter;
 
+    // Check for simplified LayoutBlock configuration first
+    if (frontmatter["ui__LayoutBlock_display_properties"]) {
+      await this.renderSimplifiedLayout(container, file, frontmatter);
+      return;
+    }
+
+    // Check for simplified ui__LayoutBlock configuration first
+    const simplifiedConfig = frontmatter["ui__LayoutBlock_display_properties"];
+    if (
+      simplifiedConfig &&
+      Array.isArray(simplifiedConfig) &&
+      simplifiedConfig.length > 0
+    ) {
+      await this.renderSimplifiedLayout(container, file, frontmatter);
+      return;
+    }
+
     // Add layout info
     const layoutInfo = container.createDiv({ cls: "exocortex-layout-info" });
     layoutInfo.style.display = "none"; // Hidden by default
@@ -184,12 +206,92 @@ export class LayoutRenderer {
     }
   }
 
+  private async renderSimplifiedLayout(
+    container: HTMLElement,
+    file: TFile,
+    frontmatter: any,
+  ): Promise<void> {
+    try {
+      const displayProperties =
+        frontmatter["ui__LayoutBlock_display_properties"];
+      const targetClass =
+        frontmatter["ui__LayoutBlock_target_class"] ||
+        frontmatter["exo__Instance_class"];
+
+      const layoutBlockResult = SimplifiedLayoutBlock.create({
+        targetClass: this.cleanClassName(targetClass),
+        displayProperties: displayProperties,
+        enabled: frontmatter["ui__LayoutBlock_enabled"] !== false,
+        priority: frontmatter["ui__LayoutBlock_priority"] || 100,
+      });
+
+      if (layoutBlockResult.isFailure) {
+        container.createEl("p", {
+          text: `Invalid simplified layout configuration: ${layoutBlockResult.getError()}`,
+          cls: "exocortex-error",
+        });
+        return;
+      }
+
+      const layoutBlock = layoutBlockResult.getValue();
+
+      // Create block container
+      const blockContainer = container.createDiv({
+        cls: "exocortex-block exocortex-simplified-layout",
+      });
+
+      // Add header
+      blockContainer.createEl("h3", {
+        text: "Related Assets",
+        cls: "exocortex-block-header",
+      });
+
+      // Render content
+      const contentContainer = blockContainer.createDiv({
+        cls: "exocortex-block-content",
+      });
+
+      await this.simplifiedPropertiesRenderer.render(
+        contentContainer,
+        layoutBlock,
+        file,
+      );
+    } catch (error) {
+      console.error("Error rendering simplified layout:", error);
+      container.createEl("p", {
+        text: "Error rendering simplified layout",
+        cls: "exocortex-error",
+      });
+    }
+  }
+
   private async renderDefaultLayout(
     container: HTMLElement,
     file: TFile,
     metadata: any,
     dv: any,
   ): Promise<void> {
+    // Check for simplified configuration in default layout too
+    if (
+      metadata.frontmatter &&
+      metadata.frontmatter["ui__LayoutBlock_display_properties"]
+    ) {
+      await this.renderSimplifiedLayout(container, file, metadata.frontmatter);
+      return;
+    }
+    const frontmatter = metadata.frontmatter;
+
+    // Check for simplified configuration in default layout too
+    const simplifiedConfig = frontmatter["ui__LayoutBlock_display_properties"];
+    if (
+      simplifiedConfig &&
+      Array.isArray(simplifiedConfig) &&
+      simplifiedConfig.length > 0
+    ) {
+      await this.renderSimplifiedLayout(container, file, frontmatter);
+      return;
+    }
+
     // Default layout now only shows dynamic property-based backlinks
     const dynamicBacklinksContainer = container.createDiv({
       cls: "exocortex-block exocortex-block-dynamic-backlinks",

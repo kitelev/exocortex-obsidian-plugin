@@ -1516,6 +1516,22 @@
       ],
       "format": "esm"
     },
+    "src/domain/entities/SimplifiedLayoutBlock.ts": {
+      "bytes": 4206,
+      "imports": [
+        {
+          "path": "src/domain/core/Entity.ts",
+          "kind": "import-statement",
+          "original": "../core/Entity"
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
     "src/application/services/DynamicBacklinksService.ts": {
       "bytes": 5074,
       "imports": [
@@ -1569,7 +1585,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/RelationPropertiesBlockRenderer.ts": {
-      "bytes": 13647,
+      "bytes": 13783,
       "imports": [
         {
           "path": "obsidian",
@@ -1578,6 +1594,22 @@
         },
         {
           "path": "../../domain/entities/LayoutBlock",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/renderers/SimplifiedRelationPropertiesRenderer.ts": {
+      "bytes": 6788,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/entities/SimplifiedLayoutBlock",
           "kind": "import-statement",
           "external": true
         }
@@ -1611,7 +1643,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/LayoutRenderer.ts": {
-      "bytes": 8976,
+      "bytes": 12211,
       "imports": [
         {
           "path": "obsidian",
@@ -1629,6 +1661,11 @@
           "external": true
         },
         {
+          "path": "src/domain/entities/SimplifiedLayoutBlock.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/SimplifiedLayoutBlock"
+        },
+        {
           "path": "src/presentation/renderers/DynamicBacklinksBlockRenderer.ts",
           "kind": "import-statement",
           "original": "./DynamicBacklinksBlockRenderer"
@@ -1637,6 +1674,11 @@
           "path": "src/presentation/renderers/RelationPropertiesBlockRenderer.ts",
           "kind": "import-statement",
           "original": "./RelationPropertiesBlockRenderer"
+        },
+        {
+          "path": "src/presentation/renderers/SimplifiedRelationPropertiesRenderer.ts",
+          "kind": "import-statement",
+          "original": "./SimplifiedRelationPropertiesRenderer"
         },
         {
           "path": "src/application/use-cases/GetLayoutForClassUseCase.ts",
@@ -2739,6 +2781,9 @@
         "src/presentation/components/PropertyRenderer.ts": {
           "bytesInOutput": 5617
         },
+        "src/domain/entities/SimplifiedLayoutBlock.ts": {
+          "bytesInOutput": 1906
+        },
         "src/application/services/DynamicBacklinksService.ts": {
           "bytesInOutput": 1642
         },
@@ -2748,11 +2793,14 @@
         "src/presentation/renderers/RelationPropertiesBlockRenderer.ts": {
           "bytesInOutput": 6198
         },
+        "src/presentation/renderers/SimplifiedRelationPropertiesRenderer.ts": {
+          "bytesInOutput": 2908
+        },
         "src/application/use-cases/GetLayoutForClassUseCase.ts": {
           "bytesInOutput": 975
         },
         "src/presentation/renderers/LayoutRenderer.ts": {
-          "bytesInOutput": 3158
+          "bytesInOutput": 4461
         },
         "src/infrastructure/container/DIContainer.ts": {
           "bytesInOutput": 3703
@@ -2806,7 +2854,7 @@
           "bytesInOutput": 2896
         }
       },
-      "bytes": 226650
+      "bytes": 232767
     }
   }
 }

@@ -1,3 +1,34 @@
+## [5.16.0] - 2025-08-24
+
+### 🎯 Simplified UI LayoutBlock - Just List Properties to Display
+
+#### Ultra-Simple Configuration
+Configure related asset displays with **just a list of property references** - no complex configuration needed. Simply list which properties you want to see using standard Obsidian wikilink format.
+
+#### How It Works
+```yaml
+ui__LayoutBlock_display_properties:
+  - "[[ems__Effort_status]]"
+  - "[[ems__Effort_priority]]"
+  - "[[ems__Effort_due_date]]"
+```
+That's it! The system automatically handles everything else.
+
+#### Automatic Smart Formatting
+- **Status properties** → Colored badges (green/yellow/red/blue)
+- **Date properties** → Locale-formatted dates
+- **User/Owner properties** → Clickable internal links
+- **Other properties** → Clean text display
+
+#### Zero Configuration Benefits
+- **No format specifications** - Automatically detected from property names
+- **No column widths** - Auto-sized for content
+- **No complex settings** - Just list what you want to see
+- **Order preserved** - Properties appear in the order you list them
+
+#### Example Result
+When viewing a Project, related Efforts appear in a clean table with your chosen properties as columns, automatically formatted based on their type.
+
 ## [5.15.0] - 2025-08-24
 
 ### 🎨 UI LayoutBlock - Advanced Property Display for Related Assets
