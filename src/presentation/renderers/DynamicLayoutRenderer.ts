@@ -52,19 +52,26 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
       }
 
       // Find layout configuration
-      console.log(`DynamicLayout: Looking for ClassLayout for class: ${className}`);
+      console.log(
+        `DynamicLayout: Looking for ClassLayout for class: ${className}`,
+      );
       const layoutConfig = await this.findLayoutConfiguration(className);
       if (!layoutConfig) {
         // Fallback to UniversalLayout with informational message
         const message = `There is no specific Layout for class [[${className}]] - UniversalLayout will be used`;
         this.renderMessage(container, message);
-        
+
         // Render UniversalLayout content
-        console.log(`DynamicLayout: Falling back to UniversalLayout for class: ${className}`);
+        console.log(
+          `DynamicLayout: Falling back to UniversalLayout for class: ${className}`,
+        );
         await this.renderAllRelations(file, container);
         return;
       }
-      console.log(`DynamicLayout: Found ClassLayout for ${className}:`, layoutConfig);
+      console.log(
+        `DynamicLayout: Found ClassLayout for ${className}:`,
+        layoutConfig,
+      );
 
       // Check if relations are configured
       if (
@@ -126,7 +133,7 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
 
         const instanceClass = metadata.exo__Instance_class;
         if (!this.isLayoutClass(instanceClass)) continue;
-        
+
         // Debug: Log ClassLayout files found
         console.log(`DynamicLayout: Found ClassLayout file: ${file.path}`);
 
@@ -134,8 +141,9 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
         // 1. Check ui__ClassLayout property (exact class name)
         // 2. Check ui__ClassLayout_for property (explicit declaration)
         // 3. Extract from filename patterns: "Layout - ClassName" or "ClassLayout - ClassName"
-        let layoutFor = metadata.ui__ClassLayout || metadata.ui__ClassLayout_for;
-        
+        let layoutFor =
+          metadata.ui__ClassLayout || metadata.ui__ClassLayout_for;
+
         if (!layoutFor) {
           // Extract class name from filename
           const basename = file.basename;
