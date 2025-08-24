@@ -141,10 +141,76 @@ jobs:
       - name: Check Types
         run: npm run check:types || npx tsc --noEmit
 
+  # BDD Testing and Validation
+  bdd-validation:
+    name: BDD Tests & Validation
+    needs: build-matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+
+      - name: Restore Dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            node_modules
+            .jest-cache
+          key: deps-ubuntu-latest-node20.x-${{ hashFiles('package-lock.json') }}-${{ env.CACHE_VERSION }}
+
+      - name: Install Dependencies
+        run: |
+          if [ ! -d "node_modules" ] || [ ! -f "node_modules/.package-lock.json" ]; then
+            npm ci --prefer-offline --no-audit --silent
+          else
+            echo "✅ Dependencies cached and available"
+          fi
+
+      - name: Run BDD Tests
+        run: |
+          echo "🥒 Running BDD Tests..."
+          npm run test:bdd
+        env:
+          NODE_ENV: test
+
+      - name: Validate BDD Coverage
+        run: |
+          echo "📊 Validating BDD Coverage..."
+          npm run bdd:validate-coverage:strict
+        env:
+          NODE_ENV: test
+
+      - name: Generate BDD Report
+        if: always()
+        run: |
+          echo "📋 Generating BDD Report..."
+          npm run bdd:generate-report
+          mkdir -p test-results/bdd
+          if [ -f "bdd-report.json" ]; then
+            mv bdd-report.json test-results/bdd/
+          fi
+          if [ -f "cucumber-report.html" ]; then
+            mv cucumber-report.html test-results/bdd/
+          fi
+
+      - name: Upload BDD Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bdd-test-results
+          path: test-results/bdd/
+          retention-days: 30
+
   # Final status report
   ci-status:
     name: CI Status Report
-    needs: [build-matrix, quality-checks]
+    needs: [build-matrix, quality-checks, bdd-validation]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2
@@ -159,16 +225,32 @@ jobs:
           echo "## Quality Checks"
           echo "Status: ${{ needs.quality-checks.result }}"
           echo ""
+          echo "## BDD Validation"
+          echo "Status: ${{ needs.bdd-validation.result }}"
+          echo ""
 
           if [[ "${{ needs.build-matrix.result }}" != "success" || 
-                "${{ needs.quality-checks.result }}" != "success" ]]; then
+                "${{ needs.quality-checks.result }}" != "success" ||
+                "${{ needs.bdd-validation.result }}" != "success" ]]; then
             echo "❌ **CI Failed** - Critical checks did not pass"
+            echo ""
+            echo "### Failed Jobs:"
+            if [[ "${{ needs.build-matrix.result }}" != "success" ]]; then
+              echo "- 🚫 Build Matrix: ${{ needs.build-matrix.result }}"
+            fi
+            if [[ "${{ needs.quality-checks.result }}" != "success" ]]; then
+              echo "- 🚫 Quality Checks: ${{ needs.quality-checks.result }}"
+            fi
+            if [[ "${{ needs.bdd-validation.result }}" != "success" ]]; then
+              echo "- 🚫 BDD Validation: ${{ needs.bdd-validation.result }}"
+            fi
             exit 1
           fi
 
           echo "✅ **CI Passed** - All critical checks successful"
           echo ""
-          echo "### Coverage"
-          echo "- Platforms tested: Linux, macOS"
-          echo "- Node versions: 18.x, 20.x"
-          echo "- Quality checks: format, lint, types"
+          echo "### Coverage Summary"
+          echo "- 🏗️  Platforms tested: Linux, macOS"
+          echo "- 🟢 Node versions: 18.x, 20.x"
+          echo "- 📋 Quality checks: format, lint, types"
+          echo "- 🥒 BDD tests: scenarios, coverage validation"

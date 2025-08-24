@@ -6,7 +6,8 @@ module.exports = {
   testTimeout: 30000,
   setupFilesAfterEnv: [
     '<rootDir>/tests/setup.ts',
-    '<rootDir>/tests/bdd/setup/bdd-setup.ts'
+    '<rootDir>/tests/bdd/setup/bdd-setup.ts',
+    '<rootDir>/tests/bdd/setup/jest-cucumber-setup.ts'
   ],
   collectCoverageFrom: [
     '<rootDir>/src/**/*.ts',
@@ -22,7 +23,9 @@ module.exports = {
         compilerOptions: {
           experimentalDecorators: true,
           emitDecoratorMetadata: true,
-          skipLibCheck: true
+          skipLibCheck: true,
+          esModuleInterop: true,
+          allowSyntheticDefaultImports: true
         }
       }
     }]
@@ -44,5 +47,6 @@ module.exports = {
     '<rootDir>/main.js'
   ],
   moduleFileExtensions: ['ts', 'js', 'json'],
-  verbose: true
+  verbose: true,
+  reporters: ['default']
 };
