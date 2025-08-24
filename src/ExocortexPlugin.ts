@@ -107,7 +107,6 @@ export default class ExocortexPlugin extends Plugin {
 
     // Initialize settings first (others depend on it)
     await this.settingsManager.initialize();
-
   }
 
   private async initializeServiceProvider(): Promise<void> {

@@ -158,7 +158,6 @@ export class DIContainer {
         ),
     );
 
-
     // Register Services
     this.container.register<ICommandExecutor>(
       "ICommandExecutor",
@@ -184,7 +183,6 @@ export class DIContainer {
           this.container.resolve<INotificationService>("INotificationService"),
         ),
     );
-
 
     // Register RDF Service - Must be before any dependencies that use it
     this.container.register<RDFService>(
@@ -250,7 +248,6 @@ export class DIContainer {
           this.plugin || this.app, // Use plugin if available, otherwise app
         ),
     );
-
 
     // Register Presentation Components
     this.container.register<ButtonRenderer>(
@@ -331,7 +328,6 @@ export class DIContainer {
   public getPropertyEditingUseCase(): PropertyEditingUseCase {
     return this.resolve<PropertyEditingUseCase>("PropertyEditingUseCase");
   }
-
 
   public getRDFService(): RDFService {
     return this.resolve<RDFService>("RDFService");
