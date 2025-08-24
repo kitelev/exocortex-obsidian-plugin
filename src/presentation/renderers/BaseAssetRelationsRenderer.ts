@@ -231,9 +231,45 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
       href: relation.path,
     });
 
-    linkEl.addEventListener("click", (event) => {
+    // Handle standard click events
+    linkEl.addEventListener("click", (event: MouseEvent) => {
+      // For Cmd/Ctrl+Click, open in new tab
+      if (event.metaKey || event.ctrlKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.app.workspace.openLinkText(relation.path, "", true);
+        return;
+      }
+      
+      // For Shift+Click, open in new split
+      if (event.shiftKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        const leaf = this.app.workspace.getLeaf('split');
+        if (leaf) {
+          leaf.openFile(this.app.vault.getAbstractFileByPath(relation.path) as any);
+        }
+        return;
+      }
+      
+      // For Alt+Click, show context menu (let default behavior handle it)
+      if (event.altKey) {
+        // Don't prevent default - let Obsidian handle context menu
+        return;
+      }
+      
+      // For simple click, open in current tab
       event.preventDefault();
       this.app.workspace.openLinkText(relation.path, "", false);
+    });
+    
+    // Handle middle mouse button click
+    linkEl.addEventListener("auxclick", (event: MouseEvent) => {
+      if (event.button === 1) { // Middle button
+        event.preventDefault();
+        event.stopPropagation();
+        this.app.workspace.openLinkText(relation.path, "", true);
+      }
     });
   }
 
@@ -257,9 +293,45 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
       href: relation.path,
     });
 
-    linkEl.addEventListener("click", (event) => {
+    // Handle standard click events
+    linkEl.addEventListener("click", (event: MouseEvent) => {
+      // For Cmd/Ctrl+Click, open in new tab
+      if (event.metaKey || event.ctrlKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.app.workspace.openLinkText(relation.path, "", true);
+        return;
+      }
+      
+      // For Shift+Click, open in new split
+      if (event.shiftKey) {
+        event.preventDefault();
+        event.stopPropagation();
+        const leaf = this.app.workspace.getLeaf('split');
+        if (leaf) {
+          leaf.openFile(this.app.vault.getAbstractFileByPath(relation.path) as any);
+        }
+        return;
+      }
+      
+      // For Alt+Click, show context menu (let default behavior handle it)
+      if (event.altKey) {
+        // Don't prevent default - let Obsidian handle context menu
+        return;
+      }
+      
+      // For simple click, open in current tab
       event.preventDefault();
       this.app.workspace.openLinkText(relation.path, "", false);
+    });
+    
+    // Handle middle mouse button click
+    linkEl.addEventListener("auxclick", (event: MouseEvent) => {
+      if (event.button === 1) { // Middle button
+        event.preventDefault();
+        event.stopPropagation();
+        this.app.workspace.openLinkText(relation.path, "", true);
+      }
     });
   }
 

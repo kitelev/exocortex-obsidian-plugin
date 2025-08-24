@@ -1,3 +1,39 @@
+## [5.9.0] - 2025-08-24
+
+### 🔗 Standard Link Behavior - Native Navigation with Perfect Plugin Compatibility
+
+#### Seamless Integration with Obsidian's Link System
+Experience **true native link behavior** in asset relation tables that works exactly like standard Obsidian links, ensuring perfect compatibility with all your other plugins and preserving familiar keyboard shortcuts.
+
+#### Keyboard Modifier Support
+- **Cmd/Ctrl+Click**: Opens links in new tabs without affecting current tab
+- **Shift+Click**: Opens links in split panes for side-by-side viewing
+- **Alt+Click**: Shows context menu with all link options
+- **Middle Mouse Button**: Opens in new tab for quick navigation
+- **Simple Click**: Opens in current tab as expected
+
+#### Fixed Navigation Issues
+- **No More Double Navigation**: Cmd+Click now correctly opens only in new tab
+- **Current Tab Preserved**: Modifier clicks no longer change your current view
+- **Event Handling Fixed**: Proper preventDefault and stopPropagation implementation
+- **Clean Event Flow**: Standard DOM events for plugin compatibility
+
+#### Enhanced User Experience
+- **Predictable Behavior**: Links work exactly as they do everywhere else in Obsidian
+- **Plugin Compatibility**: Other link-enhancing plugins can now interact properly
+- **Accessibility Improved**: Keyboard navigation fully supported
+- **Touch Device Support**: Proper handling for mobile and tablet users
+
+#### Developer Benefits
+- **Standard Event Emission**: Links emit proper DOM events for interception
+- **No Proprietary Handlers**: Uses native addEventListener for compatibility
+- **Clean Architecture**: Separate handlers for click and auxclick events
+- **BDD Test Coverage**: Comprehensive scenarios for all link behaviors
+
+This update ensures that links in Exocortex tables behave exactly like standard Obsidian links, providing a consistent and predictable experience while maintaining full compatibility with the entire Obsidian ecosystem.
+
+---
+
 ## [5.8.0] - 2025-08-24
 
 ### 🎯 BDD-First Development - Executable Specifications for Quality Excellence
