@@ -10,9 +10,9 @@ export interface IViewRenderer {
   render(
     content: string,
     el: HTMLElement,
-    ctx: MarkdownPostProcessorContext
+    ctx: MarkdownPostProcessorContext,
   ): Promise<void>;
-  
+
   /**
    * Called when the view should be updated due to external changes
    */
@@ -68,17 +68,17 @@ export class CodeBlockProcessor {
   public async processCodeBlock(
     source: string,
     el: HTMLElement,
-    ctx: MarkdownPostProcessorContext
+    ctx: MarkdownPostProcessorContext,
   ): Promise<void> {
     const startTime = Date.now();
-    
+
     try {
       // Parse the source to extract view type and configuration
       const config = this.parseConfig(source);
-      
+
       // Get the appropriate renderer
       const renderer = this.views.get(config.type);
-      
+
       if (!renderer) {
         this.renderError(el, `Unknown view type: ${config.type}`);
         return;
@@ -86,34 +86,35 @@ export class CodeBlockProcessor {
 
       // Clear existing content
       el.empty();
-      
+
       // Add container with proper styling
       const container = el.createDiv({ cls: "exocortex-view-container" });
       container.setAttribute("data-view-type", config.type);
-      
+
       // Store the element and config for live updates
       this.activeElements.set(container, config);
-      
+
       // Render the view
       await renderer.render(source, container, ctx);
-      
+
       // Set up cleanup when the element is removed from DOM
       const self = this;
-      ctx.addChild(new class extends MarkdownRenderChild {
-        constructor() {
-          super(container);
-        }
-        
-        onunload() {
-          self.activeElements.delete(container);
-        }
-      }());
-      
+      ctx.addChild(
+        new (class extends MarkdownRenderChild {
+          constructor() {
+            super(container);
+          }
+
+          onunload() {
+            self.activeElements.delete(container);
+          }
+        })(),
+      );
+
       this.logger.info(`Rendered view ${config.type}`, {
         duration: Date.now() - startTime,
-        sourcePath: ctx.sourcePath
+        sourcePath: ctx.sourcePath,
       });
-      
     } catch (error) {
       this.logger.error(`Failed to process code block`, { error });
       this.renderError(el, `Error: ${error.message}`);
@@ -126,14 +127,14 @@ export class CodeBlockProcessor {
   private parseConfig(source: string): ViewConfig {
     const lines = source.trim().split("\n");
     const type = lines[0]?.trim() || "UniversalLayout";
-    
+
     // Parse YAML-like configuration if present
     const config: ViewConfig = { type };
-    
+
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line || line.startsWith("#")) continue;
-      
+
       const match = line.match(/^(\w+):\s*(.+)$/);
       if (match) {
         const [, key, value] = match;
@@ -146,7 +147,7 @@ export class CodeBlockProcessor {
         }
       }
     }
-    
+
     return config;
   }
 
@@ -156,9 +157,9 @@ export class CodeBlockProcessor {
   private renderError(el: HTMLElement, message: string): void {
     el.empty();
     const errorDiv = el.createDiv({ cls: "exocortex-error" });
-    errorDiv.createEl("span", { 
+    errorDiv.createEl("span", {
       text: "⚠️ " + message,
-      cls: "exocortex-error-message" 
+      cls: "exocortex-error-message",
     });
   }
 

@@ -41,12 +41,12 @@ export class UniversalLayoutRenderer implements IViewRenderer {
   public async render(
     source: string,
     el: HTMLElement,
-    ctx: MarkdownPostProcessorContext
+    ctx: MarkdownPostProcessorContext,
   ): Promise<void> {
     try {
       const config = this.parseConfig(source);
       const currentFile = this.app.workspace.getActiveFile();
-      
+
       if (!currentFile) {
         this.renderMessage(el, "No active file");
         return;
@@ -54,7 +54,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
 
       // Get backlinks for the current file
       const backlinks = await this.getBacklinks(currentFile, config);
-      
+
       if (backlinks.length === 0) {
         this.renderMessage(el, "No backlinks found");
         return;
@@ -74,9 +74,10 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         default:
           await this.renderList(el, backlinks, config);
       }
-      
-      this.logger.info(`Rendered UniversalLayout with ${backlinks.length} backlinks`);
-      
+
+      this.logger.info(
+        `Rendered UniversalLayout with ${backlinks.length} backlinks`,
+      );
     } catch (error) {
       this.logger.error("Failed to render UniversalLayout", { error });
       this.renderError(el, error.message);
@@ -96,19 +97,22 @@ export class UniversalLayoutRenderer implements IViewRenderer {
   /**
    * Get backlinks for the current file
    */
-  private async getBacklinks(file: TFile, config: UniversalLayoutConfig): Promise<any[]> {
+  private async getBacklinks(
+    file: TFile,
+    config: UniversalLayoutConfig,
+  ): Promise<any[]> {
     const backlinks: any[] = [];
-    
+
     // Use Obsidian's metadata cache to get backlinks
     const cache = this.app.metadataCache;
     const resolvedLinks = cache.resolvedLinks;
-    
+
     for (const [sourcePath, links] of Object.entries(resolvedLinks)) {
       if (links && (links as any)[file.path]) {
         const sourceFile = this.app.vault.getAbstractFileByPath(sourcePath);
         if (sourceFile instanceof TFile) {
           const metadata = cache.getFileCache(sourceFile);
-          
+
           const backlinkData = {
             file: sourceFile,
             path: sourcePath,
@@ -116,9 +120,9 @@ export class UniversalLayoutRenderer implements IViewRenderer {
             metadata: metadata?.frontmatter || {},
             links: (links as any)[file.path] || 0,
             created: sourceFile.stat.ctime,
-            modified: sourceFile.stat.mtime
+            modified: sourceFile.stat.mtime,
           };
-          
+
           // Apply filters if specified
           if (this.matchesFilters(backlinkData, config)) {
             backlinks.push(backlinkData);
@@ -126,7 +130,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         }
       }
     }
-    
+
     // Sort backlinks
     if (config.sortBy) {
       backlinks.sort((a, b) => {
@@ -136,51 +140,55 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         return aVal > bVal ? order : -order;
       });
     }
-    
+
     // Apply limit
     if (config.limit && config.limit > 0) {
       return backlinks.slice(0, config.limit);
     }
-    
+
     return backlinks;
   }
 
   /**
    * Render backlinks as a list
    */
-  private async renderList(el: HTMLElement, backlinks: any[], config: UniversalLayoutConfig): Promise<void> {
+  private async renderList(
+    el: HTMLElement,
+    backlinks: any[],
+    config: UniversalLayoutConfig,
+  ): Promise<void> {
     const container = el.createDiv({ cls: "exocortex-backlinks-list" });
-    
+
     // Add header
     container.createEl("h3", { text: `Backlinks (${backlinks.length})` });
-    
+
     const listEl = container.createEl("ul", { cls: "exocortex-list" });
-    
+
     for (const backlink of backlinks) {
       const itemEl = listEl.createEl("li", { cls: "exocortex-list-item" });
-      
+
       // Create link to the file
       const linkEl = itemEl.createEl("a", {
         text: backlink.title,
         cls: "internal-link",
-        href: backlink.path
+        href: backlink.path,
       });
-      
+
       // Add click handler
       linkEl.addEventListener("click", (e) => {
         e.preventDefault();
         this.app.workspace.openLinkText(backlink.path, "", false);
       });
-      
+
       // Show properties if configured
       if (config.showProperties && config.showProperties.length > 0) {
         const propsEl = itemEl.createDiv({ cls: "exocortex-properties" });
         for (const prop of config.showProperties) {
           const value = this.getPropertyValue(backlink, prop);
           if (value !== undefined) {
-            propsEl.createSpan({ 
+            propsEl.createSpan({
               text: `${prop}: ${value}`,
-              cls: "exocortex-property"
+              cls: "exocortex-property",
             });
           }
         }
@@ -191,46 +199,50 @@ export class UniversalLayoutRenderer implements IViewRenderer {
   /**
    * Render backlinks as a table
    */
-  private async renderTable(el: HTMLElement, backlinks: any[], config: UniversalLayoutConfig): Promise<void> {
+  private async renderTable(
+    el: HTMLElement,
+    backlinks: any[],
+    config: UniversalLayoutConfig,
+  ): Promise<void> {
     const container = el.createDiv({ cls: "exocortex-backlinks-table" });
-    
+
     // Add header
     container.createEl("h3", { text: `Backlinks (${backlinks.length})` });
-    
+
     const table = container.createEl("table", { cls: "exocortex-table" });
     const thead = table.createEl("thead");
     const tbody = table.createEl("tbody");
-    
+
     // Create header row
     const headerRow = thead.createEl("tr");
     headerRow.createEl("th", { text: "Title" });
-    
+
     // Add property columns
     if (config.showProperties) {
       for (const prop of config.showProperties) {
         headerRow.createEl("th", { text: prop });
       }
     }
-    
+
     headerRow.createEl("th", { text: "Modified" });
-    
+
     // Create data rows
     for (const backlink of backlinks) {
       const row = tbody.createEl("tr");
-      
+
       // Title cell with link
       const titleCell = row.createEl("td");
       const linkEl = titleCell.createEl("a", {
         text: backlink.title,
         cls: "internal-link",
-        href: backlink.path
+        href: backlink.path,
       });
-      
+
       linkEl.addEventListener("click", (e) => {
         e.preventDefault();
         this.app.workspace.openLinkText(backlink.path, "", false);
       });
-      
+
       // Property cells
       if (config.showProperties) {
         for (const prop of config.showProperties) {
@@ -238,10 +250,10 @@ export class UniversalLayoutRenderer implements IViewRenderer {
           row.createEl("td", { text: value?.toString() || "" });
         }
       }
-      
+
       // Modified date cell
-      row.createEl("td", { 
-        text: new Date(backlink.modified).toLocaleDateString() 
+      row.createEl("td", {
+        text: new Date(backlink.modified).toLocaleDateString(),
       });
     }
   }
@@ -249,48 +261,57 @@ export class UniversalLayoutRenderer implements IViewRenderer {
   /**
    * Render backlinks as cards
    */
-  private async renderCards(el: HTMLElement, backlinks: any[], config: UniversalLayoutConfig): Promise<void> {
+  private async renderCards(
+    el: HTMLElement,
+    backlinks: any[],
+    config: UniversalLayoutConfig,
+  ): Promise<void> {
     const container = el.createDiv({ cls: "exocortex-backlinks-cards" });
-    
+
     // Add header
     container.createEl("h3", { text: `Backlinks (${backlinks.length})` });
-    
+
     const cardsContainer = container.createDiv({ cls: "exocortex-cards-grid" });
-    
+
     for (const backlink of backlinks) {
       const card = cardsContainer.createDiv({ cls: "exocortex-card" });
-      
+
       // Card title
       const titleEl = card.createEl("h4", { cls: "exocortex-card-title" });
       const linkEl = titleEl.createEl("a", {
         text: backlink.title,
         cls: "internal-link",
-        href: backlink.path
+        href: backlink.path,
       });
-      
+
       linkEl.addEventListener("click", (e) => {
         e.preventDefault();
         this.app.workspace.openLinkText(backlink.path, "", false);
       });
-      
+
       // Card properties
       if (config.showProperties && config.showProperties.length > 0) {
         const propsEl = card.createDiv({ cls: "exocortex-card-properties" });
         for (const prop of config.showProperties) {
           const value = this.getPropertyValue(backlink, prop);
           if (value !== undefined) {
-            const propEl = propsEl.createDiv({ cls: "exocortex-card-property" });
+            const propEl = propsEl.createDiv({
+              cls: "exocortex-card-property",
+            });
             propEl.createSpan({ text: prop + ": ", cls: "property-label" });
-            propEl.createSpan({ text: value.toString(), cls: "property-value" });
+            propEl.createSpan({
+              text: value.toString(),
+              cls: "property-value",
+            });
           }
         }
       }
-      
+
       // Card footer
       const footer = card.createDiv({ cls: "exocortex-card-footer" });
-      footer.createSpan({ 
+      footer.createSpan({
         text: `Modified: ${new Date(backlink.modified).toLocaleDateString()}`,
-        cls: "card-date"
+        cls: "card-date",
       });
     }
   }
@@ -298,13 +319,17 @@ export class UniversalLayoutRenderer implements IViewRenderer {
   /**
    * Render backlinks as a graph (placeholder for now)
    */
-  private async renderGraph(el: HTMLElement, backlinks: any[], config: UniversalLayoutConfig): Promise<void> {
+  private async renderGraph(
+    el: HTMLElement,
+    backlinks: any[],
+    config: UniversalLayoutConfig,
+  ): Promise<void> {
     const container = el.createDiv({ cls: "exocortex-backlinks-graph" });
     container.createEl("h3", { text: `Backlinks Graph (${backlinks.length})` });
-    container.createEl("p", { 
-      text: "Graph visualization coming soon. Showing list view instead." 
+    container.createEl("p", {
+      text: "Graph visualization coming soon. Showing list view instead.",
     });
-    
+
     // Fall back to list view for now
     await this.renderList(container, backlinks, config);
   }
@@ -317,48 +342,55 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     const config: UniversalLayoutConfig = {
       type: "UniversalLayout",
       layout: "list",
-      showBacklinks: true
+      showBacklinks: true,
     };
-    
+
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line || line === "UniversalLayout") continue;
-      
+
       const match = line.match(/^(\w+):\s*(.+)$/);
       if (match) {
         const [, key, value] = match;
         try {
           // Handle array values for showProperties
           if (key === "showProperties") {
-            config.showProperties = value.split(",").map(s => s.trim());
+            config.showProperties = value.split(",").map((s) => s.trim());
           } else {
-            (config as any)[key] = 
-              value === "true" ? true :
-              value === "false" ? false :
-              isNaN(Number(value)) ? value : Number(value);
+            (config as any)[key] =
+              value === "true"
+                ? true
+                : value === "false"
+                  ? false
+                  : isNaN(Number(value))
+                    ? value
+                    : Number(value);
           }
         } catch {
           (config as any)[key] = value;
         }
       }
     }
-    
+
     return config;
   }
 
   /**
    * Check if a backlink matches the configured filters
    */
-  private matchesFilters(backlink: any, config: UniversalLayoutConfig): boolean {
+  private matchesFilters(
+    backlink: any,
+    config: UniversalLayoutConfig,
+  ): boolean {
     if (!config.filters) return true;
-    
+
     for (const [key, value] of Object.entries(config.filters)) {
       const backlinkValue = this.getPropertyValue(backlink, key);
       if (backlinkValue !== value) {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -370,12 +402,12 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     if (backlink.metadata && backlink.metadata[property] !== undefined) {
       return backlink.metadata[property];
     }
-    
+
     // Check direct properties
     if (backlink[property] !== undefined) {
       return backlink[property];
     }
-    
+
     // Check nested properties using dot notation
     const parts = property.split(".");
     let value = backlink;
@@ -383,7 +415,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       value = value?.[part];
       if (value === undefined) break;
     }
-    
+
     return value;
   }
 
@@ -391,9 +423,9 @@ export class UniversalLayoutRenderer implements IViewRenderer {
    * Render a simple message
    */
   private renderMessage(el: HTMLElement, message: string): void {
-    el.createDiv({ 
+    el.createDiv({
       text: message,
-      cls: "exocortex-message" 
+      cls: "exocortex-message",
     });
   }
 
@@ -401,9 +433,9 @@ export class UniversalLayoutRenderer implements IViewRenderer {
    * Render an error message
    */
   private renderError(el: HTMLElement, message: string): void {
-    el.createDiv({ 
+    el.createDiv({
       text: `Error: ${message}`,
-      cls: "exocortex-error-message" 
+      cls: "exocortex-error-message",
     });
   }
 }
