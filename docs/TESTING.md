@@ -102,7 +102,7 @@ The CI test suite:
 
 The project includes GitHub Actions workflow (`.github/workflows/ci.yml`) that:
 
-- Tests on multiple Node.js versions (16.x, 18.x, 20.x)
+- Tests on multiple Node.js versions (18.x, 20.x)
 - Installs required dependencies (including jsdom for CI)
 - Runs build verification
 - Executes all test suites except UI tests

@@ -3,10 +3,7 @@ import { LifecycleRegistry } from "./infrastructure/lifecycle/LifecycleRegistry"
 import { CommandRegistry } from "./presentation/command-controllers/CommandRegistry";
 import { ServiceProvider } from "./infrastructure/providers/ServiceProvider";
 import { SettingsLifecycleManager } from "./infrastructure/lifecycle/SettingsLifecycleManager";
-import { GraphLifecycleManager } from "./infrastructure/lifecycle/GraphLifecycleManager";
 import { AssetCommandController } from "./presentation/command-controllers/AssetCommandController";
-import { RDFCommandController } from "./presentation/command-controllers/RDFCommandController";
-import { QueryProcessor } from "./presentation/processors/QueryProcessor";
 import { CodeBlockProcessor } from "./presentation/processors/CodeBlockProcessor";
 import { RefactoredUniversalLayoutRenderer } from "./presentation/renderers/RefactoredUniversalLayoutRenderer";
 import { AssetListRenderer } from "./presentation/renderers/AssetListRenderer";
@@ -35,7 +32,6 @@ export default class ExocortexPlugin extends Plugin {
 
   // Managers
   private settingsManager: SettingsLifecycleManager;
-  private graphManager: GraphLifecycleManager;
 
   async onload(): Promise<void> {
     try {
@@ -70,8 +66,8 @@ export default class ExocortexPlugin extends Plugin {
 
       this.logger.endTiming("plugin-onload");
       this.logger.info("Exocortex Plugin initialized successfully", {
-        managers: ["lifecycle", "settings", "graph"],
-        controllers: ["asset", "rdf"],
+        managers: ["lifecycle", "settings"],
+        controllers: ["asset"],
         processors: ["codeBlock"],
       });
     } catch (error) {
@@ -137,10 +133,8 @@ export default class ExocortexPlugin extends Plugin {
   private async initializeLifecycleManagers(): Promise<void> {
     // Create and register lifecycle managers
     this.settingsManager = new SettingsLifecycleManager(this);
-    this.graphManager = new GraphLifecycleManager(this);
 
     this.lifecycleRegistry.registerManager(this.settingsManager);
-    this.lifecycleRegistry.registerManager(this.graphManager);
 
     // Settings will be initialized later by lifecycleRegistry.initializeAll()
     // Load settings early so they're available for other components
@@ -150,7 +144,6 @@ export default class ExocortexPlugin extends Plugin {
   private async initializeServiceProvider(): Promise<void> {
     this.serviceProvider = new ServiceProvider(
       this,
-      this.graphManager.getGraph(),
       this.settingsManager.getSettings(),
     );
     await this.serviceProvider.initializeServices();
@@ -159,14 +152,7 @@ export default class ExocortexPlugin extends Plugin {
   private async initializeCommandControllers(): Promise<void> {
     // Create and register command controllers
     const assetController = new AssetCommandController(this);
-    const rdfController = new RDFCommandController(
-      this,
-      this.graphManager.getGraph(),
-      this.serviceProvider.getService("RDFService"),
-      new QueryProcessor(this, this.graphManager.getGraph()),
-    );
     this.commandRegistry.registerController(assetController);
-    this.commandRegistry.registerController(rdfController);
   }
 
   private setupCacheInvalidation(): void {

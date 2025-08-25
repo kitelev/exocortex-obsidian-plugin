@@ -38,7 +38,6 @@ import { ErrorHandlerService } from "../../application/services/ErrorHandlerServ
 import { OntologyProvisioningService } from "../../domain/services/OntologyProvisioningService";
 import { PropertyCacheService } from "../../domain/services/PropertyCacheService";
 import { CircuitBreakerService } from "../resilience/CircuitBreakerService";
-import { RDFService } from "../../application/services/RDFService";
 
 // Presentation
 import { ButtonRenderer } from "../../presentation/components/ButtonRenderer";
@@ -196,16 +195,6 @@ export class DIContainer {
         ),
     );
 
-    // Register RDF Service - Must be before any dependencies that use it
-    this.container.register<RDFService>(
-      "RDFService",
-      () =>
-        new RDFService(
-          this.container.resolve<INotificationService>("INotificationService"),
-          this.container.resolve<IFileSystemAdapter>("IFileSystemAdapter"),
-        ),
-    );
-
     // Register Domain Services
     this.container.register<OntologyProvisioningService>(
       "OntologyProvisioningService",
@@ -339,10 +328,6 @@ export class DIContainer {
 
   public getPropertyEditingUseCase(): PropertyEditingUseCase {
     return this.resolve<PropertyEditingUseCase>("PropertyEditingUseCase");
-  }
-
-  public getRDFService(): RDFService {
-    return this.resolve<RDFService>("RDFService");
   }
 
   /**

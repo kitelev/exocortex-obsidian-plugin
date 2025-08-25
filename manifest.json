@@ -1,9 +1,9 @@
 {
 	"id": "exocortex",
 	"name": "Exocortex",
-	"version": "6.1.3",
+	"version": "7.0.0",
 	"minAppVersion": "1.5.0",
-	"description": "SPARQL queries in Obsidian - Semantic knowledge management",
+	"description": "Configurable UI system for Obsidian with ontology-driven layouts",
 	"author": "A. Kitelev",
 	"authorUrl": "https://github.com/kitelev",
 	"isDesktopOnly": false,

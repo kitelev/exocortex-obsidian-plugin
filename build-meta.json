@@ -1215,260 +1215,6 @@
       "imports": [],
       "format": "esm"
     },
-    "src/domain/semantic/core/Graph.ts": {
-      "bytes": 8163,
-      "imports": [
-        {
-          "path": "./Triple",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../core/Result",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
-    "src/domain/semantic/core/Triple.ts": {
-      "bytes": 8712,
-      "imports": [
-        {
-          "path": "src/domain/core/Result.ts",
-          "kind": "import-statement",
-          "original": "../../core/Result"
-        }
-      ],
-      "format": "esm"
-    },
-    "src/application/services/NamespaceManager.ts": {
-      "bytes": 6426,
-      "imports": [
-        {
-          "path": "src/domain/semantic/core/Triple.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/Triple"
-        },
-        {
-          "path": "src/domain/core/Result.ts",
-          "kind": "import-statement",
-          "original": "../../domain/core/Result"
-        }
-      ],
-      "format": "esm"
-    },
-    "src/application/services/RDFSerializer.ts": {
-      "bytes": 15590,
-      "imports": [
-        {
-          "path": "../../domain/semantic/core/Graph",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/semantic/core/Triple.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/Triple"
-        },
-        {
-          "path": "src/domain/core/Result.ts",
-          "kind": "import-statement",
-          "original": "../../domain/core/Result"
-        },
-        {
-          "path": "src/application/services/NamespaceManager.ts",
-          "kind": "import-statement",
-          "original": "./NamespaceManager"
-        }
-      ],
-      "format": "esm"
-    },
-    "src/application/services/RDFParser.ts": {
-      "bytes": 19545,
-      "imports": [
-        {
-          "path": "src/domain/semantic/core/Graph.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/Graph"
-        },
-        {
-          "path": "src/domain/semantic/core/Triple.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/Triple"
-        },
-        {
-          "path": "src/domain/core/Result.ts",
-          "kind": "import-statement",
-          "original": "../../domain/core/Result"
-        },
-        {
-          "path": "src/application/services/NamespaceManager.ts",
-          "kind": "import-statement",
-          "original": "./NamespaceManager"
-        },
-        {
-          "path": "./RDFSerializer",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
-    "src/application/services/RDFValidator.ts": {
-      "bytes": 8392,
-      "imports": [
-        {
-          "path": "src/domain/core/Result.ts",
-          "kind": "import-statement",
-          "original": "../../domain/core/Result"
-        },
-        {
-          "path": "../../domain/semantic/core/Graph",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/semantic/core/Triple.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/Triple"
-        },
-        {
-          "path": "./RDFSerializer",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
-    "src/infrastructure/performance/MemoryOptimizedImporter.ts": {
-      "bytes": 10090,
-      "imports": [
-        {
-          "path": "../../domain/semantic/core/Graph",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../domain/semantic/core/IndexedGraph",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/semantic/core/Triple.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/Triple"
-        },
-        {
-          "path": "src/domain/core/Result.ts",
-          "kind": "import-statement",
-          "original": "../../domain/core/Result"
-        },
-        {
-          "path": "src/application/services/RDFParser.ts",
-          "kind": "import-statement",
-          "original": "../../application/services/RDFParser"
-        },
-        {
-          "path": "../../application/services/NamespaceManager",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
-    "src/domain/semantic/core/IndexedGraph.ts": {
-      "bytes": 44041,
-      "imports": [
-        {
-          "path": "src/domain/semantic/core/Graph.ts",
-          "kind": "import-statement",
-          "original": "./Graph"
-        },
-        {
-          "path": "src/domain/semantic/core/Triple.ts",
-          "kind": "import-statement",
-          "original": "./Triple"
-        },
-        {
-          "path": "src/domain/core/Result.ts",
-          "kind": "import-statement",
-          "original": "../../core/Result"
-        },
-        {
-          "path": "../../../infrastructure/logging/ILogger",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/infrastructure/logging/LoggerFactory.ts",
-          "kind": "import-statement",
-          "original": "../../../infrastructure/logging/LoggerFactory"
-        }
-      ],
-      "format": "esm"
-    },
-    "src/application/services/RDFService.ts": {
-      "bytes": 12261,
-      "imports": [
-        {
-          "path": "src/domain/semantic/core/Graph.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/Graph"
-        },
-        {
-          "path": "src/domain/semantic/core/Triple.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/Triple"
-        },
-        {
-          "path": "src/domain/core/Result.ts",
-          "kind": "import-statement",
-          "original": "../../domain/core/Result"
-        },
-        {
-          "path": "src/application/services/RDFSerializer.ts",
-          "kind": "import-statement",
-          "original": "./RDFSerializer"
-        },
-        {
-          "path": "src/application/services/RDFParser.ts",
-          "kind": "import-statement",
-          "original": "./RDFParser"
-        },
-        {
-          "path": "src/application/services/NamespaceManager.ts",
-          "kind": "import-statement",
-          "original": "./NamespaceManager"
-        },
-        {
-          "path": "src/application/services/RDFValidator.ts",
-          "kind": "import-statement",
-          "original": "./RDFValidator"
-        },
-        {
-          "path": "../ports/INotificationService",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../ports/IFileSystemAdapter",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/infrastructure/performance/MemoryOptimizedImporter.ts",
-          "kind": "import-statement",
-          "original": "../../infrastructure/performance/MemoryOptimizedImporter"
-        },
-        {
-          "path": "src/domain/semantic/core/IndexedGraph.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/IndexedGraph"
-        }
-      ],
-      "format": "esm"
-    },
     "src/presentation/components/ButtonRenderer.ts": {
       "bytes": 10513,
       "imports": [
@@ -1643,7 +1389,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/LayoutRenderer.ts": {
-      "bytes": 12287,
+      "bytes": 11798,
       "imports": [
         {
           "path": "obsidian",
@@ -1704,7 +1450,7 @@
       "format": "esm"
     },
     "src/infrastructure/container/DIContainer.ts": {
-      "bytes": 11599,
+      "bytes": 11091,
       "imports": [
         {
           "path": "obsidian",
@@ -1857,11 +1603,6 @@
           "original": "../resilience/CircuitBreakerService"
         },
         {
-          "path": "src/application/services/RDFService.ts",
-          "kind": "import-statement",
-          "original": "../../application/services/RDFService"
-        },
-        {
           "path": "src/presentation/components/ButtonRenderer.ts",
           "kind": "import-statement",
           "original": "../../presentation/components/ButtonRenderer"
@@ -1890,7 +1631,7 @@
       "format": "esm"
     },
     "src/infrastructure/providers/ServiceProvider.ts": {
-      "bytes": 4346,
+      "bytes": 2856,
       "imports": [
         {
           "path": "obsidian",
@@ -1903,11 +1644,6 @@
           "external": true
         },
         {
-          "path": "../../domain/semantic/core/Graph",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
           "path": "../../domain/entities/ExocortexSettings",
           "kind": "import-statement",
           "external": true
@@ -1916,11 +1652,6 @@
           "path": "src/infrastructure/container/DIContainer.ts",
           "kind": "import-statement",
           "original": "../container/DIContainer"
-        },
-        {
-          "path": "../../application/services/RDFService",
-          "kind": "import-statement",
-          "external": true
         },
         {
           "path": "src/presentation/renderers/LayoutRenderer.ts",
@@ -2013,32 +1744,6 @@
       ],
       "format": "esm"
     },
-    "src/infrastructure/lifecycle/GraphLifecycleManager.ts": {
-      "bytes": 7125,
-      "imports": [
-        {
-          "path": "obsidian",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../application/ports/ILifecycleManager",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/semantic/core/Graph.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/Graph"
-        },
-        {
-          "path": "src/domain/semantic/core/Triple.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/Triple"
-        }
-      ],
-      "format": "esm"
-    },
     "src/presentation/modals/CreateAssetModal.ts": {
       "bytes": 17702,
       "imports": [
@@ -2111,135 +1816,6 @@
       ],
       "format": "esm"
     },
-    "src/presentation/modals/ExportRDFModal.ts": {
-      "bytes": 12938,
-      "imports": [
-        {
-          "path": "obsidian",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/semantic/core/Graph.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/Graph"
-        },
-        {
-          "path": "src/application/services/RDFSerializer.ts",
-          "kind": "import-statement",
-          "original": "../../application/services/RDFSerializer"
-        },
-        {
-          "path": "src/application/services/NamespaceManager.ts",
-          "kind": "import-statement",
-          "original": "../../application/services/NamespaceManager"
-        }
-      ],
-      "format": "esm"
-    },
-    "src/presentation/modals/ImportRDFModal.ts": {
-      "bytes": 26080,
-      "imports": [
-        {
-          "path": "obsidian",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../domain/semantic/core/Graph",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/semantic/core/IndexedGraph.ts",
-          "kind": "import-statement",
-          "original": "../../domain/semantic/core/IndexedGraph"
-        },
-        {
-          "path": "src/application/services/RDFParser.ts",
-          "kind": "import-statement",
-          "original": "../../application/services/RDFParser"
-        },
-        {
-          "path": "../../application/services/RDFSerializer",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/application/services/NamespaceManager.ts",
-          "kind": "import-statement",
-          "original": "../../application/services/NamespaceManager"
-        },
-        {
-          "path": "src/infrastructure/performance/MemoryOptimizedImporter.ts",
-          "kind": "import-statement",
-          "original": "../../infrastructure/performance/MemoryOptimizedImporter"
-        }
-      ],
-      "format": "esm"
-    },
-    "src/presentation/command-controllers/RDFCommandController.ts": {
-      "bytes": 2422,
-      "imports": [
-        {
-          "path": "obsidian",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../application/ports/ICommandController",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../domain/semantic/core/Graph",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../application/services/RDFService",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../processors/QueryProcessor",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/presentation/modals/ExportRDFModal.ts",
-          "kind": "import-statement",
-          "original": "../modals/ExportRDFModal"
-        },
-        {
-          "path": "src/presentation/modals/ImportRDFModal.ts",
-          "kind": "import-statement",
-          "original": "../modals/ImportRDFModal"
-        }
-      ],
-      "format": "esm"
-    },
-    "src/presentation/processors/QueryProcessor.ts": {
-      "bytes": 4346,
-      "imports": [
-        {
-          "path": "../../domain/semantic/core/Graph",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../domain/core/Result",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "obsidian",
-          "kind": "import-statement",
-          "external": true
-        }
-      ],
-      "format": "esm"
-    },
     "src/presentation/processors/CodeBlockProcessor.ts": {
       "bytes": 4844,
       "imports": [
@@ -2267,7 +1843,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
-      "bytes": 18028,
+      "bytes": 18003,
       "imports": [
         {
           "path": "obsidian",
@@ -2283,7 +1859,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/RefactoredUniversalLayoutRenderer.ts": {
-      "bytes": 8817,
+      "bytes": 8811,
       "imports": [
         {
           "path": "obsidian",
@@ -2371,7 +1947,7 @@
       "format": "esm"
     },
     "src/ExocortexPlugin.ts": {
-      "bytes": 8224,
+      "bytes": 7462,
       "imports": [
         {
           "path": "obsidian",
@@ -2399,24 +1975,9 @@
           "original": "./infrastructure/lifecycle/SettingsLifecycleManager"
         },
         {
-          "path": "src/infrastructure/lifecycle/GraphLifecycleManager.ts",
-          "kind": "import-statement",
-          "original": "./infrastructure/lifecycle/GraphLifecycleManager"
-        },
-        {
           "path": "src/presentation/command-controllers/AssetCommandController.ts",
           "kind": "import-statement",
           "original": "./presentation/command-controllers/AssetCommandController"
-        },
-        {
-          "path": "src/presentation/command-controllers/RDFCommandController.ts",
-          "kind": "import-statement",
-          "original": "./presentation/command-controllers/RDFCommandController"
-        },
-        {
-          "path": "src/presentation/processors/QueryProcessor.ts",
-          "kind": "import-statement",
-          "original": "./presentation/processors/QueryProcessor"
         },
         {
           "path": "src/presentation/processors/CodeBlockProcessor.ts",
@@ -2570,36 +2131,16 @@
           "path": "obsidian",
           "kind": "require-call",
           "external": true
-        },
-        {
-          "path": "obsidian",
-          "kind": "require-call",
-          "external": true
-        },
-        {
-          "path": "obsidian",
-          "kind": "require-call",
-          "external": true
-        },
-        {
-          "path": "obsidian",
-          "kind": "require-call",
-          "external": true
-        },
-        {
-          "path": "obsidian",
-          "kind": "require-call",
-          "external": true
         }
       ],
       "exports": [],
       "entryPoint": "src/main.ts",
       "inputs": {
         "src/main.ts": {
-          "bytesInOutput": 56
+          "bytesInOutput": 55
         },
         "src/ExocortexPlugin.ts": {
-          "bytesInOutput": 3388
+          "bytesInOutput": 3079
         },
         "src/infrastructure/lifecycle/LifecycleRegistry.ts": {
           "bytesInOutput": 406
@@ -2620,10 +2161,10 @@
           "bytesInOutput": 673
         },
         "src/infrastructure/adapters/ObsidianUIAdapter.ts": {
-          "bytesInOutput": 1204
+          "bytesInOutput": 1203
         },
         "src/infrastructure/adapters/ObsidianVaultAdapter.ts": {
-          "bytesInOutput": 1129
+          "bytesInOutput": 1128
         },
         "src/infrastructure/repositories/ObsidianAssetRepository.ts": {
           "bytesInOutput": 2278
@@ -2644,7 +2185,7 @@
           "bytesInOutput": 652
         },
         "src/domain/entities/Asset.ts": {
-          "bytesInOutput": 7360
+          "bytesInOutput": 7371
         },
         "src/shared/AbstractFileRepository.ts": {
           "bytesInOutput": 2177
@@ -2656,28 +2197,28 @@
           "bytesInOutput": 948
         },
         "src/infrastructure/repositories/ObsidianOntologyRepository.ts": {
-          "bytesInOutput": 1068
+          "bytesInOutput": 1066
         },
         "src/domain/entities/Ontology.ts": {
-          "bytesInOutput": 979
+          "bytesInOutput": 977
         },
         "src/infrastructure/repositories/ObsidianClassViewRepository.ts": {
-          "bytesInOutput": 4282
+          "bytesInOutput": 4281
         },
         "src/domain/core/AggregateRoot.ts": {
           "bytesInOutput": 239
         },
         "src/domain/aggregates/ClassView.ts": {
-          "bytesInOutput": 3009
+          "bytesInOutput": 3002
         },
         "src/domain/entities/UIButton.ts": {
-          "bytesInOutput": 1541
+          "bytesInOutput": 1539
         },
         "src/infrastructure/repositories/ObsidianButtonRepository.ts": {
-          "bytesInOutput": 5351
+          "bytesInOutput": 5342
         },
         "src/domain/entities/ButtonCommand.ts": {
-          "bytesInOutput": 3085
+          "bytesInOutput": 3083
         },
         "src/domain/entities/ClassLayout.ts": {
           "bytesInOutput": 1835
@@ -2704,7 +2245,7 @@
           "bytesInOutput": 1187
         },
         "src/domain/errors/ErrorAnalyzer.ts": {
-          "bytesInOutput": 4229
+          "bytesInOutput": 4227
         },
         "src/domain/core/EnhancedResult.ts": {
           "bytesInOutput": 1547
@@ -2713,7 +2254,7 @@
           "bytesInOutput": 104
         },
         "src/infrastructure/logging/LoggerConfig.ts": {
-          "bytesInOutput": 491
+          "bytesInOutput": 490
         },
         "node_modules/uuid/dist/esm-browser/stringify.js": {
           "bytesInOutput": 292
@@ -2731,13 +2272,13 @@
           "bytesInOutput": 0
         },
         "src/infrastructure/logging/Logger.ts": {
-          "bytesInOutput": 3075
+          "bytesInOutput": 3072
         },
         "src/infrastructure/logging/LoggerFactory.ts": {
-          "bytesInOutput": 565
+          "bytesInOutput": 562
         },
         "src/application/services/ErrorHandlerService.ts": {
-          "bytesInOutput": 4095
+          "bytesInOutput": 4089
         },
         "src/domain/services/OntologyProvisioningService.ts": {
           "bytesInOutput": 331
@@ -2746,34 +2287,7 @@
           "bytesInOutput": 364
         },
         "src/infrastructure/resilience/CircuitBreakerService.ts": {
-          "bytesInOutput": 923
-        },
-        "src/domain/semantic/core/Graph.ts": {
-          "bytesInOutput": 3761
-        },
-        "src/domain/semantic/core/Triple.ts": {
-          "bytesInOutput": 4960
-        },
-        "src/application/services/NamespaceManager.ts": {
-          "bytesInOutput": 2625
-        },
-        "src/application/services/RDFSerializer.ts": {
-          "bytesInOutput": 6055
-        },
-        "src/application/services/RDFParser.ts": {
-          "bytesInOutput": 6662
-        },
-        "src/application/services/RDFValidator.ts": {
-          "bytesInOutput": 3532
-        },
-        "src/infrastructure/performance/MemoryOptimizedImporter.ts": {
-          "bytesInOutput": 3323
-        },
-        "src/domain/semantic/core/IndexedGraph.ts": {
-          "bytesInOutput": 17082
-        },
-        "src/application/services/RDFService.ts": {
-          "bytesInOutput": 4551
+          "bytesInOutput": 918
         },
         "src/presentation/components/ButtonRenderer.ts": {
           "bytesInOutput": 4310
@@ -2782,31 +2296,31 @@
           "bytesInOutput": 5617
         },
         "src/domain/entities/SimplifiedLayoutBlock.ts": {
-          "bytesInOutput": 1906
+          "bytesInOutput": 1903
         },
         "src/application/services/DynamicBacklinksService.ts": {
           "bytesInOutput": 1642
         },
         "src/presentation/renderers/DynamicBacklinksBlockRenderer.ts": {
-          "bytesInOutput": 1992
+          "bytesInOutput": 1990
         },
         "src/presentation/renderers/RelationPropertiesBlockRenderer.ts": {
           "bytesInOutput": 6198
         },
         "src/presentation/renderers/SimplifiedRelationPropertiesRenderer.ts": {
-          "bytesInOutput": 2911
+          "bytesInOutput": 2913
         },
         "src/application/use-cases/GetLayoutForClassUseCase.ts": {
           "bytesInOutput": 975
         },
         "src/presentation/renderers/LayoutRenderer.ts": {
-          "bytesInOutput": 4461
+          "bytesInOutput": 4239
         },
         "src/infrastructure/container/DIContainer.ts": {
-          "bytesInOutput": 3703
+          "bytesInOutput": 3507
         },
         "src/infrastructure/providers/ServiceProvider.ts": {
-          "bytesInOutput": 1404
+          "bytesInOutput": 795
         },
         "src/infrastructure/lifecycle/SettingsLifecycleManager.ts": {
           "bytesInOutput": 581
@@ -2817,26 +2331,11 @@
         "src/presentation/settings/ExocortexSettingTab.ts": {
           "bytesInOutput": 3612
         },
-        "src/infrastructure/lifecycle/GraphLifecycleManager.ts": {
-          "bytesInOutput": 2639
-        },
         "src/presentation/modals/CreateAssetModal.ts": {
           "bytesInOutput": 7596
         },
         "src/presentation/command-controllers/AssetCommandController.ts": {
           "bytesInOutput": 398
-        },
-        "src/presentation/command-controllers/RDFCommandController.ts": {
-          "bytesInOutput": 767
-        },
-        "src/presentation/modals/ExportRDFModal.ts": {
-          "bytesInOutput": 7784
-        },
-        "src/presentation/modals/ImportRDFModal.ts": {
-          "bytesInOutput": 16176
-        },
-        "src/presentation/processors/QueryProcessor.ts": {
-          "bytesInOutput": 1505
         },
         "src/presentation/processors/CodeBlockProcessor.ts": {
           "bytesInOutput": 1524
@@ -2854,7 +2353,7 @@
           "bytesInOutput": 2896
         }
       },
-      "bytes": 234745
+      "bytes": 151947
     }
   }
 }
