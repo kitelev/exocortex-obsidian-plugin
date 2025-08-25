@@ -303,7 +303,9 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     });
 
     // Render as a table with two columns: Name and Instance Class
-    const table = groupDiv.createEl("table", { cls: "exocortex-relation-table" });
+    const table = groupDiv.createEl("table", {
+      cls: "exocortex-relation-table",
+    });
     const thead = table.createEl("thead");
     const tbody = table.createEl("tbody");
 
@@ -315,7 +317,8 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     // Add additional property columns if configured
     if (config.showProperties && config.showProperties.length > 0) {
       for (const prop of config.showProperties) {
-        if (prop !== "exo__Instance_class") { // Don't duplicate Instance Class column
+        if (prop !== "exo__Instance_class") {
+          // Don't duplicate Instance Class column
           headerRow.createEl("th", { text: prop });
         }
       }
@@ -340,22 +343,24 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       });
 
       // Second column: exo__Instance_class value
-      const instanceClass = relation.metadata?.exo__Instance_class || 
-                           relation.metadata?.["exo__Instance_class"] || 
-                           "-";
-      row.createEl("td", { 
+      const instanceClass =
+        relation.metadata?.exo__Instance_class ||
+        relation.metadata?.["exo__Instance_class"] ||
+        "-";
+      row.createEl("td", {
         text: instanceClass,
-        cls: "instance-class" 
+        cls: "instance-class",
       });
 
       // Additional property columns if configured
       if (config.showProperties && config.showProperties.length > 0) {
         for (const prop of config.showProperties) {
-          if (prop !== "exo__Instance_class") { // Don't duplicate Instance Class column
+          if (prop !== "exo__Instance_class") {
+            // Don't duplicate Instance Class column
             const value = this.getPropertyValue(relation, prop);
             row.createEl("td", {
               text: value !== undefined ? String(value) : "",
-              cls: "exocortex-property"
+              cls: "exocortex-property",
             });
           }
         }
@@ -431,7 +436,8 @@ export class UniversalLayoutRenderer implements IViewRenderer {
 
     if (config.showProperties) {
       for (const prop of config.showProperties) {
-        if (prop !== "exo__Instance_class") { // Don't duplicate Instance Class column
+        if (prop !== "exo__Instance_class") {
+          // Don't duplicate Instance Class column
           headerRow.createEl("th", { text: prop });
         }
       }
@@ -457,17 +463,19 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       });
 
       // Second column: exo__Instance_class value
-      const instanceClass = relation.metadata?.exo__Instance_class || 
-                           relation.metadata?.["exo__Instance_class"] || 
-                           "-";
-      row.createEl("td", { 
+      const instanceClass =
+        relation.metadata?.exo__Instance_class ||
+        relation.metadata?.["exo__Instance_class"] ||
+        "-";
+      row.createEl("td", {
         text: instanceClass,
-        cls: "instance-class" 
+        cls: "instance-class",
       });
 
       if (config.showProperties) {
         for (const prop of config.showProperties) {
-          if (prop !== "exo__Instance_class") { // Don't duplicate Instance Class column
+          if (prop !== "exo__Instance_class") {
+            // Don't duplicate Instance Class column
             const value = this.getPropertyValue(relation, prop);
             row.createEl("td", { text: value?.toString() || "" });
           }
