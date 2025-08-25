@@ -1,3 +1,39 @@
+## [6.1.3] - 2025-08-25
+
+### 🗄️ Smart Archived Asset Filtering
+
+#### Focus on Active Knowledge
+UniversalLayout and DynamicLayout now automatically hide archived assets, allowing you to focus on your active, relevant knowledge without clutter from archived items. This creates a cleaner, more productive workspace.
+
+#### What's New
+- **Automatic Filtering**: Assets with `archived: true` are hidden by default
+- **Smart Detection**: Recognizes various formats (`true`, `"true"`, `yes`, `1`)
+- **Clean Interface**: No empty sections or placeholders for archived items
+- **Consistent Behavior**: Works across all layout types (table, cards, list)
+- **Performance Optimized**: Efficient filtering even with thousands of assets
+
+#### Benefits
+- **Reduced Clutter**: See only what matters now, not what's been archived
+- **Better Focus**: Concentrate on active projects and current knowledge
+- **Cleaner Navigation**: Easier to find relevant assets without archived noise
+- **Improved Performance**: Less data to render means faster page loads
+
+#### How It Works
+Simply add `archived: true` to any asset's frontmatter to hide it from relation views:
+```yaml
+---
+archived: true
+---
+```
+
+The asset remains in your vault and searchable, but won't appear in UniversalLayout or DynamicLayout views, keeping your workspace focused and organized.
+
+#### Technical Excellence
+- **BDD-First Development**: Complete Gherkin specifications before implementation
+- **Comprehensive Testing**: 21+ test scenarios covering all edge cases
+- **Backward Compatible**: Assets without the property work as before
+- **Clean Architecture**: Filtering logic centralized in base renderer
+
 ## [6.1.2] - 2025-08-25
 
 ### 🔗 Clickable Instance Class Links in UniversalLayout

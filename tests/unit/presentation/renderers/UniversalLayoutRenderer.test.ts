@@ -310,4 +310,147 @@ describe("UniversalLayoutRenderer", () => {
       expect(cells?.[1]?.textContent).toBe("ems__Project");
     });
   });
+
+  describe("archived asset filtering", () => {
+    it("should exclude archived assets from relations", async () => {
+      const container = document.createElement("div");
+      const currentFile = new MockTFile("current-file.md", "Current File");
+
+      mockApp.workspace.getActiveFile.mockReturnValue(currentFile);
+      
+      // Setup three related files, one is archived
+      mockApp.metadataCache.resolvedLinks = {
+        "active-task.md": { "current-file.md": 1 },
+        "archived-project.md": { "current-file.md": 1 },
+        "normal-note.md": { "current-file.md": 1 },
+      };
+
+      // Mock file cache to return different metadata for each file
+      const fileCacheResponses = new Map([
+        ["active-task.md", { frontmatter: { exo__Instance_class: "ems__Task", archived: false } }],
+        ["archived-project.md", { frontmatter: { exo__Instance_class: "ems__Project", archived: true } }],
+        ["normal-note.md", { frontmatter: { exo__Instance_class: "ems__Note" } }],
+      ]);
+
+      mockApp.metadataCache.getFileCache.mockImplementation((file: TFile) => {
+        return fileCacheResponses.get(file.path) || { frontmatter: {} };
+      });
+
+      // Mock vault to return different files
+      const mockFiles = new Map([
+        ["active-task.md", new MockTFile("active-task.md", "Active Task")],
+        ["archived-project.md", new MockTFile("archived-project.md", "Archived Project")],
+        ["normal-note.md", new MockTFile("normal-note.md", "Normal Note")],
+      ]);
+
+      mockApp.vault.getAbstractFileByPath.mockImplementation((path: string) => {
+        return mockFiles.get(path) || null;
+      });
+
+      await renderer.render("UniversalLayout", container, {} as MarkdownPostProcessorContext);
+
+      // Check that only 2 rows are rendered (archived asset should be filtered out)
+      const rows = container.querySelectorAll("tbody tr");
+      expect(rows.length).toBe(2);
+
+      // Check that the archived project is not included
+      const cellTexts = Array.from(container.querySelectorAll("tbody td")).map(cell => cell.textContent);
+      expect(cellTexts).toContain("Active Task");
+      expect(cellTexts).toContain("Normal Note");
+      expect(cellTexts).not.toContain("Archived Project");
+    });
+
+    it("should handle various archived value formats", async () => {
+      const container = document.createElement("div");
+      const currentFile = new MockTFile("current-file.md", "Current File");
+
+      mockApp.workspace.getActiveFile.mockReturnValue(currentFile);
+      
+      mockApp.metadataCache.resolvedLinks = {
+        "archived-string-true.md": { "current-file.md": 1 },
+        "archived-string-yes.md": { "current-file.md": 1 },
+        "archived-number-1.md": { "current-file.md": 1 },
+        "active-string-false.md": { "current-file.md": 1 },
+        "active-number-0.md": { "current-file.md": 1 },
+        "no-archived-property.md": { "current-file.md": 1 },
+      };
+
+      const fileCacheResponses = new Map([
+        ["archived-string-true.md", { frontmatter: { archived: "true" } }],
+        ["archived-string-yes.md", { frontmatter: { archived: "yes" } }],
+        ["archived-number-1.md", { frontmatter: { archived: 1 } }],
+        ["active-string-false.md", { frontmatter: { archived: "false" } }],
+        ["active-number-0.md", { frontmatter: { archived: 0 } }],
+        ["no-archived-property.md", { frontmatter: { exo__Instance_class: "ems__Note" } }],
+      ]);
+
+      mockApp.metadataCache.getFileCache.mockImplementation((file: TFile) => {
+        return fileCacheResponses.get(file.path) || { frontmatter: {} };
+      });
+
+      const mockFiles = new Map();
+      for (const [path, _] of fileCacheResponses) {
+        mockFiles.set(path, new MockTFile(path, path.replace('.md', '').replace(/-/g, ' ')));
+      }
+
+      mockApp.vault.getAbstractFileByPath.mockImplementation((path: string) => {
+        return mockFiles.get(path) || null;
+      });
+
+      await renderer.render("UniversalLayout", container, {} as MarkdownPostProcessorContext);
+
+      // Should only render 3 rows (the non-archived files)
+      const rows = container.querySelectorAll("tbody tr");
+      expect(rows.length).toBe(3);
+
+      const cellTexts = Array.from(container.querySelectorAll("tbody td")).map(cell => cell.textContent);
+      
+      // Active files should be included
+      expect(cellTexts).toContain("active string false");
+      expect(cellTexts).toContain("active number 0");
+      expect(cellTexts).toContain("no archived property");
+      
+      // Archived files should be excluded
+      expect(cellTexts).not.toContain("archived string true");
+      expect(cellTexts).not.toContain("archived string yes");
+      expect(cellTexts).not.toContain("archived number 1");
+    });
+
+    it("should display message when all related assets are archived", async () => {
+      const container = document.createElement("div");
+      const currentFile = new MockTFile("current-file.md", "Current File");
+
+      mockApp.workspace.getActiveFile.mockReturnValue(currentFile);
+      
+      mockApp.metadataCache.resolvedLinks = {
+        "archived-1.md": { "current-file.md": 1 },
+        "archived-2.md": { "current-file.md": 1 },
+      };
+
+      const fileCacheResponses = new Map([
+        ["archived-1.md", { frontmatter: { archived: true, exo__Instance_class: "ems__Task" } }],
+        ["archived-2.md", { frontmatter: { archived: "yes", exo__Instance_class: "ems__Project" } }],
+      ]);
+
+      mockApp.metadataCache.getFileCache.mockImplementation((file: TFile) => {
+        return fileCacheResponses.get(file.path) || { frontmatter: {} };
+      });
+
+      const mockFiles = new Map([
+        ["archived-1.md", new MockTFile("archived-1.md", "Archived 1")],
+        ["archived-2.md", new MockTFile("archived-2.md", "Archived 2")],
+      ]);
+
+      mockApp.vault.getAbstractFileByPath.mockImplementation((path: string) => {
+        return mockFiles.get(path) || null;
+      });
+
+      await renderer.render("UniversalLayout", container, {} as MarkdownPostProcessorContext);
+
+      // Should display message indicating no related assets found (because all are archived)
+      const messageElement = container.querySelector(".exocortex-message");
+      expect(messageElement).toBeTruthy();
+      expect(messageElement?.textContent).toContain("No related assets found");
+    });
+  });
 });

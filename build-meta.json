@@ -2267,7 +2267,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
-      "bytes": 16966,
+      "bytes": 18028,
       "imports": [
         {
           "path": "obsidian",
@@ -2842,7 +2842,7 @@
           "bytesInOutput": 1524
         },
         "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
-          "bytesInOutput": 5689
+          "bytesInOutput": 5957
         },
         "src/presentation/renderers/RefactoredUniversalLayoutRenderer.ts": {
           "bytesInOutput": 3054
@@ -2854,7 +2854,7 @@
           "bytesInOutput": 2896
         }
       },
-      "bytes": 234477
+      "bytes": 234745
     }
   }
 }

@@ -116,6 +116,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
   /**
    * Get asset relations for the current file
    * Analyzes HOW each asset references the current one (via which property or body)
+   * Filters out archived assets to maintain clean output
    */
   private async getAssetRelations(
     file: TFile,
@@ -131,6 +132,11 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         if (sourceFile instanceof TFile) {
           const fileCache = cache.getFileCache(sourceFile);
           const metadata = fileCache?.frontmatter || {};
+
+          // Skip archived assets
+          if (this.isAssetArchived(metadata)) {
+            continue;
+          }
 
           // Determine how this asset references the current file
           const propertyName = this.findReferencingProperty(
@@ -174,6 +180,38 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     }
 
     return relations;
+  }
+
+  /**
+   * Check if an asset is archived based on frontmatter property
+   * Handles various truthy values (true, "true", "yes", 1) gracefully
+   */
+  private isAssetArchived(metadata: Record<string, any>): boolean {
+    const archived = metadata?.archived;
+    
+    // Handle undefined/null
+    if (archived === undefined || archived === null) {
+      return false;
+    }
+    
+    // Handle boolean
+    if (typeof archived === "boolean") {
+      return archived;
+    }
+    
+    // Handle string values (case-insensitive)
+    if (typeof archived === "string") {
+      const lowerValue = archived.toLowerCase().trim();
+      return lowerValue === "true" || lowerValue === "yes" || lowerValue === "1";
+    }
+    
+    // Handle numeric values
+    if (typeof archived === "number") {
+      return archived !== 0;
+    }
+    
+    // Default to false for any other type
+    return false;
   }
 
   /**

@@ -50,6 +50,7 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
   /**
    * Collect all relations for a given file
    * Common implementation for all relation renderers
+   * Filters out archived assets to maintain clean output
    */
   protected async collectAllRelations(file: TFile): Promise<AssetRelation[]> {
     const relations: AssetRelation[] = [];
@@ -63,6 +64,11 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
         if (sourceFile instanceof TFile) {
           const fileCache = cache.getFileCache(sourceFile);
           const metadata = fileCache?.frontmatter || {};
+
+          // Skip archived assets
+          if (this.isAssetArchived(metadata)) {
+            continue;
+          }
 
           const propertyName = this.findReferencingProperty(
             metadata,
@@ -87,6 +93,38 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
     }
 
     return relations.sort((a, b) => b.modified - a.modified);
+  }
+
+  /**
+   * Check if an asset is archived based on frontmatter property
+   * Handles various truthy values (true, "true", "yes", 1) gracefully
+   */
+  protected isAssetArchived(metadata: Record<string, any>): boolean {
+    const archived = metadata?.archived;
+    
+    // Handle undefined/null
+    if (archived === undefined || archived === null) {
+      return false;
+    }
+    
+    // Handle boolean
+    if (typeof archived === "boolean") {
+      return archived;
+    }
+    
+    // Handle string values (case-insensitive)
+    if (typeof archived === "string") {
+      const lowerValue = archived.toLowerCase().trim();
+      return lowerValue === "true" || lowerValue === "yes" || lowerValue === "1";
+    }
+    
+    // Handle numeric values
+    if (typeof archived === "number") {
+      return archived !== 0;
+    }
+    
+    // Default to false for any other type
+    return false;
   }
 
   /**
