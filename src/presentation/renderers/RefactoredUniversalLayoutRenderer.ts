@@ -212,15 +212,12 @@ export class RefactoredUniversalLayoutRenderer extends BaseAssetRelationsRendere
         this.app.workspace.openLinkText(relation.path, "", false);
       });
 
-      // Instance Class column
-      const instanceClass =
-        relation.metadata?.exo__Instance_class ||
-        relation.metadata?.["exo__Instance_class"] ||
-        "-";
-      row.createEl("td", {
-        text: instanceClass,
+      // Instance Class column - render as clickable links
+      const instanceClassCell = row.createEl("td", {
         cls: "instance-class",
       });
+      
+      this.renderInstanceClassLinks(instanceClassCell, relation.metadata);
 
       if (config.showProperties) {
         for (const prop of config.showProperties) {

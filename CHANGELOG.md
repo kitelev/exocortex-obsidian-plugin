@@ -1,3 +1,32 @@
+## [6.1.2] - 2025-08-25
+
+### 🔗 Clickable Instance Class Links in UniversalLayout
+
+#### Navigate Directly to Class Definitions
+The `exo__Instance_class` values in UniversalLayout tables are now interactive clickable links, enabling instant navigation to class definitions and dramatically improving your knowledge graph exploration experience.
+
+#### What's New
+- **Clickable Links**: All instance class values are now active links to their definitions
+- **Array Support**: Handles multiple class values with comma-separated clickable links
+- **Smart Link Parsing**: Supports `[[Link]]`, `[[Link|Alias]]`, and plain text formats
+- **Navigation Modifiers**: Full Obsidian navigation support:
+  - Regular click: Opens in current pane
+  - Ctrl/Cmd+Click: Opens in new tab
+  - Shift+Click: Opens in new split
+  - Middle click: Opens in new tab
+
+#### Benefits
+- **Faster Exploration**: Jump directly from asset lists to class definitions
+- **Better Understanding**: Quickly explore inheritance hierarchies and relationships
+- **Improved Workflow**: Seamlessly navigate your semantic knowledge structure
+- **Enhanced Productivity**: Reduce clicks and time spent searching for class definitions
+
+#### Technical Excellence
+- **BDD-First Development**: Complete Gherkin specifications before implementation
+- **Comprehensive Testing**: 16 test scenarios covering all edge cases
+- **Type-Safe Implementation**: Full TypeScript with proper Obsidian API usage
+- **Performance Optimized**: Efficient event handling and DOM manipulation
+
 ## [6.1.1] - 2025-08-25
 
 ### 🐛 Fix: Instance Class Column Now Displays in BaseAssetRelationsRenderer

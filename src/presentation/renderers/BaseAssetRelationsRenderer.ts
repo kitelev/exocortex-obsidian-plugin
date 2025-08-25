@@ -277,15 +277,12 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
       href: relation.path,
     });
 
-    // Instance Class column
-    const instanceClass =
-      relation.metadata?.exo__Instance_class ||
-      relation.metadata?.["exo__Instance_class"] ||
-      "-";
-    row.createEl("td", {
-      text: instanceClass,
+    // Instance Class column - render as clickable links
+    const instanceClassCell = row.createEl("td", {
       cls: "exocortex-instance-class-cell",
     });
+    
+    this.renderInstanceClassLinks(instanceClassCell, relation.metadata);
 
     // Handle standard click events
     linkEl.addEventListener("click", (event: MouseEvent) => {
@@ -394,6 +391,107 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
         event.stopPropagation();
         this.app.workspace.openLinkText(relation.path, "", true);
       }
+    });
+  }
+
+  /**
+   * Render instance class values as clickable links
+   * Handles both single values and arrays, with or without wiki-link brackets
+   */
+  protected renderInstanceClassLinks(
+    container: HTMLElement,
+    metadata: Record<string, any>,
+  ): void {
+    const instanceClasses = metadata?.exo__Instance_class || metadata?.["exo__Instance_class"];
+    
+    if (!instanceClasses) {
+      container.createSpan({ text: "-", cls: "no-instance-class" });
+      return;
+    }
+
+    // Convert to array if it's a single value
+    const classArray = Array.isArray(instanceClasses) 
+      ? instanceClasses 
+      : [instanceClasses];
+
+    if (classArray.length === 0) {
+      container.createSpan({ text: "-", cls: "no-instance-class" });
+      return;
+    }
+
+    // Render each class as a link
+    classArray.forEach((classValue, index) => {
+      if (index > 0) {
+        container.createSpan({ text: ", ", cls: "separator" });
+      }
+
+      const classStr = String(classValue);
+      
+      // Parse the link - handle [[Link]], [[Link|Alias]], or plain text
+      let linkPath: string;
+      let linkText: string;
+      
+      if (classStr.startsWith("[[") && classStr.endsWith("]]")) {
+        // Wiki-link format
+        const inner = classStr.slice(2, -2);
+        const pipeIndex = inner.indexOf("|");
+        
+        if (pipeIndex !== -1) {
+          // Piped link [[Path|Alias]]
+          linkPath = inner.substring(0, pipeIndex);
+          linkText = inner.substring(pipeIndex + 1);
+        } else {
+          // Regular link [[Path]]
+          linkPath = inner;
+          linkText = inner;
+        }
+      } else {
+        // Plain text - treat as link path
+        linkPath = classStr;
+        linkText = classStr;
+      }
+
+      // Create the link element
+      const linkEl = container.createEl("a", {
+        text: linkText,
+        cls: "instance-class-link internal-link",
+        href: linkPath.endsWith(".md") ? linkPath : `${linkPath}.md`,
+      });
+
+      // Handle click events for navigation
+      linkEl.addEventListener("click", (event: MouseEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        // Handle modifiers for different opening modes
+        if (event.metaKey || event.ctrlKey) {
+          // Cmd/Ctrl+Click: open in new tab
+          this.app.workspace.openLinkText(linkPath, "", true);
+        } else if (event.shiftKey) {
+          // Shift+Click: open in new split
+          const leaf = this.app.workspace.getLeaf("split");
+          if (leaf) {
+            const file = this.app.vault.getAbstractFileByPath(
+              linkPath.endsWith(".md") ? linkPath : `${linkPath}.md`
+            );
+            if (file instanceof TFile) {
+              leaf.openFile(file);
+            }
+          }
+        } else {
+          // Regular click: open in current pane
+          this.app.workspace.openLinkText(linkPath, "", false);
+        }
+      });
+
+      // Handle middle mouse button
+      linkEl.addEventListener("auxclick", (event: MouseEvent) => {
+        if (event.button === 1) {
+          event.preventDefault();
+          event.stopPropagation();
+          this.app.workspace.openLinkText(linkPath, "", true);
+        }
+      });
     });
   }
 
