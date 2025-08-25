@@ -213,7 +213,7 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
 
   /**
    * Render a single group of relations as a table
-   * Each asset is displayed as a row with "Name" column
+   * Each asset is displayed as a row with "Name" and "Instance Class" columns
    */
   protected renderRelationGroup(
     container: HTMLElement,
@@ -240,7 +240,11 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
     const headerRow = thead.createEl("tr");
     headerRow.createEl("th", {
       text: "Name",
-      cls: "exocortex-table-header",
+      cls: "exocortex-table-header sortable",
+    });
+    headerRow.createEl("th", {
+      text: "Instance Class",
+      cls: "exocortex-table-header sortable",
     });
 
     // Create table body
@@ -271,6 +275,16 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
       text: relation.title,
       cls: "exocortex-relation-link internal-link",
       href: relation.path,
+    });
+
+    // Instance Class column
+    const instanceClass =
+      relation.metadata?.exo__Instance_class ||
+      relation.metadata?.["exo__Instance_class"] ||
+      "-";
+    row.createEl("td", {
+      text: instanceClass,
+      cls: "exocortex-instance-class-cell",
     });
 
     // Handle standard click events

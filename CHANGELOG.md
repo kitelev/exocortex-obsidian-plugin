@@ -1,3 +1,21 @@
+## [6.1.1] - 2025-08-25
+
+### 🐛 Fix: Instance Class Column Now Displays in BaseAssetRelationsRenderer
+
+#### Fixed the Missing Second Column
+The `exo__Instance_class` column was not displaying because the feature was implemented in the wrong renderer. This update correctly adds the Instance Class column to the BaseAssetRelationsRenderer which is actually used by the RefactoredUniversalLayoutRenderer in production.
+
+#### What Was Fixed
+- **BaseAssetRelationsRenderer**: Added Instance Class column to the table header and rows
+- **RefactoredUniversalLayoutRenderer**: Updated table rendering for legacy mode consistency
+- **Proper Renderer**: Changed the correct renderer that's actually used in production
+
+#### Technical Details
+- Modified `renderRelationGroup` method in BaseAssetRelationsRenderer
+- Modified `renderRelationRow` method to display exo__Instance_class value
+- Updated `renderTable` method in RefactoredUniversalLayoutRenderer for consistency
+- Added "sortable" CSS class to column headers for future sorting functionality
+
 ## [6.1.0] - 2025-08-25
 
 ### 🎯 Enhanced UniversalLayout with Instance Class Display

@@ -180,11 +180,15 @@ export class RefactoredUniversalLayoutRenderer extends BaseAssetRelationsRendere
 
     const thead = table.createEl("thead");
     const headerRow = thead.createEl("tr");
-    headerRow.createEl("th", { text: "Title" });
+    headerRow.createEl("th", { text: "Name", cls: "sortable" });
+    headerRow.createEl("th", { text: "Instance Class", cls: "sortable" });
 
     if (config.showProperties) {
       for (const prop of config.showProperties) {
-        headerRow.createEl("th", { text: prop });
+        if (prop !== "exo__Instance_class") {
+          // Don't duplicate Instance Class column
+          headerRow.createEl("th", { text: prop });
+        }
       }
     }
 
@@ -195,6 +199,7 @@ export class RefactoredUniversalLayoutRenderer extends BaseAssetRelationsRendere
     for (const relation of relations) {
       const row = tbody.createEl("tr");
 
+      // Name column with link
       const titleCell = row.createEl("td");
       const linkEl = titleCell.createEl("a", {
         text: relation.title,
@@ -207,10 +212,23 @@ export class RefactoredUniversalLayoutRenderer extends BaseAssetRelationsRendere
         this.app.workspace.openLinkText(relation.path, "", false);
       });
 
+      // Instance Class column
+      const instanceClass =
+        relation.metadata?.exo__Instance_class ||
+        relation.metadata?.["exo__Instance_class"] ||
+        "-";
+      row.createEl("td", {
+        text: instanceClass,
+        cls: "instance-class",
+      });
+
       if (config.showProperties) {
         for (const prop of config.showProperties) {
-          const value = this.getPropertyValue(relation, prop);
-          row.createEl("td", { text: value?.toString() || "" });
+          if (prop !== "exo__Instance_class") {
+            // Don't duplicate Instance Class column
+            const value = this.getPropertyValue(relation, prop);
+            row.createEl("td", { text: value?.toString() || "" });
+          }
         }
       }
 
