@@ -216,7 +216,7 @@ export class RefactoredUniversalLayoutRenderer extends BaseAssetRelationsRendere
       const instanceClassCell = row.createEl("td", {
         cls: "instance-class",
       });
-      
+
       this.renderInstanceClassLinks(instanceClassCell, relation.metadata);
 
       if (config.showProperties) {

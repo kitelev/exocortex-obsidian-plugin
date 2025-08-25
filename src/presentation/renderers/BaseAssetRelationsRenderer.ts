@@ -101,28 +101,30 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
    */
   protected isAssetArchived(metadata: Record<string, any>): boolean {
     const archived = metadata?.archived;
-    
+
     // Handle undefined/null
     if (archived === undefined || archived === null) {
       return false;
     }
-    
+
     // Handle boolean
     if (typeof archived === "boolean") {
       return archived;
     }
-    
+
     // Handle string values (case-insensitive)
     if (typeof archived === "string") {
       const lowerValue = archived.toLowerCase().trim();
-      return lowerValue === "true" || lowerValue === "yes" || lowerValue === "1";
+      return (
+        lowerValue === "true" || lowerValue === "yes" || lowerValue === "1"
+      );
     }
-    
+
     // Handle numeric values
     if (typeof archived === "number") {
       return archived !== 0;
     }
-    
+
     // Default to false for any other type
     return false;
   }
@@ -319,7 +321,7 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
     const instanceClassCell = row.createEl("td", {
       cls: "exocortex-instance-class-cell",
     });
-    
+
     this.renderInstanceClassLinks(instanceClassCell, relation.metadata);
 
     // Handle standard click events
@@ -440,16 +442,17 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
     container: HTMLElement,
     metadata: Record<string, any>,
   ): void {
-    const instanceClasses = metadata?.exo__Instance_class || metadata?.["exo__Instance_class"];
-    
+    const instanceClasses =
+      metadata?.exo__Instance_class || metadata?.["exo__Instance_class"];
+
     if (!instanceClasses) {
       container.createSpan({ text: "-", cls: "no-instance-class" });
       return;
     }
 
     // Convert to array if it's a single value
-    const classArray = Array.isArray(instanceClasses) 
-      ? instanceClasses 
+    const classArray = Array.isArray(instanceClasses)
+      ? instanceClasses
       : [instanceClasses];
 
     if (classArray.length === 0) {
@@ -464,16 +467,16 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
       }
 
       const classStr = String(classValue);
-      
+
       // Parse the link - handle [[Link]], [[Link|Alias]], or plain text
       let linkPath: string;
       let linkText: string;
-      
+
       if (classStr.startsWith("[[") && classStr.endsWith("]]")) {
         // Wiki-link format
         const inner = classStr.slice(2, -2);
         const pipeIndex = inner.indexOf("|");
-        
+
         if (pipeIndex !== -1) {
           // Piped link [[Path|Alias]]
           linkPath = inner.substring(0, pipeIndex);
@@ -510,7 +513,7 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
           const leaf = this.app.workspace.getLeaf("split");
           if (leaf) {
             const file = this.app.vault.getAbstractFileByPath(
-              linkPath.endsWith(".md") ? linkPath : `${linkPath}.md`
+              linkPath.endsWith(".md") ? linkPath : `${linkPath}.md`,
             );
             if (file instanceof TFile) {
               leaf.openFile(file);

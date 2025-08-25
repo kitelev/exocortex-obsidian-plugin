@@ -114,12 +114,6 @@ export class LayoutRenderer {
   ): Promise<void> {
     const frontmatter = metadata.frontmatter;
 
-    // Check for simplified LayoutBlock configuration first
-    if (frontmatter["ui__LayoutBlock_display_properties"]) {
-      await this.renderSimplifiedLayout(container, file, frontmatter);
-      return;
-    }
-
     // Check for simplified ui__LayoutBlock configuration first
     const simplifiedConfig = frontmatter["ui__LayoutBlock_display_properties"];
     if (
@@ -271,14 +265,6 @@ export class LayoutRenderer {
     metadata: any,
     dv: any,
   ): Promise<void> {
-    // Check for simplified configuration in default layout too
-    if (
-      metadata.frontmatter &&
-      metadata.frontmatter["ui__LayoutBlock_display_properties"]
-    ) {
-      await this.renderSimplifiedLayout(container, file, metadata.frontmatter);
-      return;
-    }
     const frontmatter = metadata.frontmatter;
 
     // Check for simplified configuration in default layout too

@@ -211,7 +211,7 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
       // Act
       await renderer.renderLayout(container, mockFile, metadata, null);
 
-      // Assert: Should fall back to normal default layout
+      // Assert: Empty array should fall back to normal default layout
       const dynamicBacklinks = container.querySelector(
         ".exocortex-block-dynamic-backlinks"
       );
@@ -246,7 +246,8 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
       // Assert: Should render error message
       const errorElement = container.querySelector(".exocortex-error");
       expect(errorElement).toBeTruthy();
-      expect(errorElement?.textContent).toContain("Layout Error");
+      expect(errorElement?.textContent).toContain("Invalid simplified layout configuration");
+      expect(errorElement?.textContent).toContain("Invalid property reference format");
     });
   });
 });

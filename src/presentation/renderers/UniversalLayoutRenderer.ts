@@ -188,28 +188,30 @@ export class UniversalLayoutRenderer implements IViewRenderer {
    */
   private isAssetArchived(metadata: Record<string, any>): boolean {
     const archived = metadata?.archived;
-    
+
     // Handle undefined/null
     if (archived === undefined || archived === null) {
       return false;
     }
-    
+
     // Handle boolean
     if (typeof archived === "boolean") {
       return archived;
     }
-    
+
     // Handle string values (case-insensitive)
     if (typeof archived === "string") {
       const lowerValue = archived.toLowerCase().trim();
-      return lowerValue === "true" || lowerValue === "yes" || lowerValue === "1";
+      return (
+        lowerValue === "true" || lowerValue === "yes" || lowerValue === "1"
+      );
     }
-    
+
     // Handle numeric values
     if (typeof archived === "number") {
       return archived !== 0;
     }
-    
+
     // Default to false for any other type
     return false;
   }
