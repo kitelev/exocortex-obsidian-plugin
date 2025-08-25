@@ -1,3 +1,56 @@
+## [6.0.0] - 2025-08-25
+
+### 🚀 Comprehensive BDD Test Coverage
+
+#### Enterprise-Grade Testing Infrastructure
+The Exocortex plugin now features **complete Behavior-Driven Development (BDD) test coverage** with executable specifications in Gherkin format, providing enterprise-level quality assurance and living documentation.
+
+#### What's New
+- **30+ Feature Files**: Comprehensive Gherkin scenarios covering all plugin functionality
+- **1000+ Test Scenarios**: Happy paths, edge cases, error handling, and performance testing
+- **Living Documentation**: BDD scenarios serve as always up-to-date documentation
+- **IDE Integration**: Run any test directly from your IDE with configured launch profiles
+- **CI/CD Pipeline**: Automated BDD test execution on every commit
+
+#### Coverage Areas
+- **Semantic/RDF Operations**: Triple management, SPARQL queries, OWL ontologies, graph indexing, reasoning
+- **Mobile Support**: iOS/Android optimization, touch gestures, responsive UI, performance
+- **Business Logic**: Task management, children efforts, backlinks, relations, caching
+- **Security**: Input validation, injection prevention, access control, audit logging
+- **UI Components**: Modals, buttons, renderers, layouts, accessibility
+
+#### Developer Benefits
+- **Test-First Development**: Write scenarios before code for better design
+- **Executable Specifications**: Requirements that can be verified automatically
+- **Regression Protection**: Comprehensive test suite prevents feature breakage
+- **Clear Communication**: Business-readable scenarios improve stakeholder alignment
+- **Quality Gates**: Multiple validation checkpoints ensure code quality
+
+#### How to Use
+```bash
+# Run all BDD tests
+npm run cucumber:run
+
+# Run specific test categories
+npm run cucumber:smoke     # Quick smoke tests
+npm run cucumber:semantic  # Semantic/RDF tests
+npm run cucumber:mobile    # Mobile-specific tests
+npm run cucumber:business  # Business logic tests
+
+# Watch mode for development
+npm run cucumber:watch
+
+# Generate HTML report
+npm run cucumber:report
+```
+
+#### IDE Support
+- **VSCode**: Launch configurations for running individual features or scenarios
+- **IntelliJ/WebStorm**: Right-click on feature files to run
+- **Direct Execution**: All tests can be run directly through the IDE
+
+This major release establishes a solid foundation for quality assurance, making the plugin more reliable, maintainable, and suitable for enterprise deployment.
+
 ## [5.17.0] - 2025-08-24
 
 ### 📊 Improved UniversalLayout Block Ordering

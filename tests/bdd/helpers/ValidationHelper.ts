@@ -605,7 +605,7 @@ export interface PropertySchema {
   validator?: (value: any) => boolean;
 }
 
-export interface ValidationSchema<T> {
+export type ValidationSchema<T> = {
   [K in keyof T]?: PropertySchema;
 } & {
   __strict?: boolean;

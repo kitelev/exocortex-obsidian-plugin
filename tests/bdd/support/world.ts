@@ -1,4 +1,5 @@
-import { setWorldConstructor, World, IWorldOptions } from '@cucumber/cucumber';
+// NOTE: This file is for jest-cucumber, not @cucumber/cucumber
+// The setWorldConstructor is not used with jest-cucumber
 import { DIContainer } from '../../../src/infrastructure/container/DIContainer';
 import { FakeVaultAdapter } from '../../helpers/FakeVaultAdapter';
 import { createMockVault } from '../../__mocks__/obsidian';
@@ -48,7 +49,7 @@ export interface IBDDWorld {
   cleanupTasks: Array<() => Promise<void> | void>;
 }
 
-export class BDDWorld extends World implements IBDDWorld {
+export class BDDWorld implements IBDDWorld {
   public container!: DIContainer;
   public vaultAdapter!: FakeVaultAdapter;
   public graph!: IndexedGraph;
@@ -75,8 +76,7 @@ export class BDDWorld extends World implements IBDDWorld {
   
   public cleanupTasks: Array<() => Promise<void> | void> = [];
   
-  constructor(options: IWorldOptions) {
-    super(options);
+  constructor(options: any) {
   }
   
   /**
@@ -287,5 +287,6 @@ export class BDDWorld extends World implements IBDDWorld {
   }
 }
 
-// Register the world constructor
-setWorldConstructor(BDDWorld);
+// NOTE: setWorldConstructor is not used with jest-cucumber
+// This world class is instantiated directly in test files
+export default BDDWorld;

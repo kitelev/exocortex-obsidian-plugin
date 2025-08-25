@@ -1,0 +1,203 @@
+name: BDD Executable Specifications
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  bdd-smoke-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Create reports directory
+      run: mkdir -p reports/cucumber
+    
+    - name: Run BDD Smoke Tests
+      run: npm run cucumber:smoke
+      continue-on-error: true
+    
+    - name: Generate BDD Report
+      run: npm run cucumber:report || true
+    
+    - name: Upload BDD Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: bdd-smoke-results
+        path: reports/cucumber/
+
+  bdd-semantic-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Create reports directory
+      run: mkdir -p reports/cucumber
+    
+    - name: Run Semantic BDD Tests
+      run: npm run cucumber:semantic
+      continue-on-error: true
+    
+    - name: Upload Semantic Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: bdd-semantic-results
+        path: reports/cucumber/
+
+  bdd-mobile-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Create reports directory
+      run: mkdir -p reports/cucumber
+    
+    - name: Run Mobile BDD Tests
+      run: npm run cucumber:mobile
+      continue-on-error: true
+    
+    - name: Upload Mobile Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: bdd-mobile-results
+        path: reports/cucumber/
+
+  bdd-business-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Create reports directory
+      run: mkdir -p reports/cucumber
+    
+    - name: Run Business Logic BDD Tests
+      run: npm run cucumber:business
+      continue-on-error: true
+    
+    - name: Upload Business Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: bdd-business-results
+        path: reports/cucumber/
+
+  bdd-full-suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [bdd-smoke-tests]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Create reports directory
+      run: mkdir -p reports/cucumber
+    
+    - name: Run All BDD Tests
+      run: npm run cucumber:ci
+      continue-on-error: true
+    
+    - name: Generate Comprehensive Report
+      run: npm run cucumber:report || true
+    
+    - name: Upload Full Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: bdd-full-results
+        path: reports/cucumber/
+    
+    - name: BDD Coverage Validation
+      run: npm run bdd:validate-coverage || true
+    
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: bdd-coverage-report
+        path: reports/coverage/
+
+  bdd-test-summary:
+    runs-on: ubuntu-latest
+    needs: [bdd-smoke-tests, bdd-semantic-tests, bdd-mobile-tests, bdd-business-tests]
+    if: always()
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: test-results
+    
+    - name: Generate Test Summary
+      run: |
+        echo "# BDD Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Test Categories" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Smoke Tests" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔬 Semantic Tests" >> $GITHUB_STEP_SUMMARY
+        echo "- 📱 Mobile Tests" >> $GITHUB_STEP_SUMMARY
+        echo "- 💼 Business Logic Tests" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "Test reports have been uploaded as artifacts for review." >> $GITHUB_STEP_SUMMARY

@@ -1,6 +1,6 @@
 {
   "name": "exocortex-obsidian-plugin",
-  "version": "5.17.0",
+  "version": "6.0.0",
   "description": "Exocortex: A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
   "main": "main.js",
   "engines": {
@@ -46,6 +46,14 @@
     "bdd:generate-report": "node scripts/generate-bdd-report.js",
     "bdd:coverage-check": "npm run bdd:validate-coverage && npm run bdd:generate-report",
     "cucumber": "cucumber-js",
+    "cucumber:run": "cucumber-js features/**/*.feature --require features/step_definitions/**/*.ts --require features/support/**/*.ts --require-module ts-node/register",
+    "cucumber:watch": "cucumber-js features/**/*.feature --require features/step_definitions/**/*.ts --require features/support/**/*.ts --require-module ts-node/register --watch",
+    "cucumber:ci": "cucumber-js features/**/*.feature --require features/step_definitions/**/*.ts --require features/support/**/*.ts --require-module ts-node/register --profile ci",
+    "cucumber:smoke": "cucumber-js features/**/*.feature --tags @smoke --require features/step_definitions/**/*.ts --require features/support/**/*.ts --require-module ts-node/register",
+    "cucumber:semantic": "cucumber-js features/**/*.feature --tags @semantic --require features/step_definitions/**/*.ts --require features/support/**/*.ts --require-module ts-node/register",
+    "cucumber:mobile": "cucumber-js features/**/*.feature --tags @mobile --require features/step_definitions/**/*.ts --require features/support/**/*.ts --require-module ts-node/register",
+    "cucumber:business": "cucumber-js features/**/*.feature --tags @business --require features/step_definitions/**/*.ts --require features/support/**/*.ts --require-module ts-node/register",
+    "cucumber:report": "cucumber-html-reporter -c cucumber-html-reporter.js",
     "test:ui:headless": "CI=true wdio run wdio.conf.ci.ts",
     "test:ui:macos": "wdio run wdio.conf.macos.ts",
     "test:ui:with-fallback": "bash scripts/run-ui-tests-with-fallback.sh",
