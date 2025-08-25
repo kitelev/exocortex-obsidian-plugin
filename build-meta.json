@@ -1601,7 +1601,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/SimplifiedRelationPropertiesRenderer.ts": {
-      "bytes": 6792,
+      "bytes": 6822,
       "imports": [
         {
           "path": "obsidian",
@@ -2267,7 +2267,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
-      "bytes": 13330,
+      "bytes": 13363,
       "imports": [
         {
           "path": "obsidian",
@@ -2794,7 +2794,7 @@
           "bytesInOutput": 6198
         },
         "src/presentation/renderers/SimplifiedRelationPropertiesRenderer.ts": {
-          "bytesInOutput": 2908
+          "bytesInOutput": 2911
         },
         "src/application/use-cases/GetLayoutForClassUseCase.ts": {
           "bytesInOutput": 975
@@ -2854,7 +2854,7 @@
           "bytesInOutput": 2896
         }
       },
-      "bytes": 232943
+      "bytes": 232946
     }
   }
 }

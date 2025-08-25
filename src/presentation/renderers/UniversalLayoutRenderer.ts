@@ -302,14 +302,32 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       cls: "exocortex-relation-group-header",
     });
 
-    // Render the relations list
-    const listEl = groupDiv.createEl("ul", { cls: "exocortex-relation-list" });
+    // Render as a table with two columns: Name and Instance Class
+    const table = groupDiv.createEl("table", { cls: "exocortex-relation-table" });
+    const thead = table.createEl("thead");
+    const tbody = table.createEl("tbody");
 
+    // Create header row
+    const headerRow = thead.createEl("tr");
+    headerRow.createEl("th", { text: "Name", cls: "sortable" });
+    headerRow.createEl("th", { text: "Instance Class", cls: "sortable" });
+
+    // Add additional property columns if configured
+    if (config.showProperties && config.showProperties.length > 0) {
+      for (const prop of config.showProperties) {
+        if (prop !== "exo__Instance_class") { // Don't duplicate Instance Class column
+          headerRow.createEl("th", { text: prop });
+        }
+      }
+    }
+
+    // Render each relation as a table row
     for (const relation of relations) {
-      const itemEl = listEl.createEl("li", { cls: "exocortex-relation-item" });
+      const row = tbody.createEl("tr", { cls: "exocortex-relation-row" });
 
-      // Create link to the file
-      const linkEl = itemEl.createEl("a", {
+      // First column: Asset name with link
+      const nameCell = row.createEl("td", { cls: "asset-name" });
+      const linkEl = nameCell.createEl("a", {
         text: relation.title,
         cls: "internal-link",
         href: relation.path,
@@ -321,19 +339,32 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         this.app.workspace.openLinkText(relation.path, "", false);
       });
 
-      // Show properties if configured
+      // Second column: exo__Instance_class value
+      const instanceClass = relation.metadata?.exo__Instance_class || 
+                           relation.metadata?.["exo__Instance_class"] || 
+                           "-";
+      row.createEl("td", { 
+        text: instanceClass,
+        cls: "instance-class" 
+      });
+
+      // Additional property columns if configured
       if (config.showProperties && config.showProperties.length > 0) {
-        const propsEl = itemEl.createDiv({ cls: "exocortex-properties" });
         for (const prop of config.showProperties) {
-          const value = this.getPropertyValue(relation, prop);
-          if (value !== undefined) {
-            propsEl.createSpan({
-              text: `${prop}: ${value}`,
-              cls: "exocortex-property",
+          if (prop !== "exo__Instance_class") { // Don't duplicate Instance Class column
+            const value = this.getPropertyValue(relation, prop);
+            row.createEl("td", {
+              text: value !== undefined ? String(value) : "",
+              cls: "exocortex-property"
             });
           }
         }
       }
+    }
+
+    // Add responsive mobile class if needed
+    if ((window as any).isMobile) {
+      table.addClass("mobile-responsive");
     }
   }
 
@@ -395,11 +426,14 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     const tbody = table.createEl("tbody");
 
     const headerRow = thead.createEl("tr");
-    headerRow.createEl("th", { text: "Title" });
+    headerRow.createEl("th", { text: "Name", cls: "sortable" });
+    headerRow.createEl("th", { text: "Instance Class", cls: "sortable" });
 
     if (config.showProperties) {
       for (const prop of config.showProperties) {
-        headerRow.createEl("th", { text: prop });
+        if (prop !== "exo__Instance_class") { // Don't duplicate Instance Class column
+          headerRow.createEl("th", { text: prop });
+        }
       }
     }
 
@@ -409,6 +443,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     for (const relation of relations) {
       const row = tbody.createEl("tr");
 
+      // First column: Name with link
       const titleCell = row.createEl("td");
       const linkEl = titleCell.createEl("a", {
         text: relation.title,
@@ -421,10 +456,21 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         this.app.workspace.openLinkText(relation.path, "", false);
       });
 
+      // Second column: exo__Instance_class value
+      const instanceClass = relation.metadata?.exo__Instance_class || 
+                           relation.metadata?.["exo__Instance_class"] || 
+                           "-";
+      row.createEl("td", { 
+        text: instanceClass,
+        cls: "instance-class" 
+      });
+
       if (config.showProperties) {
         for (const prop of config.showProperties) {
-          const value = this.getPropertyValue(relation, prop);
-          row.createEl("td", { text: value?.toString() || "" });
+          if (prop !== "exo__Instance_class") { // Don't duplicate Instance Class column
+            const value = this.getPropertyValue(relation, prop);
+            row.createEl("td", { text: value?.toString() || "" });
+          }
         }
       }
 
@@ -437,6 +483,11 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       row.createEl("td", {
         text: new Date(relation.modified).toLocaleDateString(),
       });
+    }
+
+    // Add responsive mobile class if needed
+    if ((window as any).isMobile) {
+      table.addClass("mobile-responsive");
     }
   }
 

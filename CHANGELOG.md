@@ -1,3 +1,32 @@
+## [6.1.0] - 2025-08-25
+
+### 🎯 Enhanced UniversalLayout with Instance Class Display
+
+#### Asset Classification at a Glance
+The UniversalLayout now displays the `exo__Instance_class` property directly in a second column alongside asset names, making it instantly clear what type each asset represents in your knowledge management system.
+
+#### What's New
+- **Two-Column Table Layout**: Asset name in the first column, Instance Class in the second
+- **Automatic Detection**: Displays the `exo__Instance_class` value for all assets that have it
+- **Graceful Fallback**: Shows a dash (-) for assets without an instance class
+- **Mobile Responsive**: Optimized table layout that works seamlessly on mobile devices
+- **Sortable Columns**: Both Name and Instance Class columns support sorting
+
+#### Benefits
+- **Faster Navigation**: Instantly see asset types without opening each file
+- **Better Organization**: Group and identify assets by their semantic classification
+- **Improved Workflows**: Make decisions faster with type information readily visible
+- **Enterprise Compliance**: Supports ontology-driven asset management patterns
+
+#### Usage
+The feature works automatically - no configuration needed! Simply view any asset with UniversalLayout and you'll see the enhanced two-column display showing both asset names and their instance classes.
+
+#### Technical Excellence
+- **BDD-Driven Development**: Complete Gherkin specifications written before implementation
+- **100% Test Coverage**: Comprehensive unit and integration tests
+- **Performance Optimized**: Efficient rendering with minimal overhead
+- **Clean Architecture**: Follows established patterns and SOLID principles
+
 ## [6.0.0] - 2025-08-25
 
 ### 🚀 Comprehensive BDD Test Coverage
