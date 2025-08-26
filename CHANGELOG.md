@@ -1,3 +1,22 @@
+## [7.2.0] - 2025-08-26
+
+### 🎯 Deep Repository Restructuring
+
+#### Major Improvements
+- **Documentation Organization**: Moved all CLAUDE-specific documentation to `.claude/docs/` for better structure
+- **Removed Experimental Code**: Deleted the experimental `turbo/` directory with unused scripts
+- **Cleaner Configuration**: Removed duplicate Cucumber configuration files
+- **Streamlined Documentation**: Consolidated duplicate TESTING.md files
+- **Better Project Organization**: All auxiliary documentation now properly categorized
+
+#### What Changed
+- Moved 7 CLAUDE documentation files from root to `.claude/docs/`
+- Removed experimental `turbo/` directory and its contents
+- Deleted duplicate `cucumber-html-reporter.js` and `cucumber.config.js`
+- Removed duplicate `TESTING.md` from root (kept docs version)
+- Maintained all actively used scripts and configurations
+- All tests pass and build succeeds after restructuring
+
 ## [7.1.0] - 2025-08-26
 
 ### 🧹 Repository Cleanup & Maintenance
