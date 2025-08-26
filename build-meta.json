@@ -1450,7 +1450,7 @@
       "format": "esm"
     },
     "src/infrastructure/container/DIContainer.ts": {
-      "bytes": 11091,
+      "bytes": 11090,
       "imports": [
         {
           "path": "obsidian",
@@ -1631,7 +1631,7 @@
       "format": "esm"
     },
     "src/infrastructure/providers/ServiceProvider.ts": {
-      "bytes": 2856,
+      "bytes": 2854,
       "imports": [
         {
           "path": "obsidian",
