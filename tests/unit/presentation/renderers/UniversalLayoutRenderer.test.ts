@@ -93,7 +93,7 @@ describe("UniversalLayoutRenderer", () => {
 
       // Render the layout
       const ctx = {} as MarkdownPostProcessorContext;
-      await renderer.render("UniversalLayout", container, ctx);
+      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, ctx);
 
       // Check that table was created
       const table = container.querySelector("table");
@@ -126,7 +126,7 @@ describe("UniversalLayoutRenderer", () => {
       });
       mockApp.vault.getAbstractFileByPath.mockReturnValue(relatedFile);
 
-      await renderer.render("UniversalLayout", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, {} as MarkdownPostProcessorContext);
 
       const cells = container.querySelectorAll("tbody td");
       expect(cells[0]?.textContent).toBe("Generic Note");
@@ -167,7 +167,7 @@ describe("UniversalLayoutRenderer", () => {
         return asset ? new MockTFile(path, asset.name) : null;
       });
 
-      await renderer.render("UniversalLayout", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, {} as MarkdownPostProcessorContext);
 
       const rows = container.querySelectorAll("tbody tr");
       expect(rows.length).toBeGreaterThan(0);
@@ -197,7 +197,7 @@ describe("UniversalLayoutRenderer", () => {
       });
       mockApp.vault.getAbstractFileByPath.mockReturnValue(relatedFile);
 
-      await renderer.render("UniversalLayout", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, {} as MarkdownPostProcessorContext);
 
       const nameHeader = container.querySelector("th:first-child");
       const classHeader = container.querySelector("th:nth-child(2)");
@@ -225,7 +225,7 @@ describe("UniversalLayoutRenderer", () => {
       });
       mockApp.vault.getAbstractFileByPath.mockReturnValue(relatedFile);
 
-      await renderer.render("UniversalLayout", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, {} as MarkdownPostProcessorContext);
 
       const table = container.querySelector("table");
       expect(table?.classList.contains("mobile-responsive")).toBeTruthy();
@@ -255,7 +255,7 @@ describe("UniversalLayoutRenderer", () => {
       mockApp.vault.getAbstractFileByPath.mockReturnValue(relatedFile);
 
       // Render with showProperties including exo__Instance_class
-      const config = "UniversalLayout\nshowProperties: exo__Instance_class,status,priority";
+      const config = "UniversalLayout\ngroupByProperty: false\nlayout: table\nshowProperties: exo__Instance_class,status,priority";
       await renderer.render(config, container, {} as MarkdownPostProcessorContext);
 
       // Count the number of headers - should be 4: Name, exo__Instance_class, status, priority
@@ -347,7 +347,7 @@ describe("UniversalLayoutRenderer", () => {
         return mockFiles.get(path) || null;
       });
 
-      await renderer.render("UniversalLayout", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, {} as MarkdownPostProcessorContext);
 
       // Check that only 2 rows are rendered (archived asset should be filtered out)
       const rows = container.querySelectorAll("tbody tr");
@@ -397,7 +397,7 @@ describe("UniversalLayoutRenderer", () => {
         return mockFiles.get(path) || null;
       });
 
-      await renderer.render("UniversalLayout", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, {} as MarkdownPostProcessorContext);
 
       // Should only render 3 rows (the non-archived files)
       const rows = container.querySelectorAll("tbody tr");
@@ -445,7 +445,7 @@ describe("UniversalLayoutRenderer", () => {
         return mockFiles.get(path) || null;
       });
 
-      await renderer.render("UniversalLayout", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, {} as MarkdownPostProcessorContext);
 
       // Should display message indicating no related assets found (because all are archived)
       const messageElement = container.querySelector(".exocortex-message");

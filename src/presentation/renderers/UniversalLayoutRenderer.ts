@@ -348,12 +348,18 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       });
 
       // Second column: exo__Instance_class value
-      const instanceClass =
+      const instanceClassRaw =
         relation.metadata?.exo__Instance_class ||
         relation.metadata?.["exo__Instance_class"] ||
         "-";
+      
+      // Handle arrays and convert to string safely
+      const instanceClass = Array.isArray(instanceClassRaw) 
+        ? (instanceClassRaw[0] || "-")
+        : (instanceClassRaw || "-");
+        
       row.createEl("td", {
-        text: instanceClass,
+        text: String(instanceClass),
         cls: "instance-class",
       });
 
@@ -468,12 +474,18 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       });
 
       // Second column: exo__Instance_class value
-      const instanceClass =
+      const instanceClassRaw =
         relation.metadata?.exo__Instance_class ||
         relation.metadata?.["exo__Instance_class"] ||
         "-";
+      
+      // Handle arrays and convert to string safely
+      const instanceClass = Array.isArray(instanceClassRaw) 
+        ? (instanceClassRaw[0] || "-")
+        : (instanceClassRaw || "-");
+        
       row.createEl("td", {
-        text: instanceClass,
+        text: String(instanceClass),
         cls: "instance-class",
       });
 
@@ -713,12 +725,18 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       });
 
       // Second column: exo__Instance_class value
-      const instanceClass =
+      const instanceClassRaw =
         relation.metadata?.exo__Instance_class ||
         relation.metadata?.["exo__Instance_class"] ||
         "-";
+      
+      // Handle arrays and convert to string safely
+      const instanceClass = Array.isArray(instanceClassRaw) 
+        ? (instanceClassRaw[0] || "-")
+        : (instanceClassRaw || "-");
+        
       row.createEl("td", {
-        text: instanceClass,
+        text: String(instanceClass),
         cls: "instance-class",
       });
 
