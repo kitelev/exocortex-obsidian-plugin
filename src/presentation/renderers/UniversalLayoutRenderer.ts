@@ -43,6 +43,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
   private logger: ILogger;
   private assetRepository: IAssetRepository;
   private app: any;
+  private sortState: Map<string, { column: string; order: 'asc' | 'desc' }> = new Map();
 
   constructor(private serviceProvider: ServiceProvider) {
     this.logger = LoggerFactory.createForClass(UniversalLayoutRenderer);
@@ -349,23 +350,76 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     const thead = table.createEl("thead");
     const tbody = table.createEl("tbody");
 
-    // Create header row
+    // Create header row with sorting
     const headerRow = thead.createEl("tr");
-    headerRow.createEl("th", { text: "Name", cls: "sortable" });
-    headerRow.createEl("th", { text: "exo__Instance_class", cls: "sortable" });
+    
+    // Get or initialize sort state for this group
+    const sortStateKey = `group_${groupName}`;
+    if (!this.sortState.has(sortStateKey)) {
+      this.sortState.set(sortStateKey, { column: 'Name', order: 'asc' });
+    }
+    const currentSort = this.sortState.get(sortStateKey)!;
+
+    // Create sortable headers
+    const nameHeader = headerRow.createEl("th", { 
+      text: "Name", 
+      cls: `sortable ${currentSort.column === 'Name' ? `sorted-${currentSort.order}` : ''}`
+    });
+    const instanceClassHeader = headerRow.createEl("th", { 
+      text: "exo__Instance_class", 
+      cls: `sortable ${currentSort.column === 'exo__Instance_class' ? `sorted-${currentSort.order}` : ''}`
+    });
+
+    // Add sort indicator arrows
+    if (currentSort.column === 'Name') {
+      nameHeader.createSpan({ text: currentSort.order === 'asc' ? ' ▲' : ' ▼', cls: 'sort-indicator' });
+    }
+    if (currentSort.column === 'exo__Instance_class') {
+      instanceClassHeader.createSpan({ text: currentSort.order === 'asc' ? ' ▲' : ' ▼', cls: 'sort-indicator' });
+    }
+
+    // Add click handlers for sorting
+    nameHeader.addEventListener('click', async () => {
+      this.sortTable(tbody, relations, 'Name', sortStateKey, config);
+      // Re-render the group to update sort indicators
+      groupDiv.empty();
+      await this.renderRelationGroup(container, groupName, relations, config);
+    });
+
+    instanceClassHeader.addEventListener('click', async () => {
+      this.sortTable(tbody, relations, 'exo__Instance_class', sortStateKey, config);
+      // Re-render the group to update sort indicators
+      groupDiv.empty();
+      await this.renderRelationGroup(container, groupName, relations, config);
+    });
 
     // Add additional property columns if configured
     if (config.showProperties && config.showProperties.length > 0) {
       for (const prop of config.showProperties) {
         if (prop !== "exo__Instance_class") {
-          // Don't duplicate Instance Class column
-          headerRow.createEl("th", { text: prop });
+          const propHeader = headerRow.createEl("th", { 
+            text: prop, 
+            cls: `sortable ${currentSort.column === prop ? `sorted-${currentSort.order}` : ''}` 
+          });
+          
+          if (currentSort.column === prop) {
+            propHeader.createSpan({ text: currentSort.order === 'asc' ? ' ▲' : ' ▼', cls: 'sort-indicator' });
+          }
+          
+          propHeader.addEventListener('click', async () => {
+            this.sortTable(tbody, relations, prop, sortStateKey, config);
+            groupDiv.empty();
+            await this.renderRelationGroup(container, groupName, relations, config);
+          });
         }
       }
     }
 
+    // Sort relations based on current sort state
+    const sortedRelations = this.sortRelations(relations, currentSort.column, currentSort.order);
+
     // Render each relation as a table row
-    for (const relation of relations) {
+    for (const relation of sortedRelations) {
       const row = tbody.createEl("tr", { cls: "exocortex-relation-row" });
 
       // First column: Asset name with link
@@ -723,5 +777,67 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       text: `Error: ${message}`,
       cls: "exocortex-error-message",
     });
+  }
+
+  /**
+   * Sort relations array based on column and order
+   */
+  private sortRelations(
+    relations: AssetRelation[],
+    column: string,
+    order: 'asc' | 'desc'
+  ): AssetRelation[] {
+    return [...relations].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      if (column === 'Name') {
+        aValue = a.title.toLowerCase();
+        bValue = b.title.toLowerCase();
+      } else if (column === 'exo__Instance_class') {
+        aValue = (a.metadata?.exo__Instance_class || a.metadata?.['exo__Instance_class'] || '').toLowerCase();
+        bValue = (b.metadata?.exo__Instance_class || b.metadata?.['exo__Instance_class'] || '').toLowerCase();
+      } else {
+        aValue = this.getPropertyValue(a, column);
+        bValue = this.getPropertyValue(b, column);
+        // Convert to string for comparison if values exist
+        if (aValue !== undefined) aValue = String(aValue).toLowerCase();
+        if (bValue !== undefined) bValue = String(bValue).toLowerCase();
+      }
+
+      // Handle undefined/null values - put them at the end
+      if (aValue === undefined || aValue === null || aValue === '') return 1;
+      if (bValue === undefined || bValue === null || bValue === '') return -1;
+
+      // Compare values
+      if (aValue < bValue) return order === 'asc' ? -1 : 1;
+      if (aValue > bValue) return order === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  /**
+   * Handle table sorting when header is clicked
+   */
+  private sortTable(
+    tbody: HTMLElement,
+    relations: AssetRelation[],
+    column: string,
+    sortStateKey: string,
+    config: UniversalLayoutConfig
+  ): void {
+    const currentSort = this.sortState.get(sortStateKey)!;
+    
+    // Update sort state
+    if (currentSort.column === column) {
+      // Toggle order if same column
+      currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+    } else {
+      // New column, default to ascending
+      currentSort.column = column;
+      currentSort.order = 'asc';
+    }
+    
+    this.sortState.set(sortStateKey, currentSort);
   }
 }

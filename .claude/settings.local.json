@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "WebSearch",
-      "Read(//Users/kitelev/vault-2025/03 Knowledge/kitelev/**)"
+      "Read(//Users/kitelev/vault-2025/03 Knowledge/kitelev/**)",
+      "Read(/Users/kitelev/vault-2025/02 Ontology/1 Exo/exo/Class/**)"
     ],
     "deny": [],
     "ask": []

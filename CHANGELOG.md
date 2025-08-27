@@ -1,3 +1,33 @@
+## [7.4.0] - 2025-08-27
+
+### 🎯 Interactive Table Sorting
+
+#### What's New
+- **Clickable Column Headers**: Click any column header to sort the table by that column
+- **Visual Sort Indicators**: Arrow indicators (▲ for ascending, ▼ for descending) show the current sort direction
+- **Toggle Sort Direction**: Click the same column again to reverse the sort order
+- **Smart Sorting**: Automatically handles text, numbers, and empty values correctly
+
+#### Features
+- **Name Column Sorting**: Sort assets alphabetically by their names
+- **Instance Class Sorting**: Sort by the exo__Instance_class property values
+- **Additional Property Sorting**: Any configured additional columns are also sortable
+- **Persistent Sort State**: Each table group maintains its own sort state during the session
+- **Visual Feedback**: Hover effects and active column highlighting for better user experience
+
+#### Technical Improvements
+- Implemented sorting logic in UniversalLayoutRenderer
+- Added sorting support to BaseAssetRelationsRenderer
+- Enhanced CSS with sortable column styles and indicators
+- Maintained performance with efficient sorting algorithms
+- Preserved all existing functionality while adding new features
+
+#### Benefits for Users
+- **Better Organization**: Quickly find assets by sorting them in the order you need
+- **Improved Navigation**: Sort large lists to locate specific items faster
+- **Enhanced Usability**: Intuitive click-to-sort interface familiar from other applications
+- **Visual Clarity**: Clear indicators show which column is sorted and in what direction
+
 ## [7.3.0] - 2025-08-27
 
 ### 🎯 Updated Table Column Naming Convention
