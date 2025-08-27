@@ -138,7 +138,7 @@ Given('I have a UniversalLayout table with exo__Instance_class column', () => {
       <thead>
         <tr>
           <th>Name</th>
-          <th>Instance Class</th>
+          <th>exo__Instance_class</th>
         </tr>
       </thead>
       <tbody>
@@ -254,7 +254,7 @@ Then('I should see a table with the following content:', (dataTable: any) => {
   expectedRows.forEach((expectedRow: any, index: number) => {
     const actualCells = actualRows[index].querySelectorAll('td');
     expect(actualCells[0].textContent).toBe(expectedRow['Name']);
-    expect(actualCells[1].textContent).toBe(expectedRow['Instance Class']);
+    expect(actualCells[1].textContent).toBe(expectedRow['exo__Instance_class']);
   });
 });
 
@@ -356,7 +356,7 @@ Then('the copied text should include both columns', () => {
   const selection = window.getSelection();
   const text = selection?.toString();
   expect(text).toContain('Name');
-  expect(text).toContain('Instance Class');
+  expect(text).toContain('exo__Instance_class');
 });
 
 Then('the format should be suitable for pasting into spreadsheets', () => {
@@ -369,5 +369,5 @@ Then('the column headers should be included', () => {
   const selection = window.getSelection();
   const text = selection?.toString();
   expect(text).toContain('Name');
-  expect(text).toContain('Instance Class');
+  expect(text).toContain('exo__Instance_class');
 });

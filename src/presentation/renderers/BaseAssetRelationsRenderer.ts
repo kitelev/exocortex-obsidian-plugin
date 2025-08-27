@@ -283,7 +283,7 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
       cls: "exocortex-table-header sortable",
     });
     headerRow.createEl("th", {
-      text: "Instance Class",
+      text: "exo__Instance_class",
       cls: "exocortex-table-header sortable",
     });
 

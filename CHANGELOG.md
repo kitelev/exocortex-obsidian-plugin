@@ -1,3 +1,22 @@
+## [7.3.0] - 2025-08-27
+
+### 🎯 Updated Table Column Naming Convention
+
+#### What Changed
+- **Column Header Update**: The second column in UniversalLayout tables now displays `exo__Instance_class` instead of "Instance Class"
+- **Consistency Improvement**: This change aligns the UI display with the actual property name used in the data model
+- **Multiple Renderer Updates**: Updated all three renderers that display this table: UniversalLayoutRenderer, RefactoredUniversalLayoutRenderer, and BaseAssetRelationsRenderer
+
+#### Benefits for Users
+- **Clearer Property Reference**: The column header now exactly matches the property name you use in your notes
+- **Better Consistency**: No more confusion between display names and actual property names
+- **Improved Data Model Transparency**: You can see exactly which property is being displayed
+
+#### Technical Details
+- Updated table header text in all relevant renderer components
+- Updated all related tests to match the new column naming
+- Maintained backward compatibility with existing data
+
 ## [7.2.0] - 2025-08-26
 
 ### 🎯 Deep Repository Restructuring

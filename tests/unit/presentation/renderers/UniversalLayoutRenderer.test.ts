@@ -102,7 +102,7 @@ describe("UniversalLayoutRenderer", () => {
       // Check headers
       const headers = container.querySelectorAll("th");
       expect(headers[0]?.textContent).toBe("Name");
-      expect(headers[1]?.textContent).toBe("Instance Class");
+      expect(headers[1]?.textContent).toBe("exo__Instance_class");
 
       // Check data cells
       const cells = container.querySelectorAll("tbody td");
@@ -258,12 +258,12 @@ describe("UniversalLayoutRenderer", () => {
       const config = "UniversalLayout\nshowProperties: exo__Instance_class,status,priority";
       await renderer.render(config, container, {} as MarkdownPostProcessorContext);
 
-      // Count the number of headers - should be 4: Name, Instance Class, status, priority
+      // Count the number of headers - should be 4: Name, exo__Instance_class, status, priority
       const headers = container.querySelectorAll("th");
       const headerTexts = Array.from(headers).map(h => h.textContent);
       
-      // Check that Instance Class appears only once
-      const instanceClassCount = headerTexts.filter(t => t === "Instance Class").length;
+      // Check that exo__Instance_class appears only once
+      const instanceClassCount = headerTexts.filter(t => t === "exo__Instance_class").length;
       expect(instanceClassCount).toBe(1);
       
       // Check that other properties are present
@@ -297,11 +297,11 @@ describe("UniversalLayoutRenderer", () => {
       const table = container.querySelector("table.exocortex-table");
       expect(table).toBeTruthy();
 
-      // Check headers include Instance Class
+      // Check headers include exo__Instance_class
       const headers = container.querySelectorAll("th");
       const headerTexts = Array.from(headers).map(h => h.textContent);
       expect(headerTexts).toContain("Name");
-      expect(headerTexts).toContain("Instance Class");
+      expect(headerTexts).toContain("exo__Instance_class");
 
       // Check data cells
       const firstRow = container.querySelector("tbody tr");

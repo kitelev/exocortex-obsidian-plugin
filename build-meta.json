@@ -1843,7 +1843,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
-      "bytes": 18003,
+      "bytes": 18008,
       "imports": [
         {
           "path": "obsidian",
@@ -1859,7 +1859,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/RefactoredUniversalLayoutRenderer.ts": {
-      "bytes": 8811,
+      "bytes": 8816,
       "imports": [
         {
           "path": "obsidian",
@@ -2341,10 +2341,10 @@
           "bytesInOutput": 1524
         },
         "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
-          "bytesInOutput": 5957
+          "bytesInOutput": 5962
         },
         "src/presentation/renderers/RefactoredUniversalLayoutRenderer.ts": {
-          "bytesInOutput": 3054
+          "bytesInOutput": 3059
         },
         "src/presentation/renderers/AssetListRenderer.ts": {
           "bytesInOutput": 3861
@@ -2353,7 +2353,7 @@
           "bytesInOutput": 2896
         }
       },
-      "bytes": 151947
+      "bytes": 151957
     }
   }
 }

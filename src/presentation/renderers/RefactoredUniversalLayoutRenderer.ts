@@ -181,7 +181,7 @@ export class RefactoredUniversalLayoutRenderer extends BaseAssetRelationsRendere
     const thead = table.createEl("thead");
     const headerRow = thead.createEl("tr");
     headerRow.createEl("th", { text: "Name", cls: "sortable" });
-    headerRow.createEl("th", { text: "Instance Class", cls: "sortable" });
+    headerRow.createEl("th", { text: "exo__Instance_class", cls: "sortable" });
 
     if (config.showProperties) {
       for (const prop of config.showProperties) {

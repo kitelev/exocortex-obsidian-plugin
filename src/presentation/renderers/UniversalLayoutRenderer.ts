@@ -352,7 +352,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     // Create header row
     const headerRow = thead.createEl("tr");
     headerRow.createEl("th", { text: "Name", cls: "sortable" });
-    headerRow.createEl("th", { text: "Instance Class", cls: "sortable" });
+    headerRow.createEl("th", { text: "exo__Instance_class", cls: "sortable" });
 
     // Add additional property columns if configured
     if (config.showProperties && config.showProperties.length > 0) {
@@ -472,7 +472,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
 
     const headerRow = thead.createEl("tr");
     headerRow.createEl("th", { text: "Name", cls: "sortable" });
-    headerRow.createEl("th", { text: "Instance Class", cls: "sortable" });
+    headerRow.createEl("th", { text: "exo__Instance_class", cls: "sortable" });
 
     if (config.showProperties) {
       for (const prop of config.showProperties) {
