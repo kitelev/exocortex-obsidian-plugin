@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext, TFile } from "obsidian";
+import { MarkdownPostProcessorContext, TFile, TAbstractFile } from "obsidian";
 import {
   BaseAssetRelationsRenderer,
   AssetRelation,
@@ -51,11 +51,11 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
         return;
       }
 
-      // Find layout configuration
+      // Find layout configuration (now checks defaultLayout first)
       console.log(
         `DynamicLayout: Looking for ClassLayout for class: ${className}`,
       );
-      const layoutConfig = await this.findLayoutConfiguration(className);
+      const layoutConfig = await this.findLayoutConfiguration(className, metadata);
       if (!layoutConfig) {
         // Fallback to UniversalLayout with informational message
         const message = `There is no specific Layout for class [[${className}]] - UniversalLayout will be used`;
@@ -119,11 +119,34 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
 
   /**
    * Find layout configuration for a given class
+   * First checks for defaultLayout property, then falls back to search
    */
   private async findLayoutConfiguration(
     className: string,
+    classMetadata?: Record<string, any>,
   ): Promise<DynamicLayoutConfig | null> {
     try {
+      // PERFORMANCE OPTIMIZATION: Check for defaultLayout property first
+      if (classMetadata) {
+        const defaultLayoutRef = this.extractDefaultLayout(classMetadata);
+        if (defaultLayoutRef) {
+          console.log(
+            `DynamicLayout: Found defaultLayout reference: ${defaultLayoutRef}`,
+          );
+          const layoutConfig = await this.findLayoutByUUID(defaultLayoutRef);
+          if (layoutConfig) {
+            console.log(
+              `DynamicLayout: Successfully loaded layout via defaultLayout property`,
+            );
+            return layoutConfig;
+          }
+          console.log(
+            `DynamicLayout: defaultLayout UUID not found, falling back to search`,
+          );
+        }
+      }
+
+      // FALLBACK: Original search logic
       const vault = this.app.vault;
       const files = vault.getMarkdownFiles();
 
@@ -320,5 +343,97 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
     }
 
     return orderedGroups;
+  }
+
+  /**
+   * Extract defaultLayout property from class metadata
+   * Handles various property naming conventions
+   */
+  private extractDefaultLayout(metadata: Record<string, any>): string | null {
+    // Check multiple possible property names
+    const possibleProps = [
+      'exo__Class_defaultLayout',
+      'defaultLayout',
+      'ui__defaultLayout',
+    ];
+
+    for (const prop of possibleProps) {
+      if (metadata[prop]) {
+        return this.extractBasename(metadata[prop]);
+      }
+    }
+
+    // Check for class-specific defaultLayout pattern
+    const instanceClass = metadata.exo__Instance_class;
+    if (instanceClass) {
+      const className = this.extractBasename(instanceClass);
+      const classSpecificProp = `${className}_defaultLayout`;
+      if (metadata[classSpecificProp]) {
+        return this.extractBasename(metadata[classSpecificProp]);
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Find layout configuration by UUID - O(1) direct lookup
+   * Checks both filename and frontmatter UID
+   */
+  private async findLayoutByUUID(
+    uuid: string,
+  ): Promise<DynamicLayoutConfig | null> {
+    try {
+      const vault = this.app.vault;
+      
+      // First try direct filename lookup
+      const directFile = vault.getAbstractFileByPath(`${uuid}.md`);
+      if (directFile && directFile instanceof TFile) {
+        const metadata = this.getFileMetadata(directFile as TFile);
+        if (metadata && this.isLayoutClass(metadata.exo__Instance_class)) {
+          const relationsToShow = this.parseRelationsToShow(
+            metadata.ui__ClassLayout_relationsToShow,
+          );
+          return { relationsToShow };
+        }
+      }
+
+      // Also check in Inbox folder
+      const inboxFile = vault.getAbstractFileByPath(`01 Inbox/${uuid}.md`);
+      if (inboxFile && inboxFile instanceof TFile) {
+        const metadata = this.getFileMetadata(inboxFile as TFile);
+        if (metadata && this.isLayoutClass(metadata.exo__Instance_class)) {
+          const relationsToShow = this.parseRelationsToShow(
+            metadata.ui__ClassLayout_relationsToShow,
+          );
+          return { relationsToShow };
+        }
+      }
+
+      // Search by UID in frontmatter (still optimized - single pass)
+      const files = vault.getMarkdownFiles();
+      for (const file of files) {
+        const metadata = this.getFileMetadata(file);
+        if (!metadata) continue;
+
+        // Check if this is a ClassLayout and has matching UID
+        if (
+          this.isLayoutClass(metadata.exo__Instance_class) &&
+          (metadata.exo__Asset_uid === uuid || 
+           metadata.uid === uuid ||
+           file.basename === uuid)
+        ) {
+          const relationsToShow = this.parseRelationsToShow(
+            metadata.ui__ClassLayout_relationsToShow,
+          );
+          return { relationsToShow };
+        }
+      }
+
+      return null;
+    } catch (error) {
+      console.error(`Error finding layout by UUID ${uuid}:`, error);
+      return null;
+    }
   }
 }

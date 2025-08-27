@@ -1843,7 +1843,7 @@
       "format": "esm"
     },
     "src/shared/utils/AssetRelationUtils.ts": {
-      "bytes": 5491,
+      "bytes": 5637,
       "imports": [
         {
           "path": "obsidian",
@@ -1854,7 +1854,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
-      "bytes": 19541,
+      "bytes": 19622,
       "imports": [
         {
           "path": "obsidian",
@@ -1947,7 +1947,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/DynamicLayoutRenderer.ts": {
-      "bytes": 9637,
+      "bytes": 13575,
       "imports": [
         {
           "path": "obsidian",
@@ -2048,6 +2048,11 @@
   "outputs": {
     "main.js": {
       "imports": [
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
         {
           "path": "obsidian",
           "kind": "require-call",
@@ -2369,10 +2374,10 @@
           "bytesInOutput": 3861
         },
         "src/presentation/renderers/DynamicLayoutRenderer.ts": {
-          "bytesInOutput": 2896
+          "bytesInOutput": 4128
         }
       },
-      "bytes": 154663
+      "bytes": 155895
     }
   }
 }

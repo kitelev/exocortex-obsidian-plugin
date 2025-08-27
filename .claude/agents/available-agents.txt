@@ -15,4 +15,5 @@ result-pattern-agent:Result pattern and functional programming
 security-agent:Security analysis and compliance
 swebok-engineer:Software engineering best practices
 test-fixer-agent:Fix failing tests
-cicd-optimization-agent
+cicd-optimization-agent:CI/CD pipeline optimization and workflow improvement
+enterprise-prompt-writer:Craft perfect prompts for /enterprise command execution
