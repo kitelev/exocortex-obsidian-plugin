@@ -34,7 +34,8 @@ export interface AssetRelationsConfig {
  */
 export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
   protected app: App;
-  protected sortState: Map<string, { column: string; order: 'asc' | 'desc' }> = new Map();
+  protected sortState: Map<string, { column: string; order: "asc" | "desc" }> =
+    new Map();
 
   constructor(app: App) {
     this.app = app;
@@ -96,7 +97,6 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
 
     return relations.sort((a, b) => b.modified - a.modified);
   }
-
 
   /**
    * Group relations by the property they reference through
@@ -186,59 +186,71 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
     // Get or initialize sort state for this group
     const sortStateKey = `group_${groupName}`;
     if (!this.sortState.has(sortStateKey)) {
-      this.sortState.set(sortStateKey, { column: 'Name', order: 'asc' });
+      this.sortState.set(sortStateKey, { column: "Name", order: "asc" });
     }
     const currentSort = this.sortState.get(sortStateKey)!;
 
     // Create table header
     const thead = table.createEl("thead");
     const headerRow = thead.createEl("tr");
-    
+
     // Name header with sorting
     const nameHeader = headerRow.createEl("th", {
       text: "Name",
-      cls: `exocortex-table-header sortable ${currentSort.column === 'Name' ? `sorted-${currentSort.order}` : ''}`,
+      cls: `exocortex-table-header sortable ${currentSort.column === "Name" ? `sorted-${currentSort.order}` : ""}`,
     });
-    
+
     // Add sort indicator for Name
-    if (currentSort.column === 'Name') {
-      nameHeader.createSpan({ 
-        text: currentSort.order === 'asc' ? ' ▲' : ' ▼', 
-        cls: 'sort-indicator' 
+    if (currentSort.column === "Name") {
+      nameHeader.createSpan({
+        text: currentSort.order === "asc" ? " ▲" : " ▼",
+        cls: "sort-indicator",
       });
     }
-    
+
     // Instance class header with sorting
     const instanceHeader = headerRow.createEl("th", {
       text: "exo__Instance_class",
-      cls: `exocortex-table-header sortable ${currentSort.column === 'exo__Instance_class' ? `sorted-${currentSort.order}` : ''}`,
+      cls: `exocortex-table-header sortable ${currentSort.column === "exo__Instance_class" ? `sorted-${currentSort.order}` : ""}`,
     });
-    
+
     // Add sort indicator for Instance class
-    if (currentSort.column === 'exo__Instance_class') {
-      instanceHeader.createSpan({ 
-        text: currentSort.order === 'asc' ? ' ▲' : ' ▼', 
-        cls: 'sort-indicator' 
+    if (currentSort.column === "exo__Instance_class") {
+      instanceHeader.createSpan({
+        text: currentSort.order === "asc" ? " ▲" : " ▼",
+        cls: "sort-indicator",
       });
     }
 
     // Add click handlers for sorting
-    nameHeader.addEventListener('click', () => {
-      this.handleSort('Name', sortStateKey);
-      const newSortedRelations = AssetRelationUtils.sortRelations(relations, 'Name', this.sortState.get(sortStateKey)!.order);
+    nameHeader.addEventListener("click", () => {
+      this.handleSort("Name", sortStateKey);
+      const newSortedRelations = AssetRelationUtils.sortRelations(
+        relations,
+        "Name",
+        this.sortState.get(sortStateKey)!.order,
+      );
       this.updateTableBody(tbody, newSortedRelations);
       this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
     });
 
-    instanceHeader.addEventListener('click', () => {
-      this.handleSort('exo__Instance_class', sortStateKey);
-      const newSortedRelations = AssetRelationUtils.sortRelations(relations, 'exo__Instance_class', this.sortState.get(sortStateKey)!.order);
+    instanceHeader.addEventListener("click", () => {
+      this.handleSort("exo__Instance_class", sortStateKey);
+      const newSortedRelations = AssetRelationUtils.sortRelations(
+        relations,
+        "exo__Instance_class",
+        this.sortState.get(sortStateKey)!.order,
+      );
       this.updateTableBody(tbody, newSortedRelations);
       this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
     });
 
     // Sort relations based on current state
-    const sortedRelations = AssetRelationUtils.sortRelations(relations, currentSort.column, currentSort.order);
+    const sortedRelations = AssetRelationUtils.sortRelations(
+      relations,
+      currentSort.column,
+      currentSort.order,
+    );
 
     // Create table body
     const tbody = table.createEl("tbody");
@@ -600,11 +612,11 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
    */
   protected updateTableBody(
     tbody: HTMLElement,
-    relations: AssetRelation[]
+    relations: AssetRelation[],
   ): void {
     // Clear existing rows
     tbody.empty();
-    
+
     // Re-render sorted rows
     for (const relation of relations) {
       this.renderRelationRow(tbody, relation);
@@ -616,27 +628,30 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
    */
   protected updateSortIndicators(
     headerRow: HTMLElement,
-    sortState: { column: string; order: 'asc' | 'desc' }
+    sortState: { column: string; order: "asc" | "desc" },
   ): void {
     // Remove all existing indicators
-    headerRow.querySelectorAll('.sort-indicator').forEach(el => el.remove());
-    
+    headerRow.querySelectorAll(".sort-indicator").forEach((el) => el.remove());
+
     // Remove all sorted classes
-    headerRow.querySelectorAll('th').forEach(th => {
-      th.classList.remove('sorted-asc', 'sorted-desc');
+    headerRow.querySelectorAll("th").forEach((th) => {
+      th.classList.remove("sorted-asc", "sorted-desc");
     });
-    
+
     // Add indicator to the currently sorted column
-    const headers = headerRow.querySelectorAll('th');
-    headers.forEach(th => {
-      const text = th.textContent?.replace(' ▲', '').replace(' ▼', '').trim();
-      if (text === sortState.column || 
-          (text === 'Name' && sortState.column === 'Name') ||
-          (text === 'exo__Instance_class' && sortState.column === 'exo__Instance_class')) {
+    const headers = headerRow.querySelectorAll("th");
+    headers.forEach((th) => {
+      const text = th.textContent?.replace(" ▲", "").replace(" ▼", "").trim();
+      if (
+        text === sortState.column ||
+        (text === "Name" && sortState.column === "Name") ||
+        (text === "exo__Instance_class" &&
+          sortState.column === "exo__Instance_class")
+      ) {
         th.classList.add(`sorted-${sortState.order}`);
-        th.createSpan({ 
-          text: sortState.order === 'asc' ? ' ▲' : ' ▼', 
-          cls: 'sort-indicator' 
+        th.createSpan({
+          text: sortState.order === "asc" ? " ▲" : " ▼",
+          cls: "sort-indicator",
         });
       }
     });
@@ -647,17 +662,17 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
    */
   protected handleSort(column: string, sortStateKey: string): void {
     const currentSort = this.sortState.get(sortStateKey)!;
-    
+
     // Update sort state
     if (currentSort.column === column) {
       // Toggle order if same column
-      currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+      currentSort.order = currentSort.order === "asc" ? "desc" : "asc";
     } else {
       // New column, default to ascending
       currentSort.column = column;
-      currentSort.order = 'asc';
+      currentSort.order = "asc";
     }
-    
+
     this.sortState.set(sortStateKey, currentSort);
   }
 }

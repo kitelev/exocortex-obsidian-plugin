@@ -130,42 +130,56 @@ export class AssetRelationUtils {
   static sortRelations(
     relations: any[],
     column: string,
-    order: 'asc' | 'desc'
+    order: "asc" | "desc",
   ): any[] {
     return [...relations].sort((a, b) => {
       let aValue: any;
       let bValue: any;
 
-      if (column === 'Name') {
-        aValue = String(a.title || '').toLowerCase();
-        bValue = String(b.title || '').toLowerCase();
-      } else if (column === 'exo__Instance_class') {
+      if (column === "Name") {
+        aValue = String(a.title || "").toLowerCase();
+        bValue = String(b.title || "").toLowerCase();
+      } else if (column === "exo__Instance_class") {
         // Safely convert to string, handling arrays and other types
-        const aClass = a.metadata?.exo__Instance_class || a.metadata?.['exo__Instance_class'] || '';
-        const bClass = b.metadata?.exo__Instance_class || b.metadata?.['exo__Instance_class'] || '';
-        aValue = String(Array.isArray(aClass) ? aClass[0] || '' : aClass).toLowerCase();
-        bValue = String(Array.isArray(bClass) ? bClass[0] || '' : bClass).toLowerCase();
+        const aClass =
+          a.metadata?.exo__Instance_class ||
+          a.metadata?.["exo__Instance_class"] ||
+          "";
+        const bClass =
+          b.metadata?.exo__Instance_class ||
+          b.metadata?.["exo__Instance_class"] ||
+          "";
+        aValue = String(
+          Array.isArray(aClass) ? aClass[0] || "" : aClass,
+        ).toLowerCase();
+        bValue = String(
+          Array.isArray(bClass) ? bClass[0] || "" : bClass,
+        ).toLowerCase();
       } else {
         // For other columns, use the generic property getter
         const aRaw = AssetRelationUtils.getPropertyValue(a, column);
         const bRaw = AssetRelationUtils.getPropertyValue(b, column);
-        
+
         // Safely convert to string for comparison
         if (aRaw !== undefined && aRaw !== null) {
-          aValue = String(Array.isArray(aRaw) ? aRaw[0] || '' : aRaw).toLowerCase();
+          aValue = String(
+            Array.isArray(aRaw) ? aRaw[0] || "" : aRaw,
+          ).toLowerCase();
         }
         if (bRaw !== undefined && bRaw !== null) {
-          bValue = String(Array.isArray(bRaw) ? bRaw[0] || '' : bRaw).toLowerCase();
+          bValue = String(
+            Array.isArray(bRaw) ? bRaw[0] || "" : bRaw,
+          ).toLowerCase();
         }
       }
 
       // Handle undefined/null values - put them at the end
-      if (aValue === undefined || aValue === null || aValue === '') return 1;
-      if (bValue === undefined || bValue === null || bValue === '') return -1;
+      if (aValue === undefined || aValue === null || aValue === "") return 1;
+      if (bValue === undefined || bValue === null || bValue === "") return -1;
 
       // Compare values
-      if (aValue < bValue) return order === 'asc' ? -1 : 1;
-      if (aValue > bValue) return order === 'asc' ? 1 : -1;
+      if (aValue < bValue) return order === "asc" ? -1 : 1;
+      if (aValue > bValue) return order === "asc" ? 1 : -1;
       return 0;
     });
   }
