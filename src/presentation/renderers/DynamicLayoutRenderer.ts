@@ -55,7 +55,10 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
       console.log(
         `DynamicLayout: Looking for ClassLayout for class: ${className}`,
       );
-      const layoutConfig = await this.findLayoutConfiguration(className, metadata);
+      const layoutConfig = await this.findLayoutConfiguration(
+        className,
+        metadata,
+      );
       if (!layoutConfig) {
         // Fallback to UniversalLayout with informational message
         const message = `There is no specific Layout for class [[${className}]] - UniversalLayout will be used`;
@@ -352,9 +355,9 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
   private extractDefaultLayout(metadata: Record<string, any>): string | null {
     // Check multiple possible property names
     const possibleProps = [
-      'exo__Class_defaultLayout',
-      'defaultLayout',
-      'ui__defaultLayout',
+      "exo__Class_defaultLayout",
+      "defaultLayout",
+      "ui__defaultLayout",
     ];
 
     for (const prop of possibleProps) {
@@ -385,7 +388,7 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
   ): Promise<DynamicLayoutConfig | null> {
     try {
       const vault = this.app.vault;
-      
+
       // First try direct filename lookup
       const directFile = vault.getAbstractFileByPath(`${uuid}.md`);
       if (directFile && directFile instanceof TFile) {
@@ -419,9 +422,9 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
         // Check if this is a ClassLayout and has matching UID
         if (
           this.isLayoutClass(metadata.exo__Instance_class) &&
-          (metadata.exo__Asset_uid === uuid || 
-           metadata.uid === uuid ||
-           file.basename === uuid)
+          (metadata.exo__Asset_uid === uuid ||
+            metadata.uid === uuid ||
+            file.basename === uuid)
         ) {
           const relationsToShow = this.parseRelationsToShow(
             metadata.ui__ClassLayout_relationsToShow,
