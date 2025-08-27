@@ -1,3 +1,36 @@
+## [7.5.0] - 2025-08-27
+
+### 🔧 Code Refactoring & Bug Fixes
+
+#### What's Improved
+- **DRY Principle Applied**: Eliminated 500+ lines of duplicate code by creating shared utilities
+- **Fixed Table Sorting Bug**: Resolved critical issue where sorting would break table rendering
+- **Type Safety Enhanced**: Fixed errors with non-string property values in sorting
+
+#### Key Changes
+- **New AssetRelationUtils Class**: Centralized shared functionality for asset relation operations
+  - `isAssetArchived`: Checks if an asset is archived with robust type handling
+  - `findReferencingProperty`: Finds which property references a target file
+  - `getPropertyValue`: Gets property values with nested property support
+  - `sortRelations`: Sorts relations with proper type conversion
+
+#### Bug Fixes
+- **Table Breaking on Sort**: Fixed issue where clicking sort would make tables disappear
+- **Type Error in Sorting**: Resolved "toLowerCase is not a function" error when sorting arrays or non-string values
+- **Instance Class Handling**: Properly handles arrays and complex values in exo__Instance_class property
+
+#### Technical Improvements
+- **Reduced Code Duplication**: UniversalLayoutRenderer and BaseAssetRelationsRenderer now share common utilities
+- **Better Error Handling**: Safe type conversion for all property values during sorting
+- **Improved Performance**: Sorting now updates only table body instead of re-rendering entire group
+- **Cleaner Architecture**: Following SOLID principles with better separation of concerns
+
+#### Benefits for Users
+- **Stable Sorting**: Tables no longer break when sorting columns
+- **Reliable Operation**: Fixed crashes when dealing with complex property values
+- **Better Performance**: Faster table updates when sorting large datasets
+- **Consistent Behavior**: Same sorting logic across all table renderers
+
 ## [7.4.0] - 2025-08-27
 
 ### 🎯 Interactive Table Sorting

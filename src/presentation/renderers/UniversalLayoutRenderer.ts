@@ -5,6 +5,7 @@ import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
 import { ServiceProvider } from "../../infrastructure/providers/ServiceProvider";
 import { IAssetRepository } from "../../domain/repositories/IAssetRepository";
 import { Result } from "../../domain/core/Result";
+import { AssetRelationUtils } from "../../shared/utils/AssetRelationUtils";
 
 /**
  * UniversalLayout configuration options
@@ -135,12 +136,12 @@ export class UniversalLayoutRenderer implements IViewRenderer {
           const metadata = fileCache?.frontmatter || {};
 
           // Skip archived assets
-          if (this.isAssetArchived(metadata)) {
+          if (AssetRelationUtils.isAssetArchived(metadata)) {
             continue;
           }
 
           // Determine how this asset references the current file
-          const propertyName = this.findReferencingProperty(
+          const propertyName = AssetRelationUtils.findReferencingProperty(
             metadata,
             file.basename,
             file.path,
@@ -168,8 +169,8 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     // Sort relations
     if (config.sortBy) {
       relations.sort((a, b) => {
-        const aVal = this.getPropertyValue(a, config.sortBy!);
-        const bVal = this.getPropertyValue(b, config.sortBy!);
+        const aVal = AssetRelationUtils.getPropertyValue(a, config.sortBy!);
+        const bVal = AssetRelationUtils.getPropertyValue(b, config.sortBy!);
         const order = config.sortOrder === "desc" ? -1 : 1;
         return aVal > bVal ? order : -order;
       });
@@ -183,97 +184,6 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     return relations;
   }
 
-  /**
-   * Check if an asset is archived based on frontmatter property
-   * Handles various truthy values (true, "true", "yes", 1) gracefully
-   */
-  private isAssetArchived(metadata: Record<string, any>): boolean {
-    const archived = metadata?.archived;
-
-    // Handle undefined/null
-    if (archived === undefined || archived === null) {
-      return false;
-    }
-
-    // Handle boolean
-    if (typeof archived === "boolean") {
-      return archived;
-    }
-
-    // Handle string values (case-insensitive)
-    if (typeof archived === "string") {
-      const lowerValue = archived.toLowerCase().trim();
-      return (
-        lowerValue === "true" || lowerValue === "yes" || lowerValue === "1"
-      );
-    }
-
-    // Handle numeric values
-    if (typeof archived === "number") {
-      return archived !== 0;
-    }
-
-    // Default to false for any other type
-    return false;
-  }
-
-  /**
-   * Find which frontmatter property contains a reference to the target file
-   * Handles both regular [[Link]] and piped [[Link|Alias]] formats
-   */
-  private findReferencingProperty(
-    metadata: Record<string, any>,
-    targetBasename: string,
-    targetPath: string,
-  ): string | undefined {
-    for (const [key, value] of Object.entries(metadata)) {
-      if (!value) continue;
-
-      const valueStr = String(value);
-      // Check for wiki-link format [[FileName]] or [[path/to/file]]
-      if (
-        valueStr.includes(`[[${targetBasename}]]`) ||
-        valueStr.includes(`[[${targetPath}]]`) ||
-        valueStr.includes(`[[${targetPath.replace(".md", "")}]]`)
-      ) {
-        return key;
-      }
-
-      // Check for piped links - [[Target|Alias]] format
-      if (
-        valueStr.includes(`[[${targetBasename}|`) ||
-        valueStr.includes(`[[${targetPath}|`) ||
-        valueStr.includes(`[[${targetPath.replace(".md", "")}|`)
-      ) {
-        return key;
-      }
-
-      // Check for array values (e.g., tags, related, etc.)
-      if (Array.isArray(value)) {
-        for (const item of value) {
-          const itemStr = String(item);
-          if (
-            itemStr.includes(`[[${targetBasename}]]`) ||
-            itemStr.includes(`[[${targetPath}]]`) ||
-            itemStr.includes(`[[${targetPath.replace(".md", "")}]]`)
-          ) {
-            return key;
-          }
-
-          // Check for piped links - [[Target|Alias]] format
-          if (
-            itemStr.includes(`[[${targetBasename}|`) ||
-            itemStr.includes(`[[${targetPath}|`) ||
-            itemStr.includes(`[[${targetPath.replace(".md", "")}|`)
-          ) {
-            return key;
-          }
-        }
-      }
-    }
-
-    return undefined;
-  }
 
   /**
    * Render assets grouped by the property through which they reference the current asset
@@ -379,18 +289,18 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     }
 
     // Add click handlers for sorting
-    nameHeader.addEventListener('click', async () => {
-      this.sortTable(tbody, relations, 'Name', sortStateKey, config);
-      // Re-render the group to update sort indicators
-      groupDiv.empty();
-      await this.renderRelationGroup(container, groupName, relations, config);
+    nameHeader.addEventListener('click', () => {
+      this.updateSort('Name', sortStateKey);
+      const sortedRelations = AssetRelationUtils.sortRelations(relations, 'Name', this.sortState.get(sortStateKey)!.order);
+      this.updateTableBody(tbody, sortedRelations, config);
+      this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
     });
 
-    instanceClassHeader.addEventListener('click', async () => {
-      this.sortTable(tbody, relations, 'exo__Instance_class', sortStateKey, config);
-      // Re-render the group to update sort indicators
-      groupDiv.empty();
-      await this.renderRelationGroup(container, groupName, relations, config);
+    instanceClassHeader.addEventListener('click', () => {
+      this.updateSort('exo__Instance_class', sortStateKey);
+      const sortedRelations = AssetRelationUtils.sortRelations(relations, 'exo__Instance_class', this.sortState.get(sortStateKey)!.order);
+      this.updateTableBody(tbody, sortedRelations, config);
+      this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
     });
 
     // Add additional property columns if configured
@@ -406,17 +316,18 @@ export class UniversalLayoutRenderer implements IViewRenderer {
             propHeader.createSpan({ text: currentSort.order === 'asc' ? ' ▲' : ' ▼', cls: 'sort-indicator' });
           }
           
-          propHeader.addEventListener('click', async () => {
-            this.sortTable(tbody, relations, prop, sortStateKey, config);
-            groupDiv.empty();
-            await this.renderRelationGroup(container, groupName, relations, config);
+          propHeader.addEventListener('click', () => {
+            this.updateSort(prop, sortStateKey);
+            const sortedRelations = AssetRelationUtils.sortRelations(relations, prop, this.sortState.get(sortStateKey)!.order);
+            this.updateTableBody(tbody, sortedRelations, config);
+            this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
           });
         }
       }
     }
 
     // Sort relations based on current sort state
-    const sortedRelations = this.sortRelations(relations, currentSort.column, currentSort.order);
+    const sortedRelations = AssetRelationUtils.sortRelations(relations, currentSort.column, currentSort.order);
 
     // Render each relation as a table row
     for (const relation of sortedRelations) {
@@ -451,7 +362,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         for (const prop of config.showProperties) {
           if (prop !== "exo__Instance_class") {
             // Don't duplicate Instance Class column
-            const value = this.getPropertyValue(relation, prop);
+            const value = AssetRelationUtils.getPropertyValue(relation, prop);
             row.createEl("td", {
               text: value !== undefined ? String(value) : "",
               cls: "exocortex-property",
@@ -497,7 +408,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       if (config.showProperties && config.showProperties.length > 0) {
         const propsEl = itemEl.createDiv({ cls: "exocortex-properties" });
         for (const prop of config.showProperties) {
-          const value = this.getPropertyValue(relation, prop);
+          const value = AssetRelationUtils.getPropertyValue(relation, prop);
           if (value !== undefined) {
             propsEl.createSpan({
               text: `${prop}: ${value}`,
@@ -570,7 +481,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         for (const prop of config.showProperties) {
           if (prop !== "exo__Instance_class") {
             // Don't duplicate Instance Class column
-            const value = this.getPropertyValue(relation, prop);
+            const value = AssetRelationUtils.getPropertyValue(relation, prop);
             row.createEl("td", { text: value?.toString() || "" });
           }
         }
@@ -632,7 +543,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       if (config.showProperties && config.showProperties.length > 0) {
         const propsEl = card.createDiv({ cls: "exocortex-card-properties" });
         for (const prop of config.showProperties) {
-          const value = this.getPropertyValue(relation, prop);
+          const value = AssetRelationUtils.getPropertyValue(relation, prop);
           if (value !== undefined) {
             const propEl = propsEl.createDiv({
               cls: "exocortex-card-property",
@@ -725,7 +636,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     if (!config.filters) return true;
 
     for (const [key, value] of Object.entries(config.filters)) {
-      const relationValue = this.getPropertyValue(relation, key);
+      const relationValue = AssetRelationUtils.getPropertyValue(relation, key);
       if (relationValue !== value) {
         return false;
       }
@@ -734,30 +645,6 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     return true;
   }
 
-  /**
-   * Get a property value from a relation object
-   */
-  private getPropertyValue(relation: AssetRelation, property: string): any {
-    // Check frontmatter first
-    if (relation.metadata && relation.metadata[property] !== undefined) {
-      return relation.metadata[property];
-    }
-
-    // Check direct properties
-    if ((relation as any)[property] !== undefined) {
-      return (relation as any)[property];
-    }
-
-    // Check nested properties using dot notation
-    const parts = property.split(".");
-    let value: any = relation;
-    for (const part of parts) {
-      value = value?.[part];
-      if (value === undefined) break;
-    }
-
-    return value;
-  }
 
   /**
    * Render a simple message
@@ -780,55 +667,11 @@ export class UniversalLayoutRenderer implements IViewRenderer {
   }
 
   /**
-   * Sort relations array based on column and order
+   * Update sort state when a column is clicked
    */
-  private sortRelations(
-    relations: AssetRelation[],
-    column: string,
-    order: 'asc' | 'desc'
-  ): AssetRelation[] {
-    return [...relations].sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
-
-      if (column === 'Name') {
-        aValue = a.title.toLowerCase();
-        bValue = b.title.toLowerCase();
-      } else if (column === 'exo__Instance_class') {
-        aValue = (a.metadata?.exo__Instance_class || a.metadata?.['exo__Instance_class'] || '').toLowerCase();
-        bValue = (b.metadata?.exo__Instance_class || b.metadata?.['exo__Instance_class'] || '').toLowerCase();
-      } else {
-        aValue = this.getPropertyValue(a, column);
-        bValue = this.getPropertyValue(b, column);
-        // Convert to string for comparison if values exist
-        if (aValue !== undefined) aValue = String(aValue).toLowerCase();
-        if (bValue !== undefined) bValue = String(bValue).toLowerCase();
-      }
-
-      // Handle undefined/null values - put them at the end
-      if (aValue === undefined || aValue === null || aValue === '') return 1;
-      if (bValue === undefined || bValue === null || bValue === '') return -1;
-
-      // Compare values
-      if (aValue < bValue) return order === 'asc' ? -1 : 1;
-      if (aValue > bValue) return order === 'asc' ? 1 : -1;
-      return 0;
-    });
-  }
-
-  /**
-   * Handle table sorting when header is clicked
-   */
-  private sortTable(
-    tbody: HTMLElement,
-    relations: AssetRelation[],
-    column: string,
-    sortStateKey: string,
-    config: UniversalLayoutConfig
-  ): void {
+  private updateSort(column: string, sortStateKey: string): void {
     const currentSort = this.sortState.get(sortStateKey)!;
     
-    // Update sort state
     if (currentSort.column === column) {
       // Toggle order if same column
       currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
@@ -839,5 +682,89 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     }
     
     this.sortState.set(sortStateKey, currentSort);
+  }
+
+  /**
+   * Update the table body with sorted data
+   */
+  private updateTableBody(
+    tbody: HTMLElement,
+    relations: AssetRelation[],
+    config: UniversalLayoutConfig
+  ): void {
+    // Clear existing rows
+    tbody.empty();
+    
+    // Re-render sorted rows
+    for (const relation of relations) {
+      const row = tbody.createEl("tr", { cls: "exocortex-relation-row" });
+
+      // First column: Asset name with link
+      const nameCell = row.createEl("td", { cls: "asset-name" });
+      const linkEl = nameCell.createEl("a", {
+        text: relation.title,
+        cls: "internal-link",
+        href: relation.path,
+      });
+
+      linkEl.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.app.workspace.openLinkText(relation.path, "", false);
+      });
+
+      // Second column: exo__Instance_class value
+      const instanceClass =
+        relation.metadata?.exo__Instance_class ||
+        relation.metadata?.["exo__Instance_class"] ||
+        "-";
+      row.createEl("td", {
+        text: instanceClass,
+        cls: "instance-class",
+      });
+
+      // Additional property columns if configured
+      if (config.showProperties && config.showProperties.length > 0) {
+        for (const prop of config.showProperties) {
+          if (prop !== "exo__Instance_class") {
+            const value = AssetRelationUtils.getPropertyValue(relation, prop);
+            row.createEl("td", {
+              text: value !== undefined ? String(value) : "",
+              cls: "exocortex-property",
+            });
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Update sort indicators on column headers
+   */
+  private updateSortIndicators(
+    headerRow: HTMLElement,
+    sortState: { column: string; order: 'asc' | 'desc' }
+  ): void {
+    // Remove all existing indicators
+    headerRow.querySelectorAll('.sort-indicator').forEach(el => el.remove());
+    
+    // Remove all sorted classes
+    headerRow.querySelectorAll('th').forEach(th => {
+      th.classList.remove('sorted-asc', 'sorted-desc');
+    });
+    
+    // Add indicator to the currently sorted column
+    const headers = headerRow.querySelectorAll('th');
+    headers.forEach(th => {
+      const text = th.textContent?.replace(' ▲', '').replace(' ▼', '').trim();
+      if (text === sortState.column || 
+          (text === 'Name' && sortState.column === 'Name') ||
+          (text === 'exo__Instance_class' && sortState.column === 'exo__Instance_class')) {
+        th.classList.add(`sorted-${sortState.order}`);
+        th.createSpan({ 
+          text: sortState.order === 'asc' ? ' ▲' : ' ▼', 
+          cls: 'sort-indicator' 
+        });
+      }
+    });
   }
 }

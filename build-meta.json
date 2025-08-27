@@ -1842,8 +1842,19 @@
       ],
       "format": "esm"
     },
+    "src/shared/utils/AssetRelationUtils.ts": {
+      "bytes": 5491,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
     "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
-      "bytes": 21794,
+      "bytes": 19541,
       "imports": [
         {
           "path": "obsidian",
@@ -1854,6 +1865,11 @@
           "path": "../processors/CodeBlockProcessor",
           "kind": "import-statement",
           "external": true
+        },
+        {
+          "path": "src/shared/utils/AssetRelationUtils.ts",
+          "kind": "import-statement",
+          "original": "../../shared/utils/AssetRelationUtils"
         }
       ],
       "format": "esm"
@@ -2278,7 +2294,7 @@
           "bytesInOutput": 562
         },
         "src/application/services/ErrorHandlerService.ts": {
-          "bytesInOutput": 4089
+          "bytesInOutput": 4091
         },
         "src/domain/services/OntologyProvisioningService.ts": {
           "bytesInOutput": 331
@@ -2317,7 +2333,7 @@
           "bytesInOutput": 4239
         },
         "src/infrastructure/container/DIContainer.ts": {
-          "bytesInOutput": 3507
+          "bytesInOutput": 3508
         },
         "src/infrastructure/providers/ServiceProvider.ts": {
           "bytesInOutput": 795
@@ -2341,7 +2357,10 @@
           "bytesInOutput": 1524
         },
         "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
-          "bytesInOutput": 7478
+          "bytesInOutput": 6879
+        },
+        "src/shared/utils/AssetRelationUtils.ts": {
+          "bytesInOutput": 1786
         },
         "src/presentation/renderers/RefactoredUniversalLayoutRenderer.ts": {
           "bytesInOutput": 3059
@@ -2353,7 +2372,7 @@
           "bytesInOutput": 2896
         }
       },
-      "bytes": 153473
+      "bytes": 154663
     }
   }
 }

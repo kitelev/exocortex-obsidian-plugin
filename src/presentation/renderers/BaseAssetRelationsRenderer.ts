@@ -1,5 +1,6 @@
 import { App, MarkdownPostProcessorContext, TFile } from "obsidian";
 import { IViewRenderer } from "../processors/CodeBlockProcessor";
+import { AssetRelationUtils } from "../../shared/utils/AssetRelationUtils";
 
 /**
  * Asset relation data structure shared by all relation renderers
@@ -67,11 +68,11 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
           const metadata = fileCache?.frontmatter || {};
 
           // Skip archived assets
-          if (this.isAssetArchived(metadata)) {
+          if (AssetRelationUtils.isAssetArchived(metadata)) {
             continue;
           }
 
-          const propertyName = this.findReferencingProperty(
+          const propertyName = AssetRelationUtils.findReferencingProperty(
             metadata,
             file.basename,
             file.path,
@@ -96,100 +97,6 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
     return relations.sort((a, b) => b.modified - a.modified);
   }
 
-  /**
-   * Check if an asset is archived based on frontmatter property
-   * Handles various truthy values (true, "true", "yes", 1) gracefully
-   */
-  protected isAssetArchived(metadata: Record<string, any>): boolean {
-    const archived = metadata?.archived;
-
-    // Handle undefined/null
-    if (archived === undefined || archived === null) {
-      return false;
-    }
-
-    // Handle boolean
-    if (typeof archived === "boolean") {
-      return archived;
-    }
-
-    // Handle string values (case-insensitive)
-    if (typeof archived === "string") {
-      const lowerValue = archived.toLowerCase().trim();
-      return (
-        lowerValue === "true" || lowerValue === "yes" || lowerValue === "1"
-      );
-    }
-
-    // Handle numeric values
-    if (typeof archived === "number") {
-      return archived !== 0;
-    }
-
-    // Default to false for any other type
-    return false;
-  }
-
-  /**
-   * Find which property contains the reference to the target file
-   * Common logic shared between all renderers
-   * Handles both regular [[Link]] and piped [[Link|Alias]] formats
-   */
-  protected findReferencingProperty(
-    metadata: Record<string, any>,
-    targetBasename: string,
-    targetPath: string,
-  ): string | undefined {
-    for (const [key, value] of Object.entries(metadata)) {
-      if (!value) continue;
-
-      const valueStr = String(value);
-
-      // Check for regular links
-      if (
-        valueStr.includes(`[[${targetBasename}]]`) ||
-        valueStr.includes(`[[${targetPath}]]`) ||
-        valueStr.includes(`[[${targetPath.replace(".md", "")}]]`)
-      ) {
-        return key;
-      }
-
-      // Check for piped links - [[Target|Alias]] format
-      if (
-        valueStr.includes(`[[${targetBasename}|`) ||
-        valueStr.includes(`[[${targetPath}|`) ||
-        valueStr.includes(`[[${targetPath.replace(".md", "")}|`)
-      ) {
-        return key;
-      }
-
-      if (Array.isArray(value)) {
-        for (const item of value) {
-          const itemStr = String(item);
-
-          // Check for regular links
-          if (
-            itemStr.includes(`[[${targetBasename}]]`) ||
-            itemStr.includes(`[[${targetPath}]]`) ||
-            itemStr.includes(`[[${targetPath.replace(".md", "")}]]`)
-          ) {
-            return key;
-          }
-
-          // Check for piped links - [[Target|Alias]] format
-          if (
-            itemStr.includes(`[[${targetBasename}|`) ||
-            itemStr.includes(`[[${targetPath}|`) ||
-            itemStr.includes(`[[${targetPath.replace(".md", "")}|`)
-          ) {
-            return key;
-          }
-        }
-      }
-    }
-
-    return undefined;
-  }
 
   /**
    * Group relations by the property they reference through
@@ -318,20 +225,20 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
     // Add click handlers for sorting
     nameHeader.addEventListener('click', () => {
       this.handleSort('Name', sortStateKey);
-      // Re-render to update indicators and sort
-      groupDiv.empty();
-      this.renderRelationGroup(container, groupName, relations);
+      const newSortedRelations = AssetRelationUtils.sortRelations(relations, 'Name', this.sortState.get(sortStateKey)!.order);
+      this.updateTableBody(tbody, newSortedRelations);
+      this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
     });
 
     instanceHeader.addEventListener('click', () => {
       this.handleSort('exo__Instance_class', sortStateKey);
-      // Re-render to update indicators and sort
-      groupDiv.empty();
-      this.renderRelationGroup(container, groupName, relations);
+      const newSortedRelations = AssetRelationUtils.sortRelations(relations, 'exo__Instance_class', this.sortState.get(sortStateKey)!.order);
+      this.updateTableBody(tbody, newSortedRelations);
+      this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
     });
 
     // Sort relations based on current state
-    const sortedRelations = this.sortRelations(relations, currentSort.column, currentSort.order);
+    const sortedRelations = AssetRelationUtils.sortRelations(relations, currentSort.column, currentSort.order);
 
     // Create table body
     const tbody = table.createEl("tbody");
@@ -689,40 +596,49 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
   }
 
   /**
-   * Sort relations array based on column and order
+   * Update the table body with sorted data
    */
-  protected sortRelations(
-    relations: AssetRelation[],
-    column: string,
-    order: 'asc' | 'desc'
-  ): AssetRelation[] {
-    return [...relations].sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+  protected updateTableBody(
+    tbody: HTMLElement,
+    relations: AssetRelation[]
+  ): void {
+    // Clear existing rows
+    tbody.empty();
+    
+    // Re-render sorted rows
+    for (const relation of relations) {
+      this.renderRelationRow(tbody, relation);
+    }
+  }
 
-      if (column === 'Name') {
-        aValue = a.title.toLowerCase();
-        bValue = b.title.toLowerCase();
-      } else if (column === 'exo__Instance_class') {
-        aValue = (a.metadata?.exo__Instance_class || a.metadata?.['exo__Instance_class'] || '').toLowerCase();
-        bValue = (b.metadata?.exo__Instance_class || b.metadata?.['exo__Instance_class'] || '').toLowerCase();
-      } else {
-        // For other columns, get metadata values
-        aValue = a.metadata?.[column];
-        bValue = b.metadata?.[column];
-        // Convert to string for comparison if values exist
-        if (aValue !== undefined) aValue = String(aValue).toLowerCase();
-        if (bValue !== undefined) bValue = String(bValue).toLowerCase();
+  /**
+   * Update sort indicators on column headers
+   */
+  protected updateSortIndicators(
+    headerRow: HTMLElement,
+    sortState: { column: string; order: 'asc' | 'desc' }
+  ): void {
+    // Remove all existing indicators
+    headerRow.querySelectorAll('.sort-indicator').forEach(el => el.remove());
+    
+    // Remove all sorted classes
+    headerRow.querySelectorAll('th').forEach(th => {
+      th.classList.remove('sorted-asc', 'sorted-desc');
+    });
+    
+    // Add indicator to the currently sorted column
+    const headers = headerRow.querySelectorAll('th');
+    headers.forEach(th => {
+      const text = th.textContent?.replace(' ▲', '').replace(' ▼', '').trim();
+      if (text === sortState.column || 
+          (text === 'Name' && sortState.column === 'Name') ||
+          (text === 'exo__Instance_class' && sortState.column === 'exo__Instance_class')) {
+        th.classList.add(`sorted-${sortState.order}`);
+        th.createSpan({ 
+          text: sortState.order === 'asc' ? ' ▲' : ' ▼', 
+          cls: 'sort-indicator' 
+        });
       }
-
-      // Handle undefined/null values - put them at the end
-      if (aValue === undefined || aValue === null || aValue === '') return 1;
-      if (bValue === undefined || bValue === null || bValue === '') return -1;
-
-      // Compare values
-      if (aValue < bValue) return order === 'asc' ? -1 : 1;
-      if (aValue > bValue) return order === 'asc' ? 1 : -1;
-      return 0;
     });
   }
 

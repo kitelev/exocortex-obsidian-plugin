@@ -3,7 +3,10 @@
     "allow": [
       "WebSearch",
       "Read(//Users/kitelev/vault-2025/03 Knowledge/kitelev/**)",
-      "Read(/Users/kitelev/vault-2025/02 Ontology/1 Exo/exo/Class/**)"
+      "Read(/Users/kitelev/vault-2025/02 Ontology/1 Exo/exo/Class/**)",
+      "Read(/Users/kitelev/vault-2025/**)",
+      "Read(/Users/kitelev/vault-2025/01 Inbox/**)",
+      "Read(/Users/kitelev/vault-2025/**)"
     ],
     "deny": [],
     "ask": []
