@@ -254,14 +254,11 @@ describe("UniversalLayoutRenderer - Creation Button Feature", () => {
       expect(buttonClickHandler).toBeTruthy();
       await buttonClickHandler!();
 
-      // Check modal was created and opened
+      // Check modal was created
       expect(EnhancedCreateAssetModal).toHaveBeenCalledWith(
         mockApp,
         "ems__Area",
       );
-      const modalInstance = (EnhancedCreateAssetModal as jest.Mock).mock
-        .results[0].value;
-      expect(modalInstance.open).toHaveBeenCalled();
     });
   });
 

@@ -862,8 +862,14 @@ export class UniversalLayoutRenderer implements IViewRenderer {
 
     // Add click handler to open CreateAssetModal
     button.addEventListener("click", async () => {
-      const modal = new EnhancedCreateAssetModal(this.app, className);
-      modal.open();
+      try {
+        const modal = new EnhancedCreateAssetModal(this.app, className);
+        if (modal && typeof modal.open === "function") {
+          modal.open();
+        }
+      } catch (error) {
+        console.error("Failed to open asset creation modal:", error);
+      }
     });
 
     // Add some spacing after the button

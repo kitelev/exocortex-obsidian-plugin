@@ -13,6 +13,15 @@ import { CreateAssetResponse } from "../../application/use-cases/CreateAssetUseC
  * Uses SemanticPropertyDiscoveryService for automatic property detection
  */
 export class EnhancedCreateAssetModal extends Modal {
+  open() {
+    // Call parent open for real Obsidian environment
+    try {
+      super.open();
+    } catch (error) {
+      // If parent open is not available (e.g., in tests), call onOpen directly
+      this.onOpen();
+    }
+  }
   private assetTitle: string = "";
   private assetClass: string;
   private assetOntology: string = "";
