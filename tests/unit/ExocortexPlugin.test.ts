@@ -51,7 +51,10 @@ describe("ExocortexPlugin", () => {
     mockApp = new App();
 
     // Create plugin instance
-    plugin = new ExocortexPlugin(mockApp, { id: "exocortex", name: "Exocortex" });
+    plugin = new ExocortexPlugin(mockApp, {
+      id: "exocortex",
+      name: "Exocortex",
+    });
 
     // Setup mock instances
     mockLifecycleRegistry = {
@@ -88,7 +91,9 @@ describe("ExocortexPlugin", () => {
     (LifecycleRegistry as jest.Mock).mockReturnValue(mockLifecycleRegistry);
     (CommandRegistry as jest.Mock).mockReturnValue(mockCommandRegistry);
     (ServiceProvider as jest.Mock).mockReturnValue(mockServiceProvider);
-    (SettingsLifecycleManager as jest.Mock).mockReturnValue(mockSettingsManager);
+    (SettingsLifecycleManager as jest.Mock).mockReturnValue(
+      mockSettingsManager,
+    );
     (GraphLifecycleManager as jest.Mock).mockReturnValue(mockGraphManager);
     (AssetCommandController as jest.Mock).mockReturnValue({});
     (RDFCommandController as jest.Mock).mockReturnValue({});
@@ -106,7 +111,9 @@ describe("ExocortexPlugin", () => {
         await plugin.onload();
 
         // Assert - Check initialization sequence
-        expect(LoggerFactory.createForClass).toHaveBeenCalledWith(ExocortexPlugin);
+        expect(LoggerFactory.createForClass).toHaveBeenCalledWith(
+          ExocortexPlugin,
+        );
         expect(mockLogger.startTiming).toHaveBeenCalledWith("plugin-onload");
 
         // Verify registries created
@@ -116,15 +123,19 @@ describe("ExocortexPlugin", () => {
         // Verify lifecycle managers initialized
         expect(SettingsLifecycleManager).toHaveBeenCalledWith(plugin);
         expect(GraphLifecycleManager).toHaveBeenCalledWith(plugin);
-        expect(mockLifecycleRegistry.registerManager).toHaveBeenCalledWith(mockSettingsManager);
-        expect(mockLifecycleRegistry.registerManager).toHaveBeenCalledWith(mockGraphManager);
+        expect(mockLifecycleRegistry.registerManager).toHaveBeenCalledWith(
+          mockSettingsManager,
+        );
+        expect(mockLifecycleRegistry.registerManager).toHaveBeenCalledWith(
+          mockGraphManager,
+        );
         expect(mockSettingsManager.initialize).toHaveBeenCalled();
 
         // Verify service provider initialized
         expect(ServiceProvider).toHaveBeenCalledWith(
           plugin,
           mockGraphManager.getGraph(),
-          mockSettingsManager.getSettings()
+          mockSettingsManager.getSettings(),
         );
         expect(mockServiceProvider.initializeServices).toHaveBeenCalled();
 
@@ -134,7 +145,7 @@ describe("ExocortexPlugin", () => {
           plugin,
           mockGraphManager.getGraph(),
           mockServiceProvider.getService("RDFService"),
-          expect.any(Object)
+          expect.any(Object),
         );
         expect(mockCommandRegistry.registerController).toHaveBeenCalledTimes(2);
 
@@ -148,8 +159,8 @@ describe("ExocortexPlugin", () => {
           "Exocortex Plugin initialized successfully",
           {
             managers: ["lifecycle", "settings", "graph"],
-            controllers: ["asset", "rdf"]
-          }
+            controllers: ["asset", "rdf"],
+          },
         );
       });
 
@@ -164,7 +175,7 @@ describe("ExocortexPlugin", () => {
         expect(mockLogger.error).toHaveBeenCalledWith(
           "Failed to initialize Exocortex Plugin",
           { stage: "onload" },
-          testError
+          testError,
         );
       });
 
@@ -180,7 +191,9 @@ describe("ExocortexPlugin", () => {
 
       it("should handle lifecycle registry initialization failure", async () => {
         // Arrange
-        mockLifecycleRegistry.initializeAll.mockRejectedValue(new Error("Lifecycle init failed"));
+        mockLifecycleRegistry.initializeAll.mockRejectedValue(
+          new Error("Lifecycle init failed"),
+        );
 
         // Act & Assert
         await expect(plugin.onload()).rejects.toThrow("Lifecycle init failed");
@@ -189,11 +202,13 @@ describe("ExocortexPlugin", () => {
       it("should handle service provider initialization failure", async () => {
         // Arrange
         mockServiceProvider.initializeServices.mockRejectedValue(
-          new Error("Service provider init failed")
+          new Error("Service provider init failed"),
         );
 
         // Act & Assert
-        await expect(plugin.onload()).rejects.toThrow("Service provider init failed");
+        await expect(plugin.onload()).rejects.toThrow(
+          "Service provider init failed",
+        );
       });
     });
 
@@ -220,8 +235,8 @@ describe("ExocortexPlugin", () => {
         expect(mockLogger.info).toHaveBeenCalledWith(
           "Exocortex Plugin cleaned up successfully",
           {
-            cleanedUp: ["commands", "services", "lifecycle"]
-          }
+            cleanedUp: ["commands", "services", "lifecycle"],
+          },
         );
       });
 
@@ -237,7 +252,7 @@ describe("ExocortexPlugin", () => {
         expect(mockLogger.error).toHaveBeenCalledWith(
           "Error during plugin cleanup",
           { stage: "onunload" },
-          cleanupError
+          cleanupError,
         );
       });
 
@@ -245,7 +260,7 @@ describe("ExocortexPlugin", () => {
         // Arrange - simulate uninitialized plugin
         const uninitializedPlugin = new ExocortexPlugin(mockApp, {
           id: "exocortex",
-          name: "Exocortex"
+          name: "Exocortex",
         });
 
         // Act - should not throw
@@ -266,7 +281,9 @@ describe("ExocortexPlugin", () => {
       it("should return settings from settings manager", () => {
         // Arrange
         const mockSettings = { version: "1.0.0", debug: true };
-        mockSettingsManager.getSettings.mockReturnValue(mockSettings as ExocortexSettings);
+        mockSettingsManager.getSettings.mockReturnValue(
+          mockSettings as ExocortexSettings,
+        );
 
         // Act
         const settings = plugin.settings;
@@ -280,7 +297,7 @@ describe("ExocortexPlugin", () => {
         // Arrange
         const uninitializedPlugin = new ExocortexPlugin(mockApp, {
           id: "exocortex",
-          name: "Exocortex"
+          name: "Exocortex",
         });
 
         // Act
@@ -295,19 +312,25 @@ describe("ExocortexPlugin", () => {
       it("should save settings and update services", async () => {
         // Arrange
         const mockSettings = { version: "1.0.0", debug: true };
-        mockSettingsManager.getSettings.mockReturnValue(mockSettings as ExocortexSettings);
+        mockSettingsManager.getSettings.mockReturnValue(
+          mockSettings as ExocortexSettings,
+        );
 
         // Act
         await plugin.saveSettings();
 
         // Assert
         expect(mockSettingsManager.saveSettings).toHaveBeenCalled();
-        expect(mockServiceProvider.updateServices).toHaveBeenCalledWith(mockSettings);
+        expect(mockServiceProvider.updateServices).toHaveBeenCalledWith(
+          mockSettings,
+        );
       });
 
       it("should handle save errors gracefully", async () => {
         // Arrange
-        mockSettingsManager.saveSettings.mockRejectedValue(new Error("Save failed"));
+        mockSettingsManager.saveSettings.mockRejectedValue(
+          new Error("Save failed"),
+        );
 
         // Act & Assert - should propagate error
         await expect(plugin.saveSettings()).rejects.toThrow("Save failed");
@@ -318,13 +341,17 @@ describe("ExocortexPlugin", () => {
       it("should update services with current settings", () => {
         // Arrange
         const mockSettings = { version: "1.0.0", debug: false };
-        mockSettingsManager.getSettings.mockReturnValue(mockSettings as ExocortexSettings);
+        mockSettingsManager.getSettings.mockReturnValue(
+          mockSettings as ExocortexSettings,
+        );
 
         // Act
         plugin.updateContainer();
 
         // Assert
-        expect(mockServiceProvider.updateServices).toHaveBeenCalledWith(mockSettings);
+        expect(mockServiceProvider.updateServices).toHaveBeenCalledWith(
+          mockSettings,
+        );
       });
     });
   });
@@ -337,24 +364,28 @@ describe("ExocortexPlugin", () => {
       });
 
       // Act & Assert
-      await expect(plugin.onload()).rejects.toThrow("Dependency injection failed");
+      await expect(plugin.onload()).rejects.toThrow(
+        "Dependency injection failed",
+      );
     });
 
     it("should handle async operation timeouts", async () => {
       // Arrange
       mockLifecycleRegistry.initializeAll.mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 1000))
+        () => new Promise((resolve) => setTimeout(resolve, 1000)),
       );
 
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timeout")), 100)
+        setTimeout(() => reject(new Error("Timeout")), 100),
       );
 
       // Mock the plugin's onload to race with timeout
       const originalOnload = plugin.onload.bind(plugin);
-      plugin.onload = jest.fn().mockImplementation(() =>
-        Promise.race([originalOnload(), timeoutPromise])
-      );
+      plugin.onload = jest
+        .fn()
+        .mockImplementation(() =>
+          Promise.race([originalOnload(), timeoutPromise]),
+        );
 
       // Act & Assert
       await expect(plugin.onload()).rejects.toThrow("Timeout");
@@ -364,7 +395,8 @@ describe("ExocortexPlugin", () => {
   describe("Memory Management", () => {
     it("should not leak memory after multiple load/unload cycles", async () => {
       // Track initial state
-      const initialMockCalls = mockLifecycleRegistry.registerManager.mock.calls.length;
+      const initialMockCalls =
+        mockLifecycleRegistry.registerManager.mock.calls.length;
 
       // Perform multiple cycles
       for (let i = 0; i < 3; i++) {
@@ -402,29 +434,29 @@ describe("ExocortexPlugin", () => {
     it("should maintain correct initialization order dependencies", async () => {
       // Reset and track call order
       jest.clearAllMocks();
-      
+
       const callOrder: string[] = [];
-      
+
       mockSettingsManager.initialize.mockImplementation(async () => {
         callOrder.push("settings-init");
       });
-      
+
       mockLifecycleRegistry.initializeAll.mockImplementation(async () => {
         callOrder.push("lifecycle-init");
       });
-      
+
       mockCommandRegistry.initializeAll.mockImplementation(async () => {
         callOrder.push("commands-init");
       });
-      
+
       // Act
       await plugin.onload();
-      
+
       // Assert - settings must be initialized first, then lifecycle, then commands
       expect(callOrder).toEqual([
         "settings-init",
-        "lifecycle-init", 
-        "commands-init"
+        "lifecycle-init",
+        "commands-init",
       ]);
     });
   });
@@ -433,7 +465,7 @@ describe("ExocortexPlugin", () => {
     it("should handle double initialization gracefully", async () => {
       // Act
       await plugin.onload();
-      
+
       // Second initialization should not break
       await plugin.onload();
 
@@ -452,11 +484,13 @@ describe("ExocortexPlugin", () => {
     it("should handle partial initialization failure", async () => {
       // Arrange - fail after settings but before service provider
       mockServiceProvider.initializeServices.mockRejectedValue(
-        new Error("Service initialization failed")
+        new Error("Service initialization failed"),
       );
 
       // Act & Assert
-      await expect(plugin.onload()).rejects.toThrow("Service initialization failed");
+      await expect(plugin.onload()).rejects.toThrow(
+        "Service initialization failed",
+      );
 
       // Verify partial cleanup would work
       expect(mockSettingsManager.initialize).toHaveBeenCalled();

@@ -1,6 +1,9 @@
 import { Logger } from "../../../../src/infrastructure/logging/Logger";
 import { LoggerFactory } from "../../../../src/infrastructure/logging/LoggerFactory";
-import { LogLevel, ILogger } from "../../../../src/infrastructure/logging/ILogger";
+import {
+  LogLevel,
+  ILogger,
+} from "../../../../src/infrastructure/logging/ILogger";
 import { LoggerConfig } from "../../../../src/infrastructure/logging/LoggerConfig";
 
 // Mock console methods
@@ -15,7 +18,9 @@ const consoleMock = {
 
 beforeEach(() => {
   Object.assign(console, consoleMock);
-  Object.keys(consoleMock).forEach(key => (consoleMock as any)[key].mockClear());
+  Object.keys(consoleMock).forEach((key) =>
+    (consoleMock as any)[key].mockClear(),
+  );
 });
 
 afterEach(() => {
@@ -39,7 +44,7 @@ describe("Logger", () => {
         includeStackTrace: false,
         maxLogSize: 500,
         performanceThreshold: 50,
-        sensitiveKeys: ['secret']
+        sensitiveKeys: ["secret"],
       };
 
       const logger = new Logger(config);
@@ -57,12 +62,12 @@ describe("Logger", () => {
       includeStackTrace: true,
       maxLogSize: 1000,
       performanceThreshold: 100,
-      sensitiveKeys: ['password', 'secret']
+      sensitiveKeys: ["password", "secret"],
     };
 
     beforeEach(() => {
       // Mock NODE_ENV to development
-      process.env.NODE_ENV = 'development';
+      process.env.NODE_ENV = "development";
       logger = new Logger(config);
     });
 
@@ -93,7 +98,7 @@ describe("Logger", () => {
 
     it("should respect log levels", () => {
       logger.setLevel(LogLevel.WARN);
-      
+
       logger.debug("Should not log");
       logger.info("Should not log");
       logger.warn("Should log");
@@ -116,11 +121,11 @@ describe("Logger", () => {
       includeStackTrace: false,
       maxLogSize: 1000,
       performanceThreshold: 50, // 50ms threshold
-      sensitiveKeys: []
+      sensitiveKeys: [],
     };
 
     beforeEach(() => {
-      process.env.NODE_ENV = 'development';
+      process.env.NODE_ENV = "development";
       logger = new Logger(config);
     });
 
@@ -133,23 +138,23 @@ describe("Logger", () => {
       logger.endTiming("test-operation");
 
       expect(consoleMock.debug).toHaveBeenCalledWith(
-        expect.stringContaining("Timer started: test-operation")
+        expect.stringContaining("Timer started: test-operation"),
       );
       expect(consoleMock.debug).toHaveBeenCalledWith(
-        expect.stringContaining("Timer ended: test-operation")
+        expect.stringContaining("Timer ended: test-operation"),
       );
     });
 
     it("should warn on slow operations", (done) => {
       logger.startTiming("slow-operation");
-      
+
       // Simulate slow operation
       setTimeout(() => {
         logger.endTiming("slow-operation");
-        
+
         // Should have called warn due to exceeding threshold
         expect(consoleMock.warn).toHaveBeenCalledWith(
-          expect.stringContaining("Slow operation: slow-operation")
+          expect.stringContaining("Slow operation: slow-operation"),
         );
         done();
       }, 60); // 60ms > 50ms threshold
@@ -158,7 +163,7 @@ describe("Logger", () => {
     it("should warn when timer not found", () => {
       logger.endTiming("non-existent-timer");
       expect(consoleMock.warn).toHaveBeenCalledWith(
-        expect.stringContaining("Timer not found: non-existent-timer")
+        expect.stringContaining("Timer not found: non-existent-timer"),
       );
     });
   });
@@ -167,7 +172,7 @@ describe("Logger", () => {
     let logger: ILogger;
 
     beforeEach(() => {
-      process.env.NODE_ENV = 'development';
+      process.env.NODE_ENV = "development";
       logger = new Logger();
     });
 
@@ -190,10 +195,10 @@ describe("Logger", () => {
       const testId = "test-correlation-id";
       logger.setCorrelationId(testId);
       logger.info("Test message");
-      
+
       // Check that the console output includes the correlation ID
       expect(consoleMock.info).toHaveBeenCalledWith(
-        expect.stringContaining("test-cor") // First 8 chars
+        expect.stringContaining("test-cor"), // First 8 chars
       );
     });
   });
@@ -203,7 +208,7 @@ describe("Logger", () => {
     let childLogger: ILogger;
 
     beforeEach(() => {
-      process.env.NODE_ENV = 'development';
+      process.env.NODE_ENV = "development";
       parentLogger = new Logger();
       parentLogger.setCorrelationId("parent-id");
       childLogger = parentLogger.createChildLogger({ component: "child" });
@@ -233,11 +238,11 @@ describe("Logger", () => {
       includeStackTrace: false,
       maxLogSize: 1000,
       performanceThreshold: 100,
-      sensitiveKeys: ['password', 'secret', 'token']
+      sensitiveKeys: ["password", "secret", "token"],
     };
 
     beforeEach(() => {
-      process.env.NODE_ENV = 'development';
+      process.env.NODE_ENV = "development";
       logger = new Logger(config);
     });
 
@@ -249,7 +254,7 @@ describe("Logger", () => {
       logger.info("Test message", {
         username: "testuser",
         password: "secret123",
-        token: "abc123"
+        token: "abc123",
       });
 
       const logCall = consoleMock.info.mock.calls[0][0];
@@ -263,8 +268,8 @@ describe("Logger", () => {
       logger.info("Test message", {
         user: {
           name: "testuser",
-          password: "secret123"
-        }
+          password: "secret123",
+        },
       });
 
       const logCall = consoleMock.info.mock.calls[0][0];
@@ -284,11 +289,11 @@ describe("Logger", () => {
       includeStackTrace: false,
       maxLogSize: 1000,
       performanceThreshold: 100,
-      sensitiveKeys: []
+      sensitiveKeys: [],
     };
 
     beforeEach(() => {
-      process.env.NODE_ENV = 'production';
+      process.env.NODE_ENV = "production";
       logger = new Logger(config);
     });
 
@@ -298,10 +303,10 @@ describe("Logger", () => {
 
     it("should output JSON format in production", () => {
       logger.info("Test message", { key: "value" });
-      
+
       const logCall = consoleMock.log.mock.calls[0][0];
       expect(() => JSON.parse(logCall)).not.toThrow();
-      
+
       const parsed = JSON.parse(logCall);
       expect(parsed.message).toBe("Test message");
       expect(parsed.level).toBe(LogLevel.INFO);
@@ -337,8 +342,8 @@ describe("Logger", () => {
     });
 
     it("should create logger with context", () => {
-      const logger = LoggerFactory.createWithContext("TestLogger", { 
-        service: "test" 
+      const logger = LoggerFactory.createWithContext("TestLogger", {
+        service: "test",
       });
       expect(logger).toBeDefined();
     });
@@ -357,9 +362,9 @@ describe("Logger", () => {
     it("should clear all loggers", () => {
       LoggerFactory.create("Test1");
       LoggerFactory.create("Test2");
-      
+
       expect(LoggerFactory.getAllLoggers().size).toBe(2);
-      
+
       LoggerFactory.clearAll();
       expect(LoggerFactory.getAllLoggers().size).toBe(0);
     });

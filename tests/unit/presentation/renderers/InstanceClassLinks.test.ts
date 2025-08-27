@@ -10,7 +10,7 @@ class TestableBaseAssetRelationsRenderer extends BaseAssetRelationsRenderer {
   // Expose protected method for testing
   public testRenderInstanceClassLinks(
     container: HTMLElement,
-    metadata: Record<string, any>
+    metadata: Record<string, any>,
   ): void {
     this.renderInstanceClassLinks(container, metadata);
   }
@@ -32,21 +32,21 @@ describe("Instance Class Links Rendering", () => {
       workspace: {
         openLinkText: jest.fn(),
         getLeaf: jest.fn().mockReturnValue({
-          openFile: jest.fn()
-        })
+          openFile: jest.fn(),
+        }),
       },
       vault: {
-        getAbstractFileByPath: jest.fn()
+        getAbstractFileByPath: jest.fn(),
       },
       metadataCache: {
         resolvedLinks: {},
-        getFileCache: jest.fn()
-      }
+        getFileCache: jest.fn(),
+      },
     };
 
     renderer = new TestableBaseAssetRelationsRenderer(mockApp);
     container = document.createElement("div");
-    
+
     // Mock Obsidian's HTMLElement extensions
     (container as any).createSpan = jest.fn((options: any) => {
       const span = document.createElement("span");
@@ -55,7 +55,7 @@ describe("Instance Class Links Rendering", () => {
       container.appendChild(span);
       return span;
     });
-    
+
     (container as any).createEl = jest.fn((tag: string, options: any = {}) => {
       const element = document.createElement(tag);
       if (options.text) element.textContent = options.text;
@@ -73,7 +73,7 @@ describe("Instance Class Links Rendering", () => {
   describe("Single instance class values", () => {
     it("should render single wiki-link as clickable link", () => {
       const metadata = {
-        exo__Instance_class: "[[ems__Project]]"
+        exo__Instance_class: "[[ems__Project]]",
       };
 
       renderer.testRenderInstanceClassLinks(container, metadata);
@@ -86,7 +86,7 @@ describe("Instance Class Links Rendering", () => {
 
     it("should render plain text as clickable link", () => {
       const metadata = {
-        exo__Instance_class: "ems__Task"
+        exo__Instance_class: "ems__Task",
       };
 
       renderer.testRenderInstanceClassLinks(container, metadata);
@@ -99,7 +99,7 @@ describe("Instance Class Links Rendering", () => {
 
     it("should handle piped links with custom text", () => {
       const metadata = {
-        exo__Instance_class: "[[ems__CustomClass|My Custom Class]]"
+        exo__Instance_class: "[[ems__CustomClass|My Custom Class]]",
       };
 
       renderer.testRenderInstanceClassLinks(container, metadata);
@@ -122,7 +122,7 @@ describe("Instance Class Links Rendering", () => {
 
     it("should display dash for null instance class", () => {
       const metadata = {
-        exo__Instance_class: null
+        exo__Instance_class: null,
       };
 
       renderer.testRenderInstanceClassLinks(container, metadata);
@@ -139,8 +139,8 @@ describe("Instance Class Links Rendering", () => {
         exo__Instance_class: [
           "[[ems__Task]]",
           "[[ems__Effort]]",
-          "[[ems__Milestone]]"
-        ]
+          "[[ems__Milestone]]",
+        ],
       };
 
       renderer.testRenderInstanceClassLinks(container, metadata);
@@ -162,8 +162,8 @@ describe("Instance Class Links Rendering", () => {
         exo__Instance_class: [
           "[[ems__Project]]",
           "ems__Task",
-          "[[ems__Area|Custom Area]]"
-        ]
+          "[[ems__Area|Custom Area]]",
+        ],
       };
 
       renderer.testRenderInstanceClassLinks(container, metadata);
@@ -178,7 +178,7 @@ describe("Instance Class Links Rendering", () => {
 
     it("should display dash for empty array", () => {
       const metadata = {
-        exo__Instance_class: []
+        exo__Instance_class: [],
       };
 
       renderer.testRenderInstanceClassLinks(container, metadata);
@@ -192,46 +192,50 @@ describe("Instance Class Links Rendering", () => {
   describe("Click event handling", () => {
     it("should handle regular click", () => {
       const metadata = {
-        exo__Instance_class: "[[ems__Project]]"
+        exo__Instance_class: "[[ems__Project]]",
       };
 
       renderer.testRenderInstanceClassLinks(container, metadata);
 
-      const link = container.querySelector("a.instance-class-link") as HTMLElement;
+      const link = container.querySelector(
+        "a.instance-class-link",
+      ) as HTMLElement;
       const event = new MouseEvent("click", { bubbles: true });
       link.dispatchEvent(event);
 
       expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(
         "ems__Project",
         "",
-        false
+        false,
       );
     });
 
     it("should handle Ctrl+Click for new tab", () => {
       const metadata = {
-        exo__Instance_class: "[[ems__Task]]"
+        exo__Instance_class: "[[ems__Task]]",
       };
 
       renderer.testRenderInstanceClassLinks(container, metadata);
 
-      const link = container.querySelector("a.instance-class-link") as HTMLElement;
-      const event = new MouseEvent("click", { 
+      const link = container.querySelector(
+        "a.instance-class-link",
+      ) as HTMLElement;
+      const event = new MouseEvent("click", {
         bubbles: true,
-        ctrlKey: true 
+        ctrlKey: true,
       });
       link.dispatchEvent(event);
 
       expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(
         "ems__Task",
         "",
-        true
+        true,
       );
     });
 
     it("should handle Shift+Click for split pane", () => {
       const metadata = {
-        exo__Instance_class: "[[ems__Area]]"
+        exo__Instance_class: "[[ems__Area]]",
       };
 
       // Create a mock TFile instance
@@ -241,42 +245,48 @@ describe("Instance Class Links Rendering", () => {
 
       // Mock the leaf
       const mockLeaf = {
-        openFile: jest.fn()
+        openFile: jest.fn(),
       };
       mockApp.workspace.getLeaf.mockReturnValue(mockLeaf);
 
       renderer.testRenderInstanceClassLinks(container, metadata);
 
-      const link = container.querySelector("a.instance-class-link") as HTMLElement;
-      const event = new MouseEvent("click", { 
+      const link = container.querySelector(
+        "a.instance-class-link",
+      ) as HTMLElement;
+      const event = new MouseEvent("click", {
         bubbles: true,
-        shiftKey: true 
+        shiftKey: true,
       });
       link.dispatchEvent(event);
 
       expect(mockApp.workspace.getLeaf).toHaveBeenCalledWith("split");
-      expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith("ems__Area.md");
+      expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledWith(
+        "ems__Area.md",
+      );
       expect(mockLeaf.openFile).toHaveBeenCalledWith(mockFile);
     });
 
     it("should handle middle mouse button click", () => {
       const metadata = {
-        exo__Instance_class: "[[ems__Zone]]"
+        exo__Instance_class: "[[ems__Zone]]",
       };
 
       renderer.testRenderInstanceClassLinks(container, metadata);
 
-      const link = container.querySelector("a.instance-class-link") as HTMLElement;
-      const event = new MouseEvent("auxclick", { 
+      const link = container.querySelector(
+        "a.instance-class-link",
+      ) as HTMLElement;
+      const event = new MouseEvent("auxclick", {
         bubbles: true,
-        button: 1 
+        button: 1,
       });
       link.dispatchEvent(event);
 
       expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith(
         "ems__Zone",
         "",
-        true
+        true,
       );
     });
   });
@@ -284,7 +294,7 @@ describe("Instance Class Links Rendering", () => {
   describe("Special characters and edge cases", () => {
     it("should handle links with special characters", () => {
       const metadata = {
-        exo__Instance_class: "[[ems__Project-2024]]"
+        exo__Instance_class: "[[ems__Project-2024]]",
       };
 
       renderer.testRenderInstanceClassLinks(container, metadata);
@@ -296,7 +306,7 @@ describe("Instance Class Links Rendering", () => {
 
     it("should handle links with paths", () => {
       const metadata = {
-        exo__Instance_class: "[[folder/ems__Task]]"
+        exo__Instance_class: "[[folder/ems__Task]]",
       };
 
       renderer.testRenderInstanceClassLinks(container, metadata);
@@ -308,7 +318,7 @@ describe("Instance Class Links Rendering", () => {
 
     it("should handle already .md suffixed links", () => {
       const metadata = {
-        exo__Instance_class: "ems__Project.md"
+        exo__Instance_class: "ems__Project.md",
       };
 
       renderer.testRenderInstanceClassLinks(container, metadata);
@@ -319,16 +329,19 @@ describe("Instance Class Links Rendering", () => {
     });
 
     it("should handle very long arrays gracefully", () => {
-      const longArray = Array.from({ length: 20 }, (_, i) => `[[ems__Class${i}]]`);
+      const longArray = Array.from(
+        { length: 20 },
+        (_, i) => `[[ems__Class${i}]]`,
+      );
       const metadata = {
-        exo__Instance_class: longArray
+        exo__Instance_class: longArray,
       };
 
       renderer.testRenderInstanceClassLinks(container, metadata);
 
       const links = container.querySelectorAll("a.instance-class-link");
       expect(links.length).toBe(20);
-      
+
       // Check all links are rendered
       links.forEach((link, i) => {
         expect(link.textContent).toBe(`ems__Class${i}`);

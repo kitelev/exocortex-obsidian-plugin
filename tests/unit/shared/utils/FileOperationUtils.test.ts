@@ -105,10 +105,12 @@ describe("FileOperationUtils", () => {
       const result = FileOperationUtils.buildYamlFrontmatter(frontmatter);
 
       // Assert
-      expect(result).toContain('description: "A document with: special characters"');
+      expect(result).toContain(
+        'description: "A document with: special characters"',
+      );
       expect(result).toContain('link: "[[Some Link]]"');
       expect(result).toContain('email: "test@example.com"');
-      expect(result).toContain('path: /some/path'); // path doesn't need quotes
+      expect(result).toContain("path: /some/path"); // path doesn't need quotes
       expect(result).toContain('hash: "#hashtag"');
       expect(result).toContain('bracket: "[test]"');
       expect(result).toContain('brace: "{test}"');
@@ -149,12 +151,7 @@ describe("FileOperationUtils", () => {
       const result = FileOperationUtils.buildYamlFrontmatter(frontmatter);
 
       // Assert
-      expect(result).toEqual([
-        "---",
-        "title: Test",
-        "version: 1",
-        "---",
-      ]);
+      expect(result).toEqual(["---", "title: Test", "version: 1", "---"]);
     });
 
     it("should handle array with values needing quotes", () => {
@@ -168,11 +165,11 @@ describe("FileOperationUtils", () => {
       const result = FileOperationUtils.buildYamlFrontmatter(frontmatter);
 
       // Assert
-      expect(result).toContain('links:');
+      expect(result).toContain("links:");
       expect(result).toContain('  - "[[Page 1]]"');
-      expect(result).toContain('  - normal-link');
+      expect(result).toContain("  - normal-link");
       expect(result).toContain('  - "link with: colon"');
-      expect(result).toContain('emails:');
+      expect(result).toContain("emails:");
       expect(result).toContain('  - "test@example.com"');
     });
 
@@ -309,7 +306,9 @@ This is the actual document body.`);
 
       // Assert
       expect(result).toBe(mockFiles[0]);
-      expect(mockVault.getAbstractFileByPath).toHaveBeenCalledWith("documents/test1.md");
+      expect(mockVault.getAbstractFileByPath).toHaveBeenCalledWith(
+        "documents/test1.md",
+      );
     });
 
     it("should fallback to finding by UID when stored path fails", () => {
@@ -319,7 +318,7 @@ This is the actual document body.`);
       mockVault.getMarkdownFiles.mockReturnValue(mockFiles);
       mockMetadataCache.getFileCache.mockImplementation((file) => {
         if (file === mockFiles[1]) {
-          return { frontmatter: { "exo__Asset_uid": "test-uid-123" } };
+          return { frontmatter: { exo__Asset_uid: "test-uid-123" } };
         }
         return { frontmatter: {} };
       });
@@ -410,7 +409,11 @@ This is the body content.`;
       mockVault.modify.mockResolvedValue(undefined);
 
       // Act
-      await FileOperationUtils.updateFileWithFrontmatter(mockApp, file, newFrontmatter);
+      await FileOperationUtils.updateFileWithFrontmatter(
+        mockApp,
+        file,
+        newFrontmatter,
+      );
 
       // Assert
       expect(mockVault.read).toHaveBeenCalledWith(file);
@@ -420,7 +423,7 @@ This is the body content.`;
 title: New Title
 author: Test Author
 ---
-This is the body content.`
+This is the body content.`,
       );
     });
 
@@ -434,7 +437,11 @@ This is the body content.`
       mockVault.modify.mockResolvedValue(undefined);
 
       // Act
-      await FileOperationUtils.updateFileWithFrontmatter(mockApp, file, newFrontmatter);
+      await FileOperationUtils.updateFileWithFrontmatter(
+        mockApp,
+        file,
+        newFrontmatter,
+      );
 
       // Assert
       expect(mockVault.modify).toHaveBeenCalledWith(
@@ -442,7 +449,7 @@ This is the body content.`
         `---
 title: New Title
 ---
-Just body content here.`
+Just body content here.`,
       );
     });
   });
@@ -455,7 +462,11 @@ Just body content here.`
       mockVault.create.mockResolvedValue(new TFile(filename));
 
       // Act
-      await FileOperationUtils.createFileWithFrontmatter(mockApp, filename, frontmatter);
+      await FileOperationUtils.createFileWithFrontmatter(
+        mockApp,
+        filename,
+        frontmatter,
+      );
 
       // Assert
       expect(mockVault.create).toHaveBeenCalledWith(
@@ -464,7 +475,7 @@ Just body content here.`
 title: New Document
 author: Test Author
 ---
-`
+`,
       );
     });
 
@@ -475,14 +486,18 @@ author: Test Author
       mockVault.create.mockResolvedValue(new TFile(filename));
 
       // Act
-      await FileOperationUtils.createFileWithFrontmatter(mockApp, filename, frontmatter);
+      await FileOperationUtils.createFileWithFrontmatter(
+        mockApp,
+        filename,
+        frontmatter,
+      );
 
       // Assert
       expect(mockVault.create).toHaveBeenCalledWith(
         filename,
         `---
 ---
-`
+`,
       );
     });
   });
@@ -512,7 +527,11 @@ author: Test Author
       });
 
       // Act
-      const result = FileOperationUtils.getFilesWithProperty(mockApp, "type", "document");
+      const result = FileOperationUtils.getFilesWithProperty(
+        mockApp,
+        "type",
+        "document",
+      );
 
       // Assert
       expect(result).toEqual([mockFiles[0], mockFiles[1]]);
@@ -544,7 +563,11 @@ author: Test Author
       }));
 
       // Act
-      const result = FileOperationUtils.getFilesWithProperty(mockApp, "type", "document");
+      const result = FileOperationUtils.getFilesWithProperty(
+        mockApp,
+        "type",
+        "document",
+      );
 
       // Assert
       expect(result).toEqual([]);
@@ -555,7 +578,11 @@ author: Test Author
       mockMetadataCache.getFileCache.mockReturnValue(null);
 
       // Act
-      const result = FileOperationUtils.getFilesWithProperty(mockApp, "type", "document");
+      const result = FileOperationUtils.getFilesWithProperty(
+        mockApp,
+        "type",
+        "document",
+      );
 
       // Assert
       expect(result).toEqual([]);
@@ -582,8 +609,14 @@ author: Test Author
 
     it("should handle empty objects", () => {
       // Arrange & Act
-      const result1 = FileOperationUtils.mergeFrontmatter({}, { title: "Test" });
-      const result2 = FileOperationUtils.mergeFrontmatter({ title: "Test" }, {});
+      const result1 = FileOperationUtils.mergeFrontmatter(
+        {},
+        { title: "Test" },
+      );
+      const result2 = FileOperationUtils.mergeFrontmatter(
+        { title: "Test" },
+        {},
+      );
       const result3 = FileOperationUtils.mergeFrontmatter({}, {});
 
       // Assert
@@ -608,10 +641,21 @@ author: Test Author
   describe("isReferencingAsset", () => {
     it("should detect references in various formats", () => {
       // Arrange & Act & Assert
-      expect(FileOperationUtils.isReferencingAsset("test-asset", "test-asset")).toBe(true);
-      expect(FileOperationUtils.isReferencingAsset("test-asset.md", "test-asset")).toBe(true);
-      expect(FileOperationUtils.isReferencingAsset("[[test-asset]]", "test-asset")).toBe(true);
-      expect(FileOperationUtils.isReferencingAsset("link to test-asset here", "test-asset")).toBe(true);
+      expect(
+        FileOperationUtils.isReferencingAsset("test-asset", "test-asset"),
+      ).toBe(true);
+      expect(
+        FileOperationUtils.isReferencingAsset("test-asset.md", "test-asset"),
+      ).toBe(true);
+      expect(
+        FileOperationUtils.isReferencingAsset("[[test-asset]]", "test-asset"),
+      ).toBe(true);
+      expect(
+        FileOperationUtils.isReferencingAsset(
+          "link to test-asset here",
+          "test-asset",
+        ),
+      ).toBe(true);
     });
 
     it("should handle array of references", () => {
@@ -619,31 +663,60 @@ author: Test Author
       const references = ["[[other-asset]]", "test-asset", "[[third-asset]]"];
 
       // Act & Assert
-      expect(FileOperationUtils.isReferencingAsset(references, "test-asset")).toBe(true);
-      expect(FileOperationUtils.isReferencingAsset(references, "other-asset")).toBe(true);
-      expect(FileOperationUtils.isReferencingAsset(references, "nonexistent")).toBe(false);
+      expect(
+        FileOperationUtils.isReferencingAsset(references, "test-asset"),
+      ).toBe(true);
+      expect(
+        FileOperationUtils.isReferencingAsset(references, "other-asset"),
+      ).toBe(true);
+      expect(
+        FileOperationUtils.isReferencingAsset(references, "nonexistent"),
+      ).toBe(false);
     });
 
     it("should handle bracketed references correctly", () => {
       // Arrange & Act & Assert
-      expect(FileOperationUtils.isReferencingAsset("[[test-asset]]", "test-asset")).toBe(true);
-      expect(FileOperationUtils.isReferencingAsset("[[test-asset.md]]", "test-asset")).toBe(true);
+      expect(
+        FileOperationUtils.isReferencingAsset("[[test-asset]]", "test-asset"),
+      ).toBe(true);
+      expect(
+        FileOperationUtils.isReferencingAsset(
+          "[[test-asset.md]]",
+          "test-asset",
+        ),
+      ).toBe(true);
     });
 
     it("should return false for non-matching references", () => {
       // Arrange & Act & Assert
-      expect(FileOperationUtils.isReferencingAsset("other-asset", "test-asset")).toBe(false);
-      expect(FileOperationUtils.isReferencingAsset("[[other-asset]]", "test-asset")).toBe(false);
-      expect(FileOperationUtils.isReferencingAsset("", "test-asset")).toBe(false);
-      expect(FileOperationUtils.isReferencingAsset(null, "test-asset")).toBe(false);
-      expect(FileOperationUtils.isReferencingAsset(undefined, "test-asset")).toBe(false);
+      expect(
+        FileOperationUtils.isReferencingAsset("other-asset", "test-asset"),
+      ).toBe(false);
+      expect(
+        FileOperationUtils.isReferencingAsset("[[other-asset]]", "test-asset"),
+      ).toBe(false);
+      expect(FileOperationUtils.isReferencingAsset("", "test-asset")).toBe(
+        false,
+      );
+      expect(FileOperationUtils.isReferencingAsset(null, "test-asset")).toBe(
+        false,
+      );
+      expect(
+        FileOperationUtils.isReferencingAsset(undefined, "test-asset"),
+      ).toBe(false);
     });
 
     it("should handle edge cases", () => {
       // Arrange & Act & Assert
-      expect(FileOperationUtils.isReferencingAsset([], "test-asset")).toBe(false);
-      expect(FileOperationUtils.isReferencingAsset([null, undefined], "test-asset")).toBe(false);
-      expect(FileOperationUtils.isReferencingAsset(123, "test-asset")).toBe(false);
+      expect(FileOperationUtils.isReferencingAsset([], "test-asset")).toBe(
+        false,
+      );
+      expect(
+        FileOperationUtils.isReferencingAsset([null, undefined], "test-asset"),
+      ).toBe(false);
+      expect(FileOperationUtils.isReferencingAsset(123, "test-asset")).toBe(
+        false,
+      );
     });
   });
 
@@ -656,7 +729,11 @@ author: Test Author
 
       // Act & Assert
       await expect(
-        FileOperationUtils.updateFileWithFrontmatter(mockApp, file, frontmatter)
+        FileOperationUtils.updateFileWithFrontmatter(
+          mockApp,
+          file,
+          frontmatter,
+        ),
       ).rejects.toThrow("File not found");
     });
 
@@ -668,7 +745,11 @@ author: Test Author
 
       // Act & Assert
       await expect(
-        FileOperationUtils.createFileWithFrontmatter(mockApp, filename, frontmatter)
+        FileOperationUtils.createFileWithFrontmatter(
+          mockApp,
+          filename,
+          frontmatter,
+        ),
       ).rejects.toThrow("Permission denied");
     });
 
@@ -707,7 +788,9 @@ author: Test Author
       const contentWithFrontmatter = `---\ntitle: Test\n---\n${longContent}`;
 
       // Act
-      const result = FileOperationUtils.extractBodyContent(contentWithFrontmatter);
+      const result = FileOperationUtils.extractBodyContent(
+        contentWithFrontmatter,
+      );
 
       // Assert
       expect(result).toBe(longContent);
@@ -715,9 +798,14 @@ author: Test Author
 
     it("should handle many files efficiently", () => {
       // Arrange
-      const manyFiles = Array.from({ length: 1000 }, (_, i) => new TFile(`file${i}.md`));
+      const manyFiles = Array.from(
+        { length: 1000 },
+        (_, i) => new TFile(`file${i}.md`),
+      );
       mockVault.getMarkdownFiles.mockReturnValue(manyFiles);
-      mockMetadataCache.getFileCache.mockReturnValue({ frontmatter: { type: "document" } });
+      mockMetadataCache.getFileCache.mockReturnValue({
+        frontmatter: { type: "document" },
+      });
 
       // Act & Assert
       expect(() => {

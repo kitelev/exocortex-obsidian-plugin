@@ -1,4 +1,7 @@
-import { CreateAssetUseCase, CreateAssetRequest } from "../../../../src/application/use-cases/CreateAssetUseCase";
+import {
+  CreateAssetUseCase,
+  CreateAssetRequest,
+} from "../../../../src/application/use-cases/CreateAssetUseCase";
 import { IAssetRepository } from "../../../../src/domain/repositories/IAssetRepository";
 import { IOntologyRepository } from "../../../../src/domain/repositories/IOntologyRepository";
 import { OntologyProvisioningService } from "../../../../src/domain/services/OntologyProvisioningService";
@@ -70,7 +73,9 @@ describe("CreateAssetUseCase Enhanced", () => {
       expect(result.success).toBe(true);
       expect(result.assetId).toBeTruthy();
       expect(result.message).toContain("Created asset: Test Asset");
-      expect(mockProvisioningService.ensureOntologyExists).toHaveBeenCalledWith("test");
+      expect(mockProvisioningService.ensureOntologyExists).toHaveBeenCalledWith(
+        "test",
+      );
       expect(mockAssetRepository.save).toHaveBeenCalledTimes(1);
     });
 
@@ -92,7 +97,9 @@ describe("CreateAssetUseCase Enhanced", () => {
 
       // Assert
       expect(result.success).toBe(false);
-      expect(result.error).toMatch(/Failed to provision ontology|Invalid ontology prefix/);
+      expect(result.error).toMatch(
+        /Failed to provision ontology|Invalid ontology prefix/,
+      );
       expect(mockAssetRepository.save).not.toHaveBeenCalled();
     });
 
@@ -135,7 +142,9 @@ describe("CreateAssetUseCase Enhanced", () => {
       // Assert
       expect(result.success).toBe(false);
       expect(result.error).toBe("Asset title is required");
-      expect(mockProvisioningService.ensureOntologyExists).not.toHaveBeenCalled();
+      expect(
+        mockProvisioningService.ensureOntologyExists,
+      ).not.toHaveBeenCalled();
     });
 
     it("should return error response for title too long", async () => {
@@ -154,7 +163,9 @@ describe("CreateAssetUseCase Enhanced", () => {
       // Assert
       expect(result.success).toBe(false);
       expect(result.error).toContain("cannot exceed 200 characters");
-      expect(mockProvisioningService.ensureOntologyExists).not.toHaveBeenCalled();
+      expect(
+        mockProvisioningService.ensureOntologyExists,
+      ).not.toHaveBeenCalled();
     });
 
     it("should return error response for empty ontology prefix", async () => {
@@ -172,7 +183,9 @@ describe("CreateAssetUseCase Enhanced", () => {
       // Assert
       expect(result.success).toBe(false);
       expect(result.error).toContain("cannot be empty");
-      expect(mockProvisioningService.ensureOntologyExists).not.toHaveBeenCalled();
+      expect(
+        mockProvisioningService.ensureOntologyExists,
+      ).not.toHaveBeenCalled();
     });
 
     it("should return error response for invalid class name", async () => {
@@ -194,7 +207,9 @@ describe("CreateAssetUseCase Enhanced", () => {
 
       // Assert
       expect(result.success).toBe(false);
-      expect(result.error).toMatch(/Invalid class name|Asset class is required/);
+      expect(result.error).toMatch(
+        /Invalid class name|Asset class is required/,
+      );
       expect(mockAssetRepository.save).not.toHaveBeenCalled();
     });
   });
@@ -256,7 +271,9 @@ describe("CreateAssetUseCase Enhanced", () => {
         properties: {},
       };
 
-      mockProvisioningService.ensureOntologyExists.mockRejectedValue("String error");
+      mockProvisioningService.ensureOntologyExists.mockRejectedValue(
+        "String error",
+      );
 
       // Act
       const result = await useCase.execute(request);
@@ -330,7 +347,7 @@ describe("CreateAssetUseCase Enhanced", () => {
 
       // Act
       const results = await Promise.all(
-        requests.map(request => useCase.execute(request)),
+        requests.map((request) => useCase.execute(request)),
       );
 
       // Assert

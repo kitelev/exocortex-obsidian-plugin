@@ -6,6 +6,7 @@ import { ServiceProvider } from "../../infrastructure/providers/ServiceProvider"
 import { IAssetRepository } from "../../domain/repositories/IAssetRepository";
 import { Result } from "../../domain/core/Result";
 import { AssetRelationUtils } from "../../shared/utils/AssetRelationUtils";
+import { EnhancedCreateAssetModal } from "../modals/EnhancedCreateAssetModal";
 
 /**
  * UniversalLayout configuration options
@@ -69,6 +70,9 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         this.renderMessage(el, "No active file");
         return;
       }
+
+      // Check if current file is a class and add creation button
+      await this.renderCreationButtonIfClass(el, currentFile);
 
       // Get asset relations for the current file
       const relations = await this.getAssetRelations(currentFile, config);
@@ -814,5 +818,83 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         });
       }
     });
+  }
+
+  /**
+   * Check if current file is a class and render creation button if applicable
+   */
+  private async renderCreationButtonIfClass(
+    container: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    if (!cache?.frontmatter) return;
+
+    const instanceClass = this.extractValue(
+      cache.frontmatter["exo__Instance_class"],
+    );
+
+    // Check if this file is a class
+    if (instanceClass !== "exo__Class") return;
+
+    // Get class name and label
+    const className = file.basename;
+    const classLabel =
+      cache.frontmatter["rdfs__label"] ||
+      cache.frontmatter["exo__Asset_label"] ||
+      className;
+
+    // Determine button label - check for custom button configuration
+    const customButtonLabel = cache.frontmatter["exo__Class_createButtonLabel"];
+    const buttonLabel =
+      customButtonLabel || `Create ${this.humanizeClassName(classLabel)}`;
+
+    // Create button container at the top of the layout
+    const buttonContainer = container.createDiv({
+      cls: "exocortex-creation-button-container",
+    });
+
+    // Create the button
+    const button = buttonContainer.createEl("button", {
+      text: buttonLabel,
+      cls: "exocortex-create-asset-button",
+    });
+
+    // Add click handler to open CreateAssetModal
+    button.addEventListener("click", async () => {
+      const modal = new EnhancedCreateAssetModal(this.app, className);
+      modal.open();
+    });
+
+    // Add some spacing after the button
+    buttonContainer.createEl("hr", { cls: "exocortex-button-separator" });
+  }
+
+  /**
+   * Extract clean value from frontmatter (remove wikilink brackets)
+   */
+  private extractValue(value: any): string {
+    if (!value) return "";
+    const str = String(value);
+    // Handle arrays
+    if (Array.isArray(value)) {
+      return this.extractValue(value[0]);
+    }
+    // Remove [[ and ]] if present
+    return str.replace(/^\[\[|\]\]$/g, "");
+  }
+
+  /**
+   * Convert class name to human-readable form for button label
+   */
+  private humanizeClassName(className: string): string {
+    // Remove prefix if present (e.g., "ems__Area" -> "Area")
+    const withoutPrefix = className.split("__").pop() || className;
+
+    // Convert to title case and add spacing
+    return withoutPrefix
+      .replace(/([A-Z])/g, " $1")
+      .replace(/_/g, " ")
+      .trim();
   }
 }

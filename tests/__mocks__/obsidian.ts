@@ -201,7 +201,7 @@ export class Modal {
     this.backdrop.appendChild(this.modalEl);
     this.onOpen();
   }
-  
+
   close(): void {
     this.onClose();
     if (this.backdrop) {
@@ -209,7 +209,7 @@ export class Modal {
       this.backdrop = undefined;
     }
   }
-  
+
   onOpen(): void {}
   onClose(): void {}
 }
@@ -557,10 +557,10 @@ export class Vault {
   }
 
   async rename(file: TFile, newPath: string): Promise<void> {
-    const targetFile = this.mockFiles.find(f => f === file);
+    const targetFile = this.mockFiles.find((f) => f === file);
     if (targetFile) {
       targetFile.path = newPath;
-      targetFile.name = newPath.split('/').pop() || '';
+      targetFile.name = newPath.split("/").pop() || "";
     }
     return Promise.resolve();
   }

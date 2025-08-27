@@ -1,4 +1,7 @@
-import { CodeBlockProcessor, IViewRenderer } from "../../../../src/presentation/processors/CodeBlockProcessor";
+import {
+  CodeBlockProcessor,
+  IViewRenderer,
+} from "../../../../src/presentation/processors/CodeBlockProcessor";
 import { ServiceProvider } from "../../../../src/infrastructure/providers/ServiceProvider";
 import { MarkdownPostProcessorContext, MarkdownRenderChild } from "obsidian";
 import { LoggerFactory } from "../../../../src/infrastructure/logging/LoggerFactory";
@@ -17,7 +20,7 @@ jest.mock("obsidian", () => {
         this.containerEl = containerEl;
       }
       onunload() {}
-    }
+    },
   };
 });
 
@@ -34,7 +37,7 @@ describe("CodeBlockProcessor", () => {
       info: jest.fn(),
       error: jest.fn(),
       warn: jest.fn(),
-      debug: jest.fn()
+      debug: jest.fn(),
     });
 
     // Mock service provider
@@ -58,48 +61,60 @@ describe("CodeBlockProcessor", () => {
     // Mock context
     mockContext = {
       sourcePath: "test.md",
-      addChild: jest.fn()
+      addChild: jest.fn(),
     } as any;
 
     // Mock renderer
     mockRenderer = {
       render: jest.fn().mockResolvedValue(undefined),
-      refresh: jest.fn().mockResolvedValue(undefined)
+      refresh: jest.fn().mockResolvedValue(undefined),
     };
   });
 
   describe("registerView", () => {
     it("should register a view renderer", () => {
       processor.registerView("TestView", mockRenderer);
-      expect(LoggerFactory.createForClass).toHaveBeenCalledWith(CodeBlockProcessor);
+      expect(LoggerFactory.createForClass).toHaveBeenCalledWith(
+        CodeBlockProcessor,
+      );
     });
   });
 
   describe("processCodeBlock", () => {
     it("should process a simple UniversalLayout view", async () => {
       processor.registerView("UniversalLayout", mockRenderer);
-      
+
       const source = "UniversalLayout";
       await processor.processCodeBlock(source, mockElement, mockContext);
 
       expect(mockElement.empty).toHaveBeenCalled();
-      expect(mockElement.createDiv).toHaveBeenCalledWith({ cls: "exocortex-view-container" });
-      expect(mockRenderer.render).toHaveBeenCalledWith(source, expect.any(HTMLElement), mockContext);
+      expect(mockElement.createDiv).toHaveBeenCalledWith({
+        cls: "exocortex-view-container",
+      });
+      expect(mockRenderer.render).toHaveBeenCalledWith(
+        source,
+        expect.any(HTMLElement),
+        mockContext,
+      );
       expect(mockContext.addChild).toHaveBeenCalled();
     });
 
     it("should process a view with configuration", async () => {
       processor.registerView("AssetList", mockRenderer);
-      
+
       const source = `AssetList
 class: ems__Project
 folder: Projects
 limit: 10
 showCreateButton: true`;
-      
+
       await processor.processCodeBlock(source, mockElement, mockContext);
 
-      expect(mockRenderer.render).toHaveBeenCalledWith(source, expect.any(HTMLElement), mockContext);
+      expect(mockRenderer.render).toHaveBeenCalledWith(
+        source,
+        expect.any(HTMLElement),
+        mockContext,
+      );
     });
 
     it("should handle unknown view types", async () => {
@@ -107,30 +122,34 @@ showCreateButton: true`;
       await processor.processCodeBlock(source, mockElement, mockContext);
 
       expect(mockElement.empty).toHaveBeenCalled();
-      expect(mockElement.createDiv).toHaveBeenCalledWith({ cls: "exocortex-error" });
+      expect(mockElement.createDiv).toHaveBeenCalledWith({
+        cls: "exocortex-error",
+      });
     });
 
     it("should handle renderer errors gracefully", async () => {
       const error = new Error("Render failed");
       mockRenderer.render = jest.fn().mockRejectedValue(error);
       processor.registerView("TestView", mockRenderer);
-      
+
       const source = "TestView";
       await processor.processCodeBlock(source, mockElement, mockContext);
 
       expect(mockElement.empty).toHaveBeenCalled();
-      expect(mockElement.createDiv).toHaveBeenCalledWith({ cls: "exocortex-error" });
+      expect(mockElement.createDiv).toHaveBeenCalledWith({
+        cls: "exocortex-error",
+      });
     });
 
     it("should parse configuration with various data types", async () => {
       processor.registerView("TestView", mockRenderer);
-      
+
       const source = `TestView
 string: value
 number: 42
 boolean: true
 array: ["item1", "item2"]`;
-      
+
       await processor.processCodeBlock(source, mockElement, mockContext);
 
       expect(mockRenderer.render).toHaveBeenCalled();
@@ -138,13 +157,13 @@ array: ["item1", "item2"]`;
 
     it("should ignore comment lines in configuration", async () => {
       processor.registerView("TestView", mockRenderer);
-      
+
       const source = `TestView
 # This is a comment
 property: value
 # Another comment
 limit: 5`;
-      
+
       await processor.processCodeBlock(source, mockElement, mockContext);
 
       expect(mockRenderer.render).toHaveBeenCalled();
@@ -152,7 +171,7 @@ limit: 5`;
 
     it("should set data-view-type attribute on container", async () => {
       processor.registerView("TestView", mockRenderer);
-      
+
       const source = "TestView";
       await processor.processCodeBlock(source, mockElement, mockContext);
 
@@ -165,11 +184,11 @@ limit: 5`;
     it("should refresh all active views with refresh method", async () => {
       const refreshableRenderer: IViewRenderer = {
         render: jest.fn().mockResolvedValue(undefined),
-        refresh: jest.fn().mockResolvedValue(undefined)
+        refresh: jest.fn().mockResolvedValue(undefined),
       };
 
       processor.registerView("RefreshableView", refreshableRenderer);
-      
+
       const source = "RefreshableView";
       await processor.processCodeBlock(source, mockElement, mockContext);
 
@@ -180,11 +199,11 @@ limit: 5`;
 
     it("should skip views without refresh method", async () => {
       const nonRefreshableRenderer: IViewRenderer = {
-        render: jest.fn().mockResolvedValue(undefined)
+        render: jest.fn().mockResolvedValue(undefined),
       };
 
       processor.registerView("NonRefreshableView", nonRefreshableRenderer);
-      
+
       const source = "NonRefreshableView";
       await processor.processCodeBlock(source, mockElement, mockContext);
 
@@ -195,25 +214,25 @@ limit: 5`;
     it("should handle multiple active views", async () => {
       const renderer1: IViewRenderer = {
         render: jest.fn().mockResolvedValue(undefined),
-        refresh: jest.fn().mockResolvedValue(undefined)
+        refresh: jest.fn().mockResolvedValue(undefined),
       };
-      
+
       const renderer2: IViewRenderer = {
         render: jest.fn().mockResolvedValue(undefined),
-        refresh: jest.fn().mockResolvedValue(undefined)
+        refresh: jest.fn().mockResolvedValue(undefined),
       };
 
       processor.registerView("View1", renderer1);
       processor.registerView("View2", renderer2);
-      
+
       const element1 = document.createElement("div");
       element1.empty = jest.fn();
       element1.createDiv = mockElement.createDiv;
-      
+
       const element2 = document.createElement("div");
       element2.empty = jest.fn();
       element2.createDiv = mockElement.createDiv;
-      
+
       await processor.processCodeBlock("View1", element1, mockContext);
       await processor.processCodeBlock("View2", element2, mockContext);
 
@@ -227,7 +246,7 @@ limit: 5`;
   describe("configuration parsing", () => {
     it("should default to UniversalLayout if no type specified", async () => {
       processor.registerView("UniversalLayout", mockRenderer);
-      
+
       const source = "";
       await processor.processCodeBlock(source, mockElement, mockContext);
 
@@ -236,11 +255,11 @@ limit: 5`;
 
     it("should handle JSON values in configuration", async () => {
       processor.registerView("TestView", mockRenderer);
-      
+
       const source = `TestView
 object: {"key": "value"}
 array: [1, 2, 3]`;
-      
+
       await processor.processCodeBlock(source, mockElement, mockContext);
 
       expect(mockRenderer.render).toHaveBeenCalled();
@@ -248,10 +267,10 @@ array: [1, 2, 3]`;
 
     it("should handle malformed JSON as strings", async () => {
       processor.registerView("TestView", mockRenderer);
-      
+
       const source = `TestView
 malformed: {not valid json}`;
-      
+
       await processor.processCodeBlock(source, mockElement, mockContext);
 
       expect(mockRenderer.render).toHaveBeenCalled();
@@ -259,11 +278,11 @@ malformed: {not valid json}`;
 
     it("should trim whitespace from configuration lines", async () => {
       processor.registerView("TestView", mockRenderer);
-      
+
       const source = `  TestView  
   property: value  
     limit: 10    `;
-      
+
       await processor.processCodeBlock(source, mockElement, mockContext);
 
       expect(mockRenderer.render).toHaveBeenCalled();
@@ -273,27 +292,29 @@ malformed: {not valid json}`;
   describe("cleanup", () => {
     it("should register cleanup handler with context", async () => {
       processor.registerView("TestView", mockRenderer);
-      
+
       const source = "TestView";
       await processor.processCodeBlock(source, mockElement, mockContext);
 
       expect(mockContext.addChild).toHaveBeenCalledWith(expect.any(Object));
-      
+
       // Verify the cleanup handler is a MarkdownRenderChild
-      const cleanupHandler = (mockContext.addChild as jest.Mock).mock.calls[0][0];
+      const cleanupHandler = (mockContext.addChild as jest.Mock).mock
+        .calls[0][0];
       expect(cleanupHandler).toBeDefined();
       expect(cleanupHandler.onunload).toBeDefined();
     });
 
     it("should remove element from active elements on cleanup", async () => {
       processor.registerView("TestView", mockRenderer);
-      
+
       const source = "TestView";
       await processor.processCodeBlock(source, mockElement, mockContext);
 
       // Get the cleanup handler
-      const cleanupHandler = (mockContext.addChild as jest.Mock).mock.calls[0][0];
-      
+      const cleanupHandler = (mockContext.addChild as jest.Mock).mock
+        .calls[0][0];
+
       // Initially the view should be refreshable
       await processor.refreshViews();
       expect(mockRenderer.refresh).toHaveBeenCalledTimes(1);
@@ -321,23 +342,25 @@ malformed: {not valid json}`;
       const error = new Error("Processing failed");
       mockRenderer.render = jest.fn().mockRejectedValue(error);
       processor.registerView("TestView", mockRenderer);
-      
-      const logger = (LoggerFactory.createForClass as jest.Mock).mock.results[0].value;
-      
+
+      const logger = (LoggerFactory.createForClass as jest.Mock).mock.results[0]
+        .value;
+
       const source = "TestView";
       await processor.processCodeBlock(source, mockElement, mockContext);
 
       expect(logger.error).toHaveBeenCalledWith(
         "Failed to process code block",
-        expect.objectContaining({ error })
+        expect.objectContaining({ error }),
       );
     });
 
     it("should log successful renders", async () => {
       processor.registerView("TestView", mockRenderer);
-      
-      const logger = (LoggerFactory.createForClass as jest.Mock).mock.results[0].value;
-      
+
+      const logger = (LoggerFactory.createForClass as jest.Mock).mock.results[0]
+        .value;
+
       const source = "TestView";
       await processor.processCodeBlock(source, mockElement, mockContext);
 
@@ -345,8 +368,8 @@ malformed: {not valid json}`;
         "Rendered view TestView",
         expect.objectContaining({
           duration: expect.any(Number),
-          sourcePath: "test.md"
-        })
+          sourcePath: "test.md",
+        }),
       );
     });
   });

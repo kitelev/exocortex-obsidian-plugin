@@ -42,14 +42,14 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
     } as TFile;
 
     // Setup default app mocks
-    jest.spyOn(mockApp.metadataCache, 'getBacklinksForFile').mockReturnValue({
+    jest.spyOn(mockApp.metadataCache, "getBacklinksForFile").mockReturnValue({
       data: new Map(),
       count: () => 0,
       keys: () => [],
     });
 
-    jest.spyOn(mockApp.vault, 'getAbstractFileByPath').mockReturnValue(null);
-    jest.spyOn(mockApp.metadataCache, 'getFileCache').mockReturnValue({
+    jest.spyOn(mockApp.vault, "getAbstractFileByPath").mockReturnValue(null);
+    jest.spyOn(mockApp.metadataCache, "getFileCache").mockReturnValue({
       frontmatter: {},
       sections: [],
       headings: [],
@@ -57,7 +57,7 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
       embeds: [],
       tags: [],
     });
-    jest.spyOn(mockApp.workspace, 'openLinkText').mockReturnValue(undefined);
+    jest.spyOn(mockApp.workspace, "openLinkText").mockReturnValue(undefined);
   });
 
   describe("Simplified Layout Detection", () => {
@@ -65,8 +65,8 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
       // Setup: Frontmatter with simplified configuration
       const metadata = {
         frontmatter: {
-          "exo__Instance_class": "ems__Project",
-          "ui__LayoutBlock_display_properties": [
+          exo__Instance_class: "ems__Project",
+          ui__LayoutBlock_display_properties: [
             "[[ems__Effort_status]]",
             "[[ems__Effort_priority]]",
           ],
@@ -77,7 +77,7 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
       mockLayoutRepository.findEnabledByClass.mockResolvedValue([]);
 
       // Mock: Simplified renderer dependencies - empty backlinks for simple test
-      jest.spyOn(mockApp.metadataCache, 'getBacklinksForFile').mockReturnValue({
+      jest.spyOn(mockApp.metadataCache, "getBacklinksForFile").mockReturnValue({
         data: new Map(),
         count: () => 0,
         keys: () => [],
@@ -88,10 +88,10 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
 
       // Assert: Check that simplified layout was rendered
       expect(container.children.length).toBeGreaterThan(0);
-      
+
       // Should have simplified layout container
       const simplifiedLayout = container.querySelector(
-        ".exocortex-simplified-layout"
+        ".exocortex-simplified-layout",
       );
       expect(simplifiedLayout).toBeTruthy();
 
@@ -105,16 +105,16 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
       // Setup: Normal frontmatter without simplified config
       const metadata = {
         frontmatter: {
-          "exo__Instance_class": "ems__Project",
+          exo__Instance_class: "ems__Project",
         },
       };
 
       // Mock: Return complex layout
       const assetId = AssetId.generate();
       const classNameResult = ClassName.create("ems__Project");
-      
+
       expect(classNameResult.isSuccess).toBe(true);
-      
+
       const mockComplexLayout = ClassLayout.create({
         id: assetId,
         targetClass: classNameResult.getValue(),
@@ -123,14 +123,16 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
         priority: 1,
       }).getValue();
 
-      mockLayoutRepository.findEnabledByClass.mockResolvedValue([mockComplexLayout]);
+      mockLayoutRepository.findEnabledByClass.mockResolvedValue([
+        mockComplexLayout,
+      ]);
 
       // Act
       await renderer.renderLayout(container, mockFile, metadata, null);
 
       // Assert: Should not render simplified layout
       const simplifiedLayout = container.querySelector(
-        ".exocortex-simplified-layout"
+        ".exocortex-simplified-layout",
       );
       expect(simplifiedLayout).toBeFalsy();
 
@@ -143,10 +145,8 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
       // Setup: Frontmatter with simplified config but no custom layout
       const metadata = {
         frontmatter: {
-          "exo__Instance_class": "ems__Project",
-          "ui__LayoutBlock_display_properties": [
-            "[[ems__Effort_status]]",
-          ],
+          exo__Instance_class: "ems__Project",
+          ui__LayoutBlock_display_properties: ["[[ems__Effort_status]]"],
         },
       };
 
@@ -163,7 +163,7 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
 
       // Assert: Should render simplified layout even in default case
       const simplifiedLayout = container.querySelector(
-        ".exocortex-simplified-layout"
+        ".exocortex-simplified-layout",
       );
       expect(simplifiedLayout).toBeTruthy();
     });
@@ -172,8 +172,8 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
       // Setup: Invalid simplified configuration
       const metadata = {
         frontmatter: {
-          "exo__Instance_class": "ems__Project",
-          "ui__LayoutBlock_display_properties": "invalid-not-array",
+          exo__Instance_class: "ems__Project",
+          ui__LayoutBlock_display_properties: "invalid-not-array",
         },
       };
 
@@ -185,13 +185,13 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
 
       // Assert: Should fall back to normal default layout
       const dynamicBacklinks = container.querySelector(
-        ".exocortex-block-dynamic-backlinks"
+        ".exocortex-block-dynamic-backlinks",
       );
       expect(dynamicBacklinks).toBeTruthy();
 
       // Should not render simplified layout
       const simplifiedLayout = container.querySelector(
-        ".exocortex-simplified-layout"
+        ".exocortex-simplified-layout",
       );
       expect(simplifiedLayout).toBeFalsy();
     });
@@ -200,8 +200,8 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
       // Setup: Empty simplified configuration
       const metadata = {
         frontmatter: {
-          "exo__Instance_class": "ems__Project",
-          "ui__LayoutBlock_display_properties": [],
+          exo__Instance_class: "ems__Project",
+          ui__LayoutBlock_display_properties: [],
         },
       };
 
@@ -213,13 +213,13 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
 
       // Assert: Empty array should fall back to normal default layout
       const dynamicBacklinks = container.querySelector(
-        ".exocortex-block-dynamic-backlinks"
+        ".exocortex-block-dynamic-backlinks",
       );
       expect(dynamicBacklinks).toBeTruthy();
 
       // Should not render simplified layout
       const simplifiedLayout = container.querySelector(
-        ".exocortex-simplified-layout"
+        ".exocortex-simplified-layout",
       );
       expect(simplifiedLayout).toBeFalsy();
     });
@@ -230,8 +230,8 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
       // Setup: Configuration that will cause SimplifiedLayoutBlock creation to fail
       const metadata = {
         frontmatter: {
-          "exo__Instance_class": "ems__Project",
-          "ui__LayoutBlock_display_properties": [
+          exo__Instance_class: "ems__Project",
+          ui__LayoutBlock_display_properties: [
             "invalid-property-format", // Invalid format - missing [[ ]]
           ],
         },
@@ -246,8 +246,12 @@ describe("LayoutRenderer - Simplified Configuration Integration", () => {
       // Assert: Should render error message
       const errorElement = container.querySelector(".exocortex-error");
       expect(errorElement).toBeTruthy();
-      expect(errorElement?.textContent).toContain("Invalid simplified layout configuration");
-      expect(errorElement?.textContent).toContain("Invalid property reference format");
+      expect(errorElement?.textContent).toContain(
+        "Invalid simplified layout configuration",
+      );
+      expect(errorElement?.textContent).toContain(
+        "Invalid property reference format",
+      );
     });
   });
 });

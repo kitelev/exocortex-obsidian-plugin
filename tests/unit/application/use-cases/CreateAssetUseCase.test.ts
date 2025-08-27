@@ -80,11 +80,11 @@ describe("CreateAssetUseCase", () => {
 
       mockOntologyRepository.findByPrefix.mockResolvedValue(mockOntology);
       mockAssetRepository.save.mockResolvedValue(undefined);
-      
+
       // Mock successful ontology provisioning
       const expectedPrefix = OntologyPrefix.create("exo").getValue()!;
       mockProvisioningService.ensureOntologyExists.mockResolvedValue(
-        Result.ok(expectedPrefix)
+        Result.ok(expectedPrefix),
       );
     });
 
@@ -272,7 +272,7 @@ describe("CreateAssetUseCase", () => {
       };
 
       const response = await useCase.execute(request);
-      
+
       expect(response.success).toBe(false);
       expect(response.error).toBe("Asset title is required");
     });

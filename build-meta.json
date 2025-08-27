@@ -1947,7 +1947,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/DynamicLayoutRenderer.ts": {
-      "bytes": 13575,
+      "bytes": 13595,
       "imports": [
         {
           "path": "obsidian",

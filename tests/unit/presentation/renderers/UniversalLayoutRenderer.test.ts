@@ -8,10 +8,10 @@ import { MarkdownPostProcessorContext, TFile } from "obsidian";
 // Extend TFile to add stat property
 class MockTFile extends TFile {
   stat: { ctime: number; mtime: number };
-  
+
   constructor(path: string, basename?: string) {
     super(path);
-    this.basename = basename || path.split('/').pop()?.replace('.md', '') || '';
+    this.basename = basename || path.split("/").pop()?.replace(".md", "") || "";
     this.stat = { ctime: Date.now(), mtime: Date.now() };
   }
 }
@@ -52,7 +52,7 @@ describe("UniversalLayoutRenderer", () => {
       createAsset: jest.fn(),
       getAssetProperties: jest.fn(),
     } as any;
-    
+
     serviceProvider = {
       getService: jest.fn().mockImplementation((name: string) => {
         if (name === "IAssetRepository") return mockAssetRepository;
@@ -93,7 +93,11 @@ describe("UniversalLayoutRenderer", () => {
 
       // Render the layout
       const ctx = {} as MarkdownPostProcessorContext;
-      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, ctx);
+      await renderer.render(
+        "UniversalLayout\ngroupByProperty: false\nlayout: table",
+        container,
+        ctx,
+      );
 
       // Check that table was created
       const table = container.querySelector("table");
@@ -126,7 +130,11 @@ describe("UniversalLayoutRenderer", () => {
       });
       mockApp.vault.getAbstractFileByPath.mockReturnValue(relatedFile);
 
-      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, {} as MarkdownPostProcessorContext);
+      await renderer.render(
+        "UniversalLayout\ngroupByProperty: false\nlayout: table",
+        container,
+        {} as MarkdownPostProcessorContext,
+      );
 
       const cells = container.querySelectorAll("tbody td");
       expect(cells[0]?.textContent).toBe("Generic Note");
@@ -145,7 +153,7 @@ describe("UniversalLayoutRenderer", () => {
       ];
 
       mockApp.workspace.getActiveFile.mockReturnValue(currentFile);
-      
+
       const resolvedLinks: any = {};
       testAssets.forEach((asset, index) => {
         const path = `${asset.name.toLowerCase().replace(" ", "-")}.md`;
@@ -155,25 +163,32 @@ describe("UniversalLayoutRenderer", () => {
 
       let callIndex = 0;
       mockApp.metadataCache.getFileCache.mockImplementation(() => ({
-        frontmatter: testAssets[callIndex % testAssets.length].class 
-          ? { exo__Instance_class: testAssets[callIndex++ % testAssets.length].class }
+        frontmatter: testAssets[callIndex % testAssets.length].class
+          ? {
+              exo__Instance_class:
+                testAssets[callIndex++ % testAssets.length].class,
+            }
           : {},
       }));
 
       mockApp.vault.getAbstractFileByPath.mockImplementation((path: string) => {
-        const asset = testAssets.find(a => 
-          path === `${a.name.toLowerCase().replace(" ", "-")}.md`
+        const asset = testAssets.find(
+          (a) => path === `${a.name.toLowerCase().replace(" ", "-")}.md`,
         );
         return asset ? new MockTFile(path, asset.name) : null;
       });
 
-      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, {} as MarkdownPostProcessorContext);
+      await renderer.render(
+        "UniversalLayout\ngroupByProperty: false\nlayout: table",
+        container,
+        {} as MarkdownPostProcessorContext,
+      );
 
       const rows = container.querySelectorAll("tbody tr");
       expect(rows.length).toBeGreaterThan(0);
 
       // Verify that both columns are present in each row
-      rows.forEach(row => {
+      rows.forEach((row) => {
         const cells = row.querySelectorAll("td");
         expect(cells.length).toBeGreaterThanOrEqual(2);
         expect(cells[0]?.textContent).toBeTruthy(); // Name should not be empty
@@ -197,7 +212,11 @@ describe("UniversalLayoutRenderer", () => {
       });
       mockApp.vault.getAbstractFileByPath.mockReturnValue(relatedFile);
 
-      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, {} as MarkdownPostProcessorContext);
+      await renderer.render(
+        "UniversalLayout\ngroupByProperty: false\nlayout: table",
+        container,
+        {} as MarkdownPostProcessorContext,
+      );
 
       const nameHeader = container.querySelector("th:first-child");
       const classHeader = container.querySelector("th:nth-child(2)");
@@ -225,7 +244,11 @@ describe("UniversalLayoutRenderer", () => {
       });
       mockApp.vault.getAbstractFileByPath.mockReturnValue(relatedFile);
 
-      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, {} as MarkdownPostProcessorContext);
+      await renderer.render(
+        "UniversalLayout\ngroupByProperty: false\nlayout: table",
+        container,
+        {} as MarkdownPostProcessorContext,
+      );
 
       const table = container.querySelector("table");
       expect(table?.classList.contains("mobile-responsive")).toBeTruthy();
@@ -246,26 +269,33 @@ describe("UniversalLayoutRenderer", () => {
         },
       };
       mockApp.metadataCache.getFileCache.mockReturnValue({
-        frontmatter: { 
+        frontmatter: {
           exo__Instance_class: "ems__Effort",
           status: "active",
-          priority: "high"
+          priority: "high",
         },
       });
       mockApp.vault.getAbstractFileByPath.mockReturnValue(relatedFile);
 
       // Render with showProperties including exo__Instance_class
-      const config = "UniversalLayout\ngroupByProperty: false\nlayout: table\nshowProperties: exo__Instance_class,status,priority";
-      await renderer.render(config, container, {} as MarkdownPostProcessorContext);
+      const config =
+        "UniversalLayout\ngroupByProperty: false\nlayout: table\nshowProperties: exo__Instance_class,status,priority";
+      await renderer.render(
+        config,
+        container,
+        {} as MarkdownPostProcessorContext,
+      );
 
       // Count the number of headers - should be 4: Name, exo__Instance_class, status, priority
       const headers = container.querySelectorAll("th");
-      const headerTexts = Array.from(headers).map(h => h.textContent);
-      
+      const headerTexts = Array.from(headers).map((h) => h.textContent);
+
       // Check that exo__Instance_class appears only once
-      const instanceClassCount = headerTexts.filter(t => t === "exo__Instance_class").length;
+      const instanceClassCount = headerTexts.filter(
+        (t) => t === "exo__Instance_class",
+      ).length;
       expect(instanceClassCount).toBe(1);
-      
+
       // Check that other properties are present
       expect(headerTexts).toContain("status");
       expect(headerTexts).toContain("priority");
@@ -291,7 +321,11 @@ describe("UniversalLayoutRenderer", () => {
 
       // Use table layout with groupByProperty disabled
       const config = "UniversalLayout\nlayout: table\ngroupByProperty: false";
-      await renderer.render(config, container, {} as MarkdownPostProcessorContext);
+      await renderer.render(
+        config,
+        container,
+        {} as MarkdownPostProcessorContext,
+      );
 
       // Check that table was created
       const table = container.querySelector("table.exocortex-table");
@@ -299,7 +333,7 @@ describe("UniversalLayoutRenderer", () => {
 
       // Check headers include exo__Instance_class
       const headers = container.querySelectorAll("th");
-      const headerTexts = Array.from(headers).map(h => h.textContent);
+      const headerTexts = Array.from(headers).map((h) => h.textContent);
       expect(headerTexts).toContain("Name");
       expect(headerTexts).toContain("exo__Instance_class");
 
@@ -317,7 +351,7 @@ describe("UniversalLayoutRenderer", () => {
       const currentFile = new MockTFile("current-file.md", "Current File");
 
       mockApp.workspace.getActiveFile.mockReturnValue(currentFile);
-      
+
       // Setup three related files, one is archived
       mockApp.metadataCache.resolvedLinks = {
         "active-task.md": { "current-file.md": 1 },
@@ -327,9 +361,25 @@ describe("UniversalLayoutRenderer", () => {
 
       // Mock file cache to return different metadata for each file
       const fileCacheResponses = new Map([
-        ["active-task.md", { frontmatter: { exo__Instance_class: "ems__Task", archived: false } }],
-        ["archived-project.md", { frontmatter: { exo__Instance_class: "ems__Project", archived: true } }],
-        ["normal-note.md", { frontmatter: { exo__Instance_class: "ems__Note" } }],
+        [
+          "active-task.md",
+          {
+            frontmatter: { exo__Instance_class: "ems__Task", archived: false },
+          },
+        ],
+        [
+          "archived-project.md",
+          {
+            frontmatter: {
+              exo__Instance_class: "ems__Project",
+              archived: true,
+            },
+          },
+        ],
+        [
+          "normal-note.md",
+          { frontmatter: { exo__Instance_class: "ems__Note" } },
+        ],
       ]);
 
       mockApp.metadataCache.getFileCache.mockImplementation((file: TFile) => {
@@ -339,7 +389,10 @@ describe("UniversalLayoutRenderer", () => {
       // Mock vault to return different files
       const mockFiles = new Map([
         ["active-task.md", new MockTFile("active-task.md", "Active Task")],
-        ["archived-project.md", new MockTFile("archived-project.md", "Archived Project")],
+        [
+          "archived-project.md",
+          new MockTFile("archived-project.md", "Archived Project"),
+        ],
         ["normal-note.md", new MockTFile("normal-note.md", "Normal Note")],
       ]);
 
@@ -347,14 +400,20 @@ describe("UniversalLayoutRenderer", () => {
         return mockFiles.get(path) || null;
       });
 
-      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, {} as MarkdownPostProcessorContext);
+      await renderer.render(
+        "UniversalLayout\ngroupByProperty: false\nlayout: table",
+        container,
+        {} as MarkdownPostProcessorContext,
+      );
 
       // Check that only 2 rows are rendered (archived asset should be filtered out)
       const rows = container.querySelectorAll("tbody tr");
       expect(rows.length).toBe(2);
 
       // Check that the archived project is not included
-      const cellTexts = Array.from(container.querySelectorAll("tbody td")).map(cell => cell.textContent);
+      const cellTexts = Array.from(container.querySelectorAll("tbody td")).map(
+        (cell) => cell.textContent,
+      );
       expect(cellTexts).toContain("Active Task");
       expect(cellTexts).toContain("Normal Note");
       expect(cellTexts).not.toContain("Archived Project");
@@ -365,7 +424,7 @@ describe("UniversalLayoutRenderer", () => {
       const currentFile = new MockTFile("current-file.md", "Current File");
 
       mockApp.workspace.getActiveFile.mockReturnValue(currentFile);
-      
+
       mockApp.metadataCache.resolvedLinks = {
         "archived-string-true.md": { "current-file.md": 1 },
         "archived-string-yes.md": { "current-file.md": 1 },
@@ -381,7 +440,10 @@ describe("UniversalLayoutRenderer", () => {
         ["archived-number-1.md", { frontmatter: { archived: 1 } }],
         ["active-string-false.md", { frontmatter: { archived: "false" } }],
         ["active-number-0.md", { frontmatter: { archived: 0 } }],
-        ["no-archived-property.md", { frontmatter: { exo__Instance_class: "ems__Note" } }],
+        [
+          "no-archived-property.md",
+          { frontmatter: { exo__Instance_class: "ems__Note" } },
+        ],
       ]);
 
       mockApp.metadataCache.getFileCache.mockImplementation((file: TFile) => {
@@ -390,26 +452,35 @@ describe("UniversalLayoutRenderer", () => {
 
       const mockFiles = new Map();
       for (const [path, _] of fileCacheResponses) {
-        mockFiles.set(path, new MockTFile(path, path.replace('.md', '').replace(/-/g, ' ')));
+        mockFiles.set(
+          path,
+          new MockTFile(path, path.replace(".md", "").replace(/-/g, " ")),
+        );
       }
 
       mockApp.vault.getAbstractFileByPath.mockImplementation((path: string) => {
         return mockFiles.get(path) || null;
       });
 
-      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, {} as MarkdownPostProcessorContext);
+      await renderer.render(
+        "UniversalLayout\ngroupByProperty: false\nlayout: table",
+        container,
+        {} as MarkdownPostProcessorContext,
+      );
 
       // Should only render 3 rows (the non-archived files)
       const rows = container.querySelectorAll("tbody tr");
       expect(rows.length).toBe(3);
 
-      const cellTexts = Array.from(container.querySelectorAll("tbody td")).map(cell => cell.textContent);
-      
+      const cellTexts = Array.from(container.querySelectorAll("tbody td")).map(
+        (cell) => cell.textContent,
+      );
+
       // Active files should be included
       expect(cellTexts).toContain("active string false");
       expect(cellTexts).toContain("active number 0");
       expect(cellTexts).toContain("no archived property");
-      
+
       // Archived files should be excluded
       expect(cellTexts).not.toContain("archived string true");
       expect(cellTexts).not.toContain("archived string yes");
@@ -421,15 +492,26 @@ describe("UniversalLayoutRenderer", () => {
       const currentFile = new MockTFile("current-file.md", "Current File");
 
       mockApp.workspace.getActiveFile.mockReturnValue(currentFile);
-      
+
       mockApp.metadataCache.resolvedLinks = {
         "archived-1.md": { "current-file.md": 1 },
         "archived-2.md": { "current-file.md": 1 },
       };
 
       const fileCacheResponses = new Map([
-        ["archived-1.md", { frontmatter: { archived: true, exo__Instance_class: "ems__Task" } }],
-        ["archived-2.md", { frontmatter: { archived: "yes", exo__Instance_class: "ems__Project" } }],
+        [
+          "archived-1.md",
+          { frontmatter: { archived: true, exo__Instance_class: "ems__Task" } },
+        ],
+        [
+          "archived-2.md",
+          {
+            frontmatter: {
+              archived: "yes",
+              exo__Instance_class: "ems__Project",
+            },
+          },
+        ],
       ]);
 
       mockApp.metadataCache.getFileCache.mockImplementation((file: TFile) => {
@@ -445,7 +527,11 @@ describe("UniversalLayoutRenderer", () => {
         return mockFiles.get(path) || null;
       });
 
-      await renderer.render("UniversalLayout\ngroupByProperty: false\nlayout: table", container, {} as MarkdownPostProcessorContext);
+      await renderer.render(
+        "UniversalLayout\ngroupByProperty: false\nlayout: table",
+        container,
+        {} as MarkdownPostProcessorContext,
+      );
 
       // Should display message indicating no related assets found (because all are archived)
       const messageElement = container.querySelector(".exocortex-message");

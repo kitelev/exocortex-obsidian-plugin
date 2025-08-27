@@ -8,7 +8,9 @@ describe("ValidationUtils", () => {
       expect(ValidationUtils.isNonEmptyString("a")).toBe(true);
       expect(ValidationUtils.isNonEmptyString("  test  ")).toBe(true);
       expect(ValidationUtils.isNonEmptyString("123")).toBe(true);
-      expect(ValidationUtils.isNonEmptyString("test\nwith\nnewlines")).toBe(true);
+      expect(ValidationUtils.isNonEmptyString("test\nwith\nnewlines")).toBe(
+        true,
+      );
     });
 
     it("should return false for empty or invalid strings", () => {
@@ -51,7 +53,9 @@ describe("ValidationUtils", () => {
       const requiredProps = ["name", "age"];
 
       // Act & Assert
-      expect(ValidationUtils.hasRequiredProperties(obj, requiredProps)).toBe(true);
+      expect(ValidationUtils.hasRequiredProperties(obj, requiredProps)).toBe(
+        true,
+      );
     });
 
     it("should return true for empty required properties list", () => {
@@ -60,7 +64,9 @@ describe("ValidationUtils", () => {
       const requiredProps: string[] = [];
 
       // Act & Assert
-      expect(ValidationUtils.hasRequiredProperties(obj, requiredProps)).toBe(true);
+      expect(ValidationUtils.hasRequiredProperties(obj, requiredProps)).toBe(
+        true,
+      );
     });
 
     it("should return false when required properties are missing", () => {
@@ -69,7 +75,9 @@ describe("ValidationUtils", () => {
       const requiredProps = ["name", "age"];
 
       // Act & Assert
-      expect(ValidationUtils.hasRequiredProperties(obj, requiredProps)).toBe(false);
+      expect(ValidationUtils.hasRequiredProperties(obj, requiredProps)).toBe(
+        false,
+      );
     });
 
     it("should return false when required properties are null or undefined", () => {
@@ -79,15 +87,23 @@ describe("ValidationUtils", () => {
       const requiredProps = ["name", "age"];
 
       // Act & Assert
-      expect(ValidationUtils.hasRequiredProperties(objWithNull, requiredProps)).toBe(false);
-      expect(ValidationUtils.hasRequiredProperties(objWithUndefined, requiredProps)).toBe(false);
+      expect(
+        ValidationUtils.hasRequiredProperties(objWithNull, requiredProps),
+      ).toBe(false);
+      expect(
+        ValidationUtils.hasRequiredProperties(objWithUndefined, requiredProps),
+      ).toBe(false);
     });
 
     it("should return false for non-objects", () => {
       // Arrange & Act & Assert
       expect(ValidationUtils.hasRequiredProperties(null, ["prop"])).toBe(false);
-      expect(ValidationUtils.hasRequiredProperties(undefined, ["prop"])).toBe(false);
-      expect(ValidationUtils.hasRequiredProperties("string", ["prop"])).toBe(false);
+      expect(ValidationUtils.hasRequiredProperties(undefined, ["prop"])).toBe(
+        false,
+      );
+      expect(ValidationUtils.hasRequiredProperties("string", ["prop"])).toBe(
+        false,
+      );
       expect(ValidationUtils.hasRequiredProperties(123, ["prop"])).toBe(false);
       expect(ValidationUtils.hasRequiredProperties([], ["prop"])).toBe(false);
     });
@@ -99,7 +115,9 @@ describe("ValidationUtils", () => {
       expect(ValidationUtils.isValidFilename("document.txt")).toBe(true);
       expect(ValidationUtils.isValidFilename("my-file_123.md")).toBe(true);
       expect(ValidationUtils.isValidFilename("simple")).toBe(true);
-      expect(ValidationUtils.isValidFilename("file with spaces.pdf")).toBe(true);
+      expect(ValidationUtils.isValidFilename("file with spaces.pdf")).toBe(
+        true,
+      );
       expect(ValidationUtils.isValidFilename("测试文件.txt")).toBe(true);
     });
 
@@ -129,20 +147,36 @@ describe("ValidationUtils", () => {
   describe("isValidAssetId", () => {
     it("should return true for valid UUID v4 strings", () => {
       // Arrange & Act & Assert
-      expect(ValidationUtils.isValidAssetId("123e4567-e89b-42d3-a456-426614174000")).toBe(true);
-      expect(ValidationUtils.isValidAssetId("00000000-0000-4000-8000-000000000000")).toBe(true);
-      expect(ValidationUtils.isValidAssetId("FFFFFFFF-FFFF-4FFF-BFFF-FFFFFFFFFFFF")).toBe(true);
+      expect(
+        ValidationUtils.isValidAssetId("123e4567-e89b-42d3-a456-426614174000"),
+      ).toBe(true);
+      expect(
+        ValidationUtils.isValidAssetId("00000000-0000-4000-8000-000000000000"),
+      ).toBe(true);
+      expect(
+        ValidationUtils.isValidAssetId("FFFFFFFF-FFFF-4FFF-BFFF-FFFFFFFFFFFF"),
+      ).toBe(true);
     });
 
     it("should return false for invalid UUID formats", () => {
       // Arrange & Act & Assert
-      expect(ValidationUtils.isValidAssetId("123e4567-e89b-12d3-a456-426614174000")).toBe(false); // wrong version
-      expect(ValidationUtils.isValidAssetId("123e4567-e89b-42d3-c456-426614174000")).toBe(false); // wrong variant
-      expect(ValidationUtils.isValidAssetId("123e4567-e89b-42d3-a456-42661417400")).toBe(false); // too short
-      expect(ValidationUtils.isValidAssetId("123e4567-e89b-42d3-a456-4266141740000")).toBe(false); // too long
+      expect(
+        ValidationUtils.isValidAssetId("123e4567-e89b-12d3-a456-426614174000"),
+      ).toBe(false); // wrong version
+      expect(
+        ValidationUtils.isValidAssetId("123e4567-e89b-42d3-c456-426614174000"),
+      ).toBe(false); // wrong variant
+      expect(
+        ValidationUtils.isValidAssetId("123e4567-e89b-42d3-a456-42661417400"),
+      ).toBe(false); // too short
+      expect(
+        ValidationUtils.isValidAssetId("123e4567-e89b-42d3-a456-4266141740000"),
+      ).toBe(false); // too long
       expect(ValidationUtils.isValidAssetId("not-a-uuid")).toBe(false);
       expect(ValidationUtils.isValidAssetId("")).toBe(false);
-      expect(ValidationUtils.isValidAssetId("123e4567e89b42d3a456426614174000")).toBe(false); // missing hyphens
+      expect(
+        ValidationUtils.isValidAssetId("123e4567e89b42d3a456426614174000"),
+      ).toBe(false); // missing hyphens
     });
   });
 
@@ -246,7 +280,11 @@ describe("ValidationUtils", () => {
       expect(ValidationUtils.isValidUrl("https://example.com")).toBe(true);
       expect(ValidationUtils.isValidUrl("http://example.com/path")).toBe(true);
       expect(ValidationUtils.isValidUrl("ftp://files.example.com")).toBe(true);
-      expect(ValidationUtils.isValidUrl("https://sub.domain.example.com:8080/path?query=value#hash")).toBe(true);
+      expect(
+        ValidationUtils.isValidUrl(
+          "https://sub.domain.example.com:8080/path?query=value#hash",
+        ),
+      ).toBe(true);
     });
 
     it("should return false for invalid URLs", () => {
@@ -262,11 +300,21 @@ describe("ValidationUtils", () => {
   describe("sanitizeString", () => {
     it("should remove control characters and normalize whitespace", () => {
       // Arrange & Act & Assert
-      expect(ValidationUtils.sanitizeString("  hello   world  ")).toBe("hello world");
-      expect(ValidationUtils.sanitizeString("test\x00string")).toBe("teststring");
-      expect(ValidationUtils.sanitizeString("test\x1fcontrol")).toBe("testcontrol");
-      expect(ValidationUtils.sanitizeString("test\x7fdelete")).toBe("testdelete");
-      expect(ValidationUtils.sanitizeString("multi\n\nline\t\tstring")).toBe("multilinestring"); // newlines/tabs are control chars
+      expect(ValidationUtils.sanitizeString("  hello   world  ")).toBe(
+        "hello world",
+      );
+      expect(ValidationUtils.sanitizeString("test\x00string")).toBe(
+        "teststring",
+      );
+      expect(ValidationUtils.sanitizeString("test\x1fcontrol")).toBe(
+        "testcontrol",
+      );
+      expect(ValidationUtils.sanitizeString("test\x7fdelete")).toBe(
+        "testdelete",
+      );
+      expect(ValidationUtils.sanitizeString("multi\n\nline\t\tstring")).toBe(
+        "multilinestring",
+      ); // newlines/tabs are control chars
     });
 
     it("should handle edge cases", () => {
@@ -288,11 +336,11 @@ describe("ValidationUtils", () => {
     it("should return true for valid JSON strings", () => {
       // Arrange & Act & Assert
       expect(ValidationUtils.isValidJson('{"name": "test"}')).toBe(true);
-      expect(ValidationUtils.isValidJson('[1, 2, 3]')).toBe(true);
+      expect(ValidationUtils.isValidJson("[1, 2, 3]")).toBe(true);
       expect(ValidationUtils.isValidJson('"string"')).toBe(true);
-      expect(ValidationUtils.isValidJson('123')).toBe(true);
-      expect(ValidationUtils.isValidJson('true')).toBe(true);
-      expect(ValidationUtils.isValidJson('null')).toBe(true);
+      expect(ValidationUtils.isValidJson("123")).toBe(true);
+      expect(ValidationUtils.isValidJson("true")).toBe(true);
+      expect(ValidationUtils.isValidJson("null")).toBe(true);
     });
 
     it("should return false for invalid JSON strings", () => {
@@ -313,7 +361,7 @@ describe("ValidationUtils", () => {
       const schema = {
         required: ["name", "age"],
         optional: ["email"],
-        types: { name: "string", age: "number", email: "string" }
+        types: { name: "string", age: "number", email: "string" },
       };
 
       // Act & Assert
@@ -334,7 +382,7 @@ describe("ValidationUtils", () => {
       const obj = { name: "test", age: "25" };
       const schema = {
         required: ["name", "age"],
-        types: { name: "string", age: "number" }
+        types: { name: "string", age: "number" },
       };
 
       // Act & Assert
@@ -368,13 +416,13 @@ describe("ValidationUtils", () => {
         "email",
         "invalid-email",
         "must be valid email format",
-        "user registration"
+        "user registration",
       );
 
       // Assert
       expect(error).toBeInstanceOf(Error);
       expect(error.message).toBe(
-        "Validation failed for email in user registration: must be valid email format. Got: invalid-email"
+        "Validation failed for email in user registration: must be valid email format. Got: invalid-email",
       );
       expect((error as any).field).toBe("email");
       expect((error as any).value).toBe("invalid-email");
@@ -387,12 +435,12 @@ describe("ValidationUtils", () => {
       const error = ValidationUtils.createValidationError(
         "age",
         -5,
-        "must be positive"
+        "must be positive",
       );
 
       // Assert
       expect(error.message).toBe(
-        "Validation failed for age: must be positive. Got: -5"
+        "Validation failed for age: must be positive. Got: -5",
       );
       expect((error as any).context).toBeUndefined();
     });

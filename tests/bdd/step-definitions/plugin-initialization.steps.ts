@@ -28,7 +28,7 @@ defineFeature(feature, (test) => {
 
     // Create mock Obsidian app
     app = createMockApp();
-    
+
     // Reset initialization tracking
     initializationSteps = [];
   });
@@ -40,7 +40,12 @@ defineFeature(feature, (test) => {
     }
   });
 
-  test("Plugin loads successfully without errors", ({ given, when, then, and }) => {
+  test("Plugin loads successfully without errors", ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
     given("the Obsidian app is running", () => {
       expect(app).toBeDefined();
     });
@@ -59,7 +64,7 @@ defineFeature(feature, (test) => {
       expect(consoleErrors).toHaveLength(0);
     });
 
-    and("the plugin status should be \"active\"", () => {
+    and('the plugin status should be "active"', () => {
       expect(plugin).toBeDefined();
       // In a real test, check plugin.app.plugins.enabledPlugins
     });
@@ -69,7 +74,12 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test("All required services are registered during initialization", ({ given, when, then, and }) => {
+  test("All required services are registered during initialization", ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
     let requiredServices: Map<string, string>;
 
     given("the plugin is not yet loaded", () => {
@@ -78,12 +88,15 @@ defineFeature(feature, (test) => {
 
     when("the plugin initialization sequence starts", async () => {
       plugin = new ExocortexPlugin(app, {} as any);
-      
+
       // Spy on ServiceProvider initialization
-      const initSpy = jest.spyOn(ServiceProvider.prototype, "initializeServices");
-      
+      const initSpy = jest.spyOn(
+        ServiceProvider.prototype,
+        "initializeServices",
+      );
+
       await plugin.onload();
-      
+
       expect(initSpy).toHaveBeenCalled();
       serviceProvider = (plugin as any).serviceProvider;
     });
@@ -109,19 +122,24 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test("Code block processor initializes with all dependencies", ({ given, when, then, and }) => {
+  test("Code block processor initializes with all dependencies", ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
     let codeBlockProcessor: CodeBlockProcessor;
     let universalLayoutRenderer: UniversalLayoutRenderer;
     let assetListRenderer: AssetListRenderer;
 
     given("the ServiceProvider is initialized with all services", async () => {
       plugin = new ExocortexPlugin(app, {} as any);
-      
+
       // Initialize only up to ServiceProvider
       await (plugin as any).initializeLifecycleManagers();
       await (plugin as any).initializeServiceProvider();
       serviceProvider = (plugin as any).serviceProvider;
-      
+
       expect(serviceProvider).toBeDefined();
     });
 
@@ -145,9 +163,9 @@ defineFeature(feature, (test) => {
       expect(assetListRenderer).toBeDefined();
     });
 
-    and("no \"Service not found\" errors should occur", () => {
-      const serviceNotFoundErrors = consoleErrors.filter(err => 
-        err.includes("Service") && err.includes("not found")
+    and('no "Service not found" errors should occur', () => {
+      const serviceNotFoundErrors = consoleErrors.filter(
+        (err) => err.includes("Service") && err.includes("not found"),
       );
       expect(serviceNotFoundErrors).toHaveLength(0);
     });
@@ -156,28 +174,36 @@ defineFeature(feature, (test) => {
   test("Plugin initialization follows correct order", ({ when, then }) => {
     when("the plugin onload method is called", async () => {
       plugin = new ExocortexPlugin(app, {} as any);
-      
+
       // Track initialization steps
       const trackStep = (step: string) => {
         initializationSteps.push({ step, status: "Success" });
       };
 
       // Mock internal methods to track order
-      jest.spyOn(plugin as any, "initializeLifecycleManagers").mockImplementation(async () => {
-        trackStep("LifecycleManagers initialize");
-      });
+      jest
+        .spyOn(plugin as any, "initializeLifecycleManagers")
+        .mockImplementation(async () => {
+          trackStep("LifecycleManagers initialize");
+        });
 
-      jest.spyOn(plugin as any, "initializeServiceProvider").mockImplementation(async () => {
-        trackStep("ServiceProvider initialize");
-      });
+      jest
+        .spyOn(plugin as any, "initializeServiceProvider")
+        .mockImplementation(async () => {
+          trackStep("ServiceProvider initialize");
+        });
 
-      jest.spyOn(plugin as any, "initializeCommandControllers").mockImplementation(async () => {
-        trackStep("CommandControllers initialize");
-      });
+      jest
+        .spyOn(plugin as any, "initializeCommandControllers")
+        .mockImplementation(async () => {
+          trackStep("CommandControllers initialize");
+        });
 
-      jest.spyOn(plugin as any, "initializeCodeBlockProcessor").mockImplementation(async () => {
-        trackStep("CodeBlockProcessor initialize");
-      });
+      jest
+        .spyOn(plugin as any, "initializeCodeBlockProcessor")
+        .mockImplementation(async () => {
+          trackStep("CodeBlockProcessor initialize");
+        });
 
       await plugin.onload();
     });
@@ -185,8 +211,8 @@ defineFeature(feature, (test) => {
     then(/^the initialization should follow this sequence:$/, (table) => {
       // Verify that key steps were executed
       const expectedSteps = table.map((row: any) => row.Component);
-      const actualSteps = initializationSteps.map(s => s.step);
-      
+      const actualSteps = initializationSteps.map((s) => s.step);
+
       expectedSteps.forEach((expectedStep: string) => {
         if (expectedStep.includes("initialize")) {
           expect(actualSteps).toContain(expectedStep);
@@ -195,23 +221,30 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test("Plugin handles missing dependencies gracefully", ({ given, when, then, and }) => {
+  test("Plugin handles missing dependencies gracefully", ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
     let errorLogged = false;
     let errorMessage = "";
 
     given("a dependency is not available", () => {
       // Mock DIContainer to throw error for a specific service
-      jest.spyOn(DIContainer.prototype, "resolve").mockImplementation((service) => {
-        if (service === "NonExistentService") {
-          throw new Error(`Service ${service} not found in container`);
-        }
-        return {} as any;
-      });
+      jest
+        .spyOn(DIContainer.prototype, "resolve")
+        .mockImplementation((service) => {
+          if (service === "NonExistentService") {
+            throw new Error(`Service ${service} not found in container`);
+          }
+          return {} as any;
+        });
     });
 
     when("the plugin tries to initialize", async () => {
       plugin = new ExocortexPlugin(app, {} as any);
-      
+
       try {
         await plugin.onload();
       } catch (error: any) {
@@ -264,7 +297,7 @@ defineFeature(feature, (test) => {
       expect(true).toBe(true);
     });
 
-    and("the plugin status should be \"unloaded\"", () => {
+    and('the plugin status should be "unloaded"', () => {
       // Plugin should be unloaded
       expect(true).toBe(true);
     });
@@ -284,7 +317,7 @@ defineFeature(feature, (test) => {
 
     then("the plugin should initialize successfully", () => {
       expect(plugin).toBeDefined();
-      expect(consoleErrors.filter(e => e.includes("Error"))).toHaveLength(0);
+      expect(consoleErrors.filter((e) => e.includes("Error"))).toHaveLength(0);
     });
 
     and("all services should be available", () => {
@@ -295,8 +328,8 @@ defineFeature(feature, (test) => {
 
     and("no duplicate registrations should occur", () => {
       // Check for duplicate registration warnings
-      const duplicateWarnings = consoleErrors.filter(e => 
-        e.includes("duplicate") || e.includes("already registered")
+      const duplicateWarnings = consoleErrors.filter(
+        (e) => e.includes("duplicate") || e.includes("already registered"),
       );
       expect(duplicateWarnings).toHaveLength(0);
     });
@@ -307,7 +340,11 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test("Plugin initialization completes within time limit", ({ when, then, and }) => {
+  test("Plugin initialization completes within time limit", ({
+    when,
+    then,
+    and,
+  }) => {
     when("I enable the Exocortex plugin", async () => {
       plugin = new ExocortexPlugin(app, {} as any);
       initializationStartTime = Date.now();
@@ -330,22 +367,31 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test("Plugin recovers from initialization errors", ({ given, when, then, and }) => {
+  test("Plugin recovers from initialization errors", ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
     let errorLogged = false;
     let notificationShown = false;
 
     given("an error occurs during service initialization", () => {
-      jest.spyOn(ServiceProvider.prototype, "initializeServices").mockImplementation(async () => {
-        throw new Error("Service initialization failed");
-      });
+      jest
+        .spyOn(ServiceProvider.prototype, "initializeServices")
+        .mockImplementation(async () => {
+          throw new Error("Service initialization failed");
+        });
     });
 
     when("the plugin attempts to recover", async () => {
       plugin = new ExocortexPlugin(app, {} as any);
-      
+
       // Mock notification
       (app as any).notices = {
-        show: jest.fn(() => { notificationShown = true; })
+        show: jest.fn(() => {
+          notificationShown = true;
+        }),
       };
 
       try {
@@ -356,9 +402,10 @@ defineFeature(feature, (test) => {
     });
 
     then("the error should be logged with context", () => {
-      const contextualErrors = consoleErrors.filter(e => 
-        e.includes("Service initialization failed") || 
-        e.includes("Failed to initialize")
+      const contextualErrors = consoleErrors.filter(
+        (e) =>
+          e.includes("Service initialization failed") ||
+          e.includes("Failed to initialize"),
       );
       expect(contextualErrors.length).toBeGreaterThan(0);
     });
@@ -384,12 +431,12 @@ defineFeature(feature, (test) => {
 
     when("the plugin checks for external dependencies", async () => {
       plugin = new ExocortexPlugin(app, {} as any);
-      
+
       // Check Obsidian version
       const minVersion = "1.5.0";
       const currentVersion = (app as any).apiVersion || "1.5.0";
       dependencyCheckPassed = currentVersion >= minVersion;
-      
+
       await plugin.onload();
     });
 

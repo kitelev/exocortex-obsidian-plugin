@@ -111,10 +111,10 @@ describe("CreateAssetModal", () => {
       getCreateAssetUseCase: jest.fn().mockReturnValue(mockCreateAssetUseCase),
       getInstance: jest.fn().mockReturnThis(),
       resolve: jest.fn().mockImplementation((token: string) => {
-        if (token === 'PropertyCacheService') {
+        if (token === "PropertyCacheService") {
           return mockPropertyCache;
         }
-        if (token === 'CircuitBreakerService') {
+        if (token === "CircuitBreakerService") {
           return mockCircuitBreaker;
         }
         // Return empty mock repositories
@@ -135,16 +135,18 @@ describe("CreateAssetModal", () => {
   describe("Asset Creation with Circuit Breaker", () => {
     test("should create asset successfully through circuit breaker", async () => {
       // Setup circuit breaker to execute operation and return success
-      mockCircuitBreaker.execute.mockImplementation(async (name: string, operation: Function) => {
-        // Set up use case to return success
-        mockCreateAssetUseCase.execute.mockResolvedValue({
-          success: true,
-          assetId: "test-id",
-          message: "Created asset: Test Asset",
-        });
-        // Execute the operation
-        return await operation();
-      });
+      mockCircuitBreaker.execute.mockImplementation(
+        async (name: string, operation: Function) => {
+          // Set up use case to return success
+          mockCreateAssetUseCase.execute.mockResolvedValue({
+            success: true,
+            assetId: "test-id",
+            message: "Created asset: Test Asset",
+          });
+          // Execute the operation
+          return await operation();
+        },
+      );
 
       (modal as any).assetTitle = "Test Asset";
       (modal as any).assetClass = "exo__Task";
@@ -162,7 +164,7 @@ describe("CreateAssetModal", () => {
           failureThreshold: 3,
           resetTimeout: 30000,
           halfOpenMaxCalls: 2,
-        })
+        }),
       );
 
       expect(mockCreateAssetUseCase.execute).toHaveBeenCalledWith({
@@ -180,27 +182,32 @@ describe("CreateAssetModal", () => {
 
     test("should handle asset creation failure through circuit breaker", async () => {
       // Setup circuit breaker to execute operation and return failure
-      mockCircuitBreaker.execute.mockImplementation(async (name: string, operation: Function) => {
-        mockCreateAssetUseCase.execute.mockResolvedValue({
-          success: false,
-          assetId: "",
-          message: "Creation failed",
-          error: "Invalid asset data",
-        });
-        return await operation();
-      });
+      mockCircuitBreaker.execute.mockImplementation(
+        async (name: string, operation: Function) => {
+          mockCreateAssetUseCase.execute.mockResolvedValue({
+            success: false,
+            assetId: "",
+            message: "Creation failed",
+            error: "Invalid asset data",
+          });
+          return await operation();
+        },
+      );
 
       (modal as any).assetTitle = "Test Asset";
 
       await (modal as any).createAsset();
 
-      expect(Notice).toHaveBeenCalledWith("Validation error: Invalid asset data", 6000);
+      expect(Notice).toHaveBeenCalledWith(
+        "Validation error: Invalid asset data",
+        6000,
+      );
     });
 
     test("should handle circuit breaker open state", async () => {
       // Setup circuit breaker to return circuit open error
       mockCircuitBreaker.execute.mockResolvedValue(
-        Result.fail("Circuit asset-creation is OPEN. Try again in 25 seconds")
+        Result.fail("Circuit asset-creation is OPEN. Try again in 25 seconds"),
       );
 
       (modal as any).assetTitle = "Test Asset";
@@ -209,13 +216,13 @@ describe("CreateAssetModal", () => {
 
       expect(Notice).toHaveBeenCalledWith(
         "Asset creation is temporarily unavailable. Please try again in a moment.",
-        5000
+        5000,
       );
     });
 
     test("should handle ontology-related errors", async () => {
       mockCircuitBreaker.execute.mockResolvedValue(
-        Result.fail("Ontology 'test' not found")
+        Result.fail("Ontology 'test' not found"),
       );
 
       (modal as any).assetTitle = "Test Asset";
@@ -224,13 +231,13 @@ describe("CreateAssetModal", () => {
 
       expect(Notice).toHaveBeenCalledWith(
         "Error: Ontology 'test' not found",
-        5000
+        5000,
       );
     });
 
     test("should handle validation errors", async () => {
       mockCircuitBreaker.execute.mockResolvedValue(
-        Result.fail("Invalid asset title: contains special characters")
+        Result.fail("Invalid asset title: contains special characters"),
       );
 
       (modal as any).assetTitle = "Test@Asset#";
@@ -239,7 +246,7 @@ describe("CreateAssetModal", () => {
 
       expect(Notice).toHaveBeenCalledWith(
         "Validation error: Invalid asset title: contains special characters",
-        6000
+        6000,
       );
     });
   });
@@ -247,8 +254,10 @@ describe("CreateAssetModal", () => {
   describe("Property Caching", () => {
     test("should use property cache service", async () => {
       // Test that the property cache service is resolved during initialization
-      expect(mockContainer.resolve).toHaveBeenCalledWith("PropertyCacheService");
-      
+      expect(mockContainer.resolve).toHaveBeenCalledWith(
+        "PropertyCacheService",
+      );
+
       // Test that the cache service is available
       expect(mockPropertyCache).toBeDefined();
       expect(mockPropertyCache.getPropertiesForClass).toBeDefined();
@@ -290,9 +299,15 @@ describe("CreateAssetModal", () => {
 
     test("should properly resolve services from container", () => {
       expect(mockContainer.resolve).toHaveBeenCalledWith("IOntologyRepository");
-      expect(mockContainer.resolve).toHaveBeenCalledWith("IClassViewRepository");
-      expect(mockContainer.resolve).toHaveBeenCalledWith("PropertyCacheService");
-      expect(mockContainer.resolve).toHaveBeenCalledWith("CircuitBreakerService");
+      expect(mockContainer.resolve).toHaveBeenCalledWith(
+        "IClassViewRepository",
+      );
+      expect(mockContainer.resolve).toHaveBeenCalledWith(
+        "PropertyCacheService",
+      );
+      expect(mockContainer.resolve).toHaveBeenCalledWith(
+        "CircuitBreakerService",
+      );
     });
   });
 
@@ -300,7 +315,7 @@ describe("CreateAssetModal", () => {
     test("should recover from circuit breaker errors", async () => {
       // First call fails
       mockCircuitBreaker.execute.mockResolvedValueOnce(
-        Result.fail("Circuit is open")
+        Result.fail("Circuit is open"),
       );
 
       (modal as any).assetTitle = "Test Asset";
@@ -308,21 +323,23 @@ describe("CreateAssetModal", () => {
 
       expect(Notice).toHaveBeenCalledWith(
         "Asset creation is temporarily unavailable. Please try again in a moment.",
-        5000
+        5000,
       );
 
       // Reset Notice mock for second call
       (Notice as jest.Mock).mockClear();
 
       // Second call succeeds after circuit recovery
-      mockCircuitBreaker.execute.mockImplementation(async (name: string, operation: Function) => {
-        mockCreateAssetUseCase.execute.mockResolvedValue({
-          success: true,
-          assetId: "test-id",
-          message: "Created asset: Test Asset",
-        });
-        return await operation();
-      });
+      mockCircuitBreaker.execute.mockImplementation(
+        async (name: string, operation: Function) => {
+          mockCreateAssetUseCase.execute.mockResolvedValue({
+            success: true,
+            assetId: "test-id",
+            message: "Created asset: Test Asset",
+          });
+          return await operation();
+        },
+      );
 
       await (modal as any).createAsset();
 

@@ -28,7 +28,7 @@ describe("ErrorHandlingUtils", () => {
     // Restore console methods
     consoleSpy.error.mockRestore();
     consoleSpy.warn.mockRestore();
-    
+
     // Restore Notice mock
     if (mockNotice) {
       mockNotice.mockRestore();
@@ -47,11 +47,11 @@ describe("ErrorHandlingUtils", () => {
       // Assert
       expect(consoleSpy.error).toHaveBeenCalledWith(
         "save asset failed: Database connection failed",
-        { error, context: undefined }
+        { error, context: undefined },
       );
       expect(mockNotice).toHaveBeenCalledWith(
         "Error: save asset failed: Database connection failed",
-        5000
+        5000,
       );
     });
 
@@ -67,11 +67,11 @@ describe("ErrorHandlingUtils", () => {
       // Assert
       expect(consoleSpy.error).toHaveBeenCalledWith(
         "delete asset failed: Permission denied",
-        { error, context }
+        { error, context },
       );
       expect(mockNotice).toHaveBeenCalledWith(
         "Error: delete asset failed: Permission denied",
-        5000
+        5000,
       );
     });
 
@@ -84,13 +84,13 @@ describe("ErrorHandlingUtils", () => {
       ErrorHandlingUtils.handleRepositoryError(operation, error);
 
       // Assert
-      expect(consoleSpy.error).toHaveBeenCalledWith(
-        "update asset failed: ",
-        { error, context: undefined }
-      );
+      expect(consoleSpy.error).toHaveBeenCalledWith("update asset failed: ", {
+        error,
+        context: undefined,
+      });
       expect(mockNotice).toHaveBeenCalledWith(
         "Error: update asset failed: ",
-        5000
+        5000,
       );
     });
 
@@ -105,7 +105,7 @@ describe("ErrorHandlingUtils", () => {
       // Assert
       expect(consoleSpy.error).toHaveBeenCalledWith(
         "validate asset failed: Invalid asset type",
-        { error: customError, context: undefined }
+        { error: customError, context: undefined },
       );
     });
   });
@@ -117,7 +117,9 @@ describe("ErrorHandlingUtils", () => {
       // Setup mock container
       mockContainer = document.createElement("div");
       mockContainer.empty = jest.fn();
-      mockContainer.createEl = jest.fn().mockReturnValue(document.createElement("div"));
+      mockContainer.createEl = jest
+        .fn()
+        .mockReturnValue(document.createElement("div"));
     });
 
     it("should log error and show notice without container", () => {
@@ -131,11 +133,11 @@ describe("ErrorHandlingUtils", () => {
       // Assert
       expect(consoleSpy.error).toHaveBeenCalledWith(
         "AssetRenderer rendering failed: Template not found",
-        error
+        error,
       );
       expect(mockNotice).toHaveBeenCalledWith(
         "Rendering error in AssetRenderer",
-        3000
+        3000,
       );
     });
 
@@ -146,7 +148,12 @@ describe("ErrorHandlingUtils", () => {
       const fallbackMessage = "Unable to render layout";
 
       // Act
-      ErrorHandlingUtils.handleRenderingError(component, error, mockContainer, fallbackMessage);
+      ErrorHandlingUtils.handleRenderingError(
+        component,
+        error,
+        mockContainer,
+        fallbackMessage,
+      );
 
       // Assert
       expect(mockContainer.empty).toHaveBeenCalled();
@@ -156,11 +163,11 @@ describe("ErrorHandlingUtils", () => {
       });
       expect(consoleSpy.error).toHaveBeenCalledWith(
         "LayoutRenderer rendering failed: Layout file corrupted",
-        error
+        error,
       );
       expect(mockNotice).toHaveBeenCalledWith(
         "Rendering error in LayoutRenderer",
-        3000
+        3000,
       );
     });
 
@@ -185,13 +192,17 @@ describe("ErrorHandlingUtils", () => {
       // Remove mock methods to simulate standard DOM element
       delete (basicContainer as any).empty;
       delete (basicContainer as any).createEl;
-      
+
       const component = "QueryRenderer";
       const error = new Error("Query syntax error");
 
       // Act & Assert - should not throw
       expect(() => {
-        ErrorHandlingUtils.handleRenderingError(component, error, basicContainer);
+        ErrorHandlingUtils.handleRenderingError(
+          component,
+          error,
+          basicContainer,
+        );
       }).not.toThrow();
     });
   });
@@ -208,11 +219,11 @@ describe("ErrorHandlingUtils", () => {
 
       // Assert
       expect(consoleSpy.warn).toHaveBeenCalledWith(
-        'Invalid email: "invalid-email". Expected format: user@domain.com'
+        'Invalid email: "invalid-email". Expected format: user@domain.com',
       );
       expect(mockNotice).toHaveBeenCalledWith(
         'Invalid email: "invalid-email". Expected format: user@domain.com',
-        4000
+        4000,
       );
     });
 
@@ -225,13 +236,8 @@ describe("ErrorHandlingUtils", () => {
       ErrorHandlingUtils.handleValidationError(field, value);
 
       // Assert
-      expect(consoleSpy.warn).toHaveBeenCalledWith(
-        'Invalid age: "-5"'
-      );
-      expect(mockNotice).toHaveBeenCalledWith(
-        'Invalid age: "-5"',
-        4000
-      );
+      expect(consoleSpy.warn).toHaveBeenCalledWith('Invalid age: "-5"');
+      expect(mockNotice).toHaveBeenCalledWith('Invalid age: "-5"', 4000);
     });
 
     it("should handle complex values", () => {
@@ -244,7 +250,7 @@ describe("ErrorHandlingUtils", () => {
 
       // Assert
       expect(consoleSpy.warn).toHaveBeenCalledWith(
-        'Invalid config: "[object Object]"'
+        'Invalid config: "[object Object]"',
       );
     });
 
@@ -255,7 +261,9 @@ describe("ErrorHandlingUtils", () => {
 
       // Assert
       expect(consoleSpy.warn).toHaveBeenCalledWith('Invalid name: "null"');
-      expect(consoleSpy.warn).toHaveBeenCalledWith('Invalid description: "undefined"');
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
+        'Invalid description: "undefined"',
+      );
     });
   });
 
@@ -266,7 +274,10 @@ describe("ErrorHandlingUtils", () => {
       const errorContext = "test operation";
 
       // Act
-      const result = await ErrorHandlingUtils.safeAsync(operation, errorContext);
+      const result = await ErrorHandlingUtils.safeAsync(
+        operation,
+        errorContext,
+      );
 
       // Assert
       expect(result).toBe("success");
@@ -276,34 +287,45 @@ describe("ErrorHandlingUtils", () => {
 
     it("should return undefined when operation fails without fallback", async () => {
       // Arrange
-      const operation = jest.fn().mockRejectedValue(new Error("Operation failed"));
+      const operation = jest
+        .fn()
+        .mockRejectedValue(new Error("Operation failed"));
       const errorContext = "test operation";
 
       // Act
-      const result = await ErrorHandlingUtils.safeAsync(operation, errorContext);
+      const result = await ErrorHandlingUtils.safeAsync(
+        operation,
+        errorContext,
+      );
 
       // Assert
       expect(result).toBeUndefined();
       expect(consoleSpy.error).toHaveBeenCalledWith(
         "test operation failed:",
-        new Error("Operation failed")
+        new Error("Operation failed"),
       );
     });
 
     it("should return fallback when operation fails with fallback provided", async () => {
       // Arrange
-      const operation = jest.fn().mockRejectedValue(new Error("Network timeout"));
+      const operation = jest
+        .fn()
+        .mockRejectedValue(new Error("Network timeout"));
       const errorContext = "fetch data";
       const fallback = { data: "default" };
 
       // Act
-      const result = await ErrorHandlingUtils.safeAsync(operation, errorContext, fallback);
+      const result = await ErrorHandlingUtils.safeAsync(
+        operation,
+        errorContext,
+        fallback,
+      );
 
       // Assert
       expect(result).toBe(fallback);
       expect(consoleSpy.error).toHaveBeenCalledWith(
         "fetch data failed:",
-        new Error("Network timeout")
+        new Error("Network timeout"),
       );
     });
 
@@ -315,24 +337,35 @@ describe("ErrorHandlingUtils", () => {
       const errorContext = "sync operation";
 
       // Act
-      const result = await ErrorHandlingUtils.safeAsync(operation, errorContext);
+      const result = await ErrorHandlingUtils.safeAsync(
+        operation,
+        errorContext,
+      );
 
       // Assert
       expect(result).toBeUndefined();
       expect(consoleSpy.error).toHaveBeenCalledWith(
         "sync operation failed:",
-        new Error("Immediate error")
+        new Error("Immediate error"),
       );
     });
 
     it("should handle null and undefined fallbacks explicitly", async () => {
       // Arrange
       const operation = jest.fn().mockRejectedValue(new Error("Failed"));
-      
+
       // Act
-      const resultWithNull = await ErrorHandlingUtils.safeAsync(operation, "test", null);
-      const resultWithUndefined = await ErrorHandlingUtils.safeAsync(operation, "test", undefined);
-      
+      const resultWithNull = await ErrorHandlingUtils.safeAsync(
+        operation,
+        "test",
+        null,
+      );
+      const resultWithUndefined = await ErrorHandlingUtils.safeAsync(
+        operation,
+        "test",
+        undefined,
+      );
+
       // Assert
       expect(resultWithNull).toBeNull();
       expect(resultWithUndefined).toBeUndefined();
@@ -368,7 +401,7 @@ describe("ErrorHandlingUtils", () => {
       expect(result).toBeUndefined();
       expect(consoleSpy.error).toHaveBeenCalledWith(
         "sync operation failed:",
-        new Error("Sync operation failed")
+        new Error("Sync operation failed"),
       );
     });
 
@@ -381,13 +414,17 @@ describe("ErrorHandlingUtils", () => {
       const fallback = 0;
 
       // Act
-      const result = ErrorHandlingUtils.safeSync(operation, errorContext, fallback);
+      const result = ErrorHandlingUtils.safeSync(
+        operation,
+        errorContext,
+        fallback,
+      );
 
       // Assert
       expect(result).toBe(0);
       expect(consoleSpy.error).toHaveBeenCalledWith(
         "calculate value failed:",
-        new Error("Computation error")
+        new Error("Computation error"),
       );
     });
 
@@ -448,18 +485,28 @@ describe("ErrorHandlingUtils", () => {
   describe("isErrorOfType", () => {
     it("should return true for matching error code", () => {
       // Arrange
-      const error = ErrorHandlingUtils.createError("VALIDATION_ERROR", "Test error");
+      const error = ErrorHandlingUtils.createError(
+        "VALIDATION_ERROR",
+        "Test error",
+      );
 
       // Act & Assert
-      expect(ErrorHandlingUtils.isErrorOfType(error, "VALIDATION_ERROR")).toBe(true);
+      expect(ErrorHandlingUtils.isErrorOfType(error, "VALIDATION_ERROR")).toBe(
+        true,
+      );
     });
 
     it("should return false for non-matching error code", () => {
       // Arrange
-      const error = ErrorHandlingUtils.createError("NETWORK_ERROR", "Test error");
+      const error = ErrorHandlingUtils.createError(
+        "NETWORK_ERROR",
+        "Test error",
+      );
 
       // Act & Assert
-      expect(ErrorHandlingUtils.isErrorOfType(error, "VALIDATION_ERROR")).toBe(false);
+      expect(ErrorHandlingUtils.isErrorOfType(error, "VALIDATION_ERROR")).toBe(
+        false,
+      );
     });
 
     it("should return false for standard errors without code", () => {
@@ -467,7 +514,9 @@ describe("ErrorHandlingUtils", () => {
       const error = new Error("Standard error");
 
       // Act & Assert
-      expect(ErrorHandlingUtils.isErrorOfType(error, "VALIDATION_ERROR")).toBe(false);
+      expect(ErrorHandlingUtils.isErrorOfType(error, "VALIDATION_ERROR")).toBe(
+        false,
+      );
     });
 
     it("should handle null and undefined errors", () => {
@@ -488,8 +537,12 @@ describe("ErrorHandlingUtils", () => {
       const objectWithCode = { code: "CUSTOM_ERROR", message: "Custom" };
 
       // Act & Assert
-      expect(ErrorHandlingUtils.isErrorOfType(objectWithCode, "CUSTOM_ERROR")).toBe(true);
-      expect(ErrorHandlingUtils.isErrorOfType(objectWithCode, "OTHER_ERROR")).toBe(false);
+      expect(
+        ErrorHandlingUtils.isErrorOfType(objectWithCode, "CUSTOM_ERROR"),
+      ).toBe(true);
+      expect(
+        ErrorHandlingUtils.isErrorOfType(objectWithCode, "OTHER_ERROR"),
+      ).toBe(false);
     });
   });
 
@@ -501,7 +554,10 @@ describe("ErrorHandlingUtils", () => {
       const context = { operation: "test", userId: "123" };
 
       // Act
-      const formatted = ErrorHandlingUtils.formatErrorForLogging(error, context);
+      const formatted = ErrorHandlingUtils.formatErrorForLogging(
+        error,
+        context,
+      );
 
       // Assert
       expect(formatted).toEqual({
@@ -517,7 +573,10 @@ describe("ErrorHandlingUtils", () => {
 
     it("should format custom error with code", () => {
       // Arrange
-      const error = ErrorHandlingUtils.createError("CUSTOM_CODE", "Custom error");
+      const error = ErrorHandlingUtils.createError(
+        "CUSTOM_CODE",
+        "Custom error",
+      );
 
       // Act
       const formatted = ErrorHandlingUtils.formatErrorForLogging(error);
@@ -553,7 +612,8 @@ describe("ErrorHandlingUtils", () => {
 
       // Act
       const formattedType = ErrorHandlingUtils.formatErrorForLogging(typeError);
-      const formattedRange = ErrorHandlingUtils.formatErrorForLogging(rangeError);
+      const formattedRange =
+        ErrorHandlingUtils.formatErrorForLogging(rangeError);
 
       // Assert
       expect(formattedType.name).toBe("TypeError");
@@ -576,7 +636,9 @@ describe("ErrorHandlingUtils", () => {
       expect(timestamp).toBeInstanceOf(Date);
       expect(timestamp.getTime()).toBeGreaterThanOrEqual(before.getTime());
       expect(timestamp.getTime()).toBeLessThanOrEqual(after.getTime());
-      expect(formatted.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+      expect(formatted.timestamp).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
+      );
     });
   });
 
@@ -589,12 +651,14 @@ describe("ErrorHandlingUtils", () => {
 
       // Act - Create error
       const error = ErrorHandlingUtils.createError(code, message, context);
-      
+
       // Act - Check error type
       const isCorrectType = ErrorHandlingUtils.isErrorOfType(error, code);
-      
+
       // Act - Format for logging
-      const formatted = ErrorHandlingUtils.formatErrorForLogging(error, { additional: "info" });
+      const formatted = ErrorHandlingUtils.formatErrorForLogging(error, {
+        additional: "info",
+      });
 
       // Assert
       expect(isCorrectType).toBe(true);
@@ -606,14 +670,17 @@ describe("ErrorHandlingUtils", () => {
     it("should handle error pipeline with safe operations", async () => {
       // Arrange
       const failingOperation = async () => {
-        throw ErrorHandlingUtils.createError("ASYNC_ERROR", "Async operation failed");
+        throw ErrorHandlingUtils.createError(
+          "ASYNC_ERROR",
+          "Async operation failed",
+        );
       };
 
       // Act - Use safe async with error handling
       const result = await ErrorHandlingUtils.safeAsync(
         failingOperation,
         "test async operation",
-        "fallback result"
+        "fallback result",
       );
 
       // Assert
@@ -623,7 +690,7 @@ describe("ErrorHandlingUtils", () => {
         expect.objectContaining({
           message: "Async operation failed",
           code: "ASYNC_ERROR",
-        })
+        }),
       );
     });
   });
@@ -661,7 +728,11 @@ describe("ErrorHandlingUtils", () => {
       });
 
       // Act
-      const result = ErrorHandlingUtils.safeSync(operation, "state test", "fallback");
+      const result = ErrorHandlingUtils.safeSync(
+        operation,
+        "state test",
+        "fallback",
+      );
 
       // Assert
       expect(result).toBe("fallback");

@@ -77,7 +77,6 @@ describe("VisualQueryCanvas", () => {
     parentElement = document.createElement("div");
     document.body.appendChild(parentElement);
 
-
     mockOptions = {
       width: 800,
       height: 600,
@@ -96,10 +95,7 @@ describe("VisualQueryCanvas", () => {
       onExecuteQuery: jest.fn(),
     };
 
-    canvas = new VisualQueryCanvas(
-      parentElement,
-      mockOptions
-    );
+    canvas = new VisualQueryCanvas(parentElement, mockOptions);
   });
 
   afterEach(() => {
@@ -461,9 +457,7 @@ describe("VisualQueryCanvas", () => {
       // Test the generateQuery method
       const generatedQuery = canvas.generateQuery();
       expect(generatedQuery).toBeDefined();
-      expect(mockOptions.onQueryGenerated).toHaveBeenCalledWith(
-        generatedQuery,
-      );
+      expect(mockOptions.onQueryGenerated).toHaveBeenCalledWith(generatedQuery);
 
       // Test direct execution through internal method
       canvas.executeQuery();

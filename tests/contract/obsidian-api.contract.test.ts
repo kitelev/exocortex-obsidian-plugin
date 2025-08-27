@@ -26,15 +26,15 @@ describe("Obsidian API Contract Tests", () => {
     it("should have correct Vault method signatures", () => {
       const app = new App();
       const vault = app.vault;
-      
+
       // Test read signature
       expect(vault.read).toBeInstanceOf(Function);
       expect(vault.read.length).toBe(1); // Takes 1 parameter (file)
-      
+
       // Test modify signature
       expect(vault.modify).toBeInstanceOf(Function);
       expect(vault.modify.length).toBe(2); // Takes 2 parameters (file, data)
-      
+
       // Test create signature
       expect(vault.create).toBeInstanceOf(Function);
       expect(vault.create.length).toBe(2); // Takes 2 parameters (path, data)
@@ -44,7 +44,14 @@ describe("Obsidian API Contract Tests", () => {
   describe("TFile API Contract", () => {
     it("should have required TFile properties", () => {
       const file = new TFile();
-      const requiredProps = ["path", "name", "extension", "basename", "vault", "parent"];
+      const requiredProps = [
+        "path",
+        "name",
+        "extension",
+        "basename",
+        "vault",
+        "parent",
+      ];
 
       requiredProps.forEach((prop) => {
         expect(prop in file).toBe(true);
@@ -72,7 +79,12 @@ describe("Obsidian API Contract Tests", () => {
   describe("App API Contract", () => {
     it("should have required App properties", () => {
       const app = new App();
-      const requiredProps = ["vault", "metadataCache", "workspace", "fileManager"];
+      const requiredProps = [
+        "vault",
+        "metadataCache",
+        "workspace",
+        "fileManager",
+      ];
 
       requiredProps.forEach((prop) => {
         expect(prop in app).toBe(true);
@@ -81,7 +93,7 @@ describe("Obsidian API Contract Tests", () => {
 
     it("should have correct App method signatures", () => {
       const app = new App();
-      
+
       expect(app.vault).toBeDefined();
       expect(app.metadataCache).toBeDefined();
       expect(app.workspace).toBeDefined();
@@ -117,7 +129,16 @@ describe("Obsidian API Contract Tests", () => {
         onunload(): void {}
       }
       const app = new App();
-      const manifest = { id: "test", name: "Test", version: "1.0.0", minAppVersion: "0.15.0", description: "Test", author: "Test", authorUrl: "", isDesktopOnly: false };
+      const manifest = {
+        id: "test",
+        name: "Test",
+        version: "1.0.0",
+        minAppVersion: "0.15.0",
+        description: "Test",
+        author: "Test",
+        authorUrl: "",
+        isDesktopOnly: false,
+      };
       const plugin = new TestPlugin(app, manifest);
       const lifecycleMethods = ["onload", "onunload"];
 
@@ -132,7 +153,16 @@ describe("Obsidian API Contract Tests", () => {
         onunload(): void {}
       }
       const app = new App();
-      const manifest = { id: "test", name: "Test", version: "1.0.0", minAppVersion: "0.15.0", description: "Test", author: "Test", authorUrl: "", isDesktopOnly: false };
+      const manifest = {
+        id: "test",
+        name: "Test",
+        version: "1.0.0",
+        minAppVersion: "0.15.0",
+        description: "Test",
+        author: "Test",
+        authorUrl: "",
+        isDesktopOnly: false,
+      };
       const plugin = new TestPlugin(app, manifest);
       const requiredProps = ["app", "manifest"];
 
@@ -144,7 +174,7 @@ describe("Obsidian API Contract Tests", () => {
 
   describe("MetadataCache API Contract", () => {
     it("should have required MetadataCache methods", () => {
-      const metadataCache = (new App()).metadataCache;
+      const metadataCache = new App().metadataCache;
       const requiredMethods = [
         "getFileCache",
         "getCache",
@@ -162,7 +192,7 @@ describe("Obsidian API Contract Tests", () => {
 
   describe("Workspace API Contract", () => {
     it("should have required Workspace methods", () => {
-      const workspace = (new App()).workspace;
+      const workspace = new App().workspace;
       const requiredMethods = [
         "getActiveFile",
         "getLeaf",
@@ -200,7 +230,7 @@ describe("Obsidian API Contract Tests", () => {
   describe("DOM Extension Contract", () => {
     it("should have Obsidian DOM extensions", () => {
       const element = document.createElement("div");
-      
+
       // Check for Obsidian-specific DOM methods
       expect(typeof (element as any).createEl).toBe("function");
       expect(typeof (element as any).createDiv).toBe("function");

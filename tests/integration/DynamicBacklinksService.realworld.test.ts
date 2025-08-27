@@ -19,7 +19,7 @@ describe("DynamicBacklinksService - Real World Scenarios", () => {
 
   beforeEach(() => {
     mockApp = new App();
-    
+
     // Create mock vault adapter
     const mockVaultAdapter: IVaultAdapter = {
       create: jest.fn(),
@@ -30,10 +30,16 @@ describe("DynamicBacklinksService - Real World Scenarios", () => {
       list: jest.fn(),
       getMetadata: jest.fn(),
       getFiles: () => Promise.resolve(mockApp.vault.getMarkdownFiles()),
-      getFileMetadata: (file: any) => Promise.resolve(mockApp.metadataCache.getFileCache(file)?.frontmatter || null),
-      resolveLinkToFile: (linkText: string, sourcePath?: string) => Promise.resolve(mockApp.metadataCache.getFirstLinkpathDest(linkText, sourcePath))
+      getFileMetadata: (file: any) =>
+        Promise.resolve(
+          mockApp.metadataCache.getFileCache(file)?.frontmatter || null,
+        ),
+      resolveLinkToFile: (linkText: string, sourcePath?: string) =>
+        Promise.resolve(
+          mockApp.metadataCache.getFirstLinkpathDest(linkText, sourcePath),
+        ),
     };
-    
+
     // Create mock UI adapter
     const mockUIAdapter: IUIAdapter = {
       getDisplayLabel: jest.fn(),
@@ -47,9 +53,9 @@ describe("DynamicBacklinksService - Real World Scenarios", () => {
       },
       groupFilesByClass: jest.fn(),
       filterFilesByClass: jest.fn(),
-      applyResultLimit: jest.fn()
+      applyResultLimit: jest.fn(),
     };
-    
+
     service = new DynamicBacklinksService(mockVaultAdapter, mockUIAdapter);
 
     // Setup default mocks

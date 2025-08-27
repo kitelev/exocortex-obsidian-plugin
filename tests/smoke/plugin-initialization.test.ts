@@ -1,9 +1,9 @@
 /**
  * Smoke Test Suite for Plugin Initialization
- * 
+ *
  * This test suite ensures that the plugin can be loaded without critical errors,
  * particularly focusing on the "Service IAssetRepository not found" issue.
- * 
+ *
  * Run with: npm run test:smoke
  */
 
@@ -44,12 +44,13 @@ describe("Plugin Initialization Smoke Tests", () => {
 
       // Act
       await plugin.onload();
-      const serviceProvider = (plugin as any).serviceProvider as ServiceProvider;
+      const serviceProvider = (plugin as any)
+        .serviceProvider as ServiceProvider;
 
       // Assert
       expect(serviceProvider).toBeDefined();
       expect(serviceProvider.hasService("IAssetRepository")).toBe(true);
-      
+
       // Verify the service can be retrieved without error
       expect(() => {
         const assetRepo = serviceProvider.getService("IAssetRepository");
@@ -60,20 +61,21 @@ describe("Plugin Initialization Smoke Tests", () => {
     it("should register all required services for code block processors", async () => {
       // Arrange
       plugin = new ExocortexPlugin(app, createMockManifest());
-      
+
       // Act
       await plugin.onload();
-      const serviceProvider = (plugin as any).serviceProvider as ServiceProvider;
+      const serviceProvider = (plugin as any)
+        .serviceProvider as ServiceProvider;
 
       // Assert - Check all services required by renderers
       const requiredServices = [
         "RDFService",
         "IAssetRepository",
         "LayoutRenderer",
-        "PropertyRenderer"
+        "PropertyRenderer",
       ];
 
-      requiredServices.forEach(serviceName => {
+      requiredServices.forEach((serviceName) => {
         expect(serviceProvider.hasService(serviceName)).toBe(true);
         expect(() => serviceProvider.getService(serviceName)).not.toThrow();
       });
@@ -85,7 +87,8 @@ describe("Plugin Initialization Smoke Tests", () => {
       // Arrange
       plugin = new ExocortexPlugin(app, createMockManifest());
       await plugin.onload();
-      const serviceProvider = (plugin as any).serviceProvider as ServiceProvider;
+      const serviceProvider = (plugin as any)
+        .serviceProvider as ServiceProvider;
 
       // Act & Assert - This was previously throwing "Service IAssetRepository not found"
       expect(() => {
@@ -94,8 +97,8 @@ describe("Plugin Initialization Smoke Tests", () => {
       }).not.toThrow();
 
       // Verify no service not found errors
-      const serviceNotFoundErrors = consoleErrors.filter(err => 
-        err.includes("Service") && err.includes("not found")
+      const serviceNotFoundErrors = consoleErrors.filter(
+        (err) => err.includes("Service") && err.includes("not found"),
       );
       expect(serviceNotFoundErrors).toHaveLength(0);
     });
@@ -104,7 +107,8 @@ describe("Plugin Initialization Smoke Tests", () => {
       // Arrange
       plugin = new ExocortexPlugin(app, createMockManifest());
       await plugin.onload();
-      const serviceProvider = (plugin as any).serviceProvider as ServiceProvider;
+      const serviceProvider = (plugin as any)
+        .serviceProvider as ServiceProvider;
 
       // Act & Assert
       expect(() => {
@@ -122,7 +126,9 @@ describe("Plugin Initialization Smoke Tests", () => {
 
       // Assert
       expect((plugin as any).codeBlockProcessor).toBeDefined();
-      expect(consoleErrors.filter(e => e.includes("Error") || e.includes("error"))).toHaveLength(0);
+      expect(
+        consoleErrors.filter((e) => e.includes("Error") || e.includes("error")),
+      ).toHaveLength(0);
     });
   });
 
@@ -133,26 +139,36 @@ describe("Plugin Initialization Smoke Tests", () => {
       plugin = new ExocortexPlugin(app, createMockManifest());
 
       // Spy on initialization methods
-      jest.spyOn(plugin as any, "initializeServiceProvider").mockImplementation(async function(this: any) {
-        initOrder.push("ServiceProvider");
-        // Call the original implementation
-        const sp = new ServiceProvider(this.plugin, this.graphManager.getGraph(), this.settingsManager.getSettings());
-        await sp.initializeServices();
-        this.serviceProvider = sp;
-      });
+      jest
+        .spyOn(plugin as any, "initializeServiceProvider")
+        .mockImplementation(async function (this: any) {
+          initOrder.push("ServiceProvider");
+          // Call the original implementation
+          const sp = new ServiceProvider(
+            this.plugin,
+            this.graphManager.getGraph(),
+            this.settingsManager.getSettings(),
+          );
+          await sp.initializeServices();
+          this.serviceProvider = sp;
+        });
 
-      jest.spyOn(plugin as any, "initializeCodeBlockProcessor").mockImplementation(async function(this: any) {
-        initOrder.push("CodeBlockProcessor");
-        // Simplified version - just verify serviceProvider exists
-        expect(this.serviceProvider).toBeDefined();
-      });
+      jest
+        .spyOn(plugin as any, "initializeCodeBlockProcessor")
+        .mockImplementation(async function (this: any) {
+          initOrder.push("CodeBlockProcessor");
+          // Simplified version - just verify serviceProvider exists
+          expect(this.serviceProvider).toBeDefined();
+        });
 
       // Act
       await plugin.onload();
 
       // Assert
       expect(initOrder).toEqual(["ServiceProvider", "CodeBlockProcessor"]);
-      expect(initOrder.indexOf("ServiceProvider")).toBeLessThan(initOrder.indexOf("CodeBlockProcessor"));
+      expect(initOrder.indexOf("ServiceProvider")).toBeLessThan(
+        initOrder.indexOf("CodeBlockProcessor"),
+      );
     });
   });
 
@@ -161,7 +177,8 @@ describe("Plugin Initialization Smoke Tests", () => {
       // Arrange
       plugin = new ExocortexPlugin(app, createMockManifest());
       await plugin.onload();
-      const serviceProvider = (plugin as any).serviceProvider as ServiceProvider;
+      const serviceProvider = (plugin as any)
+        .serviceProvider as ServiceProvider;
 
       // Act & Assert
       expect(() => {
@@ -174,13 +191,15 @@ describe("Plugin Initialization Smoke Tests", () => {
       plugin = new ExocortexPlugin(app, createMockManifest());
 
       // Mock one service to throw during initialization
-      jest.spyOn(DIContainer.prototype, "resolve").mockImplementation((service) => {
-        if (service === "FailingService") {
-          throw new Error("Service initialization failed");
-        }
-        // Return mock for other services
-        return createMockService(service);
-      });
+      jest
+        .spyOn(DIContainer.prototype, "resolve")
+        .mockImplementation((service) => {
+          if (service === "FailingService") {
+            throw new Error("Service initialization failed");
+          }
+          // Return mock for other services
+          return createMockService(service);
+        });
 
       // Act
       await plugin.onload();
@@ -204,7 +223,9 @@ describe("Plugin Initialization Smoke Tests", () => {
       await plugin.onunload();
 
       // Assert
-      expect(consoleErrors.filter(e => e.includes("Error during plugin cleanup"))).toHaveLength(0);
+      expect(
+        consoleErrors.filter((e) => e.includes("Error during plugin cleanup")),
+      ).toHaveLength(0);
     });
 
     it("should support reload without duplicate registrations", async () => {
@@ -224,7 +245,9 @@ describe("Plugin Initialization Smoke Tests", () => {
       // Assert
       expect(firstServiceProvider).not.toBe(secondServiceProvider);
       expect(secondServiceProvider.hasService("IAssetRepository")).toBe(true);
-      expect(consoleErrors.filter(e => e.includes("already registered"))).toHaveLength(0);
+      expect(
+        consoleErrors.filter((e) => e.includes("already registered")),
+      ).toHaveLength(0);
     });
   });
 });

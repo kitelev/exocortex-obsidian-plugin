@@ -45,8 +45,10 @@ describe("OntologyProvisioningService", () => {
       const prefix = "test";
       const expectedPrefix = OntologyPrefix.create(prefix).getValue()!;
       const mockOntology = { prefix: expectedPrefix };
-      
-      mockOntologyRepository.findByPrefix.mockResolvedValue(mockOntology as any);
+
+      mockOntologyRepository.findByPrefix.mockResolvedValue(
+        mockOntology as any,
+      );
 
       // Act
       const result = await service.ensureOntologyExists(prefix);
@@ -54,7 +56,9 @@ describe("OntologyProvisioningService", () => {
       // Assert
       expect(result.isSuccess).toBe(true);
       expect(result.getValue()).toEqual(expectedPrefix);
-      expect(mockOntologyRepository.findByPrefix).toHaveBeenCalledWith(expectedPrefix);
+      expect(mockOntologyRepository.findByPrefix).toHaveBeenCalledWith(
+        expectedPrefix,
+      );
       expect(mockVaultAdapter.create).not.toHaveBeenCalled();
     });
 
@@ -62,11 +66,11 @@ describe("OntologyProvisioningService", () => {
       // Arrange
       const prefix = "newontology";
       const expectedPrefix = OntologyPrefix.create(prefix).getValue()!;
-      
+
       mockOntologyRepository.findByPrefix
         .mockResolvedValueOnce(null) // First call returns null
         .mockResolvedValueOnce({ prefix: expectedPrefix } as any); // After creation
-      
+
       mockVaultAdapter.create.mockResolvedValue();
 
       // Act
@@ -98,9 +102,11 @@ describe("OntologyProvisioningService", () => {
       // Arrange
       const prefix = "testfail";
       const expectedPrefix = OntologyPrefix.create(prefix).getValue()!;
-      
+
       mockOntologyRepository.findByPrefix.mockResolvedValue(null);
-      mockVaultAdapter.create.mockRejectedValue(new Error("File creation failed"));
+      mockVaultAdapter.create.mockRejectedValue(
+        new Error("File creation failed"),
+      );
 
       // Act
       const result = await service.ensureOntologyExists(prefix);
@@ -114,7 +120,7 @@ describe("OntologyProvisioningService", () => {
       // Arrange
       const prefix = "missingafter";
       const expectedPrefix = OntologyPrefix.create(prefix).getValue()!;
-      
+
       mockOntologyRepository.findByPrefix.mockResolvedValue(null);
       mockVaultAdapter.create.mockResolvedValue();
 
@@ -123,7 +129,9 @@ describe("OntologyProvisioningService", () => {
 
       // Assert
       expect(result.isSuccess).toBe(false);
-      expect(result.getError()).toContain("Failed to register newly created ontology");
+      expect(result.getError()).toContain(
+        "Failed to register newly created ontology",
+      );
     });
   });
 
@@ -150,7 +158,11 @@ describe("OntologyProvisioningService", () => {
 
       // Assert
       expect(result.canProvision).toBe(false);
-      expect(result.reasons.some(reason => reason.includes("Invalid prefix format"))).toBe(true);
+      expect(
+        result.reasons.some((reason) =>
+          reason.includes("Invalid prefix format"),
+        ),
+      ).toBe(true);
     });
 
     it("should reject if file already exists", async () => {
@@ -163,7 +175,9 @@ describe("OntologyProvisioningService", () => {
 
       // Assert
       expect(result.canProvision).toBe(false);
-      expect(result.reasons.some(reason => reason.includes("already exists"))).toBe(true);
+      expect(
+        result.reasons.some((reason) => reason.includes("already exists")),
+      ).toBe(true);
     });
 
     it("should reject reserved prefixes", async () => {
@@ -176,7 +190,9 @@ describe("OntologyProvisioningService", () => {
 
       // Assert
       expect(result.canProvision).toBe(false);
-      expect(result.reasons.some(reason => reason.includes("reserved prefix"))).toBe(true);
+      expect(
+        result.reasons.some((reason) => reason.includes("reserved prefix")),
+      ).toBe(true);
     });
 
     it("should handle multiple validation failures", async () => {
@@ -198,11 +214,11 @@ describe("OntologyProvisioningService", () => {
       // Arrange
       const prefix = "testcontent";
       const expectedPrefix = OntologyPrefix.create(prefix).getValue()!;
-      
+
       mockOntologyRepository.findByPrefix
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce({ prefix: expectedPrefix } as any);
-      
+
       mockVaultAdapter.create.mockResolvedValue();
 
       // Act
@@ -213,22 +229,24 @@ describe("OntologyProvisioningService", () => {
         `!${prefix}.md`,
         expect.stringMatching(/^---[\s\S]*---[\s\S]*$/),
       );
-      
+
       const createdContent = mockVaultAdapter.create.mock.calls[0][1];
-      expect(createdContent).toContain('exo__Ontology_prefix:');
-      expect(createdContent).toContain('exo__Instance_class:');
-      expect(createdContent).toContain('rdfs__label:');
-      expect(createdContent).toContain('Auto-provisioned ontology');
+      expect(createdContent).toContain("exo__Ontology_prefix:");
+      expect(createdContent).toContain("exo__Instance_class:");
+      expect(createdContent).toContain("rdfs__label:");
+      expect(createdContent).toContain("Auto-provisioned ontology");
     });
 
     it("should generate display names for abbreviations", async () => {
       // Arrange
       const prefix = "ui";
-      
+
       mockOntologyRepository.findByPrefix
         .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce({ prefix: OntologyPrefix.create(prefix).getValue()! } as any);
-      
+        .mockResolvedValueOnce({
+          prefix: OntologyPrefix.create(prefix).getValue()!,
+        } as any);
+
       mockVaultAdapter.create.mockResolvedValue();
 
       // Act
@@ -236,7 +254,7 @@ describe("OntologyProvisioningService", () => {
 
       // Assert
       const createdContent = mockVaultAdapter.create.mock.calls[0][1];
-      expect(createdContent).toContain('User Interface');
+      expect(createdContent).toContain("User Interface");
     });
 
     it("should generate title case for camelCase prefixes", async () => {
@@ -247,11 +265,11 @@ describe("OntologyProvisioningService", () => {
         // Use a valid prefix instead
         const validPrefix = "usermgmt";
         const validPrefixObj = OntologyPrefix.create(validPrefix).getValue()!;
-        
+
         mockOntologyRepository.findByPrefix
           .mockResolvedValueOnce(null)
           .mockResolvedValueOnce({ prefix: validPrefixObj } as any);
-        
+
         mockVaultAdapter.create.mockResolvedValue();
 
         // Act
@@ -259,14 +277,16 @@ describe("OntologyProvisioningService", () => {
 
         // Assert
         const createdContent = mockVaultAdapter.create.mock.calls[0][1];
-        expect(createdContent).toContain('Usermgmt');
+        expect(createdContent).toContain("Usermgmt");
         return;
       }
-      
+
       mockOntologyRepository.findByPrefix
         .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce({ prefix: validPrefixResult.getValue()! } as any);
-      
+        .mockResolvedValueOnce({
+          prefix: validPrefixResult.getValue()!,
+        } as any);
+
       mockVaultAdapter.create.mockResolvedValue();
 
       // Act
@@ -274,7 +294,7 @@ describe("OntologyProvisioningService", () => {
 
       // Assert
       const createdContent = mockVaultAdapter.create.mock.calls[0][1];
-      expect(createdContent).toContain('User Management');
+      expect(createdContent).toContain("User Management");
     });
   });
 
@@ -282,10 +302,14 @@ describe("OntologyProvisioningService", () => {
     it("should handle repository failures gracefully", async () => {
       // Arrange
       const prefix = "repofail";
-      mockOntologyRepository.findByPrefix.mockRejectedValue(new Error("Repository error"));
+      mockOntologyRepository.findByPrefix.mockRejectedValue(
+        new Error("Repository error"),
+      );
 
       // Act & Assert
-      await expect(service.ensureOntologyExists(prefix)).rejects.toThrow("Repository error");
+      await expect(service.ensureOntologyExists(prefix)).rejects.toThrow(
+        "Repository error",
+      );
     });
 
     it("should handle vault adapter failures gracefully", async () => {
@@ -294,7 +318,9 @@ describe("OntologyProvisioningService", () => {
       mockVaultAdapter.exists.mockRejectedValue(new Error("Vault error"));
 
       // Act & Assert
-      await expect(service.canProvisionOntology(prefix)).rejects.toThrow("Vault error");
+      await expect(service.canProvisionOntology(prefix)).rejects.toThrow(
+        "Vault error",
+      );
     });
   });
 
@@ -303,9 +329,11 @@ describe("OntologyProvisioningService", () => {
       // Arrange
       const prefix = "concurrent";
       const expectedPrefix = OntologyPrefix.create(prefix).getValue()!;
-      
+
       // Mock to return existing ontology for all calls
-      mockOntologyRepository.findByPrefix.mockResolvedValue({ prefix: expectedPrefix } as any);
+      mockOntologyRepository.findByPrefix.mockResolvedValue({
+        prefix: expectedPrefix,
+      } as any);
 
       // Act - simulate concurrent calls
       const [result1, result2] = await Promise.all([
@@ -322,18 +350,18 @@ describe("OntologyProvisioningService", () => {
       // Arrange
       const prefix = "workflow";
       const expectedPrefix = OntologyPrefix.create(prefix).getValue()!;
-      
+
       mockOntologyRepository.findByPrefix
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce({ prefix: expectedPrefix } as any);
-      
+
       mockVaultAdapter.create.mockResolvedValue();
       mockVaultAdapter.exists.mockResolvedValue(false);
 
       // Act - full workflow
       const canProvision = await service.canProvisionOntology(prefix);
       expect(canProvision.canProvision).toBe(true);
-      
+
       const result = await service.ensureOntologyExists(prefix);
 
       // Assert

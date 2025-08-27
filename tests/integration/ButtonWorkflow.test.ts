@@ -368,11 +368,11 @@ describe("Button Workflow Integration Tests", () => {
 
       // Mock missing project - this should cause the command executor to fail
       jest.spyOn(assetRepository, "findById").mockResolvedValue(null);
-      
+
       // Mock CreateChildTaskUseCase to return proper failure response
       mockCreateChildTaskUseCase.execute.mockResolvedValue({
         success: false,
-        message: 'Project not found'
+        message: "Project not found",
       });
 
       const buttonIdResult = AssetId.generate();
@@ -388,7 +388,7 @@ describe("Button Workflow Integration Tests", () => {
       if (result.isSuccess) {
         const response = result.getValue();
         expect(response.success).toBe(true);
-        expect(response.result.status).toBe('failure');
+        expect(response.result.status).toBe("failure");
         expect(response.result.error || "").toContain("Project not found");
       }
     });
@@ -447,7 +447,7 @@ describe("Button Workflow Integration Tests", () => {
       if (result.isSuccess) {
         const response = result.getValue();
         expect(response.success).toBe(true);
-        expect(response.result.status).toBe('failure');
+        expect(response.result.status).toBe("failure");
         expect(response.result.error || "").toContain("Asset is not a project");
       }
     });
