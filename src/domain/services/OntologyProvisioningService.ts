@@ -14,7 +14,7 @@ export class OntologyProvisioningService {
     }
   }
 
-  async checkOntologyExists(prefix: string): Promise<boolean> {
+  async checkOntologyExists(_prefix: string): Promise<boolean> {
     // Placeholder for checking if ontology exists
     return false;
   }

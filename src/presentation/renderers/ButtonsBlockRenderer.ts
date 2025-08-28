@@ -56,11 +56,17 @@ export class ButtonsBlockRenderer {
   ): Promise<void> {
     const commandType = buttonConfig.commandType;
 
-    if (commandType === 'CREATE_CHILD_TASK' || commandType === CommandType.CREATE_CHILD_TASK) {
+    if (
+      commandType === "CREATE_CHILD_TASK" ||
+      commandType === CommandType.CREATE_CHILD_TASK
+    ) {
       await this.handleCreateChildTask(file, frontmatter);
-    } else if (commandType === 'CREATE_CHILD_AREA' || commandType === CommandType.CREATE_CHILD_AREA) {
+    } else if (
+      commandType === "CREATE_CHILD_AREA" ||
+      commandType === CommandType.CREATE_CHILD_AREA
+    ) {
       await this.handleCreateChildArea(file, frontmatter);
-    } else if (commandType === 'CREATE_ASSET') {
+    } else if (commandType === "CREATE_ASSET") {
       await this.handleCreateAsset(buttonConfig, file, frontmatter);
     } else {
       new Notice(`Command ${buttonConfig.commandType} not yet implemented`);
@@ -94,16 +100,15 @@ export class ButtonsBlockRenderer {
       }
 
       // Import the EnhancedCreateAssetModal
-      const { EnhancedCreateAssetModal } = await import("../modals/EnhancedCreateAssetModal");
+      const { EnhancedCreateAssetModal } = await import(
+        "../modals/EnhancedCreateAssetModal"
+      );
 
       // Create and open the modal
-      const modal = new EnhancedCreateAssetModal(
-        this.app,
-        className
-      );
-      
+      const modal = new EnhancedCreateAssetModal(this.app, className);
+
       // TODO: Add parent context support when modal is updated
-      
+
       modal.open();
     } catch (error) {
       console.error("Failed to create asset:", error);

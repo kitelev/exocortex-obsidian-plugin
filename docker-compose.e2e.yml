@@ -1,0 +1,358 @@
+# Docker Compose configuration for E2E testing of modal property display
+# Provides isolated testing environment with performance monitoring
+
+version: '3.8'
+
+services:
+  # Main E2E testing service
+  exocortex-e2e-modal:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui-test
+      target: ui-test-ci
+      args:
+        - OBSIDIAN_VERSION=1.8.10
+    container_name: exocortex-modal-e2e
+    environment:
+      - CI=true
+      - HEADLESS=true
+      - NODE_ENV=test
+      - DISPLAY=:99
+      - ELECTRON_DISABLE_SANDBOX=1
+      - ELECTRON_ENABLE_LOGGING=1
+      # Performance monitoring
+      - PERFORMANCE_MONITORING=true
+      - MEMORY_THRESHOLD_MB=25
+      - PROPERTY_LOAD_TIMEOUT_MS=2000
+      # Test-specific settings
+      - TEST_SUITE=modal
+      - TEST_TIMEOUT=30000
+      - WDIO_TIMEOUT=30000
+    volumes:
+      # Test results and artifacts
+      - ./test-results:/app/test-output
+      - ./screenshots:/app/screenshots
+      - ./wdio-logs:/app/wdio-logs
+      # Test data
+      - ./test-vault:/app/test-vault
+      # Shared memory for Chrome
+      - /dev/shm:/dev/shm
+    working_dir: /app
+    command: ['modal']
+    networks:
+      - e2e-network
+    healthcheck:
+      test: ['CMD', 'pgrep', 'Xvfb']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Performance monitoring service
+  performance-monitor:
+    image: node:20.18-alpine
+    container_name: exocortex-perf-monitor
+    environment:
+      - NODE_ENV=test
+    volumes:
+      - ./test-results:/app/test-results
+      - ./monitoring:/app/monitoring
+    working_dir: /app
+    command: >
+      sh -c "
+        # Install monitoring dependencies
+        npm install -g clinic autocannon
+        
+        # Wait for main test service to start
+        sleep 10
+        
+        # Monitor test execution
+        while [ ! -f /app/test-results/e2e-complete ]; do
+          # Log system metrics
+          echo \"$(date): Monitoring E2E test performance\" >> /app/test-results/performance.log
+          
+          # Check memory usage if metrics available
+          if [ -f /app/test-results/memory-usage.json ]; then
+            cat /app/test-results/memory-usage.json >> /app/test-results/performance.log
+          fi
+          
+          sleep 5
+        done
+        
+        echo 'Performance monitoring completed'
+      "
+    networks:
+      - e2e-network
+    depends_on:
+      - exocortex-e2e-modal
+
+  # Test data preparation service
+  test-data-prep:
+    image: node:20.18-alpine
+    container_name: exocortex-test-prep
+    volumes:
+      - ./test-vault:/app/test-vault
+      - ./test-data:/app/test-data
+    working_dir: /app
+    command: >
+      sh -c "
+        # Create comprehensive test vault structure
+        mkdir -p /app/test-vault/{classes,properties,ontologies,assets}
+        
+        # Create test classes
+        cat > /app/test-vault/classes/Person.md << 'EOF'
+        ---
+        exo__Instance_class: \"[[exo__Class]]\"
+        rdfs__label: \"Person\"
+        rdfs__comment: \"A person entity in the knowledge graph\"
+        ---
+        
+        # Person Class
+        
+        A person entity with name, age, and contact information.
+        EOF
+        
+        cat > /app/test-vault/classes/Organization.md << 'EOF'
+        ---
+        exo__Instance_class: \"[[exo__Class]]\"
+        rdfs__label: \"Organization\"
+        rdfs__comment: \"An organizational entity\"
+        ---
+        
+        # Organization Class
+        
+        An organizational entity with name, industry, and contact details.
+        EOF
+        
+        cat > /app/test-vault/classes/Employee.md << 'EOF'
+        ---
+        exo__Instance_class: \"[[exo__Class]]\"
+        rdfs__label: \"Employee\"
+        rdfs__subClassOf: \"[[Person]]\"
+        rdfs__comment: \"An employee, inheriting from Person\"
+        ---
+        
+        # Employee Class
+        
+        An employee class that inherits from Person.
+        EOF
+        
+        # Create properties for Person
+        cat > /app/test-vault/properties/person_name.md << 'EOF'
+        ---
+        exo__Instance_class: \"[[exo__Property]]\"
+        rdf__type: \"exo__DatatypeProperty\"
+        rdfs__label: \"Full Name\"
+        rdfs__comment: \"The full name of a person\"
+        exo__Property_domain: \"[[Person]]\"
+        rdfs__range: \"string\"
+        exo__Property_isRequired: true
+        ---
+        
+        # Person Name Property
+        EOF
+        
+        cat > /app/test-vault/properties/person_age.md << 'EOF'
+        ---
+        exo__Instance_class: \"[[exo__Property]]\"
+        rdf__type: \"exo__DatatypeProperty\"
+        rdfs__label: \"Age\"
+        rdfs__comment: \"The age of a person\"
+        exo__Property_domain: \"[[Person]]\"
+        rdfs__range: \"integer\"
+        exo__Property_isRequired: false
+        ---
+        
+        # Person Age Property
+        EOF
+        
+        cat > /app/test-vault/properties/person_email.md << 'EOF'
+        ---
+        exo__Instance_class: \"[[exo__Property]]\"
+        rdf__type: \"exo__DatatypeProperty\"
+        rdfs__label: \"Email Address\"
+        rdfs__comment: \"Primary email address\"
+        exo__Property_domain: \"[[Person]]\"
+        rdfs__range: \"string\"
+        exo__Property_isRequired: false
+        ---
+        
+        # Person Email Property
+        EOF
+        
+        # Create properties for Organization
+        cat > /app/test-vault/properties/org_name.md << 'EOF'
+        ---
+        exo__Instance_class: \"[[exo__Property]]\"
+        rdf__type: \"exo__DatatypeProperty\"
+        rdfs__label: \"Organization Name\"
+        rdfs__comment: \"The official name of the organization\"
+        exo__Property_domain: \"[[Organization]]\"
+        rdfs__range: \"string\"
+        exo__Property_isRequired: true
+        ---
+        
+        # Organization Name Property
+        EOF
+        
+        cat > /app/test-vault/properties/org_industry.md << 'EOF'
+        ---
+        exo__Instance_class: \"[[exo__Property]]\"
+        rdf__type: \"exo__DatatypeProperty\"
+        rdfs__label: \"Industry\"
+        rdfs__comment: \"The industry sector\"
+        exo__Property_domain: \"[[Organization]]\"
+        rdfs__range: \"string\"
+        exo__Property_isRequired: false
+        ---
+        
+        # Organization Industry Property
+        EOF
+        
+        # Create Employee-specific properties
+        cat > /app/test-vault/properties/employee_id.md << 'EOF'
+        ---
+        exo__Instance_class: \"[[exo__Property]]\"
+        rdf__type: \"exo__DatatypeProperty\"
+        rdfs__label: \"Employee ID\"
+        rdfs__comment: \"Unique employee identifier\"
+        exo__Property_domain: \"[[Employee]]\"
+        rdfs__range: \"string\"
+        exo__Property_isRequired: true
+        ---
+        
+        # Employee ID Property
+        EOF
+        
+        # Create performance test class with many properties
+        cat > /app/test-vault/classes/RichClass.md << 'EOF'
+        ---
+        exo__Instance_class: \"[[exo__Class]]\"
+        rdfs__label: \"Rich Class\"
+        rdfs__comment: \"A class with many properties for performance testing\"
+        ---
+        
+        # Rich Class
+        
+        A class with many properties for performance testing.
+        EOF
+        
+        # Create 50 properties for performance testing
+        for i in $(seq 1 50); do
+          cat > /app/test-vault/properties/rich_prop_$i.md << EOF
+        ---
+        exo__Instance_class: \"[[exo__Property]]\"
+        rdf__type: \"exo__DatatypeProperty\"
+        rdfs__label: \"Property $i\"
+        rdfs__comment: \"Performance test property $i\"
+        exo__Property_domain: \"[[RichClass]]\"
+        rdfs__range: \"string\"
+        exo__Property_isRequired: false
+        ---
+        
+        # Performance Test Property $i
+        EOF
+        done
+        
+        # Create EmptyClass for edge case testing
+        cat > /app/test-vault/classes/EmptyClass.md << 'EOF'
+        ---
+        exo__Instance_class: \"[[exo__Class]]\"
+        rdfs__label: \"Empty Class\"
+        rdfs__comment: \"A class with no properties\"
+        ---
+        
+        # Empty Class
+        
+        A class with no properties for edge case testing.
+        EOF
+        
+        # Create basic ontology
+        cat > /app/test-vault/!exo.md << 'EOF'
+        ---
+        exo__Ontology_prefix: \"exo\"
+        rdfs__label: \"Exocortex Core Ontology\"
+        rdfs__comment: \"Core ontology for Exocortex knowledge management\"
+        ---
+        
+        # Exocortex Core Ontology
+        
+        Core ontological definitions for the Exocortex system.
+        EOF
+        
+        echo 'Test data preparation completed successfully'
+        ls -la /app/test-vault/
+        find /app/test-vault -name '*.md' | wc -l
+      "
+    networks:
+      - e2e-network
+
+  # Results aggregation service
+  results-aggregator:
+    image: node:20.18-alpine
+    container_name: exocortex-results
+    volumes:
+      - ./test-results:/app/test-results
+      - ./test-reports:/app/test-reports
+    working_dir: /app
+    command: >
+      sh -c "
+        # Wait for tests to complete
+        while [ ! -f /app/test-results/e2e-complete ]; do
+          sleep 5
+        done
+        
+        # Aggregate results
+        echo 'Aggregating E2E test results...'
+        
+        # Create comprehensive report
+        cat > /app/test-reports/modal-e2e-summary.md << 'EOF'
+        # CreateAssetModal E2E Test Results
+        
+        ## Test Execution Summary
+        EOF
+        
+        # Add timestamp
+        echo \"\nExecution Time: $(date)\" >> /app/test-reports/modal-e2e-summary.md
+        
+        # Process JSON results if available
+        if [ -f /app/test-results/wdio-0-0-json-reporter.json ]; then
+          node -e \"
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('/app/test-results/wdio-0-0-json-reporter.json', 'utf8'));
+            console.log('\\n## Test Statistics');
+            console.log('- Total Tests:', report.stats.tests);
+            console.log('- Passed:', report.stats.passes);
+            console.log('- Failed:', report.stats.failures);
+            console.log('- Duration:', Math.round((report.stats.end - report.stats.start) / 1000), 'seconds');
+          \" >> /app/test-reports/modal-e2e-summary.md
+        fi
+        
+        # Add performance metrics if available
+        if [ -f /app/test-results/performance.log ]; then
+          echo '\n## Performance Metrics' >> /app/test-reports/modal-e2e-summary.md
+          tail -10 /app/test-results/performance.log >> /app/test-reports/modal-e2e-summary.md
+        fi
+        
+        echo 'Results aggregation completed'
+      "
+    networks:
+      - e2e-network
+    depends_on:
+      - exocortex-e2e-modal
+      - performance-monitor
+
+networks:
+  e2e-network:
+    driver: bridge
+    name: exocortex-e2e
+
+volumes:
+  test-results:
+    driver: local
+  test-vault:
+    driver: local
+  screenshots:
+    driver: local
+  wdio-logs:
+    driver: local

@@ -278,7 +278,7 @@ export class ExoFocus extends Entity<ExoFocusProps> {
     return filter.operator === "excludes";
   }
 
-  private evaluateRelationFilter(filter: FocusFilter, asset: any): boolean {
+  private evaluateRelationFilter(_filter: FocusFilter, _asset: any): boolean {
     // This would need access to the graph to evaluate relations
     // For now, return true
     return true;

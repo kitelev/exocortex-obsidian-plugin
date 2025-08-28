@@ -44,10 +44,7 @@ export class BlockRendererFactory implements IBlockRendererFactory {
       "dynamic-backlinks",
       new DynamicBacklinksBlockRenderer(app),
     );
-    this.renderers.set(
-      "Buttons",
-      new ButtonsBlockRenderer(app),
-    );
+    this.renderers.set("Buttons", new ButtonsBlockRenderer(app));
   }
 
   createRenderer(blockType: BlockType): Result<IBlockRenderer> {

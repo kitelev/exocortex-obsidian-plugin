@@ -3,9 +3,6 @@ import {
   PropertyValue,
   PropertyValueType,
 } from "../value-objects/PropertyValue";
-import { ClassName } from "../value-objects/ClassName";
-import { OntologyPrefix } from "../value-objects/OntologyPrefix";
-import { Result } from "../core/Result";
 
 /**
  * Validation rule interface

@@ -99,7 +99,6 @@ export class DynamicBacklinksService {
     const strValue = value.toString();
     const targetFileName =
       targetFile.basename || targetFile.name?.replace(/\.[^/.]+$/, "") || "";
-    const targetPath = targetFile.path || targetFile.name || "";
 
     // Get target file's UUID for UUID-based matching
     const targetMetadata = await this.vaultAdapter.getFileMetadata(targetFile);

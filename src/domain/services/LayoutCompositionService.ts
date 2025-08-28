@@ -638,7 +638,7 @@ export class LayoutCompositionService {
     this.optimizationRules.push({
       analyze: (
         layout: LayoutConfiguration,
-        context: LayoutCompositionContext,
+        _context: LayoutCompositionContext,
       ): LayoutOptimization[] => {
         const optimizations: LayoutOptimization[] = [];
         const blocks = layout.getBlocks();
@@ -676,7 +676,7 @@ export class LayoutCompositionService {
     this.optimizationRules.push({
       analyze: (
         layout: LayoutConfiguration,
-        context: LayoutCompositionContext,
+        _context: LayoutCompositionContext,
       ): LayoutOptimization[] => {
         const optimizations: LayoutOptimization[] = [];
         const blocks = layout.getBlocks();

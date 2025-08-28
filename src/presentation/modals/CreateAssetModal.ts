@@ -4,6 +4,7 @@ import { DIContainer } from "../../infrastructure/container/DIContainer";
 import { IOntologyRepository } from "../../domain/repositories/IOntologyRepository";
 import { IClassViewRepository } from "../../domain/repositories/IClassViewRepository";
 import { PropertyCacheService } from "../../domain/services/PropertyCacheService";
+import { SemanticPropertyDiscoveryService } from "../../domain/services/SemanticPropertyDiscoveryService";
 import { CircuitBreakerService } from "../../infrastructure/resilience/CircuitBreakerService";
 import { Result } from "../../domain/core/Result";
 import { CreateAssetResponse } from "../../application/use-cases/CreateAssetUseCase";
@@ -25,6 +26,7 @@ export class CreateAssetModal extends Modal {
   private ontologyRepository: IOntologyRepository;
   private classViewRepository: IClassViewRepository;
   private propertyCache: PropertyCacheService;
+  private propertyDiscoveryService: SemanticPropertyDiscoveryService;
   private circuitBreaker: CircuitBreakerService;
 
   constructor(app: App) {
@@ -40,6 +42,7 @@ export class CreateAssetModal extends Modal {
     this.propertyCache = this.container.resolve<PropertyCacheService>(
       "PropertyCacheService",
     );
+    this.propertyDiscoveryService = new SemanticPropertyDiscoveryService(app);
     this.circuitBreaker = this.container.resolve<CircuitBreakerService>(
       "CircuitBreakerService",
     );
@@ -47,6 +50,7 @@ export class CreateAssetModal extends Modal {
 
   async onOpen() {
     const { contentEl } = this;
+    contentEl.setAttribute("data-test", "create-asset-modal");
     contentEl.createEl("h2", { text: "Create ExoAsset" });
 
     await this.setupTitleField(contentEl);
@@ -57,15 +61,16 @@ export class CreateAssetModal extends Modal {
   }
 
   private async setupTitleField(containerEl: HTMLElement): Promise<void> {
-    new Setting(containerEl)
+    const setting = new Setting(containerEl)
       .setName("Title")
       .setDesc("Asset title")
-      .addText((text) =>
+      .addText((text) => {
+        text.inputEl.setAttribute("data-test", "asset-title-input");
         text
           .setPlaceholder("Enter asset title")
           .setValue(this.assetTitle)
-          .onChange((value) => (this.assetTitle = value)),
-      );
+          .onChange((value) => (this.assetTitle = value));
+      });
   }
 
   private async setupClassField(containerEl: HTMLElement): Promise<void> {
@@ -98,10 +103,12 @@ export class CreateAssetModal extends Modal {
       );
     }
 
-    new Setting(containerEl)
+    const setting = new Setting(containerEl)
       .setName("Class")
       .setDesc("Select the type of asset")
       .addDropdown((dropdown) => {
+        dropdown.selectEl.setAttribute("data-test", "asset-class-dropdown");
+
         for (const classInfo of classes) {
           dropdown.addOption(classInfo.className, classInfo.displayName);
         }
@@ -186,6 +193,7 @@ export class CreateAssetModal extends Modal {
     this.propertiesContainer = containerEl.createDiv({
       cls: "exocortex-properties-container",
     });
+    this.propertiesContainer.setAttribute("data-test", "properties-container");
 
     await this.updatePropertiesForClass(this.assetClass);
   }
@@ -194,110 +202,148 @@ export class CreateAssetModal extends Modal {
     if (!this.propertiesContainer) return;
 
     console.log(`Updating properties for class: ${className}`);
+    const startTime = Date.now();
 
-    // Clear the container - try Obsidian method first, fallback to DOM
-    if (
-      "empty" in this.propertiesContainer &&
-      typeof (this.propertiesContainer as any).empty === "function"
-    ) {
-      (this.propertiesContainer as any).empty();
-    } else {
-      // Fallback to standard DOM method - use innerHTML for complete cleanup
-      this.propertiesContainer.innerHTML = "";
-    }
-    this.propertyValues.clear();
+    try {
+      // Clear the container - try Obsidian method first, fallback to DOM
+      if (
+        "empty" in this.propertiesContainer &&
+        typeof (this.propertiesContainer as any).empty === "function"
+      ) {
+        (this.propertiesContainer as any).empty();
+      } else {
+        // Fallback to standard DOM method - use innerHTML for complete cleanup
+        this.propertiesContainer.innerHTML = "";
+      }
+      this.propertyValues.clear();
 
-    // Get properties for this class
-    this.properties = [];
-    const files = this.app.vault.getMarkdownFiles();
+      // Use SemanticPropertyDiscoveryService for proper property resolution
+      const propertyResult =
+        await this.propertyDiscoveryService.discoverPropertiesForClass(
+          className,
+        );
 
-    console.log(`Scanning ${files.length} files for properties...`);
+      if (!propertyResult.isSuccess) {
+        console.error(
+          `Property discovery failed: ${propertyResult.getError()}`,
+        );
 
-    // Find all property definitions related to this class
-    for (const file of files) {
-      const cache = this.app.metadataCache.getFileCache(file);
-      if (cache?.frontmatter) {
-        const instanceClass = cache.frontmatter["exo__Instance_class"];
-        if (
-          instanceClass === "[[exo__Property]]" ||
-          instanceClass === "exo__Property"
-        ) {
-          const domain = cache.frontmatter["rdfs__domain"];
-          // Check if this property belongs to the current class
-          if (
-            domain === `[[${className}]]` ||
-            domain === className ||
-            (Array.isArray(domain) &&
-              (domain.includes(className) ||
-                domain.includes(`[[${className}]]`)))
-          ) {
-            const propertyName = file.basename;
-            const label = cache.frontmatter["rdfs__label"] || propertyName;
-            const description = cache.frontmatter["rdfs__comment"] || "";
-            const range = cache.frontmatter["rdfs__range"] || "string";
-            const isRequired =
-              cache.frontmatter["exo__Property_isRequired"] || false;
-            const options = cache.frontmatter["exo__Property_options"] || null;
+        // Display error message to user
+        const errorEl = this.propertiesContainer.createEl("div", {
+          cls: "exocortex-property-error",
+        });
+        errorEl.createEl("p", {
+          text: "Failed to load properties for this class",
+          cls: "exocortex-error-message",
+        });
+        errorEl.createEl("p", {
+          text: propertyResult.getError(),
+          cls: "exocortex-error-details",
+        });
 
-            console.log(
-              `Found property ${propertyName} for class ${className}`,
-            );
+        // Still allow basic asset creation
+        this.addFallbackProperties();
+        return;
+      }
 
-            // Determine property type based on range and options
-            let type = this.mapRangeToType(range);
-            if (options && Array.isArray(options)) {
-              type = "enum";
-            } else if (range === "select" && options) {
-              type = "enum";
-            }
+      const discoveredProperties = propertyResult.getValue() || [];
+      console.log(
+        `Discovered ${discoveredProperties.length} properties for class ${className}`,
+      );
 
-            this.properties.push({
-              name: propertyName,
-              label: label,
-              description: description,
-              type: type,
-              isRequired: isRequired,
-              range: range,
-              options: options,
-            });
-          }
+      // Convert semantic property metadata to modal format
+      this.properties = discoveredProperties.map((prop) => ({
+        name: prop.name,
+        label: prop.label,
+        description: prop.description || "",
+        type: this.mapSemanticPropertyTypeToUIType(prop),
+        isRequired: prop.isRequired,
+        range: prop.range,
+        options: prop.options,
+        semanticType: prop.type, // Keep original semantic type for reference
+      }));
+
+      if (this.properties.length === 0) {
+        this.propertiesContainer.createEl("p", {
+          text: "No specific properties for this class",
+          cls: "exocortex-no-properties",
+        });
+      } else {
+        // Create fields for all properties
+        for (const prop of this.properties) {
+          this.createPropertyField(prop);
         }
       }
-    }
 
-    console.log(
-      `Found ${this.properties.length} properties for class ${className}`,
-    );
+      const duration = Date.now() - startTime;
+      console.log(`Property update completed in ${duration}ms`);
 
-    // Add some default properties for common classes
-    if (this.properties.length === 0 && className === "exo__Asset") {
-      this.properties.push(
-        {
-          name: "description",
-          label: "Description",
-          description: "A brief description of the asset",
-          type: "text",
-          isRequired: false,
-        },
-        {
-          name: "tags",
-          label: "Tags",
-          description: "Tags for categorization",
-          type: "array",
-          isRequired: false,
-        },
-      );
-    }
+      // Performance monitoring for testing
+      if (duration > 200) {
+        console.warn(
+          `Property loading took ${duration}ms, exceeding 200ms threshold`,
+        );
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error(`Error updating properties for class ${className}:`, error);
 
-    if (this.properties.length === 0) {
-      this.propertiesContainer.createEl("p", {
-        text: "No specific properties for this class",
-        cls: "exocortex-no-properties",
+      // Display user-friendly error and provide fallback
+      const errorEl = this.propertiesContainer.createEl("div", {
+        cls: "exocortex-property-error",
       });
-      return;
+      errorEl.createEl("p", {
+        text: "Unable to load class properties",
+        cls: "exocortex-error-message",
+      });
+      errorEl.createEl("p", {
+        text: `Error: ${errorMessage}`,
+        cls: "exocortex-error-details",
+      });
+
+      this.addFallbackProperties();
+    }
+  }
+
+  /**
+   * Map semantic property type to UI input type
+   */
+  private mapSemanticPropertyTypeToUIType(prop: any): string {
+    // Handle ObjectProperty vs DatatypeProperty
+    if (prop.type === "ObjectProperty") {
+      return "object"; // Will create dropdown with instances
     }
 
-    // Create fields for all properties (including defaults)
+    // Handle DatatypeProperty with range-based mapping
+    if (prop.options && Array.isArray(prop.options)) {
+      return "enum";
+    }
+
+    return this.mapRangeToType(prop.range);
+  }
+
+  /**
+   * Add fallback properties when property discovery fails
+   */
+  private addFallbackProperties(): void {
+    this.properties = [
+      {
+        name: "description",
+        label: "Description",
+        description: "A brief description of the asset",
+        type: "text",
+        isRequired: false,
+      },
+      {
+        name: "tags",
+        label: "Tags",
+        description: "Tags for categorization",
+        type: "array",
+        isRequired: false,
+      },
+    ];
+
     for (const prop of this.properties) {
       this.createPropertyField(prop);
     }
@@ -326,6 +372,12 @@ export class CreateAssetModal extends Modal {
       .setName(property.label + (property.isRequired ? " *" : ""))
       .setDesc(property.description);
 
+    // Add test attribute for E2E testing
+    const settingEl = setting.settingEl;
+    settingEl.setAttribute("data-test", `property-${property.name}`);
+    settingEl.setAttribute("data-property-type", property.type);
+    settingEl.setAttribute("data-required", property.isRequired.toString());
+
     // Create appropriate input based on property type
     switch (property.type) {
       case "enum":
@@ -346,9 +398,51 @@ export class CreateAssetModal extends Modal {
       case "array":
         this.createArrayField(setting, property);
         break;
+      case "object":
+        this.createObjectPropertyField(setting, property);
+        break;
       default:
         this.createTextField(setting, property);
     }
+  }
+
+  /**
+   * Create ObjectProperty field with instance dropdown
+   */
+  private async createObjectPropertyField(
+    setting: Setting,
+    property: any,
+  ): Promise<void> {
+    // Extract class name from range for ObjectProperty
+    const rangeClass = property.range.replace(/^\[\[|\]\]$/g, "");
+
+    const instancesResult =
+      await this.propertyDiscoveryService.getInstancesOfClass(rangeClass);
+
+    if (!instancesResult.isSuccess) {
+      console.warn(
+        `Failed to get instances for ${rangeClass}: ${instancesResult.getError()}`,
+      );
+      // Fallback to text input
+      this.createTextField(setting, property);
+      return;
+    }
+
+    const instances = instancesResult.getValue() || [];
+
+    setting.addDropdown((dropdown) => {
+      dropdown.addOption("", "-- Select --");
+      for (const instance of instances) {
+        dropdown.addOption(instance.value, instance.label);
+      }
+      dropdown.onChange((value) => {
+        if (value) {
+          this.propertyValues.set(property.name, value);
+        } else {
+          this.propertyValues.delete(property.name);
+        }
+      });
+    });
   }
 
   private createEnumField(setting: Setting, property: any): void {
@@ -456,14 +550,15 @@ export class CreateAssetModal extends Modal {
   }
 
   private setupActionButtons(containerEl: HTMLElement): void {
-    new Setting(containerEl).addButton((btn) =>
+    new Setting(containerEl).addButton((btn) => {
+      btn.buttonEl.setAttribute("data-test", "create-asset-button");
       btn
         .setButtonText("Create")
         .setCta()
         .onClick(async () => {
           await this.createAsset();
-        }),
-    );
+        });
+    });
   }
 
   private async createAsset(): Promise<void> {

@@ -29,13 +29,16 @@ export class ButtonsViewRenderer implements IViewRenderer {
 
       if (!file) {
         // Show a message if no file context is available
-        el.createDiv({ text: "Buttons require a file context to work properly.", cls: "exocortex-warning" });
+        el.createDiv({
+          text: "Buttons require a file context to work properly.",
+          cls: "exocortex-warning",
+        });
         return;
       }
 
       // Check if content contains button references or YAML config
       const isButtonReferences = this.isButtonReferencesFormat(content);
-      
+
       let config: any;
       if (isButtonReferences) {
         // Parse button references and load their configs
@@ -68,13 +71,13 @@ export class ButtonsViewRenderer implements IViewRenderer {
    * Check if content is in button references format
    */
   private isButtonReferencesFormat(content: string): boolean {
-    const lines = content.trim().split('\n');
+    const lines = content.trim().split("\n");
     // Check if first line is just "Buttons" or similar without YAML syntax
-    if (lines[0]?.trim().toLowerCase() === 'buttons') {
+    if (lines[0]?.trim().toLowerCase() === "buttons") {
       // Check if subsequent lines contain wiki link references
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
-        if (line.startsWith('- [[') && line.endsWith(']]')) {
+        if (line.startsWith("- [[") && line.endsWith("]]")) {
           return true;
         }
       }
@@ -86,12 +89,12 @@ export class ButtonsViewRenderer implements IViewRenderer {
    * Load button configurations from wiki link references
    */
   private async loadButtonReferences(content: string): Promise<any> {
-    const lines = content.trim().split('\n');
+    const lines = content.trim().split("\n");
     const buttons: any[] = [];
 
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
-      
+
       // Extract wiki link references
       const linkMatch = line.match(/^-\s*\[\[([^\]]+)\]\]$/);
       if (linkMatch) {
@@ -109,12 +112,14 @@ export class ButtonsViewRenderer implements IViewRenderer {
   /**
    * Load a single button configuration from a file reference
    */
-  private async loadButtonFromReference(reference: string): Promise<any | null> {
+  private async loadButtonFromReference(
+    reference: string,
+  ): Promise<any | null> {
     try {
       // Try to find the file
       const filePath = `${reference}.md`;
       let file = this.app.vault.getAbstractFileByPath(filePath) as TFile;
-      
+
       // If not found in root, search in known directories
       if (!file) {
         const searchPaths = [
@@ -122,7 +127,7 @@ export class ButtonsViewRenderer implements IViewRenderer {
           `02 Ontology/1 Exo/${reference}.md`,
           `ui/${reference}.md`,
         ];
-        
+
         for (const path of searchPaths) {
           file = this.app.vault.getAbstractFileByPath(path) as TFile;
           if (file) break;
@@ -137,7 +142,7 @@ export class ButtonsViewRenderer implements IViewRenderer {
       // Get the file's frontmatter
       const cache = this.app.metadataCache.getFileCache(file);
       const fm = cache?.frontmatter;
-      
+
       if (!fm) {
         this.logger.warn(`No frontmatter found for button: ${reference}`);
         return null;
@@ -145,14 +150,16 @@ export class ButtonsViewRenderer implements IViewRenderer {
 
       // Convert frontmatter to button config
       return {
-        label: fm['ui__Button_label'] || fm['exo__Asset_label'] || reference,
-        commandType: this.mapCommandToType(fm['ui__Button_command']),
-        tooltip: fm['ui__Button_tooltip'] || '',
-        style: fm['ui__Button_style'] || 'default',
-        commandArgs: fm['ui__Button_commandArgs'] || {},
+        label: fm["ui__Button_label"] || fm["exo__Asset_label"] || reference,
+        commandType: this.mapCommandToType(fm["ui__Button_command"]),
+        tooltip: fm["ui__Button_tooltip"] || "",
+        style: fm["ui__Button_style"] || "default",
+        commandArgs: fm["ui__Button_commandArgs"] || {},
       };
     } catch (error) {
-      this.logger.error(`Failed to load button reference: ${reference}`, { error });
+      this.logger.error(`Failed to load button reference: ${reference}`, {
+        error,
+      });
       return null;
     }
   }
@@ -162,24 +169,24 @@ export class ButtonsViewRenderer implements IViewRenderer {
    */
   private mapCommandToType(command: string): string {
     const commandMap: Record<string, string> = {
-      'exocortex:create-asset': 'CREATE_ASSET',
-      'exocortex:create-child-task': 'CREATE_CHILD_TASK',
-      'exocortex:create-child-area': 'CREATE_CHILD_AREA',
-      'exocortex:open-asset': 'OPEN_ASSET',
-      'exocortex:delete-asset': 'DELETE_ASSET',
+      "exocortex:create-asset": "CREATE_ASSET",
+      "exocortex:create-child-task": "CREATE_CHILD_TASK",
+      "exocortex:create-child-area": "CREATE_CHILD_AREA",
+      "exocortex:open-asset": "OPEN_ASSET",
+      "exocortex:delete-asset": "DELETE_ASSET",
     };
-    
-    return commandMap[command] || 'CUSTOM';
+
+    return commandMap[command] || "CUSTOM";
   }
 
   /**
    * Parse the YAML-like configuration for buttons
    */
   private parseButtonsConfig(content: string): any {
-    const lines = content.trim().split('\n');
-    
+    const lines = content.trim().split("\n");
+
     let config: any = {};
-    let currentSection = '';
+    let currentSection = "";
     let inButtonsArray = false;
     let currentButton: any = {};
     let buttons: any[] = [];
@@ -187,28 +194,28 @@ export class ButtonsViewRenderer implements IViewRenderer {
     for (let i = 0; i < lines.length; i++) {
       const originalLine = lines[i];
       const line = originalLine.trim();
-      
+
       // Skip empty lines and comments
-      if (!line || line.startsWith('#')) continue;
+      if (!line || line.startsWith("#")) continue;
 
       // Skip the view type line
-      if (line.startsWith('view:')) continue;
+      if (line.startsWith("view:")) continue;
 
       // Handle config section
-      if (line === 'config:') {
-        currentSection = 'config';
+      if (line === "config:") {
+        currentSection = "config";
         continue;
       }
 
       // Handle buttons array
-      if (line === 'buttons:') {
+      if (line === "buttons:") {
         inButtonsArray = true;
         buttons = [];
         continue;
       }
-      
+
       // Handle empty buttons array syntax: "buttons: []"
-      if (line.startsWith('buttons:')) {
+      if (line.startsWith("buttons:")) {
         const match = line.match(/^buttons:\s*\[\s*\]$/);
         if (match) {
           config.buttons = [];
@@ -221,13 +228,13 @@ export class ButtonsViewRenderer implements IViewRenderer {
       }
 
       // Handle button items
-      if (inButtonsArray && line.startsWith('- ')) {
+      if (inButtonsArray && line.startsWith("- ")) {
         // Save previous button if exists
         if (Object.keys(currentButton).length > 0) {
           buttons.push(currentButton);
         }
         currentButton = {};
-        
+
         // Parse the first property if it's on the same line as the dash
         const propertyMatch = line.match(/^-\s+(\w+):\s*(.+)$/);
         if (propertyMatch) {
@@ -240,7 +247,11 @@ export class ButtonsViewRenderer implements IViewRenderer {
 
       // Handle continuation of button properties
       // Check if the original line has indentation and we're in a buttons array
-      if (inButtonsArray && originalLine.match(/^\s+\w+:/) && !line.startsWith('- ')) {
+      if (
+        inButtonsArray &&
+        originalLine.match(/^\s+\w+:/) &&
+        !line.startsWith("- ")
+      ) {
         const propertyMatch = line.match(/^(\w+):\s*(.+)$/);
         if (propertyMatch) {
           const [, key, value] = propertyMatch;
@@ -250,7 +261,7 @@ export class ButtonsViewRenderer implements IViewRenderer {
       }
 
       // Handle other config properties
-      if (currentSection === 'config' && !inButtonsArray) {
+      if (currentSection === "config" && !inButtonsArray) {
         const propertyMatch = line.match(/^(\w+):\s*(.+)$/);
         if (propertyMatch) {
           const [, key, value] = propertyMatch;
@@ -268,7 +279,6 @@ export class ButtonsViewRenderer implements IViewRenderer {
     if (inButtonsArray) {
       config.buttons = buttons;
     }
-    
 
     return config;
   }
@@ -279,14 +289,16 @@ export class ButtonsViewRenderer implements IViewRenderer {
   private parseValue(value: string): any {
     // Remove quotes if present
     const trimmed = value.trim();
-    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
-        (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+    if (
+      (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+      (trimmed.startsWith("'") && trimmed.endsWith("'"))
+    ) {
       return trimmed.slice(1, -1);
     }
 
     // Try to parse as boolean
-    if (trimmed === 'true') return true;
-    if (trimmed === 'false') return false;
+    if (trimmed === "true") return true;
+    if (trimmed === "false") return false;
 
     // Try to parse as number
     if (/^\d+$/.test(trimmed)) {
@@ -302,7 +314,7 @@ export class ButtonsViewRenderer implements IViewRenderer {
    */
   private getCurrentFile(ctx: MarkdownPostProcessorContext): TFile | null {
     if (!ctx.sourcePath) return null;
-    
+
     return this.app.vault.getAbstractFileByPath(ctx.sourcePath) as TFile;
   }
 

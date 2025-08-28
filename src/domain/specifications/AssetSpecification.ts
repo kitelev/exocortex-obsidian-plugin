@@ -1,10 +1,7 @@
 import { Asset } from "../entities/Asset";
 import { ClassName } from "../value-objects/ClassName";
 import { OntologyPrefix } from "../value-objects/OntologyPrefix";
-import {
-  PropertyValue,
-  PropertyValueType,
-} from "../value-objects/PropertyValue";
+import { PropertyValueType } from "../value-objects/PropertyValue";
 
 /**
  * Specification pattern for asset queries

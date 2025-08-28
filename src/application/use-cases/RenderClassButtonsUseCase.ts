@@ -3,8 +3,6 @@ import { Result } from "../../domain/core/Result";
 import { IClassViewRepository } from "../../domain/repositories/IClassViewRepository";
 import { IButtonRepository } from "../../domain/repositories/IButtonRepository";
 import { ClassName } from "../../domain/value-objects/ClassName";
-import { UIButton } from "../../domain/entities/UIButton";
-import { ButtonCommand } from "../../domain/entities/ButtonCommand";
 
 /**
  * Use Case for rendering buttons in an asset view

@@ -55,11 +55,11 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
       console.log(
         `DynamicLayout: Looking for ClassLayout for class: ${className}`,
       );
-      
+
       // Special case: If viewing a class file itself (exo__Instance_class === "exo__Class"),
       // use the current file's metadata as the class metadata
       let classMetadata = metadata;
-      
+
       // Only fetch the class file if we're not viewing the class definition itself
       if (className !== "exo__Class") {
         // Need to load the class file to get its metadata
@@ -70,7 +70,7 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
           classMetadata = {};
         }
       }
-      
+
       const layoutConfig = await this.findLayoutConfiguration(
         className,
         classMetadata,
@@ -371,19 +371,19 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
     // First try direct path
     let file = this.app.vault.getAbstractFileByPath(`${className}.md`) as TFile;
     if (file) return file;
-    
+
     // Try common directories
     const searchPaths = [
       `02 Ontology/1 Exo/exo/Class/${className}.md`,
       `02 Ontology/2 Custom/ems/${className}.md`,
       `02 Ontology/${className}.md`,
     ];
-    
+
     for (const path of searchPaths) {
       file = this.app.vault.getAbstractFileByPath(path) as TFile;
       if (file) return file;
     }
-    
+
     // Fallback to search
     const files = this.app.vault.getMarkdownFiles();
     for (const f of files) {
@@ -394,7 +394,7 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
         }
       }
     }
-    
+
     return null;
   }
 

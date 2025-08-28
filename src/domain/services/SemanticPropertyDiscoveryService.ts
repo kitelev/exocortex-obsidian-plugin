@@ -1,5 +1,6 @@
 import { App, TFile } from "obsidian";
 import { Result } from "../core/Result";
+import { globalPropertyPerformanceMonitor } from "./PropertyDiscoveryPerformanceMonitor";
 
 /**
  * Property metadata interface following semantic web standards
@@ -25,39 +26,65 @@ export class SemanticPropertyDiscoveryService {
 
   /**
    * Discover all properties applicable to a class including inherited from superclasses
-   * Performance optimized with early returns and efficient filtering
+   * Performance optimized with monitoring, caching, and efficient filtering
    */
   async discoverPropertiesForClass(
     className: string,
   ): Promise<Result<PropertyMetadata[]>> {
-    const startTime = Date.now();
+    // Start performance monitoring
+    const files = this.app.vault.getMarkdownFiles();
+    const operationId = globalPropertyPerformanceMonitor.startOperation(
+      className,
+      files.length,
+    );
+    const errors: string[] = [];
+
     try {
+      // Check cache first for better performance
+      const cacheKey = `properties_${className}`;
+      const cached = this.getFromCache<PropertyMetadata[]>(cacheKey);
+      if (cached) {
+        globalPropertyPerformanceMonitor.completeOperation(
+          operationId,
+          cached.length,
+          true,
+        );
+        return Result.ok(cached);
+      }
+
       // Get all classes in hierarchy (including superclasses)
       const classHierarchy = await this.getClassHierarchy(className);
       const properties: PropertyMetadata[] = [];
       const seen = new Set<string>();
 
-      // Scan all property files in vault
-      const files = this.app.vault.getMarkdownFiles();
+      // Performance optimization: batch process files
+      const propertyFiles = this.filterPropertyFiles(files);
 
-      for (const file of files) {
-        const cache = this.app.metadataCache.getFileCache(file);
-        if (!cache?.frontmatter) continue;
+      for (const file of propertyFiles) {
+        try {
+          const cache = this.app.metadataCache.getFileCache(file);
+          if (!cache?.frontmatter) continue;
 
-        // Check if this is a property definition
-        if (!this.isPropertyDefinition(cache.frontmatter)) continue;
+          // Check if property domain matches any class in hierarchy
+          const domain = this.extractDomain(cache.frontmatter);
+          if (!this.domainMatchesClassHierarchy(domain, classHierarchy))
+            continue;
 
-        // Check if property domain matches any class in hierarchy
-        const domain = this.extractDomain(cache.frontmatter);
-        if (!this.domainMatchesClassHierarchy(domain, classHierarchy)) continue;
+          const propertyName = file.basename;
+          if (seen.has(propertyName)) continue;
+          seen.add(propertyName);
 
-        const propertyName = file.basename;
-        if (seen.has(propertyName)) continue;
-        seen.add(propertyName);
-
-        // Extract property metadata
-        const metadata = this.extractPropertyMetadata(file, cache.frontmatter);
-        properties.push(metadata);
+          // Extract property metadata
+          const metadata = this.extractPropertyMetadata(
+            file,
+            cache.frontmatter,
+          );
+          properties.push(metadata);
+        } catch (fileError) {
+          const errorMsg = `Error processing property file ${file.basename}: ${fileError instanceof Error ? fileError.message : String(fileError)}`;
+          errors.push(errorMsg);
+          console.warn(`[PropertyDiscovery] ${errorMsg}`);
+        }
       }
 
       // Add core properties that every asset should have
@@ -71,17 +98,48 @@ export class SemanticPropertyDiscoveryService {
         return a.label.localeCompare(b.label);
       });
 
-      const duration = Date.now() - startTime;
-      console.log(
-        `Property discovery completed in ${duration}ms. Found ${properties.length} properties.`,
+      // Cache the result for future use
+      this.setCache(cacheKey, properties);
+
+      // Complete performance monitoring
+      globalPropertyPerformanceMonitor.completeOperation(
+        operationId,
+        properties.length,
+        false,
+        errors,
       );
 
       return Result.ok(properties);
     } catch (error) {
-      return Result.fail(
-        `Failed to discover properties: ${error instanceof Error ? error.message : String(error)}`,
+      const errorMessage = `Failed to discover properties: ${error instanceof Error ? error.message : String(error)}`;
+      errors.push(errorMessage);
+
+      // Complete monitoring with error
+      globalPropertyPerformanceMonitor.completeOperation(
+        operationId,
+        0,
+        false,
+        errors,
       );
+
+      return Result.fail(errorMessage);
     }
+  }
+
+  /**
+   * Filter files to only property definitions for performance optimization
+   */
+  private filterPropertyFiles(files: TFile[]): TFile[] {
+    const propertyFiles: TFile[] = [];
+
+    for (const file of files) {
+      const cache = this.app.metadataCache.getFileCache(file);
+      if (cache?.frontmatter && this.isPropertyDefinition(cache.frontmatter)) {
+        propertyFiles.push(file);
+      }
+    }
+
+    return propertyFiles;
   }
 
   /**
@@ -115,14 +173,36 @@ export class SemanticPropertyDiscoveryService {
 
   /**
    * Find instances of a class for ObjectProperty dropdowns
+   * Performance optimized with caching and monitoring
    */
   async getInstancesOfClass(
     className: string,
   ): Promise<Result<Array<{ label: string; value: string; file: TFile }>>> {
+    // Start performance monitoring
+    const files = this.app.vault.getMarkdownFiles();
+    const operationId = globalPropertyPerformanceMonitor.startOperation(
+      `instances_${className}`,
+      files.length,
+    );
+
     try {
+      // Check cache first
+      const cacheKey = `instances_${className}`;
+      const cached =
+        this.getFromCache<Array<{ label: string; value: string; file: TFile }>>(
+          cacheKey,
+        );
+      if (cached) {
+        globalPropertyPerformanceMonitor.completeOperation(
+          operationId,
+          cached.length,
+          true,
+        );
+        return Result.ok(cached);
+      }
+
       const instances: Array<{ label: string; value: string; file: TFile }> =
         [];
-      const files = this.app.vault.getMarkdownFiles();
 
       for (const file of files) {
         const cache = this.app.metadataCache.getFileCache(file);
@@ -145,11 +225,26 @@ export class SemanticPropertyDiscoveryService {
       // Sort instances alphabetically by label
       instances.sort((a, b) => a.label.localeCompare(b.label));
 
+      // Cache the result
+      this.setCache(cacheKey, instances);
+
+      // Complete monitoring
+      globalPropertyPerformanceMonitor.completeOperation(
+        operationId,
+        instances.length,
+        false,
+      );
+
       return Result.ok(instances);
     } catch (error) {
-      return Result.fail(
-        `Failed to get instances: ${error instanceof Error ? error.message : String(error)}`,
+      const errorMessage = `Failed to get instances: ${error instanceof Error ? error.message : String(error)}`;
+      globalPropertyPerformanceMonitor.completeOperation(
+        operationId,
+        0,
+        false,
+        [errorMessage],
       );
+      return Result.fail(errorMessage);
     }
   }
 
@@ -342,5 +437,75 @@ export class SemanticPropertyDiscoveryService {
       .replace(/_/g, " ")
       .replace(/\b\w/g, (l) => l.toUpperCase())
       .trim();
+  }
+
+  /**
+   * Simple in-memory cache for performance optimization
+   */
+  private cache = new Map<string, any>();
+  private cacheTimestamps = new Map<string, number>();
+  private readonly cacheMaxAge = 5 * 60 * 1000; // 5 minutes
+
+  private getFromCache<T>(key: string): T | null {
+    const timestamp = this.cacheTimestamps.get(key);
+    if (!timestamp || Date.now() - timestamp > this.cacheMaxAge) {
+      this.cache.delete(key);
+      this.cacheTimestamps.delete(key);
+      return null;
+    }
+
+    return this.cache.get(key) || null;
+  }
+
+  private setCache<T>(key: string, value: T): void {
+    this.cache.set(key, value);
+    this.cacheTimestamps.set(key, Date.now());
+
+    // Clean up old cache entries if cache is getting too large
+    if (this.cache.size > 100) {
+      this.cleanupCache();
+    }
+  }
+
+  private cleanupCache(): void {
+    const now = Date.now();
+    for (const [key, timestamp] of this.cacheTimestamps.entries()) {
+      if (now - timestamp > this.cacheMaxAge) {
+        this.cache.delete(key);
+        this.cacheTimestamps.delete(key);
+      }
+    }
+  }
+
+  /**
+   * Clear the cache (useful for testing or when vault changes)
+   */
+  public clearCache(): void {
+    this.cache.clear();
+    this.cacheTimestamps.clear();
+  }
+
+  /**
+   * Get cache statistics for monitoring
+   */
+  public getCacheStats(): {
+    size: number;
+    hitRate: number;
+    oldestEntry: number;
+  } {
+    const now = Date.now();
+    let oldestTimestamp = now;
+
+    for (const timestamp of this.cacheTimestamps.values()) {
+      if (timestamp < oldestTimestamp) {
+        oldestTimestamp = timestamp;
+      }
+    }
+
+    return {
+      size: this.cache.size,
+      hitRate: 0, // Would need to track hits/misses for accurate calculation
+      oldestEntry: oldestTimestamp,
+    };
   }
 }

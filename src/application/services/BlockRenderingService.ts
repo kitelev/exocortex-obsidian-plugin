@@ -1,5 +1,5 @@
 import { Result } from "../../domain/core/Result";
-import { Block, BlockConfig } from "../../domain/entities/LayoutBlock";
+import { Block } from "../../domain/entities/LayoutBlock";
 import {
   IBlockRenderStrategy,
   BlockRenderResult,

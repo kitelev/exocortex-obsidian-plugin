@@ -1,6 +1,6 @@
 import { Result } from "../../domain/core/Result";
 import { ClassLayout } from "../../domain/entities/ClassLayout";
-import { LayoutBlock, Block } from "../../domain/entities/LayoutBlock";
+import { Block } from "../../domain/entities/LayoutBlock";
 import {
   ILayoutCoordinator,
   LayoutRenderResult,

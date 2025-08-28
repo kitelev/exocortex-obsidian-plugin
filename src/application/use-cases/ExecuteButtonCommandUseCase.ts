@@ -3,7 +3,6 @@ import { Result } from "../../domain/core/Result";
 import { IButtonRepository } from "../../domain/repositories/IButtonRepository";
 import { ICommandExecutor } from "../services/ICommandExecutor";
 import { AssetId } from "../../domain/value-objects/AssetId";
-import { CommandType } from "../../domain/entities/ButtonCommand";
 
 /**
  * Use Case for executing a button command

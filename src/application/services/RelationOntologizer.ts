@@ -1,4 +1,4 @@
-import { TFile, App, Notice, TFolder } from "obsidian";
+import { TFile, App, Notice } from "obsidian";
 import {
   RelationAsset,
   RelationAssetHelper,

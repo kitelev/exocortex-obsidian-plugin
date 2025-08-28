@@ -29,11 +29,11 @@ export class AssetCommandController implements ICommandController {
         // Get active file to determine context
         const activeFile = this.plugin.app.workspace.getActiveFile();
         let className: string | null = null;
-        
+
         if (activeFile) {
           const cache = this.plugin.app.metadataCache.getFileCache(activeFile);
           const instanceClass = cache?.frontmatter?.["exo__Instance_class"];
-          
+
           // If viewing a class file, use it as default
           if (instanceClass === "exo__Class") {
             className = activeFile.basename;
@@ -43,26 +43,28 @@ export class AssetCommandController implements ICommandController {
         // Create and open the enhanced modal with a default class if needed
         const modal = new EnhancedCreateAssetModal(
           this.plugin.app,
-          className || "exo__Asset"
+          className || "exo__Asset",
         );
-        
+
         modal.open();
       },
     });
 
     // Register class-specific asset creation commands for common classes
-    const commonClasses = ["ems__Area", "ems__Task", "ems__Project", "ems__Goal"];
-    
+    const commonClasses = [
+      "ems__Area",
+      "ems__Task",
+      "ems__Project",
+      "ems__Goal",
+    ];
+
     for (const cls of commonClasses) {
       this.plugin.addCommand({
         id: `create-${cls.toLowerCase().replace("__", "-")}`,
         name: `Exocortex: Create ${cls.replace("__", " ")}`,
         callback: async () => {
-          const modal = new EnhancedCreateAssetModal(
-            this.plugin.app,
-            cls
-          );
-          
+          const modal = new EnhancedCreateAssetModal(this.plugin.app, cls);
+
           modal.open();
         },
       });

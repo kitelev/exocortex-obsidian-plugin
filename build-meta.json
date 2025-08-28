@@ -161,7 +161,7 @@
       "format": "esm"
     },
     "src/domain/entities/Asset.ts": {
-      "bytes": 16124,
+      "bytes": 16054,
       "imports": [
         {
           "path": "src/domain/value-objects/AssetId.ts",
@@ -597,7 +597,7 @@
       "format": "esm"
     },
     "src/application/use-cases/RenderClassButtonsUseCase.ts": {
-      "bytes": 4547,
+      "bytes": 4419,
       "imports": [
         {
           "path": "../core/UseCase",
@@ -623,22 +623,12 @@
           "path": "src/domain/value-objects/ClassName.ts",
           "kind": "import-statement",
           "original": "../../domain/value-objects/ClassName"
-        },
-        {
-          "path": "../../domain/entities/UIButton",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "../../domain/entities/ButtonCommand",
-          "kind": "import-statement",
-          "external": true
         }
       ],
       "format": "esm"
     },
     "src/application/use-cases/ExecuteButtonCommandUseCase.ts": {
-      "bytes": 4433,
+      "bytes": 4366,
       "imports": [
         {
           "path": "../core/UseCase",
@@ -664,11 +654,6 @@
           "path": "src/domain/value-objects/AssetId.ts",
           "kind": "import-statement",
           "original": "../../domain/value-objects/AssetId"
-        },
-        {
-          "path": "../../domain/entities/ButtonCommand",
-          "kind": "import-statement",
-          "external": true
         }
       ],
       "format": "esm"
@@ -1201,7 +1186,7 @@
       "format": "esm"
     },
     "src/domain/services/OntologyProvisioningService.ts": {
-      "bytes": 904,
+      "bytes": 905,
       "imports": [],
       "format": "esm"
     },
@@ -1279,7 +1264,7 @@
       "format": "esm"
     },
     "src/application/services/DynamicBacklinksService.ts": {
-      "bytes": 5074,
+      "bytes": 5009,
       "imports": [
         {
           "path": "src/domain/core/Result.ts",
@@ -1744,8 +1729,34 @@
       ],
       "format": "esm"
     },
+    "src/domain/services/PropertyDiscoveryPerformanceMonitor.ts": {
+      "bytes": 9367,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/domain/services/SemanticPropertyDiscoveryService.ts": {
+      "bytes": 14403,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        },
+        {
+          "path": "src/domain/services/PropertyDiscoveryPerformanceMonitor.ts",
+          "kind": "import-statement",
+          "original": "./PropertyDiscoveryPerformanceMonitor"
+        }
+      ],
+      "format": "esm"
+    },
     "src/presentation/modals/CreateAssetModal.ts": {
-      "bytes": 17702,
+      "bytes": 20699,
       "imports": [
         {
           "path": "obsidian",
@@ -1778,6 +1789,11 @@
           "external": true
         },
         {
+          "path": "src/domain/services/SemanticPropertyDiscoveryService.ts",
+          "kind": "import-statement",
+          "original": "../../domain/services/SemanticPropertyDiscoveryService"
+        },
+        {
           "path": "../../infrastructure/resilience/CircuitBreakerService",
           "kind": "import-statement",
           "external": true
@@ -1791,22 +1807,6 @@
           "path": "../../application/use-cases/CreateAssetUseCase",
           "kind": "import-statement",
           "external": true
-        }
-      ],
-      "format": "esm"
-    },
-    "src/domain/services/SemanticPropertyDiscoveryService.ts": {
-      "bytes": 10175,
-      "imports": [
-        {
-          "path": "obsidian",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/domain/core/Result.ts",
-          "kind": "import-statement",
-          "original": "../core/Result"
         }
       ],
       "format": "esm"
@@ -2320,7 +2320,7 @@
           "bytesInOutput": 665
         },
         "src/domain/entities/Asset.ts": {
-          "bytesInOutput": 7411
+          "bytesInOutput": 7374
         },
         "src/shared/utils/FileOperationUtils.ts": {
           "bytesInOutput": 2271
@@ -2344,7 +2344,7 @@
           "bytesInOutput": 258
         },
         "src/domain/aggregates/ClassView.ts": {
-          "bytesInOutput": 3028
+          "bytesInOutput": 3036
         },
         "src/domain/entities/UIButton.ts": {
           "bytesInOutput": 1561
@@ -2437,7 +2437,7 @@
           "bytesInOutput": 1929
         },
         "src/application/services/DynamicBacklinksService.ts": {
-          "bytesInOutput": 1661
+          "bytesInOutput": 1640
         },
         "src/presentation/renderers/DynamicBacklinksBlockRenderer.ts": {
           "bytesInOutput": 2022
@@ -2457,8 +2457,11 @@
         "src/infrastructure/container/DIContainer.ts": {
           "bytesInOutput": 3638
         },
+        "src/domain/services/PropertyDiscoveryPerformanceMonitor.ts": {
+          "bytesInOutput": 3728
+        },
         "src/domain/services/SemanticPropertyDiscoveryService.ts": {
-          "bytesInOutput": 3908
+          "bytesInOutput": 5367
         },
         "src/presentation/modals/EnhancedCreateAssetModal.ts": {
           "bytesInOutput": 7152
@@ -2488,7 +2491,7 @@
           "bytesInOutput": 3612
         },
         "src/presentation/modals/CreateAssetModal.ts": {
-          "bytesInOutput": 7601
+          "bytesInOutput": 8966
         },
         "src/presentation/command-controllers/AssetCommandController.ts": {
           "bytesInOutput": 1039
@@ -2518,7 +2521,7 @@
           "bytesInOutput": 3447
         }
       },
-      "bytes": 174604
+      "bytes": 181106
     }
   }
 }

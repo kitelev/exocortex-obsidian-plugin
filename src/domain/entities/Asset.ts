@@ -2,7 +2,7 @@ import { AssetId } from "../value-objects/AssetId";
 import { ClassName } from "../value-objects/ClassName";
 import { OntologyPrefix } from "../value-objects/OntologyPrefix";
 import { PropertyValue } from "../value-objects/PropertyValue";
-import { Entity, DomainEvent } from "../core/Entity";
+import { Entity } from "../core/Entity";
 import { Result } from "../core/Result";
 
 interface AssetProps {
@@ -24,7 +24,7 @@ interface AssetProps {
  * Core business logic and invariants
  */
 export class Asset extends Entity<AssetProps> {
-  private constructor(props: AssetProps, id?: string) {
+  private constructor(props: AssetProps, _id?: string) {
     super(props, props.id.toString());
   }
 
@@ -311,7 +311,6 @@ export class Asset extends Entity<AssetProps> {
     }
 
     // Apply all updates atomically
-    const oldProperties = new Map(this.props.properties);
     for (const [key, propertyValue] of validatedProperties) {
       this.props.properties.set(key, propertyValue);
     }

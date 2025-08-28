@@ -134,7 +134,7 @@ export class ExecuteQueryBlockUseCase {
     filter: any,
     currentAssetPath: string,
     currentAssetFrontmatter: any,
-    file: TFile,
+    _file: TFile,
   ): boolean {
     const propertyValue = frontmatter[filter.property];
     let filterValue = filter.value;
