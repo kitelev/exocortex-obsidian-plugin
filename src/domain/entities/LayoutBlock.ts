@@ -1,7 +1,7 @@
 import { Entity } from "../core/Entity";
 import { Result } from "../core/Result";
 
-export type BlockType = "dynamic-backlinks" | "relation-properties";
+export type BlockType = "dynamic-backlinks" | "relation-properties" | "Buttons";
 
 export interface PropertyDisplayConfig {
   propertyName: string;

@@ -1795,8 +1795,60 @@
       ],
       "format": "esm"
     },
+    "src/domain/services/SemanticPropertyDiscoveryService.ts": {
+      "bytes": 10175,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/core/Result.ts",
+          "kind": "import-statement",
+          "original": "../core/Result"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/modals/EnhancedCreateAssetModal.ts": {
+      "bytes": 15882,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/use-cases/CreateAssetUseCase",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/container/DIContainer.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/container/DIContainer"
+        },
+        {
+          "path": "src/domain/services/SemanticPropertyDiscoveryService.ts",
+          "kind": "import-statement",
+          "original": "../../domain/services/SemanticPropertyDiscoveryService"
+        },
+        {
+          "path": "../../infrastructure/resilience/CircuitBreakerService",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../application/use-cases/CreateAssetUseCase",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
     "src/presentation/command-controllers/AssetCommandController.ts": {
-      "bytes": 1112,
+      "bytes": 2763,
       "imports": [
         {
           "path": "obsidian",
@@ -1812,6 +1864,11 @@
           "path": "src/presentation/modals/CreateAssetModal.ts",
           "kind": "import-statement",
           "original": "../modals/CreateAssetModal"
+        },
+        {
+          "path": "src/presentation/modals/EnhancedCreateAssetModal.ts",
+          "kind": "import-statement",
+          "original": "../modals/EnhancedCreateAssetModal"
         }
       ],
       "format": "esm"
@@ -1947,7 +2004,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/DynamicLayoutRenderer.ts": {
-      "bytes": 13595,
+      "bytes": 15173,
       "imports": [
         {
           "path": "obsidian",
@@ -1962,8 +2019,65 @@
       ],
       "format": "esm"
     },
+    "src/presentation/renderers/ButtonsBlockRenderer.ts": {
+      "bytes": 3327,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../../domain/entities/LayoutBlockStubs",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/entities/ButtonCommand.ts",
+          "kind": "import-statement",
+          "original": "../../domain/entities/ButtonCommand"
+        },
+        {
+          "path": "src/presentation/modals/EnhancedCreateAssetModal.ts",
+          "kind": "dynamic-import",
+          "original": "../modals/EnhancedCreateAssetModal"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/renderers/ButtonsViewRenderer.ts": {
+      "bytes": 9815,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "../processors/CodeBlockProcessor",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/presentation/renderers/ButtonsBlockRenderer.ts",
+          "kind": "import-statement",
+          "original": "./ButtonsBlockRenderer"
+        },
+        {
+          "path": "../../infrastructure/logging/ILogger",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/infrastructure/logging/LoggerFactory.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/logging/LoggerFactory"
+        }
+      ],
+      "format": "esm"
+    },
     "src/ExocortexPlugin.ts": {
-      "bytes": 7462,
+      "bytes": 7702,
       "imports": [
         {
           "path": "obsidian",
@@ -2014,6 +2128,11 @@
           "path": "src/presentation/renderers/DynamicLayoutRenderer.ts",
           "kind": "import-statement",
           "original": "./presentation/renderers/DynamicLayoutRenderer"
+        },
+        {
+          "path": "src/presentation/renderers/ButtonsViewRenderer.ts",
+          "kind": "import-statement",
+          "original": "./presentation/renderers/ButtonsViewRenderer"
         },
         {
           "path": "./domain/entities/ExocortexSettings",
@@ -2152,16 +2271,203 @@
           "path": "obsidian",
           "kind": "require-call",
           "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
         }
       ],
       "exports": [],
       "entryPoint": "src/main.ts",
       "inputs": {
+        "src/application/core/Container.ts": {
+          "bytesInOutput": 592
+        },
+        "src/infrastructure/adapters/ObsidianNotificationService.ts": {
+          "bytesInOutput": 243
+        },
+        "src/domain/core/Result.ts": {
+          "bytesInOutput": 686
+        },
+        "src/infrastructure/adapters/ObsidianFileSystemAdapter.ts": {
+          "bytesInOutput": 1390
+        },
+        "src/infrastructure/adapters/ObsidianUIAdapter.ts": {
+          "bytesInOutput": 1219
+        },
+        "src/infrastructure/adapters/ObsidianVaultAdapter.ts": {
+          "bytesInOutput": 1147
+        },
+        "src/domain/value-objects/AssetId.ts": {
+          "bytesInOutput": 693
+        },
+        "src/domain/value-objects/ClassName.ts": {
+          "bytesInOutput": 545
+        },
+        "src/domain/value-objects/OntologyPrefix.ts": {
+          "bytesInOutput": 395
+        },
+        "src/domain/value-objects/PropertyValue.ts": {
+          "bytesInOutput": 2843
+        },
+        "src/domain/core/Entity.ts": {
+          "bytesInOutput": 665
+        },
+        "src/domain/entities/Asset.ts": {
+          "bytesInOutput": 7411
+        },
+        "src/shared/utils/FileOperationUtils.ts": {
+          "bytesInOutput": 2271
+        },
+        "src/shared/utils/ErrorHandlingUtils.ts": {
+          "bytesInOutput": 965
+        },
+        "src/shared/AbstractFileRepository.ts": {
+          "bytesInOutput": 2201
+        },
+        "src/infrastructure/repositories/ObsidianAssetRepository.ts": {
+          "bytesInOutput": 2302
+        },
+        "src/domain/entities/Ontology.ts": {
+          "bytesInOutput": 996
+        },
+        "src/infrastructure/repositories/ObsidianOntologyRepository.ts": {
+          "bytesInOutput": 1085
+        },
+        "src/domain/core/AggregateRoot.ts": {
+          "bytesInOutput": 258
+        },
+        "src/domain/aggregates/ClassView.ts": {
+          "bytesInOutput": 3028
+        },
+        "src/domain/entities/UIButton.ts": {
+          "bytesInOutput": 1561
+        },
+        "src/infrastructure/repositories/ObsidianClassViewRepository.ts": {
+          "bytesInOutput": 4317
+        },
+        "src/domain/entities/ButtonCommand.ts": {
+          "bytesInOutput": 3111
+        },
+        "src/infrastructure/repositories/ObsidianButtonRepository.ts": {
+          "bytesInOutput": 5382
+        },
+        "src/domain/entities/ClassLayout.ts": {
+          "bytesInOutput": 1860
+        },
+        "src/infrastructure/repositories/ObsidianClassLayoutRepository.ts": {
+          "bytesInOutput": 4573
+        },
+        "src/application/use-cases/CreateAssetUseCase.ts": {
+          "bytesInOutput": 1510
+        },
+        "src/application/use-cases/RenderClassButtonsUseCase.ts": {
+          "bytesInOutput": 1222
+        },
+        "src/application/use-cases/ExecuteButtonCommandUseCase.ts": {
+          "bytesInOutput": 1507
+        },
+        "src/application/use-cases/PropertyEditingUseCase.ts": {
+          "bytesInOutput": 2002
+        },
+        "src/infrastructure/services/ObsidianCommandExecutor.ts": {
+          "bytesInOutput": 6591
+        },
+        "src/domain/errors/ExocortexError.ts": {
+          "bytesInOutput": 1201
+        },
+        "src/domain/errors/ErrorAnalyzer.ts": {
+          "bytesInOutput": 4246
+        },
+        "src/domain/core/EnhancedResult.ts": {
+          "bytesInOutput": 1570
+        },
+        "src/infrastructure/logging/ILogger.ts": {
+          "bytesInOutput": 119
+        },
+        "src/infrastructure/logging/LoggerConfig.ts": {
+          "bytesInOutput": 511
+        },
+        "node_modules/uuid/dist/esm-browser/stringify.js": {
+          "bytesInOutput": 306
+        },
+        "node_modules/uuid/dist/esm-browser/rng.js": {
+          "bytesInOutput": 298
+        },
+        "node_modules/uuid/dist/esm-browser/native.js": {
+          "bytesInOutput": 122
+        },
+        "node_modules/uuid/dist/esm-browser/v4.js": {
+          "bytesInOutput": 470
+        },
+        "node_modules/uuid/dist/esm-browser/index.js": {
+          "bytesInOutput": 21
+        },
+        "src/infrastructure/logging/Logger.ts": {
+          "bytesInOutput": 3105
+        },
+        "src/infrastructure/logging/LoggerFactory.ts": {
+          "bytesInOutput": 588
+        },
+        "src/application/services/ErrorHandlerService.ts": {
+          "bytesInOutput": 4125
+        },
+        "src/domain/services/OntologyProvisioningService.ts": {
+          "bytesInOutput": 346
+        },
+        "src/domain/services/PropertyCacheService.ts": {
+          "bytesInOutput": 378
+        },
+        "src/infrastructure/resilience/CircuitBreakerService.ts": {
+          "bytesInOutput": 932
+        },
+        "src/presentation/components/ButtonRenderer.ts": {
+          "bytesInOutput": 4330
+        },
+        "src/presentation/components/PropertyRenderer.ts": {
+          "bytesInOutput": 5634
+        },
+        "src/domain/entities/SimplifiedLayoutBlock.ts": {
+          "bytesInOutput": 1929
+        },
+        "src/application/services/DynamicBacklinksService.ts": {
+          "bytesInOutput": 1661
+        },
+        "src/presentation/renderers/DynamicBacklinksBlockRenderer.ts": {
+          "bytesInOutput": 2022
+        },
+        "src/presentation/renderers/RelationPropertiesBlockRenderer.ts": {
+          "bytesInOutput": 6213
+        },
+        "src/presentation/renderers/SimplifiedRelationPropertiesRenderer.ts": {
+          "bytesInOutput": 2928
+        },
+        "src/application/use-cases/GetLayoutForClassUseCase.ts": {
+          "bytesInOutput": 998
+        },
+        "src/presentation/renderers/LayoutRenderer.ts": {
+          "bytesInOutput": 4280
+        },
+        "src/infrastructure/container/DIContainer.ts": {
+          "bytesInOutput": 3638
+        },
+        "src/domain/services/SemanticPropertyDiscoveryService.ts": {
+          "bytesInOutput": 3908
+        },
+        "src/presentation/modals/EnhancedCreateAssetModal.ts": {
+          "bytesInOutput": 7152
+        },
         "src/main.ts": {
-          "bytesInOutput": 55
+          "bytesInOutput": 56
         },
         "src/ExocortexPlugin.ts": {
-          "bytesInOutput": 3079
+          "bytesInOutput": 3164
         },
         "src/infrastructure/lifecycle/LifecycleRegistry.ts": {
           "bytesInOutput": 406
@@ -2169,197 +2475,26 @@
         "src/presentation/command-controllers/CommandRegistry.ts": {
           "bytesInOutput": 328
         },
-        "src/application/core/Container.ts": {
-          "bytesInOutput": 578
-        },
-        "src/infrastructure/adapters/ObsidianNotificationService.ts": {
-          "bytesInOutput": 225
-        },
-        "src/infrastructure/adapters/ObsidianFileSystemAdapter.ts": {
-          "bytesInOutput": 1372
-        },
-        "src/domain/core/Result.ts": {
-          "bytesInOutput": 673
-        },
-        "src/infrastructure/adapters/ObsidianUIAdapter.ts": {
-          "bytesInOutput": 1203
-        },
-        "src/infrastructure/adapters/ObsidianVaultAdapter.ts": {
-          "bytesInOutput": 1128
-        },
-        "src/infrastructure/repositories/ObsidianAssetRepository.ts": {
-          "bytesInOutput": 2278
-        },
-        "src/domain/value-objects/AssetId.ts": {
-          "bytesInOutput": 676
-        },
-        "src/domain/value-objects/ClassName.ts": {
-          "bytesInOutput": 528
-        },
-        "src/domain/value-objects/OntologyPrefix.ts": {
-          "bytesInOutput": 377
-        },
-        "src/domain/value-objects/PropertyValue.ts": {
-          "bytesInOutput": 2825
-        },
-        "src/domain/core/Entity.ts": {
-          "bytesInOutput": 652
-        },
-        "src/domain/entities/Asset.ts": {
-          "bytesInOutput": 7371
-        },
-        "src/shared/AbstractFileRepository.ts": {
-          "bytesInOutput": 2177
-        },
-        "src/shared/utils/FileOperationUtils.ts": {
-          "bytesInOutput": 2254
-        },
-        "src/shared/utils/ErrorHandlingUtils.ts": {
-          "bytesInOutput": 948
-        },
-        "src/infrastructure/repositories/ObsidianOntologyRepository.ts": {
-          "bytesInOutput": 1066
-        },
-        "src/domain/entities/Ontology.ts": {
-          "bytesInOutput": 977
-        },
-        "src/infrastructure/repositories/ObsidianClassViewRepository.ts": {
-          "bytesInOutput": 4281
-        },
-        "src/domain/core/AggregateRoot.ts": {
-          "bytesInOutput": 239
-        },
-        "src/domain/aggregates/ClassView.ts": {
-          "bytesInOutput": 3002
-        },
-        "src/domain/entities/UIButton.ts": {
-          "bytesInOutput": 1539
-        },
-        "src/infrastructure/repositories/ObsidianButtonRepository.ts": {
-          "bytesInOutput": 5342
-        },
-        "src/domain/entities/ButtonCommand.ts": {
-          "bytesInOutput": 3083
-        },
-        "src/domain/entities/ClassLayout.ts": {
-          "bytesInOutput": 1835
-        },
-        "src/infrastructure/repositories/ObsidianClassLayoutRepository.ts": {
-          "bytesInOutput": 4545
-        },
-        "src/application/use-cases/CreateAssetUseCase.ts": {
-          "bytesInOutput": 1473
-        },
-        "src/application/use-cases/RenderClassButtonsUseCase.ts": {
-          "bytesInOutput": 1199
-        },
-        "src/application/use-cases/ExecuteButtonCommandUseCase.ts": {
-          "bytesInOutput": 1484
-        },
-        "src/application/use-cases/PropertyEditingUseCase.ts": {
-          "bytesInOutput": 1979
-        },
-        "src/infrastructure/services/ObsidianCommandExecutor.ts": {
-          "bytesInOutput": 6548
-        },
-        "src/domain/errors/ExocortexError.ts": {
-          "bytesInOutput": 1187
-        },
-        "src/domain/errors/ErrorAnalyzer.ts": {
-          "bytesInOutput": 4227
-        },
-        "src/domain/core/EnhancedResult.ts": {
-          "bytesInOutput": 1547
-        },
-        "src/infrastructure/logging/ILogger.ts": {
-          "bytesInOutput": 104
-        },
-        "src/infrastructure/logging/LoggerConfig.ts": {
-          "bytesInOutput": 490
-        },
-        "node_modules/uuid/dist/esm-browser/stringify.js": {
-          "bytesInOutput": 292
-        },
-        "node_modules/uuid/dist/esm-browser/rng.js": {
-          "bytesInOutput": 283
-        },
-        "node_modules/uuid/dist/esm-browser/native.js": {
-          "bytesInOutput": 104
-        },
-        "node_modules/uuid/dist/esm-browser/v4.js": {
-          "bytesInOutput": 440
-        },
-        "node_modules/uuid/dist/esm-browser/index.js": {
-          "bytesInOutput": 0
-        },
-        "src/infrastructure/logging/Logger.ts": {
-          "bytesInOutput": 3072
-        },
-        "src/infrastructure/logging/LoggerFactory.ts": {
-          "bytesInOutput": 562
-        },
-        "src/application/services/ErrorHandlerService.ts": {
-          "bytesInOutput": 4091
-        },
-        "src/domain/services/OntologyProvisioningService.ts": {
-          "bytesInOutput": 331
-        },
-        "src/domain/services/PropertyCacheService.ts": {
-          "bytesInOutput": 364
-        },
-        "src/infrastructure/resilience/CircuitBreakerService.ts": {
-          "bytesInOutput": 918
-        },
-        "src/presentation/components/ButtonRenderer.ts": {
-          "bytesInOutput": 4310
-        },
-        "src/presentation/components/PropertyRenderer.ts": {
-          "bytesInOutput": 5617
-        },
-        "src/domain/entities/SimplifiedLayoutBlock.ts": {
-          "bytesInOutput": 1903
-        },
-        "src/application/services/DynamicBacklinksService.ts": {
-          "bytesInOutput": 1642
-        },
-        "src/presentation/renderers/DynamicBacklinksBlockRenderer.ts": {
-          "bytesInOutput": 1990
-        },
-        "src/presentation/renderers/RelationPropertiesBlockRenderer.ts": {
-          "bytesInOutput": 6198
-        },
-        "src/presentation/renderers/SimplifiedRelationPropertiesRenderer.ts": {
-          "bytesInOutput": 2913
-        },
-        "src/application/use-cases/GetLayoutForClassUseCase.ts": {
-          "bytesInOutput": 975
-        },
-        "src/presentation/renderers/LayoutRenderer.ts": {
-          "bytesInOutput": 4239
-        },
-        "src/infrastructure/container/DIContainer.ts": {
-          "bytesInOutput": 3508
-        },
         "src/infrastructure/providers/ServiceProvider.ts": {
-          "bytesInOutput": 795
+          "bytesInOutput": 810
         },
         "src/infrastructure/lifecycle/SettingsLifecycleManager.ts": {
           "bytesInOutput": 581
         },
         "src/domain/entities/ExocortexSettings.ts": {
-          "bytesInOutput": 2084
+          "bytesInOutput": 2088
         },
         "src/presentation/settings/ExocortexSettingTab.ts": {
           "bytesInOutput": 3612
         },
         "src/presentation/modals/CreateAssetModal.ts": {
-          "bytesInOutput": 7596
+          "bytesInOutput": 7601
         },
         "src/presentation/command-controllers/AssetCommandController.ts": {
-          "bytesInOutput": 398
+          "bytesInOutput": 1039
         },
         "src/presentation/processors/CodeBlockProcessor.ts": {
-          "bytesInOutput": 1524
+          "bytesInOutput": 1528
         },
         "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
           "bytesInOutput": 6879
@@ -2368,16 +2503,22 @@
           "bytesInOutput": 1786
         },
         "src/presentation/renderers/RefactoredUniversalLayoutRenderer.ts": {
-          "bytesInOutput": 3059
+          "bytesInOutput": 3063
         },
         "src/presentation/renderers/AssetListRenderer.ts": {
-          "bytesInOutput": 3861
+          "bytesInOutput": 3865
         },
         "src/presentation/renderers/DynamicLayoutRenderer.ts": {
-          "bytesInOutput": 4128
+          "bytesInOutput": 4723
+        },
+        "src/presentation/renderers/ButtonsBlockRenderer.ts": {
+          "bytesInOutput": 1431
+        },
+        "src/presentation/renderers/ButtonsViewRenderer.ts": {
+          "bytesInOutput": 3447
         }
       },
-      "bytes": 155895
+      "bytes": 174604
     }
   }
 }

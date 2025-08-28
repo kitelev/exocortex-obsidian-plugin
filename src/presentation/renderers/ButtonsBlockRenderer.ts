@@ -1,7 +1,6 @@
 import { App, TFile, ButtonComponent, Notice } from "obsidian";
 import { ButtonsBlockConfig } from "../../domain/entities/LayoutBlockStubs";
 import { CommandType } from "../../domain/entities/ButtonCommand";
-import { DIContainer } from "../../infrastructure/container/DIContainer";
 
 export class ButtonsBlockRenderer {
   constructor(private app: App) {}
@@ -55,12 +54,14 @@ export class ButtonsBlockRenderer {
     file: TFile,
     frontmatter: any,
   ): Promise<void> {
-    const commandType = buttonConfig.commandType as CommandType;
+    const commandType = buttonConfig.commandType;
 
-    if (commandType === CommandType.CREATE_CHILD_TASK) {
+    if (commandType === 'CREATE_CHILD_TASK' || commandType === CommandType.CREATE_CHILD_TASK) {
       await this.handleCreateChildTask(file, frontmatter);
-    } else if (commandType === CommandType.CREATE_CHILD_AREA) {
+    } else if (commandType === 'CREATE_CHILD_AREA' || commandType === CommandType.CREATE_CHILD_AREA) {
       await this.handleCreateChildArea(file, frontmatter);
+    } else if (commandType === 'CREATE_ASSET') {
+      await this.handleCreateAsset(buttonConfig, file, frontmatter);
     } else {
       new Notice(`Command ${buttonConfig.commandType} not yet implemented`);
     }
@@ -78,5 +79,35 @@ export class ButtonsBlockRenderer {
     frontmatter: any,
   ): Promise<void> {
     new Notice("Create Child Area functionality has been removed");
+  }
+
+  private async handleCreateAsset(
+    buttonConfig: any,
+    file: TFile,
+    frontmatter: any,
+  ): Promise<void> {
+    try {
+      const className = buttonConfig.commandArgs?.className;
+      if (!className) {
+        new Notice("No class specified for asset creation");
+        return;
+      }
+
+      // Import the EnhancedCreateAssetModal
+      const { EnhancedCreateAssetModal } = await import("../modals/EnhancedCreateAssetModal");
+
+      // Create and open the modal
+      const modal = new EnhancedCreateAssetModal(
+        this.app,
+        className
+      );
+      
+      // TODO: Add parent context support when modal is updated
+      
+      modal.open();
+    } catch (error) {
+      console.error("Failed to create asset:", error);
+      new Notice(`Failed to create asset: ${error}`);
+    }
   }
 }
