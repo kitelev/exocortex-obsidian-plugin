@@ -50,13 +50,26 @@ export OBSIDIAN_APP_PATH="/path/to/Obsidian.app"
 
 ## Running Tests
 
+### Docker-based Testing (Recommended)
+```bash
+# Run UI tests in Docker with real Obsidian
+npm run test:ui:docker
+
+# Run specific test
+cd tests/ui
+docker-compose up --build --abort-on-container-exit
+
+# Clean up Docker containers
+npm run test:ui:docker:clean
+```
+
 ### Local Development
 ```bash
 # Run all UI tests
 npm run test:ui
 
 # Run with specific spec file
-npx wdio run wdio.conf.ts --spec tests/ui/specs/activate.spec.ts
+npx wdio run wdio.conf.ts --spec tests/ui/specs/create-asset-modal-real.spec.ts
 
 # Run with debug logging
 npx wdio run wdio.conf.ts --logLevel debug
