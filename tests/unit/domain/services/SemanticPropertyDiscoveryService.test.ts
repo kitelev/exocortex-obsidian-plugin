@@ -110,14 +110,14 @@ describe("SemanticPropertyDiscoveryService", () => {
             return {
               frontmatter: {
                 exo__Instance_class: "exo__Class",
-                rdfs__subClassOf: "exo__Asset",
+                rdfs__subClassOf: "exo__Asset",  // Legacy property for backward compatibility
               },
             };
           } else if (file.basename === "exo__Asset_label") {
             return {
               frontmatter: {
                 exo__Instance_class: "exo__Property",
-                rdfs__domain: "exo__Asset",
+                rdfs__domain: "exo__Asset",  // Legacy property for backward compatibility
                 rdfs__label: "Label",
               },
             };
@@ -147,7 +147,89 @@ describe("SemanticPropertyDiscoveryService", () => {
       expect(parentProp).toBeDefined();
     });
 
-    it("should add core properties automatically", async () => {
+    it("should prioritize modern exo__Class_superClass and exo__Property_domain", async () => {
+      const mockFiles = [
+        { basename: "ztlk__FleetingNote", path: "classes/ztlk__FleetingNote.md" },
+        { basename: "ztlk__Note", path: "classes/ztlk__Note.md" },
+        { basename: "exo__Asset", path: "classes/exo__Asset.md" },
+        { basename: "ztlk__FleetingNote_type", path: "props/ztlk__FleetingNote_type.md" },
+        { basename: "exo__Asset_label", path: "props/exo__Asset_label.md" },
+      ] as TFile[];
+
+      (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue(mockFiles);
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation(
+        (file) => {
+          if (file.basename === "ztlk__FleetingNote") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "exo__Class",
+                exo__Class_superClass: ["ztlk__Note"],  // Modern property
+                rdfs__subClassOf: "ShouldNotUseThis",  // Legacy - should be ignored when modern exists
+              },
+            };
+          } else if (file.basename === "ztlk__Note") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "exo__Class",
+                exo__Class_superClass: "exo__Asset",  // Modern property
+              },
+            };
+          } else if (file.basename === "exo__Asset") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "exo__Class",
+                rdfs__label: "Asset",
+              },
+            };
+          } else if (file.basename === "ztlk__FleetingNote_type") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "exo__Property",
+                exo__Property_domain: "ztlk__FleetingNote",  // Modern property
+                rdfs__domain: "ShouldNotUseThis",            // Legacy - should be ignored when modern exists
+                rdfs__label: "Note Type",
+                rdfs__range: "string",
+                exo__Property_options: ["idea", "reference", "question", "task"],
+              },
+            };
+          } else if (file.basename === "exo__Asset_label") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "exo__Property",
+                exo__Property_domain: "exo__Asset",  // Modern property for inherited property
+                rdfs__label: "Label",
+                rdfs__range: "string",
+              },
+            };
+          }
+          return null;
+        },
+      );
+
+      const result = await service.discoverPropertiesForClass("ztlk__FleetingNote");
+
+      expect(result.isSuccess).toBe(true);
+      const properties = result.getValue()!;
+
+      // Should find both the class-specific property and inherited property
+      const typeProp = properties.find((p) => p.name === "ztlk__FleetingNote_type");
+      const labelProp = properties.find((p) => p.name === "exo__Asset_label");
+
+      expect(typeProp).toBeDefined();
+      expect(typeProp?.label).toBe("Note Type");
+      expect(typeProp?.domain).toBe("ztlk__FleetingNote");
+      expect(typeProp?.options).toEqual(["idea", "reference", "question", "task"]);
+
+      expect(labelProp).toBeDefined();
+      expect(labelProp?.label).toBe("Label");
+      expect(labelProp?.domain).toBe("exo__Asset");
+
+      // Should have at least these 2 properties
+      expect(properties.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it("should return empty properties when no properties match the domain", async () => {
       (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue([]);
 
       const result = await service.discoverPropertiesForClass("test__Class");
@@ -155,19 +237,10 @@ describe("SemanticPropertyDiscoveryService", () => {
       expect(result.isSuccess).toBe(true);
       const properties = result.getValue()!;
 
-      // Should include core properties even with no discovered properties
-      const uidProp = properties.find((p) => p.name === "exo__Asset_uid");
-      const classProp = properties.find(
-        (p) => p.name === "exo__Instance_class",
-      );
-      const definedByProp = properties.find(
-        (p) => p.name === "exo__Asset_isDefinedBy",
-      );
-
-      expect(uidProp).toBeDefined();
-      expect(classProp).toBeDefined();
-      expect(definedByProp).toBeDefined();
-      expect(uidProp?.isRequired).toBe(true);
+      // Should return empty array when no properties match the domain
+      // Core properties are now handled automatically by the Asset entity and CreateAssetModal
+      // They are not included in user-editable properties to prevent confusion
+      expect(properties).toEqual([]);
     });
 
     it("should determine property type from rdf__type", async () => {

@@ -1735,7 +1735,7 @@
       "format": "esm"
     },
     "src/domain/services/SemanticPropertyDiscoveryService.ts": {
-      "bytes": 14301,
+      "bytes": 14372,
       "imports": [
         {
           "path": "obsidian",

@@ -144,6 +144,7 @@ export class SemanticPropertyDiscoveryService {
 
   /**
    * Get class hierarchy including all superclasses
+   * Handles both modern exo__Class_superClass and legacy rdfs__subClassOf for backward compatibility
    */
   private async getClassHierarchy(className: string): Promise<string[]> {
     const hierarchy = [className];
@@ -157,10 +158,16 @@ export class SemanticPropertyDiscoveryService {
       const cache = this.app.metadataCache.getFileCache(classFile);
       if (!cache?.frontmatter) break;
 
-      const superClass = this.extractValue(
-        cache.frontmatter["rdfs__subClassOf"] ||
-          cache.frontmatter["exo__Class_superClass"],
-      );
+      // Support both array and single value for superClass
+      let superClassValue = cache.frontmatter["exo__Class_superClass"] ||  // Primary property used in modern vaults
+                           cache.frontmatter["rdfs__subClassOf"];           // W3C standard fallback
+      
+      // Handle array of superclasses - take the first one for linear hierarchy
+      if (Array.isArray(superClassValue)) {
+        superClassValue = superClassValue[0];
+      }
+      
+      const superClass = this.extractValue(superClassValue);
       if (!superClass || visited.has(superClass)) break;
 
       hierarchy.push(superClass);
@@ -330,12 +337,13 @@ export class SemanticPropertyDiscoveryService {
 
   /**
    * Extract domain from frontmatter (handles various formats)
+   * Prioritizes modern exo__Property_domain over legacy rdfs__domain
    */
   private extractDomain(frontmatter: Record<string, any>): string | string[] {
     const domain =
-      frontmatter["rdfs__domain"] ||
-      frontmatter["exo__Property_domain"] ||
-      frontmatter["domain"];
+      frontmatter["exo__Property_domain"] ||  // Primary property used in modern vaults
+      frontmatter["rdfs__domain"] ||          // W3C standard fallback
+      frontmatter["domain"];                  // Generic fallback
 
     if (Array.isArray(domain)) {
       return domain.map((d) => this.extractValue(d));

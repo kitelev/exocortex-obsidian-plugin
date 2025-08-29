@@ -1,3 +1,27 @@
+## [7.8.3] - 2025-08-29
+
+### 🐛 Fix: Enhanced Class Inheritance and Property Discovery
+
+#### What Was Fixed
+- **Modern Property Support**: Enhanced property discovery to prioritize `exo__Class_superClass` over legacy `rdfs__subClassOf` for class inheritance
+- **Improved Domain Matching**: Property domain checking now prioritizes `exo__Property_domain` over legacy `rdfs__domain`
+- **FleetingNote Classes**: Custom classes like `ztlk__FleetingNote` now correctly discover their properties through proper inheritance chains
+- **Array Inheritance**: Added support for array-based superclass definitions in class hierarchies
+
+#### User Benefits
+- **Custom Class Properties**: Properties for custom classes like FleetingNote now appear correctly in the CreateAssetModal
+- **Better Inheritance**: Class hierarchies work seamlessly with modern vault structures using `exo__Class_superClass`
+- **Backward Compatibility**: Older vaults using `rdfs__subClassOf` continue to work while modern vaults get priority treatment
+- **Property Discovery**: All class-specific properties are now discovered regardless of file location in the vault
+
+#### Technical Improvements
+- **Enhanced GetClassHierarchyUseCase**: Now handles array-based superclass values and prioritizes modern properties
+- **Improved SemanticPropertyDiscoveryService**: Better domain matching with modern property priority
+- **Comprehensive Test Coverage**: Added comprehensive tests for FleetingNote property discovery scenarios
+- **Performance Maintained**: All improvements maintain the existing performance optimizations
+
+This fix ensures that users working with modern vault structures get the best experience while maintaining compatibility with legacy setups.
+
 ## [7.8.2] - 2025-08-29
 
 ### 🐛 Fix: Enhanced Core Property Filtering in CreateAssetModal
