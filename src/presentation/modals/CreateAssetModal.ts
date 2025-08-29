@@ -20,6 +20,8 @@ export class CreateAssetModal extends Modal {
   private propertyValues: Map<string, any> = new Map();
   private propertiesContainer: HTMLElement | null = null;
   private properties: any[] = []; // Store current properties for testing
+  private updateDebounceTimer: number | null = null;
+  private isUpdatingProperties: boolean = false;
 
   private createAssetUseCase: CreateAssetUseCase;
   private container: DIContainer;
@@ -116,7 +118,16 @@ export class CreateAssetModal extends Modal {
         dropdown.setValue(this.assetClass);
         dropdown.onChange(async (value) => {
           this.assetClass = value;
-          await this.updatePropertiesForClass(value);
+          
+          // Debounce rapid class changes to prevent race conditions
+          if (this.updateDebounceTimer !== null) {
+            window.clearTimeout(this.updateDebounceTimer);
+          }
+          
+          this.updateDebounceTimer = window.setTimeout(async () => {
+            this.updateDebounceTimer = null;
+            await this.updatePropertiesForClass(value);
+          }, 50) as unknown as number; // 50ms debounce
         });
       });
   }
@@ -200,11 +211,26 @@ export class CreateAssetModal extends Modal {
 
   private async updatePropertiesForClass(className: string): Promise<void> {
     if (!this.propertiesContainer) return;
+    
+    // Prevent concurrent updates
+    if (this.isUpdatingProperties) {
+      console.log(`Already updating properties, skipping update for: ${className}`);
+      return;
+    }
+    
+    this.isUpdatingProperties = true;
 
     console.log(`Updating properties for class: ${className}`);
     const startTime = Date.now();
 
     try {
+      // Clear cache for the new class to ensure fresh data
+      this.propertyDiscoveryService.clearCache();
+      
+      // Clear property values BEFORE clearing the container to prevent stale data
+      this.propertyValues.clear();
+      this.properties = [];
+      
       // Clear the container - try Obsidian method first, fallback to DOM
       if (
         "empty" in this.propertiesContainer &&
@@ -215,7 +241,9 @@ export class CreateAssetModal extends Modal {
         // Fallback to standard DOM method - use innerHTML for complete cleanup
         this.propertiesContainer.innerHTML = "";
       }
-      this.propertyValues.clear();
+      
+      // Force DOM refresh to ensure complete cleanup
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       // Use SemanticPropertyDiscoveryService for proper property resolution
       const propertyResult =
@@ -303,6 +331,9 @@ export class CreateAssetModal extends Modal {
       });
 
       this.addFallbackProperties();
+    } finally {
+      // Always reset the update flag
+      this.isUpdatingProperties = false;
     }
   }
 
@@ -372,11 +403,13 @@ export class CreateAssetModal extends Modal {
       .setName(property.label + (property.isRequired ? " *" : ""))
       .setDesc(property.description);
 
-    // Add test attribute for E2E testing
-    const settingEl = setting.settingEl;
-    settingEl.setAttribute("data-test", `property-${property.name}`);
-    settingEl.setAttribute("data-property-type", property.type);
-    settingEl.setAttribute("data-required", property.isRequired.toString());
+    // Add test attribute for E2E testing (check if settingEl exists for compatibility)
+    const settingEl = (setting as any).settingEl;
+    if (settingEl) {
+      settingEl.setAttribute("data-test", `property-${property.name}`);
+      settingEl.setAttribute("data-property-type", property.type);
+      settingEl.setAttribute("data-required", property.isRequired.toString());
+    }
 
     // Create appropriate input based on property type
     switch (property.type) {
@@ -409,39 +442,46 @@ export class CreateAssetModal extends Modal {
   /**
    * Create ObjectProperty field with instance dropdown
    */
-  private async createObjectPropertyField(
+  private createObjectPropertyField(
     setting: Setting,
     property: any,
-  ): Promise<void> {
+  ): void {
     // Extract class name from range for ObjectProperty
     const rangeClass = property.range.replace(/^\[\[|\]\]$/g, "");
 
-    const instancesResult =
-      await this.propertyDiscoveryService.getInstancesOfClass(rangeClass);
-
-    if (!instancesResult.isSuccess) {
-      console.warn(
-        `Failed to get instances for ${rangeClass}: ${instancesResult.getError()}`,
-      );
-      // Fallback to text input
-      this.createTextField(setting, property);
-      return;
-    }
-
-    const instances = instancesResult.getValue() || [];
-
+    // Create dropdown synchronously first
     setting.addDropdown((dropdown) => {
-      dropdown.addOption("", "-- Select --");
-      for (const instance of instances) {
-        dropdown.addOption(instance.value, instance.label);
-      }
+      dropdown.addOption("", "Loading...");
       dropdown.onChange((value) => {
-        if (value) {
+        if (value && value !== "") {
           this.propertyValues.set(property.name, value);
         } else {
           this.propertyValues.delete(property.name);
         }
       });
+      
+      // Load instances asynchronously without blocking
+      this.propertyDiscoveryService.getInstancesOfClass(rangeClass).then(
+        (instancesResult) => {
+          if (!instancesResult.isSuccess) {
+            console.warn(
+              `Failed to get instances for ${rangeClass}: ${instancesResult.getError()}`,
+            );
+            dropdown.selectEl.innerHTML = "";
+            dropdown.addOption("", "-- Error loading options --");
+            return;
+          }
+
+          const instances = instancesResult.getValue() || [];
+          
+          // Clear and repopulate dropdown
+          dropdown.selectEl.innerHTML = "";
+          dropdown.addOption("", "-- Select --");
+          for (const instance of instances) {
+            dropdown.addOption(instance.value, instance.label);
+          }
+        }
+      );
     });
   }
 
@@ -616,6 +656,21 @@ export class CreateAssetModal extends Modal {
   }
 
   onClose() {
+    // Cancel any pending property updates
+    if (this.updateDebounceTimer !== null) {
+      window.clearTimeout(this.updateDebounceTimer);
+      this.updateDebounceTimer = null;
+    }
+    
+    // Clear all state
+    this.propertyValues.clear();
+    this.properties = [];
+    this.propertiesContainer = null;
+    this.isUpdatingProperties = false;
+    
+    // Clear cache to prevent stale data
+    this.propertyDiscoveryService.clearCache();
+    
     // Clear content - try Obsidian method first, fallback to DOM
     if (
       "empty" in this.contentEl &&

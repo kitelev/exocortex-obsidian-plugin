@@ -1730,12 +1730,12 @@
       "format": "esm"
     },
     "src/domain/services/PropertyDiscoveryPerformanceMonitor.ts": {
-      "bytes": 9367,
+      "bytes": 9518,
       "imports": [],
       "format": "esm"
     },
     "src/domain/services/SemanticPropertyDiscoveryService.ts": {
-      "bytes": 14403,
+      "bytes": 14688,
       "imports": [
         {
           "path": "obsidian",
@@ -1756,7 +1756,7 @@
       "format": "esm"
     },
     "src/presentation/modals/CreateAssetModal.ts": {
-      "bytes": 20699,
+      "bytes": 22808,
       "imports": [
         {
           "path": "obsidian",
@@ -1848,7 +1848,7 @@
       "format": "esm"
     },
     "src/presentation/command-controllers/AssetCommandController.ts": {
-      "bytes": 2763,
+      "bytes": 2719,
       "imports": [
         {
           "path": "obsidian",
@@ -2004,7 +2004,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/DynamicLayoutRenderer.ts": {
-      "bytes": 15173,
+      "bytes": 15139,
       "imports": [
         {
           "path": "obsidian",
@@ -2020,7 +2020,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/ButtonsBlockRenderer.ts": {
-      "bytes": 3327,
+      "bytes": 3343,
       "imports": [
         {
           "path": "obsidian",
@@ -2046,7 +2046,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/ButtonsViewRenderer.ts": {
-      "bytes": 9815,
+      "bytes": 9842,
       "imports": [
         {
           "path": "obsidian",
@@ -2491,7 +2491,7 @@
           "bytesInOutput": 3612
         },
         "src/presentation/modals/CreateAssetModal.ts": {
-          "bytesInOutput": 8966
+          "bytesInOutput": 9752
         },
         "src/presentation/command-controllers/AssetCommandController.ts": {
           "bytesInOutput": 1039
@@ -2521,7 +2521,7 @@
           "bytesInOutput": 3447
         }
       },
-      "bytes": 181106
+      "bytes": 181892
     }
   }
 }
