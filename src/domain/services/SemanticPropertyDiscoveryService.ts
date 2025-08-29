@@ -159,14 +159,15 @@ export class SemanticPropertyDiscoveryService {
       if (!cache?.frontmatter) break;
 
       // Support both array and single value for superClass
-      let superClassValue = cache.frontmatter["exo__Class_superClass"] ||  // Primary property used in modern vaults
-                           cache.frontmatter["rdfs__subClassOf"];           // W3C standard fallback
-      
+      let superClassValue =
+        cache.frontmatter["exo__Class_superClass"] || // Primary property used in modern vaults
+        cache.frontmatter["rdfs__subClassOf"]; // W3C standard fallback
+
       // Handle array of superclasses - take the first one for linear hierarchy
       if (Array.isArray(superClassValue)) {
         superClassValue = superClassValue[0];
       }
-      
+
       const superClass = this.extractValue(superClassValue);
       if (!superClass || visited.has(superClass)) break;
 
@@ -341,9 +342,9 @@ export class SemanticPropertyDiscoveryService {
    */
   private extractDomain(frontmatter: Record<string, any>): string | string[] {
     const domain =
-      frontmatter["exo__Property_domain"] ||  // Primary property used in modern vaults
-      frontmatter["rdfs__domain"] ||          // W3C standard fallback
-      frontmatter["domain"];                  // Generic fallback
+      frontmatter["exo__Property_domain"] || // Primary property used in modern vaults
+      frontmatter["rdfs__domain"] || // W3C standard fallback
+      frontmatter["domain"]; // Generic fallback
 
     if (Array.isArray(domain)) {
       return domain.map((d) => this.extractValue(d));
@@ -390,10 +391,10 @@ export class SemanticPropertyDiscoveryService {
   /**
    * Core properties are automatically handled by the Asset entity and CreateAssetUseCase.
    * They are not included in user-editable properties to prevent duplication and confusion.
-   * 
+   *
    * Core properties that are auto-generated:
    * - exo__Asset_uid: Unique identifier (UUID)
-   * - exo__Asset_isDefinedBy: Ontology reference 
+   * - exo__Asset_isDefinedBy: Ontology reference
    * - exo__Instance_class: Asset class
    * - exo__Asset_createdAt: Creation timestamp
    * - exo__Asset_updatedAt: Last update timestamp

@@ -169,8 +169,8 @@ export class GetClassHierarchyUseCase
 
     const fm = metadata.frontmatter;
     return !!(
-      fm["exo__Class_superClass"] ||  // Primary property used in vault
-      fm["exo__Class_subClassOf"] ||  // Backward compatibility
+      fm["exo__Class_superClass"] || // Primary property used in vault
+      fm["exo__Class_subClassOf"] || // Backward compatibility
       fm["rdfs__subClassOf"] ||
       fm["owl__Class"] ||
       (fm["rdf__type"] && fm["rdf__type"].includes("Class"))
@@ -185,8 +185,8 @@ export class GetClassHierarchyUseCase
 
     // Check various parent class properties
     const parentProperties = [
-      "exo__Class_superClass",  // Updated from exo__Class_subClassOf to match vault naming
-      "exo__Class_subClassOf",  // Keep for backward compatibility
+      "exo__Class_superClass", // Updated from exo__Class_subClassOf to match vault naming
+      "exo__Class_subClassOf", // Keep for backward compatibility
       "rdfs__subClassOf",
       "subClassOf",
       "extends",
