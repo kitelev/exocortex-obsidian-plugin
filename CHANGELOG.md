@@ -1,3 +1,43 @@
+## [7.8.2] - 2025-08-29
+
+### 🐛 Fix: Enhanced Core Property Filtering in CreateAssetModal
+
+#### What Was Fixed
+- **Improved Core Property Filtering**: Enhanced the filtering logic to catch core properties by both name AND label
+- **No More Duplicate Fields**: Core properties like "Unique ID", "Defined By", and "Instance Class" are now completely filtered out
+- **Cleaner Property Section**: Only user-editable properties are shown in the Properties section
+
+#### Technical Details
+- Added label-based filtering in addition to name-based filtering
+- Core properties that exist as actual property files in the vault are now properly excluded
+- Filtering catches variations like "Instance Class" vs "exo__Instance_class"
+
+#### User Benefits
+- Cleaner modal interface without confusing duplicate fields
+- Only see properties you can actually edit
+- Core properties are still handled automatically behind the scenes
+
+## [7.8.1] - 2025-08-29
+
+### 🐛 Bug Fix: Removed Duplicate Core Properties in Asset Creation Modal
+
+#### What Was Fixed
+- **Duplicate Fields**: Fixed issue where core properties (Instance Class, Unique ID, Defined By) appeared twice in the CreateAssetModal
+- **Core Property Filtering**: Core properties are now properly excluded from user-editable fields since they are auto-generated
+- **Clean Property Discovery**: Property discovery service no longer adds core properties to the user interface
+
+#### User Experience Improvements
+- **Cleaner Interface**: Modal now shows only relevant, class-specific properties that users can actually edit
+- **No Confusion**: Eliminated duplicate Instance Class field that was causing user confusion
+- **Auto-Generated Fields**: Core properties (UUID, timestamps, ontology references) are handled automatically by the system
+
+#### Technical Changes
+- **SemanticPropertyDiscoveryService**: Removed `addCoreProperties` method to prevent duplicate core property display
+- **CreateAssetModal**: Added explicit filtering to exclude core properties from user-editable fields
+- **Asset Entity**: Core properties continue to be properly handled in the domain layer during asset creation
+
+This fix ensures the asset creation experience is clean and intuitive, showing users only the properties they need to configure.
+
 ## [7.8.0] - 2025-08-29
 
 ### 🐛 Critical UX Bug Fix: Asset Creation Modal Class Switching

@@ -87,8 +87,8 @@ export class SemanticPropertyDiscoveryService {
         }
       }
 
-      // Add core properties that every asset should have
-      this.addCoreProperties(properties, seen);
+      // Core properties are handled automatically by the Asset entity and use case
+      // They should not be displayed as user-editable fields in the modal
 
       // Sort properties: required first, then alphabetical
       properties.sort((a, b) => {
@@ -380,48 +380,20 @@ export class SemanticPropertyDiscoveryService {
   }
 
   /**
-   * Add core properties that every asset should have
+   * Core properties are automatically handled by the Asset entity and CreateAssetUseCase.
+   * They are not included in user-editable properties to prevent duplication and confusion.
+   * 
+   * Core properties that are auto-generated:
+   * - exo__Asset_uid: Unique identifier (UUID)
+   * - exo__Asset_isDefinedBy: Ontology reference 
+   * - exo__Instance_class: Asset class
+   * - exo__Asset_createdAt: Creation timestamp
+   * - exo__Asset_updatedAt: Last update timestamp
+   * - exo__Asset_version: Version number for optimistic locking
    */
-  private addCoreProperties(
-    properties: PropertyMetadata[],
-    seen: Set<string>,
-  ): void {
-    const coreProps: PropertyMetadata[] = [
-      {
-        name: "exo__Asset_uid",
-        label: "Unique ID",
-        type: "DatatypeProperty",
-        domain: "exo__Asset",
-        range: "string",
-        isRequired: true,
-        description: "Unique identifier for this asset (auto-generated)",
-      },
-      {
-        name: "exo__Asset_isDefinedBy",
-        label: "Defined By",
-        type: "ObjectProperty",
-        domain: "exo__Asset",
-        range: "exo__Ontology",
-        isRequired: true,
-        description: "The ontology that defines this asset",
-      },
-      {
-        name: "exo__Instance_class",
-        label: "Instance Class",
-        type: "ObjectProperty",
-        domain: "exo__Asset",
-        range: "exo__Class",
-        isRequired: true,
-        description: "The class of this instance",
-      },
-    ];
-
-    for (const prop of coreProps) {
-      if (!seen.has(prop.name)) {
-        properties.unshift(prop); // Add at beginning
-        seen.add(prop.name);
-      }
-    }
+  private addCorePropertiesDocumentation(): void {
+    // This method exists solely for documentation purposes.
+    // Core properties are handled automatically by the domain layer.
   }
 
   /**
