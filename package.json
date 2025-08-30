@@ -101,7 +101,6 @@
     "allure-commandline": "^2.34.1",
     "builtin-modules": "3.3.0",
     "chai": "^5.3.3",
-    "chromedriver": "^139.0.3",
     "cucumber-html-reporter": "^7.2.0",
     "esbuild": "0.17.3",
     "eslint-config-prettier": "^10.1.8",
@@ -123,7 +122,6 @@
     "tslib": "^2.4.0",
     "tsx": "^4.20.5",
     "typescript": "4.7.4",
-    "wdio-chromedriver-service": "^8.1.1",
     "wdio-obsidian-reporter": "^2.1.1",
     "wdio-obsidian-service": "^2.1.1",
     "webdriverio": "^9.19.2"
