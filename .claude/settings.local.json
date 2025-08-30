@@ -12,7 +12,8 @@
       "Read(/Users/kitelev/vault-2025/02 Ontology/2 Custom/ems/**)",
       "Read(/Users/kitelev/vault-2025/**)",
       "Read(/Users/kitelev/vault-2025/02 Ontology/2 Custom/ems/**)",
-      "Read(/Users/kitelev/vault-2025/**)"
+      "Read(/Users/kitelev/vault-2025/**)",
+      "Read(/Users/kitelev/Downloads/obsidian-open-tab-settings-main/**)"
     ],
     "deny": [],
     "ask": []

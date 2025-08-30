@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  obsidian-e2e:
+    image: ghcr.io/sytone/obsidian-remote:latest
+    platform: linux/amd64
+    container_name: obsidian-e2e-test
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../../../:/workspace
+      - ./test-vault:/vault
+      - obsidian-config:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - OBSIDIAN_PORT=8080
+      - OBSIDIAN_UID=1000
+      - OBSIDIAN_GID=1000
+      - CUSTOM_PORT=8080
+      - WEBPAGE_TITLE=Obsidian E2E Test
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - e2e-network
+
+  webdriver-chrome:
+    image: selenium/standalone-chrome:4.15.0
+    container_name: chrome-e2e-test
+    ports:
+      - "4444:4444"
+      - "7900:7900"  # VNC server for debugging
+    volumes:
+      - /dev/shm:/dev/shm
+    environment:
+      - SE_VNC_NO_PASSWORD=1
+      - SE_NODE_MAX_SESSIONS=1
+      - SE_NODE_SESSION_TIMEOUT=300
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - e2e-network
+
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.test-runner
+    container_name: e2e-test-runner
+    volumes:
+      - ../../../:/workspace
+      - ./test-results:/test-results
+      - ./wdio-logs:/wdio-logs
+    working_dir: /workspace
+    environment:
+      - NODE_ENV=test
+      - OBSIDIAN_URL=http://obsidian-e2e:8080
+      - WEBDRIVER_URL=http://webdriver-chrome:4444/wd/hub
+      - CI=true
+    depends_on:
+      obsidian-e2e:
+        condition: service_healthy
+      webdriver-chrome:
+        condition: service_healthy
+    networks:
+      - e2e-network
+    command: ["npm", "run", "test:e2e:docker"]
+
+volumes:
+  obsidian-config:
+    driver: local
+
+networks:
+  e2e-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

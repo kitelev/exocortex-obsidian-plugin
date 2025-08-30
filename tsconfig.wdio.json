@@ -19,8 +19,11 @@
   "include": [
     "wdio.conf.ts",
     "wdio.conf.ci.ts",
+    "wdio.e2e.conf.ts",
     "tests/ui/**/*.ts",
-    "tests/ui/**/*.d.ts"
+    "tests/ui/**/*.d.ts",
+    "tests/e2e/**/*.ts",
+    "tests/e2e/**/*.d.ts"
   ],
   "exclude": ["node_modules"]
 }

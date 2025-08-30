@@ -1,0 +1,341 @@
+name: 'E2E Tests (Obsidian Service)'
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'tests/e2e/**'
+      - 'package.json'
+      - 'wdio.*.conf.ts'
+      - '.github/workflows/e2e-obsidian-service.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'tests/e2e/**' 
+      - 'package.json'
+      - 'wdio.*.conf.ts'
+  workflow_dispatch:
+    inputs:
+      test_suite:
+        description: 'Test suite to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'modal'
+          - 'layout'
+          - 'universal'
+      obsidian_version:
+        description: 'Obsidian version'
+        required: false
+        default: 'latest'
+        type: choice
+        options:
+          - 'latest'
+          - '1.4.16'
+          - '1.5.0'
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  e2e-tests:
+    name: 'E2E Tests (wdio-obsidian-service)'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        test-suite:
+          - name: 'Create Asset Modal'
+            spec: 'create-asset-modal.spec.ts'
+            timeout: 10
+          - name: 'Dynamic Layout'
+            spec: 'dynamic-layout.spec.ts'
+            timeout: 8
+          - name: 'Universal Layout'
+            spec: 'universal-layout.spec.ts'
+            timeout: 8
+
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 'Install Dependencies'
+        run: npm ci
+
+      - name: 'Build Plugin'
+        run: |
+          npm run build
+          ls -la main.js manifest.json
+
+      - name: 'Setup Virtual Display (Linux)'
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      - name: 'Setup Test Environment'
+        shell: bash
+        run: |
+          # Create test directories
+          mkdir -p tests/e2e/test-results/screenshots
+          mkdir -p tests/e2e/test-results/allure-results
+          mkdir -p tests/e2e/.obsidian-cache
+          
+          # Setup test vault
+          mkdir -p tests/e2e/test-vault/.obsidian/plugins/exocortex-obsidian-plugin
+          
+          # Copy plugin files
+          cp main.js tests/e2e/test-vault/.obsidian/plugins/exocortex-obsidian-plugin/
+          cp manifest.json tests/e2e/test-vault/.obsidian/plugins/exocortex-obsidian-plugin/
+          cp styles.css tests/e2e/test-vault/.obsidian/plugins/exocortex-obsidian-plugin/ 2>/dev/null || echo "No styles.css found"
+          
+          # Copy test data
+          cp -r classes tests/e2e/test-vault/ 2>/dev/null || echo "No classes directory found"
+          cp -r properties tests/e2e/test-vault/ 2>/dev/null || echo "No properties directory found"
+          cp -r ontologies tests/e2e/test-vault/ 2>/dev/null || echo "No ontologies directory found"
+
+      - name: 'Enable Plugin in Test Vault'
+        shell: bash
+        run: |
+          cat > tests/e2e/test-vault/.obsidian/community-plugins.json << 'EOF'
+          ["exocortex-obsidian-plugin"]
+          EOF
+
+      - name: 'Run E2E Tests - ${{ matrix.test-suite.name }}'
+        timeout-minutes: ${{ matrix.test-suite.timeout }}
+        shell: bash
+        run: |
+          if [[ "${{ github.event.inputs.test_suite }}" == "all" ]] || [[ "${{ github.event.inputs.test_suite }}" == "" ]] || [[ "${{ matrix.test-suite.spec }}" == *"${{ github.event.inputs.test_suite }}"* ]]; then
+            npx wdio run wdio.e2e.conf.ts --spec "tests/e2e/specs/${{ matrix.test-suite.spec }}"
+          else
+            echo "Skipping ${{ matrix.test-suite.name }} based on input filter"
+          fi
+        env:
+          CI: true
+          OBSIDIAN_VERSION: ${{ github.event.inputs.obsidian_version || 'latest' }}
+
+      - name: 'Capture Test Logs on Failure'
+        if: failure()
+        shell: bash
+        run: |
+          echo "Capturing test logs..."
+          
+          # Capture Obsidian logs if available
+          find tests/e2e/.obsidian-cache -name "*.log" -type f -exec cp {} tests/e2e/test-results/ \; 2>/dev/null || echo "No Obsidian logs found"
+          
+          # Capture WDIO logs
+          find . -name "wdio-*.log" -type f -exec cp {} tests/e2e/test-results/ \; 2>/dev/null || echo "No WDIO logs found"
+          
+          # System information for debugging
+          echo "System Information:" > tests/e2e/test-results/system-info.txt
+          echo "OS: ${{ runner.os }}" >> tests/e2e/test-results/system-info.txt
+          echo "Node version: $(node --version)" >> tests/e2e/test-results/system-info.txt
+          echo "NPM version: $(npm --version)" >> tests/e2e/test-results/system-info.txt
+          echo "Test suite: ${{ matrix.test-suite.name }}" >> tests/e2e/test-results/system-info.txt
+
+      - name: 'Upload Test Results'
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-results-${{ runner.os }}-${{ matrix.test-suite.name }}-${{ github.run_number }}
+          path: |
+            tests/e2e/test-results/
+          retention-days: 14
+
+      - name: 'Upload Screenshots'
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-screenshots-${{ runner.os }}-${{ matrix.test-suite.name }}-${{ github.run_number }}
+          path: tests/e2e/test-results/screenshots/
+          retention-days: 7
+
+  stability-test:
+    name: 'Stability Test'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v4
+
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 'Install Dependencies'
+        run: npm ci
+
+      - name: 'Build Plugin'
+        run: npm run build
+
+      - name: 'Setup Virtual Display'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      - name: 'Make Scripts Executable'
+        run: chmod +x run-e2e-*.sh
+
+      - name: 'Run Stability Tests'
+        run: |
+          ./run-e2e-stable.sh
+        env:
+          CI: true
+
+      - name: 'Upload Stability Results'
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stability-results-${{ github.run_number }}
+          path: tests/e2e/test-results/run-*/
+          retention-days: 14
+
+  quick-test:
+    name: 'Quick E2E Test'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v4
+
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 'Install Dependencies'
+        run: npm ci
+
+      - name: 'Build Plugin'
+        run: npm run build
+
+      - name: 'Setup Virtual Display'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
+          echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      - name: 'Make Scripts Executable'
+        run: chmod +x run-e2e-*.sh
+
+      - name: 'Run Quick E2E Test'
+        run: |
+          ./run-e2e-quick.sh
+        env:
+          CI: true
+
+      - name: 'Upload Quick Test Results'
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quick-e2e-results-${{ github.run_number }}
+          path: tests/e2e/test-results/
+          retention-days: 7
+
+  report-results:
+    name: 'Report Test Results'
+    runs-on: ubuntu-latest
+    needs: [e2e-tests]
+    if: always()
+    
+    steps:
+      - name: 'Download All Artifacts'
+        uses: actions/download-artifact@v4
+        
+      - name: 'Generate Summary Report'
+        run: |
+          echo "# E2E Test Results (Obsidian Service)" > summary.md
+          echo "" >> summary.md
+          echo "**Test Method**: wdio-obsidian-service (Direct Obsidian Integration)" >> summary.md
+          echo "" >> summary.md
+          
+          # Count results by OS and test suite
+          declare -A results
+          passed_total=0
+          failed_total=0
+          
+          for result_dir in e2e-results-*; do
+            if [ -d "$result_dir" ]; then
+              os=$(echo "$result_dir" | cut -d'-' -f3)
+              test_name=$(echo "$result_dir" | cut -d'-' -f4)
+              
+              # Check for test results
+              if find "$result_dir" -name "*.json" -exec grep -l "\"failures\": 0" {} \; | head -n1 > /dev/null 2>&1; then
+                echo "✅ $os - $test_name: PASSED" >> summary.md
+                ((passed_total++))
+                results["$os-passed"]=$((${results["$os-passed"]} + 1))
+              else
+                echo "❌ $os - $test_name: FAILED" >> summary.md
+                ((failed_total++))
+                results["$os-failed"]=$((${results["$os-failed"]} + 1))
+              fi
+            fi
+          done
+          
+          echo "" >> summary.md
+          echo "## Summary by OS" >> summary.md
+          for os in ubuntu windows macos; do
+            os_passed=${results["$os-passed"]}
+            os_failed=${results["$os-failed"]}
+            if [[ $os_passed -gt 0 || $os_failed -gt 0 ]]; then
+              echo "- **$os**: $os_passed passed, $os_failed failed" >> summary.md
+            fi
+          done
+          
+          echo "" >> summary.md
+          echo "**Overall**: $passed_total passed, $failed_total failed" >> summary.md
+          
+          if [[ $failed_total -eq 0 ]]; then
+            echo "🎉 **All tests passed!**" >> summary.md
+          else
+            echo "⚠️ **Some tests failed - please check the artifacts for details**" >> summary.md
+          fi
+          
+          cat summary.md
+
+      - name: 'Comment PR with Results'
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (fs.existsSync('summary.md')) {
+              const summary = fs.readFileSync('summary.md', 'utf8');
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: summary
+              });
+            }

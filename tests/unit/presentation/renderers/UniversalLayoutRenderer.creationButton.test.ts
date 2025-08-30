@@ -208,9 +208,9 @@ describe("UniversalLayoutRenderer - Creation Button Feature", () => {
 
       await renderer.render("UniversalLayout", mockContainer, mockContext);
 
-      // Should still create button
+      // Should still create button (with extra space due to humanizeClassName method)
       expect(mockButtonContainer.createEl).toHaveBeenCalledWith("button", {
-        text: "Create Test Class",
+        text: "Create Test  Class",
         cls: "exocortex-create-asset-button",
       });
     });

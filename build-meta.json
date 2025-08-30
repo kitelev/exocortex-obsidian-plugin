@@ -1735,7 +1735,7 @@
       "format": "esm"
     },
     "src/domain/services/SemanticPropertyDiscoveryService.ts": {
-      "bytes": 14372,
+      "bytes": 14899,
       "imports": [
         {
           "path": "obsidian",
@@ -1756,7 +1756,7 @@
       "format": "esm"
     },
     "src/presentation/modals/CreateAssetModal.ts": {
-      "bytes": 23781,
+      "bytes": 23734,
       "imports": [
         {
           "path": "obsidian",
@@ -2461,7 +2461,7 @@
           "bytesInOutput": 3728
         },
         "src/domain/services/SemanticPropertyDiscoveryService.ts": {
-          "bytesInOutput": 4756
+          "bytesInOutput": 4791
         },
         "src/presentation/modals/EnhancedCreateAssetModal.ts": {
           "bytesInOutput": 7152
@@ -2521,7 +2521,7 @@
           "bytesInOutput": 3447
         }
       },
-      "bytes": 181590
+      "bytes": 181625
     }
   }
 }

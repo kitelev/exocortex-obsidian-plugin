@@ -1,0 +1,50 @@
+# E2E Test Runner Dockerfile
+FROM node:18-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    chromium \
+    chromium-chromedriver \
+    curl \
+    bash \
+    git
+
+# Install wait-for-it script for service dependencies
+RUN wget -O /usr/local/bin/wait-for-it https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh \
+    && chmod +x /usr/local/bin/wait-for-it
+
+# Set Chrome environment variables
+ENV CHROME_BIN=/usr/bin/chromium-browser \
+    CHROME_PATH=/usr/bin/chromium-browser \
+    CHROMIUM_FLAGS="--disable-software-rasterizer --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-renderer-backgrounding --disable-features=TranslateUI --disable-ipc-flooding-protection"
+
+# Create app directory
+WORKDIR /workspace
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Install additional E2E testing dependencies
+RUN npm install --save-dev \
+    @wdio/cli@^8.0.0 \
+    @wdio/local-runner@^8.0.0 \
+    @wdio/mocha-framework@^8.0.0 \
+    @wdio/spec-reporter@^8.0.0 \
+    @wdio/docker-service@^8.0.0 \
+    webdriverio@^8.0.0
+
+# Create test results directory
+RUN mkdir -p /test-results /wdio-logs
+
+# Set execution permissions for scripts
+RUN chmod +x /workspace/tests/e2e/docker/run-stable-quick.sh || true
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# Default command
+CMD ["npm", "run", "test:e2e:docker"]

@@ -1,0 +1,15 @@
+{
+  "legacyEditor": false,
+  "livePreview": true,
+  "showLineNumber": true,
+  "spellcheck": false,
+  "showFrontmatter": true,
+  "defaultViewMode": "preview",
+  "alwaysUpdateLinks": true,
+  "newFileLocation": "root",
+  "attachmentFolderPath": "attachments",
+  "useMarkdownLinks": true,
+  "showUnsupportedFiles": false,
+  "promptDelete": false,
+  "enabledPlugins": ["exocortex-obsidian-plugin"]
+}
