@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Obsidian v0.15.9</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+    <link href="css/vdi.css" rel="stylesheet">
+  </head>
+  <body>
+    <!--On Screen Keyboard-->
+    <div id="Keyboard" class="lsosk">
+      <button onclick="$('#Keyboard').toggle(100)" id="keyboardClose">X</button>
+      <div id="osk"></div>
+    </div>
+    <!--File Browser-->
+    <div id="files">
+      <iframe id="files_frame" name="files_frame" src="files" frameborder="0"></iframe>
+      <div class="close" onclick="$('#files').toggle(100)"></div>
+    </div>
+    <!-- Display -->
+    <div id="display"></div>
+    <!-- SideBar -->
+    <div id="sidebar">
+      <textarea id="clipboard" cols="100" rows="100" class="stopcapture"></textarea>
+      <div class="menu">
+        <img class="icons" title="On Screen Keyboard" src="css/keyboard.svg" onclick="poposk()"/>
+        <img class="icons" title="File Manager" src="css/files.svg" onclick="popfiles()"/>
+        <img class="icons" title="Fit to Window" src="css/fit.svg" onclick="resize()"/>
+        <img class="icons" title="Fullscreen" src="css/fullscreen.svg" onclick="fullscreen()"/>
+      </div>
+      <div class="close" onclick="$('#sidebar').toggle(100)"></div>
+    </div>
+    <div id="sideopen" onclick="$('#sidebar').toggle(100)"></div>
+    <!-- Storage for encoded connection string -->
+    <input type="hidden" id="connectionstring" value="eyJpdiI6IllOTlVFMVhZZlBLVWxSOVpVeEFhanc9PSIsInZhbHVlIjoiNEJZSDdrSDBTaEJKTThxaW5Ddm5mU25kSlYyY2FSbFhrQmd4VmRmKzVPOTFpY3RqSDlQWGtGUkJXM2Mrb1ZibklpM2hwYWM3R1hjSFc1MXJGVjBXWjhqR2hFdTJQOEZRSDh6cENPZUVuUkdMeVhvWjBsQUVNa1NSWisvcXNtOXoweGpLUEZyak44TjdZNHdIaU9sR2JKbU15L0JPYTB6bVliVG0zc3lsOHVqamZVQ0hDR1ZCY0RsUHBZMFd3NVZiWnpIbldaR0V5b3p4VGVja3ZWcmVtTEFtdW41M0swcnpFbDc2YVkwN21uT0VhenFNQzhrS3RxdVQ3NkM1UnF0TCJ9" />
+    <input type="hidden" id="keyboard" value="en-us-qwerty" />
+    <!-- Javascript -->
+    <script src="js/vendor/guac.min.js"></script>
+    <script src="js/vendor/jquery.min.js"></script>
+    <script src="js/rdp.js"></script>
+  </body>
+</html>
