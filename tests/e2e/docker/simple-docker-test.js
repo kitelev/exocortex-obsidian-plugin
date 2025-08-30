@@ -29,7 +29,7 @@ async function runTests() {
         {
             name: 'Container responds to HTTP requests',
             test: async () => {
-                const res = await makeRequest('http://localhost:8080');
+                const res = await makeRequest('http://localhost:8084');
                 if (res.status !== 200) {
                     throw new Error(`Expected status 200, got ${res.status}`);
                 }
@@ -38,7 +38,7 @@ async function runTests() {
         {
             name: 'Obsidian web interface is loaded',
             test: async () => {
-                const res = await makeRequest('http://localhost:8080');
+                const res = await makeRequest('http://localhost:8084');
                 if (!res.data.includes('Obsidian')) {
                     throw new Error('Obsidian not found in response');
                 }
@@ -47,7 +47,7 @@ async function runTests() {
         {
             name: 'Web interface includes required elements',
             test: async () => {
-                const res = await makeRequest('http://localhost:8080');
+                const res = await makeRequest('http://localhost:8084');
                 const requiredElements = ['<!DOCTYPE html>', 'vdi.css', 'Keyboard'];
                 for (const element of requiredElements) {
                     if (!res.data.includes(element)) {
