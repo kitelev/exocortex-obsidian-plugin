@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  obsidian:
+    image: ghcr.io/sytone/obsidian-remote:latest
+    platform: linux/amd64
+    container_name: obsidian-e2e-simple
+    ports:
+      - "8084:8080"
+    volumes:
+      - ../../../main.js:/vaults/plugin/main.js:ro
+      - ../../../manifest.json:/vaults/plugin/manifest.json:ro
+      - ./test-vault:/vaults/test
+    environment:
+      - PUID=1000
+      - PGID=1000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 30s

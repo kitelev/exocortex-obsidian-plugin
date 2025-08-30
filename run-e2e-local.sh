@@ -19,9 +19,17 @@ npm run build
 # Create test vault directory
 echo "📁 Setting up test vault..."
 mkdir -p tests/e2e/test-vault/.obsidian/plugins/exocortex-obsidian-plugin
-cp -r classes tests/e2e/test-vault/ || echo "No classes directory found"
-cp -r properties tests/e2e/test-vault/ || echo "No properties directory found"  
-cp -r ontologies tests/e2e/test-vault/ || echo "No ontologies directory found"
+
+# Test vault classes are already in place
+if [ -d "tests/e2e/test-vault/classes" ]; then
+  echo "✅ Test vault classes already present"
+else
+  echo "⚠️ No test vault classes found - creating sample files"
+  mkdir -p tests/e2e/test-vault/classes
+  echo "# Asset Class" > tests/e2e/test-vault/classes/Asset.md
+  echo "# Task Class" > tests/e2e/test-vault/classes/Task.md
+  echo "# Project Class" > tests/e2e/test-vault/classes/Project.md
+fi
 
 # Copy plugin files to test vault
 cp main.js tests/e2e/test-vault/.obsidian/plugins/exocortex-obsidian-plugin/
