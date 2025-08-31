@@ -1,76 +1,99 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
 
 /**
- * Playwright configuration for UI testing
- * Tests the Create Child Task button functionality in real Obsidian environment
+ * Real E2E Testing Configuration for Exocortex Plugin
+ * Tests the actual plugin in real Obsidian environments
  */
 export default defineConfig({
-  testDir: "./tests/ui",
-
-  // Maximum time one test can run
-  timeout: 30 * 1000,
-
+  testDir: './tests/e2e/playwright',
+  
   // Test execution settings
   fullyParallel: false, // Run tests sequentially for Obsidian
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: 1, // Single worker for Obsidian testing
-
-  // Reporter configuration
+  workers: 1, // Single worker for Obsidian instance
+  
+  // Reporting
   reporter: [
-    ["html", { outputFolder: "test-results/ui-tests" }],
-    ["junit", { outputFile: "test-results/ui-tests.xml" }],
-    ["list"],
+    ['html', { outputFolder: 'playwright-report' }],
+    ['json', { outputFile: 'test-results/playwright-results.json' }],
+    ['list'],
+    ['./tests/e2e/playwright/utils/screenshot-reporter.ts']
   ],
-
-  // Shared settings for all projects
-  use: {
-    // Base URL for Obsidian
-    baseURL: "obsidian://open",
-
-    // Collect trace on failure
-    trace: "on-first-retry",
-
-    // Screenshot on failure
-    screenshot: "only-on-failure",
-
-    // Video on failure
-    video: "retain-on-failure",
-
-    // Action timeout
-    actionTimeout: 10 * 1000,
-
-    // Navigation timeout
-    navigationTimeout: 30 * 1000,
+  
+  // Global timeout settings
+  timeout: 60000, // 60 seconds per test
+  expect: {
+    timeout: 10000, // 10 seconds for assertions
   },
-
-  // Configure projects for different testing scenarios
+  
+  use: {
+    // Base settings
+    baseURL: 'obsidian://open',
+    
+    // Screenshot settings
+    screenshot: {
+      mode: 'only-on-failure',
+      fullPage: true,
+    },
+    
+    // Video recording
+    video: process.env.CI ? 'retain-on-failure' : 'off',
+    
+    // Tracing for debugging
+    trace: 'on-first-retry',
+    
+    // Custom test data
+    testIdAttribute: 'data-test-id',
+  },
+  
+  // Projects for different test scenarios
   projects: [
     {
-      name: "Desktop Obsidian",
+      name: 'desktop-app',
+      testMatch: /.*\.spec\.ts$/,
       use: {
-        ...devices["Desktop Chrome"],
-        // Custom launch options for Obsidian
+        ...devices['Desktop Chrome'],
+        // Path to Obsidian executable
         launchOptions: {
-          executablePath: "/Applications/Obsidian.app/Contents/MacOS/Obsidian",
-          args: ["--enable-automation", "--no-sandbox"],
+          executablePath: process.platform === 'darwin' 
+            ? '/Applications/Obsidian.app/Contents/MacOS/Obsidian'
+            : process.platform === 'win32'
+            ? 'C:\\Program Files\\Obsidian\\Obsidian.exe'
+            : '/usr/bin/obsidian', // Linux
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            `--vault-path=${path.join(__dirname, 'tests/e2e/playwright/test-vault')}`,
+          ],
         },
       },
     },
+    
     {
-      name: "CI Tests",
+      name: 'web-based',
+      testMatch: /.*\.web\.spec\.ts$/,
       use: {
-        ...devices["Desktop Chrome"],
-        headless: true,
+        ...devices['Desktop Chrome'],
+        baseURL: 'http://localhost:8084', // For Docker testing
       },
-      testMatch: "**/*.test.ts",
     },
   ],
-
-  // Web server configuration (not needed for Obsidian)
-  // webServer: undefined,
-
-  // Global setup/teardown
-  globalSetup: "./tests/ui/global-setup.ts",
-  globalTeardown: "./tests/ui/global-teardown.ts",
+  
+  // Global setup and teardown
+  globalSetup: './tests/e2e/playwright/setup/global-setup.ts',
+  globalTeardown: './tests/e2e/playwright/setup/global-teardown.ts',
+  
+  // Output folder for test artifacts
+  outputDir: 'test-results/playwright',
+  
+  // Web server configuration (for Docker tests)
+  webServer: process.env.USE_DOCKER ? {
+    command: 'docker run -d -p 8084:8080 --name obsidian-e2e ghcr.io/sytone/obsidian-remote:latest',
+    port: 8084,
+    timeout: 120 * 1000,
+    reuseExistingServer: !process.env.CI,
+  } : undefined,
 });

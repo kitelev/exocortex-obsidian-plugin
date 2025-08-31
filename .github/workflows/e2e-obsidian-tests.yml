@@ -1,0 +1,256 @@
+name: E2E Obsidian Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'tests/e2e-obsidian/**'
+      - 'jest.e2e-obsidian.config.js'
+      - 'package.json'
+      - '.github/workflows/e2e-obsidian-tests.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'src/**'
+      - 'tests/e2e-obsidian/**'
+      - 'jest.e2e-obsidian.config.js'
+      - 'package.json'
+  workflow_dispatch:
+    inputs:
+      test_pattern:
+        description: 'Test pattern to run (optional)'
+        required: false
+        default: ''
+      debug_mode:
+        description: 'Enable debug mode'
+        type: boolean
+        required: false
+        default: false
+
+env:
+  NODE_VERSION: '18'
+  FORCE_COLOR: 1
+  CI: true
+
+jobs:
+  e2e-obsidian-tests:
+    runs-on: ubuntu-latest
+    name: Real E2E Tests (jest-environment-obsidian)
+    
+    strategy:
+      matrix:
+        test-suite:
+          - UniversalLayout
+          - DynamicLayout  
+          - CreateAssetModal
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install system dependencies for headless testing
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            xvfb \
+            libgtk-3-0 \
+            libgbm-dev \
+            libxss1 \
+            libasound2 \
+            fonts-liberation \
+            libappindicator3-1 \
+            libatk-bridge2.0-0 \
+            libdrm2 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxrandr2 \
+            libnss3 \
+            libxss1 \
+            libgconf-2-4
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm list jest-environment-obsidian || (echo "jest-environment-obsidian not found" && exit 1)
+
+      - name: Verify test environment setup
+        run: |
+          echo "Node version: $(node --version)"
+          echo "NPM version: $(npm --version)"
+          echo "Jest config exists: $(test -f jest.e2e-obsidian.config.js && echo 'YES' || echo 'NO')"
+          echo "Test files exist:"
+          find tests/e2e-obsidian -name "*.test.ts" || echo "No test files found"
+
+      - name: Setup virtual display
+        run: |
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          echo "XVFB_PID=$!" >> $GITHUB_ENV
+          sleep 3
+          echo "Virtual display started on :99"
+
+      - name: Run specific E2E test suite
+        env:
+          DISPLAY: :99
+          NODE_ENV: test
+        run: |
+          TEST_PATTERN="${{ matrix.test-suite }}"
+          if [[ "${{ github.event.inputs.test_pattern }}" != "" ]]; then
+            TEST_PATTERN="${{ github.event.inputs.test_pattern }}"
+          fi
+          
+          echo "Running E2E tests with pattern: $TEST_PATTERN"
+          
+          if [[ "${{ github.event.inputs.debug_mode }}" == "true" ]]; then
+            npm run test:e2e-obsidian -- --testNamePattern="$TEST_PATTERN" --verbose --detectOpenHandles
+          else
+            npm run test:e2e-obsidian -- --testNamePattern="$TEST_PATTERN"
+          fi
+
+      - name: Generate test report
+        if: always()
+        run: |
+          echo "## E2E Test Results (${{ matrix.test-suite }})" >> $GITHUB_STEP_SUMMARY
+          if [[ -f "test-results/e2e-obsidian-results.xml" ]]; then
+            echo "Test results found, processing..." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No test results file found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-obsidian-test-results-${{ matrix.test-suite }}
+          path: |
+            test-results/
+            jest-coverage/
+            *.log
+          retention-days: 7
+
+      - name: Cleanup virtual display
+        if: always()
+        run: |
+          if [[ "$XVFB_PID" != "" ]]; then
+            kill $XVFB_PID || true
+            echo "Virtual display stopped"
+          fi
+
+  docker-e2e-tests:
+    runs-on: ubuntu-latest
+    name: Docker E2E Tests
+    needs: e2e-obsidian-tests
+    if: always() && (needs.e2e-obsidian-tests.result == 'success' || github.event_name == 'workflow_dispatch')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and run E2E tests in Docker
+        run: |
+          echo "Building Docker image for E2E tests..."
+          docker-compose -f docker-compose.e2e-obsidian.yml build
+
+          echo "Running E2E tests in Docker..."
+          docker-compose -f docker-compose.e2e-obsidian.yml up --abort-on-container-exit
+
+      - name: Extract test results from Docker
+        if: always()
+        run: |
+          # Copy test results from Docker volume
+          docker-compose -f docker-compose.e2e-obsidian.yml cp e2e-obsidian-tests:/app/test-results ./docker-test-results/ || true
+          
+          # Show container logs
+          echo "## Docker Container Logs" >> $GITHUB_STEP_SUMMARY
+          docker-compose -f docker-compose.e2e-obsidian.yml logs >> $GITHUB_STEP_SUMMARY || true
+
+      - name: Upload Docker test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-e2e-test-results
+          path: |
+            docker-test-results/
+            docker-compose.logs
+          retention-days: 7
+
+      - name: Cleanup Docker
+        if: always()
+        run: |
+          docker-compose -f docker-compose.e2e-obsidian.yml down -v || true
+          docker system prune -f || true
+
+  results-summary:
+    runs-on: ubuntu-latest
+    name: Test Results Summary
+    needs: [e2e-obsidian-tests, docker-e2e-tests]
+    if: always()
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-test-results
+
+      - name: Generate comprehensive summary
+        run: |
+          echo "# E2E Obsidian Tests Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Matrix tests results
+          echo "## Matrix Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Suite | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|------------|--------|" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.e2e-obsidian-tests.result }}" == "success" ]]; then
+            echo "| UniversalLayout | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+            echo "| DynamicLayout | ✅ Passed |" >> $GITHUB_STEP_SUMMARY  
+            echo "| CreateAssetModal | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| All Suites | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Docker tests results
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Docker Test Results" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ needs.docker-e2e-tests.result }}" == "success" ]]; then
+            echo "✅ Docker E2E tests passed successfully" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.docker-e2e-tests.result }}" == "skipped" ]]; then
+            echo "⏭️ Docker E2E tests were skipped" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Docker E2E tests failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Test artifacts summary
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Artifacts" >> $GITHUB_STEP_SUMMARY
+          find all-test-results -type f -name "*.log" -o -name "*.xml" -o -name "*.json" | head -10 | while read file; do
+            echo "- \`$(basename "$file")\`" >> $GITHUB_STEP_SUMMARY
+          done
+
+      - name: Check overall test status
+        run: |
+          if [[ "${{ needs.e2e-obsidian-tests.result }}" != "success" ]]; then
+            echo "E2E Obsidian tests failed"
+            exit 1
+          fi
+          
+          if [[ "${{ needs.docker-e2e-tests.result }}" == "failure" ]]; then
+            echo "Docker E2E tests failed"
+            exit 1
+          fi
+          
+          echo "All E2E tests completed successfully!"

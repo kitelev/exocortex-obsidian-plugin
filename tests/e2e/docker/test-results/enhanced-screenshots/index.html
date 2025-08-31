@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enhanced Obsidian Screenshots - 2025-08-30T18-01-51</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 42px;
+        }
+        .meta {
+            color: #6b7280;
+            font-size: 16px;
+        }
+        .stats {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4f46e5;
+        }
+        .stat-label {
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: rgba(255,255,255,0.3);
+            transform: translateX(-50%);
+        }
+        .timeline-item {
+            margin-bottom: 60px;
+            position: relative;
+        }
+        .timeline-item:nth-child(odd) .timeline-content {
+            margin-right: 51%;
+            text-align: right;
+        }
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-left: 51%;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            top: 20px;
+            width: 20px;
+            height: 20px;
+            background: #4f46e5;
+            border: 4px solid white;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+        .timeline-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .screenshot-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .screenshot-desc {
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+        .screenshot-img {
+            width: 100%;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .screenshot-img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 10000;
+            padding: 40px;
+        }
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Enhanced Obsidian Screenshots</h1>
+            <div class="meta">
+                Captured on 8/30/2025 at 11:01:58 PM<br>
+                <strong>Environment:</strong> Docker Container (http://localhost:8084)
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">5</div>
+                <div class="stat-label">Total Screenshots</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">10</div>
+                <div class="stat-label">Test Scenarios</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">1920×1080</div>
+                <div class="stat-label">Resolution</div>
+            </div>
+        </div>
+        
+        <div class="timeline">
+            
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="screenshot-title">Step 1: Obsidian Welcome Screen</div>
+                        <div class="screenshot-desc">11:01:55 PM</div>
+                        <img src="2025-08-30T18-01-51_01_initial_load.png" 
+                             alt="Obsidian Welcome Screen" 
+                             class="screenshot-img"
+                             onclick="openModal('2025-08-30T18-01-51_01_initial_load.png')">
+                    </div>
+                </div>
+            
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="screenshot-title">Step 2: UI Hover Effects</div>
+                        <div class="screenshot-desc">11:01:55 PM</div>
+                        <img src="2025-08-30T18-01-51_04_hover_state.png" 
+                             alt="UI Hover Effects" 
+                             class="screenshot-img"
+                             onclick="openModal('2025-08-30T18-01-51_04_hover_state.png')">
+                    </div>
+                </div>
+            
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="screenshot-title">Step 3: Virtual Keyboard Shown</div>
+                        <div class="screenshot-desc">11:01:56 PM</div>
+                        <img src="2025-08-30T18-01-51_05_keyboard_visible.png" 
+                             alt="Virtual Keyboard Shown" 
+                             class="screenshot-img"
+                             onclick="openModal('2025-08-30T18-01-51_05_keyboard_visible.png')">
+                    </div>
+                </div>
+            
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="screenshot-title">Step 4: Files Panel Display</div>
+                        <div class="screenshot-desc">11:01:57 PM</div>
+                        <img src="2025-08-30T18-01-51_06_files_panel.png" 
+                             alt="Files Panel Display" 
+                             class="screenshot-img"
+                             onclick="openModal('2025-08-30T18-01-51_06_files_panel.png')">
+                    </div>
+                </div>
+            
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="screenshot-title">Step 5: Settings/Preferences Panel</div>
+                        <div class="screenshot-desc">11:01:57 PM</div>
+                        <img src="2025-08-30T18-01-51_07_settings.png" 
+                             alt="Settings/Preferences Panel" 
+                             class="screenshot-img"
+                             onclick="openModal('2025-08-30T18-01-51_07_settings.png')">
+                    </div>
+                </div>
+            
+        </div>
+    </div>
+    
+    <div id="modal" class="modal" onclick="closeModal()">
+        <span class="modal-close">&times;</span>
+        <img id="modal-img" class="modal-content">
+    </div>
+    
+    <script>
+        function openModal(src) {
+            const modal = document.getElementById('modal');
+            const modalImg = document.getElementById('modal-img');
+            modal.classList.add('active');
+            modalImg.src = src;
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+</body>
+</html>

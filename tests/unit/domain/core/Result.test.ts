@@ -144,6 +144,30 @@ describe("Result", () => {
     });
   });
 
+  describe("Additional error cases", () => {
+    it("should handle Result.fail with null error message", () => {
+      // Given & When & Then
+      expect(() => {
+        // Use Reflect to bypass TypeScript type checking
+        Reflect.construct(Result, [false, null]);
+      }).toThrow("InvalidOperation: A failing result needs to contain an error message");
+    });
+
+    it("should maintain error state consistency", () => {
+      // Given
+      const error = "Consistent error";
+      const result = Result.fail(error);
+
+      // When & Then - All error access methods should return same value
+      expect(result.error).toBe(error);
+      expect(result.getError()).toBe(error);
+      expect(result.getErrorMessage()).toBe(error);
+      expect(result.errorValue()).toBe(error);
+      expect(result.isFailure).toBe(true);
+      expect(result.isSuccess).toBe(false);
+    });
+  });
+
   describe("Result.combine", () => {
     it("should return success when all results are successful", () => {
       // Given
@@ -386,7 +410,33 @@ describe("Result", () => {
       expect(errorMessage).toContain("'apostrophes'");
       expect(errorMessage).toContain("\n");
     });
-  });
+
+    it("should provide error message through all error methods", () => {
+      // Given
+      const errorMessage = "Test error message";
+      const result = Result.fail(errorMessage);
+
+      // When & Then
+      expect(result.getError()).toBe(errorMessage);
+      expect(result.getErrorMessage()).toBe(errorMessage);
+      expect(result.errorValue()).toBe(errorMessage);
+    });
+
+    it("should handle error when attempting invalid construction combinations", () => {
+      // Test all invalid constructor parameter combinations
+      expect(() => {
+        Reflect.construct(Result, [true, "error", "value"]);
+      }).toThrow("InvalidOperation: A result cannot be successful and contain an error");
+
+      expect(() => {
+        Reflect.construct(Result, [false, null]);
+      }).toThrow("InvalidOperation: A failing result needs to contain an error message");
+
+      expect(() => {
+        Reflect.construct(Result, [false, undefined]);
+      }).toThrow("InvalidOperation: A failing result needs to contain an error message");
+    });
+  };
 
   describe("Edge Cases and Performance", () => {
     it("should handle very long error messages", () => {
@@ -441,6 +491,32 @@ describe("Result", () => {
       expect(duration).toBeLessThan(50); // Should be reasonably fast
     });
 
+    it("should handle combine with mixed types and edge cases", () => {
+      // Test empty results, null values, and mixed success/failure
+      const results = [
+        Result.ok(null),
+        Result.ok(undefined),
+        Result.ok(0),
+        Result.ok(false),
+        Result.ok(""),
+        Result.ok("valid"),
+      ];
+
+      const combined = Result.combine(results);
+      expect(combined.isSuccess).toBe(true);
+
+      // Test with failure in mixed results
+      const mixedResults = [
+        Result.ok("first"),
+        Result.fail("middle error"),
+        Result.ok("third"),
+      ];
+
+      const mixedCombined = Result.combine(mixedResults);
+      expect(mixedCombined.isFailure).toBe(true);
+      expect(mixedCombined.getError()).toBe("middle error");
+    });
+
     it("should maintain consistency across multiple operations", () => {
       // Given
       const result = Result.ok("consistent value");
@@ -451,6 +527,75 @@ describe("Result", () => {
         expect(result.isSuccess).toBe(true);
         expect(result.isFailure).toBe(false);
       }
+    });
+
+    it("should handle concurrent access to Result properties", async () => {
+      // Given
+      const result = Result.ok("concurrent value");
+      const errorResult = Result.fail("concurrent error");
+
+      // When - Simulate concurrent access
+      const promises = Array.from({ length: 10 }, async () => {
+        return {
+          successValue: result.getValue(),
+          successFlag: result.isSuccess,
+          errorValue: errorResult.getError(),
+          errorFlag: errorResult.isFailure,
+        };
+      });
+
+      const results = await Promise.all(promises);
+
+      // Then - All concurrent accesses should return consistent values
+      results.forEach(r => {
+        expect(r.successValue).toBe("concurrent value");
+        expect(r.successFlag).toBe(true);
+        expect(r.errorValue).toBe("concurrent error");
+        expect(r.errorFlag).toBe(true);
+      });
+    });
+    it("should handle Result creation with extreme edge cases", () => {
+      // Test with various falsy values that are valid
+      const falsyResults = [
+        Result.ok(null),
+        Result.ok(undefined),
+        Result.ok(0),
+        Result.ok(false),
+        Result.ok(""),
+        Result.ok(NaN),
+      ];
+
+      falsyResults.forEach((result, index) => {
+        expect(result.isSuccess).toBe(true);
+        expect(result.isFailure).toBe(false);
+        // Each should return its specific falsy value
+        const value = result.getValue();
+        switch(index) {
+          case 0: expect(value).toBe(null); break;
+          case 1: expect(value).toBe(undefined); break;
+          case 2: expect(value).toBe(0); break;
+          case 3: expect(value).toBe(false); break;
+          case 4: expect(value).toBe(""); break;
+          case 5: expect(Number.isNaN(value)).toBe(true); break;
+        }
+      });
+    });
+
+    it("should handle Result.fail with various error types", () => {
+      // Test with different error message types that could be passed
+      const errorResults = [
+        Result.fail("string error"),
+        Result.fail(String(404)), // Number converted to string
+        Result.fail(String(true)), // Boolean converted to string
+        Result.fail(JSON.stringify({error: "object"})), // Object serialized
+      ];
+
+      errorResults.forEach(result => {
+        expect(result.isFailure).toBe(true);
+        expect(result.isSuccess).toBe(false);
+        expect(typeof result.getError()).toBe("string");
+        expect(result.getError().length).toBeGreaterThan(0);
+      });
     });
   });
 });

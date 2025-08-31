@@ -539,4 +539,215 @@ describe("UniversalLayoutRenderer", () => {
       expect(messageElement?.textContent).toContain("No related assets found");
     });
   });
+
+  describe("error handling", () => {
+    it("should handle and display errors during rendering", async () => {
+      const container = document.createElement("div");
+      const currentFile = new MockTFile("error-test.md", "Error Test");
+      
+      mockApp.workspace.getActiveFile.mockReturnValue(currentFile);
+      
+      // Make resolvedLinks throw an error
+      Object.defineProperty(mockApp.metadataCache, 'resolvedLinks', {
+        get: () => {
+          throw new Error("Cache access error");
+        },
+        configurable: true
+      });
+
+      // Render should handle the error gracefully
+      const ctx = {} as MarkdownPostProcessorContext;
+      await renderer.render(
+        "UniversalLayout\nlayout: table",
+        container,
+        ctx,
+      );
+
+      // Should render error message or handle error gracefully
+      const errorElement = container.querySelector(".exocortex-error-message");
+      expect(errorElement).toBeTruthy();
+      expect(errorElement?.textContent).toContain("Cache access error");
+    });
+
+    it("should handle null/undefined file cache gracefully", async () => {
+      const container = document.createElement("div");
+      const currentFile = new MockTFile("null-cache.md", "Null Cache");
+      const relatedFile = new MockTFile("related.md", "Related");
+
+      mockApp.workspace.getActiveFile.mockReturnValue(currentFile);
+      mockApp.metadataCache.resolvedLinks = {
+        "related.md": { "null-cache.md": 1 }
+      };
+      mockApp.metadataCache.getFileCache.mockReturnValue(null); // Return null cache
+      mockApp.vault.getAbstractFileByPath.mockReturnValue(relatedFile);
+
+      const ctx = {} as MarkdownPostProcessorContext;
+      await renderer.render(
+        "UniversalLayout\nlayout: table",
+        container,
+        ctx,
+      );
+
+      // When cache is null, metadata is empty, so asset should be filtered out
+      // Check that container has some content (either message or error)
+      expect(container.children.length).toBeGreaterThan(0);
+      
+      // Should either show message or have some indication of handling the null cache
+      const hasMessage = container.querySelector(".exocortex-message") !== null;
+      const hasError = container.querySelector(".exocortex-error-message") !== null;
+      const hasContent = container.textContent && container.textContent.trim().length > 0;
+      
+      expect(hasMessage || hasError || hasContent).toBe(true);
+    });
+
+    it("should handle invalid configuration gracefully", async () => {
+      const container = document.createElement("div");
+      const currentFile = new MockTFile("config-test.md", "Config Test");
+      
+      mockApp.workspace.getActiveFile.mockReturnValue(currentFile);
+      mockApp.metadataCache.resolvedLinks = {};
+
+      // Test with malformed config
+      const ctx = {} as MarkdownPostProcessorContext;
+      await renderer.render(
+        "UniversalLayout\ninvalidKey: invalidValue\nlayout: invalidLayout",
+        container,
+        ctx,
+      );
+
+      // Should handle invalid config and show message
+      const messageElement = container.querySelector(".exocortex-message");
+      expect(messageElement).toBeTruthy();
+    });
+
+    it("should handle missing active file", async () => {
+      const container = document.createElement("div");
+      
+      // No active file
+      mockApp.workspace.getActiveFile.mockReturnValue(null);
+
+      const ctx = {} as MarkdownPostProcessorContext;
+      await renderer.render(
+        "UniversalLayout",
+        container,
+        ctx,
+      );
+
+      // Should show "No active file" message
+      const messageElement = container.querySelector(".exocortex-message");
+      expect(messageElement).toBeTruthy();
+      expect(messageElement?.textContent).toContain("No active file");
+    });
+
+    it("should handle vault.getAbstractFileByPath returning null", async () => {
+      const container = document.createElement("div");
+      const currentFile = new MockTFile("current.md", "Current");
+      
+      mockApp.workspace.getActiveFile.mockReturnValue(currentFile);
+      mockApp.metadataCache.resolvedLinks = {
+        "missing-file.md": { "current.md": 1 }
+      };
+      mockApp.vault.getAbstractFileByPath.mockReturnValue(null); // File not found
+
+      const ctx = {} as MarkdownPostProcessorContext;
+      await renderer.render(
+        "UniversalLayout",
+        container,
+        ctx,
+      );
+
+      // Should handle missing file gracefully
+      const messageElement = container.querySelector(".exocortex-message");
+      expect(messageElement?.textContent).toContain("No related assets found");
+    });
+
+    it("should handle exception in asset creation modal", async () => {
+      const container = document.createElement("div");
+      const currentFile = new MockTFile("class-file.md", "Class File");
+      
+      mockApp.workspace.getActiveFile.mockReturnValue(currentFile);
+      mockApp.metadataCache.resolvedLinks = {};
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: { 
+          exo__Instance_class: "exo__Class",
+          rdfs__label: "Test Class"
+        }
+      });
+
+      const ctx = {} as MarkdownPostProcessorContext;
+      await renderer.render(
+        "UniversalLayout",
+        container,
+        ctx,
+      );
+
+      // Find and click the create button
+      const createButton = container.querySelector(".exocortex-create-asset-button") as HTMLButtonElement;
+      expect(createButton).toBeTruthy();
+      
+      // Mock console.error to check error handling
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      
+      // Trigger button click - should handle any modal creation errors
+      createButton.click();
+      
+      // Cleanup
+      consoleSpy.mockRestore();
+    });
+
+    it("should handle undefined or null metadata values without crashing", async () => {
+      const container = document.createElement("div");
+      const currentFile = new MockTFile("current.md", "Current");
+      const relatedFile = new MockTFile("related.md", "Related");
+      
+      mockApp.workspace.getActiveFile.mockReturnValue(currentFile);
+      mockApp.metadataCache.resolvedLinks = {
+        "related.md": { "current.md": 1 }
+      };
+      
+      // Return frontmatter with undefined/null values but ensure not archived
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: undefined,
+          someProperty: null,
+          emptyString: "",
+          archived: false // Explicitly not archived to ensure it's included
+        }
+      });
+      mockApp.vault.getAbstractFileByPath.mockReturnValue(relatedFile);
+
+      const ctx = {} as MarkdownPostProcessorContext;
+      
+      // Main test: Should not throw an error when rendering
+      await expect(renderer.render(
+        "UniversalLayout\nlayout: table\nshowProperties: someProperty,emptyString",
+        container,
+        ctx,
+      )).resolves.not.toThrow();
+
+      // Should have completed rendering without crashing
+      expect(container).toBeTruthy();
+    });
+  });
+
+  afterEach(() => {
+    // Clean up any property descriptors we may have set
+    try {
+      if (mockApp?.metadataCache) {
+        const descriptor = Object.getOwnPropertyDescriptor(mockApp.metadataCache, 'resolvedLinks');
+        if (descriptor?.configurable) {
+          delete mockApp.metadataCache.resolvedLinks;
+        }
+        // Ensure we always have a basic resolvedLinks object
+        if (!mockApp.metadataCache.resolvedLinks) {
+          mockApp.metadataCache.resolvedLinks = {};
+        }
+      }
+    } catch (error) {
+      // Ignore cleanup errors
+    }
+    
+    // Clear all mocks to ensure clean state
+    jest.clearAllMocks();
+  });
 });

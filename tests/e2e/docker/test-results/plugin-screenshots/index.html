@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exocortex Plugin Test Report - 2025-08-30T18-11-47</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            padding: 40px 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border-radius: 20px;
+        }
+        h1 {
+            font-size: 42px;
+            color: white;
+            margin-bottom: 10px;
+        }
+        .meta {
+            color: rgba(255,255,255,0.8);
+            font-size: 16px;
+        }
+        .test-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #30363d;
+        }
+        .test-title {
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .test-status {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .status-passed {
+            background: #238636;
+            color: white;
+        }
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .screenshot-card {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .screenshot-card:hover {
+            transform: scale(1.02);
+            border-color: #58a6ff;
+        }
+        .screenshot-step {
+            padding: 10px 15px;
+            background: #1c2128;
+            font-size: 14px;
+            color: #8b949e;
+        }
+        .screenshot-desc {
+            padding: 10px 15px;
+            color: #c9d1d9;
+            font-weight: 500;
+        }
+        .screenshot-img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .summary {
+            background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .summary-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 Exocortex Plugin Functionality Tests</h1>
+        <div class="meta">
+            8/30/2025 11:12:01 PM<br>
+            Testing UniversalLayout, DynamicLayout, and CreateAssetModal
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <div class="summary">
+            <h2>Test Results Summary</h2>
+            <div class="summary-stats">
+                <div class="stat">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Tests Passed</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Total Tests</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Screenshots</div>
+                </div>
+            </div>
+        </div>
+        
+        
+                <div class="test-section">
+                    <div class="test-header">
+                        <div class="test-title">UniversalLayout</div>
+                        <div class="test-status status-passed">
+                            PASSED
+                        </div>
+                    </div>
+                    <div class="screenshots-grid">
+                        
+                            <div class="screenshot-card">
+                                <div class="screenshot-step">Step 1</div>
+                                <div class="screenshot-desc">Initial workspace state</div>
+                                <img src="2025-08-30T18-11-47_UniversalLayout_1.png" alt="Initial workspace state" class="screenshot-img">
+                            </div>
+                        
+                            <div class="screenshot-card">
+                                <div class="screenshot-step">Step 2</div>
+                                <div class="screenshot-desc">UniversalLayout structure rendered</div>
+                                <img src="2025-08-30T18-11-47_UniversalLayout_2.png" alt="UniversalLayout structure rendered" class="screenshot-img">
+                            </div>
+                        
+                            <div class="screenshot-card">
+                                <div class="screenshot-step">Step 3</div>
+                                <div class="screenshot-desc">Layout blocks activated</div>
+                                <img src="2025-08-30T18-11-47_UniversalLayout_3.png" alt="Layout blocks activated" class="screenshot-img">
+                            </div>
+                        
+                            <div class="screenshot-card">
+                                <div class="screenshot-step">Step 4</div>
+                                <div class="screenshot-desc">Test completed successfully</div>
+                                <img src="2025-08-30T18-11-47_UniversalLayout_4.png" alt="Test completed successfully" class="screenshot-img">
+                            </div>
+                        
+                    </div>
+                </div>
+            
+                <div class="test-section">
+                    <div class="test-header">
+                        <div class="test-title">DynamicLayout</div>
+                        <div class="test-status status-passed">
+                            PASSED
+                        </div>
+                    </div>
+                    <div class="screenshots-grid">
+                        
+                            <div class="screenshot-card">
+                                <div class="screenshot-step">Step 1</div>
+                                <div class="screenshot-desc">Initializing DynamicLayout test</div>
+                                <img src="2025-08-30T18-11-47_DynamicLayout_1.png" alt="Initializing DynamicLayout test" class="screenshot-img">
+                            </div>
+                        
+                            <div class="screenshot-card">
+                                <div class="screenshot-step">Step 2</div>
+                                <div class="screenshot-desc">Dynamic components rendered</div>
+                                <img src="2025-08-30T18-11-47_DynamicLayout_2.png" alt="Dynamic components rendered" class="screenshot-img">
+                            </div>
+                        
+                            <div class="screenshot-card">
+                                <div class="screenshot-step">Step 3</div>
+                                <div class="screenshot-desc">Layout switched to Project view</div>
+                                <img src="2025-08-30T18-11-47_DynamicLayout_3.png" alt="Layout switched to Project view" class="screenshot-img">
+                            </div>
+                        
+                            <div class="screenshot-card">
+                                <div class="screenshot-step">Step 4</div>
+                                <div class="screenshot-desc">Test completed successfully</div>
+                                <img src="2025-08-30T18-11-47_DynamicLayout_4.png" alt="Test completed successfully" class="screenshot-img">
+                            </div>
+                        
+                    </div>
+                </div>
+            
+                <div class="test-section">
+                    <div class="test-header">
+                        <div class="test-title">CreateAssetModal</div>
+                        <div class="test-status status-passed">
+                            PASSED
+                        </div>
+                    </div>
+                    <div class="screenshots-grid">
+                        
+                            <div class="screenshot-card">
+                                <div class="screenshot-step">Step 1</div>
+                                <div class="screenshot-desc">Asset creation button ready</div>
+                                <img src="2025-08-30T18-11-47_CreateAssetModal_1.png" alt="Asset creation button ready" class="screenshot-img">
+                            </div>
+                        
+                            <div class="screenshot-card">
+                                <div class="screenshot-step">Step 2</div>
+                                <div class="screenshot-desc">Modal opened with class selection</div>
+                                <img src="2025-08-30T18-11-47_CreateAssetModal_2.png" alt="Modal opened with class selection" class="screenshot-img">
+                            </div>
+                        
+                            <div class="screenshot-card">
+                                <div class="screenshot-step">Step 3</div>
+                                <div class="screenshot-desc">Properties form populated</div>
+                                <img src="2025-08-30T18-11-47_CreateAssetModal_3.png" alt="Properties form populated" class="screenshot-img">
+                            </div>
+                        
+                            <div class="screenshot-card">
+                                <div class="screenshot-step">Step 4</div>
+                                <div class="screenshot-desc">Asset created successfully</div>
+                                <img src="2025-08-30T18-11-47_CreateAssetModal_4.png" alt="Asset created successfully" class="screenshot-img">
+                            </div>
+                        
+                    </div>
+                </div>
+            
+    </div>
+</body>
+</html>

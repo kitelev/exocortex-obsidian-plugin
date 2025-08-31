@@ -1,0 +1,67 @@
+# Dockerfile for running jest-environment-obsidian E2E tests headlessly
+FROM node:18-bullseye
+
+# Install required packages for headless browser testing
+RUN apt-get update && apt-get install -y \
+    xvfb \
+    libgtk-3-0 \
+    libgbm-dev \
+    libxss1 \
+    libasound2 \
+    fonts-liberation \
+    libappindicator3-1 \
+    libatk-bridge2.0-0 \
+    libdrm2 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libnss3 \
+    libxss1 \
+    libgconf-2-4 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set environment variables for headless operation
+ENV DISPLAY=:99
+ENV NODE_ENV=test
+ENV CI=true
+ENV FORCE_COLOR=1
+
+# Create application directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production=false
+
+# Copy source code and tests
+COPY . .
+
+# Create a script to run tests with virtual display
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+# Start virtual display for headless testing\n\
+Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &\n\
+XVFB_PID=$!\n\
+\n\
+# Wait for X server to start\n\
+sleep 2\n\
+\n\
+# Trap to cleanup X server on exit\n\
+trap "kill $XVFB_PID || true" EXIT\n\
+\n\
+# Run the E2E tests\n\
+npm run test:e2e-obsidian\n\
+\n\
+# Exit with the test result\n\
+exit $?\n\
+' > /app/run-e2e-tests.sh && chmod +x /app/run-e2e-tests.sh
+
+# Health check to ensure container is ready
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD ps aux | grep -q '[X]vfb' || exit 1
+
+# Default command
+CMD ["/app/run-e2e-tests.sh"]

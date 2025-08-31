@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Obsidian Screenshot Gallery - 2025-08-30T17-53-27</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            font-size: 36px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .meta {
+            color: #8b949e;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+        }
+        .screenshot-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .screenshot-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+            border-color: #58a6ff;
+        }
+        .screenshot-header {
+            padding: 15px 20px;
+            background: #1c2128;
+            border-bottom: 1px solid #30363d;
+        }
+        .test-name {
+            font-weight: 600;
+            font-size: 18px;
+            color: #f0f6fc;
+        }
+        .test-step {
+            color: #8b949e;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .screenshot-container {
+            position: relative;
+            background: #0d1117;
+            padding: 10px;
+        }
+        .screenshot-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 4px;
+        }
+        .timestamp {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: #8b949e;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .status-pass {
+            background: #238636;
+            color: #ffffff;
+        }
+        .status-fail {
+            background: #da3633;
+            color: #ffffff;
+        }
+        .filter-bar {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .filter-btn {
+            background: #21262d;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            padding: 8px 16px;
+            margin: 0 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover {
+            background: #30363d;
+            border-color: #58a6ff;
+        }
+        .filter-btn.active {
+            background: #58a6ff;
+            color: #0d1117;
+            border-color: #58a6ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Obsidian Screenshot Gallery</h1>
+            <div class="meta">
+                <strong>Test Run:</strong> 2025-08-30T17-53-27 | 
+                <strong>Total Screenshots:</strong> 12 | 
+                <strong>Target:</strong> http://localhost:8084
+            </div>
+        </div>
+        
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterScreenshots('all')">All Screenshots</button>
+            <button class="filter-btn" onclick="filterScreenshots('initial')">Initial States</button>
+            <button class="filter-btn" onclick="filterScreenshots('final')">Final States</button>
+        </div>
+        
+        <div class="gallery" id="gallery">
+            
+                <div class="screenshot-card" data-step="startup">
+                    <div class="screenshot-header">
+                        <div class="test-name">
+                            Obsidian_Initial_Load
+                            
+                        </div>
+                        <div class="test-step">Step: startup</div>
+                    </div>
+                    <div class="screenshot-container">
+                        <img src="2025-08-30T17-53-27_Obsidian_Initial_Load_startup.png" alt="Obsidian_Initial_Load - startup" class="screenshot-img">
+                        <div class="timestamp">10:53:31 PM</div>
+                    </div>
+                </div>
+            
+                <div class="screenshot-card" data-step="initial">
+                    <div class="screenshot-header">
+                        <div class="test-name">
+                            Obsidian UI Elements
+                            <span class="status-badge status-pass">PASS</span>
+                        </div>
+                        <div class="test-step">Step: initial</div>
+                    </div>
+                    <div class="screenshot-container">
+                        <img src="2025-08-30T17-53-27_Obsidian_UI_Elements_initial.png" alt="Obsidian UI Elements - initial" class="screenshot-img">
+                        <div class="timestamp">10:53:31 PM</div>
+                    </div>
+                </div>
+            
+                <div class="screenshot-card" data-step="final">
+                    <div class="screenshot-header">
+                        <div class="test-name">
+                            Obsidian UI Elements
+                            <span class="status-badge status-pass">PASS</span>
+                        </div>
+                        <div class="test-step">Step: final</div>
+                    </div>
+                    <div class="screenshot-container">
+                        <img src="2025-08-30T17-53-27_Obsidian_UI_Elements_final.png" alt="Obsidian UI Elements - final" class="screenshot-img">
+                        <div class="timestamp">10:53:31 PM</div>
+                    </div>
+                </div>
+            
+                <div class="screenshot-card" data-step="initial">
+                    <div class="screenshot-header">
+                        <div class="test-name">
+                            Viewport and Layout
+                            <span class="status-badge status-pass">PASS</span>
+                        </div>
+                        <div class="test-step">Step: initial</div>
+                    </div>
+                    <div class="screenshot-container">
+                        <img src="2025-08-30T17-53-27_Viewport_and_Layout_initial.png" alt="Viewport and Layout - initial" class="screenshot-img">
+                        <div class="timestamp">10:53:31 PM</div>
+                    </div>
+                </div>
+            
+                <div class="screenshot-card" data-step="final">
+                    <div class="screenshot-header">
+                        <div class="test-name">
+                            Viewport and Layout
+                            <span class="status-badge status-pass">PASS</span>
+                        </div>
+                        <div class="test-step">Step: final</div>
+                    </div>
+                    <div class="screenshot-container">
+                        <img src="2025-08-30T17-53-27_Viewport_and_Layout_final.png" alt="Viewport and Layout - final" class="screenshot-img">
+                        <div class="timestamp">10:53:31 PM</div>
+                    </div>
+                </div>
+            
+                <div class="screenshot-card" data-step="initial">
+                    <div class="screenshot-header">
+                        <div class="test-name">
+                            Plugin Integration Check
+                            <span class="status-badge status-pass">PASS</span>
+                        </div>
+                        <div class="test-step">Step: initial</div>
+                    </div>
+                    <div class="screenshot-container">
+                        <img src="2025-08-30T17-53-27_Plugin_Integration_Check_initial.png" alt="Plugin Integration Check - initial" class="screenshot-img">
+                        <div class="timestamp">10:53:31 PM</div>
+                    </div>
+                </div>
+            
+                <div class="screenshot-card" data-step="final">
+                    <div class="screenshot-header">
+                        <div class="test-name">
+                            Plugin Integration Check
+                            <span class="status-badge status-pass">PASS</span>
+                        </div>
+                        <div class="test-step">Step: final</div>
+                    </div>
+                    <div class="screenshot-container">
+                        <img src="2025-08-30T17-53-27_Plugin_Integration_Check_final.png" alt="Plugin Integration Check - final" class="screenshot-img">
+                        <div class="timestamp">10:53:31 PM</div>
+                    </div>
+                </div>
+            
+                <div class="screenshot-card" data-step="initial">
+                    <div class="screenshot-header">
+                        <div class="test-name">
+                            Interactive Elements
+                            <span class="status-badge status-pass">PASS</span>
+                        </div>
+                        <div class="test-step">Step: initial</div>
+                    </div>
+                    <div class="screenshot-container">
+                        <img src="2025-08-30T17-53-27_Interactive_Elements_initial.png" alt="Interactive Elements - initial" class="screenshot-img">
+                        <div class="timestamp">10:53:32 PM</div>
+                    </div>
+                </div>
+            
+                <div class="screenshot-card" data-step="final">
+                    <div class="screenshot-header">
+                        <div class="test-name">
+                            Interactive Elements
+                            <span class="status-badge status-pass">PASS</span>
+                        </div>
+                        <div class="test-step">Step: final</div>
+                    </div>
+                    <div class="screenshot-container">
+                        <img src="2025-08-30T17-53-27_Interactive_Elements_final.png" alt="Interactive Elements - final" class="screenshot-img">
+                        <div class="timestamp">10:53:32 PM</div>
+                    </div>
+                </div>
+            
+                <div class="screenshot-card" data-step="initial">
+                    <div class="screenshot-header">
+                        <div class="test-name">
+                            Performance Metrics
+                            <span class="status-badge status-pass">PASS</span>
+                        </div>
+                        <div class="test-step">Step: initial</div>
+                    </div>
+                    <div class="screenshot-container">
+                        <img src="2025-08-30T17-53-27_Performance_Metrics_initial.png" alt="Performance Metrics - initial" class="screenshot-img">
+                        <div class="timestamp">10:53:32 PM</div>
+                    </div>
+                </div>
+            
+                <div class="screenshot-card" data-step="final">
+                    <div class="screenshot-header">
+                        <div class="test-name">
+                            Performance Metrics
+                            <span class="status-badge status-pass">PASS</span>
+                        </div>
+                        <div class="test-step">Step: final</div>
+                    </div>
+                    <div class="screenshot-container">
+                        <img src="2025-08-30T17-53-27_Performance_Metrics_final.png" alt="Performance Metrics - final" class="screenshot-img">
+                        <div class="timestamp">10:53:32 PM</div>
+                    </div>
+                </div>
+            
+                <div class="screenshot-card" data-step="complete">
+                    <div class="screenshot-header">
+                        <div class="test-name">
+                            Obsidian_Final_State
+                            
+                        </div>
+                        <div class="test-step">Step: complete</div>
+                    </div>
+                    <div class="screenshot-container">
+                        <img src="2025-08-30T17-53-27_Obsidian_Final_State_complete.png" alt="Obsidian_Final_State - complete" class="screenshot-img">
+                        <div class="timestamp">10:53:32 PM</div>
+                    </div>
+                </div>
+            
+        </div>
+    </div>
+    
+    <script>
+        function filterScreenshots(filter) {
+            const cards = document.querySelectorAll('.screenshot-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            cards.forEach(card => {
+                if (filter === 'all') {
+                    card.style.display = 'block';
+                } else if (card.dataset.step === filter) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

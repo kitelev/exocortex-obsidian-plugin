@@ -27,9 +27,6 @@ jest.mock(
   "../../../../src/infrastructure/repositories/ObsidianButtonRepository",
 );
 jest.mock(
-  "../../../../src/infrastructure/repositories/ObsidianQueryTemplateRepository",
-);
-jest.mock(
   "../../../../src/infrastructure/repositories/GraphSuggestionRepository",
 );
 jest.mock("../../../../src/infrastructure/services/ObsidianCommandExecutor");

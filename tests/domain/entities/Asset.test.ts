@@ -487,6 +487,254 @@ describe("Asset Entity", () => {
       expect(validAssets[0]!.getTitle()).toBe("Valid Asset");
     });
   });
+
+  describe("Additional branch coverage", () => {
+    it("should handle asset creation with long labels", () => {
+      const longLabel = "a".repeat(201); // Exceeds 200 character limit
+      const result = Asset.create({
+        id: AssetId.generate(),
+        label: longLabel,
+        className: ClassName.create("exo__Asset").getValue()!,
+        ontology: OntologyPrefix.create("exo").getValue()!,
+      });
+
+      expect(result.isFailure).toBe(true);
+      expect(result.getError()).toContain("cannot exceed 200 characters");
+    });
+
+    it("should handle updateTitle with various edge cases", () => {
+      const asset = Asset.create({
+        id: AssetId.generate(),
+        label: "Test Asset",
+        className: ClassName.create("exo__Asset").getValue()!,
+        ontology: OntologyPrefix.create("exo").getValue()!,
+      }).getValue()!;
+
+      // Test empty title
+      const emptyResult = asset.updateTitle("");
+      expect(emptyResult.isFailure).toBe(true);
+      expect(emptyResult.getError()).toBe("Asset title cannot be empty");
+
+      // Test whitespace-only title
+      const whitespaceResult = asset.updateTitle("   ");
+      expect(whitespaceResult.isFailure).toBe(true);
+      expect(whitespaceResult.getError()).toBe("Asset title cannot be empty");
+
+      // Test long title
+      const longTitle = "a".repeat(201);
+      const longResult = asset.updateTitle(longTitle);
+      expect(longResult.isFailure).toBe(true);
+      expect(longResult.getError()).toBe("Asset title cannot exceed 200 characters");
+
+      // Test successful update with trimming
+      const paddedTitle = "   Valid Title   ";
+      const successResult = asset.updateTitle(paddedTitle);
+      expect(successResult.isSuccess).toBe(true);
+      expect(asset.getTitle()).toBe("Valid Title");
+    });
+
+    it("should handle setProperty with various edge cases", () => {
+      const asset = Asset.create({
+        id: AssetId.generate(),
+        label: "Test Asset",
+        className: ClassName.create("exo__Asset").getValue()!,
+        ontology: OntologyPrefix.create("exo").getValue()!,
+      }).getValue()!;
+
+      // Test empty property key
+      const emptyKeyResult = asset.setProperty("", "value");
+      expect(emptyKeyResult.isFailure).toBe(true);
+      expect(emptyKeyResult.getError()).toBe("Property key cannot be empty");
+
+      // Test whitespace-only key
+      const whitespaceKeyResult = asset.setProperty("   ", "value");
+      expect(whitespaceKeyResult.isFailure).toBe(true);
+      expect(whitespaceKeyResult.getError()).toBe("Property key cannot be empty");
+
+      // Test successful property set
+      const successResult = asset.setProperty("validKey", "validValue");
+      expect(successResult.isSuccess).toBe(true);
+      expect(asset.getPropertyValue("validKey")).toBe("validValue");
+    });
+
+    it("should handle removeProperty edge cases", () => {
+      const asset = Asset.create({
+        id: AssetId.generate(),
+        label: "Test Asset",
+        className: ClassName.create("exo__Asset").getValue()!,
+        ontology: OntologyPrefix.create("exo").getValue()!,
+      }).getValue()!;
+
+      // Test removing non-existent property
+      const nonExistentResult = asset.removeProperty("nonExistent");
+      expect(nonExistentResult.isFailure).toBe(true);
+      expect(nonExistentResult.getError()).toBe("Property 'nonExistent' does not exist");
+
+      // Test successful removal
+      asset.setProperty("tempProp", "tempValue");
+      const successResult = asset.removeProperty("tempProp");
+      expect(successResult.isSuccess).toBe(true);
+      expect(asset.hasProperty("tempProp")).toBe(false);
+    });
+
+    it("should handle changeClass with null/undefined", () => {
+      const asset = Asset.create({
+        id: AssetId.generate(),
+        label: "Test Asset",
+        className: ClassName.create("exo__Asset").getValue()!,
+        ontology: OntologyPrefix.create("exo").getValue()!,
+      }).getValue()!;
+
+      const nullResult = asset.changeClass(null as any);
+      expect(nullResult.isFailure).toBe(true);
+      expect(nullResult.getError()).toBe("Class name cannot be null");
+    });
+
+    it("should handle updateDescription with various lengths", () => {
+      const asset = Asset.create({
+        id: AssetId.generate(),
+        label: "Test Asset",
+        className: ClassName.create("exo__Asset").getValue()!,
+        ontology: OntologyPrefix.create("exo").getValue()!,
+      }).getValue()!;
+
+      // Test very long description (over 2000 characters)
+      const longDescription = "a".repeat(2001);
+      const longResult = asset.updateDescription(longDescription);
+      expect(longResult.isFailure).toBe(true);
+      expect(longResult.getError()).toBe("Description cannot exceed 2000 characters");
+
+      // Test empty description (should be allowed)
+      const emptyResult = asset.updateDescription("");
+      expect(emptyResult.isSuccess).toBe(true);
+
+      // Test null description (should be allowed)
+      const nullResult = asset.updateDescription(null as any);
+      expect(nullResult.isSuccess).toBe(true);
+
+      // Test successful description with trimming
+      const paddedDescription = "   Valid Description   ";
+      const successResult = asset.updateDescription(paddedDescription);
+      expect(successResult.isSuccess).toBe(true);
+    });
+
+    it("should handle updateProperties with invalid data", () => {
+      const asset = Asset.create({
+        id: AssetId.generate(),
+        label: "Test Asset",
+        className: ClassName.create("exo__Asset").getValue()!,
+        ontology: OntologyPrefix.create("exo").getValue()!,
+      }).getValue()!;
+
+      // Test with empty property key
+      const emptyKeyResult = asset.updateProperties({ "": "value" });
+      expect(emptyKeyResult.isFailure).toBe(true);
+      expect(emptyKeyResult.getError()).toBe("Property key cannot be empty");
+
+      // Test with whitespace-only key
+      const whitespaceKeyResult = asset.updateProperties({ "   ": "value" });
+      expect(whitespaceKeyResult.isFailure).toBe(true);
+      expect(whitespaceKeyResult.getError()).toBe("Property key cannot be empty");
+
+      // Test successful bulk update
+      const successResult = asset.updateProperties({
+        prop1: "value1",
+        prop2: "value2",
+        prop3: "value3"
+      });
+      expect(successResult.isSuccess).toBe(true);
+      expect(asset.getPropertyValue("prop1")).toBe("value1");
+      expect(asset.getPropertyValue("prop2")).toBe("value2");
+      expect(asset.getPropertyValue("prop3")).toBe("value3");
+    });
+
+    it("should handle canDelete business logic", () => {
+      const asset = Asset.create({
+        id: AssetId.generate(),
+        label: "Test Asset",
+        className: ClassName.create("exo__Asset").getValue()!,
+        ontology: OntologyPrefix.create("exo").getValue()!,
+      }).getValue()!;
+
+      const deleteCheck = asset.canDelete();
+      expect(deleteCheck.canDelete).toBe(true);
+      expect(deleteCheck.reasons).toEqual([]);
+    });
+
+    it("should handle markAsDeleted with various scenarios", () => {
+      const asset = Asset.create({
+        id: AssetId.generate(),
+        label: "Test Asset",
+        className: ClassName.create("exo__Asset").getValue()!,
+        ontology: OntologyPrefix.create("exo").getValue()!,
+      }).getValue()!;
+
+      // Test successful deletion (no business rules preventing it)
+      const deleteResult = asset.markAsDeleted();
+      expect(deleteResult.isSuccess).toBe(true);
+    });
+  });
+});
+
+describe("Asset validation edge cases", () => {
+  it("should validate PropertyValue instances in properties map", () => {
+    // This tests the validation path in the validate() method
+    const result = Asset.create({
+      id: AssetId.generate(),
+      label: "Test Asset",
+      className: ClassName.create("exo__Asset").getValue()!,
+      ontology: OntologyPrefix.create("exo").getValue()!,
+      properties: {
+        validProp: "valid value" // This will be converted to PropertyValue
+      }
+    });
+
+    expect(result.isSuccess).toBe(true);
+    const asset = result.getValue()!;
+    expect(asset.hasProperty("validProp")).toBe(true);
+  });
+
+  it("should handle toFrontmatter with description", () => {
+    const asset = Asset.create({
+      id: AssetId.generate(),
+      label: "Test Asset",
+      className: ClassName.create("exo__Asset").getValue()!,
+      ontology: OntologyPrefix.create("exo").getValue()!,
+      description: "Test description"
+    }).getValue()!;
+
+    const frontmatter = asset.toFrontmatter();
+    expect(frontmatter.exo__Asset_description).toBe("Test description");
+  });
+
+  it("should handle toFrontmatter without description", () => {
+    const asset = Asset.create({
+      id: AssetId.generate(),
+      label: "Test Asset",
+      className: ClassName.create("exo__Asset").getValue()!,
+      ontology: OntologyPrefix.create("exo").getValue()!,
+    }).getValue()!;
+
+    const frontmatter = asset.toFrontmatter();
+    expect(frontmatter.exo__Asset_description).toBeUndefined();
+  });
+
+  it("should prevent property conflicts in toFrontmatter", () => {
+    const asset = Asset.create({
+      id: AssetId.generate(),
+      label: "Test Asset",
+      className: ClassName.create("exo__Asset").getValue()!,
+      ontology: OntologyPrefix.create("exo").getValue()!,
+      properties: {
+        exo__Asset_uid: "should not override", // This should not override the actual ID
+        customProp: "should be included"
+      }
+    }).getValue()!;
+
+    const frontmatter = asset.toFrontmatter();
+    expect(frontmatter.exo__Asset_uid).toBe(asset.getId().toString()); // Should use actual ID
+    expect(frontmatter.customProp).toBe("should be included"); // Custom prop should be included
+  });
 });
 
 describe("Asset Entity - FIRST Principles", () => {

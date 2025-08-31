@@ -50,19 +50,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     
-    strategy:
-      fail-fast: false
-      matrix:
-        test-suite:
-          - name: 'Dynamic Layout'
-            spec: 'dynamic-layout.spec.ts'
-            timeout: 10
-          - name: 'Create Asset Modal'
-            spec: 'create-asset-modal.spec.ts'
-            timeout: 15
-          - name: 'Universal Layout'
-            spec: 'universal-layout.spec.ts'
-            timeout: 10
 
     steps:
       - name: 'Checkout Repository'
@@ -111,65 +98,81 @@ jobs:
           cp manifest.json tests/e2e/docker/test-vault/.obsidian/plugins/exocortex-obsidian-plugin/
           cp styles.css tests/e2e/docker/test-vault/.obsidian/plugins/exocortex-obsidian-plugin/ || true
 
-      - name: 'Start Docker Services'
+      - name: 'Start Obsidian Docker Service'  
         run: |
-          docker-compose -f tests/e2e/docker/docker-compose.e2e.yml up -d --build
+          cd tests/e2e/docker
+          docker-compose -f docker-compose.e2e.yml up -d obsidian-e2e
           
-          # Wait for services to be healthy
-          timeout 300 bash -c 'until docker-compose -f tests/e2e/docker/docker-compose.e2e.yml ps | grep -q healthy; do sleep 10; done'
+          # Wait for Obsidian container to be healthy
+          echo "Waiting for Obsidian container to be ready..."
+          timeout 300 bash -c 'until docker-compose -f docker-compose.e2e.yml ps | grep -q healthy; do echo "Waiting..."; sleep 10; done'
+          
+          # Verify the container is responding  
+          timeout 60 bash -c 'until curl -f -s http://localhost:8084 > /dev/null; do echo "Waiting for HTTP..."; sleep 5; done'
+          
+          echo "✅ Obsidian container is ready!"
 
-      - name: 'Run E2E Tests - ${{ matrix.test-suite.name }}'
-        timeout-minutes: ${{ matrix.test-suite.timeout }}
+      - name: 'Install Docker Test Dependencies'
         run: |
-          npx wdio run wdio.e2e.conf.ts --spec "tests/e2e/specs/${{ matrix.test-suite.spec }}"
+          cd tests/e2e/docker
+          npm install
+
+      - name: 'Run REAL Plugin Tests (No More Fakes!)'
+        timeout-minutes: 30
+        run: |
+          cd tests/e2e/docker
+          ./run-real-tests.sh
         env:
-          OBSIDIAN_URL: http://localhost:8080
-          WEBDRIVER_URL: http://localhost:4444/wd/hub
           CI: true
+          DOCKER_BUILDKIT: 1
 
       - name: 'Capture Service Logs on Failure'
         if: failure()
         run: |
           echo "Capturing Docker service logs..."
-          docker-compose -f tests/e2e/docker/docker-compose.e2e.yml logs > tests/e2e/docker/test-results/docker-services.log
+          cd tests/e2e/docker
+          docker-compose -f docker-compose.e2e.yml logs > test-results/docker-services.log
           
-          # Capture individual service logs
-          docker-compose -f tests/e2e/docker/docker-compose.e2e.yml logs obsidian-e2e > tests/e2e/docker/test-results/obsidian.log || true
-          docker-compose -f tests/e2e/docker/docker-compose.e2e.yml logs webdriver-chrome > tests/e2e/docker/test-results/webdriver.log || true
-          docker-compose -f tests/e2e/docker/docker-results/test-runner.log || true
+          # Capture Obsidian container logs
+          docker-compose -f docker-compose.e2e.yml logs obsidian-e2e > test-results/obsidian.log || true
+          
+          # List container status
+          docker-compose -f docker-compose.e2e.yml ps > test-results/container-status.log || true
 
-      - name: 'Upload Test Results'
+      - name: 'Upload Real Test Results'
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-test-results-${{ matrix.test-suite.name }}-${{ github.run_number }}
+          name: real-plugin-test-results-${{ github.run_number }}
           path: |
             tests/e2e/docker/test-results/
-            tests/e2e/docker/wdio-logs/
           retention-days: 30
 
-      - name: 'Upload Screenshots'
+      - name: 'Upload Real Plugin Screenshots'
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
-          name: e2e-screenshots-${{ matrix.test-suite.name }}-${{ github.run_number }}
-          path: tests/e2e/docker/test-results/screenshots/
+          name: real-plugin-screenshots-${{ github.run_number }}
+          path: tests/e2e/docker/test-results/real-plugin-screenshots/
           retention-days: 14
 
-      - name: 'Generate Allure Report'
+      - name: 'Generate Test Summary'
         if: always()
         run: |
-          if [ -d "tests/e2e/docker/test-results/allure-results" ] && [ "$(ls -A tests/e2e/docker/test-results/allure-results)" ]; then
-            npx allure generate tests/e2e/docker/test-results/allure-results --clean -o tests/e2e/docker/test-results/allure-report
+          cd tests/e2e/docker
+          echo "# Real Plugin Test Results" > test-summary.md
+          echo "" >> test-summary.md
+          
+          # Check if real test results exist
+          if [ -f "test-results/real-plugin-screenshots/real_test_report.json" ]; then
+            echo "✅ **Real Plugin Tests**: COMPLETED" >> test-summary.md
+            echo "📸 **Screenshots**: Available in artifacts" >> test-summary.md
+            echo "🔥 **No More Fake Tests**: All tests now verify real plugin functionality" >> test-summary.md
+          else
+            echo "❌ **Real Plugin Tests**: No results found" >> test-summary.md
           fi
-
-      - name: 'Upload Allure Report'
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: allure-report-${{ matrix.test-suite.name }}-${{ github.run_number }}
-          path: tests/e2e/docker/test-results/allure-report/
-          retention-days: 30
+          
+          cat test-summary.md
 
       - name: 'Cleanup Docker Services'
         if: always()

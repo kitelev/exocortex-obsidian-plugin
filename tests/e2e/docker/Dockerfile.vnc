@@ -1,0 +1,52 @@
+# VNC Debugging Container for E2E Tests
+FROM consol/ubuntu-xfce-vnc:latest
+
+USER root
+
+# Install Node.js and Obsidian dependencies
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get install -y \
+        chromium-browser \
+        firefox \
+        libnss3 \
+        libatk1.0-0 \
+        libatk-bridge2.0-0 \
+        libdrm2 \
+        libxcomposite1 \
+        libxdamage1 \
+        libxrandr2 \
+        libgbm1 \
+        libxss1 \
+        libasound2
+
+# Install Obsidian AppImage
+WORKDIR /opt
+RUN wget -O obsidian.AppImage "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.5.12/Obsidian-1.5.12.AppImage" \
+    && chmod +x obsidian.AppImage \
+    && ./obsidian.AppImage --appimage-extract \
+    && rm obsidian.AppImage \
+    && mv squashfs-root obsidian \
+    && ln -sf /opt/obsidian/obsidian /usr/local/bin/obsidian
+
+# Create desktop shortcut for Obsidian
+RUN echo '[Desktop Entry]
+Version=1.0
+Name=Obsidian
+Comment=Knowledge base app
+Exec=/usr/local/bin/obsidian
+Icon=/opt/obsidian/obsidian.png
+Terminal=false
+Type=Application
+Categories=Office;' > /headless/Desktop/obsidian.desktop \
+    && chmod +x /headless/Desktop/obsidian.desktop
+
+# Set environment variables
+ENV VNC_PW=exocortex123
+ENV VNC_RESOLUTION=1920x1080
+ENV DISPLAY=:1
+
+# Switch back to default user
+USER 1000
+
+WORKDIR /headless

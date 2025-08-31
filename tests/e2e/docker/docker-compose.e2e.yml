@@ -6,73 +6,32 @@ services:
     platform: linux/amd64
     container_name: obsidian-e2e-test
     ports:
-      - "8080:8080"
+      - "8084:8080"  # Use 8084 to match existing test URLs
     volumes:
-      - ../../../:/workspace
-      - ./test-vault:/vault
-      - obsidian-config:/config
+      # Mount test vault with plugin files
+      - ./test-vault:/vaults/test-vault:ro
+      # Mount Obsidian config with plugin installation
+      - ./obsidian-config:/config
+      # Mount built plugin files directly into plugins directory
+      - ../../../main.js:/config/plugins/exocortex/main.js:ro
+      - ../../../manifest.json:/config/plugins/exocortex/manifest.json:ro
+      - ../../../styles.css:/config/plugins/exocortex/styles.css:ro
     environment:
       - PUID=1000
       - PGID=1000
-      - OBSIDIAN_PORT=8080
-      - OBSIDIAN_UID=1000
-      - OBSIDIAN_GID=1000
+      - TZ=UTC
       - CUSTOM_PORT=8080
-      - WEBPAGE_TITLE=Obsidian E2E Test
+      - WEBPAGE_TITLE=Exocortex Plugin E2E Tests
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
     restart: unless-stopped
     networks:
       - e2e-network
 
-  webdriver-chrome:
-    image: selenium/standalone-chrome:4.15.0
-    container_name: chrome-e2e-test
-    ports:
-      - "4444:4444"
-      - "7900:7900"  # VNC server for debugging
-    volumes:
-      - /dev/shm:/dev/shm
-    environment:
-      - SE_VNC_NO_PASSWORD=1
-      - SE_NODE_MAX_SESSIONS=1
-      - SE_NODE_SESSION_TIMEOUT=300
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-    networks:
-      - e2e-network
-
-  test-runner:
-    build:
-      context: .
-      dockerfile: Dockerfile.test-runner
-    container_name: e2e-test-runner
-    volumes:
-      - ../../../:/workspace
-      - ./test-results:/test-results
-      - ./wdio-logs:/wdio-logs
-    working_dir: /workspace
-    environment:
-      - NODE_ENV=test
-      - OBSIDIAN_URL=http://obsidian-e2e:8080
-      - WEBDRIVER_URL=http://webdriver-chrome:4444/wd/hub
-      - CI=true
-    depends_on:
-      obsidian-e2e:
-        condition: service_healthy
-      webdriver-chrome:
-        condition: service_healthy
-    networks:
-      - e2e-network
-    command: ["npm", "run", "test:e2e:docker"]
 
 volumes:
   obsidian-config:
