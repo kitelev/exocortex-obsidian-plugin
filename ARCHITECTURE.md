@@ -1,26 +1,26 @@
-# Exocortex Plugin Architecture
+# Exocortex Plugin Architecture (v8.0.0 - Simplified)
 
 ## Overview
 
-This plugin follows Clean Architecture principles with a clear separation of concerns and dependency inversion.
+This plugin follows Clean Architecture principles with a streamlined focus on three core features: UniversalLayout, DynamicLayout, and CreateAssetModal. The architecture maintains clear separation of concerns while removing unnecessary complexity.
 
 ## System Architecture
 
-### Clean Architecture Layers
+### Clean Architecture Layers (Simplified v8.0.0)
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    Presentation Layer                    │
-│  (UI Components, Views, Controllers, Processors)         │
+│  CreateAssetModal, UniversalLayout, DynamicLayout        │
 ├─────────────────────────────────────────────────────────┤
 │                    Application Layer                     │
-│  (Use Cases, Services, DTOs, Application Logic)          │
+│  CreateAssetUseCase, PropertyEditingUseCase              │
 ├─────────────────────────────────────────────────────────┤
 │                      Domain Layer                        │
-│  (Entities, Value Objects, Domain Services, Core Logic)  │
+│  Asset, ClassLayout, LayoutBlock, Ontology               │
 ├─────────────────────────────────────────────────────────┤
 │                   Infrastructure Layer                   │
-│  (Adapters, Repositories, External Services, Framework)  │
+│  ObsidianAssetRepository, DIContainer, ServiceProvider   │
 └─────────────────────────────────────────────────────────┘
 ```
 

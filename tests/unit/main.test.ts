@@ -34,57 +34,13 @@ jest.mock("../../src/infrastructure/container/DIContainer", () => {
   };
 });
 
-// Mock Graph
-const mockGraphMethods = {
-  add: jest.fn(),
-  remove: jest.fn(),
-  clear: jest.fn(),
-  match: jest.fn().mockReturnValue([]),
-  merge: jest.fn(),
-  size: jest.fn().mockReturnValue(0),
-};
+// Graph mock removed - semantic core removed in refactoring
 
-jest.mock("../../src/domain/semantic/core/Graph", () => ({
-  Graph: jest.fn().mockImplementation(() => mockGraphMethods),
-}));
+// SPARQLProcessor removed in refactoring
 
-// Mock SPARQLProcessor
-jest.mock("../../src/presentation/processors/SPARQLProcessor", () => ({
-  SPARQLProcessor: jest.fn().mockImplementation(() => ({
-    processCodeBlock: jest.fn().mockResolvedValue(undefined),
-    getCacheStatistics: jest.fn().mockReturnValue({
-      hits: 10,
-      misses: 5,
-      hitRate: 66.7,
-      size: 8,
-      maxSize: 500,
-      totalQueries: 15,
-      evictions: 0,
-    }),
-    invalidateCache: jest.fn(),
-    destroy: jest.fn(),
-  })),
-}));
+// GraphVisualizationProcessor removed in refactoring
 
-// Mock GraphVisualizationProcessor
-jest.mock(
-  "../../src/presentation/processors/GraphVisualizationProcessor",
-  () => ({
-    GraphVisualizationProcessor: jest.fn().mockImplementation(() => ({
-      processCodeBlock: jest.fn().mockResolvedValue(undefined),
-    })),
-  }),
-);
-
-// Mock RDFService
-jest.mock("../../src/application/services/RDFService", () => ({
-  RDFService: jest.fn().mockImplementation(() => ({
-    getNamespaceManager: jest.fn().mockReturnValue({
-      getPrefix: jest.fn().mockReturnValue("exo"),
-      expand: jest.fn().mockReturnValue("http://example.org/exo#"),
-    }),
-  })),
-}));
+// RDFService removed in refactoring
 
 // Mock all modals
 jest.mock("../../src/presentation/modals/CreateAssetModal", () => ({
@@ -93,31 +49,13 @@ jest.mock("../../src/presentation/modals/CreateAssetModal", () => ({
   })),
 }));
 
-jest.mock("../../src/presentation/modals/ExportRDFModal", () => ({
-  ExportRDFModal: jest.fn().mockImplementation(() => ({
-    open: jest.fn(),
-  })),
-}));
+// RDF modals removed in refactoring
 
-jest.mock("../../src/presentation/modals/ImportRDFModal", () => ({
-  ImportRDFModal: jest.fn().mockImplementation(() => ({
-    open: jest.fn(),
-  })),
-}));
-
-jest.mock("../../src/presentation/modals/QuickTaskModal", () => ({
-  QuickTaskModal: jest.fn().mockImplementation(() => ({
-    open: jest.fn(),
-  })),
-}));
+// QuickTaskModal removed in refactoring
 
 // Mock repositories and use cases
-jest.mock("../../src/infrastructure/repositories/ObsidianTaskRepository");
 jest.mock("../../src/infrastructure/repositories/ObsidianAssetRepository");
-jest.mock("../../src/application/use-cases/CreateTaskFromProjectUseCase");
-jest.mock("../../src/application/use-cases/GetCurrentProjectUseCase");
-jest.mock("../../src/domain/semantic/core/IndexedGraph");
-jest.mock("../../src/application/services/ExoFocusService");
+// Deleted components removed from mocks
 
 describe("ExocortexPlugin - Comprehensive Tests", () => {
   let app: App;

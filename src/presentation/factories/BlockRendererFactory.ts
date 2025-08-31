@@ -6,8 +6,7 @@ import {
   IBlockRenderer,
   BlockRenderingContext,
 } from "./IBlockRendererFactory";
-import { DynamicBacklinksBlockRenderer } from "../renderers/DynamicBacklinksBlockRenderer";
-import { ButtonsBlockRenderer } from "../renderers/ButtonsBlockRenderer";
+// Removed deleted renderers - only core functionality remains
 
 // Adapter pattern to bridge old block renderers to new interface
 class BlockRendererAdapter implements IBlockRenderer {
@@ -39,12 +38,8 @@ export class BlockRendererFactory implements IBlockRendererFactory {
   private readonly renderers: Map<BlockType, any> = new Map();
 
   constructor(private readonly app: App) {
-    // Initialize supported block renderers
-    this.renderers.set(
-      "dynamic-backlinks",
-      new DynamicBacklinksBlockRenderer(app),
-    );
-    this.renderers.set("Buttons", new ButtonsBlockRenderer(app));
+    // Initialize supported block renderers - empty after refactoring
+    // Core layouts are handled elsewhere
   }
 
   createRenderer(blockType: BlockType): Result<IBlockRenderer> {

@@ -2,9 +2,9 @@ import { ObsidianCommandExecutor } from "../../../../src/infrastructure/services
 import { IAssetRepository } from "../../../../src/domain/repositories/IAssetRepository";
 import { 
   CommandExecutionRequest, 
-  CommandExecutionResult 
+  CommandExecutionResult,
+  CommandType
 } from "../../../../src/application/services/ICommandExecutor";
-import { CommandType } from "../../../../src/domain/entities/ButtonCommand";
 import { Result } from "../../../../src/domain/core/Result";
 import { Asset } from "../../../../src/domain/entities/Asset";
 import { App, Notice, TFile, TFolder, Modal } from "obsidian";

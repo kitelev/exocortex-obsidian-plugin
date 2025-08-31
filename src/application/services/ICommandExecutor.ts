@@ -1,28 +1,34 @@
 import { Result } from "../../domain/core/Result";
-import {
-  ButtonCommand,
-  CommandType,
-} from "../../domain/entities/ButtonCommand";
+
+// Define CommandType enum locally since ButtonCommand was removed
+export enum CommandType {
+  CREATE_ASSET = "CREATE_ASSET",
+  OPEN_ASSET = "OPEN_ASSET",
+  DELETE_ASSET = "DELETE_ASSET", 
+  RUN_TEMPLATE = "RUN_TEMPLATE",
+  EXECUTE_SEARCH = "EXECUTE_SEARCH",
+  TRIGGER_WORKFLOW = "TRIGGER_WORKFLOW",
+  CUSTOM = "CUSTOM",
+  CREATE_CHILD_TASK = "CREATE_CHILD_TASK",
+  CREATE_CHILD_AREA = "CREATE_CHILD_AREA"
+}
 
 /**
  * Interface for command execution service
  * This is an application service that orchestrates command execution
  */
 export interface CommandExecutionRequest {
-  command: ButtonCommand;
-  context: {
-    commandId: string;
-    commandType: CommandType;
-    parameters: Record<string, any>;
-    timestamp: Date;
-    template?: string;
-    script?: string;
-    targetClass?: string;
-    assetId?: string;
-    currentView?: string;
-    currentClass?: string;
-    selection?: string[];
-  };
+  commandId: string;
+  commandType: CommandType;
+  parameters: Record<string, any>;
+  timestamp: Date;
+  template?: string;
+  script?: string;
+  targetClass?: string;
+  assetId?: string;
+  currentView?: string;
+  currentClass?: string;
+  selection?: string[];
 }
 
 export interface CommandExecutionResult {

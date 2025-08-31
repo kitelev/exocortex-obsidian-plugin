@@ -1,4 +1,4 @@
-import { App, Modal, Setting, Notice, TFile } from "obsidian";
+import { App, Modal, Setting, Notice } from "obsidian";
 import { CreateAssetUseCase } from "../../application/use-cases/CreateAssetUseCase";
 import { DIContainer } from "../../infrastructure/container/DIContainer";
 import { IOntologyRepository } from "../../domain/repositories/IOntologyRepository";
@@ -6,7 +6,6 @@ import { IClassViewRepository } from "../../domain/repositories/IClassViewReposi
 import { PropertyCacheService } from "../../domain/services/PropertyCacheService";
 import { SemanticPropertyDiscoveryService } from "../../domain/services/SemanticPropertyDiscoveryService";
 import { CircuitBreakerService } from "../../infrastructure/resilience/CircuitBreakerService";
-import { Result } from "../../domain/core/Result";
 import { CreateAssetResponse } from "../../application/use-cases/CreateAssetUseCase";
 
 /**

@@ -1,5 +1,6 @@
 import { Result } from "../core/Result";
-import { QueryEngineType } from "../ports/IQueryEngine";
+// Define QueryEngineType locally since IQueryEngine was removed
+export type QueryEngineType = "dataview" | "native" | "datacore";
 
 /**
  * Exocortex Plugin Settings Interface

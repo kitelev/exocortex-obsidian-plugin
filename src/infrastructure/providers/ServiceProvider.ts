@@ -2,11 +2,9 @@ import { Plugin } from "obsidian";
 import { IServiceProvider } from "../../application/ports/IServiceProvider";
 import { ExocortexSettings } from "../../domain/entities/ExocortexSettings";
 import { DIContainer } from "../container/DIContainer";
-import { LayoutRenderer } from "../../presentation/renderers/LayoutRenderer";
 import { PropertyRenderer } from "../../presentation/components/PropertyRenderer";
 import { IClassLayoutRepository } from "../../domain/repositories/IClassLayoutRepository";
 import { IAssetRepository } from "../../domain/repositories/IAssetRepository";
-import { PropertyEditingUseCase } from "../../application/use-cases/PropertyEditingUseCase";
 
 /**
  * Service Provider following Creator Pattern (GRASP)
@@ -28,21 +26,13 @@ export class ServiceProvider implements IServiceProvider {
 
     // Initialize Asset Repository - Required for UniversalLayoutRenderer
     const assetRepository =
-      this.container.resolve<IAssetRepository>("IAssetRepository");
+      DIContainer.getInstance().resolve<IAssetRepository>("IAssetRepository");
     this.services.set("IAssetRepository", assetRepository);
 
-    // Initialize Layout Renderer with proper dependencies
-    const layoutRepository = this.container.resolve<IClassLayoutRepository>(
-      "IClassLayoutRepository",
-    );
-    const layoutRenderer = new LayoutRenderer(
-      this.plugin.app,
-      layoutRepository,
-    );
-    this.services.set("LayoutRenderer", layoutRenderer);
+    // LayoutRenderer removed - handled by UniversalLayoutRenderer and DynamicLayoutRenderer
 
     // Initialize Property Renderer
-    const propertyEditingUseCase = this.container.getPropertyEditingUseCase();
+    const propertyEditingUseCase = DIContainer.getInstance().getPropertyEditingUseCase();
     const propertyRenderer = new PropertyRenderer(
       this.plugin.app,
       propertyEditingUseCase,

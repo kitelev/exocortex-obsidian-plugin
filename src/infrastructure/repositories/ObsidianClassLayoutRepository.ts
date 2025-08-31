@@ -6,7 +6,6 @@ import {
 } from "../../domain/entities/ClassLayout";
 import { ClassName } from "../../domain/value-objects/ClassName";
 import { AssetId } from "../../domain/value-objects/AssetId";
-import { Result } from "../../domain/core/Result";
 
 export class ObsidianClassLayoutRepository implements IClassLayoutRepository {
   private cache: Map<string, ClassLayout[]> = new Map();

@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext, TFile, TAbstractFile } from "obsidian";
+import { MarkdownPostProcessorContext, TFile } from "obsidian";
 import {
   BaseAssetRelationsRenderer,
   AssetRelation,

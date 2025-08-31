@@ -4,7 +4,6 @@ import { ClassView, DisplayOptions } from "../../domain/aggregates/ClassView";
 import { ClassName } from "../../domain/value-objects/ClassName";
 import { AssetId } from "../../domain/value-objects/AssetId";
 import { Result } from "../../domain/core/Result";
-import { UIButton } from "../../domain/entities/UIButton";
 
 /**
  * Obsidian implementation of ClassView repository
@@ -147,26 +146,12 @@ export class ObsidianClassViewRepository implements IClassViewRepository {
         return Result.fail<ClassView | null>(classNameResult.error);
       }
 
-      // Parse buttons
-      const buttonRefs = fm["ui__ClassView_buttons"] || [];
-      const buttons: UIButton[] = [];
-
-      for (const buttonRef of this.ensureArray(buttonRefs)) {
-        const buttonResult = await this.loadButton(
-          this.cleanAssetReference(buttonRef),
-        );
-        if (buttonResult.isSuccess && buttonResult.getValue()) {
-          buttons.push(buttonResult.getValue()!);
-        }
-      }
 
       // Parse display options
       const displayOptions: DisplayOptions = {
         showProperties: fm["ui__ClassView_showProperties"] !== false,
         showRelations: fm["ui__ClassView_showRelations"] !== false,
         showBacklinks: fm["ui__ClassView_showBacklinks"] !== false,
-        showButtons: fm["ui__ClassView_showButtons"] !== false,
-        buttonPosition: fm["ui__ClassView_buttonPosition"] || "top",
       };
 
       // Create ClassView
@@ -178,7 +163,6 @@ export class ObsidianClassViewRepository implements IClassViewRepository {
       const classViewResult = ClassView.create({
         id: idResult.getValue(),
         className: classNameResult.getValue(),
-        buttons: buttons,
         layoutTemplate: fm["ui__ClassView_template"],
         displayOptions: displayOptions,
       });
@@ -195,64 +179,14 @@ export class ObsidianClassViewRepository implements IClassViewRepository {
     }
   }
 
-  private async loadButton(
-    buttonName: string,
-  ): Promise<Result<UIButton | null>> {
-    try {
-      const file = this.app.vault.getAbstractFileByPath(buttonName + ".md");
-      if (!file || !(file instanceof TFile)) {
-        return Result.ok<UIButton | null>(null);
-      }
-
-      const metadata = this.app.metadataCache.getFileCache(file);
-      if (!metadata?.frontmatter) {
-        return Result.ok<UIButton | null>(null);
-      }
-
-      const fm = metadata.frontmatter;
-
-      const idResult = AssetId.create(file.basename);
-      const commandIdResult = AssetId.create(
-        this.cleanAssetReference(fm["ui__Button_command"] || ""),
-      );
-
-      if (idResult.isFailure || commandIdResult.isFailure) {
-        return Result.ok<UIButton | null>(null);
-      }
-
-      const buttonResult = UIButton.create({
-        id: idResult.getValue(),
-        label: fm["ui__Button_label"] || file.basename,
-        commandId: commandIdResult.getValue(),
-        order: fm["ui__Button_order"] || 0,
-        isEnabled: fm["ui__Button_enabled"] !== false,
-        tooltip: fm["ui__Button_tooltip"],
-      });
-
-      if (buttonResult.isFailure) {
-        return Result.fail<UIButton | null>(buttonResult.error);
-      }
-
-      return Result.ok<UIButton | null>(buttonResult.getValue());
-    } catch (error) {
-      return Result.fail<UIButton | null>(
-        `Failed to load button: ${error.message}`,
-      );
-    }
-  }
 
   private serializeClassView(classView: ClassView): string {
     const frontmatter = {
       exo__Instance_class: "[[ui__ClassView]]",
       ui__ClassView_targetClass: `[[${classView.className.value}]]`,
-      ui__ClassView_buttons: classView.buttons.map(
-        (b) => `[[${b.id.toString()}]]`,
-      ),
       ui__ClassView_showProperties: classView.displayOptions.showProperties,
       ui__ClassView_showRelations: classView.displayOptions.showRelations,
       ui__ClassView_showBacklinks: classView.displayOptions.showBacklinks,
-      ui__ClassView_showButtons: classView.displayOptions.showButtons,
-      ui__ClassView_buttonPosition: classView.displayOptions.buttonPosition,
     };
 
     const yamlContent = this.toYaml(frontmatter);

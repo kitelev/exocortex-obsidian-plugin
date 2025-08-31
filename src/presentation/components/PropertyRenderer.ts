@@ -1,6 +1,5 @@
 import {
   App,
-  Setting,
   TextComponent,
   DropdownComponent,
   ToggleComponent,
@@ -9,7 +8,6 @@ import {
   Notice,
 } from "obsidian";
 import { PropertyEditingUseCase } from "../../application/use-cases/PropertyEditingUseCase";
-import { Result } from "../../domain/core/Result";
 
 /**
  * Component for rendering editable properties in asset views

@@ -9,16 +9,14 @@
 
 ## 🎯 What is Exocortex?
 
-Exocortex transforms your Obsidian vault into an intelligent, ontology-driven knowledge management system. Instead of static markdown files, your notes become dynamic, interconnected assets with smart layouts, semantic relationships, and automated property management.
+Exocortex is a streamlined Obsidian plugin focused on providing dynamic layouts and intelligent asset creation through ontology-driven UI.
 
-### Key Features
+### Core Features (v8.0.0 - Simplified Architecture)
 
-- 🏗️ **Dynamic Layouts**: Automatically render appropriate UI based on asset types (Project, Task, etc.)
-- 🧠 **Semantic Properties**: Rich metadata with validation and intelligent defaults
-- 🔗 **Relationship Management**: Automatic backlinking and instance tracking
-- 🎛️ **Asset Creation**: Guided modal dialogs for structured content creation
+- 🏗️ **Universal Layout**: Smart rendering system that adapts to your content
+- 🎨 **Dynamic Layout**: Flexible layout system for custom views
+- 🎛️ **Create Asset Modal**: Intelligent form with dynamic property fields based on class selection
 - 📱 **Mobile Optimized**: Touch-friendly interface with platform-specific optimizations
-- 🚀 **High Performance**: IndexedGraph with O(1) lookups for large knowledge bases
 
 ## 🔬 Real E2E Testing - Our Commitment to Authenticity
 
@@ -95,8 +93,8 @@ Exocortex follows Clean Architecture principles with a rich domain model:
 
 ```
 ┌─── Presentation Layer ────────────────────────────┐
-│  • Modal Dialogs    • Layout Renderers           │
-│  • Property Fields  • Button Components          │
+│  • CreateAssetModal  • UniversalLayoutRenderer   │
+│  • PropertyRenderer  • DynamicLayoutRenderer     │
 └───────────────────────────────────────────────────┘
 ┌─── Application Layer ─────────────────────────────┐
 │  • Use Cases        • Services                   │

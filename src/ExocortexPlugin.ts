@@ -8,7 +8,6 @@ import { CodeBlockProcessor } from "./presentation/processors/CodeBlockProcessor
 import { RefactoredUniversalLayoutRenderer } from "./presentation/renderers/RefactoredUniversalLayoutRenderer";
 import { AssetListRenderer } from "./presentation/renderers/AssetListRenderer";
 import { DynamicLayoutRenderer } from "./presentation/renderers/DynamicLayoutRenderer";
-import { ButtonsViewRenderer } from "./presentation/renderers/ButtonsViewRenderer";
 import { ExocortexSettings } from "./domain/entities/ExocortexSettings";
 import { ILogger } from "./infrastructure/logging/ILogger";
 import { LoggerFactory } from "./infrastructure/logging/LoggerFactory";
@@ -175,7 +174,6 @@ export default class ExocortexPlugin extends Plugin {
       );
       const assetListRenderer = new AssetListRenderer(this.serviceProvider);
       const dynamicLayoutRenderer = new DynamicLayoutRenderer(this.app);
-      const buttonsViewRenderer = new ButtonsViewRenderer(this.app);
 
       this.codeBlockProcessor.registerView(
         "UniversalLayout",
@@ -186,7 +184,6 @@ export default class ExocortexPlugin extends Plugin {
         "DynamicLayout",
         dynamicLayoutRenderer,
       );
-      this.codeBlockProcessor.registerView("Buttons", buttonsViewRenderer);
 
       // Register the markdown code block processor with Obsidian
       this.registerMarkdownCodeBlockProcessor(
@@ -211,7 +208,7 @@ export default class ExocortexPlugin extends Plugin {
       );
 
       this.logger.info("Code block processor initialized with views", {
-        views: ["UniversalLayout", "AssetList", "DynamicLayout", "Buttons"],
+        views: ["UniversalLayout", "AssetList", "DynamicLayout"],
         updateListeners: ["vault.modify", "metadataCache.changed"],
       });
     } catch (error) {

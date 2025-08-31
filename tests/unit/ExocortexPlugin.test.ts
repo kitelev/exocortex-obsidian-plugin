@@ -6,7 +6,7 @@ jest.mock("../../src/infrastructure/lifecycle/LifecycleRegistry");
 jest.mock("../../src/presentation/command-controllers/CommandRegistry");
 jest.mock("../../src/infrastructure/providers/ServiceProvider");
 jest.mock("../../src/infrastructure/lifecycle/SettingsLifecycleManager");
-jest.mock("../../src/infrastructure/lifecycle/GraphLifecycleManager");
+// GraphLifecycleManager removed in refactoring
 jest.mock("../../src/presentation/command-controllers/AssetCommandController");
 jest.mock("../../src/presentation/command-controllers/RDFCommandController");
 jest.mock("../../src/presentation/processors/QueryProcessor");
@@ -16,7 +16,7 @@ import { LifecycleRegistry } from "../../src/infrastructure/lifecycle/LifecycleR
 import { CommandRegistry } from "../../src/presentation/command-controllers/CommandRegistry";
 import { ServiceProvider } from "../../src/infrastructure/providers/ServiceProvider";
 import { SettingsLifecycleManager } from "../../src/infrastructure/lifecycle/SettingsLifecycleManager";
-import { GraphLifecycleManager } from "../../src/infrastructure/lifecycle/GraphLifecycleManager";
+// GraphLifecycleManager removed
 import { AssetCommandController } from "../../src/presentation/command-controllers/AssetCommandController";
 import { RDFCommandController } from "../../src/presentation/command-controllers/RDFCommandController";
 import { QueryProcessor } from "../../src/presentation/processors/QueryProcessor";
@@ -31,7 +31,7 @@ describe("ExocortexPlugin", () => {
   let mockCommandRegistry: jest.Mocked<CommandRegistry>;
   let mockServiceProvider: jest.Mocked<ServiceProvider>;
   let mockSettingsManager: jest.Mocked<SettingsLifecycleManager>;
-  let mockGraphManager: jest.Mocked<GraphLifecycleManager>;
+  // let mockGraphManager: jest.Mocked<GraphLifecycleManager>;
 
   beforeEach(() => {
     // Setup mock logger
@@ -82,10 +82,7 @@ describe("ExocortexPlugin", () => {
       saveSettings: jest.fn().mockResolvedValue(undefined),
     } as any;
 
-    mockGraphManager = {
-      initialize: jest.fn().mockResolvedValue(undefined),
-      getGraph: jest.fn().mockReturnValue({}),
-    } as any;
+    // GraphLifecycleManager mocking removed
 
     // Mock constructors
     (LifecycleRegistry as jest.Mock).mockReturnValue(mockLifecycleRegistry);
@@ -94,7 +91,7 @@ describe("ExocortexPlugin", () => {
     (SettingsLifecycleManager as jest.Mock).mockReturnValue(
       mockSettingsManager,
     );
-    (GraphLifecycleManager as jest.Mock).mockReturnValue(mockGraphManager);
+    // (GraphLifecycleManager as jest.Mock).mockReturnValue(mockGraphManager);
     (AssetCommandController as jest.Mock).mockReturnValue({});
     (RDFCommandController as jest.Mock).mockReturnValue({});
     (QueryProcessor as jest.Mock).mockReturnValue({});
@@ -122,19 +119,17 @@ describe("ExocortexPlugin", () => {
 
         // Verify lifecycle managers initialized
         expect(SettingsLifecycleManager).toHaveBeenCalledWith(plugin);
-        expect(GraphLifecycleManager).toHaveBeenCalledWith(plugin);
+        // expect(GraphLifecycleManager).toHaveBeenCalledWith(plugin);
         expect(mockLifecycleRegistry.registerManager).toHaveBeenCalledWith(
           mockSettingsManager,
         );
-        expect(mockLifecycleRegistry.registerManager).toHaveBeenCalledWith(
-          mockGraphManager,
-        );
+        // GraphLifecycleManager registration removed
         expect(mockSettingsManager.initialize).toHaveBeenCalled();
 
         // Verify service provider initialized
         expect(ServiceProvider).toHaveBeenCalledWith(
           plugin,
-          mockGraphManager.getGraph(),
+          {}, // GraphLifecycleManager removed
           mockSettingsManager.getSettings(),
         );
         expect(mockServiceProvider.initializeServices).toHaveBeenCalled();
@@ -143,7 +138,7 @@ describe("ExocortexPlugin", () => {
         expect(AssetCommandController).toHaveBeenCalledWith(plugin);
         expect(RDFCommandController).toHaveBeenCalledWith(
           plugin,
-          mockGraphManager.getGraph(),
+          {}, // GraphLifecycleManager removed
           mockServiceProvider.getService("RDFService"),
           expect.any(Object),
         );

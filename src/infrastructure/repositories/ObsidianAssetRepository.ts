@@ -5,7 +5,6 @@ import { AssetId } from "../../domain/value-objects/AssetId";
 import { ClassName } from "../../domain/value-objects/ClassName";
 import { OntologyPrefix } from "../../domain/value-objects/OntologyPrefix";
 import { AbstractFileRepository } from "../../shared/AbstractFileRepository";
-import { FileOperationUtils } from "../../shared/utils/FileOperationUtils";
 
 /**
  * Obsidian implementation of IAssetRepository

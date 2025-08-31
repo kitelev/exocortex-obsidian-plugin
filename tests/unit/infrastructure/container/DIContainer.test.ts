@@ -7,8 +7,6 @@ import { IClassLayoutRepository } from "../../../../src/domain/repositories/ICla
 import { ErrorHandlerService } from "../../../../src/application/services/ErrorHandlerService";
 import { CreateAssetUseCase } from "../../../../src/application/use-cases/CreateAssetUseCase";
 import { PropertyEditingUseCase } from "../../../../src/application/use-cases/PropertyEditingUseCase";
-import { ButtonRenderer } from "../../../../src/presentation/components/ButtonRenderer";
-import { LayoutRenderer } from "../../../../src/presentation/renderers/LayoutRenderer";
 
 // Mock all dependencies
 jest.mock(
@@ -23,18 +21,11 @@ jest.mock(
 jest.mock(
   "../../../../src/infrastructure/repositories/ObsidianClassViewRepository",
 );
-jest.mock(
-  "../../../../src/infrastructure/repositories/ObsidianButtonRepository",
-);
 jest.mock("../../../../src/infrastructure/services/ObsidianCommandExecutor");
 jest.mock("../../../../src/application/services/ErrorHandlerService");
 jest.mock("../../../../src/application/use-cases/CreateAssetUseCase");
-jest.mock("../../../../src/application/use-cases/RenderClassButtonsUseCase");
-jest.mock("../../../../src/application/use-cases/ExecuteButtonCommandUseCase");
 jest.mock("../../../../src/application/use-cases/PropertyEditingUseCase");
-jest.mock("../../../../src/presentation/components/ButtonRenderer");
 jest.mock("../../../../src/presentation/components/PropertyRenderer");
-jest.mock("../../../../src/presentation/renderers/LayoutRenderer");
 
 describe("DIContainer", () => {
   let app: App;
@@ -166,7 +157,7 @@ describe("DIContainer", () => {
         container.resolve<ButtonRenderer>("ButtonRenderer"),
       ).not.toThrow();
       expect(() =>
-        container.resolve<LayoutRenderer>("LayoutRenderer"),
+        // LayoutRenderer removed
       ).not.toThrow();
     });
   });
@@ -317,7 +308,7 @@ describe("DIContainer", () => {
 
     it("should provide convenience methods for renderers", () => {
       expect(container.getButtonRenderer()).toBeInstanceOf(ButtonRenderer);
-      expect(container.getLayoutRenderer()).toBeInstanceOf(LayoutRenderer);
+      // LayoutRenderer removed - replaced by UniversalLayoutRenderer and DynamicLayoutRenderer
       expect(container.getPropertyRenderer()).toBeDefined();
     });
 
@@ -1016,7 +1007,7 @@ describe("DIContainer", () => {
     it("should support full application initialization flow", () => {
       // Simulate what happens during plugin initialization
       const buttonRenderer = container.getButtonRenderer();
-      const layoutRenderer = container.getLayoutRenderer();
+      // LayoutRenderer removed
       const createAssetUseCase = container.getCreateAssetUseCase();
 
       expect(buttonRenderer).toBeDefined();
@@ -1026,7 +1017,7 @@ describe("DIContainer", () => {
 
     it("should handle complex service interaction patterns", () => {
       // Test that services can be resolved in any order
-      const renderer = container.getLayoutRenderer();
+      // LayoutRenderer removed
       const useCase = container.getPropertyEditingUseCase();
       const repository = container.resolve<IClassLayoutRepository>(
         "IClassLayoutRepository",

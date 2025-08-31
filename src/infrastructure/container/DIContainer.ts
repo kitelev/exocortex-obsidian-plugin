@@ -17,18 +17,14 @@ import { ObsidianVaultAdapter } from "../adapters/ObsidianVaultAdapter";
 import { IAssetRepository } from "../../domain/repositories/IAssetRepository";
 import { IOntologyRepository } from "../../domain/repositories/IOntologyRepository";
 import { IClassViewRepository } from "../../domain/repositories/IClassViewRepository";
-import { IButtonRepository } from "../../domain/repositories/IButtonRepository";
 import { IClassLayoutRepository } from "../../domain/repositories/IClassLayoutRepository";
 import { ObsidianAssetRepository } from "../repositories/ObsidianAssetRepository";
 import { ObsidianOntologyRepository } from "../repositories/ObsidianOntologyRepository";
 import { ObsidianClassViewRepository } from "../repositories/ObsidianClassViewRepository";
-import { ObsidianButtonRepository } from "../repositories/ObsidianButtonRepository";
 import { ObsidianClassLayoutRepository } from "../repositories/ObsidianClassLayoutRepository";
 
 // Use Cases
 import { CreateAssetUseCase } from "../../application/use-cases/CreateAssetUseCase";
-import { RenderClassButtonsUseCase } from "../../application/use-cases/RenderClassButtonsUseCase";
-import { ExecuteButtonCommandUseCase } from "../../application/use-cases/ExecuteButtonCommandUseCase";
 import { PropertyEditingUseCase } from "../../application/use-cases/PropertyEditingUseCase";
 
 // Services
@@ -40,9 +36,7 @@ import { PropertyCacheService } from "../../domain/services/PropertyCacheService
 import { CircuitBreakerService } from "../resilience/CircuitBreakerService";
 
 // Presentation
-import { ButtonRenderer } from "../../presentation/components/ButtonRenderer";
 import { PropertyRenderer } from "../../presentation/components/PropertyRenderer";
-import { LayoutRenderer } from "../../presentation/renderers/LayoutRenderer";
 
 // Logging
 import { ILogger } from "../logging/ILogger";
@@ -155,10 +149,6 @@ export class DIContainer {
       () => new ObsidianClassViewRepository(this.app),
     );
 
-    this.container.register<IButtonRepository>(
-      "IButtonRepository",
-      () => new ObsidianButtonRepository(this.app),
-    );
 
     this.container.register<IClassLayoutRepository>(
       "IClassLayoutRepository",
@@ -223,23 +213,7 @@ export class DIContainer {
         ),
     );
 
-    this.container.register<RenderClassButtonsUseCase>(
-      "RenderClassButtonsUseCase",
-      () =>
-        new RenderClassButtonsUseCase(
-          this.container.resolve<IClassViewRepository>("IClassViewRepository"),
-          this.container.resolve<IButtonRepository>("IButtonRepository"),
-        ),
-    );
 
-    this.container.register<ExecuteButtonCommandUseCase>(
-      "ExecuteButtonCommandUseCase",
-      () =>
-        new ExecuteButtonCommandUseCase(
-          this.container.resolve<IButtonRepository>("IButtonRepository"),
-          this.container.resolve<ICommandExecutor>("ICommandExecutor"),
-        ),
-    );
 
     this.container.register<PropertyEditingUseCase>(
       "PropertyEditingUseCase",
@@ -251,19 +225,6 @@ export class DIContainer {
     );
 
     // Register Presentation Components
-    this.container.register<ButtonRenderer>(
-      "ButtonRenderer",
-      () =>
-        new ButtonRenderer(
-          this.app,
-          this.container.resolve<RenderClassButtonsUseCase>(
-            "RenderClassButtonsUseCase",
-          ),
-          this.container.resolve<ExecuteButtonCommandUseCase>(
-            "ExecuteButtonCommandUseCase",
-          ),
-        ),
-    );
 
     this.container.register<PropertyRenderer>(
       "PropertyRenderer",
@@ -276,16 +237,6 @@ export class DIContainer {
         ),
     );
 
-    this.container.register<LayoutRenderer>(
-      "LayoutRenderer",
-      () =>
-        new LayoutRenderer(
-          this.app,
-          this.container.resolve<IClassLayoutRepository>(
-            "IClassLayoutRepository",
-          ),
-        ),
-    );
 
     // Register Mobile Components
   }
@@ -304,27 +255,11 @@ export class DIContainer {
     return this.resolve<CreateAssetUseCase>("CreateAssetUseCase");
   }
 
-  public getRenderButtonsUseCase(): RenderClassButtonsUseCase {
-    return this.resolve<RenderClassButtonsUseCase>("RenderClassButtonsUseCase");
-  }
-
-  public getExecuteButtonCommandUseCase(): ExecuteButtonCommandUseCase {
-    return this.resolve<ExecuteButtonCommandUseCase>(
-      "ExecuteButtonCommandUseCase",
-    );
-  }
-
-  public getButtonRenderer(): ButtonRenderer {
-    return this.resolve<ButtonRenderer>("ButtonRenderer");
-  }
 
   public getPropertyRenderer(): PropertyRenderer {
     return this.resolve<PropertyRenderer>("PropertyRenderer");
   }
 
-  public getLayoutRenderer(): LayoutRenderer {
-    return this.resolve<LayoutRenderer>("LayoutRenderer");
-  }
 
   public getPropertyEditingUseCase(): PropertyEditingUseCase {
     return this.resolve<PropertyEditingUseCase>("PropertyEditingUseCase");
