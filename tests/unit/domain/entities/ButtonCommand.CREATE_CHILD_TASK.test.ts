@@ -9,7 +9,7 @@ describe("ButtonCommand - CREATE_CHILD_TASK", () => {
   describe("create", () => {
     it("should create a CREATE_CHILD_TASK command successfully", () => {
       const props = {
-        id: AssetId.create("create-task-btn").getValue(),
+        id: AssetId.generate(),
         type: CommandType.CREATE_CHILD_TASK,
         name: "Create Child Task",
         description: "Creates a new task as child of current project",
@@ -30,7 +30,7 @@ describe("ButtonCommand - CREATE_CHILD_TASK", () => {
 
     it("should create command with optional task title parameter", () => {
       const props = {
-        id: AssetId.create("create-task-btn").getValue(),
+        id: AssetId.generate(),
         type: CommandType.CREATE_CHILD_TASK,
         name: "Create Child Task",
         requiresInput: true,
@@ -58,7 +58,7 @@ describe("ButtonCommand - CREATE_CHILD_TASK", () => {
   describe("canExecute", () => {
     it("should allow execution when current class is ems__Project", () => {
       const command = ButtonCommand.create({
-        id: AssetId.create("create-task-btn").getValue(),
+        id: AssetId.generate(),
         type: CommandType.CREATE_CHILD_TASK,
         name: "Create Child Task",
         requiresInput: false,
@@ -75,7 +75,7 @@ describe("ButtonCommand - CREATE_CHILD_TASK", () => {
 
     it("should not allow execution when current class is not ems__Project", () => {
       const command = ButtonCommand.create({
-        id: AssetId.create("create-task-btn").getValue(),
+        id: AssetId.generate(),
         type: CommandType.CREATE_CHILD_TASK,
         name: "Create Child Task",
         requiresInput: false,
@@ -92,7 +92,7 @@ describe("ButtonCommand - CREATE_CHILD_TASK", () => {
 
     it("should allow execution when no target class specified", () => {
       const command = ButtonCommand.create({
-        id: AssetId.create("create-task-btn").getValue(),
+        id: AssetId.generate(),
         type: CommandType.CREATE_CHILD_TASK,
         name: "Create Child Task",
         requiresInput: false,
@@ -110,7 +110,7 @@ describe("ButtonCommand - CREATE_CHILD_TASK", () => {
   describe("buildExecutionContext", () => {
     it("should build execution context for CREATE_CHILD_TASK", () => {
       const command = ButtonCommand.create({
-        id: AssetId.create("create-task-btn").getValue(),
+        id: AssetId.generate(),
         type: CommandType.CREATE_CHILD_TASK,
         name: "Create Child Task",
         requiresInput: false,
@@ -128,7 +128,7 @@ describe("ButtonCommand - CREATE_CHILD_TASK", () => {
 
     it("should include provided parameters in context", () => {
       const command = ButtonCommand.create({
-        id: AssetId.create("create-task-btn").getValue(),
+        id: AssetId.generate(),
         type: CommandType.CREATE_CHILD_TASK,
         name: "Create Child Task",
         requiresInput: true,

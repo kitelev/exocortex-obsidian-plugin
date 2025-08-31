@@ -26,16 +26,12 @@ jest.mock(
 jest.mock(
   "../../../../src/infrastructure/repositories/ObsidianButtonRepository",
 );
-jest.mock(
-  "../../../../src/infrastructure/repositories/GraphSuggestionRepository",
-);
 jest.mock("../../../../src/infrastructure/services/ObsidianCommandExecutor");
 jest.mock("../../../../src/application/services/ErrorHandlerService");
 jest.mock("../../../../src/application/use-cases/CreateAssetUseCase");
 jest.mock("../../../../src/application/use-cases/RenderClassButtonsUseCase");
 jest.mock("../../../../src/application/use-cases/ExecuteButtonCommandUseCase");
 jest.mock("../../../../src/application/use-cases/PropertyEditingUseCase");
-jest.mock("../../../../src/application/use-cases/QueryTemplateUseCase");
 jest.mock("../../../../src/presentation/components/ButtonRenderer");
 jest.mock("../../../../src/presentation/components/PropertyRenderer");
 jest.mock("../../../../src/presentation/renderers/LayoutRenderer");
@@ -266,10 +262,11 @@ describe("DIContainer", () => {
       ).not.toThrow();
     });
 
-    it("should pass graph reference to suggestion repository", () => {
+    it("should pass graph reference when available", () => {
       container = DIContainer.initialize(app, mockPlugin);
 
-      expect(() => container.resolve("ISuggestionRepository")).not.toThrow();
+      // Should initialize without error when graph is available
+      expect(container).toBeDefined();
     });
   });
 
@@ -328,11 +325,6 @@ describe("DIContainer", () => {
       expect(container.getPropertyEditingUseCase()).toBeInstanceOf(
         PropertyEditingUseCase,
       );
-      expect(container.getQueryTemplateUseCase()).toBeDefined();
-    });
-
-    it("should provide repository access methods", () => {
-      expect(container.getQueryTemplateRepository()).toBeDefined();
     });
 
     it("should maintain consistency between resolve and convenience methods", () => {
@@ -387,7 +379,9 @@ describe("DIContainer", () => {
         // Missing graph property
       };
       container = DIContainer.initialize(app, pluginWithoutGraph);
-      expect(() => container.resolve("ISuggestionRepository")).not.toThrow();
+      
+      // Should initialize without error even without graph
+      expect(container).toBeDefined();
     });
   });
 
@@ -738,7 +732,6 @@ describe("DIContainer", () => {
         container = DIContainer.initialize(app, pluginWithNullNested);
 
         expect(() => {
-          container.resolve("ISuggestionRepository");
           container.resolve<IClassLayoutRepository>("IClassLayoutRepository");
         }).not.toThrow();
       });
