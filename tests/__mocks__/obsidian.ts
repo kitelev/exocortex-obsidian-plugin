@@ -3,6 +3,7 @@ declare global {
   interface HTMLElement {
     createEl?: (tag: string, options?: any) => HTMLElement;
     createDiv?: (options?: any) => HTMLElement;
+    createSpan?: (options?: any) => HTMLElement;
     empty?: () => void;
     addClass?: (cls: string) => void;
     removeClass?: (cls: string) => void;
@@ -56,6 +57,15 @@ if (typeof document !== "undefined") {
   if (!proto.hasClass) {
     proto.hasClass = function (cls: string) {
       return this.classList.contains(cls);
+    };
+  }
+  if (!proto.createSpan) {
+    proto.createSpan = function (options?: any) {
+      const el = document.createElement("span");
+      if (options?.text) el.textContent = options.text;
+      if (options?.cls) el.className = options.cls;
+      this.appendChild(el);
+      return el;
     };
   }
 }

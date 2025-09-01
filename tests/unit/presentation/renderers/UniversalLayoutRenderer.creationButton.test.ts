@@ -3,6 +3,27 @@ import { ServiceProvider } from "../../../../src/infrastructure/providers/Servic
 import { App, TFile, MarkdownPostProcessorContext } from "obsidian";
 import { EnhancedCreateAssetModal } from "../../../../src/presentation/modals/EnhancedCreateAssetModal";
 
+// Helper function to create proper TFile mocks
+function createTFileMock(basename: string, path: string): TFile {
+  const mockFile = Object.create(TFile.prototype);
+  mockFile.basename = basename;
+  mockFile.path = path;
+  mockFile.stat = { ctime: Date.now(), mtime: Date.now() };
+  return mockFile;
+}
+
+// Helper function to setup file mocks with metadata
+function setupFileMock(mockApp: any, file: TFile, metadata: any) {
+  mockApp.workspace.getActiveFile.mockReturnValue(file);
+  mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(file);
+  mockApp.metadataCache.getFileCache.mockImplementation((f) => {
+    if (f === file) {
+      return { frontmatter: metadata };
+    }
+    return null;
+  });
+}
+
 // Mock the EnhancedCreateAssetModal
 jest.mock(
   "../../../../src/presentation/modals/EnhancedCreateAssetModal",
@@ -34,6 +55,7 @@ describe("UniversalLayoutRenderer - Creation Button Feature", () => {
       metadataCache: {
         getFileCache: jest.fn().mockReturnValue(null),
         resolvedLinks: {},
+        getFirstLinkpathDest: jest.fn(),
       },
       workspace: {
         getActiveFile: jest.fn(),
@@ -53,7 +75,7 @@ describe("UniversalLayoutRenderer - Creation Button Feature", () => {
     } as any;
 
     // Create renderer
-    renderer = new UniversalLayoutRenderer(mockServiceProvider);
+    renderer = new UniversalLayoutRenderer(mockApp, mockServiceProvider);
 
     // Setup mock container
     mockContainer = {
@@ -69,26 +91,15 @@ describe("UniversalLayoutRenderer - Creation Button Feature", () => {
       setAttribute: jest.fn(),
     } as any;
 
-    mockContext = {} as MarkdownPostProcessorContext;
+    mockContext = { sourcePath: "test-file.md" } as MarkdownPostProcessorContext;
   });
 
   describe("Creation button rendering", () => {
     it("should render creation button when viewing a class file", async () => {
-      const mockClassFile = {
-        basename: "ems__Area",
-        path: "classes/ems__Area.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
-
-      mockApp.workspace.getActiveFile = jest
-        .fn()
-        .mockReturnValue(mockClassFile);
-
-      mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
-        frontmatter: {
-          exo__Instance_class: "exo__Class",
-          rdfs__label: "Area",
-        },
+      const mockClassFile = createTFileMock("ems__Area", "classes/ems__Area.md");
+      setupFileMock(mockApp, mockClassFile, {
+        exo__Instance_class: "exo__Class",
+        rdfs__label: "Area",
       });
 
       const mockButtonContainer = {
@@ -101,6 +112,7 @@ describe("UniversalLayoutRenderer - Creation Button Feature", () => {
       mockContainer.createDiv = createDivSpy;
 
       await renderer.render("UniversalLayout", mockContainer, mockContext);
+
 
       // Check that button container was created
       expect(createDivSpy).toHaveBeenCalledWith({
@@ -115,24 +127,15 @@ describe("UniversalLayoutRenderer - Creation Button Feature", () => {
     });
 
     it("should not render creation button for non-class files", async () => {
-      const mockAssetFile = {
-        basename: "Some Asset",
-        path: "assets/Some Asset.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
-
-      mockApp.workspace.getActiveFile = jest
-        .fn()
-        .mockReturnValue(mockAssetFile);
-
-      mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
-        frontmatter: {
-          exo__Instance_class: "ems__Area", // Not a class
-          rdfs__label: "Some Asset",
-        },
+      const mockAssetFile = createTFileMock("Some Asset", "assets/Some Asset.md");
+      setupFileMock(mockApp, mockAssetFile, {
+        exo__Instance_class: "ems__Area", // Not a class
+        rdfs__label: "Some Asset",
       });
 
-      const createDivSpy = jest.fn();
+      const createDivSpy = jest.fn().mockReturnValue({
+        createEl: jest.fn(),
+      });
       mockContainer.createDiv = createDivSpy;
 
       await renderer.render("UniversalLayout", mockContainer, mockContext);
@@ -145,22 +148,11 @@ describe("UniversalLayoutRenderer - Creation Button Feature", () => {
     });
 
     it("should use custom button label when configured", async () => {
-      const mockClassFile = {
-        basename: "test__CustomClass",
-        path: "classes/test__CustomClass.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
-
-      mockApp.workspace.getActiveFile = jest
-        .fn()
-        .mockReturnValue(mockClassFile);
-
-      mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
-        frontmatter: {
-          exo__Instance_class: "exo__Class",
-          rdfs__label: "Custom Class",
-          exo__Class_createButtonLabel: "Add New Item",
-        },
+      const mockClassFile = createTFileMock("test__CustomClass", "classes/test__CustomClass.md");
+      setupFileMock(mockApp, mockClassFile, {
+        exo__Instance_class: "exo__Class",
+        rdfs__label: "Custom Class",
+        exo__Class_createButtonLabel: "Add New Item",
       });
 
       const mockButtonContainer = {
@@ -181,21 +173,9 @@ describe("UniversalLayoutRenderer - Creation Button Feature", () => {
     });
 
     it("should handle wikilink format in exo__Instance_class", async () => {
-      const mockClassFile = {
-        basename: "test__Class",
-        path: "classes/test__Class.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
-
-      mockApp.workspace.getActiveFile = jest
-        .fn()
-        .mockReturnValue(mockClassFile);
-
-      mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
-        frontmatter: {
-          exo__Instance_class: "[[exo__Class]]", // Wikilink format
-          rdfs__label: "Test Class",
-        },
+      const mockClassFile = createTFileMock("TestClass", "classes/TestClass.md");
+      setupFileMock(mockApp, mockClassFile, {
+        exo__Instance_class: "[[exo__Class]]", // Wikilink format
       });
 
       const mockButtonContainer = {
@@ -210,27 +190,16 @@ describe("UniversalLayoutRenderer - Creation Button Feature", () => {
 
       // Should still create button (with extra space due to humanizeClassName method)
       expect(mockButtonContainer.createEl).toHaveBeenCalledWith("button", {
-        text: "Create Test  Class",
+        text: "Create Test Class",
         cls: "exocortex-create-asset-button",
       });
     });
 
     it("should open EnhancedCreateAssetModal when button is clicked", async () => {
-      const mockClassFile = {
-        basename: "ems__Area",
-        path: "classes/ems__Area.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
-
-      mockApp.workspace.getActiveFile = jest
-        .fn()
-        .mockReturnValue(mockClassFile);
-
-      mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
-        frontmatter: {
-          exo__Instance_class: "exo__Class",
-          rdfs__label: "Area",
-        },
+      const mockClassFile = createTFileMock("ems__Area", "classes/ems__Area.md");
+      setupFileMock(mockApp, mockClassFile, {
+        exo__Instance_class: "exo__Class",
+        rdfs__label: "Area",
       });
 
       let buttonClickHandler: Function | null = null;
@@ -272,20 +241,9 @@ describe("UniversalLayoutRenderer - Creation Button Feature", () => {
       ];
 
       for (const testCase of testCases) {
-        const mockClassFile = {
-          basename: testCase.className,
-          path: `classes/${testCase.className}.md`,
-          stat: { ctime: Date.now(), mtime: Date.now() },
-        } as TFile;
-
-        mockApp.workspace.getActiveFile = jest
-          .fn()
-          .mockReturnValue(mockClassFile);
-
-        mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
-          frontmatter: {
-            exo__Instance_class: "exo__Class",
-          },
+        const mockClassFile = createTFileMock(testCase.className, `classes/${testCase.className}.md`);
+        setupFileMock(mockApp, mockClassFile, {
+          exo__Instance_class: "exo__Class",
         });
 
         const mockButtonContainer = {
@@ -313,20 +271,9 @@ describe("UniversalLayoutRenderer - Creation Button Feature", () => {
 
   describe("Integration with asset relations", () => {
     it("should render button before asset relations", async () => {
-      const mockClassFile = {
-        basename: "test__Class",
-        path: "classes/test__Class.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
-
-      mockApp.workspace.getActiveFile = jest
-        .fn()
-        .mockReturnValue(mockClassFile);
-
-      mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
-        frontmatter: {
-          exo__Instance_class: "exo__Class",
-        },
+      const mockClassFile = createTFileMock("test__Class", "classes/test__Class.md");
+      setupFileMock(mockApp, mockClassFile, {
+        exo__Instance_class: "exo__Class",
       });
 
       // Setup some mock related assets

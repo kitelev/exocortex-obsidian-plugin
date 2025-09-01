@@ -32,6 +32,7 @@ describe("UniversalLayoutRenderer", () => {
       metadataCache: {
         resolvedLinks: {},
         getFileCache: jest.fn(),
+        getFirstLinkpathDest: jest.fn(),
       },
       vault: {
         getAbstractFileByPath: jest.fn(),
@@ -62,7 +63,11 @@ describe("UniversalLayoutRenderer", () => {
     } as any;
 
     // Create renderer
-    renderer = new UniversalLayoutRenderer(serviceProvider);
+    renderer = new UniversalLayoutRenderer(mockApp, serviceProvider);
+    
+    // Default mock for getFirstLinkpathDest - individual tests can override this
+    const defaultCurrentFile = new MockTFile("current-file.md", "Current File");
+    mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(defaultCurrentFile);
   });
 
   afterEach(() => {
@@ -91,8 +96,11 @@ describe("UniversalLayoutRenderer", () => {
       });
       mockApp.vault.getAbstractFileByPath.mockReturnValue(relatedFile);
 
+      // Mock getFirstLinkpathDest to return the current file
+      mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(currentFile);
+
       // Render the layout
-      const ctx = {} as MarkdownPostProcessorContext;
+      const ctx = { sourcePath: "current-file.md" } as MarkdownPostProcessorContext;
       await renderer.render(
         "UniversalLayout\ngroupByProperty: false\nlayout: table",
         container,
@@ -129,11 +137,13 @@ describe("UniversalLayoutRenderer", () => {
         frontmatter: {},
       });
       mockApp.vault.getAbstractFileByPath.mockReturnValue(relatedFile);
+      // Mock getFirstLinkpathDest to return the current file
+      mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(currentFile);
 
       await renderer.render(
         "UniversalLayout\ngroupByProperty: false\nlayout: table",
         container,
-        {} as MarkdownPostProcessorContext,
+        { sourcePath: "current-file.md" } as MarkdownPostProcessorContext,
       );
 
       const cells = container.querySelectorAll("tbody td");
@@ -181,7 +191,7 @@ describe("UniversalLayoutRenderer", () => {
       await renderer.render(
         "UniversalLayout\ngroupByProperty: false\nlayout: table",
         container,
-        {} as MarkdownPostProcessorContext,
+        { sourcePath: "current-file.md" } as MarkdownPostProcessorContext,
       );
 
       const rows = container.querySelectorAll("tbody tr");
@@ -215,7 +225,7 @@ describe("UniversalLayoutRenderer", () => {
       await renderer.render(
         "UniversalLayout\ngroupByProperty: false\nlayout: table",
         container,
-        {} as MarkdownPostProcessorContext,
+        { sourcePath: "current-file.md" } as MarkdownPostProcessorContext,
       );
 
       const nameHeader = container.querySelector("th:first-child");
@@ -247,7 +257,7 @@ describe("UniversalLayoutRenderer", () => {
       await renderer.render(
         "UniversalLayout\ngroupByProperty: false\nlayout: table",
         container,
-        {} as MarkdownPostProcessorContext,
+        { sourcePath: "current-file.md" } as MarkdownPostProcessorContext,
       );
 
       const table = container.querySelector("table");
@@ -283,7 +293,7 @@ describe("UniversalLayoutRenderer", () => {
       await renderer.render(
         config,
         container,
-        {} as MarkdownPostProcessorContext,
+        { sourcePath: "current-file.md" } as MarkdownPostProcessorContext,
       );
 
       // Count the number of headers - should be 4: Name, exo__Instance_class, status, priority
@@ -324,7 +334,7 @@ describe("UniversalLayoutRenderer", () => {
       await renderer.render(
         config,
         container,
-        {} as MarkdownPostProcessorContext,
+        { sourcePath: "current-file.md" } as MarkdownPostProcessorContext,
       );
 
       // Check that table was created
@@ -403,7 +413,7 @@ describe("UniversalLayoutRenderer", () => {
       await renderer.render(
         "UniversalLayout\ngroupByProperty: false\nlayout: table",
         container,
-        {} as MarkdownPostProcessorContext,
+        { sourcePath: "current-file.md" } as MarkdownPostProcessorContext,
       );
 
       // Check that only 2 rows are rendered (archived asset should be filtered out)
@@ -465,7 +475,7 @@ describe("UniversalLayoutRenderer", () => {
       await renderer.render(
         "UniversalLayout\ngroupByProperty: false\nlayout: table",
         container,
-        {} as MarkdownPostProcessorContext,
+        { sourcePath: "current-file.md" } as MarkdownPostProcessorContext,
       );
 
       // Should only render 3 rows (the non-archived files)
@@ -530,11 +540,11 @@ describe("UniversalLayoutRenderer", () => {
       await renderer.render(
         "UniversalLayout\ngroupByProperty: false\nlayout: table",
         container,
-        {} as MarkdownPostProcessorContext,
+        { sourcePath: "current-file.md" } as MarkdownPostProcessorContext,
       );
 
       // Should display message indicating no related assets found (because all are archived)
-      const messageElement = container.querySelector(".exocortex-message");
+      const messageElement = container.querySelector(".exocortex-info-message");
       expect(messageElement).toBeTruthy();
       expect(messageElement?.textContent).toContain("No related assets found");
     });
@@ -556,7 +566,7 @@ describe("UniversalLayoutRenderer", () => {
       });
 
       // Render should handle the error gracefully
-      const ctx = {} as MarkdownPostProcessorContext;
+      const ctx = { sourcePath: "current-file.md" } as MarkdownPostProcessorContext;
       await renderer.render(
         "UniversalLayout\nlayout: table",
         container,
@@ -581,7 +591,7 @@ describe("UniversalLayoutRenderer", () => {
       mockApp.metadataCache.getFileCache.mockReturnValue(null); // Return null cache
       mockApp.vault.getAbstractFileByPath.mockReturnValue(relatedFile);
 
-      const ctx = {} as MarkdownPostProcessorContext;
+      const ctx = { sourcePath: "current-file.md" } as MarkdownPostProcessorContext;
       await renderer.render(
         "UniversalLayout\nlayout: table",
         container,
@@ -593,7 +603,7 @@ describe("UniversalLayoutRenderer", () => {
       expect(container.children.length).toBeGreaterThan(0);
       
       // Should either show message or have some indication of handling the null cache
-      const hasMessage = container.querySelector(".exocortex-message") !== null;
+      const hasMessage = container.querySelector(".exocortex-info-message") !== null;
       const hasError = container.querySelector(".exocortex-error-message") !== null;
       const hasContent = container.textContent && container.textContent.trim().length > 0;
       
@@ -608,7 +618,7 @@ describe("UniversalLayoutRenderer", () => {
       mockApp.metadataCache.resolvedLinks = {};
 
       // Test with malformed config
-      const ctx = {} as MarkdownPostProcessorContext;
+      const ctx = { sourcePath: "current-file.md" } as MarkdownPostProcessorContext;
       await renderer.render(
         "UniversalLayout\ninvalidKey: invalidValue\nlayout: invalidLayout",
         container,
@@ -616,17 +626,18 @@ describe("UniversalLayoutRenderer", () => {
       );
 
       // Should handle invalid config and show message
-      const messageElement = container.querySelector(".exocortex-message");
+      const messageElement = container.querySelector(".exocortex-info-message");
       expect(messageElement).toBeTruthy();
     });
 
     it("should handle missing active file", async () => {
       const container = document.createElement("div");
       
-      // No active file
+      // No active file - need to mock getFirstLinkpathDest to return null
       mockApp.workspace.getActiveFile.mockReturnValue(null);
+      mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(null);
 
-      const ctx = {} as MarkdownPostProcessorContext;
+      const ctx = { sourcePath: "current-file.md" } as MarkdownPostProcessorContext;
       await renderer.render(
         "UniversalLayout",
         container,
@@ -634,7 +645,7 @@ describe("UniversalLayoutRenderer", () => {
       );
 
       // Should show "No active file" message
-      const messageElement = container.querySelector(".exocortex-message");
+      const messageElement = container.querySelector(".exocortex-info-message");
       expect(messageElement).toBeTruthy();
       expect(messageElement?.textContent).toContain("No active file");
     });
@@ -649,7 +660,7 @@ describe("UniversalLayoutRenderer", () => {
       };
       mockApp.vault.getAbstractFileByPath.mockReturnValue(null); // File not found
 
-      const ctx = {} as MarkdownPostProcessorContext;
+      const ctx = { sourcePath: "current-file.md" } as MarkdownPostProcessorContext;
       await renderer.render(
         "UniversalLayout",
         container,
@@ -657,7 +668,7 @@ describe("UniversalLayoutRenderer", () => {
       );
 
       // Should handle missing file gracefully
-      const messageElement = container.querySelector(".exocortex-message");
+      const messageElement = container.querySelector(".exocortex-info-message");
       expect(messageElement?.textContent).toContain("No related assets found");
     });
 
@@ -674,7 +685,7 @@ describe("UniversalLayoutRenderer", () => {
         }
       });
 
-      const ctx = {} as MarkdownPostProcessorContext;
+      const ctx = { sourcePath: "current-file.md" } as MarkdownPostProcessorContext;
       await renderer.render(
         "UniversalLayout",
         container,
@@ -716,7 +727,7 @@ describe("UniversalLayoutRenderer", () => {
       });
       mockApp.vault.getAbstractFileByPath.mockReturnValue(relatedFile);
 
-      const ctx = {} as MarkdownPostProcessorContext;
+      const ctx = { sourcePath: "current-file.md" } as MarkdownPostProcessorContext;
       
       // Main test: Should not throw an error when rendering
       await expect(renderer.render(

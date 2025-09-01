@@ -156,9 +156,6 @@ describe("DIContainer", () => {
       expect(() =>
         container.resolve<ButtonRenderer>("ButtonRenderer"),
       ).not.toThrow();
-      expect(() =>
-        // LayoutRenderer removed
-      ).not.toThrow();
     });
   });
 
