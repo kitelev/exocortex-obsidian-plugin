@@ -32,7 +32,8 @@ export class ServiceProvider implements IServiceProvider {
     // LayoutRenderer removed - handled by UniversalLayoutRenderer and DynamicLayoutRenderer
 
     // Initialize Property Renderer
-    const propertyEditingUseCase = DIContainer.getInstance().getPropertyEditingUseCase();
+    const propertyEditingUseCase =
+      DIContainer.getInstance().getPropertyEditingUseCase();
     const propertyRenderer = new PropertyRenderer(
       this.plugin.app,
       propertyEditingUseCase,

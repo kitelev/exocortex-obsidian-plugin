@@ -57,7 +57,6 @@ export class RefactoredUniversalLayoutRenderer extends BaseAssetRelationsRendere
       const config = this.parseConfig(source);
       const file = this.getCurrentFile(ctx);
 
-
       if (!file) {
         this.renderMessage(container, "No active file");
         return;
@@ -87,7 +86,10 @@ export class RefactoredUniversalLayoutRenderer extends BaseAssetRelationsRendere
       );
     } catch (error) {
       this.logger.error("Failed to render UniversalLayout", { error });
-      this.renderError(container, `Error: ${error?.message || 'Unknown error'}`);
+      this.renderError(
+        container,
+        `Error: ${error?.message || "Unknown error"}`,
+      );
     }
   }
 
@@ -112,8 +114,8 @@ export class RefactoredUniversalLayoutRenderer extends BaseAssetRelationsRendere
           (config as any)[key] = JSON.parse(value);
         } catch {
           // Handle special cases for comma-separated values
-          if (key === 'showProperties' && value.includes(',')) {
-            (config as any)[key] = value.split(',').map(s => s.trim());
+          if (key === "showProperties" && value.includes(",")) {
+            (config as any)[key] = value.split(",").map((s) => s.trim());
           } else {
             // Otherwise treat as string
             (config as any)[key] = value;
@@ -184,7 +186,7 @@ export class RefactoredUniversalLayoutRenderer extends BaseAssetRelationsRendere
     config: UniversalLayoutConfig,
   ): void {
     // Determine CSS classes based on mobile detection
-    const isMobile = typeof window !== 'undefined' && (window as any).isMobile;
+    const isMobile = typeof window !== "undefined" && (window as any).isMobile;
     const tableClasses = ["exocortex-table"];
     if (isMobile) {
       tableClasses.push("mobile-responsive");
@@ -329,7 +331,6 @@ export class RefactoredUniversalLayoutRenderer extends BaseAssetRelationsRendere
     const metadata = this.getFileMetadata(file);
     const instanceClass = metadata?.exo__Instance_class;
 
-
     // Check if this is a class file
     if (instanceClass === "exo__Class" || instanceClass === "[[exo__Class]]") {
       const buttonContainer = container.createDiv({
@@ -337,7 +338,8 @@ export class RefactoredUniversalLayoutRenderer extends BaseAssetRelationsRendere
       });
 
       // Generate button label from class name or rdfs__label
-      const label = metadata?.rdfs__label || this.humanizeClassName(file.basename);
+      const label =
+        metadata?.rdfs__label || this.humanizeClassName(file.basename);
       const customLabel = metadata?.exo__Class_createButtonLabel;
       const buttonText = customLabel || `Create ${label}`;
 
@@ -363,10 +365,10 @@ export class RefactoredUniversalLayoutRenderer extends BaseAssetRelationsRendere
   private humanizeClassName(className: string): string {
     // Remove common prefixes
     const cleaned = className.replace(/^(ems__|exo__|ui__|test__)/, "");
-    
+
     // Convert camelCase/PascalCase to spaced words
     const spaced = cleaned.replace(/([A-Z])/g, " $1");
-    
+
     // Trim first, then capitalize
     const trimmed = spaced.trim();
     return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);

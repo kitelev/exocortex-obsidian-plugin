@@ -170,9 +170,7 @@ export class SemanticPropertyDiscoveryService {
   /**
    * Sort properties: required first, then alphabetical
    */
-  private sortProperties(
-    properties: PropertyMetadata[],
-  ): PropertyMetadata[] {
+  private sortProperties(properties: PropertyMetadata[]): PropertyMetadata[] {
     return properties.sort((a, b) => {
       if (a.isRequired !== b.isRequired) {
         return a.isRequired ? -1 : 1;

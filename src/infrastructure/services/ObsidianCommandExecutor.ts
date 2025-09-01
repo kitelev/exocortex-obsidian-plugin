@@ -117,7 +117,7 @@ export class ObsidianCommandExecutor implements ICommandExecutor {
         // Create asset with proper interface
         const assetId = AssetId.generate();
         const ontology = OntologyPrefix.create("exo").getValue(); // Default ontology
-        
+
         const assetResult = Asset.create({
           id: assetId,
           className: classNameResult.getValue(),

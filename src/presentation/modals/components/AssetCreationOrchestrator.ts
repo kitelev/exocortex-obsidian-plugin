@@ -41,17 +41,24 @@ export class AssetCreationOrchestrator {
       }
 
       // Execute asset creation with circuit breaker protection
-      const result = await this.circuitBreaker.execute("createAsset", async () => {
-        return await this.createAssetUseCase.execute({
-          title: request.title,
-          className: request.className,
-          ontologyPrefix: request.ontologyPrefix || "",
-          properties: Object.fromEntries(request.properties),
-        });
-      });
+      const result = await this.circuitBreaker.execute(
+        "createAsset",
+        async () => {
+          return await this.createAssetUseCase.execute({
+            title: request.title,
+            className: request.className,
+            ontologyPrefix: request.ontologyPrefix || "",
+            properties: Object.fromEntries(request.properties),
+          });
+        },
+      );
 
-      if (result && typeof result === 'object' && 'success' in result) {
-        const typedResponse = result as { success: boolean; assetId?: string; message?: string };
+      if (result && typeof result === "object" && "success" in result) {
+        const typedResponse = result as {
+          success: boolean;
+          assetId?: string;
+          message?: string;
+        };
         if (typedResponse.success) {
           new Notice(`Asset "${request.title}" created successfully!`);
           // Use the asset title as the path since we don't get a path back
@@ -97,7 +104,9 @@ export class AssetCreationOrchestrator {
     if (request.properties) {
       for (const [key, value] of request.properties) {
         if (typeof value === "string" && value.length > 10000) {
-          errors.push(`Property "${key}" value is too long (max 10,000 characters)`);
+          errors.push(
+            `Property "${key}" value is too long (max 10,000 characters)`,
+          );
         }
       }
     }
@@ -141,7 +150,9 @@ export class AssetCreationOrchestrator {
 
       // Format array values
       if (Array.isArray(value)) {
-        formatted[key] = value.filter(item => item !== null && item !== undefined && item !== "");
+        formatted[key] = value.filter(
+          (item) => item !== null && item !== undefined && item !== "",
+        );
         if (formatted[key].length === 0) {
           delete formatted[key];
         }

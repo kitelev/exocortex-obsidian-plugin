@@ -146,7 +146,6 @@ export class ObsidianClassViewRepository implements IClassViewRepository {
         return Result.fail<ClassView | null>(classNameResult.error);
       }
 
-
       // Parse display options
       const displayOptions: DisplayOptions = {
         showProperties: fm["ui__ClassView_showProperties"] !== false,
@@ -178,7 +177,6 @@ export class ObsidianClassViewRepository implements IClassViewRepository {
       );
     }
   }
-
 
   private serializeClassView(classView: ClassView): string {
     const frontmatter = {

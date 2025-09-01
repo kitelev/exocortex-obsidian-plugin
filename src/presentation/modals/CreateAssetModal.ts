@@ -8,7 +8,10 @@ import { SemanticPropertyDiscoveryService } from "../../domain/services/Semantic
 import { CircuitBreakerService } from "../../infrastructure/resilience/CircuitBreakerService";
 import { PropertyFieldManager } from "./components/PropertyFieldManager";
 import { FormUIManager, FormUICallbacks } from "./components/FormUIManager";
-import { AssetCreationOrchestrator, AssetCreationCallbacks } from "./components/AssetCreationOrchestrator";
+import {
+  AssetCreationOrchestrator,
+  AssetCreationCallbacks,
+} from "./components/AssetCreationOrchestrator";
 
 /**
  * Modal for creating new ExoAssets
@@ -95,7 +98,9 @@ export class CreateAssetModal extends Modal {
     this.formUIManager.setupActionButtons(contentEl, callbacks);
   }
 
-  private async setupPropertiesSection(containerEl: HTMLElement): Promise<void> {
+  private async setupPropertiesSection(
+    containerEl: HTMLElement,
+  ): Promise<void> {
     const propertiesSection = containerEl.createEl("div", {
       cls: "exocortex-properties-section",
     });
@@ -106,13 +111,15 @@ export class CreateAssetModal extends Modal {
     });
 
     // Load initial properties for default class
-    await this.updatePropertiesForClass(this.formUIManager.getValue("assetClass"));
+    await this.updatePropertiesForClass(
+      this.formUIManager.getValue("assetClass"),
+    );
   }
 
   private async createAsset(): Promise<void> {
     const formValues = this.formUIManager.getValues();
     const propertyValues = this.propertyFieldManager.getPropertyValues();
-    
+
     const request = this.assetCreationOrchestrator.createAssetCreationRequest(
       formValues,
       propertyValues,
@@ -164,9 +171,9 @@ export class CreateAssetModal extends Modal {
 
   private async updatePropertiesForClass(className: string): Promise<void> {
     if (!this.propertiesContainer || this.isUpdatingProperties) return;
-    
+
     this.isUpdatingProperties = true;
-    
+
     try {
       // Debounce rapid class changes to prevent race conditions
       if (this.updateDebounceTimer !== null) {
@@ -175,14 +182,17 @@ export class CreateAssetModal extends Modal {
 
       this.updateDebounceTimer = window.setTimeout(async () => {
         this.updateDebounceTimer = null;
-        
-        const result = await this.propertyFieldManager.discoverPropertiesForClass(className);
-        
+
+        const result =
+          await this.propertyFieldManager.discoverPropertiesForClass(className);
+
         if (result.isSuccess) {
-          this.propertyFieldManager.renderPropertiesInContainer(this.propertiesContainer!);
+          this.propertyFieldManager.renderPropertiesInContainer(
+            this.propertiesContainer!,
+          );
         } else {
           console.error(`Property discovery failed: ${result.getError()}`);
-          
+
           // Display error message to user
           this.propertiesContainer!.empty();
           const errorEl = this.propertiesContainer!.createEl("div", {
@@ -197,7 +207,7 @@ export class CreateAssetModal extends Modal {
             cls: "exocortex-error-details",
           });
         }
-        
+
         this.isUpdatingProperties = false;
       }, 50) as unknown as number;
     } catch (error) {

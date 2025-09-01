@@ -57,7 +57,7 @@ export class FormUIManager {
     containerEl: HTMLElement,
     callbacks: FormUICallbacks,
   ): Promise<void> {
-    const classOptions: Record<string, string> = { "exo__Asset": "Asset" };
+    const classOptions: Record<string, string> = { exo__Asset: "Asset" };
 
     // Load available classes from class views
     try {
@@ -67,7 +67,9 @@ export class FormUIManager {
         for (const classView of classViews) {
           const className = classView.className.toString();
           // Use className as display name for now, or add a display name property to ClassView
-          const displayName = className.replace(/^exo__/, '').replace(/_/g, ' ');
+          const displayName = className
+            .replace(/^exo__/, "")
+            .replace(/_/g, " ");
           classOptions[className] = displayName;
         }
       }
@@ -83,12 +85,10 @@ export class FormUIManager {
           dropdown.addOption(value, label);
         });
 
-        dropdown
-          .setValue(this.values.assetClass)
-          .onChange(async (value) => {
-            this.values.assetClass = value;
-            await callbacks.onClassChange(value);
-          });
+        dropdown.setValue(this.values.assetClass).onChange(async (value) => {
+          this.values.assetClass = value;
+          await callbacks.onClassChange(value);
+        });
       });
   }
 
@@ -117,12 +117,10 @@ export class FormUIManager {
           dropdown.addOption(value, label);
         });
 
-        dropdown
-          .setValue(this.values.assetOntology)
-          .onChange((value) => {
-            this.values.assetOntology = value;
-            callbacks.onOntologyChange(value);
-          });
+        dropdown.setValue(this.values.assetOntology).onChange((value) => {
+          this.values.assetOntology = value;
+          callbacks.onOntologyChange(value);
+        });
       });
   }
 

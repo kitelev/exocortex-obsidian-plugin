@@ -142,7 +142,6 @@ export class DIContainer {
       () => new ObsidianClassViewRepository(this.app),
     );
 
-
     this.container.register<IClassLayoutRepository>(
       "IClassLayoutRepository",
       () =>
@@ -207,8 +206,6 @@ export class DIContainer {
         ),
     );
 
-
-
     this.container.register<PropertyEditingUseCase>(
       "PropertyEditingUseCase",
       () =>
@@ -231,7 +228,6 @@ export class DIContainer {
         ),
     );
 
-
     // Register Mobile Components
   }
 
@@ -249,11 +245,9 @@ export class DIContainer {
     return this.resolve<CreateAssetUseCase>("CreateAssetUseCase");
   }
 
-
   public getPropertyRenderer(): PropertyRenderer {
     return this.resolve<PropertyRenderer>("PropertyRenderer");
   }
-
 
   public getPropertyEditingUseCase(): PropertyEditingUseCase {
     return this.resolve<PropertyEditingUseCase>("PropertyEditingUseCase");

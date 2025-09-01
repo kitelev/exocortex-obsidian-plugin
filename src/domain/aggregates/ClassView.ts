@@ -21,7 +21,6 @@ export interface DisplayOptions {
 }
 
 export class ClassView extends AggregateRoot<ClassViewProps> {
-
   private constructor(props: ClassViewProps) {
     super(props);
   }
@@ -61,7 +60,6 @@ export class ClassView extends AggregateRoot<ClassViewProps> {
     return this.props.className;
   }
 
-
   get displayOptions(): DisplayOptions {
     return (
       this.props.displayOptions || {
@@ -71,9 +69,6 @@ export class ClassView extends AggregateRoot<ClassViewProps> {
       }
     );
   }
-
-
-
 
   /**
    * Update display options
@@ -98,7 +93,4 @@ export class ClassView extends AggregateRoot<ClassViewProps> {
 
     return Result.ok<void>();
   }
-
-
-
 }

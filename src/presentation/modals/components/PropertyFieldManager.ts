@@ -185,7 +185,10 @@ export class PropertyFieldManager {
     });
   }
 
-  private createNumberField(setting: Setting, property: PropertyMetadata): void {
+  private createNumberField(
+    setting: Setting,
+    property: PropertyMetadata,
+  ): void {
     setting.addText((text) => {
       text
         .setPlaceholder("Enter number")

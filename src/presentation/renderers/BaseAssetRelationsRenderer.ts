@@ -334,7 +334,6 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
     });
   }
 
-
   /**
    * Render instance class values as clickable links
    * Handles both single values and arrays, with or without wiki-link brackets
