@@ -6,17 +6,22 @@ import {
 } from "../../domain/entities/ClassLayout";
 import { ClassName } from "../../domain/value-objects/ClassName";
 import { AssetId } from "../../domain/value-objects/AssetId";
+import { AbstractFileRepository } from "../../shared/AbstractFileRepository";
 
-export class ObsidianClassLayoutRepository implements IClassLayoutRepository {
+export class ObsidianClassLayoutRepository
+  extends AbstractFileRepository
+  implements IClassLayoutRepository
+{
   private cache: Map<string, ClassLayout[]> = new Map();
   private lastCacheUpdate: number = 0;
   private readonly CACHE_TTL = 30000; // 30 seconds
   private hasManuallyAddedLayouts: boolean = false;
 
   constructor(
-    private app: App,
+    app: App,
     private layoutsFolderPath: string = "layouts",
   ) {
+    super(app);
     // Initialize cache to ensure it's never undefined
     this.cache = new Map();
   }

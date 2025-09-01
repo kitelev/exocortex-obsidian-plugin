@@ -1,5 +1,5 @@
 import { MarkdownPostProcessorContext, MarkdownRenderChild } from "obsidian";
-import { ILogger } from "../../infrastructure/logging/ILogger";
+import { ILogger } from "../../application/ports/ILogger";
 import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
 import { ServiceProvider } from "../../infrastructure/providers/ServiceProvider";
 

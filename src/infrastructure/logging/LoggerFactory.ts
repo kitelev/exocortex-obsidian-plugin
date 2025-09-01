@@ -1,4 +1,4 @@
-import { ILogger } from "./ILogger";
+import { ILogger } from "../../application/ports/ILogger";
 import { Logger } from "./Logger";
 import { LoggerConfig, LoggerConfigFactory } from "./LoggerConfig";
 

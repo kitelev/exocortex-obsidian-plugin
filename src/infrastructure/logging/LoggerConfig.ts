@@ -1,4 +1,4 @@
-import { LogLevel } from "./ILogger";
+import { LogLevel } from "../../application/ports/ILogger";
 
 export interface LoggerConfig {
   level: LogLevel;

@@ -9,7 +9,7 @@ import { RefactoredUniversalLayoutRenderer } from "./presentation/renderers/Refa
 import { AssetListRenderer } from "./presentation/renderers/AssetListRenderer";
 import { DynamicLayoutRenderer } from "./presentation/renderers/DynamicLayoutRenderer";
 import { ExocortexSettings } from "./domain/entities/ExocortexSettings";
-import { ILogger } from "./infrastructure/logging/ILogger";
+import { ILogger } from "./application/ports/ILogger";
 import { LoggerFactory } from "./infrastructure/logging/LoggerFactory";
 
 /**

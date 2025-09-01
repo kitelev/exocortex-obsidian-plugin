@@ -2,13 +2,20 @@ import { App, TFile } from "obsidian";
 import { IOntologyRepository } from "../../domain/repositories/IOntologyRepository";
 import { Ontology } from "../../domain/entities/Ontology";
 import { OntologyPrefix } from "../../domain/value-objects/OntologyPrefix";
+import { AbstractFileRepository } from "../../shared/AbstractFileRepository";
 
 /**
  * Obsidian implementation of IOntologyRepository
  * Handles ontology persistence using Obsidian vault
+ * Extends AbstractFileRepository to eliminate code duplication
  */
-export class ObsidianOntologyRepository implements IOntologyRepository {
-  constructor(private app: App) {}
+export class ObsidianOntologyRepository
+  extends AbstractFileRepository
+  implements IOntologyRepository
+{
+  constructor(app: App) {
+    super(app);
+  }
 
   async findByPrefix(prefix: OntologyPrefix): Promise<Ontology | null> {
     const fileName = `!${prefix.toString()}.md`;
@@ -25,53 +32,35 @@ export class ObsidianOntologyRepository implements IOntologyRepository {
   }
 
   async findAll(): Promise<Ontology[]> {
-    const files = this.app.vault.getMarkdownFiles();
-    const ontologies: Ontology[] = [];
-
-    for (const file of files) {
-      if (file.name.startsWith("!")) {
-        const cache = this.app.metadataCache.getFileCache(file);
-        if (cache?.frontmatter?.["exo__Ontology_prefix"]) {
-          ontologies.push(Ontology.fromFrontmatter(cache.frontmatter));
-        }
-      }
-    }
-
-    return ontologies;
+    return this.findAllEntities(
+      "exo__Ontology_prefix",
+      (frontmatter) => Ontology.fromFrontmatter(frontmatter),
+      "Ontology",
+      (file) => file.name.startsWith("!"),
+    );
   }
 
   async save(ontology: Ontology): Promise<void> {
-    const fileName = `!${ontology.getPrefix().toString()}.md`;
-    const frontmatter = ontology.toFrontmatter();
-
-    // Build YAML frontmatter
-    const yamlLines = ["---"];
-    for (const [key, value] of Object.entries(frontmatter)) {
-      if (Array.isArray(value)) {
-        yamlLines.push(`${key}:`);
-        for (const item of value) {
-          yamlLines.push(`  - ${item}`);
-        }
-      } else {
-        yamlLines.push(`${key}: ${value}`);
-      }
-    }
-    yamlLines.push("---", "");
-
-    const content = yamlLines.join("\n");
-
-    // Check if file exists
-    const existingFile = this.app.vault.getAbstractFileByPath(fileName);
-    if (existingFile instanceof TFile) {
-      await this.app.vault.modify(existingFile, content);
-    } else {
-      await this.app.vault.create(fileName, content);
-    }
+    return this.saveEntityWithFrontmatter(
+      ontology,
+      (entity) => `!${entity.getPrefix().toString()}`,
+      (entity) => entity.toFrontmatter(),
+      (entity) => {
+        const fileName = `!${entity.getPrefix().toString()}.md`;
+        const file = this.app.vault.getAbstractFileByPath(fileName);
+        return file instanceof TFile ? file : null;
+      },
+      "Ontology",
+    );
   }
 
   async exists(prefix: OntologyPrefix): Promise<boolean> {
-    const fileName = `!${prefix.toString()}.md`;
-    const file = this.app.vault.getAbstractFileByPath(fileName);
-    return file instanceof TFile;
+    try {
+      const ontology = await this.findByPrefix(prefix);
+      return ontology !== null;
+    } catch (error) {
+      console.error(`Error checking if Ontology exists: ${error}`);
+      return false;
+    }
   }
 }

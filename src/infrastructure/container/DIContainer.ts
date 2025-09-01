@@ -37,7 +37,7 @@ import { CircuitBreakerService } from "../resilience/CircuitBreakerService";
 import { PropertyRenderer } from "../../presentation/components/PropertyRenderer";
 
 // Logging
-import { ILogger } from "../logging/ILogger";
+import { ILogger } from "../../application/ports/ILogger";
 import { LoggerFactory } from "../logging/LoggerFactory";
 
 /**
@@ -168,6 +168,7 @@ export class DIContainer {
       "ErrorHandlerService",
       () =>
         new ErrorHandlerService(
+          LoggerFactory.createForClass(ErrorHandlerService),
           {
             showUserNotification: true,
             logToConsole: true,

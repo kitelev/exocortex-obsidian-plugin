@@ -1,6 +1,6 @@
 import { MarkdownPostProcessorContext, TFile } from "obsidian";
 import { IViewRenderer, ViewConfig } from "../processors/CodeBlockProcessor";
-import { ILogger } from "../../infrastructure/logging/ILogger";
+import { ILogger } from "../../application/ports/ILogger";
 import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
 import { ServiceProvider } from "../../infrastructure/providers/ServiceProvider";
 import { IAssetRepository } from "../../domain/repositories/IAssetRepository";

@@ -26,104 +26,211 @@ export class SemanticPropertyDiscoveryService {
 
   /**
    * Discover all properties applicable to a class including inherited from superclasses
-   * Performance optimized with monitoring, caching, and efficient filtering
+   * Refactored to follow Single Responsibility Principle with focused helper methods
    */
   async discoverPropertiesForClass(
     className: string,
   ): Promise<Result<PropertyMetadata[]>> {
-    // Start performance monitoring
-    const files = this.app.vault.getMarkdownFiles();
-    const operationId = globalPropertyPerformanceMonitor.startOperation(
-      className,
-      files.length,
-    );
+    const operationId = this.startPerformanceMonitoring(className);
     const errors: string[] = [];
 
     try {
       // Check cache first for better performance
-      const cacheKey = `properties_${className}`;
-      const cached = this.getFromCache<PropertyMetadata[]>(cacheKey);
-      if (cached) {
-        globalPropertyPerformanceMonitor.completeOperation(
-          operationId,
-          cached.length,
-          true,
-        );
-        return Result.ok(cached);
+      const cacheResult = this.tryGetFromCache(className, operationId);
+      if (cacheResult) {
+        return cacheResult;
       }
 
-      // Get all classes in hierarchy (including superclasses)
+      // Get class hierarchy and discover properties
       const classHierarchy = await this.getClassHierarchy(className);
-      const properties: PropertyMetadata[] = [];
-      const seen = new Set<string>();
+      const properties = await this.discoverPropertiesForHierarchy(
+        classHierarchy,
+        errors,
+      );
 
-      // Performance optimization: batch process files
-      const propertyFiles = this.filterPropertyFiles(files);
-
-      for (const file of propertyFiles) {
-        try {
-          const cache = this.app.metadataCache.getFileCache(file);
-          if (!cache?.frontmatter) continue;
-
-          // Check if property domain matches any class in hierarchy
-          const domain = this.extractDomain(cache.frontmatter);
-          if (!this.domainMatchesClassHierarchy(domain, classHierarchy))
-            continue;
-
-          const propertyName = file.basename;
-          if (seen.has(propertyName)) continue;
-          seen.add(propertyName);
-
-          // Extract property metadata
-          const metadata = this.extractPropertyMetadata(
-            file,
-            cache.frontmatter,
-          );
-          properties.push(metadata);
-        } catch (fileError) {
-          const errorMsg = `Error processing property file ${file.basename}: ${fileError instanceof Error ? fileError.message : String(fileError)}`;
-          errors.push(errorMsg);
-          console.warn(`[PropertyDiscovery] ${errorMsg}`);
-        }
-      }
-
-      // Core properties are handled automatically by the Asset entity and use case
-      // They should not be displayed as user-editable fields in the modal
-
-      // Sort properties: required first, then alphabetical
-      properties.sort((a, b) => {
-        if (a.isRequired !== b.isRequired) {
-          return a.isRequired ? -1 : 1;
-        }
-        return a.label.localeCompare(b.label);
-      });
-
-      // Cache the result for future use
-      this.setCache(cacheKey, properties);
+      // Sort and cache the results
+      const sortedProperties = this.sortProperties(properties);
+      this.cacheResults(className, sortedProperties);
 
       // Complete performance monitoring
-      globalPropertyPerformanceMonitor.completeOperation(
+      this.completePerformanceMonitoring(
         operationId,
-        properties.length,
+        sortedProperties.length,
         false,
         errors,
       );
 
-      return Result.ok(properties);
+      return Result.ok(sortedProperties);
     } catch (error) {
-      const errorMessage = `Failed to discover properties: ${error instanceof Error ? error.message : String(error)}`;
-      errors.push(errorMessage);
+      return this.handleDiscoveryError(error, operationId, errors);
+    }
+  }
 
-      // Complete monitoring with error
+  /**
+   * Start performance monitoring for property discovery operation
+   */
+  private startPerformanceMonitoring(className: string): string {
+    const files = this.app.vault.getMarkdownFiles();
+    return globalPropertyPerformanceMonitor.startOperation(
+      className,
+      files.length,
+    );
+  }
+
+  /**
+   * Try to get cached results for the given class
+   */
+  private tryGetFromCache(
+    className: string,
+    operationId: string,
+  ): Result<PropertyMetadata[]> | null {
+    const cacheKey = `properties_${className}`;
+    const cached = this.getFromCache<PropertyMetadata[]>(cacheKey);
+    if (cached) {
       globalPropertyPerformanceMonitor.completeOperation(
         operationId,
-        0,
-        false,
-        errors,
+        cached.length,
+        true,
       );
-
-      return Result.fail(errorMessage);
+      return Result.ok(cached);
     }
+    return null;
+  }
+
+  /**
+   * Discover properties for all classes in the hierarchy
+   */
+  private async discoverPropertiesForHierarchy(
+    classHierarchy: string[],
+    errors: string[],
+  ): Promise<PropertyMetadata[]> {
+    const properties: PropertyMetadata[] = [];
+    const seen = new Set<string>();
+    const files = this.app.vault.getMarkdownFiles();
+    const propertyFiles = this.filterPropertyFiles(files);
+
+    for (const file of propertyFiles) {
+      try {
+        const property = await this.processPropertyFile(
+          file,
+          classHierarchy,
+          seen,
+        );
+        if (property) {
+          properties.push(property);
+        }
+      } catch (fileError) {
+        this.handleFileProcessingError(file, fileError, errors);
+      }
+    }
+
+    return properties;
+  }
+
+  /**
+   * Process a single property file and extract metadata if applicable
+   */
+  private async processPropertyFile(
+    file: TFile,
+    classHierarchy: string[],
+    seen: Set<string>,
+  ): Promise<PropertyMetadata | null> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    if (!cache?.frontmatter) return null;
+
+    // Check if property domain matches any class in hierarchy
+    const domain = this.extractDomain(cache.frontmatter);
+    if (!this.domainMatchesClassHierarchy(domain, classHierarchy)) {
+      return null;
+    }
+
+    const propertyName = file.basename;
+    if (seen.has(propertyName)) return null;
+    seen.add(propertyName);
+
+    // Extract property metadata
+    return this.extractPropertyMetadata(file, cache.frontmatter);
+  }
+
+  /**
+   * Handle errors during file processing
+   */
+  private handleFileProcessingError(
+    file: TFile,
+    error: unknown,
+    errors: string[],
+  ): void {
+    const errorMsg = `Error processing property file ${file.basename}: ${
+      error instanceof Error ? error.message : String(error)
+    }`;
+    errors.push(errorMsg);
+    console.warn(`[PropertyDiscovery] ${errorMsg}`);
+  }
+
+  /**
+   * Sort properties: required first, then alphabetical
+   */
+  private sortProperties(
+    properties: PropertyMetadata[],
+  ): PropertyMetadata[] {
+    return properties.sort((a, b) => {
+      if (a.isRequired !== b.isRequired) {
+        return a.isRequired ? -1 : 1;
+      }
+      return a.label.localeCompare(b.label);
+    });
+  }
+
+  /**
+   * Cache the discovered properties for future use
+   */
+  private cacheResults(
+    className: string,
+    properties: PropertyMetadata[],
+  ): void {
+    const cacheKey = `properties_${className}`;
+    this.setCache(cacheKey, properties);
+  }
+
+  /**
+   * Complete performance monitoring with success metrics
+   */
+  private completePerformanceMonitoring(
+    operationId: string,
+    propertyCount: number,
+    fromCache: boolean,
+    errors: string[],
+  ): void {
+    globalPropertyPerformanceMonitor.completeOperation(
+      operationId,
+      propertyCount,
+      fromCache,
+      errors,
+    );
+  }
+
+  /**
+   * Handle discovery errors and complete monitoring
+   */
+  private handleDiscoveryError(
+    error: unknown,
+    operationId: string,
+    errors: string[],
+  ): Result<PropertyMetadata[]> {
+    const errorMessage = `Failed to discover properties: ${
+      error instanceof Error ? error.message : String(error)
+    }`;
+    errors.push(errorMessage);
+
+    // Complete monitoring with error
+    globalPropertyPerformanceMonitor.completeOperation(
+      operationId,
+      0,
+      false,
+      errors,
+    );
+
+    return Result.fail(errorMessage);
   }
 
   /**

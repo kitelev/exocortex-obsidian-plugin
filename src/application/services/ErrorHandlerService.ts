@@ -8,8 +8,7 @@ import {
 import { ErrorAnalyzer } from "../../domain/errors/ErrorAnalyzer";
 import { EnhancedResult } from "../../domain/core/EnhancedResult";
 import { INotificationService } from "../ports/INotificationService";
-import { ILogger } from "../../infrastructure/logging/ILogger";
-import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
+import { ILogger } from "../ports/ILogger";
 
 export interface ErrorHandlerOptions {
   showUserNotification?: boolean;
@@ -27,7 +26,6 @@ export interface ErrorMetrics {
 }
 
 export class ErrorHandlerService {
-  private logger: ILogger;
   private errorHistory: ExocortexError[] = [];
   private errorMetrics: ErrorMetrics = {
     totalErrors: 0,
@@ -52,10 +50,10 @@ export class ErrorHandlerService {
   private errorStartTimes = new Map<string, number>();
 
   constructor(
+    private logger: ILogger,
     private options: ErrorHandlerOptions = {},
     private notificationService?: INotificationService,
   ) {
-    this.logger = LoggerFactory.createForClass(ErrorHandlerService);
     this.options = {
       showUserNotification: true,
       logToConsole: true,

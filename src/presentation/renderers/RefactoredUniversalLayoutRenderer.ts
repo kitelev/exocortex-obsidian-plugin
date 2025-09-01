@@ -6,7 +6,7 @@ import {
 } from "./BaseAssetRelationsRenderer";
 import { ServiceProvider } from "../../infrastructure/providers/ServiceProvider";
 import { IAssetRepository } from "../../domain/repositories/IAssetRepository";
-import { ILogger } from "../../infrastructure/logging/ILogger";
+import { ILogger } from "../../application/ports/ILogger";
 import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
 import { EnhancedCreateAssetModal } from "../modals/EnhancedCreateAssetModal";
 

@@ -1,4 +1,4 @@
-import { ILogger, LogLevel, LogContext, LogEntry } from "./ILogger";
+import { ILogger, LogLevel, LogContext, LogEntry } from "../../application/ports/ILogger";
 import { LoggerConfig, LoggerConfigFactory } from "./LoggerConfig";
 import { v4 as uuidv4 } from "uuid";
 
