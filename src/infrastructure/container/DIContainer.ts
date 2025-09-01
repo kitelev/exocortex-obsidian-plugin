@@ -3,13 +3,11 @@ import { Container } from "../../application/core/Container";
 
 // Port Interfaces
 import { INotificationService } from "../../application/ports/INotificationService";
-import { IFileSystemAdapter } from "../../application/ports/IFileSystemAdapter";
 import { IUIAdapter } from "../../application/ports/IUIAdapter";
 import { IVaultAdapter } from "../../application/ports/IVaultAdapter";
 
 // Infrastructure Adapters
 import { ObsidianNotificationService } from "../adapters/ObsidianNotificationService";
-import { ObsidianFileSystemAdapter } from "../adapters/ObsidianFileSystemAdapter";
 import { ObsidianUIAdapter } from "../adapters/ObsidianUIAdapter";
 import { ObsidianVaultAdapter } from "../adapters/ObsidianVaultAdapter";
 
@@ -116,11 +114,6 @@ export class DIContainer {
     this.container.register<INotificationService>(
       "INotificationService",
       () => new ObsidianNotificationService(),
-    );
-
-    this.container.register<IFileSystemAdapter>(
-      "IFileSystemAdapter",
-      () => new ObsidianFileSystemAdapter(this.app),
     );
 
     this.container.register<IUIAdapter>(

@@ -1,3 +1,30 @@
+## [8.1.0] - 2025-09-01
+
+### 🧹 Deep Code Cleanup - Zero Unused Code
+
+This release completes a comprehensive audit of the entire codebase, removing ALL unused code and dependencies. Every file now serves a direct purpose in the plugin's functionality.
+
+#### Removed
+- **Unused Interfaces**: IFileSystemAdapter and ObsidianFileSystemAdapter (not used in actual plugin code)
+- **Duplicate Renderers**: Removed UniversalLayoutRenderer (replaced by RefactoredUniversalLayoutRenderer)
+- **Unused Services**: RelationOntologizer, unused use cases and domain services
+- **Dead Code**: 20+ unused files including utilities, base classes, and specifications
+- **Empty Directories**: Cleaned up all empty directories after file removal
+
+#### Improved
+- **Code Quality**: 100% of code now actively used in production
+- **Build Size**: Further reduced bundle size by removing dead code
+- **Maintainability**: Clearer codebase with no confusing unused components
+- **Test Accuracy**: Tests now reference the actual components used in production
+
+#### Technical Details
+- Audited every single TypeScript file for usage
+- Removed all files with zero references in production code
+- Updated tests to use actual production components
+- Cleaned up all import statements and dependencies
+
+This release ensures that every line of code serves a purpose, making the plugin easier to maintain and understand.
+
 ## [8.0.0] - 2025-08-31
 
 ### 🎯 Major Architecture Simplification - Focus on Core Features

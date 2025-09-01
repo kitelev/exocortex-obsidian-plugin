@@ -1,4 +1,4 @@
-import { UniversalLayoutRenderer } from "../../../../src/presentation/renderers/UniversalLayoutRenderer";
+import { RefactoredUniversalLayoutRenderer as UniversalLayoutRenderer } from "../../../../src/presentation/renderers/RefactoredUniversalLayoutRenderer";
 import { ServiceProvider } from "../../../../src/infrastructure/providers/ServiceProvider";
 import { FakeVaultAdapter } from "../../../helpers/FakeVaultAdapter";
 import { IAssetRepository } from "../../../../src/domain/repositories/IAssetRepository";

@@ -1,4 +1,4 @@
-import { UniversalLayoutRenderer } from "../../../../src/presentation/renderers/UniversalLayoutRenderer";
+import { RefactoredUniversalLayoutRenderer as UniversalLayoutRenderer } from "../../../../src/presentation/renderers/RefactoredUniversalLayoutRenderer";
 import { ServiceProvider } from "../../../../src/infrastructure/providers/ServiceProvider";
 import { App, TFile, MarkdownPostProcessorContext } from "obsidian";
 import { EnhancedCreateAssetModal } from "../../../../src/presentation/modals/EnhancedCreateAssetModal";
