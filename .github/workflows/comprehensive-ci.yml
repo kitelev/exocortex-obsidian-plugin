@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         node: ["18.x", "20.x"]
     outputs:
       ubuntu-build-cache: ${{ steps.cache-build.outputs.cache-hit }}
@@ -36,6 +36,7 @@ jobs:
         run: |
           git config --global core.longpaths true
           git config --global core.autocrlf false
+          git config --global core.filemode false
         shell: bash
 
       - name: Setup Node.js
@@ -88,6 +89,14 @@ jobs:
           if [ ! -f manifest.json ]; then
             echo "❌ manifest.json not found"
             exit 1
+          fi
+          # Windows-specific file validation
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            echo "Windows build validation..."
+            # Check for Windows-specific issues
+            if command -v file >/dev/null 2>&1; then
+              file main.js || true
+            fi
           fi
           echo "✅ Build validation passed"
         shell: bash

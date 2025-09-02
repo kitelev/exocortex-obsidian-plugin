@@ -15,7 +15,12 @@ export default defineConfig({
   workers: 1, // Single worker for Obsidian instance
   
   // Reporting
-  reporter: [
+  reporter: process.env.CI ? [
+    ['html', { outputFolder: 'playwright-report' }],
+    ['json', { outputFile: 'test-results/playwright-results.json' }],
+    ['junit', { outputFile: 'test-results/junit.xml' }],
+    ['list'],
+  ] : [
     ['html', { outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'test-results/playwright-results.json' }],
     ['list'],
@@ -55,17 +60,45 @@ export default defineConfig({
       testMatch: /.*\.spec\.ts$/,
       use: {
         ...devices['Desktop Chrome'],
-        // Path to Obsidian executable
+        // Path to Obsidian executable (with CI fallback)
         launchOptions: {
-          executablePath: process.platform === 'darwin' 
-            ? '/Applications/Obsidian.app/Contents/MacOS/Obsidian'
-            : process.platform === 'win32'
-            ? 'C:\\Program Files\\Obsidian\\Obsidian.exe'
-            : '/usr/bin/obsidian', // Linux
+          executablePath: process.env.OBSIDIAN_PATH || (
+            process.platform === 'darwin' 
+              ? '/Applications/Obsidian.app/Contents/MacOS/Obsidian'
+              : process.platform === 'win32'
+              ? 'C:\\Program Files\\Obsidian\\Obsidian.exe'
+              : '/usr/local/bin/obsidian' // CI Linux path
+          ),
           args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-renderer-backgrounding',
+            `--vault-path=${path.join(__dirname, 'tests/e2e/playwright/test-vault')}`,
+          ],
+        },
+      },
+    },
+    
+    // CI Environment Project
+    {
+      name: 'CI Environment - Headless',
+      testMatch: /.*\.spec\.ts$/,
+      use: {
+        ...devices['Desktop Chrome'],
+        headless: true,
+        launchOptions: {
+          executablePath: process.env.OBSIDIAN_PATH || '/usr/local/bin/obsidian',
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--headless',
+            '--virtual-time-budget=5000',
             `--vault-path=${path.join(__dirname, 'tests/e2e/playwright/test-vault')}`,
           ],
         },
