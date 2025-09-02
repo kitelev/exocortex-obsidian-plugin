@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'e2e-enhanced-tests'
+    static_configs:
+      - targets: ['e2e-enhanced-tests:3000']
+    scrape_interval: 5s
+    metrics_path: '/metrics'
+
+  - job_name: 'obsidian-remote-enhanced'
+    static_configs:
+      - targets: ['obsidian-remote-enhanced:8080']
+    scrape_interval: 10s
+    metrics_path: '/health'

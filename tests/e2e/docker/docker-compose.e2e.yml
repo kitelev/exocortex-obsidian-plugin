@@ -23,11 +23,11 @@ services:
       - CUSTOM_PORT=8080
       - WEBPAGE_TITLE=Exocortex Plugin E2E Tests
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
-      interval: 15s
-      timeout: 5s
-      retries: 10
-      start_period: 45s
+      test: ["CMD", "curl", "-f", "--connect-timeout", "3", "--max-time", "10", "http://localhost:8080"]
+      interval: 10s
+      timeout: 15s
+      retries: 15
+      start_period: 90s
     restart: unless-stopped
     networks:
       - e2e-network

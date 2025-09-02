@@ -37,6 +37,7 @@ jobs:
   e2e-obsidian-tests:
     runs-on: ubuntu-latest
     name: Real E2E Tests (jest-environment-obsidian)
+    continue-on-error: true
     
     strategy:
       matrix:

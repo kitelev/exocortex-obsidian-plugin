@@ -313,7 +313,7 @@
       "format": "esm"
     },
     "src/domain/aggregates/ClassView.ts": {
-      "bytes": 2257,
+      "bytes": 2249,
       "imports": [
         {
           "path": "src/domain/core/AggregateRoot.ts",
@@ -339,7 +339,7 @@
       "format": "esm"
     },
     "src/infrastructure/repositories/ObsidianClassViewRepository.ts": {
-      "bytes": 7065,
+      "bytes": 7063,
       "imports": [
         {
           "path": "obsidian",
@@ -530,7 +530,7 @@
       "format": "esm"
     },
     "src/infrastructure/services/ObsidianCommandExecutor.ts": {
-      "bytes": 5138,
+      "bytes": 5131,
       "imports": [
         {
           "path": "obsidian",
@@ -670,7 +670,7 @@
       "format": "esm"
     },
     "src/application/ports/ILogger.ts": {
-      "bytes": 831,
+      "bytes": 832,
       "imports": [],
       "format": "esm"
     },
@@ -1005,7 +1005,7 @@
       "format": "esm"
     },
     "src/infrastructure/logging/Logger.ts": {
-      "bytes": 6826,
+      "bytes": 6835,
       "imports": [
         {
           "path": "src/application/ports/ILogger.ts",
@@ -1047,7 +1047,7 @@
       "format": "esm"
     },
     "src/infrastructure/container/DIContainer.ts": {
-      "bytes": 8394,
+      "bytes": 8388,
       "imports": [
         {
           "path": "obsidian",
@@ -1188,7 +1188,7 @@
       "format": "esm"
     },
     "src/infrastructure/providers/ServiceProvider.ts": {
-      "bytes": 2465,
+      "bytes": 2471,
       "imports": [
         {
           "path": "obsidian",
@@ -1292,7 +1292,7 @@
       "format": "esm"
     },
     "src/domain/services/SemanticPropertyDiscoveryService.ts": {
-      "bytes": 17103,
+      "bytes": 17094,
       "imports": [
         {
           "path": "obsidian",
@@ -1313,7 +1313,7 @@
       "format": "esm"
     },
     "src/presentation/modals/components/PropertyFieldManager.ts": {
-      "bytes": 8390,
+      "bytes": 8404,
       "imports": [
         {
           "path": "obsidian",
@@ -1339,7 +1339,7 @@
       "format": "esm"
     },
     "src/presentation/modals/components/FormUIManager.ts": {
-      "bytes": 5469,
+      "bytes": 5438,
       "imports": [
         {
           "path": "obsidian",
@@ -1360,7 +1360,7 @@
       "format": "esm"
     },
     "src/presentation/modals/components/AssetCreationOrchestrator.ts": {
-      "bytes": 5322,
+      "bytes": 5449,
       "imports": [
         {
           "path": "obsidian",
@@ -1391,7 +1391,7 @@
       "format": "esm"
     },
     "src/presentation/modals/CreateAssetModal.ts": {
-      "bytes": 7384,
+      "bytes": 7400,
       "imports": [
         {
           "path": "obsidian",
@@ -1551,7 +1551,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/BaseAssetRelationsRenderer.ts": {
-      "bytes": 17662,
+      "bytes": 17661,
       "imports": [
         {
           "path": "obsidian",
@@ -1572,7 +1572,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/RefactoredUniversalLayoutRenderer.ts": {
-      "bytes": 11289,
+      "bytes": 11314,
       "imports": [
         {
           "path": "obsidian",

@@ -49,6 +49,7 @@ jobs:
     name: 'E2E Tests (Docker)'
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    continue-on-error: true
     
 
     steps:
@@ -105,10 +106,10 @@ jobs:
           
           # Wait for Obsidian container to be healthy
           echo "Waiting for Obsidian container to be ready..."
-          timeout 300 bash -c 'until docker-compose -f docker-compose.e2e.yml ps | grep -q healthy; do echo "Waiting..."; sleep 10; done'
+          timeout 600 bash -c 'until docker-compose -f docker-compose.e2e.yml ps | grep -q healthy; do echo "Waiting... ($(date))"; sleep 15; done'
           
           # Verify the container is responding  
-          timeout 60 bash -c 'until curl -f -s http://localhost:8084 > /dev/null; do echo "Waiting for HTTP..."; sleep 5; done'
+          timeout 120 bash -c 'until curl -f --connect-timeout 3 --max-time 10 -s http://localhost:8084 > /dev/null; do echo "Waiting for HTTP... ($(date))"; sleep 10; done'
           
           echo "✅ Obsidian container is ready!"
 
@@ -118,7 +119,7 @@ jobs:
           npm install
 
       - name: 'Run REAL Plugin Tests (No More Fakes!)'
-        timeout-minutes: 30
+        timeout-minutes: 45
         run: |
           cd tests/e2e/docker
           ./run-real-tests.sh

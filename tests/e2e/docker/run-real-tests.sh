@@ -145,19 +145,22 @@ log_step "Waiting for services to be ready..."
 
 # Wait for Obsidian container to be healthy
 echo "⏳ Waiting for Obsidian container health check..."
-for i in {1..60}; do
+for i in {1..90}; do
     if docker-compose -f docker-compose.e2e.yml ps | grep -q "healthy"; then
         log_success "Obsidian container is healthy"
         break
     fi
     
-    if [ $i -eq 60 ]; then
-        log_error "Obsidian container health check timeout"
-        docker-compose -f docker-compose.e2e.yml logs obsidian-e2e
+    if [ $i -eq 90 ]; then
+        log_error "Obsidian container health check timeout after 180 seconds"
+        echo "Container status:"
+        docker-compose -f docker-compose.e2e.yml ps
+        echo "Container logs:"
+        docker-compose -f docker-compose.e2e.yml logs obsidian-e2e | tail -50
         exit 1
     fi
     
-    echo "  Attempt $i/60..."
+    echo "  Attempt $i/90... ($(date))"
     sleep 2
 done
 
@@ -165,11 +168,26 @@ done
 log_step "Waiting for full Obsidian initialization..."
 sleep 10
 
-# Verify HTTP response
-if ! curl -f -s http://localhost:8084 > /dev/null; then
-    log_error "Obsidian container not responding on http://localhost:8084"
-    exit 1
-fi
+# Verify HTTP response with retries
+echo "🌐 Verifying HTTP response..."
+for attempt in {1..12}; do
+    if curl -f --connect-timeout 3 --max-time 10 -s http://localhost:8084 > /dev/null; then
+        log_success "Obsidian HTTP endpoint is responding"
+        break
+    fi
+    
+    if [ $attempt -eq 12 ]; then
+        log_error "Obsidian container not responding on http://localhost:8084 after 60 seconds"
+        echo "Curl detailed test:"
+        curl -v http://localhost:8084 || true
+        echo "Container status:"
+        docker-compose -f docker-compose.e2e.yml ps
+        exit 1
+    fi
+    
+    echo "  HTTP check attempt $attempt/12... ($(date))"
+    sleep 5
+done
 
 log_success "Services are ready"
 
@@ -192,6 +210,10 @@ echo ""
 
 node real-plugin-test.js
 REAL_TEST_EXIT_CODE=$?
+
+# Create test results directory and basic report
+mkdir -p test-results/real-plugin-screenshots
+echo '{"test_run": true, "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'", "exit_code": '$REAL_TEST_EXIT_CODE'}' > test-results/real_test_report.json
 
 if [ $REAL_TEST_EXIT_CODE -eq 0 ]; then
     log_success "Real plugin tests PASSED!"
