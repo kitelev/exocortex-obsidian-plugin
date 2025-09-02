@@ -273,6 +273,7 @@ jobs:
         uses: actions/download-artifact@v4
         
       - name: 'Generate Summary Report'
+        continue-on-error: true
         run: |
           echo "# E2E Test Results (Obsidian Service)" > summary.md
           echo "" >> summary.md
@@ -321,7 +322,7 @@ jobs:
             echo "⚠️ **Some tests failed - please check the artifacts for details**" >> summary.md
           fi
           
-          cat summary.md
+          cat summary.md || echo "No summary generated"
 
       - name: 'Comment PR with Results'
         if: github.event_name == 'pull_request'
