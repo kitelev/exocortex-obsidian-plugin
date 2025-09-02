@@ -1,6 +1,6 @@
 {
   "name": "exocortex-obsidian-plugin",
-  "version": "8.3.0",
+  "version": "8.4.0",
   "description": "Exocortex: Streamlined Obsidian plugin with dynamic layouts and intelligent asset creation",
   "main": "main.js",
   "engines": {
