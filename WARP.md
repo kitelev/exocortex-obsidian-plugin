@@ -261,6 +261,26 @@ Current performance characteristics:
 - **Batch Insert**: ~100ms for 1000 triples regardless of vault size
 - **Memory Usage**: 10MB to 750MB scaling with content
 
+## Troubleshooting (Repo-specific)
+- Playwright E2E: set OBSIDIAN_PATH if not found (macOS default: /Applications/Obsidian.app/Contents/MacOS/Obsidian). Kill running Obsidian before tests.
+- macOS Gatekeeper: if Obsidian fails to launch in E2E, run ./fix-obsidian-gatekeeper.sh.
+- Husky v9 warning: remove . "$(dirname -- "$0")/_/husky.sh" from .husky/pre-commit (already fixed here).
+- Node version: require Node >= 18 (per package engines). Check with node -v.
+- Build output missing main.js: run npm run build first.
+
+## Performance Tuning Checklist
+- Development: use npm run dev (incremental, watch). Production: npm run build.
+- Bundle analysis: npm run analyze:bundle (writes build-meta.json; esbuild logs analysis).
+- Performance report: npm run test:performance (writes test-results/performance-report.html).
+- Reduce logging in prod: ensure Logger drops debug/console per esbuild production settings.
+- Keep SPO/POS/OSP caches sized appropriately (see DEFAULT_SETTINGS query cache values).
+
+## Common Error Patterns
+- TypeScript compile errors: run npm run check:types to isolate TS issues.
+- Jest timeouts in CI: tests are configured single-worker; prefer test:unit:safe for local flakiness.
+- Playwright path errors: verify vault path and OBSIDIAN_PATH in playwright.config.ts.
+- ESLint failures in CI: run npm run lint:fix locally to auto-resolve common issues.
+
 ## Common Development Tasks
 
 ### Adding New Features
