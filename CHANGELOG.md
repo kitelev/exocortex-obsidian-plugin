@@ -1,3 +1,21 @@
+## [8.5.0] - 2025-09-11
+
+### ✨ Maintenance & Diagnostics
+
+This release adds convenient maintenance commands and a quick status modal to improve day‑to‑day use and support.
+
+#### What's New
+- New commands (Command Palette):
+  - Exocortex: Refresh Views — instantly re-render active views without reopening notes
+  - Exocortex: Toggle Debug Logging — enable/disable detailed logs at runtime
+  - Exocortex: Show Status — opens a modal with live diagnostics
+- Status modal: shows active view count, property cache size, logger level, and performance threshold
+- Dynamic logging configuration: logger level/stack traces and perf threshold adapt to settings
+
+#### Notes
+- Internal CI clean-up: removed experimental E2E workflows from the default pipeline (no user‑visible changes)
+
+
 ## [8.4.0] - 2025-09-02
 
 ### 🚀 CI/CD Excellence Edition - Rock-Solid Pipeline Mastery
