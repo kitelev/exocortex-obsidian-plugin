@@ -182,14 +182,14 @@ jobs:
         run: |
           echo "🧪 EXPERIMENTAL: Building Docker image for E2E tests (non-blocking)..."
           
-          if docker-compose -f docker-compose.e2e-obsidian.yml build; then
+          if docker compose -f docker-compose.e2e-obsidian.yml build; then
             echo "✅ Docker image built successfully"
           else
             echo "⚠️ Docker image build had issues (non-blocking)"
           fi
 
           echo "🧪 EXPERIMENTAL: Running E2E tests in Docker (non-blocking)..."
-          if docker-compose -f docker-compose.e2e-obsidian.yml up --abort-on-container-exit; then
+          if docker compose -f docker-compose.e2e-obsidian.yml up --abort-on-container-exit; then
             echo "✅ Experimental Docker E2E tests completed"
           else
             echo "⚠️ Experimental Docker E2E tests had issues (non-blocking)"
@@ -202,11 +202,11 @@ jobs:
         if: always()
         run: |
           # Copy test results from Docker volume
-          docker-compose -f docker-compose.e2e-obsidian.yml cp e2e-obsidian-tests:/app/test-results ./docker-test-results/ || true
+          docker compose -f docker-compose.e2e-obsidian.yml cp e2e-obsidian-tests:/app/test-results ./docker-test-results/ || true
           
           # Show container logs
           echo "## Docker Container Logs" >> $GITHUB_STEP_SUMMARY
-          docker-compose -f docker-compose.e2e-obsidian.yml logs >> $GITHUB_STEP_SUMMARY || true
+          docker compose -f docker-compose.e2e-obsidian.yml logs >> $GITHUB_STEP_SUMMARY || true
 
       - name: Upload Docker test artifacts
         if: always()
@@ -221,7 +221,7 @@ jobs:
       - name: Cleanup Docker
         if: always()
         run: |
-          docker-compose -f docker-compose.e2e-obsidian.yml down -v || true
+          docker compose -f docker-compose.e2e-obsidian.yml down -v || true
           docker system prune -f || true
 
   results-summary:

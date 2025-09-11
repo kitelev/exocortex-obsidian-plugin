@@ -92,10 +92,11 @@ jobs:
       - name: Check Bundle Size
         run: |
           SIZE=$(stat -f%z main.js 2>/dev/null || stat -c%s main.js)
-          SIZE_MB=$(echo "scale=2; $SIZE / 1048576" | bc)
-          echo "📦 Bundle size: ${SIZE_MB}MB"
+          # Compute MB using integer arithmetic to avoid external deps
+          SIZE_MB_INT=$(( (SIZE + 1048575) / 1048576 ))
+          echo "📦 Bundle size: ${SIZE_MB_INT}MB"
 
-          if (( $(echo "$SIZE_MB > 5" | bc -l) )); then
+          if [ "$SIZE" -gt $((5 * 1024 * 1024)) ]; then
             echo "⚠️ Warning: Bundle size exceeds 5MB"
           fi
 
@@ -237,7 +238,7 @@ jobs:
       - name: Run UI Smoke Tests
         run: |
           export DISPLAY=:99
-          npm run test:ui:smoke || true
+          npm run test:e2e:quick || true
         env:
           CI: true
           DISPLAY: :99

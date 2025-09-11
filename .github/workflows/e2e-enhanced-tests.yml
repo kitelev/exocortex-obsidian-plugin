@@ -226,9 +226,9 @@ jobs:
           # Run the enhanced tests with error handling - always succeed
           TEST_EXIT_CODE=0
           if [ "${{ matrix.test-profile.compose-profile }}" != "" ]; then
-            docker-compose -f docker-compose.e2e-enhanced.yml --profile ${{ matrix.test-profile.compose-profile }} up --abort-on-container-exit || TEST_EXIT_CODE=$?
+            docker compose -f docker-compose.e2e-enhanced.yml --profile ${{ matrix.test-profile.compose-profile }} up --abort-on-container-exit || TEST_EXIT_CODE=$?
           else
-            docker-compose -f docker-compose.e2e-enhanced.yml up e2e-enhanced-tests --abort-on-container-exit || TEST_EXIT_CODE=$?
+            docker compose -f docker-compose.e2e-enhanced.yml up e2e-enhanced-tests --abort-on-container-exit || TEST_EXIT_CODE=$?
           fi
           
           echo "Experimental enhanced tests completed with exit code: $TEST_EXIT_CODE"
@@ -264,13 +264,13 @@ jobs:
           mkdir -p test-results/container-logs
           
           # Get all container logs
-          docker-compose -f docker-compose.e2e-enhanced.yml logs > test-results/container-logs/all-services.log 2>&1 || true
+          docker compose -f docker-compose.e2e-enhanced.yml logs > test-results/container-logs/all-services.log 2>&1 || true
           
           # Individual service logs
-          docker-compose -f docker-compose.e2e-enhanced.yml logs e2e-enhanced-tests > test-results/container-logs/e2e-tests.log 2>&1 || true
+          docker compose -f docker-compose.e2e-enhanced.yml logs e2e-enhanced-tests > test-results/container-logs/e2e-tests.log 2>&1 || true
           
           # Container status
-          docker-compose -f docker-compose.e2e-enhanced.yml ps > test-results/container-logs/container-status.log 2>&1 || true
+          docker compose -f docker-compose.e2e-enhanced.yml ps > test-results/container-logs/container-status.log 2>&1 || true
           
           # System information
           docker system df > test-results/container-logs/docker-system.log 2>&1 || true
@@ -343,7 +343,7 @@ jobs:
         if: always()
         run: |
           echo "🧹 Cleaning up Docker resources..."
-          docker-compose -f docker-compose.e2e-enhanced.yml down --volumes --remove-orphans || true
+          docker compose -f docker-compose.e2e-enhanced.yml down --volumes --remove-orphans || true
           docker system prune -f || true
 
   # Performance Analysis Job

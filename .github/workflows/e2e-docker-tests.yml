@@ -106,11 +106,11 @@ jobs:
       - name: 'Start Obsidian Docker Service'  
         run: |
           cd tests/e2e/docker
-          docker-compose -f docker-compose.e2e.yml up -d obsidian-e2e
+          docker compose -f docker-compose.e2e.yml up -d obsidian-e2e
           
           # Wait for Obsidian container to be healthy
           echo "Waiting for Obsidian container to be ready..."
-          timeout 600 bash -c 'until docker-compose -f docker-compose.e2e.yml ps | grep -q healthy; do echo "Waiting... ($(date))"; sleep 15; done'
+          timeout 600 bash -c 'until docker compose -f docker-compose.e2e.yml ps | grep -q healthy; do echo "Waiting... ($(date))"; sleep 15; done'
           
           # Verify the container is responding  
           timeout 120 bash -c 'until curl -f --connect-timeout 3 --max-time 10 -s http://localhost:8084 > /dev/null; do echo "Waiting for HTTP... ($(date))"; sleep 10; done'
@@ -155,13 +155,13 @@ jobs:
         run: |
           echo "Capturing Docker service logs..."
           cd tests/e2e/docker
-          docker-compose -f docker-compose.e2e.yml logs > test-results/docker-services.log
+          docker compose -f docker-compose.e2e.yml logs > test-results/docker-services.log
           
           # Capture Obsidian container logs
-          docker-compose -f docker-compose.e2e.yml logs obsidian-e2e > test-results/obsidian.log || true
+          docker compose -f docker-compose.e2e.yml logs obsidian-e2e > test-results/obsidian.log || true
           
           # List container status
-          docker-compose -f docker-compose.e2e.yml ps > test-results/container-status.log || true
+          docker compose -f docker-compose.e2e.yml ps > test-results/container-status.log || true
 
       - name: 'Upload Real Test Results'
         uses: actions/upload-artifact@v4
@@ -201,7 +201,7 @@ jobs:
       - name: 'Cleanup Docker Services'
         if: always()
         run: |
-          docker-compose -f tests/e2e/docker/docker-compose.e2e.yml down --volumes --remove-orphans
+          docker compose -f tests/e2e/docker/docker-compose.e2e.yml down --volumes --remove-orphans
           docker system prune -f
 
   stability-test:
