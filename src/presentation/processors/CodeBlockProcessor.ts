@@ -174,4 +174,11 @@ export class CodeBlockProcessor {
       }
     }
   }
+
+  /**
+   * Diagnostics: number of active rendered views
+   */
+  public getActiveViewCount(): number {
+    return this.activeElements.size;
+  }
 }

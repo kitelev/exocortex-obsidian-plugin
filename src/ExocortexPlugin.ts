@@ -4,6 +4,7 @@ import { CommandRegistry } from "./presentation/command-controllers/CommandRegis
 import { ServiceProvider } from "./infrastructure/providers/ServiceProvider";
 import { SettingsLifecycleManager } from "./infrastructure/lifecycle/SettingsLifecycleManager";
 import { AssetCommandController } from "./presentation/command-controllers/AssetCommandController";
+import { MaintenanceCommandController } from "./presentation/command-controllers/MaintenanceCommandController";
 import { CodeBlockProcessor } from "./presentation/processors/CodeBlockProcessor";
 import { RefactoredUniversalLayoutRenderer } from "./presentation/renderers/RefactoredUniversalLayoutRenderer";
 import { AssetListRenderer } from "./presentation/renderers/AssetListRenderer";
@@ -11,6 +12,9 @@ import { DynamicLayoutRenderer } from "./presentation/renderers/DynamicLayoutRen
 import { ExocortexSettings } from "./domain/entities/ExocortexSettings";
 import { ILogger } from "./application/ports/ILogger";
 import { LoggerFactory } from "./infrastructure/logging/LoggerFactory";
+import { LoggerConfigFactory } from "./infrastructure/logging/LoggerConfig";
+import { LogLevel } from "./application/ports/ILogger";
+import { PropertyCacheService } from "./domain/services/PropertyCacheService";
 
 /**
  * Main Plugin Class following Single Responsibility Principle
@@ -48,6 +52,9 @@ export default class ExocortexPlugin extends Plugin {
 
       // Initialize service provider
       await this.initializeServiceProvider();
+
+      // Apply logging configuration from settings
+      this.applyLoggingConfigFromSettings();
 
       // Initialize and register command controllers
       await this.initializeCommandControllers();
@@ -153,6 +160,71 @@ export default class ExocortexPlugin extends Plugin {
     // Create and register command controllers
     const assetController = new AssetCommandController(this);
     this.commandRegistry.registerController(assetController);
+
+    // Maintenance/utility commands
+    const maintenance = new MaintenanceCommandController(this);
+    this.commandRegistry.registerController(maintenance);
+  }
+
+  /**
+   * Public: refresh all rendered views
+   */
+  public async refreshViews(): Promise<void> {
+    await this.codeBlockProcessor?.refreshViews();
+  }
+
+  /**
+   * Public: derive logger config from settings and apply
+   */
+  public applyLoggingConfigFromSettings(): void {
+    const s = this.settings;
+    const cfg = LoggerConfigFactory.createDefault();
+
+    // Enable logs in production only when explicitly requested
+    const enableLogs = !!(s.get("enableVerboseLogging") || s.get("enableDebugMode"));
+    cfg.enabledInProduction = enableLogs;
+    cfg.enabledInDevelopment = true;
+
+    // Level
+    cfg.level = enableLogs ? LogLevel.DEBUG : LogLevel.WARN;
+    cfg.includeStackTrace = enableLogs;
+    cfg.formatJson = false; // more readable in Obsidian console
+
+    // Performance threshold based on settings
+    cfg.performanceThreshold = s.get("enablePerformanceMetrics") ? 50 : 150;
+
+    LoggerFactory.setConfig(cfg);
+    this.logger?.info("Logger configuration updated", {
+      enabledInProd: cfg.enabledInProduction,
+      level: LogLevel[cfg.level],
+      perfThreshold: cfg.performanceThreshold,
+    });
+  }
+
+  /**
+   * Public: lightweight diagnostics for status modal
+   */
+  public async getDiagnostics(): Promise<{
+    activeViews: number;
+    cacheSize: number;
+    loggerLevel: string;
+    performanceThresholdMs: number;
+    settings: Record<string, any>;
+  }> {
+    const cfg = LoggerFactory.getConfig();
+    const cacheSize = PropertyCacheService.getInstance().getSize?.() ?? 0;
+    const activeViews = this.codeBlockProcessor?.getActiveViewCount?.() ?? 0;
+    return {
+      activeViews,
+      cacheSize,
+      loggerLevel: LogLevel[cfg.level],
+      performanceThresholdMs: cfg.performanceThreshold,
+      settings: {
+        enableDebugMode: this.settings.get("enableDebugMode"),
+        enableVerboseLogging: this.settings.get("enableVerboseLogging"),
+        enablePerformanceMetrics: this.settings.get("enablePerformanceMetrics"),
+      },
+    };
   }
 
   private setupCacheInvalidation(): void {
