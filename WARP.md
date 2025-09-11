@@ -281,6 +281,13 @@ Current performance characteristics:
 - Playwright path errors: verify vault path and OBSIDIAN_PATH in playwright.config.ts.
 - ESLint failures in CI: run npm run lint:fix locally to auto-resolve common issues.
 
+## Running GitHub Actions locally
+
+- Prerequisites: GitHub CLI (gh) installed and authenticated (GH_TOKEN in env)
+- Trigger a workflow and wait for completion:
+  - scripts/ci/run-workflow.sh .github/workflows/fast-feedback.yml -r main -d
+  - scripts/ci/run-workflow.sh .github/workflows/bdd-tests.yml -r main -f test_suite=smoke -d
+
 ## Common Development Tasks
 
 ### Adding New Features

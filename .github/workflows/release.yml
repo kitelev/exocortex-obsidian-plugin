@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - "*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag name to release (e.g., v8.4.1)"
+        required: false
+        type: string
 
 concurrency:
   group: release-${{ github.workflow }}-${{ github.ref }}
@@ -48,14 +54,15 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.tag || steps.build.outputs.tag_name || github.ref_name }}
           files: |
             main.js
             manifest.json
             styles.css
             ${{ github.event.repository.name }}.zip
-          name: Release ${{ github.ref_name }}
+          name: Release ${{ inputs.tag || steps.build.outputs.tag_name || github.ref_name }}
           body: |
-            # Release ${{ github.ref_name }}
+            # Release ${{ inputs.tag || steps.build.outputs.tag_name || github.ref_name }}
 
             ## Installation
 

@@ -10,6 +10,7 @@ on:
       - "package.json"
       - "manifest.json"
       - "esbuild.config.mjs"
+  workflow_dispatch:
 
 concurrency:
   group: auto-release-${{ github.workflow }}-${{ github.ref }}
