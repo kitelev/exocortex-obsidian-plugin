@@ -1,5 +1,12 @@
 ## [10.1.0] - 2025-09-18
 
+## [11.0.1] - 2025-09-18
+
+### Changes
+
+- chore: clean up project files and remove unnecessary documentation
+
+
 ### Project Cleanup
 
 This release removes all unnecessary files outside the source code to create an even more streamlined plugin package.
