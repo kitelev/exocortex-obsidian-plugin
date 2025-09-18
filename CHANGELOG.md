@@ -1,5 +1,12 @@
 ## [9.2.0] - 2025-09-18
 
+## [9.2.1] - 2025-09-18
+
+### Changes
+
+- fix: remove version script that references deleted file
+
+
 ### Codebase Cleanup and Optimization
 
 This release removes unnecessary files and documentation to streamline the plugin codebase while preserving all CLAUDE instruction files and core functionality.
