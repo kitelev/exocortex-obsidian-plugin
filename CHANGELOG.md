@@ -1,3 +1,23 @@
+## [10.1.0] - 2025-09-18
+
+### Project Cleanup
+
+This release removes all unnecessary files outside the source code to create an even more streamlined plugin package.
+
+#### Removed
+- Documentation folder with outdated guides
+- Test setup and configuration files
+- Build metadata files
+- Husky git hooks
+- Architecture documentation
+- Validation scripts
+- Test helper directories and non-layout tests
+
+#### Results
+- Tests directory reduced to 84KB (only layout tests remain)
+- Root directory cleaned of unnecessary documentation
+- Cleaner project structure focused on essential files only
+
 ## [10.0.0] - 2025-09-18
 
 ## [11.0.0] - 2025-09-18
