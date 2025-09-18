@@ -1,5 +1,12 @@
 ## [10.0.0] - 2025-09-18
 
+## [11.0.0] - 2025-09-18
+
+### Changes
+
+- feat!: simplify plugin to only UniversalLayout and DynamicLayout
+
+
 ### Major Release: Simplified Plugin - UniversalLayout and DynamicLayout Only
 
 This major release strips the plugin down to its core functionality - UniversalLayout and DynamicLayout rendering. All other features have been removed to create a lightweight, focused plugin that does one thing well: display Obsidian notes with flexible layout options.
