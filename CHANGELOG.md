@@ -1,3 +1,30 @@
+## [9.2.0] - 2025-09-18
+
+### Codebase Cleanup and Optimization
+
+This release removes unnecessary files and documentation to streamline the plugin codebase while preserving all CLAUDE instruction files and core functionality.
+
+#### Removed
+- All Docker-related files and configurations
+- BDD/Cucumber testing infrastructure and feature files
+- Unused configuration files (mobile, mutation testing)
+- Redundant scripts and build tools
+- Legacy documentation and planning files
+- System files (.DS_Store, duplicate configs)
+
+#### Preserved
+- All CLAUDE instruction files in `.claude/` directory
+- Core plugin functionality and source code
+- Essential build and development tools
+- Unit and integration tests
+- GitHub Actions workflows
+
+#### Benefits
+- Significantly reduced repository size
+- Cleaner, more focused codebase
+- Faster clone and install times
+- Easier maintenance and navigation
+
 ## [9.1.0] - 2025-09-18
 
 ### Testing Infrastructure Cleanup
