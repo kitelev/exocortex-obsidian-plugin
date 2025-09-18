@@ -8,6 +8,8 @@ import { SemanticPropertyDiscoveryService } from "../../domain/services/Semantic
 import { CircuitBreakerService } from "../../infrastructure/resilience/CircuitBreakerService";
 import { Result } from "../../domain/core/Result";
 import { CreateAssetResponse } from "../../application/use-cases/CreateAssetUseCase";
+import { ILogger } from "../../infrastructure/logging/ILogger";
+import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
 
 /**
  * Modal for creating new ExoAssets
@@ -30,6 +32,7 @@ export class CreateAssetModal extends Modal {
   private propertyCache: PropertyCacheService;
   private propertyDiscoveryService: SemanticPropertyDiscoveryService;
   private circuitBreaker: CircuitBreakerService;
+  private logger: ILogger;
 
   constructor(app: App) {
     super(app);
@@ -48,6 +51,7 @@ export class CreateAssetModal extends Modal {
     this.circuitBreaker = this.container.resolve<CircuitBreakerService>(
       "CircuitBreakerService",
     );
+    this.logger = LoggerFactory.create("CreateAssetModal");
   }
 
   async onOpen() {
@@ -254,7 +258,7 @@ export class CreateAssetModal extends Modal {
         );
 
       if (!propertyResult.isSuccess) {
-        console.error(
+        this.logger.error(
           `Property discovery failed: ${propertyResult.getError()}`,
         );
 

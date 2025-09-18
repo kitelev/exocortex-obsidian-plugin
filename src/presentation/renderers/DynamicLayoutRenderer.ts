@@ -3,6 +3,8 @@ import {
   BaseAssetRelationsRenderer,
   AssetRelation,
 } from "./BaseAssetRelationsRenderer";
+import { ILogger } from "../../infrastructure/logging/ILogger";
+import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
 
 /**
  * Layout configuration specific to DynamicLayout
@@ -22,6 +24,12 @@ interface DynamicLayoutConfig {
  * - Dependency Inversion: Depends on abstractions (base class)
  */
 export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
+  private logger: ILogger;
+
+  constructor(app: any) {
+    super(app);
+    this.logger = LoggerFactory.create("DynamicLayoutRenderer");
+  }
   /**
    * Main render method - implements the abstract method from base class
    */
@@ -52,7 +60,7 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
       }
 
       // Find layout configuration (now checks defaultLayout first)
-      console.log(
+      this.logger.debug(
         `DynamicLayout: Looking for ClassLayout for class: ${className}`,
       );
 
@@ -81,15 +89,15 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
         this.renderMessage(container, message);
 
         // Render UniversalLayout content
-        console.log(
+        this.logger.debug(
           `DynamicLayout: Falling back to UniversalLayout for class: ${className}`,
         );
         await this.renderAllRelations(file, container);
         return;
       }
-      console.log(
-        `DynamicLayout: Found ClassLayout for ${className}:`,
-        layoutConfig,
+      this.logger.debug(
+        `DynamicLayout: Found ClassLayout for ${className}`,
+        { layoutConfig },
       );
 
       // Check if relations are configured
@@ -113,7 +121,7 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
       // Render filtered relations
       await this.renderFilteredRelations(file, container, layoutConfig);
     } catch (error) {
-      console.error("DynamicLayout rendering error:", error);
+      this.logger.error("DynamicLayout rendering error", { error });
       this.renderError(container, "Failed to render DynamicLayout", error);
     }
   }
@@ -149,17 +157,17 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
       if (classMetadata) {
         const defaultLayoutRef = this.extractDefaultLayout(classMetadata);
         if (defaultLayoutRef) {
-          console.log(
+          this.logger.debug(
             `DynamicLayout: Found defaultLayout reference: ${defaultLayoutRef}`,
           );
           const layoutConfig = await this.findLayoutByUUID(defaultLayoutRef);
           if (layoutConfig) {
-            console.log(
+            this.logger.debug(
               `DynamicLayout: Successfully loaded layout via defaultLayout property`,
             );
             return layoutConfig;
           }
-          console.log(
+          this.logger.debug(
             `DynamicLayout: defaultLayout UUID not found, falling back to search`,
           );
         }
@@ -177,7 +185,7 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
         if (!this.isLayoutClass(instanceClass)) continue;
 
         // Debug: Log ClassLayout files found
-        console.log(`DynamicLayout: Found ClassLayout file: ${file.path}`);
+        this.logger.debug(`DynamicLayout: Found ClassLayout file: ${file.path}`);
 
         // Try to determine which class this layout is for
         // 1. Check ui__ClassLayout property (exact class name)
@@ -217,7 +225,7 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
 
       return null;
     } catch (error) {
-      console.error("Error finding layout configuration:", error);
+      this.logger.error("Error finding layout configuration", { error });
       return null;
     }
   }
@@ -485,7 +493,7 @@ export class DynamicLayoutRenderer extends BaseAssetRelationsRenderer {
 
       return null;
     } catch (error) {
-      console.error(`Error finding layout by UUID ${uuid}:`, error);
+      this.logger.error(`Error finding layout by UUID ${uuid}`, { error });
       return null;
     }
   }

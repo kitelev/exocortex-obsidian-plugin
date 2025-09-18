@@ -4,6 +4,8 @@ import { OntologyPrefix } from "../value-objects/OntologyPrefix";
 import { PropertyValue } from "../value-objects/PropertyValue";
 import { Entity } from "../core/Entity";
 import { Result } from "../core/Result";
+import { ILogger } from "../../infrastructure/logging/ILogger";
+import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
 
 interface AssetProps {
   id: AssetId;
@@ -24,6 +26,8 @@ interface AssetProps {
  * Core business logic and invariants
  */
 export class Asset extends Entity<AssetProps> {
+  private static logger: ILogger = LoggerFactory.create("Asset");
+
   private constructor(props: AssetProps, _id?: string) {
     super(props, props.id.toString());
   }
@@ -462,9 +466,9 @@ export class Asset extends Entity<AssetProps> {
     // Validate mandatory properties first
     const validation = Asset.validateMandatoryProperties(frontmatter);
     if (!validation.isValid) {
-      console.warn(
-        `Asset validation failed for ${fileName}:`,
-        validation.errors,
+      Asset.logger.warn(
+        `Asset validation failed for ${fileName}`,
+        { errors: validation.errors },
       );
       return null; // Silently ignore invalid assets
     }

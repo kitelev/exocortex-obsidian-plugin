@@ -11,12 +11,15 @@ import { Asset } from "../../domain/entities/Asset";
 import { AssetId } from "../../domain/value-objects/AssetId";
 import { ClassName } from "../../domain/value-objects/ClassName";
 import { OntologyPrefix } from "../../domain/value-objects/OntologyPrefix";
+import { ILogger } from "../logging/ILogger";
+import { LoggerFactory } from "../logging/LoggerFactory";
 
 /**
  * Obsidian implementation of command executor
  * Handles actual command execution in the Obsidian environment
  */
 export class ObsidianCommandExecutor implements ICommandExecutor {
+  private logger: ILogger;
   private handlers: Map<
     CommandType,
     (request: CommandExecutionRequest) => Promise<Result<any>>
@@ -28,6 +31,7 @@ export class ObsidianCommandExecutor implements ICommandExecutor {
     private createChildTaskUseCase?: any,
     private createChildAreaUseCase?: any,
   ) {
+    this.logger = LoggerFactory.create("ObsidianCommandExecutor");
     this.handlers = new Map();
     this.registerDefaultHandlers();
   }
@@ -298,9 +302,9 @@ export class ObsidianCommandExecutor implements ICommandExecutor {
 
       // This would integrate with a workflow system
       // For now, just log the workflow trigger
-      console.log(
+      this.logger.info(
         `Triggering workflow: ${workflowName}`,
-        request.context.parameters,
+        { parameters: request.context.parameters },
       );
 
       new Notice(`Workflow "${workflowName}" triggered`);

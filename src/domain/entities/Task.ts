@@ -4,6 +4,8 @@ import { TaskStatus } from "../value-objects/TaskStatus";
 import { AssetId } from "../value-objects/AssetId";
 import { Entity } from "../core/Entity";
 import { Result } from "../core/Result";
+import { ILogger } from "../../infrastructure/logging/ILogger";
+import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
 
 interface TaskProps {
   id: TaskId;
@@ -25,6 +27,8 @@ interface TaskProps {
  * Follows domain-driven design principles with business rules
  */
 export class Task extends Entity<TaskProps> {
+  private static logger: ILogger = LoggerFactory.create("Task");
+
   private constructor(props: TaskProps) {
     super(props, props.id.toString());
   }
@@ -76,7 +80,7 @@ export class Task extends Entity<TaskProps> {
 
     if (params.dueDate && params.dueDate < new Date()) {
       // Only warn for past due dates, don't fail creation
-      console.warn("Task created with past due date:", params.dueDate);
+      Task.logger.warn("Task created with past due date", { dueDate: params.dueDate });
     }
 
     const props: TaskProps = {
@@ -402,12 +406,12 @@ export class Task extends Entity<TaskProps> {
 
         return task;
       } else {
-        console.warn("Failed to create task from frontmatter:", result.error);
+        Task.logger.warn("Failed to create task from frontmatter", { error: result.error });
       }
 
       return null;
     } catch (error) {
-      console.warn("Failed to create task from frontmatter:", error);
+      Task.logger.warn("Failed to create task from frontmatter", { error });
       return null;
     }
   }
