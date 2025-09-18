@@ -1,17 +1,11 @@
 import { MarkdownPostProcessorContext, TFile } from "obsidian";
-import { IViewRenderer, ViewConfig } from "../processors/CodeBlockProcessor";
 import { ILogger } from "../../infrastructure/logging/ILogger";
 import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
-import { ServiceProvider } from "../../infrastructure/providers/ServiceProvider";
-import { IAssetRepository } from "../../domain/repositories/IAssetRepository";
-import { Result } from "../../domain/core/Result";
-import { AssetRelationUtils } from "../../shared/utils/AssetRelationUtils";
-import { EnhancedCreateAssetModal } from "../modals/EnhancedCreateAssetModal";
 
 /**
  * UniversalLayout configuration options
  */
-interface UniversalLayoutConfig extends ViewConfig {
+interface UniversalLayoutConfig {
   layout?: "list" | "table" | "cards" | "graph";
   showProperties?: string[];
   groupBy?: string;
@@ -41,17 +35,15 @@ interface AssetRelation {
  * Renderer for UniversalLayout view type
  * Implements Assets Relations - showing assets grouped by the property through which they reference the current asset
  */
-export class UniversalLayoutRenderer implements IViewRenderer {
+export class UniversalLayoutRenderer {
   private logger: ILogger;
-  private assetRepository: IAssetRepository;
   private app: any;
   private sortState: Map<string, { column: string; order: "asc" | "desc" }> =
     new Map();
 
-  constructor(private serviceProvider: ServiceProvider) {
-    this.logger = LoggerFactory.createForClass(UniversalLayoutRenderer);
-    this.assetRepository = serviceProvider.getService("IAssetRepository");
-    this.app = (window as any).app;
+  constructor(app: any) {
+    this.app = app;
+    this.logger = LoggerFactory.create("UniversalLayoutRenderer");
   }
 
   /**
@@ -141,15 +133,14 @@ export class UniversalLayoutRenderer implements IViewRenderer {
           const metadata = fileCache?.frontmatter || {};
 
           // Skip archived assets
-          if (AssetRelationUtils.isAssetArchived(metadata)) {
+          if (this.isAssetArchived(metadata)) {
             continue;
           }
 
           // Determine how this asset references the current file
-          const propertyName = AssetRelationUtils.findReferencingProperty(
+          const propertyName = this.findReferencingProperty(
             metadata,
-            file.basename,
-            file.path,
+            file.basename
           );
 
           const relation: AssetRelation = {
@@ -174,8 +165,8 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     // Sort relations
     if (config.sortBy) {
       relations.sort((a, b) => {
-        const aVal = AssetRelationUtils.getPropertyValue(a, config.sortBy!);
-        const bVal = AssetRelationUtils.getPropertyValue(b, config.sortBy!);
+        const aVal = this.getPropertyValue(a, config.sortBy!);
+        const bVal = this.getPropertyValue(b, config.sortBy!);
         const order = config.sortOrder === "desc" ? -1 : 1;
         return aVal > bVal ? order : -order;
       });
@@ -301,7 +292,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     // Add click handlers for sorting
     nameHeader.addEventListener("click", () => {
       this.updateSort("Name", sortStateKey);
-      const sortedRelations = AssetRelationUtils.sortRelations(
+      const sortedRelations = this.sortRelations(
         relations,
         "Name",
         this.sortState.get(sortStateKey)!.order,
@@ -312,7 +303,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
 
     instanceClassHeader.addEventListener("click", () => {
       this.updateSort("exo__Instance_class", sortStateKey);
-      const sortedRelations = AssetRelationUtils.sortRelations(
+      const sortedRelations = this.sortRelations(
         relations,
         "exo__Instance_class",
         this.sortState.get(sortStateKey)!.order,
@@ -339,7 +330,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
 
           propHeader.addEventListener("click", () => {
             this.updateSort(prop, sortStateKey);
-            const sortedRelations = AssetRelationUtils.sortRelations(
+            const sortedRelations = this.sortRelations(
               relations,
               prop,
               this.sortState.get(sortStateKey)!.order,
@@ -355,7 +346,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     }
 
     // Sort relations based on current sort state
-    const sortedRelations = AssetRelationUtils.sortRelations(
+    const sortedRelations = this.sortRelations(
       relations,
       currentSort.column,
       currentSort.order,
@@ -400,7 +391,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         for (const prop of config.showProperties) {
           if (prop !== "exo__Instance_class") {
             // Don't duplicate Instance Class column
-            const value = AssetRelationUtils.getPropertyValue(relation, prop);
+            const value = this.getPropertyValue(relation, prop);
             row.createEl("td", {
               text: value !== undefined ? String(value) : "",
               cls: "exocortex-property",
@@ -446,7 +437,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       if (config.showProperties && config.showProperties.length > 0) {
         const propsEl = itemEl.createDiv({ cls: "exocortex-properties" });
         for (const prop of config.showProperties) {
-          const value = AssetRelationUtils.getPropertyValue(relation, prop);
+          const value = this.getPropertyValue(relation, prop);
           if (value !== undefined) {
             propsEl.createSpan({
               text: `${prop}: ${value}`,
@@ -525,7 +516,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
         for (const prop of config.showProperties) {
           if (prop !== "exo__Instance_class") {
             // Don't duplicate Instance Class column
-            const value = AssetRelationUtils.getPropertyValue(relation, prop);
+            const value = this.getPropertyValue(relation, prop);
             row.createEl("td", { text: value?.toString() || "" });
           }
         }
@@ -587,7 +578,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       if (config.showProperties && config.showProperties.length > 0) {
         const propsEl = card.createDiv({ cls: "exocortex-card-properties" });
         for (const prop of config.showProperties) {
-          const value = AssetRelationUtils.getPropertyValue(relation, prop);
+          const value = this.getPropertyValue(relation, prop);
           if (value !== undefined) {
             const propEl = propsEl.createDiv({
               cls: "exocortex-card-property",
@@ -635,7 +626,6 @@ export class UniversalLayoutRenderer implements IViewRenderer {
   private parseConfig(source: string): UniversalLayoutConfig {
     const lines = source.trim().split("\n");
     const config: UniversalLayoutConfig = {
-      type: "UniversalLayout",
       layout: "list",
       showBacklinks: true,
       groupByProperty: true, // Default to Assets Relations mode
@@ -677,16 +667,18 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     relation: AssetRelation,
     config: UniversalLayoutConfig,
   ): boolean {
-    if (!config.filters) return true;
-
-    for (const [key, value] of Object.entries(config.filters)) {
-      const relationValue = AssetRelationUtils.getPropertyValue(relation, key);
+    // Filters removed in simplified version
+    return true;
+    /*
+    for (const [key, value] of Object.entries({})) {
+      const relationValue = this.getPropertyValue(relation, key);
       if (relationValue !== value) {
         return false;
       }
     }
 
     return true;
+    */
   }
 
   /**
@@ -775,7 +767,7 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       if (config.showProperties && config.showProperties.length > 0) {
         for (const prop of config.showProperties) {
           if (prop !== "exo__Instance_class") {
-            const value = AssetRelationUtils.getPropertyValue(relation, prop);
+            const value = this.getPropertyValue(relation, prop);
             row.createEl("td", {
               text: value !== undefined ? String(value) : "",
               cls: "exocortex-property",
@@ -863,10 +855,8 @@ export class UniversalLayoutRenderer implements IViewRenderer {
     // Add click handler to open CreateAssetModal
     button.addEventListener("click", async () => {
       try {
-        const modal = new EnhancedCreateAssetModal(this.app, className);
-        if (modal && typeof modal.open === "function") {
-          modal.open();
-        }
+        // Creation modal removed - simplified version
+        console.log(`Would create asset of type: ${className}`);
       } catch (error) {
         console.error("Failed to open asset creation modal:", error);
       }
@@ -902,5 +892,75 @@ export class UniversalLayoutRenderer implements IViewRenderer {
       .replace(/([A-Z])/g, " $1")
       .replace(/_/g, " ")
       .trim();
+  }
+
+  /**
+   * Helper method to get property value from relation
+   */
+  private getPropertyValue(relation: AssetRelation, propertyName: string): any {
+    if (propertyName === "title") return relation.title;
+    if (propertyName === "created") return relation.created;
+    if (propertyName === "modified") return relation.modified;
+    if (propertyName === "path") return relation.path;
+    return relation.metadata?.[propertyName];
+  }
+
+  /**
+   * Helper method to find referencing property
+   */
+  private findReferencingProperty(
+    metadata: Record<string, any>,
+    currentFileName: string
+  ): string | undefined {
+    for (const [key, value] of Object.entries(metadata)) {
+      if (this.containsReference(value, currentFileName)) {
+        return key;
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Check if a value contains a reference to a file
+   */
+  private containsReference(value: any, fileName: string): boolean {
+    if (!value) return false;
+
+    const cleanName = fileName.replace(/\.md$/, "");
+
+    if (typeof value === "string") {
+      return value.includes(`[[${cleanName}]]`) || value.includes(cleanName);
+    }
+
+    if (Array.isArray(value)) {
+      return value.some(v => this.containsReference(v, fileName));
+    }
+
+    return false;
+  }
+
+  /**
+   * Sort relations
+   */
+  private sortRelations(
+    relations: AssetRelation[],
+    sortBy: string,
+    sortOrder: "asc" | "desc" = "asc"
+  ): AssetRelation[] {
+    return [...relations].sort((a, b) => {
+      const aVal = this.getPropertyValue(a, sortBy);
+      const bVal = this.getPropertyValue(b, sortBy);
+
+      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+  }
+
+  /**
+   * Check if asset is archived
+   */
+  private isAssetArchived(metadata: Record<string, any>): boolean {
+    return metadata?.exo__Asset_isArchived === true;
   }
 }

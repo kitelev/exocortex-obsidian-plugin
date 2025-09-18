@@ -1,6 +1,4 @@
 import { App, MarkdownPostProcessorContext, TFile } from "obsidian";
-import { IViewRenderer } from "../processors/CodeBlockProcessor";
-import { AssetRelationUtils } from "../../shared/utils/AssetRelationUtils";
 
 /**
  * Asset relation data structure shared by all relation renderers
@@ -32,7 +30,7 @@ export interface AssetRelationsConfig {
  * Implements SOLID principles by providing common functionality
  * while allowing derived classes to customize specific behavior
  */
-export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
+export abstract class BaseAssetRelationsRenderer {
   protected app: App;
   protected sortState: Map<string, { column: string; order: "asc" | "desc" }> =
     new Map();
@@ -69,14 +67,13 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
           const metadata = fileCache?.frontmatter || {};
 
           // Skip archived assets
-          if (AssetRelationUtils.isAssetArchived(metadata)) {
+          if (this.isAssetArchived(metadata)) {
             continue;
           }
 
-          const propertyName = AssetRelationUtils.findReferencingProperty(
+          const propertyName = this.findReferencingProperty(
             metadata,
-            file.basename,
-            file.path,
+            file.basename
           );
 
           const relation: AssetRelation = {
@@ -225,7 +222,7 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
     // Add click handlers for sorting
     nameHeader.addEventListener("click", () => {
       this.handleSort("Name", sortStateKey);
-      const newSortedRelations = AssetRelationUtils.sortRelations(
+      const newSortedRelations = this.sortRelations(
         relations,
         "Name",
         this.sortState.get(sortStateKey)!.order,
@@ -236,7 +233,7 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
 
     instanceHeader.addEventListener("click", () => {
       this.handleSort("exo__Instance_class", sortStateKey);
-      const newSortedRelations = AssetRelationUtils.sortRelations(
+      const newSortedRelations = this.sortRelations(
         relations,
         "exo__Instance_class",
         this.sortState.get(sortStateKey)!.order,
@@ -246,7 +243,7 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
     });
 
     // Sort relations based on current state
-    const sortedRelations = AssetRelationUtils.sortRelations(
+    const sortedRelations = this.sortRelations(
       relations,
       currentSort.column,
       currentSort.order,
@@ -674,5 +671,62 @@ export abstract class BaseAssetRelationsRenderer implements IViewRenderer {
     }
 
     this.sortState.set(sortStateKey, currentSort);
+  }
+
+  /**
+   * Helper methods from AssetRelationUtils
+   */
+  protected isAssetArchived(metadata: Record<string, any>): boolean {
+    return metadata?.exo__Asset_isArchived === true;
+  }
+
+  protected findReferencingProperty(
+    metadata: Record<string, any>,
+    currentFileName: string
+  ): string | undefined {
+    for (const [key, value] of Object.entries(metadata)) {
+      if (this.containsReference(value, currentFileName)) {
+        return key;
+      }
+    }
+    return undefined;
+  }
+
+  private containsReference(value: any, fileName: string): boolean {
+    if (!value) return false;
+    const cleanName = fileName.replace(/\.md$/, "");
+
+    if (typeof value === "string") {
+      return value.includes(`[[${cleanName}]]`) || value.includes(cleanName);
+    }
+
+    if (Array.isArray(value)) {
+      return value.some(v => this.containsReference(v, fileName));
+    }
+
+    return false;
+  }
+
+  protected sortRelations(
+    relations: AssetRelation[],
+    sortBy: string,
+    sortOrder: "asc" | "desc" = "asc"
+  ): AssetRelation[] {
+    return [...relations].sort((a, b) => {
+      const aVal = this.getPropertyValue(a, sortBy);
+      const bVal = this.getPropertyValue(b, sortBy);
+
+      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+  }
+
+  private getPropertyValue(relation: AssetRelation, propertyName: string): any {
+    if (propertyName === "title") return relation.title;
+    if (propertyName === "created") return relation.created;
+    if (propertyName === "modified") return relation.modified;
+    if (propertyName === "path") return relation.path;
+    return relation.metadata?.[propertyName];
   }
 }

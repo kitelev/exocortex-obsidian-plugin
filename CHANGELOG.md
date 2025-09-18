@@ -1,3 +1,33 @@
+## [10.0.0] - 2025-09-18
+
+### Major Release: Simplified Plugin - UniversalLayout and DynamicLayout Only
+
+This major release strips the plugin down to its core functionality - UniversalLayout and DynamicLayout rendering. All other features have been removed to create a lightweight, focused plugin that does one thing well: display Obsidian notes with flexible layout options.
+
+#### Key Changes
+- **Simplified to Core Features**: Plugin now only provides UniversalLayout and DynamicLayout functionality
+- **Removed All Commands and Modals**: No more complex UI interactions, just simple layout rendering
+- **Cleaned Infrastructure**: Removed all unused services, repositories, and domain entities
+- **Minimized Bundle Size**: From hundreds of files to just the essentials (30.5kb bundle)
+- **Streamlined Main Plugin**: Direct registration of layout renderers without complex dependency injection
+
+#### What Remains
+- **UniversalLayout**: Display all related assets with grouping and sorting options
+- **DynamicLayout**: Configure specific relations to display based on class layouts
+- **Base Relations Renderer**: Shared functionality for both layouts
+
+#### Removed Features
+- Asset creation modals and commands
+- Button renderers and command execution
+- Property editing and asset management
+- Complex service providers and dependency injection
+- All test infrastructure except layout tests
+- Query engines and semantic capabilities
+- All use cases and application services
+
+#### For Users
+Your existing UniversalLayout and DynamicLayout blocks will continue to work exactly as before. The plugin is now faster to load and has a smaller footprint in your vault.
+
 ## [9.2.0] - 2025-09-18
 
 ## [9.2.1] - 2025-09-18
