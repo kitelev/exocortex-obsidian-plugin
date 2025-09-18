@@ -1,3 +1,22 @@
+## [9.1.0] - 2025-09-18
+
+### Testing Infrastructure Cleanup
+
+This release removes all E2E and UI testing infrastructure to streamline the codebase and focus on core functionality.
+
+#### Removed
+- Complete E2E test infrastructure including all test files and configurations
+- Playwright and WebDriverIO dependencies and configurations
+- Docker Compose files for E2E testing environments
+- All E2E test scripts from package.json
+- Test result directories and screenshots
+
+#### Benefits
+- Reduced project complexity and maintenance overhead
+- Faster build times without E2E dependencies
+- Cleaner codebase focused on core functionality
+- Reduced npm install time by removing heavy E2E dependencies
+
 ## [9.0.0] - 2025-09-18
 
 ### Major Rollback Release
