@@ -38,7 +38,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Tests disabled - optional for Obsidian plugins
-      # - name: Run tests
-      #   run: npm test
-      #   continue-on-error: true
+      - name: Run tests
+        run: |
+          export NODE_OPTIONS="--max-old-space-size=4096"
+          timeout 120s npm test || exit 1
