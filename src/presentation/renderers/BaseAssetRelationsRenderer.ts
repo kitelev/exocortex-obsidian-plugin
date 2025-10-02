@@ -34,9 +34,48 @@ export abstract class BaseAssetRelationsRenderer {
   protected app: App;
   protected sortState: Map<string, { column: string; order: "asc" | "desc" }> =
     new Map();
+  protected eventListeners: Array<{
+    element: HTMLElement;
+    type: string;
+    handler: EventListener;
+  }> = [];
+  private backlinksCache: Map<string, Set<string>> = new Map();
+  private backlinksCacheValid: boolean = false;
 
   constructor(app: App) {
     this.app = app;
+  }
+
+  /**
+   * Build reverse index of backlinks for O(1) lookups
+   * Called lazily on first use and invalidated when vault changes
+   */
+  private buildBacklinksCache(): void {
+    if (this.backlinksCacheValid) return;
+
+    this.backlinksCache.clear();
+    const resolvedLinks = this.app.metadataCache.resolvedLinks;
+
+    // Build reverse index: target -> [sources]
+    for (const sourcePath in resolvedLinks) {
+      const links = resolvedLinks[sourcePath];
+      for (const targetPath in links) {
+        if (!this.backlinksCache.has(targetPath)) {
+          this.backlinksCache.set(targetPath, new Set());
+        }
+        this.backlinksCache.get(targetPath)!.add(sourcePath);
+      }
+    }
+
+    this.backlinksCacheValid = true;
+  }
+
+  /**
+   * Invalidate backlinks cache when vault changes
+   * Should be called by plugin on metadata change events
+   */
+  public invalidateBacklinksCache(): void {
+    this.backlinksCacheValid = false;
   }
 
   /**
@@ -49,46 +88,76 @@ export abstract class BaseAssetRelationsRenderer {
   ): Promise<void>;
 
   /**
+   * Clean up all registered event listeners
+   * Should be called when component is unmounted
+   */
+  cleanup(): void {
+    this.eventListeners.forEach(({ element, type, handler }) => {
+      element.removeEventListener(type, handler);
+    });
+    this.eventListeners = [];
+    this.sortState.clear();
+  }
+
+  /**
+   * Register event listener for automatic cleanup
+   */
+  protected registerEventListener(
+    element: HTMLElement,
+    type: string,
+    handler: EventListener,
+  ): void {
+    element.addEventListener(type, handler);
+    this.eventListeners.push({ element, type, handler });
+  }
+
+  /**
    * Collect all relations for a given file
-   * Common implementation for all relation renderers
+   * Optimized with O(1) backlinks lookup using reverse index
    * Filters out archived assets to maintain clean output
    */
   protected async collectAllRelations(file: TFile): Promise<AssetRelation[]> {
     const relations: AssetRelation[] = [];
     const cache = this.app.metadataCache;
-    const resolvedLinks = cache.resolvedLinks;
 
-    for (const sourcePath in resolvedLinks) {
-      const links = resolvedLinks[sourcePath];
-      if (links && links[file.path]) {
-        const sourceFile = this.app.vault.getAbstractFileByPath(sourcePath);
-        if (sourceFile instanceof TFile) {
-          const fileCache = cache.getFileCache(sourceFile);
-          const metadata = fileCache?.frontmatter || {};
+    // Build reverse index if needed (amortized O(1) per call)
+    this.buildBacklinksCache();
 
-          // Skip archived assets
-          if (this.isAssetArchived(metadata)) {
-            continue;
-          }
+    // O(1) lookup of backlinks instead of O(n) iteration
+    const backlinks = this.backlinksCache.get(file.path);
+    if (!backlinks) {
+      return relations;
+    }
 
-          const propertyName = this.findReferencingProperty(
-            metadata,
-            file.basename
-          );
+    // Process only files that actually link to this file
+    for (const sourcePath of backlinks) {
+      const sourceFile = this.app.vault.getAbstractFileByPath(sourcePath);
+      if (sourceFile instanceof TFile) {
+        const fileCache = cache.getFileCache(sourceFile);
+        const metadata = fileCache?.frontmatter || {};
 
-          const relation: AssetRelation = {
-            file: sourceFile,
-            path: sourcePath,
-            title: sourceFile.basename,
-            metadata,
-            propertyName,
-            isBodyLink: !propertyName,
-            created: sourceFile.stat.ctime,
-            modified: sourceFile.stat.mtime,
-          };
-
-          relations.push(relation);
+        // Skip archived assets
+        if (this.isAssetArchived(metadata)) {
+          continue;
         }
+
+        const propertyName = this.findReferencingProperty(
+          metadata,
+          file.basename
+        );
+
+        const relation: AssetRelation = {
+          file: sourceFile,
+          path: sourcePath,
+          title: sourceFile.basename,
+          metadata,
+          propertyName,
+          isBodyLink: !propertyName,
+          created: sourceFile.stat.ctime,
+          modified: sourceFile.stat.mtime,
+        };
+
+        relations.push(relation);
       }
     }
 

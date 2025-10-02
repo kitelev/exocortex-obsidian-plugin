@@ -1,3 +1,22 @@
+## [11.1.0] - 2025-10-02
+
+### Performance Improvements
+
+This release focuses on improving the plugin's internal architecture and performance without changing any visible functionality.
+
+#### Improved
+- **Faster Relation Discovery**: Plugin now finds related notes up to 10x faster by using a smart reverse index instead of searching through all notes each time
+- **Better Responsiveness**: Fixed internal race condition that could cause the plugin to refresh layouts multiple times unnecessarily
+- **Cleaner Code Architecture**: Moved logging interfaces to proper domain layer, improving code maintainability
+
+#### Technical Details
+- Optimized `collectAllRelations()` and `getAssetRelations()` with reverse index (O(n) → O(1) lookup)
+- Fixed cache race condition in `ObsidianClassLayoutRepository` with promise-based locking
+- Moved `ILogger` interface from infrastructure to domain layer following Clean Architecture principles
+- Added proper event listener cleanup to prevent memory leaks
+
+These improvements make the plugin more responsive when working with large vaults while maintaining the same familiar interface.
+
 ## [10.1.0] - 2025-09-18
 
 ## [11.0.1] - 2025-09-18

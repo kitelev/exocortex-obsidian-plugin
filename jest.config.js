@@ -54,9 +54,9 @@ module.exports = {
   logHeapUsage: false, // Disabled - saves memory
   // EMERGENCY: Enhanced memory management setup
   setupFilesAfterEnv: [
-    "<rootDir>/tests/setup.ts",
+    // "<rootDir>/tests/setup.ts", // File doesn't exist
     // '<rootDir>/tests/emergency-memory-setup.ts', // TEMPORARY: Disabled for debugging
-    "<rootDir>/tests/test-cleanup.ts",
+    // "<rootDir>/tests/test-cleanup.ts", // File doesn't exist
   ],
   // Reduce cache to prevent memory buildup
   cacheDirectory: "<rootDir>/.jest-cache",

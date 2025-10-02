@@ -13,6 +13,7 @@ export class ObsidianClassLayoutRepository implements IClassLayoutRepository {
   private lastCacheUpdate: number = 0;
   private readonly CACHE_TTL = 30000; // 30 seconds
   private hasManuallyAddedLayouts: boolean = false;
+  private refreshPromise: Promise<void> | null = null;
 
   constructor(
     private app: App,
@@ -84,12 +85,29 @@ export class ObsidianClassLayoutRepository implements IClassLayoutRepository {
       return;
     }
 
+    // If refresh is already in progress, wait for it
+    if (this.refreshPromise) {
+      await this.refreshPromise;
+      return;
+    }
+
+    // Start refresh and store promise
+    this.refreshPromise = this.performRefresh();
+
+    try {
+      await this.refreshPromise;
+    } finally {
+      this.refreshPromise = null;
+    }
+  }
+
+  private async performRefresh(): Promise<void> {
     // Only load from files if no layouts were manually added
     // This allows tests to work properly with in-memory layouts
     if (!this.hasManuallyAddedLayouts) {
       await this.loadLayoutsFromFiles();
     }
-    this.lastCacheUpdate = now;
+    this.lastCacheUpdate = Date.now();
   }
 
   private async loadLayoutsFromFiles(): Promise<void> {

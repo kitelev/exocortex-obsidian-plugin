@@ -3,6 +3,7 @@ import { UniversalLayoutRenderer } from "./presentation/renderers/UniversalLayou
 import { DynamicLayoutRenderer } from "./presentation/renderers/DynamicLayoutRenderer";
 import { ILogger } from "./infrastructure/logging/ILogger";
 import { LoggerFactory } from "./infrastructure/logging/LoggerFactory";
+import { Asset } from "./domain/entities/Asset";
 
 /**
  * Simplified Exocortex Plugin - UniversalLayout and DynamicLayout only
@@ -18,9 +19,20 @@ export default class ExocortexPlugin extends Plugin {
       this.logger = LoggerFactory.create("ExocortexPlugin");
       this.logger.info("Loading Exocortex Plugin - Simplified version");
 
+      // Inject logger into domain entities
+      Asset.setLogger(LoggerFactory.create("Asset"));
+
       // Initialize renderers
       this.universalLayoutRenderer = new UniversalLayoutRenderer(this.app);
       this.dynamicLayoutRenderer = new DynamicLayoutRenderer(this.app);
+
+      // Register metadata change listener to invalidate backlinks cache
+      this.registerEvent(
+        this.app.metadataCache.on("resolved", () => {
+          this.universalLayoutRenderer.invalidateBacklinksCache();
+          this.dynamicLayoutRenderer.invalidateBacklinksCache();
+        })
+      );
 
       // Register the markdown code block processor for UniversalLayout
       this.registerMarkdownCodeBlockProcessor(

@@ -40,10 +40,70 @@ export class UniversalLayoutRenderer {
   private app: any;
   private sortState: Map<string, { column: string; order: "asc" | "desc" }> =
     new Map();
+  private eventListeners: Array<{
+    element: HTMLElement;
+    type: string;
+    handler: EventListener;
+  }> = [];
+  private backlinksCache: Map<string, Set<string>> = new Map();
+  private backlinksCacheValid: boolean = false;
 
   constructor(app: any) {
     this.app = app;
     this.logger = LoggerFactory.create("UniversalLayoutRenderer");
+  }
+
+  /**
+   * Build reverse index of backlinks for O(1) lookups
+   */
+  private buildBacklinksCache(): void {
+    if (this.backlinksCacheValid) return;
+
+    this.backlinksCache.clear();
+    const resolvedLinks = this.app.metadataCache.resolvedLinks;
+
+    for (const sourcePath in resolvedLinks) {
+      const links = resolvedLinks[sourcePath];
+      for (const targetPath in links) {
+        if (!this.backlinksCache.has(targetPath)) {
+          this.backlinksCache.set(targetPath, new Set());
+        }
+        this.backlinksCache.get(targetPath)!.add(sourcePath);
+      }
+    }
+
+    this.backlinksCacheValid = true;
+  }
+
+  /**
+   * Invalidate backlinks cache when vault changes
+   */
+  public invalidateBacklinksCache(): void {
+    this.backlinksCacheValid = false;
+  }
+
+  /**
+   * Clean up all registered event listeners
+   * Should be called when component is unmounted
+   */
+  cleanup(): void {
+    this.eventListeners.forEach(({ element, type, handler }) => {
+      element.removeEventListener(type, handler);
+    });
+    this.eventListeners = [];
+    this.sortState.clear();
+  }
+
+  /**
+   * Register event listener for automatic cleanup
+   */
+  private registerEventListener(
+    element: HTMLElement,
+    type: string,
+    handler: EventListener,
+  ): void {
+    element.addEventListener(type, handler);
+    this.eventListeners.push({ element, type, handler });
   }
 
   /**
@@ -123,41 +183,48 @@ export class UniversalLayoutRenderer {
   ): Promise<AssetRelation[]> {
     const relations: AssetRelation[] = [];
     const cache = this.app.metadataCache;
-    const resolvedLinks = cache.resolvedLinks;
 
-    for (const [sourcePath, links] of Object.entries(resolvedLinks)) {
-      if (links && (links as any)[file.path]) {
-        const sourceFile = this.app.vault.getAbstractFileByPath(sourcePath);
-        if (sourceFile instanceof TFile) {
-          const fileCache = cache.getFileCache(sourceFile);
-          const metadata = fileCache?.frontmatter || {};
+    // Build reverse index if needed (amortized O(1) per call)
+    this.buildBacklinksCache();
 
-          // Skip archived assets
-          if (this.isAssetArchived(metadata)) {
-            continue;
-          }
+    // O(1) lookup of backlinks instead of O(n) iteration
+    const backlinks = this.backlinksCache.get(file.path);
+    if (!backlinks) {
+      return relations;
+    }
 
-          // Determine how this asset references the current file
-          const propertyName = this.findReferencingProperty(
-            metadata,
-            file.basename
-          );
+    // Process only files that actually link to this file
+    for (const sourcePath of backlinks) {
+      const sourceFile = this.app.vault.getAbstractFileByPath(sourcePath);
+      if (sourceFile instanceof TFile) {
+        const fileCache = cache.getFileCache(sourceFile);
+        const metadata = fileCache?.frontmatter || {};
 
-          const relation: AssetRelation = {
-            file: sourceFile,
-            path: sourcePath,
-            title: sourceFile.basename,
-            metadata: metadata,
-            propertyName: propertyName,
-            isBodyLink: !propertyName, // If no property found, it's a body link
-            created: sourceFile.stat.ctime,
-            modified: sourceFile.stat.mtime,
-          };
+        // Skip archived assets
+        if (this.isAssetArchived(metadata)) {
+          continue;
+        }
 
-          // Apply filters if specified
-          if (this.matchesFilters(relation, config)) {
-            relations.push(relation);
-          }
+        // Determine how this asset references the current file
+        const propertyName = this.findReferencingProperty(
+          metadata,
+          file.basename
+        );
+
+        const relation: AssetRelation = {
+          file: sourceFile,
+          path: sourcePath,
+          title: sourceFile.basename,
+          metadata: metadata,
+          propertyName: propertyName,
+          isBodyLink: !propertyName, // If no property found, it's a body link
+          created: sourceFile.stat.ctime,
+          modified: sourceFile.stat.mtime,
+        };
+
+        // Apply filters if specified
+        if (this.matchesFilters(relation, config)) {
+          relations.push(relation);
         }
       }
     }
@@ -290,7 +357,7 @@ export class UniversalLayoutRenderer {
     }
 
     // Add click handlers for sorting
-    nameHeader.addEventListener("click", () => {
+    this.registerEventListener(nameHeader, "click", () => {
       this.updateSort("Name", sortStateKey);
       const sortedRelations = this.sortRelations(
         relations,
@@ -301,7 +368,7 @@ export class UniversalLayoutRenderer {
       this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
     });
 
-    instanceClassHeader.addEventListener("click", () => {
+    this.registerEventListener(instanceClassHeader, "click", () => {
       this.updateSort("exo__Instance_class", sortStateKey);
       const sortedRelations = this.sortRelations(
         relations,
@@ -328,7 +395,7 @@ export class UniversalLayoutRenderer {
             });
           }
 
-          propHeader.addEventListener("click", () => {
+          this.registerEventListener(propHeader, "click", () => {
             this.updateSort(prop, sortStateKey);
             const sortedRelations = this.sortRelations(
               relations,
@@ -365,7 +432,7 @@ export class UniversalLayoutRenderer {
       });
 
       // Add click handler
-      linkEl.addEventListener("click", (e) => {
+      this.registerEventListener(linkEl, "click", (e) => {
         e.preventDefault();
         this.app.workspace.openLinkText(relation.path, "", false);
       });
@@ -429,7 +496,7 @@ export class UniversalLayoutRenderer {
         href: relation.path,
       });
 
-      linkEl.addEventListener("click", (e) => {
+      this.registerEventListener(linkEl, "click", (e) => {
         e.preventDefault();
         this.app.workspace.openLinkText(relation.path, "", false);
       });
