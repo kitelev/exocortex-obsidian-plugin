@@ -47,3 +47,51 @@ jobs:
           git config --local user.name "GitHub Action"
           git tag -a "v${{ steps.check.outputs.version }}" -m "Release v${{ steps.check.outputs.version }}"
           git push origin "v${{ steps.check.outputs.version }}"
+
+      - name: Setup Node.js
+        if: steps.check.outputs.needs_release == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        if: steps.check.outputs.needs_release == 'true'
+        run: npm ci
+
+      - name: Build plugin
+        if: steps.check.outputs.needs_release == 'true'
+        run: npm run build
+
+      - name: Create release package
+        if: steps.check.outputs.needs_release == 'true'
+        run: |
+          mkdir release-files
+          cp main.js manifest.json release-files/
+          [ -f styles.css ] && cp styles.css release-files/ || true
+          cd release-files
+          zip -r ../${{ github.event.repository.name }}.zip ./*
+
+      - name: Extract changelog for version
+        if: steps.check.outputs.needs_release == 'true'
+        id: changelog
+        run: |
+          VERSION="${{ steps.check.outputs.version }}"
+          CHANGELOG=$(awk "/## \[$VERSION\]/{flag=1; next} /## \[/{flag=0} flag" CHANGELOG.md)
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details."
+          fi
+          echo "$CHANGELOG" > release_notes.md
+
+      - name: Create GitHub Release
+        if: steps.check.outputs.needs_release == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.check.outputs.version }}
+          files: |
+            main.js
+            manifest.json
+            ${{ github.event.repository.name }}.zip
+          body_path: release_notes.md
+          draft: false
+          prerelease: false

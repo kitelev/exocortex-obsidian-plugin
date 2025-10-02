@@ -1,3 +1,10 @@
+## [11.2.1] - 2025-10-02
+
+### Fixed
+
+- **Release Automation**: Combined tag creation and GitHub release into single workflow to ensure releases are always created when tests pass
+- **Workflow Reliability**: Eliminated dependency on tag push triggers that don't work with GitHub Actions-created tags
+
 ## [11.2.0] - 2025-10-02
 
 ### GitHub Actions & Quality
