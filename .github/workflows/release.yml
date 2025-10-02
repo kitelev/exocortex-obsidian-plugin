@@ -1,13 +1,9 @@
-name: Release Obsidian plugin
+name: Release Obsidian Plugin
 
 on:
   push:
     tags:
       - "*"
-
-concurrency:
-  group: release-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -17,62 +13,58 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Use Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: "18.x"
+          node-version: "18"
           cache: "npm"
-          cache-dependency-path: package-lock.json
 
-      - name: Configure npm for release
-        run: |
-          npm config set fetch-retries 3
-          npm config set fetch-timeout 60000
-          npm config set progress false
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build plugin
-        id: build
-        run: |
-          timeout 5m npm ci --prefer-offline --no-audit --no-fund
-          node esbuild.config.mjs production
-          mkdir ${{ github.event.repository.name }}
-          cp main.js manifest.json ${{ github.event.repository.name }}
-          # Copy styles.css only if it exists
-          [ -f styles.css ] && cp styles.css ${{ github.event.repository.name }}/ || true
-          zip -r ${{ github.event.repository.name }}.zip ${{ github.event.repository.name }}
-          ls -la
-          echo "tag_name=$(git tag --sort version:refname | tail -n 1)" >> $GITHUB_OUTPUT
+        run: npm run build
 
-      - name: Create Release
+      - name: Create release package
+        run: |
+          mkdir release-files
+          cp main.js manifest.json release-files/
+          # Copy styles.css only if it exists
+          [ -f styles.css ] && cp styles.css release-files/ || true
+          cd release-files
+          zip -r ../${{ github.event.repository.name }}.zip ./*
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Extract changelog for version
+        id: changelog
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          # Remove 'v' prefix if present
+          VERSION_NUM=${VERSION#v}
+
+          # Extract changelog entry for this version
+          CHANGELOG=$(awk "/## \[$VERSION_NUM\]/{flag=1; next} /## \[/{flag=0} flag" CHANGELOG.md)
+
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details."
+          fi
+
+          # Save to file
+          echo "$CHANGELOG" > release_notes.md
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
             main.js
             manifest.json
-            styles.css
             ${{ github.event.repository.name }}.zip
-          name: Release ${{ github.ref_name }}
-          body: |
-            # Release ${{ github.ref_name }}
-
-            ## Installation
-
-            ### From this release
-            1. Download `main.js`, `manifest.json`, and `styles.css`
-            2. Create a folder named `exocortex-obsidian-plugin` in your vault's plugins folder
-            3. Move the downloaded files into this folder
-            4. Reload Obsidian
-            5. Enable the plugin in Settings → Community plugins
-
-            ### From ZIP
-            1. Download the `exocortex-obsidian-plugin.zip` file
-            2. Extract it into your vault's plugins folder
-            3. Reload Obsidian
-            4. Enable the plugin
-
-            ## What's New
-            See [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+          body_path: release_notes.md
           draft: false
           prerelease: false
