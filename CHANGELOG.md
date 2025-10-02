@@ -1,5 +1,12 @@
 ## [11.1.0] - 2025-10-02
 
+## [11.1.1] - 2025-10-02
+
+### Changes
+
+- perf: improve relation discovery performance and fix race conditions
+
+
 ### Performance Improvements
 
 This release focuses on improving the plugin's internal architecture and performance without changing any visible functionality.
