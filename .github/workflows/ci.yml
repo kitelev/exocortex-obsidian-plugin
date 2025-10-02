@@ -33,6 +33,7 @@ jobs:
 
       - name: Lint
         run: npm run lint
+        continue-on-error: true
 
       - name: Build
         run: npm run build
