@@ -1,8 +1,4 @@
 import { UniversalLayoutRenderer } from "../../../../src/presentation/renderers/UniversalLayoutRenderer";
-import { ServiceProvider } from "../../../../src/infrastructure/providers/ServiceProvider";
-import { FakeVaultAdapter } from "../../../helpers/FakeVaultAdapter";
-import { IAssetRepository } from "../../../../src/domain/repositories/IAssetRepository";
-import { LoggerFactory } from "../../../../src/infrastructure/logging/LoggerFactory";
 import { MarkdownPostProcessorContext, TFile } from "obsidian";
 
 // Extend TFile to add stat property
@@ -18,8 +14,6 @@ class MockTFile extends TFile {
 
 describe("UniversalLayoutRenderer", () => {
   let renderer: UniversalLayoutRenderer;
-  let serviceProvider: ServiceProvider;
-  let vaultAdapter: FakeVaultAdapter;
   let mockApp: any;
 
   beforeEach(() => {
@@ -32,37 +26,15 @@ describe("UniversalLayoutRenderer", () => {
       metadataCache: {
         resolvedLinks: {},
         getFileCache: jest.fn(),
+        on: jest.fn(),
       },
       vault: {
         getAbstractFileByPath: jest.fn(),
       },
     };
-    (window as any).app = mockApp;
 
-    // Setup vault adapter
-    vaultAdapter = new FakeVaultAdapter();
-
-    // Setup mock service provider
-    const mockAssetRepository: IAssetRepository = {
-      findById: jest.fn(),
-      save: jest.fn(),
-      updateFrontmatter: jest.fn(),
-      getAllAssets: jest.fn(),
-      findByClass: jest.fn(),
-      createAsset: jest.fn(),
-      getAssetProperties: jest.fn(),
-    } as any;
-
-    serviceProvider = {
-      getService: jest.fn().mockImplementation((name: string) => {
-        if (name === "IAssetRepository") return mockAssetRepository;
-        return null;
-      }),
-      registerService: jest.fn(),
-    } as any;
-
-    // Create renderer
-    renderer = new UniversalLayoutRenderer(serviceProvider);
+    // Create renderer with mockApp
+    renderer = new UniversalLayoutRenderer(mockApp);
   });
 
   afterEach(() => {
