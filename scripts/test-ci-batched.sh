@@ -17,7 +17,7 @@ fi
 
 # Optimized memory settings based on environment
 if [ "$CI" = "true" ]; then
-    export NODE_OPTIONS="--max-old-space-size=6144 --expose-gc"
+    export NODE_OPTIONS="--max-old-space-size=6144"
     export MAX_WORKERS=2
     export TEST_TIMEOUT=90000
 else
