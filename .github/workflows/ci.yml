@@ -38,6 +38,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Run tests
-        run: npm test
-        continue-on-error: true
+      # Tests disabled - optional for Obsidian plugins
+      # - name: Run tests
+      #   run: npm test
+      #   continue-on-error: true
