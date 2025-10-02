@@ -1,6 +1,28 @@
-## [11.1.0] - 2025-10-02
+## [11.2.0] - 2025-10-02
+
+### GitHub Actions & Quality
+
+This release improves the development workflow and ensures release quality through automated testing.
+
+#### Added
+- **Quality Gates**: Tests now block releases - no release will be created if tests fail
+- **CI/CD Improvements**: Auto-release workflow now depends on successful CI completion
+- **Test Reliability**: Fixed `--expose-gc` flag issue in test script
+
+#### Changed
+- Auto-release workflow now triggers only after CI workflow succeeds
+- Tests are enabled in CI with 2-minute timeout
+- Simplified GitHub Actions from 26 workflows to 3 essential ones
+
+These changes ensure that every release is validated by passing tests, maintaining plugin quality.
 
 ## [11.1.1] - 2025-10-02
+
+### Changes
+
+- perf: improve relation discovery performance and fix race conditions
+
+## [11.1.0] - 2025-10-02
 
 ### Changes
 
