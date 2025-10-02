@@ -1,0 +1,54 @@
+# Git attributes to handle cross-platform compatibility
+# Ensure consistent line endings across platforms
+
+# Text files
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.svg text eol=lf
+*.xml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.conf text eol=lf
+*.config text eol=lf
+
+# Shell scripts should use LF
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Python files
+*.py text eol=lf
+
+# Configuration files
+.gitignore text eol=lf
+.gitattributes text eol=lf
+.npmrc text eol=lf
+.nvmrc text eol=lf
+Dockerfile* text eol=lf
+docker-compose*.yml text eol=lf
+
+# Windows-specific files
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files (don't process as text)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.zip binary
+*.tar.gz binary
+*.node binary
+
+# Exclude problematic files with ANSI codes from Windows builds
+.claude/hooks/*.sh filter=strip-ansi

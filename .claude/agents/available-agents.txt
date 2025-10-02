@@ -1,0 +1,19 @@
+architect-agent:System architecture decisions
+code-review-agent:Code quality review
+code-searcher:Locate functions and code in codebase
+devops-engineer:CI/CD and deployment
+docker-test-agent:Containerized testing and CI/CD infrastructure
+error-handler:Error diagnosis and debugging
+general-purpose:General research and multi-step tasks
+obsidian-test-agent:Obsidian plugin testing and mock management
+orchestrator:Coordinate complex multi-domain tasks
+performance-agent:Performance optimization
+product-manager:Product planning and requirements
+qa-engineer:Quality assurance and testing
+refactoring-specialist:SOLID principles and Clean Architecture refactoring
+result-pattern-agent:Result pattern and functional programming
+security-agent:Security analysis and compliance
+swebok-engineer:Software engineering best practices
+test-fixer-agent:Fix failing tests
+cicd-optimization-agent:CI/CD pipeline optimization and workflow improvement
+enterprise-prompt-writer:Craft perfect prompts for /enterprise command execution
