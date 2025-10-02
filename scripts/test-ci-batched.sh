@@ -20,8 +20,7 @@ echo "📦 Running all tests..."
 if npx jest \
     --runInBand \
     --forceExit \
-    --testTimeout=60000 \
-    --maxWorkers=1; then
+    --testTimeout=60000; then
     echo "✅ All tests passed!"
     exit 0
 else
