@@ -25,12 +25,19 @@ interface SortState {
   order: "asc" | "desc";
 }
 
-export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
-  relations,
-  groupByProperty = false,
-  sortBy = "title",
-  sortOrder = "asc",
-  showProperties = [],
+interface SingleTableProps {
+  items: AssetRelation[];
+  sortBy: string;
+  sortOrder: "asc" | "desc";
+  showProperties: string[];
+  onAssetClick?: (path: string) => void;
+}
+
+const SingleTable: React.FC<SingleTableProps> = ({
+  items,
+  sortBy,
+  sortOrder,
+  showProperties,
   onAssetClick,
 }) => {
   const [sortState, setSortState] = useState<SortState>({
@@ -50,16 +57,14 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
     const instanceClassRaw =
       metadata?.exo__Instance_class || metadata?.["exo__Instance_class"] || "-";
 
-    // Handle arrays and convert to string safely
     const instanceClass = Array.isArray(instanceClassRaw)
       ? instanceClassRaw[0] || "-"
       : instanceClassRaw || "-";
 
-    // Remove [[ and ]] from wikilink syntax
     return String(instanceClass).replace(/^\[\[|\]\]$/g, "");
   };
 
-  const sortRelations = (items: AssetRelation[]) => {
+  const sortedItems = useMemo(() => {
     return [...items].sort((a, b) => {
       let aVal: unknown;
       let bVal: unknown;
@@ -87,34 +92,9 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
 
       return 0;
     });
-  };
+  }, [items, sortState]);
 
-  const groupedRelations = useMemo(() => {
-    if (!groupByProperty) {
-      return { ungrouped: sortRelations(relations) };
-    }
-
-    // First, group relations by property
-    const grouped = relations.reduce(
-      (acc, relation) => {
-        const group = relation.propertyName || "Body Links";
-        if (!acc[group]) acc[group] = [];
-        acc[group].push(relation);
-        return acc;
-      },
-      {} as Record<string, AssetRelation[]>,
-    );
-
-    // Then, sort items within each group
-    const sortedGrouped: Record<string, AssetRelation[]> = {};
-    for (const [groupName, items] of Object.entries(grouped)) {
-      sortedGrouped[groupName] = sortRelations(items);
-    }
-
-    return sortedGrouped;
-  }, [relations, sortState, groupByProperty]);
-
-  const renderTable = (items: AssetRelation[]) => (
+  return (
     <table className="exocortex-relations-table">
       <thead>
         <tr>
@@ -137,7 +117,7 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
         </tr>
       </thead>
       <tbody>
-        {items.map((relation) => {
+        {sortedItems.map((relation) => {
           const instanceClass = getInstanceClass(relation.metadata);
           return (
             <tr key={relation.path} data-path={relation.path}>
@@ -178,6 +158,33 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
       </tbody>
     </table>
   );
+};
+
+export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
+  relations,
+  groupByProperty = false,
+  sortBy = "title",
+  sortOrder = "asc",
+  showProperties = [],
+  onAssetClick,
+}) => {
+  const groupedRelations = useMemo(() => {
+    if (!groupByProperty) {
+      return { ungrouped: relations };
+    }
+
+    const grouped = relations.reduce(
+      (acc, relation) => {
+        const group = relation.propertyName || "Body Links";
+        if (!acc[group]) acc[group] = [];
+        acc[group].push(relation);
+        return acc;
+      },
+      {} as Record<string, AssetRelation[]>,
+    );
+
+    return grouped;
+  }, [relations, groupByProperty]);
 
   if (groupByProperty) {
     return (
@@ -185,7 +192,13 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
         {Object.entries(groupedRelations).map(([groupName, items]) => (
           <div key={groupName} className="relation-group">
             <h3 className="group-header">{groupName}</h3>
-            {renderTable(items)}
+            <SingleTable
+              items={items}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              showProperties={showProperties}
+              onAssetClick={onAssetClick}
+            />
           </div>
         ))}
       </div>
@@ -193,6 +206,14 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
   }
 
   return (
-    <div className="exocortex-relations">{renderTable(groupedRelations.ungrouped)}</div>
+    <div className="exocortex-relations">
+      <SingleTable
+        items={groupedRelations.ungrouped}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        showProperties={showProperties}
+        onAssetClick={onAssetClick}
+      />
+    </div>
   );
 };
