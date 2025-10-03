@@ -39,7 +39,7 @@ module.exports = {
   bail: process.env.CI ? 3 : false, // Fail fast in CI after 3 failures
   // EMERGENCY: Safe degradation settings
   forceExit: true, // Always force exit to prevent hangs
-  detectOpenHandles: process.env.CI ? false : true,
+  detectOpenHandles: false, // Disabled to prevent hangs
 
   // EMERGENCY: Memory allocation handled via NODE_OPTIONS environment variable
   // Critical memory optimizations for CI/CD stability
