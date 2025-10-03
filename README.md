@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![CI](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-30%20passing-success)](./specs/TEST-RESULTS.md)
+[![Tests](https://img.shields.io/badge/tests-91%20passing-success)](./specs/TEST-RESULTS.md)
 
 ## 🎯 What is Exocortex?
 
@@ -65,17 +65,16 @@ Archived assets are automatically filtered from all relation lists, keeping your
 
 ## 🏗️ Architecture
 
-Simple and efficient architecture:
+Simple and focused architecture:
 
 ```
-┌─── Presentation Layer ────────────────────────────┐
+┌─── Layout Renderers ──────────────────────────────┐
 │  • UniversalLayoutRenderer                        │
 │  • DynamicLayoutRenderer (extends Universal)      │
 └───────────────────────────────────────────────────┘
-┌─── Infrastructure Layer ──────────────────────────┐
-│  • Logging                                        │
-└───────────────────────────────────────────────────┘
 ```
+
+Built with TypeScript and optimized for performance.
 
 ## 🚀 Performance
 
@@ -108,48 +107,39 @@ npm run dev
 ### Development Standards
 
 - **TypeScript**: Strict mode with comprehensive type safety
-- **Clean Architecture**: Domain-driven design patterns
-- **SOLID Principles**: Single Responsibility, Open-Closed, etc.
 - **Performance First**: Memory-conscious development
+- **Testing**: BDD with jest-cucumber + Playwright Component Testing
 
 ### Running Tests
 
 ```bash
-# Run unit tests
-npm test
+# Unit tests (30 tests)
+npm run test:unit
 
-# Run BDD tests (jest-cucumber)
-npm run test:cucumber
+# BDD tests (30 tests)
+npm run test:bdd
 
-# Run with coverage
-npm run test:coverage
+# Component tests (31 tests)
+npm run test:component
 
 # Build verification
 npm run build
 ```
 
-### WebStorm IDE Integration
-
-Full Cucumber support for executable .feature files:
-
-- ✅ **No yellow underlines** on step definitions
-- ✅ **Go-to-definition** (Ctrl+Click) works
-- ✅ **Autocomplete** for Gherkin steps
-- ✅ **Run from IDE** - Right-click → Run scenario
-
-See [WebStorm Setup Guide](./docs/WEBSTORM-CUCUMBER-SETUP.md) for configuration instructions.
+**Total: 91 tests** covering layout rendering, sorting, and UI components.
 
 ## 📚 Documentation
 
-- **[CLAUDE.md](./CLAUDE.md)** - AI assistant development guidelines
+- **[docs/testing/](./docs/)** - Testing guides and best practices
 - **[CHANGELOG.md](./CHANGELOG.md)** - Version history and changes
+- **[CLAUDE.md](./CLAUDE.md)** - AI assistant development guidelines
 
-## 🌟 Recent Improvements (v11.1.0)
+## 🌟 Recent Improvements (v11.4.0)
 
-- **10x Faster Relation Discovery**: Reverse index optimization
-- **Better Responsiveness**: Fixed cache race conditions
-- **Cleaner Architecture**: Moved logging to domain layer
-- **Memory Leak Prevention**: Proper event listener cleanup
+- **Component Testing**: 31 tests with Playwright Component Testing
+- **CI/CD Optimization**: 61% faster pipeline (2m 54s → 1m 7s)
+- **Test Coverage**: 91 tests total (30 unit + 30 BDD + 31 component)
+- **Archive Filtering**: Automatic filtering of archived assets
 
 ## 📄 License
 
