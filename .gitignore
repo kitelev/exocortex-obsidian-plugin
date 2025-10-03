@@ -21,6 +21,7 @@ playwright-report-ct/
 test-results/
 tests/e2e/setup/test-vault/
 tests/e2e/setup/test-user-data/
+playwright/.cache/
 
 # Debug files
 debug-main.js
