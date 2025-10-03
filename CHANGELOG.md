@@ -1,3 +1,24 @@
+## [11.2.3] - 2025-10-03
+
+### Added
+
+- **Clickable Instance Class Links**: Instance Class columns now display as clickable internal links instead of plain text - click any Instance Class value to navigate to that class definition
+- **Interactive Table Sorting**: Added visual sort indicators (▲/▼) that show current sort direction and toggle on click
+- **BDD Test Automation**: Implemented comprehensive BDD test suite with 24 passing scenarios covering table sorting and Instance Class links
+
+### Fixed
+
+- **Instance Class Display**: Fixed critical gap where Instance Class was shown as `[[ems__Task]]` instead of a clickable link to `ems__Task`
+- **Sort Indicators**: Sort arrows now properly update when switching between columns and directions
+- **Wiki-link Syntax**: Instance Class values automatically strip `[[]]` brackets for clean display
+
+### Technical
+
+- Added `createSpan` to Obsidian API mocks for complete test coverage
+- All 48 tests passing (45 active + 3 skipped archived filtering tests)
+- Test execution time: <1 second
+- BDD specifications available in `specs/features/layout/`
+
 ## [11.2.2] - 2025-10-03
 
 ### Fixed

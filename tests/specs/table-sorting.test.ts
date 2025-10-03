@@ -51,8 +51,8 @@ describe("Feature: Интерактивная сортировка таблиц"
   };
 
   describe("Правило: Сортировка по колонке Name", () => {
-    describe("Сценарий: Первый клик - сортировка по возрастанию", () => {
-      it("должен сортировать таблицу по имени по возрастанию", async () => {
+    describe("Сценарий: Первый клик - переключение на убыва ние (т.к. изначально возрастание)", () => {
+      it("должен переключить с возрастания на убывание при клике", async () => {
         const relations: AssetRelation[] = [
           {
             path: "Задача C.md",
@@ -82,22 +82,25 @@ describe("Feature: Интерактивная сортировка таблиц"
           showProperties: ["exo__Instance_class"],
         });
 
-        // Клик на заголовок Name
+        // Initially sorted ascending by Name (default state)
+        expect(getRowNames()).toEqual(["Задача A", "Задача B", "Задача C"]);
+
+        // Клик на заголовок Name - toggles to descending
         const header = clickHeader("Name");
         expect(header).not.toBeNull();
 
-        // Проверяем порядок
+        // Проверяем порядок - теперь убывание
         const names = getRowNames();
-        expect(names).toEqual(["Задача A", "Задача B", "Задача C"]);
+        expect(names).toEqual(["Задача C", "Задача B", "Задача A"]);
 
         // Проверяем индикаторы
-        expect(header?.classList.contains("sorted-asc")).toBe(true);
-        expect(header?.textContent).toContain("▲");
+        expect(header?.classList.contains("sorted-desc")).toBe(true);
+        expect(header?.textContent).toContain("▼");
       });
     });
 
-    describe("Сценарий: Второй клик - сортировка по убыванию", () => {
-      it("должен переключить направление сортировки", async () => {
+    describe("Сценарий: Второй клик - возврат к возрастанию", () => {
+      it("должен вернуться к возрастанию после убывания", async () => {
         const relations: AssetRelation[] = [
           {
             path: "Задача C.md",
@@ -127,22 +130,25 @@ describe("Feature: Интерактивная сортировка таблиц"
           showProperties: ["exo__Instance_class"],
         });
 
-        // Первый клик - asc
-        let header = clickHeader("Name");
+        // Initial: asc (default)
         expect(getRowNames()).toEqual(["Задача A", "Задача B", "Задача C"]);
 
-        // Второй клик - desc
+        // Первый клик - desc
+        let header = clickHeader("Name");
+        expect(getRowNames()).toEqual(["Задача C", "Задача B", "Задача A"]);
+
+        // Второй клик - обратно к asc
         header = clickHeader("Name");
 
-        expect(getRowNames()).toEqual(["Задача C", "Задача B", "Задача A"]);
-        expect(header?.classList.contains("sorted-desc")).toBe(true);
-        expect(header?.textContent).toContain("▼");
-        expect(header?.textContent).not.toContain("▲");
+        expect(getRowNames()).toEqual(["Задача A", "Задача B", "Задача C"]);
+        expect(header?.classList.contains("sorted-asc")).toBe(true);
+        expect(header?.textContent).toContain("▲");
+        expect(header?.textContent).not.toContain("▼");
       });
     });
 
-    describe("Сценарий: Третий клик - возврат к возрастанию", () => {
-      it("должен снова сортировать по возрастанию", async () => {
+    describe("Сценарий: Циклическое переключение", () => {
+      it("должен циклически переключаться между asc и desc", async () => {
         const relations: AssetRelation[] = [
           { path: "C.md", title: "C", metadata: {}, modified: Date.now(), created: Date.now() },
           { path: "A.md", title: "A", metadata: {}, modified: Date.now(), created: Date.now() },
@@ -153,12 +159,18 @@ describe("Feature: Интерактивная сортировка таблиц"
           layout: "table",
         });
 
-        clickHeader("Name"); // asc
-        clickHeader("Name"); // desc
-        const header = clickHeader("Name"); // asc again
-
+        // Default: asc
         expect(getRowNames()).toEqual(["A", "B", "C"]);
-        expect(header?.classList.contains("sorted-asc")).toBe(true);
+
+        clickHeader("Name"); // toggle to desc
+        expect(getRowNames()).toEqual(["C", "B", "A"]);
+
+        clickHeader("Name"); // toggle back to asc
+        expect(getRowNames()).toEqual(["A", "B", "C"]);
+
+        const header = clickHeader("Name"); // toggle to desc again
+        expect(getRowNames()).toEqual(["C", "B", "A"]);
+        expect(header?.classList.contains("sorted-desc")).toBe(true);
       });
     });
   });
@@ -259,25 +271,32 @@ describe("Feature: Интерактивная сортировка таблиц"
           showProperties: ["exo__Instance_class"],
         });
 
-        // Сортировка по Name
+        // Initially sorted by Name with asc indicator
         const nameHeader = clickHeader("Name");
-        expect(nameHeader?.classList.contains("sorted-asc")).toBe(true);
+        expect(nameHeader).not.toBeNull();
 
-        // Сортировка по Instance Class
+        // After initial render, Name is sorted asc by default
+        // First click toggles to desc
+        expect(nameHeader?.classList.contains("sorted-desc")).toBe(true);
+        expect(nameHeader?.textContent).toContain("▼");
+
+        // Сортировка по Instance Class - should remove Name indicator
         const classHeader = clickHeader("exo__Instance_class");
 
         // Name больше не должен иметь индикатор
         expect(nameHeader?.classList.contains("sorted-asc")).toBe(false);
+        expect(nameHeader?.classList.contains("sorted-desc")).toBe(false);
         expect(nameHeader?.textContent).not.toContain("▲");
         expect(nameHeader?.textContent).not.toContain("▼");
 
         // Instance Class должен иметь индикатор
         expect(classHeader?.classList.contains("sorted-asc")).toBe(true);
+        expect(classHeader?.textContent).toContain("▲");
       });
     });
 
     describe("Сценарий: Стрелки обновляются при изменении направления", () => {
-      it("должен заменять ▲ на ▼ при повторном клике", async () => {
+      it("должен заменять ▲ на ▼ при клике и обратно", async () => {
         const relations: AssetRelation[] = [
           { path: "A.md", title: "A", metadata: {}, modified: Date.now(), created: Date.now() },
         ];
@@ -286,13 +305,26 @@ describe("Feature: Интерактивная сортировка таблиц"
           layout: "table",
         });
 
-        let header = clickHeader("Name");
-        expect(header?.textContent).toContain("▲");
-        expect(header?.textContent).not.toContain("▼");
+        // Initial state: Name sorted asc with ▲ indicator
+        const headers = container.querySelectorAll("th");
+        let nameHeader: Element | null = null;
+        for (const header of Array.from(headers)) {
+          if (header.textContent?.includes("Name")) {
+            nameHeader = header;
+            break;
+          }
+        }
+        expect(nameHeader?.textContent).toContain("▲");
 
-        header = clickHeader("Name");
+        // First click: toggle to desc (▼)
+        let header = clickHeader("Name");
         expect(header?.textContent).toContain("▼");
         expect(header?.textContent).not.toContain("▲");
+
+        // Second click: toggle back to asc (▲)
+        header = clickHeader("Name");
+        expect(header?.textContent).toContain("▲");
+        expect(header?.textContent).not.toContain("▼");
       });
     });
   });

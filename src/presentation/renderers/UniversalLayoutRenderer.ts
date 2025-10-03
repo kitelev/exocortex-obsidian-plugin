@@ -448,10 +448,26 @@ export class UniversalLayoutRenderer {
         ? instanceClassRaw[0] || "-"
         : instanceClassRaw || "-";
 
-      row.createEl("td", {
-        text: String(instanceClass),
-        cls: "instance-class",
-      });
+      // Create Instance Class cell with clickable link
+      const instanceCell = row.createEl("td", { cls: "instance-class" });
+
+      if (instanceClass && instanceClass !== "-") {
+        // Remove [[ and ]] from wikilink syntax
+        const cleanClass = String(instanceClass).replace(/^\[\[|\]\]$/g, "");
+
+        const link = instanceCell.createEl("a", {
+          text: cleanClass,
+          cls: "internal-link",
+          attr: { href: cleanClass },
+        });
+
+        this.registerEventListener(link, "click", (e) => {
+          e.preventDefault();
+          this.app.workspace.openLinkText(cleanClass, "", false);
+        });
+      } else {
+        instanceCell.textContent = "-";
+      }
 
       // Additional property columns if configured
       if (config.showProperties && config.showProperties.length > 0) {
@@ -548,6 +564,20 @@ export class UniversalLayoutRenderer {
       cls: `sortable ${currentSort.column === "exo__Instance_class" ? `sorted-${currentSort.order}` : ""}`
     });
 
+    // Add sort indicator arrows
+    if (currentSort.column === "Name") {
+      nameHeader.createSpan({
+        text: currentSort.order === "asc" ? " ▲" : " ▼",
+        cls: "sort-indicator",
+      });
+    }
+    if (currentSort.column === "exo__Instance_class") {
+      instanceClassHeader.createSpan({
+        text: currentSort.order === "asc" ? " ▲" : " ▼",
+        cls: "sort-indicator",
+      });
+    }
+
     // Add click handlers for sorting
     this.registerEventListener(nameHeader, "click", () => {
       this.updateSort("Name", sortStateKey);
@@ -630,10 +660,26 @@ export class UniversalLayoutRenderer {
         ? instanceClassRaw[0] || "-"
         : instanceClassRaw || "-";
 
-      row.createEl("td", {
-        text: String(instanceClass),
-        cls: "instance-class",
-      });
+      // Create Instance Class cell with clickable link
+      const instanceCell = row.createEl("td", { cls: "instance-class" });
+
+      if (instanceClass && instanceClass !== "-") {
+        // Remove [[ and ]] from wikilink syntax
+        const cleanClass = String(instanceClass).replace(/^\[\[|\]\]$/g, "");
+
+        const link = instanceCell.createEl("a", {
+          text: cleanClass,
+          cls: "internal-link",
+          attr: { href: cleanClass },
+        });
+
+        this.registerEventListener(link, "click", (e) => {
+          e.preventDefault();
+          this.app.workspace.openLinkText(cleanClass, "", false);
+        });
+      } else {
+        instanceCell.textContent = "-";
+      }
 
       if (config.showProperties) {
         for (const prop of config.showProperties) {
@@ -881,10 +927,26 @@ export class UniversalLayoutRenderer {
         ? instanceClassRaw[0] || "-"
         : instanceClassRaw || "-";
 
-      row.createEl("td", {
-        text: String(instanceClass),
-        cls: "instance-class",
-      });
+      // Create Instance Class cell with clickable link
+      const instanceCell = row.createEl("td", { cls: "instance-class" });
+
+      if (instanceClass && instanceClass !== "-") {
+        // Remove [[ and ]] from wikilink syntax
+        const cleanClass = String(instanceClass).replace(/^\[\[|\]\]$/g, "");
+
+        const link = instanceCell.createEl("a", {
+          text: cleanClass,
+          cls: "internal-link",
+          attr: { href: cleanClass },
+        });
+
+        linkEl.addEventListener("click", (e) => {
+          e.preventDefault();
+          this.app.workspace.openLinkText(cleanClass, "", false);
+        });
+      } else {
+        instanceCell.textContent = "-";
+      }
 
       // Additional property columns if configured
       if (config.showProperties && config.showProperties.length > 0) {
