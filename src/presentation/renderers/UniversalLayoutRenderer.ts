@@ -208,8 +208,15 @@ export class UniversalLayoutRenderer {
     // Process only files that actually link to this file
     for (const sourcePath of backlinks) {
       const sourceFile = this.app.vault.getAbstractFileByPath(sourcePath);
-      if (sourceFile instanceof TFile) {
-        const fileCache = cache.getFileCache(sourceFile);
+      // Duck typing: Check for TFile properties instead of instanceof
+      if (
+        sourceFile &&
+        typeof sourceFile === "object" &&
+        "basename" in sourceFile &&
+        "path" in sourceFile &&
+        "stat" in sourceFile
+      ) {
+        const fileCache = cache.getFileCache(sourceFile as TFile);
         const metadata = fileCache?.frontmatter || {};
 
         // Skip archived assets
