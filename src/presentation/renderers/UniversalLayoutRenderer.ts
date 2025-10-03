@@ -46,7 +46,7 @@ export class UniversalLayoutRenderer {
     handler: EventListener;
   }> = [];
   private backlinksCache: Map<string, Set<string>> = new Map();
-  private backlinksCacheValid: boolean = false;
+  private backlinksCacheValid = false;
 
   constructor(app: any) {
     this.app = app;
@@ -208,7 +208,7 @@ export class UniversalLayoutRenderer {
         // Determine how this asset references the current file
         const propertyName = this.findReferencingProperty(
           metadata,
-          file.basename
+          file.basename,
         );
 
         const relation: AssetRelation = {
@@ -557,11 +557,11 @@ export class UniversalLayoutRenderer {
     const headerRow = thead.createEl("tr");
     const nameHeader = headerRow.createEl("th", {
       text: "Name",
-      cls: `sortable ${currentSort.column === "Name" ? `sorted-${currentSort.order}` : ""}`
+      cls: `sortable ${currentSort.column === "Name" ? `sorted-${currentSort.order}` : ""}`,
     });
     const instanceClassHeader = headerRow.createEl("th", {
       text: "exo__Instance_class",
-      cls: `sortable ${currentSort.column === "exo__Instance_class" ? `sorted-${currentSort.order}` : ""}`
+      cls: `sortable ${currentSort.column === "exo__Instance_class" ? `sorted-${currentSort.order}` : ""}`,
     });
 
     // Add sort indicator arrows
@@ -606,7 +606,7 @@ export class UniversalLayoutRenderer {
         if (prop !== "exo__Instance_class") {
           const propHeader = headerRow.createEl("th", {
             text: prop,
-            cls: `sortable ${currentSort.column === prop ? `sorted-${currentSort.order}` : ""}`
+            cls: `sortable ${currentSort.column === prop ? `sorted-${currentSort.order}` : ""}`,
           });
 
           this.registerEventListener(propHeader, "click", () => {
@@ -617,7 +617,10 @@ export class UniversalLayoutRenderer {
               this.sortState.get(sortStateKey)!.order,
             );
             this.updateTableBody(tbody, sortedRelations, config);
-            this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
+            this.updateSortIndicators(
+              headerRow,
+              this.sortState.get(sortStateKey)!,
+            );
           });
         }
       }
@@ -1096,7 +1099,7 @@ export class UniversalLayoutRenderer {
    */
   private findReferencingProperty(
     metadata: Record<string, any>,
-    currentFileName: string
+    currentFileName: string,
   ): string | undefined {
     for (const [key, value] of Object.entries(metadata)) {
       if (this.containsReference(value, currentFileName)) {
@@ -1119,7 +1122,7 @@ export class UniversalLayoutRenderer {
     }
 
     if (Array.isArray(value)) {
-      return value.some(v => this.containsReference(v, fileName));
+      return value.some((v) => this.containsReference(v, fileName));
     }
 
     return false;
@@ -1131,7 +1134,7 @@ export class UniversalLayoutRenderer {
   private sortRelations(
     relations: AssetRelation[],
     sortBy: string,
-    sortOrder: "asc" | "desc" = "asc"
+    sortOrder: "asc" | "desc" = "asc",
   ): AssetRelation[] {
     return [...relations].sort((a, b) => {
       const aVal = this.getPropertyValue(a, sortBy);
@@ -1180,7 +1183,9 @@ export class UniversalLayoutRenderer {
     // Handle string ("true", "yes" = archived, "false", "no" = not archived)
     if (typeof archivedValue === "string") {
       const normalized = archivedValue.toLowerCase().trim();
-      return normalized === "true" || normalized === "yes" || normalized === "1";
+      return (
+        normalized === "true" || normalized === "yes" || normalized === "1"
+      );
     }
 
     return false;

@@ -1,9 +1,9 @@
-import React from 'react';
+import React from "react";
 
 export interface PropertyDisplayProps {
   name: string;
   value: any;
-  type?: 'text' | 'number' | 'date' | 'boolean' | 'list' | 'link';
+  type?: "text" | "number" | "date" | "boolean" | "list" | "link";
   editable?: boolean;
   onEdit?: (name: string, newValue: any) => void;
 }
@@ -11,7 +11,7 @@ export interface PropertyDisplayProps {
 export const PropertyDisplay: React.FC<PropertyDisplayProps> = ({
   name,
   value,
-  type = 'text',
+  type = "text",
   editable = false,
   onEdit,
 }) => {
@@ -24,16 +24,16 @@ export const PropertyDisplay: React.FC<PropertyDisplayProps> = ({
   };
 
   const formatValue = (val: any): string => {
-    if (val === null || val === undefined) return '-';
+    if (val === null || val === undefined) return "-";
 
     switch (type) {
-      case 'date':
+      case "date":
         return new Date(val).toLocaleDateString();
-      case 'boolean':
-        return val ? 'Yes' : 'No';
-      case 'list':
-        return Array.isArray(val) ? val.join(', ') : String(val);
-      case 'link':
+      case "boolean":
+        return val ? "Yes" : "No";
+      case "list":
+        return Array.isArray(val) ? val.join(", ") : String(val);
+      case "link":
         return val;
       default:
         return String(val);
@@ -45,9 +45,9 @@ export const PropertyDisplay: React.FC<PropertyDisplayProps> = ({
       <div className="exocortex-property editing" data-property={name}>
         <span className="property-name">{name}:</span>
         <input
-          type={type === 'number' ? 'number' : 'text'}
+          type={type === "number" ? "number" : "text"}
           value={editValue}
-          onChange={e => setEditValue(e.target.value)}
+          onChange={(e) => setEditValue(e.target.value)}
           className="property-input"
           autoFocus
         />
