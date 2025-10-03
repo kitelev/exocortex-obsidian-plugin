@@ -2,10 +2,10 @@ import React from "react";
 
 export interface PropertyDisplayProps {
   name: string;
-  value: any;
+  value: unknown;
   type?: "text" | "number" | "date" | "boolean" | "list" | "link";
   editable?: boolean;
-  onEdit?: (name: string, newValue: any) => void;
+  onEdit?: (name: string, newValue: unknown) => void;
 }
 
 export const PropertyDisplay: React.FC<PropertyDisplayProps> = ({
@@ -23,18 +23,18 @@ export const PropertyDisplay: React.FC<PropertyDisplayProps> = ({
     setIsEditing(false);
   };
 
-  const formatValue = (val: any): string => {
+  const formatValue = (val: unknown): string => {
     if (val === null || val === undefined) return "-";
 
     switch (type) {
       case "date":
-        return new Date(val).toLocaleDateString();
+        return new Date(val as string | number | Date).toLocaleDateString();
       case "boolean":
         return val ? "Yes" : "No";
       case "list":
         return Array.isArray(val) ? val.join(", ") : String(val);
       case "link":
-        return val;
+        return String(val);
       default:
         return String(val);
     }
@@ -46,7 +46,7 @@ export const PropertyDisplay: React.FC<PropertyDisplayProps> = ({
         <span className="property-name">{name}:</span>
         <input
           type={type === "number" ? "number" : "text"}
-          value={editValue}
+          value={String(editValue)}
           onChange={(e) => setEditValue(e.target.value)}
           className="property-input"
           autoFocus

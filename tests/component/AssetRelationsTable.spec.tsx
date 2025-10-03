@@ -10,7 +10,7 @@ test.describe('AssetRelationsTable Component', () => {
       isBodyLink: false,
       created: Date.now() - 86400000,
       modified: Date.now(),
-      metadata: { status: 'active', priority: 'high' },
+      metadata: { exo__Instance_class: 'ems__Task', status: 'active', priority: 'high' },
     },
     {
       path: 'tasks/task2.md',
@@ -19,7 +19,7 @@ test.describe('AssetRelationsTable Component', () => {
       isBodyLink: false,
       created: Date.now() - 172800000,
       modified: Date.now() - 86400000,
-      metadata: { status: 'completed', priority: 'medium' },
+      metadata: { exo__Instance_class: '[[ems__Project]]', status: 'completed', priority: 'medium' },
     },
     {
       path: 'tasks/task3.md',
@@ -47,18 +47,18 @@ test.describe('AssetRelationsTable Component', () => {
     await expect(component.locator('text=Task 3')).toBeVisible();
   });
 
-  test('should handle sorting by title', async ({ mount }) => {
+  test('should handle sorting by name', async ({ mount }) => {
     const component = await mount(<AssetRelationsTable relations={mockRelations} />);
 
-    // Click title header to sort (first click sorts descending)
-    await component.locator('th:has-text("Title")').click();
+    // Click Name header to sort (first click sorts descending)
+    await component.locator('th:has-text("Name")').click();
 
     // Check sort indicator (component starts with desc on first click)
-    await expect(component.locator('th:has-text("Title")')).toContainText('↓');
+    await expect(component.locator('th:has-text("Name")')).toContainText('↓');
 
     // Click again to reverse sort to ascending
-    await component.locator('th:has-text("Title")').click();
-    await expect(component.locator('th:has-text("Title")')).toContainText('↑');
+    await component.locator('th:has-text("Name")').click();
+    await expect(component.locator('th:has-text("Name")')).toContainText('↑');
   });
 
   test('should group relations by property', async ({ mount }) => {
@@ -120,27 +120,24 @@ test.describe('AssetRelationsTable Component', () => {
     await expect(component.locator('tbody tr')).toHaveCount(0);
   });
 
-  test('should sort by created date', async ({ mount }) => {
+  test('should display exo__Instance_class column', async ({ mount }) => {
     const component = await mount(<AssetRelationsTable relations={mockRelations} />);
 
-    // Click created column
-    await component.locator('th:has-text("Created")').click();
+    // Check Instance Class column exists
+    await expect(component.locator('th:has-text("exo__Instance_class")')).toBeVisible();
 
-    // Check sort indicator
-    await expect(component.locator('th:has-text("Created")')).toContainText('↑');
-
-    // First row should be oldest
-    const firstRow = component.locator('tbody tr').first();
-    await expect(firstRow.locator('a')).toHaveText('Task 3');
+    // Check Instance Class values are displayed (wiki syntax removed)
+    await expect(component.locator('text=ems__Task')).toBeVisible();
+    await expect(component.locator('text=ems__Project')).toBeVisible();
   });
 
-  test('should sort by modified date', async ({ mount }) => {
+  test('should sort by exo__Instance_class', async ({ mount }) => {
     const component = await mount(<AssetRelationsTable relations={mockRelations} />);
 
-    // Click modified column
-    await component.locator('th:has-text("Modified")').click();
+    // Click exo__Instance_class column
+    await component.locator('th:has-text("exo__Instance_class")').click();
 
     // Check sort indicator
-    await expect(component.locator('th:has-text("Modified")')).toContainText('↑');
+    await expect(component.locator('th:has-text("exo__Instance_class")')).toContainText('↑');
   });
 });

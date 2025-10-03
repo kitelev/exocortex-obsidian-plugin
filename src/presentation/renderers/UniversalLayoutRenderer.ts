@@ -1,6 +1,9 @@
 import { MarkdownPostProcessorContext, TFile } from "obsidian";
 import { ILogger } from "../../infrastructure/logging/ILogger";
 import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
+import React from "react";
+import { ReactRenderer } from "../utils/ReactRenderer";
+import { AssetRelationsTable } from "../components/AssetRelationsTable";
 
 /**
  * UniversalLayout configuration options
@@ -24,6 +27,7 @@ interface AssetRelation {
   file: TFile;
   path: string;
   title: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata: Record<string, any>;
   propertyName?: string; // The property through which this asset references the current one
   isBodyLink: boolean; // True if link is in body, not frontmatter
@@ -35,9 +39,12 @@ interface AssetRelation {
  * Renderer for UniversalLayout view type
  * Implements Assets Relations - showing assets grouped by the property through which they reference the current asset
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ObsidianApp = any;
+
 export class UniversalLayoutRenderer {
   private logger: ILogger;
-  private app: any;
+  private app: ObsidianApp;
   private sortState: Map<string, { column: string; order: "asc" | "desc" }> =
     new Map();
   private eventListeners: Array<{
@@ -47,10 +54,12 @@ export class UniversalLayoutRenderer {
   }> = [];
   private backlinksCache: Map<string, Set<string>> = new Map();
   private backlinksCacheValid = false;
+  private reactRenderer: ReactRenderer;
 
-  constructor(app: any) {
+  constructor(app: ObsidianApp) {
     this.app = app;
     this.logger = LoggerFactory.create("UniversalLayoutRenderer");
+    this.reactRenderer = new ReactRenderer();
   }
 
   /**
@@ -65,10 +74,12 @@ export class UniversalLayoutRenderer {
     for (const sourcePath in resolvedLinks) {
       const links = resolvedLinks[sourcePath];
       for (const targetPath in links) {
-        if (!this.backlinksCache.has(targetPath)) {
-          this.backlinksCache.set(targetPath, new Set());
+        const existingBacklinks = this.backlinksCache.get(targetPath);
+        if (!existingBacklinks) {
+          this.backlinksCache.set(targetPath, new Set([sourcePath]));
+        } else {
+          existingBacklinks.add(sourcePath);
         }
-        this.backlinksCache.get(targetPath)!.add(sourcePath);
       }
     }
 
@@ -92,6 +103,7 @@ export class UniversalLayoutRenderer {
     });
     this.eventListeners = [];
     this.sortState.clear();
+    this.reactRenderer.cleanup();
   }
 
   /**
@@ -112,7 +124,7 @@ export class UniversalLayoutRenderer {
   public async render(
     source: string,
     el: HTMLElement,
-    ctx: MarkdownPostProcessorContext,
+    _ctx: MarkdownPostProcessorContext,
   ): Promise<void> {
     try {
       const config = this.parseConfig(source);
@@ -231,9 +243,10 @@ export class UniversalLayoutRenderer {
 
     // Sort relations
     if (config.sortBy) {
+      const sortBy = config.sortBy;
       relations.sort((a, b) => {
-        const aVal = this.getPropertyValue(a, config.sortBy!);
-        const bVal = this.getPropertyValue(b, config.sortBy!);
+        const aVal = this.getPropertyValue(a, sortBy);
+        const bVal = this.getPropertyValue(b, sortBy);
         const order = config.sortOrder === "desc" ? -1 : 1;
         return aVal > bVal ? order : -order;
       });
@@ -249,7 +262,7 @@ export class UniversalLayoutRenderer {
 
   /**
    * Render assets grouped by the property through which they reference the current asset
-   * This is the core Assets Relations feature
+   * This is the core Assets Relations feature - Now using React components
    */
   private async renderAssetRelations(
     el: HTMLElement,
@@ -258,44 +271,20 @@ export class UniversalLayoutRenderer {
   ): Promise<void> {
     const container = el.createDiv({ cls: "exocortex-assets-relations" });
 
-    // Group relations by property name
-    const groupedRelations = new Map<string, AssetRelation[]>();
-    const untypedRelations: AssetRelation[] = [];
-
-    for (const relation of relations) {
-      if (relation.isBodyLink) {
-        untypedRelations.push(relation);
-      } else if (relation.propertyName) {
-        if (!groupedRelations.has(relation.propertyName)) {
-          groupedRelations.set(relation.propertyName, []);
-        }
-        groupedRelations.get(relation.propertyName)!.push(relation);
-      }
-    }
-
-    // Sort property names alphabetically for typed relations
-    const sortedProperties = Array.from(groupedRelations.keys()).sort();
-
-    // Render each typed property group first
-    for (const propertyName of sortedProperties) {
-      const group = groupedRelations.get(propertyName)!;
-      await this.renderRelationGroup(container, propertyName, group, config);
-    }
-
-    // Always render untyped relations last
-    if (untypedRelations.length > 0) {
-      await this.renderRelationGroup(
-        container,
-        "Untyped Relations",
-        untypedRelations,
-        config,
-      );
-    }
-
-    // If no relations found, show message
-    if (groupedRelations.size === 0 && untypedRelations.length === 0) {
-      this.renderMessage(container, "No asset relations found");
-    }
+    // Use React component for rendering
+    this.reactRenderer.render(
+      container,
+      React.createElement(AssetRelationsTable, {
+        relations,
+        groupByProperty: true,
+        sortBy: config.sortBy || "title",
+        sortOrder: config.sortOrder || "asc",
+        showProperties: config.showProperties || [],
+        onAssetClick: (path: string) => {
+          this.app.workspace.openLinkText(path, "", false);
+        },
+      }),
+    );
   }
 
   /**
@@ -330,7 +319,8 @@ export class UniversalLayoutRenderer {
     if (!this.sortState.has(sortStateKey)) {
       this.sortState.set(sortStateKey, { column: "Name", order: "asc" });
     }
-    const currentSort = this.sortState.get(sortStateKey)!;
+    const currentSort = this.sortState.get(sortStateKey);
+    if (!currentSort) return;
 
     // Create sortable headers
     const nameHeader = headerRow.createEl("th", {
@@ -359,24 +349,28 @@ export class UniversalLayoutRenderer {
     // Add click handlers for sorting
     this.registerEventListener(nameHeader, "click", () => {
       this.updateSort("Name", sortStateKey);
+      const updatedSort = this.sortState.get(sortStateKey);
+      if (!updatedSort) return;
       const sortedRelations = this.sortRelations(
         relations,
         "Name",
-        this.sortState.get(sortStateKey)!.order,
+        updatedSort.order,
       );
       this.updateTableBody(tbody, sortedRelations, config);
-      this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
+      this.updateSortIndicators(headerRow, updatedSort);
     });
 
     this.registerEventListener(instanceClassHeader, "click", () => {
       this.updateSort("exo__Instance_class", sortStateKey);
+      const updatedSort = this.sortState.get(sortStateKey);
+      if (!updatedSort) return;
       const sortedRelations = this.sortRelations(
         relations,
         "exo__Instance_class",
-        this.sortState.get(sortStateKey)!.order,
+        updatedSort.order,
       );
       this.updateTableBody(tbody, sortedRelations, config);
-      this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
+      this.updateSortIndicators(headerRow, updatedSort);
     });
 
     // Add additional property columns if configured
@@ -397,16 +391,15 @@ export class UniversalLayoutRenderer {
 
           this.registerEventListener(propHeader, "click", () => {
             this.updateSort(prop, sortStateKey);
+            const updatedSort = this.sortState.get(sortStateKey);
+            if (!updatedSort) return;
             const sortedRelations = this.sortRelations(
               relations,
               prop,
-              this.sortState.get(sortStateKey)!.order,
+              updatedSort.order,
             );
             this.updateTableBody(tbody, sortedRelations, config);
-            this.updateSortIndicators(
-              headerRow,
-              this.sortState.get(sortStateKey)!,
-            );
+            this.updateSortIndicators(headerRow, updatedSort);
           });
         }
       }
@@ -485,7 +478,7 @@ export class UniversalLayoutRenderer {
     }
 
     // Add responsive mobile class if needed
-    if ((window as any).isMobile) {
+    if ((window as unknown as { isMobile?: boolean }).isMobile) {
       table.addClass("mobile-responsive");
     }
   }
@@ -552,7 +545,8 @@ export class UniversalLayoutRenderer {
     if (!this.sortState.has(sortStateKey)) {
       this.sortState.set(sortStateKey, { column: "Name", order: "asc" });
     }
-    const currentSort = this.sortState.get(sortStateKey)!;
+    const currentSort = this.sortState.get(sortStateKey);
+    if (!currentSort) return;
 
     const headerRow = thead.createEl("tr");
     const nameHeader = headerRow.createEl("th", {
@@ -581,24 +575,28 @@ export class UniversalLayoutRenderer {
     // Add click handlers for sorting
     this.registerEventListener(nameHeader, "click", () => {
       this.updateSort("Name", sortStateKey);
+      const updatedSort = this.sortState.get(sortStateKey);
+      if (!updatedSort) return;
       const sortedRelations = this.sortRelations(
         relations,
         "Name",
-        this.sortState.get(sortStateKey)!.order,
+        updatedSort.order,
       );
       this.updateTableBody(tbody, sortedRelations, config);
-      this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
+      this.updateSortIndicators(headerRow, updatedSort);
     });
 
     this.registerEventListener(instanceClassHeader, "click", () => {
       this.updateSort("exo__Instance_class", sortStateKey);
+      const updatedSort = this.sortState.get(sortStateKey);
+      if (!updatedSort) return;
       const sortedRelations = this.sortRelations(
         relations,
         "exo__Instance_class",
-        this.sortState.get(sortStateKey)!.order,
+        updatedSort.order,
       );
       this.updateTableBody(tbody, sortedRelations, config);
-      this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
+      this.updateSortIndicators(headerRow, updatedSort);
     });
 
     if (config.showProperties) {
@@ -611,16 +609,15 @@ export class UniversalLayoutRenderer {
 
           this.registerEventListener(propHeader, "click", () => {
             this.updateSort(prop, sortStateKey);
+            const updatedSort = this.sortState.get(sortStateKey);
+            if (!updatedSort) return;
             const sortedRelations = this.sortRelations(
               relations,
               prop,
-              this.sortState.get(sortStateKey)!.order,
+              updatedSort.order,
             );
             this.updateTableBody(tbody, sortedRelations, config);
-            this.updateSortIndicators(
-              headerRow,
-              this.sortState.get(sortStateKey)!,
-            );
+            this.updateSortIndicators(headerRow, updatedSort);
           });
         }
       }
@@ -706,7 +703,7 @@ export class UniversalLayoutRenderer {
     }
 
     // Add responsive mobile class if needed
-    if ((window as any).isMobile) {
+    if ((window as unknown as { isMobile?: boolean }).isMobile) {
       table.addClass("mobile-responsive");
     }
   }
@@ -814,7 +811,7 @@ export class UniversalLayoutRenderer {
           if (key === "showProperties") {
             config.showProperties = value.split(",").map((s) => s.trim());
           } else {
-            (config as any)[key] =
+            (config as Record<string, unknown>)[key] =
               value === "true"
                 ? true
                 : value === "false"
@@ -824,7 +821,7 @@ export class UniversalLayoutRenderer {
                     : Number(value);
           }
         } catch {
-          (config as any)[key] = value;
+          (config as Record<string, unknown>)[key] = value;
         }
       }
     }
@@ -836,8 +833,8 @@ export class UniversalLayoutRenderer {
    * Check if a relation matches the configured filters
    */
   private matchesFilters(
-    relation: AssetRelation,
-    config: UniversalLayoutConfig,
+    _relation: AssetRelation,
+    _config: UniversalLayoutConfig,
   ): boolean {
     // Filters removed in simplified version
     return true;
@@ -877,7 +874,8 @@ export class UniversalLayoutRenderer {
    * Update sort state when a column is clicked
    */
   private updateSort(column: string, sortStateKey: string): void {
-    const currentSort = this.sortState.get(sortStateKey)!;
+    const currentSort = this.sortState.get(sortStateKey);
+    if (!currentSort) return;
 
     if (currentSort.column === column) {
       // Toggle order if same column
@@ -937,13 +935,13 @@ export class UniversalLayoutRenderer {
         // Remove [[ and ]] from wikilink syntax
         const cleanClass = String(instanceClass).replace(/^\[\[|\]\]$/g, "");
 
-        const link = instanceCell.createEl("a", {
+        const instanceLink = instanceCell.createEl("a", {
           text: cleanClass,
           cls: "internal-link",
           attr: { href: cleanClass },
         });
 
-        linkEl.addEventListener("click", (e) => {
+        this.registerEventListener(instanceLink, "click", (e) => {
           e.preventDefault();
           this.app.workspace.openLinkText(cleanClass, "", false);
         });
@@ -1044,9 +1042,9 @@ export class UniversalLayoutRenderer {
     button.addEventListener("click", async () => {
       try {
         // Creation modal removed - simplified version
-        console.log(`Would create asset of type: ${className}`);
+        this.logger.info(`Would create asset of type: ${className}`);
       } catch (error) {
-        console.error("Failed to open asset creation modal:", error);
+        this.logger.error("Failed to open asset creation modal", { error });
       }
     });
 
@@ -1057,6 +1055,7 @@ export class UniversalLayoutRenderer {
   /**
    * Extract clean value from frontmatter (remove wikilink brackets)
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private extractValue(value: any): string {
     if (!value) return "";
     const str = String(value);
@@ -1085,7 +1084,11 @@ export class UniversalLayoutRenderer {
   /**
    * Helper method to get property value from relation
    */
-  private getPropertyValue(relation: AssetRelation, propertyName: string): any {
+  private getPropertyValue(
+    relation: AssetRelation,
+    propertyName: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): any {
     if (propertyName === "Name") return relation.title;
     if (propertyName === "title") return relation.title;
     if (propertyName === "created") return relation.created;
@@ -1098,6 +1101,7 @@ export class UniversalLayoutRenderer {
    * Helper method to find referencing property
    */
   private findReferencingProperty(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     metadata: Record<string, any>,
     currentFileName: string,
   ): string | undefined {
@@ -1112,6 +1116,7 @@ export class UniversalLayoutRenderer {
   /**
    * Check if a value contains a reference to a file
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private containsReference(value: any, fileName: string): boolean {
     if (!value) return false;
 
@@ -1157,7 +1162,10 @@ export class UniversalLayoutRenderer {
    * - archived: 1 (number)
    * Also checks legacy exo__Asset_isArchived field for backward compatibility
    */
-  private isAssetArchived(metadata: Record<string, any>): boolean {
+  private isAssetArchived(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    metadata: Record<string, any>,
+  ): boolean {
     // Check legacy field first
     if (metadata?.exo__Asset_isArchived === true) {
       return true;

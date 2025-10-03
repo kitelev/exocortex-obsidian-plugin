@@ -1,7 +1,7 @@
 {
   "inputs": {
     "src/infrastructure/logging/Logger.ts": {
-      "bytes": 697,
+      "bytes": 928,
       "imports": [
         {
           "path": "./ILogger",
@@ -27,8 +27,121 @@
       ],
       "format": "esm"
     },
+    "node_modules/react/cjs/react.production.js": {
+      "bytes": 17217,
+      "imports": [],
+      "format": "cjs"
+    },
+    "node_modules/react/index.js": {
+      "bytes": 186,
+      "imports": [
+        {
+          "path": "node_modules/react/cjs/react.production.js",
+          "kind": "require-call",
+          "original": "./cjs/react.production.js"
+        }
+      ],
+      "format": "cjs"
+    },
+    "node_modules/scheduler/cjs/scheduler.production.js": {
+      "bytes": 10181,
+      "imports": [],
+      "format": "cjs"
+    },
+    "node_modules/scheduler/index.js": {
+      "bytes": 194,
+      "imports": [
+        {
+          "path": "node_modules/scheduler/cjs/scheduler.production.js",
+          "kind": "require-call",
+          "original": "./cjs/scheduler.production.js"
+        }
+      ],
+      "format": "cjs"
+    },
+    "node_modules/react-dom/cjs/react-dom.production.js": {
+      "bytes": 6655,
+      "imports": [
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "require-call",
+          "original": "react"
+        }
+      ],
+      "format": "cjs"
+    },
+    "node_modules/react-dom/index.js": {
+      "bytes": 1359,
+      "imports": [
+        {
+          "path": "node_modules/react-dom/cjs/react-dom.production.js",
+          "kind": "require-call",
+          "original": "./cjs/react-dom.production.js"
+        }
+      ],
+      "format": "cjs"
+    },
+    "node_modules/react-dom/cjs/react-dom-client.production.js": {
+      "bytes": 536016,
+      "imports": [
+        {
+          "path": "node_modules/scheduler/index.js",
+          "kind": "require-call",
+          "original": "scheduler"
+        },
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "require-call",
+          "original": "react"
+        },
+        {
+          "path": "node_modules/react-dom/index.js",
+          "kind": "require-call",
+          "original": "react-dom"
+        }
+      ],
+      "format": "cjs"
+    },
+    "node_modules/react-dom/client.js": {
+      "bytes": 1373,
+      "imports": [
+        {
+          "path": "node_modules/react-dom/cjs/react-dom-client.production.js",
+          "kind": "require-call",
+          "original": "./cjs/react-dom-client.production.js"
+        }
+      ],
+      "format": "cjs"
+    },
+    "src/presentation/utils/ReactRenderer.tsx": {
+      "bytes": 945,
+      "imports": [
+        {
+          "path": "react",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node_modules/react-dom/client.js",
+          "kind": "import-statement",
+          "original": "react-dom/client"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/components/AssetRelationsTable.tsx": {
+      "bytes": 5571,
+      "imports": [
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "import-statement",
+          "original": "react"
+        }
+      ],
+      "format": "esm"
+    },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 36669,
+      "bytes": 37240,
       "imports": [
         {
           "path": "obsidian",
@@ -44,12 +157,27 @@
           "path": "src/infrastructure/logging/LoggerFactory.ts",
           "kind": "import-statement",
           "original": "../../infrastructure/logging/LoggerFactory"
+        },
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "import-statement",
+          "original": "react"
+        },
+        {
+          "path": "src/presentation/utils/ReactRenderer.tsx",
+          "kind": "import-statement",
+          "original": "../utils/ReactRenderer"
+        },
+        {
+          "path": "src/presentation/components/AssetRelationsTable.tsx",
+          "kind": "import-statement",
+          "original": "../components/AssetRelationsTable"
         }
       ],
       "format": "esm"
     },
     "src/presentation/renderers/DynamicLayoutRenderer.ts": {
-      "bytes": 594,
+      "bytes": 690,
       "imports": [
         {
           "path": "obsidian",
@@ -65,7 +193,7 @@
       "format": "esm"
     },
     "src/ExocortexPlugin.ts": {
-      "bytes": 2094,
+      "bytes": 2095,
       "imports": [
         {
           "path": "obsidian",
@@ -124,26 +252,56 @@
       "exports": [],
       "entryPoint": "src/main.ts",
       "inputs": {
+        "node_modules/react/cjs/react.production.js": {
+          "bytesInOutput": 7401
+        },
+        "node_modules/react/index.js": {
+          "bytesInOutput": 51
+        },
+        "node_modules/scheduler/cjs/scheduler.production.js": {
+          "bytesInOutput": 3530
+        },
+        "node_modules/scheduler/index.js": {
+          "bytesInOutput": 51
+        },
+        "node_modules/react-dom/cjs/react-dom.production.js": {
+          "bytesInOutput": 3343
+        },
+        "node_modules/react-dom/index.js": {
+          "bytesInOutput": 246
+        },
+        "node_modules/react-dom/cjs/react-dom-client.production.js": {
+          "bytesInOutput": 175414
+        },
+        "node_modules/react-dom/client.js": {
+          "bytesInOutput": 246
+        },
         "src/main.ts": {
-          "bytesInOutput": 50
+          "bytesInOutput": 56
         },
         "src/ExocortexPlugin.ts": {
-          "bytesInOutput": 954
+          "bytesInOutput": 960
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 14252
+          "bytesInOutput": 14330
         },
         "src/infrastructure/logging/Logger.ts": {
-          "bytesInOutput": 117
+          "bytesInOutput": 118
         },
         "src/infrastructure/logging/LoggerFactory.ts": {
-          "bytesInOutput": 47
+          "bytesInOutput": 49
+        },
+        "src/presentation/utils/ReactRenderer.tsx": {
+          "bytesInOutput": 284
+        },
+        "src/presentation/components/AssetRelationsTable.tsx": {
+          "bytesInOutput": 2401
         },
         "src/presentation/renderers/DynamicLayoutRenderer.ts": {
-          "bytesInOutput": 94
+          "bytesInOutput": 96
         }
       },
-      "bytes": 16060
+      "bytes": 210573
     }
   }
 }
