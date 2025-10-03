@@ -105,37 +105,3 @@ jobs:
           echo "2. Create \`playwright.config.ts\`" >> $GITHUB_STEP_SUMMARY
           echo "3. Write tests in \`tests/e2e/\`" >> $GITHUB_STEP_SUMMARY
           echo "4. Enable in workflow: Remove \`if: false\` from 'Run E2E tests' step" >> $GITHUB_STEP_SUMMARY
-
-  # Optional: Docker-based E2E (for future Spectron migration)
-  e2e-docker:
-    name: E2E Tests (Docker)
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    if: false  # Disabled by default, enable when needed
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Build plugin
-        run: npm run build
-
-      - name: Run Docker E2E tests
-        run: npm run test:e2e-obsidian:docker
-        if: false  # Needs docker-compose file
-        continue-on-error: true
-
-      - name: Upload Docker test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-e2e-results
-          path: test-results/
-          retention-days: 7
-          if-no-files-found: ignore
