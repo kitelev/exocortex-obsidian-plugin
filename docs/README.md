@@ -4,17 +4,13 @@ Documentation for the Exocortex Obsidian Plugin testing infrastructure.
 
 ## 📂 Structure
 
-### `/testing` - Current Testing Documentation
+### `/testing` - Testing Documentation
 
-Active documentation for the current testing infrastructure:
+Essential testing guides and best practices:
 
 - **[BDD-OBSIDIAN-BEST-PRACTICES.md](testing/BDD-OBSIDIAN-BEST-PRACTICES.md)** - Best practices for BDD testing in Obsidian plugins
-- **[BDD-TESTING-SUMMARY.md](testing/BDD-TESTING-SUMMARY.md)** - Summary of BDD testing approach
 - **[CI-CD-COMPONENT-TESTING.md](testing/CI-CD-COMPONENT-TESTING.md)** - Component testing CI/CD integration guide
-- **[COMPONENT-TESTING-SETUP.md](testing/COMPONENT-TESTING-SETUP.md)** - How to set up component testing with Playwright
-- **[COMPONENT-TESTING-SUCCESS.md](testing/COMPONENT-TESTING-SUCCESS.md)** - Component testing success story and metrics
 - **[EXECUTABLE-SPECIFICATIONS.md](testing/EXECUTABLE-SPECIFICATIONS.md)** - Executable specifications concept
-- **[TEST-STRUCTURE.md](testing/TEST-STRUCTURE.md)** - Test suite structure and organization
 
 
 ## 🎯 Quick Start
