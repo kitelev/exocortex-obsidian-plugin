@@ -3,6 +3,8 @@
 **A lightweight, high-performance layout rendering system for Obsidian.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![CI](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-51%20passing-success)](./specs/TEST-RESULTS.md)
 
 ## 🎯 What is Exocortex?
 
