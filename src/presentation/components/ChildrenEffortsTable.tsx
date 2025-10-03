@@ -7,7 +7,7 @@ export interface ChildEffort {
   priority?: string;
   effort?: number;
   progress?: number;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface ChildrenEffortsTableProps {

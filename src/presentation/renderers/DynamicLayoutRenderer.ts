@@ -1,12 +1,15 @@
 import { MarkdownPostProcessorContext } from "obsidian";
 import { UniversalLayoutRenderer } from "./UniversalLayoutRenderer";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ObsidianApp = any;
+
 /**
  * DynamicLayoutRenderer - Now equivalent to UniversalLayout
  * Simplified to remove ClassLayout configuration logic
  */
 export class DynamicLayoutRenderer extends UniversalLayoutRenderer {
-  constructor(app: any) {
+  constructor(app: ObsidianApp) {
     super(app);
   }
 

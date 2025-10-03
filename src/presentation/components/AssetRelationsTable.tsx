@@ -7,6 +7,7 @@ export interface AssetRelation {
   isBodyLink: boolean;
   created: number;
   modified: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata: Record<string, any>;
 }
 
@@ -44,14 +45,34 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
     }));
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getInstanceClass = (metadata: Record<string, any>): string => {
+    const instanceClassRaw =
+      metadata?.exo__Instance_class || metadata?.["exo__Instance_class"] || "-";
+
+    // Handle arrays and convert to string safely
+    const instanceClass = Array.isArray(instanceClassRaw)
+      ? instanceClassRaw[0] || "-"
+      : instanceClassRaw || "-";
+
+    // Remove [[ and ]] from wikilink syntax
+    return String(instanceClass).replace(/^\[\[|\]\]$/g, "");
+  };
+
   const sortedRelations = useMemo(() => {
     const sorted = [...relations].sort((a, b) => {
-      let aVal: any = a[sortState.column as keyof AssetRelation];
-      let bVal: any = b[sortState.column as keyof AssetRelation];
+      let aVal: unknown;
+      let bVal: unknown;
 
       if (sortState.column === "title") {
         aVal = a.title.toLowerCase();
         bVal = b.title.toLowerCase();
+      } else if (sortState.column === "exo__Instance_class") {
+        aVal = getInstanceClass(a.metadata).toLowerCase();
+        bVal = getInstanceClass(b.metadata).toLowerCase();
+      } else {
+        aVal = a[sortState.column as keyof AssetRelation];
+        bVal = b[sortState.column as keyof AssetRelation];
       }
 
       if (typeof aVal === "string" && typeof bVal === "string") {
@@ -89,18 +110,16 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
       <thead>
         <tr>
           <th onClick={() => handleSort("title")} className="sortable">
-            Title{" "}
+            Name{" "}
             {sortState.column === "title" &&
               (sortState.order === "asc" ? "↑" : "↓")}
           </th>
-          <th onClick={() => handleSort("created")} className="sortable">
-            Created{" "}
-            {sortState.column === "created" &&
-              (sortState.order === "asc" ? "↑" : "↓")}
-          </th>
-          <th onClick={() => handleSort("modified")} className="sortable">
-            Modified{" "}
-            {sortState.column === "modified" &&
+          <th
+            onClick={() => handleSort("exo__Instance_class")}
+            className="sortable"
+          >
+            exo__Instance_class{" "}
+            {sortState.column === "exo__Instance_class" &&
               (sortState.order === "asc" ? "↑" : "↓")}
           </th>
           {showProperties.map((prop) => (
@@ -109,27 +128,44 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
         </tr>
       </thead>
       <tbody>
-        {items.map((relation) => (
-          <tr key={relation.path} data-path={relation.path}>
-            <td>
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onAssetClick?.(relation.path);
-                }}
-                className="internal-link"
-              >
-                {relation.title}
-              </a>
-            </td>
-            <td>{new Date(relation.created).toLocaleDateString()}</td>
-            <td>{new Date(relation.modified).toLocaleDateString()}</td>
-            {showProperties.map((prop) => (
-              <td key={prop}>{relation.metadata[prop] || "-"}</td>
-            ))}
-          </tr>
-        ))}
+        {items.map((relation) => {
+          const instanceClass = getInstanceClass(relation.metadata);
+          return (
+            <tr key={relation.path} data-path={relation.path}>
+              <td className="asset-name">
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onAssetClick?.(relation.path);
+                  }}
+                  className="internal-link"
+                >
+                  {relation.title}
+                </a>
+              </td>
+              <td className="instance-class">
+                {instanceClass !== "-" ? (
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onAssetClick?.(instanceClass);
+                    }}
+                    className="internal-link"
+                  >
+                    {instanceClass}
+                  </a>
+                ) : (
+                  "-"
+                )}
+              </td>
+              {showProperties.map((prop) => (
+                <td key={prop}>{String(relation.metadata[prop] || "-")}</td>
+              ))}
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );
