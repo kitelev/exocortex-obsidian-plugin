@@ -55,8 +55,12 @@ Execute every request as a highly qualified Senior IT specialist with extensive 
 
 ## 📊 Architecture Overview
 
-### Current Implementation (v3.5.0)
+### Current Implementation (v11.3.0)
 
+- **Clickable Instance Class Links** (v11.2.3): Instance Class displayed as internal links for quick navigation
+- **Interactive Table Sorting** (v11.2.3): Visual sort indicators (▲/▼) with toggle functionality
+- **Archived Asset Filtering** (v11.3.0): Automatic filtering of archived assets with multi-format support
+- **BDD Test Automation** (v11.2.3): 24 passing scenarios covering sorting and Instance Class links
 - **Mobile/iOS Support**: Complete mobile experience with touch-optimized UI and platform-specific optimizations
 - **Query Engine Abstraction**: Multi-engine support (Dataview, Datacore, Native) with automatic fallback
 - **Domain Layer**: Asset-based entities with Clean Architecture and mobile performance optimizations
@@ -64,8 +68,8 @@ Execute every request as a highly qualified Senior IT specialist with extensive 
 - **Children Efforts Enhancement**: Professional table display with status badges and hierarchical organization
 - **EMS Zone Hierarchy**: Child zone creation buttons for ems__Area with automatic parent linking
 - **Slash Commands**: Quick execution commands (/execute, /status, /agents, /release, /test, /enterprise) for efficient development workflow
-- **Testing Excellence**: Comprehensive test suite with 80+ test files and robust coverage
-- **CI/CD**: Optimized GitHub Actions with Docker-based testing and parallel execution
+- **Testing Excellence**: 51 tests passing (100%), comprehensive BDD specifications
+- **CI/CD**: Optimized GitHub Actions with automated releases on test success
 - **Performance**: 40% faster CI, 50% memory reduction, adaptive performance thresholds
 - **Architecture**: Clean Architecture with comprehensive test infrastructure and security validation
 - **BOK Standards**: Full BABOK/PMBOK/SWEBOK compliance for enterprise-grade development
@@ -85,13 +89,16 @@ Domain:
 
 Testing:
   - Jest with comprehensive mocks
-  - 70% coverage threshold
+  - BDD test automation (24 passing scenarios)
+  - 51 tests total (48 active + 3 archived filtering)
   - Integration tests with FakeVaultAdapter
+  - Test execution time: <1 second
 
 CI/CD:
   - GitHub Actions automated releases
   - Semantic versioning
   - Automated changelog generation
+  - Quality gates - tests must pass before release
 ```
 
 ## 📋 Implementation Guidelines
