@@ -16,6 +16,11 @@ test-obsidian/
 test-notes/
 ~/ExocortexTestVault/
 reports/
+playwright-report/
+playwright-report-ct/
+test-results/
+tests/e2e/setup/test-vault/
+tests/e2e/setup/test-user-data/
 
 # Debug files
 debug-main.js
@@ -53,3 +58,5 @@ test-*.ts
 .jest-cache/
 .turbo-cache/
 Makefile.bak.*
+reports/
+reports/

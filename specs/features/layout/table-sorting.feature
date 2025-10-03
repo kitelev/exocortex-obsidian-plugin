@@ -1,151 +1,151 @@
-# language: ru
+# language: en
 @sorting @implemented
-Функция: Интерактивная сортировка таблиц
+Feature: Interactive Table Sorting
 
-  Как пользователь Exocortex плагина
-  Я хочу сортировать таблицы по разным колонкам
-  Чтобы быстро находить нужную информацию
+  As an Exocortex plugin user
+  I want to sort tables by different columns
+  So that I can quickly find the information I need
 
-  Предыстория:
-    Дано существует заметка с Universal Layout таблицей
-    И таблица содержит заметки:
-      | Name      | exo__Instance_class | exo__Status | Modified   |
-      | Задача C  | [[ems__Task]]       | Готово      | 2025-10-01 |
-      | Задача A  | [[ems__Area]]       | В работе    | 2025-10-03 |
-      | Задача B  | [[ems__Task]]       | Новая       | 2025-10-02 |
+  Background:
+    Given a note with Universal Layout table exists
+    And the table contains notes:
+      | Name    | exo__Instance_class | exo__Status  | Modified   |
+      | Task C  | [[ems__Task]]       | Done         | 2025-10-01 |
+      | Task A  | [[ems__Area]]       | In Progress  | 2025-10-03 |
+      | Task B  | [[ems__Task]]       | New          | 2025-10-02 |
 
-  Правило: Сортировка по колонке Name
+  Rule: Sorting by Name column
 
-    Сценарий: Первый клик - сортировка по возрастанию
-      Когда я кликаю на заголовок "Name"
-      Тогда таблица сортируется по возрастанию
-      И порядок строк:
-        | Задача A |
-        | Задача B |
-        | Задача C |
-      И заголовок "Name" имеет класс "sorted-asc"
-      И заголовок "Name" содержит символ "▲"
+    Scenario: First click - sort ascending
+      When I click on header "Name"
+      Then table is sorted ascending
+      And row order is:
+        | Task A |
+        | Task B |
+        | Task C |
+      And header "Name" has class "sorted-asc"
+      And header "Name" contains symbol "▲"
 
-    Сценарий: Второй клик - сортировка по убыванию
-      Дано я кликнул на заголовок "Name" один раз
-      И таблица отсортирована по возрастанию
-      Когда я снова кликаю на заголовок "Name"
-      Тогда таблица сортируется по убыванию
-      И порядок строк:
-        | Задача C |
-        | Задача B |
-        | Задача A |
-      И заголовок "Name" имеет класс "sorted-desc"
-      И заголовок "Name" содержит символ "▼"
-      И НЕ содержит символ "▲"
+    Scenario: Second click - sort descending
+      Given I clicked on header "Name" once
+      And table is sorted ascending
+      When I click on header "Name" again
+      Then table is sorted descending
+      And row order is:
+        | Task C |
+        | Task B |
+        | Task A |
+      And header "Name" has class "sorted-desc"
+      And header "Name" contains symbol "▼"
+      And does NOT contain symbol "▲"
 
-    Сценарий: Третий клик - возврат к возрастанию
-      Дано я кликнул на заголовок "Name" дважды
-      И таблица отсортирована по убыванию
-      Когда я снова кликаю на заголовок "Name"
-      Тогда таблица снова сортируется по возрастанию
-      И заголовок "Name" имеет класс "sorted-asc"
+    Scenario: Third click - return to ascending
+      Given I clicked on header "Name" twice
+      And table is sorted descending
+      When I click on header "Name" again
+      Then table is sorted ascending again
+      And header "Name" has class "sorted-asc"
 
-  Правило: Сортировка по Instance Class
+  Rule: Sorting by Instance Class
 
-    Сценарий: Сортировка по Instance Class работает корректно
-      Когда я кликаю на заголовок "exo__Instance_class"
-      Тогда таблица сортируется по значению Instance Class
-      И порядок строк:
-        | Задача A |  # ems__Area
-        | Задача C |  # ems__Task
-        | Задача B |  # ems__Task
-      И заголовок "exo__Instance_class" имеет класс "sorted-asc"
+    Scenario: Sort by Instance Class works correctly
+      When I click on header "exo__Instance_class"
+      Then table is sorted by Instance Class value
+      And row order is:
+        | Task A |  # ems__Area
+        | Task C |  # ems__Task
+        | Task B |  # ems__Task
+      And header "exo__Instance_class" has class "sorted-asc"
 
-    Сценарий: Instance Class извлекается из метаданных
-      Дано заметка имеет Instance Class "[[ems__Task]]"
-      Когда выполняется сортировка по "exo__Instance_class"
-      Тогда для сортировки используется значение "ems__Task"
-      И НЕ используется "[[ems__Task]]"
+    Scenario: Instance Class is extracted from metadata
+      Given note has Instance Class "[[ems__Task]]"
+      When sorting by "exo__Instance_class" is performed
+      Then value "ems__Task" is used for sorting
+      And "[[ems__Task]]" is NOT used
 
-  Правило: Сортировка по дополнительным свойствам
+  Rule: Sorting by additional properties
 
-    Сценарий: Сортировка по кастомному свойству
-      Дано конфигурация включает:
+    Scenario: Sort by custom property
+      Given configuration includes:
         """yaml
         showProperties:
           - exo__Status
         """
-      Когда я кликаю на заголовок "exo__Status"
-      Тогда таблица сортируется по значению "exo__Status"
-      И порядок строк:
-        | Задача A |  # В работе
-        | Задача C |  # Готово
-        | Задача B |  # Новая
+      When I click on header "exo__Status"
+      Then table is sorted by "exo__Status" value
+      And row order is:
+        | Task A |  # In Progress
+        | Task C |  # Done
+        | Task B |  # New
 
-    Сценарий: Все кастомные свойства сортируемые
-      Дано конфигурация включает:
+    Scenario: All custom properties are sortable
+      Given configuration includes:
         """yaml
         showProperties:
           - exo__Priority
           - exo__Status
           - exo__Assignee
         """
-      Тогда заголовки "exo__Priority", "exo__Status", "exo__Assignee" имеют класс "sortable"
-      И клик по любому заголовку вызывает сортировку
+      Then headers "exo__Priority", "exo__Status", "exo__Assignee" have class "sortable"
+      And clicking any header triggers sorting
 
-  Правило: Индикаторы сортировки
+  Rule: Sort indicators
 
-    Сценарий: Только одна колонка имеет индикатор
-      Дано таблица отсортирована по "Name"
-      И заголовок "Name" имеет класс "sorted-asc"
-      Когда я кликаю на заголовок "exo__Instance_class"
-      Тогда заголовок "Name" НЕ имеет класс "sorted-asc"
-      И заголовок "Name" НЕ содержит символы "▲" или "▼"
-      И заголовок "exo__Instance_class" имеет класс "sorted-asc"
-      И заголовок "exo__Instance_class" содержит символ "▲"
+    Scenario: Only one column has indicator
+      Given table is sorted by "Name"
+      And header "Name" has class "sorted-asc"
+      When I click on header "exo__Instance_class"
+      Then header "Name" does NOT have class "sorted-asc"
+      And header "Name" does NOT contain symbols "▲" or "▼"
+      And header "exo__Instance_class" has class "sorted-asc"
+      And header "exo__Instance_class" contains symbol "▲"
 
-    Сценарий: Стрелки обновляются при изменении направления
-      Дано заголовок "Name" содержит "▲"
-      Когда я кликаю на "Name" для изменения направления
-      Тогда символ "▲" заменяется на "▼"
-      И одновременно присутствует только один символ
+    Scenario: Arrows update when direction changes
+      Given header "Name" contains "▲"
+      When I click on "Name" to change direction
+      Then symbol "▲" is replaced with "▼"
+      And only one symbol is present at a time
 
-  Правило: Состояние сортировки
+  Rule: Sort state
 
-    Сценарий: Начальная сортировка по Name ascending
-      Когда таблица рендерится первый раз
-      Тогда таблица автоматически сортируется по "Name"
-      И направление сортировки "asc"
-      И заголовок "Name" имеет начальное состояние
+    Scenario: Initial sort by Name ascending
+      When table is rendered for the first time
+      Then table is automatically sorted by "Name"
+      And sort direction is "asc"
+      And header "Name" has initial state
 
-    Сценарий: Сохранение состояния сортировки в группах
-      Дано включена группировка по Instance Class
-      И в группе "ems__Task" я отсортировал по "Name" по убыванию
-      Когда я сортирую группу "ems__Project" по "exo__Status"
-      Тогда состояние сортировки группы "ems__Task" сохраняется
-      И группа "ems__Task" остаётся отсортированной по "Name" desc
-      И группа "ems__Project" сортируется по "exo__Status"
+    Scenario: Preserve sort state in groups
+      Given grouping by Instance Class is enabled
+      And in group "ems__Task" I sorted by "Name" descending
+      When I sort group "ems__Project" by "exo__Status"
+      Then sort state of group "ems__Task" is preserved
+      And group "ems__Task" remains sorted by "Name" desc
+      And group "ems__Project" is sorted by "exo__Status"
 
-  Правило: Обработка специальных значений
+  Rule: Handle special values
 
-    Сценарий: Сортировка с пустыми значениями
-      Дано таблица содержит заметки:
-        | Name     | exo__Status |
-        | Задача 1 | Готово      |
-        | Задача 2 | (пусто)     |
-        | Задача 3 | В работе    |
-      Когда я сортирую по "exo__Status"
-      Тогда пустые значения помещаются в конец списка
-      И порядок строк:
-        | Задача 1 |  # Готово
-        | Задача 3 |  # В работе
-        | Задача 2 |  # (пусто)
+    Scenario: Sort with empty values
+      Given table contains notes:
+        | Name   | exo__Status  |
+        | Task 1 | Done         |
+        | Task 2 | (empty)      |
+        | Task 3 | In Progress  |
+      When I sort by "exo__Status"
+      Then empty values are placed at the end
+      And row order is:
+        | Task 1 |  # Done
+        | Task 3 |  # In Progress
+        | Task 2 |  # (empty)
 
-    Сценарий: Сортировка дат
-      Дано таблица содержит колонку "Modified" с датами
-      Когда я сортирую по "Modified"
-      Тогда даты сортируются хронологически
-      И не как строки
+    Scenario: Sort dates
+      Given table contains column "Modified" with dates
+      When I sort by "Modified"
+      Then dates are sorted chronologically
+      And not as strings
 
-    Сценарий: Сортировка чисел
-      Дано таблица содержит колонку с числовыми значениями
-      Когда я сортирую по этой колонке
-      Тогда числа сортируются численно
-      И не лексикографически
-      Примечание: 2 < 10 (не "10" < "2")
+    Scenario: Sort numbers
+      Given table contains column with numeric values
+      When I sort by this column
+      Then numbers are sorted numerically
+      And not lexicographically
+      # Note: 2 < 10 (not "10" < "2")

@@ -26,6 +26,13 @@ module.exports = {
       lines: 70,
       statements: 70,
     },
+    // Domain layer - higher threshold for business logic
+    "./src/domain/": {
+      branches: 85,
+      functions: 85,
+      lines: 85,
+      statements: 85,
+    },
   },
   // Note: setupFilesAfterEnv moved to memory optimization section above
   // Handle ES modules and other transformations in CI

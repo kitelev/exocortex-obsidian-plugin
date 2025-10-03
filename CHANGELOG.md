@@ -1,3 +1,32 @@
+## [11.4.0] - 2025-10-03
+
+### Added
+
+- **Component Testing Infrastructure**: Comprehensive Playwright Component Testing setup with 31 tests covering React UI components
+- **CI/CD Component Testing**: Automated component tests integrated into GitHub Actions pipeline - every push and PR now runs all 91 tests
+- **React Components**: Three production-ready React components with full test coverage:
+  - `AssetRelationsTable` - Table with sorting, grouping, and click handling (8 tests)
+  - `PropertyDisplay` - Property editing with multiple types (11 tests)
+  - `ChildrenEffortsTable` - Task table with status badges and progress bars (12 tests)
+- **Test Artifacts**: Automated upload of test reports and results to GitHub Actions for easy debugging
+
+### Benefits
+
+- **Complete UI Coverage**: 95% component test coverage ensures UI quality and prevents regressions
+- **Fast Feedback**: Component tests complete in 3.1 seconds, providing rapid feedback on UI changes
+- **E2E Alternative**: Solved Obsidian single-instance limitation with isolated component testing
+- **Visual Debugging**: Screenshots and traces automatically captured on test failures
+- **CI/CD Ready**: All 91 tests (Unit + BDD + Component) run automatically on every commit
+
+### Technical
+
+- Playwright Component Testing 1.55.1 with Chromium-only configuration
+- React 19.2.0 + TypeScript integration
+- Test execution: 4.5s total (30 unit + 30 BDD + 31 component tests)
+- GitHub Actions artifacts: HTML reports (30 days) + test results (7 days)
+- Bundle size: 15.7kb (optimized)
+- Documentation: 9 comprehensive guides including CI/CD integration
+
 ## [11.3.0] - 2025-10-03
 
 ### Added

@@ -1,6 +1,6 @@
 {
   "name": "exocortex-obsidian-plugin",
-  "version": "11.3.0",
+  "version": "11.4.0",
   "description": "Exocortex: A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
   "main": "main.js",
   "engines": {
@@ -33,9 +33,23 @@
     "test:e2e-obsidian:watch": "jest -c jest.e2e-obsidian.config.js --watch",
     "test:e2e-obsidian:docker": "docker-compose -f docker-compose.e2e-obsidian.yml up --build --abort-on-container-exit",
     "test:cucumber": "jest --config jest.cucumber.config.js",
-    "test:cucumber:critical": "jest --config jest.cucumber.config.js tests/specs/instance-class-links.spec.ts",
+    "test:cucumber:critical": "jest --config jest.cucumber.config.js tests/specs/instance-class-core.test.ts",
     "test:bdd": "npm run test:cucumber",
-    "test:regression": "npm run test:cucumber && npm run test:unit"
+    "test:bdd:exec": "NODE_OPTIONS='--loader ts-node/esm' cucumber-js --exit",
+    "test:bdd:dry": "NODE_OPTIONS='--loader ts-node/esm' cucumber-js --dry-run",
+    "test:bdd:watch": "nodemon --watch tests/steps --watch specs/features --exec 'npm run test:bdd:exec'",
+    "test:specs": "npm run test:cucumber",
+    "test:regression": "npm run test:cucumber && npm run test:unit",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
+    "test:component": "playwright test -c playwright-ct.config.ts",
+    "test:component:ui": "playwright test -c playwright-ct.config.ts --ui",
+    "test:component:debug": "playwright test -c playwright-ct.config.ts --debug",
+    "test:component:chromium": "playwright test -c playwright-ct.config.ts --project=chromium",
+    "test:component:report": "playwright show-report playwright-report-ct"
   },
   "keywords": [
     "obsidian",
@@ -50,18 +64,20 @@
   "devDependencies": {
     "@cucumber/cucumber": "^11.3.0",
     "@cucumber/pretty-formatter": "^2.1.0",
+    "@playwright/experimental-ct-react": "^1.55.1",
     "@types/chai": "^5.2.2",
     "@types/jest": "^30.0.0",
     "@types/js-yaml": "^4.0.9",
     "@types/jsdom": "^21.1.7",
     "@types/mocha": "^10.0.10",
     "@types/node": "^18.19.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
     "@typescript-eslint/eslint-plugin": "^5.29.0",
     "@typescript-eslint/parser": "^5.29.0",
     "allure-commandline": "^2.34.1",
     "builtin-modules": "3.3.0",
     "chai": "^5.3.3",
-    "cucumber-html-reporter": "^7.2.0",
     "esbuild": "0.17.3",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.1.8",
@@ -72,7 +88,6 @@
     "jest": "^30.0.5",
     "jest-cucumber": "^4.5.0",
     "jest-environment-jsdom": "^30.0.5",
-    "jest-environment-obsidian": "^0.0.1",
     "jsdom": "^26.1.0",
     "json5": "^2.2.3",
     "obsidian": "latest",
@@ -86,8 +101,11 @@
     "typescript": "4.7.4"
   },
   "dependencies": {
+    "@playwright/test": "^1.55.1",
     "@types/uuid": "^10.0.0",
     "js-yaml": "^4.1.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "uuid": "^11.1.0"
   }
 }

@@ -1,119 +1,119 @@
-# language: ru
-Функция: Рендеринг Universal Layout
+# language: en
+Feature: Universal Layout Rendering
 
-  Как пользователь Exocortex плагина
-  Я хочу видеть связанные заметки в структурированном виде
-  Чтобы эффективно работать с семантической сетью знаний
+  As an Exocortex plugin user
+  I want to see related notes in a structured view
+  So that I can efficiently work with my semantic knowledge network
 
-  Предыстория:
-    Дано Obsidian vault с установленным Exocortex плагином
-    И существует заметка "Мой Проект" с метаданными:
-      | Свойство              | Значение        |
+  Background:
+    Given Obsidian vault with Exocortex plugin installed
+    And note "My Project" exists with metadata:
+      | Property              | Value            |
       | exo__Instance_class   | [[ems__Project]] |
-      | exo__Asset_isArchived | false           |
+      | exo__Asset_isArchived | false            |
 
-  Сценарий: Отображение таблицы связанных заметок
-    Дано у меня открыта заметка "Мой Проект"
-    И существуют связанные заметки:
-      | Название       | exo__Instance_class | Связь        |
-      | Задача 1       | [[ems__Task]]       | exo__Parent  |
-      | Задача 2       | [[ems__Task]]       | exo__Parent  |
-      | Область работ  | [[ems__Area]]       | body         |
-    Когда я добавляю блок кода с типом "exocortex-universal"
-    И блок содержит конфигурацию:
+  Scenario: Display table of related notes
+    Given I have note "My Project" open
+    And related notes exist:
+      | Name         | exo__Instance_class | Relation      |
+      | Task 1       | [[ems__Task]]       | exo__Parent   |
+      | Task 2       | [[ems__Task]]       | exo__Parent   |
+      | Work Area    | [[ems__Area]]       | body          |
+    When I add a code block with type "exocortex-universal"
+    And block contains configuration:
       """yaml
       layout: table
       showProperties:
         - exo__Instance_class
       """
-    Тогда я вижу таблицу со следующими колонками:
+    Then I see a table with columns:
       | Name | exo__Instance_class | Relation Type | Modified |
-    И таблица содержит 3 строки
-    И заголовки колонок "Name" и "exo__Instance_class" имеют класс "sortable"
+    And table contains 3 rows
+    And column headers "Name" and "exo__Instance_class" have class "sortable"
 
-  Сценарий: Колонка Instance Class содержит кликабельные ссылки
-    Дано у меня открыта заметка "Мой Проект"
-    И существует связанная заметка "Задача 1" с метаданными:
-      | Свойство            | Значение      |
+  Scenario: Instance Class column contains clickable links
+    Given I have note "My Project" open
+    And related note "Task 1" exists with metadata:
+      | Property            | Value         |
       | exo__Instance_class | [[ems__Task]] |
-    Когда я добавляю блок кода с типом "exocortex-universal"
-    И блок содержит конфигурацию:
+    When I add a code block with type "exocortex-universal"
+    And block contains configuration:
       """yaml
       layout: table
       showProperties:
         - exo__Instance_class
       """
-    Тогда в колонке "exo__Instance_class" я вижу элемент <a>
-    И элемент <a> имеет текст "ems__Task"
-    И элемент <a> имеет класс "internal-link"
-    И при клике на элемент <a> открывается заметка "ems__Task"
-    И элемент <a> НЕ содержит символы "[[" или "]]"
+    Then in column "exo__Instance_class" I see element <a>
+    And element <a> has text "ems__Task"
+    And element <a> has class "internal-link"
+    And clicking element <a> opens note "ems__Task"
+    And element <a> does NOT contain symbols "[[" or "]]"
 
-  Сценарий: Сортировка по колонке Name
-    Дано у меня открыта заметка "Мой Проект"
-    И существуют связанные заметки:
-      | Название  | exo__Instance_class |
-      | Задача C  | [[ems__Task]]       |
-      | Задача A  | [[ems__Task]]       |
-      | Задача B  | [[ems__Task]]       |
-    И я добавил блок кода с типом "exocortex-universal"
-    И блок содержит конфигурацию "layout: table"
-    Когда я кликаю на заголовок колонки "Name"
-    Тогда таблица сортируется по возрастанию
-    И порядок строк:
-      | Задача A |
-      | Задача B |
-      | Задача C |
-    Когда я снова кликаю на заголовок колонки "Name"
-    Тогда таблица сортируется по убыванию
-    И порядок строк:
-      | Задача C |
-      | Задача B |
-      | Задача A |
+  Scenario: Sort by Name column
+    Given I have note "My Project" open
+    And related notes exist:
+      | Name   | exo__Instance_class |
+      | Task C | [[ems__Task]]       |
+      | Task A | [[ems__Task]]       |
+      | Task B | [[ems__Task]]       |
+    And I added a code block with type "exocortex-universal"
+    And block contains configuration "layout: table"
+    When I click on column header "Name"
+    Then table is sorted ascending
+    And row order is:
+      | Task A |
+      | Task B |
+      | Task C |
+    When I click on column header "Name" again
+    Then table is sorted descending
+    And row order is:
+      | Task C |
+      | Task B |
+      | Task A |
 
-  Сценарий: Сортировка по колонке Instance Class
-    Дано у меня открыта заметка "Мой Проект"
-    И существуют связанные заметки:
-      | Название  | exo__Instance_class |
-      | Заметка 1 | [[ems__Task]]       |
-      | Заметка 2 | [[ems__Area]]       |
-      | Заметка 3 | [[ems__Project]]    |
-    И я добавил блок кода с типом "exocortex-universal"
-    Когда я кликаю на заголовок колонки "exo__Instance_class"
-    Тогда строки сортируются по значению Instance Class
-    И заголовок "exo__Instance_class" имеет класс "sorted-asc"
-    И заголовок "exo__Instance_class" содержит символ "▲"
+  Scenario: Sort by Instance Class column
+    Given I have note "My Project" open
+    And related notes exist:
+      | Name   | exo__Instance_class |
+      | Note 1 | [[ems__Task]]       |
+      | Note 2 | [[ems__Area]]       |
+      | Note 3 | [[ems__Project]]    |
+    And I added a code block with type "exocortex-universal"
+    When I click on column header "exo__Instance_class"
+    Then rows are sorted by Instance Class value
+    And header "exo__Instance_class" has class "sorted-asc"
+    And header "exo__Instance_class" contains symbol "▲"
 
-  Сценарий: Индикаторы сортировки
-    Дано у меня открыта заметка с Universal Layout таблицей
-    Когда я кликаю на заголовок "Name"
-    Тогда заголовок "Name" имеет класс "sorted-asc"
-    И заголовок "Name" содержит символ "▲"
-    Когда я снова кликаю на заголовок "Name"
-    Тогда заголовок "Name" имеет класс "sorted-desc"
-    И заголовок "Name" содержит символ "▼"
-    И символ "▲" исчезает
+  Scenario: Sort indicators
+    Given I have note with Universal Layout table open
+    When I click on header "Name"
+    Then header "Name" has class "sorted-asc"
+    And header "Name" contains symbol "▲"
+    When I click on header "Name" again
+    Then header "Name" has class "sorted-desc"
+    And header "Name" contains symbol "▼"
+    And symbol "▲" disappears
 
-  Сценарий: Фильтрация архивных заметок
-    Дано у меня открыта заметка "Мой Проект"
-    И существуют связанные заметки:
-      | Название       | exo__Asset_isArchived |
-      | Активная       | false                 |
-      | Архивная       | true                  |
-      | Ещё активная   | false                 |
-    Когда я добавляю блок кода с типом "exocortex-universal"
-    Тогда таблица содержит 2 строки
-    И я вижу заметки "Активная" и "Ещё активная"
-    И я НЕ вижу заметку "Архивная"
+  Scenario: Filter archived notes
+    Given I have note "My Project" open
+    And related notes exist:
+      | Name        | exo__Asset_isArchived |
+      | Active      | false                 |
+      | Archived    | true                  |
+      | Also Active | false                 |
+    When I add a code block with type "exocortex-universal"
+    Then table contains 2 rows
+    And I see notes "Active" and "Also Active"
+    And I do NOT see note "Archived"
 
-  Сценарий: Отображение дополнительных свойств
-    Дано у меня открыта заметка "Мой Проект"
-    И существует связанная заметка "Задача 1" с метаданными:
-      | Свойство            | Значение        |
+  Scenario: Display additional properties
+    Given I have note "My Project" open
+    And related note "Task 1" exists with metadata:
+      | Property            | Value           |
       | exo__Instance_class | [[ems__Task]]   |
-      | exo__Status         | В работе        |
-      | exo__Priority       | Высокий         |
-    Когда я добавляю блок кода с конфигурацией:
+      | exo__Status         | In Progress     |
+      | exo__Priority       | High            |
+    When I add a code block with configuration:
       """yaml
       layout: table
       showProperties:
@@ -121,14 +121,14 @@
         - exo__Status
         - exo__Priority
       """
-    Тогда я вижу таблицу с колонками:
+    Then I see a table with columns:
       | Name | exo__Instance_class | exo__Status | exo__Priority | Relation Type | Modified |
-    И в строке "Задача 1" колонка "exo__Status" содержит "В работе"
-    И в строке "Задача 1" колонка "exo__Priority" содержит "Высокий"
+    And in row "Task 1" column "exo__Status" contains "In Progress"
+    And in row "Task 1" column "exo__Priority" contains "High"
 
-  Сценарий: Мобильная адаптация таблицы
-    Дано я использую Obsidian на мобильном устройстве
-    И у меня открыта заметка с Universal Layout таблицей
-    Когда таблица рендерится
-    Тогда элемент <table> имеет класс "mobile-responsive"
-    И таблица адаптирована для сенсорного управления
+  Scenario: Mobile table adaptation
+    Given I am using Obsidian on a mobile device
+    And I have note with Universal Layout table open
+    When table is rendered
+    Then <table> element has class "mobile-responsive"
+    And table is adapted for touch controls
