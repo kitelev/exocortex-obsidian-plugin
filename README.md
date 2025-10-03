@@ -15,6 +15,9 @@ Exocortex is a streamlined Obsidian plugin that provides flexible layout renderi
 - 🚀 **High Performance**: Optimized relation discovery with reverse indexing (O(1) lookups)
 - 📱 **Mobile Compatible**: Works seamlessly on desktop and mobile
 - 🎨 **Flexible Configuration**: Customize layouts through frontmatter properties
+- 🔗 **Clickable Links**: Instance Class displayed as internal links for quick navigation
+- ↕️ **Interactive Sorting**: Sort tables with visual indicators (▲/▼)
+- 📦 **Archive Filtering**: Automatically hide archived assets from views
 
 ## 🏃‍♂️ Quick Start
 
@@ -47,6 +50,18 @@ Or use DynamicLayout for custom configurations:
 DynamicLayout
 ```
 ````
+
+### Archive Filtering
+
+Hide completed or archived assets from your views by adding the `archived` field:
+
+```yaml
+---
+archived: true  # or "yes", "true", 1
+---
+```
+
+Archived assets are automatically filtered from all relation lists, keeping your views clean and focused on active work.
 
 ## 🏗️ Architecture
 
