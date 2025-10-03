@@ -1146,7 +1146,43 @@ export class UniversalLayoutRenderer {
   /**
    * Check if asset is archived
    */
+  /**
+   * Check if an asset is archived based on frontmatter metadata
+   * Supports multiple archived field formats:
+   * - archived: true (boolean)
+   * - archived: "true" or "yes" (string)
+   * - archived: 1 (number)
+   * Also checks legacy exo__Asset_isArchived field for backward compatibility
+   */
   private isAssetArchived(metadata: Record<string, any>): boolean {
-    return metadata?.exo__Asset_isArchived === true;
+    // Check legacy field first
+    if (metadata?.exo__Asset_isArchived === true) {
+      return true;
+    }
+
+    // Check standard 'archived' field
+    const archivedValue = metadata?.archived;
+
+    if (archivedValue === undefined || archivedValue === null) {
+      return false;
+    }
+
+    // Handle boolean
+    if (typeof archivedValue === "boolean") {
+      return archivedValue;
+    }
+
+    // Handle number (1 = archived, 0 = not archived)
+    if (typeof archivedValue === "number") {
+      return archivedValue !== 0;
+    }
+
+    // Handle string ("true", "yes" = archived, "false", "no" = not archived)
+    if (typeof archivedValue === "string") {
+      const normalized = archivedValue.toLowerCase().trim();
+      return normalized === "true" || normalized === "yes" || normalized === "1";
+    }
+
+    return false;
   }
 }
