@@ -130,7 +130,7 @@
       "format": "esm"
     },
     "src/presentation/components/AssetRelationsTable.tsx": {
-      "bytes": 5571,
+      "bytes": 5868,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -290,13 +290,13 @@
           "bytesInOutput": 284
         },
         "src/presentation/components/AssetRelationsTable.tsx": {
-          "bytesInOutput": 2401
+          "bytesInOutput": 2469
         },
         "src/presentation/renderers/DynamicLayoutRenderer.ts": {
           "bytesInOutput": 96
         }
       },
-      "bytes": 210586
+      "bytes": 210654
     }
   }
 }

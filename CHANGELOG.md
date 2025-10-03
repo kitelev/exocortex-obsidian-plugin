@@ -1,3 +1,23 @@
+## [11.5.1] - 2025-10-04
+
+### Fixed
+
+- **Table Sorting Stability**: Fixed issue where clicking column headers to sort data was also reordering layout groups themselves
+  - Groups now maintain their original order while sorting only affects items within each group
+  - Improved user experience: sorting by Instance Class or Name no longer shuffles your carefully organized sections
+
+### Technical
+
+- Refactored `AssetRelationsTable.tsx` to group relations first, then sort within each group
+- Maintained backward compatibility with non-grouped table views
+- All 68 tests passing
+
+### Benefits
+
+- **Predictable Behavior**: Layout structure remains stable during sorting operations
+- **Better UX**: Users can sort table columns without losing track of their organized groups
+- **Clean Architecture**: Proper separation of grouping and sorting concerns
+
 ## [11.5.0] - 2025-10-04
 
 ### Added

@@ -59,8 +59,8 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
     return String(instanceClass).replace(/^\[\[|\]\]$/g, "");
   };
 
-  const sortedRelations = useMemo(() => {
-    const sorted = [...relations].sort((a, b) => {
+  const sortRelations = (items: AssetRelation[]) => {
+    return [...items].sort((a, b) => {
       let aVal: unknown;
       let bVal: unknown;
 
@@ -87,14 +87,15 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
 
       return 0;
     });
-
-    return sorted;
-  }, [relations, sortState]);
+  };
 
   const groupedRelations = useMemo(() => {
-    if (!groupByProperty) return { ungrouped: sortedRelations };
+    if (!groupByProperty) {
+      return { ungrouped: sortRelations(relations) };
+    }
 
-    return sortedRelations.reduce(
+    // First, group relations by property
+    const grouped = relations.reduce(
       (acc, relation) => {
         const group = relation.propertyName || "Body Links";
         if (!acc[group]) acc[group] = [];
@@ -103,7 +104,15 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
       },
       {} as Record<string, AssetRelation[]>,
     );
-  }, [sortedRelations, groupByProperty]);
+
+    // Then, sort items within each group
+    const sortedGrouped: Record<string, AssetRelation[]> = {};
+    for (const [groupName, items] of Object.entries(grouped)) {
+      sortedGrouped[groupName] = sortRelations(items);
+    }
+
+    return sortedGrouped;
+  }, [relations, sortState, groupByProperty]);
 
   const renderTable = (items: AssetRelation[]) => (
     <table className="exocortex-relations-table">
@@ -184,6 +193,6 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
   }
 
   return (
-    <div className="exocortex-relations">{renderTable(sortedRelations)}</div>
+    <div className="exocortex-relations">{renderTable(groupedRelations.ungrouped)}</div>
   );
 };
