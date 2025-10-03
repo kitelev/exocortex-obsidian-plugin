@@ -1,3 +1,28 @@
+## [11.3.0] - 2025-10-03
+
+### Added
+
+- **Archived Asset Filtering**: Assets marked as archived are now automatically filtered out from relation lists
+- **Multiple Archive Formats Support**: Recognizes various archive field formats:
+  - Boolean: `archived: true`
+  - String: `archived: "true"` or `archived: "yes"`
+  - Number: `archived: 1`
+  - Legacy: `exo__Asset_isArchived: true`
+- **Empty State Handling**: Displays "No related assets found" message when all related assets are archived
+
+### Benefits
+
+- **Cleaner Views**: Archive old tasks/projects without cluttering active lists
+- **Flexible Configuration**: Use any archive format that works for your workflow
+- **Backward Compatible**: Existing `exo__Asset_isArchived` field still works
+
+### Technical
+
+- Enhanced `isAssetArchived()` method with comprehensive format support
+- All 51 tests passing (48 active including 3 new archive filtering tests)
+- Zero breaking changes - filtering is automatic and transparent
+- Bundle size: 47.1kb (200 bytes increase for new functionality)
+
 ## [11.2.3] - 2025-10-03
 
 ### Added

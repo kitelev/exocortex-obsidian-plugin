@@ -317,7 +317,7 @@ describe("UniversalLayoutRenderer", () => {
     });
   });
 
-  describe.skip("archived asset filtering", () => {
+  describe("archived asset filtering", () => {
     it("should exclude archived assets from relations", async () => {
       const container = document.createElement("div");
       const currentFile = new MockTFile("current-file.md", "Current File");
