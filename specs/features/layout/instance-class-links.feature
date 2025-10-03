@@ -1,4 +1,5 @@
 # language: ru
+@instance-class @critical
 Функция: Кликабельные ссылки в колонке Instance Class
 
   Как пользователь Exocortex плагина
