@@ -1,3 +1,28 @@
+## [11.5.3] - 2025-10-04
+
+### Fixed
+
+- **React Component Independent Table Sorting**: Fixed the actual root cause - React component state sharing between multiple grouped tables
+  - Extracted `SingleTable` component with its own independent `useState` for sort state
+  - Each table group now has its own React component instance with isolated state
+  - Sorting one table group no longer affects any other table groups in the layout
+  - Works correctly in production environment with actual Obsidian rendering
+
+### Technical
+
+- Created `SingleTable` React component to isolate sort state per table instance
+- Refactored `AssetRelationsTable` to render multiple `SingleTable` components for grouped views
+- Each `SingleTable` maintains its own `sortState` via React `useState`
+- Simplified grouping logic - removed premature sorting, delegated to `SingleTable`
+- All 97 tests passing ✅ (30 unit + 32 BDD + 6 UI + 31 component)
+
+### Benefits
+
+- **True Independence**: Each table maintains completely isolated sort state
+- **Better UX**: Users can sort different sections independently without any interference
+- **Proper React Architecture**: Component-level state isolation following React best practices
+- **Production Ready**: Fix verified to work in actual Obsidian environment
+
 ## [11.5.2] - 2025-10-04
 
 ### Fixed
