@@ -16,14 +16,6 @@ Active documentation for the current testing infrastructure:
 - **[EXECUTABLE-SPECIFICATIONS.md](testing/EXECUTABLE-SPECIFICATIONS.md)** - Executable specifications concept
 - **[TEST-STRUCTURE.md](testing/TEST-STRUCTURE.md)** - Test suite structure and organization
 
-### `/archive` - Historical Documentation
-
-Archived documentation from previous testing approaches:
-
-- E2E testing documentation (replaced by Component Testing)
-- Historical BDD solutions and issue explanations
-- IDE-specific setup guides
-- Temporary verification reports
 
 ## 🎯 Quick Start
 
