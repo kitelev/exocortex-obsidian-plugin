@@ -531,15 +531,64 @@ export class UniversalLayoutRenderer {
     const thead = table.createEl("thead");
     const tbody = table.createEl("tbody");
 
+    // Get or initialize sort state for table
+    const sortStateKey = "table_main";
+    if (!this.sortState.has(sortStateKey)) {
+      this.sortState.set(sortStateKey, { column: "Name", order: "asc" });
+    }
+    const currentSort = this.sortState.get(sortStateKey)!;
+
     const headerRow = thead.createEl("tr");
-    headerRow.createEl("th", { text: "Name", cls: "sortable" });
-    headerRow.createEl("th", { text: "exo__Instance_class", cls: "sortable" });
+    const nameHeader = headerRow.createEl("th", {
+      text: "Name",
+      cls: `sortable ${currentSort.column === "Name" ? `sorted-${currentSort.order}` : ""}`
+    });
+    const instanceClassHeader = headerRow.createEl("th", {
+      text: "exo__Instance_class",
+      cls: `sortable ${currentSort.column === "exo__Instance_class" ? `sorted-${currentSort.order}` : ""}`
+    });
+
+    // Add click handlers for sorting
+    this.registerEventListener(nameHeader, "click", () => {
+      this.updateSort("Name", sortStateKey);
+      const sortedRelations = this.sortRelations(
+        relations,
+        "Name",
+        this.sortState.get(sortStateKey)!.order,
+      );
+      this.updateTableBody(tbody, sortedRelations, config);
+      this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
+    });
+
+    this.registerEventListener(instanceClassHeader, "click", () => {
+      this.updateSort("exo__Instance_class", sortStateKey);
+      const sortedRelations = this.sortRelations(
+        relations,
+        "exo__Instance_class",
+        this.sortState.get(sortStateKey)!.order,
+      );
+      this.updateTableBody(tbody, sortedRelations, config);
+      this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
+    });
 
     if (config.showProperties) {
       for (const prop of config.showProperties) {
         if (prop !== "exo__Instance_class") {
-          // Don't duplicate Instance Class column
-          headerRow.createEl("th", { text: prop });
+          const propHeader = headerRow.createEl("th", {
+            text: prop,
+            cls: `sortable ${currentSort.column === prop ? `sorted-${currentSort.order}` : ""}`
+          });
+
+          this.registerEventListener(propHeader, "click", () => {
+            this.updateSort(prop, sortStateKey);
+            const sortedRelations = this.sortRelations(
+              relations,
+              prop,
+              this.sortState.get(sortStateKey)!.order,
+            );
+            this.updateTableBody(tbody, sortedRelations, config);
+            this.updateSortIndicators(headerRow, this.sortState.get(sortStateKey)!);
+          });
         }
       }
     }
@@ -547,7 +596,14 @@ export class UniversalLayoutRenderer {
     headerRow.createEl("th", { text: "Relation Type" });
     headerRow.createEl("th", { text: "Modified" });
 
-    for (const relation of relations) {
+    // Sort relations based on current sort state
+    const sortedRelations = this.sortRelations(
+      relations,
+      currentSort.column,
+      currentSort.order,
+    );
+
+    for (const relation of sortedRelations) {
       const row = tbody.createEl("tr");
 
       // First column: Name with link
@@ -965,6 +1021,7 @@ export class UniversalLayoutRenderer {
    * Helper method to get property value from relation
    */
   private getPropertyValue(relation: AssetRelation, propertyName: string): any {
+    if (propertyName === "Name") return relation.title;
     if (propertyName === "title") return relation.title;
     if (propertyName === "created") return relation.created;
     if (propertyName === "modified") return relation.modified;

@@ -1,3 +1,10 @@
+## [11.2.2] - 2025-10-03
+
+### Fixed
+
+- **Table Sorting**: Added full sorting functionality to the legacy table view - columns are now clickable and properly sort by Name, Instance Class, and custom properties
+- **Property Mapping**: Fixed `getPropertyValue` to correctly handle "Name" column sorting
+
 ## [11.2.1] - 2025-10-02
 
 ### Fixed
