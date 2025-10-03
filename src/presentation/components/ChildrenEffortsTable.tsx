@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo } from "react";
 
 export interface ChildEffort {
   path: string;
@@ -20,16 +20,16 @@ export interface ChildrenEffortsTableProps {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  active: 'status-active',
-  completed: 'status-completed',
-  blocked: 'status-blocked',
-  pending: 'status-pending',
+  active: "status-active",
+  completed: "status-completed",
+  blocked: "status-blocked",
+  pending: "status-pending",
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  high: 'priority-high',
-  medium: 'priority-medium',
-  low: 'priority-low',
+  high: "priority-high",
+  medium: "priority-medium",
+  low: "priority-low",
 };
 
 export const ChildrenEffortsTable: React.FC<ChildrenEffortsTableProps> = ({
@@ -46,21 +46,23 @@ export const ChildrenEffortsTable: React.FC<ChildrenEffortsTableProps> = ({
         effort: acc.effort + (child.effort || 0),
         progress: acc.progress + (child.progress || 0),
       }),
-      { effort: 0, progress: 0 }
+      { effort: 0, progress: 0 },
     );
   }, [children]);
 
-  const averageProgress = children.length > 0 ? totals.progress / children.length : 0;
+  const averageProgress =
+    children.length > 0 ? totals.progress / children.length : 0;
 
   const renderStatusBadge = (status?: string) => {
     if (!status) return <span className="status-badge">-</span>;
-    const colorClass = STATUS_COLORS[status.toLowerCase()] || 'status-default';
+    const colorClass = STATUS_COLORS[status.toLowerCase()] || "status-default";
     return <span className={`status-badge ${colorClass}`}>{status}</span>;
   };
 
   const renderPriorityBadge = (priority?: string) => {
     if (!priority) return <span className="priority-badge">-</span>;
-    const colorClass = PRIORITY_COLORS[priority.toLowerCase()] || 'priority-default';
+    const colorClass =
+      PRIORITY_COLORS[priority.toLowerCase()] || "priority-default";
     return <span className={`priority-badge ${colorClass}`}>{priority}</span>;
   };
 
@@ -92,12 +94,12 @@ export const ChildrenEffortsTable: React.FC<ChildrenEffortsTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {children.map(child => (
+          {children.map((child) => (
             <tr key={child.path} data-path={child.path}>
               <td>
                 <a
                   href="#"
-                  onClick={e => {
+                  onClick={(e) => {
                     e.preventDefault();
                     onChildClick?.(child.path);
                   }}
@@ -108,7 +110,7 @@ export const ChildrenEffortsTable: React.FC<ChildrenEffortsTableProps> = ({
               </td>
               {showStatus && <td>{renderStatusBadge(child.status)}</td>}
               {showPriority && <td>{renderPriorityBadge(child.priority)}</td>}
-              {showEffort && <td>{child.effort || '-'}</td>}
+              {showEffort && <td>{child.effort || "-"}</td>}
               {showProgress && <td>{renderProgressBar(child.progress)}</td>}
             </tr>
           ))}

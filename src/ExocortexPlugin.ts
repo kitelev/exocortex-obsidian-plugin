@@ -24,7 +24,7 @@ export default class ExocortexPlugin extends Plugin {
       this.registerEvent(
         this.app.metadataCache.on("resolved", () => {
           this.universalLayoutRenderer.invalidateBacklinksCache();
-        })
+        }),
       );
 
       this.registerMarkdownCodeBlockProcessor(
