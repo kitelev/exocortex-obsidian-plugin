@@ -1,4 +1,5 @@
 # language: ru
+@sorting @implemented
 Функция: Интерактивная сортировка таблиц
 
   Как пользователь Exocortex плагина

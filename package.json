@@ -31,7 +31,11 @@
     "test:ci": "npm run test:unit && npm run test:integration",
     "test:contract": "jest tests/contract/*.test.ts",
     "test:e2e-obsidian:watch": "jest -c jest.e2e-obsidian.config.js --watch",
-    "test:e2e-obsidian:docker": "docker-compose -f docker-compose.e2e-obsidian.yml up --build --abort-on-container-exit"
+    "test:e2e-obsidian:docker": "docker-compose -f docker-compose.e2e-obsidian.yml up --build --abort-on-container-exit",
+    "test:cucumber": "jest --config jest.cucumber.config.js",
+    "test:cucumber:critical": "jest --config jest.cucumber.config.js tests/specs/instance-class-links.spec.ts",
+    "test:bdd": "npm run test:cucumber",
+    "test:regression": "npm run test:cucumber && npm run test:unit"
   },
   "keywords": [
     "obsidian",
