@@ -163,4 +163,3 @@ MIT License - see [LICENSE](./LICENSE) for details.
 ---
 
 **Built for the Obsidian community** 💜
-test cache
