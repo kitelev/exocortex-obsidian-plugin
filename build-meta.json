@@ -141,7 +141,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 37240,
+      "bytes": 37461,
       "imports": [
         {
           "path": "obsidian",
@@ -242,11 +242,6 @@
           "path": "obsidian",
           "kind": "require-call",
           "external": true
-        },
-        {
-          "path": "obsidian",
-          "kind": "require-call",
-          "external": true
         }
       ],
       "exports": [],
@@ -282,14 +277,14 @@
         "src/ExocortexPlugin.ts": {
           "bytesInOutput": 960
         },
-        "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 14330
-        },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
         },
         "src/infrastructure/logging/LoggerFactory.ts": {
           "bytesInOutput": 49
+        },
+        "src/presentation/renderers/UniversalLayoutRenderer.ts": {
+          "bytesInOutput": 14343
         },
         "src/presentation/utils/ReactRenderer.tsx": {
           "bytesInOutput": 284
@@ -301,7 +296,7 @@
           "bytesInOutput": 96
         }
       },
-      "bytes": 210573
+      "bytes": 210586
     }
   }
 }

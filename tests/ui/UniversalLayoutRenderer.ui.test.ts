@@ -82,6 +82,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       const ctx = {} as MarkdownPostProcessorContext;
       await renderer.render("", container, ctx);
 
+      // Wait for React to render (next tick)
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
       // Verify DOM structure
       expect(container.querySelector(".exocortex-assets-relations")).toBeTruthy();
       expect(container.querySelector(".exocortex-relations-table")).toBeTruthy();
@@ -91,7 +94,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(headers.length).toBeGreaterThan(0);
 
       const headerTexts = Array.from(headers).map((h) => h.textContent?.trim());
-      expect(headerTexts).toContain("Name");
+      expect(headerTexts.some((text) => text?.startsWith("Name"))).toBeTruthy();
       expect(headerTexts).toContain("exo__Instance_class");
     });
 
@@ -122,6 +125,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
+      // Wait for React to render (next tick)
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
       // Find Instance Class cell
       const instanceClassLinks = container.querySelectorAll(".instance-class a.internal-link");
       expect(instanceClassLinks.length).toBeGreaterThan(0);
@@ -135,7 +141,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
     it("should handle grouped relations rendering", async () => {
       const currentFile = {
-        basename: "Test",
+        basename: "test",
         path: "test.md",
       } as TFile;
 
@@ -152,15 +158,17 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         stat: { ctime: Date.now(), mtime: Date.now() },
       } as TFile;
 
-      let callCount = 0;
-      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation(() => {
-        callCount++;
-        return {
-          frontmatter:
-            callCount === 1
-              ? { exo__Instance_class: "ems__Task", assignedTo: "[[test]]" }
-              : { exo__Instance_class: "ems__Project", owner: "[[test]]" },
-        };
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: any) => {
+        if (file?.path === "task1.md") {
+          return {
+            frontmatter: { exo__Instance_class: "ems__Task", assignedTo: "[[test]]" },
+          };
+        } else if (file?.path === "task2.md") {
+          return {
+            frontmatter: { exo__Instance_class: "ems__Project", owner: "[[test]]" },
+          };
+        }
+        return { frontmatter: {} };
       });
 
       mockApp.metadataCache.resolvedLinks = {
@@ -175,12 +183,15 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("groupByProperty: true", container, {} as MarkdownPostProcessorContext);
 
+      // Wait for React to render (next tick)
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
       // Verify grouped rendering
-      const groups = container.querySelectorAll(".exocortex-relation-group");
+      const groups = container.querySelectorAll(".relation-group");
       expect(groups.length).toBeGreaterThan(0);
 
       // Verify group headers
-      const groupHeaders = container.querySelectorAll(".exocortex-relation-group-header");
+      const groupHeaders = container.querySelectorAll(".group-header");
       const headerTexts = Array.from(groupHeaders).map((h) => h.textContent);
       expect(headerTexts).toContain("assignedTo");
       expect(headerTexts).toContain("owner");

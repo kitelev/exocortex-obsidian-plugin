@@ -31,6 +31,43 @@ describe("Feature: Интерактивная сортировка таблиц"
 
     renderer = new UniversalLayoutRenderer(mockApp);
     container = document.createElement("div");
+
+    // Mock Obsidian's HTMLElement methods
+    const mockObsidianEl = (el: HTMLElement) => {
+      (el as any).createDiv = function (opts?: { cls?: string }) {
+        const div = document.createElement("div");
+        if (opts?.cls) div.className = opts.cls;
+        this.appendChild(div);
+        mockObsidianEl(div);
+        return div;
+      };
+      (el as any).createEl = function (tag: string, opts?: { cls?: string; text?: string; href?: string; attr?: Record<string, string> }) {
+        const elem = document.createElement(tag);
+        if (opts?.cls) elem.className = opts.cls;
+        if (opts?.text) elem.textContent = opts.text;
+        if (opts?.href && elem instanceof HTMLAnchorElement) elem.href = opts.href;
+        if (opts?.attr) {
+          Object.entries(opts.attr).forEach(([key, value]) => {
+            elem.setAttribute(key, value);
+          });
+        }
+        this.appendChild(elem);
+        mockObsidianEl(elem);
+        return elem;
+      };
+      (el as any).createSpan = function (opts?: { cls?: string; text?: string }) {
+        const span = document.createElement("span");
+        if (opts?.cls) span.className = opts.cls;
+        if (opts?.text) span.textContent = opts.text;
+        this.appendChild(span);
+        mockObsidianEl(span);
+        return span;
+      };
+      (el as any).empty = function () {
+        this.innerHTML = "";
+      };
+    };
+    mockObsidianEl(container);
   });
 
   const getRowNames = () => {
