@@ -77,7 +77,7 @@ describe("UniversalLayoutRenderer", () => {
 
       // Check headers
       const headers = container.querySelectorAll("th");
-      expect(headers[0]?.textContent).toBe("Name");
+      expect(headers[0]?.textContent).toBe("Name ▲"); // Default sort by Name ascending
       expect(headers[1]?.textContent).toBe("exo__Instance_class");
 
       // Check data cells
@@ -306,7 +306,7 @@ describe("UniversalLayoutRenderer", () => {
       // Check headers include exo__Instance_class
       const headers = container.querySelectorAll("th");
       const headerTexts = Array.from(headers).map((h) => h.textContent);
-      expect(headerTexts).toContain("Name");
+      expect(headerTexts.some(t => t?.includes("Name"))).toBe(true); // Name with sort indicator
       expect(headerTexts).toContain("exo__Instance_class");
 
       // Check data cells
