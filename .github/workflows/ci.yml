@@ -42,3 +42,14 @@ jobs:
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096"
           timeout 120s npm test || exit 1
+
+      - name: Run BDD tests
+        run: npm run test:cucumber
+
+      - name: Upload BDD test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bdd-test-results
+          path: specs/TEST-RESULTS.md
+          retention-days: 30
