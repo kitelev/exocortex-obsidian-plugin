@@ -62,7 +62,6 @@
   "author": "A. Kitelev",
   "license": "MIT",
   "devDependencies": {
-    "@cucumber/cucumber": "^11.3.0",
     "@cucumber/pretty-formatter": "^2.1.0",
     "@playwright/experimental-ct-react": "^1.55.1",
     "@types/chai": "^5.2.2",
@@ -70,7 +69,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/jsdom": "^21.1.7",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^18.19.0",
+    "@types/node": "^18.19.129",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@typescript-eslint/eslint-plugin": "^5.29.0",
