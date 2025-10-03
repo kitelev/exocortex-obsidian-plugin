@@ -55,6 +55,7 @@ export class UniversalLayoutRenderer {
   private backlinksCache: Map<string, Set<string>> = new Map();
   private backlinksCacheValid = false;
   private reactRenderer: ReactRenderer;
+  private tableIdCounter = 0;
 
   constructor(app: ObsidianApp) {
     this.app = app;
@@ -321,8 +322,8 @@ export class UniversalLayoutRenderer {
     // Create header row with sorting
     const headerRow = thead.createEl("tr");
 
-    // Get or initialize sort state for this group
-    const sortStateKey = `group_${groupName}`;
+    // Get or initialize sort state for this group with unique ID
+    const sortStateKey = `group_${groupName}_${this.generateUniqueId(groupDiv)}`;
     if (!this.sortState.has(sortStateKey)) {
       this.sortState.set(sortStateKey, { column: "Name", order: "asc" });
     }
@@ -547,8 +548,8 @@ export class UniversalLayoutRenderer {
     const thead = table.createEl("thead");
     const tbody = table.createEl("tbody");
 
-    // Get or initialize sort state for table
-    const sortStateKey = "table_main";
+    // Generate unique sort state key per table instance using container element
+    const sortStateKey = `table_${this.generateUniqueId(container)}`;
     if (!this.sortState.has(sortStateKey)) {
       this.sortState.set(sortStateKey, { column: "Name", order: "asc" });
     }
@@ -1156,6 +1157,13 @@ export class UniversalLayoutRenderer {
       if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
       return 0;
     });
+  }
+
+  /**
+   * Generate unique ID for table instances
+   */
+  private generateUniqueId(_element: HTMLElement): number {
+    return this.tableIdCounter++;
   }
 
   /**

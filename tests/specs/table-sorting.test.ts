@@ -448,4 +448,96 @@ describe("Feature: Интерактивная сортировка таблиц"
       });
     });
   });
+
+  describe("Правило: Независимая сортировка таблиц", () => {
+    describe("Сценарий: Сортировка одной таблицы не влияет на другие", () => {
+      it("должен сохранять независимое состояние сортировки для каждой таблицы", async () => {
+        const relations1: AssetRelation[] = [
+          { path: "C1.md", title: "C1", metadata: {}, modified: Date.now(), created: Date.now() },
+          { path: "A1.md", title: "A1", metadata: {}, modified: Date.now(), created: Date.now() },
+          { path: "B1.md", title: "B1", metadata: {}, modified: Date.now(), created: Date.now() },
+        ];
+
+        const relations2: AssetRelation[] = [
+          { path: "Z2.md", title: "Z2", metadata: {}, modified: Date.now(), created: Date.now() },
+          { path: "X2.md", title: "X2", metadata: {}, modified: Date.now(), created: Date.now() },
+          { path: "Y2.md", title: "Y2", metadata: {}, modified: Date.now(), created: Date.now() },
+        ];
+
+        const container1 = document.createElement("div");
+        const container2 = document.createElement("div");
+
+        const mockObsidianEl = (el: HTMLElement) => {
+          (el as any).createDiv = function (opts?: { cls?: string }) {
+            const div = document.createElement("div");
+            if (opts?.cls) div.className = opts.cls;
+            this.appendChild(div);
+            mockObsidianEl(div);
+            return div;
+          };
+          (el as any).createEl = function (tag: string, opts?: { cls?: string; text?: string; href?: string; attr?: Record<string, string> }) {
+            const elem = document.createElement(tag);
+            if (opts?.cls) elem.className = opts.cls;
+            if (opts?.text) elem.textContent = opts.text;
+            if (opts?.href && elem instanceof HTMLAnchorElement) elem.href = opts.href;
+            if (opts?.attr) {
+              Object.entries(opts.attr).forEach(([key, value]) => {
+                elem.setAttribute(key, value);
+              });
+            }
+            this.appendChild(elem);
+            mockObsidianEl(elem);
+            return elem;
+          };
+          (el as any).createSpan = function (opts?: { cls?: string; text?: string }) {
+            const span = document.createElement("span");
+            if (opts?.cls) span.className = opts.cls;
+            if (opts?.text) span.textContent = opts.text;
+            this.appendChild(span);
+            mockObsidianEl(span);
+            return span;
+          };
+          (el as any).empty = function () {
+            this.innerHTML = "";
+          };
+        };
+
+        mockObsidianEl(container1);
+        mockObsidianEl(container2);
+
+        await (renderer as any).renderTable(container1, relations1, { layout: "table" });
+        await (renderer as any).renderTable(container2, relations2, { layout: "table" });
+
+        const getRowNamesFromContainer = (cont: HTMLElement) => {
+          const rows = cont.querySelectorAll("tbody tr");
+          return Array.from(rows).map((row) => row.querySelector("td")?.textContent || "");
+        };
+
+        const clickHeaderInContainer = (cont: HTMLElement, headerText: string) => {
+          const headers = cont.querySelectorAll("th");
+          for (const header of Array.from(headers)) {
+            if (header.textContent?.includes(headerText)) {
+              const clickEvent = new MouseEvent("click", { bubbles: true });
+              header.dispatchEvent(clickEvent);
+              return header;
+            }
+          }
+          return null;
+        };
+
+        expect(getRowNamesFromContainer(container1)).toEqual(["A1", "B1", "C1"]);
+        expect(getRowNamesFromContainer(container2)).toEqual(["X2", "Y2", "Z2"]);
+
+        clickHeaderInContainer(container1, "Name");
+
+        expect(getRowNamesFromContainer(container1)).toEqual(["C1", "B1", "A1"]);
+        expect(getRowNamesFromContainer(container2)).toEqual(["X2", "Y2", "Z2"]);
+
+        clickHeaderInContainer(container2, "Name");
+
+        expect(getRowNamesFromContainer(container1)).toEqual(["C1", "B1", "A1"]);
+        expect(getRowNamesFromContainer(container2)).toEqual(["Z2", "Y2", "X2"]);
+      });
+    });
+  });
 });

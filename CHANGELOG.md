@@ -1,3 +1,26 @@
+## [11.5.2] - 2025-10-04
+
+### Fixed
+
+- **Independent Table Sorting**: Fixed critical bug where sorting one table affected all other tables in the layout
+  - Each table now maintains its own independent sort state
+  - Sorting by Name or Instance Class in one section no longer changes sort order in other sections
+  - Users can now sort different tables independently without interference
+
+### Technical
+
+- Added unique table instance tracking with `tableIdCounter` in `UniversalLayoutRenderer`
+- Changed sort state keys from fixed `"table_main"` to unique `"table_${uniqueId}"`
+- Changed group sort keys from `"group_${groupName}"` to `"group_${groupName}_${uniqueId}"`
+- Added regression test: "Сортировка одной таблицы не влияет на другие"
+- All 32 BDD tests passing ✅
+
+### Benefits
+
+- **Predictable Sorting**: Each table behaves independently as users expect
+- **Better UX**: Multiple tables can be sorted differently at the same time
+- **Clean State Management**: Proper isolation of sort state per table instance
+
 ## [11.5.1] - 2025-10-04
 
 ### Fixed
