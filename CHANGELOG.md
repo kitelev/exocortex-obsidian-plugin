@@ -1,3 +1,33 @@
+## [11.5.0] - 2025-10-04
+
+### Added
+
+- **UI Integration Testing**: New test infrastructure using `jest-environment-obsidian` for testing actual DOM rendering with Obsidian API mocks
+- **FileBuilder Pattern**: Elegant test data generation pattern that creates both file content and metadata simultaneously
+- **6 UI Integration Tests**: Comprehensive coverage of DOM rendering, React components, grouped relations, and empty states
+- **Duck Typing Pattern**: Robust file detection using property checks instead of `instanceof` for better test compatibility
+
+### Fixed
+
+- **Test Compatibility**: Resolved `jest-environment-obsidian` issues with TFile detection by implementing duck typing
+- **BDD Test Mocks**: Enhanced all BDD tests with full Obsidian HTMLElement API support (createDiv, createEl, createSpan, empty, attr)
+- **React Async Rendering**: Fixed timing issues in UI tests with proper await for React rendering
+
+### Benefits
+
+- **97 Tests Passing**: Complete test suite (30 unit + 30 BDD + 6 UI + 31 component) ensures rock-solid quality
+- **Better Test Coverage**: UI integration tests validate actual DOM structure and user interactions
+- **Maintainable Tests**: FileBuilder pattern eliminates manual position tracking in test data
+- **Future-Proof**: Duck typing ensures tests work across different Obsidian API versions
+
+### Technical
+
+- `jest-environment-obsidian` 0.0.1 for proper Obsidian API mocking
+- FileBuilder helper with frontmatter, headings, links, lists, code blocks, and tables
+- Duck typing checks for `basename`, `path`, and `stat` properties
+- Comprehensive mock functions: createDiv/El/Span/empty with attr support
+- Test execution: ~7s total for all 97 tests
+
 ## [11.4.0] - 2025-10-03
 
 ### Added
