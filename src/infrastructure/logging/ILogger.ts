@@ -1,3 +1,6 @@
-// Re-export from domain layer for backward compatibility
-export type { ILogger, LogContext, LogEntry } from "../../domain/ports/ILogger";
-export { LogLevel } from "../../domain/ports/ILogger";
+export interface ILogger {
+  debug(message: string, ...args: any[]): void;
+  info(message: string, ...args: any[]): void;
+  warn(message: string, ...args: any[]): void;
+  error(message: string, error?: Error | unknown): void;
+}

@@ -3,10 +3,10 @@ import { UniversalLayoutRenderer } from "./presentation/renderers/UniversalLayou
 import { DynamicLayoutRenderer } from "./presentation/renderers/DynamicLayoutRenderer";
 import { ILogger } from "./infrastructure/logging/ILogger";
 import { LoggerFactory } from "./infrastructure/logging/LoggerFactory";
-import { Asset } from "./domain/entities/Asset";
 
 /**
- * Simplified Exocortex Plugin - UniversalLayout and DynamicLayout only
+ * Simplified Exocortex Plugin - Layout rendering only
+ * Both UniversalLayout and DynamicLayout now behave identically
  */
 export default class ExocortexPlugin extends Plugin {
   private logger: ILogger;
@@ -15,49 +15,34 @@ export default class ExocortexPlugin extends Plugin {
 
   async onload(): Promise<void> {
     try {
-      // Initialize logger first
       this.logger = LoggerFactory.create("ExocortexPlugin");
-      this.logger.info("Loading Exocortex Plugin - Simplified version");
+      this.logger.info("Loading Exocortex Plugin - Layout rendering only");
 
-      // Inject logger into domain entities
-      Asset.setLogger(LoggerFactory.create("Asset"));
-
-      // Initialize renderers
       this.universalLayoutRenderer = new UniversalLayoutRenderer(this.app);
       this.dynamicLayoutRenderer = new DynamicLayoutRenderer(this.app);
 
-      // Register metadata change listener to invalidate backlinks cache
       this.registerEvent(
         this.app.metadataCache.on("resolved", () => {
           this.universalLayoutRenderer.invalidateBacklinksCache();
-          this.dynamicLayoutRenderer.invalidateBacklinksCache();
         })
       );
 
-      // Register the markdown code block processor for UniversalLayout
       this.registerMarkdownCodeBlockProcessor(
         "exocortex",
         async (source, el, ctx) => {
-          // Parse the source to determine the view type
           const viewType = this.parseViewType(source);
 
           if (viewType === "DynamicLayout") {
             await this.dynamicLayoutRenderer.render(source, el, ctx);
           } else {
-            // Default to UniversalLayout
             await this.universalLayoutRenderer.render(source, el, ctx);
           }
         },
       );
 
-      this.logger.info("Exocortex Plugin loaded successfully", {
-        renderers: ["UniversalLayout", "DynamicLayout"],
-      });
+      this.logger.info("Exocortex Plugin loaded successfully");
     } catch (error) {
-      this.logger?.error(
-        "Failed to load Exocortex Plugin",
-        error as Error,
-      );
+      this.logger?.error("Failed to load Exocortex Plugin", error as Error);
       throw error;
     }
   }
@@ -66,16 +51,10 @@ export default class ExocortexPlugin extends Plugin {
     this.logger?.info("Exocortex Plugin unloaded");
   }
 
-  /**
-   * Parse the view type from the source
-   */
   private parseViewType(source: string): string {
     const lines = source.trim().split("\n");
-    if (lines.length > 0) {
-      const firstLine = lines[0].trim();
-      if (firstLine === "DynamicLayout") {
-        return "DynamicLayout";
-      }
+    if (lines.length > 0 && lines[0].trim() === "DynamicLayout") {
+      return "DynamicLayout";
     }
     return "UniversalLayout";
   }

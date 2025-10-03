@@ -1,0 +1,83 @@
+{
+  "version": "1.55.1",
+  "viteVersion": "6.3.6",
+  "registerSourceHash": "ea233d95b980072c81eb49458aee55f5d33fdb02",
+  "components": [
+    {
+      "id": "_Users_kitelev_Documents_exocortex_obsidian_plugin_src_presentation_components_AssetRelationsTable_AssetRelationsTable",
+      "filename": "/Users/kitelev/Documents/exocortex-obsidian-plugin/tests/component/AssetRelationsTable.spec.tsx",
+      "importSource": "../../src/presentation/components/AssetRelationsTable",
+      "remoteName": "AssetRelationsTable"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_obsidian_plugin_src_presentation_components_ChildrenEffortsTable_ChildrenEffortsTable",
+      "filename": "/Users/kitelev/Documents/exocortex-obsidian-plugin/tests/component/ChildrenEffortsTable.spec.tsx",
+      "importSource": "../../src/presentation/components/ChildrenEffortsTable",
+      "remoteName": "ChildrenEffortsTable"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_obsidian_plugin_src_presentation_components_PropertyDisplay_PropertyDisplay",
+      "filename": "/Users/kitelev/Documents/exocortex-obsidian-plugin/tests/component/PropertyDisplay.spec.tsx",
+      "importSource": "../../src/presentation/components/PropertyDisplay",
+      "remoteName": "PropertyDisplay"
+    }
+  ],
+  "sources": {
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/playwright/index.html": {
+      "timestamp": 1759502712108.9377
+    },
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/playwright/index.ts": {
+      "timestamp": 1759502719022.5027
+    },
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/node_modules/react-dom/client.js": {
+      "timestamp": 1759502164174.7234
+    },
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/node_modules/react/index.js": {
+      "timestamp": 1759502164163.9038
+    },
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/src/presentation/components/PropertyDisplay.tsx": {
+      "timestamp": 1759502229621.8271
+    },
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/src/presentation/components/AssetRelationsTable.tsx": {
+      "timestamp": 1759502217753.3567
+    },
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/src/presentation/components/ChildrenEffortsTable.tsx": {
+      "timestamp": 1759502249372.262
+    },
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/node_modules/react/cjs/react.production.js": {
+      "timestamp": 1759502164174.6624
+    },
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/node_modules/react-dom/cjs/react-dom-client.production.js": {
+      "timestamp": 1759502164628.1135
+    },
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/node_modules/react/jsx-runtime.js": {
+      "timestamp": 1759502164164.146
+    },
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/node_modules/scheduler/index.js": {
+      "timestamp": 1759502164237.5151
+    },
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/node_modules/react-dom/index.js": {
+      "timestamp": 1759502164175.2336
+    },
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/node_modules/react/cjs/react-jsx-runtime.production.js": {
+      "timestamp": 1759502164166.0525
+    },
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/node_modules/scheduler/cjs/scheduler.production.js": {
+      "timestamp": 1759502164240.8328
+    },
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/node_modules/react-dom/cjs/react-dom.production.js": {
+      "timestamp": 1759502165173.651
+    }
+  },
+  "deps": {
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/src/presentation/components/AssetRelationsTable.tsx": [
+      "/Users/kitelev/Documents/exocortex-obsidian-plugin/src/presentation/components/AssetRelationsTable.tsx"
+    ],
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/src/presentation/components/ChildrenEffortsTable.tsx": [
+      "/Users/kitelev/Documents/exocortex-obsidian-plugin/src/presentation/components/ChildrenEffortsTable.tsx"
+    ],
+    "/Users/kitelev/Documents/exocortex-obsidian-plugin/src/presentation/components/PropertyDisplay.tsx": [
+      "/Users/kitelev/Documents/exocortex-obsidian-plugin/src/presentation/components/PropertyDisplay.tsx"
+    ]
+  }
+}

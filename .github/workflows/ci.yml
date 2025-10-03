@@ -53,3 +53,27 @@ jobs:
           name: bdd-test-results
           path: specs/TEST-RESULTS.md
           retention-days: 30
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run component tests
+        run: npm run test:component
+
+      - name: Upload component test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: component-test-report
+          path: playwright-report-ct/
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Upload component test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: component-test-results
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore

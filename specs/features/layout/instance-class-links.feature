@@ -1,108 +1,108 @@
-# language: ru
+# language: en
 @instance-class @critical
-Функция: Кликабельные ссылки в колонке Instance Class
+Feature: Clickable Instance Class Links
 
-  Как пользователь Exocortex плагина
-  Я хочу видеть Instance Class как кликабельные ссылки
-  Чтобы быстро переходить к определениям классов онтологии
+  As an Exocortex plugin user
+  I want to see Instance Class as clickable links
+  So that I can quickly navigate to ontology class definitions
 
-  Правило: Instance Class всегда отображается как internal-link
+  Rule: Instance Class is always displayed as internal-link
 
-    Сценарий: Простое значение Instance Class
-      Дано существует заметка "Задача" с метаданными:
-        | Свойство            | Значение      |
+    Scenario: Simple Instance Class value
+      Given a note "Task" exists with metadata:
+        | Property            | Value         |
         | exo__Instance_class | [[ems__Task]] |
-      И существует заметка класса "ems__Task"
-      Когда я добавляю Universal Layout таблицу в другую заметку
-      И заметка "Задача" отображается в таблице
-      Тогда в колонке "exo__Instance_class" я вижу:
-        | Элемент      | Значение       |
-        | Тег          | <a>            |
-        | Текст        | ems__Task      |
-        | Класс        | internal-link  |
-        | href         | ems__Task      |
-      И я НЕ вижу текст "[[ems__Task]]"
-      И я НЕ вижу символы "[[" или "]]"
+      And a class note "ems__Task" exists
+      When I add a Universal Layout table to another note
+      And note "Task" is displayed in the table
+      Then in column "exo__Instance_class" I see:
+        | Element | Value         |
+        | Tag     | <a>           |
+        | Text    | ems__Task     |
+        | Class   | internal-link |
+        | href    | ems__Task     |
+      And I do NOT see text "[[ems__Task]]"
+      And I do NOT see symbols "[[" or "]]"
 
-    Сценарий: Массив значений Instance Class
-      Дано существует заметка "Гибридный объект" с метаданными:
-        | Свойство            | Значение                          |
+    Scenario: Array of Instance Class values
+      Given a note "Hybrid Object" exists with metadata:
+        | Property            | Value                             |
         | exo__Instance_class | [[ems__Task]], [[ems__Document]]  |
-      Когда заметка "Гибридный объект" отображается в таблице
-      Тогда в колонке "exo__Instance_class" я вижу элемент <a>
-      И элемент <a> содержит текст "ems__Task"
-      И элемент <a> имеет класс "internal-link"
-      Примечание: Отображается только первое значение из массива
+      When note "Hybrid Object" is displayed in the table
+      Then in column "exo__Instance_class" I see element <a>
+      And element <a> contains text "ems__Task"
+      And element <a> has class "internal-link"
+      # Note: Only the first value from array is displayed
 
-    Сценарий: Клик на Instance Class ссылку
-      Дано существует заметка "Задача 1" с Instance Class "[[ems__Task]]"
-      И существует файл класса "ems__Task.md"
-      И заметка "Задача 1" отображается в Universal Layout таблице
-      Когда я кликаю на ссылку "ems__Task" в колонке "exo__Instance_class"
-      Тогда открывается заметка "ems__Task"
-      И я вижу определение класса ems__Task
+    Scenario: Click on Instance Class link
+      Given a note "Task 1" exists with Instance Class "[[ems__Task]]"
+      And class file "ems__Task.md" exists
+      And note "Task 1" is displayed in Universal Layout table
+      When I click on link "ems__Task" in column "exo__Instance_class"
+      Then note "ems__Task" opens
+      And I see ems__Task class definition
 
-    Сценарий: Отсутствующий Instance Class
-      Дано существует заметка "Без Класса" без метаданных
-      Когда заметка "Без Класса" отображается в таблице
-      Тогда в колонке "exo__Instance_class" я вижу текст "-"
-      И НЕ вижу элемент <a>
+    Scenario: Missing Instance Class
+      Given a note "No Class" exists without metadata
+      When note "No Class" is displayed in the table
+      Then in column "exo__Instance_class" I see text "-"
+      And I do NOT see element <a>
 
-    Сценарий: Instance Class с префиксом
-      Дано существует заметка "Проект EMS" с метаданными:
-        | Свойство            | Значение        |
+    Scenario: Instance Class with prefix
+      Given a note "EMS Project" exists with metadata:
+        | Property            | Value            |
         | exo__Instance_class | [[ems__Project]] |
-      Когда заметка отображается в таблице
-      Тогда ссылка Instance Class содержит полное имя "ems__Project"
-      И префикс "ems__" сохраняется в тексте ссылки
+      When the note is displayed in the table
+      Then Instance Class link contains full name "ems__Project"
+      And prefix "ems__" is preserved in link text
 
-  Правило: Instance Class в групповых таблицах
+  Rule: Instance Class in grouped tables
 
-    Сценарий: Группировка по Instance Class
-      Дано существуют заметки:
-        | Название  | exo__Instance_class |
-        | Задача 1  | [[ems__Task]]       |
-        | Задача 2  | [[ems__Task]]       |
-        | Проект 1  | [[ems__Project]]    |
-      Когда я добавляю блок с конфигурацией:
+    Scenario: Grouping by Instance Class
+      Given notes exist:
+        | Name      | exo__Instance_class |
+        | Task 1    | [[ems__Task]]       |
+        | Task 2    | [[ems__Task]]       |
+        | Project 1 | [[ems__Project]]    |
+      When I add a block with configuration:
         """yaml
         layout: table
         groupByProperty: true
         showProperties:
           - exo__Instance_class
         """
-      Тогда я вижу группу "ems__Task" с 2 заметками
-      И я вижу группу "ems__Project" с 1 заметкой
-      И в каждой группе колонка "exo__Instance_class" содержит кликабельные ссылки
+      Then I see group "ems__Task" with 2 notes
+      And I see group "ems__Project" with 1 note
+      And in each group column "exo__Instance_class" contains clickable links
 
-    Сценарий: Instance Class в заголовке группы
-      Дано существуют заметки с Instance Class "[[ems__Task]]"
-      И включена группировка по свойствам
-      Когда рендерится групповая таблица
-      Тогда заголовок группы может содержать ссылку на "ems__Task"
-      И ссылка в заголовке также является кликабельной
+    Scenario: Instance Class in group header
+      Given notes exist with Instance Class "[[ems__Task]]"
+      And grouping by properties is enabled
+      When grouped table is rendered
+      Then group header may contain link to "ems__Task"
+      And link in header is also clickable
 
-  Правило: Форматирование Instance Class
+  Rule: Instance Class formatting
 
-    Сценарий: Удаление wiki-link синтаксиса
-      Дано значение Instance Class в frontmatter: "[[ems__Task]]"
-      Когда значение обрабатывается для отображения
-      Тогда результат: "ems__Task"
-      И НЕ содержит "[[" или "]]"
+    Scenario: Remove wiki-link syntax
+      Given Instance Class value in frontmatter: "[[ems__Task]]"
+      When value is processed for display
+      Then result is: "ems__Task"
+      And does NOT contain "[[" or "]]"
 
-    Сценарий: Обработка пустых значений
-      Дано заметка имеет Instance Class со значением:
-        | Входное значение | Отображаемый результат |
-        | null             | -                      |
-        | undefined        | -                      |
-        | ""               | -                      |
-        | []               | -                      |
-      Тогда для всех пустых значений отображается "-"
-      И НЕ создаётся элемент <a>
+    Scenario: Handle empty values
+      Given note has Instance Class with value:
+        | Input value | Displayed result |
+        | null        | -                |
+        | undefined   | -                |
+        | ""          | -                |
+        | []          | -                |
+      Then for all empty values "-" is displayed
+      And element <a> is NOT created
 
-    Сценарий: Обработка некорректных значений
-      Дано заметка имеет Instance Class: "simple-text-without-brackets"
-      Когда значение отображается в таблице
-      Тогда создаётся ссылка с текстом "simple-text-without-brackets"
-      И ссылка остаётся кликабельной
-      Примечание: Даже без скобок значение обрабатывается как ссылка
+    Scenario: Handle incorrect values
+      Given note has Instance Class: "simple-text-without-brackets"
+      When value is displayed in the table
+      Then link is created with text "simple-text-without-brackets"
+      And link remains clickable
+      # Note: Even without brackets value is processed as a link

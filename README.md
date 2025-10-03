@@ -4,20 +4,17 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![CI](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-54%20passing-success)](./specs/TEST-RESULTS.md)
-[![BDD](https://img.shields.io/badge/BDD-30%20scenarios-success)](./specs/TEST-RESULTS.md)
+[![Tests](https://img.shields.io/badge/tests-30%20passing-success)](./specs/TEST-RESULTS.md)
 
 ## 🎯 What is Exocortex?
 
-Exocortex is a streamlined Obsidian plugin that provides flexible layout rendering for your notes. It focuses on two core features: **UniversalLayout** and **DynamicLayout**, making it easy to display related notes and custom content blocks.
+Exocortex is a simplified Obsidian plugin that provides layout rendering for your notes. Both **UniversalLayout** and **DynamicLayout** work identically, displaying related notes in a clean, organized format.
 
 ### Key Features
 
-- 📋 **UniversalLayout**: Display all related assets with grouping and sorting options
-- 🎛️ **DynamicLayout**: Configure specific relations based on class layouts
+- 📋 **UniversalLayout/DynamicLayout**: Display all related assets with grouping and sorting
 - 🚀 **High Performance**: Optimized relation discovery with reverse indexing (O(1) lookups)
 - 📱 **Mobile Compatible**: Works seamlessly on desktop and mobile
-- 🎨 **Flexible Configuration**: Customize layouts through frontmatter properties
 - 🔗 **Clickable Links**: Instance Class displayed as internal links for quick navigation
 - ↕️ **Interactive Sorting**: Sort tables with visual indicators (▲/▼)
 - 📦 **Archive Filtering**: Automatically hide archived assets from views
@@ -46,7 +43,7 @@ UniversalLayout
 ```
 ````
 
-Or use DynamicLayout for custom configurations:
+Or use DynamicLayout (works identically):
 
 ````markdown
 ```exocortex
@@ -68,21 +65,15 @@ Archived assets are automatically filtered from all relation lists, keeping your
 
 ## 🏗️ Architecture
 
-Exocortex follows Clean Architecture principles:
+Simple and efficient architecture:
 
 ```
 ┌─── Presentation Layer ────────────────────────────┐
 │  • UniversalLayoutRenderer                        │
-│  • DynamicLayoutRenderer                          │
-│  • BaseAssetRelationsRenderer                     │
-└───────────────────────────────────────────────────┘
-┌─── Domain Layer ──────────────────────────────────┐
-│  • Asset Entities   • Value Objects               │
-│  • Result Pattern   • Domain Events               │
+│  • DynamicLayoutRenderer (extends Universal)      │
 └───────────────────────────────────────────────────┘
 ┌─── Infrastructure Layer ──────────────────────────┐
-│  • Obsidian API     • Logging                     │
-│  • Performance Optimization                       │
+│  • Logging                                        │
 └───────────────────────────────────────────────────┘
 ```
 
@@ -127,12 +118,26 @@ npm run dev
 # Run unit tests
 npm test
 
+# Run BDD tests (jest-cucumber)
+npm run test:cucumber
+
 # Run with coverage
 npm run test:coverage
 
 # Build verification
 npm run build
 ```
+
+### WebStorm IDE Integration
+
+Full Cucumber support for executable .feature files:
+
+- ✅ **No yellow underlines** on step definitions
+- ✅ **Go-to-definition** (Ctrl+Click) works
+- ✅ **Autocomplete** for Gherkin steps
+- ✅ **Run from IDE** - Right-click → Run scenario
+
+See [WebStorm Setup Guide](./docs/WEBSTORM-CUCUMBER-SETUP.md) for configuration instructions.
 
 ## 📚 Documentation
 

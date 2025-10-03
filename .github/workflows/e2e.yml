@@ -1,0 +1,141 @@
+name: E2E Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual triggering
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-playwright:
+    name: E2E Tests (Playwright + Electron)
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false  # Continue even if one OS fails
+      matrix:
+        os: [ubuntu-latest]  # Start with Linux, add macos-latest later
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Install Playwright
+        run: |
+          # Playwright is already in package.json
+          # No browser installation needed for Electron testing
+          echo "Playwright installed via package.json"
+
+      - name: Setup test vault structure
+        run: |
+          mkdir -p tests/e2e/setup/test-vault/.obsidian/plugins/exocortex-obsidian-plugin
+          cp main.js manifest.json tests/e2e/setup/test-vault/.obsidian/plugins/exocortex-obsidian-plugin/
+
+      - name: Create sample test notes
+        run: |
+          mkdir -p tests/e2e/setup/test-vault
+          cat > tests/e2e/setup/test-vault/Test\ Task.md << 'EOF'
+          ---
+          exo__Instance_class: [[ems__Task]]
+          exo__Asset_uid: 550e8400-e29b-41d4-a716-446655440000
+          exo__Asset_isDefinedBy: [[!ems]]
+          exo__Asset_createdAt: 2025-01-01T00:00:00
+          status: active
+          ---
+          # Test Task
+
+          This is a test task for E2E testing.
+          EOF
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        if: false  # TODO: Enable when Obsidian is available in CI
+        env:
+          CI: true
+          DISPLAY: ':99.0'  # For Linux headless
+          OBSIDIAN_PATH: /usr/bin/obsidian
+        continue-on-error: true  # Don't fail CI until Obsidian installed
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.os }}
+          path: playwright-report/
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Upload test videos and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: E2E Test Summary
+        if: always()
+        run: |
+          echo "### E2E Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status**: E2E infrastructure ready, tests pending implementation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To implement E2E tests:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Follow guide: \`docs/E2E-TESTING-GUIDE.md\`" >> $GITHUB_STEP_SUMMARY
+          echo "2. Create \`playwright.config.ts\`" >> $GITHUB_STEP_SUMMARY
+          echo "3. Write tests in \`tests/e2e/\`" >> $GITHUB_STEP_SUMMARY
+          echo "4. Enable in workflow: Remove \`if: false\` from 'Run E2E tests' step" >> $GITHUB_STEP_SUMMARY
+
+  # Optional: Docker-based E2E (for future Spectron migration)
+  e2e-docker:
+    name: E2E Tests (Docker)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: false  # Disabled by default, enable when needed
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Run Docker E2E tests
+        run: npm run test:e2e-obsidian:docker
+        if: false  # Needs docker-compose file
+        continue-on-error: true
+
+      - name: Upload Docker test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-e2e-results
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore
