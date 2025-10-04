@@ -39,8 +39,6 @@ type ObsidianApp = any;
 export class UniversalLayoutRenderer {
   private logger: ILogger;
   private app: ObsidianApp;
-  private sortState: Map<string, { column: string; order: "asc" | "desc" }> =
-    new Map();
   private eventListeners: Array<{
     element: HTMLElement;
     type: string;
@@ -49,7 +47,6 @@ export class UniversalLayoutRenderer {
   private backlinksCache: Map<string, Set<string>> = new Map();
   private backlinksCacheValid = false;
   private reactRenderer: ReactRenderer;
-  private tableIdCounter = 0;
 
   constructor(app: ObsidianApp) {
     this.app = app;
@@ -97,7 +94,6 @@ export class UniversalLayoutRenderer {
       element.removeEventListener(type, handler);
     });
     this.eventListeners = [];
-    this.sortState.clear();
     this.reactRenderer.cleanup();
   }
 
@@ -216,10 +212,7 @@ export class UniversalLayoutRenderer {
           modified: sourceFile.stat.mtime,
         };
 
-        // Apply filters if specified
-        if (this.matchesFilters(relation, config)) {
-          relations.push(relation);
-        }
+        relations.push(relation);
       }
     }
 
@@ -265,26 +258,6 @@ export class UniversalLayoutRenderer {
   }
 
   /**
-   * Render a single group of related assets
-   */
-
-  /**
-   * Render relations as a list (legacy mode)
-   */
-
-  /**
-   * Render relations as a table (legacy mode)
-   */
-
-  /**
-   * Render relations as cards (legacy mode)
-   */
-
-  /**
-   * Render relations as a graph (placeholder)
-   */
-
-  /**
    * Parse configuration from source
    */
   private parseConfig(source: string): UniversalLayoutConfig {
@@ -312,27 +285,6 @@ export class UniversalLayoutRenderer {
   }
 
   /**
-   * Check if a relation matches the configured filters
-   */
-  private matchesFilters(
-    _relation: AssetRelation,
-    _config: UniversalLayoutConfig,
-  ): boolean {
-    // Filters removed in simplified version
-    return true;
-    /*
-    for (const [key, value] of Object.entries({})) {
-      const relationValue = this.getPropertyValue(relation, key);
-      if (relationValue !== value) {
-        return false;
-      }
-    }
-
-    return true;
-    */
-  }
-
-  /**
    * Render a simple message
    */
   private renderMessage(el: HTMLElement, message: string): void {
@@ -350,167 +302,6 @@ export class UniversalLayoutRenderer {
       text: `Error: ${message}`,
       cls: "exocortex-error-message",
     });
-  }
-
-  /**
-   * Update sort state when a column is clicked
-   */
-  private updateSort(column: string, sortStateKey: string): void {
-    const currentSort = this.sortState.get(sortStateKey);
-    if (!currentSort) return;
-
-    if (currentSort.column === column) {
-      // Toggle order if same column
-      currentSort.order = currentSort.order === "asc" ? "desc" : "asc";
-    } else {
-      // New column, default to ascending
-      currentSort.column = column;
-      currentSort.order = "asc";
-    }
-
-    this.sortState.set(sortStateKey, currentSort);
-  }
-
-  /**
-   * Update the table body with sorted data
-   */
-  private updateTableBody(
-    tbody: HTMLElement,
-    relations: AssetRelation[],
-    config: UniversalLayoutConfig,
-  ): void {
-    // Clear existing rows
-    tbody.empty();
-
-    // Re-render sorted rows
-    for (const relation of relations) {
-      const row = tbody.createEl("tr", { cls: "exocortex-relation-row" });
-
-      // First column: Asset name with link
-      const nameCell = row.createEl("td", { cls: "asset-name" });
-      const linkEl = nameCell.createEl("a", {
-        text: relation.title,
-        cls: "internal-link",
-        href: relation.path,
-      });
-
-      linkEl.addEventListener("click", (e) => {
-        e.preventDefault();
-        this.app.workspace.openLinkText(relation.path, "", false);
-      });
-
-      // Second column: exo__Instance_class value
-      const instanceClassRaw =
-        relation.metadata?.exo__Instance_class ||
-        relation.metadata?.["exo__Instance_class"] ||
-        "-";
-
-      // Handle arrays and convert to string safely
-      const instanceClass = Array.isArray(instanceClassRaw)
-        ? instanceClassRaw[0] || "-"
-        : instanceClassRaw || "-";
-
-      // Create Instance Class cell with clickable link
-      const instanceCell = row.createEl("td", { cls: "instance-class" });
-
-      if (instanceClass && instanceClass !== "-") {
-        // Remove [[ and ]] from wikilink syntax
-        const cleanClass = String(instanceClass).replace(/^\[\[|\]\]$/g, "");
-
-        const instanceLink = instanceCell.createEl("a", {
-          text: cleanClass,
-          cls: "internal-link",
-          attr: { href: cleanClass },
-        });
-
-        this.registerEventListener(instanceLink, "click", (e) => {
-          e.preventDefault();
-          this.app.workspace.openLinkText(cleanClass, "", false);
-        });
-      } else {
-        instanceCell.textContent = "-";
-      }
-
-      // Additional property columns if configured
-      if (config.showProperties && config.showProperties.length > 0) {
-        for (const prop of config.showProperties) {
-          if (prop !== "exo__Instance_class") {
-            const value = this.getPropertyValue(relation, prop);
-            row.createEl("td", {
-              text: value !== undefined ? String(value) : "",
-              cls: "exocortex-property",
-            });
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Update sort indicators on column headers
-   */
-  private updateSortIndicators(
-    headerRow: HTMLElement,
-    sortState: { column: string; order: "asc" | "desc" },
-  ): void {
-    // Remove all existing indicators
-    headerRow.querySelectorAll(".sort-indicator").forEach((el) => el.remove());
-
-    // Remove all sorted classes
-    headerRow.querySelectorAll("th").forEach((th) => {
-      th.classList.remove("sorted-asc", "sorted-desc");
-    });
-
-    // Add indicator to the currently sorted column
-    const headers = headerRow.querySelectorAll("th");
-    headers.forEach((th) => {
-      const text = th.textContent?.replace(" ▲", "").replace(" ▼", "").trim();
-      if (
-        text === sortState.column ||
-        (text === "Name" && sortState.column === "Name") ||
-        (text === "exo__Instance_class" &&
-          sortState.column === "exo__Instance_class")
-      ) {
-        th.classList.add(`sorted-${sortState.order}`);
-        th.createSpan({
-          text: sortState.order === "asc" ? " ▲" : " ▼",
-          cls: "sort-indicator",
-        });
-      }
-    });
-  }
-
-  /**
-   * Check if current file is a class and render creation button if applicable
-   */
-
-  /**
-   * Extract clean value from frontmatter (remove wikilink brackets)
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private extractValue(value: any): string {
-    if (!value) return "";
-    const str = String(value);
-    // Handle arrays
-    if (Array.isArray(value)) {
-      return this.extractValue(value[0]);
-    }
-    // Remove [[ and ]] if present
-    return str.replace(/^\[\[|\]\]$/g, "");
-  }
-
-  /**
-   * Convert class name to human-readable form for button label
-   */
-  private humanizeClassName(className: string): string {
-    // Remove prefix if present (e.g., "ems__Area" -> "Area")
-    const withoutPrefix = className.split("__").pop() || className;
-
-    // Convert to title case and add spacing
-    return withoutPrefix
-      .replace(/([A-Z])/g, " $1")
-      .replace(/_/g, " ")
-      .trim();
   }
 
   /**
@@ -565,34 +356,6 @@ export class UniversalLayoutRenderer {
     return false;
   }
 
-  /**
-   * Sort relations
-   */
-  private sortRelations(
-    relations: AssetRelation[],
-    sortBy: string,
-    sortOrder: "asc" | "desc" = "asc",
-  ): AssetRelation[] {
-    return [...relations].sort((a, b) => {
-      const aVal = this.getPropertyValue(a, sortBy);
-      const bVal = this.getPropertyValue(b, sortBy);
-
-      if (aVal < bVal) return sortOrder === "asc" ? -1 : 1;
-      if (aVal > bVal) return sortOrder === "asc" ? 1 : -1;
-      return 0;
-    });
-  }
-
-  /**
-   * Generate unique ID for table instances
-   */
-  private generateUniqueId(_element: HTMLElement): number {
-    return this.tableIdCounter++;
-  }
-
-  /**
-   * Check if asset is archived
-   */
   /**
    * Check if an asset is archived based on frontmatter metadata
    * Supports multiple archived field formats:

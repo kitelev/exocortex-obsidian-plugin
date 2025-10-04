@@ -1,3 +1,16 @@
+## [12.0.1] - 2025-10-04
+
+### Performance
+
+- **Code Cleanup**: Removed 8 unused methods from UniversalLayoutRenderer
+- **Bundle Size**: Reduced renderer from 5.8KB to 3.5KB (40% reduction)
+- **Maintenance**: Removed orphaned comments and unused class fields
+
+### Removed
+
+- Unused methods: `updateSort`, `updateTableBody`, `updateSortIndicators`, `extractValue`, `humanizeClassName`, `sortRelations`, `generateUniqueId`, `matchesFilters`
+- Unused class fields: `sortState`, `tableIdCounter`
+
 ## [12.0.0] - 2025-10-04
 
 ### 🚨 BREAKING CHANGES
