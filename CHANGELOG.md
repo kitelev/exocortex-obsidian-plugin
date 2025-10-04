@@ -1,3 +1,23 @@
+## [12.2.0] - 2025-10-04
+
+### Added
+
+- **Auto-render Mode**: Optional automatic display of relations table below metadata in all notes
+- **Plugin Settings**: New settings tab with "Auto-render layout" toggle (disabled by default)
+- **Smart Injection**: Uses `.metadata-container` selector to intelligently insert layout after frontmatter
+
+### Changed
+
+- **Dual Mode Support**: Keep code-block injection while adding automatic rendering option
+- **Settings Integration**: Full Obsidian settings tab with toggle for auto-render
+- **Event Handling**: Listen to `file-open` and `active-leaf-change` events when auto-render enabled
+
+### User Experience
+
+- **Option 1**: Manual code blocks (always available, backwards compatible)
+- **Option 2**: Enable auto-render in settings for automatic display everywhere (requires reload)
+- **Clean Removal**: Auto-rendered layouts properly cleaned up on file change and plugin unload
+
 ## [12.1.0] - 2025-10-04
 
 ### Changed
