@@ -45,6 +45,23 @@ jobs:
           export NODE_OPTIONS="--max-old-space-size=4096"
           timeout 180s npm test || exit 1
 
+      - name: Check BDD Coverage
+        run: npm run bdd:check
+        continue-on-error: false
+
+      - name: Generate BDD Coverage Report
+        if: always()
+        run: npm run bdd:report
+
+      - name: Upload BDD Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bdd-coverage-report
+          path: bdd-coverage-report.md
+          retention-days: 30
+          if-no-files-found: ignore
+
       - name: Upload component test report
         if: always()
         uses: actions/upload-artifact@v4
