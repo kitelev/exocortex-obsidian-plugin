@@ -141,7 +141,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 11672,
+      "bytes": 11634,
       "imports": [
         {
           "path": "obsidian",
@@ -176,24 +176,8 @@
       ],
       "format": "esm"
     },
-    "src/presentation/renderers/DynamicLayoutRenderer.ts": {
-      "bytes": 690,
-      "imports": [
-        {
-          "path": "obsidian",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "src/presentation/renderers/UniversalLayoutRenderer.ts",
-          "kind": "import-statement",
-          "original": "./UniversalLayoutRenderer"
-        }
-      ],
-      "format": "esm"
-    },
     "src/ExocortexPlugin.ts": {
-      "bytes": 2095,
+      "bytes": 1366,
       "imports": [
         {
           "path": "obsidian",
@@ -204,11 +188,6 @@
           "path": "src/presentation/renderers/UniversalLayoutRenderer.ts",
           "kind": "import-statement",
           "original": "./presentation/renderers/UniversalLayoutRenderer"
-        },
-        {
-          "path": "src/presentation/renderers/DynamicLayoutRenderer.ts",
-          "kind": "import-statement",
-          "original": "./presentation/renderers/DynamicLayoutRenderer"
         },
         {
           "path": "./infrastructure/logging/ILogger",
@@ -275,7 +254,7 @@
           "bytesInOutput": 56
         },
         "src/ExocortexPlugin.ts": {
-          "bytesInOutput": 960
+          "bytesInOutput": 652
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -284,19 +263,16 @@
           "bytesInOutput": 49
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 3626
+          "bytesInOutput": 3588
         },
         "src/presentation/utils/ReactRenderer.tsx": {
           "bytesInOutput": 284
         },
         "src/presentation/components/AssetRelationsTable.tsx": {
           "bytesInOutput": 2660
-        },
-        "src/presentation/renderers/DynamicLayoutRenderer.ts": {
-          "bytesInOutput": 96
         }
       },
-      "bytes": 200128
+      "bytes": 199686
     }
   }
 }
