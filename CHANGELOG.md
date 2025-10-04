@@ -1,4 +1,13 @@
-## [12.5.1] - 2025-10-04
+## [12.5.2] - 2025-10-04
+
+### Fixed
+
+- **Release Workflow**: Fixed auto-release workflow to properly attach build artifacts
+  - Removed premature tag creation that caused immutable release error
+  - Now softprops/action-gh-release creates tag AND uploads artifacts atomically
+  - Guarantees main.js and manifest.json are always included in release
+
+## [12.5.1] - 2025-10-04 [YANKED]
 
 ### Fixed
 

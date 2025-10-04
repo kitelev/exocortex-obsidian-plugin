@@ -40,14 +40,6 @@ jobs:
             echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create and push tag
-        if: steps.check.outputs.needs_release == 'true'
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git tag -a "v${{ steps.check.outputs.version }}" -m "Release v${{ steps.check.outputs.version }}"
-          git push origin "v${{ steps.check.outputs.version }}"
-
       - name: Setup Node.js
         if: steps.check.outputs.needs_release == 'true'
         uses: actions/setup-node@v4
