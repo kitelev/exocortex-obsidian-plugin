@@ -177,7 +177,7 @@
       "format": "esm"
     },
     "src/ExocortexPlugin.ts": {
-      "bytes": 4777,
+      "bytes": 5125,
       "imports": [
         {
           "path": "obsidian",
@@ -254,7 +254,7 @@
           "bytesInOutput": 56
         },
         "src/ExocortexPlugin.ts": {
-          "bytesInOutput": 2344
+          "bytesInOutput": 2424
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -272,7 +272,7 @@
           "bytesInOutput": 2660
         }
       },
-      "bytes": 201378
+      "bytes": 201458
     }
   }
 }
