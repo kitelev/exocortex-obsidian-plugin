@@ -262,7 +262,7 @@ export class UniversalLayoutRenderer {
         instanceClass,
         metadata,
         sourceFile: file,
-        onTaskCreate: async (fileName: string, frontmatter: Record<string, any>) => {
+        onTaskCreate: async () => {
           // Create the task file
           const createdFile = await this.taskCreationService.createTaskFromArea(
             file,

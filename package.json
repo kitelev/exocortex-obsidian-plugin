@@ -71,5 +71,8 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "uuid": "^11.1.0"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-darwin-x64": "^4.52.4"
   }
 }
