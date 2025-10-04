@@ -374,7 +374,7 @@ chore: maintenance task
 
 **VIOLATION**: Working alone on complex tasks is a project standard violation
 
-### RULE 1: Always Release After Changes
+### RULE 1: Always Release After Changes + Verify Pipeline
 
 Every code change MUST:
 
@@ -383,11 +383,20 @@ Every code change MUST:
 3. Update CHANGELOG.md with user-focused description
 4. Commit with conventional message
 5. Push to trigger auto-release
+6. **WAIT for GitHub Actions pipeline to turn GREEN** ✅
+7. **If pipeline FAILS - FIX immediately, task is NOT complete until pipeline is green**
 
 **CRITICAL**: `manifest.json` version MUST always match `package.json` version. This is required for:
 - BRAT (Beta Reviewers Auto-update Tester) compatibility
 - Obsidian plugin store compliance
 - User update notifications
+
+**CRITICAL**: After EVERY push, monitor GitHub Actions:
+- Go to: https://github.com/{repo}/actions
+- Watch the pipeline run
+- If RED (❌) - IMMEDIATELY fix the issue
+- If GREEN (✅) - Task complete
+- **A broken pipeline = incomplete task**
 
 **AUTOMATED RELEASE**: Use `.claude/agents/release.sh` script or follow `.claude/agents/release-agent.md` checklist
 
@@ -396,6 +405,8 @@ Every code change MUST:
 - [ ] manifest.json version updated (same as package.json)
 - [ ] CHANGELOG.md updated
 - [ ] Both versions match exactly
+- [ ] Code pushed to GitHub
+- [ ] **GitHub Actions pipeline is GREEN ✅**
 
 ### RULE 2: User-Focused Release Notes
 
