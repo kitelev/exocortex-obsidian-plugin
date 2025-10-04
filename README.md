@@ -13,7 +13,8 @@ Exocortex is a lightweight Obsidian plugin that displays related notes in a clea
 ### Key Features
 
 - 📋 **Simple Layout**: Display all related assets with grouping and sorting
-- ⚡ **Auto-render Mode**: Optional automatic display below metadata (no code blocks needed)
+- ⚡ **AutoLayout**: Optional automatic display below metadata (no code blocks needed)
+- 📝 **ManualLayout**: Code-block insertion for precise placement control
 - 🚀 **High Performance**: Optimized relation discovery with reverse indexing (O(1) lookups)
 - 📱 **Mobile Compatible**: Works seamlessly on desktop and mobile
 - 🔗 **Clickable Links**: Instance Class displayed as internal links for quick navigation
@@ -36,18 +37,20 @@ Enable the plugin in Obsidian settings.
 
 ### Basic Usage
 
-**Option 1: Manual Code Block (always available)**
+**ManualLayout (always available)**
 
-Add a code block to any note:
+Add a code block to any note for manual placement:
 
 ````markdown
 ```exocortex
 ```
 ````
 
-**Option 2: Auto-render (optional setting)**
+**AutoLayout (optional setting)**
 
-Enable "Auto-render layout" in plugin settings to automatically display the relations table below metadata in all notes. No code blocks needed!
+Enable "AutoLayout" in plugin settings to automatically display the relations table below metadata in all notes (reading mode only). No code blocks needed!
+
+Go to: Settings → Exocortex → Enable AutoLayout
 
 ### Archive Filtering
 
