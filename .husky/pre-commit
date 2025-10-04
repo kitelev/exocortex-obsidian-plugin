@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run tests
+echo "🧪 Running tests..."
+npm test || exit 1
+
+# Check BDD coverage
+echo "📊 Checking BDD coverage..."
+npm run bdd:check || exit 1
+
+echo "✅ All checks passed!"
