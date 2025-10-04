@@ -3,7 +3,8 @@
 
 # Run tests
 echo "🧪 Running tests..."
-npm test || exit 1
+# Force ARM64 architecture for node to ensure correct rollup binary is loaded
+arch -arm64 npm test || exit 1
 
 # Check BDD coverage
 echo "📊 Checking BDD coverage..."
