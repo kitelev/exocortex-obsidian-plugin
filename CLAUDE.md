@@ -65,7 +65,7 @@ Execute every request as a highly qualified Senior IT specialist with extensive 
 - **React Components**: AssetRelationsTable with grouping and independent sorting
 - **Domain Layer**: Asset-based entities with Clean Architecture and mobile performance optimizations
 - **Slash Commands**: Quick execution commands (/execute, /status, /agents, /release, /test) for efficient development workflow
-- **Testing Excellence**: 76 tests passing (100%) - 30 unit + 32 BDD + 6 UI + 8 component
+- **Testing Excellence**: 14 tests passing (100%) - 6 UI + 8 component (React-only tests)
 - **CI/CD**: Optimized GitHub Actions with automated releases on test success
 - **Performance**: Fast build times (<1min), optimized bundle (206kb)
 - **Architecture**: Clean Architecture with comprehensive test infrastructure and security validation
@@ -85,12 +85,11 @@ Domain:
   - OWL ontology management
 
 Testing:
-  - Jest with comprehensive mocks
-  - BDD test automation (32 scenarios covering sorting, links, filtering)
   - Playwright Component Testing (8 tests for React components)
   - UI Integration tests with jest-environment-obsidian (6 tests)
-  - 76 tests total (30 unit + 32 BDD + 6 UI + 8 component)
-  - Test execution time: ~6 seconds total
+  - 14 tests total (6 UI + 8 component)
+  - Test execution time: ~3 seconds total
+  - Focus on React components only (legacy tests removed)
 
 CI/CD:
   - GitHub Actions automated releases
@@ -428,7 +427,7 @@ Write CHANGELOG entries as Product Manager:
 
 ### Required
 
-- **Test Suite**: 76 tests total (30 unit + 32 BDD + 6 UI + 8 component)
+- **Test Suite**: 14 tests total (6 UI + 8 component, React-focused)
 - **Test Coverage**: 70%+ coverage maintained across all modules
 - **TypeScript**: Clean compilation with strict mode
 - **Build**: Successful production builds (<1min)

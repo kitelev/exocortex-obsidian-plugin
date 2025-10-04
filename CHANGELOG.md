@@ -1,3 +1,64 @@
+## [12.0.0] - 2025-10-04
+
+### 🚨 BREAKING CHANGES
+
+**Major Simplification: Table-Only Mode**
+
+Completely refactored UniversalLayoutRenderer to focus exclusively on table rendering with Name and exo__Instance_class columns. This is a breaking change that removes all alternative layout modes.
+
+### Removed
+
+- **All Alternative Layouts**: Removed cards, graph, and list rendering modes
+- **Creation Button**: Removed asset creation button functionality (renderCreationButtonIfClass)
+- **Legacy Table Renderer**: Removed old non-React table implementation
+- **BDD Tests**: Removed all 32 BDD/Cucumber tests (superseded by React component tests)
+- **Dead Code**: Removed 532 lines of unused code from UniversalLayoutRenderer
+- **Config Options**: Removed layout, limit, groupBy, showBacklinks, showForwardLinks from config
+
+### Changed
+
+- **UniversalLayoutRenderer**: Now always renders React-based AssetRelationsTable
+- **Test Suite**: Reduced from 76 to 14 tests (removed legacy tests, kept React component tests)
+- **File Size**: UniversalLayoutRenderer: 1172 → 640 lines (45% reduction)
+- **Bundle Size**: Renderer output: 14KB → 5.8KB (59% reduction)
+- **Config Interface**: Simplified to only sortBy, sortOrder, showProperties
+
+### Benefits
+
+- **Single Responsibility**: One clear purpose - render tables with React
+- **Faster Performance**: 8KB smaller bundle, 3x faster test execution
+- **Maintainability**: 532 lines less code to maintain
+- **Clarity**: No confusion about which layout mode to use
+- **React-First**: All rendering through modern React components
+
+### Technical
+
+- Removed methods: renderRelationGroup (192 lines), renderList (38), renderTable (179), renderCards (57), renderGraph (16), renderCreationButtonIfClass (50)
+- Removed helpers: updateSort, updateTableBody, updateSortIndicators, humanizeClassName, extractValue
+- Test count: 76 → 14 (6 UI + 8 component)
+- Removed jest.cucumber.config.js and all BDD test infrastructure
+- All 14 tests passing ✅
+
+### Migration Guide
+
+**Before (v11.x):**
+```markdown
+\`\`\`exocortex
+layout: cards
+limit: 10
+\`\`\`
+```
+
+**After (v12.0):**
+```markdown
+\`\`\`exocortex
+sortBy: title
+sortOrder: asc
+\`\`\`
+```
+
+Only table mode is supported. All blocks render as grouped tables with Name and exo__Instance_class columns.
+
 ## [11.5.6] - 2025-10-04
 
 ### Removed
