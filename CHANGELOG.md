@@ -1,4 +1,11 @@
-## [12.5.0] - 2025-10-04
+## [12.5.1] - 2025-10-04
+
+### Fixed
+
+- **Release Pipeline**: Fixed release automation to include required artifacts (main.js, manifest.json)
+- **Plugin Installation**: Resolved BRAT installation error "manifest.json file does not exist"
+
+## [12.5.0] - 2025-10-04 [YANKED]
 
 ### Added
 
