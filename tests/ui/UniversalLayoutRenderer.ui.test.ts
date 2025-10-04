@@ -235,6 +235,81 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       // Relations table should NOT appear (no relations)
       expect(container.querySelector(".exocortex-assets-relations")).toBeFalsy();
     });
+
+    it("should filter archived notes from relations", async () => {
+      const currentFile = {
+        basename: "My Project",
+        path: "project.md",
+      } as TFile;
+
+      // Create three related files - two active, one archived
+      const activeFile1 = {
+        basename: "Active",
+        path: "active1.md",
+        stat: { ctime: Date.now(), mtime: Date.now() },
+      } as TFile;
+
+      const archivedFile = {
+        basename: "Archived",
+        path: "archived.md",
+        stat: { ctime: Date.now(), mtime: Date.now() },
+      } as TFile;
+
+      const activeFile2 = {
+        basename: "Also Active",
+        path: "active2.md",
+        stat: { ctime: Date.now(), mtime: Date.now() },
+      } as TFile;
+
+      // Mock file cache - archived file has exo__Asset_isArchived: true
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: any) => {
+        if (file?.path === "active1.md") {
+          return { frontmatter: { exo__Asset_isArchived: false } };
+        } else if (file?.path === "archived.md") {
+          return { frontmatter: { exo__Asset_isArchived: true } };
+        } else if (file?.path === "active2.md") {
+          return { frontmatter: { exo__Asset_isArchived: false } };
+        }
+        return { frontmatter: {} };
+      });
+
+      // Setup backlinks - all three files link to current file
+      mockApp.metadataCache.resolvedLinks = {
+        "active1.md": { "project.md": 1 },
+        "archived.md": { "project.md": 1 },
+        "active2.md": { "project.md": 1 },
+      };
+
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.vault.getAbstractFileByPath as jest.Mock)
+        .mockReturnValueOnce(activeFile1)
+        .mockReturnValueOnce(archivedFile)
+        .mockReturnValueOnce(activeFile2);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      // Wait for React to render
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Verify relations table rendered
+      const relationsContainer = container.querySelector(".exocortex-assets-relations");
+      expect(relationsContainer).toBeTruthy();
+
+      const relationsTable = relationsContainer?.querySelector(".exocortex-relations-table");
+      expect(relationsTable).toBeTruthy();
+
+      // Verify only 2 rows (active files only)
+      const rows = relationsTable?.querySelectorAll("tbody tr");
+      expect(rows?.length).toBe(2);
+
+      // Verify active files are present
+      const rowTexts = Array.from(rows || []).map((row) => row.textContent);
+      expect(rowTexts.some((text) => text?.includes("Active"))).toBeTruthy();
+      expect(rowTexts.some((text) => text?.includes("Also Active"))).toBeTruthy();
+
+      // Verify archived file is NOT present
+      expect(rowTexts.some((text) => text?.includes("Archived"))).toBeFalsy();
+    });
   });
 
   describe("FileBuilder Integration", () => {

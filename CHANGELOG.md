@@ -1,3 +1,24 @@
+## [12.4.1] - 2025-10-04
+
+### Fixed
+
+- **CI/CD Pipeline**: Restored package-lock.json after accidental deletion
+- **Build Stability**: Fixed npm ci failures in GitHub Actions
+
+### Enhanced
+
+- **BDD Coverage**: Achieved 100% scenario coverage (48/48 scenarios)
+- **Quality Assurance**: Raised BDD coverage threshold from 80% to 100%
+- **Test Suite**: Added archived asset filtering test for universal layout
+
+### Technical
+
+- Restored package-lock.json (required for CI/CD)
+- Added UI integration test for archived note filtering
+- BDD coverage threshold: 100% (was 80%)
+- Total tests: 29 (22 component + 7 UI)
+- All scenarios in 4 feature files fully covered
+
 ## [12.4.0] - 2025-10-04
 
 ### Added

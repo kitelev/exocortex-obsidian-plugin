@@ -17,7 +17,7 @@ const TESTS_DIRS = [
   path.join(__dirname, '../tests/ui'),
 ];
 const COVERAGE_MAPPING_FILE = path.join(__dirname, '../coverage-mapping.json');
-const COVERAGE_THRESHOLD = parseInt(process.env.BDD_COVERAGE_THRESHOLD || '80', 10);
+const COVERAGE_THRESHOLD = parseInt(process.env.BDD_COVERAGE_THRESHOLD || '100', 10);
 
 // Parse feature files
 function parseFeatureFile(filePath) {
