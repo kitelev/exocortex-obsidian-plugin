@@ -1,3 +1,20 @@
+## [12.3.1] - 2025-10-04
+
+### Changed
+
+- **Terminology Enforcement**: Applied AutoLayout/ManualLayout terminology across entire codebase
+- **Settings**: Renamed setting from "Auto-render layout" to "Enable AutoLayout"
+- **Code Comments**: Updated all comments to use official terminology
+- **README**: Updated documentation with AutoLayout/ManualLayout terminology
+- **Variable Names**: Changed `autoRenderEnabled` to `autoLayoutEnabled` for consistency
+
+### Documentation
+
+- All references now use consistent terminology:
+  - AutoLayout = automatic rendering via settings (no code-block)
+  - ManualLayout = manual code-block rendering (user controls placement)
+- Settings description now explains both layout types clearly
+
 ## [12.3.0] - 2025-10-04
 
 ### Fixed
