@@ -1,3 +1,23 @@
+## [12.3.0] - 2025-10-04
+
+### Fixed
+
+- **AutoLayout Rendering**: Fixed AutoLayout not displaying after mode switches
+- **Event Handling**: Added `layout-change` event listener to catch reading/editing mode switches
+- **Reliability**: Added consistent timeouts for all auto-render triggers
+
+### Added
+
+- **Terminology Documentation**: Added official AutoLayout vs ManualLayout terminology to CLAUDE.md
+- **AutoLayout**: Automatic rendering when "Auto-render layout" setting is enabled (no code-block needed)
+- **ManualLayout**: Manual rendering via `exocortex` code-block (always works, user controls placement)
+
+### Technical
+
+- Added `workspace.on('layout-change')` event listener for mode switches
+- Consistent 100ms timeouts on all auto-render triggers
+- Clear terminology distinction in documentation
+
 ## [12.2.5] - 2025-10-04
 
 ### Fixed

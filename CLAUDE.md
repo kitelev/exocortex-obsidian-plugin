@@ -55,7 +55,20 @@ Execute every request as a highly qualified Senior IT specialist with extensive 
 
 ## 📊 Architecture Overview
 
-### Current Implementation (v11.5.4)
+### Terminology (CRITICAL)
+
+**AutoLayout vs ManualLayout:**
+
+- **AutoLayout**: Layout that displays automatically for all assets when the setting "Auto-render layout" is enabled in plugin settings. Appears below metadata (frontmatter) in reading/preview mode only. No code-block needed.
+
+- **ManualLayout**: Layout that displays when user explicitly adds a code-block with type `exocortex` in their note. Works always, regardless of settings. User controls placement.
+
+**IMPORTANT**: Always use correct terminology:
+- "AutoLayout" = automatic rendering via settings
+- "ManualLayout" = manual code-block rendering
+- NEVER confuse these terms in code, docs, or commits
+
+### Current Implementation (v12.2.5)
 
 - **React Component Architecture** (v11.5.3): Isolated state management with independent table sorting
 - **Clickable Instance Class Links** (v11.2.3): Instance Class displayed as internal links for quick navigation
