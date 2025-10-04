@@ -54,7 +54,7 @@ export default class ExocortexPlugin extends Plugin {
         this.registerEvent(
           this.app.workspace.on("file-open", (file) => {
             if (file) {
-              this.autoRenderLayout();
+              setTimeout(() => this.autoRenderLayout(), 100);
             }
           }),
         );
@@ -62,7 +62,15 @@ export default class ExocortexPlugin extends Plugin {
         this.registerEvent(
           this.app.workspace.on("active-leaf-change", () => {
             if (this.settings.autoRenderEnabled) {
-              this.autoRenderLayout();
+              setTimeout(() => this.autoRenderLayout(), 100);
+            }
+          }),
+        );
+
+        this.registerEvent(
+          this.app.workspace.on("layout-change", () => {
+            if (this.settings.autoRenderEnabled) {
+              setTimeout(() => this.autoRenderLayout(), 100);
             }
           }),
         );
