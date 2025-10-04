@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![CI](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-91%20passing-success)](./specs/TEST-RESULTS.md)
+[![Tests](https://img.shields.io/badge/tests-88%20passing-success)](./specs/TEST-RESULTS.md)
 
 ## 🎯 What is Exocortex?
 
