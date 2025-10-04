@@ -365,12 +365,24 @@ chore: maintenance task
 
 Every code change MUST:
 
-1. Update version in package.json
-2. Update CHANGELOG.md with user-focused description
-3. Commit with conventional message
-4. Push to trigger auto-release
+1. Update version in **package.json**
+2. Update version in **manifest.json** (CRITICAL: must match package.json!)
+3. Update CHANGELOG.md with user-focused description
+4. Commit with conventional message
+5. Push to trigger auto-release
+
+**CRITICAL**: `manifest.json` version MUST always match `package.json` version. This is required for:
+- BRAT (Beta Reviewers Auto-update Tester) compatibility
+- Obsidian plugin store compliance
+- User update notifications
 
 **AUTOMATED RELEASE**: Use `.claude/agents/release.sh` script or follow `.claude/agents/release-agent.md` checklist
+
+**Version Update Checklist:**
+- [ ] package.json version updated
+- [ ] manifest.json version updated (same as package.json)
+- [ ] CHANGELOG.md updated
+- [ ] Both versions match exactly
 
 ### RULE 2: User-Focused Release Notes
 
