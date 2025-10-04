@@ -1,6 +1,6 @@
 {
   "name": "exocortex-obsidian-plugin",
-  "version": "12.5.4",
+  "version": "12.5.3",
   "description": "Exocortex: A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
   "main": "main.js",
   "engines": {
@@ -37,8 +37,6 @@
   "license": "MIT",
   "devDependencies": {
     "@playwright/experimental-ct-react": "^1.55.1",
-    "@rollup/rollup-darwin-arm64": "^4.52.4",
-    "@rollup/rollup-darwin-x64": "^4.52.4",
     "@types/jest": "^30.0.0",
     "@types/js-yaml": "^4.0.9",
     "@types/jsdom": "^21.1.7",

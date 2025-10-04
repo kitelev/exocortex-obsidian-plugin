@@ -2,7 +2,7 @@ import React from "react";
 import { TFile } from "obsidian";
 
 export interface CreateTaskButtonProps {
-  instanceClass: string | string[] | null;
+  instanceClass: string | null;
   metadata: Record<string, any>;
   sourceFile: TFile;
   onTaskCreate: () => Promise<void>;
@@ -18,14 +18,9 @@ export const CreateTaskButton: React.FC<CreateTaskButtonProps> = ({
   const shouldShowButton = React.useMemo(() => {
     if (!instanceClass) return false;
 
-    // Normalize to array for consistent handling
-    const classes = Array.isArray(instanceClass) ? instanceClass : [instanceClass];
-
-    // Check if any class matches ems__Area
-    return classes.some((cls) => {
-      const cleanClass = cls.replace(/\[\[|\]\]/g, "").trim();
-      return cleanClass === "ems__Area";
-    });
+    // Handle both [[ems__Area]] and ems__Area formats
+    const cleanClass = instanceClass.replace(/\[\[|\]\]/g, "").trim();
+    return cleanClass === "ems__Area";
   }, [instanceClass]);
 
   const handleClick = async (e: React.MouseEvent) => {
