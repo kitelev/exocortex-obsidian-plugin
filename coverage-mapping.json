@@ -8,12 +8,13 @@
       "note": "Wiki-link syntax removal is tested implicitly"
     }
   },
-  "universal-layout-rendering.feature": {
-    "Filter archived notes": {
-      "tests": [],
-      "status": "NOT_COVERED",
-      "priority": "high",
-      "note": "Need to add test for archived assets filtering"
+  "area-task-creation.feature": {
+    "Generated UID is valid UUIDv4": {
+      "tests": [
+        "tests/component/CreateTaskButton.spec.tsx::should call onTaskCreate with correct parameters when clicked"
+      ],
+      "status": "covered",
+      "note": "UUID validation tested in component test with regex pattern"
     }
   }
 }

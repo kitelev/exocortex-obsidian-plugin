@@ -5,6 +5,8 @@ import React from "react";
 import { ReactRenderer } from "../utils/ReactRenderer";
 import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
+import { CreateTaskButton } from "../components/CreateTaskButton";
+import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 
 /**
  * UniversalLayout configuration options
@@ -53,7 +55,10 @@ export class UniversalLayoutRenderer {
     this.app = app;
     this.logger = LoggerFactory.create("UniversalLayoutRenderer");
     this.reactRenderer = new ReactRenderer();
+    this.taskCreationService = new TaskCreationService(this.app.vault);
   }
+
+  private taskCreationService: TaskCreationService;
 
   /**
    * Build reverse index of backlinks for O(1) lookups
@@ -127,7 +132,10 @@ export class UniversalLayoutRenderer {
         return;
       }
 
-      // Render asset properties FIRST
+      // Render Create Task button FIRST (above properties)
+      await this.renderCreateTaskButton(el, currentFile);
+
+      // Render asset properties
       await this.renderAssetProperties(el, currentFile);
 
       // Get asset relations for the current file
@@ -234,6 +242,43 @@ export class UniversalLayoutRenderer {
   /**
    * Render asset properties for the current file
    */
+  /**
+   * Render Create Task button for Area assets
+   * Button appears only when exo__Instance_class is ems__Area
+   */
+  private async renderCreateTaskButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+
+    const container = el.createDiv({ cls: "exocortex-create-task-wrapper" });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(CreateTaskButton, {
+        instanceClass,
+        metadata,
+        sourceFile: file,
+        onTaskCreate: async (fileName: string, frontmatter: Record<string, any>) => {
+          // Create the task file
+          const createdFile = await this.taskCreationService.createTaskFromArea(
+            file,
+            metadata,
+          );
+
+          // Open the created file in a new tab
+          const leaf = this.app.workspace.getLeaf("tab");
+          await leaf.openFile(createdFile);
+
+          this.logger.info(`Created Task: ${createdFile.path}`);
+        },
+      }),
+    );
+  }
+
   private async renderAssetProperties(
     el: HTMLElement,
     file: TFile,
