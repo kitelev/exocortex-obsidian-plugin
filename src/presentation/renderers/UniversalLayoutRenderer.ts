@@ -4,6 +4,7 @@ import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
 import React from "react";
 import { ReactRenderer } from "../utils/ReactRenderer";
 import { AssetRelationsTable } from "../components/AssetRelationsTable";
+import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
 
 /**
  * UniversalLayout configuration options
@@ -110,7 +111,7 @@ export class UniversalLayoutRenderer {
   }
 
   /**
-   * Render the UniversalLayout view with Assets Relations
+   * Render the UniversalLayout view with Asset Properties and Assets Relations
    */
   public async render(
     source: string,
@@ -126,19 +127,19 @@ export class UniversalLayoutRenderer {
         return;
       }
 
+      // Render asset properties FIRST
+      await this.renderAssetProperties(el, currentFile);
+
       // Get asset relations for the current file
       const relations = await this.getAssetRelations(currentFile, config);
 
-      if (relations.length === 0) {
-        this.renderMessage(el, "No related assets found");
-        return;
+      if (relations.length > 0) {
+        // Render as table with Name and exo__Instance_class columns
+        await this.renderAssetRelations(el, relations, config);
       }
 
-      // Render as table with Name and exo__Instance_class columns
-      await this.renderAssetRelations(el, relations, config);
-
       this.logger.info(
-        `Rendered UniversalLayout with ${relations.length} asset relations`,
+        `Rendered UniversalLayout with properties and ${relations.length} asset relations`,
       );
     } catch (error) {
       this.logger.error("Failed to render UniversalLayout", { error });
@@ -228,6 +229,33 @@ export class UniversalLayoutRenderer {
     }
 
     return relations;
+  }
+
+  /**
+   * Render asset properties for the current file
+   */
+  private async renderAssetProperties(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+
+    if (Object.keys(metadata).length === 0) {
+      return;
+    }
+
+    const container = el.createDiv({ cls: "exocortex-properties-section" });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(AssetPropertiesTable, {
+        metadata,
+        onLinkClick: (path: string) => {
+          this.app.workspace.openLinkText(path, "", false);
+        },
+      }),
+    );
   }
 
   /**

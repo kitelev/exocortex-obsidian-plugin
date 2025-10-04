@@ -140,8 +140,19 @@
       ],
       "format": "esm"
     },
+    "src/presentation/components/AssetPropertiesTable.tsx": {
+      "bytes": 2249,
+      "imports": [
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "import-statement",
+          "original": "react"
+        }
+      ],
+      "format": "esm"
+    },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 11634,
+      "bytes": 12432,
       "imports": [
         {
           "path": "obsidian",
@@ -172,6 +183,11 @@
           "path": "src/presentation/components/AssetRelationsTable.tsx",
           "kind": "import-statement",
           "original": "../components/AssetRelationsTable"
+        },
+        {
+          "path": "src/presentation/components/AssetPropertiesTable.tsx",
+          "kind": "import-statement",
+          "original": "../components/AssetPropertiesTable"
         }
       ],
       "format": "esm"
@@ -263,16 +279,19 @@
           "bytesInOutput": 49
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 3588
+          "bytesInOutput": 3917
         },
         "src/presentation/utils/ReactRenderer.tsx": {
           "bytesInOutput": 284
         },
         "src/presentation/components/AssetRelationsTable.tsx": {
           "bytesInOutput": 2660
+        },
+        "src/presentation/components/AssetPropertiesTable.tsx": {
+          "bytesInOutput": 1245
         }
       },
-      "bytes": 201660
+      "bytes": 203234
     }
   }
 }
