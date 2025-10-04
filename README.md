@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![CI](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-14%20passing-success)](./specs/TEST-RESULTS.md)
+[![Tests](https://img.shields.io/badge/tests-22%20passing-success)](./specs/TEST-RESULTS.md)
 
 ## 🎯 What is Exocortex?
 
@@ -12,12 +12,13 @@ Exocortex is a lightweight Obsidian plugin that displays related notes in a clea
 
 ### Key Features
 
-- 📋 **Simple Layout**: Display all related assets with grouping and sorting
+- 🏷️ **Asset Properties**: Display all frontmatter properties in a clean key-value table
+- 🔗 **Smart Links**: Wiki-links in properties automatically become clickable internal links
+- 📊 **Related Assets**: Show all notes that reference the current note, grouped by property
 - ⚡ **AutoLayout**: Optional automatic display below metadata (no code blocks needed)
 - 📝 **ManualLayout**: Code-block insertion for precise placement control
 - 🚀 **High Performance**: Optimized relation discovery with reverse indexing (O(1) lookups)
 - 📱 **Mobile Compatible**: Works seamlessly on desktop and mobile
-- 🔗 **Clickable Links**: Instance Class displayed as internal links for quick navigation
 - ↕️ **Interactive Sorting**: Sort tables with visual indicators (▲/▼)
 - 📦 **Archive Filtering**: Automatically hide archived assets from views
 
@@ -48,9 +49,13 @@ Add a code block to any note for manual placement:
 
 **AutoLayout (optional setting)**
 
-Enable "AutoLayout" in plugin settings to automatically display the relations table below metadata in all notes (reading mode only). No code blocks needed!
+Enable "AutoLayout" in plugin settings to automatically display both properties and relations tables below metadata in all notes (reading mode only). No code blocks needed!
 
 Go to: Settings → Exocortex → Enable AutoLayout
+
+This will show:
+1. **Properties Table** - All frontmatter properties in key-value format
+2. **Relations Table** - All notes that reference this note, grouped by property
 
 ### Archive Filtering
 

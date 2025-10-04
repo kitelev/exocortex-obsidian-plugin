@@ -1,3 +1,28 @@
+## [12.4.0] - 2025-10-04
+
+### Added
+
+- **Asset Properties Display**: AutoLayout and ManualLayout now show all frontmatter properties in a clean key-value table
+- **Wiki-link Detection**: Properties containing `[[Note]]` are automatically rendered as clickable internal links
+- **Smart Property Rendering**: Arrays, booleans, numbers, and objects all display correctly
+- **Properties First**: Properties table appears before relations table for better information hierarchy
+- **14 New Tests**: Comprehensive Playwright component tests for AssetPropertiesTable
+
+### Enhanced
+
+- **Complete Asset View**: See both properties and relations in one place
+- **Consistent Link Behavior**: Property links work just like Instance Class links
+- **Array Support**: Arrays display as comma-separated values with wiki-link detection
+- **Type-Safe Rendering**: Proper handling of null, undefined, boolean, number, and object values
+
+### Technical
+
+- New React component: `AssetPropertiesTable.tsx`
+- Updated `UniversalLayoutRenderer` to render properties before relations
+- BDD feature file: `asset-properties-display.feature` with comprehensive scenarios
+- 22 total component tests passing (14 new + 8 existing)
+- Bundle size: +1.2kb for new component
+
 ## [12.3.1] - 2025-10-04
 
 ### Changed
