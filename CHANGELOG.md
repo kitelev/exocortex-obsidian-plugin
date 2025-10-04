@@ -1,3 +1,16 @@
+## [12.2.2] - 2025-10-04
+
+### Fixed
+
+- **Auto-layout Position**: Fixed layout jumping to top when switching between reading/editing modes
+- **Stable DOM Anchoring**: Now uses content container (`.markdown-preview-view`, `.markdown-source-view`) for stable positioning
+- **Mode Switching**: Layout stays in correct position after metadata container across view mode changes
+
+### Technical
+
+- Changed from global `.metadata-container` search to scoped search within content container
+- Ensures layout is inserted within the same content context in both reading and editing modes
+
 ## [12.2.1] - 2025-10-04
 
 ### Fixed
