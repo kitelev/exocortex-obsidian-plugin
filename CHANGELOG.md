@@ -1,3 +1,33 @@
+## [11.5.6] - 2025-10-04
+
+### Removed
+
+- **Unused PropertyDisplay Component**: Removed `PropertyDisplay` component and its 11 tests
+  - Component was created only for testing infrastructure demonstration (v11.4.0)
+  - Never used in production code - only existed in test files
+  - Cleaned up codebase by removing non-functional code
+
+### Changed
+
+- **Test Count Updated**: Total tests reduced from 88 to 76 (30 unit + 32 BDD + 6 UI + 8 component)
+- **Documentation**: Updated README, CLAUDE.md to reflect accurate test counts
+- **React Components**: Now only one production component: AssetRelationsTable
+- **Bundle Size**: Slightly reduced by removing unused component code
+
+### Benefits
+
+- **Minimal Footprint**: Only essential production components remain
+- **Single Responsibility**: AssetRelationsTable is the only React component, with clear purpose
+- **Faster CI/CD**: Fewer tests mean faster pipeline execution (~6s vs ~8s)
+- **Clear Architecture**: No confusion about which components are actually used
+
+### Technical
+
+- Removed `src/presentation/components/PropertyDisplay.tsx` (76 lines)
+- Removed `tests/component/PropertyDisplay.spec.tsx` (11 tests)
+- Cleared Playwright cache to remove stale component references
+- All 76 tests passing ✅
+
 ## [11.5.5] - 2025-10-04
 
 ### Documentation
