@@ -1,3 +1,15 @@
+## [12.2.3] - 2025-10-04
+
+### Changed
+
+- **Source Mode**: Auto-layout now only appears in reading/preview mode, not in source/edit mode
+- **Cleaner Editing**: Layout hidden during source editing to avoid visual clutter
+
+### Technical
+
+- Changed selector from `.markdown-preview-view, .markdown-source-view` to only `.markdown-preview-view`
+- Auto-layout only renders when viewing content, not when editing source
+
 ## [12.2.2] - 2025-10-04
 
 ### Fixed

@@ -94,20 +94,20 @@ export default class ExocortexPlugin extends Plugin {
     // Remove existing auto-rendered layouts
     this.removeAutoRenderedLayouts();
 
-    // Find the markdown content container (stable across reading/editing modes)
-    const contentContainers = document.querySelectorAll(
-      ".markdown-preview-view, .markdown-source-view",
+    // Only render in preview mode, not in source mode
+    const previewContainers = document.querySelectorAll(
+      ".markdown-preview-view",
     );
-    if (contentContainers.length === 0) {
+    if (previewContainers.length === 0) {
       return;
     }
 
-    // Use the last content container (active file)
-    const contentContainer =
-      contentContainers[contentContainers.length - 1] as HTMLElement;
+    // Use the last preview container (active file)
+    const previewContainer =
+      previewContainers[previewContainers.length - 1] as HTMLElement;
 
-    // Find metadata container within this content
-    const metadataContainer = contentContainer.querySelector(
+    // Find metadata container within this preview
+    const metadataContainer = previewContainer.querySelector(
       ".metadata-container",
     ) as HTMLElement;
 
@@ -124,7 +124,7 @@ export default class ExocortexPlugin extends Plugin {
       border-top: 1px solid var(--background-modifier-border);
     `;
 
-    // Insert after metadata container within the same content container
+    // Insert after metadata container within the same preview container
     if (metadataContainer.parentElement) {
       metadataContainer.parentElement.insertBefore(
         layoutContainer,
