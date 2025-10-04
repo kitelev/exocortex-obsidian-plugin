@@ -1,3 +1,11 @@
+## [12.5.4] - 2025-10-04
+
+### Fixed
+
+- **Create Task Button**: Now correctly appears for Area assets with array-type `exo__Instance_class`
+  - Button now handles both string and array formats: `exo__Instance_class: ["[[ems__Area]]"]` and `exo__Instance_class: "[[ems__Area]]"`
+  - Fixes issue where button didn't render despite correct Area class in frontmatter
+
 ## [12.5.3] - 2025-10-04
 
 ### Fixed
