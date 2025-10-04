@@ -1,4 +1,13 @@
-## [12.5.2] - 2025-10-04
+## [12.5.3] - 2025-10-04
+
+### Fixed
+
+- **Release Automation**: Removed conflicting release.yml workflow
+  - Two workflows were creating releases for same tag causing immutable release errors
+  - Kept only auto-release.yml for automated releases
+  - Resolves persistent BRAT installation failures
+
+## [12.5.2] - 2025-10-04 [YANKED]
 
 ### Fixed
 
