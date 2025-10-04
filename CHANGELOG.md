@@ -1,3 +1,16 @@
+## [12.2.5] - 2025-10-04
+
+### Fixed
+
+- **Layout Position**: Fixed auto-layout jumping above metadata when switching between reading/editing modes
+- **Stable Insertion**: Now uses `insertAdjacentElement('afterend')` instead of `insertBefore` for reliable positioning
+- **Mode Switching**: Layout stays correctly positioned after metadata across all view mode changes
+
+### Technical
+
+- Replaced `insertBefore(layoutContainer, metadataContainer.nextSibling)` with `insertAdjacentElement('afterend', layoutContainer)`
+- More reliable DOM insertion that guarantees position after metadata container
+
 ## [12.2.4] - 2025-10-04
 
 ### Fixed

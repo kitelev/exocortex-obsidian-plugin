@@ -131,20 +131,16 @@ export default class ExocortexPlugin extends Plugin {
       border-top: 1px solid var(--background-modifier-border);
     `;
 
-    // Insert after metadata container within the same preview container
-    if (metadataContainer.parentElement) {
-      metadataContainer.parentElement.insertBefore(
-        layoutContainer,
-        metadataContainer.nextSibling,
-      );
+    // Insert after metadata container using insertAdjacentElement
+    // This ensures it always goes right after the metadata, not before
+    metadataContainer.insertAdjacentElement("afterend", layoutContainer);
 
-      // Render layout
-      this.layoutRenderer
-        .render("", layoutContainer, {} as MarkdownPostProcessorContext)
-        .catch((error) => {
-          this.logger.error("Failed to auto-render layout", error);
-        });
-    }
+    // Render layout
+    this.layoutRenderer
+      .render("", layoutContainer, {} as MarkdownPostProcessorContext)
+      .catch((error) => {
+        this.logger.error("Failed to auto-render layout", error);
+      });
   }
 
   private removeAutoRenderedLayouts(): void {
