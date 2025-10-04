@@ -1,3 +1,15 @@
+## [12.2.1] - 2025-10-04
+
+### Fixed
+
+- **Version Sync**: Updated manifest.json to match package.json version (BRAT compatibility)
+- **Documentation**: Added manifest.json version requirement to RULE 1 in CLAUDE.md
+
+### Documentation
+
+- Enhanced release process documentation with version sync checklist
+- Clarified BRAT compatibility requirements
+
 ## [12.2.0] - 2025-10-04
 
 ### Added
