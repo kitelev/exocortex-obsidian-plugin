@@ -264,11 +264,11 @@ export class UniversalLayoutRenderer {
     const lines = source.trim().split("\n");
     const config: UniversalLayoutConfig = {};
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line || line === "UniversalLayout") continue;
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
 
-      const match = line.match(/^(\w+):\s*(.+)$/);
+      const match = trimmed.match(/^(\w+):\s*(.+)$/);
       if (match) {
         const [, key, value] = match;
         if (key === "sortBy") {

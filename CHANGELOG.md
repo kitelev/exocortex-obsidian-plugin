@@ -1,3 +1,22 @@
+## [12.1.0] - 2025-10-04
+
+### Changed
+
+- **Simplified Usage**: Now just use empty `exocortex` code block to render layout
+- **Single Renderer**: Removed distinction between UniversalLayout and DynamicLayout
+- **Cleaner API**: No need to specify layout type anymore
+
+### Removed
+
+- **DynamicLayoutRenderer**: Removed redundant class (was identical to UniversalLayout)
+- **Layout Type Parsing**: Removed parseViewType method from ExocortexPlugin
+- **Documentation Complexity**: Simplified README and removed confusing dual-layout references
+
+### Performance
+
+- **Bundle Size**: ExocortexPlugin reduced from 960b to 652b (32% reduction)
+- **Code Simplification**: Removed 50+ lines of redundant code
+
 ## [12.0.1] - 2025-10-04
 
 ### Performance

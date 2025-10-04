@@ -8,11 +8,11 @@
 
 ## 🎯 What is Exocortex?
 
-Exocortex is a simplified Obsidian plugin that provides layout rendering for your notes. Both **UniversalLayout** and **DynamicLayout** work identically, displaying related notes in a clean, organized format.
+Exocortex is a lightweight Obsidian plugin that displays related notes in a clean, organized table format.
 
 ### Key Features
 
-- 📋 **UniversalLayout/DynamicLayout**: Display all related assets with grouping and sorting
+- 📋 **Simple Layout**: Display all related assets with grouping and sorting
 - 🚀 **High Performance**: Optimized relation discovery with reverse indexing (O(1) lookups)
 - 📱 **Mobile Compatible**: Works seamlessly on desktop and mobile
 - 🔗 **Clickable Links**: Instance Class displayed as internal links for quick navigation
@@ -39,17 +39,10 @@ Add a code block to any note:
 
 ````markdown
 ```exocortex
-UniversalLayout
 ```
 ````
 
-Or use DynamicLayout (works identically):
-
-````markdown
-```exocortex
-DynamicLayout
-```
-````
+The plugin will automatically display a table of all notes that reference the current note.
 
 ### Archive Filtering
 
@@ -68,13 +61,12 @@ Archived assets are automatically filtered from all relation lists, keeping your
 Simple and focused architecture:
 
 ```
-┌─── Layout Renderers ──────────────────────────────┐
-│  • UniversalLayoutRenderer                        │
-│  • DynamicLayoutRenderer (extends Universal)      │
+┌─── Layout Renderer ───────────────────────────────┐
+│  • UniversalLayoutRenderer (single renderer)      │
 └───────────────────────────────────────────────────┘
 ```
 
-Built with TypeScript and optimized for performance.
+Built with TypeScript and React for optimal performance.
 
 ## 🚀 Performance
 
