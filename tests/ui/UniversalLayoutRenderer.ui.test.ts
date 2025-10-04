@@ -82,15 +82,25 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       const ctx = {} as MarkdownPostProcessorContext;
       await renderer.render("", container, ctx);
 
-      // Wait for React to render (next tick)
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      // Wait for React to render
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Verify DOM structure
+      // Verify DOM structure - should have both properties and relations sections
+      expect(container.querySelector(".exocortex-properties-section")).toBeTruthy();
       expect(container.querySelector(".exocortex-assets-relations")).toBeTruthy();
-      expect(container.querySelector(".exocortex-relations-table")).toBeTruthy();
 
-      // Verify table headers
-      const headers = container.querySelectorAll("th");
+      // Relations table is inside .exocortex-relations or .exocortex-relations-grouped
+      const relationsContainer = container.querySelector(".exocortex-assets-relations");
+      expect(relationsContainer).toBeTruthy();
+      const relationsTable = relationsContainer?.querySelector(".exocortex-relations-table");
+      expect(relationsTable).toBeTruthy();
+
+      // Verify properties table rendered
+      const propertiesTable = container.querySelector(".exocortex-properties-table");
+      expect(propertiesTable).toBeTruthy();
+
+      // Verify relations table headers
+      const headers = relationsTable.querySelectorAll("th");
       expect(headers.length).toBeGreaterThan(0);
 
       const headerTexts = Array.from(headers).map((h) => h.textContent?.trim());
@@ -125,15 +135,21 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      // Wait for React to render (next tick)
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      // Wait for React to render
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Find Instance Class cell
-      const instanceClassLinks = container.querySelectorAll(".instance-class a.internal-link");
-      expect(instanceClassLinks.length).toBeGreaterThan(0);
+      // Find Instance Class links in RELATIONS table (not properties table)
+      const relationsContainer = container.querySelector(".exocortex-assets-relations");
+      expect(relationsContainer).toBeTruthy();
+
+      const relationsTable = relationsContainer?.querySelector(".exocortex-relations-table");
+      expect(relationsTable).toBeTruthy();
+
+      const instanceClassLinks = relationsTable?.querySelectorAll(".instance-class a.internal-link");
+      expect(instanceClassLinks?.length).toBeGreaterThan(0);
 
       // Verify link text (wiki syntax removed)
-      const linkText = instanceClassLinks[0]?.textContent?.trim();
+      const linkText = instanceClassLinks?.[0]?.textContent?.trim();
       expect(linkText).toBe("ems__Task");
       expect(linkText).not.toContain("[[");
       expect(linkText).not.toContain("]]");
@@ -204,14 +220,20 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       } as TFile;
 
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: null, // No frontmatter
+      });
       mockApp.metadataCache.resolvedLinks = {}; // No backlinks
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      // Verify empty message
-      const message = container.querySelector(".exocortex-message");
-      expect(message).toBeTruthy();
-      expect(message?.textContent).toContain("No related assets found");
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      // With no frontmatter and no relations, nothing should be rendered
+      // Properties table should NOT appear (no frontmatter)
+      expect(container.querySelector(".exocortex-properties-section")).toBeFalsy();
+      // Relations table should NOT appear (no relations)
+      expect(container.querySelector(".exocortex-assets-relations")).toBeFalsy();
     });
   });
 

@@ -405,11 +405,38 @@ Write CHANGELOG entries as Product Manager:
 - Include usage scenarios
 - Use clear, non-technical language
 
-### RULE 3: Test Before Push
+### RULE 3: Test Before Push (CRITICAL)
 
-- Run `npm test` before ANY commit
-- Fix all test failures
+**ALWAYS run the FULL test suite before creating ANY commit:**
+
+```bash
+npm test
+```
+
+This runs:
+1. `npm run test:unit` - Unit tests
+2. `npm run test:ui` - UI integration tests
+3. `npm run test:component` - Playwright component tests
+
+**Requirements:**
+- ALL tests must pass (100%)
+- Fix all test failures before committing
 - Maintain 70%+ coverage
+- NEVER commit broken tests
+- NEVER skip tests to "fix later"
+
+**Why this is critical:**
+- Broken commits block CI/CD pipeline
+- Failed releases waste time and break trust
+- Testing locally is faster than waiting for CI
+- Prevents embarrassing rollbacks
+
+**Checklist before EVERY commit:**
+- [ ] `npm test` executed locally
+- [ ] All test suites passed
+- [ ] No test failures or errors
+- [ ] Build successful (`npm run build`)
+- [ ] Ready to commit
 
 ### RULE 4: Follow Existing Patterns
 
