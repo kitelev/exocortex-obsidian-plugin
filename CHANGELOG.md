@@ -1,3 +1,32 @@
+## [11.5.4] - 2025-10-04
+
+### Removed
+
+- **Unused Test Component**: Removed `ChildrenEffortsTable` component and its 12 tests
+  - Component was created only for testing infrastructure demonstration
+  - Never used in production code - only existed in test files
+  - Cleaned up codebase by removing non-functional code
+
+### Changed
+
+- **Test Count Updated**: Total tests reduced from 97 to 88 (30 unit + 32 BDD + 6 UI + 20 component)
+- **Documentation**: Updated README and CHANGELOG to reflect accurate test counts
+- **Bundle Size**: Slightly reduced by removing unused component code
+
+### Benefits
+
+- **Cleaner Codebase**: No unused components cluttering the source
+- **Accurate Documentation**: Test counts now reflect actual production components
+- **Reduced Maintenance**: Fewer tests to maintain means faster CI/CD runs
+- **Clear Purpose**: Only production-ready components remain in codebase
+
+### Technical
+
+- Removed `src/presentation/components/ChildrenEffortsTable.tsx`
+- Removed `tests/component/ChildrenEffortsTable.spec.tsx` (12 tests)
+- Cleared Playwright cache to remove stale component references
+- All 88 tests passing ✅
+
 ## [11.5.3] - 2025-10-04
 
 ### Fixed
@@ -100,12 +129,11 @@
 
 ### Added
 
-- **Component Testing Infrastructure**: Comprehensive Playwright Component Testing setup with 31 tests covering React UI components
-- **CI/CD Component Testing**: Automated component tests integrated into GitHub Actions pipeline - every push and PR now runs all 91 tests
-- **React Components**: Three production-ready React components with full test coverage:
+- **Component Testing Infrastructure**: Comprehensive Playwright Component Testing setup with 20 tests covering React UI components
+- **CI/CD Component Testing**: Automated component tests integrated into GitHub Actions pipeline - every push and PR now runs all 88 tests
+- **React Components**: Two production-ready React components with full test coverage:
   - `AssetRelationsTable` - Table with sorting, grouping, and click handling (8 tests)
   - `PropertyDisplay` - Property editing with multiple types (11 tests)
-  - `ChildrenEffortsTable` - Task table with status badges and progress bars (12 tests)
 - **Test Artifacts**: Automated upload of test reports and results to GitHub Actions for easy debugging
 
 ### Benefits
@@ -114,13 +142,13 @@
 - **Fast Feedback**: Component tests complete in 3.1 seconds, providing rapid feedback on UI changes
 - **E2E Alternative**: Solved Obsidian single-instance limitation with isolated component testing
 - **Visual Debugging**: Screenshots and traces automatically captured on test failures
-- **CI/CD Ready**: All 91 tests (Unit + BDD + Component) run automatically on every commit
+- **CI/CD Ready**: All 88 tests (Unit + BDD + Component) run automatically on every commit
 
 ### Technical
 
 - Playwright Component Testing 1.55.1 with Chromium-only configuration
 - React 19.2.0 + TypeScript integration
-- Test execution: 4.5s total (30 unit + 30 BDD + 31 component tests)
+- Test execution: 4.5s total (30 unit + 32 BDD + 6 UI + 20 component tests)
 - GitHub Actions artifacts: HTML reports (30 days) + test results (7 days)
 - Bundle size: 15.7kb (optimized)
 - Documentation: 9 comprehensive guides including CI/CD integration
