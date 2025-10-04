@@ -9,15 +9,9 @@ import { AssetRelationsTable } from "../components/AssetRelationsTable";
  * UniversalLayout configuration options
  */
 interface UniversalLayoutConfig {
-  layout?: "list" | "table" | "cards" | "graph";
-  showProperties?: string[];
-  groupBy?: string;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
-  limit?: number;
-  showBacklinks?: boolean;
-  showForwardLinks?: boolean;
-  groupByProperty?: boolean; // Enable Assets Relations grouping
+  showProperties?: string[];
 }
 
 /**
@@ -136,9 +130,6 @@ export class UniversalLayoutRenderer {
         return;
       }
 
-      // Check if current file is a class and add creation button
-      await this.renderCreationButtonIfClass(el, currentFile);
-
       // Get asset relations for the current file
       const relations = await this.getAssetRelations(currentFile, config);
 
@@ -147,25 +138,8 @@ export class UniversalLayoutRenderer {
         return;
       }
 
-      // Default behavior: group by property (Assets Relations)
-      if (config.groupByProperty !== false) {
-        await this.renderAssetRelations(el, relations, config);
-      } else {
-        // Legacy behavior: render based on layout type
-        switch (config.layout) {
-          case "table":
-            await this.renderTable(el, relations, config);
-            break;
-          case "cards":
-            await this.renderCards(el, relations, config);
-            break;
-          case "graph":
-            await this.renderGraph(el, relations, config);
-            break;
-          default:
-            await this.renderList(el, relations, config);
-        }
-      }
+      // Render as table with Name and exo__Instance_class columns
+      await this.renderAssetRelations(el, relations, config);
 
       this.logger.info(
         `Rendered UniversalLayout with ${relations.length} asset relations`,
@@ -258,11 +232,6 @@ export class UniversalLayoutRenderer {
         const order = config.sortOrder === "desc" ? -1 : 1;
         return aVal > bVal ? order : -order;
       });
-    }
-
-    // Apply limit
-    if (config.limit && config.limit > 0) {
-      return relations.slice(0, config.limit);
     }
 
     return relations;
@@ -802,11 +771,7 @@ export class UniversalLayoutRenderer {
    */
   private parseConfig(source: string): UniversalLayoutConfig {
     const lines = source.trim().split("\n");
-    const config: UniversalLayoutConfig = {
-      layout: "list",
-      showBacklinks: true,
-      groupByProperty: true, // Default to Assets Relations mode
-    };
+    const config: UniversalLayoutConfig = {};
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -815,21 +780,12 @@ export class UniversalLayoutRenderer {
       const match = line.match(/^(\w+):\s*(.+)$/);
       if (match) {
         const [, key, value] = match;
-        try {
-          if (key === "showProperties") {
-            config.showProperties = value.split(",").map((s) => s.trim());
-          } else {
-            (config as Record<string, unknown>)[key] =
-              value === "true"
-                ? true
-                : value === "false"
-                  ? false
-                  : isNaN(Number(value))
-                    ? value
-                    : Number(value);
-          }
-        } catch {
-          (config as Record<string, unknown>)[key] = value;
+        if (key === "sortBy") {
+          config.sortBy = value;
+        } else if (key === "sortOrder") {
+          config.sortOrder = value as "asc" | "desc";
+        } else if (key === "showProperties") {
+          config.showProperties = value.split(",").map((s) => s.trim());
         }
       }
     }
