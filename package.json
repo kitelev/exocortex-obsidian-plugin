@@ -20,7 +20,10 @@
     "test:unit": "./scripts/test-ci-batched.sh",
     "test:ui": "jest --config jest.ui.config.js",
     "test:component": "playwright test -c playwright-ct.config.ts",
-    "test:component:ui": "playwright test -c playwright-ct.config.ts --ui"
+    "test:component:ui": "playwright test -c playwright-ct.config.ts --ui",
+    "bdd:coverage": "node scripts/bdd-coverage.js",
+    "bdd:report": "node scripts/generate-bdd-report.js",
+    "bdd:check": "node scripts/bdd-coverage.js --fail-on-uncovered"
   },
   "keywords": [
     "obsidian",

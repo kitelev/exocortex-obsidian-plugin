@@ -454,6 +454,78 @@ This runs:
 
 **REFERENCE**: See CLAUDE-agents.md for patterns and agent selection
 
+### RULE 6: BDD Coverage Guarantee (CRITICAL)
+
+**Every scenario in .feature files MUST have corresponding automated test.**
+
+**Available Commands:**
+```bash
+npm run bdd:coverage    # Show current BDD coverage
+npm run bdd:report      # Generate detailed Markdown report
+npm run bdd:check       # Fail if coverage < 80% threshold
+```
+
+**Before adding new scenario:**
+1. Write the scenario in `.feature` file (specs/features/)
+2. Implement the corresponding test (tests/component/ or tests/ui/)
+3. Run `npm run bdd:coverage` to verify coverage
+4. Update `coverage-mapping.json` if auto-detection fails
+
+**Before committing:**
+```bash
+npm run bdd:check  # Must pass (≥80% coverage)
+```
+
+**Naming Conventions:**
+- Test description should contain keywords from scenario name
+- Use descriptive test names that match scenario intent
+- Manual mapping via `coverage-mapping.json` for complex cases
+
+**Example:**
+
+Feature file (`specs/features/layout/table-sorting.feature`):
+```gherkin
+Scenario: First click - sort ascending
+  When I click on header "Name"
+  Then table is sorted ascending
+  And header "Name" contains symbol "▲"
+```
+
+Test file (`tests/component/AssetRelationsTable.spec.tsx`):
+```typescript
+test('should handle sorting by name', async ({ mount }) => {
+  const component = await mount(<AssetRelationsTable relations={mockRelations} />);
+
+  await component.locator('th:has-text("Name")').click();
+  await expect(component.locator('th:has-text("Name")')).toContainText('↑');
+});
+```
+
+**Manual Mapping** (`coverage-mapping.json`):
+```json
+{
+  "table-sorting.feature": {
+    "First click - sort ascending": {
+      "tests": [
+        "tests/component/AssetRelationsTable.spec.tsx::should handle sorting by name"
+      ],
+      "status": "covered"
+    }
+  }
+}
+```
+
+**Coverage Threshold:**
+- Minimum: 80% (enforced by `bdd:check`)
+- Target: 100%
+- Current threshold set via: `BDD_COVERAGE_THRESHOLD=80`
+
+**Why this is critical:**
+- Feature files serve as living documentation
+- Prevents scenario/test drift
+- Ensures every requirement is tested
+- Enables BDD-driven development
+
 ## 🤝 AI Assistant Collaboration
 
 ### For Claude Code

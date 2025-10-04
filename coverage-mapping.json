@@ -1,0 +1,19 @@
+{
+  "instance-class-links.feature": {
+    "Remove wiki-link syntax": {
+      "tests": [
+        "tests/component/AssetRelationsTable.spec.tsx::should display exo__Instance_class column"
+      ],
+      "status": "covered",
+      "note": "Wiki-link syntax removal is tested implicitly"
+    }
+  },
+  "universal-layout-rendering.feature": {
+    "Filter archived notes": {
+      "tests": [],
+      "status": "NOT_COVERED",
+      "priority": "high",
+      "note": "Need to add test for archived assets filtering"
+    }
+  }
+}
