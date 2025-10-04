@@ -1,3 +1,19 @@
+## [12.5.5] - 2025-10-04
+
+### Documentation
+
+- **Development Standards**: Added CRITICAL rule prohibiting bypass of pre-commit hooks
+  - NEVER use `--no-verify` flag to skip pre-commit hooks
+  - Pre-commit hooks protect code quality and prevent broken commits
+  - If hooks fail, fix the underlying issue rather than bypassing the check
+  - Bypassing hooks is a serious violation of development standards
+
+### Fixed
+
+- **Pre-commit Hook**: Force ARM64 architecture for node to ensure correct rollup binary loads
+  - Resolves issue where universal node binary would load x64 rollup on ARM64 systems
+  - Ensures Playwright component tests run correctly in pre-commit hook
+
 ## [12.5.4] - 2025-10-04
 
 ### Fixed

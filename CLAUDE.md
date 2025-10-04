@@ -449,6 +449,19 @@ This runs:
 - [ ] Build successful (`npm run build`)
 - [ ] Ready to commit
 
+**CRITICAL - NEVER BYPASS PRE-COMMIT HOOKS:**
+- **NEVER use `--no-verify` flag** to skip pre-commit hooks
+- Pre-commit hooks exist to protect code quality and prevent broken commits
+- If hooks fail, FIX the underlying issue, don't bypass the check
+- Bypassing hooks is a serious violation of development standards
+- If you encounter technical issues with hooks (e.g., environment-specific problems), fix the hook itself or the environment
+
+**Why this is critical:**
+- Pre-commit hooks are the last line of defense before bad code enters the repository
+- Bypassing hooks can introduce broken code into main branch
+- Broken code in main blocks other developers and CI/CD pipeline
+- Trust in the development process is built on consistent quality gates
+
 ### RULE 4: Follow Existing Patterns
 
 - Study existing code before adding new features
