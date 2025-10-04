@@ -1,3 +1,22 @@
+## [12.5.6] - 2025-10-04
+
+### Removed
+
+- **Code Cleanup**: Removed 24 unused npm packages and technical debt
+  - Removed unused dependencies: `js-yaml`, `@types/js-yaml`, `@types/jsdom`, `jest-cucumber`, `ts-node`, `tslib`
+  - Removed unused E2E test infrastructure (`tests/e2e/`, `playwright.config.ts`)
+  - Removed unused test helpers (`tests/helpers/FakeVaultAdapter.ts`)
+  - Removed unused Cucumber configuration files (`cucumber.config.js`, `tsconfig.cucumber.json`)
+  - Bundle size unchanged: 201.3kb (all removed code was dev dependencies)
+  - All tests passing: 14 tests (6 UI + 8 component)
+
+### Improved
+
+- **Repository Health**: Cleaner codebase with no unused dependencies or dead code
+  - Faster `npm install` with 24 fewer packages
+  - Reduced maintenance burden from unused configurations
+  - Better focus on actually used testing infrastructure (Jest + Playwright CT)
+
 ## [12.5.5] - 2025-10-04
 
 ### Documentation

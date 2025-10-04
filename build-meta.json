@@ -152,7 +152,7 @@
       "format": "esm"
     },
     "src/presentation/components/CreateTaskButton.tsx": {
-      "bytes": 1174,
+      "bytes": 1346,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -652,7 +652,7 @@
           "bytesInOutput": 1245
         },
         "src/presentation/components/CreateTaskButton.tsx": {
-          "bytesInOutput": 413
+          "bytesInOutput": 447
         },
         "node_modules/uuid/dist/esm-browser/stringify.js": {
           "bytesInOutput": 310
@@ -673,7 +673,7 @@
           "bytesInOutput": 716
         }
       },
-      "bytes": 206065
+      "bytes": 206099
     }
   }
 }
