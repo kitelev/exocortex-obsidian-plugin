@@ -1,4 +1,10 @@
-import { Plugin, PluginSettingTab, Setting } from "obsidian";
+import {
+  App,
+  MarkdownPostProcessorContext,
+  Plugin,
+  PluginSettingTab,
+  Setting,
+} from "obsidian";
 import { UniversalLayoutRenderer } from "./presentation/renderers/UniversalLayoutRenderer";
 import { ILogger } from "./infrastructure/logging/ILogger";
 import { LoggerFactory } from "./infrastructure/logging/LoggerFactory";
@@ -103,8 +109,9 @@ export default class ExocortexPlugin extends Plugin {
     }
 
     // Use the last preview container (active file)
-    const previewContainer =
-      previewContainers[previewContainers.length - 1] as HTMLElement;
+    const previewContainer = previewContainers[
+      previewContainers.length - 1
+    ] as HTMLElement;
 
     // Find metadata container within this preview
     const metadataContainer = previewContainer.querySelector(
@@ -133,7 +140,7 @@ export default class ExocortexPlugin extends Plugin {
 
       // Render layout
       this.layoutRenderer
-        .render("", layoutContainer, {} as any)
+        .render("", layoutContainer, {} as MarkdownPostProcessorContext)
         .catch((error) => {
           this.logger.error("Failed to auto-render layout", error);
         });
@@ -150,7 +157,7 @@ export default class ExocortexPlugin extends Plugin {
 class ExocortexSettingTab extends PluginSettingTab {
   plugin: ExocortexPlugin;
 
-  constructor(app: any, plugin: ExocortexPlugin) {
+  constructor(app: App, plugin: ExocortexPlugin) {
     super(app, plugin);
     this.plugin = plugin;
   }
