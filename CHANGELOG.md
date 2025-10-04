@@ -1,3 +1,17 @@
+## [12.2.4] - 2025-10-04
+
+### Fixed
+
+- **TypeScript Types**: Fixed all `@typescript-eslint/no-explicit-any` warnings
+- **Code Formatting**: Fixed prettier formatting issues
+- **Type Safety**: Replaced `any` types with proper Obsidian types (`App`, `MarkdownPostProcessorContext`)
+
+### Code Quality
+
+- No more ESLint warnings (except harmless import/no-cycle from config)
+- Clean CI/CD build without type warnings
+- Improved type safety across plugin initialization
+
 ## [12.2.3] - 2025-10-04
 
 ### Changed
