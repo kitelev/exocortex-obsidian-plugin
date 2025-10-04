@@ -11,10 +11,10 @@
   "area-task-creation.feature": {
     "Generated UID is valid UUIDv4": {
       "tests": [
-        "tests/component/CreateTaskButton.spec.tsx::should call onTaskCreate with correct parameters when clicked"
+        "tests/unit/TaskCreationService.test.ts::should generate valid UUIDv4 for exo__Asset_uid"
       ],
       "status": "covered",
-      "note": "UUID validation tested in component test with regex pattern"
+      "note": "UUID validation tested in TaskCreationService unit test with regex pattern"
     }
   }
 }

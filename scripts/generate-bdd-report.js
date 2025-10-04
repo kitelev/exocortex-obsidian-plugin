@@ -16,6 +16,7 @@ const FEATURES_DIR = path.join(__dirname, '../specs/features');
 const TESTS_DIRS = [
   path.join(__dirname, '../tests/component'),
   path.join(__dirname, '../tests/ui'),
+  path.join(__dirname, '../tests/unit'),
 ];
 const COVERAGE_MAPPING_FILE = path.join(__dirname, '../coverage-mapping.json');
 const REPORT_OUTPUT = path.join(__dirname, '../bdd-coverage-report.md');

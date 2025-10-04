@@ -151,8 +151,364 @@
       ],
       "format": "esm"
     },
+    "node_modules/uuid/dist/esm-browser/max.js": {
+      "bytes": 55,
+      "imports": [],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/nil.js": {
+      "bytes": 55,
+      "imports": [],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/regex.js": {
+      "bytes": 171,
+      "imports": [],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/validate.js": {
+      "bytes": 142,
+      "imports": [
+        {
+          "path": "node_modules/uuid/dist/esm-browser/regex.js",
+          "kind": "import-statement",
+          "original": "./regex.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/parse.js": {
+      "bytes": 612,
+      "imports": [
+        {
+          "path": "node_modules/uuid/dist/esm-browser/validate.js",
+          "kind": "import-statement",
+          "original": "./validate.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/stringify.js": {
+      "bytes": 1093,
+      "imports": [
+        {
+          "path": "node_modules/uuid/dist/esm-browser/validate.js",
+          "kind": "import-statement",
+          "original": "./validate.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/rng.js": {
+      "bytes": 440,
+      "imports": [],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/v1.js": {
+      "bytes": 2683,
+      "imports": [
+        {
+          "path": "node_modules/uuid/dist/esm-browser/rng.js",
+          "kind": "import-statement",
+          "original": "./rng.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/stringify.js",
+          "kind": "import-statement",
+          "original": "./stringify.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/v1ToV6.js": {
+      "bytes": 842,
+      "imports": [
+        {
+          "path": "node_modules/uuid/dist/esm-browser/parse.js",
+          "kind": "import-statement",
+          "original": "./parse.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/stringify.js",
+          "kind": "import-statement",
+          "original": "./stringify.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/md5.js": {
+      "bytes": 5772,
+      "imports": [],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/v35.js": {
+      "bytes": 1345,
+      "imports": [
+        {
+          "path": "node_modules/uuid/dist/esm-browser/parse.js",
+          "kind": "import-statement",
+          "original": "./parse.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/stringify.js",
+          "kind": "import-statement",
+          "original": "./stringify.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/v3.js": {
+      "bytes": 259,
+      "imports": [
+        {
+          "path": "node_modules/uuid/dist/esm-browser/md5.js",
+          "kind": "import-statement",
+          "original": "./md5.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/v35.js",
+          "kind": "import-statement",
+          "original": "./v35.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/v35.js",
+          "kind": "import-statement",
+          "original": "./v35.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/native.js": {
+      "bytes": 136,
+      "imports": [],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/v4.js": {
+      "bytes": 883,
+      "imports": [
+        {
+          "path": "node_modules/uuid/dist/esm-browser/native.js",
+          "kind": "import-statement",
+          "original": "./native.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/rng.js",
+          "kind": "import-statement",
+          "original": "./rng.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/stringify.js",
+          "kind": "import-statement",
+          "original": "./stringify.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/sha1.js": {
+      "bytes": 2351,
+      "imports": [],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/v5.js": {
+      "bytes": 262,
+      "imports": [
+        {
+          "path": "node_modules/uuid/dist/esm-browser/sha1.js",
+          "kind": "import-statement",
+          "original": "./sha1.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/v35.js",
+          "kind": "import-statement",
+          "original": "./v35.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/v35.js",
+          "kind": "import-statement",
+          "original": "./v35.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/v6.js": {
+      "bytes": 464,
+      "imports": [
+        {
+          "path": "node_modules/uuid/dist/esm-browser/stringify.js",
+          "kind": "import-statement",
+          "original": "./stringify.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/v1.js",
+          "kind": "import-statement",
+          "original": "./v1.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/v1ToV6.js",
+          "kind": "import-statement",
+          "original": "./v1ToV6.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/v6ToV1.js": {
+      "bytes": 842,
+      "imports": [
+        {
+          "path": "node_modules/uuid/dist/esm-browser/parse.js",
+          "kind": "import-statement",
+          "original": "./parse.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/stringify.js",
+          "kind": "import-statement",
+          "original": "./stringify.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/v7.js": {
+      "bytes": 2129,
+      "imports": [
+        {
+          "path": "node_modules/uuid/dist/esm-browser/rng.js",
+          "kind": "import-statement",
+          "original": "./rng.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/stringify.js",
+          "kind": "import-statement",
+          "original": "./stringify.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/version.js": {
+      "bytes": 208,
+      "imports": [
+        {
+          "path": "node_modules/uuid/dist/esm-browser/validate.js",
+          "kind": "import-statement",
+          "original": "./validate.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "node_modules/uuid/dist/esm-browser/index.js": {
+      "bytes": 636,
+      "imports": [
+        {
+          "path": "node_modules/uuid/dist/esm-browser/max.js",
+          "kind": "import-statement",
+          "original": "./max.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/nil.js",
+          "kind": "import-statement",
+          "original": "./nil.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/parse.js",
+          "kind": "import-statement",
+          "original": "./parse.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/stringify.js",
+          "kind": "import-statement",
+          "original": "./stringify.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/v1.js",
+          "kind": "import-statement",
+          "original": "./v1.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/v1ToV6.js",
+          "kind": "import-statement",
+          "original": "./v1ToV6.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/v3.js",
+          "kind": "import-statement",
+          "original": "./v3.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/v4.js",
+          "kind": "import-statement",
+          "original": "./v4.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/v5.js",
+          "kind": "import-statement",
+          "original": "./v5.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/v6.js",
+          "kind": "import-statement",
+          "original": "./v6.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/v6ToV1.js",
+          "kind": "import-statement",
+          "original": "./v6ToV1.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/v7.js",
+          "kind": "import-statement",
+          "original": "./v7.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/validate.js",
+          "kind": "import-statement",
+          "original": "./validate.js"
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/version.js",
+          "kind": "import-statement",
+          "original": "./version.js"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/components/CreateTaskButton.tsx": {
+      "bytes": 1954,
+      "imports": [
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "import-statement",
+          "original": "react"
+        },
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/index.js",
+          "kind": "dynamic-import",
+          "original": "uuid"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/infrastructure/services/TaskCreationService.ts": {
+      "bytes": 2495,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/index.js",
+          "kind": "import-statement",
+          "original": "uuid"
+        }
+      ],
+      "format": "esm"
+    },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 12432,
+      "bytes": 13964,
       "imports": [
         {
           "path": "obsidian",
@@ -188,6 +544,16 @@
           "path": "src/presentation/components/AssetPropertiesTable.tsx",
           "kind": "import-statement",
           "original": "../components/AssetPropertiesTable"
+        },
+        {
+          "path": "src/presentation/components/CreateTaskButton.tsx",
+          "kind": "import-statement",
+          "original": "../components/CreateTaskButton"
+        },
+        {
+          "path": "src/infrastructure/services/TaskCreationService.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/services/TaskCreationService"
         }
       ],
       "format": "esm"
@@ -261,10 +627,73 @@
           "bytesInOutput": 246
         },
         "node_modules/react-dom/cjs/react-dom-client.production.js": {
-          "bytesInOutput": 175414
+          "bytesInOutput": 175436
         },
         "node_modules/react-dom/client.js": {
           "bytesInOutput": 246
+        },
+        "node_modules/uuid/dist/esm-browser/max.js": {
+          "bytesInOutput": 61
+        },
+        "node_modules/uuid/dist/esm-browser/nil.js": {
+          "bytesInOutput": 61
+        },
+        "node_modules/uuid/dist/esm-browser/regex.js": {
+          "bytesInOutput": 177
+        },
+        "node_modules/uuid/dist/esm-browser/validate.js": {
+          "bytesInOutput": 83
+        },
+        "node_modules/uuid/dist/esm-browser/parse.js": {
+          "bytesInOutput": 407
+        },
+        "node_modules/uuid/dist/esm-browser/stringify.js": {
+          "bytesInOutput": 438
+        },
+        "node_modules/uuid/dist/esm-browser/rng.js": {
+          "bytesInOutput": 298
+        },
+        "node_modules/uuid/dist/esm-browser/v1.js": {
+          "bytesInOutput": 1357
+        },
+        "node_modules/uuid/dist/esm-browser/v1ToV6.js": {
+          "bytesInOutput": 374
+        },
+        "node_modules/uuid/dist/esm-browser/md5.js": {
+          "bytesInOutput": 3317
+        },
+        "node_modules/uuid/dist/esm-browser/v35.js": {
+          "bytesInOutput": 656
+        },
+        "node_modules/uuid/dist/esm-browser/v3.js": {
+          "bytesInOutput": 101
+        },
+        "node_modules/uuid/dist/esm-browser/native.js": {
+          "bytesInOutput": 122
+        },
+        "node_modules/uuid/dist/esm-browser/v4.js": {
+          "bytesInOutput": 470
+        },
+        "node_modules/uuid/dist/esm-browser/sha1.js": {
+          "bytesInOutput": 1230
+        },
+        "node_modules/uuid/dist/esm-browser/v5.js": {
+          "bytesInOutput": 101
+        },
+        "node_modules/uuid/dist/esm-browser/v6.js": {
+          "bytesInOutput": 200
+        },
+        "node_modules/uuid/dist/esm-browser/v6ToV1.js": {
+          "bytesInOutput": 374
+        },
+        "node_modules/uuid/dist/esm-browser/v7.js": {
+          "bytesInOutput": 1061
+        },
+        "node_modules/uuid/dist/esm-browser/version.js": {
+          "bytesInOutput": 122
+        },
+        "node_modules/uuid/dist/esm-browser/index.js": {
+          "bytesInOutput": 276
         },
         "src/main.ts": {
           "bytesInOutput": 56
@@ -279,7 +708,7 @@
           "bytesInOutput": 49
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 3917
+          "bytesInOutput": 4487
         },
         "src/presentation/utils/ReactRenderer.tsx": {
           "bytesInOutput": 284
@@ -289,9 +718,15 @@
         },
         "src/presentation/components/AssetPropertiesTable.tsx": {
           "bytesInOutput": 1245
+        },
+        "src/presentation/components/CreateTaskButton.tsx": {
+          "bytesInOutput": 718
+        },
+        "src/infrastructure/services/TaskCreationService.ts": {
+          "bytesInOutput": 721
         }
       },
-      "bytes": 203234
+      "bytes": 216586
     }
   }
 }
