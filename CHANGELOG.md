@@ -1,3 +1,11 @@
+## [12.5.7] - 2025-10-04
+
+### Fixed
+
+- **Build**: Restored `tslib` package (required by TypeScript for helper functions)
+  - TypeScript compiler requires tslib for code generation
+  - Fixed CI/CD pipeline type check failure
+
 ## [12.5.6] - 2025-10-04
 
 ### Removed
