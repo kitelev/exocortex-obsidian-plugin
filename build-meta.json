@@ -151,6 +151,22 @@
       ],
       "format": "esm"
     },
+    "src/presentation/components/CreateTaskButton.tsx": {
+      "bytes": 1174,
+      "imports": [
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "import-statement",
+          "original": "react"
+        },
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
     "node_modules/uuid/dist/esm-browser/max.js": {
       "bytes": 55,
       "imports": [],
@@ -470,27 +486,6 @@
       ],
       "format": "esm"
     },
-    "src/presentation/components/CreateTaskButton.tsx": {
-      "bytes": 1954,
-      "imports": [
-        {
-          "path": "node_modules/react/index.js",
-          "kind": "import-statement",
-          "original": "react"
-        },
-        {
-          "path": "obsidian",
-          "kind": "import-statement",
-          "external": true
-        },
-        {
-          "path": "node_modules/uuid/dist/esm-browser/index.js",
-          "kind": "dynamic-import",
-          "original": "uuid"
-        }
-      ],
-      "format": "esm"
-    },
     "src/infrastructure/services/TaskCreationService.ts": {
       "bytes": 2495,
       "imports": [
@@ -508,7 +503,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 13964,
+      "bytes": 13914,
       "imports": [
         {
           "path": "obsidian",
@@ -609,7 +604,7 @@
       "entryPoint": "src/main.ts",
       "inputs": {
         "node_modules/react/cjs/react.production.js": {
-          "bytesInOutput": 7401
+          "bytesInOutput": 7399
         },
         "node_modules/react/index.js": {
           "bytesInOutput": 51
@@ -627,73 +622,10 @@
           "bytesInOutput": 246
         },
         "node_modules/react-dom/cjs/react-dom-client.production.js": {
-          "bytesInOutput": 175436
+          "bytesInOutput": 175414
         },
         "node_modules/react-dom/client.js": {
           "bytesInOutput": 246
-        },
-        "node_modules/uuid/dist/esm-browser/max.js": {
-          "bytesInOutput": 61
-        },
-        "node_modules/uuid/dist/esm-browser/nil.js": {
-          "bytesInOutput": 61
-        },
-        "node_modules/uuid/dist/esm-browser/regex.js": {
-          "bytesInOutput": 177
-        },
-        "node_modules/uuid/dist/esm-browser/validate.js": {
-          "bytesInOutput": 83
-        },
-        "node_modules/uuid/dist/esm-browser/parse.js": {
-          "bytesInOutput": 407
-        },
-        "node_modules/uuid/dist/esm-browser/stringify.js": {
-          "bytesInOutput": 438
-        },
-        "node_modules/uuid/dist/esm-browser/rng.js": {
-          "bytesInOutput": 298
-        },
-        "node_modules/uuid/dist/esm-browser/v1.js": {
-          "bytesInOutput": 1357
-        },
-        "node_modules/uuid/dist/esm-browser/v1ToV6.js": {
-          "bytesInOutput": 374
-        },
-        "node_modules/uuid/dist/esm-browser/md5.js": {
-          "bytesInOutput": 3317
-        },
-        "node_modules/uuid/dist/esm-browser/v35.js": {
-          "bytesInOutput": 656
-        },
-        "node_modules/uuid/dist/esm-browser/v3.js": {
-          "bytesInOutput": 101
-        },
-        "node_modules/uuid/dist/esm-browser/native.js": {
-          "bytesInOutput": 122
-        },
-        "node_modules/uuid/dist/esm-browser/v4.js": {
-          "bytesInOutput": 470
-        },
-        "node_modules/uuid/dist/esm-browser/sha1.js": {
-          "bytesInOutput": 1230
-        },
-        "node_modules/uuid/dist/esm-browser/v5.js": {
-          "bytesInOutput": 101
-        },
-        "node_modules/uuid/dist/esm-browser/v6.js": {
-          "bytesInOutput": 200
-        },
-        "node_modules/uuid/dist/esm-browser/v6ToV1.js": {
-          "bytesInOutput": 374
-        },
-        "node_modules/uuid/dist/esm-browser/v7.js": {
-          "bytesInOutput": 1061
-        },
-        "node_modules/uuid/dist/esm-browser/version.js": {
-          "bytesInOutput": 122
-        },
-        "node_modules/uuid/dist/esm-browser/index.js": {
-          "bytesInOutput": 276
         },
         "src/main.ts": {
           "bytesInOutput": 56
@@ -708,7 +640,7 @@
           "bytesInOutput": 49
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 4487
+          "bytesInOutput": 4484
         },
         "src/presentation/utils/ReactRenderer.tsx": {
           "bytesInOutput": 284
@@ -720,13 +652,28 @@
           "bytesInOutput": 1245
         },
         "src/presentation/components/CreateTaskButton.tsx": {
-          "bytesInOutput": 718
+          "bytesInOutput": 413
+        },
+        "node_modules/uuid/dist/esm-browser/stringify.js": {
+          "bytesInOutput": 310
+        },
+        "node_modules/uuid/dist/esm-browser/rng.js": {
+          "bytesInOutput": 283
+        },
+        "node_modules/uuid/dist/esm-browser/native.js": {
+          "bytesInOutput": 104
+        },
+        "node_modules/uuid/dist/esm-browser/v4.js": {
+          "bytesInOutput": 440
+        },
+        "node_modules/uuid/dist/esm-browser/index.js": {
+          "bytesInOutput": 0
         },
         "src/infrastructure/services/TaskCreationService.ts": {
-          "bytesInOutput": 721
+          "bytesInOutput": 716
         }
       },
-      "bytes": 216586
+      "bytes": 206065
     }
   }
 }
