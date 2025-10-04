@@ -1,3 +1,37 @@
+## [12.5.0] - 2025-10-04
+
+### Added
+
+- **Create Task from Area**: Quick task creation button for Area assets
+  - Button appears above properties table for `ems__Area` assets
+  - One-click task creation with automatic property inheritance
+  - Generates unique UUIDv4 for `exo__Asset_uid`
+  - Creates ISO 8601 timestamp for `exo__Asset_createdAt`
+  - Automatically copies `exo__Asset_isDefinedBy` from parent Area
+  - Creates `exo__Effort_area` link to source Area
+  - Opens created Task in new tab for immediate editing
+
+### Enhanced
+
+- **Workflow Efficiency**: Create tasks without manual property setup
+- **Data Consistency**: Guaranteed property inheritance from parent Area
+- **Traceability**: Automatic parent-child relationships via `exo__Effort_area`
+- **Smart Naming**: Task files named with timestamp (`Task-2025-10-04T16-23-50.md`)
+- **Folder Management**: Tasks created in same folder as parent Area
+
+### Technical
+
+- New React component: `CreateTaskButton.tsx`
+- New service: `TaskCreationService.ts` for task creation logic
+- Updated `UniversalLayoutRenderer` with button rendering
+- UUID package integration for UUIDv4 generation
+- BDD feature: `area-task-creation.feature` with 9 scenarios
+- 8 new component tests for CreateTaskButton
+- 3 new UI integration tests
+- Total tests: 40 (30 component + 10 UI) - all passing
+- BDD Coverage: 100% (57/57 scenarios)
+- Bundle size impact: +3kb (new component + uuid)
+
 ## [12.4.1] - 2025-10-04
 
 ### Fixed

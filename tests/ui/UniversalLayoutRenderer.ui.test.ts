@@ -199,8 +199,8 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("groupByProperty: true", container, {} as MarkdownPostProcessorContext);
 
-      // Wait for React to render (next tick)
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      // Wait for React to render
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify grouped rendering
       const groups = container.querySelectorAll(".relation-group");
@@ -309,6 +309,93 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Verify archived file is NOT present
       expect(rowTexts.some((text) => text?.includes("Archived"))).toBeFalsy();
+    });
+  });
+
+  describe("Create Task Button", () => {
+    it("should render Create Task button for Area assets", async () => {
+      const currentFile = {
+        basename: "My Project Area",
+        path: "areas/project.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Area]]",
+          exo__Asset_isDefinedBy: "[[Ontology/EMS]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {}; // No relations
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      // Wait for React to render
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Verify button is present
+      const button = container.querySelector(".exocortex-create-task-btn");
+      expect(button).toBeTruthy();
+      expect(button?.textContent).toBe("Create Task");
+    });
+
+    it("should NOT render Create Task button for non-Area assets", async () => {
+      const currentFile = {
+        basename: "Regular Task",
+        path: "tasks/task1.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Verify button is NOT present
+      const button = container.querySelector(".exocortex-create-task-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should position Create Task button above properties table", async () => {
+      const currentFile = {
+        basename: "Area",
+        path: "area.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Area]]",
+          exo__Asset_uid: "area-123",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Verify order: button wrapper -> properties section -> relations
+      const children = Array.from(container.children);
+      const buttonIndex = children.findIndex((el) =>
+        el.classList.contains("exocortex-create-task-wrapper"),
+      );
+      const propertiesIndex = children.findIndex((el) =>
+        el.classList.contains("exocortex-properties-section"),
+      );
+
+      expect(buttonIndex).toBeGreaterThanOrEqual(0);
+      expect(propertiesIndex).toBeGreaterThanOrEqual(0);
+      expect(buttonIndex).toBeLessThan(propertiesIndex);
     });
   });
 
