@@ -19,14 +19,14 @@ describe("TaskCreationService", () => {
   describe("generateTaskFrontmatter", () => {
     it("should generate frontmatter with all required properties", () => {
       const sourceMetadata = {
-        exo__Asset_isDefinedBy: "[[Ontology/EMS]]",
+        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
       };
 
       const frontmatter = service.generateTaskFrontmatter(sourceMetadata, "My Area");
 
-      expect(frontmatter.exo__Instance_class).toBe("[[ems__Task]]");
-      expect(frontmatter.exo__Asset_isDefinedBy).toBe("[[Ontology/EMS]]");
-      expect(frontmatter.exo__Effort_area).toBe("[[My Area]]");
+      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Task]]"']);
+      expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[Ontology/EMS]]"');
+      expect(frontmatter.exo__Effort_area).toBe('"[[My Area]]"');
       expect(frontmatter.exo__Asset_uid).toBeDefined();
       expect(frontmatter.exo__Asset_createdAt).toBeDefined();
     });
@@ -50,26 +50,80 @@ describe("TaskCreationService", () => {
 
     it("should copy exo__Asset_isDefinedBy from source metadata", () => {
       const sourceMetadata = {
-        exo__Asset_isDefinedBy: "[[Custom/Ontology]]",
+        exo__Asset_isDefinedBy: '"[[Custom/Ontology]]"',
       };
 
       const frontmatter = service.generateTaskFrontmatter(sourceMetadata, "Area");
 
-      expect(frontmatter.exo__Asset_isDefinedBy).toBe("[[Custom/Ontology]]");
+      expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[Custom/Ontology]]"');
     });
 
-    it("should default to empty string when exo__Asset_isDefinedBy is missing", () => {
+    it("should handle array format for exo__Asset_isDefinedBy", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: ['"[[!toos]]"'],
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(sourceMetadata, "Area");
+
+      expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[!toos]]"');
+    });
+
+    it("should default to empty quotes when exo__Asset_isDefinedBy is missing", () => {
       const sourceMetadata = {}; // No exo__Asset_isDefinedBy
 
       const frontmatter = service.generateTaskFrontmatter(sourceMetadata, "Area");
 
-      expect(frontmatter.exo__Asset_isDefinedBy).toBe("");
+      expect(frontmatter.exo__Asset_isDefinedBy).toBe('""');
     });
 
-    it("should create wiki-link to source Area in exo__Effort_area", () => {
+    it("should create quoted wiki-link to source Area in exo__Effort_area", () => {
       const frontmatter = service.generateTaskFrontmatter({}, "Sprint Planning");
 
-      expect(frontmatter.exo__Effort_area).toBe("[[Sprint Planning]]");
+      expect(frontmatter.exo__Effort_area).toBe('"[[Sprint Planning]]"');
+    });
+
+    it("should handle Area names with parentheses", () => {
+      const frontmatter = service.generateTaskFrontmatter(
+        { exo__Asset_isDefinedBy: '"[[!toos]]"' },
+        "Sales Offering People Management (Area)",
+      );
+
+      expect(frontmatter.exo__Effort_area).toBe('"[[Sales Offering People Management (Area)]]"');
+    });
+  });
+
+  describe("buildFileContent", () => {
+    it("should generate correct YAML format with array for exo__Instance_class", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!toos]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Sales Offering People Management (Area)",
+      );
+
+      // Access private method through TypeScript any
+      const content = (service as any).buildFileContent(frontmatter);
+
+      // Should contain YAML array format with bullet
+      expect(content).toContain('exo__Instance_class:\n  - "[[ems__Task]]"');
+      // Should contain quoted wiki-links
+      expect(content).toContain('exo__Asset_isDefinedBy: "[[!toos]]"');
+      expect(content).toContain('exo__Effort_area: "[[Sales Offering People Management (Area)]]"');
+      // Should have frontmatter delimiters
+      expect(content).toMatch(/^---\n[\s\S]+\n---\n\n$/);
+    });
+
+    it("should handle multiple array items correctly", () => {
+      const frontmatter = {
+        exo__Instance_class: ['"[[ems__Task]]"', '"[[ems__Effort]]"'],
+        exo__Asset_uid: "test-uuid",
+      };
+
+      const content = (service as any).buildFileContent(frontmatter);
+
+      expect(content).toContain('exo__Instance_class:\n  - "[[ems__Task]]"\n  - "[[ems__Effort]]"');
     });
   });
 
