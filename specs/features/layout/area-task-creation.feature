@@ -50,7 +50,7 @@ Feature: Create Task from Area
         | exo__Asset_isDefinedBy  | [[Ontology/EMS]]   | copied from Area     |
         | exo__Asset_uid          | UUIDv4             | generated            |
         | exo__Asset_createdAt    | ISO 8601 timestamp | current time         |
-        | exo__Effort_area        | [[Sprint Planning]]| link to source Area  |
+        | ems__Effort_area        | [[Sprint Planning]]| link to source Area  |
 
     Scenario: Frontmatter uses correct YAML format with quoted wiki-links
       Given I have Area "Sales Offering People Management" with frontmatter:
@@ -72,12 +72,12 @@ Feature: Create Task from Area
         exo__Asset_isDefinedBy: "[[!toos]]"
         exo__Asset_uid: <generated-uuid>
         exo__Asset_createdAt: <current-timestamp>
-        exo__Effort_area: "[[Sales Offering People Management (Area)]]"
+        ems__Effort_area: "[[Sales Offering People Management (Area)]]"
         ---
         """
       And exo__Instance_class is YAML array with quoted wiki-link
       And exo__Asset_isDefinedBy is quoted wiki-link string
-      And exo__Effort_area is quoted wiki-link string
+      And ems__Effort_area is quoted wiki-link string
 
     Scenario: Generated UID is valid UUIDv4
       Given I have Area "Development"

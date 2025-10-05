@@ -38,7 +38,7 @@ export class TaskCreationService {
    * Generate frontmatter for new Task
    * Inherits exo__Asset_isDefinedBy from source Area
    * Generates new UUID and timestamp
-   * Creates link to source Area via exo__Effort_area
+   * Creates link to source Area via ems__Effort_area
    */
   generateTaskFrontmatter(
     sourceMetadata: Record<string, any>,
@@ -67,7 +67,7 @@ export class TaskCreationService {
       exo__Asset_isDefinedBy: ensureQuoted(isDefinedBy),
       exo__Asset_uid: uuidv4(),
       exo__Asset_createdAt: timestamp,
-      exo__Effort_area: `"[[${areaName}]]"`,
+      ems__Effort_area: `"[[${areaName}]]"`,
     };
   }
 
