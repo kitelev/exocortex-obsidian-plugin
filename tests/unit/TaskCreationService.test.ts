@@ -68,6 +68,26 @@ describe("TaskCreationService", () => {
       expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[!toos]]"');
     });
 
+    it("should add quotes to exo__Asset_isDefinedBy when missing", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: "[[!toos]]", // Without quotes
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(sourceMetadata, "Area");
+
+      expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[!toos]]"');
+    });
+
+    it("should add quotes to array exo__Asset_isDefinedBy when missing", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: ["[[!toos]]"], // Array without quotes
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(sourceMetadata, "Area");
+
+      expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[!toos]]"');
+    });
+
     it("should default to empty quotes when exo__Asset_isDefinedBy is missing", () => {
       const sourceMetadata = {}; // No exo__Asset_isDefinedBy
 

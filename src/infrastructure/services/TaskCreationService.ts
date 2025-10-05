@@ -53,9 +53,18 @@ export class TaskCreationService {
       isDefinedBy = isDefinedBy[0] || '""';
     }
 
+    // Ensure wiki-links are quoted
+    const ensureQuoted = (value: string): string => {
+      if (!value || value === '""') return '""';
+      // If already quoted, return as is
+      if (value.startsWith('"') && value.endsWith('"')) return value;
+      // Add quotes around wiki-link
+      return `"${value}"`;
+    };
+
     return {
       exo__Instance_class: ['"[[ems__Task]]"'],
-      exo__Asset_isDefinedBy: isDefinedBy,
+      exo__Asset_isDefinedBy: ensureQuoted(isDefinedBy),
       exo__Asset_uid: uuidv4(),
       exo__Asset_createdAt: timestamp,
       exo__Effort_area: `"[[${areaName}]]"`,
