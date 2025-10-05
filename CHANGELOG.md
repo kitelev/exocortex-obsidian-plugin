@@ -1,3 +1,13 @@
+## [12.5.12] - 2025-10-05
+
+### Enhanced
+
+- **Task Creation UX**: Automatic focus switching to newly created task
+  - When you click "Create Task" button, the new task file opens in a new tab
+  - Focus automatically switches to the new tab so you can start working immediately
+  - Improves workflow efficiency - no need to manually switch tabs
+  - Seamless transition from Area to Task creation
+
 ## [12.5.11] - 2025-10-05
 
 ### Changed

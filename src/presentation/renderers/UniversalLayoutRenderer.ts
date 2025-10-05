@@ -273,6 +273,9 @@ export class UniversalLayoutRenderer {
           const leaf = this.app.workspace.getLeaf("tab");
           await leaf.openFile(createdFile);
 
+          // Switch focus to the new tab
+          this.app.workspace.setActiveLeaf(leaf, { focus: true });
+
           this.logger.info(`Created Task: ${createdFile.path}`);
         },
       }),
