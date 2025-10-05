@@ -1,3 +1,14 @@
+## [12.5.8] - 2025-10-04
+
+### Documentation
+
+- **Development Standards**: Enhanced RULE 1 with mandatory release requirement
+  - Made it crystal clear: EVERY code change MUST result in a release
+  - Added violation examples showing wrong vs. correct approach
+  - Added verification step: Check `gh release list --limit 1` after push
+  - Emphasized consequences of skipping releases
+  - NO EXCEPTIONS policy for release discipline
+
 ## [12.5.7] - 2025-10-04
 
 ### Fixed
