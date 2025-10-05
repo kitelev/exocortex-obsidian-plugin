@@ -374,17 +374,22 @@ chore: maintenance task
 
 **VIOLATION**: Working alone on complex tasks is a project standard violation
 
-### RULE 1: Always Release After Changes + Verify Pipeline
+### RULE 1: MANDATORY RELEASE AFTER EVERY CODE CHANGE
 
-Every code change MUST:
+**CRITICAL**: EVERY code change to src/, tests/, or any production file MUST result in a release.
 
-1. Update version in **package.json**
+**NO EXCEPTIONS**: If you changed code, you MUST create a release. Period.
+
+Every code change MUST follow this exact sequence:
+
+1. Update version in **package.json** (use `npm version patch/minor/major --no-git-tag-version`)
 2. Update version in **manifest.json** (CRITICAL: must match package.json!)
 3. Update CHANGELOG.md with user-focused description
-4. Commit with conventional message
+4. Commit with conventional message (feat:, fix:, chore:, etc.)
 5. Push to trigger auto-release
 6. **WAIT for GitHub Actions pipeline to turn GREEN** ✅
 7. **If pipeline FAILS - FIX immediately, task is NOT complete until pipeline is green**
+8. **VERIFY release was created**: Check `gh release list --limit 1`
 
 **CRITICAL**: `manifest.json` version MUST always match `package.json` version. This is required for:
 - BRAT (Beta Reviewers Auto-update Tester) compatibility
@@ -407,6 +412,35 @@ Every code change MUST:
 - [ ] Both versions match exactly
 - [ ] Code pushed to GitHub
 - [ ] **GitHub Actions pipeline is GREEN ✅**
+- [ ] **Release created and visible in GitHub Releases**
+
+**VIOLATIONS AND CONSEQUENCES:**
+
+❌ **WRONG**: Changing code without releasing
+```bash
+# Changed src/presentation/components/CreateTaskButton.tsx
+git commit -m "fix: button rendering"
+git push
+# ❌ STOPPED HERE - NO RELEASE CREATED
+```
+
+✅ **CORRECT**: Always create release after code changes
+```bash
+# Changed src/presentation/components/CreateTaskButton.tsx
+npm version patch --no-git-tag-version
+# Update manifest.json version to match package.json
+# Update CHANGELOG.md
+git commit -m "fix: button rendering (v12.5.8)"
+git push
+# Wait for CI to turn green
+gh release list --limit 1  # Verify release created
+```
+
+**Why this is CRITICAL:**
+- Users need the fix/feature immediately
+- Broken code in main without a release means users can't get the fix
+- Release discipline ensures every improvement reaches users
+- Skipping releases creates confusion about what version has what features
 
 ### RULE 2: User-Focused Release Notes
 
