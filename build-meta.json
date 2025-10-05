@@ -487,7 +487,7 @@
       "format": "esm"
     },
     "src/infrastructure/services/TaskCreationService.ts": {
-      "bytes": 2495,
+      "bytes": 3327,
       "imports": [
         {
           "path": "obsidian",
@@ -670,10 +670,10 @@
           "bytesInOutput": 0
         },
         "src/infrastructure/services/TaskCreationService.ts": {
-          "bytesInOutput": 716
+          "bytesInOutput": 917
         }
       },
-      "bytes": 206099
+      "bytes": 206300
     }
   }
 }
