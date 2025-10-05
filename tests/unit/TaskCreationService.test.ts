@@ -26,7 +26,7 @@ describe("TaskCreationService", () => {
 
       expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Task]]"']);
       expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[Ontology/EMS]]"');
-      expect(frontmatter.exo__Effort_area).toBe('"[[My Area]]"');
+      expect(frontmatter.ems__Effort_area).toBe('"[[My Area]]"');
       expect(frontmatter.exo__Asset_uid).toBeDefined();
       expect(frontmatter.exo__Asset_createdAt).toBeDefined();
     });
@@ -96,10 +96,10 @@ describe("TaskCreationService", () => {
       expect(frontmatter.exo__Asset_isDefinedBy).toBe('""');
     });
 
-    it("should create quoted wiki-link to source Area in exo__Effort_area", () => {
+    it("should create quoted wiki-link to source Area in ems__Effort_area", () => {
       const frontmatter = service.generateTaskFrontmatter({}, "Sprint Planning");
 
-      expect(frontmatter.exo__Effort_area).toBe('"[[Sprint Planning]]"');
+      expect(frontmatter.ems__Effort_area).toBe('"[[Sprint Planning]]"');
     });
 
     it("should handle Area names with parentheses", () => {
@@ -108,7 +108,7 @@ describe("TaskCreationService", () => {
         "Sales Offering People Management (Area)",
       );
 
-      expect(frontmatter.exo__Effort_area).toBe('"[[Sales Offering People Management (Area)]]"');
+      expect(frontmatter.ems__Effort_area).toBe('"[[Sales Offering People Management (Area)]]"');
     });
   });
 
@@ -130,7 +130,7 @@ describe("TaskCreationService", () => {
       expect(content).toContain('exo__Instance_class:\n  - "[[ems__Task]]"');
       // Should contain quoted wiki-links
       expect(content).toContain('exo__Asset_isDefinedBy: "[[!toos]]"');
-      expect(content).toContain('exo__Effort_area: "[[Sales Offering People Management (Area)]]"');
+      expect(content).toContain('ems__Effort_area: "[[Sales Offering People Management (Area)]]"');
       // Should have frontmatter delimiters
       expect(content).toMatch(/^---\n[\s\S]+\n---\n\n$/);
     });

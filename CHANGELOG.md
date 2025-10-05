@@ -1,3 +1,18 @@
+## [12.5.11] - 2025-10-05
+
+### Changed
+
+- **Task Creation**: Changed property name from `exo__Effort_area` to `ems__Effort_area`
+  - Aligns with EMS ontology namespace convention
+  - Updated TaskCreationService to use correct property name
+  - Updated all tests and BDD scenarios
+
+### Breaking Change
+
+- Tasks created with this version will use `ems__Effort_area` instead of `exo__Effort_area`
+- Existing tasks with `exo__Effort_area` are not affected
+- This is the correct property name per EMS ontology specification
+
 ## [12.5.10] - 2025-10-05
 
 ### Fixed
