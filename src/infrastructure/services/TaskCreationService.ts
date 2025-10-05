@@ -47,12 +47,18 @@ export class TaskCreationService {
     const now = new Date();
     const timestamp = now.toISOString().split(".")[0]; // Remove milliseconds
 
+    // Extract isDefinedBy - handle both string and array formats
+    let isDefinedBy = sourceMetadata.exo__Asset_isDefinedBy || '""';
+    if (Array.isArray(isDefinedBy)) {
+      isDefinedBy = isDefinedBy[0] || '""';
+    }
+
     return {
-      exo__Instance_class: "[[ems__Task]]",
-      exo__Asset_isDefinedBy: sourceMetadata.exo__Asset_isDefinedBy || "",
+      exo__Instance_class: ['"[[ems__Task]]"'],
+      exo__Asset_isDefinedBy: isDefinedBy,
       exo__Asset_uid: uuidv4(),
       exo__Asset_createdAt: timestamp,
-      exo__Effort_area: `[[${areaName}]]`,
+      exo__Effort_area: `"[[${areaName}]]"`,
     };
   }
 
@@ -72,10 +78,18 @@ export class TaskCreationService {
 
   /**
    * Build complete file content with frontmatter
+   * Handles arrays in YAML format with proper indentation
    */
   private buildFileContent(frontmatter: Record<string, any>): string {
     const frontmatterLines = Object.entries(frontmatter)
-      .map(([key, value]) => `${key}: ${value}`)
+      .map(([key, value]) => {
+        if (Array.isArray(value)) {
+          // YAML array format with indentation
+          const arrayItems = value.map((item) => `  - ${item}`).join("\n");
+          return `${key}:\n${arrayItems}`;
+        }
+        return `${key}: ${value}`;
+      })
       .join("\n");
 
     return `---\n${frontmatterLines}\n---\n\n`;

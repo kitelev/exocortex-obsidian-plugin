@@ -1,3 +1,27 @@
+## [12.5.9] - 2025-10-05
+
+### Fixed
+
+- **Task Creation**: Fixed frontmatter formatting to use correct YAML format with quoted wiki-links
+  - `exo__Instance_class` now uses YAML array format: `- "[[ems__Task]]"` instead of `[[ems__Task]]`
+  - `exo__Asset_isDefinedBy` now properly quoted: `"[[!toos]]"` instead of `[[!toos]]`
+  - `exo__Effort_area` now properly quoted: `"[[Area Name]]"` instead of `[[Area Name]]`
+  - Handles both string and array formats in source Area metadata
+  - Ensures Obsidian can properly parse and display wiki-links
+
+### Added
+
+- **BDD Scenario**: New scenario "Frontmatter uses correct YAML format with quoted wiki-links"
+  - Validates proper YAML array format with bullets
+  - Verifies quoted wiki-link strings
+  - Documents expected frontmatter structure
+
+### Tests
+
+- Added 4 new unit tests for frontmatter formatting
+- Total tests: 17 (13 unit + 4 other)
+- All tests passing ✅
+
 ## [12.5.8] - 2025-10-04
 
 ### Documentation
