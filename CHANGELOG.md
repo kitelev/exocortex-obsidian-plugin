@@ -1,3 +1,19 @@
+## [12.5.10] - 2025-10-05
+
+### Fixed
+
+- **Task Creation**: Fixed missing quotes around `exo__Asset_isDefinedBy` wiki-link
+  - Now automatically adds quotes if they're missing in source Area
+  - Handles both quoted (`"[[!toos]]"`) and unquoted (`[[!toos]]`) formats from source
+  - Ensures consistent quoted format in created Tasks
+  - Added `ensureQuoted()` helper function for robust wiki-link quoting
+
+### Tests
+
+- Added 2 new unit tests for unquoted wiki-link handling
+- Total tests: 19 (15 unit + 4 other)
+- All tests passing ✅
+
 ## [12.5.9] - 2025-10-05
 
 ### Fixed
