@@ -45,7 +45,38 @@ test.describe("CreateTaskButton Component", () => {
     await expect(button).toBeVisible();
   });
 
-  test("should NOT render button for non-Area asset (ems__Task)", async ({ mount }) => {
+  test("should render button for Project asset with [[ems__Project]]", async ({ mount }) => {
+    const component = await mount(
+      <CreateTaskButton
+        instanceClass="[[ems__Project]]"
+        metadata={mockMetadata}
+        sourceFile={mockFile}
+        onTaskCreate={async () => {}}
+      />,
+    );
+
+    const button = component.locator("button.exocortex-create-task-btn");
+    await expect(button).toBeVisible();
+    await expect(button).toHaveText("Create Task");
+  });
+
+  test("should render button for Project asset with ems__Project (no brackets)", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <CreateTaskButton
+        instanceClass="ems__Project"
+        metadata={mockMetadata}
+        sourceFile={mockFile}
+        onTaskCreate={async () => {}}
+      />,
+    );
+
+    const button = component.locator("button.exocortex-create-task-btn");
+    await expect(button).toBeVisible();
+  });
+
+  test("should NOT render button for non-Area/Project asset (ems__Task)", async ({ mount }) => {
     const component = await mount(
       <CreateTaskButton
         instanceClass="[[ems__Task]]"

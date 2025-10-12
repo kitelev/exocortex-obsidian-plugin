@@ -1,16 +1,16 @@
 # language: en
 @task-creation @critical
-Feature: Create Task from Area
+Feature: Create Task from Area or Project
 
-  As an Exocortex user working with Areas
-  I want to quickly create new Tasks from an Area
+  As an Exocortex user working with Areas and Projects
+  I want to quickly create new Tasks from an Area or Project
   So that I can efficiently manage my work efforts
 
   Background:
     Given the Exocortex plugin is loaded
     And uuid package is available for unique IDs
 
-  Rule: Create Task button appears only for Area assets
+  Rule: Create Task button appears for Area and Project assets
 
     Scenario: Display Create Task button for Area asset
       Given I have a note "My Project Area" with frontmatter:
@@ -22,7 +22,17 @@ Feature: Create Task from Area
       Then I see a "Create Task" button above properties table
       And button has CSS class "exocortex-create-task-btn"
 
-    Scenario: No Create Task button for non-Area assets
+    Scenario: Display Create Task button for Project asset
+      Given I have a note "Website Redesign" with frontmatter:
+        | Key                    | Value             |
+        | exo__Instance_class    | [[ems__Project]]  |
+        | exo__Asset_isDefinedBy | [[Ontology/EMS]]  |
+        | exo__Asset_uid         | project-uuid-456  |
+      When I view "Website Redesign" with UniversalLayout
+      Then I see a "Create Task" button above properties table
+      And button has CSS class "exocortex-create-task-btn"
+
+    Scenario: No Create Task button for non-Area/Project assets
       Given I have a note "Regular Task" with frontmatter:
         | Key                 | Value         |
         | exo__Instance_class | [[ems__Task]] |
@@ -36,7 +46,7 @@ Feature: Create Task from Area
 
   Rule: Create Task generates correct frontmatter
 
-    Scenario: Create Task with all required properties
+    Scenario: Create Task from Area with all required properties
       Given I have Area "Sprint Planning" with:
         | Key                    | Value           |
         | exo__Instance_class    | [[ems__Area]]   |
@@ -51,6 +61,22 @@ Feature: Create Task from Area
         | exo__Asset_uid          | UUIDv4             | generated            |
         | exo__Asset_createdAt    | ISO 8601 timestamp | current time         |
         | ems__Effort_area        | [[Sprint Planning]]| link to source Area  |
+
+    Scenario: Create Task from Project with all required properties
+      Given I have Project "Website Redesign" with:
+        | Key                    | Value             |
+        | exo__Instance_class    | [[ems__Project]]  |
+        | exo__Asset_isDefinedBy | [[Ontology/EMS]]  |
+        | exo__Asset_uid         | project-001       |
+      When I click "Create Task" button
+      Then a new note is created with name format "Task-{timestamp}"
+      And new note has frontmatter:
+        | Property                | Value Type           | Source                 |
+        | exo__Instance_class     | [[ems__Task]]        | hardcoded              |
+        | exo__Asset_isDefinedBy  | [[Ontology/EMS]]     | copied from Project    |
+        | exo__Asset_uid          | UUIDv4               | generated              |
+        | exo__Asset_createdAt    | ISO 8601 timestamp   | current time           |
+        | ems__Effort_parent      | [[Website Redesign]] | link to source Project |
 
     Scenario: Frontmatter uses correct YAML format with quoted wiki-links
       Given I have Area "Sales Offering People Management" with frontmatter:
@@ -107,3 +133,8 @@ Feature: Create Task from Area
       Given Area "Backend" is in folder "Projects/Backend/"
       When I click "Create Task" button
       Then new Task is created in "Projects/Backend/" folder
+
+    Scenario: Task created in same folder as Project
+      Given Project "Mobile App" is in folder "Projects/Mobile/"
+      When I click "Create Task" button
+      Then new Task is created in "Projects/Mobile/" folder

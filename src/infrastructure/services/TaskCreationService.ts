@@ -2,30 +2,42 @@ import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 
 /**
- * Service for creating Task assets from Area assets
+ * Mapping of source class to effort property name
+ * Implements Strategy pattern for property selection
+ */
+const EFFORT_PROPERTY_MAP: Record<string, string> = {
+  ems__Area: "ems__Effort_area",
+  ems__Project: "ems__Effort_parent",
+};
+
+/**
+ * Service for creating Task assets from Area or Project assets
  * Handles frontmatter generation, file creation, and property inheritance
  */
 export class TaskCreationService {
   constructor(private vault: Vault) {}
 
   /**
-   * Create a new Task file from an Area asset
-   * @param sourceFile The Area file from which to create the Task
-   * @param sourceMetadata Frontmatter metadata from the Area
+   * Create a new Task file from an Area or Project asset
+   * @param sourceFile The source file (Area or Project) from which to create the Task
+   * @param sourceMetadata Frontmatter metadata from the source
+   * @param sourceClass The class of the source asset (ems__Area or ems__Project)
    * @returns The created Task file
    */
-  async createTaskFromArea(
+  async createTask(
     sourceFile: TFile,
     sourceMetadata: Record<string, any>,
+    sourceClass: string,
   ): Promise<TFile> {
     const fileName = this.generateTaskFileName();
     const frontmatter = this.generateTaskFrontmatter(
       sourceMetadata,
       sourceFile.basename,
+      sourceClass,
     );
     const fileContent = this.buildFileContent(frontmatter);
 
-    // Create file in same folder as source Area
+    // Create file in same folder as source
     const folderPath = sourceFile.parent?.path || "";
     const filePath = folderPath ? `${folderPath}/${fileName}` : fileName;
 
@@ -35,14 +47,29 @@ export class TaskCreationService {
   }
 
   /**
+   * @deprecated Use createTask() instead
+   * Backward compatibility wrapper for existing code
+   */
+  async createTaskFromArea(
+    sourceFile: TFile,
+    sourceMetadata: Record<string, any>,
+  ): Promise<TFile> {
+    return this.createTask(sourceFile, sourceMetadata, "ems__Area");
+  }
+
+  /**
    * Generate frontmatter for new Task
-   * Inherits exo__Asset_isDefinedBy from source Area
+   * Inherits exo__Asset_isDefinedBy from source
    * Generates new UUID and timestamp
-   * Creates link to source Area via ems__Effort_area
+   * Creates link to source via appropriate effort property based on source class
+   * @param sourceMetadata Frontmatter metadata from source asset
+   * @param sourceName Name of the source asset
+   * @param sourceClass Class of source asset (determines effort property)
    */
   generateTaskFrontmatter(
     sourceMetadata: Record<string, any>,
-    areaName: string,
+    sourceName: string,
+    sourceClass: string,
   ): Record<string, any> {
     const now = new Date();
     const timestamp = now.toISOString().split(".")[0]; // Remove milliseconds
@@ -62,13 +89,22 @@ export class TaskCreationService {
       return `"${value}"`;
     };
 
-    return {
+    // Get appropriate effort property name based on source class
+    const cleanSourceClass = sourceClass.replace(/\[\[|\]\]/g, "").trim();
+    const effortProperty =
+      EFFORT_PROPERTY_MAP[cleanSourceClass] || "ems__Effort_area";
+
+    const frontmatter: Record<string, any> = {
       exo__Instance_class: ['"[[ems__Task]]"'],
       exo__Asset_isDefinedBy: ensureQuoted(isDefinedBy),
       exo__Asset_uid: uuidv4(),
       exo__Asset_createdAt: timestamp,
-      ems__Effort_area: `"[[${areaName}]]"`,
     };
+
+    // Add effort property dynamically
+    frontmatter[effortProperty] = `"[[${sourceName}]]"`;
+
+    return frontmatter;
   }
 
   /**

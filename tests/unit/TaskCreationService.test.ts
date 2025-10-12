@@ -17,12 +17,16 @@ describe("TaskCreationService", () => {
   });
 
   describe("generateTaskFrontmatter", () => {
-    it("should generate frontmatter with all required properties", () => {
+    it("should generate frontmatter with all required properties for Area", () => {
       const sourceMetadata = {
         exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
       };
 
-      const frontmatter = service.generateTaskFrontmatter(sourceMetadata, "My Area");
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "My Area",
+        "ems__Area",
+      );
 
       expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Task]]"']);
       expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[Ontology/EMS]]"');
@@ -31,8 +35,26 @@ describe("TaskCreationService", () => {
       expect(frontmatter.exo__Asset_createdAt).toBeDefined();
     });
 
+    it("should generate frontmatter with all required properties for Project", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "My Project",
+        "ems__Project",
+      );
+
+      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Task]]"']);
+      expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[Ontology/EMS]]"');
+      expect(frontmatter.ems__Effort_parent).toBe('"[[My Project]]"');
+      expect(frontmatter.exo__Asset_uid).toBeDefined();
+      expect(frontmatter.exo__Asset_createdAt).toBeDefined();
+    });
+
     it("should generate valid UUIDv4 for exo__Asset_uid", () => {
-      const frontmatter = service.generateTaskFrontmatter({}, "Test Area");
+      const frontmatter = service.generateTaskFrontmatter({}, "Test Area", "ems__Area");
 
       // UUIDv4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
       // where x is any hex digit, y is one of [89ab]
@@ -41,7 +63,7 @@ describe("TaskCreationService", () => {
     });
 
     it("should generate ISO 8601 timestamp for exo__Asset_createdAt", () => {
-      const frontmatter = service.generateTaskFrontmatter({}, "Test Area");
+      const frontmatter = service.generateTaskFrontmatter({}, "Test Area", "ems__Area");
 
       // ISO 8601 format without milliseconds: YYYY-MM-DDTHH:MM:SS
       const isoPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/;
@@ -53,7 +75,11 @@ describe("TaskCreationService", () => {
         exo__Asset_isDefinedBy: '"[[Custom/Ontology]]"',
       };
 
-      const frontmatter = service.generateTaskFrontmatter(sourceMetadata, "Area");
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Area",
+        "ems__Area",
+      );
 
       expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[Custom/Ontology]]"');
     });
@@ -63,7 +89,11 @@ describe("TaskCreationService", () => {
         exo__Asset_isDefinedBy: ['"[[!toos]]"'],
       };
 
-      const frontmatter = service.generateTaskFrontmatter(sourceMetadata, "Area");
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Area",
+        "ems__Area",
+      );
 
       expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[!toos]]"');
     });
@@ -73,7 +103,11 @@ describe("TaskCreationService", () => {
         exo__Asset_isDefinedBy: "[[!toos]]", // Without quotes
       };
 
-      const frontmatter = service.generateTaskFrontmatter(sourceMetadata, "Area");
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Area",
+        "ems__Area",
+      );
 
       expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[!toos]]"');
     });
@@ -83,7 +117,11 @@ describe("TaskCreationService", () => {
         exo__Asset_isDefinedBy: ["[[!toos]]"], // Array without quotes
       };
 
-      const frontmatter = service.generateTaskFrontmatter(sourceMetadata, "Area");
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Area",
+        "ems__Area",
+      );
 
       expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[!toos]]"');
     });
@@ -91,29 +129,70 @@ describe("TaskCreationService", () => {
     it("should default to empty quotes when exo__Asset_isDefinedBy is missing", () => {
       const sourceMetadata = {}; // No exo__Asset_isDefinedBy
 
-      const frontmatter = service.generateTaskFrontmatter(sourceMetadata, "Area");
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Area",
+        "ems__Area",
+      );
 
       expect(frontmatter.exo__Asset_isDefinedBy).toBe('""');
     });
 
     it("should create quoted wiki-link to source Area in ems__Effort_area", () => {
-      const frontmatter = service.generateTaskFrontmatter({}, "Sprint Planning");
+      const frontmatter = service.generateTaskFrontmatter(
+        {},
+        "Sprint Planning",
+        "ems__Area",
+      );
 
       expect(frontmatter.ems__Effort_area).toBe('"[[Sprint Planning]]"');
+    });
+
+    it("should create quoted wiki-link to source Project in ems__Effort_parent", () => {
+      const frontmatter = service.generateTaskFrontmatter(
+        {},
+        "Website Redesign",
+        "ems__Project",
+      );
+
+      expect(frontmatter.ems__Effort_parent).toBe('"[[Website Redesign]]"');
     });
 
     it("should handle Area names with parentheses", () => {
       const frontmatter = service.generateTaskFrontmatter(
         { exo__Asset_isDefinedBy: '"[[!toos]]"' },
         "Sales Offering People Management (Area)",
+        "ems__Area",
       );
 
-      expect(frontmatter.ems__Effort_area).toBe('"[[Sales Offering People Management (Area)]]"');
+      expect(frontmatter.ems__Effort_area).toBe(
+        '"[[Sales Offering People Management (Area)]]"',
+      );
+    });
+
+    it("should handle Project names with parentheses", () => {
+      const frontmatter = service.generateTaskFrontmatter(
+        { exo__Asset_isDefinedBy: '"[[!toos]]"' },
+        "Q4 2025 Planning (Project)",
+        "ems__Project",
+      );
+
+      expect(frontmatter.ems__Effort_parent).toBe('"[[Q4 2025 Planning (Project)]]"');
+    });
+
+    it("should handle wiki-link formatted source class", () => {
+      const frontmatter = service.generateTaskFrontmatter(
+        {},
+        "Test",
+        "[[ems__Project]]",
+      );
+
+      expect(frontmatter.ems__Effort_parent).toBe('"[[Test]]"');
     });
   });
 
   describe("buildFileContent", () => {
-    it("should generate correct YAML format with array for exo__Instance_class", () => {
+    it("should generate correct YAML format with array for exo__Instance_class (Area)", () => {
       const sourceMetadata = {
         exo__Asset_isDefinedBy: '"[[!toos]]"',
       };
@@ -121,6 +200,7 @@ describe("TaskCreationService", () => {
       const frontmatter = service.generateTaskFrontmatter(
         sourceMetadata,
         "Sales Offering People Management (Area)",
+        "ems__Area",
       );
 
       // Access private method through TypeScript any
@@ -130,8 +210,29 @@ describe("TaskCreationService", () => {
       expect(content).toContain('exo__Instance_class:\n  - "[[ems__Task]]"');
       // Should contain quoted wiki-links
       expect(content).toContain('exo__Asset_isDefinedBy: "[[!toos]]"');
-      expect(content).toContain('ems__Effort_area: "[[Sales Offering People Management (Area)]]"');
+      expect(content).toContain(
+        'ems__Effort_area: "[[Sales Offering People Management (Area)]]"',
+      );
       // Should have frontmatter delimiters
+      expect(content).toMatch(/^---\n[\s\S]+\n---\n\n$/);
+    });
+
+    it("should generate correct YAML format for Project with ems__Effort_parent", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!toos]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Website Redesign (Project)",
+        "ems__Project",
+      );
+
+      const content = (service as any).buildFileContent(frontmatter);
+
+      expect(content).toContain('exo__Instance_class:\n  - "[[ems__Task]]"');
+      expect(content).toContain('exo__Asset_isDefinedBy: "[[!toos]]"');
+      expect(content).toContain('ems__Effort_parent: "[[Website Redesign (Project)]]"');
       expect(content).toMatch(/^---\n[\s\S]+\n---\n\n$/);
     });
 
