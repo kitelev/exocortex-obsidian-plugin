@@ -1,3 +1,28 @@
+## [12.5.17] - 2025-10-12
+
+### Fixed
+
+- **Immediate Button Hiding After Status Change**: Buttons now disappear instantly when clicked
+  - Fixed Done button not hiding immediately after marking task complete
+  - Fixed Archive button not hiding immediately after archiving task
+  - Previously required second click or file reopen to see button disappear
+  - Now button vanishes instantly providing immediate visual feedback
+  - Enhanced user experience with synchronous button state updates
+
+### User Benefits
+
+- **Instant Visual Feedback**: See button disappear the moment you click it - no confusion
+- **Smoother Workflow**: No need to click twice or reopen files to confirm action
+- **Better UX**: Interface responds immediately to your actions as expected
+- **Reduced Friction**: Eliminates annoying delay in button state updates
+
+### Technical
+
+- Added 100ms delay before refresh to allow Obsidian metadata cache synchronization
+- Applied fix to both `onMarkDone` and `onArchive` callbacks in `UniversalLayoutRenderer`
+- Ensures component re-renders with fresh cache data after file modification
+- Maintains all 105 tests passing with no regressions
+
 ## [12.5.16] - 2025-10-12
 
 ### Added

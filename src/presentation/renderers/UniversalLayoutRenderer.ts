@@ -326,6 +326,8 @@ export class UniversalLayoutRenderer {
         onMarkDone: async () => {
           await this.taskStatusService.markTaskAsDone(file);
 
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
           await this.refresh(el);
 
           this.logger.info(`Marked task as Done: ${file.path}`);
@@ -356,6 +358,8 @@ export class UniversalLayoutRenderer {
         sourceFile: file,
         onArchive: async () => {
           await this.taskStatusService.archiveTask(file);
+
+          await new Promise((resolve) => setTimeout(resolve, 100));
 
           await this.refresh(el);
 
