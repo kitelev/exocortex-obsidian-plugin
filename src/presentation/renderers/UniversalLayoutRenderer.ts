@@ -6,7 +6,9 @@ import { ReactRenderer } from "../utils/ReactRenderer";
 import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
 import { CreateTaskButton } from "../components/CreateTaskButton";
+import { MarkTaskDoneButton } from "../components/MarkTaskDoneButton";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
+import { TaskStatusService } from "../../infrastructure/services/TaskStatusService";
 
 /**
  * UniversalLayout configuration options
@@ -56,9 +58,11 @@ export class UniversalLayoutRenderer {
     this.logger = LoggerFactory.create("UniversalLayoutRenderer");
     this.reactRenderer = new ReactRenderer();
     this.taskCreationService = new TaskCreationService(this.app.vault);
+    this.taskStatusService = new TaskStatusService(this.app.vault);
   }
 
   private taskCreationService: TaskCreationService;
+  private taskStatusService: TaskStatusService;
 
   /**
    * Build reverse index of backlinks for O(1) lookups
@@ -134,6 +138,9 @@ export class UniversalLayoutRenderer {
 
       // Render Create Task button FIRST (above properties)
       await this.renderCreateTaskButton(el, currentFile);
+
+      // Render Mark Task Done button (for Task assets)
+      await this.renderMarkTaskDoneButton(el, currentFile);
 
       // Render asset properties
       await this.renderAssetProperties(el, currentFile);
@@ -290,6 +297,34 @@ export class UniversalLayoutRenderer {
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
           this.logger.info(`Created Task from ${sourceClass}: ${createdFile.path}`)
+        },
+      }),
+    );
+  }
+
+  private async renderMarkTaskDoneButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+    const currentStatus = metadata.ems__Effort_status || null;
+
+    const container = el.createDiv({ cls: "exocortex-mark-done-wrapper" });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(MarkTaskDoneButton, {
+        instanceClass,
+        currentStatus,
+        sourceFile: file,
+        onMarkDone: async () => {
+          await this.taskStatusService.markTaskAsDone(file);
+
+          await this.refresh(el);
+
+          this.logger.info(`Marked task as Done: ${file.path}`);
         },
       }),
     );
