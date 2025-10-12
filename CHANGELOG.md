@@ -1,3 +1,42 @@
+## [12.8.1] - 2025-10-13
+
+### Added
+
+- **Start Effort Button**: Begin tracking work on Tasks and Projects
+  - "Start Effort" button appears for Tasks and Projects without Doing/Done status
+  - One-click status update: sets `ems__Effort_status` to `[[ems__EffortStatusDoing]]`
+  - Automatic timestamp: adds `ems__Effort_startTimestamp` with current time (ISO 8601 format)
+  - Smart visibility: only shows when status is NOT `[[ems__EffortStatusDoing]]` or `[[ems__EffortStatusDone]]`
+  - Auto-hide: button disappears after starting effort
+  - Works for both Tasks and Projects - any effort-based asset class
+
+### User Benefits
+
+- **Quick Work Start**: Begin tracking work on tasks and projects with one click
+  - No manual frontmatter editing - button handles status and timestamp automatically
+  - Clear visual indicator when work can be started (button visible)
+  - Button hides when work is already in progress or completed
+- **Time Tracking**: Automatically records when you started working on a task
+  - ISO 8601 timestamp format (YYYY-MM-DDTHH:MM:SS) for precise time tracking
+  - Enables duration calculations and effort analysis
+  - Integrates with existing effort status workflow (Active → Doing → Done)
+- **Workflow Support**: Complements existing "Done" button for complete task lifecycle
+  - Start → Work (Doing) → Complete (Done) → Archive
+  - Visual workflow: button appearance guides next action
+
+### Technical
+
+- New React component: `StartEffortButton` with visibility logic for Tasks/Projects
+- Extended `TaskStatusService` with `startEffort()` method for status transition to Doing
+- Frontmatter updates: sets `ems__Effort_status: "[[ems__EffortStatusDoing]]"` and `ems__Effort_startTimestamp`
+- Integrated into `UniversalLayoutRenderer` positioned with other task action buttons
+- Added 18 component tests for StartEffortButton (visibility, status handling, callbacks)
+- Added 8 UI integration tests for Start Effort button rendering
+- Created 18 BDD scenarios for start effort feature (status transitions, timestamps, UI behavior)
+- Total test suite: 198 tests passing (57 unit + 99 component + 42 UI) - increased from 172 tests
+- BDD coverage: 131 scenarios total (100% coverage) - increased from 124 scenarios
+- Zero breaking changes - purely additive functionality
+
 ## [12.8.0] - 2025-10-12
 
 ### Added

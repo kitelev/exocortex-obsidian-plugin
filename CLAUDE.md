@@ -12,9 +12,88 @@ Custom slash commands are now available in `.claude/commands/` directory:
 - `/status` - Check current progress and project health
 - `/agents` - List available agents and capabilities
 - `/release [type] [desc]` - **MANDATORY for releases** - Invokes release-agent with 20-step zero-tolerance process
-- `/test [pattern]` - Run tests and check coverage
+- `/test [pattern]` - **MANDATORY for testing** - Invokes obsidian-qa-expert with Playwright hang prevention
 
 ⚠️ **CRITICAL**: For ANY release, ALWAYS use `/release` command. It guarantees release-agent execution.
+⚠️ **CRITICAL**: For ANY testing, ALWAYS use `/test` command. It guarantees hang prevention and quality gates.
+
+### 📋 MANDATORY AGENT COMMAND USAGE
+
+**CRITICAL**: Always use specialized agents through slash commands for these operations:
+
+#### Release Operations - MANDATORY
+```bash
+/release [major|minor|patch] [description]
+```
+- **ALWAYS use this command** for ANY release
+- **NEVER** manually execute release steps without this command
+- **Agent**: release-agent (20-step zero-tolerance process)
+- **Guarantees**: Version bump, tests, CI/CD, release creation, GitHub verification
+
+**When to use `/release`:**
+- ✅ After committing code changes to src/, tests/, or production files
+- ✅ When user explicitly requests release creation
+- ✅ After feature completion requiring deployment
+- ✅ When CI/CD pipeline needs to be triggered
+- ✅ For version bump and changelog update
+
+**VIOLATIONS - NEVER do these:**
+- ❌ Manual version bump without `/release`
+- ❌ Manual git tag creation
+- ❌ Manual GitHub release creation
+- ❌ Direct push expecting auto-release without verification
+
+#### Testing Operations - MANDATORY
+```bash
+/test [unit|ui|component|all|pattern]
+```
+- **ALWAYS use this command** for comprehensive testing
+- **NEVER** run `npm test` directly (risks Playwright hangs, missing quality gates)
+- **Agent**: obsidian-qa-expert (20 years Obsidian/TypeScript/Playwright experience)
+- **Guarantees**: Hang prevention, quality gates validation, BDD coverage check, failure analysis
+
+**When to use `/test`:**
+- ✅ Before committing any code changes
+- ✅ After implementing new features or bug fixes
+- ✅ When debugging test failures
+- ✅ For comprehensive quality validation before release
+- ✅ When user explicitly requests test execution
+- ✅ As part of development workflow (TDD/BDD)
+
+**VIOLATIONS - NEVER do these:**
+- ❌ Direct `npm test` execution (Playwright may hang)
+- ❌ Skipping BDD coverage check
+- ❌ Skipping quality gates validation
+- ❌ Not handling Playwright HTTP server hang
+- ❌ Running component tests without timeout wrapper
+
+#### Execution Operations - Optional but Recommended
+```bash
+/execute [task description]
+```
+- **USE for complex multi-step tasks** requiring multiple agents
+- **Agent**: orchestrator (coordinates 3-5+ specialized agents)
+- **Guarantees**: BABOK requirements, PMBOK planning, SWEBOK design, parallel execution
+
+**When to use `/execute`:**
+- ✅ Complex feature implementation (multiple files, cross-domain)
+- ✅ Major refactoring or architecture changes
+- ✅ Full development pipeline execution (requirements → design → implementation → testing → docs)
+
+### Why Mandatory Commands Matter
+
+**Problem without commands:**
+- ❌ Playwright hangs waste time (requires manual Ctrl+C, output analysis difficult)
+- ❌ Forgotten quality gates (BDD coverage, performance, pass rate)
+- ❌ Inconsistent release process (missed steps, incomplete verification)
+- ❌ Manual work prone to human error
+
+**Solution with commands:**
+- ✅ Automated hang prevention (timeout wrappers, output parsing)
+- ✅ Enforced quality gates (BDD ≥80%, 100% pass rate, performance thresholds)
+- ✅ Standardized processes (20-step release, 5-phase testing)
+- ✅ Comprehensive reporting (failures analyzed, fixes suggested)
+- ✅ Agent expertise (20+ years experience encoded)
 
 **Enhanced Execution Flow (v3.5.0):**
 1. **BABOK Requirements Interview** - Structured requirements elicitation
@@ -256,13 +335,13 @@ export class Result<T> {
 ### Making Changes
 
 ```bash
-# 1. Run tests to verify current state
-npm test
+# 1. Run tests to verify current state (MANDATORY: use /test command)
+/test
 
 # 2. Make your changes following patterns in existing code
 
-# 3. Run tests again
-npm test
+# 3. Run tests again (MANDATORY: use /test command)
+/test
 
 # 4. Build to verify compilation
 npm run build
@@ -322,12 +401,29 @@ git push origin main
 - Use existing mock infrastructure
 - Follow AAA pattern (Arrange, Act, Assert)
 
+**MANDATORY - Use /test Command:**
+- **ALWAYS use `/test` command** instead of direct `npm test`
+- The obsidian-qa-expert agent handles Playwright hangs automatically
+- Quality gates (BDD coverage ≥80%, 100% pass rate, performance) enforced automatically
+- Comprehensive reporting with failure analysis included
+- Specialized agent with 20 years Obsidian plugin testing experience
+
 **CRITICAL - Prevent Test Hangs:**
 - Playwright component tests may open HTTP server after completion
-- If `npm test` shows "Serving HTML report at http://localhost:XXXX. Press Ctrl+C to quit"
+- If you ever see "Serving HTML report at http://localhost:XXXX. Press Ctrl+C to quit"
 - IMMEDIATELY recognize this as process hang and analyze test results BEFORE the hang
 - Test results appear BEFORE the HTTP server message
 - Count passed/failed tests and proceed based on results, don't wait for process to exit
+- **NOTE**: `/test` command handles this automatically with timeout wrappers
+
+**Test Execution via /test:**
+```bash
+/test              # Run all tests (unit, ui, component) with quality gates
+/test unit         # Run only unit tests
+/test ui           # Run only UI integration tests
+/test component    # Run only Playwright CT tests (hang-safe)
+/test pattern      # Run specific test pattern
+```
 
 ### 3. Architecture Principles
 

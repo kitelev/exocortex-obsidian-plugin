@@ -6,6 +6,7 @@ import { ReactRenderer } from "../utils/ReactRenderer";
 import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
 import { CreateTaskButton } from "../components/CreateTaskButton";
+import { StartEffortButton } from "../components/StartEffortButton";
 import { MarkTaskDoneButton } from "../components/MarkTaskDoneButton";
 import { ArchiveTaskButton } from "../components/ArchiveTaskButton";
 import { CleanEmptyPropertiesButton } from "../components/CleanEmptyPropertiesButton";
@@ -147,6 +148,9 @@ export class UniversalLayoutRenderer {
 
       // Render Create Task button FIRST (above properties)
       await this.renderCreateTaskButton(el, currentFile);
+
+      // Render Start Effort button (for Task/Project assets without Doing/Done status)
+      await this.renderStartEffortButton(el, currentFile);
 
       // Render Mark Task Done button (for Task assets)
       await this.renderMarkTaskDoneButton(el, currentFile);
@@ -378,6 +382,36 @@ export class UniversalLayoutRenderer {
           await this.refresh(el);
 
           this.logger.info(`Archived task: ${file.path}`);
+        },
+      }),
+    );
+  }
+
+  private async renderStartEffortButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+    const currentStatus = metadata.ems__Effort_status || null;
+
+    const container = el.createDiv({ cls: "exocortex-start-effort-wrapper" });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(StartEffortButton, {
+        instanceClass,
+        currentStatus,
+        sourceFile: file,
+        onStartEffort: async () => {
+          await this.taskStatusService.startEffort(file);
+
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          await this.refresh(el);
+
+          this.logger.info(`Started effort: ${file.path}`);
         },
       }),
     );

@@ -19,7 +19,8 @@
       "Bash(npm version:*)",
       "Bash(git add:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\nfeat: automatic focus switching to newly created task (v12.5.12)\n\nWhen clicking \"Create Task\" button, the new task file now automatically\nreceives focus in the new tab, allowing immediate editing without manual\ntab switching.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "SlashCommand(/release:*)"
+      "SlashCommand(/release:*)",
+      "SlashCommand(/test)"
     ],
     "deny": [],
     "ask": []
