@@ -1,6 +1,10 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# Check for version conflicts FIRST
+echo "🔍 Checking version uniqueness..."
+./.claude/scripts/check-version-conflict.sh || exit 1
+
 # Run tests
 echo "🧪 Running tests..."
 # Force ARM64 architecture for node to ensure correct rollup binary is loaded
