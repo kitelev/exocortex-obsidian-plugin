@@ -8,6 +8,7 @@ import {
 import { UniversalLayoutRenderer } from "./presentation/renderers/UniversalLayoutRenderer";
 import { ILogger } from "./infrastructure/logging/ILogger";
 import { LoggerFactory } from "./infrastructure/logging/LoggerFactory";
+import { CommandManager } from "./application/services/CommandManager";
 
 interface ExocortexSettings {
   autoLayoutEnabled: boolean;
@@ -20,10 +21,12 @@ const DEFAULT_SETTINGS: ExocortexSettings = {
 /**
  * Exocortex Plugin - Simple layout rendering
  * Supports both ManualLayout (code-block) and AutoLayout (automatic rendering)
+ * Provides Command Palette integration for all asset commands
  */
 export default class ExocortexPlugin extends Plugin {
   private logger: ILogger;
   private layoutRenderer: UniversalLayoutRenderer;
+  private commandManager: CommandManager;
   settings: ExocortexSettings;
 
   async onload(): Promise<void> {
@@ -34,6 +37,10 @@ export default class ExocortexPlugin extends Plugin {
       await this.loadSettings();
 
       this.layoutRenderer = new UniversalLayoutRenderer(this.app);
+
+      // Initialize CommandManager and register all commands
+      this.commandManager = new CommandManager(this.app);
+      this.commandManager.registerAllCommands(this);
 
       this.registerEvent(
         this.app.metadataCache.on("resolved", () => {

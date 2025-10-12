@@ -1,5 +1,6 @@
 import React from "react";
 import { TFile } from "obsidian";
+import { canArchiveTask, CommandVisibilityContext } from "../../domain/commands/CommandVisibility";
 
 export interface ArchiveTaskButtonProps {
   instanceClass: string | string[] | null;
@@ -13,41 +14,21 @@ export const ArchiveTaskButton: React.FC<ArchiveTaskButtonProps> = ({
   instanceClass,
   currentStatus,
   isArchived,
+  sourceFile,
   onArchive,
 }) => {
-  const isEffort = React.useMemo(() => {
-    if (!instanceClass) return false;
-    const classes = Array.isArray(instanceClass)
-      ? instanceClass
-      : [instanceClass];
-    return classes.some((cls) => {
-      const cleanClass = cls.replace(/\[\[|\]\]/g, "").trim();
-      return cleanClass === "ems__Task" || cleanClass === "ems__Project";
-    });
-  }, [instanceClass]);
-
-  const isDone = React.useMemo(() => {
-    if (!currentStatus) return false;
-    const statusValue = Array.isArray(currentStatus)
-      ? currentStatus[0]
-      : currentStatus;
-    if (!statusValue) return false;
-    const cleanStatus = statusValue.replace(/\[\[|\]\]/g, "").trim();
-    return cleanStatus === "ems__EffortStatusDone";
-  }, [currentStatus]);
-
-  const archived = React.useMemo(() => {
-    if (isArchived === true || isArchived === 1) return true;
-    if (typeof isArchived === "string") {
-      const lower = isArchived.toLowerCase().trim();
-      return lower === "true" || lower === "yes" || lower === "1";
-    }
-    return false;
-  }, [isArchived]);
-
+  // Use centralized visibility logic from CommandVisibility
   const shouldShowButton = React.useMemo(() => {
-    return isEffort && isDone && !archived;
-  }, [isEffort, isDone, archived]);
+    const context: CommandVisibilityContext = {
+      instanceClass,
+      currentStatus,
+      metadata: {},
+      isArchived: isArchived ?? false,
+      currentFolder: sourceFile.parent?.path || "",
+      expectedFolder: null,
+    };
+    return canArchiveTask(context);
+  }, [instanceClass, currentStatus, isArchived, sourceFile]);
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
