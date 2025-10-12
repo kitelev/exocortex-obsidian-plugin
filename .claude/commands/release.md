@@ -1,51 +1,91 @@
 ---
 description: Create a new release with semantic versioning
-allowed-tools: Task, Bash(git*), Bash(npm version*), Read, Write, Edit
-argument-hint: [major|minor|patch] [description]
+allowed-tools: Task
+argument-hint: [major|minor|patch] [optional description]
 ---
 
-# Create New Release
+# 🚀 Create New Release - ZERO-TOLERANCE Process
 
-## Release Type: $ARGUMENTS
+**MANDATORY**: This command ALWAYS uses the specialized **release-agent** which follows a bulletproof 20-step process.
 
-Please create a new release following these steps:
+## Arguments Provided: $ARGUMENTS
 
-1. **Pre-Release Checks**
-   - Run all tests and ensure they pass
-   - Check git status for uncommitted changes
-   - Verify CI/CD pipeline is green
-   - Review recent commits for release notes
+**Invoking release-agent with full quality gates...**
 
-2. **Version Update**
-   - Determine version bump type (major/minor/patch)
-   - Update package.json version
-   - Follow semantic versioning rules:
-     - MAJOR: Breaking changes
-     - MINOR: New features (backwards compatible)
-     - PATCH: Bug fixes
+---
 
-3. **Update CHANGELOG.md**
-   - Write user-focused release notes
-   - Group changes by category:
-     - Features
-     - Bug Fixes
-     - Performance Improvements
-     - Documentation
-   - Include migration notes if breaking changes
+## Task for release-agent
 
-4. **Create Release Commit**
-   - Stage all changes
-   - Commit with message: "chore: Release vX.Y.Z - [brief description]"
-   - Tag the release: vX.Y.Z
+You are the **release-agent** specialist. Execute the complete 20-step release process from `.claude/agents/release-agent.md`.
 
-5. **Push Release**
-   - Push commits to main branch
-   - Push tags to trigger GitHub Actions
-   - Verify automated release workflow
+### Context:
+- Release type: $ARGUMENTS (or determine from changes if not provided)
+- Project: Exocortex Obsidian Plugin
+- Mandatory requirements from CLAUDE.md (especially RULE 1)
 
-6. **Post-Release Verification**
-   - Check GitHub releases page
-   - Verify package published correctly
-   - Update any dependent documentation
+### Your Mission:
 
-Use the release-agent for comprehensive release management if complex coordination is needed.
+**Execute ALL 20 steps in the documented release process:**
+
+#### Phase 1: Pre-Release Validation (Steps 1-4)
+- Check git status
+- Pull latest changes
+- Run complete test suite
+- Check version uniqueness
+
+#### Phase 2: Version Management (Steps 5-8)
+- Determine version bump type
+- Bump package.json
+- Update manifest.json
+- Verify version synchronization
+
+#### Phase 3: Changelog Update (Steps 9-10)
+- Update CHANGELOG.md with user-focused content
+- Validate changelog entry
+
+#### Phase 4: Commit and Push (Steps 11-14)
+- Stage changes
+- Create conventional commit
+- Verify pre-commit hook
+- Push to GitHub
+
+#### Phase 5: Release Verification (Steps 15-20) ⚠️ MOST CRITICAL
+- Wait for CI/CD pipeline (90s)
+- Check pipeline status
+- **VERIFY release created** (MANDATORY)
+- View release details
+- **VERIFY GitHub Actions GREEN** (MANDATORY)
+- Report completion with full checklist
+
+### Critical Requirements:
+
+1. ✅ **NEVER skip Step 17** (verify release created)
+2. ✅ **NEVER skip Step 19** (verify pipeline GREEN)
+3. ✅ **ALWAYS wait** for pipeline completion (Step 15)
+4. ✅ **ALWAYS report** full completion checklist (Step 20)
+
+### Success Criteria:
+
+Report is INCOMPLETE unless ALL verified:
+- ✅ Version bumped in package.json AND manifest.json
+- ✅ Versions match exactly
+- ✅ CHANGELOG.md updated
+- ✅ All tests passed
+- ✅ Pre-commit hook passed
+- ✅ Code pushed to GitHub
+- ✅ CI/CD pipeline is GREEN ✅
+- ✅ Release created and visible on GitHub
+- ✅ Release date is TODAY
+- ✅ Assets attached to release
+
+### If ANY step fails:
+
+- Follow error handling protocol from release-agent.md
+- DO NOT proceed until issue resolved
+- Report error to user with clear explanation
+
+---
+
+**Remember**: This is a ZERO-TOLERANCE process. One skipped step = incomplete release = project violation.
+
+Better to take 10 minutes and do it right than to rush and create problems.
