@@ -1,3 +1,66 @@
+## [12.8.2] - 2025-10-13
+
+### Added
+
+- **Command Palette Integration**: Access all asset commands via Command Palette with "Exocortex:" prefix
+  - All 6 asset commands now available in Command Palette (Cmd/Ctrl+P):
+    - "Exocortex: Create Task" - Create new task from Area/Project
+    - "Exocortex: Start Effort" - Begin work on Task/Project
+    - "Exocortex: Mark as Done" - Complete Task/Project
+    - "Exocortex: Archive Task" - Archive completed Task/Project
+    - "Exocortex: Clean Empty Properties" - Remove empty frontmatter properties
+    - "Exocortex: Repair Folder" - Move asset to correct folder
+  - **Dynamic Availability**: Commands appear/disappear based on current file context
+    - Command visible only when corresponding button would be visible
+    - Automatic updates when switching files or changing asset status
+    - Perfect consistency: button visibility = command availability
+  - **Keyboard-First Workflow**: Execute any asset operation without clicking UI buttons
+    - Open Command Palette → type "Exocortex" → see only available commands
+    - Faster workflow for keyboard-centric users
+    - Same behavior as button clicks (status updates, timestamps, notifications)
+
+### User Benefits
+
+- **Keyboard Efficiency**: Execute all asset operations via Command Palette without mouse
+  - No need to scroll to find buttons - access from anywhere with Cmd/Ctrl+P
+  - Type-ahead filtering: quickly find commands by typing "Exo" or command name
+  - Muscle memory: same keyboard shortcut for all commands
+- **Context-Aware Commands**: Only see relevant commands for current file
+  - Viewing Area → see "Create Task" command
+  - Viewing Task without status → see "Start Effort" and "Mark as Done" commands
+  - Viewing Done Task → see "Archive Task" command
+  - No clutter: irrelevant commands automatically hidden
+- **Consistent Experience**: Commands behave identically to button clicks
+  - Same notifications ("Started effort: Task Name")
+  - Same frontmatter updates (status, timestamps, archived flag)
+  - Same validation and error handling
+- **Accessibility**: Alternative interaction method for users who prefer keyboard navigation
+
+### Technical
+
+- New domain layer: `CommandVisibility` module with 6 pure functions for visibility logic
+  - `canCreateTask()` - Area/Project detection with bracket normalization
+  - `canStartEffort()` - Task/Project without Doing/Done status
+  - `canMarkDone()` - Task/Project without Done status
+  - `canArchiveTask()` - Done Task/Project not already archived
+  - `canCleanProperties()` - Metadata with empty/null/undefined values
+  - `canRepairFolder()` - Folder mismatch detection with path normalization
+- New application service: `CommandManager` for command registration and execution
+  - Registers all 6 commands with Obsidian Plugin API
+  - Uses `checkCallback` pattern for dynamic command availability
+  - Extracts context from active file (metadata, folder, status)
+  - Reuses existing services (TaskCreationService, TaskStatusService, etc.)
+- Refactored all 6 button components to use shared `CommandVisibility` functions
+  - Single source of truth for visibility logic
+  - DRY principle: no duplicate condition checking
+  - Button visibility and command availability guaranteed to match
+- Integrated `CommandManager` into `ExocortexPlugin.onload()`
+- Added 51 new tests (46 CommandVisibility + 5 CommandManager unit tests)
+- Created comprehensive BDD feature: 20 scenarios covering Command Palette behavior
+- Total test suite: 202 tests passing (103 unit + 99 component + 42 UI)
+- BDD coverage: 151 scenarios total (131 previous + 20 new command scenarios)
+- Zero breaking changes - purely additive functionality
+
 ## [12.8.1] - 2025-10-13
 
 ### Added

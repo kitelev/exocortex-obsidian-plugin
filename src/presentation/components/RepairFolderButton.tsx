@@ -1,5 +1,6 @@
 import React from "react";
 import { TFile } from "obsidian";
+import { canRepairFolder, CommandVisibilityContext } from "../../domain/commands/CommandVisibility";
 
 export interface RepairFolderButtonProps {
   sourceFile: TFile;
@@ -9,18 +10,22 @@ export interface RepairFolderButtonProps {
 }
 
 export const RepairFolderButton: React.FC<RepairFolderButtonProps> = ({
+  sourceFile,
   currentFolder,
   expectedFolder,
   onRepair,
 }) => {
+  // Use centralized visibility logic from CommandVisibility
   const needsRepair = React.useMemo(() => {
-    if (!expectedFolder) return false;
-
-    // Normalize paths for comparison (remove trailing slashes)
-    const normalizedCurrent = currentFolder.replace(/\/$/, "");
-    const normalizedExpected = expectedFolder.replace(/\/$/, "");
-
-    return normalizedCurrent !== normalizedExpected;
+    const context: CommandVisibilityContext = {
+      instanceClass: null,
+      currentStatus: null,
+      metadata: {},
+      isArchived: false,
+      currentFolder,
+      expectedFolder,
+    };
+    return canRepairFolder(context);
   }, [currentFolder, expectedFolder]);
 
   const handleClick = async (e: React.MouseEvent) => {

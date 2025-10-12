@@ -1,5 +1,6 @@
 import React from "react";
 import { TFile } from "obsidian";
+import { canCleanProperties, CommandVisibilityContext } from "../../domain/commands/CommandVisibility";
 
 export interface CleanEmptyPropertiesButtonProps {
   sourceFile: TFile;
@@ -9,23 +10,19 @@ export interface CleanEmptyPropertiesButtonProps {
 
 export const CleanEmptyPropertiesButton: React.FC<
   CleanEmptyPropertiesButtonProps
-> = ({ metadata, onCleanup }) => {
+> = ({ sourceFile, metadata, onCleanup }) => {
+  // Use centralized visibility logic from CommandVisibility
   const hasEmptyProperties = React.useMemo(() => {
-    if (!metadata || Object.keys(metadata).length === 0) return false;
-
-    return Object.values(metadata).some((value) => {
-      if (value === null || value === undefined) return true;
-      if (typeof value === "string" && value.trim() === "") return true;
-      if (Array.isArray(value) && value.length === 0) return true;
-      if (
-        typeof value === "object" &&
-        !Array.isArray(value) &&
-        Object.keys(value).length === 0
-      )
-        return true;
-      return false;
-    });
-  }, [metadata]);
+    const context: CommandVisibilityContext = {
+      instanceClass: null,
+      currentStatus: null,
+      metadata,
+      isArchived: false,
+      currentFolder: sourceFile.parent?.path || "",
+      expectedFolder: null,
+    };
+    return canCleanProperties(context);
+  }, [metadata, sourceFile]);
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();

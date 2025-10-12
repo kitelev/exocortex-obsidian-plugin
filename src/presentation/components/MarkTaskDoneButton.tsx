@@ -1,5 +1,6 @@
 import React from "react";
 import { TFile } from "obsidian";
+import { canMarkDone, CommandVisibilityContext } from "../../domain/commands/CommandVisibility";
 
 export interface MarkTaskDoneButtonProps {
   instanceClass: string | string[] | null;
@@ -11,32 +12,21 @@ export interface MarkTaskDoneButtonProps {
 export const MarkTaskDoneButton: React.FC<MarkTaskDoneButtonProps> = ({
   instanceClass,
   currentStatus,
+  sourceFile,
   onMarkDone,
 }) => {
-  const isEffort = React.useMemo(() => {
-    if (!instanceClass) return false;
-    const classes = Array.isArray(instanceClass)
-      ? instanceClass
-      : [instanceClass];
-    return classes.some((cls) => {
-      const cleanClass = cls.replace(/\[\[|\]\]/g, "").trim();
-      return cleanClass === "ems__Task" || cleanClass === "ems__Project";
-    });
-  }, [instanceClass]);
-
+  // Use centralized visibility logic from CommandVisibility
   const shouldShowButton = React.useMemo(() => {
-    if (!isEffort) return false;
-
-    if (!currentStatus) return true;
-
-    const statusValue = Array.isArray(currentStatus)
-      ? currentStatus[0]
-      : currentStatus;
-    if (!statusValue) return true;
-
-    const cleanStatus = statusValue.replace(/\[\[|\]\]/g, "").trim();
-    return cleanStatus !== "ems__EffortStatusDone";
-  }, [isEffort, currentStatus]);
+    const context: CommandVisibilityContext = {
+      instanceClass,
+      currentStatus,
+      metadata: {},
+      isArchived: false,
+      currentFolder: sourceFile.parent?.path || "",
+      expectedFolder: null,
+    };
+    return canMarkDone(context);
+  }, [instanceClass, currentStatus, sourceFile]);
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();

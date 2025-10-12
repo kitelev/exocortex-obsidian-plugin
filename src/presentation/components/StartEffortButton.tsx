@@ -1,5 +1,6 @@
 import React from "react";
 import { TFile } from "obsidian";
+import { canStartEffort, CommandVisibilityContext } from "../../domain/commands/CommandVisibility";
 
 export interface StartEffortButtonProps {
   instanceClass: string | string[] | null;
@@ -11,42 +12,21 @@ export interface StartEffortButtonProps {
 export const StartEffortButton: React.FC<StartEffortButtonProps> = ({
   instanceClass,
   currentStatus,
+  sourceFile,
   onStartEffort,
 }) => {
-  const isEffort = React.useMemo(() => {
-    if (!instanceClass) return false;
-
-    const classes = Array.isArray(instanceClass)
-      ? instanceClass
-      : [instanceClass];
-
-    return classes.some((cls) => {
-      const cleanClass = cls.replace(/\[\[|\]\]/g, "").trim();
-      return cleanClass === "ems__Task" || cleanClass === "ems__Project";
-    });
-  }, [instanceClass]);
-
+  // Use centralized visibility logic from CommandVisibility
   const shouldShowButton = React.useMemo(() => {
-    if (!isEffort) return false;
-
-    // Don't show if no status (undefined/null) - show button for efforts without status
-    // Don't show if status is Doing or Done
-    if (!currentStatus) return true;
-
-    const statuses = Array.isArray(currentStatus)
-      ? currentStatus
-      : [currentStatus];
-
-    const hasDoingOrDone = statuses.some((status) => {
-      const cleanStatus = status.replace(/\[\[|\]\]/g, "").trim();
-      return (
-        cleanStatus === "ems__EffortStatusDoing" ||
-        cleanStatus === "ems__EffortStatusDone"
-      );
-    });
-
-    return !hasDoingOrDone;
-  }, [isEffort, currentStatus]);
+    const context: CommandVisibilityContext = {
+      instanceClass,
+      currentStatus,
+      metadata: {},
+      isArchived: false,
+      currentFolder: sourceFile.parent?.path || "",
+      expectedFolder: null,
+    };
+    return canStartEffort(context);
+  }, [instanceClass, currentStatus, sourceFile]);
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();

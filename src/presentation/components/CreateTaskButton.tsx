@@ -1,5 +1,6 @@
 import React from "react";
 import { TFile } from "obsidian";
+import { canCreateTask, CommandVisibilityContext } from "../../domain/commands/CommandVisibility";
 
 export interface CreateTaskButtonProps {
   instanceClass: string | string[] | null;
@@ -14,20 +15,18 @@ export const CreateTaskButton: React.FC<CreateTaskButtonProps> = ({
   sourceFile,
   onTaskCreate,
 }) => {
-  // Only show button for ems__Area and ems__Project assets
+  // Use centralized visibility logic from CommandVisibility
   const shouldShowButton = React.useMemo(() => {
-    if (!instanceClass) return false;
-
-    // Normalize to array for consistent handling
-    const classes = Array.isArray(instanceClass) ? instanceClass : [instanceClass];
-
-    // Check if any class matches ems__Area or ems__Project
-    const supportedClasses = ["ems__Area", "ems__Project"];
-    return classes.some((cls) => {
-      const cleanClass = cls.replace(/\[\[|\]\]/g, "").trim();
-      return supportedClasses.includes(cleanClass);
-    });
-  }, [instanceClass]);
+    const context: CommandVisibilityContext = {
+      instanceClass,
+      currentStatus: null,
+      metadata,
+      isArchived: false,
+      currentFolder: sourceFile.parent?.path || "",
+      expectedFolder: null,
+    };
+    return canCreateTask(context);
+  }, [instanceClass, metadata, sourceFile]);
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
