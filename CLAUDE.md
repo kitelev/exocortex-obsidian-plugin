@@ -322,6 +322,13 @@ git push origin main
 - Use existing mock infrastructure
 - Follow AAA pattern (Arrange, Act, Assert)
 
+**CRITICAL - Prevent Test Hangs:**
+- Playwright component tests may open HTTP server after completion
+- If `npm test` shows "Serving HTML report at http://localhost:XXXX. Press Ctrl+C to quit"
+- IMMEDIATELY recognize this as process hang and analyze test results BEFORE the hang
+- Test results appear BEFORE the HTTP server message
+- Count passed/failed tests and proceed based on results, don't wait for process to exit
+
 ### 3. Architecture Principles
 
 - **Clean Architecture**: Separate concerns by layer

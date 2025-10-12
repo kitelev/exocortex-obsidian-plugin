@@ -9,9 +9,11 @@ import { CreateTaskButton } from "../components/CreateTaskButton";
 import { MarkTaskDoneButton } from "../components/MarkTaskDoneButton";
 import { ArchiveTaskButton } from "../components/ArchiveTaskButton";
 import { CleanEmptyPropertiesButton } from "../components/CleanEmptyPropertiesButton";
+import { RepairFolderButton } from "../components/RepairFolderButton";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 import { TaskStatusService } from "../../infrastructure/services/TaskStatusService";
 import { PropertyCleanupService } from "../../infrastructure/services/PropertyCleanupService";
+import { FolderRepairService } from "../../infrastructure/services/FolderRepairService";
 
 /**
  * UniversalLayout configuration options
@@ -63,11 +65,13 @@ export class UniversalLayoutRenderer {
     this.taskCreationService = new TaskCreationService(this.app.vault);
     this.taskStatusService = new TaskStatusService(this.app.vault);
     this.propertyCleanupService = new PropertyCleanupService(this.app.vault);
+    this.folderRepairService = new FolderRepairService(this.app.vault, this.app);
   }
 
   private taskCreationService: TaskCreationService;
   private taskStatusService: TaskStatusService;
   private propertyCleanupService: PropertyCleanupService;
+  private folderRepairService: FolderRepairService;
 
   /**
    * Build reverse index of backlinks for O(1) lookups
@@ -152,6 +156,9 @@ export class UniversalLayoutRenderer {
 
       // Render Clean Empty Properties button (for all assets)
       await this.renderCleanEmptyPropertiesButton(el, currentFile);
+
+      // Render Repair Folder button (for all assets with exo__Asset_isDefinedBy)
+      await this.renderRepairFolderButton(el, currentFile);
 
       // Render asset properties
       await this.renderAssetProperties(el, currentFile);
@@ -400,6 +407,49 @@ export class UniversalLayoutRenderer {
           await this.refresh(el);
 
           this.logger.info(`Cleaned empty properties: ${file.path}`);
+        },
+      }),
+    );
+  }
+
+  private async renderRepairFolderButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+
+    // Get current folder
+    const currentFolder = file.parent?.path || "";
+
+    // Get expected folder based on exo__Asset_isDefinedBy
+    const expectedFolder = await this.folderRepairService.getExpectedFolder(
+      file,
+      metadata,
+    );
+
+    const container = el.createDiv({
+      cls: "exocortex-repair-folder-wrapper",
+    });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(RepairFolderButton, {
+        sourceFile: file,
+        currentFolder,
+        expectedFolder,
+        onRepair: async () => {
+          if (expectedFolder) {
+            await this.folderRepairService.repairFolder(file, expectedFolder);
+
+            await new Promise((resolve) => setTimeout(resolve, 100));
+
+            await this.refresh(el);
+
+            this.logger.info(
+              `Repaired folder for ${file.path}: ${currentFolder} -> ${expectedFolder}`,
+            );
+          }
         },
       }),
     );
