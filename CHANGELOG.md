@@ -1,3 +1,27 @@
+## [12.5.14] - 2025-10-12
+
+### Enhanced
+
+- **Task Creation Frontmatter**: Consistent property order for better readability
+  - Task properties now appear in a predictable, logical order
+  - Order: `exo__Asset_isDefinedBy` → `exo__Asset_uid` → `exo__Asset_createdAt` → `Instance_class` → effort property (`ems__Effort_area` or `ems__Effort_parent`)
+  - Makes task frontmatter easier to read and understand at a glance
+  - More professional, organized appearance
+  - No functional changes - just better organization
+
+### Technical
+
+- Enforced property insertion order in `TaskCreationService`
+- Added comprehensive test coverage for property ordering
+- Updated BDD scenarios to verify consistent frontmatter structure
+
+### User Benefits
+
+- **Predictable Layout**: All tasks have the same frontmatter structure
+- **Easier Scanning**: Properties always appear in the same place
+- **Professional Appearance**: Consistent formatting across your vault
+- **Better Maintainability**: Easier to spot issues when properties are ordered consistently
+
 ## [12.5.13] - 2025-10-12
 
 ### Added
