@@ -11,8 +11,10 @@ Custom slash commands are now available in `.claude/commands/` directory:
 - `/execute [task]` - Execute with BABOK requirements interview, PMBOK planning, and full delivery pipeline
 - `/status` - Check current progress and project health
 - `/agents` - List available agents and capabilities
-- `/release [type] [desc]` - Create new release (major/minor/patch)
+- `/release [type] [desc]` - **MANDATORY for releases** - Invokes release-agent with 20-step zero-tolerance process
 - `/test [pattern]` - Run tests and check coverage
+
+⚠️ **CRITICAL**: For ANY release, ALWAYS use `/release` command. It guarantees release-agent execution.
 
 **Enhanced Execution Flow (v3.5.0):**
 1. **BABOK Requirements Interview** - Structured requirements elicitation
@@ -403,7 +405,10 @@ Every code change MUST follow this exact sequence:
 - If GREEN (✅) - Task complete
 - **A broken pipeline = incomplete task**
 
-**AUTOMATED RELEASE**: Use `.claude/agents/release.sh` script or follow `.claude/agents/release-agent.md` checklist
+**AUTOMATED RELEASE**:
+- **PRIMARY METHOD**: Use `/release` slash command - ALWAYS invokes release-agent
+- **ALTERNATIVE**: Manually use release-agent from `.claude/agents/release-agent.md`
+- **GUARANTEE**: Release-agent follows bulletproof 20-step process with zero-tolerance for skipped steps
 
 **Version Update Checklist:**
 - [ ] package.json version updated
