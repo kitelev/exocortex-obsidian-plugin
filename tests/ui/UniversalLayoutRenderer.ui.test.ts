@@ -912,6 +912,178 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
   });
 
+  describe("Repair Folder Button", () => {
+    it("should render Repair Folder button when asset is in wrong folder", async () => {
+      const currentFile = {
+        basename: "Misplaced Asset",
+        path: "wrong/folder/asset.md",
+        parent: { path: "wrong/folder" },
+      } as TFile;
+
+      const referencedFile = {
+        basename: "Reference",
+        path: "correct/folder/reference.md",
+        parent: { path: "correct/folder" },
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Asset_isDefinedBy: "[[Reference]]",
+        },
+      });
+
+      (mockApp.metadataCache.getFirstLinkpathDest as jest.Mock) = jest
+        .fn()
+        .mockReturnValue(referencedFile);
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-repair-folder-btn");
+      expect(button).toBeTruthy();
+      expect(button?.textContent).toBe("Repair Folder");
+    });
+
+    it("should NOT render Repair Folder button when asset is in correct folder", async () => {
+      const currentFile = {
+        basename: "Correct Asset",
+        path: "correct/folder/asset.md",
+        parent: { path: "correct/folder" },
+      } as TFile;
+
+      const referencedFile = {
+        basename: "Reference",
+        path: "correct/folder/reference.md",
+        parent: { path: "correct/folder" },
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Asset_isDefinedBy: "[[Reference]]",
+        },
+      });
+
+      (mockApp.metadataCache.getFirstLinkpathDest as jest.Mock) = jest
+        .fn()
+        .mockReturnValue(referencedFile);
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-repair-folder-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should NOT render Repair Folder button when exo__Asset_isDefinedBy is missing", async () => {
+      const currentFile = {
+        basename: "Asset",
+        path: "folder/asset.md",
+        parent: { path: "folder" },
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-repair-folder-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should NOT render Repair Folder button when referenced file not found", async () => {
+      const currentFile = {
+        basename: "Asset",
+        path: "folder/asset.md",
+        parent: { path: "folder" },
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Asset_isDefinedBy: "[[NonExistent]]",
+        },
+      });
+
+      (mockApp.metadataCache.getFirstLinkpathDest as jest.Mock) = jest
+        .fn()
+        .mockReturnValue(null);
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-repair-folder-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should position Repair Folder button after Clean button and before properties", async () => {
+      const currentFile = {
+        basename: "Misplaced",
+        path: "wrong/asset.md",
+        parent: { path: "wrong" },
+      } as TFile;
+
+      const referencedFile = {
+        basename: "Ref",
+        path: "correct/ref.md",
+        parent: { path: "correct" },
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Asset_isDefinedBy: "[[Ref]]",
+          exo__Instance_class: "[[ems__Task]]",
+        },
+      });
+
+      (mockApp.metadataCache.getFirstLinkpathDest as jest.Mock) = jest
+        .fn()
+        .mockReturnValue(referencedFile);
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const children = Array.from(container.children);
+      const cleanIndex = children.findIndex((el) =>
+        el.classList.contains("exocortex-clean-properties-wrapper"),
+      );
+      const repairIndex = children.findIndex((el) =>
+        el.classList.contains("exocortex-repair-folder-wrapper"),
+      );
+      const propertiesIndex = children.findIndex((el) =>
+        el.classList.contains("exocortex-properties-section"),
+      );
+
+      expect(cleanIndex).toBeGreaterThanOrEqual(0);
+      expect(repairIndex).toBeGreaterThanOrEqual(0);
+      expect(propertiesIndex).toBeGreaterThanOrEqual(0);
+      expect(repairIndex).toBeGreaterThan(cleanIndex);
+      expect(repairIndex).toBeLessThan(propertiesIndex);
+    });
+  });
+
   describe("React Component Cleanup", () => {
     it("should properly cleanup React roots on unmount", async () => {
       const currentFile = {

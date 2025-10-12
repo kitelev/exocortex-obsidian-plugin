@@ -1,3 +1,43 @@
+## [12.8.0] - 2025-10-12
+
+### Added
+
+- **Repair Folder Button**: Automatically move misplaced assets to correct folders
+  - "Repair Folder" button appears when asset is in wrong folder based on `exo__Asset_isDefinedBy` reference
+  - Detects folder mismatch: compares current asset folder with referenced asset folder
+  - One-click relocation: moves asset to correct folder with automatic folder creation
+  - Smart path resolution: handles wiki-links (`[[Name]]`), quoted wiki-links (`"[[Name]]"`), and plain text references
+  - Conflict prevention: validates target path doesn't have existing file before moving
+  - Auto-hide: button disappears after successful relocation
+  - Works for all asset classes - any asset with `exo__Asset_isDefinedBy` property
+
+### User Benefits
+
+- **Automatic Organization**: Keep your vault organized by semantic relationships, not manual folder management
+- **One-Click Fix**: Move misplaced assets to correct folders without manual file operations
+- **No Broken Links**: Asset moves preserve all links and references automatically
+- **Smart Detection**: Only shows when needed - no button clutter for correctly placed assets
+- **Safe Operation**: Prevents accidental overwrites by checking for existing files
+- **Semantic Consistency**: Ensures asset location matches its semantic definition relationship
+- **Time Saver**: No need to manually move files and update paths
+
+### Technical
+
+- New React component: `RepairFolderButton` with path normalization and mismatch detection
+- New service: `FolderRepairService` for asset relocation based on semantic references
+- Duck typing: uses `"children" in folder` check instead of `instanceof TFolder` for better testability
+- Reference extraction: handles multiple wiki-link formats with quote and bracket removal
+- Folder creation: automatically creates target folder hierarchy if missing
+- Path comparison: normalizes paths (removes trailing slashes) for accurate matching
+- Integrated into `UniversalLayoutRenderer` positioned after Clean button, before properties
+- Added 16 unit tests for FolderRepairService (reference extraction, folder creation, conflict handling)
+- Added 12 component tests for RepairFolderButton (visibility logic, path normalization, event handling)
+- Added 5 UI integration tests for repair folder button rendering and positioning
+- Created 17 BDD scenarios for folder repair feature (move operations, error handling, UI behavior)
+- Total test suite: 172 tests passing (57 unit + 81 component + 34 UI) - increased from 140 tests
+- BDD coverage: 124 scenarios total - increased from 107 scenarios
+- Zero breaking changes - purely additive functionality
+
 ## [12.7.0] - 2025-10-12
 
 ### Added
