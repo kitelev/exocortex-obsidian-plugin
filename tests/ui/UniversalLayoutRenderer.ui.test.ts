@@ -524,6 +524,107 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
   });
 
+  describe("Archive Task Button", () => {
+    it("should render Archive button for Done Task not archived", async () => {
+      const currentFile = {
+        basename: "Completed Task",
+        path: "tasks/completed.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "[[ems__EffortStatusDone]]",
+          archived: false,
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-archive-task-btn");
+      expect(button).toBeTruthy();
+      expect(button?.textContent).toBe("To Archive");
+    });
+
+    it("should NOT render Archive button for already archived Task", async () => {
+      const currentFile = {
+        basename: "Archived Task",
+        path: "tasks/archived.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "[[ems__EffortStatusDone]]",
+          archived: true,
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-archive-task-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should NOT render Archive button for non-Done Task", async () => {
+      const currentFile = {
+        basename: "Active Task",
+        path: "tasks/active.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "[[ems__EffortStatusActive]]",
+          archived: false,
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-archive-task-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should NOT render Archive button for non-Task assets", async () => {
+      const currentFile = {
+        basename: "Project",
+        path: "projects/project.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-archive-task-btn");
+      expect(button).toBeFalsy();
+    });
+  });
+
   describe("FileBuilder Integration", () => {
     it("should work with FileBuilder pattern for test data", () => {
       const [content, metadata] = new FileBuilder()

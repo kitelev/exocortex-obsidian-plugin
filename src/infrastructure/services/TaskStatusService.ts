@@ -51,4 +51,40 @@ ${content}`;
       `---\n${updatedFrontmatter}\n---`,
     );
   }
+
+  async archiveTask(taskFile: TFile): Promise<void> {
+    const fileContent = await this.vault.read(taskFile);
+    const updatedContent = this.updateFrontmatterWithArchived(fileContent);
+    await this.vault.modify(taskFile, updatedContent);
+  }
+
+  private updateFrontmatterWithArchived(content: string): string {
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) {
+      const newFrontmatter = `---
+archived: true
+---
+${content}`;
+      return newFrontmatter;
+    }
+
+    const frontmatterContent = match[1];
+    let updatedFrontmatter = frontmatterContent;
+
+    if (updatedFrontmatter.includes("archived:")) {
+      updatedFrontmatter = updatedFrontmatter.replace(
+        /archived:.*$/m,
+        "archived: true",
+      );
+    } else {
+      updatedFrontmatter += "\narchived: true";
+    }
+
+    return content.replace(
+      frontmatterRegex,
+      `---\n${updatedFrontmatter}\n---`,
+    );
+  }
 }

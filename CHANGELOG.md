@@ -1,3 +1,34 @@
+## [12.5.16] - 2025-10-12
+
+### Added
+
+- **To Archive Button for Completed Tasks**: Organize your workspace by archiving done tasks
+  - "To Archive" button appears when task is marked Done and not yet archived
+  - Single click archives task by setting `archived: true` in frontmatter
+  - Button automatically disappears after archiving for clean interface
+  - Works with multiple archived field formats (boolean, string, number)
+  - Supports legacy `exo__Asset_isArchived` field for backward compatibility
+  - Perfect for maintaining a clean task list while preserving completed work
+
+### User Benefits
+
+- **Effortless Organization**: Archive completed tasks with one click instead of manual editing
+- **Clean Workspace**: Quickly hide done tasks from your active task lists
+- **Automatic Field Updates**: Archived status recorded instantly in task frontmatter
+- **Zero Learning Curve**: Button appears only when needed - see it, click it, done
+- **Flexible Format Support**: Works with your existing archive field conventions
+- **Legacy Compatible**: Respects existing `exo__Asset_isArchived` fields
+
+### Technical
+
+- New React component: `ArchiveTaskButton` with multi-format archived value recognition
+- Extended `TaskStatusService` with `archiveTask()` method following DRY principles
+- Supports multiple archived value formats: boolean, string ("true"/"false"), number (1/0)
+- Preserves all existing task properties during archiving operation
+- SOLID architecture maintained with service-based pattern reuse
+- Comprehensive test coverage: 3 unit + 15 component + 4 UI tests + 10 BDD scenarios
+- Total test suite: 105 tests passing (30 unit + 56 component + 19 UI)
+
 ## [12.5.15] - 2025-10-12
 
 ### Added
