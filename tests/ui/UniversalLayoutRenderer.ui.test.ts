@@ -426,6 +426,104 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
   });
 
+  describe("Mark Task Done Button", () => {
+    it("should render Done button for Task without status", async () => {
+      const currentFile = {
+        basename: "My Task",
+        path: "tasks/my-task.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          exo__Asset_isDefinedBy: "[[Ontology/EMS]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-mark-done-btn");
+      expect(button).toBeTruthy();
+      expect(button?.textContent).toBe("Done");
+    });
+
+    it("should render Done button for Task with non-Done status", async () => {
+      const currentFile = {
+        basename: "Active Task",
+        path: "tasks/active.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "[[ems__EffortStatusActive]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-mark-done-btn");
+      expect(button).toBeTruthy();
+    });
+
+    it("should NOT render Done button for Task with Done status", async () => {
+      const currentFile = {
+        basename: "Completed Task",
+        path: "tasks/completed.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "[[ems__EffortStatusDone]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-mark-done-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should NOT render Done button for non-Task assets", async () => {
+      const currentFile = {
+        basename: "Project",
+        path: "projects/project.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-mark-done-btn");
+      expect(button).toBeFalsy();
+    });
+  });
+
   describe("FileBuilder Integration", () => {
     it("should work with FileBuilder pattern for test data", () => {
       const [content, metadata] = new FileBuilder()

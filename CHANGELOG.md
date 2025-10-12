@@ -1,3 +1,31 @@
+## [12.5.15] - 2025-10-12
+
+### Added
+
+- **Done Button for Task Completion**: Quick task completion with a single click
+  - "Done" button appears in Task layouts when task is not yet completed
+  - Click once to mark task as done - no manual editing needed
+  - Automatically updates task status to "Done" and records completion timestamp
+  - Button disappears after task is marked complete for clean interface
+  - Seamless integration with existing task management workflow
+
+### User Benefits
+
+- **Effortless Task Completion**: Mark tasks done with one click instead of manual property editing
+- **Automatic Timestamp Tracking**: Completion time recorded automatically in ISO 8601 format
+- **Clean Visual Feedback**: Button only appears when needed, disappears when task is done
+- **Zero Learning Curve**: Intuitive interface - if you see the button, click it to complete
+- **Faster Workflow**: Reduces task completion from multiple steps to a single click
+
+### Technical
+
+- New React component: `MarkTaskDoneButton` with conditional rendering
+- Service-based architecture: `TaskStatusService` handles frontmatter updates
+- ISO 8601 timestamp format (no milliseconds) for completion time
+- Preserves all existing task properties during status update
+- SOLID principles and Clean Architecture maintained
+- Comprehensive test coverage: 6 unit + 12 component + 4 UI tests + 9 BDD scenarios
+
 ## [12.5.14] - 2025-10-12
 
 ### Enhanced
