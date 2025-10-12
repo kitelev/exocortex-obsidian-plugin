@@ -1084,6 +1084,199 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
   });
 
+  describe("Start Effort Button", () => {
+    it("should render Start Effort button for Task without status", async () => {
+      const currentFile = {
+        basename: "New Task",
+        path: "tasks/new-task.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-start-effort-btn");
+      expect(button).toBeTruthy();
+      expect(button?.textContent).toBe("Start Effort");
+    });
+
+    it("should render Start Effort button for Task with non-Doing/Done status", async () => {
+      const currentFile = {
+        basename: "Active Task",
+        path: "tasks/active-task.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "[[ems__EffortStatusActive]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-start-effort-btn");
+      expect(button).toBeTruthy();
+    });
+
+    it("should NOT render Start Effort button for Task with Doing status", async () => {
+      const currentFile = {
+        basename: "Doing Task",
+        path: "tasks/doing-task.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "[[ems__EffortStatusDoing]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-start-effort-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should NOT render Start Effort button for Task with Done status", async () => {
+      const currentFile = {
+        basename: "Done Task",
+        path: "tasks/done-task.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "[[ems__EffortStatusDone]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-start-effort-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should render Start Effort button for Project without status", async () => {
+      const currentFile = {
+        basename: "New Project",
+        path: "projects/new-project.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-start-effort-btn");
+      expect(button).toBeTruthy();
+      expect(button?.textContent).toBe("Start Effort");
+    });
+
+    it("should NOT render Start Effort button for Project with Doing status", async () => {
+      const currentFile = {
+        basename: "Doing Project",
+        path: "projects/doing-project.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "[[ems__EffortStatusDoing]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-start-effort-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should NOT render Start Effort button for Project with Done status", async () => {
+      const currentFile = {
+        basename: "Done Project",
+        path: "projects/done-project.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "[[ems__EffortStatusDone]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-start-effort-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should NOT render Start Effort button for non-Task/Project assets (Area)", async () => {
+      const currentFile = {
+        basename: "Some Area",
+        path: "areas/area.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Area]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-start-effort-btn");
+      expect(button).toBeFalsy();
+    });
+  });
+
   describe("React Component Cleanup", () => {
     it("should properly cleanup React roots on unmount", async () => {
       const currentFile = {
