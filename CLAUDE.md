@@ -138,16 +138,11 @@ Execute every request as a highly qualified Senior IT specialist with extensive 
 
 ### Terminology (CRITICAL)
 
-**AutoLayout vs ManualLayout:**
+**Layout Rendering:**
 
-- **AutoLayout**: Layout that displays automatically for all assets when the setting "Auto-render layout" is enabled in plugin settings. Appears below metadata (frontmatter) in reading/preview mode only. No code-block needed.
+- **AutoLayout**: The plugin automatically displays related assets below metadata (frontmatter) in reading/preview mode. This is always enabled and requires no configuration.
 
-- **ManualLayout**: Layout that displays when user explicitly adds a code-block with type `exocortex` in their note. Works always, regardless of settings. User controls placement.
-
-**IMPORTANT**: Always use correct terminology:
-- "AutoLayout" = automatic rendering via settings
-- "ManualLayout" = manual code-block rendering
-- NEVER confuse these terms in code, docs, or commits
+**IMPORTANT**: Layout rendering is automatic and always active. Users see properties and relations tables below frontmatter in all notes when viewing in reading mode.
 
 ### Current Implementation (v12.2.5)
 

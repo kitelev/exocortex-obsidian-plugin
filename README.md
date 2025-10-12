@@ -15,12 +15,12 @@ Exocortex is a lightweight Obsidian plugin that displays related notes in a clea
 - 🏷️ **Asset Properties**: Display all frontmatter properties in a clean key-value table
 - 🔗 **Smart Links**: Wiki-links in properties automatically become clickable internal links
 - 📊 **Related Assets**: Show all notes that reference the current note, grouped by property
-- ⚡ **AutoLayout**: Optional automatic display below metadata (no code blocks needed)
-- 📝 **ManualLayout**: Code-block insertion for precise placement control
+- ⚡ **Automatic Display**: Always shows related assets below metadata in reading mode
 - 🚀 **High Performance**: Optimized relation discovery with reverse indexing (O(1) lookups)
 - 📱 **Mobile Compatible**: Works seamlessly on desktop and mobile
 - ↕️ **Interactive Sorting**: Sort tables with visual indicators (▲/▼)
 - 📦 **Archive Filtering**: Automatically hide archived assets from views
+- ⌨️ **Command Palette**: All asset commands accessible via keyboard (Cmd/Ctrl+P)
 
 ## 🏃‍♂️ Quick Start
 
@@ -38,24 +38,21 @@ Enable the plugin in Obsidian settings.
 
 ### Basic Usage
 
-**ManualLayout (always available)**
+The plugin automatically displays related assets below metadata in all notes (reading mode only).
 
-Add a code block to any note for manual placement:
-
-````markdown
-```exocortex
-```
-````
-
-**AutoLayout (optional setting)**
-
-Enable "AutoLayout" in plugin settings to automatically display both properties and relations tables below metadata in all notes (reading mode only). No code blocks needed!
-
-Go to: Settings → Exocortex → Enable AutoLayout
-
-This will show:
+**What you'll see:**
 1. **Properties Table** - All frontmatter properties in key-value format
 2. **Relations Table** - All notes that reference this note, grouped by property
+3. **Action Buttons** - Quick actions for creating tasks, managing status, etc.
+
+**Command Palette Access:**
+Press Cmd/Ctrl+P and type "Exocortex:" to access all asset commands:
+- Create Task
+- Start Effort
+- Mark as Done
+- Archive Task
+- Clean Empty Properties
+- Repair Folder
 
 ### Archive Filtering
 

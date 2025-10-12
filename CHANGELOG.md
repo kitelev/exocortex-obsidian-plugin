@@ -1,3 +1,34 @@
+## [12.9.0] - 2025-10-13
+
+### Changed
+
+- **BREAKING: Removed ManualLayout** - Simplified plugin by removing code-block rendering functionality
+  - Removed `registerMarkdownCodeBlockProcessor("exocortex")` from plugin initialization
+  - Plugin now **always** displays related assets automatically below metadata in reading mode
+  - No more code-block (````exocortex```) support - AutoLayout is now the only rendering mode
+  - Settings removed: "Enable AutoLayout" toggle is gone (AutoLayout is always on)
+  - **Migration**: Remove all ````exocortex``` code-blocks from your notes - they will be ignored
+  - **Benefit**: Simpler, more consistent user experience - no configuration needed
+
+### User Benefits
+
+- **Simpler Setup**: No settings to configure - plugin just works out of the box
+- **Consistent Experience**: All notes show related assets automatically in reading mode
+- **Less Clutter**: No need for code-blocks in notes - cleaner markdown files
+- **Faster Onboarding**: New users don't need to learn about code-block syntax
+- **Reduced Maintenance**: Single rendering path means fewer edge cases and bugs
+
+### Technical
+
+- Removed `ExocortexSettings` interface and `autoLayoutEnabled` setting
+- Removed `ExocortexSettingTab` class (no settings UI needed)
+- Removed `registerMarkdownCodeBlockProcessor` registration
+- Removed `loadSettings()` and `saveSettings()` methods
+- Simplified plugin initialization - AutoLayout events always registered
+- Updated README.md to remove ManualLayout documentation
+- Updated CLAUDE.md terminology section to reflect AutoLayout-only approach
+- Zero test failures - all 202 tests passing (103 unit + 99 component + 42 UI)
+
 ## [12.8.2] - 2025-10-13
 
 ### Added

@@ -2,39 +2,26 @@ import {
   App,
   MarkdownPostProcessorContext,
   Plugin,
-  PluginSettingTab,
-  Setting,
 } from "obsidian";
 import { UniversalLayoutRenderer } from "./presentation/renderers/UniversalLayoutRenderer";
 import { ILogger } from "./infrastructure/logging/ILogger";
 import { LoggerFactory } from "./infrastructure/logging/LoggerFactory";
 import { CommandManager } from "./application/services/CommandManager";
 
-interface ExocortexSettings {
-  autoLayoutEnabled: boolean;
-}
-
-const DEFAULT_SETTINGS: ExocortexSettings = {
-  autoLayoutEnabled: false,
-};
-
 /**
- * Exocortex Plugin - Simple layout rendering
- * Supports both ManualLayout (code-block) and AutoLayout (automatic rendering)
+ * Exocortex Plugin - Automatic layout rendering
+ * Automatically displays related assets table in all notes (below metadata in reading mode)
  * Provides Command Palette integration for all asset commands
  */
 export default class ExocortexPlugin extends Plugin {
   private logger: ILogger;
   private layoutRenderer: UniversalLayoutRenderer;
   private commandManager: CommandManager;
-  settings: ExocortexSettings;
 
   async onload(): Promise<void> {
     try {
       this.logger = LoggerFactory.create("ExocortexPlugin");
       this.logger.info("Loading Exocortex Plugin");
-
-      await this.loadSettings();
 
       this.layoutRenderer = new UniversalLayoutRenderer(this.app);
 
@@ -48,48 +35,32 @@ export default class ExocortexPlugin extends Plugin {
         }),
       );
 
-      // ManualLayout: Code-block processor (always enabled)
-      this.registerMarkdownCodeBlockProcessor(
-        "exocortex",
-        async (source, el, ctx) => {
-          await this.layoutRenderer.render(source, el, ctx);
-        },
+      // AutoLayout: Automatic rendering on file open
+      this.registerEvent(
+        this.app.workspace.on("file-open", (file) => {
+          if (file) {
+            setTimeout(() => this.autoRenderLayout(), 100);
+          }
+        }),
       );
 
-      // AutoLayout: Automatic rendering on file open (optional, via settings)
-      if (this.settings.autoLayoutEnabled) {
-        this.registerEvent(
-          this.app.workspace.on("file-open", (file) => {
-            if (file) {
-              setTimeout(() => this.autoRenderLayout(), 100);
-            }
-          }),
-        );
-
-        this.registerEvent(
-          this.app.workspace.on("active-leaf-change", () => {
-            if (this.settings.autoLayoutEnabled) {
-              setTimeout(() => this.autoRenderLayout(), 100);
-            }
-          }),
-        );
-
-        this.registerEvent(
-          this.app.workspace.on("layout-change", () => {
-            if (this.settings.autoLayoutEnabled) {
-              setTimeout(() => this.autoRenderLayout(), 100);
-            }
-          }),
-        );
-
-        // Initial render
-        const activeFile = this.app.workspace.getActiveFile();
-        if (activeFile) {
+      this.registerEvent(
+        this.app.workspace.on("active-leaf-change", () => {
           setTimeout(() => this.autoRenderLayout(), 100);
-        }
-      }
+        }),
+      );
 
-      this.addSettingTab(new ExocortexSettingTab(this.app, this));
+      this.registerEvent(
+        this.app.workspace.on("layout-change", () => {
+          setTimeout(() => this.autoRenderLayout(), 100);
+        }),
+      );
+
+      // Initial render
+      const activeFile = this.app.workspace.getActiveFile();
+      if (activeFile) {
+        setTimeout(() => this.autoRenderLayout(), 100);
+      }
 
       this.logger.info("Exocortex Plugin loaded successfully");
     } catch (error) {
@@ -103,19 +74,11 @@ export default class ExocortexPlugin extends Plugin {
     this.logger?.info("Exocortex Plugin unloaded");
   }
 
-  async loadSettings(): Promise<void> {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-  }
-
-  async saveSettings(): Promise<void> {
-    await this.saveData(this.settings);
-  }
-
   private autoRenderLayout(): void {
-    // AutoLayout: Remove existing auto-rendered layouts
+    // Remove existing auto-rendered layouts
     this.removeAutoRenderedLayouts();
 
-    // AutoLayout: Only render in preview mode, not in source mode
+    // Only render in preview mode, not in source mode
     const previewContainers = document.querySelectorAll(
       ".markdown-preview-view",
     );
@@ -162,36 +125,5 @@ export default class ExocortexPlugin extends Plugin {
     document
       .querySelectorAll(".exocortex-auto-layout")
       .forEach((el) => el.remove());
-  }
-}
-
-class ExocortexSettingTab extends PluginSettingTab {
-  plugin: ExocortexPlugin;
-
-  constructor(app: App, plugin: ExocortexPlugin) {
-    super(app, plugin);
-    this.plugin = plugin;
-  }
-
-  display(): void {
-    const { containerEl } = this;
-
-    containerEl.empty();
-
-    containerEl.createEl("h2", { text: "Exocortex Settings" });
-
-    new Setting(containerEl)
-      .setName("Enable AutoLayout")
-      .setDesc(
-        "AutoLayout: Automatically display related assets table in all notes (below metadata in reading mode). ManualLayout via code-blocks works always. Requires reload.",
-      )
-      .addToggle((toggle) =>
-        toggle
-          .setValue(this.plugin.settings.autoLayoutEnabled)
-          .onChange(async (value) => {
-            this.plugin.settings.autoLayoutEnabled = value;
-            await this.plugin.saveSettings();
-          }),
-      );
   }
 }
