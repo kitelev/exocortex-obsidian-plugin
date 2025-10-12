@@ -94,14 +94,11 @@ export class TaskCreationService {
     const effortProperty =
       EFFORT_PROPERTY_MAP[cleanSourceClass] || "ems__Effort_area";
 
-    const frontmatter: Record<string, any> = {
-      exo__Instance_class: ['"[[ems__Task]]"'],
-      exo__Asset_isDefinedBy: ensureQuoted(isDefinedBy),
-      exo__Asset_uid: uuidv4(),
-      exo__Asset_createdAt: timestamp,
-    };
-
-    // Add effort property dynamically
+    const frontmatter: Record<string, any> = {};
+    frontmatter["exo__Asset_isDefinedBy"] = ensureQuoted(isDefinedBy);
+    frontmatter["exo__Asset_uid"] = uuidv4();
+    frontmatter["exo__Asset_createdAt"] = timestamp;
+    frontmatter["exo__Instance_class"] = ['"[[ems__Task]]"'];
     frontmatter[effortProperty] = `"[[${sourceName}]]"`;
 
     return frontmatter;

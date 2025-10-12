@@ -189,6 +189,27 @@ describe("TaskCreationService", () => {
 
       expect(frontmatter.ems__Effort_parent).toBe('"[[Test]]"');
     });
+
+    it("should maintain property order: isDefinedBy, uid, createdAt, Instance_class, effort property", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Test Project",
+        "ems__Project",
+      );
+
+      const keys = Object.keys(frontmatter);
+      expect(keys).toEqual([
+        "exo__Asset_isDefinedBy",
+        "exo__Asset_uid",
+        "exo__Asset_createdAt",
+        "exo__Instance_class",
+        "ems__Effort_parent",
+      ]);
+    });
   });
 
   describe("buildFileContent", () => {

@@ -54,13 +54,13 @@ Feature: Create Task from Area or Project
         | exo__Asset_uid         | area-001        |
       When I click "Create Task" button
       Then a new note is created with name format "Task-{timestamp}"
-      And new note has frontmatter:
-        | Property                | Value Type         | Source               |
-        | exo__Instance_class     | [[ems__Task]]      | hardcoded            |
-        | exo__Asset_isDefinedBy  | [[Ontology/EMS]]   | copied from Area     |
-        | exo__Asset_uid          | UUIDv4             | generated            |
-        | exo__Asset_createdAt    | ISO 8601 timestamp | current time         |
-        | ems__Effort_area        | [[Sprint Planning]]| link to source Area  |
+      And new note has frontmatter in this property order:
+        | Order | Property                | Value Type         | Source               |
+        | 1     | exo__Asset_isDefinedBy  | [[Ontology/EMS]]   | copied from Area     |
+        | 2     | exo__Asset_uid          | UUIDv4             | generated            |
+        | 3     | exo__Asset_createdAt    | ISO 8601 timestamp | current time         |
+        | 4     | exo__Instance_class     | [[ems__Task]]      | hardcoded            |
+        | 5     | ems__Effort_area        | [[Sprint Planning]]| link to source Area  |
 
     Scenario: Create Task from Project with all required properties
       Given I have Project "Website Redesign" with:
@@ -70,13 +70,13 @@ Feature: Create Task from Area or Project
         | exo__Asset_uid         | project-001       |
       When I click "Create Task" button
       Then a new note is created with name format "Task-{timestamp}"
-      And new note has frontmatter:
-        | Property                | Value Type           | Source                 |
-        | exo__Instance_class     | [[ems__Task]]        | hardcoded              |
-        | exo__Asset_isDefinedBy  | [[Ontology/EMS]]     | copied from Project    |
-        | exo__Asset_uid          | UUIDv4               | generated              |
-        | exo__Asset_createdAt    | ISO 8601 timestamp   | current time           |
-        | ems__Effort_parent      | [[Website Redesign]] | link to source Project |
+      And new note has frontmatter in this property order:
+        | Order | Property                | Value Type           | Source                 |
+        | 1     | exo__Asset_isDefinedBy  | [[Ontology/EMS]]     | copied from Project    |
+        | 2     | exo__Asset_uid          | UUIDv4               | generated              |
+        | 3     | exo__Asset_createdAt    | ISO 8601 timestamp   | current time           |
+        | 4     | exo__Instance_class     | [[ems__Task]]        | hardcoded              |
+        | 5     | ems__Effort_parent      | [[Website Redesign]] | link to source Project |
 
     Scenario: Frontmatter uses correct YAML format with quoted wiki-links
       Given I have Area "Sales Offering People Management" with frontmatter:
@@ -90,14 +90,14 @@ Feature: Create Task from Area or Project
         ---
         """
       When I click "Create Task" button
-      Then new Task has frontmatter in correct YAML format:
+      Then new Task has frontmatter in correct YAML format with property order:
         """
         ---
-        exo__Instance_class:
-          - "[[ems__Task]]"
         exo__Asset_isDefinedBy: "[[!toos]]"
         exo__Asset_uid: <generated-uuid>
         exo__Asset_createdAt: <current-timestamp>
+        exo__Instance_class:
+          - "[[ems__Task]]"
         ems__Effort_area: "[[Sales Offering People Management (Area)]]"
         ---
         """
