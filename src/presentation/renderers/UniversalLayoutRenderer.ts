@@ -8,8 +8,10 @@ import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
 import { CreateTaskButton } from "../components/CreateTaskButton";
 import { MarkTaskDoneButton } from "../components/MarkTaskDoneButton";
 import { ArchiveTaskButton } from "../components/ArchiveTaskButton";
+import { CleanEmptyPropertiesButton } from "../components/CleanEmptyPropertiesButton";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 import { TaskStatusService } from "../../infrastructure/services/TaskStatusService";
+import { PropertyCleanupService } from "../../infrastructure/services/PropertyCleanupService";
 
 /**
  * UniversalLayout configuration options
@@ -60,10 +62,12 @@ export class UniversalLayoutRenderer {
     this.reactRenderer = new ReactRenderer();
     this.taskCreationService = new TaskCreationService(this.app.vault);
     this.taskStatusService = new TaskStatusService(this.app.vault);
+    this.propertyCleanupService = new PropertyCleanupService(this.app.vault);
   }
 
   private taskCreationService: TaskCreationService;
   private taskStatusService: TaskStatusService;
+  private propertyCleanupService: PropertyCleanupService;
 
   /**
    * Build reverse index of backlinks for O(1) lookups
@@ -145,6 +149,9 @@ export class UniversalLayoutRenderer {
 
       // Render Archive Task button (for completed Task assets)
       await this.renderArchiveTaskButton(el, currentFile);
+
+      // Render Clean Empty Properties button (for all assets)
+      await this.renderCleanEmptyPropertiesButton(el, currentFile);
 
       // Render asset properties
       await this.renderAssetProperties(el, currentFile);
@@ -364,6 +371,35 @@ export class UniversalLayoutRenderer {
           await this.refresh(el);
 
           this.logger.info(`Archived task: ${file.path}`);
+        },
+      }),
+    );
+  }
+
+  private async renderCleanEmptyPropertiesButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+
+    const container = el.createDiv({
+      cls: "exocortex-clean-properties-wrapper",
+    });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(CleanEmptyPropertiesButton, {
+        sourceFile: file,
+        metadata,
+        onCleanup: async () => {
+          await this.propertyCleanupService.cleanEmptyProperties(file);
+
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          await this.refresh(el);
+
+          this.logger.info(`Cleaned empty properties: ${file.path}`);
         },
       }),
     );

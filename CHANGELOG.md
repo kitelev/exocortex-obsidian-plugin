@@ -1,3 +1,39 @@
+## [12.7.0] - 2025-10-12
+
+### Added
+
+- **Clean Empty Properties Button**: One-click cleanup of empty frontmatter properties
+  - "Clean Empty Properties" button appears for all assets with empty properties
+  - Removes properties with empty values: `""`, `null`, `undefined`, `[]`, `{}`
+  - Automatically detects and removes whitespace-only strings
+  - Button disappears after cleanup when no empty properties remain
+  - Works for all asset classes - Areas, Tasks, Projects, and any other asset type
+  - Safe operation: preserves all non-empty properties and file content
+
+### User Benefits
+
+- **Cleaner Frontmatter**: Remove clutter with one click instead of manual editing
+- **Better Organization**: Keep your notes tidy by removing unnecessary empty fields
+- **Time Saver**: No need to manually find and delete each empty property
+- **Universal**: Works for any asset class, not just specific types
+- **Instant Feedback**: Button appears only when needed, disappears when done
+- **Safe by Design**: Only removes truly empty values, preserves all valid data
+
+### Technical
+
+- New React component: `CleanEmptyPropertiesButton` with intelligent empty property detection
+- New service: `PropertyCleanupService` for safe frontmatter manipulation
+- Smart detection: recognizes empty strings, null, undefined, empty arrays/objects, whitespace
+- YAML-aware: correctly handles list properties and nested structures
+- Integrated into `UniversalLayoutRenderer` for all asset classes
+- Added 11 unit tests for PropertyCleanupService
+- Added 10 component tests for CleanEmptyPropertiesButton
+- Added 4 UI integration tests for cleanup button rendering
+- Created 16 BDD scenarios for property cleanup feature
+- Total test suite: 140 tests passing (41 unit + 70 component + 29 UI)
+- BDD coverage: 107 scenarios total
+- Zero breaking changes - purely additive functionality
+
 ## [12.6.0] - 2025-10-12
 
 ### Added
