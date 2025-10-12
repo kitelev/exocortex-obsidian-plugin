@@ -775,6 +775,111 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
   });
 
+  describe("Clean Empty Properties Button", () => {
+    it("should render Clean button when asset has empty properties", async () => {
+      const currentFile = {
+        basename: "Area with Empty Props",
+        path: "areas/empty-props.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Area]]",
+          exo__Asset_uid: "area-123",
+          emptyProp: "",
+          validProp: "value",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-clean-properties-btn");
+      expect(button).toBeTruthy();
+      expect(button?.textContent).toBe("Clean Empty Properties");
+    });
+
+    it("should NOT render Clean button when asset has no empty properties", async () => {
+      const currentFile = {
+        basename: "Area Without Empty Props",
+        path: "areas/no-empty.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Area]]",
+          exo__Asset_uid: "area-123",
+          validProp1: "value1",
+          validProp2: "value2",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-clean-properties-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should render Clean button for Task with empty properties", async () => {
+      const currentFile = {
+        basename: "Task with Empty Props",
+        path: "tasks/empty-props.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "[[ems__EffortStatusActive]]",
+          emptyProp: null,
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-clean-properties-btn");
+      expect(button).toBeTruthy();
+    });
+
+    it("should render Clean button for Project with empty properties", async () => {
+      const currentFile = {
+        basename: "Project with Empty Props",
+        path: "projects/empty-props.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "[[ems__EffortStatusDone]]",
+          emptyArray: [],
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-clean-properties-btn");
+      expect(button).toBeTruthy();
+    });
+  });
+
   describe("FileBuilder Integration", () => {
     it("should work with FileBuilder pattern for test data", () => {
       const [content, metadata] = new FileBuilder()
