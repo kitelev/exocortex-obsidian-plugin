@@ -340,7 +340,34 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(button?.textContent).toBe("Create Task");
     });
 
-    it("should NOT render Create Task button for non-Area assets", async () => {
+    it("should render Create Task button for Project assets", async () => {
+      const currentFile = {
+        basename: "Website Redesign",
+        path: "projects/redesign.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+          exo__Asset_isDefinedBy: "[[Ontology/EMS]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {}; // No relations
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      // Wait for React to render
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Verify button is present
+      const button = container.querySelector(".exocortex-create-task-btn");
+      expect(button).toBeTruthy();
+      expect(button?.textContent).toBe("Create Task");
+    });
+
+    it("should NOT render Create Task button for non-Area/Project assets", async () => {
       const currentFile = {
         basename: "Regular Task",
         path: "tasks/task1.md",

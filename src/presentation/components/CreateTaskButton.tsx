@@ -14,17 +14,18 @@ export const CreateTaskButton: React.FC<CreateTaskButtonProps> = ({
   sourceFile,
   onTaskCreate,
 }) => {
-  // Only show button for ems__Area assets
+  // Only show button for ems__Area and ems__Project assets
   const shouldShowButton = React.useMemo(() => {
     if (!instanceClass) return false;
 
     // Normalize to array for consistent handling
     const classes = Array.isArray(instanceClass) ? instanceClass : [instanceClass];
 
-    // Check if any class matches ems__Area
+    // Check if any class matches ems__Area or ems__Project
+    const supportedClasses = ["ems__Area", "ems__Project"];
     return classes.some((cls) => {
       const cleanClass = cls.replace(/\[\[|\]\]/g, "").trim();
-      return cleanClass === "ems__Area";
+      return supportedClasses.includes(cleanClass);
     });
   }, [instanceClass]);
 

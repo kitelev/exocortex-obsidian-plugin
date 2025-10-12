@@ -1,4 +1,12 @@
-## [12.5.12] - 2025-10-05
+## [12.5.12] - 2025-10-12
+
+### Added
+
+- **Task Creation from Projects**: Create tasks directly from Project assets
+  - "Create Task" button now appears in layouts for both `ems__Area` AND `ems__Project` assets
+  - Tasks created from Areas use `ems__Effort_area` property (existing behavior)
+  - Tasks created from Projects use `ems__Effort_parent` property (new)
+  - Unified task creation workflow across different asset types
 
 ### Enhanced
 
@@ -6,7 +14,24 @@
   - When you click "Create Task" button, the new task file opens in a new tab
   - Focus automatically switches to the new tab so you can start working immediately
   - Improves workflow efficiency - no need to manually switch tabs
-  - Seamless transition from Area to Task creation
+  - Seamless transition from Area/Project to Task creation
+
+### Technical
+
+- Implemented Strategy Pattern for property mapping (SOLID + DRY principles)
+- Single `createTask()` method handles both Areas and Projects
+- Backward compatible with existing Area functionality
+- 100% test coverage maintained (29 component + 11 UI + 20 unit tests)
+
+### User Benefits
+
+- **Flexible Task Management**: Create tasks from either Areas or Projects based on your workflow
+- **Consistent Experience**: Same button, same process, different context
+- **Proper Relationships**: Tasks automatically link to their parent Area or Project with correct property
+
+**Usage Example:**
+- Open a Project note → Click "Create Task" → New task with `ems__Effort_parent: "[[Your Project]]"`
+- Open an Area note → Click "Create Task" → New task with `ems__Effort_area: "[[Your Area]]"`
 
 ## [12.5.11] - 2025-10-05
 

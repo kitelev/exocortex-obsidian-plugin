@@ -243,8 +243,8 @@ export class UniversalLayoutRenderer {
    * Render asset properties for the current file
    */
   /**
-   * Render Create Task button for Area assets
-   * Button appears only when exo__Instance_class is ems__Area
+   * Render Create Task button for Area and Project assets
+   * Button appears when exo__Instance_class is ems__Area or ems__Project
    */
   private async renderCreateTaskButton(
     el: HTMLElement,
@@ -256,6 +256,16 @@ export class UniversalLayoutRenderer {
 
     const container = el.createDiv({ cls: "exocortex-create-task-wrapper" });
 
+    // Extract clean source class for service
+    const getCleanSourceClass = (): string => {
+      if (!instanceClass) return "";
+      const classes = Array.isArray(instanceClass)
+        ? instanceClass
+        : [instanceClass];
+      const firstClass = classes[0] || "";
+      return firstClass.replace(/\[\[|\]\]/g, "").trim();
+    };
+
     this.reactRenderer.render(
       container,
       React.createElement(CreateTaskButton, {
@@ -263,10 +273,13 @@ export class UniversalLayoutRenderer {
         metadata,
         sourceFile: file,
         onTaskCreate: async () => {
-          // Create the task file
-          const createdFile = await this.taskCreationService.createTaskFromArea(
+          const sourceClass = getCleanSourceClass();
+
+          // Create the task file with appropriate effort property
+          const createdFile = await this.taskCreationService.createTask(
             file,
             metadata,
+            sourceClass,
           );
 
           // Open the created file in a new tab
@@ -276,7 +289,7 @@ export class UniversalLayoutRenderer {
           // Switch focus to the new tab
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
-          this.logger.info(`Created Task: ${createdFile.path}`);
+          this.logger.info(`Created Task from ${sourceClass}: ${createdFile.path}`)
         },
       }),
     );
