@@ -7,6 +7,7 @@ import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
 import { CreateTaskButton } from "../components/CreateTaskButton";
 import { MarkTaskDoneButton } from "../components/MarkTaskDoneButton";
+import { ArchiveTaskButton } from "../components/ArchiveTaskButton";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 import { TaskStatusService } from "../../infrastructure/services/TaskStatusService";
 
@@ -141,6 +142,9 @@ export class UniversalLayoutRenderer {
 
       // Render Mark Task Done button (for Task assets)
       await this.renderMarkTaskDoneButton(el, currentFile);
+
+      // Render Archive Task button (for completed Task assets)
+      await this.renderArchiveTaskButton(el, currentFile);
 
       // Render asset properties
       await this.renderAssetProperties(el, currentFile);
@@ -325,6 +329,37 @@ export class UniversalLayoutRenderer {
           await this.refresh(el);
 
           this.logger.info(`Marked task as Done: ${file.path}`);
+        },
+      }),
+    );
+  }
+
+  private async renderArchiveTaskButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+    const currentStatus = metadata.ems__Effort_status || null;
+    const isArchived =
+      metadata.archived ?? metadata.exo__Asset_isArchived ?? null;
+
+    const container = el.createDiv({ cls: "exocortex-archive-task-wrapper" });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(ArchiveTaskButton, {
+        instanceClass,
+        currentStatus,
+        isArchived,
+        sourceFile: file,
+        onArchive: async () => {
+          await this.taskStatusService.archiveTask(file);
+
+          await this.refresh(el);
+
+          this.logger.info(`Archived task: ${file.path}`);
         },
       }),
     );

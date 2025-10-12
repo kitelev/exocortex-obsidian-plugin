@@ -146,4 +146,70 @@ Content`;
       expect(timestamp.split("T")[1]).toMatch(/\d{2}:\d{2}:\d{2}/);
     });
   });
+
+  describe("archiveTask", () => {
+    it("should add archived property to file without frontmatter", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = "Task content";
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.archiveTask(mockFile);
+
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        mockFile,
+        expect.stringContaining("archived: true"),
+      );
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        mockFile,
+        expect.stringContaining("Task content"),
+      );
+    });
+
+    it("should update existing archived property", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class:
+  - "[[ems__Task]]"
+archived: false
+---
+Task content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.archiveTask(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain("archived: true");
+      expect(modifiedContent).not.toContain("archived: false");
+    });
+
+    it("should preserve other frontmatter properties when archiving", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class:
+  - "[[ems__Task]]"
+ems__Effort_status: "[[ems__EffortStatusDone]]"
+ems__Effort_endTimestamp: 2025-10-12T14:30:00
+exo__Asset_uid: task-123
+---
+Content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.archiveTask(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusDone]]"',
+      );
+      expect(modifiedContent).toContain(
+        "ems__Effort_endTimestamp: 2025-10-12T14:30:00",
+      );
+      expect(modifiedContent).toContain("exo__Asset_uid: task-123");
+      expect(modifiedContent).toContain("archived: true");
+    });
+  });
 });
