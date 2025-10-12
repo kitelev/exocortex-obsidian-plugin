@@ -3,7 +3,7 @@ Feature: Mark Task as Done
   Background:
     Given I am viewing a note with UniversalLayout
 
-  Rule: Done button appears only for incomplete Tasks
+  Rule: Done button appears only for incomplete Tasks and Projects
 
     Scenario: Display Done button for Task without status
       Given I have a note "My Task" with frontmatter:
@@ -30,14 +30,30 @@ Feature: Mark Task as Done
       When I view "Completed Task" with UniversalLayout
       Then I do NOT see "Done" button
 
-    Scenario: NO Done button for non-Task assets (Project)
-      Given I have a note "Project Asset" with:
+    Scenario: Display Done button for Project without status
+      Given I have a note "My Project" with:
         | Key                 | Value            |
         | exo__Instance_class | [[ems__Project]] |
-      When I view "Project Asset" with UniversalLayout
+      When I view "My Project" with UniversalLayout
+      Then I see a "Done" button
+
+    Scenario: Display Done button for Project with non-Done status
+      Given I have a Project "Active Project" with:
+        | Key                 | Value                       |
+        | exo__Instance_class | [[ems__Project]]            |
+        | ems__Effort_status  | [[ems__EffortStatusActive]] |
+      When I view "Active Project" with UniversalLayout
+      Then I see a "Done" button
+
+    Scenario: NO Done button for completed Project
+      Given I have a Project "Completed Project" with:
+        | Key                 | Value                     |
+        | exo__Instance_class | [[ems__Project]]          |
+        | ems__Effort_status  | [[ems__EffortStatusDone]] |
+      When I view "Completed Project" with UniversalLayout
       Then I do NOT see "Done" button
 
-    Scenario: NO Done button for non-Task assets (Area)
+    Scenario: NO Done button for non-Task/Project assets (Area)
       Given I have a note "Area Asset" with:
         | Key                 | Value         |
         | exo__Instance_class | [[ems__Area]] |

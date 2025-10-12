@@ -3,7 +3,7 @@ Feature: Archive Completed Tasks
   Background:
     Given I am viewing a note with UniversalLayout
 
-  Rule: Archive button appears only for completed, non-archived Tasks
+  Rule: Archive button appears only for completed, non-archived Tasks and Projects
 
     Scenario: Display Archive button for Done Task not archived
       Given I have a Task "Completed Task" with:
@@ -31,18 +31,37 @@ Feature: Archive Completed Tasks
       When I view "Archived Task" with UniversalLayout
       Then I do NOT see "To Archive" button
 
-    Scenario: NO Archive button for non-Task assets (Area)
+    Scenario: Display Archive button for Done Project not archived
+      Given I have a Project "Completed Project" with:
+        | Key                 | Value                     |
+        | exo__Instance_class | [[ems__Project]]          |
+        | ems__Effort_status  | [[ems__EffortStatusDone]] |
+        | archived            | false                     |
+      When I view "Completed Project" with UniversalLayout
+      Then I see a "To Archive" button
+
+    Scenario: NO Archive button for incomplete Project
+      Given I have a Project "Active Project" with:
+        | Key                 | Value                       |
+        | exo__Instance_class | [[ems__Project]]            |
+        | ems__Effort_status  | [[ems__EffortStatusActive]] |
+      When I view "Active Project" with UniversalLayout
+      Then I do NOT see "To Archive" button
+
+    Scenario: NO Archive button for already archived Project
+      Given I have a Project "Archived Project" with:
+        | Key                 | Value                     |
+        | exo__Instance_class | [[ems__Project]]          |
+        | ems__Effort_status  | [[ems__EffortStatusDone]] |
+        | archived            | true                      |
+      When I view "Archived Project" with UniversalLayout
+      Then I do NOT see "To Archive" button
+
+    Scenario: NO Archive button for non-Task/Project assets (Area)
       Given I have an Area "Development" with:
         | Key                 | Value         |
         | exo__Instance_class | [[ems__Area]] |
       When I view "Development" with UniversalLayout
-      Then I do NOT see "To Archive" button
-
-    Scenario: NO Archive button for non-Task assets (Project)
-      Given I have a Project "Redesign" with:
-        | Key                 | Value            |
-        | exo__Instance_class | [[ems__Project]] |
-      When I view "Redesign" with UniversalLayout
       Then I do NOT see "To Archive" button
 
   Rule: Clicking Archive button updates Task

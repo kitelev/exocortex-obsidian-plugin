@@ -72,7 +72,7 @@ test.describe("ArchiveTaskButton Component", () => {
     await expect(button).not.toBeVisible();
   });
 
-  test("should NOT render button for non-Task asset (Project)", async ({
+  test("should render button for Done Project not archived", async ({
     mount,
   }) => {
     const component = await mount(
@@ -80,6 +80,41 @@ test.describe("ArchiveTaskButton Component", () => {
         instanceClass="[[ems__Project]]"
         currentStatus="[[ems__EffortStatusDone]]"
         isArchived={false}
+        sourceFile={mockFile}
+        onArchive={async () => {}}
+      />,
+    );
+
+    const button = component.locator("button.exocortex-archive-task-btn");
+    await expect(button).toBeVisible();
+    await expect(button).toHaveText("To Archive");
+  });
+
+  test("should NOT render button for Project without Done status", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <ArchiveTaskButton
+        instanceClass="[[ems__Project]]"
+        currentStatus="[[ems__EffortStatusActive]]"
+        isArchived={false}
+        sourceFile={mockFile}
+        onArchive={async () => {}}
+      />,
+    );
+
+    const button = component.locator("button.exocortex-archive-task-btn");
+    await expect(button).not.toBeVisible();
+  });
+
+  test("should NOT render button for already archived Project", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <ArchiveTaskButton
+        instanceClass="[[ems__Project]]"
+        currentStatus="[[ems__EffortStatusDone]]"
+        isArchived={true}
         sourceFile={mockFile}
         onArchive={async () => {}}
       />,

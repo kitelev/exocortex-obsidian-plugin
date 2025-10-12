@@ -500,7 +500,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(button).toBeFalsy();
     });
 
-    it("should NOT render Done button for non-Task assets", async () => {
+    it("should render Done button for Project without status", async () => {
       const currentFile = {
         basename: "Project",
         path: "projects/project.md",
@@ -509,6 +509,78 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Project]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-mark-done-btn");
+      expect(button).toBeTruthy();
+      expect(button?.textContent).toBe("Done");
+    });
+
+    it("should render Done button for Project with non-Done status", async () => {
+      const currentFile = {
+        basename: "Active Project",
+        path: "projects/active.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "[[ems__EffortStatusActive]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-mark-done-btn");
+      expect(button).toBeTruthy();
+    });
+
+    it("should NOT render Done button for Project with Done status", async () => {
+      const currentFile = {
+        basename: "Completed Project",
+        path: "projects/completed.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "[[ems__EffortStatusDone]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-mark-done-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should NOT render Done button for non-Task/Project assets (Area)", async () => {
+      const currentFile = {
+        basename: "Area",
+        path: "areas/area.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Area]]",
         },
       });
 
@@ -601,15 +673,93 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(button).toBeFalsy();
     });
 
-    it("should NOT render Archive button for non-Task assets", async () => {
+    it("should render Archive button for Done Project not archived", async () => {
       const currentFile = {
-        basename: "Project",
-        path: "projects/project.md",
+        basename: "Completed Project",
+        path: "projects/completed.md",
       } as TFile;
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "[[ems__EffortStatusDone]]",
+          archived: false,
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-archive-task-btn");
+      expect(button).toBeTruthy();
+      expect(button?.textContent).toBe("To Archive");
+    });
+
+    it("should NOT render Archive button for already archived Project", async () => {
+      const currentFile = {
+        basename: "Archived Project",
+        path: "projects/archived.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "[[ems__EffortStatusDone]]",
+          archived: true,
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-archive-task-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should NOT render Archive button for non-Done Project", async () => {
+      const currentFile = {
+        basename: "Active Project",
+        path: "projects/active.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "[[ems__EffortStatusActive]]",
+          archived: false,
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const button = container.querySelector(".exocortex-archive-task-btn");
+      expect(button).toBeFalsy();
+    });
+
+    it("should NOT render Archive button for non-Task/Project assets (Area)", async () => {
+      const currentFile = {
+        basename: "Area",
+        path: "areas/area.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Area]]",
+          ems__Effort_status: "[[ems__EffortStatusDone]]",
+          archived: false,
         },
       });
 

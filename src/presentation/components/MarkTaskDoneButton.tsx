@@ -13,19 +13,19 @@ export const MarkTaskDoneButton: React.FC<MarkTaskDoneButtonProps> = ({
   currentStatus,
   onMarkDone,
 }) => {
-  const isTask = React.useMemo(() => {
+  const isEffort = React.useMemo(() => {
     if (!instanceClass) return false;
     const classes = Array.isArray(instanceClass)
       ? instanceClass
       : [instanceClass];
     return classes.some((cls) => {
       const cleanClass = cls.replace(/\[\[|\]\]/g, "").trim();
-      return cleanClass === "ems__Task";
+      return cleanClass === "ems__Task" || cleanClass === "ems__Project";
     });
   }, [instanceClass]);
 
   const shouldShowButton = React.useMemo(() => {
-    if (!isTask) return false;
+    if (!isEffort) return false;
 
     if (!currentStatus) return true;
 
@@ -36,7 +36,7 @@ export const MarkTaskDoneButton: React.FC<MarkTaskDoneButtonProps> = ({
 
     const cleanStatus = statusValue.replace(/\[\[|\]\]/g, "").trim();
     return cleanStatus !== "ems__EffortStatusDone";
-  }, [isTask, currentStatus]);
+  }, [isEffort, currentStatus]);
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
