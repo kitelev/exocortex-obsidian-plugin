@@ -15,14 +15,14 @@ export const ArchiveTaskButton: React.FC<ArchiveTaskButtonProps> = ({
   isArchived,
   onArchive,
 }) => {
-  const isTask = React.useMemo(() => {
+  const isEffort = React.useMemo(() => {
     if (!instanceClass) return false;
     const classes = Array.isArray(instanceClass)
       ? instanceClass
       : [instanceClass];
     return classes.some((cls) => {
       const cleanClass = cls.replace(/\[\[|\]\]/g, "").trim();
-      return cleanClass === "ems__Task";
+      return cleanClass === "ems__Task" || cleanClass === "ems__Project";
     });
   }, [instanceClass]);
 
@@ -46,8 +46,8 @@ export const ArchiveTaskButton: React.FC<ArchiveTaskButtonProps> = ({
   }, [isArchived]);
 
   const shouldShowButton = React.useMemo(() => {
-    return isTask && isDone && !archived;
-  }, [isTask, isDone, archived]);
+    return isEffort && isDone && !archived;
+  }, [isEffort, isDone, archived]);
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();

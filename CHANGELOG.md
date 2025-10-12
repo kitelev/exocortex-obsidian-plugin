@@ -1,3 +1,33 @@
+## [12.6.0] - 2025-10-12
+
+### Added
+
+- **Done and Archive Buttons Now Support Projects**: Complete project lifecycle management
+  - "Done" button now appears for Projects without status or with non-Done status
+  - "To Archive" button now appears for completed Projects (status = Done, not archived)
+  - Both buttons work identically for Tasks and Projects with same conditions
+  - Unified effort management - both Task and Project are effort types
+  - Consistent user experience across all effort-based assets
+
+### User Benefits
+
+- **Project Completion Made Easy**: Mark projects as done with one click, just like tasks
+- **Project Archiving**: Archive completed projects to keep workspace organized
+- **Unified Workflow**: Same buttons and behavior for both tasks and projects
+- **No Manual Editing**: Update project status and archive state without touching frontmatter
+- **Consistent Experience**: Learn once, use everywhere - both efforts work the same way
+
+### Technical
+
+- Updated `MarkTaskDoneButton` component: changed `isTask` to `isEffort` checking for both `ems__Task` and `ems__Project`
+- Updated `ArchiveTaskButton` component: same logic extension to support Projects
+- Added 6 new component tests for Project button behavior (3 for Done, 3 for Archive)
+- Added 7 new UI integration tests for Project button rendering
+- Updated BDD scenarios: 3 new scenarios for Project Done button, 3 for Project Archive button
+- Total test suite: 115 tests passing (30 unit + 60 component + 25 UI)
+- BDD coverage: 91 scenarios (was 85)
+- Zero breaking changes - purely additive functionality
+
 ## [12.5.17] - 2025-10-12
 
 ### Fixed
