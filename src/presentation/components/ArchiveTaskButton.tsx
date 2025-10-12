@@ -19,11 +19,19 @@ export const ArchiveTaskButton: React.FC<ArchiveTaskButtonProps> = ({
 }) => {
   // Use centralized visibility logic from CommandVisibility
   const shouldShowButton = React.useMemo(() => {
+    // Normalize isArchived to boolean (handle string/number/boolean)
+    const normalizedArchived = Boolean(
+      isArchived === true ||
+        isArchived === "true" ||
+        isArchived === "yes" ||
+        isArchived === 1,
+    );
+
     const context: CommandVisibilityContext = {
       instanceClass,
       currentStatus,
       metadata: {},
-      isArchived: isArchived ?? false,
+      isArchived: normalizedArchived,
       currentFolder: sourceFile.parent?.path || "",
       expectedFolder: null,
     };

@@ -36,7 +36,7 @@ export class CommandManager {
     this.taskCreationService = new TaskCreationService(app.vault);
     this.taskStatusService = new TaskStatusService(app.vault);
     this.propertyCleanupService = new PropertyCleanupService(app.vault);
-    this.folderRepairService = new FolderRepairService(app);
+    this.folderRepairService = new FolderRepairService(app.vault, app);
   }
 
   /**
@@ -54,6 +54,8 @@ export class CommandManager {
 
   /**
    * Get visibility context for current active file
+   * Note: expectedFolder is set to null for synchronous checking.
+   * Individual command handlers will fetch it async when needed.
    */
   private getContext(file: TFile): CommandVisibilityContext | null {
     const cache = this.app.metadataCache.getFileCache(file);
@@ -65,8 +67,6 @@ export class CommandManager {
       metadata.archived ?? metadata.exo__Asset_isArchived ?? false;
 
     const currentFolder = file.parent?.path || "";
-    const expectedFolder =
-      this.folderRepairService.getExpectedFolder(file, metadata) || null;
 
     return {
       instanceClass,
@@ -74,7 +74,7 @@ export class CommandManager {
       metadata,
       isArchived,
       currentFolder,
-      expectedFolder,
+      expectedFolder: null, // Will be fetched async by repair folder command
     };
   }
 
@@ -210,6 +210,8 @@ export class CommandManager {
 
   /**
    * Register "Exocortex: Repair Folder" command
+   * Note: Shows command if asset has exo__Asset_isDefinedBy property.
+   * Actual folder mismatch check happens during execution.
    */
   private registerRepairFolderCommand(plugin: any): void {
     plugin.addCommand({
@@ -219,11 +221,15 @@ export class CommandManager {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
 
-        const context = this.getContext(file);
-        if (!context || !canRepairFolder(context)) return false;
+        const cache = this.app.metadataCache.getFileCache(file);
+        const metadata = cache?.frontmatter || {};
+
+        // Show command if asset has isDefinedBy property
+        // Actual folder check happens in executeRepairFolder
+        if (!metadata?.exo__Asset_isDefinedBy) return false;
 
         if (!checking) {
-          this.executeRepairFolder(file, context).catch((error) => {
+          this.executeRepairFolder(file, metadata).catch((error) => {
             new Notice(`Failed to repair folder: ${error.message}`);
             console.error("Repair folder error:", error);
           });
@@ -291,14 +297,25 @@ export class CommandManager {
 
   private async executeRepairFolder(
     file: TFile,
-    context: CommandVisibilityContext,
+    metadata: Record<string, any>,
   ): Promise<void> {
-    if (!context.expectedFolder) return;
-
-    await this.folderRepairService.repairFolder(
+    const expectedFolder = await this.folderRepairService.getExpectedFolder(
       file,
-      context.expectedFolder,
+      metadata,
     );
-    new Notice(`Moved to ${context.expectedFolder}`);
+
+    if (!expectedFolder) {
+      new Notice("No expected folder found");
+      return;
+    }
+
+    const currentFolder = file.parent?.path || "";
+    if (currentFolder === expectedFolder) {
+      new Notice("Asset is already in correct folder");
+      return;
+    }
+
+    await this.folderRepairService.repairFolder(file, expectedFolder);
+    new Notice(`Moved to ${expectedFolder}`);
   }
 }
