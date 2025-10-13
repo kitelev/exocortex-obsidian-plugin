@@ -127,7 +127,6 @@ const SingleTable: React.FC<SingleTableProps> = ({
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('[Exocortex Component] Asset link clicked!', relation.path);
                     onAssetClick?.(relation.path, e);
                   }}
                   className="internal-link"
@@ -143,7 +142,6 @@ const SingleTable: React.FC<SingleTableProps> = ({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      console.log('[Exocortex Component] Instance class clicked!', instanceClass);
                       onAssetClick?.(instanceClass, e);
                     }}
                     className="internal-link"

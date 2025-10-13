@@ -1,3 +1,30 @@
+## [12.9.11] - 2025-10-13
+
+### Fixed
+
+- **Duplicate Tab Issue Resolved**: Successfully fixed the duplicate tab creation when clicking links
+  - Added `e.stopPropagation()` to prevent Obsidian from intercepting clicks
+  - No more extra tabs opening when clicking links in Layout
+  - Links now work reliably - regular clicks open in current tab
+
+### Changed
+
+- **Removed Debug Logging**: Cleaned up all console.log statements from previous debugging sessions
+- **Updated Documentation**: Added Known Issues section to README.md documenting Command/Ctrl+Click limitation
+
+### Known Issues
+
+- Command/Ctrl+Click modifier keys don't currently work for opening in new tab
+- Root cause: Obsidian's internal link handler intercepts events before React handlers
+- Workaround: Use right-click → "Open in new tab" or middle-click
+- See README.md for full details and future fix plans
+
+### User Impact
+
+✅ **FIXED**: The annoying duplicate tab issue is completely resolved
+⚠️ **LIMITATION**: Modifier keys for new tabs don't work (use right-click instead)
+✅ **WORKAROUND**: Multiple standard Obsidian methods still work fine
+
 ## [12.9.10] - 2025-10-13
 
 ### Fixed

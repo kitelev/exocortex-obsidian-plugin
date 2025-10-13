@@ -40,7 +40,6 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log('[Exocortex Component] Property link clicked!', target);
               onLinkClick?.(target, e);
             }}
             style={{ cursor: 'pointer' }}

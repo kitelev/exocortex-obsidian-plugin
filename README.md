@@ -140,6 +140,35 @@ npm run build
 - **[CLAUDE.md](./CLAUDE.md)** - Development guidelines for AI assistants
 - **[specs/features/](./specs/features/)** - BDD feature specifications
 
+## ⚠️ Known Issues
+
+### Command/Ctrl+Click Link Behavior (v12.9.10)
+
+**Status**: Partially Working
+
+**What works:**
+- ✅ No duplicate tabs created (fixed in v12.9.10)
+- ✅ Links are clickable
+- ✅ Regular clicks open in current tab
+
+**What doesn't work:**
+- ❌ Command/Ctrl+Click doesn't open in new tab (opens in current tab instead)
+
+**Root cause:**
+- Obsidian's internal link handler intercepts clicks on elements with `internal-link` class
+- Added `e.stopPropagation()` which fixed the duplicate tab issue
+- However, Obsidian's modifier key detection still doesn't reach our handler
+- Debug logging shows our onClick handlers are not being called at all
+
+**Workaround:**
+- Use standard Obsidian link opening: Right-click → "Open in new tab"
+- Or use Middle-click (mouse wheel button) to open in new tab
+
+**Future fix:**
+- May need to completely remove `internal-link` class and implement custom link styling
+- Or register our own Obsidian link handler instead of React onClick
+- Issue tracked for future investigation
+
 ## 📄 License
 
 MIT License - see [LICENSE](./LICENSE) for details.
