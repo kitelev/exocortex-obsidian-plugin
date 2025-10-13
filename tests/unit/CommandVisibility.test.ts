@@ -2,6 +2,7 @@ import {
   canCreateTask,
   canCreateInstance,
   canStartEffort,
+  canPlanOnToday,
   canMarkDone,
   canArchiveTask,
   canCleanProperties,
@@ -155,6 +156,80 @@ describe("CommandVisibility", () => {
         expectedFolder: null,
       };
       expect(canCreateInstance(context)).toBe(true);
+    });
+  });
+
+  describe("canPlanOnToday", () => {
+    it("should return true for ems__Task", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canPlanOnToday(context)).toBe(true);
+    });
+
+    it("should return true for ems__Project", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Project]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canPlanOnToday(context)).toBe(true);
+    });
+
+    it("should return true for Task without brackets", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "ems__Task",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canPlanOnToday(context)).toBe(true);
+    });
+
+    it("should return false for ems__Area", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Area]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canPlanOnToday(context)).toBe(false);
+    });
+
+    it("should return false when instanceClass is null", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: null,
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canPlanOnToday(context)).toBe(false);
+    });
+
+    it("should return true for array with ems__Task", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: ["[[ems__Task]]", "[[SomeOtherClass]]"],
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canPlanOnToday(context)).toBe(true);
     });
   });
 

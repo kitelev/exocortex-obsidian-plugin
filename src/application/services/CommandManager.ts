@@ -4,6 +4,7 @@ import {
   canCreateTask,
   canCreateInstance,
   canStartEffort,
+  canPlanOnToday,
   canMarkDone,
   canArchiveTask,
   canCleanProperties,
@@ -48,6 +49,7 @@ export class CommandManager {
     this.registerCreateTaskCommand(plugin);
     this.registerCreateInstanceCommand(plugin);
     this.registerStartEffortCommand(plugin);
+    this.registerPlanOnTodayCommand(plugin);
     this.registerMarkDoneCommand(plugin);
     this.registerArchiveTaskCommand(plugin);
     this.registerCleanPropertiesCommand(plugin);
@@ -150,6 +152,32 @@ export class CommandManager {
           this.executeStartEffort(file).catch((error) => {
             new Notice(`Failed to start effort: ${error.message}`);
             console.error("Start effort error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Plan on today" command
+   */
+  private registerPlanOnTodayCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "plan-on-today",
+      name: "Plan on today",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canPlanOnToday(context)) return false;
+
+        if (!checking) {
+          this.executePlanOnToday(file).catch((error) => {
+            new Notice(`Failed to plan on today: ${error.message}`);
+            console.error("Plan on today error:", error);
           });
         }
 
@@ -337,6 +365,11 @@ export class CommandManager {
   private async executeStartEffort(file: TFile): Promise<void> {
     await this.taskStatusService.startEffort(file);
     new Notice(`Started effort: ${file.basename}`);
+  }
+
+  private async executePlanOnToday(file: TFile): Promise<void> {
+    await this.taskStatusService.planOnToday(file);
+    new Notice(`Planned on today: ${file.basename}`);
   }
 
   private async executeMarkDone(file: TFile): Promise<void> {
