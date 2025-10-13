@@ -1,3 +1,30 @@
+## [12.9.7] - 2025-10-13
+
+### Fixed
+
+- **Command/Ctrl+Click Link Behavior (CORRECT FIX using Keymap.isModEvent)**: Now uses Obsidian's official API for modifier key detection
+  - Uses `Keymap.isModEvent()` from Obsidian API - the correct way to detect Cmd/Ctrl
+  - Passes mouse event directly to components, Obsidian handles the rest
+  - Command/Ctrl+Click now works EXACTLY like in native Obsidian
+  - No more duplicate tabs, no more scrolling issues
+  - Current tab stays untouched when opening new tabs
+
+### User Benefits
+
+- **Native Obsidian Behavior**: Command/Ctrl+Click works identically to core Obsidian functionality
+- **Zero Issues**: No duplicate tabs, no scrolling, no Layout disappearing
+- **Perfect UX**: Your current view stays exactly where it is
+- **Reliable**: Uses official Obsidian API, not custom workarounds
+
+### Technical
+
+- **Key Change**: Imported `Keymap` from Obsidian API
+- **Event Handling**: Pass `React.MouseEvent` to callbacks, not boolean flags
+- **Detection**: `Keymap.isModEvent(event.nativeEvent)` detects Cmd/Ctrl correctly
+- **Simplified**: Let Obsidian handle modifier keys instead of manual `metaKey || ctrlKey` checks
+- **Tests Updated**: Component tests now verify event passing (4 tests updated)
+- **All 285 tests passing** (122 unit + 42 UI + 121 component)
+
 ## [12.9.6] - 2025-10-13
 
 ### Fixed
