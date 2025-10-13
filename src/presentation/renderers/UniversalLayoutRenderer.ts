@@ -6,6 +6,7 @@ import { ReactRenderer } from "../utils/ReactRenderer";
 import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
 import { CreateTaskButton } from "../components/CreateTaskButton";
+import { CreateInstanceButton } from "../components/CreateInstanceButton";
 import { StartEffortButton } from "../components/StartEffortButton";
 import { MarkTaskDoneButton } from "../components/MarkTaskDoneButton";
 import { ArchiveTaskButton } from "../components/ArchiveTaskButton";
@@ -148,6 +149,9 @@ export class UniversalLayoutRenderer {
 
       // Render Create Task button FIRST (above properties)
       await this.renderCreateTaskButton(el, currentFile);
+
+      // Render Create Instance button (for TaskPrototype assets)
+      await this.renderCreateInstanceButton(el, currentFile);
 
       // Render Start Effort button (for Task/Project assets without Doing/Done status)
       await this.renderStartEffortButton(el, currentFile);
@@ -319,6 +323,59 @@ export class UniversalLayoutRenderer {
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
           this.logger.info(`Created Task from ${sourceClass}: ${createdFile.path}`)
+        },
+      }),
+    );
+  }
+
+  /**
+   * Render Create Instance button for TaskPrototype assets
+   * Button appears when exo__Instance_class is ems__TaskPrototype
+   */
+  private async renderCreateInstanceButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+
+    const container = el.createDiv({ cls: "exocortex-create-instance-wrapper" });
+
+    // Extract clean source class for service
+    const getCleanSourceClass = (): string => {
+      if (!instanceClass) return "";
+      const classes = Array.isArray(instanceClass)
+        ? instanceClass
+        : [instanceClass];
+      const firstClass = classes[0] || "";
+      return firstClass.replace(/\[\[|\]\]/g, "").trim();
+    };
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(CreateInstanceButton, {
+        instanceClass,
+        metadata,
+        sourceFile: file,
+        onInstanceCreate: async () => {
+          const sourceClass = getCleanSourceClass();
+
+          // Create the instance (task) from prototype with ems__Effort_prototype property
+          const createdFile = await this.taskCreationService.createTask(
+            file,
+            metadata,
+            sourceClass,
+          );
+
+          // Open the created file in a new tab
+          const leaf = this.app.workspace.getLeaf("tab");
+          await leaf.openFile(createdFile);
+
+          // Switch focus to the new tab
+          this.app.workspace.setActiveLeaf(leaf, { focus: true });
+
+          this.logger.info(`Created Instance from TaskPrototype: ${createdFile.path}`);
         },
       }),
     );

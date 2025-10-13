@@ -134,6 +134,14 @@ export function canCreateTask(context: CommandVisibilityContext): boolean {
 }
 
 /**
+ * Can execute "Create Instance" command
+ * Available for: ems__TaskPrototype assets
+ */
+export function canCreateInstance(context: CommandVisibilityContext): boolean {
+  return hasClass(context.instanceClass, "ems__TaskPrototype");
+}
+
+/**
  * Can execute "Start Effort" command
  * Available for: Task/Project without Doing or Done status
  */

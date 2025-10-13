@@ -1,5 +1,6 @@
 import {
   canCreateTask,
+  canCreateInstance,
   canStartEffort,
   canMarkDone,
   canArchiveTask,
@@ -80,6 +81,80 @@ describe("CommandVisibility", () => {
         expectedFolder: null,
       };
       expect(canCreateTask(context)).toBe(true);
+    });
+  });
+
+  describe("canCreateInstance", () => {
+    it("should return true for ems__TaskPrototype", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__TaskPrototype]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateInstance(context)).toBe(true);
+    });
+
+    it("should return true for TaskPrototype without brackets", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "ems__TaskPrototype",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateInstance(context)).toBe(true);
+    });
+
+    it("should return false for ems__Task", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateInstance(context)).toBe(false);
+    });
+
+    it("should return false for ems__Area", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Area]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateInstance(context)).toBe(false);
+    });
+
+    it("should return false when instanceClass is null", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: null,
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateInstance(context)).toBe(false);
+    });
+
+    it("should return true for array with ems__TaskPrototype", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: ["[[ems__TaskPrototype]]", "[[SomeOtherClass]]"],
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateInstance(context)).toBe(true);
     });
   });
 
