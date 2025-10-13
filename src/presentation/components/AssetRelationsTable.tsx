@@ -123,12 +123,15 @@ const SingleTable: React.FC<SingleTableProps> = ({
             <tr key={relation.path} data-path={relation.path}>
               <td className="asset-name">
                 <a
-                  href="#"
+                  data-href={relation.path}
                   onClick={(e) => {
                     e.preventDefault();
+                    e.stopPropagation();
+                    console.log('[Exocortex Component] Asset link clicked!', relation.path);
                     onAssetClick?.(relation.path, e);
                   }}
                   className="internal-link"
+                  style={{ cursor: 'pointer' }}
                 >
                   {relation.title}
                 </a>
@@ -136,12 +139,15 @@ const SingleTable: React.FC<SingleTableProps> = ({
               <td className="instance-class">
                 {instanceClass !== "-" ? (
                   <a
-                    href="#"
+                    data-href={instanceClass}
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
+                      console.log('[Exocortex Component] Instance class clicked!', instanceClass);
                       onAssetClick?.(instanceClass, e);
                     }}
                     className="internal-link"
+                    style={{ cursor: 'pointer' }}
                   >
                     {instanceClass}
                   </a>

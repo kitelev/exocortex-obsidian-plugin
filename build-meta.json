@@ -130,7 +130,7 @@
       "format": "esm"
     },
     "src/presentation/components/AssetRelationsTable.tsx": {
-      "bytes": 6150,
+      "bytes": 6558,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -141,7 +141,7 @@
       "format": "esm"
     },
     "src/presentation/components/AssetPropertiesTable.tsx": {
-      "bytes": 2277,
+      "bytes": 2447,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -937,10 +937,10 @@
           "bytesInOutput": 284
         },
         "src/presentation/components/AssetRelationsTable.tsx": {
-          "bytesInOutput": 2664
+          "bytesInOutput": 2769
         },
         "src/presentation/components/AssetPropertiesTable.tsx": {
-          "bytesInOutput": 1247
+          "bytesInOutput": 1297
         },
         "src/presentation/components/CreateTaskButton.tsx": {
           "bytesInOutput": 530
@@ -1000,7 +1000,7 @@
           "bytesInOutput": 5234
         }
       },
-      "bytes": 226104
+      "bytes": 226259
     }
   }
 }
