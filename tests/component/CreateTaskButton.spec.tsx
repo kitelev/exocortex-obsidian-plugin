@@ -26,9 +26,9 @@ test.describe("CreateTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-create-task-btn");
-    await expect(button).toBeVisible();
-    await expect(button).toHaveText("Create Task");
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("Create Task");
   });
 
   test("should render button for Area asset with ems__Area (no brackets)", async ({ mount }) => {
@@ -41,8 +41,8 @@ test.describe("CreateTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-create-task-btn");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should render button for Project asset with [[ems__Project]]", async ({ mount }) => {
@@ -55,9 +55,9 @@ test.describe("CreateTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-create-task-btn");
-    await expect(button).toBeVisible();
-    await expect(button).toHaveText("Create Task");
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("Create Task");
   });
 
   test("should render button for Project asset with ems__Project (no brackets)", async ({
@@ -72,8 +72,8 @@ test.describe("CreateTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-create-task-btn");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should NOT render button for non-Area/Project asset (ems__Task)", async ({ mount }) => {
@@ -86,8 +86,8 @@ test.describe("CreateTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-create-task-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should NOT render button when instanceClass is null", async ({ mount }) => {
@@ -100,8 +100,8 @@ test.describe("CreateTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-create-task-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should call onTaskCreate when clicked", async ({ mount }) => {
@@ -118,8 +118,8 @@ test.describe("CreateTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-create-task-btn");
-    await button.click();
+    // Component IS the button (no wrapper div)
+    await component.click();
 
     // Wait for async click handler
     await component.page().waitForTimeout(100);

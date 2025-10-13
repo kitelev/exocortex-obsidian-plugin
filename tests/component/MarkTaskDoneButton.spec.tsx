@@ -15,9 +15,9 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-mark-done-btn");
-    await expect(button).toBeVisible();
-    await expect(button).toHaveText("Done");
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("Done");
   });
 
   test("should render button for Task with non-Done status", async ({
@@ -32,8 +32,8 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-mark-done-btn");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should NOT render button for Task with Done status", async ({
@@ -48,8 +48,8 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-mark-done-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should NOT render button for non-Task asset (Area)", async ({
@@ -64,8 +64,8 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-mark-done-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should render button for Project without status", async ({
@@ -80,9 +80,9 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-mark-done-btn");
-    await expect(button).toBeVisible();
-    await expect(button).toHaveText("Done");
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("Done");
   });
 
   test("should render button for Project with non-Done status", async ({
@@ -97,8 +97,8 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-mark-done-btn");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should NOT render button for Project with Done status", async ({
@@ -113,8 +113,8 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-mark-done-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should NOT render button when instanceClass is null", async ({
@@ -129,8 +129,8 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-mark-done-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should handle Task class without brackets", async ({ mount }) => {
@@ -143,8 +143,8 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-mark-done-btn");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should handle status without brackets", async ({ mount }) => {
@@ -157,8 +157,8 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-mark-done-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should call onMarkDone when clicked", async ({ mount }) => {
@@ -176,8 +176,8 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-mark-done-btn");
-    await button.click();
+    // Component IS the button (no wrapper div)
+    await component.click();
 
     await expect.poll(() => callbackCalled).toBe(true);
   });
@@ -192,8 +192,8 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-mark-done-btn");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should handle array of statuses with Done", async ({ mount }) => {
@@ -206,8 +206,8 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-mark-done-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should render button when status is empty string", async ({
@@ -222,7 +222,7 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-mark-done-btn");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 });

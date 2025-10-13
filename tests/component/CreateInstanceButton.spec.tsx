@@ -17,8 +17,9 @@ test.describe("CreateInstanceButton", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).toBeVisible();
-    await expect(component.getByRole("button")).toHaveText("Create Instance");
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("Create Instance");
   });
 
   test("should not render for ems__Task", async ({ mount }) => {
@@ -35,7 +36,8 @@ test.describe("CreateInstanceButton", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should not render for ems__Area", async ({ mount }) => {
@@ -52,7 +54,8 @@ test.describe("CreateInstanceButton", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should not render when instanceClass is null", async ({ mount }) => {
@@ -69,7 +72,8 @@ test.describe("CreateInstanceButton", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should call onInstanceCreate when clicked", async ({ mount }) => {
@@ -91,7 +95,8 @@ test.describe("CreateInstanceButton", () => {
       />,
     );
 
-    await component.getByRole("button").click();
+    // Component IS the button (no wrapper div)
+    await component.click();
 
     // Wait a bit for the async callback to complete
     await component.page().waitForTimeout(100);
@@ -113,8 +118,9 @@ test.describe("CreateInstanceButton", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).toBeVisible();
-    await expect(component.getByRole("button")).toHaveText("Create Instance");
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("Create Instance");
   });
 
   test("should have correct CSS class", async ({ mount }) => {
@@ -131,8 +137,8 @@ test.describe("CreateInstanceButton", () => {
       />,
     );
 
-    const button = component.getByRole("button");
-    await expect(button).toHaveClass(/exocortex-create-instance-btn/);
+    // Component IS the button (no wrapper div)
+    await expect(component).toHaveClass(/exocortex-create-instance-btn/);
   });
 
   test("should prevent default event behavior on click", async ({ mount }) => {
@@ -150,9 +156,11 @@ test.describe("CreateInstanceButton", () => {
     );
 
     // Click the button - if preventDefault works correctly, no errors should occur
-    await component.getByRole("button").click();
+    // Component IS the button (no wrapper div)
+    await component.click();
 
     // Button should still be visible after click
-    await expect(component.getByRole("button")).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 });

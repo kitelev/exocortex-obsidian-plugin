@@ -47,9 +47,9 @@ test.describe("RepairFolderButton", () => {
       />,
     );
 
-    const button = component.locator("button");
-    await expect(button).toBeVisible();
-    await expect(button).toContainText("Repair Folder");
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
+    await expect(component).toContainText("Repair Folder");
   });
 
   test("should show expected folder in title attribute", async ({ mount }) => {
@@ -62,8 +62,8 @@ test.describe("RepairFolderButton", () => {
       />,
     );
 
-    const button = component.locator("button");
-    await expect(button).toHaveAttribute("title", "Move to other/path");
+    // Component IS the button (no wrapper div)
+    await expect(component).toHaveAttribute("title", "Move to other/path");
   });
 
   test("should call onRepair when button is clicked", async ({ mount }) => {
@@ -80,8 +80,8 @@ test.describe("RepairFolderButton", () => {
       />,
     );
 
-    const button = component.locator("button");
-    await button.click();
+    // Component IS the button (no wrapper div)
+    await component.click();
 
     expect(repairCalled).toBe(true);
   });
@@ -113,8 +113,8 @@ test.describe("RepairFolderButton", () => {
       />,
     );
 
-    const button = component.locator("button");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should detect mismatch when expected has trailing slash", async ({
@@ -129,8 +129,8 @@ test.describe("RepairFolderButton", () => {
       />,
     );
 
-    const button = component.locator("button");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should handle empty current folder path", async ({ mount }) => {
@@ -143,8 +143,8 @@ test.describe("RepairFolderButton", () => {
       />,
     );
 
-    const button = component.locator("button");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should NOT render when expected folder is empty string", async ({ mount }) => {
@@ -172,9 +172,8 @@ test.describe("RepairFolderButton", () => {
       />,
     );
 
-    const button = component.locator("button");
-
+    // Component IS the button (no wrapper div)
     // The button should have type="button" which prevents form submission
-    await expect(button).toHaveAttribute("type", "button");
+    await expect(component).toHaveAttribute("type", "button");
   });
 });
