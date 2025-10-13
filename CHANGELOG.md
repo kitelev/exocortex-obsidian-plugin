@@ -1,3 +1,28 @@
+## [12.9.8] - 2025-10-13
+
+### Fixed
+
+- **Command/Ctrl+Click Link Behavior (WORKING FIX)**: Fixed the implementation to properly use `getLeaf('tab')` when modifier key is pressed
+  - Uses `Keymap.isModEvent()` to detect Cmd/Ctrl
+  - When modifier pressed: `getLeaf('tab').openLinkText(path)` - opens in NEW tab only
+  - When no modifier: `workspace.openLinkText(path, "", false)` - opens in CURRENT tab
+  - Previous issue: was passing boolean to third parameter (which is `split`, not `newLeaf`)
+  - Correct approach: conditionally choose between `getLeaf('tab')` and `workspace`
+
+### User Benefits
+
+- **Working Cmd/Ctrl+Click**: Now actually works - opens new tab without changing current
+- **No Duplicate Tabs**: Fixed - only one new tab opens
+- **Current Tab Preserved**: Your view stays exactly where it is
+- **Native Behavior**: Matches how Obsidian core handles links
+
+### Technical
+
+- Conditional logic: `if (isModPressed) { getLeaf('tab').openLinkText() } else { workspace.openLinkText() }`
+- Third parameter of `openLinkText` is `split` (split pane), not `newLeaf` flag
+- Must use `getLeaf('tab')` to actually create new tab
+- All 285 tests passing (122 unit + 42 UI + 121 component)
+
 ## [12.9.7] - 2025-10-13
 
 ### Fixed

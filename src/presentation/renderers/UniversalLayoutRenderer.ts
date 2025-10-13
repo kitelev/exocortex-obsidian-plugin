@@ -602,8 +602,16 @@ export class UniversalLayoutRenderer {
         metadata,
         onLinkClick: async (path: string, event: React.MouseEvent) => {
           // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
-          const newLeaf = Keymap.isModEvent(event.nativeEvent as MouseEvent);
-          await this.app.workspace.openLinkText(path, "", newLeaf);
+          const isModPressed = Keymap.isModEvent(event.nativeEvent as MouseEvent);
+
+          if (isModPressed) {
+            // Open in new tab - get a new leaf and open there
+            const leaf = this.app.workspace.getLeaf('tab');
+            await leaf.openLinkText(path, '');
+          } else {
+            // Open in current tab
+            await this.app.workspace.openLinkText(path, "", false);
+          }
         },
       }),
     );
@@ -631,8 +639,16 @@ export class UniversalLayoutRenderer {
         showProperties: config.showProperties || [],
         onAssetClick: async (path: string, event: React.MouseEvent) => {
           // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
-          const newLeaf = Keymap.isModEvent(event.nativeEvent as MouseEvent);
-          await this.app.workspace.openLinkText(path, "", newLeaf);
+          const isModPressed = Keymap.isModEvent(event.nativeEvent as MouseEvent);
+
+          if (isModPressed) {
+            // Open in new tab - get a new leaf and open there
+            const leaf = this.app.workspace.getLeaf('tab');
+            await leaf.openLinkText(path, '');
+          } else {
+            // Open in current tab
+            await this.app.workspace.openLinkText(path, "", false);
+          }
         },
       }),
     );
