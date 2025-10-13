@@ -1,3 +1,28 @@
+## [12.9.10] - 2025-10-13
+
+### Fixed
+
+- **onClick Handler Not Being Called**: Found the root cause - Obsidian was intercepting `internal-link` class clicks
+  - Added `e.stopPropagation()` to prevent event bubbling to Obsidian handlers
+  - Added component-level console.log to verify clicks are being received
+  - Changed `href="#"` to `data-href` to avoid browser default behavior
+  - Added `style={{ cursor: 'pointer' }}` for proper UX
+
+### Debug Improvements
+
+- Added logging at component level: `[Exocortex Component] Asset link clicked!`
+- Added logging at renderer level: `[Exocortex] Link click:`
+- This helps track the complete event flow from React to Obsidian API
+
+### Testing
+
+- Open Console (Cmd+Opt+I / Ctrl+Shift+I)
+- Click links - you should now see TWO log messages:
+  1. `[Exocortex Component]` - from React component
+  2. `[Exocortex]` - from renderer handler
+- If you only see #1, the renderer isn't being called (still investigating)
+- If you see both, check if tabs behave correctly
+
 ## [12.9.9] - 2025-10-13
 
 ### Added

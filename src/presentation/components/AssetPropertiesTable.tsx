@@ -35,12 +35,15 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
         const target = extractLinkTarget(value);
         return (
           <a
-            href="#"
+            data-href={target}
             className="internal-link"
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
+              console.log('[Exocortex Component] Property link clicked!', target);
               onLinkClick?.(target, e);
             }}
+            style={{ cursor: 'pointer' }}
           >
             {target}
           </a>
