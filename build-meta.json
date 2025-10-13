@@ -693,7 +693,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 24327,
+      "bytes": 24871,
       "imports": [
         {
           "path": "obsidian",
@@ -925,7 +925,7 @@
           "bytesInOutput": 1721
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 9001
+          "bytesInOutput": 9109
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -1000,7 +1000,7 @@
           "bytesInOutput": 5234
         }
       },
-      "bytes": 225996
+      "bytes": 226104
     }
   }
 }
