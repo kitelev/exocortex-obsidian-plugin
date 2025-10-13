@@ -148,29 +148,32 @@ export class UniversalLayoutRenderer {
         return;
       }
 
+      // Create horizontal buttons container
+      const buttonsContainer = el.createDiv({ cls: "exocortex-buttons-container" });
+
       // Render Create Task button FIRST (above properties)
-      await this.renderCreateTaskButton(el, currentFile);
+      await this.renderCreateTaskButton(buttonsContainer, currentFile);
 
       // Render Create Instance button (for TaskPrototype assets)
-      await this.renderCreateInstanceButton(el, currentFile);
+      await this.renderCreateInstanceButton(buttonsContainer, currentFile);
 
       // Render Start Effort button (for Task/Project assets without Doing/Done status)
-      await this.renderStartEffortButton(el, currentFile);
+      await this.renderStartEffortButton(buttonsContainer, currentFile);
 
       // Render Plan on Today button (for Task/Project assets)
-      await this.renderPlanOnTodayButton(el, currentFile);
+      await this.renderPlanOnTodayButton(buttonsContainer, currentFile);
 
       // Render Mark Task Done button (for Task assets)
-      await this.renderMarkTaskDoneButton(el, currentFile);
+      await this.renderMarkTaskDoneButton(buttonsContainer, currentFile);
 
       // Render Archive Task button (for completed Task assets)
-      await this.renderArchiveTaskButton(el, currentFile);
+      await this.renderArchiveTaskButton(buttonsContainer, currentFile);
 
       // Render Clean Empty Properties button (for all assets)
-      await this.renderCleanEmptyPropertiesButton(el, currentFile);
+      await this.renderCleanEmptyPropertiesButton(buttonsContainer, currentFile);
 
       // Render Repair Folder button (for all assets with exo__Asset_isDefinedBy)
-      await this.renderRepairFolderButton(el, currentFile);
+      await this.renderRepairFolderButton(buttonsContainer, currentFile);
 
       // Render asset properties
       await this.renderAssetProperties(el, currentFile);
