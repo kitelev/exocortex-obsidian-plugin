@@ -1,3 +1,27 @@
+## [12.9.9] - 2025-10-13
+
+### Added
+
+- **Debug Logging for Link Clicks**: Added console logging to debug Command/Ctrl+Click behavior
+  - Logs when links are clicked: path, modifier keys status
+  - Logs which code path is taken (new tab vs current tab)
+  - Helps diagnose any remaining issues with link behavior
+  - Open Developer Console (Cmd+Opt+I / Ctrl+Shift+I) to see logs
+
+### Purpose
+
+- This is a DEBUG release to understand what's happening
+- Please test with Console open and report what you see
+- Logs will show: `[Exocortex] Link click:` and `[Exocortex] Opening in...`
+- This will help identify if the issue is in detection or execution
+
+### Instructions
+
+1. Open Obsidian Developer Console (Cmd+Opt+I on Mac, Ctrl+Shift+I on Windows)
+2. Click on a link normally - check console
+3. Command/Ctrl+Click on a link - check console
+4. Report what you see in the logs
+
 ## [12.9.8] - 2025-10-13
 
 ### Fixed
