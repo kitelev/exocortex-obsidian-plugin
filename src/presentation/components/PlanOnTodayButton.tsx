@@ -38,14 +38,12 @@ export const PlanOnTodayButton: React.FC<PlanOnTodayButtonProps> = ({
   }
 
   return (
-    <div className="exocortex-plan-on-today-section">
-      <button
-        className="exocortex-plan-on-today-btn"
-        onClick={handleClick}
-        type="button"
-      >
-        Plan on today
-      </button>
-    </div>
+    <button
+      className="exocortex-plan-on-today-btn"
+      onClick={handleClick}
+      type="button"
+    >
+      Plan on today
+    </button>
   );
 };

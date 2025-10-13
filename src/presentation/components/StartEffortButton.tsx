@@ -38,14 +38,12 @@ export const StartEffortButton: React.FC<StartEffortButtonProps> = ({
   }
 
   return (
-    <div className="exocortex-start-effort-section">
-      <button
-        className="exocortex-start-effort-btn"
-        onClick={handleClick}
-        type="button"
-      >
-        Start Effort
-      </button>
-    </div>
+    <button
+      className="exocortex-start-effort-btn"
+      onClick={handleClick}
+      type="button"
+    >
+      Start Effort
+    </button>
   );
 };

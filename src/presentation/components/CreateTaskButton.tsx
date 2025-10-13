@@ -41,14 +41,12 @@ export const CreateTaskButton: React.FC<CreateTaskButtonProps> = ({
   }
 
   return (
-    <div className="exocortex-create-task-section">
-      <button
-        className="exocortex-create-task-btn"
-        onClick={handleClick}
-        type="button"
-      >
-        Create Task
-      </button>
-    </div>
+    <button
+      className="exocortex-create-task-btn"
+      onClick={handleClick}
+      type="button"
+    >
+      Create Task
+    </button>
   );
 };

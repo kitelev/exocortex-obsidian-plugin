@@ -1,3 +1,16 @@
+## [12.9.13] - 2025-10-13
+
+### Fixed
+
+- **Horizontal Button Layout Rendering**: Fixed issue where buttons were displaying vertically despite horizontal layout CSS. Previously, React components had extra wrapper divs that blocked the flexbox layout. Now buttons render correctly in a horizontal row as intended. This fix improves the visual organization of the Layout section, making buttons easier to find and use. The horizontal layout works seamlessly on desktop, while mobile devices continue to show buttons vertically for better touch accessibility.
+
+### Technical
+
+- Removed wrapper divs from 8 React button components (CreateTaskButton, MarkTaskDoneButton, ArchiveTaskButton, CleanEmptyPropertiesButton, RepairFolderButton, StartEffortButton, PlanOnTodayButton, CreateInstanceButton)
+- Each button component now returns button element directly without intermediate wrapper
+- Container flexbox layout now works properly without wrapper div interference
+- Added test case for horizontal layout container rendering
+
 ## [12.9.12] - 2025-10-13
 
 ### Improved

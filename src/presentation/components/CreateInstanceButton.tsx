@@ -41,14 +41,12 @@ export const CreateInstanceButton: React.FC<CreateInstanceButtonProps> = ({
   }
 
   return (
-    <div className="exocortex-create-instance-section">
-      <button
-        className="exocortex-create-instance-btn"
-        onClick={handleClick}
-        type="button"
-      >
-        Create Instance
-      </button>
-    </div>
+    <button
+      className="exocortex-create-instance-btn"
+      onClick={handleClick}
+      type="button"
+    >
+      Create Instance
+    </button>
   );
 };
