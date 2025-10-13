@@ -8,6 +8,7 @@ import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
 import { CreateTaskButton } from "../components/CreateTaskButton";
 import { CreateInstanceButton } from "../components/CreateInstanceButton";
 import { StartEffortButton } from "../components/StartEffortButton";
+import { PlanOnTodayButton } from "../components/PlanOnTodayButton";
 import { MarkTaskDoneButton } from "../components/MarkTaskDoneButton";
 import { ArchiveTaskButton } from "../components/ArchiveTaskButton";
 import { CleanEmptyPropertiesButton } from "../components/CleanEmptyPropertiesButton";
@@ -155,6 +156,9 @@ export class UniversalLayoutRenderer {
 
       // Render Start Effort button (for Task/Project assets without Doing/Done status)
       await this.renderStartEffortButton(el, currentFile);
+
+      // Render Plan on Today button (for Task/Project assets)
+      await this.renderPlanOnTodayButton(el, currentFile);
 
       // Render Mark Task Done button (for Task assets)
       await this.renderMarkTaskDoneButton(el, currentFile);
@@ -469,6 +473,39 @@ export class UniversalLayoutRenderer {
           await this.refresh(el);
 
           this.logger.info(`Started effort: ${file.path}`);
+        },
+      }),
+    );
+  }
+
+  /**
+   * Render Plan on Today button for Task and Project assets
+   * Button appears when exo__Instance_class is ems__Task or ems__Project
+   */
+  private async renderPlanOnTodayButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+
+    const container = el.createDiv({ cls: "exocortex-plan-on-today-wrapper" });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(PlanOnTodayButton, {
+        instanceClass,
+        metadata,
+        sourceFile: file,
+        onPlanOnToday: async () => {
+          await this.taskStatusService.planOnToday(file);
+
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          await this.refresh(el);
+
+          this.logger.info(`Planned on today: ${file.path}`);
         },
       }),
     );

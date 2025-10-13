@@ -1,3 +1,40 @@
+## [12.9.3] - 2025-10-13
+
+### Added
+
+- **"Plan on today" Button and Command**: New button for Task and Project assets to set daily planning
+  - Button appears in layout for all Task and Project assets
+  - Sets `ems__Effort_day` property to current date as wikilink (e.g., `"[[2025-10-13]]"`)
+  - Available in both UI button and Command Palette ("Exocortex: Plan on today")
+  - Updates existing `ems__Effort_day` if already set
+  - Positioned between "Start Effort" and "Mark as Done" buttons
+
+### User Benefits
+
+- **Daily Planning Integration**: Link efforts to specific dates using Exocortex's asset-based date model
+  - Each date becomes a navigable asset in your vault (e.g., `[[2025-10-13]]`)
+  - Click date links to see all efforts planned for that day
+  - Supports temporal queries and date-based organization
+  - Follows Exocortex philosophy: even primitive values like dates are assets
+
+- **Single-Click Planning**: Plan tasks for today with one click
+- **Date Navigation**: Click date wikilinks to navigate to daily note or see related efforts
+- **Flexible Updates**: Change planned date anytime by clicking button again
+- **Keyboard Support**: Access via Command Palette for power users
+
+### Technical
+
+- Added `planOnToday()` method to TaskStatusService
+- Added `formatDateAsWikilink()` helper for YYYY-MM-DD format
+- Created PlanOnTodayButton React component with visibility logic
+- Added `canPlanOnToday()` function to CommandVisibility domain layer
+- Integrated button into UniversalLayoutRenderer (after Start Effort button)
+- Added "plan-on-today" command to CommandManager
+- Implemented `executePlanOnToday()` method
+- Added 6 unit tests for `canPlanOnToday()` visibility logic
+- Added 9 component tests for PlanOnTodayButton React component
+- Zero test failures - all 124 tests passing (115 unit + 116 component)
+
 ## [12.9.2] - 2025-10-13
 
 ### Added

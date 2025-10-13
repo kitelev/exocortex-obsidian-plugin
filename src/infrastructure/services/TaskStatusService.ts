@@ -18,6 +18,18 @@ export class TaskStatusService {
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
   }
 
+  /**
+   * Format date as YYYY-MM-DD wikilink for ems__Effort_day property
+   * Format: [[YYYY-MM-DD]]
+   */
+  private formatDateAsWikilink(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `"[[${year}-${month}-${day}]]"`;
+  }
+
   async startEffort(taskFile: TFile): Promise<void> {
     const fileContent = await this.vault.read(taskFile);
     const updatedContent = this.updateFrontmatterWithDoingStatus(fileContent);
@@ -144,6 +156,45 @@ ${content}`;
       );
     } else {
       updatedFrontmatter += "\narchived: true";
+    }
+
+    return content.replace(
+      frontmatterRegex,
+      `---\n${updatedFrontmatter}\n---`,
+    );
+  }
+
+  async planOnToday(taskFile: TFile): Promise<void> {
+    const fileContent = await this.vault.read(taskFile);
+    const updatedContent = this.updateFrontmatterWithTodayDate(fileContent);
+    await this.vault.modify(taskFile, updatedContent);
+  }
+
+  private updateFrontmatterWithTodayDate(content: string): string {
+    const now = new Date();
+    const todayWikilink = this.formatDateAsWikilink(now);
+
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) {
+      const newFrontmatter = `---
+ems__Effort_day: ${todayWikilink}
+---
+${content}`;
+      return newFrontmatter;
+    }
+
+    const frontmatterContent = match[1];
+    let updatedFrontmatter = frontmatterContent;
+
+    if (updatedFrontmatter.includes("ems__Effort_day:")) {
+      updatedFrontmatter = updatedFrontmatter.replace(
+        /ems__Effort_day:.*$/m,
+        `ems__Effort_day: ${todayWikilink}`,
+      );
+    } else {
+      updatedFrontmatter += `\nems__Effort_day: ${todayWikilink}`;
     }
 
     return content.replace(

@@ -142,6 +142,14 @@ export function canCreateInstance(context: CommandVisibilityContext): boolean {
 }
 
 /**
+ * Can execute "Plan on today" command
+ * Available for: Task and Project (any effort)
+ */
+export function canPlanOnToday(context: CommandVisibilityContext): boolean {
+  return isEffort(context.instanceClass);
+}
+
+/**
  * Can execute "Start Effort" command
  * Available for: Task/Project without Doing or Done status
  */
