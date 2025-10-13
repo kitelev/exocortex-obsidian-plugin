@@ -130,7 +130,7 @@
       "format": "esm"
     },
     "src/presentation/components/AssetRelationsTable.tsx": {
-      "bytes": 6176,
+      "bytes": 6150,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -141,7 +141,7 @@
       "format": "esm"
     },
     "src/presentation/components/AssetPropertiesTable.tsx": {
-      "bytes": 2290,
+      "bytes": 2277,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -693,7 +693,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 24551,
+      "bytes": 24327,
       "imports": [
         {
           "path": "obsidian",
@@ -884,6 +884,11 @@
           "path": "obsidian",
           "kind": "require-call",
           "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
         }
       ],
       "exports": [],
@@ -919,23 +924,23 @@
         "src/ExocortexPlugin.ts": {
           "bytesInOutput": 1721
         },
+        "src/presentation/renderers/UniversalLayoutRenderer.ts": {
+          "bytesInOutput": 9001
+        },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
         },
         "src/infrastructure/logging/LoggerFactory.ts": {
           "bytesInOutput": 49
         },
-        "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 9014
-        },
         "src/presentation/utils/ReactRenderer.tsx": {
           "bytesInOutput": 284
         },
         "src/presentation/components/AssetRelationsTable.tsx": {
-          "bytesInOutput": 2702
+          "bytesInOutput": 2664
         },
         "src/presentation/components/AssetPropertiesTable.tsx": {
-          "bytesInOutput": 1266
+          "bytesInOutput": 1247
         },
         "src/presentation/components/CreateTaskButton.tsx": {
           "bytesInOutput": 530
@@ -995,7 +1000,7 @@
           "bytesInOutput": 5234
         }
       },
-      "bytes": 226066
+      "bytes": 225996
     }
   }
 }

@@ -2,7 +2,7 @@ import React from "react";
 
 export interface AssetPropertiesTableProps {
   metadata: Record<string, any>;
-  onLinkClick?: (path: string, newTab: boolean) => void;
+  onLinkClick?: (path: string, event: React.MouseEvent) => void;
 }
 
 export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
@@ -39,7 +39,7 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
             className="internal-link"
             onClick={(e) => {
               e.preventDefault();
-              onLinkClick?.(target, e.metaKey || e.ctrlKey);
+              onLinkClick?.(target, e);
             }}
           >
             {target}

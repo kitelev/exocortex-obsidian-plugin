@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext, TFile } from "obsidian";
+import { MarkdownPostProcessorContext, TFile, Keymap } from "obsidian";
 import { ILogger } from "../../infrastructure/logging/ILogger";
 import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
 import React from "react";
@@ -600,15 +600,10 @@ export class UniversalLayoutRenderer {
       container,
       React.createElement(AssetPropertiesTable, {
         metadata,
-        onLinkClick: async (path: string, newTab: boolean) => {
-          if (newTab) {
-            // Open in new tab WITHOUT changing current tab
-            const leaf = this.app.workspace.getLeaf('tab');
-            await leaf.openLinkText(path, "");
-          } else {
-            // Open in current tab (default behavior)
-            await this.app.workspace.openLinkText(path, "", false);
-          }
+        onLinkClick: async (path: string, event: React.MouseEvent) => {
+          // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
+          const newLeaf = Keymap.isModEvent(event.nativeEvent as MouseEvent);
+          await this.app.workspace.openLinkText(path, "", newLeaf);
         },
       }),
     );
@@ -634,15 +629,10 @@ export class UniversalLayoutRenderer {
         sortBy: config.sortBy || "title",
         sortOrder: config.sortOrder || "asc",
         showProperties: config.showProperties || [],
-        onAssetClick: async (path: string, newTab: boolean) => {
-          if (newTab) {
-            // Open in new tab WITHOUT changing current tab
-            const leaf = this.app.workspace.getLeaf('tab');
-            await leaf.openLinkText(path, "");
-          } else {
-            // Open in current tab (default behavior)
-            await this.app.workspace.openLinkText(path, "", false);
-          }
+        onAssetClick: async (path: string, event: React.MouseEvent) => {
+          // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
+          const newLeaf = Keymap.isModEvent(event.nativeEvent as MouseEvent);
+          await this.app.workspace.openLinkText(path, "", newLeaf);
         },
       }),
     );
