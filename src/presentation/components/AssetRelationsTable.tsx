@@ -17,7 +17,7 @@ export interface AssetRelationsTableProps {
   sortBy?: string;
   sortOrder?: "asc" | "desc";
   showProperties?: string[];
-  onAssetClick?: (path: string) => void;
+  onAssetClick?: (path: string, newTab: boolean) => void;
 }
 
 interface SortState {
@@ -30,7 +30,7 @@ interface SingleTableProps {
   sortBy: string;
   sortOrder: "asc" | "desc";
   showProperties: string[];
-  onAssetClick?: (path: string) => void;
+  onAssetClick?: (path: string, newTab: boolean) => void;
 }
 
 const SingleTable: React.FC<SingleTableProps> = ({
@@ -126,7 +126,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
                   href="#"
                   onClick={(e) => {
                     e.preventDefault();
-                    onAssetClick?.(relation.path);
+                    onAssetClick?.(relation.path, e.metaKey || e.ctrlKey);
                   }}
                   className="internal-link"
                 >
@@ -139,7 +139,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
-                      onAssetClick?.(instanceClass);
+                      onAssetClick?.(instanceClass, e.metaKey || e.ctrlKey);
                     }}
                     className="internal-link"
                   >

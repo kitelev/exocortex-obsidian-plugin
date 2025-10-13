@@ -1,3 +1,28 @@
+## [12.9.5] - 2025-10-13
+
+### Fixed
+
+- **Command/Ctrl+Click Behavior in Layout Links**: Fixed issue where clicking links with Command (Mac) or Ctrl (Windows/Linux) held would both change the current tab AND open a new tab
+  - Now Command/Ctrl+Click opens link in new tab WITHOUT changing current tab
+  - Regular click continues to open in current tab (standard behavior)
+  - Applies to all clickable links in Layout: asset names, Instance Class links, and property values
+  - Fixed in both Asset Relations Table and Asset Properties Table
+
+### User Benefits
+
+- **Better Navigation**: Command/Ctrl+Click now works as expected in Obsidian - opens new tab while keeping current context
+- **No Disruption**: Your current view stays intact when opening links in new tabs
+- **Consistent Behavior**: Matches standard Obsidian link behavior throughout the plugin
+- **Multi-tasking**: Easily open multiple related assets in tabs without losing your place
+
+### Technical
+
+- Modified `AssetRelationsTable.tsx` to pass `newTab` parameter based on modifier keys
+- Modified `AssetPropertiesTable.tsx` to pass `newTab` parameter based on modifier keys
+- Updated `UniversalLayoutRenderer.ts` to respect `newTab` parameter in `openLinkText()` calls
+- Detection: `e.metaKey` (Mac Command) or `e.ctrlKey` (Windows/Linux Ctrl)
+- All 285 tests passing (122 unit + 42 UI + 121 component)
+
 ## [12.9.4] - 2025-10-13
 
 ### Fixed
