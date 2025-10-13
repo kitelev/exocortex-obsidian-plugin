@@ -93,12 +93,14 @@ test.describe('AssetRelationsTable Component', () => {
 
   test('should handle asset click', async ({ mount }) => {
     let clickedPath: string | null = null;
+    let clickedNewTab: boolean | null = null;
 
     const component = await mount(
       <AssetRelationsTable
         relations={mockRelations}
-        onAssetClick={path => {
+        onAssetClick={(path, newTab) => {
           clickedPath = path;
+          clickedNewTab = newTab;
         }}
       />
     );
@@ -106,9 +108,33 @@ test.describe('AssetRelationsTable Component', () => {
     // Click on first asset link
     await component.locator('a:has-text("Task 1")').click();
 
-    // Verify callback was called with correct path
+    // Verify callback was called with correct path and newTab=false
     expect(clickedPath).toBe('tasks/task1.md');
+    expect(clickedNewTab).toBe(false);
   });
+
+  test('should pass newTab=true when Command+Click', async ({ mount, page }) => {
+    let clickedPath: string | null = null;
+    let clickedNewTab: boolean | null = null;
+
+    const component = await mount(
+      <AssetRelationsTable
+        relations={mockRelations}
+        onAssetClick={(path, newTab) => {
+          clickedPath = path;
+          clickedNewTab = newTab;
+        }}
+      />
+    );
+
+    // Command+Click on first asset link (Mac)
+    await component.locator('a:has-text("Task 1")').click({ modifiers: ['Meta'] });
+
+    // Verify callback was called with newTab=true
+    expect(clickedPath).toBe('tasks/task1.md');
+    expect(clickedNewTab).toBe(true);
+  });
+
 
   test('should handle empty relations', async ({ mount }) => {
     const component = await mount(<AssetRelationsTable relations={[]} />);

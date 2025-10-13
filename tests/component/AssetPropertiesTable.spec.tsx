@@ -64,12 +64,14 @@ test.describe('AssetPropertiesTable Component', () => {
 
   test('should handle link clicks', async ({ mount }) => {
     let clickedPath: string | null = null;
+    let clickedNewTab: boolean | null = null;
 
     const component = await mount(
       <AssetPropertiesTable
         metadata={mockMetadata}
-        onLinkClick={path => {
+        onLinkClick={(path, newTab) => {
           clickedPath = path;
+          clickedNewTab = newTab;
         }}
       />
     );
@@ -77,9 +79,33 @@ test.describe('AssetPropertiesTable Component', () => {
     // Click on Instance Class link
     await component.locator('a:has-text("ems__Task")').click();
 
-    // Verify callback was called
+    // Verify callback was called with newTab=false
     expect(clickedPath).toBe('ems__Task');
+    expect(clickedNewTab).toBe(false);
   });
+
+  test('should pass newTab=true when Command+Click on link', async ({ mount }) => {
+    let clickedPath: string | null = null;
+    let clickedNewTab: boolean | null = null;
+
+    const component = await mount(
+      <AssetPropertiesTable
+        metadata={mockMetadata}
+        onLinkClick={(path, newTab) => {
+          clickedPath = path;
+          clickedNewTab = newTab;
+        }}
+      />
+    );
+
+    // Command+Click on Instance Class link
+    await component.locator('a:has-text("ems__Task")').click({ modifiers: ['Meta'] });
+
+    // Verify callback was called with newTab=true
+    expect(clickedPath).toBe('ems__Task');
+    expect(clickedNewTab).toBe(true);
+  });
+
 
   test('should display array properties as comma-separated values', async ({ mount }) => {
     const component = await mount(<AssetPropertiesTable metadata={mockMetadata} />);
