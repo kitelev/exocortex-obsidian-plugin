@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![CI](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-22%20passing-success)](./specs/TEST-RESULTS.md)
+[![Tests](https://img.shields.io/badge/tests-passing-success)](https://github.com/kitelev/exocortex-obsidian-plugin/actions)
 
 ## 🎯 What is Exocortex?
 
@@ -12,15 +12,14 @@ Exocortex is a lightweight Obsidian plugin that displays related notes in a clea
 
 ### Key Features
 
-- 🏷️ **Asset Properties**: Display all frontmatter properties in a clean key-value table
-- 🔗 **Smart Links**: Wiki-links in properties automatically become clickable internal links
-- 📊 **Related Assets**: Show all notes that reference the current note, grouped by property
-- ⚡ **Automatic Display**: Always shows related assets below metadata in reading mode
-- 🚀 **High Performance**: Optimized relation discovery with reverse indexing (O(1) lookups)
-- 📱 **Mobile Compatible**: Works seamlessly on desktop and mobile
-- ↕️ **Interactive Sorting**: Sort tables with visual indicators (▲/▼)
+- 📊 **Automatic Layout**: Related notes displayed in clean tables below metadata (reading mode)
+- 🏷️ **Properties Display**: All frontmatter properties in organized key-value tables
+- 🔗 **Smart Links**: Wiki-links automatically become clickable internal links
+- ↕️ **Interactive Sorting**: Click headers to sort tables with visual indicators (▲/▼)
 - 📦 **Archive Filtering**: Automatically hide archived assets from views
-- ⌨️ **Command Palette**: All asset commands accessible via keyboard (Cmd/Ctrl+P)
+- ⚡ **High Performance**: O(1) relation lookups via reverse indexing
+- 📱 **Mobile Compatible**: Full desktop and mobile support
+- ⌨️ **Command Palette**: Quick access to all actions (Cmd/Ctrl+P)
 
 ## 🏃‍♂️ Quick Start
 
@@ -45,14 +44,13 @@ The plugin automatically displays related assets below metadata in all notes (re
 2. **Relations Table** - All notes that reference this note, grouped by property
 3. **Action Buttons** - Quick actions for creating tasks, managing status, etc.
 
-**Command Palette Access:**
-Press Cmd/Ctrl+P and type "Exocortex:" to access all asset commands:
-- Create Task
-- Start Effort
-- Mark as Done
+**Available Commands** (Cmd/Ctrl+P → "Exocortex:"):
+- Create Task from current note
+- Start Effort tracking
+- Mark Task as Done
 - Archive Task
 - Clean Empty Properties
-- Repair Folder
+- Repair Folder structure
 
 ### Archive Filtering
 
@@ -68,15 +66,24 @@ Archived assets are automatically filtered from all relation lists, keeping your
 
 ## 🏗️ Architecture
 
-Simple and focused architecture:
+Clean Architecture with domain-driven design:
 
 ```
-┌─── Layout Renderer ───────────────────────────────┐
-│  • UniversalLayoutRenderer (single renderer)      │
-└───────────────────────────────────────────────────┘
+┌─────────── Presentation ────────────┐
+│  React Components                   │
+│  Layout Renderer                    │
+└─────────────────────────────────────┘
+         ↓
+┌─────────── Application ─────────────┐
+│  Services & Use Cases               │
+└─────────────────────────────────────┘
+         ↓
+┌─────────── Domain ──────────────────┐
+│  Entities, Value Objects            │
+└─────────────────────────────────────┘
 ```
 
-Built with TypeScript and React for optimal performance.
+**Tech Stack**: TypeScript, React, Obsidian API
 
 ## 🚀 Performance
 
@@ -115,33 +122,23 @@ npm run dev
 ### Running Tests
 
 ```bash
-# Unit tests (30 tests)
-npm run test:unit
+# All tests
+npm test
 
-# BDD tests (30 tests)
-npm run test:bdd
-
-# Component tests (31 tests)
-npm run test:component
+# Individual test suites
+npm run test:unit       # Unit tests
+npm run test:ui         # UI integration tests
+npm run test:component  # Component tests
 
 # Build verification
 npm run build
 ```
 
-**Total: 91 tests** covering layout rendering, sorting, and UI components.
-
 ## 📚 Documentation
 
-- **[docs/testing/](./docs/)** - Testing guides and best practices
-- **[CHANGELOG.md](./CHANGELOG.md)** - Version history and changes
-- **[CLAUDE.md](./CLAUDE.md)** - AI assistant development guidelines
-
-## 🌟 Recent Improvements (v11.4.0)
-
-- **Component Testing**: 31 tests with Playwright Component Testing
-- **CI/CD Optimization**: 61% faster pipeline (2m 54s → 1m 7s)
-- **Test Coverage**: 91 tests total (30 unit + 30 BDD + 31 component)
-- **Archive Filtering**: Automatic filtering of archived assets
+- **[CHANGELOG.md](./CHANGELOG.md)** - Complete version history
+- **[CLAUDE.md](./CLAUDE.md)** - Development guidelines for AI assistants
+- **[specs/features/](./specs/features/)** - BDD feature specifications
 
 ## 📄 License
 

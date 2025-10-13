@@ -600,8 +600,8 @@ export class UniversalLayoutRenderer {
       container,
       React.createElement(AssetPropertiesTable, {
         metadata,
-        onLinkClick: (path: string) => {
-          this.app.workspace.openLinkText(path, "", false);
+        onLinkClick: (path: string, newTab: boolean) => {
+          this.app.workspace.openLinkText(path, "", newTab);
         },
       }),
     );
@@ -627,8 +627,8 @@ export class UniversalLayoutRenderer {
         sortBy: config.sortBy || "title",
         sortOrder: config.sortOrder || "asc",
         showProperties: config.showProperties || [],
-        onAssetClick: (path: string) => {
-          this.app.workspace.openLinkText(path, "", false);
+        onAssetClick: (path: string, newTab: boolean) => {
+          this.app.workspace.openLinkText(path, "", newTab);
         },
       }),
     );
