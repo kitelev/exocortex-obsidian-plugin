@@ -16,9 +16,9 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).toBeVisible();
-    await expect(button).toHaveText("To Archive");
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("To Archive");
   });
 
   test("should NOT render button for Task without Done status", async ({
@@ -34,8 +34,8 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should NOT render button for already archived Task", async ({
@@ -51,8 +51,8 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should NOT render button for non-Task asset (Area)", async ({
@@ -68,8 +68,8 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should render button for Done Project not archived", async ({
@@ -85,9 +85,9 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).toBeVisible();
-    await expect(button).toHaveText("To Archive");
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("To Archive");
   });
 
   test("should NOT render button for Project without Done status", async ({
@@ -103,8 +103,8 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should NOT render button for already archived Project", async ({
@@ -120,8 +120,8 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should NOT render button when instanceClass is null", async ({
@@ -137,8 +137,8 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should handle Task class without brackets", async ({ mount }) => {
@@ -152,8 +152,8 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should recognize archived as string 'true'", async ({ mount }) => {
@@ -167,8 +167,8 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should recognize archived as string 'yes'", async ({ mount }) => {
@@ -182,8 +182,8 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should recognize archived as number 1", async ({ mount }) => {
@@ -197,8 +197,8 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should show button when archived is false string", async ({
@@ -214,8 +214,8 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should show button when archived is null", async ({ mount }) => {
@@ -229,8 +229,8 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should call onArchive when clicked", async ({ mount }) => {
@@ -249,8 +249,8 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await button.click();
+    // Component IS the button (no wrapper div)
+    await component.click();
 
     await expect.poll(() => callbackCalled).toBe(true);
   });
@@ -266,8 +266,8 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should handle array of statuses with Done", async ({ mount }) => {
@@ -281,7 +281,7 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    const button = component.locator("button.exocortex-archive-task-btn");
-    await expect(button).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 });

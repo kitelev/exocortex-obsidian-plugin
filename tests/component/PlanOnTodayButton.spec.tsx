@@ -19,8 +19,9 @@ test.describe("PlanOnTodayButton Component", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).toBeVisible();
-    await expect(component.getByRole("button")).toHaveText("Plan on today");
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("Plan on today");
   });
 
   test("should render button for Project without ems__Effort_day", async ({
@@ -39,8 +40,9 @@ test.describe("PlanOnTodayButton Component", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).toBeVisible();
-    await expect(component.getByRole("button")).toHaveText("Plan on today");
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("Plan on today");
   });
 
   test("should NOT render button for non-Task/Project asset (Area)", async ({
@@ -59,7 +61,8 @@ test.describe("PlanOnTodayButton Component", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should NOT render button when instanceClass is null", async ({
@@ -78,7 +81,8 @@ test.describe("PlanOnTodayButton Component", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should handle Task class without brackets", async ({ mount }) => {
@@ -95,7 +99,8 @@ test.describe("PlanOnTodayButton Component", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should call onPlanOnToday when clicked", async ({ mount }) => {
@@ -117,7 +122,8 @@ test.describe("PlanOnTodayButton Component", () => {
       />,
     );
 
-    await component.getByRole("button").click();
+    // Component IS the button (no wrapper div)
+    await component.click();
 
     // Wait a bit for the async callback to complete
     await component.page().waitForTimeout(100);
@@ -139,7 +145,8 @@ test.describe("PlanOnTodayButton Component", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should handle array of classes with Project", async ({ mount }) => {
@@ -156,7 +163,8 @@ test.describe("PlanOnTodayButton Component", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should render button when ems__Effort_day is set to different date", async ({
@@ -175,7 +183,8 @@ test.describe("PlanOnTodayButton Component", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 
   test("should NOT render button when ems__Effort_day is set to today", async ({
@@ -200,7 +209,8 @@ test.describe("PlanOnTodayButton Component", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should NOT render button when ems__Effort_day is set to today without quotes", async ({
@@ -225,7 +235,8 @@ test.describe("PlanOnTodayButton Component", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).not.toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should render button when ems__Effort_day is set to yesterday", async ({
@@ -251,6 +262,7 @@ test.describe("PlanOnTodayButton Component", () => {
       />,
     );
 
-    await expect(component.getByRole("button")).toBeVisible();
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
   });
 });

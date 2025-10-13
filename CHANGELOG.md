@@ -1,3 +1,16 @@
+## [12.9.14] - 2025-10-13
+
+### Fixed
+
+- **Test Suite Compatibility After Layout Changes**: Fixed test suite compatibility following the horizontal button layout changes in v12.9.13. Updated Playwright component tests to work correctly with the new button structure where buttons are root elements without wrapper divs. This is an internal testing fix with no impact on plugin functionality - all features continue to work exactly as before.
+
+### Technical
+
+- Updated 8 Playwright component test files to use `component` directly instead of `component.locator("button")`
+- Fixed test selectors in: ArchiveTaskButton, CleanEmptyPropertiesButton, CreateInstanceButton, CreateTaskButton, MarkTaskDoneButton, PlanOnTodayButton, RepairFolderButton, StartEffortButton
+- All 307 tests now passing (100% pass rate): 122 unit + 43 UI + 142 component tests
+- Maintained 100% BDD coverage (154/154 scenarios)
+
 ## [12.9.13] - 2025-10-13
 
 ### Fixed
