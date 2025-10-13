@@ -142,11 +142,53 @@ export function canCreateInstance(context: CommandVisibilityContext): boolean {
 }
 
 /**
+ * Get today's date in YYYY-MM-DD format
+ */
+function getTodayDateString(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Check if ems__Effort_day is set to today's date
+ * Handles formats: "[[YYYY-MM-DD]]" or [[YYYY-MM-DD]]
+ */
+function isPlannedForToday(metadata: Record<string, any>): boolean {
+  const effortDay = metadata.ems__Effort_day;
+  if (!effortDay) return false;
+
+  const todayString = getTodayDateString();
+
+  // Handle string value
+  if (typeof effortDay === "string") {
+    // Remove quotes and brackets
+    const cleanValue = effortDay.replace(/["'\[\]]/g, "").trim();
+    return cleanValue === todayString;
+  }
+
+  // Handle array value (take first element)
+  if (Array.isArray(effortDay) && effortDay.length > 0) {
+    const cleanValue = String(effortDay[0]).replace(/["'\[\]]/g, "").trim();
+    return cleanValue === todayString;
+  }
+
+  return false;
+}
+
+/**
  * Can execute "Plan on today" command
- * Available for: Task and Project (any effort)
+ * Available for: Task and Project (any effort) that are NOT already planned for today
  */
 export function canPlanOnToday(context: CommandVisibilityContext): boolean {
-  return isEffort(context.instanceClass);
+  if (!isEffort(context.instanceClass)) return false;
+
+  // Hide button if already planned for today
+  if (isPlannedForToday(context.metadata)) return false;
+
+  return true;
 }
 
 /**

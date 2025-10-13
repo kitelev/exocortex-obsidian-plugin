@@ -1,3 +1,30 @@
+## [12.9.4] - 2025-10-13
+
+### Fixed
+
+- **Smart "Plan on today" Button Visibility**: Button now automatically hides when effort is already planned for today
+  - Button disappears when `ems__Effort_day` is set to current date
+  - Prevents accidental re-planning of already scheduled efforts
+  - Button reappears when date changes or if planned for different day
+  - Handles multiple date formats: `"[[YYYY-MM-DD]]"`, `[[YYYY-MM-DD]]`, and arrays
+
+### User Benefits
+
+- **Cleaner UI**: No redundant "Plan on today" button when task is already planned for today
+- **Visual Feedback**: Button presence indicates planning status at a glance
+- **Prevents Confusion**: Clear signal when effort is already scheduled for current day
+- **Smart Behavior**: Button automatically returns tomorrow or when date is changed
+
+### Technical
+
+- Added `getTodayDateString()` helper function for date comparison
+- Added `isPlannedForToday()` helper function to check ems__Effort_day value
+- Updated `canPlanOnToday()` to hide button when already planned for today
+- Handles multiple formats: quoted wikilinks, unquoted wikilinks, arrays
+- Added 8 unit tests for date checking logic in CommandVisibility.test.ts
+- Added 4 component tests for visibility behavior in PlanOnTodayButton.spec.tsx
+- Zero test failures - all 131 tests passing (123 unit + 119 component)
+
 ## [12.9.3] - 2025-10-13
 
 ### Added

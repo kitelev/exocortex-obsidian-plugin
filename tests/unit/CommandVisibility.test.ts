@@ -231,6 +231,136 @@ describe("CommandVisibility", () => {
       };
       expect(canPlanOnToday(context)).toBe(true);
     });
+
+    it("should return false when ems__Effort_day is set to today", () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const todayString = `${year}-${month}-${day}`;
+
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          ems__Effort_day: `"[[${todayString}]]"`,
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canPlanOnToday(context)).toBe(false);
+    });
+
+    it("should return false when ems__Effort_day is set to today without quotes", () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const todayString = `${year}-${month}-${day}`;
+
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          ems__Effort_day: `[[${todayString}]]`,
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canPlanOnToday(context)).toBe(false);
+    });
+
+    it("should return true when ems__Effort_day is set to yesterday", () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const year = yesterday.getFullYear();
+      const month = String(yesterday.getMonth() + 1).padStart(2, "0");
+      const day = String(yesterday.getDate()).padStart(2, "0");
+      const yesterdayString = `${year}-${month}-${day}`;
+
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          ems__Effort_day: `"[[${yesterdayString}]]"`,
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canPlanOnToday(context)).toBe(true);
+    });
+
+    it("should return true when ems__Effort_day is set to tomorrow", () => {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const year = tomorrow.getFullYear();
+      const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
+      const day = String(tomorrow.getDate()).padStart(2, "0");
+      const tomorrowString = `${year}-${month}-${day}`;
+
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          ems__Effort_day: `"[[${tomorrowString}]]"`,
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canPlanOnToday(context)).toBe(true);
+    });
+
+    it("should return false when ems__Effort_day is array with today", () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const todayString = `${year}-${month}-${day}`;
+
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          ems__Effort_day: [`"[[${todayString}]]"`],
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canPlanOnToday(context)).toBe(false);
+    });
+
+    it("should return true when ems__Effort_day is empty string", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          ems__Effort_day: "",
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canPlanOnToday(context)).toBe(true);
+    });
+
+    it("should return true when ems__Effort_day is null", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          ems__Effort_day: null,
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canPlanOnToday(context)).toBe(true);
+    });
   });
 
   describe("canStartEffort", () => {
