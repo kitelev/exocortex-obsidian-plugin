@@ -600,8 +600,15 @@ export class UniversalLayoutRenderer {
       container,
       React.createElement(AssetPropertiesTable, {
         metadata,
-        onLinkClick: (path: string, newTab: boolean) => {
-          this.app.workspace.openLinkText(path, "", newTab);
+        onLinkClick: async (path: string, newTab: boolean) => {
+          if (newTab) {
+            // Open in new tab WITHOUT changing current tab
+            const leaf = this.app.workspace.getLeaf('tab');
+            await leaf.openLinkText(path, "");
+          } else {
+            // Open in current tab (default behavior)
+            await this.app.workspace.openLinkText(path, "", false);
+          }
         },
       }),
     );
@@ -627,8 +634,15 @@ export class UniversalLayoutRenderer {
         sortBy: config.sortBy || "title",
         sortOrder: config.sortOrder || "asc",
         showProperties: config.showProperties || [],
-        onAssetClick: (path: string, newTab: boolean) => {
-          this.app.workspace.openLinkText(path, "", newTab);
+        onAssetClick: async (path: string, newTab: boolean) => {
+          if (newTab) {
+            // Open in new tab WITHOUT changing current tab
+            const leaf = this.app.workspace.getLeaf('tab');
+            await leaf.openLinkText(path, "");
+          } else {
+            // Open in current tab (default behavior)
+            await this.app.workspace.openLinkText(path, "", false);
+          }
         },
       }),
     );
