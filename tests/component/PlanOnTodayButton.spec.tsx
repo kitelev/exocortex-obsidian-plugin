@@ -159,7 +159,7 @@ test.describe("PlanOnTodayButton Component", () => {
     await expect(component.getByRole("button")).toBeVisible();
   });
 
-  test("should render button even if ems__Effort_day is already set", async ({
+  test("should render button when ems__Effort_day is set to different date", async ({
     mount,
   }) => {
     const mockFile = {
@@ -170,6 +170,82 @@ test.describe("PlanOnTodayButton Component", () => {
       <PlanOnTodayButton
         instanceClass="[[ems__Task]]"
         metadata={{ ems__Effort_day: '"[[2025-10-12]]"' }}
+        sourceFile={mockFile}
+        onPlanOnToday={async () => {}}
+      />,
+    );
+
+    await expect(component.getByRole("button")).toBeVisible();
+  });
+
+  test("should NOT render button when ems__Effort_day is set to today", async ({
+    mount,
+  }) => {
+    const mockFile = {
+      parent: { path: "test/folder" },
+    } as any;
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const todayString = `${year}-${month}-${day}`;
+
+    const component = await mount(
+      <PlanOnTodayButton
+        instanceClass="[[ems__Task]]"
+        metadata={{ ems__Effort_day: `"[[${todayString}]]"` }}
+        sourceFile={mockFile}
+        onPlanOnToday={async () => {}}
+      />,
+    );
+
+    await expect(component.getByRole("button")).not.toBeVisible();
+  });
+
+  test("should NOT render button when ems__Effort_day is set to today without quotes", async ({
+    mount,
+  }) => {
+    const mockFile = {
+      parent: { path: "test/folder" },
+    } as any;
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const todayString = `${year}-${month}-${day}`;
+
+    const component = await mount(
+      <PlanOnTodayButton
+        instanceClass="[[ems__Task]]"
+        metadata={{ ems__Effort_day: `[[${todayString}]]` }}
+        sourceFile={mockFile}
+        onPlanOnToday={async () => {}}
+      />,
+    );
+
+    await expect(component.getByRole("button")).not.toBeVisible();
+  });
+
+  test("should render button when ems__Effort_day is set to yesterday", async ({
+    mount,
+  }) => {
+    const mockFile = {
+      parent: { path: "test/folder" },
+    } as any;
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const year = yesterday.getFullYear();
+    const month = String(yesterday.getMonth() + 1).padStart(2, "0");
+    const day = String(yesterday.getDate()).padStart(2, "0");
+    const yesterdayString = `${year}-${month}-${day}`;
+
+    const component = await mount(
+      <PlanOnTodayButton
+        instanceClass="[[ems__Task]]"
+        metadata={{ ems__Effort_day: `"[[${yesterdayString}]]"` }}
         sourceFile={mockFile}
         onPlanOnToday={async () => {}}
       />,
