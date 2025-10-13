@@ -38,15 +38,13 @@ export const RepairFolderButton: React.FC<RepairFolderButtonProps> = ({
   }
 
   return (
-    <div className="exocortex-repair-folder-section">
-      <button
-        className="exocortex-repair-folder-btn"
-        onClick={handleClick}
-        type="button"
-        title={`Move to ${expectedFolder}`}
-      >
-        Repair Folder
-      </button>
-    </div>
+    <button
+      className="exocortex-repair-folder-btn"
+      onClick={handleClick}
+      type="button"
+      title={`Move to ${expectedFolder}`}
+    >
+      Repair Folder
+    </button>
   );
 };

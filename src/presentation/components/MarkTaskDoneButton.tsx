@@ -38,14 +38,12 @@ export const MarkTaskDoneButton: React.FC<MarkTaskDoneButtonProps> = ({
   }
 
   return (
-    <div className="exocortex-mark-done-section">
-      <button
-        className="exocortex-mark-done-btn"
-        onClick={handleClick}
-        type="button"
-      >
-        Done
-      </button>
-    </div>
+    <button
+      className="exocortex-mark-done-btn"
+      onClick={handleClick}
+      type="button"
+    >
+      Done
+    </button>
   );
 };

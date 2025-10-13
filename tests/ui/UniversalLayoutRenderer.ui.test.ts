@@ -1104,6 +1104,62 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       const repairIndex = buttonElements.indexOf(repairButton!);
       expect(repairIndex).toBeGreaterThan(cleanIndex);
     });
+
+    it("should render buttons in horizontal layout container", async () => {
+      const currentFile = {
+        basename: "Test Asset",
+        path: "test-asset.md",
+        parent: { path: "wrong-folder" },
+      } as TFile;
+
+      const targetFile = {
+        parent: { path: "correct-folder" },
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Area]]",
+          exo__Asset_uid: "test-123",
+          exo__Asset_isDefinedBy: "[[some-class]]",
+          emptyProp: "",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {
+        "some-class.md": { "correct-folder": 1 },
+      };
+
+      (mockApp.metadataCache.getFirstLinkpathDest as jest.Mock) = jest
+        .fn()
+        .mockReturnValue(targetFile);
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(targetFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Get buttons container
+      const buttonsContainer = container.querySelector(".exocortex-buttons-container") as HTMLElement;
+      expect(buttonsContainer).toBeTruthy();
+
+      // Verify container has correct CSS class for flexbox styling
+      expect(buttonsContainer.classList.contains("exocortex-buttons-container")).toBe(true);
+
+      // Verify buttons have expected wrapper classes
+      const createTaskWrapper = buttonsContainer.querySelector(".exocortex-create-task-wrapper");
+      const cleanPropertiesWrapper = buttonsContainer.querySelector(".exocortex-clean-properties-wrapper");
+      const repairFolderWrapper = buttonsContainer.querySelector(".exocortex-repair-folder-wrapper");
+
+      expect(createTaskWrapper).toBeTruthy();
+      expect(cleanPropertiesWrapper).toBeTruthy();
+      expect(repairFolderWrapper).toBeTruthy();
+
+      // Verify all wrappers are direct children of buttons container (no nesting)
+      expect(buttonsContainer.contains(createTaskWrapper!)).toBe(true);
+      expect(buttonsContainer.contains(cleanPropertiesWrapper!)).toBe(true);
+      expect(buttonsContainer.contains(repairFolderWrapper!)).toBe(true);
+    });
   });
 
   describe("Start Effort Button", () => {

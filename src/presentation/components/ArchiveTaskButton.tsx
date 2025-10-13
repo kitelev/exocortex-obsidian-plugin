@@ -48,14 +48,12 @@ export const ArchiveTaskButton: React.FC<ArchiveTaskButtonProps> = ({
   }
 
   return (
-    <div className="exocortex-archive-task-section">
-      <button
-        className="exocortex-archive-task-btn"
-        onClick={handleClick}
-        type="button"
-      >
-        To Archive
-      </button>
-    </div>
+    <button
+      className="exocortex-archive-task-btn"
+      onClick={handleClick}
+      type="button"
+    >
+      To Archive
+    </button>
   );
 };

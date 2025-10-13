@@ -34,14 +34,12 @@ export const CleanEmptyPropertiesButton: React.FC<
   }
 
   return (
-    <div className="exocortex-clean-properties-section">
-      <button
-        className="exocortex-clean-properties-btn"
-        onClick={handleClick}
-        type="button"
-      >
-        Clean Empty Properties
-      </button>
-    </div>
+    <button
+      className="exocortex-clean-properties-btn"
+      onClick={handleClick}
+      type="button"
+    >
+      Clean Empty Properties
+    </button>
   );
 };
