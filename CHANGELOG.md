@@ -1,3 +1,15 @@
+## [12.9.12] - 2025-10-13
+
+### Improved
+
+- **Horizontal Button Layout with Responsive Mobile Design**: Layout buttons (Create Task, Mark Done, Archive, Clean Properties, Repair Folder, etc.) now display horizontally in a single row with comfortable spacing between them, making better use of horizontal space. On mobile devices (screens < 768px), buttons automatically stack vertically for better touch accessibility. This improves visual organization and makes the Layout section cleaner and more intuitive.
+
+### Technical
+
+- Added `exocortex-buttons-container` CSS class with flexbox layout for horizontal button arrangement
+- Implemented responsive CSS media query for vertical stacking on mobile devices
+- Updated UI tests to reflect new button container structure
+
 ## [12.9.11] - 2025-10-13
 
 ### Fixed

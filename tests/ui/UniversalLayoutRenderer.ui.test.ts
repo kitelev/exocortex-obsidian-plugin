@@ -411,18 +411,25 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Verify order: button wrapper -> properties section -> relations
+      // Verify order: buttons container -> properties section -> relations
       const children = Array.from(container.children);
-      const buttonIndex = children.findIndex((el) =>
-        el.classList.contains("exocortex-create-task-wrapper"),
+      const buttonsContainerIndex = children.findIndex((el) =>
+        el.classList.contains("exocortex-buttons-container"),
       );
       const propertiesIndex = children.findIndex((el) =>
         el.classList.contains("exocortex-properties-section"),
       );
 
-      expect(buttonIndex).toBeGreaterThanOrEqual(0);
+      expect(buttonsContainerIndex).toBeGreaterThanOrEqual(0);
       expect(propertiesIndex).toBeGreaterThanOrEqual(0);
-      expect(buttonIndex).toBeLessThan(propertiesIndex);
+      expect(buttonsContainerIndex).toBeLessThan(propertiesIndex);
+
+      // Verify Create Task button is inside buttons container
+      const buttonsContainer = children[buttonsContainerIndex];
+      const createTaskButton = buttonsContainer.querySelector(
+        ".exocortex-create-task-wrapper",
+      );
+      expect(createTaskButton).toBeTruthy();
     });
   });
 
@@ -1065,22 +1072,37 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
+      // Verify buttons container is before properties
       const children = Array.from(container.children);
-      const cleanIndex = children.findIndex((el) =>
-        el.classList.contains("exocortex-clean-properties-wrapper"),
-      );
-      const repairIndex = children.findIndex((el) =>
-        el.classList.contains("exocortex-repair-folder-wrapper"),
+      const buttonsContainerIndex = children.findIndex((el) =>
+        el.classList.contains("exocortex-buttons-container"),
       );
       const propertiesIndex = children.findIndex((el) =>
         el.classList.contains("exocortex-properties-section"),
       );
 
-      expect(cleanIndex).toBeGreaterThanOrEqual(0);
-      expect(repairIndex).toBeGreaterThanOrEqual(0);
+      expect(buttonsContainerIndex).toBeGreaterThanOrEqual(0);
       expect(propertiesIndex).toBeGreaterThanOrEqual(0);
+      expect(buttonsContainerIndex).toBeLessThan(propertiesIndex);
+
+      // Verify both buttons exist inside the buttons container
+      const buttonsContainer = children[buttonsContainerIndex];
+      const buttonElements = Array.from(buttonsContainer.children);
+
+      const cleanButton = buttonElements.find((el) =>
+        el.classList.contains("exocortex-clean-properties-wrapper"),
+      );
+      const repairButton = buttonElements.find((el) =>
+        el.classList.contains("exocortex-repair-folder-wrapper"),
+      );
+
+      expect(cleanButton).toBeTruthy();
+      expect(repairButton).toBeTruthy();
+
+      // Verify repair button comes after clean button in horizontal layout
+      const cleanIndex = buttonElements.indexOf(cleanButton!);
+      const repairIndex = buttonElements.indexOf(repairButton!);
       expect(repairIndex).toBeGreaterThan(cleanIndex);
-      expect(repairIndex).toBeLessThan(propertiesIndex);
     });
   });
 
