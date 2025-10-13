@@ -3,6 +3,21 @@ import { TFile, Vault } from "obsidian";
 export class TaskStatusService {
   constructor(private vault: Vault) {}
 
+  /**
+   * Format date as ISO 8601 string in local timezone (not UTC)
+   * Format: YYYY-MM-DDTHH:mm:ss
+   */
+  private formatLocalTimestamp(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  }
+
   async startEffort(taskFile: TFile): Promise<void> {
     const fileContent = await this.vault.read(taskFile);
     const updatedContent = this.updateFrontmatterWithDoingStatus(fileContent);
@@ -11,7 +26,7 @@ export class TaskStatusService {
 
   private updateFrontmatterWithDoingStatus(content: string): string {
     const now = new Date();
-    const timestamp = now.toISOString().split(".")[0];
+    const timestamp = this.formatLocalTimestamp(now);
 
     const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
     const match = content.match(frontmatterRegex);
@@ -60,7 +75,7 @@ ${content}`;
 
   private updateFrontmatterWithDoneStatus(content: string): string {
     const now = new Date();
-    const timestamp = now.toISOString().split(".")[0];
+    const timestamp = this.formatLocalTimestamp(now);
 
     const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
     const match = content.match(frontmatterRegex);
