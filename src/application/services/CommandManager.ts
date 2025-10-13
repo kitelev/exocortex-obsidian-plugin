@@ -2,6 +2,7 @@ import { App, TFile, Notice } from "obsidian";
 import {
   CommandVisibilityContext,
   canCreateTask,
+  canCreateInstance,
   canStartEffort,
   canMarkDone,
   canArchiveTask,
@@ -45,6 +46,7 @@ export class CommandManager {
    */
   registerAllCommands(plugin: any): void {
     this.registerCreateTaskCommand(plugin);
+    this.registerCreateInstanceCommand(plugin);
     this.registerStartEffortCommand(plugin);
     this.registerMarkDoneCommand(plugin);
     this.registerArchiveTaskCommand(plugin);
@@ -96,6 +98,32 @@ export class CommandManager {
           this.executeCreateTask(file, context).catch((error) => {
             new Notice(`Failed to create task: ${error.message}`);
             console.error("Create task error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Create Instance" command
+   */
+  private registerCreateInstanceCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "create-instance",
+      name: "Create Instance",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canCreateInstance(context)) return false;
+
+        if (!checking) {
+          this.executeCreateInstance(file, context).catch((error) => {
+            new Notice(`Failed to create instance: ${error.message}`);
+            console.error("Create instance error:", error);
           });
         }
 
@@ -273,6 +301,37 @@ export class CommandManager {
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
     new Notice(`Task created: ${createdFile.basename}`);
+  }
+
+  private async executeCreateInstance(
+    file: TFile,
+    context: CommandVisibilityContext,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+
+    // Extract clean source class (ems__TaskPrototype)
+    const instanceClass = context.instanceClass;
+    const classes = Array.isArray(instanceClass)
+      ? instanceClass
+      : [instanceClass];
+    const firstClass = classes[0] || "";
+    const sourceClass = firstClass.replace(/\[\[|\]\]/g, "").trim();
+
+    const createdFile = await this.taskCreationService.createTask(
+      file,
+      metadata,
+      sourceClass,
+    );
+
+    // Open the created file in a new tab
+    const leaf = this.app.workspace.getLeaf("tab");
+    await leaf.openFile(createdFile);
+
+    // Switch focus to the new tab
+    this.app.workspace.setActiveLeaf(leaf, { focus: true });
+
+    new Notice(`Instance created: ${createdFile.basename}`);
   }
 
   private async executeStartEffort(file: TFile): Promise<void> {

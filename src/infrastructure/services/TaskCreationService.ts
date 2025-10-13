@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 const EFFORT_PROPERTY_MAP: Record<string, string> = {
   ems__Area: "ems__Effort_area",
   ems__Project: "ems__Effort_parent",
+  ems__TaskPrototype: "ems__Effort_prototype",
 };
 
 /**

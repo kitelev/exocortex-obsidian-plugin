@@ -1,3 +1,35 @@
+## [12.9.2] - 2025-10-13
+
+### Added
+
+- **Create Instance Button for Task Prototypes**: New "Create Instance" button for ems__TaskPrototype assets
+  - Button appears in layout for TaskPrototype assets (below properties table)
+  - Creates new ems__Task instances linked via `ems__Effort_prototype` property
+  - Available in both UI button and Command Palette ("Exocortex: Create Instance")
+  - Created task automatically opens in new tab with focus
+  - Follows same pattern as existing "Create Task" functionality for Areas/Projects
+
+### User Benefits
+
+- **Template-Based Task Creation**: Create tasks from predefined prototypes with single click
+- **Efficient Workflow**: TaskPrototypes serve as templates for recurring task types
+- **Instant Access**: New task opens immediately in new tab for editing
+- **Consistent UI**: "Create Instance" button matches existing plugin design
+- **Keyboard Support**: Accessible via Command Palette for power users
+- **Smart Visibility**: Button only appears for TaskPrototype assets
+
+### Technical
+
+- Added `ems__TaskPrototype` → `ems__Effort_prototype` mapping to EFFORT_PROPERTY_MAP
+- Created CreateInstanceButton React component with visibility logic
+- Added `canCreateInstance()` function to CommandVisibility domain layer
+- Integrated button into UniversalLayoutRenderer (positioned after Create Task button)
+- Added "create-instance" command to CommandManager with checkCallback pattern
+- Implemented `executeCreateInstance()` method with automatic tab switching
+- Added 6 unit tests for `canCreateInstance()` visibility logic
+- Added 8 component tests for CreateInstanceButton React component
+- Zero test failures - all 115 tests passing (109 unit + 107 component)
+
 ## [12.9.1] - 2025-10-13
 
 ### Fixed
