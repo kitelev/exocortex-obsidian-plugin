@@ -604,16 +604,12 @@ export class UniversalLayoutRenderer {
           // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
           const isModPressed = Keymap.isModEvent(event.nativeEvent as MouseEvent);
 
-          console.log('[Exocortex] Link click:', { path, isModPressed, metaKey: event.metaKey, ctrlKey: event.ctrlKey });
-
           if (isModPressed) {
             // Open in new tab - get a new leaf and open there
-            console.log('[Exocortex] Opening in NEW tab via getLeaf("tab")');
             const leaf = this.app.workspace.getLeaf('tab');
             await leaf.openLinkText(path, '');
           } else {
             // Open in current tab
-            console.log('[Exocortex] Opening in CURRENT tab via workspace');
             await this.app.workspace.openLinkText(path, "", false);
           }
         },
@@ -645,16 +641,12 @@ export class UniversalLayoutRenderer {
           // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
           const isModPressed = Keymap.isModEvent(event.nativeEvent as MouseEvent);
 
-          console.log('[Exocortex] Asset click:', { path, isModPressed, metaKey: event.metaKey, ctrlKey: event.ctrlKey });
-
           if (isModPressed) {
             // Open in new tab - get a new leaf and open there
-            console.log('[Exocortex] Opening in NEW tab via getLeaf("tab")');
             const leaf = this.app.workspace.getLeaf('tab');
             await leaf.openLinkText(path, '');
           } else {
             // Open in current tab
-            console.log('[Exocortex] Opening in CURRENT tab via workspace');
             await this.app.workspace.openLinkText(path, "", false);
           }
         },

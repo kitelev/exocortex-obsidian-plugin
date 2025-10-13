@@ -130,7 +130,7 @@
       "format": "esm"
     },
     "src/presentation/components/AssetRelationsTable.tsx": {
-      "bytes": 6558,
+      "bytes": 6366,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -141,7 +141,7 @@
       "format": "esm"
     },
     "src/presentation/components/AssetPropertiesTable.tsx": {
-      "bytes": 2447,
+      "bytes": 2364,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -693,7 +693,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 25428,
+      "bytes": 24871,
       "imports": [
         {
           "path": "obsidian",
