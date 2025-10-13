@@ -18,6 +18,21 @@ export class TaskCreationService {
   constructor(private vault: Vault) {}
 
   /**
+   * Format date as ISO 8601 string in local timezone (not UTC)
+   * Format: YYYY-MM-DDTHH:mm:ss
+   */
+  private formatLocalTimestamp(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  }
+
+  /**
    * Create a new Task file from an Area or Project asset
    * @param sourceFile The source file (Area or Project) from which to create the Task
    * @param sourceMetadata Frontmatter metadata from the source
@@ -72,7 +87,7 @@ export class TaskCreationService {
     sourceClass: string,
   ): Record<string, any> {
     const now = new Date();
-    const timestamp = now.toISOString().split(".")[0]; // Remove milliseconds
+    const timestamp = this.formatLocalTimestamp(now);
 
     // Extract isDefinedBy - handle both string and array formats
     let isDefinedBy = sourceMetadata.exo__Asset_isDefinedBy || '""';
@@ -110,10 +125,7 @@ export class TaskCreationService {
    */
   generateTaskFileName(): string {
     const now = new Date();
-    const timestamp = now
-      .toISOString()
-      .split(".")[0] // Remove milliseconds
-      .replace(/:/g, "-"); // Replace colons for filesystem compatibility
+    const timestamp = this.formatLocalTimestamp(now).replace(/:/g, "-"); // Replace colons for filesystem compatibility
 
     return `Task-${timestamp}.md`;
   }

@@ -1,3 +1,32 @@
+## [12.9.1] - 2025-10-13
+
+### Fixed
+
+- **Local Timezone for Timestamps**: All timestamps now use local device timezone instead of UTC
+  - Fixed `ems__Effort_startTimestamp` to use local time when starting effort
+  - Fixed `ems__Effort_endTimestamp` to use local time when marking task as done
+  - Fixed `exo__Asset_createdAt` to use local time when creating new tasks
+  - Fixed task filename generation to use local time
+  - **Format**: YYYY-MM-DDTHH:mm:ss in local timezone (e.g., 2025-10-13T15:30:45)
+  - **Previous behavior**: Used UTC time (e.g., 2025-10-13T12:30:45Z for UTC+3)
+
+### User Benefits
+
+- **Accurate Time Tracking**: Timestamps reflect actual local time when action was performed
+- **Timezone-Aware**: Respects user's device timezone settings
+- **Consistent Display**: Times match what user sees on their device clock
+- **Better Logging**: Task creation/completion times are immediately understandable
+- **No Confusion**: No need to mentally convert UTC to local time
+
+### Technical
+
+- Added `formatLocalTimestamp()` method to `TaskStatusService`
+- Added `formatLocalTimestamp()` method to `TaskCreationService`
+- Replaced all `toISOString()` calls with local timezone formatting
+- Uses `Date` methods: `getFullYear()`, `getMonth()`, `getDate()`, `getHours()`, `getMinutes()`, `getSeconds()`
+- Format implementation: manual padding with `padStart(2, "0")` for consistency
+- Zero test failures - all 202 tests passing (103 unit + 99 component + 42 UI)
+
 ## [12.9.0] - 2025-10-13
 
 ### Changed
