@@ -1,3 +1,18 @@
+## [12.9.16] - 2025-10-14
+
+### Added
+
+- **Custom Asset Labels**: Assets can now display custom labels instead of file names throughout the Layout interface. When an asset has the `exo__Asset_label` property defined, that label will be used for display in asset relations tables and property links, while still maintaining the correct file path for navigation. This allows for more user-friendly naming (e.g., displaying "Q4 Marketing Campaign" instead of "2024-q4-marketing-project.md") without changing the underlying file structure.
+
+### Technical
+
+- Added `getDisplayLabel()` helper in AssetRelationsTable component to check for `exo__Asset_label` in metadata
+- Implemented `getAssetLabel(path: string)` method in UniversalLayoutRenderer to look up labels from vault metadata
+- Extended AssetPropertiesTable interface with `getAssetLabel` callback prop for label resolution
+- Updated link rendering to display labels when available, falling back to file names
+- Added 8 component tests covering label display scenarios with various edge cases
+- Fully backward compatible - assets without labels display file names as before
+
 ## [12.9.15] - 2025-10-13
 
 ### Added

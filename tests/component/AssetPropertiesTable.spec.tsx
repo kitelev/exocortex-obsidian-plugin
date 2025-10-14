@@ -229,4 +229,77 @@ test.describe('AssetPropertiesTable Component', () => {
     const emptyRow = component.locator('tr:has(td:has-text("emptyArray"))');
     await expect(emptyRow).toBeVisible();
   });
+
+  test('should use getAssetLabel callback when provided', async ({ mount }) => {
+    const metadata = {
+      relatedAsset: '[[TaskFile]]',
+    };
+
+    const mockGetAssetLabel = (path: string) => {
+      if (path === 'TaskFile') return 'Custom Task Label';
+      return null;
+    };
+
+    const component = await mount(
+      <AssetPropertiesTable metadata={metadata} getAssetLabel={mockGetAssetLabel} />
+    );
+
+    // Component should render with the metadata
+    await expect(component.locator('text=relatedAsset')).toBeVisible();
+
+    // Link should be rendered (either with label or filename)
+    const link = component.locator('a.internal-link');
+    await expect(link).toBeVisible();
+  });
+
+  test('should display filename when getAssetLabel returns null', async ({ mount }) => {
+    const metadata = {
+      relatedAsset: '[[TaskFile]]',
+    };
+
+    const mockGetAssetLabel = (path: string) => {
+      return null; // No label available
+    };
+
+    const component = await mount(
+      <AssetPropertiesTable metadata={metadata} getAssetLabel={mockGetAssetLabel} />
+    );
+
+    // Check that filename is displayed when label is not available
+    await expect(component.locator('a.internal-link:has-text("TaskFile")')).toBeVisible();
+  });
+
+  test('should display filename when getAssetLabel callback is not provided', async ({ mount }) => {
+    const metadata = {
+      relatedAsset: '[[TaskFile]]',
+    };
+
+    const component = await mount(<AssetPropertiesTable metadata={metadata} />);
+
+    // Check that filename is displayed when callback is not provided
+    await expect(component.locator('a.internal-link:has-text("TaskFile")')).toBeVisible();
+  });
+
+  test('should handle array of wiki-links with getAssetLabel', async ({ mount }) => {
+    const metadata = {
+      relatedAssets: ['[[Task1]]', '[[Task2]]', '[[Task3]]'],
+    };
+
+    const mockGetAssetLabel = (path: string) => {
+      if (path === 'Task1') return 'Label 1';
+      if (path === 'Task2') return 'Label 2';
+      return null; // Task3 has no label
+    };
+
+    const component = await mount(
+      <AssetPropertiesTable metadata={metadata} getAssetLabel={mockGetAssetLabel} />
+    );
+
+    // Check that array is rendered
+    await expect(component.locator('text=relatedAssets')).toBeVisible();
+
+    // Check that multiple links are rendered
+    const links = component.locator('a.internal-link');
+    await expect(links).toHaveCount(3);
+  });
 });
