@@ -53,8 +53,8 @@ describe("CommandManager", () => {
         commandManager.registerAllCommands(mockPlugin);
       }).not.toThrow();
 
-      // Verify that addCommand was called for each command (8 commands total)
-      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(8);
+      // Verify that addCommand was called for each command (9 commands total)
+      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(9);
     });
 
     it("should register commands with correct IDs", () => {
@@ -83,6 +83,7 @@ describe("CommandManager", () => {
       expect(registeredCommands).toContain("archive-task");
       expect(registeredCommands).toContain("clean-properties");
       expect(registeredCommands).toContain("repair-folder");
+      expect(registeredCommands).toContain("reload-layout");
     });
 
     it("should register commands with correct names", () => {
@@ -111,28 +112,31 @@ describe("CommandManager", () => {
       expect(registeredNames).toContain("Archive Task");
       expect(registeredNames).toContain("Clean Empty Properties");
       expect(registeredNames).toContain("Repair Folder");
+      expect(registeredNames).toContain("Reload Layout");
     });
 
-    it("should register commands with checkCallback function", () => {
+    it("should register commands with checkCallback or callback function", () => {
       const mockApp = {
         vault: {},
         metadataCache: {},
         workspace: {},
       } as any;
 
-      const registeredCallbacks: any[] = [];
+      const registeredCommands: any[] = [];
       const mockPlugin = {
         addCommand: jest.fn((command: any) => {
-          registeredCallbacks.push(command.checkCallback);
+          registeredCommands.push(command);
         }),
       };
 
       const commandManager = new CommandManager(mockApp);
       commandManager.registerAllCommands(mockPlugin);
 
-      // Verify all commands have checkCallback functions
-      registeredCallbacks.forEach((callback) => {
-        expect(typeof callback).toBe("function");
+      // Verify all commands have either checkCallback or callback function
+      registeredCommands.forEach((command) => {
+        const hasCheckCallback = typeof command.checkCallback === "function";
+        const hasCallback = typeof command.callback === "function";
+        expect(hasCheckCallback || hasCallback).toBe(true);
       });
     });
   });

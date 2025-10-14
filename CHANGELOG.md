@@ -1,3 +1,16 @@
+## [12.9.15] - 2025-10-13
+
+### Added
+
+- **Manual Layout Reload Command**: Added "Exocortex: Reload Layout" command to Command Palette, allowing users to manually refresh the Layout display without reloading the entire plugin. This is useful when you want to see updated relations immediately after making changes to notes, without switching files. The command is always available and can be triggered via Command Palette (Ctrl/Cmd+P → "Reload Layout").
+
+### Technical
+
+- Added `registerReloadLayoutCommand()` method to CommandManager
+- Command uses callback pattern for loose coupling with plugin lifecycle
+- Updated unit tests to verify 9 registered commands (was 8)
+- Command ID: `reload-layout`, always available (no visibility conditions)
+
 ## [12.9.14] - 2025-10-13
 
 ### Fixed

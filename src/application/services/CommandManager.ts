@@ -33,6 +33,7 @@ export class CommandManager {
   private taskStatusService: TaskStatusService;
   private propertyCleanupService: PropertyCleanupService;
   private folderRepairService: FolderRepairService;
+  private reloadLayoutCallback?: () => void;
 
   constructor(private app: App) {
     this.taskCreationService = new TaskCreationService(app.vault);
@@ -45,7 +46,9 @@ export class CommandManager {
    * Register all commands in Obsidian Command Palette
    * Call this once during plugin initialization
    */
-  registerAllCommands(plugin: any): void {
+  registerAllCommands(plugin: any, reloadLayoutCallback?: () => void): void {
+    this.reloadLayoutCallback = reloadLayoutCallback;
+
     this.registerCreateTaskCommand(plugin);
     this.registerCreateInstanceCommand(plugin);
     this.registerStartEffortCommand(plugin);
@@ -54,6 +57,7 @@ export class CommandManager {
     this.registerArchiveTaskCommand(plugin);
     this.registerCleanPropertiesCommand(plugin);
     this.registerRepairFolderCommand(plugin);
+    this.registerReloadLayoutCommand(plugin);
   }
 
   /**
@@ -292,6 +296,25 @@ export class CommandManager {
         }
 
         return true;
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Reload Layout" command
+   * Always available - reloads the Layout display in current note
+   */
+  private registerReloadLayoutCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "reload-layout",
+      name: "Reload Layout",
+      callback: () => {
+        if (this.reloadLayoutCallback) {
+          this.reloadLayoutCallback();
+          new Notice("Layout reloaded");
+        } else {
+          new Notice("Failed to reload layout");
+        }
       },
     });
   }
