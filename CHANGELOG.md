@@ -1,3 +1,19 @@
+## [12.9.17] - 2025-10-14
+
+### Added
+
+- **Prototype Label Fallback**: When an asset doesn't have its own `exo__Asset_label` but has `ems__Effort_prototype` property pointing to a prototype with a label, the prototype's label will be used for display. This creates a template-based naming system where task instances automatically inherit display names from their prototypes. Example: A task without a label but linked to "Marketing Campaign Template" prototype will display as "Marketing Campaign Template" in all views. Asset's own label always takes priority over prototype label when both exist.
+
+### Technical
+
+- Extended `getAssetLabel()` method to check `ems__Effort_prototype` when asset has no label
+- Added prototype file lookup with wiki-link format handling (`[[path]]` → `path.md`)
+- Enriched relation metadata with resolved labels during `getAssetRelations()`
+- Added UI integration test for prototype label fallback scenario
+- Added component test verifying label display from metadata
+- Label resolution chain: asset label → prototype label → filename
+- Fully backward compatible with existing label-less assets
+
 ## [12.9.16] - 2025-10-14
 
 ### Added

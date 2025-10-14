@@ -193,9 +193,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       };
 
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
-      (mockApp.vault.getAbstractFileByPath as jest.Mock)
-        .mockReturnValueOnce(file1)
-        .mockReturnValueOnce(file2);
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
+        if (path === "task1.md") return file1;
+        if (path === "task2.md") return file2;
+        return null;
+      });
 
       await renderer.render("groupByProperty: true", container, {} as MarkdownPostProcessorContext);
 
@@ -1386,6 +1388,80 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       // Verify container is not empty but React internals are cleaned
       // (container still has DOM elements but React roots are unmounted)
       expect(container.querySelector(".exocortex-assets-relations")).toBeTruthy();
+    });
+  });
+
+  describe("Prototype Label Fallback", () => {
+    it("should display prototype label when asset has ems__Effort_prototype", async () => {
+      const currentFile = {
+        basename: "Current",
+        path: "current.md",
+      } as TFile;
+
+      const taskFile = {
+        basename: "Task-123",
+        path: "tasks/Task-123.md",
+        stat: { ctime: Date.now(), mtime: Date.now() },
+      } as TFile;
+
+      const prototypeFile = {
+        basename: "TaskPrototype",
+        path: "prototypes/TaskPrototype.md",
+      } as TFile;
+
+      // Mock workspace and vault
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      // Mock cache for current file
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: TFile) => {
+        if (file.path === "current.md") {
+          return { frontmatter: { exo__Instance_class: "ems__Area" } };
+        }
+        if (file.path === "tasks/Task-123.md") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Task",
+              ems__Effort_prototype: "[[TaskPrototype]]",
+              // No exo__Asset_label on task itself
+            },
+          };
+        }
+        if (file.path === "prototypes/TaskPrototype.md") {
+          return {
+            frontmatter: {
+              exo__Asset_label: "Marketing Campaign Template",
+            },
+          };
+        }
+        return null;
+      });
+
+      // Mock vault file lookup
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
+        if (path === "tasks/Task-123.md") return taskFile;
+        if (path === "TaskPrototype.md") return prototypeFile;
+        return null;
+      });
+
+      // Mock backlinks
+      mockApp.metadataCache.resolvedLinks = {
+        "tasks/Task-123.md": { "current.md": 1 },
+      };
+
+      // Render
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Check that prototype label is displayed (not filename)
+      const assetLinks = container.querySelectorAll("a.internal-link");
+      let foundPrototypeLabel = false;
+      assetLinks.forEach((link) => {
+        if (link.textContent === "Marketing Campaign Template") {
+          foundPrototypeLabel = true;
+        }
+      });
+
+      expect(foundPrototypeLabel).toBe(true);
     });
   });
 });

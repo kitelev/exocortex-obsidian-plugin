@@ -250,11 +250,18 @@ export class UniversalLayoutRenderer {
           file.basename,
         );
 
+        // Enrich metadata with resolved label (asset's own or prototype's)
+        const enrichedMetadata = { ...metadata };
+        const resolvedLabel = this.getAssetLabel(sourcePath);
+        if (resolvedLabel) {
+          enrichedMetadata.exo__Asset_label = resolvedLabel;
+        }
+
         const relation: AssetRelation = {
           file: sourceFile,
           path: sourcePath,
           title: sourceFile.basename,
-          metadata: metadata,
+          metadata: enrichedMetadata,
           propertyName: propertyName,
           isBodyLink: !propertyName, // If no property found, it's a body link
           created: sourceFile.stat.ctime,
@@ -706,7 +713,11 @@ export class UniversalLayoutRenderer {
   }
 
   /**
-   * Get asset label for display (exo__Asset_label or filename)
+   * Get asset label for display (exo__Asset_label or prototype's label)
+   * Fallback chain:
+   * 1. Asset's own exo__Asset_label
+   * 2. Prototype's exo__Asset_label (via ems__Effort_prototype)
+   * 3. null (caller should use filename)
    */
   private getAssetLabel(path: string): string | null {
     const file = this.app.vault.getAbstractFileByPath(path);
@@ -721,10 +732,34 @@ export class UniversalLayoutRenderer {
 
     const cache = this.app.metadataCache.getFileCache(file as TFile);
     const metadata = cache?.frontmatter || {};
-    const label = metadata.exo__Asset_label;
 
+    // Check asset's own label first
+    const label = metadata.exo__Asset_label;
     if (label && typeof label === "string" && label.trim() !== "") {
       return label;
+    }
+
+    // Fallback: check prototype's label
+    const prototypeRef = metadata.ems__Effort_prototype;
+    if (prototypeRef) {
+      // Extract clean path from wiki-link format [[path]] or plain path
+      const prototypePath = typeof prototypeRef === "string"
+        ? prototypeRef.replace(/^\[\[|\]\]$/g, "").trim()
+        : null;
+
+      if (prototypePath) {
+        // Try with .md extension
+        const prototypeFile = this.app.vault.getAbstractFileByPath(prototypePath + ".md");
+        if (prototypeFile && typeof prototypeFile === "object" && "path" in prototypeFile) {
+          const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile as TFile);
+          const prototypeMetadata = prototypeCache?.frontmatter || {};
+          const prototypeLabel = prototypeMetadata.exo__Asset_label;
+
+          if (prototypeLabel && typeof prototypeLabel === "string" && prototypeLabel.trim() !== "") {
+            return prototypeLabel;
+          }
+        }
+      }
     }
 
     return null;

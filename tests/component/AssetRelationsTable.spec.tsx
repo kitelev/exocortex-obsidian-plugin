@@ -257,4 +257,30 @@ test.describe('AssetRelationsTable Component', () => {
     // Check that filename is displayed when label is whitespace
     await expect(component.locator('text=Task 1')).toBeVisible();
   });
+
+  test('should display label from metadata directly (not from prototype)', async ({ mount }) => {
+    // Note: AssetRelationsTable receives metadata directly, not file paths
+    // Prototype label lookup happens in UniversalLayoutRenderer.getAssetLabel()
+    // This component always uses metadata.exo__Asset_label if present
+    const relationsWithLabel: AssetRelation[] = [
+      {
+        path: 'tasks/task1.md',
+        title: 'Task 1',
+        propertyName: 'assignedTo',
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: {
+          exo__Instance_class: 'ems__Task',
+          exo__Asset_label: 'Prototype Label',
+          ems__Effort_prototype: '[[TaskPrototype]]'
+        },
+      },
+    ];
+
+    const component = await mount(<AssetRelationsTable relations={relationsWithLabel} />);
+
+    // Component should display the label from metadata
+    await expect(component.locator('text=Prototype Label')).toBeVisible();
+  });
 });
