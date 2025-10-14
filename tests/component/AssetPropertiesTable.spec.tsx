@@ -302,4 +302,5 @@ test.describe('AssetPropertiesTable Component', () => {
     const links = component.locator('a.internal-link');
     await expect(links).toHaveCount(3);
   });
+
 });
