@@ -167,4 +167,94 @@ test.describe('AssetRelationsTable Component', () => {
     // Check sort indicator
     await expect(component.locator('th:has-text("exo__Instance_class")')).toContainText('↑');
   });
+
+  test('should display exo__Asset_label when present instead of filename', async ({ mount }) => {
+    const relationsWithLabels: AssetRelation[] = [
+      {
+        path: 'tasks/task1.md',
+        title: 'Task 1',
+        propertyName: 'assignedTo',
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { exo__Instance_class: 'ems__Task', exo__Asset_label: 'Custom Label 1' },
+      },
+      {
+        path: 'tasks/task2.md',
+        title: 'Task 2',
+        propertyName: 'assignedTo',
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { exo__Instance_class: 'ems__Task', exo__Asset_label: 'Custom Label 2' },
+      },
+    ];
+
+    const component = await mount(<AssetRelationsTable relations={relationsWithLabels} />);
+
+    // Check that labels are displayed instead of filenames
+    await expect(component.locator('text=Custom Label 1')).toBeVisible();
+    await expect(component.locator('text=Custom Label 2')).toBeVisible();
+
+    // Check that original filenames are NOT displayed
+    await expect(component.locator('text=Task 1')).not.toBeVisible();
+    await expect(component.locator('text=Task 2')).not.toBeVisible();
+  });
+
+  test('should display filename when exo__Asset_label is missing', async ({ mount }) => {
+    const relationsWithoutLabels: AssetRelation[] = [
+      {
+        path: 'tasks/task1.md',
+        title: 'Task 1',
+        propertyName: 'assignedTo',
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { exo__Instance_class: 'ems__Task' },
+      },
+    ];
+
+    const component = await mount(<AssetRelationsTable relations={relationsWithoutLabels} />);
+
+    // Check that filename is displayed when label is missing
+    await expect(component.locator('text=Task 1')).toBeVisible();
+  });
+
+  test('should display filename when exo__Asset_label is empty string', async ({ mount }) => {
+    const relationsWithEmptyLabel: AssetRelation[] = [
+      {
+        path: 'tasks/task1.md',
+        title: 'Task 1',
+        propertyName: 'assignedTo',
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { exo__Instance_class: 'ems__Task', exo__Asset_label: '' },
+      },
+    ];
+
+    const component = await mount(<AssetRelationsTable relations={relationsWithEmptyLabel} />);
+
+    // Check that filename is displayed when label is empty
+    await expect(component.locator('text=Task 1')).toBeVisible();
+  });
+
+  test('should display filename when exo__Asset_label is whitespace only', async ({ mount }) => {
+    const relationsWithWhitespaceLabel: AssetRelation[] = [
+      {
+        path: 'tasks/task1.md',
+        title: 'Task 1',
+        propertyName: 'assignedTo',
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { exo__Instance_class: 'ems__Task', exo__Asset_label: '   ' },
+      },
+    ];
+
+    const component = await mount(<AssetRelationsTable relations={relationsWithWhitespaceLabel} />);
+
+    // Check that filename is displayed when label is whitespace
+    await expect(component.locator('text=Task 1')).toBeVisible();
+  });
 });

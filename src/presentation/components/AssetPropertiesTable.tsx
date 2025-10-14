@@ -3,11 +3,13 @@ import React from "react";
 export interface AssetPropertiesTableProps {
   metadata: Record<string, any>;
   onLinkClick?: (path: string, event: React.MouseEvent) => void;
+  getAssetLabel?: (path: string) => string | null;
 }
 
 export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
   metadata,
   onLinkClick,
+  getAssetLabel,
 }) => {
   const isWikiLink = (value: any): boolean => {
     return typeof value === "string" && /\[\[.*?\]\]/.test(value);
@@ -33,6 +35,7 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
     if (typeof value === "string") {
       if (isWikiLink(value)) {
         const target = extractLinkTarget(value);
+        const displayLabel = getAssetLabel?.(target) || target;
         return (
           <a
             data-href={target}
@@ -44,7 +47,7 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
             }}
             style={{ cursor: 'pointer' }}
           >
-            {target}
+            {displayLabel}
           </a>
         );
       }

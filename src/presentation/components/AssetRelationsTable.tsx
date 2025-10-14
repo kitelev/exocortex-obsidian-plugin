@@ -64,6 +64,14 @@ const SingleTable: React.FC<SingleTableProps> = ({
     return String(instanceClass).replace(/^\[\[|\]\]$/g, "");
   };
 
+  const getDisplayLabel = (relation: AssetRelation): string => {
+    const label = relation.metadata?.exo__Asset_label;
+    if (label && typeof label === "string" && label.trim() !== "") {
+      return label;
+    }
+    return relation.title;
+  };
+
   const sortedItems = useMemo(() => {
     return [...items].sort((a, b) => {
       let aVal: unknown;
@@ -132,7 +140,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
                   className="internal-link"
                   style={{ cursor: 'pointer' }}
                 >
-                  {relation.title}
+                  {getDisplayLabel(relation)}
                 </a>
               </td>
               <td className="instance-class">

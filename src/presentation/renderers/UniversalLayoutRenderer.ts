@@ -616,6 +616,7 @@ export class UniversalLayoutRenderer {
             await this.app.workspace.openLinkText(path, "", false);
           }
         },
+        getAssetLabel: (path: string) => this.getAssetLabel(path),
       }),
     );
   }
@@ -702,6 +703,31 @@ export class UniversalLayoutRenderer {
       text: `Error: ${message}`,
       cls: "exocortex-error-message",
     });
+  }
+
+  /**
+   * Get asset label for display (exo__Asset_label or filename)
+   */
+  private getAssetLabel(path: string): string | null {
+    const file = this.app.vault.getAbstractFileByPath(path);
+    if (
+      !file ||
+      typeof file !== "object" ||
+      !("basename" in file) ||
+      !("path" in file)
+    ) {
+      return null;
+    }
+
+    const cache = this.app.metadataCache.getFileCache(file as TFile);
+    const metadata = cache?.frontmatter || {};
+    const label = metadata.exo__Asset_label;
+
+    if (label && typeof label === "string" && label.trim() !== "") {
+      return label;
+    }
+
+    return null;
   }
 
   /**
