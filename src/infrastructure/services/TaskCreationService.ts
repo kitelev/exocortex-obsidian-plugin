@@ -38,18 +38,21 @@ export class TaskCreationService {
    * @param sourceFile The source file (Area or Project) from which to create the Task
    * @param sourceMetadata Frontmatter metadata from the source
    * @param sourceClass The class of the source asset (ems__Area or ems__Project)
+   * @param label Optional display label for the asset (exo__Asset_label)
    * @returns The created Task file
    */
   async createTask(
     sourceFile: TFile,
     sourceMetadata: Record<string, any>,
     sourceClass: string,
+    label?: string,
   ): Promise<TFile> {
     const fileName = this.generateTaskFileName();
     const frontmatter = this.generateTaskFrontmatter(
       sourceMetadata,
       sourceFile.basename,
       sourceClass,
+      label,
     );
     const fileContent = this.buildFileContent(frontmatter);
 
@@ -81,11 +84,13 @@ export class TaskCreationService {
    * @param sourceMetadata Frontmatter metadata from source asset
    * @param sourceName Name of the source asset
    * @param sourceClass Class of source asset (determines effort property)
+   * @param label Optional display label for the asset (exo__Asset_label)
    */
   generateTaskFrontmatter(
     sourceMetadata: Record<string, any>,
     sourceName: string,
     sourceClass: string,
+    label?: string,
   ): Record<string, any> {
     const now = new Date();
     const timestamp = this.formatLocalTimestamp(now);
@@ -116,6 +121,11 @@ export class TaskCreationService {
     frontmatter["exo__Asset_createdAt"] = timestamp;
     frontmatter["exo__Instance_class"] = ['"[[ems__Task]]"'];
     frontmatter[effortProperty] = `"[[${sourceName}]]"`;
+
+    // Add label if provided and non-empty
+    if (label && label.trim() !== "") {
+      frontmatter["exo__Asset_label"] = label.trim();
+    }
 
     return frontmatter;
   }

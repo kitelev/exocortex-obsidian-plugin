@@ -1,3 +1,29 @@
+## [12.10.0] - 2025-10-15
+
+### Added
+
+- **Optional Label Input for Asset Creation**: When creating a new asset (Task or Instance) via "Create Task" or "Create Instance" commands, a modal dialog now appears asking for an optional display label (`exo__Asset_label`). This allows you to immediately give your new task a meaningful name like "Prepare Q4 Budget" instead of the default timestamp-based filename. The label input is completely optional - if you leave it blank or cancel the modal, the asset is created without a label (same behavior as before). Works for both Command Palette commands and Layout UI buttons.
+
+### User Experience
+
+- **Modal Dialog**: Clean, focused input experience with Enter to submit, Escape to cancel
+- **Optional Input**: Leave blank to create asset without label (no change from previous behavior)
+- **Keyboard Shortcuts**: Enter submits, Escape cancels
+- **Whitespace Handling**: Input is automatically trimmed, whitespace-only input treated as empty
+- **Universal Support**: Works identically for Command Palette and Layout button workflows
+
+### Technical
+
+- Created `LabelInputModal` component extending Obsidian's Modal API
+- Updated `TaskCreationService.createTask()` to accept optional `label` parameter
+- Modified `CommandManager` to show modal before asset creation in both "Create Task" and "Create Instance" commands
+- Updated `UniversalLayoutRenderer` button handlers to show modal before task/instance creation
+- Added CSS styles for modal dialog with theme-aware variables
+- Updated TaskCreationService tests with 5 new test cases for label handling
+- Fixed UI test configuration to properly mock Modal class from obsidian package
+- All 301 tests passing (127 unit + 44 UI + 130 component)
+- Bundle size impact: +1.2kb for modal code
+
 ## [12.9.17] - 2025-10-14
 
 ### Added

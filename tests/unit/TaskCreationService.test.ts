@@ -210,6 +210,80 @@ describe("TaskCreationService", () => {
         "ems__Effort_parent",
       ]);
     });
+
+    it("should include exo__Asset_label when label parameter is provided", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "My Area",
+        "ems__Area",
+        "Test Label",
+      );
+
+      expect(frontmatter.exo__Asset_label).toBe("Test Label");
+    });
+
+    it("should NOT include exo__Asset_label when label parameter is empty string", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "My Area",
+        "ems__Area",
+        "",
+      );
+
+      expect(frontmatter.exo__Asset_label).toBeUndefined();
+    });
+
+    it("should NOT include exo__Asset_label when label parameter is undefined", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "My Area",
+        "ems__Area",
+      );
+
+      expect(frontmatter.exo__Asset_label).toBeUndefined();
+    });
+
+    it("should trim whitespace from label parameter", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "My Area",
+        "ems__Area",
+        "  Test Label  ",
+      );
+
+      expect(frontmatter.exo__Asset_label).toBe("Test Label");
+    });
+
+    it("should NOT include exo__Asset_label when label is only whitespace", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "My Area",
+        "ems__Area",
+        "   ",
+      );
+
+      expect(frontmatter.exo__Asset_label).toBeUndefined();
+    });
   });
 
   describe("buildFileContent", () => {

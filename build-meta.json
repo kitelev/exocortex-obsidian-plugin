@@ -130,7 +130,7 @@
       "format": "esm"
     },
     "src/presentation/components/AssetRelationsTable.tsx": {
-      "bytes": 6366,
+      "bytes": 6625,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -141,7 +141,7 @@
       "format": "esm"
     },
     "src/presentation/components/AssetPropertiesTable.tsx": {
-      "bytes": 2364,
+      "bytes": 2502,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -320,6 +320,17 @@
           "path": "src/domain/commands/CommandVisibility.ts",
           "kind": "import-statement",
           "original": "../../domain/commands/CommandVisibility"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/modals/LabelInputModal.ts": {
+      "bytes": 2219,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
         }
       ],
       "format": "esm"
@@ -644,7 +655,7 @@
       "format": "esm"
     },
     "src/infrastructure/services/TaskCreationService.ts": {
-      "bytes": 5180,
+      "bytes": 5525,
       "imports": [
         {
           "path": "obsidian",
@@ -693,7 +704,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 25114,
+      "bytes": 27967,
       "imports": [
         {
           "path": "obsidian",
@@ -771,6 +782,11 @@
           "original": "../components/RepairFolderButton"
         },
         {
+          "path": "src/presentation/modals/LabelInputModal.ts",
+          "kind": "import-statement",
+          "original": "../modals/LabelInputModal"
+        },
+        {
           "path": "src/infrastructure/services/TaskCreationService.ts",
           "kind": "import-statement",
           "original": "../../infrastructure/services/TaskCreationService"
@@ -794,7 +810,7 @@
       "format": "esm"
     },
     "src/application/services/CommandManager.ts": {
-      "bytes": 13503,
+      "bytes": 14084,
       "imports": [
         {
           "path": "obsidian",
@@ -825,6 +841,11 @@
           "path": "src/infrastructure/services/FolderRepairService.ts",
           "kind": "import-statement",
           "original": "../../infrastructure/services/FolderRepairService"
+        },
+        {
+          "path": "src/presentation/modals/LabelInputModal.ts",
+          "kind": "import-statement",
+          "original": "../../presentation/modals/LabelInputModal"
         }
       ],
       "format": "esm"
@@ -889,6 +910,11 @@
           "path": "obsidian",
           "kind": "require-call",
           "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
         }
       ],
       "exports": [],
@@ -925,7 +951,7 @@
           "bytesInOutput": 1749
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 9164
+          "bytesInOutput": 10069
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -937,10 +963,10 @@
           "bytesInOutput": 284
         },
         "src/presentation/components/AssetRelationsTable.tsx": {
-          "bytesInOutput": 2769
+          "bytesInOutput": 2886
         },
         "src/presentation/components/AssetPropertiesTable.tsx": {
-          "bytesInOutput": 1297
+          "bytesInOutput": 1340
         },
         "src/presentation/components/CreateTaskButton.tsx": {
           "bytesInOutput": 454
@@ -969,6 +995,9 @@
         "src/presentation/components/RepairFolderButton.tsx": {
           "bytesInOutput": 420
         },
+        "src/presentation/modals/LabelInputModal.ts": {
+          "bytesInOutput": 1209
+        },
         "node_modules/uuid/dist/esm-browser/stringify.js": {
           "bytesInOutput": 310
         },
@@ -985,7 +1014,7 @@
           "bytesInOutput": 0
         },
         "src/infrastructure/services/TaskCreationService.ts": {
-          "bytesInOutput": 1457
+          "bytesInOutput": 1511
         },
         "src/infrastructure/services/TaskStatusService.ts": {
           "bytesInOutput": 2784
@@ -997,10 +1026,10 @@
           "bytesInOutput": 844
         },
         "src/application/services/CommandManager.ts": {
-          "bytesInOutput": 5532
+          "bytesInOutput": 5686
         }
       },
-      "bytes": 226019
+      "bytes": 228501
     }
   }
 }
