@@ -249,8 +249,8 @@ export class UniversalLayoutRenderer {
           continue;
         }
 
-        // Determine how this asset references the current file
-        const propertyName = this.findReferencingProperty(
+        // Find ALL properties that reference the current file
+        const referencingProperties = this.findAllReferencingProperties(
           metadata,
           file.basename,
         );
@@ -262,18 +262,35 @@ export class UniversalLayoutRenderer {
           enrichedMetadata.exo__Asset_label = resolvedLabel;
         }
 
-        const relation: AssetRelation = {
-          file: sourceFile,
-          path: sourcePath,
-          title: sourceFile.basename,
-          metadata: enrichedMetadata,
-          propertyName: propertyName,
-          isBodyLink: !propertyName, // If no property found, it's a body link
-          created: sourceFile.stat.ctime,
-          modified: sourceFile.stat.mtime,
-        };
-
-        relations.push(relation);
+        // Create a separate relation for EACH property that references this file
+        if (referencingProperties.length > 0) {
+          for (const propertyName of referencingProperties) {
+            const relation: AssetRelation = {
+              file: sourceFile,
+              path: sourcePath,
+              title: sourceFile.basename,
+              metadata: enrichedMetadata,
+              propertyName: propertyName,
+              isBodyLink: false,
+              created: sourceFile.stat.ctime,
+              modified: sourceFile.stat.mtime,
+            };
+            relations.push(relation);
+          }
+        } else {
+          // No property found, it's a body link
+          const relation: AssetRelation = {
+            file: sourceFile,
+            path: sourcePath,
+            title: sourceFile.basename,
+            metadata: enrichedMetadata,
+            propertyName: undefined,
+            isBodyLink: true,
+            created: sourceFile.stat.ctime,
+            modified: sourceFile.stat.mtime,
+          };
+          relations.push(relation);
+        }
       }
     }
 
@@ -841,6 +858,24 @@ export class UniversalLayoutRenderer {
   /**
    * Helper method to find referencing property
    */
+  /**
+   * Find ALL properties that reference the current file
+   * Returns array of property names (can be multiple if same file is referenced via different properties)
+   */
+  private findAllReferencingProperties(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    metadata: Record<string, any>,
+    currentFileName: string,
+  ): string[] {
+    const properties: string[] = [];
+    for (const [key, value] of Object.entries(metadata)) {
+      if (this.containsReference(value, currentFileName)) {
+        properties.push(key);
+      }
+    }
+    return properties;
+  }
+
   private findReferencingProperty(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     metadata: Record<string, any>,

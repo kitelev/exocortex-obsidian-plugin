@@ -125,10 +125,12 @@ const SingleTable: React.FC<SingleTableProps> = ({
         </tr>
       </thead>
       <tbody>
-        {sortedItems.map((relation) => {
+        {sortedItems.map((relation, index) => {
           const instanceClass = getInstanceClass(relation.metadata);
+          // Use unique key: path + propertyName to handle multiple relations from same asset via different properties
+          const uniqueKey = `${relation.path}-${relation.propertyName || 'body'}-${index}`;
           return (
-            <tr key={relation.path} data-path={relation.path}>
+            <tr key={uniqueKey} data-path={relation.path}>
               <td className="asset-name">
                 <a
                   data-href={relation.path}
