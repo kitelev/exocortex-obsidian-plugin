@@ -130,7 +130,7 @@
       "format": "esm"
     },
     "src/presentation/components/AssetRelationsTable.tsx": {
-      "bytes": 6625,
+      "bytes": 6839,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -152,7 +152,7 @@
       "format": "esm"
     },
     "src/domain/commands/CommandVisibility.ts": {
-      "bytes": 8302,
+      "bytes": 8410,
       "imports": [],
       "format": "esm"
     },
@@ -725,7 +725,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 29042,
+      "bytes": 30308,
       "imports": [
         {
           "path": "obsidian",
@@ -835,8 +835,40 @@
       ],
       "format": "esm"
     },
+    "src/infrastructure/services/SupervisionCreationService.ts": {
+      "bytes": 2770,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/index.js",
+          "kind": "import-statement",
+          "original": "uuid"
+        },
+        {
+          "path": "../../presentation/modals/SupervisionInputModal",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/modals/SupervisionInputModal.ts": {
+      "bytes": 2997,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
     "src/application/services/CommandManager.ts": {
-      "bytes": 15010,
+      "bytes": 16473,
       "imports": [
         {
           "path": "obsidian",
@@ -869,9 +901,19 @@
           "original": "../../infrastructure/services/FolderRepairService"
         },
         {
+          "path": "src/infrastructure/services/SupervisionCreationService.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/services/SupervisionCreationService"
+        },
+        {
           "path": "src/presentation/modals/LabelInputModal.ts",
           "kind": "import-statement",
           "original": "../../presentation/modals/LabelInputModal"
+        },
+        {
+          "path": "src/presentation/modals/SupervisionInputModal.ts",
+          "kind": "import-statement",
+          "original": "../../presentation/modals/SupervisionInputModal"
         }
       ],
       "format": "esm"
@@ -941,6 +983,11 @@
           "path": "obsidian",
           "kind": "require-call",
           "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
         }
       ],
       "exports": [],
@@ -977,7 +1024,7 @@
           "bytesInOutput": 1749
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 10615
+          "bytesInOutput": 10917
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -989,7 +1036,7 @@
           "bytesInOutput": 284
         },
         "src/presentation/components/AssetRelationsTable.tsx": {
-          "bytesInOutput": 2886
+          "bytesInOutput": 2930
         },
         "src/presentation/components/AssetPropertiesTable.tsx": {
           "bytesInOutput": 1340
@@ -998,7 +1045,7 @@
           "bytesInOutput": 454
         },
         "src/domain/commands/CommandVisibility.ts": {
-          "bytesInOutput": 2079
+          "bytesInOutput": 2132
         },
         "src/presentation/components/CreateInstanceButton.tsx": {
           "bytesInOutput": 466
@@ -1055,10 +1102,16 @@
           "bytesInOutput": 844
         },
         "src/application/services/CommandManager.ts": {
-          "bytesInOutput": 6096
+          "bytesInOutput": 6714
+        },
+        "src/infrastructure/services/SupervisionCreationService.ts": {
+          "bytesInOutput": 1819
+        },
+        "src/presentation/modals/SupervisionInputModal.ts": {
+          "bytesInOutput": 2146
         }
       },
-      "bytes": 230883
+      "bytes": 235865
     }
   }
 }
