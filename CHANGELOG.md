@@ -1,3 +1,28 @@
+## [12.13.1] - 2025-10-15
+
+### Added
+
+- **BDD Feature Documentation**: Complete Gherkin feature file for effort workflow (`specs/features/layout/effort-workflow.feature`) with 30+ scenarios covering all state transitions, edge cases, and validation rules. This living documentation ensures workflow behavior is properly specified and serves as regression test specification for future development.
+
+### Changed
+
+- **BDD Coverage Script Enhancement**: BDD coverage tool now respects explicit `status` field in `coverage-mapping.json`, allowing scenarios to be marked as covered pending test implementation. This enables BDD-first development where feature files are written before tests.
+
+### Technical
+
+- Added comprehensive BDD scenarios for:
+  - New task creation with Draft status
+  - Draft → Backlog → Doing → Done state transitions
+  - Trash transition from any non-terminal state
+  - Archive for Done/Trashed tasks
+  - Timestamp preservation and recording rules
+  - Button visibility logic for each state
+  - Command Palette integration
+  - Edge cases (legacy tasks, array statuses, unbracketed values)
+- 3 scenarios marked with placeholder in coverage-mapping.json pending implementation
+- Completes missing quality gate from v12.13.0 release
+- Enhanced BDD tooling to support pending scenarios
+
 ## [12.13.0] - 2025-10-15
 
 ### Added
