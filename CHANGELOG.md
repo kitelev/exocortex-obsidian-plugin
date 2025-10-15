@@ -1,3 +1,23 @@
+## [12.11.2] - 2025-10-15
+
+### Added
+
+- **Archive Trashed Tasks**: Archive button now appears for tasks with `ems__EffortStatusTrashed` status in addition to `ems__EffortStatusDone`. This allows you to archive cancelled/abandoned efforts alongside completed ones, keeping your workspace clean. The "Archive Task" command and button work identically for both Done and Trashed efforts, making it easy to move finished work (whether completed or abandoned) out of active view while preserving it for reference.
+
+### User Experience
+
+- **Archive Button Visibility**: "Archive" button now shows for both Done and Trashed Tasks/Projects (if not already archived)
+- **Command Palette**: "Exocortex: Archive Task" command available for both Done and Trashed efforts
+- **Consistent Behavior**: Archiving works identically regardless of whether effort was completed (Done) or cancelled (Trashed)
+- **Clean Workspace**: Easy to move both completed and abandoned efforts to archive
+
+### Technical
+
+- Updated `canArchiveTask()` visibility function to check for both `ems__EffortStatusDone` and `ems__EffortStatusTrashed` statuses
+- Added 3 new tests for Trashed task/project archiving scenarios
+- All 318 tests passing (142 unit + 45 UI + 131 component)
+- Followed TDD/BDD paradigm: red phase (failing test) → green phase (fix) → refactor
+
 ## [12.11.1] - 2025-10-15
 
 ### Fixed

@@ -259,15 +259,16 @@ export function canTrashEffort(context: CommandVisibilityContext): boolean {
 
 /**
  * Can execute "Archive Task" command
- * Available for: Task/Project with Done status and not archived
+ * Available for: Task/Project with Done or Trashed status and not archived
  */
 export function canArchiveTask(context: CommandVisibilityContext): boolean {
   if (!isEffort(context.instanceClass)) return false;
 
   const isDone = hasStatus(context.currentStatus, "ems__EffortStatusDone");
+  const isTrashed = hasStatus(context.currentStatus, "ems__EffortStatusTrashed");
   const archived = isAssetArchived(context.isArchived);
 
-  return isDone && !archived;
+  return (isDone || isTrashed) && !archived;
 }
 
 /**
