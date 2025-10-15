@@ -53,8 +53,8 @@ describe("CommandManager", () => {
         commandManager.registerAllCommands(mockPlugin);
       }).not.toThrow();
 
-      // Verify that addCommand was called for each command (11 commands total)
-      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(11);
+      // Verify that addCommand was called for each command (12 commands total)
+      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(12);
     });
 
     it("should register commands with correct IDs", () => {

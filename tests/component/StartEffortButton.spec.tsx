@@ -5,11 +5,11 @@ import { TFile } from "obsidian";
 const mockFile = { path: "test-task.md", basename: "test-task" } as TFile;
 
 test.describe("StartEffortButton Component", () => {
-  test("should render button for Task without status", async ({ mount }) => {
+  test("should render button for Task with Backlog status", async ({ mount }) => {
     const component = await mount(
       <StartEffortButton
         instanceClass="[[ems__Task]]"
-        currentStatus={null}
+        currentStatus="[[ems__EffortStatusBacklog]]"
         sourceFile={mockFile}
         onStartEffort={async () => {}}
       />,
@@ -20,20 +20,20 @@ test.describe("StartEffortButton Component", () => {
     await expect(component).toHaveText("Start Effort");
   });
 
-  test("should render button for Task with non-Doing/Done status", async ({
+  test("should NOT render button for Task without status", async ({
     mount,
   }) => {
     const component = await mount(
       <StartEffortButton
         instanceClass="[[ems__Task]]"
-        currentStatus="[[ems__EffortStatusActive]]"
+        currentStatus={null}
         sourceFile={mockFile}
         onStartEffort={async () => {}}
       />,
     );
 
-    // Component IS the button (no wrapper div)
-    await expect(component).toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should NOT render button for Task with Doing status", async ({
@@ -84,7 +84,24 @@ test.describe("StartEffortButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should render button for Project without status", async ({
+  test("should render button for Project with Backlog status", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <StartEffortButton
+        instanceClass="[[ems__Project]]"
+        currentStatus="[[ems__EffortStatusBacklog]]"
+        sourceFile={mockFile}
+        onStartEffort={async () => {}}
+      />,
+    );
+
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("Start Effort");
+  });
+
+  test("should NOT render button for Project without status", async ({
     mount,
   }) => {
     const component = await mount(
@@ -96,25 +113,8 @@ test.describe("StartEffortButton Component", () => {
       />,
     );
 
-    // Component IS the button (no wrapper div)
-    await expect(component).toBeVisible();
-    await expect(component).toHaveText("Start Effort");
-  });
-
-  test("should render button for Project with non-Doing/Done status", async ({
-    mount,
-  }) => {
-    const component = await mount(
-      <StartEffortButton
-        instanceClass="[[ems__Project]]"
-        currentStatus="[[ems__EffortStatusActive]]"
-        sourceFile={mockFile}
-        onStartEffort={async () => {}}
-      />,
-    );
-
-    // Component IS the button (no wrapper div)
-    await expect(component).toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should NOT render button for Project with Doing status", async ({
@@ -169,7 +169,7 @@ test.describe("StartEffortButton Component", () => {
     const component = await mount(
       <StartEffortButton
         instanceClass="ems__Task"
-        currentStatus={null}
+        currentStatus="[[ems__EffortStatusBacklog]]"
         sourceFile={mockFile}
         onStartEffort={async () => {}}
       />,
@@ -202,7 +202,7 @@ test.describe("StartEffortButton Component", () => {
     const component = await mount(
       <StartEffortButton
         instanceClass="[[ems__Task]]"
-        currentStatus={null}
+        currentStatus="[[ems__EffortStatusBacklog]]"
         sourceFile={mockFile}
         onStartEffort={onStartEffort}
       />,
@@ -218,7 +218,7 @@ test.describe("StartEffortButton Component", () => {
     const component = await mount(
       <StartEffortButton
         instanceClass={["[[ems__Task]]", "[[SomeOtherClass]]"]}
-        currentStatus={null}
+        currentStatus="[[ems__EffortStatusBacklog]]"
         sourceFile={mockFile}
         onStartEffort={async () => {}}
       />,
@@ -232,7 +232,7 @@ test.describe("StartEffortButton Component", () => {
     const component = await mount(
       <StartEffortButton
         instanceClass={["[[SomeOtherClass]]", "[[ems__Project]]"]}
-        currentStatus={null}
+        currentStatus="[[ems__EffortStatusBacklog]]"
         sourceFile={mockFile}
         onStartEffort={async () => {}}
       />,
@@ -276,7 +276,7 @@ test.describe("StartEffortButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should render button when status is empty string", async ({
+  test("should NOT render button when status is empty string", async ({
     mount,
   }) => {
     const component = await mount(
@@ -288,7 +288,7 @@ test.describe("StartEffortButton Component", () => {
       />,
     );
 
-    // Component IS the button (no wrapper div)
-    await expect(component).toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 });

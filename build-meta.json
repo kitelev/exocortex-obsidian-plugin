@@ -152,7 +152,7 @@
       "format": "esm"
     },
     "src/domain/commands/CommandVisibility.ts": {
-      "bytes": 8410,
+      "bytes": 8275,
       "imports": [],
       "format": "esm"
     },
@@ -179,6 +179,27 @@
     },
     "src/presentation/components/CreateInstanceButton.tsx": {
       "bytes": 1346,
+      "imports": [
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "import-statement",
+          "original": "react"
+        },
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/commands/CommandVisibility.ts",
+          "kind": "import-statement",
+          "original": "../../domain/commands/CommandVisibility"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/components/MoveToBacklogButton.tsx": {
+      "bytes": 1194,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -676,7 +697,7 @@
       "format": "esm"
     },
     "src/infrastructure/services/TaskCreationService.ts": {
-      "bytes": 5525,
+      "bytes": 5597,
       "imports": [
         {
           "path": "obsidian",
@@ -692,7 +713,7 @@
       "format": "esm"
     },
     "src/infrastructure/services/TaskStatusService.ts": {
-      "bytes": 7797,
+      "bytes": 9332,
       "imports": [
         {
           "path": "obsidian",
@@ -725,7 +746,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 30308,
+      "bytes": 31423,
       "imports": [
         {
           "path": "obsidian",
@@ -771,6 +792,11 @@
           "path": "src/presentation/components/CreateInstanceButton.tsx",
           "kind": "import-statement",
           "original": "../components/CreateInstanceButton"
+        },
+        {
+          "path": "src/presentation/components/MoveToBacklogButton.tsx",
+          "kind": "import-statement",
+          "original": "../components/MoveToBacklogButton"
         },
         {
           "path": "src/presentation/components/StartEffortButton.tsx",
@@ -868,7 +894,7 @@
       "format": "esm"
     },
     "src/application/services/CommandManager.ts": {
-      "bytes": 16473,
+      "bytes": 17463,
       "imports": [
         {
           "path": "obsidian",
@@ -1024,7 +1050,7 @@
           "bytesInOutput": 1749
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 10917
+          "bytesInOutput": 11482
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -1045,10 +1071,13 @@
           "bytesInOutput": 454
         },
         "src/domain/commands/CommandVisibility.ts": {
-          "bytesInOutput": 2132
+          "bytesInOutput": 2075
         },
         "src/presentation/components/CreateInstanceButton.tsx": {
           "bytesInOutput": 466
+        },
+        "src/presentation/components/MoveToBacklogButton.tsx": {
+          "bytesInOutput": 463
         },
         "src/presentation/components/StartEffortButton.tsx": {
           "bytesInOutput": 460
@@ -1090,10 +1119,10 @@
           "bytesInOutput": 0
         },
         "src/infrastructure/services/TaskCreationService.ts": {
-          "bytesInOutput": 1511
+          "bytesInOutput": 1563
         },
         "src/infrastructure/services/TaskStatusService.ts": {
-          "bytesInOutput": 3526
+          "bytesInOutput": 4298
         },
         "src/infrastructure/services/PropertyCleanupService.ts": {
           "bytesInOutput": 970
@@ -1102,7 +1131,7 @@
           "bytesInOutput": 844
         },
         "src/application/services/CommandManager.ts": {
-          "bytesInOutput": 6714
+          "bytesInOutput": 7192
         },
         "src/infrastructure/services/SupervisionCreationService.ts": {
           "bytesInOutput": 1819
@@ -1111,7 +1140,7 @@
           "bytesInOutput": 2146
         }
       },
-      "bytes": 235865
+      "bytes": 238138
     }
   }
 }
