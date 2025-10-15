@@ -47,12 +47,14 @@ export class TaskCreationService {
     sourceClass: string,
     label?: string,
   ): Promise<TFile> {
-    const fileName = this.generateTaskFileName();
+    const uid = uuidv4();
+    const fileName = `${uid}.md`;
     const frontmatter = this.generateTaskFrontmatter(
       sourceMetadata,
       sourceFile.basename,
       sourceClass,
       label,
+      uid,
     );
     const fileContent = this.buildFileContent(frontmatter);
 
@@ -79,18 +81,20 @@ export class TaskCreationService {
   /**
    * Generate frontmatter for new Task
    * Inherits exo__Asset_isDefinedBy from source
-   * Generates new UUID and timestamp
+   * Uses provided UUID and generates timestamp
    * Creates link to source via appropriate effort property based on source class
    * @param sourceMetadata Frontmatter metadata from source asset
    * @param sourceName Name of the source asset
    * @param sourceClass Class of source asset (determines effort property)
    * @param label Optional display label for the asset (exo__Asset_label)
+   * @param uid UUID for the asset
    */
   generateTaskFrontmatter(
     sourceMetadata: Record<string, any>,
     sourceName: string,
     sourceClass: string,
     label?: string,
+    uid?: string,
   ): Record<string, any> {
     const now = new Date();
     const timestamp = this.formatLocalTimestamp(now);
@@ -117,7 +121,7 @@ export class TaskCreationService {
 
     const frontmatter: Record<string, any> = {};
     frontmatter["exo__Asset_isDefinedBy"] = ensureQuoted(isDefinedBy);
-    frontmatter["exo__Asset_uid"] = uuidv4();
+    frontmatter["exo__Asset_uid"] = uid || uuidv4();
     frontmatter["exo__Asset_createdAt"] = timestamp;
     frontmatter["exo__Instance_class"] = ['"[[ems__Task]]"'];
     frontmatter["ems__Effort_status"] = '"[[ems__EffortStatusDraft]]"';
@@ -132,6 +136,7 @@ export class TaskCreationService {
   }
 
   /**
+   * @deprecated No longer used - filename is now based on UUID
    * Generate filename for new Task using timestamp
    * Format: Task-2025-10-04T16-23-50.md
    */

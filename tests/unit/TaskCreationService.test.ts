@@ -53,7 +53,14 @@ describe("TaskCreationService", () => {
       expect(frontmatter.exo__Asset_createdAt).toBeDefined();
     });
 
-    it("should generate valid UUIDv4 for exo__Asset_uid", () => {
+    it("should use provided UUID for exo__Asset_uid", () => {
+      const testUid = "12345678-1234-4123-8123-123456789abc";
+      const frontmatter = service.generateTaskFrontmatter({}, "Test Area", "ems__Area", undefined, testUid);
+
+      expect(frontmatter.exo__Asset_uid).toBe(testUid);
+    });
+
+    it("should generate valid UUIDv4 when no UUID provided", () => {
       const frontmatter = service.generateTaskFrontmatter({}, "Test Area", "ems__Area");
 
       // UUIDv4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
@@ -344,8 +351,8 @@ describe("TaskCreationService", () => {
     });
   });
 
-  describe("generateTaskFileName", () => {
-    it("should generate filename with timestamp format", () => {
+  describe("generateTaskFileName (deprecated)", () => {
+    it("should generate filename with timestamp format (backward compatibility)", () => {
       const fileName = service.generateTaskFileName();
 
       // Format: Task-YYYY-MM-DDTHH-MM-SS.md
@@ -366,6 +373,55 @@ describe("TaskCreationService", () => {
       const fileName = service.generateTaskFileName();
 
       expect(fileName.endsWith(".md")).toBe(true);
+    });
+  });
+
+  describe("createTask", () => {
+    it("should create file with UUID-based filename", async () => {
+      const mockSourceFile = {
+        basename: "Test Area",
+        parent: { path: "03 Knowledge/user" },
+      } as any;
+
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!user]]"',
+      };
+
+      await service.createTask(mockSourceFile, sourceMetadata, "ems__Area");
+
+      expect(mockVault.create).toHaveBeenCalledTimes(1);
+      const [filePath] = mockVault.create.mock.calls[0];
+
+      // Should match: 03 Knowledge/user/{uuid}.md
+      expect(filePath).toMatch(/^03 Knowledge\/user\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/);
+    });
+
+    it("should use same UUID for filename and exo__Asset_uid", async () => {
+      const mockSourceFile = {
+        basename: "Test Area",
+        parent: { path: "03 Knowledge/user" },
+      } as any;
+
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!user]]"',
+      };
+
+      await service.createTask(mockSourceFile, sourceMetadata, "ems__Area");
+
+      const [filePath, content] = mockVault.create.mock.calls[0];
+
+      // Extract UUID from filepath
+      const filenameMatch = filePath.match(/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.md$/);
+      expect(filenameMatch).not.toBeNull();
+      const filenameUid = filenameMatch![1];
+
+      // Extract UUID from frontmatter
+      const uidMatch = content.match(/exo__Asset_uid: ([0-9a-f-]+)/);
+      expect(uidMatch).not.toBeNull();
+      const frontmatterUid = uidMatch![1];
+
+      // They should match
+      expect(filenameUid).toBe(frontmatterUid);
     });
   });
 });

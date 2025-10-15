@@ -1,3 +1,25 @@
+## [12.13.3] - 2025-10-15
+
+### Changed
+
+- **UUID-Based Asset Filenames**: All created assets (Tasks, Supervisions) now use UUID-based filenames matching their `exo__Asset_uid` property. This ensures consistent asset identification throughout the system. File naming convention changed from `Task-{timestamp}.md` to `{uuid}.md`. The human-readable name is stored in `exo__Asset_label` property as before.
+
+### Benefits
+
+- Consistent asset identification across filename and metadata
+- Simplified asset lookup and management
+- Better semantic alignment with asset ontology
+- Prevents filename collisions and improves reliability
+
+### Technical
+
+- Updated `TaskCreationService.ts` to generate UUID-based filenames
+- Enhanced `generateTaskFrontmatter()` to accept optional `uid` parameter for consistency
+- Deprecated `generateTaskFileName()` method (maintained for backward compatibility)
+- Added 7 comprehensive tests validating UUID consistency
+- `SupervisionCreationService.ts` already used UUID-based naming (no changes needed)
+- 100% test pass rate: 311 tests passing (164 unit + 6 UI + 141 component)
+
 ## [12.13.2] - 2025-10-15
 
 ### Fixed
