@@ -1,3 +1,18 @@
+## [12.15.1] - 2025-10-15
+
+### Fixed
+
+**Layout Duplication Prevention**: Fixed critical bug where clicking any button in Layout (Create Task, Mark Done, Archive, etc.) caused Relations and Properties sections to duplicate. The refresh mechanism now properly clears and re-renders the entire layout without creating nested duplicates.
+
+- Users can now click buttons multiple times without visual glitches
+- Layout remains clean and properly structured after any button action
+- Improved user experience with consistent, predictable layout behavior
+
+**Technical Details:**
+- Updated `UniversalLayoutRenderer` to maintain a reference to the root container
+- Modified `refresh()` method to use saved root container instead of passed element
+- Ensures proper cleanup and re-render cycle without nested duplication
+
 ## [12.15.0] - 2025-10-15
 
 ### New Feature: Shift Effort Dates with One Click
