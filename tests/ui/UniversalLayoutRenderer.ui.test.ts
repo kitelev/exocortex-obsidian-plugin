@@ -1464,4 +1464,79 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(foundPrototypeLabel).toBe(true);
     });
   });
+
+  describe("Multiple Relations via Different Properties", () => {
+    it("should render multiple relations when same asset links via different properties", async () => {
+      // BUG: Asset A links to Asset B via property1 and property2
+      // Asset B should show BOTH relations, but currently shows only one
+      const currentFile = {
+        basename: "AssetB",
+        path: "assets/AssetB.md",
+      } as TFile;
+
+      const assetAFile = {
+        basename: "AssetA",
+        path: "assets/AssetA.md",
+        stat: { ctime: Date.now(), mtime: Date.now() },
+      } as TFile;
+
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      // AssetA has TWO properties linking to AssetB
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: TFile) => {
+        if (file.path === "assets/AssetB.md") {
+          return { frontmatter: { exo__Instance_class: "ems__Task" } };
+        }
+        if (file.path === "assets/AssetA.md") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Task",
+              property1: "[[AssetB]]",
+              property2: "[[AssetB]]",
+            },
+          };
+        }
+        return null;
+      });
+
+      // Mock backlinks - AssetA links to AssetB
+      mockApp.metadataCache.resolvedLinks = {
+        "assets/AssetA.md": { "assets/AssetB.md": 2 },
+      };
+
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(assetAFile);
+
+      // Render with groupByProperty to see both relations
+      await renderer.render("groupByProperty: true", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Should show 2 groups (property1 and property2)
+      const groups = container.querySelectorAll(".relation-group");
+      expect(groups.length).toBe(2);
+
+      // Should have headers for both properties
+      const groupHeaders = container.querySelectorAll(".group-header");
+      const headerTexts = Array.from(groupHeaders).map((h) => h.textContent);
+      expect(headerTexts).toContain("property1");
+      expect(headerTexts).toContain("property2");
+
+      // Each group should have 1 row with AssetA
+      const property1Group = Array.from(groups).find((g) => g.querySelector(".group-header")?.textContent === "property1");
+      const property2Group = Array.from(groups).find((g) => g.querySelector(".group-header")?.textContent === "property2");
+
+      expect(property1Group).toBeTruthy();
+      expect(property2Group).toBeTruthy();
+
+      const property1Rows = property1Group?.querySelectorAll("tbody tr");
+      const property2Rows = property2Group?.querySelectorAll("tbody tr");
+
+      expect(property1Rows?.length).toBe(1);
+      expect(property2Rows?.length).toBe(1);
+
+      // Both should show AssetA
+      expect(property1Rows?.[0]?.textContent).toContain("AssetA");
+      expect(property2Rows?.[0]?.textContent).toContain("AssetA");
+    });
+  });
 });

@@ -1,3 +1,24 @@
+## [12.11.1] - 2025-10-15
+
+### Fixed
+
+- **Multiple Relations via Different Properties**: Fixed bug where if Asset A links to Asset B through multiple properties (e.g., `property1: "[[B]]"` and `property2: "[[B]]"`), the Layout in Asset B would only show one relation instead of both. Now all relations are correctly displayed, with each property creating a separate entry in the grouped relations view. This fix ensures complete visibility of all inter-asset relationships, making it easier to understand complex knowledge graphs where the same asset is referenced multiple times via different properties.
+
+### User Experience
+
+- **Complete Relation Visibility**: All backlinks now appear in Layout, even when the same asset references you through multiple properties
+- **Grouped Display**: When using `groupByProperty: true`, each property gets its own group showing the referencing asset
+- **Accurate Knowledge Graph**: No more missing relationships - every link is now visible
+
+### Technical
+
+- Added `findAllReferencingProperties()` method to return array of ALL properties containing references (previously `findReferencingProperty()` returned only first match)
+- Modified `getAssetRelations()` to create separate relation entry for each property that references current file
+- Changed React key in `AssetRelationsTable` from `relation.path` to `${relation.path}-${relation.propertyName}-${index}` to handle duplicate paths with different properties
+- Added 2 new tests (1 UI integration, 1 component) specifically for multiple relations bug
+- All 315 tests passing (139 unit + 45 UI + 131 component)
+- Followed TDD/BDD paradigm: red phase (failing test) → green phase (fix) → refactor
+
 ## [12.11.0] - 2025-10-15
 
 ### Added

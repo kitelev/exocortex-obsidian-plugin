@@ -283,4 +283,47 @@ test.describe('AssetRelationsTable Component', () => {
     // Component should display the label from metadata
     await expect(component.locator('text=Prototype Label')).toBeVisible();
   });
+
+  test('should display multiple relations when same asset links via multiple properties', async ({ mount }) => {
+    // Bug reproduction: Asset A links to Asset B via property1 and property2
+    // Asset B should show both relations, not just one
+    const duplicateRelations: AssetRelation[] = [
+      {
+        path: 'assets/AssetA.md',
+        title: 'Asset A',
+        propertyName: 'property1',
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { exo__Instance_class: 'ems__Task' },
+      },
+      {
+        path: 'assets/AssetA.md',
+        title: 'Asset A',
+        propertyName: 'property2',
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { exo__Instance_class: 'ems__Task' },
+      },
+    ];
+
+    const component = await mount(
+      <AssetRelationsTable relations={duplicateRelations} groupByProperty={true} />
+    );
+
+    // Should render 2 separate groups
+    await expect(component.locator('.relation-group')).toHaveCount(2);
+
+    // Both properties should be shown
+    await expect(component.locator('.group-header:has-text("property1")')).toBeVisible();
+    await expect(component.locator('.group-header:has-text("property2")')).toBeVisible();
+
+    // Each group should have 1 row
+    const property1Group = component.locator('.relation-group:has(.group-header:has-text("property1"))');
+    await expect(property1Group.locator('tbody tr')).toHaveCount(1);
+
+    const property2Group = component.locator('.relation-group:has(.group-header:has-text("property2"))');
+    await expect(property2Group.locator('tbody tr')).toHaveCount(1);
+  });
 });
