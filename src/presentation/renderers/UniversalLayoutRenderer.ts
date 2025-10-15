@@ -942,7 +942,12 @@ export class UniversalLayoutRenderer {
    * 3. null (caller should use filename)
    */
   private getAssetLabel(path: string): string | null {
-    const file = this.app.vault.getAbstractFileByPath(path);
+    let file = this.app.vault.getAbstractFileByPath(path);
+
+    if (!file && !path.endsWith('.md')) {
+      file = this.app.vault.getAbstractFileByPath(path + '.md');
+    }
+
     if (
       !file ||
       typeof file !== "object" ||
