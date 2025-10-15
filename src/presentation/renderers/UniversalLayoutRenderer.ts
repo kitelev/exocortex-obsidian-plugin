@@ -10,6 +10,8 @@ import { CreateInstanceButton } from "../components/CreateInstanceButton";
 import { MoveToBacklogButton } from "../components/MoveToBacklogButton";
 import { StartEffortButton } from "../components/StartEffortButton";
 import { PlanOnTodayButton } from "../components/PlanOnTodayButton";
+import { ShiftDayBackwardButton } from "../components/ShiftDayBackwardButton";
+import { ShiftDayForwardButton } from "../components/ShiftDayForwardButton";
 import { MarkTaskDoneButton } from "../components/MarkTaskDoneButton";
 import { TrashEffortButton } from "../components/TrashEffortButton";
 import { ArchiveTaskButton } from "../components/ArchiveTaskButton";
@@ -172,6 +174,12 @@ export class UniversalLayoutRenderer {
 
       // Render Plan on Today button (for Task/Project assets)
       await this.renderPlanOnTodayButton(buttonsContainer, currentFile);
+
+      // Render Shift Day Backward button (for Task/Project assets with ems__Effort_day)
+      await this.renderShiftDayBackwardButton(buttonsContainer, currentFile);
+
+      // Render Shift Day Forward button (for Task/Project assets with ems__Effort_day)
+      await this.renderShiftDayForwardButton(buttonsContainer, currentFile);
 
       // Render Mark Task Done button (for Task assets)
       await this.renderMarkTaskDoneButton(buttonsContainer, currentFile);
@@ -631,6 +639,64 @@ export class UniversalLayoutRenderer {
           await this.refresh(el);
 
           this.logger.info(`Planned on today: ${file.path}`);
+        },
+      }),
+    );
+  }
+
+  private async renderShiftDayBackwardButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+
+    const container = el.createDiv({ cls: "exocortex-shift-day-backward-wrapper" });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(ShiftDayBackwardButton, {
+        instanceClass,
+        metadata,
+        sourceFile: file,
+        onShiftDayBackward: async () => {
+          await this.taskStatusService.shiftDayBackward(file);
+
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          await this.refresh(el);
+
+          this.logger.info(`Day shifted backward: ${file.path}`);
+        },
+      }),
+    );
+  }
+
+  private async renderShiftDayForwardButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+
+    const container = el.createDiv({ cls: "exocortex-shift-day-forward-wrapper" });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(ShiftDayForwardButton, {
+        instanceClass,
+        metadata,
+        sourceFile: file,
+        onShiftDayForward: async () => {
+          await this.taskStatusService.shiftDayForward(file);
+
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          await this.refresh(el);
+
+          this.logger.info(`Day shifted forward: ${file.path}`);
         },
       }),
     );

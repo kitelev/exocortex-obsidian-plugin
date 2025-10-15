@@ -12,6 +12,8 @@ import {
   canCleanProperties,
   canRepairFolder,
   canRenameToUid,
+  canShiftDayBackward,
+  canShiftDayForward,
 } from "../../domain/commands/CommandVisibility";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 import { TaskStatusService } from "../../infrastructure/services/TaskStatusService";
@@ -65,6 +67,8 @@ export class CommandManager {
     this.registerMoveToBacklogCommand(plugin);
     this.registerStartEffortCommand(plugin);
     this.registerPlanOnTodayCommand(plugin);
+    this.registerShiftDayBackwardCommand(plugin);
+    this.registerShiftDayForwardCommand(plugin);
     this.registerMarkDoneCommand(plugin);
     this.registerTrashCommand(plugin);
     this.registerArchiveTaskCommand(plugin);
@@ -223,6 +227,58 @@ export class CommandManager {
           this.executePlanOnToday(file).catch((error) => {
             new Notice(`Failed to plan on today: ${error.message}`);
             console.error("Plan on today error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Shift Day Backward" command
+   */
+  private registerShiftDayBackwardCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "shift-day-backward",
+      name: "Shift Day Backward",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canShiftDayBackward(context)) return false;
+
+        if (!checking) {
+          this.executeShiftDayBackward(file).catch((error) => {
+            new Notice(`Failed to shift day backward: ${error.message}`);
+            console.error("Shift day backward error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Shift Day Forward" command
+   */
+  private registerShiftDayForwardCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "shift-day-forward",
+      name: "Shift Day Forward",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canShiftDayForward(context)) return false;
+
+        if (!checking) {
+          this.executeShiftDayForward(file).catch((error) => {
+            new Notice(`Failed to shift day forward: ${error.message}`);
+            console.error("Shift day forward error:", error);
           });
         }
 
@@ -531,6 +587,16 @@ export class CommandManager {
   private async executePlanOnToday(file: TFile): Promise<void> {
     await this.taskStatusService.planOnToday(file);
     new Notice(`Planned on today: ${file.basename}`);
+  }
+
+  private async executeShiftDayBackward(file: TFile): Promise<void> {
+    await this.taskStatusService.shiftDayBackward(file);
+    new Notice(`Day shifted backward: ${file.basename}`);
+  }
+
+  private async executeShiftDayForward(file: TFile): Promise<void> {
+    await this.taskStatusService.shiftDayForward(file);
+    new Notice(`Day shifted forward: ${file.basename}`);
   }
 
   private async executeMarkDone(file: TFile): Promise<void> {

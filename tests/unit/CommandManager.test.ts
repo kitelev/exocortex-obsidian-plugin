@@ -53,8 +53,8 @@ describe("CommandManager", () => {
         commandManager.registerAllCommands(mockPlugin);
       }).not.toThrow();
 
-      // Verify that addCommand was called for each command (13 commands total)
-      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(13);
+      // Verify that addCommand was called for each command (15 commands total)
+      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(15);
     });
 
     it("should register commands with correct IDs", () => {
@@ -77,8 +77,11 @@ describe("CommandManager", () => {
       // Verify all expected command IDs are registered
       expect(registeredCommands).toContain("create-task");
       expect(registeredCommands).toContain("create-instance");
+      expect(registeredCommands).toContain("move-to-backlog");
       expect(registeredCommands).toContain("start-effort");
       expect(registeredCommands).toContain("plan-on-today");
+      expect(registeredCommands).toContain("shift-day-backward");
+      expect(registeredCommands).toContain("shift-day-forward");
       expect(registeredCommands).toContain("mark-done");
       expect(registeredCommands).toContain("trash-effort");
       expect(registeredCommands).toContain("archive-task");
@@ -109,9 +112,13 @@ describe("CommandManager", () => {
       // Verify all expected command names are registered
       expect(registeredNames).toContain("Create Task");
       expect(registeredNames).toContain("Create Instance");
+      expect(registeredNames).toContain("Move to Backlog");
       expect(registeredNames).toContain("Start Effort");
       expect(registeredNames).toContain("Plan on today");
+      expect(registeredNames).toContain("Shift Day Backward");
+      expect(registeredNames).toContain("Shift Day Forward");
       expect(registeredNames).toContain("Mark as Done");
+      expect(registeredNames).toContain("Trash");
       expect(registeredNames).toContain("Archive Task");
       expect(registeredNames).toContain("Clean Empty Properties");
       expect(registeredNames).toContain("Repair Folder");
