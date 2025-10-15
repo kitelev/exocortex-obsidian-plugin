@@ -608,6 +608,42 @@ describe("CommandVisibility", () => {
       };
       expect(canArchiveTask(context)).toBe(false);
     });
+
+    it("should return true for Trashed Task not archived", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: "[[ems__EffortStatusTrashed]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canArchiveTask(context)).toBe(true);
+    });
+
+    it("should return false for Trashed Task already archived", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: "[[ems__EffortStatusTrashed]]",
+        metadata: {},
+        isArchived: true,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canArchiveTask(context)).toBe(false);
+    });
+
+    it("should return true for Trashed Project not archived", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Project]]",
+        currentStatus: "[[ems__EffortStatusTrashed]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canArchiveTask(context)).toBe(true);
+    });
   });
 
   describe("canCleanProperties", () => {
