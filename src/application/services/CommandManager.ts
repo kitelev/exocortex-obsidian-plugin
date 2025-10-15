@@ -11,12 +11,14 @@ import {
   canArchiveTask,
   canCleanProperties,
   canRepairFolder,
+  canRenameToUid,
 } from "../../domain/commands/CommandVisibility";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 import { TaskStatusService } from "../../infrastructure/services/TaskStatusService";
 import { PropertyCleanupService } from "../../infrastructure/services/PropertyCleanupService";
 import { FolderRepairService } from "../../infrastructure/services/FolderRepairService";
 import { SupervisionCreationService } from "../../infrastructure/services/SupervisionCreationService";
+import { RenameToUidService } from "../../infrastructure/services/RenameToUidService";
 import { LabelInputModal } from "../../presentation/modals/LabelInputModal";
 import { SupervisionInputModal } from "../../presentation/modals/SupervisionInputModal";
 
@@ -39,6 +41,7 @@ export class CommandManager {
   private propertyCleanupService: PropertyCleanupService;
   private folderRepairService: FolderRepairService;
   private supervisionCreationService: SupervisionCreationService;
+  private renameToUidService: RenameToUidService;
   private reloadLayoutCallback?: () => void;
 
   constructor(private app: App) {
@@ -47,6 +50,7 @@ export class CommandManager {
     this.propertyCleanupService = new PropertyCleanupService(app.vault);
     this.folderRepairService = new FolderRepairService(app.vault, app);
     this.supervisionCreationService = new SupervisionCreationService(app.vault);
+    this.renameToUidService = new RenameToUidService(app.vault);
   }
 
   /**
@@ -66,6 +70,7 @@ export class CommandManager {
     this.registerArchiveTaskCommand(plugin);
     this.registerCleanPropertiesCommand(plugin);
     this.registerRepairFolderCommand(plugin);
+    this.registerRenameToUidCommand(plugin);
     this.registerReloadLayoutCommand(plugin);
     this.registerAddSupervisionCommand(plugin);
   }
@@ -363,6 +368,33 @@ export class CommandManager {
   }
 
   /**
+   * Register "Exocortex: Rename to UID" command
+   * Shows when filename doesn't match exo__Asset_uid
+   */
+  private registerRenameToUidCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "rename-to-uid",
+      name: "Rename to UID",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canRenameToUid(context, file.basename)) return false;
+
+        if (!checking) {
+          this.executeRenameToUid(file, context.metadata).catch((error) => {
+            new Notice(`Failed to rename: ${error.message}`);
+            console.error("Rename to UID error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
+  /**
    * Register "Exocortex: Reload Layout" command
    * Always available - reloads the Layout display in current note
    */
@@ -564,5 +596,17 @@ export class CommandManager {
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
     new Notice(`Supervision created: ${createdFile.basename}`);
+  }
+
+  private async executeRenameToUid(
+    file: TFile,
+    metadata: Record<string, any>,
+  ): Promise<void> {
+    const oldName = file.basename;
+    const uid = metadata.exo__Asset_uid;
+
+    await this.renameToUidService.renameToUid(file, metadata);
+
+    new Notice(`Renamed "${oldName}" to "${uid}"`);
   }
 }
