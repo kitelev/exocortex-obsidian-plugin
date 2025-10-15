@@ -883,6 +883,7 @@ export class UniversalLayoutRenderer {
             await this.app.workspace.openLinkText(path, "", false);
           }
         },
+        getAssetLabel: (path: string) => this.getAssetLabel(path),
       }),
     );
   }

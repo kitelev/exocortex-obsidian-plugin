@@ -18,6 +18,7 @@ export interface AssetRelationsTableProps {
   sortOrder?: "asc" | "desc";
   showProperties?: string[];
   onAssetClick?: (path: string, event: React.MouseEvent) => void;
+  getAssetLabel?: (path: string) => string | null;
 }
 
 interface SortState {
@@ -31,6 +32,7 @@ interface SingleTableProps {
   sortOrder: "asc" | "desc";
   showProperties: string[];
   onAssetClick?: (path: string, event: React.MouseEvent) => void;
+  getAssetLabel?: (path: string) => string | null;
 }
 
 const SingleTable: React.FC<SingleTableProps> = ({
@@ -39,6 +41,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
   sortOrder,
   showProperties,
   onAssetClick,
+  getAssetLabel,
 }) => {
   const [sortState, setSortState] = useState<SortState>({
     column: sortBy,
@@ -70,6 +73,52 @@ const SingleTable: React.FC<SingleTableProps> = ({
       return label;
     }
     return relation.title;
+  };
+
+  const isWikiLink = (value: any): boolean => {
+    return typeof value === "string" && /\[\[.*?\]\]/.test(value);
+  };
+
+  const extractLinkTarget = (value: string): string => {
+    return value.replace(/^\[\[|\]\]$/g, "");
+  };
+
+  const renderPropertyValue = (value: any): React.ReactNode => {
+    if (value === null || value === undefined) {
+      return "-";
+    }
+
+    if (typeof value === "string" && isWikiLink(value)) {
+      const target = extractLinkTarget(value);
+      const label = getAssetLabel?.(target);
+      const displayText = label || target;
+
+      return (
+        <a
+          data-href={target}
+          className="internal-link"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onAssetClick?.(target, e);
+          }}
+          style={{ cursor: 'pointer' }}
+        >
+          {displayText}
+        </a>
+      );
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((item, index) => (
+        <React.Fragment key={index}>
+          {renderPropertyValue(item)}
+          {index < value.length - 1 ? ", " : ""}
+        </React.Fragment>
+      ));
+    }
+
+    return String(value);
   };
 
   const sortedItems = useMemo(() => {
@@ -164,7 +213,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
                 )}
               </td>
               {showProperties.map((prop) => (
-                <td key={prop}>{String(relation.metadata[prop] || "-")}</td>
+                <td key={prop}>{renderPropertyValue(relation.metadata[prop])}</td>
               ))}
             </tr>
           );
@@ -181,6 +230,7 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
   sortOrder = "asc",
   showProperties = [],
   onAssetClick,
+  getAssetLabel,
 }) => {
   const groupedRelations = useMemo(() => {
     if (!groupByProperty) {
@@ -212,6 +262,7 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
               sortOrder={sortOrder}
               showProperties={showProperties}
               onAssetClick={onAssetClick}
+              getAssetLabel={getAssetLabel}
             />
           </div>
         ))}
@@ -227,6 +278,7 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
         sortOrder={sortOrder}
         showProperties={showProperties}
         onAssetClick={onAssetClick}
+        getAssetLabel={getAssetLabel}
       />
     </div>
   );
