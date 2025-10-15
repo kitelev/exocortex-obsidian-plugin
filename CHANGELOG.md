@@ -1,3 +1,35 @@
+## [12.14.1] - 2025-10-15
+
+### UI Enhancement: Rename to UID Button in Layout
+
+The "Rename to UID" feature now includes a visual button that automatically appears in the Layout view of all assets when the filename doesn't match the exo__Asset_uid property.
+
+**What's New:**
+- Visual button appears directly in the note's Layout section
+- No need to open Command Palette for filename normalization
+- Button only shows when filename needs normalization (filename ≠ UID)
+- One-click access to rename functionality
+- Consistent with other Layout action buttons (Archive, Trash, Repair Folder, etc.)
+
+**User Experience:**
+- **Before**: Users had to use Command Palette (Ctrl/Cmd+P → "Rename to UID")
+- **After**: Visual button appears automatically in Layout when needed
+
+**Benefits:**
+- **Improved discoverability** - users see the option when it's relevant
+- **Faster workflow** - one click instead of multiple steps
+- **Consistent UI** - matches existing Layout button patterns
+- **Visual indicator** - button presence signals filename mismatch
+
+This enhancement makes the UUID-based filename normalization feature introduced in v12.14.0 more accessible and user-friendly.
+
+**Technical:**
+- New `RenameToUidButton` React component with icon and styling
+- Integrated `renderRenameToUidButton()` method in `UniversalLayoutRenderer`
+- Button automatically checks filename vs UID and shows/hides accordingly
+- 100% test pass rate: 358 tests (172 unit + 45 UI + 141 component)
+- Bundle size impact: +587 bytes (234.9kb total)
+
 ## [12.14.0] - 2025-10-15
 
 ### New Feature: Rename to UID Command
