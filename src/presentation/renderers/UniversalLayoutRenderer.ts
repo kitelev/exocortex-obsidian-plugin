@@ -13,6 +13,7 @@ import { MarkTaskDoneButton } from "../components/MarkTaskDoneButton";
 import { ArchiveTaskButton } from "../components/ArchiveTaskButton";
 import { CleanEmptyPropertiesButton } from "../components/CleanEmptyPropertiesButton";
 import { RepairFolderButton } from "../components/RepairFolderButton";
+import { LabelInputModal } from "../modals/LabelInputModal";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 import { TaskStatusService } from "../../infrastructure/services/TaskStatusService";
 import { PropertyCleanupService } from "../../infrastructure/services/PropertyCleanupService";
@@ -320,6 +321,16 @@ export class UniversalLayoutRenderer {
         metadata,
         sourceFile: file,
         onTaskCreate: async () => {
+          // Show modal and wait for user input
+          const label = await new Promise<string | null>((resolve) => {
+            new LabelInputModal(this.app, resolve).open();
+          });
+
+          // User cancelled
+          if (label === null) {
+            return;
+          }
+
           const sourceClass = getCleanSourceClass();
 
           // Create the task file with appropriate effort property
@@ -327,6 +338,7 @@ export class UniversalLayoutRenderer {
             file,
             metadata,
             sourceClass,
+            label,
           );
 
           // Open the created file in a new tab
@@ -373,6 +385,16 @@ export class UniversalLayoutRenderer {
         metadata,
         sourceFile: file,
         onInstanceCreate: async () => {
+          // Show modal and wait for user input
+          const label = await new Promise<string | null>((resolve) => {
+            new LabelInputModal(this.app, resolve).open();
+          });
+
+          // User cancelled
+          if (label === null) {
+            return;
+          }
+
           const sourceClass = getCleanSourceClass();
 
           // Create the instance (task) from prototype with ems__Effort_prototype property
@@ -380,6 +402,7 @@ export class UniversalLayoutRenderer {
             file,
             metadata,
             sourceClass,
+            label,
           );
 
           // Open the created file in a new tab
