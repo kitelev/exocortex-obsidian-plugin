@@ -53,8 +53,8 @@ describe("CommandManager", () => {
         commandManager.registerAllCommands(mockPlugin);
       }).not.toThrow();
 
-      // Verify that addCommand was called for each command (10 commands total)
-      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(10);
+      // Verify that addCommand was called for each command (11 commands total)
+      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(11);
     });
 
     it("should register commands with correct IDs", () => {
@@ -85,6 +85,7 @@ describe("CommandManager", () => {
       expect(registeredCommands).toContain("clean-properties");
       expect(registeredCommands).toContain("repair-folder");
       expect(registeredCommands).toContain("reload-layout");
+      expect(registeredCommands).toContain("add-supervision");
     });
 
     it("should register commands with correct names", () => {
@@ -114,6 +115,7 @@ describe("CommandManager", () => {
       expect(registeredNames).toContain("Clean Empty Properties");
       expect(registeredNames).toContain("Repair Folder");
       expect(registeredNames).toContain("Reload Layout");
+      expect(registeredNames).toContain("Add Supervision");
     });
 
     it("should register commands with checkCallback or callback function", () => {

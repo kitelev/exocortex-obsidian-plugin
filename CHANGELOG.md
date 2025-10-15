@@ -1,3 +1,36 @@
+## [12.12.0] - 2025-10-15
+
+### Added
+
+- **Supervision Command**: New "Add Supervision" command allows you to quickly capture supervision entries for self-reflection and psychological work. Access it via Command Palette ("Exocortex: Add Supervision") to open a structured input modal with 6 fields based on the supervision framework: situation/trigger, emotions, thoughts, behavior, short-term consequences, and long-term consequences. Each supervision entry is automatically saved as a FleetingNote in your "01 Inbox/" folder with proper metadata (type: Supervision, owned by you) and structured content, making it easy to process later into your knowledge base or reflect on patterns over time.
+
+### User Experience
+
+- **Quick Access**: "Exocortex: Add Supervision" command in Command Palette (Ctrl/Cmd+P)
+- **Structured Input**: Modal dialog with 6 Russian-labeled fields for comprehensive self-reflection
+- **Field Labels**:
+  - Ситуация/триггер (Situation/Trigger)
+  - Эмоции (Emotions)
+  - Мысли (Thoughts)
+  - Поведение (Behavior)
+  - Краткосрочные последствия поведения (Short-term consequences of behavior)
+  - Долгосрочные последствия поведения (Long-term consequences of behavior)
+- **Automatic Save**: Creates FleetingNote with UUID filename in "01 Inbox/" folder
+- **Proper Metadata**: Automatically tagged with Supervision type and ownership
+- **Empty Values Preserved**: All fields included in note even if left empty, providing consistent structure
+
+### Technical
+
+- Added `SupervisionInputModal` component with 6 text area inputs and Russian labels
+- Added `SupervisionCreationService` for creating supervision FleetingNotes with proper frontmatter and body structure
+- Integrated "Add Supervision" command into `CommandManager` (11 commands total)
+- Frontmatter structure: `exo__Asset_isDefinedBy: "[[!kitelev]]"`, `exo__Instance_class: "[[ztlk__FleetingNote]]"`, `zltk__FleetingNote_type: "[[Supervision]]"`
+- Body format: Markdown list with field labels and values (`- field: value`)
+- Added 16 new unit tests for `SupervisionCreationService` covering all edge cases
+- Updated `CommandManager` tests for 11 commands
+- All 152 tests passing (21 unit + 6 UI + 131 component)
+- Files changed: 3 new files, 2 modified files
+
 ## [12.11.2] - 2025-10-15
 
 ### Added

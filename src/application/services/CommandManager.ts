@@ -15,7 +15,9 @@ import { TaskCreationService } from "../../infrastructure/services/TaskCreationS
 import { TaskStatusService } from "../../infrastructure/services/TaskStatusService";
 import { PropertyCleanupService } from "../../infrastructure/services/PropertyCleanupService";
 import { FolderRepairService } from "../../infrastructure/services/FolderRepairService";
+import { SupervisionCreationService } from "../../infrastructure/services/SupervisionCreationService";
 import { LabelInputModal } from "../../presentation/modals/LabelInputModal";
+import { SupervisionInputModal } from "../../presentation/modals/SupervisionInputModal";
 
 /**
  * Command Manager Service
@@ -35,6 +37,7 @@ export class CommandManager {
   private taskStatusService: TaskStatusService;
   private propertyCleanupService: PropertyCleanupService;
   private folderRepairService: FolderRepairService;
+  private supervisionCreationService: SupervisionCreationService;
   private reloadLayoutCallback?: () => void;
 
   constructor(private app: App) {
@@ -42,6 +45,7 @@ export class CommandManager {
     this.taskStatusService = new TaskStatusService(app.vault);
     this.propertyCleanupService = new PropertyCleanupService(app.vault);
     this.folderRepairService = new FolderRepairService(app.vault, app);
+    this.supervisionCreationService = new SupervisionCreationService(app.vault);
   }
 
   /**
@@ -61,6 +65,7 @@ export class CommandManager {
     this.registerCleanPropertiesCommand(plugin);
     this.registerRepairFolderCommand(plugin);
     this.registerReloadLayoutCommand(plugin);
+    this.registerAddSupervisionCommand(plugin);
   }
 
   /**
@@ -348,6 +353,23 @@ export class CommandManager {
     });
   }
 
+  /**
+   * Register "Exocortex: Add Supervision" command
+   * Always available - creates a new Supervision FleetingNote
+   */
+  private registerAddSupervisionCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "add-supervision",
+      name: "Add Supervision",
+      callback: () => {
+        this.executeAddSupervision().catch((error) => {
+          new Notice(`Failed to create supervision: ${error.message}`);
+          console.error("Add supervision error:", error);
+        });
+      },
+    });
+  }
+
   // ============================================================================
   // Command Execution Methods
   // ============================================================================
@@ -488,5 +510,26 @@ export class CommandManager {
 
     await this.folderRepairService.repairFolder(file, expectedFolder);
     new Notice(`Moved to ${expectedFolder}`);
+  }
+
+  private async executeAddSupervision(): Promise<void> {
+    const formData = await new Promise<any>((resolve) => {
+      new SupervisionInputModal(this.app, resolve).open();
+    });
+
+    if (formData === null) {
+      return;
+    }
+
+    const createdFile = await this.supervisionCreationService.createSupervision(
+      formData,
+    );
+
+    const leaf = this.app.workspace.getLeaf("tab");
+    await leaf.openFile(createdFile);
+
+    this.app.workspace.setActiveLeaf(leaf, { focus: true });
+
+    new Notice(`Supervision created: ${createdFile.basename}`);
   }
 }
