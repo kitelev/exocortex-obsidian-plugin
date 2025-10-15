@@ -1,3 +1,17 @@
+## [12.15.2] - 2025-10-15
+
+### Fixed
+
+**Properties Label Display**: Fixed bug where `exo__Asset_label` was not displayed for wiki-links in Properties table when files were referenced without `.md` extension. Now all wiki-link formats (with or without extension) correctly display asset labels instead of filenames.
+
+- Prototype references (`ems__Effort_prototype`) now properly show label values
+- Consistent label display across all property links
+- Improved user experience with meaningful labels instead of technical filenames
+
+**Technical Details:**
+- Updated `getAssetLabel()` method in UniversalLayoutRenderer to try adding `.md` extension if file not found initially
+- Ensures proper label resolution for all wiki-link formats (`[[filename]]` and `[[filename.md]]`)
+
 ## [12.15.1] - 2025-10-15
 
 ### Fixed
