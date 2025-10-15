@@ -232,6 +232,32 @@ export function canMarkDone(context: CommandVisibilityContext): boolean {
 }
 
 /**
+ * Can execute "Trash" command
+ * Available for: Task/Project without Trashed or Done status
+ */
+export function canTrashEffort(context: CommandVisibilityContext): boolean {
+  if (!isEffort(context.instanceClass)) return false;
+
+  // Show for efforts without status
+  if (!context.currentStatus) return true;
+
+  // Hide if status is Trashed or Done
+  const statuses = Array.isArray(context.currentStatus)
+    ? context.currentStatus
+    : [context.currentStatus];
+
+  const hasTrashedOrDone = statuses.some((status) => {
+    const cleanStatus = normalizeClassName(status);
+    return (
+      cleanStatus === "ems__EffortStatusTrashed" ||
+      cleanStatus === "ems__EffortStatusDone"
+    );
+  });
+
+  return !hasTrashedOrDone;
+}
+
+/**
  * Can execute "Archive Task" command
  * Available for: Task/Project with Done status and not archived
  */

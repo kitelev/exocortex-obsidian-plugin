@@ -152,7 +152,7 @@
       "format": "esm"
     },
     "src/domain/commands/CommandVisibility.ts": {
-      "bytes": 7570,
+      "bytes": 8302,
       "imports": [],
       "format": "esm"
     },
@@ -242,6 +242,27 @@
     },
     "src/presentation/components/MarkTaskDoneButton.tsx": {
       "bytes": 1215,
+      "imports": [
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "import-statement",
+          "original": "react"
+        },
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/commands/CommandVisibility.ts",
+          "kind": "import-statement",
+          "original": "../../domain/commands/CommandVisibility"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/components/TrashEffortButton.tsx": {
+      "bytes": 1145,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -671,7 +692,7 @@
       "format": "esm"
     },
     "src/infrastructure/services/TaskStatusService.ts": {
-      "bytes": 6251,
+      "bytes": 7797,
       "imports": [
         {
           "path": "obsidian",
@@ -704,7 +725,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 27967,
+      "bytes": 29042,
       "imports": [
         {
           "path": "obsidian",
@@ -767,6 +788,11 @@
           "original": "../components/MarkTaskDoneButton"
         },
         {
+          "path": "src/presentation/components/TrashEffortButton.tsx",
+          "kind": "import-statement",
+          "original": "../components/TrashEffortButton"
+        },
+        {
           "path": "src/presentation/components/ArchiveTaskButton.tsx",
           "kind": "import-statement",
           "original": "../components/ArchiveTaskButton"
@@ -810,7 +836,7 @@
       "format": "esm"
     },
     "src/application/services/CommandManager.ts": {
-      "bytes": 14084,
+      "bytes": 15010,
       "imports": [
         {
           "path": "obsidian",
@@ -939,7 +965,7 @@
           "bytesInOutput": 246
         },
         "node_modules/react-dom/cjs/react-dom-client.production.js": {
-          "bytesInOutput": 175414
+          "bytesInOutput": 175436
         },
         "node_modules/react-dom/client.js": {
           "bytesInOutput": 246
@@ -951,7 +977,7 @@
           "bytesInOutput": 1749
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 10069
+          "bytesInOutput": 10615
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -972,7 +998,7 @@
           "bytesInOutput": 454
         },
         "src/domain/commands/CommandVisibility.ts": {
-          "bytesInOutput": 1857
+          "bytesInOutput": 2079
         },
         "src/presentation/components/CreateInstanceButton.tsx": {
           "bytesInOutput": 466
@@ -985,6 +1011,9 @@
         },
         "src/presentation/components/MarkTaskDoneButton.tsx": {
           "bytesInOutput": 446
+        },
+        "src/presentation/components/TrashEffortButton.tsx": {
+          "bytesInOutput": 440
         },
         "src/presentation/components/ArchiveTaskButton.tsx": {
           "bytesInOutput": 516
@@ -1017,7 +1046,7 @@
           "bytesInOutput": 1511
         },
         "src/infrastructure/services/TaskStatusService.ts": {
-          "bytesInOutput": 2784
+          "bytesInOutput": 3526
         },
         "src/infrastructure/services/PropertyCleanupService.ts": {
           "bytesInOutput": 970
@@ -1026,10 +1055,10 @@
           "bytesInOutput": 844
         },
         "src/application/services/CommandManager.ts": {
-          "bytesInOutput": 5686
+          "bytesInOutput": 6096
         }
       },
-      "bytes": 228501
+      "bytes": 230883
     }
   }
 }

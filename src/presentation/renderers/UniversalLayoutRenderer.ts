@@ -10,6 +10,7 @@ import { CreateInstanceButton } from "../components/CreateInstanceButton";
 import { StartEffortButton } from "../components/StartEffortButton";
 import { PlanOnTodayButton } from "../components/PlanOnTodayButton";
 import { MarkTaskDoneButton } from "../components/MarkTaskDoneButton";
+import { TrashEffortButton } from "../components/TrashEffortButton";
 import { ArchiveTaskButton } from "../components/ArchiveTaskButton";
 import { CleanEmptyPropertiesButton } from "../components/CleanEmptyPropertiesButton";
 import { RepairFolderButton } from "../components/RepairFolderButton";
@@ -166,6 +167,9 @@ export class UniversalLayoutRenderer {
 
       // Render Mark Task Done button (for Task assets)
       await this.renderMarkTaskDoneButton(buttonsContainer, currentFile);
+
+      // Render Trash Effort button (for Task/Project assets)
+      await this.renderTrashEffortButton(buttonsContainer, currentFile);
 
       // Render Archive Task button (for completed Task assets)
       await this.renderArchiveTaskButton(buttonsContainer, currentFile);
@@ -443,6 +447,36 @@ export class UniversalLayoutRenderer {
           await this.refresh(el);
 
           this.logger.info(`Marked task as Done: ${file.path}`);
+        },
+      }),
+    );
+  }
+
+  private async renderTrashEffortButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+    const currentStatus = metadata.ems__Effort_status || null;
+
+    const container = el.createDiv({ cls: "exocortex-trash-effort-wrapper" });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(TrashEffortButton, {
+        instanceClass,
+        currentStatus,
+        sourceFile: file,
+        onTrash: async () => {
+          await this.taskStatusService.trashEffort(file);
+
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          await this.refresh(el);
+
+          this.logger.info(`Trashed effort: ${file.path}`);
         },
       }),
     );

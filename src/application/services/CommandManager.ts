@@ -6,6 +6,7 @@ import {
   canStartEffort,
   canPlanOnToday,
   canMarkDone,
+  canTrashEffort,
   canArchiveTask,
   canCleanProperties,
   canRepairFolder,
@@ -55,6 +56,7 @@ export class CommandManager {
     this.registerStartEffortCommand(plugin);
     this.registerPlanOnTodayCommand(plugin);
     this.registerMarkDoneCommand(plugin);
+    this.registerTrashCommand(plugin);
     this.registerArchiveTaskCommand(plugin);
     this.registerCleanPropertiesCommand(plugin);
     this.registerRepairFolderCommand(plugin);
@@ -209,6 +211,32 @@ export class CommandManager {
           this.executeMarkDone(file).catch((error) => {
             new Notice(`Failed to mark as done: ${error.message}`);
             console.error("Mark done error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Trash" command
+   */
+  private registerTrashCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "trash-effort",
+      name: "Trash",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canTrashEffort(context)) return false;
+
+        if (!checking) {
+          this.executeTrashEffort(file).catch((error) => {
+            new Notice(`Failed to trash effort: ${error.message}`);
+            console.error("Trash effort error:", error);
           });
         }
 
@@ -421,6 +449,11 @@ export class CommandManager {
   private async executeMarkDone(file: TFile): Promise<void> {
     await this.taskStatusService.markTaskAsDone(file);
     new Notice(`Marked as done: ${file.basename}`);
+  }
+
+  private async executeTrashEffort(file: TFile): Promise<void> {
+    await this.taskStatusService.trashEffort(file);
+    new Notice(`Trashed: ${file.basename}`);
   }
 
   private async executeArchiveTask(file: TFile): Promise<void> {
