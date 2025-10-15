@@ -67,6 +67,7 @@ export class UniversalLayoutRenderer {
   private backlinksCache: Map<string, Set<string>> = new Map();
   private backlinksCacheValid = false;
   private reactRenderer: ReactRenderer;
+  private rootContainer: HTMLElement | null = null;
 
   constructor(app: ObsidianApp) {
     this.app = app;
@@ -149,6 +150,9 @@ export class UniversalLayoutRenderer {
     _ctx: MarkdownPostProcessorContext,
   ): Promise<void> {
     try {
+      // Save root container for refresh operations
+      this.rootContainer = el;
+
       const config = this.parseConfig(source);
       const currentFile = this.app.workspace.getActiveFile();
 
@@ -222,10 +226,15 @@ export class UniversalLayoutRenderer {
   /**
    * Refresh the view when data changes
    */
-  public async refresh(el: HTMLElement): Promise<void> {
-    const source = el.getAttribute("data-source") || "";
-    el.empty();
-    await this.render(source, el, {} as MarkdownPostProcessorContext);
+  public async refresh(_el?: HTMLElement): Promise<void> {
+    if (!this.rootContainer) {
+      this.logger.error("Cannot refresh: root container not set");
+      return;
+    }
+
+    const source = this.rootContainer.getAttribute("data-source") || "";
+    this.rootContainer.empty();
+    await this.render(source, this.rootContainer, {} as MarkdownPostProcessorContext);
   }
 
   /**
