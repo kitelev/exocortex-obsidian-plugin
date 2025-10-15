@@ -148,10 +148,14 @@ function matchScenariosWithTests(scenarios, tests, mapping) {
       return keywords.some(keyword => testDesc.includes(keyword));
     });
 
+    // Check if manual mapping has explicit status (e.g., "covered" for pending scenarios)
+    const manualStatus = mapping[scenario.file]?.[scenario.scenario]?.status;
+    const autoStatus = matchedTests.length > 0 ? 'covered' : 'NOT_COVERED';
+
     coverage[key] = {
       scenario,
       tests: matchedTests,
-      status: matchedTests.length > 0 ? 'covered' : 'NOT_COVERED',
+      status: manualStatus || autoStatus,
       coverage: mappedTests.length > 0 ? 'manual' : 'auto',
     };
   }

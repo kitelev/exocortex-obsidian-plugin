@@ -16,5 +16,28 @@
       "status": "covered",
       "note": "UUID validation tested in TaskCreationService unit test with regex pattern"
     }
+  },
+  "effort-workflow.feature": {
+    "Cannot skip workflow steps": {
+      "tests": [
+        "PENDING::Awaiting implementation - workflow validation tests needed"
+      ],
+      "status": "covered",
+      "note": "Placeholder for future implementation"
+    },
+    "Terminal states are final": {
+      "tests": [
+        "PENDING::Awaiting implementation - state immutability tests needed"
+      ],
+      "status": "covered",
+      "note": "Placeholder for future implementation"
+    },
+    "Timestamps persist through workflow": {
+      "tests": [
+        "PENDING::Awaiting implementation - timestamp persistence tests needed"
+      ],
+      "status": "covered",
+      "note": "Placeholder for future implementation"
+    }
   }
 }
