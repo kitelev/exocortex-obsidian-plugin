@@ -15,11 +15,13 @@ import { TrashEffortButton } from "../components/TrashEffortButton";
 import { ArchiveTaskButton } from "../components/ArchiveTaskButton";
 import { CleanEmptyPropertiesButton } from "../components/CleanEmptyPropertiesButton";
 import { RepairFolderButton } from "../components/RepairFolderButton";
+import { RenameToUidButton } from "../components/RenameToUidButton";
 import { LabelInputModal } from "../modals/LabelInputModal";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 import { TaskStatusService } from "../../infrastructure/services/TaskStatusService";
 import { PropertyCleanupService } from "../../infrastructure/services/PropertyCleanupService";
 import { FolderRepairService } from "../../infrastructure/services/FolderRepairService";
+import { RenameToUidService } from "../../infrastructure/services/RenameToUidService";
 
 /**
  * UniversalLayout configuration options
@@ -72,12 +74,14 @@ export class UniversalLayoutRenderer {
     this.taskStatusService = new TaskStatusService(this.app.vault);
     this.propertyCleanupService = new PropertyCleanupService(this.app.vault);
     this.folderRepairService = new FolderRepairService(this.app.vault, this.app);
+    this.renameToUidService = new RenameToUidService(this.app.vault);
   }
 
   private taskCreationService: TaskCreationService;
   private taskStatusService: TaskStatusService;
   private propertyCleanupService: PropertyCleanupService;
   private folderRepairService: FolderRepairService;
+  private renameToUidService: RenameToUidService;
 
   /**
    * Build reverse index of backlinks for O(1) lookups
@@ -183,6 +187,9 @@ export class UniversalLayoutRenderer {
 
       // Render Repair Folder button (for all assets with exo__Asset_isDefinedBy)
       await this.renderRepairFolderButton(buttonsContainer, currentFile);
+
+      // Render Rename to UID button (when filename doesn't match UID)
+      await this.renderRenameToUidButton(buttonsContainer, currentFile);
 
       // Render asset properties
       await this.renderAssetProperties(el, currentFile);
@@ -696,6 +703,38 @@ export class UniversalLayoutRenderer {
               `Repaired folder for ${file.path}: ${currentFolder} -> ${expectedFolder}`,
             );
           }
+        },
+      }),
+    );
+  }
+
+  private async renderRenameToUidButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+
+    const container = el.createDiv({
+      cls: "exocortex-rename-to-uid-wrapper",
+    });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(RenameToUidButton, {
+        file,
+        metadata,
+        onRename: async () => {
+          const oldName = file.basename;
+          const uid = metadata.exo__Asset_uid;
+
+          await this.renameToUidService.renameToUid(file, metadata);
+
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          await this.refresh(el);
+
+          this.logger.info(`Renamed "${oldName}" to "${uid}"`);
         },
       }),
     );

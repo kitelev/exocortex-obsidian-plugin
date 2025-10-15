@@ -152,7 +152,7 @@
       "format": "esm"
     },
     "src/domain/commands/CommandVisibility.ts": {
-      "bytes": 8275,
+      "bytes": 8614,
       "imports": [],
       "format": "esm"
     },
@@ -347,6 +347,27 @@
     },
     "src/presentation/components/RepairFolderButton.tsx": {
       "bytes": 1199,
+      "imports": [
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "import-statement",
+          "original": "react"
+        },
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/commands/CommandVisibility.ts",
+          "kind": "import-statement",
+          "original": "../../domain/commands/CommandVisibility"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/components/RenameToUidButton.tsx": {
+      "bytes": 1170,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -697,7 +718,7 @@
       "format": "esm"
     },
     "src/infrastructure/services/TaskCreationService.ts": {
-      "bytes": 5597,
+      "bytes": 5752,
       "imports": [
         {
           "path": "obsidian",
@@ -745,8 +766,19 @@
       ],
       "format": "esm"
     },
+    "src/infrastructure/services/RenameToUidService.ts": {
+      "bytes": 1433,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 31423,
+      "bytes": 32664,
       "imports": [
         {
           "path": "obsidian",
@@ -834,6 +866,11 @@
           "original": "../components/RepairFolderButton"
         },
         {
+          "path": "src/presentation/components/RenameToUidButton.tsx",
+          "kind": "import-statement",
+          "original": "../components/RenameToUidButton"
+        },
+        {
           "path": "src/presentation/modals/LabelInputModal.ts",
           "kind": "import-statement",
           "original": "../modals/LabelInputModal"
@@ -857,12 +894,17 @@
           "path": "src/infrastructure/services/FolderRepairService.ts",
           "kind": "import-statement",
           "original": "../../infrastructure/services/FolderRepairService"
+        },
+        {
+          "path": "src/infrastructure/services/RenameToUidService.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/services/RenameToUidService"
         }
       ],
       "format": "esm"
     },
     "src/infrastructure/services/SupervisionCreationService.ts": {
-      "bytes": 2770,
+      "bytes": 2775,
       "imports": [
         {
           "path": "obsidian",
@@ -894,7 +936,7 @@
       "format": "esm"
     },
     "src/application/services/CommandManager.ts": {
-      "bytes": 17463,
+      "bytes": 18842,
       "imports": [
         {
           "path": "obsidian",
@@ -930,6 +972,11 @@
           "path": "src/infrastructure/services/SupervisionCreationService.ts",
           "kind": "import-statement",
           "original": "../../infrastructure/services/SupervisionCreationService"
+        },
+        {
+          "path": "src/infrastructure/services/RenameToUidService.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/services/RenameToUidService"
         },
         {
           "path": "src/presentation/modals/LabelInputModal.ts",
@@ -1014,6 +1061,11 @@
           "path": "obsidian",
           "kind": "require-call",
           "external": true
+        },
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
         }
       ],
       "exports": [],
@@ -1050,7 +1102,7 @@
           "bytesInOutput": 1749
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 11482
+          "bytesInOutput": 12029
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -1071,7 +1123,7 @@
           "bytesInOutput": 454
         },
         "src/domain/commands/CommandVisibility.ts": {
-          "bytesInOutput": 2075
+          "bytesInOutput": 2142
         },
         "src/presentation/components/CreateInstanceButton.tsx": {
           "bytesInOutput": 466
@@ -1100,6 +1152,9 @@
         "src/presentation/components/RepairFolderButton.tsx": {
           "bytesInOutput": 420
         },
+        "src/presentation/components/RenameToUidButton.tsx": {
+          "bytesInOutput": 587
+        },
         "src/presentation/modals/LabelInputModal.ts": {
           "bytesInOutput": 1209
         },
@@ -1119,7 +1174,7 @@
           "bytesInOutput": 0
         },
         "src/infrastructure/services/TaskCreationService.ts": {
-          "bytesInOutput": 1563
+          "bytesInOutput": 1559
         },
         "src/infrastructure/services/TaskStatusService.ts": {
           "bytesInOutput": 4298
@@ -1130,17 +1185,20 @@
         "src/infrastructure/services/FolderRepairService.ts": {
           "bytesInOutput": 844
         },
+        "src/infrastructure/services/RenameToUidService.ts": {
+          "bytesInOutput": 610
+        },
         "src/application/services/CommandManager.ts": {
-          "bytesInOutput": 7192
+          "bytesInOutput": 7743
         },
         "src/infrastructure/services/SupervisionCreationService.ts": {
-          "bytesInOutput": 1819
+          "bytesInOutput": 1824
         },
         "src/presentation/modals/SupervisionInputModal.ts": {
           "bytesInOutput": 2146
         }
       },
-      "bytes": 238138
+      "bytes": 240501
     }
   }
 }
