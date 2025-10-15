@@ -1,3 +1,47 @@
+## [12.14.0] - 2025-10-15
+
+### New Feature: Rename to UID Command
+
+Introduces a new command "Rename to UID" that automatically normalizes asset filenames to match their unique identifier (exo__Asset_uid). This powerful command helps maintain consistency across your vault by standardizing filename conventions.
+
+### What It Does
+
+When you have files with human-readable names like "Task-2025-10-15T14-30-45.md" or "My Project Notes.md", this command converts them to UUID-based naming (e.g., "abc-123-def.md") while intelligently preserving the original name in the exo__Asset_label property for display purposes.
+
+### Key Features
+
+- **Smart Command Visibility**: Appears in Command Palette only when a file's name doesn't match its exo__Asset_uid
+- **Automatic Label Preservation**: If no exo__Asset_label exists, the command automatically preserves the current filename as the label before renaming
+- **One-Click Normalization**: Renames the file to match the UUID format: {exo__Asset_uid}.md
+- **Legacy File Support**: Perfect for normalizing older assets created before UUID-based naming was standard
+
+### Benefits
+
+- **Consistent Asset Identification**: Aligns filenames with semantic asset identification system
+- **Prevents Filename Conflicts**: UUID-based names eliminate collision risks
+- **Preserves Human-Readable Names**: Original filenames remain accessible via exo__Asset_label property
+- **Batch Normalization Ready**: Easily normalize your entire vault one file at a time
+
+### Use Case Example
+
+**Before:**
+- Filename: "My Important Project.md"
+- exo__Asset_uid: "abc-123-def-456"
+- exo__Asset_label: (empty)
+
+**After running "Rename to UID":**
+- Filename: "abc-123-def-456.md"
+- exo__Asset_uid: "abc-123-def-456"
+- exo__Asset_label: "My Important Project"
+
+### Technical
+
+- New `RenameToUidService` with comprehensive error handling
+- New `canRenameToUid()` visibility function in CommandVisibility
+- 8 new tests for RenameToUidService (95.83% coverage)
+- 100% test pass rate: 172 unit tests passing
+- Zero breaking changes - fully backward compatible
+
 ## [12.13.3] - 2025-10-15
 
 ### Changed

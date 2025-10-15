@@ -281,3 +281,17 @@ export function canCleanProperties(
 export function canRepairFolder(context: CommandVisibilityContext): boolean {
   return needsFolderRepair(context.currentFolder, context.expectedFolder);
 }
+
+/**
+ * Can execute "Rename to UID" command
+ * Available for: Any asset where filename doesn't match exo__Asset_uid
+ */
+export function canRenameToUid(
+  context: CommandVisibilityContext,
+  currentFilename: string,
+): boolean {
+  const uid = context.metadata.exo__Asset_uid;
+  if (!uid) return false;
+
+  return currentFilename !== uid;
+}
