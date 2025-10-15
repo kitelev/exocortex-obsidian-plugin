@@ -192,6 +192,44 @@ export function canPlanOnToday(context: CommandVisibilityContext): boolean {
 }
 
 /**
+ * Check if ems__Effort_day property exists
+ */
+function hasEffortDay(metadata: Record<string, any>): boolean {
+  const effortDay = metadata.ems__Effort_day;
+  if (!effortDay) return false;
+
+  if (typeof effortDay === "string") {
+    const cleanValue = effortDay.replace(/["'\[\]]/g, "").trim();
+    return cleanValue.length > 0;
+  }
+
+  if (Array.isArray(effortDay) && effortDay.length > 0) {
+    const cleanValue = String(effortDay[0]).replace(/["'\[\]]/g, "").trim();
+    return cleanValue.length > 0;
+  }
+
+  return false;
+}
+
+/**
+ * Can execute "Shift Day Backward" command
+ * Available for: Task and Project with ems__Effort_day property
+ */
+export function canShiftDayBackward(context: CommandVisibilityContext): boolean {
+  if (!isEffort(context.instanceClass)) return false;
+  return hasEffortDay(context.metadata);
+}
+
+/**
+ * Can execute "Shift Day Forward" command
+ * Available for: Task and Project with ems__Effort_day property
+ */
+export function canShiftDayForward(context: CommandVisibilityContext): boolean {
+  if (!isEffort(context.instanceClass)) return false;
+  return hasEffortDay(context.metadata);
+}
+
+/**
  * Can execute "Move to Backlog" command
  * Available for: Task/Project with Draft status
  */

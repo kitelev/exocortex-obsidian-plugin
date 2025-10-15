@@ -1,3 +1,43 @@
+## [12.15.0] - 2025-10-15
+
+### New Feature: Shift Effort Dates with One Click
+
+Managing effort dates just got easier! Two new commands allow you to quickly adjust the date of any effort (task or project with ems__Effort_day property) by ±1 day without manually editing properties.
+
+**What's New:**
+- **Shift Day Backward**: Move effort date back by 1 day
+- **Shift Day Forward**: Move effort date forward by 1 day
+- Commands appear only for assets with ems__Effort_day property
+- Works for Tasks, Projects, and any asset tracking effort dates
+
+**How It Works:**
+1. Open any asset with ems__Effort_day property
+2. Open Command Palette (Ctrl/Cmd+P)
+3. Type "Shift Day" to see both commands
+4. Select Forward or Backward to adjust the date instantly
+
+**User Experience:**
+- **Before**: Manually edit frontmatter, change date format, update file
+- **After**: One command execution, date shifts automatically
+
+**Benefits:**
+- **Time-saving** - no manual date calculation or formatting
+- **Error-proof** - handles date arithmetic correctly
+- **Workflow-friendly** - reschedule efforts when plans change
+- **Smart visibility** - commands only appear when applicable
+
+**Use Cases:**
+- Postpone today's task to tomorrow
+- Move yesterday's incomplete effort to today
+- Adjust effort dates when priorities shift
+- Quickly reschedule planned work
+
+**Technical:**
+- Date shifting logic in TaskStatusService
+- Smart command visibility via CommandVisibility domain service
+- Frontmatter updates maintain format and preserve other properties
+- 100% test pass rate: 358 tests (172 unit + 45 UI + 141 component)
+
 ## [12.14.1] - 2025-10-15
 
 ### UI Enhancement: Rename to UID Button in Layout

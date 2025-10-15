@@ -297,4 +297,103 @@ ${content}`;
       `---\n${updatedFrontmatter}\n---`,
     );
   }
+
+  private parseDateFromWikilink(wikilink: string): Date | null {
+    const cleanValue = wikilink.replace(/["'\[\]]/g, "").trim();
+    const date = new Date(cleanValue);
+
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+
+    return date;
+  }
+
+  private extractEffortDay(content: string): string | null {
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) return null;
+
+    const frontmatterContent = match[1];
+    const effortDayMatch = frontmatterContent.match(/ems__Effort_day:\s*(.+)$/m);
+
+    if (!effortDayMatch) return null;
+
+    return effortDayMatch[1].trim();
+  }
+
+  async shiftDayBackward(taskFile: TFile): Promise<void> {
+    const fileContent = await this.vault.read(taskFile);
+    const currentEffortDay = this.extractEffortDay(fileContent);
+
+    if (!currentEffortDay) {
+      throw new Error("ems__Effort_day property not found");
+    }
+
+    const currentDate = this.parseDateFromWikilink(currentEffortDay);
+
+    if (!currentDate) {
+      throw new Error("Invalid date format in ems__Effort_day");
+    }
+
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() - 1);
+
+    const updatedContent = this.updateFrontmatterWithDate(fileContent, newDate);
+    await this.vault.modify(taskFile, updatedContent);
+  }
+
+  async shiftDayForward(taskFile: TFile): Promise<void> {
+    const fileContent = await this.vault.read(taskFile);
+    const currentEffortDay = this.extractEffortDay(fileContent);
+
+    if (!currentEffortDay) {
+      throw new Error("ems__Effort_day property not found");
+    }
+
+    const currentDate = this.parseDateFromWikilink(currentEffortDay);
+
+    if (!currentDate) {
+      throw new Error("Invalid date format in ems__Effort_day");
+    }
+
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + 1);
+
+    const updatedContent = this.updateFrontmatterWithDate(fileContent, newDate);
+    await this.vault.modify(taskFile, updatedContent);
+  }
+
+  private updateFrontmatterWithDate(content: string, date: Date): string {
+    const dateWikilink = this.formatDateAsWikilink(date);
+
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) {
+      const newFrontmatter = `---
+ems__Effort_day: ${dateWikilink}
+---
+${content}`;
+      return newFrontmatter;
+    }
+
+    const frontmatterContent = match[1];
+    let updatedFrontmatter = frontmatterContent;
+
+    if (updatedFrontmatter.includes("ems__Effort_day:")) {
+      updatedFrontmatter = updatedFrontmatter.replace(
+        /ems__Effort_day:.*$/m,
+        `ems__Effort_day: ${dateWikilink}`,
+      );
+    } else {
+      updatedFrontmatter += `\nems__Effort_day: ${dateWikilink}`;
+    }
+
+    return content.replace(
+      frontmatterRegex,
+      `---\n${updatedFrontmatter}\n---`,
+    );
+  }
 }
