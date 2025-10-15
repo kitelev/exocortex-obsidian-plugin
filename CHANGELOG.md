@@ -1,3 +1,23 @@
+## [12.15.3] - 2025-10-15
+
+### Enhanced
+
+**Universal Label Display**: All asset links throughout Layout now consistently display `exo__Asset_label` instead of technical filenames. Previously, only the Properties table and Relations table "Name" column showed labels. Now additional columns in Relations table (when configured via `showProperties`) also display labels.
+
+- Properties table: Shows labels for all wiki-links ✓
+- Relations table "Name" column: Shows labels for all assets ✓
+- Relations table additional columns: Now shows labels for wiki-links (NEW)
+- Prototype references: Display prototype labels when available ✓
+- Improved consistency: Same label resolution logic everywhere
+- Better user experience: Human-readable labels instead of filenames throughout the interface
+
+**Technical Details:**
+- Added `getAssetLabel` prop support to AssetRelationsTable component
+- Implemented `renderPropertyValue()` function for wiki-link label resolution
+- Supports arrays of wiki-links with proper label extraction
+- Handles both `[[filename]]` and `[[filename.md]]` formats
+- Unified label resolution: label → prototype label → filename fallback
+
 ## [12.15.2] - 2025-10-15
 
 ### Fixed
