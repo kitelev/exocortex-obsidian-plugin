@@ -1,6 +1,7 @@
 import {
   App,
   MarkdownPostProcessorContext,
+  MarkdownView,
   Plugin,
 } from "obsidian";
 import { UniversalLayoutRenderer } from "./presentation/renderers/UniversalLayoutRenderer";
@@ -42,27 +43,27 @@ export default class ExocortexPlugin extends Plugin {
       this.registerEvent(
         this.app.workspace.on("file-open", (file) => {
           if (file) {
-            setTimeout(() => this.autoRenderLayout(), 100);
+            setTimeout(() => this.autoRenderLayout(), 150);
           }
         }),
       );
 
       this.registerEvent(
         this.app.workspace.on("active-leaf-change", () => {
-          setTimeout(() => this.autoRenderLayout(), 100);
+          setTimeout(() => this.autoRenderLayout(), 150);
         }),
       );
 
       this.registerEvent(
         this.app.workspace.on("layout-change", () => {
-          setTimeout(() => this.autoRenderLayout(), 100);
+          setTimeout(() => this.autoRenderLayout(), 150);
         }),
       );
 
       // Initial render
       const activeFile = this.app.workspace.getActiveFile();
       if (activeFile) {
-        setTimeout(() => this.autoRenderLayout(), 100);
+        setTimeout(() => this.autoRenderLayout(), 150);
       }
 
       this.logger.info("Exocortex Plugin loaded successfully");
@@ -81,21 +82,23 @@ export default class ExocortexPlugin extends Plugin {
     // Remove existing auto-rendered layouts
     this.removeAutoRenderedLayouts();
 
-    // Only render in preview mode, not in source mode
-    const previewContainers = document.querySelectorAll(
-      ".markdown-preview-view",
-    );
-    if (previewContainers.length === 0) {
+    // Get the active MarkdownView using Obsidian API
+    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+
+    if (!view) {
       return;
     }
 
-    // Use the last preview container (active file)
-    const previewContainer = previewContainers[
-      previewContainers.length - 1
-    ] as HTMLElement;
+    // Get the container element from the view
+    // Use containerEl which contains the entire view DOM
+    const viewContainer = view.containerEl;
 
-    // Find metadata container within this preview
-    const metadataContainer = previewContainer.querySelector(
+    if (!viewContainer) {
+      return;
+    }
+
+    // Find metadata container within the active view
+    const metadataContainer = viewContainer.querySelector(
       ".metadata-container",
     ) as HTMLElement;
 
