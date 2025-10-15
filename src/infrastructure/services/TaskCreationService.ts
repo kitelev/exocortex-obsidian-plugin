@@ -120,6 +120,7 @@ export class TaskCreationService {
     frontmatter["exo__Asset_uid"] = uuidv4();
     frontmatter["exo__Asset_createdAt"] = timestamp;
     frontmatter["exo__Instance_class"] = ['"[[ems__Task]]"'];
+    frontmatter["ems__Effort_status"] = '"[[ems__EffortStatusDraft]]"';
     frontmatter[effortProperty] = `"[[${sourceName}]]"`;
 
     // Add label if provided and non-empty

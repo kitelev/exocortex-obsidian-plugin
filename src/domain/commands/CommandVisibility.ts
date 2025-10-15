@@ -192,43 +192,36 @@ export function canPlanOnToday(context: CommandVisibilityContext): boolean {
 }
 
 /**
+ * Can execute "Move to Backlog" command
+ * Available for: Task/Project with Draft status
+ */
+export function canMoveToBacklog(context: CommandVisibilityContext): boolean {
+  if (!isEffort(context.instanceClass)) return false;
+
+  // Show only for Draft status
+  return hasStatus(context.currentStatus, "ems__EffortStatusDraft");
+}
+
+/**
  * Can execute "Start Effort" command
- * Available for: Task/Project without Doing or Done status
+ * Available for: Task/Project with Backlog status
  */
 export function canStartEffort(context: CommandVisibilityContext): boolean {
   if (!isEffort(context.instanceClass)) return false;
 
-  // Show for efforts without status
-  if (!context.currentStatus) return true;
-
-  // Hide if status is Doing or Done
-  const statuses = Array.isArray(context.currentStatus)
-    ? context.currentStatus
-    : [context.currentStatus];
-
-  const hasDoingOrDone = statuses.some((status) => {
-    const cleanStatus = normalizeClassName(status);
-    return (
-      cleanStatus === "ems__EffortStatusDoing" ||
-      cleanStatus === "ems__EffortStatusDone"
-    );
-  });
-
-  return !hasDoingOrDone;
+  // Show only for Backlog status
+  return hasStatus(context.currentStatus, "ems__EffortStatusBacklog");
 }
 
 /**
  * Can execute "Mark as Done" command
- * Available for: Task/Project without Done status
+ * Available for: Task/Project with Doing status
  */
 export function canMarkDone(context: CommandVisibilityContext): boolean {
   if (!isEffort(context.instanceClass)) return false;
 
-  // Show for efforts without status
-  if (!context.currentStatus) return true;
-
-  // Hide if status is Done
-  return !hasStatus(context.currentStatus, "ems__EffortStatusDone");
+  // Show only for Doing status
+  return hasStatus(context.currentStatus, "ems__EffortStatusDoing");
 }
 
 /**

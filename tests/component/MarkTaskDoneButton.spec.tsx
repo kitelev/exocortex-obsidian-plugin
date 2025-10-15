@@ -5,11 +5,11 @@ import { TFile } from "obsidian";
 const mockFile = { path: "test-task.md", basename: "test-task" } as TFile;
 
 test.describe("MarkTaskDoneButton Component", () => {
-  test("should render button for Task without status", async ({ mount }) => {
+  test("should render button for Task with Doing status", async ({ mount }) => {
     const component = await mount(
       <MarkTaskDoneButton
         instanceClass="[[ems__Task]]"
-        currentStatus={null}
+        currentStatus="[[ems__EffortStatusDoing]]"
         sourceFile={mockFile}
         onMarkDone={async () => {}}
       />,
@@ -20,20 +20,20 @@ test.describe("MarkTaskDoneButton Component", () => {
     await expect(component).toHaveText("Done");
   });
 
-  test("should render button for Task with non-Done status", async ({
+  test("should NOT render button for Task without status", async ({
     mount,
   }) => {
     const component = await mount(
       <MarkTaskDoneButton
         instanceClass="[[ems__Task]]"
-        currentStatus="[[ems__EffortStatusActive]]"
+        currentStatus={null}
         sourceFile={mockFile}
         onMarkDone={async () => {}}
       />,
     );
 
-    // Component IS the button (no wrapper div)
-    await expect(component).toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should NOT render button for Task with Done status", async ({
@@ -68,7 +68,24 @@ test.describe("MarkTaskDoneButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should render button for Project without status", async ({
+  test("should render button for Project with Doing status", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <MarkTaskDoneButton
+        instanceClass="[[ems__Project]]"
+        currentStatus="[[ems__EffortStatusDoing]]"
+        sourceFile={mockFile}
+        onMarkDone={async () => {}}
+      />,
+    );
+
+    // Component IS the button (no wrapper div)
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("Done");
+  });
+
+  test("should NOT render button for Project without status", async ({
     mount,
   }) => {
     const component = await mount(
@@ -80,25 +97,8 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    // Component IS the button (no wrapper div)
-    await expect(component).toBeVisible();
-    await expect(component).toHaveText("Done");
-  });
-
-  test("should render button for Project with non-Done status", async ({
-    mount,
-  }) => {
-    const component = await mount(
-      <MarkTaskDoneButton
-        instanceClass="[[ems__Project]]"
-        currentStatus="[[ems__EffortStatusActive]]"
-        sourceFile={mockFile}
-        onMarkDone={async () => {}}
-      />,
-    );
-
-    // Component IS the button (no wrapper div)
-    await expect(component).toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 
   test("should NOT render button for Project with Done status", async ({
@@ -137,7 +137,7 @@ test.describe("MarkTaskDoneButton Component", () => {
     const component = await mount(
       <MarkTaskDoneButton
         instanceClass="ems__Task"
-        currentStatus={null}
+        currentStatus="[[ems__EffortStatusDoing]]"
         sourceFile={mockFile}
         onMarkDone={async () => {}}
       />,
@@ -170,7 +170,7 @@ test.describe("MarkTaskDoneButton Component", () => {
     const component = await mount(
       <MarkTaskDoneButton
         instanceClass="[[ems__Task]]"
-        currentStatus={null}
+        currentStatus="[[ems__EffortStatusDoing]]"
         sourceFile={mockFile}
         onMarkDone={onMarkDone}
       />,
@@ -186,7 +186,7 @@ test.describe("MarkTaskDoneButton Component", () => {
     const component = await mount(
       <MarkTaskDoneButton
         instanceClass={["[[ems__Task]]", "[[ems__Effort]]"]}
-        currentStatus={null}
+        currentStatus="[[ems__EffortStatusDoing]]"
         sourceFile={mockFile}
         onMarkDone={async () => {}}
       />,
@@ -210,7 +210,7 @@ test.describe("MarkTaskDoneButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should render button when status is empty string", async ({
+  test("should NOT render button when status is empty string", async ({
     mount,
   }) => {
     const component = await mount(
@@ -222,7 +222,7 @@ test.describe("MarkTaskDoneButton Component", () => {
       />,
     );
 
-    // Component IS the button (no wrapper div)
-    await expect(component).toBeVisible();
+    // Component returns null when button should not render
+    await expect(component).not.toBeVisible();
   });
 });

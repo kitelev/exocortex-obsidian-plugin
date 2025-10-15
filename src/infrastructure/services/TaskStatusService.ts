@@ -30,6 +30,42 @@ export class TaskStatusService {
     return `"[[${year}-${month}-${day}]]"`;
   }
 
+  async moveToBacklog(taskFile: TFile): Promise<void> {
+    const fileContent = await this.vault.read(taskFile);
+    const updatedContent = this.updateFrontmatterWithBacklogStatus(fileContent);
+    await this.vault.modify(taskFile, updatedContent);
+  }
+
+  private updateFrontmatterWithBacklogStatus(content: string): string {
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) {
+      const newFrontmatter = `---
+ems__Effort_status: "[[ems__EffortStatusBacklog]]"
+---
+${content}`;
+      return newFrontmatter;
+    }
+
+    const frontmatterContent = match[1];
+    let updatedFrontmatter = frontmatterContent;
+
+    if (updatedFrontmatter.includes("ems__Effort_status:")) {
+      updatedFrontmatter = updatedFrontmatter.replace(
+        /ems__Effort_status:.*$/m,
+        'ems__Effort_status: "[[ems__EffortStatusBacklog]]"',
+      );
+    } else {
+      updatedFrontmatter += '\nems__Effort_status: "[[ems__EffortStatusBacklog]]"';
+    }
+
+    return content.replace(
+      frontmatterRegex,
+      `---\n${updatedFrontmatter}\n---`,
+    );
+  }
+
   async startEffort(taskFile: TFile): Promise<void> {
     const fileContent = await this.vault.read(taskFile);
     const updatedContent = this.updateFrontmatterWithDoingStatus(fileContent);
@@ -96,6 +132,7 @@ ${content}`;
       const newFrontmatter = `---
 ems__Effort_status: "[[ems__EffortStatusDone]]"
 ems__Effort_endTimestamp: ${timestamp}
+ems__Effort_resolutionTimestamp: ${timestamp}
 ---
 ${content}`;
       return newFrontmatter;
@@ -122,6 +159,15 @@ ${content}`;
       updatedFrontmatter += `\nems__Effort_endTimestamp: ${timestamp}`;
     }
 
+    if (updatedFrontmatter.includes("ems__Effort_resolutionTimestamp:")) {
+      updatedFrontmatter = updatedFrontmatter.replace(
+        /ems__Effort_resolutionTimestamp:.*$/m,
+        `ems__Effort_resolutionTimestamp: ${timestamp}`,
+      );
+    } else {
+      updatedFrontmatter += `\nems__Effort_resolutionTimestamp: ${timestamp}`;
+    }
+
     return content.replace(
       frontmatterRegex,
       `---\n${updatedFrontmatter}\n---`,
@@ -144,7 +190,7 @@ ${content}`;
     if (!match) {
       const newFrontmatter = `---
 ems__Effort_status: "[[ems__EffortStatusTrashed]]"
-ems__Effort_endTimestamp: ${timestamp}
+ems__Effort_resolutionTimestamp: ${timestamp}
 ---
 ${content}`;
       return newFrontmatter;
@@ -162,13 +208,13 @@ ${content}`;
       updatedFrontmatter += '\nems__Effort_status: "[[ems__EffortStatusTrashed]]"';
     }
 
-    if (updatedFrontmatter.includes("ems__Effort_endTimestamp:")) {
+    if (updatedFrontmatter.includes("ems__Effort_resolutionTimestamp:")) {
       updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_endTimestamp:.*$/m,
-        `ems__Effort_endTimestamp: ${timestamp}`,
+        /ems__Effort_resolutionTimestamp:.*$/m,
+        `ems__Effort_resolutionTimestamp: ${timestamp}`,
       );
     } else {
-      updatedFrontmatter += `\nems__Effort_endTimestamp: ${timestamp}`;
+      updatedFrontmatter += `\nems__Effort_resolutionTimestamp: ${timestamp}`;
     }
 
     return content.replace(

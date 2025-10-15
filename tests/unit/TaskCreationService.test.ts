@@ -207,6 +207,7 @@ describe("TaskCreationService", () => {
         "exo__Asset_uid",
         "exo__Asset_createdAt",
         "exo__Instance_class",
+        "ems__Effort_status",
         "ems__Effort_parent",
       ]);
     });

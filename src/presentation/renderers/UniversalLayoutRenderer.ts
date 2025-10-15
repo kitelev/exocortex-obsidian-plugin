@@ -7,6 +7,7 @@ import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
 import { CreateTaskButton } from "../components/CreateTaskButton";
 import { CreateInstanceButton } from "../components/CreateInstanceButton";
+import { MoveToBacklogButton } from "../components/MoveToBacklogButton";
 import { StartEffortButton } from "../components/StartEffortButton";
 import { PlanOnTodayButton } from "../components/PlanOnTodayButton";
 import { MarkTaskDoneButton } from "../components/MarkTaskDoneButton";
@@ -159,7 +160,10 @@ export class UniversalLayoutRenderer {
       // Render Create Instance button (for TaskPrototype assets)
       await this.renderCreateInstanceButton(buttonsContainer, currentFile);
 
-      // Render Start Effort button (for Task/Project assets without Doing/Done status)
+      // Render Move to Backlog button (for Task/Project assets with Draft status)
+      await this.renderMoveToBacklogButton(buttonsContainer, currentFile);
+
+      // Render Start Effort button (for Task/Project assets with Backlog status)
       await this.renderStartEffortButton(buttonsContainer, currentFile);
 
       // Render Plan on Today button (for Task/Project assets)
@@ -434,6 +438,36 @@ export class UniversalLayoutRenderer {
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
           this.logger.info(`Created Instance from TaskPrototype: ${createdFile.path}`);
+        },
+      }),
+    );
+  }
+
+  private async renderMoveToBacklogButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+    const currentStatus = metadata.ems__Effort_status || null;
+
+    const container = el.createDiv({ cls: "exocortex-move-to-backlog-wrapper" });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(MoveToBacklogButton, {
+        instanceClass,
+        currentStatus,
+        sourceFile: file,
+        onMoveToBacklog: async () => {
+          await this.taskStatusService.moveToBacklog(file);
+
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          await this.refresh(el);
+
+          this.logger.info(`Moved to Backlog: ${file.path}`);
         },
       }),
     );

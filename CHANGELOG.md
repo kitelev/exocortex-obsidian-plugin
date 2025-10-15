@@ -1,3 +1,51 @@
+## [12.13.0] - 2025-10-15
+
+### Added
+
+- **Draft and Backlog Workflow**: Comprehensive effort lifecycle management with Draft → Backlog → Doing → Done workflow. New tasks automatically start in Draft status, allowing you to collect ideas before committing to work. Move tasks to Backlog when ready to plan, then Start Effort when ready to work. This structured approach helps you manage task maturity and intention, reducing overwhelm and improving focus.
+
+- **"To Backlog" Button & Command**: New button and Command Palette command ("Exocortex: Move to Backlog") for Draft tasks. Moves tasks from Draft to Backlog status, signaling readiness for execution planning. Button appears only for tasks with Draft status, maintaining clean UI.
+
+- **Draft Status for New Tasks**: All tasks created via "Create Task" button or Command Palette now start with `ems__EffortStatusDraft` status automatically. This ensures every task begins in planning mode, preventing premature execution and promoting intentional workflow.
+
+- **Resolution Timestamp**: New `ems__Effort_resolutionTimestamp` property tracks when tasks reach final state (Done or Trashed). Done tasks record both `endTimestamp` (work completion) and `resolutionTimestamp` (final resolution). Trashed tasks record only `resolutionTimestamp`, as work wasn't completed.
+
+### Changed
+
+- **"Start Effort" Workflow**: "Start Effort" button and command now available ONLY for Backlog status (was: any status except Doing/Done). This enforces intentional workflow: Draft → Backlog → Doing, ensuring tasks are ready before starting work.
+
+- **"Done" Workflow**: "Done" button and command now available ONLY for Doing status (was: any status except Done). This prevents marking tasks done without starting them, maintaining workflow integrity.
+
+- **"Trash" Availability**: "Trash" button and command now available from Draft, Backlog, and Doing statuses (was: restricted when Done/Trashed). You can cancel tasks at any stage before completion, improving flexibility.
+
+- **Status Timestamps**:
+  - Done: Sets both `ems__Effort_endTimestamp` and `ems__Effort_resolutionTimestamp`
+  - Trashed: Sets only `ems__Effort_resolutionTimestamp` (not `endTimestamp`)
+
+### User Experience
+
+- **Structured Workflow**: Clear progression through task lifecycle: Create (Draft) → Plan (Backlog) → Execute (Doing) → Complete (Done)
+- **Visual Cues**: Buttons appear based on current status, guiding you through workflow naturally
+- **Command Palette Integration**: "Exocortex: Move to Backlog" command available for Draft tasks
+- **Flexible Cancellation**: "Trash" button available at any stage (Draft/Backlog/Doing), allowing easy task abandonment
+
+### Technical
+
+- Added `canMoveToBacklog()` visibility function for Draft status checking
+- Updated `canStartEffort()` to check only Backlog status
+- Updated `canMarkDone()` to check only Doing status
+- Added `moveToBacklog()` method to `TaskStatusService`
+- Updated `markTaskAsDone()` to set both `endTimestamp` and `resolutionTimestamp`
+- Updated `trashEffort()` to set only `resolutionTimestamp` (removed `endTimestamp`)
+- Updated `TaskCreationService` to set Draft status for new tasks
+- Added `MoveToBacklogButton` React component
+- Integrated "Move to Backlog" command into `CommandManager`
+- Added 7 tests for `canMoveToBacklog()` covering all status scenarios
+- Updated tests for `canStartEffort()` (7 tests) and `canMarkDone()` (7 tests) to match new workflow
+- Added 10 component tests for `MoveToBacklogButton`
+- Updated 17 component tests (MarkTaskDoneButton and StartEffortButton) to align with new workflow
+- All 206 tests passing (161 unit + 45 UI + 141 component, including 27 workflow-related tests)
+
 ## [12.12.0] - 2025-10-15
 
 ### Added

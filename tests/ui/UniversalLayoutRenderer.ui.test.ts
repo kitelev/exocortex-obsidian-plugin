@@ -436,7 +436,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
   });
 
   describe("Mark Task Done Button", () => {
-    it("should render Done button for Task without status", async () => {
+    it("should render Done button for Task with Doing status", async () => {
       const currentFile = {
         basename: "My Task",
         path: "tasks/my-task.md",
@@ -445,6 +445,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "[[ems__EffortStatusDoing]]",
           exo__Asset_isDefinedBy: "[[Ontology/EMS]]",
         },
       });
@@ -461,16 +462,16 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(button?.textContent).toBe("Done");
     });
 
-    it("should render Done button for Task with non-Done status", async () => {
+    it("should NOT render Done button for Task with Backlog status", async () => {
       const currentFile = {
-        basename: "Active Task",
-        path: "tasks/active.md",
+        basename: "Backlog Task",
+        path: "tasks/backlog.md",
       } as TFile;
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Task]]",
-          ems__Effort_status: "[[ems__EffortStatusActive]]",
+          ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         },
       });
 
@@ -482,7 +483,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       const button = container.querySelector(".exocortex-mark-done-btn");
-      expect(button).toBeTruthy();
+      expect(button).toBeFalsy();
     });
 
     it("should NOT render Done button for Task with Done status", async () => {
@@ -509,7 +510,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(button).toBeFalsy();
     });
 
-    it("should render Done button for Project without status", async () => {
+    it("should render Done button for Project with Doing status", async () => {
       const currentFile = {
         basename: "Project",
         path: "projects/project.md",
@@ -518,6 +519,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "[[ems__EffortStatusDoing]]",
         },
       });
 
@@ -533,16 +535,16 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(button?.textContent).toBe("Done");
     });
 
-    it("should render Done button for Project with non-Done status", async () => {
+    it("should NOT render Done button for Project with Backlog status", async () => {
       const currentFile = {
-        basename: "Active Project",
-        path: "projects/active.md",
+        basename: "Backlog Project",
+        path: "projects/backlog.md",
       } as TFile;
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Project]]",
-          ems__Effort_status: "[[ems__EffortStatusActive]]",
+          ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         },
       });
 
@@ -554,7 +556,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       const button = container.querySelector(".exocortex-mark-done-btn");
-      expect(button).toBeTruthy();
+      expect(button).toBeFalsy();
     });
 
     it("should NOT render Done button for Project with Done status", async () => {
@@ -1165,15 +1167,16 @@ describe("UniversalLayoutRenderer UI Integration", () => {
   });
 
   describe("Start Effort Button", () => {
-    it("should render Start Effort button for Task without status", async () => {
+    it("should render Start Effort button for Task with Backlog status", async () => {
       const currentFile = {
-        basename: "New Task",
-        path: "tasks/new-task.md",
+        basename: "Backlog Task",
+        path: "tasks/backlog-task.md",
       } as TFile;
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         },
       });
 
@@ -1189,16 +1192,16 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(button?.textContent).toBe("Start Effort");
     });
 
-    it("should render Start Effort button for Task with non-Doing/Done status", async () => {
+    it("should NOT render Start Effort button for Task with Draft status", async () => {
       const currentFile = {
-        basename: "Active Task",
-        path: "tasks/active-task.md",
+        basename: "Draft Task",
+        path: "tasks/draft-task.md",
       } as TFile;
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Task]]",
-          ems__Effort_status: "[[ems__EffortStatusActive]]",
+          ems__Effort_status: "[[ems__EffortStatusDraft]]",
         },
       });
 
@@ -1210,7 +1213,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       const button = container.querySelector(".exocortex-start-effort-btn");
-      expect(button).toBeTruthy();
+      expect(button).toBeFalsy();
     });
 
     it("should NOT render Start Effort button for Task with Doing status", async () => {
@@ -1261,15 +1264,16 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(button).toBeFalsy();
     });
 
-    it("should render Start Effort button for Project without status", async () => {
+    it("should render Start Effort button for Project with Backlog status", async () => {
       const currentFile = {
-        basename: "New Project",
-        path: "projects/new-project.md",
+        basename: "Backlog Project",
+        path: "projects/backlog-project.md",
       } as TFile;
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         },
       });
 

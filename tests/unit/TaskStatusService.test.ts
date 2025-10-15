@@ -214,7 +214,7 @@ Content`;
   });
 
   describe("trashEffort", () => {
-    it("should add Trashed status and endTimestamp to file without frontmatter", async () => {
+    it("should add Trashed status and resolutionTimestamp to file without frontmatter", async () => {
       const mockFile = { path: "test-task.md" } as TFile;
       const originalContent = "Task content";
 
@@ -228,7 +228,7 @@ Content`;
       );
       expect(mockVault.modify).toHaveBeenCalledWith(
         mockFile,
-        expect.stringContaining("ems__Effort_endTimestamp:"),
+        expect.stringContaining("ems__Effort_resolutionTimestamp:"),
       );
       expect(mockVault.modify).toHaveBeenCalledWith(
         mockFile,
@@ -253,11 +253,11 @@ Task content`;
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
       expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusTrashed]]"');
-      expect(modifiedContent).toContain("ems__Effort_endTimestamp:");
+      expect(modifiedContent).toContain("ems__Effort_resolutionTimestamp:");
       expect(modifiedContent).not.toContain("ems__EffortStatusDoing");
     });
 
-    it("should update existing endTimestamp in frontmatter", async () => {
+    it("should add resolutionTimestamp and preserve existing endTimestamp in frontmatter", async () => {
       const mockFile = { path: "test-task.md" } as TFile;
       const originalContent = `---
 ems__Effort_status: "[[ems__EffortStatusDoing]]"
@@ -272,9 +272,9 @@ ems__Effort_endTimestamp: 2025-10-12T10:30:00
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
       expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusTrashed]]"');
-      expect(modifiedContent).toContain("ems__Effort_endTimestamp:");
-      const oldTimestamp = "ems__Effort_endTimestamp: 2025-10-12T10:30:00";
-      expect(modifiedContent).not.toContain(oldTimestamp);
+      expect(modifiedContent).toContain("ems__Effort_resolutionTimestamp:");
+      const oldEndTimestamp = "ems__Effort_endTimestamp: 2025-10-12T10:30:00";
+      expect(modifiedContent).toContain(oldEndTimestamp);
     });
   });
 });

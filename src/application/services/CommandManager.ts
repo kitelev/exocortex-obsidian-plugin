@@ -3,6 +3,7 @@ import {
   CommandVisibilityContext,
   canCreateTask,
   canCreateInstance,
+  canMoveToBacklog,
   canStartEffort,
   canPlanOnToday,
   canMarkDone,
@@ -57,6 +58,7 @@ export class CommandManager {
 
     this.registerCreateTaskCommand(plugin);
     this.registerCreateInstanceCommand(plugin);
+    this.registerMoveToBacklogCommand(plugin);
     this.registerStartEffortCommand(plugin);
     this.registerPlanOnTodayCommand(plugin);
     this.registerMarkDoneCommand(plugin);
@@ -138,6 +140,32 @@ export class CommandManager {
           this.executeCreateInstance(file, context).catch((error) => {
             new Notice(`Failed to create instance: ${error.message}`);
             console.error("Create instance error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Move to Backlog" command
+   */
+  private registerMoveToBacklogCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "move-to-backlog",
+      name: "Move to Backlog",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canMoveToBacklog(context)) return false;
+
+        if (!checking) {
+          this.executeMoveToBacklog(file).catch((error) => {
+            new Notice(`Failed to move to backlog: ${error.message}`);
+            console.error("Move to backlog error:", error);
           });
         }
 
@@ -456,6 +484,11 @@ export class CommandManager {
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
     new Notice(`Instance created: ${createdFile.basename}`);
+  }
+
+  private async executeMoveToBacklog(file: TFile): Promise<void> {
+    await this.taskStatusService.moveToBacklog(file);
+    new Notice(`Moved to Backlog: ${file.basename}`);
   }
 
   private async executeStartEffort(file: TFile): Promise<void> {
