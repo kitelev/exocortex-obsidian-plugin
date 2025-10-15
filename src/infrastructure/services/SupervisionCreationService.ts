@@ -39,7 +39,7 @@ export class SupervisionCreationService {
       exo__Asset_uid: uid,
       exo__Asset_createdAt: timestamp,
       exo__Instance_class: ['"[[ztlk__FleetingNote]]"'],
-      zltk__FleetingNote_type: '"[[Supervision]]"',
+      ztlk__FleetingNote_type: '"[[CBT-Diary Record]]"',
     };
   }
 

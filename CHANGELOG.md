@@ -1,3 +1,17 @@
+## [12.13.2] - 2025-10-15
+
+### Fixed
+
+- **Supervision Command Type Reference**: Corrected the Supervision command to reference the correct asset type `[[CBT-Diary Record]]` (uid: 41099f84-80d2-44d1-b8f4-9ed83ab46d23) instead of the generic `[[Supervision]]`. This ensures FleetingNotes created via the Supervision command are properly classified and routed to the correct folder structure.
+
+- **Property Name Typo**: Fixed typo in SupervisionCreationService where `zltk__FleetingNote_type` was incorrectly spelled. The correct property name is `ztlk__FleetingNote_type`. This ensures proper integration with the Zettelkasten naming convention and metadata handling.
+
+### Technical
+
+- Updated `SupervisionCreationService.ts` to use correct type reference and property name
+- Updated corresponding tests in `SupervisionCreationService.test.ts` to reflect the fix
+- Ensures supervision workflow correctly classifies fleeting notes for CBT diary records
+
 ## [12.13.1] - 2025-10-15
 
 ### Added
