@@ -130,7 +130,7 @@
       "format": "esm"
     },
     "src/presentation/components/AssetRelationsTable.tsx": {
-      "bytes": 6839,
+      "bytes": 8238,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -152,7 +152,7 @@
       "format": "esm"
     },
     "src/domain/commands/CommandVisibility.ts": {
-      "bytes": 8614,
+      "bytes": 9738,
       "imports": [],
       "format": "esm"
     },
@@ -242,6 +242,48 @@
     },
     "src/presentation/components/PlanOnTodayButton.tsx": {
       "bytes": 1222,
+      "imports": [
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "import-statement",
+          "original": "react"
+        },
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/commands/CommandVisibility.ts",
+          "kind": "import-statement",
+          "original": "../../domain/commands/CommandVisibility"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/components/ShiftDayBackwardButton.tsx": {
+      "bytes": 1200,
+      "imports": [
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "import-statement",
+          "original": "react"
+        },
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/commands/CommandVisibility.ts",
+          "kind": "import-statement",
+          "original": "../../domain/commands/CommandVisibility"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/components/ShiftDayForwardButton.tsx": {
+      "bytes": 1191,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -734,7 +776,7 @@
       "format": "esm"
     },
     "src/infrastructure/services/TaskStatusService.ts": {
-      "bytes": 9332,
+      "bytes": 12193,
       "imports": [
         {
           "path": "obsidian",
@@ -778,7 +820,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 32664,
+      "bytes": 35313,
       "imports": [
         {
           "path": "obsidian",
@@ -839,6 +881,16 @@
           "path": "src/presentation/components/PlanOnTodayButton.tsx",
           "kind": "import-statement",
           "original": "../components/PlanOnTodayButton"
+        },
+        {
+          "path": "src/presentation/components/ShiftDayBackwardButton.tsx",
+          "kind": "import-statement",
+          "original": "../components/ShiftDayBackwardButton"
+        },
+        {
+          "path": "src/presentation/components/ShiftDayForwardButton.tsx",
+          "kind": "import-statement",
+          "original": "../components/ShiftDayForwardButton"
         },
         {
           "path": "src/presentation/components/MarkTaskDoneButton.tsx",
@@ -936,7 +988,7 @@
       "format": "esm"
     },
     "src/application/services/CommandManager.ts": {
-      "bytes": 18842,
+      "bytes": 20889,
       "imports": [
         {
           "path": "obsidian",
@@ -992,7 +1044,7 @@
       "format": "esm"
     },
     "src/ExocortexPlugin.ts": {
-      "bytes": 4056,
+      "bytes": 4061,
       "imports": [
         {
           "path": "obsidian",
@@ -1099,10 +1151,10 @@
           "bytesInOutput": 56
         },
         "src/ExocortexPlugin.ts": {
-          "bytesInOutput": 1749
+          "bytesInOutput": 1764
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 12029
+          "bytesInOutput": 13423
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -1114,7 +1166,7 @@
           "bytesInOutput": 284
         },
         "src/presentation/components/AssetRelationsTable.tsx": {
-          "bytesInOutput": 2930
+          "bytesInOutput": 3459
         },
         "src/presentation/components/AssetPropertiesTable.tsx": {
           "bytesInOutput": 1340
@@ -1123,7 +1175,7 @@
           "bytesInOutput": 454
         },
         "src/domain/commands/CommandVisibility.ts": {
-          "bytesInOutput": 2142
+          "bytesInOutput": 2459
         },
         "src/presentation/components/CreateInstanceButton.tsx": {
           "bytesInOutput": 466
@@ -1136,6 +1188,12 @@
         },
         "src/presentation/components/PlanOnTodayButton.tsx": {
           "bytesInOutput": 459
+        },
+        "src/presentation/components/ShiftDayBackwardButton.tsx": {
+          "bytesInOutput": 466
+        },
+        "src/presentation/components/ShiftDayForwardButton.tsx": {
+          "bytesInOutput": 464
         },
         "src/presentation/components/MarkTaskDoneButton.tsx": {
           "bytesInOutput": 446
@@ -1177,7 +1235,7 @@
           "bytesInOutput": 1559
         },
         "src/infrastructure/services/TaskStatusService.ts": {
-          "bytesInOutput": 4298
+          "bytesInOutput": 5596
         },
         "src/infrastructure/services/PropertyCleanupService.ts": {
           "bytesInOutput": 970
@@ -1189,7 +1247,7 @@
           "bytesInOutput": 610
         },
         "src/application/services/CommandManager.ts": {
-          "bytesInOutput": 7743
+          "bytesInOutput": 8746
         },
         "src/infrastructure/services/SupervisionCreationService.ts": {
           "bytesInOutput": 1824
@@ -1198,7 +1256,7 @@
           "bytesInOutput": 2146
         }
       },
-      "bytes": 240501
+      "bytes": 245987
     }
   }
 }

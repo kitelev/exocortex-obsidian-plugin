@@ -1,3 +1,22 @@
+## [12.15.4] - 2025-10-16
+
+### Fixed
+
+**Layout Display on Same-Tab Navigation**: Fixed critical bug where Layout (Properties and Relations tables) failed to display when clicking on links in the same tab. Previously, Layout only appeared when opening links in new tabs (Cmd+Click), forcing users to either use the workaround (close and reopen tab with Cmd+Shift+T) or always open links in new tabs. Now Layout displays reliably regardless of how you navigate to an asset.
+
+- Same-tab link clicks: Layout now displays correctly ✓
+- New-tab link clicks: Continues to work as before ✓
+- Tab switching: Layout properly updates ✓
+- File open events: Layout renders consistently ✓
+- No more "close and reopen" workarounds needed
+- Improved user experience with predictable, reliable Layout rendering
+
+**Technical Details:**
+- Replaced unreliable `document.querySelectorAll(".markdown-preview-view")` with official `workspace.getActiveViewOfType(MarkdownView)` API
+- Now uses Obsidian's workspace API to guarantee access to the active view's DOM container
+- Increased event handler delay from 100ms to 150ms for improved stability
+- Ensures Layout rendering works with the correct DOM element in all navigation scenarios
+
 ## [12.15.3] - 2025-10-15
 
 ### Enhanced
