@@ -1,3 +1,29 @@
+## [12.11.0] - 2025-10-15
+
+### Added
+
+- **Trash Command for Effort Cancellation**: New "Trash" command and button allows you to cancel efforts (Tasks or Projects) that you no longer want to complete. When you trash an effort, it gets marked with `ems__EffortStatusTrashed` status and `ems__Effort_endTimestamp` is set to the current time, similar to marking as done but indicating the effort was abandoned rather than completed. This is useful for tasks that become irrelevant, blocked, or no longer needed. The Trash button appears for efforts without Done or Trashed status and works via both Command Palette ("Exocortex: Trash") and Layout UI buttons.
+
+### User Experience
+
+- **Trash Button**: Appears in Layout UI for Task/Project assets alongside other action buttons
+- **Command Palette**: "Exocortex: Trash" command available when viewing Task or Project
+- **Smart Visibility**: Button/command only shows for efforts that aren't already Done or Trashed
+- **Status Update**: Sets `ems__EffortStatusTrashed` and current timestamp
+- **Seamless Integration**: Works identically to "Mark as Done" but with different status
+
+### Technical
+
+- Added `trashEffort()` method to `TaskStatusService` for status transition
+- Created `canTrashEffort()` visibility function in `CommandVisibility` domain layer
+- Implemented `TrashEffortButton` React component with conditional rendering
+- Added "Exocortex: Trash" command to CommandManager (10 commands total now)
+- Integrated Trash button into `UniversalLayoutRenderer` button layout
+- Added CSS styles for `exocortex-trash-effort-wrapper` with mobile responsiveness
+- Added 12 new tests: 9 for `canTrashEffort()` visibility logic, 3 for `trashEffort()` service method
+- All 313 tests passing (139 unit + 44 UI + 130 component)
+- Bundle size: 225.5kb (no significant increase)
+
 ## [12.10.0] - 2025-10-15
 
 ### Added

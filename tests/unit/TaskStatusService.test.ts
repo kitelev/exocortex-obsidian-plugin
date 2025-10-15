@@ -212,4 +212,69 @@ Content`;
       expect(modifiedContent).toContain("archived: true");
     });
   });
+
+  describe("trashEffort", () => {
+    it("should add Trashed status and endTimestamp to file without frontmatter", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = "Task content";
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.trashEffort(mockFile);
+
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        mockFile,
+        expect.stringContaining('ems__Effort_status: "[[ems__EffortStatusTrashed]]"'),
+      );
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        mockFile,
+        expect.stringContaining("ems__Effort_endTimestamp:"),
+      );
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        mockFile,
+        expect.stringContaining("Task content"),
+      );
+    });
+
+    it("should update existing status to Trashed in frontmatter", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class:
+  - "[[ems__Task]]"
+ems__Effort_status: "[[ems__EffortStatusDoing]]"
+exo__Asset_uid: test-uuid
+---
+Task content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.trashEffort(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusTrashed]]"');
+      expect(modifiedContent).toContain("ems__Effort_endTimestamp:");
+      expect(modifiedContent).not.toContain("ems__EffortStatusDoing");
+    });
+
+    it("should update existing endTimestamp in frontmatter", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+ems__Effort_status: "[[ems__EffortStatusDoing]]"
+ems__Effort_startTimestamp: 2025-10-12T10:00:00
+ems__Effort_endTimestamp: 2025-10-12T10:30:00
+---`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.trashEffort(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusTrashed]]"');
+      expect(modifiedContent).toContain("ems__Effort_endTimestamp:");
+      const oldTimestamp = "ems__Effort_endTimestamp: 2025-10-12T10:30:00";
+      expect(modifiedContent).not.toContain(oldTimestamp);
+    });
+  });
 });

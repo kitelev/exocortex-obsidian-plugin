@@ -128,6 +128,55 @@ ${content}`;
     );
   }
 
+  async trashEffort(taskFile: TFile): Promise<void> {
+    const fileContent = await this.vault.read(taskFile);
+    const updatedContent = this.updateFrontmatterWithTrashedStatus(fileContent);
+    await this.vault.modify(taskFile, updatedContent);
+  }
+
+  private updateFrontmatterWithTrashedStatus(content: string): string {
+    const now = new Date();
+    const timestamp = this.formatLocalTimestamp(now);
+
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) {
+      const newFrontmatter = `---
+ems__Effort_status: "[[ems__EffortStatusTrashed]]"
+ems__Effort_endTimestamp: ${timestamp}
+---
+${content}`;
+      return newFrontmatter;
+    }
+
+    const frontmatterContent = match[1];
+    let updatedFrontmatter = frontmatterContent;
+
+    if (updatedFrontmatter.includes("ems__Effort_status:")) {
+      updatedFrontmatter = updatedFrontmatter.replace(
+        /ems__Effort_status:.*$/m,
+        'ems__Effort_status: "[[ems__EffortStatusTrashed]]"',
+      );
+    } else {
+      updatedFrontmatter += '\nems__Effort_status: "[[ems__EffortStatusTrashed]]"';
+    }
+
+    if (updatedFrontmatter.includes("ems__Effort_endTimestamp:")) {
+      updatedFrontmatter = updatedFrontmatter.replace(
+        /ems__Effort_endTimestamp:.*$/m,
+        `ems__Effort_endTimestamp: ${timestamp}`,
+      );
+    } else {
+      updatedFrontmatter += `\nems__Effort_endTimestamp: ${timestamp}`;
+    }
+
+    return content.replace(
+      frontmatterRegex,
+      `---\n${updatedFrontmatter}\n---`,
+    );
+  }
+
   async archiveTask(taskFile: TFile): Promise<void> {
     const fileContent = await this.vault.read(taskFile);
     const updatedContent = this.updateFrontmatterWithArchived(fileContent);

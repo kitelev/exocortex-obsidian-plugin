@@ -4,6 +4,7 @@ import {
   canStartEffort,
   canPlanOnToday,
   canMarkDone,
+  canTrashEffort,
   canArchiveTask,
   canCleanProperties,
   canRepairFolder,
@@ -778,6 +779,116 @@ describe("CommandVisibility", () => {
         expectedFolder: "folder2/",
       };
       expect(canRepairFolder(context)).toBe(true);
+    });
+  });
+
+  describe("canTrashEffort", () => {
+    it("should return true for Task without status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canTrashEffort(context)).toBe(true);
+    });
+
+    it("should return true for Task with Doing status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: "[[ems__EffortStatusDoing]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canTrashEffort(context)).toBe(true);
+    });
+
+    it("should return false for Task with Done status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: "[[ems__EffortStatusDone]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canTrashEffort(context)).toBe(false);
+    });
+
+    it("should return false for Task with Trashed status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: "[[ems__EffortStatusTrashed]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canTrashEffort(context)).toBe(false);
+    });
+
+    it("should return true for Project without status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Project]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canTrashEffort(context)).toBe(true);
+    });
+
+    it("should return false for Area", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Area]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canTrashEffort(context)).toBe(false);
+    });
+
+    it("should return false for null instanceClass", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: null,
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canTrashEffort(context)).toBe(false);
+    });
+
+    it("should handle array of statuses with Trashed", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: ["[[ems__EffortStatusTrashed]]"],
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canTrashEffort(context)).toBe(false);
+    });
+
+    it("should handle array of statuses with Done", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: ["[[ems__EffortStatusDone]]"],
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canTrashEffort(context)).toBe(false);
     });
   });
 });
