@@ -21,7 +21,7 @@ describe("SupervisionCreationService", () => {
       expect(frontmatter.exo__Asset_uid).toBe(uid);
       expect(frontmatter.exo__Asset_createdAt).toBeDefined();
       expect(frontmatter.exo__Instance_class).toEqual(['"[[ztlk__FleetingNote]]"']);
-      expect(frontmatter.zltk__FleetingNote_type).toBe('"[[Supervision]]"');
+      expect(frontmatter.ztlk__FleetingNote_type).toBe('"[[CBT-Diary Record]]"');
     });
 
     it("should generate ISO 8601 timestamp for exo__Asset_createdAt", () => {
@@ -42,7 +42,7 @@ describe("SupervisionCreationService", () => {
         "exo__Asset_uid",
         "exo__Asset_createdAt",
         "exo__Instance_class",
-        "zltk__FleetingNote_type",
+        "ztlk__FleetingNote_type",
       ]);
     });
   });
@@ -164,7 +164,7 @@ describe("SupervisionCreationService", () => {
       expect(content).toContain("exo__Asset_uid:");
       expect(content).toContain("exo__Asset_createdAt:");
       expect(content).toContain('exo__Instance_class:\n  - "[[ztlk__FleetingNote]]"');
-      expect(content).toContain('zltk__FleetingNote_type: "[[Supervision]]"');
+      expect(content).toContain('ztlk__FleetingNote_type: "[[CBT-Diary Record]]"');
 
       expect(content).toContain("- Ситуация/триггер: Situation text");
       expect(content).toContain("- Эмоции: Emotions text");
