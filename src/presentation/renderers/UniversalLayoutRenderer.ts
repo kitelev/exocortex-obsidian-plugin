@@ -5,6 +5,7 @@ import React from "react";
 import { ReactRenderer } from "../utils/ReactRenderer";
 import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
+import { DailyTasksTable, DailyTask } from "../components/DailyTasksTable";
 import { CreateTaskButton } from "../components/CreateTaskButton";
 import { CreateInstanceButton } from "../components/CreateInstanceButton";
 import { MoveToBacklogButton } from "../components/MoveToBacklogButton";
@@ -205,6 +206,9 @@ export class UniversalLayoutRenderer {
 
       // Render asset properties
       await this.renderAssetProperties(el, currentFile);
+
+      // Render daily tasks for pn__DailyNote assets
+      await this.renderDailyTasks(el, currentFile);
 
       // Get asset relations for the current file
       const relations = await this.getAssetRelations(currentFile, config);
@@ -850,6 +854,96 @@ export class UniversalLayoutRenderer {
     );
   }
 
+  private async renderDailyTasks(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+
+    // Check if this is a pn__DailyNote
+    const classes = Array.isArray(instanceClass)
+      ? instanceClass
+      : [instanceClass];
+    const isDailyNote = classes.some(
+      (c: string) => c === "[[pn__DailyNote]]" || c === "pn__DailyNote",
+    );
+
+    if (!isDailyNote) {
+      return;
+    }
+
+    // Get the day from metadata
+    const dayProperty = metadata.pn__DailyNote_day;
+    if (!dayProperty) {
+      this.logger.debug("No pn__DailyNote_day found for daily note");
+      return;
+    }
+
+    // Extract day link: [[2025-10-16]] -> 2025-10-16
+    const dayMatch =
+      typeof dayProperty === "string"
+        ? dayProperty.match(/\[\[(.+?)\]\]/)
+        : null;
+    const day = dayMatch ? dayMatch[1] : String(dayProperty).replace(/^\[\[|\]\]$/g, "");
+
+    // Check if Dataview is available
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dataviewApi = (this.app as any).plugins?.plugins?.dataview?.api;
+    if (!dataviewApi) {
+      this.logger.debug(
+        "Dataview plugin not found, skipping tasks table for DailyNote",
+      );
+      return;
+    }
+
+    // Get daily tasks
+    const tasks = await this.getDailyTasks(dataviewApi, day);
+
+    if (tasks.length === 0) {
+      this.logger.debug(`No tasks found for day: ${day}`);
+      return;
+    }
+
+    // Render the tasks table
+    const sectionContainer = el.createDiv({ cls: "exocortex-daily-tasks-section" });
+
+    // Add section header
+    sectionContainer.createEl("h3", {
+      text: "Tasks",
+      cls: "exocortex-section-header",
+    });
+
+    // Create separate container for React component to prevent header replacement
+    const tableContainer = sectionContainer.createDiv({ cls: "exocortex-daily-tasks-table-container" });
+
+    this.reactRenderer.render(
+      tableContainer,
+      React.createElement(DailyTasksTable, {
+        tasks,
+        onTaskClick: async (path: string, event: React.MouseEvent) => {
+          // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
+          const isModPressed = Keymap.isModEvent(
+            event.nativeEvent as MouseEvent,
+          );
+
+          if (isModPressed) {
+            // Open in new tab
+            const leaf = this.app.workspace.getLeaf("tab");
+            await leaf.openLinkText(path, "");
+          } else {
+            // Open in current tab
+            await this.app.workspace.openLinkText(path, "", false);
+          }
+        },
+        getAssetLabel: (path: string) => this.getAssetLabel(path),
+      }),
+    );
+
+    this.logger.info(`Rendered ${tasks.length} tasks for DailyNote: ${day}`);
+  }
+
   /**
    * Render assets grouped by the property through which they reference the current asset
    * This is the core Assets Relations feature - Now using React components
@@ -1106,5 +1200,117 @@ export class UniversalLayoutRenderer {
     }
 
     return false;
+  }
+
+  private async getDailyTasks(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    dataviewApi: any,
+    day: string,
+  ): Promise<DailyTask[]> {
+    try {
+      const allPages = dataviewApi.pages(`""`);
+
+      const tasks: DailyTask[] = [];
+
+      const pagesArray = allPages?.values || allPages || [];
+
+      for (const page of pagesArray) {
+        const effortDay = page.ems__Effort_day;
+
+        if (!effortDay) {
+          continue;
+        }
+
+        const effortDayStr = String(effortDay).replace(/^\[\[|\]\]$/g, "");
+
+        if (effortDayStr !== day) {
+          continue;
+        }
+
+        const file = this.app.vault.getAbstractFileByPath(page.file.path);
+        if (!file || !("basename" in file)) {
+          continue;
+        }
+
+        const tfile = file as TFile;
+        const cache = this.app.metadataCache.getFileCache(tfile);
+        const metadata = cache?.frontmatter || {};
+
+        const effortStatus = metadata.ems__Effort_status || "";
+        const effortStatusStr = String(effortStatus).replace(/^\[\[|\]\]$/g, "");
+
+        const startTimestamp = metadata.ems__Effort_startTimestamp;
+        const plannedStartTimestamp = metadata.ems__Effort_plannedStartTimestamp;
+        const endTimestamp = metadata.ems__Effort_endTimestamp;
+        const plannedEndTimestamp = metadata.ems__Effort_plannedEndTimestamp;
+
+        const formatTime = (timestamp: string | number | null | undefined): string => {
+          if (!timestamp) return "";
+          const date = new Date(timestamp);
+          if (isNaN(date.getTime())) return "";
+          return date.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          });
+        };
+
+        const startTime = formatTime(startTimestamp) || formatTime(plannedStartTimestamp);
+        const endTime = formatTime(endTimestamp) || formatTime(plannedEndTimestamp);
+
+        const isDone = effortStatusStr === "ems__EffortStatusDone";
+        const isTrashed = effortStatusStr === "ems__EffortStatusTrashed";
+        const instanceClass = metadata.exo__Instance_class || [];
+        const instanceClassArray = Array.isArray(instanceClass)
+          ? instanceClass
+          : [instanceClass];
+        const isMeeting = instanceClassArray.some(
+          (c: string) => String(c).includes("ems__Meeting"),
+        );
+
+        const label = metadata.exo__Asset_label || tfile.basename;
+
+        tasks.push({
+          file: {
+            path: tfile.path,
+            basename: tfile.basename,
+          },
+          path: tfile.path,
+          title: tfile.basename,
+          label,
+          startTime,
+          endTime,
+          status: effortStatusStr,
+          metadata,
+          isDone,
+          isTrashed,
+          isMeeting,
+        });
+      }
+
+      tasks.sort((a, b) => {
+        if (a.isTrashed !== b.isTrashed) {
+          return a.isTrashed ? 1 : -1;
+        }
+
+        if (a.isDone !== b.isDone) {
+          return a.isDone ? 1 : -1;
+        }
+
+        if (a.startTime && b.startTime) {
+          return a.startTime.localeCompare(b.startTime);
+        }
+
+        if (a.startTime) return -1;
+        if (b.startTime) return 1;
+
+        return 0;
+      });
+
+      return tasks.slice(0, 50);
+    } catch (error) {
+      this.logger.error("Failed to get daily tasks", { error });
+      return [];
+    }
   }
 }
