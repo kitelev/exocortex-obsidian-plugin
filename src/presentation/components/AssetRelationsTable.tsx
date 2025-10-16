@@ -17,6 +17,7 @@ export interface AssetRelationsTableProps {
   sortBy?: string;
   sortOrder?: "asc" | "desc";
   showProperties?: string[];
+  groupSpecificProperties?: Record<string, string[]>;
   onAssetClick?: (path: string, event: React.MouseEvent) => void;
   getAssetLabel?: (path: string) => string | null;
 }
@@ -267,6 +268,7 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
   sortBy = "title",
   sortOrder = "asc",
   showProperties = [],
+  groupSpecificProperties = {},
   onAssetClick,
   getAssetLabel,
 }) => {
@@ -291,19 +293,24 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
   if (groupByProperty) {
     return (
       <div className="exocortex-relations-grouped">
-        {Object.entries(groupedRelations).map(([groupName, items]) => (
-          <div key={groupName} className="relation-group">
-            <h3 className="group-header">{groupName}</h3>
-            <SingleTable
-              items={items}
-              sortBy={sortBy}
-              sortOrder={sortOrder}
-              showProperties={showProperties}
-              onAssetClick={onAssetClick}
-              getAssetLabel={getAssetLabel}
-            />
-          </div>
-        ))}
+        {Object.entries(groupedRelations).map(([groupName, items]) => {
+          const groupProps = groupSpecificProperties[groupName] || [];
+          const mergedProperties = [...showProperties, ...groupProps];
+
+          return (
+            <div key={groupName} className="relation-group">
+              <h3 className="group-header">{groupName}</h3>
+              <SingleTable
+                items={items}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                showProperties={mergedProperties}
+                onAssetClick={onAssetClick}
+                getAssetLabel={getAssetLabel}
+              />
+            </div>
+          );
+        })}
       </div>
     );
   }

@@ -1203,6 +1203,9 @@ export class UniversalLayoutRenderer {
         sortBy: config.sortBy || "title",
         sortOrder: config.sortOrder || "asc",
         showProperties: config.showProperties || [],
+        groupSpecificProperties: {
+          "ems__Effort_parent": ["ems__Effort_status"],
+        },
         onAssetClick: async (path: string, event: React.MouseEvent) => {
           // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
           const isModPressed = Keymap.isModEvent(event.nativeEvent as MouseEvent);
