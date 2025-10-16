@@ -1,3 +1,26 @@
+## [12.15.12] - 2025-10-16
+
+### Fixed
+
+**Properties Now Display Prototype Labels Instead of UIDs**: Fixed an issue where asset properties that reference files by UID would display the UID filename (like `442f3928-9d64-46d7-ad8a-a054f7b7854c`) instead of the human-readable label. Now properly resolves and displays the `exo__Asset_label` from prototype files.
+
+**Why this matters:**
+- **Human-Readable Names**: Properties now show meaningful labels like "Dinner" instead of cryptic UIDs
+- **Prototype Labels Work**: When an asset references a prototype via `ems__Effort_prototype`, the prototype's label is correctly displayed
+- **Consistent Display**: All wiki-link properties now consistently show labels throughout the Properties table
+- **Better UX**: No more confusion about what UID-named files represent
+
+**What you see:**
+- **Before**: Property value shows `[[442f3928-9d64-46d7-ad8a-a054f7b7854c]]` (UID)
+- **After**: Property value shows `Dinner` (from `exo__Asset_label`)
+- **Applies to all properties**: Works for `ems__Effort_prototype` and any property that references assets by UID
+
+**Technical Details:**
+- Switched from `getAbstractFileByPath()` to `getFirstLinkpathDest()` for file resolution
+- Now correctly resolves files regardless of their location in the vault
+- Maintains fallback chain: own label → prototype label → filename
+- All 384 tests passing (100% pass rate maintained)
+
 ## [12.15.11] - 2025-10-16
 
 ### Enhanced

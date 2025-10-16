@@ -1445,6 +1445,13 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         return null;
       });
 
+      // Mock metadataCache.getFirstLinkpathDest (used by new label resolution logic)
+      (mockApp.metadataCache.getFirstLinkpathDest as jest.Mock).mockImplementation((path: string) => {
+        if (path === "tasks/Task-123.md" || path === "tasks/Task-123") return taskFile;
+        if (path === "TaskPrototype" || path === "TaskPrototype.md") return prototypeFile;
+        return null;
+      });
+
       // Mock backlinks
       mockApp.metadataCache.resolvedLinks = {
         "tasks/Task-123.md": { "current.md": 1 },
