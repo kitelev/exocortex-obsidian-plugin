@@ -1,0 +1,610 @@
+/* Exocortex Plugin Styles */
+
+/* Import relation properties styles */
+@import url('styles/relation-properties.css');
+@import url('styles/simplified-properties.css');
+
+/* Assets Relations Styles - Core feature for grouped asset relationships */
+.exocortex-assets-relations {
+  padding: 10px 0;
+}
+
+.exocortex-relation-group {
+  margin-bottom: 20px;
+}
+
+.exocortex-relation-group-header {
+  color: var(--text-normal);
+  font-size: 1.2em;
+  font-weight: 600;
+  margin: 15px 0 10px 0;
+  padding-bottom: 5px;
+  border-bottom: 2px solid var(--background-modifier-border);
+}
+
+/* Table styles for asset relations */
+.exocortex-relation-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.exocortex-relation-table thead {
+  background-color: var(--background-secondary);
+  border-bottom: 2px solid var(--background-modifier-border);
+}
+
+.exocortex-table-header {
+  text-align: left;
+  padding: 8px 12px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.exocortex-relation-table tbody tr {
+  border-bottom: 1px solid var(--background-modifier-border);
+  transition: background-color 0.2s ease;
+}
+
+.exocortex-relation-table tbody tr:hover {
+  background-color: var(--background-secondary);
+}
+
+.exocortex-relation-row {
+  cursor: pointer;
+}
+
+.exocortex-relation-name-cell {
+  padding: 8px 12px;
+}
+
+.exocortex-relation-link {
+  color: var(--text-normal);
+  text-decoration: none;
+  display: block;
+  width: 100%;
+}
+
+.exocortex-relation-link:hover {
+  color: var(--interactive-accent);
+  text-decoration: underline;
+}
+
+/* Legacy styles for backward compatibility */
+.exocortex-relation-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.exocortex-relation-item {
+  padding: 8px 0;
+  margin: 3px 0;
+  border-left: 3px solid transparent;
+  padding-left: 12px;
+  transition: all 0.2s ease;
+}
+
+.exocortex-relation-item:hover {
+  border-left-color: var(--interactive-accent);
+  background-color: var(--background-secondary);
+  padding-left: 15px;
+}
+
+.exocortex-relation-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  margin: 5px 0;
+  font-size: 0.85em;
+  background-color: var(--background-modifier-form-field);
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+.relation-type {
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+/* Code Block Container Styles */
+.exocortex-view-container {
+  margin: 1em 0;
+  padding: 1em;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--background-secondary);
+}
+
+.exocortex-error {
+  padding: 1em;
+  background-color: var(--background-modifier-error);
+  border-radius: 4px;
+  color: var(--text-error);
+}
+
+.exocortex-error-message {
+  font-weight: 500;
+}
+
+.exocortex-message {
+  padding: 0.5em;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* List View Styles */
+.exocortex-backlinks-list h3 {
+  margin-bottom: 1em;
+  color: var(--text-normal);
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.exocortex-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.exocortex-list-item {
+  padding: 0.5em 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.exocortex-list-item:last-child {
+  border-bottom: none;
+}
+
+.exocortex-list-item .internal-link {
+  color: var(--link-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.exocortex-list-item .internal-link:hover {
+  color: var(--link-color-hover);
+  text-decoration: underline;
+}
+
+.exocortex-properties {
+  margin-top: 0.25em;
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
+.exocortex-property {
+  margin-right: 1em;
+  display: inline-block;
+}
+
+/* Table View Styles */
+.exocortex-backlinks-table h3 {
+  margin-bottom: 1em;
+  color: var(--text-normal);
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.exocortex-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5em;
+}
+
+.exocortex-table thead {
+  background-color: var(--background-modifier-border);
+}
+
+.exocortex-table th {
+  padding: 0.5em;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-normal);
+  border-bottom: 2px solid var(--background-modifier-border);
+}
+
+/* Sortable column styles */
+.exocortex-table th.sortable,
+.exocortex-relation-table th.sortable,
+.exocortex-table-header.sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: 1.5em;
+  transition: background-color 0.2s ease;
+}
+
+.exocortex-table th.sortable:hover,
+.exocortex-relation-table th.sortable:hover,
+.exocortex-table-header.sortable:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+/* Sort indicator styles */
+.sort-indicator {
+  font-size: 0.8em;
+  color: var(--interactive-accent);
+  margin-left: 0.25em;
+  display: inline-block;
+}
+
+/* Active sort column styles */
+.exocortex-table th.sorted-asc,
+.exocortex-table th.sorted-desc,
+.exocortex-relation-table th.sorted-asc,
+.exocortex-relation-table th.sorted-desc,
+.exocortex-table-header.sorted-asc,
+.exocortex-table-header.sorted-desc {
+  background-color: var(--background-modifier-active-hover);
+  font-weight: 700;
+}
+
+.exocortex-table td {
+  padding: 0.5em;
+  border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-normal);
+}
+
+.exocortex-table tr:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.exocortex-table .internal-link {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.exocortex-table .internal-link:hover {
+  color: var(--link-color-hover);
+  text-decoration: underline;
+}
+
+/* Cards View Styles */
+.exocortex-backlinks-cards h3 {
+  margin-bottom: 1em;
+  color: var(--text-normal);
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.exocortex-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1em;
+  margin-top: 1em;
+}
+
+.exocortex-card {
+  padding: 1em;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background-color: var(--background-primary);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.exocortex-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.exocortex-card-title {
+  margin: 0 0 0.5em 0;
+  font-size: 1em;
+  font-weight: 600;
+}
+
+.exocortex-card-title .internal-link {
+  color: var(--text-normal);
+  text-decoration: none;
+}
+
+.exocortex-card-title .internal-link:hover {
+  color: var(--link-color);
+  text-decoration: underline;
+}
+
+.exocortex-card-properties {
+  margin: 0.5em 0;
+  font-size: 0.9em;
+}
+
+.exocortex-card-property {
+  margin-bottom: 0.25em;
+  color: var(--text-muted);
+}
+
+.property-label {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.property-value {
+  color: var(--text-normal);
+}
+
+.exocortex-card-footer {
+  margin-top: 0.5em;
+  padding-top: 0.5em;
+  border-top: 1px solid var(--background-modifier-border);
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+/* Graph View Styles (placeholder) */
+.exocortex-backlinks-graph {
+  padding: 1em;
+}
+
+.exocortex-backlinks-graph h3 {
+  margin-bottom: 0.5em;
+  color: var(--text-normal);
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.exocortex-backlinks-graph p {
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 1em;
+}
+
+/* Dark mode adjustments */
+.theme-dark .exocortex-view-container {
+  background-color: var(--background-secondary);
+  border-color: var(--background-modifier-border);
+}
+
+.theme-dark .exocortex-card {
+  background-color: var(--background-secondary);
+}
+
+.theme-dark .exocortex-card:hover {
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
+}
+
+/* AssetList View Styles */
+.exocortex-asset-list {
+  padding: 0.5em;
+}
+
+.exocortex-asset-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1em;
+  padding-bottom: 0.5em;
+  border-bottom: 2px solid var(--background-modifier-border);
+}
+
+.exocortex-asset-header h3 {
+  margin: 0;
+  color: var(--text-normal);
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.exocortex-create-button {
+  padding: 0.25em 0.75em;
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s;
+}
+
+.exocortex-create-button:hover {
+  background-color: var(--interactive-accent-hover);
+}
+
+.exocortex-asset-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+
+.exocortex-asset-item {
+  padding: 0.75em;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--background-primary);
+  transition: background-color 0.2s;
+}
+
+.exocortex-asset-item:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.exocortex-asset-title {
+  margin-bottom: 0.5em;
+}
+
+.exocortex-asset-title .internal-link {
+  color: var(--text-normal);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.05em;
+}
+
+.exocortex-asset-title .internal-link:hover {
+  color: var(--link-color);
+  text-decoration: underline;
+}
+
+.exocortex-asset-properties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  margin-bottom: 0.5em;
+}
+
+.exocortex-asset-property {
+  font-size: 0.9em;
+}
+
+.exocortex-asset-property .property-label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.exocortex-asset-property .property-value {
+  color: var(--text-normal);
+  margin-left: 0.25em;
+}
+
+.exocortex-asset-meta {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-top: 0.5em;
+  padding-top: 0.5em;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+/* Horizontal Buttons Container */
+.exocortex-buttons-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+/* Button wrapper styles for horizontal layout */
+.exocortex-mark-done-wrapper,
+.exocortex-trash-effort-wrapper,
+.exocortex-archive-task-wrapper,
+.exocortex-archive-wrapper,
+.exocortex-clean-properties-wrapper,
+.exocortex-repair-folder-wrapper,
+.exocortex-rename-to-uid-wrapper,
+.exocortex-create-task-wrapper,
+.exocortex-start-effort-wrapper,
+.exocortex-move-to-backlog-wrapper,
+.exocortex-shift-day-backward-wrapper,
+.exocortex-shift-day-forward-wrapper,
+.exocortex-plan-on-today-wrapper,
+.exocortex-create-instance-wrapper {
+  flex-shrink: 0;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .exocortex-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .exocortex-table {
+    font-size: 0.9em;
+  }
+
+  .exocortex-table th,
+  .exocortex-table td {
+    padding: 0.25em;
+  }
+
+  .exocortex-asset-header {
+    flex-direction: column;
+    gap: 0.5em;
+    align-items: flex-start;
+  }
+
+  .exocortex-create-button {
+    width: 100%;
+  }
+
+  /* Stack buttons vertically on mobile */
+  .exocortex-buttons-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .exocortex-mark-done-wrapper,
+  .exocortex-trash-effort-wrapper,
+  .exocortex-archive-task-wrapper,
+  .exocortex-archive-wrapper,
+  .exocortex-clean-properties-wrapper,
+  .exocortex-repair-folder-wrapper,
+  .exocortex-rename-to-uid-wrapper,
+  .exocortex-create-task-wrapper,
+  .exocortex-start-effort-wrapper,
+  .exocortex-move-to-backlog-wrapper,
+  .exocortex-shift-day-backward-wrapper,
+  .exocortex-shift-day-forward-wrapper,
+  .exocortex-plan-on-today-wrapper,
+  .exocortex-create-instance-wrapper {
+    width: 100%;
+  }
+}
+/* ============================================================================
+   Label Input Modal Styles
+   ============================================================================ */
+
+/* Modal container */
+.exocortex-label-input-modal .modal-content {
+  padding: 20px;
+}
+
+/* Modal description text */
+.exocortex-modal-description {
+  margin-bottom: 16px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Input container */
+.exocortex-modal-input-container {
+  margin-bottom: 20px;
+}
+
+/* Input field */
+.exocortex-modal-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 14px;
+}
+
+.exocortex-modal-input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+/* Button container */
+.modal-button-container {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.modal-button-container button {
+  padding: 8px 16px;
+  cursor: pointer;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--interactive-normal);
+  color: var(--text-normal);
+  font-size: 14px;
+  transition: background-color 0.1s ease;
+}
+
+.modal-button-container button:hover {
+  background-color: var(--interactive-hover);
+}
+
+.modal-button-container button.mod-cta {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+.modal-button-container button.mod-cta:hover {
+  background-color: var(--interactive-accent-hover);
+}

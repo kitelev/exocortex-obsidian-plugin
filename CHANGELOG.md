@@ -1,3 +1,20 @@
+## [12.15.7] - 2025-10-16
+
+### Fixed
+
+**Button Layout CSS**: Fixed button container styling to ensure all action buttons (Create Task, Move to Backlog, Start Effort, Plan on Today, Shift Day, Mark Done, Trash, Archive, Clean Properties, Repair Folder, Rename to UID) display properly in horizontal layout on desktop and adapt to vertical stacking on mobile devices (<768px width).
+
+- **Desktop Layout**: All buttons now display in a horizontal row with proper spacing
+- **Mobile Layout**: Buttons automatically stack vertically on narrow screens
+- **Complete Coverage**: Added missing CSS classes for all button wrapper components
+- **Responsive Design**: Maintains consistent user experience across all device sizes
+- **Visual Polish**: Proper flex layout with 8px gaps and wrap behavior
+
+**Technical Details:**
+- Added CSS classes for all button wrappers in horizontal layout section
+- Updated mobile responsive rules to include all button types
+- Ensures consistent flex-shrink behavior across all action buttons
+
 ## [12.15.6] - 2025-10-16
 
 ### Fixed
