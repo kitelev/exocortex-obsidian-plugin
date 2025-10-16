@@ -151,6 +151,17 @@
       ],
       "format": "esm"
     },
+    "src/presentation/components/DailyTasksTable.tsx": {
+      "bytes": 2952,
+      "imports": [
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "import-statement",
+          "original": "react"
+        }
+      ],
+      "format": "esm"
+    },
     "src/domain/commands/CommandVisibility.ts": {
       "bytes": 9738,
       "imports": [],
@@ -820,7 +831,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 35313,
+      "bytes": 41718,
       "imports": [
         {
           "path": "obsidian",
@@ -856,6 +867,11 @@
           "path": "src/presentation/components/AssetPropertiesTable.tsx",
           "kind": "import-statement",
           "original": "../components/AssetPropertiesTable"
+        },
+        {
+          "path": "src/presentation/components/DailyTasksTable.tsx",
+          "kind": "import-statement",
+          "original": "../components/DailyTasksTable"
         },
         {
           "path": "src/presentation/components/CreateTaskButton.tsx",
@@ -1154,7 +1170,7 @@
           "bytesInOutput": 1764
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 13423
+          "bytesInOutput": 16113
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -1170,6 +1186,9 @@
         },
         "src/presentation/components/AssetPropertiesTable.tsx": {
           "bytesInOutput": 1340
+        },
+        "src/presentation/components/DailyTasksTable.tsx": {
+          "bytesInOutput": 1434
         },
         "src/presentation/components/CreateTaskButton.tsx": {
           "bytesInOutput": 454
@@ -1256,7 +1275,7 @@
           "bytesInOutput": 2146
         }
       },
-      "bytes": 245987
+      "bytes": 250111
     }
   }
 }

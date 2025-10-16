@@ -1543,4 +1543,240 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(property2Rows?.[0]?.textContent).toContain("AssetA");
     });
   });
+
+  describe("Daily Tasks Table for pn__DailyNote", () => {
+    it("should render Tasks table for pn__DailyNote with tasks", async () => {
+      const currentFile = {
+        basename: "2025-10-16 Note",
+        path: "daily-notes/2025-10-16 Note.md",
+      } as TFile;
+
+      const taskFile = {
+        basename: "Task 1",
+        path: "tasks/task1.md",
+        stat: { ctime: Date.now(), mtime: Date.now() },
+      } as TFile;
+
+      // Setup mocks in same order as passing test
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: TFile) => {
+        if (file.path === "daily-notes/2025-10-16 Note.md") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "[[pn__DailyNote]]",
+              pn__DailyNote_day: "[[2025-10-16]]",
+              some_property: "value",
+            },
+          };
+        }
+        if (file.path === "tasks/task1.md") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Task",
+              exo__Asset_label: "Task 1",
+              ems__Effort_status: "[[ems__EffortStatusDoing]]",
+              ems__Effort_day: "[[2025-10-16]]",
+              some_reference: "[[2025-10-16 Note]]",
+            },
+          };
+        }
+        return { frontmatter: {} };
+      });
+
+      // Mock Dataview API
+      const mockDataviewApi = {
+        pages: jest.fn().mockReturnValue({
+          values: [
+            {
+              file: { path: "tasks/task1.md" },
+              ems__Effort_day: "[[2025-10-16]]",
+            },
+          ],
+        }),
+      };
+
+      (mockApp as any).plugins = {
+        plugins: {
+          dataview: { api: mockDataviewApi },
+        },
+      };
+
+      mockApp.metadataCache.resolvedLinks = {
+        "tasks/task1.md": { "daily-notes/2025-10-16 Note.md": 1 },
+      };
+
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(taskFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verify Tasks section header is present
+      const tasksHeader = container.querySelector(".exocortex-section-header");
+      expect(tasksHeader?.textContent).toBe("Tasks");
+
+      // Verify Tasks table is present
+      const tasksSection = container.querySelector(".exocortex-daily-tasks-section");
+      expect(tasksSection).toBeTruthy();
+
+      const tasksTable = tasksSection?.querySelector(".exocortex-tasks-table");
+      expect(tasksTable).toBeTruthy();
+    });
+
+    it("should NOT render Tasks table for non-DailyNote assets", async () => {
+      const currentFile = {
+        basename: "Regular Note",
+        path: "notes/regular.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Verify Tasks table is NOT present
+      const tasksSection = container.querySelector(".exocortex-daily-tasks-section");
+      expect(tasksSection).toBeFalsy();
+    });
+
+    it("should NOT render Tasks table when pn__DailyNote_day is missing", async () => {
+      const currentFile = {
+        basename: "Daily Note",
+        path: "daily-notes/note.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[pn__DailyNote]]",
+          // Missing pn__DailyNote_day
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Verify Tasks table is NOT present
+      const tasksSection = container.querySelector(".exocortex-daily-tasks-section");
+      expect(tasksSection).toBeFalsy();
+    });
+
+    it("should NOT render Tasks table when Dataview is not available", async () => {
+      const currentFile = {
+        basename: "2025-10-16 Note",
+        path: "daily-notes/2025-10-16 Note.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[pn__DailyNote]]",
+          pn__DailyNote_day: "[[2025-10-16]]",
+        },
+      });
+
+      // No Dataview API
+      (mockApp as any).plugins = {};
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Verify Tasks table is NOT present (graceful fallback)
+      const tasksSection = container.querySelector(".exocortex-daily-tasks-section");
+      expect(tasksSection).toBeFalsy();
+    });
+
+    it("should position Tasks table between Properties and Relations", async () => {
+      const currentFile = {
+        basename: "2025-10-16 Note",
+        path: "daily-notes/2025-10-16 Note.md",
+      } as TFile;
+
+      const relatedTask = {
+        basename: "Task 1",
+        path: "tasks/task1.md",
+        stat: { ctime: Date.now(), mtime: Date.now() },
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: TFile) => {
+        if (file.path === "daily-notes/2025-10-16 Note.md") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "[[pn__DailyNote]]",
+              pn__DailyNote_day: "[[2025-10-16]]",
+              some_property: "value",
+            },
+          };
+        }
+        if (file.path === "tasks/task1.md") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Task",
+              ems__Effort_day: "[[2025-10-16]]",
+              some_reference: "[[2025-10-16 Note]]",
+            },
+          };
+        }
+        return { frontmatter: {} };
+      });
+
+      // Mock Dataview API
+      const mockDataviewApi = {
+        pages: jest.fn().mockReturnValue({
+          values: [{ file: { path: "tasks/task1.md" }, ems__Effort_day: "[[2025-10-16]]" }],
+        }),
+      };
+
+      (mockApp as any).plugins = {
+        plugins: {
+          dataview: { api: mockDataviewApi },
+        },
+      };
+
+      mockApp.metadataCache.resolvedLinks = {
+        "tasks/task1.md": { "daily-notes/2025-10-16 Note.md": 1 },
+      };
+
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(relatedTask);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verify order: Properties -> Tasks -> Relations
+      const children = Array.from(container.children);
+      const propertiesIndex = children.findIndex((el) =>
+        el.classList.contains("exocortex-properties-section"),
+      );
+      const tasksIndex = children.findIndex((el) =>
+        el.classList.contains("exocortex-daily-tasks-section"),
+      );
+      const relationsIndex = children.findIndex((el) =>
+        el.classList.contains("exocortex-assets-relations"),
+      );
+
+      expect(propertiesIndex).toBeGreaterThanOrEqual(0);
+      expect(tasksIndex).toBeGreaterThanOrEqual(0);
+      expect(relationsIndex).toBeGreaterThanOrEqual(0);
+
+      // Tasks should be BETWEEN Properties and Relations
+      expect(tasksIndex).toBeGreaterThan(propertiesIndex);
+      expect(tasksIndex).toBeLessThan(relationsIndex);
+    });
+  });
 });

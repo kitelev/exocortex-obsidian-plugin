@@ -1,3 +1,28 @@
+## [12.15.5] - 2025-10-16
+
+### Added
+
+**Daily Tasks Table for pn__DailyNote**: When viewing daily notes (assets with `pn__DailyNote` class), a Tasks table now automatically displays between Properties and Relations sections, showing all tasks scheduled for that day. This provides an at-a-glance view of your daily agenda directly in your daily note.
+
+- **Automatic Display**: Tasks table appears only for `pn__DailyNote` assets with `pn__DailyNote_day` property
+- **Task Information**: Shows task name (with label), start time, end time, and status
+- **Visual Indicators**: Tasks display with icons - ✅ for completed, ❌ for trashed, 👥 for meetings
+- **Smart Sorting**: Tasks automatically sorted with trashed at bottom, completed next, active tasks first by start time
+- **Time Display**: Shows actual start/end times, or planned times if actual not set, or "-" if unscheduled
+- **Clickable Links**: Click task names to open task files (Cmd+Click for new tab)
+- **Status Links**: Click status to view status definition
+- **Label Support**: Displays `exo__Asset_label` for readable task names
+- **Performance**: Limited to 50 tasks per day
+- **Graceful Fallback**: If Dataview plugin not installed, table simply doesn't appear (no errors)
+
+**Technical Integration:**
+- Integrates with Dataview API to query tasks with `ems__Effort_day` matching the daily note's day
+- Uses existing React component architecture with DailyTasksTable component
+- Positioned strategically between Properties and Relations for optimal workflow
+- Respects existing Layout rendering patterns and styling
+
+**Use Case:** Perfect for daily planning and review - see your entire day's tasks in one place without running manual queries. Ideal for users managing multiple tasks per day across projects and areas.
+
 ## [12.15.4] - 2025-10-16
 
 ### Fixed
