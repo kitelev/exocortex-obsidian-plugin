@@ -130,7 +130,7 @@
       "format": "esm"
     },
     "src/presentation/components/AssetRelationsTable.tsx": {
-      "bytes": 8238,
+      "bytes": 9206,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -141,7 +141,7 @@
       "format": "esm"
     },
     "src/presentation/components/AssetPropertiesTable.tsx": {
-      "bytes": 2502,
+      "bytes": 2989,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -152,7 +152,7 @@
       "format": "esm"
     },
     "src/presentation/components/DailyTasksTable.tsx": {
-      "bytes": 2904,
+      "bytes": 3756,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -831,7 +831,7 @@
       "format": "esm"
     },
     "src/infrastructure/services/RenameToUidService.ts": {
-      "bytes": 1433,
+      "bytes": 1445,
       "imports": [
         {
           "path": "obsidian",
@@ -842,7 +842,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 49114,
+      "bytes": 49108,
       "imports": [
         {
           "path": "obsidian",
@@ -1025,7 +1025,7 @@
       "format": "esm"
     },
     "src/application/services/CommandManager.ts": {
-      "bytes": 20889,
+      "bytes": 20883,
       "imports": [
         {
           "path": "obsidian",
@@ -1191,7 +1191,7 @@
           "bytesInOutput": 1764
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 20273
+          "bytesInOutput": 20267
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -1203,13 +1203,13 @@
           "bytesInOutput": 284
         },
         "src/presentation/components/AssetRelationsTable.tsx": {
-          "bytesInOutput": 3458
+          "bytesInOutput": 3854
         },
         "src/presentation/components/AssetPropertiesTable.tsx": {
-          "bytesInOutput": 1339
+          "bytesInOutput": 1498
         },
         "src/presentation/components/DailyTasksTable.tsx": {
-          "bytesInOutput": 1398
+          "bytesInOutput": 1674
         },
         "src/presentation/components/ActionButtonsGroup.tsx": {
           "bytesInOutput": 819
@@ -1287,10 +1287,10 @@
           "bytesInOutput": 844
         },
         "src/infrastructure/services/RenameToUidService.ts": {
-          "bytesInOutput": 610
+          "bytesInOutput": 626
         },
         "src/application/services/CommandManager.ts": {
-          "bytesInOutput": 8746
+          "bytesInOutput": 8740
         },
         "src/infrastructure/services/SupervisionCreationService.ts": {
           "bytesInOutput": 1824
@@ -1299,7 +1299,7 @@
           "bytesInOutput": 2146
         }
       },
-      "bytes": 255058
+      "bytes": 255893
     }
   }
 }

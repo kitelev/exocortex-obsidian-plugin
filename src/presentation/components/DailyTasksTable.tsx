@@ -28,6 +28,30 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   onTaskClick,
   getAssetLabel,
 }) => {
+  interface WikiLink {
+    target: string;
+    alias?: string;
+  }
+
+  const parseWikiLink = (value: string): WikiLink => {
+    // Remove [[ and ]]
+    const content = value.replace(/^\[\[|\]\]$/g, "");
+
+    // Check if there's an alias (format: target|alias)
+    const pipeIndex = content.indexOf("|");
+
+    if (pipeIndex !== -1) {
+      return {
+        target: content.substring(0, pipeIndex).trim(),
+        alias: content.substring(pipeIndex + 1).trim()
+      };
+    }
+
+    return {
+      target: content.trim()
+    };
+  };
+
   const getDisplayName = (task: DailyTask): string => {
     const icon = task.isDone ? "✅ " : task.isTrashed ? "❌ " : task.isMeeting ? "👥 " : "";
 
@@ -76,22 +100,26 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
               <td className="task-start">{task.startTime || "-"}</td>
               <td className="task-end">{task.endTime || "-"}</td>
               <td className="task-status">
-                {task.status ? (
-                  <a
-                    data-href={task.status}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onTaskClick?.(task.status, e);
-                    }}
-                    className="internal-link"
-                    style={{ cursor: "pointer" }}
-                  >
-                    {task.status}
-                  </a>
-                ) : (
-                  "-"
-                )}
+                {task.status ? (() => {
+                  const isWikiLink = typeof task.status === "string" && /\[\[.*?\]\]/.test(task.status);
+                  const parsed = isWikiLink ? parseWikiLink(task.status) : { target: task.status };
+                  const displayText = parsed.alias || parsed.target;
+
+                  return (
+                    <a
+                      data-href={parsed.target}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onTaskClick?.(parsed.target, e);
+                      }}
+                      className="internal-link"
+                      style={{ cursor: "pointer" }}
+                    >
+                      {displayText}
+                    </a>
+                  );
+                })() : "-"}
               </td>
             </tr>
           ))}

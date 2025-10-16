@@ -1,3 +1,30 @@
+## [12.15.10] - 2025-10-16
+
+### Fixed
+
+**Wiki-Link Aliases Now Work Correctly in Layout Tables**: Links with aliases in format `[[Asset|Custom Name]]` now correctly navigate to the target asset while displaying the custom alias. Previously, clicking such links would attempt to open a non-existent file "Asset|Custom Name", breaking navigation.
+
+**Why this matters:**
+- **Proper Link Navigation**: Click on any link with an alias and you'll go to the right place
+- **Clean Display Names**: Show friendly names like "Q4 Planning" while linking to "task-2025-456"
+- **Works Everywhere**: Fixed in all three table types - Asset Relations, Daily Tasks, and Asset Properties
+- **Standard Obsidian Behavior**: Now handles wiki-link syntax exactly like Obsidian does
+
+**What's Fixed:**
+- **Asset Relations Tables**: Instance Class column displays and navigates correctly
+- **Daily Tasks Tables**: Status column links work with aliases
+- **Asset Properties Tables**: All property values with aliases now functional
+
+**Example:**
+- Before: Clicking `[[task-2025-456|Q4 Planning]]` would try to open "task-2025-456|Q4 Planning" (broken)
+- After: Clicking displays "Q4 Planning" but navigates to "task-2025-456" (correct)
+
+**Technical Details:**
+- Updated AssetRelationsTable.tsx, DailyTasksTable.tsx, AssetPropertiesTable.tsx
+- Improved wiki-link regex to correctly parse `[[target|alias]]` format
+- Extracts link target separately from display text
+- All 387 tests passing (100% coverage maintained)
+
 ## [12.15.9] - 2025-10-16
 
 ### Fixed

@@ -56,7 +56,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getInstanceClass = (metadata: Record<string, any>): string => {
+  const getInstanceClass = (metadata: Record<string, any>): WikiLink => {
     const instanceClassRaw =
       metadata?.exo__Instance_class || metadata?.["exo__Instance_class"] || "-";
 
@@ -64,7 +64,23 @@ const SingleTable: React.FC<SingleTableProps> = ({
       ? instanceClassRaw[0] || "-"
       : instanceClassRaw || "-";
 
-    return String(instanceClass).replace(/^\[\[|\]\]$/g, "");
+    if (instanceClass === "-") {
+      return { target: "-" };
+    }
+
+    const content = String(instanceClass).replace(/^\[\[|\]\]$/g, "");
+    const pipeIndex = content.indexOf("|");
+
+    if (pipeIndex !== -1) {
+      return {
+        target: content.substring(0, pipeIndex).trim(),
+        alias: content.substring(pipeIndex + 1).trim()
+      };
+    }
+
+    return {
+      target: content.trim()
+    };
   };
 
   const getDisplayLabel = (relation: AssetRelation): string => {
@@ -79,8 +95,28 @@ const SingleTable: React.FC<SingleTableProps> = ({
     return typeof value === "string" && /\[\[.*?\]\]/.test(value);
   };
 
-  const extractLinkTarget = (value: string): string => {
-    return value.replace(/^\[\[|\]\]$/g, "");
+  interface WikiLink {
+    target: string;
+    alias?: string;
+  }
+
+  const parseWikiLink = (value: string): WikiLink => {
+    // Remove [[ and ]]
+    const content = value.replace(/^\[\[|\]\]$/g, "");
+
+    // Check if there's an alias (format: target|alias)
+    const pipeIndex = content.indexOf("|");
+
+    if (pipeIndex !== -1) {
+      return {
+        target: content.substring(0, pipeIndex).trim(),
+        alias: content.substring(pipeIndex + 1).trim()
+      };
+    }
+
+    return {
+      target: content.trim()
+    };
   };
 
   const renderPropertyValue = (value: any): React.ReactNode => {
@@ -89,18 +125,18 @@ const SingleTable: React.FC<SingleTableProps> = ({
     }
 
     if (typeof value === "string" && isWikiLink(value)) {
-      const target = extractLinkTarget(value);
-      const label = getAssetLabel?.(target);
-      const displayText = label || target;
+      const parsed = parseWikiLink(value);
+      const label = getAssetLabel?.(parsed.target);
+      const displayText = parsed.alias || label || parsed.target;
 
       return (
         <a
-          data-href={target}
+          data-href={parsed.target}
           className="internal-link"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onAssetClick?.(target, e);
+            onAssetClick?.(parsed.target, e);
           }}
           style={{ cursor: 'pointer' }}
         >
@@ -130,8 +166,10 @@ const SingleTable: React.FC<SingleTableProps> = ({
         aVal = a.title.toLowerCase();
         bVal = b.title.toLowerCase();
       } else if (sortState.column === "exo__Instance_class") {
-        aVal = getInstanceClass(a.metadata).toLowerCase();
-        bVal = getInstanceClass(b.metadata).toLowerCase();
+        const aClass = getInstanceClass(a.metadata);
+        const bClass = getInstanceClass(b.metadata);
+        aVal = (aClass.alias || aClass.target).toLowerCase();
+        bVal = (bClass.alias || bClass.target).toLowerCase();
       } else {
         aVal = a[sortState.column as keyof AssetRelation];
         bVal = b[sortState.column as keyof AssetRelation];
@@ -195,18 +233,18 @@ const SingleTable: React.FC<SingleTableProps> = ({
                 </a>
               </td>
               <td className="instance-class">
-                {instanceClass !== "-" ? (
+                {instanceClass.target !== "-" ? (
                   <a
-                    data-href={instanceClass}
+                    data-href={instanceClass.target}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      onAssetClick?.(instanceClass, e);
+                      onAssetClick?.(instanceClass.target, e);
                     }}
                     className="internal-link"
                     style={{ cursor: 'pointer' }}
                   >
-                    {instanceClass}
+                    {instanceClass.alias || instanceClass.target}
                   </a>
                 ) : (
                   "-"

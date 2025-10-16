@@ -15,8 +15,28 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
     return typeof value === "string" && /\[\[.*?\]\]/.test(value);
   };
 
-  const extractLinkTarget = (value: string): string => {
-    return value.replace(/^\[\[|\]\]$/g, "");
+  interface WikiLink {
+    target: string;
+    alias?: string;
+  }
+
+  const parseWikiLink = (value: string): WikiLink => {
+    // Remove [[ and ]]
+    const content = value.replace(/^\[\[|\]\]$/g, "");
+
+    // Check if there's an alias (format: target|alias)
+    const pipeIndex = content.indexOf("|");
+
+    if (pipeIndex !== -1) {
+      return {
+        target: content.substring(0, pipeIndex).trim(),
+        alias: content.substring(pipeIndex + 1).trim()
+      };
+    }
+
+    return {
+      target: content.trim()
+    };
   };
 
   const renderValue = (value: any): React.ReactNode => {
@@ -34,20 +54,21 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
 
     if (typeof value === "string") {
       if (isWikiLink(value)) {
-        const target = extractLinkTarget(value);
-        const displayLabel = getAssetLabel?.(target) || target;
+        const parsed = parseWikiLink(value);
+        const label = getAssetLabel?.(parsed.target);
+        const displayText = parsed.alias || label || parsed.target;
         return (
           <a
-            data-href={target}
+            data-href={parsed.target}
             className="internal-link"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              onLinkClick?.(target, e);
+              onLinkClick?.(parsed.target, e);
             }}
             style={{ cursor: 'pointer' }}
           >
-            {displayLabel}
+            {displayText}
           </a>
         );
       }
