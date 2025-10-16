@@ -1,3 +1,32 @@
+## [12.15.11] - 2025-10-16
+
+### Enhanced
+
+**Effort Relations Now Show Status Column Automatically**: When viewing an Effort asset (Task, Project, etc.), the Relations table for `ems__Effort_parent` now automatically displays a Status column showing the status of each child effort. This makes it easy to see at a glance which child tasks are in progress, done, or backlog without opening each one.
+
+**Why this matters:**
+- **Instant Status Overview**: See the status of all child efforts directly in the Relations table - no need to open each task individually
+- **Better Project Management**: When viewing a Project, immediately see which child tasks are in progress, done, or waiting
+- **Automatic Display**: The Status column appears automatically for effort hierarchies - no configuration needed
+- **Consistent Information**: Status values are pulled directly from each effort's `ems__Effort_status` property
+
+**What you see:**
+- **Effort Relations Table**: Now includes an `ems__Effort_status` column for the `ems__Effort_parent` group
+- **Child Effort Status**: Each row shows the current status (Draft, Backlog, Doing, Done, Trashed)
+- **Works for All Efforts**: Tasks, Projects, and any other effort types with parent relationships
+
+**Example:**
+When viewing a Project with multiple child Tasks:
+- Before: Relations table only showed child task names and instance classes
+- After: Relations table shows names, classes, AND status for each child task
+- You can instantly see: 3 tasks in "Doing", 2 in "Backlog", 1 "Done"
+
+**Technical Details:**
+- Added `groupSpecificProperties` support to AssetRelationsTable component
+- UniversalLayoutRenderer automatically adds `ems__Effort_status` for `ems__Effort_parent` relations
+- Leverages existing property rendering system - status values display as clickable links
+- All 389 tests passing (100% coverage maintained)
+
 ## [12.15.10] - 2025-10-16
 
 ### Fixed
