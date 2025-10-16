@@ -1,3 +1,30 @@
+## [12.15.8] - 2025-10-16
+
+### Added
+
+**Beautiful Semantic Button Grouping**: All action buttons in Layout view now display with elegant, creative styling organized into meaningful semantic groups. Buttons are visually grouped by their purpose (Creation, Status, Planning, Maintenance) with color-coded variants and smooth animations for a premium user experience.
+
+**Why this matters:**
+- **Faster Navigation**: Instantly find the right action by semantic category
+- **Visual Clarity**: Color-coded buttons (blue for creation, green for completion, orange for planning, red for destructive actions)
+- **Professional Polish**: Gradient separators, hover effects, and responsive design
+- **Better Organization**: Related actions grouped together (e.g., "Shift Day ◀" and "Shift Day ▶" appear together)
+
+**Semantic Groups:**
+- **Creation** (Primary blue): Create Task, Create Instance
+- **Status** (Secondary/Green): Move to Backlog, Start Effort, Mark Done
+- **Planning** (Orange): Plan on Today, Shift Day Backward, Shift Day Forward
+- **Maintenance** (Secondary/Red): Trash, Archive, Clean Properties, Repair Folder, Rename to UID
+
+**Technical Implementation:**
+- New `ActionButtonsGroup` React component with semantic grouping architecture
+- 5 color-coded button variants: primary, secondary, success, warning, danger
+- Responsive design: horizontal layout on desktop, vertical stack on mobile (<768px)
+- Gradient separators between groups for visual hierarchy
+- Hover animations with transform and shadow effects
+- 10 comprehensive component tests ensuring quality
+- Complete test coverage: 387/387 tests passing (100%)
+
 ## [12.15.7] - 2025-10-16
 
 ### Fixed
