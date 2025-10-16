@@ -162,6 +162,17 @@
       ],
       "format": "esm"
     },
+    "src/presentation/components/ActionButtonsGroup.tsx": {
+      "bytes": 2372,
+      "imports": [
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "import-statement",
+          "original": "react"
+        }
+      ],
+      "format": "esm"
+    },
     "src/domain/commands/CommandVisibility.ts": {
       "bytes": 9738,
       "imports": [],
@@ -831,7 +842,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 43301,
+      "bytes": 49114,
       "imports": [
         {
           "path": "obsidian",
@@ -872,6 +883,16 @@
           "path": "src/presentation/components/DailyTasksTable.tsx",
           "kind": "import-statement",
           "original": "../components/DailyTasksTable"
+        },
+        {
+          "path": "src/presentation/components/ActionButtonsGroup.tsx",
+          "kind": "import-statement",
+          "original": "../components/ActionButtonsGroup"
+        },
+        {
+          "path": "src/domain/commands/CommandVisibility.ts",
+          "kind": "import-statement",
+          "original": "../../domain/commands/CommandVisibility"
         },
         {
           "path": "src/presentation/components/CreateTaskButton.tsx",
@@ -1143,7 +1164,7 @@
           "bytesInOutput": 7401
         },
         "node_modules/react/index.js": {
-          "bytesInOutput": 51
+          "bytesInOutput": 50
         },
         "node_modules/scheduler/cjs/scheduler.production.js": {
           "bytesInOutput": 3530
@@ -1152,13 +1173,13 @@
           "bytesInOutput": 51
         },
         "node_modules/react-dom/cjs/react-dom.production.js": {
-          "bytesInOutput": 3343
+          "bytesInOutput": 3342
         },
         "node_modules/react-dom/index.js": {
           "bytesInOutput": 246
         },
         "node_modules/react-dom/cjs/react-dom-client.production.js": {
-          "bytesInOutput": 175436
+          "bytesInOutput": 175457
         },
         "node_modules/react-dom/client.js": {
           "bytesInOutput": 246
@@ -1170,7 +1191,7 @@
           "bytesInOutput": 1764
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 17432
+          "bytesInOutput": 20273
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -1182,55 +1203,58 @@
           "bytesInOutput": 284
         },
         "src/presentation/components/AssetRelationsTable.tsx": {
-          "bytesInOutput": 3459
+          "bytesInOutput": 3458
         },
         "src/presentation/components/AssetPropertiesTable.tsx": {
-          "bytesInOutput": 1340
+          "bytesInOutput": 1339
         },
         "src/presentation/components/DailyTasksTable.tsx": {
-          "bytesInOutput": 1399
+          "bytesInOutput": 1398
         },
-        "src/presentation/components/CreateTaskButton.tsx": {
-          "bytesInOutput": 454
+        "src/presentation/components/ActionButtonsGroup.tsx": {
+          "bytesInOutput": 819
         },
         "src/domain/commands/CommandVisibility.ts": {
           "bytesInOutput": 2459
         },
+        "src/presentation/components/CreateTaskButton.tsx": {
+          "bytesInOutput": 453
+        },
         "src/presentation/components/CreateInstanceButton.tsx": {
-          "bytesInOutput": 466
+          "bytesInOutput": 465
         },
         "src/presentation/components/MoveToBacklogButton.tsx": {
-          "bytesInOutput": 463
+          "bytesInOutput": 462
         },
         "src/presentation/components/StartEffortButton.tsx": {
-          "bytesInOutput": 460
-        },
-        "src/presentation/components/PlanOnTodayButton.tsx": {
           "bytesInOutput": 459
         },
+        "src/presentation/components/PlanOnTodayButton.tsx": {
+          "bytesInOutput": 458
+        },
         "src/presentation/components/ShiftDayBackwardButton.tsx": {
-          "bytesInOutput": 466
+          "bytesInOutput": 465
         },
         "src/presentation/components/ShiftDayForwardButton.tsx": {
-          "bytesInOutput": 464
+          "bytesInOutput": 463
         },
         "src/presentation/components/MarkTaskDoneButton.tsx": {
-          "bytesInOutput": 446
+          "bytesInOutput": 445
         },
         "src/presentation/components/TrashEffortButton.tsx": {
-          "bytesInOutput": 440
+          "bytesInOutput": 439
         },
         "src/presentation/components/ArchiveTaskButton.tsx": {
-          "bytesInOutput": 516
+          "bytesInOutput": 515
         },
         "src/presentation/components/CleanEmptyPropertiesButton.tsx": {
-          "bytesInOutput": 452
+          "bytesInOutput": 451
         },
         "src/presentation/components/RepairFolderButton.tsx": {
-          "bytesInOutput": 420
+          "bytesInOutput": 419
         },
         "src/presentation/components/RenameToUidButton.tsx": {
-          "bytesInOutput": 587
+          "bytesInOutput": 586
         },
         "src/presentation/modals/LabelInputModal.ts": {
           "bytesInOutput": 1209
@@ -1275,7 +1299,7 @@
           "bytesInOutput": 2146
         }
       },
-      "bytes": 251395
+      "bytes": 255058
     }
   }
 }

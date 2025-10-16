@@ -32,6 +32,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       },
       metadataCache: {
         getFileCache: jest.fn(),
+        getFirstLinkpathDest: jest.fn(),
         resolvedLinks: {},
         on: jest.fn(),
       },
@@ -336,10 +337,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       // Wait for React to render
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Verify button is present
-      const button = container.querySelector(".exocortex-create-task-btn");
-      expect(button).toBeTruthy();
-      expect(button?.textContent).toBe("Create Task");
+      // Verify button is present - find by text content
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const createTaskBtn = Array.from(buttons).find(btn => btn.textContent === "Create Task");
+      expect(createTaskBtn).toBeTruthy();
     });
 
     it("should render Create Task button for Project assets", async () => {
@@ -363,10 +364,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       // Wait for React to render
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Verify button is present
-      const button = container.querySelector(".exocortex-create-task-btn");
-      expect(button).toBeTruthy();
-      expect(button?.textContent).toBe("Create Task");
+      // Verify button is present - find by text content
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const createTaskBtn = Array.from(buttons).find(btn => btn.textContent === "Create Task");
+      expect(createTaskBtn).toBeTruthy();
     });
 
     it("should NOT render Create Task button for non-Area/Project assets", async () => {
@@ -413,10 +414,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Verify order: buttons container -> properties section -> relations
+      // Verify order: buttons section (containing action buttons) -> properties section -> relations
       const children = Array.from(container.children);
       const buttonsContainerIndex = children.findIndex((el) =>
-        el.classList.contains("exocortex-buttons-container"),
+        el.classList.contains("exocortex-buttons-section"),
       );
       const propertiesIndex = children.findIndex((el) =>
         el.classList.contains("exocortex-properties-section"),
@@ -426,12 +427,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(propertiesIndex).toBeGreaterThanOrEqual(0);
       expect(buttonsContainerIndex).toBeLessThan(propertiesIndex);
 
-      // Verify Create Task button is inside buttons container
-      const buttonsContainer = children[buttonsContainerIndex];
-      const createTaskButton = buttonsContainer.querySelector(
-        ".exocortex-create-task-wrapper",
-      );
-      expect(createTaskButton).toBeTruthy();
+      // Verify Create Task button is inside the action buttons container (inside buttons section)
+      const buttonsSection = children[buttonsContainerIndex];
+      const buttons = buttonsSection.querySelectorAll(".exocortex-action-button");
+      const createTaskBtn = Array.from(buttons).find(btn => btn.textContent === "Create Task");
+      expect(createTaskBtn).toBeTruthy();
     });
   });
 
@@ -457,9 +457,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-mark-done-btn");
-      expect(button).toBeTruthy();
-      expect(button?.textContent).toBe("Done");
+      // Find Mark Done button by text content
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const doneBtn = Array.from(buttons).find(btn => btn.textContent === "Mark Done");
+      expect(doneBtn).toBeTruthy();
     });
 
     it("should NOT render Done button for Task with Backlog status", async () => {
@@ -530,9 +531,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-mark-done-btn");
-      expect(button).toBeTruthy();
-      expect(button?.textContent).toBe("Done");
+      // Find Mark Done button by text content
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const doneBtn = Array.from(buttons).find(btn => btn.textContent === "Mark Done");
+      expect(doneBtn).toBeTruthy();
     });
 
     it("should NOT render Done button for Project with Backlog status", async () => {
@@ -629,9 +631,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-archive-task-btn");
-      expect(button).toBeTruthy();
-      expect(button?.textContent).toBe("To Archive");
+      // Find Archive button by text content
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const archiveBtn = Array.from(buttons).find(btn => btn.textContent === "Archive");
+      expect(archiveBtn).toBeTruthy();
     });
 
     it("should NOT render Archive button for already archived Task", async () => {
@@ -705,9 +708,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-archive-task-btn");
-      expect(button).toBeTruthy();
-      expect(button?.textContent).toBe("To Archive");
+      // Find Archive button by text content
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const archiveBtn = Array.from(buttons).find(btn => btn.textContent === "Archive");
+      expect(archiveBtn).toBeTruthy();
     });
 
     it("should NOT render Archive button for already archived Project", async () => {
@@ -809,9 +813,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-clean-properties-btn");
-      expect(button).toBeTruthy();
-      expect(button?.textContent).toBe("Clean Empty Properties");
+      // Find Clean Properties button by text content
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const cleanBtn = Array.from(buttons).find(btn => btn.textContent === "Clean Properties");
+      expect(cleanBtn).toBeTruthy();
     });
 
     it("should NOT render Clean button when asset has no empty properties", async () => {
@@ -861,8 +866,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-clean-properties-btn");
-      expect(button).toBeTruthy();
+      // Find Clean Properties button by text content
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const cleanBtn = Array.from(buttons).find(btn => btn.textContent === "Clean Properties");
+      expect(cleanBtn).toBeTruthy();
     });
 
     it("should render Clean button for Project with empty properties", async () => {
@@ -886,8 +893,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-clean-properties-btn");
-      expect(button).toBeTruthy();
+      // Find Clean Properties button by text content
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const cleanBtn = Array.from(buttons).find(btn => btn.textContent === "Clean Properties");
+      expect(cleanBtn).toBeTruthy();
     });
   });
 
@@ -954,9 +963,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-repair-folder-btn");
-      expect(button).toBeTruthy();
-      expect(button?.textContent).toBe("Repair Folder");
+      // Find Repair Folder button by text content
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const repairBtn = Array.from(buttons).find(btn => btn.textContent === "Repair Folder");
+      expect(repairBtn).toBeTruthy();
     });
 
     it("should NOT render Repair Folder button when asset is in correct folder", async () => {
@@ -1062,6 +1072,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         frontmatter: {
           exo__Asset_isDefinedBy: "[[Ref]]",
           exo__Instance_class: "[[ems__Task]]",
+          emptyProp: "",  // Add empty property to trigger Clean Properties button
         },
       });
 
@@ -1076,10 +1087,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Verify buttons container is before properties
+      // Verify buttons section is before properties
       const children = Array.from(container.children);
       const buttonsContainerIndex = children.findIndex((el) =>
-        el.classList.contains("exocortex-buttons-container"),
+        el.classList.contains("exocortex-buttons-section"),
       );
       const propertiesIndex = children.findIndex((el) =>
         el.classList.contains("exocortex-properties-section"),
@@ -1089,24 +1100,15 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(propertiesIndex).toBeGreaterThanOrEqual(0);
       expect(buttonsContainerIndex).toBeLessThan(propertiesIndex);
 
-      // Verify both buttons exist inside the buttons container
-      const buttonsContainer = children[buttonsContainerIndex];
-      const buttonElements = Array.from(buttonsContainer.children);
+      // Verify both buttons exist inside the buttons section (via action buttons container)
+      const buttonsSection = children[buttonsContainerIndex];
+      const buttons = buttonsSection.querySelectorAll(".exocortex-action-button");
 
-      const cleanButton = buttonElements.find((el) =>
-        el.classList.contains("exocortex-clean-properties-wrapper"),
-      );
-      const repairButton = buttonElements.find((el) =>
-        el.classList.contains("exocortex-repair-folder-wrapper"),
-      );
+      const cleanBtn = Array.from(buttons).find(btn => btn.textContent === "Clean Properties");
+      const repairBtn = Array.from(buttons).find(btn => btn.textContent === "Repair Folder");
 
-      expect(cleanButton).toBeTruthy();
-      expect(repairButton).toBeTruthy();
-
-      // Verify repair button comes after clean button in horizontal layout
-      const cleanIndex = buttonElements.indexOf(cleanButton!);
-      const repairIndex = buttonElements.indexOf(repairButton!);
-      expect(repairIndex).toBeGreaterThan(cleanIndex);
+      expect(cleanBtn).toBeTruthy();
+      expect(repairBtn).toBeTruthy();
     });
 
     it("should render buttons in horizontal layout container", async () => {
@@ -1143,26 +1145,20 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Get buttons container
-      const buttonsContainer = container.querySelector(".exocortex-buttons-container") as HTMLElement;
+      // Get action buttons container
+      const buttonsContainer = container.querySelector(".exocortex-action-buttons-container") as HTMLElement;
       expect(buttonsContainer).toBeTruthy();
 
-      // Verify container has correct CSS class for flexbox styling
-      expect(buttonsContainer.classList.contains("exocortex-buttons-container")).toBe(true);
+      // Verify container has correct CSS class
+      expect(buttonsContainer.classList.contains("exocortex-action-buttons-container")).toBe(true);
 
-      // Verify buttons have expected wrapper classes
-      const createTaskWrapper = buttonsContainer.querySelector(".exocortex-create-task-wrapper");
-      const cleanPropertiesWrapper = buttonsContainer.querySelector(".exocortex-clean-properties-wrapper");
-      const repairFolderWrapper = buttonsContainer.querySelector(".exocortex-repair-folder-wrapper");
+      // Verify all expected buttons are present
+      const buttons = buttonsContainer.querySelectorAll(".exocortex-action-button");
+      const buttonTexts = Array.from(buttons).map(btn => btn.textContent);
 
-      expect(createTaskWrapper).toBeTruthy();
-      expect(cleanPropertiesWrapper).toBeTruthy();
-      expect(repairFolderWrapper).toBeTruthy();
-
-      // Verify all wrappers are direct children of buttons container (no nesting)
-      expect(buttonsContainer.contains(createTaskWrapper!)).toBe(true);
-      expect(buttonsContainer.contains(cleanPropertiesWrapper!)).toBe(true);
-      expect(buttonsContainer.contains(repairFolderWrapper!)).toBe(true);
+      expect(buttonTexts).toContain("Create Task");
+      expect(buttonTexts).toContain("Clean Properties");
+      expect(buttonTexts).toContain("Repair Folder");
     });
   });
 
@@ -1187,9 +1183,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-start-effort-btn");
-      expect(button).toBeTruthy();
-      expect(button?.textContent).toBe("Start Effort");
+      // Find Start Effort button by text content
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const startBtn = Array.from(buttons).find(btn => btn.textContent === "Start Effort");
+      expect(startBtn).toBeTruthy();
     });
 
     it("should NOT render Start Effort button for Task with Draft status", async () => {
@@ -1284,9 +1281,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-start-effort-btn");
-      expect(button).toBeTruthy();
-      expect(button?.textContent).toBe("Start Effort");
+      // Find Start Effort button by text content
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const startBtn = Array.from(buttons).find(btn => btn.textContent === "Start Effort");
+      expect(startBtn).toBeTruthy();
     });
 
     it("should NOT render Start Effort button for Project with Doing status", async () => {

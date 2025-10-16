@@ -6,6 +6,23 @@ import { ReactRenderer } from "../utils/ReactRenderer";
 import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
 import { DailyTasksTable, DailyTask } from "../components/DailyTasksTable";
+import { ActionButtonsGroup, ButtonGroup, ActionButton } from "../components/ActionButtonsGroup";
+import {
+  canCreateTask,
+  canCreateInstance,
+  canMoveToBacklog,
+  canStartEffort,
+  canMarkDone,
+  canPlanOnToday,
+  canShiftDayBackward,
+  canShiftDayForward,
+  canTrashEffort,
+  canArchiveTask,
+  canCleanProperties,
+  canRepairFolder,
+  canRenameToUid,
+  CommandVisibilityContext,
+} from "../../domain/commands/CommandVisibility";
 import { CreateTaskButton } from "../components/CreateTaskButton";
 import { CreateInstanceButton } from "../components/CreateInstanceButton";
 import { MoveToBacklogButton } from "../components/MoveToBacklogButton";
@@ -143,6 +160,260 @@ export class UniversalLayoutRenderer {
   }
 
   /**
+   * Build action button groups with semantic organization
+   */
+  private async buildActionButtonGroups(file: TFile): Promise<ButtonGroup[]> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+    const currentStatus = metadata.ems__Effort_status || null;
+    const isArchived = metadata.archived ?? metadata.exo__Asset_isArchived ?? null;
+    const currentFolder = file.parent?.path || "";
+    const expectedFolder = await this.folderRepairService.getExpectedFolder(file, metadata);
+
+    const context: CommandVisibilityContext = {
+      instanceClass,
+      currentStatus,
+      metadata,
+      isArchived,
+      currentFolder,
+      expectedFolder,
+    };
+
+    const groups: ButtonGroup[] = [];
+
+    // Creation Group - Primary actions
+    const creationButtons: ActionButton[] = [
+      {
+        id: "create-task",
+        label: "Create Task",
+        variant: "primary",
+        visible: canCreateTask(context),
+        onClick: async () => {
+          const label = await new Promise<string | null>((resolve) => {
+            new LabelInputModal(this.app, resolve).open();
+          });
+          if (label === null) return;
+
+          const sourceClass = Array.isArray(instanceClass)
+            ? (instanceClass[0] || "").replace(/\[\[|\]\]/g, "").trim()
+            : (instanceClass || "").replace(/\[\[|\]\]/g, "").trim();
+
+          const createdFile = await this.taskCreationService.createTask(file, metadata, sourceClass, label);
+          const leaf = this.app.workspace.getLeaf("tab");
+          await leaf.openFile(createdFile);
+          this.app.workspace.setActiveLeaf(leaf, { focus: true });
+          this.logger.info(`Created Task from ${sourceClass}: ${createdFile.path}`);
+        },
+      },
+      {
+        id: "create-instance",
+        label: "Create Instance",
+        variant: "primary",
+        visible: canCreateInstance(context),
+        onClick: async () => {
+          const label = await new Promise<string | null>((resolve) => {
+            new LabelInputModal(this.app, resolve).open();
+          });
+          if (label === null) return;
+
+          const sourceClass = Array.isArray(instanceClass)
+            ? (instanceClass[0] || "").replace(/\[\[|\]\]/g, "").trim()
+            : (instanceClass || "").replace(/\[\[|\]\]/g, "").trim();
+
+          const createdFile = await this.taskCreationService.createTask(file, metadata, sourceClass, label);
+          const leaf = this.app.workspace.getLeaf("tab");
+          await leaf.openFile(createdFile);
+          this.app.workspace.setActiveLeaf(leaf, { focus: true });
+          this.logger.info(`Created Instance from TaskPrototype: ${createdFile.path}`);
+        },
+      },
+    ];
+
+    if (creationButtons.some(btn => btn.visible)) {
+      groups.push({
+        id: "creation",
+        title: "Creation",
+        buttons: creationButtons,
+      });
+    }
+
+    // Status Group - Status transitions
+    const statusButtons: ActionButton[] = [
+      {
+        id: "move-to-backlog",
+        label: "Move to Backlog",
+        variant: "secondary",
+        visible: canMoveToBacklog(context),
+        onClick: async () => {
+          await this.taskStatusService.moveToBacklog(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Moved to Backlog: ${file.path}`);
+        },
+      },
+      {
+        id: "start-effort",
+        label: "Start Effort",
+        variant: "secondary",
+        visible: canStartEffort(context),
+        onClick: async () => {
+          await this.taskStatusService.startEffort(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Started effort: ${file.path}`);
+        },
+      },
+      {
+        id: "mark-done",
+        label: "Mark Done",
+        variant: "success",
+        visible: canMarkDone(context),
+        onClick: async () => {
+          await this.taskStatusService.markTaskAsDone(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Marked task as Done: ${file.path}`);
+        },
+      },
+    ];
+
+    if (statusButtons.some(btn => btn.visible)) {
+      groups.push({
+        id: "status",
+        title: "Status",
+        buttons: statusButtons,
+      });
+    }
+
+    // Planning Group - Planning actions
+    const planningButtons: ActionButton[] = [
+      {
+        id: "plan-on-today",
+        label: "Plan on Today",
+        variant: "warning",
+        visible: canPlanOnToday(context),
+        onClick: async () => {
+          await this.taskStatusService.planOnToday(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Planned on today: ${file.path}`);
+        },
+      },
+      {
+        id: "shift-day-backward",
+        label: "Shift Day ◀",
+        variant: "warning",
+        visible: canShiftDayBackward(context),
+        onClick: async () => {
+          await this.taskStatusService.shiftDayBackward(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Day shifted backward: ${file.path}`);
+        },
+      },
+      {
+        id: "shift-day-forward",
+        label: "Shift Day ▶",
+        variant: "warning",
+        visible: canShiftDayForward(context),
+        onClick: async () => {
+          await this.taskStatusService.shiftDayForward(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Day shifted forward: ${file.path}`);
+        },
+      },
+    ];
+
+    if (planningButtons.some(btn => btn.visible)) {
+      groups.push({
+        id: "planning",
+        title: "Planning",
+        buttons: planningButtons,
+      });
+    }
+
+    // Maintenance Group - Maintenance actions
+    const maintenanceButtons: ActionButton[] = [
+      {
+        id: "trash",
+        label: "Trash",
+        variant: "danger",
+        visible: canTrashEffort(context),
+        onClick: async () => {
+          await this.taskStatusService.trashEffort(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Trashed effort: ${file.path}`);
+        },
+      },
+      {
+        id: "archive",
+        label: "Archive",
+        variant: "danger",
+        visible: canArchiveTask(context),
+        onClick: async () => {
+          await this.taskStatusService.archiveTask(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Archived task: ${file.path}`);
+        },
+      },
+      {
+        id: "clean-properties",
+        label: "Clean Properties",
+        variant: "secondary",
+        visible: canCleanProperties(context),
+        onClick: async () => {
+          await this.propertyCleanupService.cleanEmptyProperties(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Cleaned empty properties: ${file.path}`);
+        },
+      },
+      {
+        id: "repair-folder",
+        label: "Repair Folder",
+        variant: "secondary",
+        visible: canRepairFolder(context),
+        onClick: async () => {
+          if (expectedFolder) {
+            await this.folderRepairService.repairFolder(file, expectedFolder);
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            await this.refresh();
+            this.logger.info(`Repaired folder for ${file.path}: ${currentFolder} -> ${expectedFolder}`);
+          }
+        },
+      },
+      {
+        id: "rename-to-uid",
+        label: "Rename to UID",
+        variant: "secondary",
+        visible: canRenameToUid(context, file.basename),
+        onClick: async () => {
+          const oldName = file.basename;
+          const uid = metadata.exo__Asset_uid;
+          await this.renameToUidService.renameToUid(file, metadata);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Renamed "${oldName}" to "${uid}"`);
+        },
+      },
+    ];
+
+    if (maintenanceButtons.some(btn => btn.visible)) {
+      groups.push({
+        id: "maintenance",
+        title: "Maintenance",
+        buttons: maintenanceButtons,
+      });
+    }
+
+    return groups;
+  }
+
+  /**
    * Render the UniversalLayout view with Asset Properties and Assets Relations
    */
   public async render(
@@ -162,47 +433,15 @@ export class UniversalLayoutRenderer {
         return;
       }
 
-      // Create horizontal buttons container
-      const buttonsContainer = el.createDiv({ cls: "exocortex-buttons-container" });
-
-      // Render Create Task button FIRST (above properties)
-      await this.renderCreateTaskButton(buttonsContainer, currentFile);
-
-      // Render Create Instance button (for TaskPrototype assets)
-      await this.renderCreateInstanceButton(buttonsContainer, currentFile);
-
-      // Render Move to Backlog button (for Task/Project assets with Draft status)
-      await this.renderMoveToBacklogButton(buttonsContainer, currentFile);
-
-      // Render Start Effort button (for Task/Project assets with Backlog status)
-      await this.renderStartEffortButton(buttonsContainer, currentFile);
-
-      // Render Plan on Today button (for Task/Project assets)
-      await this.renderPlanOnTodayButton(buttonsContainer, currentFile);
-
-      // Render Shift Day Backward button (for Task/Project assets with ems__Effort_day)
-      await this.renderShiftDayBackwardButton(buttonsContainer, currentFile);
-
-      // Render Shift Day Forward button (for Task/Project assets with ems__Effort_day)
-      await this.renderShiftDayForwardButton(buttonsContainer, currentFile);
-
-      // Render Mark Task Done button (for Task assets)
-      await this.renderMarkTaskDoneButton(buttonsContainer, currentFile);
-
-      // Render Trash Effort button (for Task/Project assets)
-      await this.renderTrashEffortButton(buttonsContainer, currentFile);
-
-      // Render Archive Task button (for completed Task assets)
-      await this.renderArchiveTaskButton(buttonsContainer, currentFile);
-
-      // Render Clean Empty Properties button (for all assets)
-      await this.renderCleanEmptyPropertiesButton(buttonsContainer, currentFile);
-
-      // Render Repair Folder button (for all assets with exo__Asset_isDefinedBy)
-      await this.renderRepairFolderButton(buttonsContainer, currentFile);
-
-      // Render Rename to UID button (when filename doesn't match UID)
-      await this.renderRenameToUidButton(buttonsContainer, currentFile);
+      // Render action buttons with semantic grouping
+      const buttonGroups = await this.buildActionButtonGroups(currentFile);
+      if (buttonGroups.length > 0) {
+        const buttonsContainer = el.createDiv({ cls: "exocortex-buttons-section" });
+        this.reactRenderer.render(
+          buttonsContainer,
+          React.createElement(ActionButtonsGroup, { groups: buttonGroups }),
+        );
+      }
 
       // Render asset properties
       await this.renderAssetProperties(el, currentFile);
