@@ -52,7 +52,7 @@ export class CommandManager {
     this.propertyCleanupService = new PropertyCleanupService(app.vault);
     this.folderRepairService = new FolderRepairService(app.vault, app);
     this.supervisionCreationService = new SupervisionCreationService(app.vault);
-    this.renameToUidService = new RenameToUidService(app.vault);
+    this.renameToUidService = new RenameToUidService(app);
   }
 
   /**
