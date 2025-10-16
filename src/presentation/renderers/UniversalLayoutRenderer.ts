@@ -1279,10 +1279,11 @@ export class UniversalLayoutRenderer {
    * 3. null (caller should use filename)
    */
   private getAssetLabel(path: string): string | null {
-    let file = this.app.vault.getAbstractFileByPath(path);
+    // Use getFirstLinkpathDest to resolve file regardless of vault location
+    let file = this.app.metadataCache.getFirstLinkpathDest(path, "");
 
     if (!file && !path.endsWith('.md')) {
-      file = this.app.vault.getAbstractFileByPath(path + '.md');
+      file = this.app.metadataCache.getFirstLinkpathDest(path + '.md', "");
     }
 
     if (
@@ -1312,8 +1313,8 @@ export class UniversalLayoutRenderer {
         : null;
 
       if (prototypePath) {
-        // Try with .md extension
-        const prototypeFile = this.app.vault.getAbstractFileByPath(prototypePath + ".md");
+        // Use getFirstLinkpathDest to resolve prototype file regardless of vault location
+        const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
         if (prototypeFile && typeof prototypeFile === "object" && "path" in prototypeFile) {
           const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile as TFile);
           const prototypeMetadata = prototypeCache?.frontmatter || {};
