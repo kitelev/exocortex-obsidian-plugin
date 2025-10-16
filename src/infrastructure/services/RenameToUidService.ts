@@ -1,7 +1,7 @@
-import { TFile, Vault } from "obsidian";
+import { TFile, App } from "obsidian";
 
 export class RenameToUidService {
-  constructor(private vault: Vault) {}
+  constructor(private app: App) {}
 
   async renameToUid(file: TFile, metadata: Record<string, any>): Promise<void> {
     const uid = metadata.exo__Asset_uid;
@@ -27,11 +27,11 @@ export class RenameToUidService {
     const folderPath = file.parent?.path || "";
     const newPath = folderPath ? `${folderPath}/${targetBasename}.md` : `${targetBasename}.md`;
 
-    await this.vault.rename(file, newPath);
+    await this.app.fileManager.renameFile(file, newPath);
   }
 
   private async updateLabel(file: TFile, label: string): Promise<void> {
-    await this.vault.process(file, (content) => {
+    await this.app.vault.process(file, (content) => {
       const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
       const match = content.match(frontmatterRegex);
 

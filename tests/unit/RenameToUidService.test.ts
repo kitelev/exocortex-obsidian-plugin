@@ -2,7 +2,9 @@ import { RenameToUidService } from "../../src/infrastructure/services/RenameToUi
 
 describe("RenameToUidService", () => {
   let service: RenameToUidService;
+  let mockApp: any;
   let mockVault: any;
+  let mockFileManager: any;
 
   beforeEach(() => {
     mockVault = {
@@ -17,7 +19,17 @@ Test content`;
         return Promise.resolve(callback(content));
       }),
     };
-    service = new RenameToUidService(mockVault);
+
+    mockFileManager = {
+      renameFile: jest.fn().mockResolvedValue(undefined),
+    };
+
+    mockApp = {
+      vault: mockVault,
+      fileManager: mockFileManager,
+    };
+
+    service = new RenameToUidService(mockApp);
   });
 
   describe("renameToUid", () => {
@@ -63,7 +75,7 @@ Test content`;
       await service.renameToUid(mockFile, metadata);
 
       expect(mockVault.process).toHaveBeenCalledTimes(1);
-      expect(mockVault.rename).toHaveBeenCalledWith(
+      expect(mockFileManager.renameFile).toHaveBeenCalledWith(
         mockFile,
         "03 Knowledge/user/abc-123-def.md",
       );
@@ -83,7 +95,7 @@ Test content`;
       await service.renameToUid(mockFile, metadata);
 
       expect(mockVault.process).not.toHaveBeenCalled();
-      expect(mockVault.rename).toHaveBeenCalledWith(
+      expect(mockFileManager.renameFile).toHaveBeenCalledWith(
         mockFile,
         "03 Knowledge/user/abc-123-def.md",
       );
@@ -101,7 +113,7 @@ Test content`;
 
       await service.renameToUid(mockFile, metadata);
 
-      expect(mockVault.rename).toHaveBeenCalledWith(mockFile, "root-uid-123.md");
+      expect(mockFileManager.renameFile).toHaveBeenCalledWith(mockFile, "root-uid-123.md");
     });
 
     it("should add label property to frontmatter when needed", async () => {

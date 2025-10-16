@@ -1,3 +1,27 @@
+## [12.15.9] - 2025-10-16
+
+### Fixed
+
+**Rename to UID Now Auto-Updates Links**: The "Rename to UID" command now properly updates all references to the renamed file throughout your vault. When you rename an asset to match its UID, all wiki-links pointing to that file are automatically updated to reflect the new name, preventing broken links.
+
+**Why this matters:**
+- **No More Broken Links**: Previously, renaming a file would break all links from other notes. Now links stay connected automatically.
+- **Seamless Organization**: Rename your assets to their UIDs with confidence - your knowledge graph stays intact.
+- **Standard Obsidian Behavior**: Uses Obsidian's native `fileManager.renameFile()` API, ensuring compatibility with all other plugins and features.
+
+**Example:**
+- You have a task named "Buy groceries" with UID `task-2025-123`
+- Other notes link to it as `[[Buy groceries]]`
+- When you click "Rename to UID", the file becomes `task-2025-123.md`
+- **Automatically**: All `[[Buy groceries]]` links update to `[[task-2025-123]]`
+- Your knowledge graph remains connected ✨
+
+**Technical Details:**
+- Switched from `vault.rename()` to `app.fileManager.renameFile()` in RenameToUidService
+- fileManager API handles link updates automatically across the entire vault
+- Updated CommandManager and UniversalLayoutRenderer to pass full App context
+- All 387 tests passing (100% coverage maintained)
+
 ## [12.15.8] - 2025-10-16
 
 ### Added

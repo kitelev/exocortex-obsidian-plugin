@@ -95,7 +95,7 @@ export class UniversalLayoutRenderer {
     this.taskStatusService = new TaskStatusService(this.app.vault);
     this.propertyCleanupService = new PropertyCleanupService(this.app.vault);
     this.folderRepairService = new FolderRepairService(this.app.vault, this.app);
-    this.renameToUidService = new RenameToUidService(this.app.vault);
+    this.renameToUidService = new RenameToUidService(this.app);
   }
 
   private taskCreationService: TaskCreationService;

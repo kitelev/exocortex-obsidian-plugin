@@ -512,11 +512,13 @@ export class App {
   vault: Vault;
   workspace: Workspace;
   metadataCache: MetadataCache;
+  fileManager: FileManager;
 
   constructor() {
     this.vault = new Vault();
     this.workspace = new Workspace();
     this.metadataCache = new MetadataCache();
+    this.fileManager = new FileManager(this.vault);
   }
 }
 
@@ -760,8 +762,14 @@ export class MarkdownRenderer {
 }
 
 export class FileManager {
+  constructor(private vault: Vault) {}
+
   generateMarkdownLink(file: TFile, sourcePath: string): string {
     return `[[${file.basename}]]`;
+  }
+
+  async renameFile(file: TFile, newPath: string): Promise<void> {
+    await this.vault.rename(file, newPath);
   }
 }
 
