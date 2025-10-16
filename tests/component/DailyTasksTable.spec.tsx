@@ -154,9 +154,9 @@ test.describe("DailyTasksTable", () => {
     expect(clickedPath).toBe("ems__EffortStatusInProgress");
   });
 
-  // TODO: Fix function prop handling in Playwright CT
-  // This test fails in Playwright CT environment but the feature works correctly in UI integration tests
-  // The getAssetLabel function prop doesn't seem to be called/captured correctly in Playwright CT
+  // NOTE: Skipped due to Playwright CT limitation with function props
+  // Function props don't serialize correctly across browser/Node boundary
+  // Feature is verified working in UI integration tests (UniversalLayoutRenderer.ui.test.ts)
   test.skip("should use getAssetLabel to resolve task names", async ({ mount }) => {
     const component = await mount(
       <DailyTasksTable

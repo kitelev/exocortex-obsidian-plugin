@@ -1208,7 +1208,7 @@ export class UniversalLayoutRenderer {
     day: string,
   ): Promise<DailyTask[]> {
     try {
-      const allPages = dataviewApi.pages(`""`);
+      const allPages = dataviewApi.pages();
 
       const tasks: DailyTask[] = [];
 
