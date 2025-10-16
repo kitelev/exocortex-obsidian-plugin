@@ -31,18 +31,15 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   const getDisplayName = (task: DailyTask): string => {
     const icon = task.isDone ? "✅ " : task.isTrashed ? "❌ " : task.isMeeting ? "👥 " : "";
 
-    let displayText: string;
+    let displayText = task.label || task.title;
+
+    // Check if getAssetLabel function is provided
     if (typeof getAssetLabel === 'function') {
       const customLabel = getAssetLabel(task.path);
-      if (customLabel !== null && customLabel !== undefined && customLabel !== "") {
+      // Only use custom label if it's a non-null, non-empty string
+      if (customLabel !== null && customLabel !== undefined && customLabel !== '') {
         displayText = customLabel;
-      } else if (customLabel === "") {
-        displayText = "";
-      } else {
-        displayText = task.label || task.title;
       }
-    } else {
-      displayText = task.label || task.title;
     }
 
     return icon + displayText;

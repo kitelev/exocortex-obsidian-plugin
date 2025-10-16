@@ -152,7 +152,7 @@
       "format": "esm"
     },
     "src/presentation/components/DailyTasksTable.tsx": {
-      "bytes": 2952,
+      "bytes": 2904,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -831,7 +831,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 41718,
+      "bytes": 41714,
       "imports": [
         {
           "path": "obsidian",
@@ -1170,7 +1170,7 @@
           "bytesInOutput": 1764
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 16113
+          "bytesInOutput": 16109
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -1188,7 +1188,7 @@
           "bytesInOutput": 1340
         },
         "src/presentation/components/DailyTasksTable.tsx": {
-          "bytesInOutput": 1434
+          "bytesInOutput": 1399
         },
         "src/presentation/components/CreateTaskButton.tsx": {
           "bytesInOutput": 454
@@ -1275,7 +1275,7 @@
           "bytesInOutput": 2146
         }
       },
-      "bytes": 250111
+      "bytes": 250072
     }
   }
 }

@@ -1,3 +1,14 @@
+## [12.15.6] - 2025-10-16
+
+### Fixed
+
+**Daily Tasks Table Rendering**: Fixed critical bug that prevented the Daily Tasks table from appearing on pn__DailyNote assets. The Dataview API was being called with incorrect syntax (`pages(\`""\`)` instead of `pages()`), causing the query to return no results. Now the Tasks table displays correctly for all daily notes with scheduled tasks.
+
+**Technical Details:**
+- Fixed Dataview API call from `pages(\`""\`)` to `pages()` for proper all-pages query
+- Ensures Tasks table renders between Properties and Relations as designed
+- Maintains graceful fallback when Dataview plugin not installed
+
 ## [12.15.5] - 2025-10-16
 
 ### Added
