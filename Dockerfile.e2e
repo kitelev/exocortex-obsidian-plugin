@@ -22,11 +22,11 @@ RUN apt-get update && apt-get install -y \
 
 # Download and extract Obsidian AppImage
 WORKDIR /opt
-RUN wget -q https://github.com/obsidianmd/obsidian-releases/releases/download/v1.5.0/Obsidian-1.5.0.AppImage \
-    && chmod +x Obsidian-1.5.0.AppImage \
-    && ./Obsidian-1.5.0.AppImage --appimage-extract \
+RUN wget -q https://github.com/obsidianmd/obsidian-releases/releases/download/v1.9.14/Obsidian-1.9.14.AppImage \
+    && chmod +x Obsidian-1.9.14.AppImage \
+    && ./Obsidian-1.9.14.AppImage --appimage-extract \
     && mv squashfs-root obsidian \
-    && rm Obsidian-1.5.0.AppImage
+    && rm Obsidian-1.9.14.AppImage
 
 WORKDIR /app
 
