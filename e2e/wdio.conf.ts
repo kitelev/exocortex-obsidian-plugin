@@ -31,7 +31,7 @@ export const config: Options.Testrunner = {
       // should build the plugin (e.g. `npm run build`).  The service will
       // copy `main.js`, `manifest.json` and `styles.css` from this
       // directory into the temporary Obsidian plugins folder.
-      pluginPath: './dist',
+      pluginPath: '.',
       // List of vaults to make available.  Each entry defines a friendly
       // name used in tests and the path to a fixture directory under
       // `./e2e/fixtures`.  Additional vaults can be added here if you have
