@@ -6,6 +6,7 @@ module.exports = {
   testPathIgnorePatterns: [
     "/node_modules/",
     "/tests/ui/", // Exclude WebDriver UI tests
+    "/tests/e2e/", // Exclude Playwright E2E tests
   ],
   collectCoverageFrom: [
     "main.ts",

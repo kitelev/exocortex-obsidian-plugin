@@ -1,3 +1,40 @@
+## [12.15.14] - 2025-10-17
+
+### Added
+
+**Comprehensive E2E Testing Infrastructure**: Implemented full end-to-end testing with real Obsidian instance to prevent regressions like the recent DailyNote tasks table issue. Uses Playwright + Docker + xvfb for headless testing in CI, ensuring every release is validated with actual user workflows.
+
+**Why this matters:**
+- **Regression Prevention**: Real Obsidian instance catches bugs that mocked tests miss (like the Dataview API issue)
+- **Quality Gate in CI**: GitHub Actions now runs E2E tests before every release - if they fail, release is blocked
+- **Docker-Based**: E2E tests run in isolated Docker containers with xvfb, no local Obsidian instance required
+- **Test Vault Fixtures**: Pre-configured test vault with DailyNotes and Tasks for realistic testing scenarios
+- **Fast Feedback**: E2E tests run automatically on every push, catching issues immediately
+
+**What you get:**
+- **First E2E Test**: Validates DailyNote tasks table displays correct tasks (2 for day, filters out wrong day)
+- **Docker Support**: Run `npm run test:e2e:docker` to test in isolated environment
+- **CI Integration**: E2E tests run in GitHub Actions alongside unit/component tests
+- **Comprehensive Docs**: New TESTING.md guide explains all test types and usage
+
+**Technical Details:**
+- Playwright E2E configuration with Electron launcher (`playwright-e2e.config.ts`)
+- ObsidianLauncher utility for managing Obsidian lifecycle in tests
+- Docker image with xvfb, Obsidian 1.5.0 AppImage, and Playwright browsers
+- Test vault with realistic fixtures: DailyNote (2025-10-16) + 3 tasks
+- New npm scripts: `test:e2e`, `test:e2e:docker`, `test:all`
+- CI workflow updated to build Docker image and run E2E tests
+- All existing tests still passing (100% pass rate)
+
+**Files Created:**
+- `Dockerfile.e2e` - Docker image for headless E2E testing
+- `docker-entrypoint-e2e.sh` - xvfb startup script
+- `playwright-e2e.config.ts` - Playwright E2E configuration
+- `tests/e2e/utils/obsidian-launcher.ts` - Obsidian test launcher
+- `tests/e2e/specs/daily-note-tasks.spec.ts` - First E2E test
+- `tests/e2e/test-vault/` - Test vault with fixtures
+- `.github/TESTING.md` - Comprehensive testing documentation
+
 ## [12.15.13] - 2025-10-17
 
 ### Fixed

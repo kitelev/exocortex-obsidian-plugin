@@ -1,0 +1,37 @@
+# Node modules
+node_modules
+npm-debug.log
+
+# Git
+.git
+.github/workflows
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Build artifacts
+playwright-report*/
+test-results/
+coverage/
+
+# Vault workspace (will be regenerated)
+tests/e2e/test-vault/.obsidian/workspace*
+tests/e2e/test-vault/.obsidian/cache
+tests/e2e/test-vault/.trash
+
+# Documentation
+docs/
+*.md
+!tests/e2e/test-vault/**/*.md
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

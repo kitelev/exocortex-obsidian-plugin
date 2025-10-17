@@ -1707,6 +1707,125 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(tasksSection).toBeFalsy();
     });
 
+    it("should render Tasks table even when vault has tasks matching the day", async () => {
+      // REGRESSION TEST: Previously failed when Dataview API returned empty results.
+      // This test ensures tasks are always found via vault file enumeration.
+      const currentFile = {
+        basename: "2025-10-16 Note",
+        path: "daily-notes/2025-10-16 Note.md",
+      } as TFile;
+
+      const taskFile1 = {
+        basename: "Task 1",
+        path: "tasks/task1.md",
+        stat: { ctime: Date.now(), mtime: Date.now() },
+      } as TFile;
+
+      const taskFile2 = {
+        basename: "Task 2",
+        path: "tasks/task2.md",
+        stat: { ctime: Date.now(), mtime: Date.now() },
+      } as TFile;
+
+      const otherDayTaskFile = {
+        basename: "Other Task",
+        path: "tasks/other.md",
+        stat: { ctime: Date.now(), mtime: Date.now() },
+      } as TFile;
+
+      // Setup mocks with realistic data
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: TFile) => {
+        if (file.path === "daily-notes/2025-10-16 Note.md") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "[[pn__DailyNote]]",
+              pn__DailyNote_day: "[[2025-10-16]]",
+            },
+          };
+        }
+        if (file.path === "tasks/task1.md") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Task",
+              exo__Asset_label: "Morning standup",
+              ems__Effort_status: "[[ems__EffortStatusDoing]]",
+              ems__Effort_day: "[[2025-10-16]]",
+              ems__Effort_startTimestamp: "2025-10-16T09:00:00",
+            },
+          };
+        }
+        if (file.path === "tasks/task2.md") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Task",
+              exo__Asset_label: "Code review",
+              ems__Effort_status: "[[ems__EffortStatusDone]]",
+              ems__Effort_day: "[[2025-10-16]]",
+              ems__Effort_endTimestamp: "2025-10-16T15:00:00",
+            },
+          };
+        }
+        if (file.path === "tasks/other.md") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Task",
+              exo__Asset_label: "Different day task",
+              ems__Effort_day: "[[2025-10-17]]", // Different day!
+            },
+          };
+        }
+        return { frontmatter: {} };
+      });
+
+      // Mock Dataview plugin availability (but implementation doesn't matter for this test)
+      (mockApp as any).plugins = {
+        plugins: {
+          dataview: { api: {} },
+        },
+      };
+
+      mockApp.metadataCache.resolvedLinks = {};
+
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
+        if (path === "tasks/task1.md") return taskFile1;
+        if (path === "tasks/task2.md") return taskFile2;
+        if (path === "tasks/other.md") return otherDayTaskFile;
+        return null;
+      });
+
+      // CRITICAL: Vault returns all task files, renderer should filter by day
+      (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue([
+        taskFile1,
+        taskFile2,
+        otherDayTaskFile, // This should be filtered out!
+      ]);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verify Tasks section rendered
+      const tasksHeader = container.querySelector(".exocortex-section-header");
+      expect(tasksHeader?.textContent).toBe("Tasks");
+
+      const tasksSection = container.querySelector(".exocortex-daily-tasks-section");
+      expect(tasksSection).toBeTruthy();
+
+      const tasksTable = tasksSection?.querySelector(".exocortex-tasks-table");
+      expect(tasksTable).toBeTruthy();
+
+      // Verify ONLY tasks for 2025-10-16 are shown (not the 2025-10-17 task)
+      const taskRows = tasksTable?.querySelectorAll("tbody tr");
+      expect(taskRows?.length).toBe(2);
+
+      // Verify task content is rendered correctly
+      const rowTexts = Array.from(taskRows || []).map((row) => row.textContent);
+      expect(rowTexts.some((text) => text?.includes("Morning standup"))).toBeTruthy();
+      expect(rowTexts.some((text) => text?.includes("Code review"))).toBeTruthy();
+      expect(rowTexts.some((text) => text?.includes("Different day task"))).toBeFalsy();
+    });
+
     it("should position Tasks table between Properties and Relations", async () => {
       const currentFile = {
         basename: "2025-10-16 Note",
