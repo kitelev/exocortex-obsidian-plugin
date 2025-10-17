@@ -1,3 +1,15 @@
+## [12.15.15] - 2025-10-17
+
+### Fixed
+
+**CI E2E Tests Now Run Successfully**: Fixed GitHub Actions CI workflow to properly run E2E tests in Docker. Split the workflow into two jobs - one for component tests (in Playwright container) and one for E2E tests (on ubuntu-latest with Docker). Previously, Docker was unavailable inside the Playwright container, causing E2E test step to fail.
+
+**Technical Details:**
+- Split CI into `build-and-test` and `e2e-tests` jobs
+- `e2e-tests` runs on ubuntu-latest (has Docker pre-installed)
+- `e2e-tests` depends on `build-and-test` success
+- E2E Docker build and test execution now work in GitHub Actions
+
 ## [12.15.14] - 2025-10-17
 
 ### Added
