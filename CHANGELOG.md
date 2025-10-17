@@ -1,3 +1,28 @@
+## [12.15.13] - 2025-10-17
+
+### Fixed
+
+**DailyNote Tasks Table Now Displays Correctly**: Fixed a critical issue where the tasks table in pn__DailyNote assets would not appear. The plugin was attempting to use Dataview API's `pages()` method which returned empty results. Now uses Obsidian's native Vault API (`getMarkdownFiles()`) to directly fetch and filter tasks, ensuring reliable display of all efforts scheduled for the day.
+
+**Why this matters:**
+- **Reliable Task Display**: Tasks table now consistently appears in all DailyNote files
+- **No Dataview Dependency**: Direct Vault API usage means faster performance and no dependency on Dataview's query methods
+- **Complete Task List**: All 16+ daily tasks are now properly displayed with status, time, and meeting indicators
+- **Automatic Updates**: Table updates in real-time as task metadata changes
+
+**What you see:**
+- **Before**: Empty space where tasks table should be, with silent failure
+- **After**: Full tasks table with Name, Start Time, End Time, and Status columns
+- **Filtered by Day**: Only shows tasks where `ems__Effort_day` matches the DailyNote's day
+- **Sorted Properly**: Trashed tasks last, done tasks before active, sorted by time
+
+**Technical Details:**
+- Replaced `dataviewApi.pages()` with `this.app.vault.getMarkdownFiles()`
+- Direct metadata access via `metadataCache.getFileCache()` for each file
+- Filters 4433 vault files down to 1048 with `ems__Effort_day`, then to day-specific tasks
+- Maintains all sorting logic: trashed → done → by start time
+- All existing tests passing (100% pass rate maintained)
+
 ## [12.15.12] - 2025-10-16
 
 ### Fixed
