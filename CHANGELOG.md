@@ -1,3 +1,30 @@
+## [12.15.17] - 2025-10-18
+
+### Fixed
+
+**CI Pipeline Timeout Protection**: Added explicit 5-minute timeout to all CI jobs to prevent infinite hangs. Temporarily disabled E2E tests in CI (can still run locally via Docker) until Docker layer caching is properly optimized. Created comprehensive safety documentation for running E2E tests locally.
+
+**Why this matters:**
+- **Faster Failure Detection**: CI now fails fast (5 min max) instead of hanging for 16+ minutes
+- **Cost Savings**: No more wasted compute time on stuck jobs
+- **Clear Error Signals**: Explicit timeouts make debugging easier
+- **Safe Local Testing**: Documentation prevents accidentally running E2E tests on production machines
+
+**Technical Details:**
+- Added `timeout-minutes: 5` to both `build-and-test` and `e2e-tests` jobs
+- E2E tests temporarily disabled in CI (first-time Docker build downloads 700MB Obsidian, exceeds timeout)
+- Created `.github/E2E-LOCAL-TESTING.md` with comprehensive safety guide
+- All non-E2E tests (389 tests: unit, UI, component) pass locally in ~8 seconds
+
+**Files Modified:**
+- `.github/workflows/ci.yml` - Added timeouts, commented out E2E job
+- `.github/E2E-LOCAL-TESTING.md` - Created safety documentation
+
+**E2E Testing Status:**
+- ✅ Local execution: `npm run test:e2e:docker` (safe, isolated)
+- ⏸️ CI execution: Temporarily disabled (will re-enable with better caching)
+- ❌ Direct execution: `npm run test:e2e` - NEVER use (launches local Obsidian)
+
 ## [12.15.16] - 2025-10-17
 
 ### Performance
