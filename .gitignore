@@ -61,3 +61,4 @@ Makefile.bak.*
 reports/
 reports/
 
+playwright-report-e2e/
