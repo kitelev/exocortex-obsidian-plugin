@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     libxtst6 \
     wget \
     unzip \
+    squashfs-tools \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and extract Obsidian AppImage
