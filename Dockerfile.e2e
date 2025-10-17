@@ -1,4 +1,5 @@
-FROM mcr.microsoft.com/playwright:v1.55.1-jammy
+# Stage 1: Base image with Obsidian (cached for long time)
+FROM mcr.microsoft.com/playwright:v1.55.1-jammy AS obsidian-base
 
 # Install xvfb and dependencies for headless Obsidian
 RUN apt-get update && apt-get install -y \
@@ -20,7 +21,7 @@ RUN apt-get update && apt-get install -y \
     squashfs-tools \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and extract Obsidian AppImage
+# Download and extract Obsidian AppImage (cached until version changes)
 WORKDIR /opt
 RUN wget -q https://github.com/obsidianmd/obsidian-releases/releases/download/v1.9.14/Obsidian-1.9.14.AppImage \
     && chmod +x Obsidian-1.9.14.AppImage \
@@ -28,11 +29,21 @@ RUN wget -q https://github.com/obsidianmd/obsidian-releases/releases/download/v1
     && mv squashfs-root obsidian \
     && rm Obsidian-1.9.14.AppImage
 
+# Stage 2: Dependencies (cached until package.json changes)
+FROM obsidian-base AS dependencies
+
 WORKDIR /app
 
-# Copy package files
+# Copy only package files for npm cache
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --prefer-offline --no-audit
+
+# Stage 3: Application (rebuilt on code changes)
+FROM dependencies AS app
+
+# Copy entrypoint first (rarely changes)
+COPY docker-entrypoint-e2e.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 # Copy source code
 COPY . .
@@ -44,10 +55,7 @@ RUN npm run build
 RUN mkdir -p tests/e2e/test-vault/.obsidian/plugins/exocortex \
     && cp main.js manifest.json tests/e2e/test-vault/.obsidian/plugins/exocortex/
 
-# Entrypoint for xvfb
-COPY docker-entrypoint-e2e.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
+# Environment variables
 ENV DISPLAY=:99
 ENV OBSIDIAN_PATH=/opt/obsidian/obsidian
 ENV OBSIDIAN_VAULT=/app/tests/e2e/test-vault
