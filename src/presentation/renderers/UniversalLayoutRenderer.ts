@@ -1127,7 +1127,7 @@ export class UniversalLayoutRenderer {
         : null;
     const day = dayMatch ? dayMatch[1] : String(dayProperty).replace(/^\[\[|\]\]$/g, "");
 
-    // Check if Dataview is available
+    // Check if Dataview is available (optional - we use Vault API directly now)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const dataviewApi = (this.app as any).plugins?.plugins?.dataview?.api;
     if (!dataviewApi) {
@@ -1451,14 +1451,16 @@ export class UniversalLayoutRenderer {
     day: string,
   ): Promise<DailyTask[]> {
     try {
-      const allPages = dataviewApi.pages();
-
       const tasks: DailyTask[] = [];
 
-      const pagesArray = allPages?.values || allPages || [];
+      // Use Obsidian vault API to get all markdown files directly
+      const allFiles = this.app.vault.getMarkdownFiles();
 
-      for (const page of pagesArray) {
-        const effortDay = page.ems__Effort_day;
+      for (const file of allFiles) {
+        const cache = this.app.metadataCache.getFileCache(file);
+        const metadata = cache?.frontmatter || {};
+
+        const effortDay = metadata.ems__Effort_day;
 
         if (!effortDay) {
           continue;
@@ -1469,15 +1471,6 @@ export class UniversalLayoutRenderer {
         if (effortDayStr !== day) {
           continue;
         }
-
-        const file = this.app.vault.getAbstractFileByPath(page.file.path);
-        if (!file || !("basename" in file)) {
-          continue;
-        }
-
-        const tfile = file as TFile;
-        const cache = this.app.metadataCache.getFileCache(tfile);
-        const metadata = cache?.frontmatter || {};
 
         const effortStatus = metadata.ems__Effort_status || "";
         const effortStatusStr = String(effortStatus).replace(/^\[\[|\]\]$/g, "");
@@ -1511,15 +1504,15 @@ export class UniversalLayoutRenderer {
           (c: string) => String(c).includes("ems__Meeting"),
         );
 
-        const label = metadata.exo__Asset_label || tfile.basename;
+        const label = metadata.exo__Asset_label || file.basename;
 
         tasks.push({
           file: {
-            path: tfile.path,
-            basename: tfile.basename,
+            path: file.path,
+            basename: file.basename,
           },
-          path: tfile.path,
-          title: tfile.basename,
+          path: file.path,
+          title: file.basename,
           label,
           startTime,
           endTime,

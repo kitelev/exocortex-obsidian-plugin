@@ -29,6 +29,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       },
       vault: {
         getAbstractFileByPath: jest.fn(),
+        getMarkdownFiles: jest.fn().mockReturnValue([]),
       },
       metadataCache: {
         getFileCache: jest.fn(),
@@ -1611,6 +1612,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
       (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(taskFile);
+      (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue([taskFile]);
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -1758,6 +1760,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
       (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(relatedTask);
+      (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue([relatedTask]);
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
