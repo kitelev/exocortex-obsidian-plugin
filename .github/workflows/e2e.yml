@@ -1,0 +1,32 @@
+name: End‭to‭End Tests
+
+# This workflow runs E2E tests against Obsidian using the wdio‭obsidian
+# service.  It triggers on pushes to main and on pull requests.  If the
+# plugin build succeeds but the E2E tests fail, the job will be marked as
+# failed.
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Run E2E tests
+        run: npx wdio run ./e2e/wdio.conf.ts
