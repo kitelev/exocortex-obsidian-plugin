@@ -1127,18 +1127,9 @@ export class UniversalLayoutRenderer {
         : null;
     const day = dayMatch ? dayMatch[1] : String(dayProperty).replace(/^\[\[|\]\]$/g, "");
 
-    // Check if Dataview is available (optional - we use Vault API directly now)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const dataviewApi = (this.app as any).plugins?.plugins?.dataview?.api;
-    if (!dataviewApi) {
-      this.logger.debug(
-        "Dataview plugin not found, skipping tasks table for DailyNote",
-      );
-      return;
-    }
-
+    // Dataview no longer required - we use Vault API directly
     // Get daily tasks
-    const tasks = await this.getDailyTasks(dataviewApi, day);
+    const tasks = await this.getDailyTasks(day);
 
     if (tasks.length === 0) {
       this.logger.debug(`No tasks found for day: ${day}`);
@@ -1446,8 +1437,6 @@ export class UniversalLayoutRenderer {
   }
 
   private async getDailyTasks(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    dataviewApi: any,
     day: string,
   ): Promise<DailyTask[]> {
     try {
