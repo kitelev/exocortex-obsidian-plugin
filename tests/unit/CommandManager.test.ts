@@ -53,8 +53,8 @@ describe("CommandManager", () => {
         commandManager.registerAllCommands(mockPlugin);
       }).not.toThrow();
 
-      // Verify that addCommand was called for each command (16 commands total)
-      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(16);
+      // Verify that addCommand was called for each command (17 commands total)
+      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(17);
     });
 
     it("should register commands with correct IDs", () => {
@@ -81,6 +81,7 @@ describe("CommandManager", () => {
       expect(registeredCommands).toContain("move-to-backlog");
       expect(registeredCommands).toContain("start-effort");
       expect(registeredCommands).toContain("plan-on-today");
+      expect(registeredCommands).toContain("plan-for-evening");
       expect(registeredCommands).toContain("shift-day-backward");
       expect(registeredCommands).toContain("shift-day-forward");
       expect(registeredCommands).toContain("mark-done");
@@ -117,6 +118,7 @@ describe("CommandManager", () => {
       expect(registeredNames).toContain("Move to Backlog");
       expect(registeredNames).toContain("Start Effort");
       expect(registeredNames).toContain("Plan on today");
+      expect(registeredNames).toContain("Plan for Evening (19:00)");
       expect(registeredNames).toContain("Shift Day Backward");
       expect(registeredNames).toContain("Shift Day Forward");
       expect(registeredNames).toContain("Mark as Done");

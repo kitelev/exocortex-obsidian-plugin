@@ -301,6 +301,46 @@ ${content}`;
     await this.vault.modify(taskFile, updatedContent);
   }
 
+  async planForEvening(taskFile: TFile): Promise<void> {
+    const fileContent = await this.vault.read(taskFile);
+    const updatedContent = this.updateFrontmatterWithEveningTimestamp(fileContent);
+    await this.vault.modify(taskFile, updatedContent);
+  }
+
+  private updateFrontmatterWithEveningTimestamp(content: string): string {
+    const now = new Date();
+    now.setHours(19, 0, 0, 0);
+    const eveningTimestamp = this.formatLocalTimestamp(now);
+
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) {
+      const newFrontmatter = `---
+ems__Effort_plannedStartTimestamp: ${eveningTimestamp}
+---
+${content}`;
+      return newFrontmatter;
+    }
+
+    const frontmatterContent = match[1];
+    let updatedFrontmatter = frontmatterContent;
+
+    if (updatedFrontmatter.includes("ems__Effort_plannedStartTimestamp:")) {
+      updatedFrontmatter = updatedFrontmatter.replace(
+        /ems__Effort_plannedStartTimestamp:.*$/m,
+        `ems__Effort_plannedStartTimestamp: ${eveningTimestamp}`,
+      );
+    } else {
+      updatedFrontmatter += `\nems__Effort_plannedStartTimestamp: ${eveningTimestamp}`;
+    }
+
+    return content.replace(
+      frontmatterRegex,
+      `---\n${updatedFrontmatter}\n---`,
+    );
+  }
+
   private updateFrontmatterWithTodayDate(content: string): string {
     const now = new Date();
     const todayWikilink = this.formatDateAsWikilink(now);

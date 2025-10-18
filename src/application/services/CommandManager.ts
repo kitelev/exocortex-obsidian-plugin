@@ -7,6 +7,7 @@ import {
   canMoveToBacklog,
   canStartEffort,
   canPlanOnToday,
+  canPlanForEvening,
   canMarkDone,
   canTrashEffort,
   canArchiveTask,
@@ -69,6 +70,7 @@ export class CommandManager {
     this.registerMoveToBacklogCommand(plugin);
     this.registerStartEffortCommand(plugin);
     this.registerPlanOnTodayCommand(plugin);
+    this.registerPlanForEveningCommand(plugin);
     this.registerShiftDayBackwardCommand(plugin);
     this.registerShiftDayForwardCommand(plugin);
     this.registerMarkDoneCommand(plugin);
@@ -255,6 +257,32 @@ export class CommandManager {
           this.executePlanOnToday(file).catch((error) => {
             new Notice(`Failed to plan on today: ${error.message}`);
             console.error("Plan on today error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Plan for Evening" command
+   */
+  private registerPlanForEveningCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "plan-for-evening",
+      name: "Plan for Evening (19:00)",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canPlanForEvening(context)) return false;
+
+        if (!checking) {
+          this.executePlanForEvening(file).catch((error) => {
+            new Notice(`Failed to plan for evening: ${error.message}`);
+            console.error("Plan for evening error:", error);
           });
         }
 
@@ -620,6 +648,11 @@ export class CommandManager {
   private async executePlanOnToday(file: TFile): Promise<void> {
     await this.taskStatusService.planOnToday(file);
     new Notice(`Planned on today: ${file.basename}`);
+  }
+
+  private async executePlanForEvening(file: TFile): Promise<void> {
+    await this.taskStatusService.planForEvening(file);
+    new Notice(`Planned for evening (19:00): ${file.basename}`);
   }
 
   private async executeShiftDayBackward(file: TFile): Promise<void> {

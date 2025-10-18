@@ -115,6 +115,45 @@ Feature: Effort Lifecycle Workflow
       Then "Start Effort" button is visible only for "Backlog Task"
       And button is hidden for all other tasks
 
+  Rule: Planning for Evening (19:00)
+
+    Scenario: Plan Task for evening via button
+      Given I have a Task "Prepare Presentation" with:
+        | Property            | Value                           |
+        | exo__Instance_class | [[ems__Task]]                   |
+        | ems__Effort_status  | [[ems__EffortStatusBacklog]]    |
+      When I view the Task
+      Then I see "Plan for Evening (19:00)" button
+      When I click "Plan for Evening (19:00)" button
+      Then Task property "ems__Effort_plannedStartTimestamp" is set to today at 19:00:00
+      And timestamp format is "YYYY-MM-DDTHH:mm:ss"
+
+    Scenario: Plan for evening via Command Palette
+      Given I have a Task "Review Documents" with Backlog status
+      When I open Command Palette
+      And I select "Exocortex: Plan for Evening (19:00)"
+      Then Task plannedStartTimestamp is set to today at 19:00
+      And command executes successfully
+
+    Scenario: Plan for Evening button only visible for Tasks in Backlog
+      Given I have different assets:
+        | Asset Name      | Type    | Status   |
+        | Backlog Task    | Task    | Backlog  |
+        | Draft Task      | Task    | Draft    |
+        | Doing Task      | Task    | Doing    |
+        | Backlog Project | Project | Backlog  |
+      Then "Plan for Evening (19:00)" button is visible only for "Backlog Task"
+      And button is hidden for "Draft Task"
+      And button is hidden for "Doing Task"
+      And button is hidden for "Backlog Project"
+
+    Scenario: Evening timestamp format verification
+      Given I have a Backlog Task
+      When I plan it for evening
+      Then "ems__Effort_plannedStartTimestamp" contains today's date
+      And time portion is "19:00:00"
+      And timestamp is in local timezone
+
   Rule: Doing → Done transition with dual timestamps
 
     Scenario: Mark task as Done via button
