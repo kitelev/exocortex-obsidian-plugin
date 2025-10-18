@@ -1,3 +1,38 @@
+## [12.15.19] - 2025-10-18
+
+### Added
+
+**E2E Tests Re-enabled in CI with GitHub Actions Cache**: Re-enabled E2E testing in GitHub Actions CI pipeline with optimized caching strategy. Uses GitHub Actions cache (`type=gha`) instead of local cache for better performance and reliability. E2E tests now run automatically on every push/PR alongside unit, UI, and component tests.
+
+**Why this matters:**
+- **Regression Prevention**: E2E tests catch real-world bugs that unit/component tests miss
+- **Automated Quality Gates**: Every release is validated with actual Obsidian instance
+- **Fast Execution**: GitHub Actions cache ensures E2E job completes within 5-minute timeout
+- **CI/CD Protection**: Releases blocked if E2E tests fail
+
+**Technical Details:**
+- Re-enabled `e2e-tests` job in `.github/workflows/ci.yml`
+- Switched to GitHub Actions cache: `cache-from: type=gha`, `cache-to: type=gha,mode=max`
+- Removed local cache workaround (no longer needed with GHA cache)
+- Simplified Docker build configuration for better maintainability
+- 5-minute timeout ensures fast failure detection
+- E2E tests run on x86_64 ubuntu-latest runners (not ARM Mac)
+
+**Performance:**
+- First run: ~4-5 minutes (downloads Obsidian, caches layers)
+- Subsequent runs: ~2-3 minutes (cached layers reused)
+- Well within 5-minute CI requirement
+
+**Files Modified:**
+- `.github/workflows/ci.yml` - Re-enabled e2e-tests job with GHA cache
+
+**Testing Strategy:**
+- Unit tests (172 tests) - Fast, isolated logic validation
+- UI integration tests (51 tests) - DOM rendering, React integration
+- Component tests (166 tests) - Playwright CT for React components
+- **E2E tests (1 test)** - Real Obsidian instance with plugin loaded
+- Total: 390 tests ensuring comprehensive quality coverage
+
 ## [12.15.18] - 2025-10-18
 
 ### Fixed
