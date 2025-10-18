@@ -22,6 +22,7 @@
     "test:component": "playwright test -c playwright-ct.config.ts",
     "test:component:ui": "playwright test -c playwright-ct.config.ts --ui",
     "test:e2e": "playwright test -c playwright-e2e.config.ts",
+    "test:e2e:local": "./scripts/test-e2e-local.sh",
     "test:e2e:docker": "docker build --platform linux/amd64 -f Dockerfile.e2e -t exocortex-e2e . && docker run --rm exocortex-e2e",
     "test:all": "npm run test:unit && npm run test:ui && npm run test:component && npm run test:e2e",
     "bdd:coverage": "node scripts/bdd-coverage.js",
