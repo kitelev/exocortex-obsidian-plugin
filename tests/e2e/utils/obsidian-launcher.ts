@@ -154,6 +154,23 @@ export class ObsidianLauncher {
       }
     }, normalizedPath);
 
+    await this.window.waitForTimeout(500);
+
+    await this.window.evaluate(() => {
+      const app = (window as any).app;
+      const activeLeaf = app?.workspace?.activeLeaf;
+      if (activeLeaf && activeLeaf.getViewState()?.state?.mode !== 'preview') {
+        const currentState = activeLeaf.getViewState();
+        activeLeaf.setViewState({
+          ...currentState,
+          state: {
+            ...currentState.state,
+            mode: 'preview',
+          },
+        });
+      }
+    });
+
     await this.window.waitForTimeout(1000);
   }
 

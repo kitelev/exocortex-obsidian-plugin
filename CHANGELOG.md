@@ -1,3 +1,19 @@
+## [12.15.36] - 2025-10-18
+
+### Fixed
+
+**E2E Reading Mode Fix**: Added automatic switch to reading/preview mode after opening files in E2E tests. The Exocortex plugin only renders layouts in reading mode, but Obsidian opens files in edit mode by default. Now the launcher automatically switches to preview mode after opening a file, ensuring the plugin UI renders correctly for E2E testing.
+
+**Technical Change:**
+- `tests/e2e/utils/obsidian-launcher.ts` - Added `setViewState()` call to switch active leaf to preview mode
+- Ensures `.exocortex-layout-container` renders for test verification
+- Fixes timeout errors waiting for plugin UI elements
+
+**Why This Matters:**
+- Completes E2E test infrastructure started in v12.15.35
+- Tests can now verify plugin rendering in reading mode
+- Critical for testing daily tasks table and other layout features
+
 ## [12.15.35] - 2025-10-18
 
 ### Fixed
