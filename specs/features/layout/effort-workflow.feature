@@ -7,6 +7,24 @@ Feature: Effort Lifecycle Workflow
     Given I am viewing a note with UniversalLayout
     And the plugin is properly initialized
 
+  Rule: Setting Draft status for efforts without status
+
+    Scenario: Set Draft status via button
+      Given I have a Task without ems__Effort_status property
+      When I view the Task
+      Then I see "Set Draft Status" button
+      When I click "Set Draft Status" button
+      Then Task property "ems__Effort_status" is set to "[[ems__EffortStatusDraft]]"
+      And "Set Draft Status" button disappears
+      And "Move to Backlog" button appears
+
+    Scenario: Set Draft status via Command Palette
+      Given I have a Task without ems__Effort_status property
+      When I open Command Palette
+      And I select "Exocortex: Set Draft Status"
+      Then Task status is set to Draft
+      And command executes successfully
+
   Rule: New tasks start in Draft status
 
     Scenario: Create new task from Area
@@ -288,9 +306,14 @@ Feature: Effort Lifecycle Workflow
 
   Rule: Edge cases and error handling
 
-    Scenario: Task without status shows no workflow buttons
+    Scenario: Task without status shows Set Draft Status button
       Given I have a legacy Task without ems__Effort_status property
-      Then no workflow transition buttons are visible
+      Then "Set Draft Status" button is visible
+      And no other workflow transition buttons are visible
+      When I click "Set Draft Status" button
+      Then Task property "ems__Effort_status" is set to "[[ems__EffortStatusDraft]]"
+      And "Set Draft Status" button disappears
+      And "Move to Backlog" button appears
 
     Scenario: Multiple status values handled correctly
       Given I have a Task with status array ["[[ems__EffortStatusBacklog]]", "[[CustomStatus]]"]

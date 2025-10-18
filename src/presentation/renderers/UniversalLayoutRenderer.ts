@@ -10,6 +10,7 @@ import { ActionButtonsGroup, ButtonGroup, ActionButton } from "../components/Act
 import {
   canCreateTask,
   canCreateInstance,
+  canSetDraftStatus,
   canMoveToBacklog,
   canStartEffort,
   canMarkDone,
@@ -240,6 +241,18 @@ export class UniversalLayoutRenderer {
 
     // Status Group - Status transitions
     const statusButtons: ActionButton[] = [
+      {
+        id: "set-draft-status",
+        label: "Set Draft Status",
+        variant: "secondary",
+        visible: canSetDraftStatus(context),
+        onClick: async () => {
+          await this.taskStatusService.setDraftStatus(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Set Draft status: ${file.path}`);
+        },
+      },
       {
         id: "move-to-backlog",
         label: "Move to Backlog",

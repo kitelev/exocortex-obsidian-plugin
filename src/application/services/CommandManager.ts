@@ -3,6 +3,7 @@ import {
   CommandVisibilityContext,
   canCreateTask,
   canCreateInstance,
+  canSetDraftStatus,
   canMoveToBacklog,
   canStartEffort,
   canPlanOnToday,
@@ -64,6 +65,7 @@ export class CommandManager {
 
     this.registerCreateTaskCommand(plugin);
     this.registerCreateInstanceCommand(plugin);
+    this.registerSetDraftStatusCommand(plugin);
     this.registerMoveToBacklogCommand(plugin);
     this.registerStartEffortCommand(plugin);
     this.registerPlanOnTodayCommand(plugin);
@@ -149,6 +151,32 @@ export class CommandManager {
           this.executeCreateInstance(file, context).catch((error) => {
             new Notice(`Failed to create instance: ${error.message}`);
             console.error("Create instance error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Set Draft Status" command
+   */
+  private registerSetDraftStatusCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "set-draft-status",
+      name: "Set Draft Status",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canSetDraftStatus(context)) return false;
+
+        if (!checking) {
+          this.executeSetDraftStatus(file).catch((error) => {
+            new Notice(`Failed to set draft status: ${error.message}`);
+            console.error("Set draft status error:", error);
           });
         }
 
@@ -572,6 +600,11 @@ export class CommandManager {
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
     new Notice(`Instance created: ${createdFile.basename}`);
+  }
+
+  private async executeSetDraftStatus(file: TFile): Promise<void> {
+    await this.taskStatusService.setDraftStatus(file);
+    new Notice(`Set Draft status: ${file.basename}`);
   }
 
   private async executeMoveToBacklog(file: TFile): Promise<void> {
