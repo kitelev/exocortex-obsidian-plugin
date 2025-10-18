@@ -309,16 +309,106 @@ export class ObsidianLauncher {
   }
 
   async close(): Promise<void> {
+    console.log('[ObsidianLauncher] Starting cleanup...');
+
     if (this.window) {
-      await this.window.close();
+      try {
+        await this.window.close();
+      } catch (error) {
+        console.log('[ObsidianLauncher] Window close error (expected):', error);
+      }
       this.window = null;
     }
 
     if (this.electronProcess) {
-      this.electronProcess.kill('SIGTERM');
+      const pid = this.electronProcess.pid;
+      console.log(`[ObsidianLauncher] Killing Electron process PID ${pid} with SIGKILL...`);
+
+      try {
+        // Use SIGKILL for immediate termination
+        this.electronProcess.kill('SIGKILL');
+
+        // Wait for process to exit
+        await new Promise<void>((resolve) => {
+          const checkInterval = setInterval(() => {
+            try {
+              // Check if process still exists
+              process.kill(pid!, 0);
+            } catch (e) {
+              // Process doesn't exist anymore
+              clearInterval(checkInterval);
+              console.log(`[ObsidianLauncher] Process ${pid} terminated`);
+              resolve();
+            }
+          }, 100);
+
+          // Timeout after 5 seconds
+          setTimeout(() => {
+            clearInterval(checkInterval);
+            console.log(`[ObsidianLauncher] Process ${pid} termination timeout (continuing anyway)`);
+            resolve();
+          }, 5000);
+        });
+      } catch (error) {
+        console.log('[ObsidianLauncher] Process kill error (may already be dead):', error);
+      }
+
       this.electronProcess = null;
     }
 
+    // Wait for CDP port to be released
+    console.log('[ObsidianLauncher] Waiting for CDP port 9222 to be released...');
+    await this.waitForPortClosed(9222, 10000);
+    console.log('[ObsidianLauncher] CDP port 9222 released');
+
     this.app = null;
+    console.log('[ObsidianLauncher] Cleanup complete');
+  }
+
+  private async waitForPortClosed(port: number, timeout: number): Promise<void> {
+    const startTime = Date.now();
+    const http = await import('http');
+
+    return new Promise((resolve, reject) => {
+      const checkPort = () => {
+        const req = http.request(
+          {
+            host: 'localhost',
+            port,
+            path: '/json/version',
+            method: 'GET',
+            timeout: 500,
+          },
+          (res) => {
+            // Port still responding, retry
+            retryCheck();
+          }
+        );
+
+        req.on('error', () => {
+          // Port not responding = port is closed
+          console.log(`[ObsidianLauncher] Port ${port} is closed`);
+          resolve();
+        });
+
+        req.on('timeout', () => {
+          req.destroy();
+          retryCheck();
+        });
+
+        req.end();
+      };
+
+      const retryCheck = () => {
+        if (Date.now() - startTime > timeout) {
+          console.log(`[ObsidianLauncher] Timeout waiting for port ${port} to close (continuing anyway)`);
+          resolve(); // Don't reject, just warn
+        } else {
+          setTimeout(checkPort, 200);
+        }
+      };
+
+      checkPort();
+    });
   }
 }

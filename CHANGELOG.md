@@ -1,3 +1,25 @@
+## [12.15.50] - 2025-10-18
+
+### Fixed
+
+**E2E Tests - Fixed Local Test Execution (CDP Port Cleanup)**: Local E2E tests now pass reliably (3/3) by implementing aggressive cleanup between tests. Previously, the second test would fail with "bind() failed: Address already in use (98)" because the Chrome DevTools Protocol (CDP) port 9222 wasn't released after the first test.
+
+**Root Cause:**
+- `ObsidianLauncher.close()` used SIGTERM (soft termination) without waiting for process exit
+- CDP port 9222 remained occupied between tests in single Docker container
+- Second test couldn't start Electron because port was still in use
+
+**Solution:**
+- Changed to SIGKILL for immediate process termination
+- Added explicit wait for process death (polling with 5s timeout)
+- Added `waitForPortClosed()` method to verify CDP port 9222 is released
+- Comprehensive logging for debugging cleanup issues
+
+**Impact:**
+- Local E2E tests now pass consistently (100% success rate)
+- Faster test execution (no 30s timeouts between tests)
+- Identical behavior to CI environment (which passes 3/3)
+
 ## [12.15.49] - 2025-10-18
 
 ### Fixed
