@@ -115,7 +115,12 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Run E2E tests
-        run: docker run --init --rm exocortex-e2e npm run test:e2e
+        run: |
+          mkdir -p test-results-e2e playwright-report-e2e
+          docker run --init --rm \
+            -v $PWD/test-results-e2e:/app/test-results \
+            -v $PWD/playwright-report-e2e:/app/playwright-report-e2e \
+            exocortex-e2e npm run test:e2e
 
       - name: Upload E2E test report
         if: always()
@@ -124,4 +129,13 @@ jobs:
           name: e2e-test-report
           path: playwright-report-e2e/
           retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Upload E2E test results (screenshots)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: test-results-e2e/
+          retention-days: 7
           if-no-files-found: ignore

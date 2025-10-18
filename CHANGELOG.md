@@ -1,3 +1,29 @@
+## [12.15.44] - 2025-10-18
+
+### Fixed
+
+**E2E Screenshot Capture - Docker Volume Fix**: v12.15.43 verification proved ALL configuration files are present in Docker image (`community-plugins.json`, `app.json`, `main.js`, `manifest.json`), yet screenshots showing plugin failure were lost when the container was removed. The root cause: E2E tests run in Docker with `--rm` flag, which deletes the container and all its contents (including `test-results/` directory with screenshots) after execution. Implemented Docker volume mounting to persist test results and screenshots from container to host filesystem.
+
+**Technical Solution:**
+- Modified `.github/workflows/ci.yml` E2E job to mount Docker volumes
+- Created `test-results-e2e/` directory on host before running container
+- Mounted container's `/app/test-results` → host's `test-results-e2e/`
+- Mounted container's `/app/playwright-report-e2e` → host's `playwright-report-e2e/`
+- Added new artifact upload step for `e2e-test-results` (screenshots)
+- Screenshots now persist after container removal and are available as GitHub artifacts
+
+**Why This Matters:**
+- E2E tests were creating failure screenshots but they were being deleted with the container
+- Screenshots are CRITICAL for diagnosing why plugin doesn't load in Docker environment
+- Now we'll be able to SEE exactly what Obsidian looks like when tests fail
+- Enables visual debugging of E2E failures without manual Docker runs
+- Follows standard Playwright testing pattern of capturing screenshots on failure
+
+**Next Steps:**
+- Wait for CI run to complete
+- Download `e2e-test-results` artifact from GitHub Actions
+- Analyze screenshots to understand why plugin doesn't render despite all files being present
+
 ## [12.15.43] - 2025-10-18
 
 ### Fixed
