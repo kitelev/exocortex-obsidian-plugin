@@ -1,3 +1,34 @@
+## [12.15.23] - 2025-10-18
+
+### Fixed
+
+**E2E Docker Verbose Output and Faster CI Iteration**: Enhanced xvfb-run wrapper with verbose error output and command tracing to diagnose why tests hang silently. Previous iteration showed xvfb-run starts successfully but all Playwright/Electron output is suppressed, causing 7.5-minute silent hang before timeout. Added stderr redirection, command tracing (`set -ex`), and explicit error logging. Reduced CI timeout from 10 to 5 minutes for faster iteration cycles.
+
+**Why this matters:**
+- **Visible Debugging**: Can now see actual error messages and command execution trace
+- **Faster Iteration**: 5-minute timeout instead of 10 means faster feedback loop
+- **Root Cause Tracking**: Will identify exactly where Electron/Playwright hangs
+
+**Technical Details:**
+- Added `set -ex` to docker-entrypoint-e2e.sh for command tracing
+- Added `-e /dev/stderr` to xvfb-run to redirect errors to stderr
+- Added explicit stderr output (`>&2`) for all diagnostic messages
+- Added `2>&1` to merge stderr and stdout for full output visibility
+- Reduced CI timeout from 10 minutes to 5 minutes for faster iteration
+
+**Files Modified:**
+- `docker-entrypoint-e2e.sh` - Added verbose output and command tracing
+- `.github/workflows/ci.yml` - Reduced timeout from 10 to 5 minutes
+
+**Current Issue (from v12.15.22 CI run):**
+- Tests start executing but produce no output for 7.5 minutes
+- Despite console.log() in obsidian-launcher.ts, nothing appears in logs
+- Suggests output suppression or early hang before JS execution
+
+**Next Steps:**
+- CI will run with verbose output to identify exact failure point
+- Will see xvfb startup, Playwright launch, and Electron execution trace
+
 ## [12.15.22] - 2025-10-18
 
 ### Fixed
