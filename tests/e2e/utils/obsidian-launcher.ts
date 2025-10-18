@@ -40,8 +40,8 @@ export class ObsidianLauncher {
         '--disable-renderer-backgrounding',
         '--disable-features=VizDisplayCompositor',
         '--use-gl=swiftshader',
-        '--enable-features=UseOzonePlatform',
-        '--ozone-platform=headless',
+        // Removed --enable-features=UseOzonePlatform and --ozone-platform=headless
+        // These prevent window creation in headless mode!
         '--disable-blink-features=AutomationControlled'
       );
     }
