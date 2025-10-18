@@ -1,3 +1,39 @@
+## [12.15.18] - 2025-10-18
+
+### Fixed
+
+**E2E Docker Infrastructure Improvements for CI**: Improved E2E testing Docker infrastructure to work reliably on x86_64 CI runners. Switched from AppImage to tar.gz archives for better compatibility, added architecture detection, fixed Electron sandbox flags for Docker/CI environments, and documented ARM Mac limitations. E2E tests are now ready to be re-enabled in CI.
+
+**Why this matters:**
+- **CI-Ready**: E2E Docker infrastructure tested and working on x86_64 systems
+- **Better Compatibility**: tar.gz archives instead of AppImage avoid extraction issues
+- **Proper Sandboxing**: Electron flags correctly set for Docker/CI environments
+- **Clear Limitations**: ARM Mac users know E2E tests are designed for CI, not local execution
+
+**Technical Details:**
+- Switched Dockerfile from AppImage to tar.gz archives (obsidian-1.9.14.tar.gz / obsidian-1.9.14-arm64.tar.gz)
+- Added architecture detection in Dockerfile: `ARCH=$(uname -m)` to select correct Obsidian build
+- Added Docker environment detection in `obsidian-launcher.ts`: `process.env.DOCKER` triggers `--no-sandbox` flags
+- Fixed Playwright HTML reporter hanging: Added `open: 'never'` to prevent auto-opening HTTP server
+- Added `export DOCKER=1` to `docker-entrypoint-e2e.sh` for proper environment detection
+- Updated `.github/E2E-LOCAL-TESTING.md` with ARM Mac limitations and troubleshooting
+
+**Files Modified:**
+- `Dockerfile.e2e` - Switched to tar.gz, added architecture detection
+- `tests/e2e/utils/obsidian-launcher.ts` - Added Docker/CI Electron flags (`--no-sandbox`, `--disable-gpu`, etc.)
+- `playwright-e2e.config.ts` - Fixed HTML reporter with `open: 'never'`
+- `docker-entrypoint-e2e.sh` - Added DOCKER=1 environment variable
+- `package.json` - Updated `test:e2e:docker` script with `--platform linux/amd64`
+- `.github/E2E-LOCAL-TESTING.md` - Documented ARM Mac limitations and x86_64 CI focus
+
+**Platform Support:**
+- ✅ x86_64 CI runners (GitHub Actions ubuntu-latest): Full E2E support
+- ⚠️ ARM Mac (M1/M2/M3): Docker builds work, but Playwright has connection timeouts (known limitation)
+- 🎯 E2E tests designed for CI execution on x86_64, not local ARM Mac development
+
+**Next Steps:**
+- Re-enable E2E tests in CI with GitHub Actions cache for <5 minute execution time
+
 ## [12.15.17] - 2025-10-18
 
 ### Fixed

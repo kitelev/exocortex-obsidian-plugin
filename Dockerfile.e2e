@@ -19,15 +19,24 @@ RUN apt-get update && apt-get install -y \
     wget \
     unzip \
     squashfs-tools \
+    zlib1g \
+    libfuse2 \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and extract Obsidian AppImage (cached until version changes)
+# Download and extract Obsidian (cached until version changes)
 WORKDIR /opt
-RUN wget -q https://github.com/obsidianmd/obsidian-releases/releases/download/v1.9.14/Obsidian-1.9.14.AppImage \
-    && chmod +x Obsidian-1.9.14.AppImage \
-    && ./Obsidian-1.9.14.AppImage --appimage-extract \
-    && mv squashfs-root obsidian \
-    && rm Obsidian-1.9.14.AppImage
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
+        OBSIDIAN_FILE="obsidian-1.9.14-arm64.tar.gz"; \
+        OBSIDIAN_DIR="obsidian-1.9.14-arm64"; \
+    else \
+        OBSIDIAN_FILE="obsidian-1.9.14.tar.gz"; \
+        OBSIDIAN_DIR="obsidian-1.9.14"; \
+    fi && \
+    wget -q https://github.com/obsidianmd/obsidian-releases/releases/download/v1.9.14/$OBSIDIAN_FILE \
+    && tar -xzf $OBSIDIAN_FILE \
+    && mv $OBSIDIAN_DIR obsidian \
+    && rm $OBSIDIAN_FILE
 
 # Stage 2: Dependencies (cached until package.json changes)
 FROM obsidian-base AS dependencies

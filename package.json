@@ -1,6 +1,6 @@
 {
   "name": "exocortex-obsidian-plugin",
-  "version": "12.15.17",
+  "version": "12.15.18",
   "description": "Exocortex: A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
   "main": "main.js",
   "engines": {
@@ -22,7 +22,7 @@
     "test:component": "playwright test -c playwright-ct.config.ts",
     "test:component:ui": "playwright test -c playwright-ct.config.ts --ui",
     "test:e2e": "playwright test -c playwright-e2e.config.ts",
-    "test:e2e:docker": "docker build -f Dockerfile.e2e -t exocortex-e2e . && docker run --rm exocortex-e2e",
+    "test:e2e:docker": "docker build --platform linux/amd64 -f Dockerfile.e2e -t exocortex-e2e . && docker run --rm exocortex-e2e",
     "test:all": "npm run test:unit && npm run test:ui && npm run test:component && npm run test:e2e",
     "bdd:coverage": "node scripts/bdd-coverage.js",
     "bdd:report": "node scripts/generate-bdd-report.js",
