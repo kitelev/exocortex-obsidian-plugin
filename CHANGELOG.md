@@ -1,3 +1,41 @@
+## [12.15.25] - 2025-10-18
+
+### Fixed
+
+**E2E Breakthrough: Increased Timeout + Advanced Electron Headless Flags**: Major progress - X server now starts successfully, Playwright executes, and Electron begins launching! Tests were timing out at 60s during electron.launch(). Increased Playwright test timeout to 180s (3 minutes) to allow Electron more time. Added advanced headless flags including Ozone platform, SwiftShader GL, and VizDisplayCompositor disable. Added detailed try/catch logging around electron.launch() to track exact failure point.
+
+**Why this matters:**
+- **Major Breakthrough**: X server ready in 2 attempts, npm/Playwright executing, Electron launching
+- **Narrowed Problem**: Issue is now ONLY at electron.launch() hang, not infrastructure
+- **More Time**: 180s timeout gives Electron enough time to initialize in Docker
+- **Better Debugging**: Try/catch block will show exact error if electron.launch() fails
+- **Advanced Headless**: Ozone headless platform + SwiftShader for software rendering
+
+**Technical Details:**
+- Increased `timeout: 180000` in playwright-e2e.config.ts (was 60000ms)
+- Added `--ozone-platform=headless` for proper headless display
+- Added `--use-gl=swiftshader` for software GL rendering
+- Added `--disable-features=VizDisplayCompositor` to disable compositor
+- Added `--enable-features=UseOzonePlatform` to enable Ozone
+- Added `--disable-blink-features=AutomationControlled` to avoid detection
+- Wrapped electron.launch() in try/catch with detailed error logging
+- Added console.log before electron.launch() to track execution
+
+**Files Modified:**
+- `playwright-e2e.config.ts` - Timeout 60s → 180s
+- `tests/e2e/utils/obsidian-launcher.ts` - Added 5 new Electron flags + error handling
+
+**Progress from v12.15.24:**
+- ✅ X server starts successfully (ready after 2 attempts)
+- ✅ npm and Playwright execute
+- ✅ Electron begins launching
+- ❌ electron.launch() hangs after ~60 seconds (now has 180s to complete)
+
+**Expected Outcome:**
+- Electron will have 3 full minutes to launch instead of 1 minute
+- Advanced headless flags should help Electron initialize properly
+- If still fails, try/catch will show exact error message
+
 ## [12.15.24] - 2025-10-18
 
 ### Fixed

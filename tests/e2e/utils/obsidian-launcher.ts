@@ -37,21 +37,33 @@ export class ObsidianLauncher {
         '--disable-extensions',
         '--disable-background-timer-throttling',
         '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding'
+        '--disable-renderer-backgrounding',
+        '--disable-features=VizDisplayCompositor',
+        '--use-gl=swiftshader',
+        '--enable-features=UseOzonePlatform',
+        '--ozone-platform=headless',
+        '--disable-blink-features=AutomationControlled'
       );
     }
 
     console.log('[ObsidianLauncher] Launching Electron with args:', args);
+    console.log('[ObsidianLauncher] About to call electron.launch()...');
 
-    this.app = await electron.launch({
-      executablePath: obsidianPath,
-      args,
-      env: {
-        ...process.env,
-        OBSIDIAN_DISABLE_GPU: '1',
-      },
-      timeout: 120000, // 2 minutes timeout for launch
-    });
+    try {
+      this.app = await electron.launch({
+        executablePath: obsidianPath,
+        args,
+        env: {
+          ...process.env,
+          OBSIDIAN_DISABLE_GPU: '1',
+        },
+        timeout: 120000, // 2 minutes timeout for launch
+      });
+      console.log('[ObsidianLauncher] electron.launch() completed successfully!');
+    } catch (error) {
+      console.error('[ObsidianLauncher] ERROR during electron.launch():', error);
+      throw error;
+    }
 
     console.log('[ObsidianLauncher] Electron launched, waiting for window...');
 
