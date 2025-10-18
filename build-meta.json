@@ -174,7 +174,7 @@
       "format": "esm"
     },
     "src/domain/commands/CommandVisibility.ts": {
-      "bytes": 10047,
+      "bytes": 10396,
       "imports": [],
       "format": "esm"
     },
@@ -798,7 +798,7 @@
       "format": "esm"
     },
     "src/infrastructure/services/TaskStatusService.ts": {
-      "bytes": 13295,
+      "bytes": 14576,
       "imports": [
         {
           "path": "obsidian",
@@ -842,7 +842,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 49269,
+      "bytes": 49723,
       "imports": [
         {
           "path": "obsidian",
@@ -1025,7 +1025,7 @@
       "format": "esm"
     },
     "src/application/services/CommandManager.ts": {
-      "bytes": 21885,
+      "bytes": 22906,
       "imports": [
         {
           "path": "obsidian",
@@ -1191,7 +1191,7 @@
           "bytesInOutput": 1764
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 20290
+          "bytesInOutput": 20557
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -1215,7 +1215,7 @@
           "bytesInOutput": 819
         },
         "src/domain/commands/CommandVisibility.ts": {
-          "bytesInOutput": 2521
+          "bytesInOutput": 2625
         },
         "src/presentation/components/CreateTaskButton.tsx": {
           "bytesInOutput": 453
@@ -1278,7 +1278,7 @@
           "bytesInOutput": 1559
         },
         "src/infrastructure/services/TaskStatusService.ts": {
-          "bytesInOutput": 6103
+          "bytesInOutput": 6690
         },
         "src/infrastructure/services/PropertyCleanupService.ts": {
           "bytesInOutput": 970
@@ -1290,7 +1290,7 @@
           "bytesInOutput": 626
         },
         "src/application/services/CommandManager.ts": {
-          "bytesInOutput": 9226
+          "bytesInOutput": 9731
         },
         "src/infrastructure/services/SupervisionCreationService.ts": {
           "bytesInOutput": 1824
@@ -1299,7 +1299,7 @@
           "bytesInOutput": 2146
         }
       },
-      "bytes": 257038
+      "bytes": 258501
     }
   }
 }

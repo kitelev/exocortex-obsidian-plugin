@@ -1,3 +1,30 @@
+## [12.15.52] - 2025-10-18
+
+### Added
+
+**Plan for Evening (19:00) Command for Backlog Tasks**: Tasks in Backlog status can now be quickly scheduled for the evening with a single click. The "Plan for Evening (19:00)" button sets the `ems__Effort_plannedStartTimestamp` property to today's date at 19:00 (7 PM), making it easy to defer work to evening hours.
+
+**User Benefit:**
+- One-click evening scheduling for Backlog tasks
+- Available as both Layout button and Command Palette command ("Exocortex: Plan for Evening (19:00)")
+- Automatically sets planned start time to 19:00 local time
+- Complements "Plan on Today" feature with specific evening time planning
+- Only visible for Tasks (not Projects) in Backlog status, keeping UI clean
+
+**Use Case:**
+- Morning planning: review Backlog and mark tasks for evening work
+- Quick rescheduling: defer current Backlog tasks to evening session
+- Time blocking: separate morning/afternoon work from evening work
+
+**Technical Implementation:**
+- New `canPlanForEvening()` visibility function (Task + Backlog status only)
+- `planForEvening()` service method in TaskStatusService
+- Sets `ems__Effort_plannedStartTimestamp` to today at 19:00:00 in local timezone
+- Integrated into UniversalLayoutRenderer Planning button group
+- Command Palette command "Plan for Evening (19:00)" registered
+- BDD specification updated with new scenarios in effort-workflow.feature
+- Full test coverage maintained (388/388 tests passing, 100% BDD coverage)
+
 ## [12.15.51] - 2025-10-18
 
 ### Added

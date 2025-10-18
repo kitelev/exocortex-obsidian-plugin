@@ -15,6 +15,7 @@ import {
   canStartEffort,
   canMarkDone,
   canPlanOnToday,
+  canPlanForEvening,
   canShiftDayBackward,
   canShiftDayForward,
   canTrashEffort,
@@ -311,6 +312,18 @@ export class UniversalLayoutRenderer {
           await new Promise((resolve) => setTimeout(resolve, 100));
           await this.refresh();
           this.logger.info(`Planned on today: ${file.path}`);
+        },
+      },
+      {
+        id: "plan-for-evening",
+        label: "Plan for Evening (19:00)",
+        variant: "warning",
+        visible: canPlanForEvening(context),
+        onClick: async () => {
+          await this.taskStatusService.planForEvening(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Planned for evening: ${file.path}`);
         },
       },
       {

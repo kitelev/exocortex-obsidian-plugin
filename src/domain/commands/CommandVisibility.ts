@@ -192,6 +192,17 @@ export function canPlanOnToday(context: CommandVisibilityContext): boolean {
 }
 
 /**
+ * Can execute "Plan for Evening" command
+ * Available for: Task with Backlog status
+ */
+export function canPlanForEvening(context: CommandVisibilityContext): boolean {
+  if (!hasClass(context.instanceClass, "ems__Task")) return false;
+
+  // Show only for Backlog status
+  return hasStatus(context.currentStatus, "ems__EffortStatusBacklog");
+}
+
+/**
  * Check if ems__Effort_day property exists
  */
 function hasEffortDay(metadata: Record<string, any>): boolean {
