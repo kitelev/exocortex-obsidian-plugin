@@ -8,6 +8,11 @@ import { UniversalLayoutRenderer } from "./presentation/renderers/UniversalLayou
 import { ILogger } from "./infrastructure/logging/ILogger";
 import { LoggerFactory } from "./infrastructure/logging/LoggerFactory";
 import { CommandManager } from "./application/services/CommandManager";
+import {
+  ExocortexSettings,
+  DEFAULT_SETTINGS,
+} from "./domain/settings/ExocortexSettings";
+import { ExocortexSettingTab } from "./presentation/settings/ExocortexSettingTab";
 
 /**
  * Exocortex Plugin - Automatic layout rendering
@@ -18,13 +23,16 @@ export default class ExocortexPlugin extends Plugin {
   private logger: ILogger;
   private layoutRenderer: UniversalLayoutRenderer;
   private commandManager: CommandManager;
+  settings: ExocortexSettings;
 
   async onload(): Promise<void> {
     try {
       this.logger = LoggerFactory.create("ExocortexPlugin");
       this.logger.info("Loading Exocortex Plugin");
 
-      this.layoutRenderer = new UniversalLayoutRenderer(this.app);
+      await this.loadSettings();
+
+      this.layoutRenderer = new UniversalLayoutRenderer(this.app, this.settings);
 
       // Initialize CommandManager and register all commands
       this.commandManager = new CommandManager(this.app);
@@ -32,6 +40,8 @@ export default class ExocortexPlugin extends Plugin {
         this,
         () => this.autoRenderLayout(),
       );
+
+      this.addSettingTab(new ExocortexSettingTab(this.app, this));
 
       this.registerEvent(
         this.app.metadataCache.on("resolved", () => {
@@ -76,6 +86,18 @@ export default class ExocortexPlugin extends Plugin {
   async onunload(): Promise<void> {
     this.removeAutoRenderedLayouts();
     this.logger?.info("Exocortex Plugin unloaded");
+  }
+
+  async loadSettings(): Promise<void> {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings(): Promise<void> {
+    await this.saveData(this.settings);
+  }
+
+  refreshLayout(): void {
+    this.autoRenderLayout();
   }
 
   private autoRenderLayout(): void {

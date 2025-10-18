@@ -134,6 +134,14 @@ export function canCreateTask(context: CommandVisibilityContext): boolean {
 }
 
 /**
+ * Can execute "Create Project" command
+ * Available for: ems__Area assets
+ */
+export function canCreateProject(context: CommandVisibilityContext): boolean {
+  return hasClass(context.instanceClass, "ems__Area");
+}
+
+/**
  * Can execute "Create Instance" command
  * Available for: ems__TaskPrototype assets
  */
