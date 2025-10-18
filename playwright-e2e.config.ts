@@ -9,7 +9,7 @@ export default defineConfig({
   timeout: 60000,
 
   reporter: [
-    ['html', { outputFolder: 'playwright-report-e2e' }],
+    ['html', { outputFolder: 'playwright-report-e2e', open: 'never' }],
     ['list'],
     ...(process.env.CI ? [['github', {}] as ['github', {}]] : []),
   ],

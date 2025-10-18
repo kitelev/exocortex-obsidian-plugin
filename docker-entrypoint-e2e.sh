@@ -4,6 +4,9 @@
 
 set -e
 
+# Set Docker flag for Electron --no-sandbox
+export DOCKER=1
+
 echo "Starting Xvfb on display $DISPLAY..."
 Xvfb :99 -screen 0 1920x1080x24 -ac &
 XVFB_PID=$!

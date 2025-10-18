@@ -34,8 +34,8 @@ This command:
 ### Method 2: Manual Docker commands
 
 ```bash
-# Step 1: Build the E2E Docker image
-docker build -f Dockerfile.e2e -t exocortex-e2e .
+# Step 1: Build the E2E Docker image (specify platform for ARM Macs)
+docker build --platform linux/amd64 -f Dockerfile.e2e -t exocortex-e2e .
 
 # Step 2: Run E2E tests in the container
 docker run --rm exocortex-e2e npm run test:e2e
@@ -47,8 +47,8 @@ docker run --rm -it exocortex-e2e /bin/bash
 ### Method 3: Docker with volume mount (for iterating on tests)
 
 ```bash
-# Build image once
-docker build -f Dockerfile.e2e -t exocortex-e2e .
+# Build image once (specify platform for ARM Macs)
+docker build --platform linux/amd64 -f Dockerfile.e2e -t exocortex-e2e .
 
 # Run tests with current test code mounted
 docker run --rm \
@@ -192,9 +192,21 @@ Install Docker Desktop: https://www.docker.com/products/docker-desktop/
 
 Start Docker Desktop application.
 
-### Tests timeout
+### "Exec format error" on ARM Macs (M1/M2/M3)
 
-Increase timeout in `playwright-e2e.config.ts`:
+**IMPORTANT**: E2E tests currently have technical limitations on ARM Macs (M1/M2/M3) due to Playwright + Electron compatibility issues. The Docker infrastructure works correctly on x86_64 systems (GitHub Actions CI runners).
+
+**For ARM Mac users:**
+- E2E tests are designed to run in CI on x86_64 runners
+- Local execution on ARM Mac may timeout during Playwright connection to Obsidian
+- This is a known Playwright limitation, not a bug in the plugin
+
+**For x86_64 systems (CI):**
+The Docker image uses tar.gz archives with architecture detection and runs successfully on x86_64 Linux systems.
+
+### Tests timeout in Docker
+
+If tests timeout on x86_64 systems, increase timeout in `playwright-e2e.config.ts`:
 
 ```typescript
 timeout: 120000, // 2 minutes instead of 60s

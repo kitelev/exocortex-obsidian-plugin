@@ -18,9 +18,22 @@ export class ObsidianLauncher {
       throw new Error(`Obsidian not found at ${obsidianPath}. Set OBSIDIAN_PATH environment variable.`);
     }
 
+    const args = [this.vaultPath];
+
+    // In Docker/CI, we need additional flags to run in headless environment
+    if (process.env.CI || process.env.DOCKER) {
+      args.push(
+        '--no-sandbox',
+        '--disable-gpu',
+        '--disable-dev-shm-usage',
+        '--disable-software-rasterizer',
+        '--disable-setuid-sandbox'
+      );
+    }
+
     this.app = await electron.launch({
       executablePath: obsidianPath,
-      args: [this.vaultPath],
+      args,
       env: {
         ...process.env,
         OBSIDIAN_DISABLE_GPU: '1',
