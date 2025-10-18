@@ -25,6 +25,8 @@ export class ObsidianLauncher {
       throw new Error(`Obsidian not found at ${obsidianPath}. Set OBSIDIAN_PATH environment variable.`);
     }
 
+    this.createObsidianConfig();
+
     const args = [
       this.vaultPath,
       '--remote-debugging-port=9222',
@@ -92,45 +94,7 @@ export class ObsidianLauncher {
     }
 
     await this.window.waitForLoadState('domcontentloaded', { timeout: 30000 });
-    console.log('[ObsidianLauncher] DOM loaded, checking window state...');
-
-    const bodyClass = await this.window.evaluate(() => document.body?.className || '');
-    console.log('[ObsidianLauncher] Body class:', bodyClass);
-
-    if (bodyClass.includes('starter')) {
-      console.log('[ObsidianLauncher] Detected starter screen, attempting to open vault via click...');
-
-      const vaultClicked = await this.window.evaluate((vaultPath) => {
-        const vaultItems = document.querySelectorAll('.vault');
-        console.log('[ObsidianLauncher] Found vault items:', vaultItems.length);
-
-        for (const item of vaultItems) {
-          const pathElement = item.querySelector('.vault-path');
-          if (pathElement && pathElement.textContent?.includes(vaultPath)) {
-            console.log('[ObsidianLauncher] Found matching vault, clicking...');
-            (item as HTMLElement).click();
-            return true;
-          }
-        }
-
-        console.log('[ObsidianLauncher] No matching vault found, clicking first vault...');
-        if (vaultItems.length > 0) {
-          (vaultItems[0] as HTMLElement).click();
-          return true;
-        }
-
-        return false;
-      }, this.vaultPath);
-
-      if (vaultClicked) {
-        console.log('[ObsidianLauncher] Vault click executed, waiting for app to initialize...');
-        await this.window.waitForTimeout(3000);
-      } else {
-        console.log('[ObsidianLauncher] Could not find vault to click');
-      }
-    }
-
-    console.log('[ObsidianLauncher] Waiting for window.app to become available...');
+    console.log('[ObsidianLauncher] DOM loaded, waiting for window.app to become available...');
 
     let pollCount = 0;
     const maxPolls = 60;
@@ -143,7 +107,6 @@ export class ObsidianLauncher {
           hasApp: !!win.app,
           hasWorkspace: !!win.app?.workspace,
           hasVault: !!win.app?.vault,
-          bodyClass: document.body?.className || 'no-body',
         };
       });
 
@@ -154,7 +117,7 @@ export class ObsidianLauncher {
       }
 
       if (pollCount % 5 === 0) {
-        console.log(`[ObsidianLauncher] Poll ${pollCount}/${maxPolls}: app=${pollResult.hasApp}, workspace=${pollResult.hasWorkspace}, vault=${pollResult.hasVault}, body="${pollResult.bodyClass}"`);
+        console.log(`[ObsidianLauncher] Poll ${pollCount}/${maxPolls}: app=${pollResult.hasApp}, workspace=${pollResult.hasWorkspace}, vault=${pollResult.hasVault}`);
       }
 
       await this.window.waitForTimeout(1000);
@@ -169,6 +132,31 @@ export class ObsidianLauncher {
 
     await this.window.waitForTimeout(1000);
     console.log('[ObsidianLauncher] Obsidian ready!');
+  }
+
+  private createObsidianConfig(): void {
+    const configDir = '/root/.config/obsidian';
+    const configPath = path.join(configDir, 'obsidian.json');
+
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+      console.log('[ObsidianLauncher] Created config directory:', configDir);
+    }
+
+    const vaultId = 'test-vault-e2e';
+    const config = {
+      vaults: {
+        [vaultId]: {
+          path: this.vaultPath,
+          ts: Date.now(),
+          open: true
+        }
+      }
+    };
+
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    console.log('[ObsidianLauncher] Created Obsidian config at:', configPath);
+    console.log('[ObsidianLauncher] Registered vault:', this.vaultPath);
   }
 
   private async waitForPort(port: number, timeout: number): Promise<void> {
