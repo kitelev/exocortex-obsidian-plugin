@@ -1,3 +1,24 @@
+## [12.15.30] - 2025-10-18
+
+### Fixed
+
+**E2E ACTUAL ROOT CAUSE: docker run --init for xvfb-run Signal Handling**: After 13 minutes of COMPLETE SILENCE in logs (no output at all), discovered the REAL problem! StackOverflow (xvfb-run hangs in container) reveals: "Using xvfb-run as main process for a container breaks its internal signal handling" - xvfb-run waits for SIGUSR1 from Xvfb but never receives it! Solution: Add `--init` flag to `docker run` to provide proper init process (tini) for signal handling.
+
+**Why docker run --init is critical:**
+- **Signal Handling Fix**: xvfb-run requires proper init process to receive SIGUSR1 from Xvfb
+- **Silent Hang Without It**: xvfb-run just hangs forever with zero output when run as PID 1
+- **StackOverflow Confirmed**: Multiple reports of same issue, all solved with --init flag
+- **Works with xvfb-run --auto-servernum**: Combined with Playwright's recommendation
+
+**Files Modified:**
+- `.github/workflows/ci.yml` - Changed `docker run --rm` to `docker run --init --rm`
+
+**Technical Detail:**
+xvfb-run script contains `wait` for Xvfb to signal readiness via SIGUSR1. When xvfb-run runs as PID 1 (container main process), Linux kernel doesn't deliver signals properly. Docker's `--init` flag adds tini as PID 1, which properly forwards signals to child processes.
+
+**Reference:**
+- https://stackoverflow.com/questions/50634819/xvfb-run-hangs-in-container
+
 ## [12.15.29] - 2025-10-18
 
 ### Fixed

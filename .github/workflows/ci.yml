@@ -115,7 +115,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Run E2E tests
-        run: docker run --rm exocortex-e2e npm run test:e2e
+        run: docker run --init --rm exocortex-e2e npm run test:e2e
 
       - name: Upload E2E test report
         if: always()
