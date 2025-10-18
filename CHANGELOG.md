@@ -1,3 +1,31 @@
+## [12.15.20] - 2025-10-18
+
+### Fixed
+
+**E2E CI Timeout Adjusted for Realistic Docker Build Times**: Increased E2E job timeout from 5 to 10 minutes to accommodate first-time Docker builds while maintaining parallel job execution. Jobs run in parallel (not sequential) ensuring `build-and-test` completes in ~2 minutes while E2E runs concurrently. Subsequent E2E runs benefit from GitHub Actions cache and complete in ~3-4 minutes.
+
+**Why this matters:**
+- **Parallel Execution**: Both jobs run simultaneously, total CI time = slowest job (~5-6 min for cached E2E)
+- **First Run Realistic**: 10-minute E2E timeout accounts for downloading Obsidian (700MB) + Docker build
+- **Cached Runs Fast**: GHA cache ensures subsequent runs complete in 3-4 minutes (well under timeout)
+- **No Sequential Bottleneck**: Removed `needs:` dependency to keep jobs parallel
+
+**Technical Details:**
+- E2E job timeout: 5min → 10min (realistic for first run, ample for cached runs)
+- Jobs remain parallel (no `needs:` dependency between build-and-test and e2e-tests)
+- GitHub Actions cache (`type=gha`) reuses Docker layers across runs
+- First run: ~8-10 minutes total (downloading Obsidian dominates)
+- Cached runs: ~5-6 minutes total (E2E Docker build uses cache, completes in ~3-4min)
+
+**Performance:**
+- build-and-test job: ~2 minutes (unchanged)
+- e2e-tests job first run: ~8-10 minutes (Docker download + build)
+- e2e-tests job cached: ~3-4 minutes (GitHub Actions cache hit)
+- Total CI time (parallel): MAX(build-and-test, e2e-tests) = ~5-6 minutes after first run
+
+**Files Modified:**
+- `.github/workflows/ci.yml` - E2E timeout 5→10min, keep parallel execution
+
 ## [12.15.19] - 2025-10-18
 
 ### Added
