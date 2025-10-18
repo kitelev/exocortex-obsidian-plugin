@@ -227,11 +227,15 @@ export class UniversalLayoutRenderer {
           });
           if (label === null) return;
 
-          const createdFile = await this.projectCreationService.createProject(file, metadata, label);
+          const sourceClass = Array.isArray(instanceClass)
+            ? (instanceClass[0] || "").replace(/\[\[|\]\]/g, "").trim()
+            : (instanceClass || "").replace(/\[\[|\]\]/g, "").trim();
+
+          const createdFile = await this.projectCreationService.createProject(file, metadata, sourceClass, label);
           const leaf = this.app.workspace.getLeaf("tab");
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
-          this.logger.info(`Created Project from Area: ${createdFile.path}`);
+          this.logger.info(`Created Project from ${sourceClass}: ${createdFile.path}`);
         },
       },
       {
@@ -701,8 +705,8 @@ export class UniversalLayoutRenderer {
   }
 
   /**
-   * Render Create Project button for Area assets
-   * Button appears when exo__Instance_class is ems__Area
+   * Render Create Project button for Area and Initiative assets
+   * Button appears when exo__Instance_class is ems__Area or ems__Initiative
    */
   private async renderCreateProjectButton(
     el: HTMLElement,
@@ -729,9 +733,14 @@ export class UniversalLayoutRenderer {
             return;
           }
 
+          const sourceClass = Array.isArray(instanceClass)
+            ? (instanceClass[0] || "").replace(/\[\[|\]\]/g, "").trim()
+            : (instanceClass || "").replace(/\[\[|\]\]/g, "").trim();
+
           const createdFile = await this.projectCreationService.createProject(
             file,
             metadata,
+            sourceClass,
             label,
           );
 
@@ -740,7 +749,7 @@ export class UniversalLayoutRenderer {
 
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
-          this.logger.info(`Created Project from Area: ${createdFile.path}`);
+          this.logger.info(`Created Project from ${sourceClass}: ${createdFile.path}`);
         },
       }),
     );

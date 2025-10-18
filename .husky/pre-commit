@@ -1,9 +1,13 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-# Check for version conflicts FIRST
-echo "🔍 Checking version uniqueness..."
-./.claude/scripts/check-version-conflict.sh || exit 1
+# Check for version conflicts ONLY on main branch
+# Feature branches skip this check (versioning handled by pr-auto-version workflow)
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$BRANCH" = "main" ]; then
+  echo "🔍 Checking version uniqueness (main branch)..."
+  ./.claude/scripts/check-version-conflict.sh || exit 1
+else
+  echo "⏭️  Skipping version check (feature branch: $BRANCH)"
+  echo "   Version will be auto-bumped after PR merge by pr-auto-version workflow"
+fi
 
 # Run tests
 echo "🧪 Running tests..."

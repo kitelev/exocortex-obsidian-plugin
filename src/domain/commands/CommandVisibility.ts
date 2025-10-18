@@ -135,10 +135,10 @@ export function canCreateTask(context: CommandVisibilityContext): boolean {
 
 /**
  * Can execute "Create Project" command
- * Available for: ems__Area assets
+ * Available for: ems__Area and ems__Initiative assets
  */
 export function canCreateProject(context: CommandVisibilityContext): boolean {
-  return hasClass(context.instanceClass, "ems__Area");
+  return hasClass(context.instanceClass, "ems__Area") || hasClass(context.instanceClass, "ems__Initiative");
 }
 
 /**
