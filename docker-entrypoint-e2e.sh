@@ -7,6 +7,8 @@ set -ex
 # Set Docker flag for Electron --no-sandbox
 export DOCKER=1
 export DISPLAY=:99
+export DEBUG=pw:browser*
+export ELECTRON_ENABLE_LOGGING=1
 
 echo "========================================" >&2
 echo "OBSIDIAN_PATH: $OBSIDIAN_PATH" >&2

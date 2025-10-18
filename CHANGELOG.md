@@ -1,3 +1,36 @@
+## [12.15.26] - 2025-10-18
+
+### Fixed
+
+**E2E Debug Logging: Playwright + Electron Diagnostics**: electron.launch() hangs for exactly 120s (its timeout) but try/catch doesn't capture the error. Added DEBUG=pw:browser* for Playwright browser debug output and ELECTRON_ENABLE_LOGGING=1 for Electron internals logging. Increased CI timeout from 5 to 15 minutes to allow full diagnostic output collection. This will show us WHY Electron hangs inside launch().
+
+**Why this matters:**
+- **Root Cause Discovery**: Debug logs will show internal Playwright + Electron communication
+- **Exact Hang Point**: Will see where in electron.launch() it hangs
+- **More Time**: 15 minute CI timeout ensures we see full debug output
+- **Electron Internals**: ELECTRON_ENABLE_LOGGING shows Chromium/Electron startup issues
+
+**Technical Details:**
+- Added `export DEBUG=pw:browser*` to docker-entrypoint-e2e.sh
+- Added `export ELECTRON_ENABLE_LOGGING=1` to docker-entrypoint-e2e.sh
+- Increased CI timeout from 5 minutes to 15 minutes
+- These environment variables will show detailed browser/Electron launch process
+
+**Files Modified:**
+- `docker-entrypoint-e2e.sh` - Added DEBUG and ELECTRON_ENABLE_LOGGING
+- `.github/workflows/ci.yml` - Timeout 5min → 15min
+
+**Current Status (from v12.15.25):**
+- electron.launch() hangs for exactly 120 seconds (its timeout)
+- Try/catch block doesn't capture this timeout error
+- No error messages at all - just silent hang then timeout
+- Need to see WHAT is happening inside electron.launch()
+
+**Expected Outcome:**
+- Playwright debug output will show browser launch steps
+- Electron logging will show Chromium initialization
+- We'll see exactly where it hangs and why
+
 ## [12.15.25] - 2025-10-18
 
 ### Fixed
