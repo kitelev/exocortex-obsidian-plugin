@@ -2,6 +2,15 @@
 
 ## 🎯 Quick Command Reference
 
+**⚠️ STEP 0 (MANDATORY): Before ANY task, create separate worktree!**
+
+```bash
+# ALWAYS start with this:
+git worktree add ../exocortex-[task-name] -b feature/[description]
+cd ../exocortex-[task-name]
+git fetch origin main && git rebase origin/main
+```
+
 **ALWAYS use slash commands for these operations:**
 
 ```bash
@@ -13,11 +22,72 @@
 ```
 
 ⚠️ **CRITICAL**:
+- **NEVER work in main directory** - ALWAYS create worktree first (see RULE 0)
 - Use `/release` for ANY code change to src/, tests/, or production files
 - Use `/test` instead of `npm test` (prevents hangs, enforces BDD coverage ≥80%)
 - Use `/execute` for complex tasks requiring multiple agents
 
 ## 🚨 Critical Rules
+
+### RULE 0: Mandatory Worktree Isolation (CRITICAL - NEVER VIOLATE)
+
+**🔴 ABSOLUTE REQUIREMENT: EVERY task MUST be done in a separate worktree. NEVER work in main directory.**
+
+**Enforcement:**
+```bash
+# ✅ CORRECT - Always create worktree first
+git worktree add ../exocortex-[task-name] -b feature/[description]
+cd ../exocortex-[task-name]
+# ... work here ...
+
+# ❌ WRONG - Never work directly in main
+cd /Users/kitelev/Documents/exocortex-obsidian-plugin
+# ... edit files here ... ❌ BLOCKED!
+```
+
+**Why this is CRITICAL:**
+- **Multi-instance safety**: 2-5 Claude instances work in parallel - working in main causes conflicts
+- **Clean rollback**: Failed experiments don't pollute main directory
+- **Atomic changes**: One worktree = one feature = one PR = clean history
+- **No accidental main commits**: Impossible to `git commit` in main when you're in a worktree
+
+**Before starting ANY task, ask yourself:**
+1. ✅ Am I in a separate worktree?
+2. ✅ Did I sync with latest main first?
+3. ❌ Am I in `/Users/kitelev/Documents/exocortex-obsidian-plugin`? → STOP and create worktree!
+
+**Workflow enforcement:**
+```bash
+# Step 0 (MANDATORY): Check current directory
+pwd
+# If output is main directory → create worktree immediately!
+
+# Step 1: Create worktree
+git worktree add ../exocortex-fix-bug -b feature/fix-bug
+cd ../exocortex-fix-bug
+
+# Step 2: Sync with main
+git fetch origin main && git rebase origin/main
+
+# Step 3: Make changes
+# ... your work ...
+
+# Step 4: Cleanup after merge
+cd /Users/kitelev/Documents/exocortex-obsidian-plugin
+git worktree remove ../exocortex-fix-bug
+git pull origin main
+```
+
+**Valid exceptions (ONLY 2):**
+1. Reading files for research (no edits)
+2. Creating new worktree (then immediately switch to it)
+
+**All other operations MUST be in worktree:**
+- ✅ Code changes → worktree
+- ✅ Documentation updates → worktree
+- ✅ Test modifications → worktree
+- ✅ Configuration changes → worktree
+- ✅ ANY file edit → worktree
 
 ### RULE 1: PR-Based Workflow (MANDATORY)
 
@@ -127,12 +197,26 @@ gh release list --limit 1
 
 ⚠️ **This plugin is developed in PARALLEL by 2-5 Claude Code instances.**
 
-**Coordination rules:**
-- One task = One worktree (NEVER work in main directory)
+**Coordination rules (enforced by RULE 0):**
+- **One task = One worktree** (NEVER work in main directory - see RULE 0)
+- **Worktree isolation prevents conflicts** between parallel instances
 - Small, focused tasks (one feature/fix per worktree)
 - Frequent syncs (fetch origin main before starting)
 - Fast completion (don't leave worktrees open for days)
 - Clean pipeline (never push broken code - blocks everyone)
+
+**Why worktree is mandatory for multi-instance:**
+```
+❌ WITHOUT worktree (chaos):
+Instance A (main dir): Edits file.ts → commit → push ❌ CONFLICT
+Instance B (main dir): Edits file.ts → commit → push ❌ CONFLICT
+Result: Merge conflicts, lost work, frustration
+
+✅ WITH worktree (harmony):
+Instance A (worktree-A): feature/add-x → PR #123 → merge → v12.5.11
+Instance B (worktree-B): feature/add-y → PR #124 → merge → v12.5.12
+Result: Clean sequential processing, no conflicts
+```
 
 **Race condition prevention:**
 ```
