@@ -8,6 +8,7 @@ In multi-instance AI development environment:
 - **Prevents race conditions**: Only one PR can merge at a time
 - **Ensures quality**: All CI checks must pass before merge
 - **Eliminates version conflicts**: Automatic versioning happens sequentially
+- **Linear history**: Rebase-only merges keep git history clean
 - **Safe rollback**: Every change is a PR that can be reverted
 
 ## Required Status Checks
@@ -40,9 +41,15 @@ cd /Users/kitelev/Documents/exocortex-obsidian-plugin
 - ✅ Requires PR before merging to main
 - ✅ Requires `build-and-test` and `e2e-tests` to pass
 - ✅ Requires branches to be up to date before merging
+- ✅ Requires linear history (rebase-only merges)
 - ✅ Enforces rules for administrators (no bypass)
 - ✅ Dismisses stale PR approvals on new commits
 - ✅ Blocks direct pushes to main
+
+**Repository merge settings (configured separately):**
+- ✅ Rebase merge enabled
+- ❌ Squash merge disabled
+- ❌ Merge commits disabled
 
 ### Method 2: Manual Configuration via GitHub UI
 
@@ -138,8 +145,8 @@ gh pr create --title "feat: description" --body "Details..."
 # 6. Wait for CI checks (REQUIRED!)
 gh pr checks --watch
 
-# 7. If all GREEN ✅ - auto-merge
-gh pr merge --auto --squash
+# 7. If all GREEN ✅ - auto-merge (rebase only - linear history)
+gh pr merge --auto --rebase
 
 # 8. Version bump happens automatically via pr-auto-version.yml
 
