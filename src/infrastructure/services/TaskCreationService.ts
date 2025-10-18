@@ -13,6 +13,17 @@ const EFFORT_PROPERTY_MAP: Record<string, string> = {
 };
 
 /**
+ * Mapping of source class to target instance class
+ * Determines what type of instance is created from each source
+ */
+const INSTANCE_CLASS_MAP: Record<string, string> = {
+  ems__Area: "ems__Task",
+  ems__Project: "ems__Task",
+  ems__TaskPrototype: "ems__Task",
+  ems__MeetingPrototype: "ems__Meeting",
+};
+
+/**
  * Service for creating Task assets from Area or Project assets
  * Handles frontmatter generation, file creation, and property inheritance
  */
@@ -161,16 +172,18 @@ export class TaskCreationService {
       return `"${value}"`;
     };
 
-    // Get appropriate effort property name based on source class
+    // Get appropriate effort property name and instance class based on source class
     const cleanSourceClass = sourceClass.replace(/\[\[|\]\]/g, "").trim();
     const effortProperty =
       EFFORT_PROPERTY_MAP[cleanSourceClass] || "ems__Effort_area";
+    const instanceClass =
+      INSTANCE_CLASS_MAP[cleanSourceClass] || "ems__Task";
 
     const frontmatter: Record<string, any> = {};
     frontmatter["exo__Asset_isDefinedBy"] = ensureQuoted(isDefinedBy);
     frontmatter["exo__Asset_uid"] = uid || uuidv4();
     frontmatter["exo__Asset_createdAt"] = timestamp;
-    frontmatter["exo__Instance_class"] = ['"[[ems__Task]]"'];
+    frontmatter["exo__Instance_class"] = [`"[[${instanceClass}]]"`];
     frontmatter["ems__Effort_status"] = '"[[ems__EffortStatusDraft]]"';
     frontmatter[effortProperty] = `"[[${sourceName}]]"`;
 
