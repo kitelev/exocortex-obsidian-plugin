@@ -10,6 +10,7 @@
 import { App, TFile, MarkdownPostProcessorContext } from "obsidian";
 import { UniversalLayoutRenderer } from "../../src/presentation/renderers/UniversalLayoutRenderer";
 import { FileBuilder, ListBuilder } from "./helpers/FileBuilder";
+import { DEFAULT_SETTINGS } from "../../src/domain/settings/ExocortexSettings";
 
 describe("UniversalLayoutRenderer UI Integration", () => {
   let renderer: UniversalLayoutRenderer;
@@ -39,7 +40,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       },
     } as unknown as App;
 
-    renderer = new UniversalLayoutRenderer(mockApp);
+    renderer = new UniversalLayoutRenderer(mockApp, DEFAULT_SETTINGS);
   });
 
   afterEach(() => {

@@ -1,3 +1,32 @@
+## [12.15.53] - 2025-10-18
+
+### Added
+
+**Properties Section Visibility Toggle**: You can now control whether the Properties table is displayed in the Layout. This new setting gives you full control over your workspace layout, allowing you to hide Properties when you want a cleaner, more focused view of relationships and tasks.
+
+**User Benefit:**
+- Toggle Properties section visibility without restarting Obsidian
+- Available in two ways:
+  1. Plugin Settings: Persistent toggle in "Exocortex Settings" tab
+  2. Command Palette: Quick toggle via "Exocortex: Toggle Properties Visibility" command
+- Settings persist across sessions - your preference is remembered
+- Instant layout refresh when toggling - no need to reload notes
+- Keeps other Layout sections (buttons, tasks, relations) fully functional
+
+**Use Cases:**
+- Focus on relationships: Hide Properties to see more asset connections on screen
+- Reduce clutter: Properties can be verbose - toggle them off when not needed
+- Quick switching: Use Command Palette hotkey for instant Properties toggle during work
+- Custom workflows: Different visibility preferences for different work sessions
+
+**Technical Implementation:**
+- New `ExocortexSettings` interface with `showPropertiesSection: boolean` property
+- Settings UI tab: `ExocortexSettingTab` with toggle control
+- Settings persistence via Obsidian's plugin data system
+- Command Palette integration: "Toggle Properties Visibility" command (always available)
+- Layout renderer respects setting: conditionally renders Properties section
+- Default value: `true` (Properties visible by default, backward compatible)
+
 ## [12.15.52] - 2025-10-18
 
 ### Added

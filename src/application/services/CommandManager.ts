@@ -2,6 +2,7 @@ import { App, TFile, Notice } from "obsidian";
 import {
   CommandVisibilityContext,
   canCreateTask,
+  canCreateProject,
   canCreateInstance,
   canSetDraftStatus,
   canMoveToBacklog,
@@ -18,6 +19,7 @@ import {
   canShiftDayForward,
 } from "../../domain/commands/CommandVisibility";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
+import { ProjectCreationService } from "../../infrastructure/services/ProjectCreationService";
 import { TaskStatusService } from "../../infrastructure/services/TaskStatusService";
 import { PropertyCleanupService } from "../../infrastructure/services/PropertyCleanupService";
 import { FolderRepairService } from "../../infrastructure/services/FolderRepairService";
@@ -41,6 +43,7 @@ import { SupervisionInputModal } from "../../presentation/modals/SupervisionInpu
  */
 export class CommandManager {
   private taskCreationService: TaskCreationService;
+  private projectCreationService: ProjectCreationService;
   private taskStatusService: TaskStatusService;
   private propertyCleanupService: PropertyCleanupService;
   private folderRepairService: FolderRepairService;
@@ -50,6 +53,7 @@ export class CommandManager {
 
   constructor(private app: App) {
     this.taskCreationService = new TaskCreationService(app.vault);
+    this.projectCreationService = new ProjectCreationService(app.vault);
     this.taskStatusService = new TaskStatusService(app.vault);
     this.propertyCleanupService = new PropertyCleanupService(app.vault);
     this.folderRepairService = new FolderRepairService(app.vault, app);
@@ -65,6 +69,7 @@ export class CommandManager {
     this.reloadLayoutCallback = reloadLayoutCallback;
 
     this.registerCreateTaskCommand(plugin);
+    this.registerCreateProjectCommand(plugin);
     this.registerCreateInstanceCommand(plugin);
     this.registerSetDraftStatusCommand(plugin);
     this.registerMoveToBacklogCommand(plugin);
@@ -81,6 +86,7 @@ export class CommandManager {
     this.registerRenameToUidCommand(plugin);
     this.registerReloadLayoutCommand(plugin);
     this.registerAddSupervisionCommand(plugin);
+    this.registerTogglePropertiesVisibilityCommand(plugin);
   }
 
   /**
@@ -127,6 +133,32 @@ export class CommandManager {
           this.executeCreateTask(file, context).catch((error) => {
             new Notice(`Failed to create task: ${error.message}`);
             console.error("Create task error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Create Project" command
+   */
+  private registerCreateProjectCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "create-project",
+      name: "Create Project",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canCreateProject(context)) return false;
+
+        if (!checking) {
+          this.executeCreateProject(file, context).catch((error) => {
+            new Notice(`Failed to create project: ${error.message}`);
+            console.error("Create project error:", error);
           });
         }
 
@@ -542,6 +574,26 @@ export class CommandManager {
     });
   }
 
+  /**
+   * Register "Exocortex: Toggle Properties Visibility" command
+   * Always available - toggles the visibility of the Properties section
+   */
+  private registerTogglePropertiesVisibilityCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "toggle-properties-visibility",
+      name: "Toggle Properties Visibility",
+      callback: async () => {
+        plugin.settings.showPropertiesSection =
+          !plugin.settings.showPropertiesSection;
+        await plugin.saveSettings();
+        plugin.refreshLayout();
+        new Notice(
+          `Properties section ${plugin.settings.showPropertiesSection ? "shown" : "hidden"}`,
+        );
+      },
+    });
+  }
+
   // ============================================================================
   // Command Execution Methods
   // ============================================================================
@@ -586,6 +638,35 @@ export class CommandManager {
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
     new Notice(`Task created: ${createdFile.basename}`);
+  }
+
+  private async executeCreateProject(
+    file: TFile,
+    context: CommandVisibilityContext,
+  ): Promise<void> {
+    const label = await new Promise<string | null>((resolve) => {
+      new LabelInputModal(this.app, resolve).open();
+    });
+
+    if (label === null) {
+      return;
+    }
+
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+
+    const createdFile = await this.projectCreationService.createProject(
+      file,
+      metadata,
+      label,
+    );
+
+    const leaf = this.app.workspace.getLeaf("tab");
+    await leaf.openFile(createdFile);
+
+    this.app.workspace.setActiveLeaf(leaf, { focus: true });
+
+    new Notice(`Project created: ${createdFile.basename}`);
   }
 
   private async executeCreateInstance(

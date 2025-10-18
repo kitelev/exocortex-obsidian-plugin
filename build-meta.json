@@ -174,12 +174,33 @@
       "format": "esm"
     },
     "src/domain/commands/CommandVisibility.ts": {
-      "bytes": 10396,
+      "bytes": 10616,
       "imports": [],
       "format": "esm"
     },
     "src/presentation/components/CreateTaskButton.tsx": {
       "bytes": 1302,
+      "imports": [
+        {
+          "path": "node_modules/react/index.js",
+          "kind": "import-statement",
+          "original": "react"
+        },
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "src/domain/commands/CommandVisibility.ts",
+          "kind": "import-statement",
+          "original": "../../domain/commands/CommandVisibility"
+        }
+      ],
+      "format": "esm"
+    },
+    "src/presentation/components/CreateProjectButton.tsx": {
+      "bytes": 1179,
       "imports": [
         {
           "path": "node_modules/react/index.js",
@@ -797,6 +818,22 @@
       ],
       "format": "esm"
     },
+    "src/infrastructure/services/ProjectCreationService.ts": {
+      "bytes": 2855,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        },
+        {
+          "path": "node_modules/uuid/dist/esm-browser/index.js",
+          "kind": "import-statement",
+          "original": "uuid"
+        }
+      ],
+      "format": "esm"
+    },
     "src/infrastructure/services/TaskStatusService.ts": {
       "bytes": 14576,
       "imports": [
@@ -842,7 +879,7 @@
       "format": "esm"
     },
     "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-      "bytes": 49723,
+      "bytes": 52358,
       "imports": [
         {
           "path": "obsidian",
@@ -868,6 +905,11 @@
           "path": "src/presentation/utils/ReactRenderer.tsx",
           "kind": "import-statement",
           "original": "../utils/ReactRenderer"
+        },
+        {
+          "path": "../../domain/settings/ExocortexSettings",
+          "kind": "import-statement",
+          "external": true
         },
         {
           "path": "src/presentation/components/AssetRelationsTable.tsx",
@@ -898,6 +940,11 @@
           "path": "src/presentation/components/CreateTaskButton.tsx",
           "kind": "import-statement",
           "original": "../components/CreateTaskButton"
+        },
+        {
+          "path": "src/presentation/components/CreateProjectButton.tsx",
+          "kind": "import-statement",
+          "original": "../components/CreateProjectButton"
         },
         {
           "path": "src/presentation/components/CreateInstanceButton.tsx",
@@ -970,6 +1017,11 @@
           "original": "../../infrastructure/services/TaskCreationService"
         },
         {
+          "path": "src/infrastructure/services/ProjectCreationService.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/services/ProjectCreationService"
+        },
+        {
           "path": "src/infrastructure/services/TaskStatusService.ts",
           "kind": "import-statement",
           "original": "../../infrastructure/services/TaskStatusService"
@@ -1025,7 +1077,7 @@
       "format": "esm"
     },
     "src/application/services/CommandManager.ts": {
-      "bytes": 22906,
+      "bytes": 25421,
       "imports": [
         {
           "path": "obsidian",
@@ -1041,6 +1093,11 @@
           "path": "src/infrastructure/services/TaskCreationService.ts",
           "kind": "import-statement",
           "original": "../../infrastructure/services/TaskCreationService"
+        },
+        {
+          "path": "src/infrastructure/services/ProjectCreationService.ts",
+          "kind": "import-statement",
+          "original": "../../infrastructure/services/ProjectCreationService"
         },
         {
           "path": "src/infrastructure/services/TaskStatusService.ts",
@@ -1080,8 +1137,24 @@
       ],
       "format": "esm"
     },
+    "src/domain/settings/ExocortexSettings.ts": {
+      "bytes": 161,
+      "imports": [],
+      "format": "esm"
+    },
+    "src/presentation/settings/ExocortexSettingTab.ts": {
+      "bytes": 917,
+      "imports": [
+        {
+          "path": "obsidian",
+          "kind": "import-statement",
+          "external": true
+        }
+      ],
+      "format": "esm"
+    },
     "src/ExocortexPlugin.ts": {
-      "bytes": 4061,
+      "bytes": 4658,
       "imports": [
         {
           "path": "obsidian",
@@ -1107,6 +1180,16 @@
           "path": "src/application/services/CommandManager.ts",
           "kind": "import-statement",
           "original": "./application/services/CommandManager"
+        },
+        {
+          "path": "src/domain/settings/ExocortexSettings.ts",
+          "kind": "import-statement",
+          "original": "./domain/settings/ExocortexSettings"
+        },
+        {
+          "path": "src/presentation/settings/ExocortexSettingTab.ts",
+          "kind": "import-statement",
+          "original": "./presentation/settings/ExocortexSettingTab"
         }
       ],
       "format": "esm"
@@ -1126,6 +1209,11 @@
   "outputs": {
     "main.js": {
       "imports": [
+        {
+          "path": "obsidian",
+          "kind": "require-call",
+          "external": true
+        },
         {
           "path": "obsidian",
           "kind": "require-call",
@@ -1188,10 +1276,10 @@
           "bytesInOutput": 56
         },
         "src/ExocortexPlugin.ts": {
-          "bytesInOutput": 1764
+          "bytesInOutput": 2020
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
-          "bytesInOutput": 20557
+          "bytesInOutput": 21683
         },
         "src/infrastructure/logging/Logger.ts": {
           "bytesInOutput": 118
@@ -1215,10 +1303,13 @@
           "bytesInOutput": 819
         },
         "src/domain/commands/CommandVisibility.ts": {
-          "bytesInOutput": 2625
+          "bytesInOutput": 2679
         },
         "src/presentation/components/CreateTaskButton.tsx": {
           "bytesInOutput": 453
+        },
+        "src/presentation/components/CreateProjectButton.tsx": {
+          "bytesInOutput": 462
         },
         "src/presentation/components/CreateInstanceButton.tsx": {
           "bytesInOutput": 465
@@ -1277,6 +1368,9 @@
         "src/infrastructure/services/TaskCreationService.ts": {
           "bytesInOutput": 1559
         },
+        "src/infrastructure/services/ProjectCreationService.ts": {
+          "bytesInOutput": 1230
+        },
         "src/infrastructure/services/TaskStatusService.ts": {
           "bytesInOutput": 6690
         },
@@ -1290,16 +1384,22 @@
           "bytesInOutput": 626
         },
         "src/application/services/CommandManager.ts": {
-          "bytesInOutput": 9731
+          "bytesInOutput": 10921
         },
         "src/infrastructure/services/SupervisionCreationService.ts": {
           "bytesInOutput": 1824
         },
         "src/presentation/modals/SupervisionInputModal.ts": {
           "bytesInOutput": 2146
+        },
+        "src/domain/settings/ExocortexSettings.ts": {
+          "bytesInOutput": 34
+        },
+        "src/presentation/settings/ExocortexSettingTab.ts": {
+          "bytesInOutput": 500
         }
       },
-      "bytes": 258501
+      "bytes": 263353
     }
   }
 }
