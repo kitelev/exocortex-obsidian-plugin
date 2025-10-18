@@ -6,7 +6,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: 1,
-  timeout: 60000,
+  timeout: 180000, // 3 minutes for Electron launch in Docker
 
   reporter: [
     ['html', { outputFolder: 'playwright-report-e2e', open: 'never' }],
