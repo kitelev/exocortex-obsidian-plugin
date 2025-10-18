@@ -149,7 +149,8 @@ export class ObsidianLauncher {
         [vaultId]: {
           path: this.vaultPath,
           ts: Date.now(),
-          open: true
+          open: true,
+          trusted: true
         }
       }
     };
