@@ -1,3 +1,28 @@
+## [12.15.40] - 2025-10-18
+
+### Fixed
+
+**E2E Window Diagnostics - CRITICAL**: Added comprehensive diagnostic logging to identify why `window.app` object never becomes available in headless Docker environment. The v12.15.39 approach (waiting for `window.app`) was correct, but the app object simply never appears even after 180 seconds. Added detailed window state inspection to understand what objects Obsidian exposes in headless mode and custom polling loop with progress logging every 5 seconds.
+
+**Root Cause from v12.15.39:**
+- Obsidian launches successfully via CDP
+- DOM loads correctly
+- BUT: `window.app` object never initializes (timeout after 180s)
+- All 3 E2E tests failed with "Test timeout of 180000ms exceeded while running 'beforeEach' hook"
+
+**Technical Changes:**
+- `tests/e2e/utils/obsidian-launcher.ts` - Added window diagnostics immediately after DOM load
+- Inspects: `window.app`, `window.require`, `window.electron`, `document.title`, `document.body.className`, top 20 window keys
+- Custom polling loop (60 iterations, 1-second intervals) with detailed logging
+- Progress logs every 5 polls showing app/workspace/vault availability
+- Replaced Playwright's `waitForFunction()` with manual polling for better observability
+
+**Diagnostic Goals:**
+- Identify what objects Obsidian exposes in headless Docker/xvfb
+- Understand if app object exists but is uninitialized
+- Determine if Obsidian requires specific trigger to initialize app
+- Provide actionable data for next debugging step
+
 ## [12.15.39] - 2025-10-18
 
 ### Fixed
