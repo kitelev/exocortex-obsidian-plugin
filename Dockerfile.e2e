@@ -1,10 +1,11 @@
 # Stage 1: Base image with Obsidian (cached for long time)
 FROM mcr.microsoft.com/playwright:v1.55.1-jammy AS obsidian-base
 
-# Install xvfb and dependencies for headless Obsidian
+# Install xvfb, window manager, and dependencies for headless Obsidian
 RUN apt-get update && apt-get install -y \
     xvfb \
     x11-utils \
+    fluxbox \
     libgbm1 \
     libnss3 \
     libxss1 \

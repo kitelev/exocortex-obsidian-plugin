@@ -41,7 +41,15 @@ if ! xdpyinfo -display $DISPLAY >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "X server confirmed ready, launching tests..." >&2
+echo "X server confirmed ready, starting window manager..." >&2
+
+# Start window manager in background for Electron window creation
+fluxbox -display $DISPLAY >&2 &
+FLUXBOX_PID=$!
+echo "Fluxbox started with PID $FLUXBOX_PID" >&2
+sleep 1
+
+echo "Window manager ready, launching tests..." >&2
 
 # Run the test command
 exec "$@"

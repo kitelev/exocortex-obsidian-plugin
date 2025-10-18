@@ -1,3 +1,25 @@
+## [12.15.28] - 2025-10-18
+
+### Fixed
+
+**E2E WINDOW MANAGER ADDED: Fluxbox for Electron Window Creation**: Removing Ozone flags didn't fix the issue - Obsidian still initializes but doesn't create windows. Analysis: Electron applications need a window manager to create windows in X server environments. Added `fluxbox` lightweight window manager that starts after Xvfb is ready. This is standard practice for GUI automation in Docker (Selenium, Cypress, Playwright all use WMs in headless mode).
+
+**Why window manager is critical:**
+- **X Server Alone Not Enough**: Xvfb provides display server but apps need WM to create windows
+- **Electron Requirement**: Electron apps wait for window manager before creating windows
+- **Standard Pattern**: All successful Electron E2E setups use WM (fluxbox/openbox/xfce)
+
+**Files Modified:**
+- `Dockerfile.e2e` - Added `fluxbox` package
+- `docker-entrypoint-e2e.sh` - Start fluxbox after Xvfb initialization
+
+**Expected Outcome:**
+- Xvfb provides display :99
+- Fluxbox manages windows on :99
+- Obsidian creates window through fluxbox
+- Playwright detects window creation
+- Tests execute successfully!
+
 ## [12.15.27] - 2025-10-18
 
 ### Fixed
