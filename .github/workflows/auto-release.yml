@@ -14,7 +14,6 @@ permissions:
 jobs:
   auto-release:
     runs-on: ubuntu-latest
-    # Only run if CI workflow succeeded
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
@@ -23,40 +22,139 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check if release needed
-        id: check
+      - name: Get last release tag
+        id: last_tag
         run: |
-          # Get current version from package.json
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "Current version: $CURRENT_VERSION"
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Last tag: $LAST_TAG"
+          echo "tag=$LAST_TAG" >> $GITHUB_OUTPUT
 
-          # Check if tag already exists
-          if git tag -l "v$CURRENT_VERSION" | grep -q "v$CURRENT_VERSION"; then
-            echo "Tag v$CURRENT_VERSION already exists, skipping release"
-            echo "needs_release=false" >> $GITHUB_OUTPUT
+      - name: Get commits since last tag
+        id: commits
+        run: |
+          LAST_TAG="${{ steps.last_tag.outputs.tag }}"
+          COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"%s" --no-merges)
+          echo "Commits since $LAST_TAG:"
+          echo "$COMMITS"
+
+          # Check if there are any commits
+          if [ -z "$COMMITS" ]; then
+            echo "No new commits since last release"
+            echo "has_commits=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "has_commits=true" >> $GITHUB_OUTPUT
+
+          # Save commits to file for changelog generation
+          echo "$COMMITS" > commits.txt
+
+      - name: Determine version bump type
+        id: bump_type
+        if: steps.commits.outputs.has_commits == 'true'
+        run: |
+          COMMITS=$(cat commits.txt)
+
+          # Check for BREAKING CHANGE
+          if echo "$COMMITS" | grep -qE "(BREAKING CHANGE|^[a-z]+\!:)"; then
+            echo "Detected BREAKING CHANGE → major bump"
+            echo "type=major" >> $GITHUB_OUTPUT
+          # Check for feat:
+          elif echo "$COMMITS" | grep -qE "^feat(\([a-z]+\))?:"; then
+            echo "Detected feat: → minor bump"
+            echo "type=minor" >> $GITHUB_OUTPUT
+          # Everything else is patch
           else
-            echo "Tag v$CURRENT_VERSION does not exist, will create release"
-            echo "needs_release=true" >> $GITHUB_OUTPUT
-            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "Detected fix/chore/etc → patch bump"
+            echo "type=patch" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Calculate new version
+        id: new_version
+        if: steps.commits.outputs.has_commits == 'true'
+        run: |
+          LAST_TAG="${{ steps.last_tag.outputs.tag }}"
+          BUMP_TYPE="${{ steps.bump_type.outputs.type }}"
+
+          # Remove 'v' prefix if present
+          LAST_VERSION="${LAST_TAG#v}"
+
+          # Parse version components
+          IFS='.' read -r major minor patch <<< "$LAST_VERSION"
+
+          # Bump version based on type
+          case "$BUMP_TYPE" in
+            major)
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+            minor)
+              minor=$((minor + 1))
+              patch=0
+              ;;
+            patch)
+              patch=$((patch + 1))
+              ;;
+          esac
+
+          NEW_VERSION="$major.$minor.$patch"
+          echo "New version: $NEW_VERSION"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if tag already exists
+        id: check_tag
+        if: steps.commits.outputs.has_commits == 'true'
+        run: |
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+          if git tag -l "v$NEW_VERSION" | grep -q "v$NEW_VERSION"; then
+            echo "Tag v$NEW_VERSION already exists, skipping release"
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Tag v$NEW_VERSION does not exist, proceeding with release"
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Setup Node.js
-        if: steps.check.outputs.needs_release == 'true'
+        if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
         uses: actions/setup-node@v4
         with:
           node-version: "18"
           cache: "npm"
 
+      - name: Update package.json and manifest.json
+        if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+
+          # Update package.json
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '$NEW_VERSION';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+
+          # Update manifest.json
+          node -e "
+            const fs = require('fs');
+            const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+            manifest.version = '$NEW_VERSION';
+            fs.writeFileSync('manifest.json', JSON.stringify(manifest, null, 2) + '\n');
+          "
+
+          echo "Updated package.json and manifest.json to version $NEW_VERSION"
+
       - name: Install dependencies
-        if: steps.check.outputs.needs_release == 'true'
+        if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
         run: npm ci
 
       - name: Build plugin
-        if: steps.check.outputs.needs_release == 'true'
+        if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
         run: npm run build
 
       - name: Create release package
-        if: steps.check.outputs.needs_release == 'true'
+        if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
         run: |
           mkdir release-files
           cp main.js manifest.json release-files/
@@ -64,22 +162,50 @@ jobs:
           cd release-files
           zip -r ../${{ github.event.repository.name }}.zip ./*
 
-      - name: Extract changelog for version
-        if: steps.check.outputs.needs_release == 'true'
+      - name: Generate changelog from commits
+        if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
         id: changelog
         run: |
-          VERSION="${{ steps.check.outputs.version }}"
-          CHANGELOG=$(awk "/## \[$VERSION\]/{flag=1; next} /## \[/{flag=0} flag" CHANGELOG.md)
-          if [ -z "$CHANGELOG" ]; then
-            CHANGELOG="See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details."
-          fi
-          echo "$CHANGELOG" > release_notes.md
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+          LAST_TAG="${{ steps.last_tag.outputs.tag }}"
+          DATE=$(date +%Y-%m-%d)
+
+          # Read commits
+          COMMITS=$(cat commits.txt)
+
+          # Generate changelog
+          echo "## [${NEW_VERSION}] - ${DATE}" > release_notes.md
+          echo "" >> release_notes.md
+
+          # Group commits by type
+          echo "### Features" >> release_notes.md
+          echo "$COMMITS" | grep -E "^feat(\([a-z]+\))?:" | sed 's/^feat[^:]*: /- /' >> release_notes.md || echo "_No new features_" >> release_notes.md
+          echo "" >> release_notes.md
+
+          echo "### Bug Fixes" >> release_notes.md
+          echo "$COMMITS" | grep -E "^fix(\([a-z]+\))?:" | sed 's/^fix[^:]*: /- /' >> release_notes.md || echo "_No bug fixes_" >> release_notes.md
+          echo "" >> release_notes.md
+
+          echo "### Other Changes" >> release_notes.md
+          echo "$COMMITS" | grep -vE "^(feat|fix)(\([a-z]+\))?:" | sed 's/^/- /' >> release_notes.md || echo "_No other changes_" >> release_notes.md
+
+          echo "Generated changelog:"
+          cat release_notes.md
+
+      - name: Create git tag
+        if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
+          git push origin "v$NEW_VERSION"
 
       - name: Create GitHub Release
-        if: steps.check.outputs.needs_release == 'true'
+        if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.check.outputs.version }}
+          tag_name: v${{ steps.new_version.outputs.version }}
           files: |
             main.js
             manifest.json
@@ -87,3 +213,10 @@ jobs:
           body_path: release_notes.md
           draft: false
           prerelease: false
+
+      - name: Summary
+        if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          echo "✅ Release v${{ steps.new_version.outputs.version }} created successfully"
+          echo "📦 Tag: v${{ steps.new_version.outputs.version }}"
+          echo "📝 Changelog generated from commits"
