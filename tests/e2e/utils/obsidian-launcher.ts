@@ -146,6 +146,7 @@ export class ObsidianLauncher {
     }
 
     const normalizedPath = filePath.replace(/\\/g, '/');
+    console.log(`[ObsidianLauncher] Opening file: ${normalizedPath}`);
 
     await this.window.evaluate((path) => {
       const app = (window as any).app;
@@ -155,23 +156,56 @@ export class ObsidianLauncher {
     }, normalizedPath);
 
     await this.window.waitForTimeout(500);
+    console.log('[ObsidianLauncher] File opened, checking view mode...');
 
-    await this.window.evaluate(() => {
+    const viewInfo = await this.window.evaluate(() => {
       const app = (window as any).app;
       const activeLeaf = app?.workspace?.activeLeaf;
-      if (activeLeaf && activeLeaf.getViewState()?.state?.mode !== 'preview') {
-        const currentState = activeLeaf.getViewState();
-        activeLeaf.setViewState({
-          ...currentState,
-          state: {
-            ...currentState.state,
-            mode: 'preview',
-          },
-        });
-      }
+      const viewState = activeLeaf?.getViewState();
+      return {
+        hasLeaf: !!activeLeaf,
+        currentMode: viewState?.state?.mode,
+        viewType: viewState?.type,
+      };
     });
 
-    await this.window.waitForTimeout(1000);
+    console.log('[ObsidianLauncher] View info before mode switch:', viewInfo);
+
+    if (viewInfo.currentMode !== 'preview') {
+      console.log('[ObsidianLauncher] Switching to preview mode...');
+      await this.window.evaluate(() => {
+        const app = (window as any).app;
+        const activeLeaf = app?.workspace?.activeLeaf;
+        if (activeLeaf) {
+          const currentState = activeLeaf.getViewState();
+          activeLeaf.setViewState({
+            ...currentState,
+            state: {
+              ...currentState.state,
+              mode: 'preview',
+            },
+          });
+        }
+      });
+
+      await this.window.waitForTimeout(2000);
+      console.log('[ObsidianLauncher] Preview mode switch complete, waiting for plugin render...');
+    } else {
+      console.log('[ObsidianLauncher] Already in preview mode');
+      await this.window.waitForTimeout(1000);
+    }
+
+    const finalViewInfo = await this.window.evaluate(() => {
+      const app = (window as any).app;
+      const activeLeaf = app?.workspace?.activeLeaf;
+      const viewState = activeLeaf?.getViewState();
+      return {
+        currentMode: viewState?.state?.mode,
+        hasExocortexContainer: !!document.querySelector('.exocortex-layout-container'),
+      };
+    });
+
+    console.log('[ObsidianLauncher] Final view info:', finalViewInfo);
   }
 
   async getWindow(): Promise<Page> {
