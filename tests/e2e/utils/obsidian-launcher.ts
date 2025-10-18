@@ -283,7 +283,7 @@ export class ObsidianLauncher {
         hasLeaf: !!activeLeaf,
         currentMode: viewState?.state?.mode,
         viewType: viewState?.type,
-        hasExocortexContainer: !!document.querySelector('.exocortex-layout-container'),
+        hasExocortexContainer: !!(document.querySelector('.exocortex-properties-section') || document.querySelector('.exocortex-daily-tasks-section')),
       };
     });
 
