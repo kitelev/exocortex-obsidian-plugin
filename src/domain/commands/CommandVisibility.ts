@@ -143,10 +143,11 @@ export function canCreateProject(context: CommandVisibilityContext): boolean {
 
 /**
  * Can execute "Create Instance" command
- * Available for: ems__TaskPrototype assets
+ * Available for: ems__TaskPrototype and ems__MeetingPrototype assets
  */
 export function canCreateInstance(context: CommandVisibilityContext): boolean {
-  return hasClass(context.instanceClass, "ems__TaskPrototype");
+  return hasClass(context.instanceClass, "ems__TaskPrototype") ||
+         hasClass(context.instanceClass, "ems__MeetingPrototype");
 }
 
 /**

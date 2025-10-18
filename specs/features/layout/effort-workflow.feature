@@ -51,6 +51,15 @@ Feature: Effort Lifecycle Workflow
       And Task has property "ems__Effort_prototype" = "[[Code Review Template]]"
       And Task has property "exo__Asset_label" = "Review PR #123"
 
+    Scenario: Create instance from MeetingPrototype
+      Given I have a MeetingPrototype "Daily Standup Template"
+      When I click "Create Instance" button
+      And I enter label "Standup 2025-10-19"
+      Then a new Task is created
+      And Task has property "ems__Effort_status" = "[[ems__EffortStatusDraft]]"
+      And Task has property "ems__Effort_prototype" = "[[Daily Standup Template]]"
+      And Task has property "exo__Asset_label" = "Standup 2025-10-19"
+
   Rule: Draft → Backlog transition
 
     Scenario: Move Task from Draft to Backlog via button
