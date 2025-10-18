@@ -44,6 +44,7 @@ gh api \
     "required_approving_review_count": 0,
     "require_last_push_approval": false
   },
+  "required_linear_history": true,
   "restrictions": null,
   "allow_force_pushes": false,
   "allow_deletions": false,
@@ -61,6 +62,7 @@ echo "Protection rules applied:"
 echo "  ✅ Require pull request before merging"
 echo "  ✅ Require status checks to pass: build-and-test, e2e-tests"
 echo "  ✅ Require branches to be up to date before merging"
+echo "  ✅ Require linear history (no merge commits)"
 echo "  ✅ Enforce restrictions for administrators"
 echo "  ✅ Dismiss stale pull request approvals when new commits are pushed"
 echo "  ✅ No direct pushes to main (must use PR)"
