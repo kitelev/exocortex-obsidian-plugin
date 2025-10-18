@@ -1,3 +1,28 @@
+## [12.15.38] - 2025-10-18
+
+### Fixed
+
+**E2E File Opening Fix - CRITICAL**: Fixed file opening method in E2E tests to use proper Obsidian API. Debug logs from v12.15.37 revealed that `app.workspace.openLinkText()` was failing silently - no active leaf was created, resulting in `hasLeaf: false, currentMode: undefined`. Replaced with correct approach: `app.vault.getAbstractFileByPath()` + `app.workspace.getLeaf().openFile()` with preview mode state. This ensures files actually open with an active leaf before plugin rendering.
+
+**Root Cause Identified from v12.15.37 Logs:**
+- `openLinkText()` returned `{ hasLeaf: false, currentMode: undefined, viewType: undefined }`
+- File opening was failing silently - no errors, but no active leaf created
+- Without active leaf, there's no view to render the plugin UI on
+- Plugin couldn't render because no file was actually open
+
+**Technical Changes:**
+- `tests/e2e/utils/obsidian-launcher.ts` - Complete rewrite of `openFile()` method
+- Use `app.vault.getAbstractFileByPath()` to get TFile object
+- Use `app.workspace.getLeaf().openFile(file, { state: { mode: 'preview' } })` to properly open file
+- Add error handling for missing files and failed opens
+- Verify active leaf exists after opening
+
+**Why This Should Work:**
+- Uses documented Obsidian API for opening files programmatically
+- Opens directly in preview mode (no mode switching needed)
+- Creates active leaf that plugin can render on
+- Proper error handling reveals if file doesn't exist
+
 ## [12.15.37] - 2025-10-18
 
 ### Fixed
