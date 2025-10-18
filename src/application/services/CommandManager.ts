@@ -654,10 +654,14 @@ export class CommandManager {
 
     const cache = this.app.metadataCache.getFileCache(file);
     const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class;
+
+    const sourceClass = Array.isArray(instanceClass) ? instanceClass[0] : instanceClass;
 
     const createdFile = await this.projectCreationService.createProject(
       file,
       metadata,
+      sourceClass,
       label,
     );
 

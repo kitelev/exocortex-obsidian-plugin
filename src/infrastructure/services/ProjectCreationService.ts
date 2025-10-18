@@ -1,6 +1,15 @@
 import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 
+/**
+ * Mapping of source class to effort property name
+ * Implements Strategy pattern for property selection
+ */
+const EFFORT_PROPERTY_MAP: Record<string, string> = {
+  ems__Area: "ems__Effort_area",
+  ems__Initiative: "ems__Effort_parent",
+};
+
 export class ProjectCreationService {
   constructor(private vault: Vault) {}
 
@@ -18,6 +27,7 @@ export class ProjectCreationService {
   async createProject(
     sourceFile: TFile,
     sourceMetadata: Record<string, any>,
+    sourceClass: string,
     label?: string,
   ): Promise<TFile> {
     const uid = uuidv4();
@@ -25,6 +35,7 @@ export class ProjectCreationService {
     const frontmatter = this.generateProjectFrontmatter(
       sourceMetadata,
       sourceFile.basename,
+      sourceClass,
       label,
       uid,
     );
@@ -41,6 +52,7 @@ export class ProjectCreationService {
   generateProjectFrontmatter(
     sourceMetadata: Record<string, any>,
     sourceName: string,
+    sourceClass: string,
     label?: string,
     uid?: string,
   ): Record<string, any> {
@@ -58,13 +70,18 @@ export class ProjectCreationService {
       return `"${value}"`;
     };
 
+    // Get appropriate effort property name based on source class
+    const cleanSourceClass = sourceClass.replace(/\[\[|\]\]/g, "").trim();
+    const effortProperty =
+      EFFORT_PROPERTY_MAP[cleanSourceClass] || "ems__Effort_area";
+
     const frontmatter: Record<string, any> = {};
     frontmatter["exo__Asset_isDefinedBy"] = ensureQuoted(isDefinedBy);
     frontmatter["exo__Asset_uid"] = uid || uuidv4();
     frontmatter["exo__Asset_createdAt"] = timestamp;
     frontmatter["exo__Instance_class"] = ['"[[ems__Project]]"'];
     frontmatter["ems__Effort_status"] = '"[[ems__EffortStatusDraft]]"';
-    frontmatter["ems__Effort_area"] = `"[[${sourceName}]]"`;
+    frontmatter[effortProperty] = `"[[${sourceName}]]"`;
 
     if (label && label.trim() !== "") {
       frontmatter["exo__Asset_label"] = label.trim();
