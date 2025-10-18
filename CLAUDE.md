@@ -826,6 +826,82 @@ After each task:
 2. **Build errors**: Run `npm run build` for detailed output
 3. **Coverage low**: Add tests for uncovered branches
 4. **Release failed**: Check GitHub Actions logs
+5. **E2E tests timeout**: Verify CSS selectors match actual rendered classes in screenshots
+6. **E2E environment differences**: Check all dependencies available in Docker (Dataview, etc.)
+7. **Obsolete dependency checks**: Audit code for unused plugin availability checks that block functionality
+
+### E2E Testing Lessons Learned
+
+Critical lessons from v12.15.45-49 debugging session (5 versions, 4 failures before success):
+
+#### 1. Screenshot Analysis is Critical
+
+**Lesson**: E2E test screenshots show actual rendered state - don't assume plugin is broken just because tests fail.
+
+**Example**: v12.15.47 screenshots proved plugin rendered perfectly (Properties + DailyNote tasks tables visible), but tests failed with timeout. Problem was wrong CSS selector, not broken plugin.
+
+**Action**:
+- Always check E2E screenshots first when tests fail
+- Compare expected vs. actual rendered output
+- Use screenshots to validate assumptions about plugin behavior
+
+#### 2. Code Analysis > Trial and Error
+
+**Lesson**: Reading source code finds root cause faster than experimenting with fixes.
+
+**Example**: After 3 failed attempts (config, UI clicks, timing), analyzed `UniversalLayoutRenderer.ts` source code and discovered `.exocortex-layout-container` CSS class **never existed** in the codebase.
+
+**Action**:
+- Read the actual source code that creates DOM elements
+- Verify CSS classes, selectors, and element structure
+- Don't guess - check the implementation directly
+- Use `grep -r "class-name"` to find where selectors are created
+
+#### 3. Obsolete Dependencies Kill
+
+**Lesson**: Code evolves but old dependency checks remain, blocking functionality in different environments.
+
+**Example**: `renderDailyTasks` checked for Dataview plugin availability (9 lines of code) but hasn't used Dataview API since v12.x. In E2E Docker (no Dataview), method returned early without rendering `.exocortex-daily-tasks-section`, causing test timeouts.
+
+**Action**:
+- Regular audit of dependency availability checks
+- Verify checks are actually needed for functionality
+- Remove obsolete checks when code evolves
+- Document required vs. optional dependencies clearly
+
+#### 4. E2E Environment ≠ Production
+
+**Lesson**: Docker test environment lacks optional plugins, creating different code paths than production.
+
+**Example**: Plugin worked perfectly in production with Dataview installed, but failed in E2E Docker without Dataview because of obsolete availability check.
+
+**Action**:
+- Explicitly test both environments (with/without optional plugins)
+- Mock or install required dependencies in E2E Docker
+- Remove environment-specific code paths when possible
+- Document environment differences in test README
+
+#### 5. CSS Selector Validation
+
+**Lesson**: Always verify CSS selectors exist in actual rendered output before writing tests.
+
+**Example**: Tests waited for `.exocortex-layout-container` selector that plugin never created. Should have been `.exocortex-daily-tasks-section` or `.exocortex-properties-section`.
+
+**Action**:
+- Use browser DevTools or E2E screenshots to verify selectors
+- Check source code for actual CSS class names
+- Update tests when component structure changes
+- Keep test selectors in sync with implementation
+
+**Quick Reference - Actual CSS Classes Created by Plugin**:
+```typescript
+// From UniversalLayoutRenderer.ts:
+exocortex-buttons-section          // line 439
+exocortex-properties-section       // line 1072
+exocortex-daily-tasks-section      // line 1149
+exocortex-assets-relations         // line 1196
+// NOTE: .exocortex-layout-container does NOT exist!
+```
 
 ### Getting Help
 
