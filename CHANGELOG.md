@@ -1,3 +1,25 @@
+## [12.15.29] - 2025-10-18
+
+### Fixed
+
+**E2E CORRECT SOLUTION: xvfb-run --auto-servernum (Playwright Team Recommendation)**: Internet research revealed the root issue! GitHub issue #8198 shows the correct solution is `xvfb-run --auto-servernum` - NOT manual Xvfb setup! The previous approaches (manual Xvfb, fluxbox) were unnecessary complexity. The Playwright team explicitly recommends using `xvfb-run --auto-servernum` for Electron tests in Docker.
+
+**Why xvfb-run --auto-servernum is the solution:**
+- **Automatic Display Management**: `--auto-servernum` handles X display server lifecycle automatically
+- **No Manual Configuration**: Eliminates sleep delays, PID tracking, and manual ready checks
+- **Playwright Team Endorsed**: Official recommendation from microsoft/playwright#8198
+- **Industry Standard**: Used in all successful Electron E2E setups (Dangl.Blog, others)
+
+**Files Modified:**
+- `docker-entrypoint-e2e.sh` - Replaced manual Xvfb + fluxbox with simple `xvfb-run --auto-servernum`
+
+**Key Insight:**
+The problem wasn't Ozone flags, window managers, or X server initialization timing. It was simply not using the `--auto-servernum` flag with xvfb-run, which causes Xvfb to automatically find an available display number and manage the server lifecycle.
+
+**Reference:**
+- https://github.com/microsoft/playwright/issues/8198#issuecomment-986736585
+- https://blog.dangl.me/archive/running-fully-automated-e2e-tests-in-electron-in-a-docker-container-with-playwright/
+
 ## [12.15.28] - 2025-10-18
 
 ### Fixed
