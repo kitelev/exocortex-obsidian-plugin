@@ -1,3 +1,27 @@
+## [12.15.37] - 2025-10-18
+
+### Fixed
+
+**E2E Debug Logging and Extended Wait**: Added comprehensive debug logging to E2E test launcher to diagnose why plugin UI isn't rendering despite successful preview mode switching. Logs now capture view state before/after mode switch, checks for `.exocortex-layout-container` existence, and provides detailed state information. Also increased wait time after mode switch from 1s to 2s to give plugin more time to render.
+
+**Technical Changes:**
+- `tests/e2e/utils/obsidian-launcher.ts` - Added debug logging at every step of `openFile()` process
+- Log view state, mode, and DOM elements before and after preview mode switch
+- Increased post-switch wait from 1000ms to 2000ms
+- Check if `.exocortex-layout-container` exists after mode switch
+
+**Debugging Information Captured:**
+- File path being opened
+- View mode before switch (edit vs preview)
+- View mode after switch
+- Whether `.exocortex-layout-container` exists in DOM
+- Active leaf and view state information
+
+**Why This Matters:**
+- Helps diagnose why v12.15.36 still failed (mode switch executed but plugin didn't render)
+- Debug logs will reveal whether plugin is loading, mode is switching correctly, or there's another issue
+- Critical for completing E2E test infrastructure
+
 ## [12.15.36] - 2025-10-18
 
 ### Fixed
