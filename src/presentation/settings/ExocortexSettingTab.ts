@@ -17,6 +17,19 @@ export class ExocortexSettingTab extends PluginSettingTab {
     containerEl.createEl("h2", { text: "Exocortex Settings" });
 
     new Setting(containerEl)
+      .setName("Show Layout")
+      .setDesc("Display the automatic layout below metadata in reading mode")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.layoutVisible)
+          .onChange(async (value) => {
+            this.plugin.settings.layoutVisible = value;
+            await this.plugin.saveSettings();
+            this.plugin.refreshLayout();
+          }),
+      );
+
+    new Setting(containerEl)
       .setName("Show Properties Section")
       .setDesc("Display the properties table in the layout")
       .addToggle((toggle) =>
