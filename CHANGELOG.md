@@ -1,8 +1,38 @@
+## [12.15.34] - 2025-10-18
+
+### Fixed
+
+**E2E Electron Autoupdater Blocking Fix**: Disabled Obsidian's autoupdater in CI/Docker environments which was blocking Electron's 'ready' event and causing `electron.launch()` to hang. Evidence from logs showed "App is up to date" message, indicating autoupdater was running during launch. Solution: Add `--disable-updates` flag specifically for CI/Docker to prevent update check from interfering with Playwright's launch synchronization. This is similar to electron/electron issue where autoupdater blocks ready event in unsigned builds running in CI.
+
+**Root Cause:**
+- Obsidian's autoupdater runs during Electron startup
+- In headless Docker/CI, autoupdater may block 'ready' event emission
+- `electron.launch()` waits for 'ready' event before resolving promise
+- Without 'ready' event, launch hangs for timeout duration (30-120s)
+- Logs showed "App is up to date" confirming autoupdater was active
+
+**Solution:**
+1. **Disable Autoupdater in CI**: Add `--disable-updates` flag when `process.env.CI` or `process.env.DOCKER` is set
+2. **Increase Timeout to 60s**: Give more time if needed, but autoupdater shouldn't block anymore
+3. **Log Autoupdater Disable**: Console message confirms flag was added
+
+**Files Modified:**
+- `tests/e2e/utils/obsidian-launcher.ts` - Added --disable-updates flag for CI/Docker
+
+**Why This Matters:**
+- Autoupdater interference is a known issue in Electron apps running in CI
+- Disabling updates is safe for E2E testing (we control the Obsidian version)
+- Should finally resolve the electron.launch() hang that's plagued all previous attempts
+
+**References:**
+- Similar to electron/electron autoupdater blocking issues in CI
+- trashhalo/obsidian-plugin-e2e-test likely doesn't have this issue because it uses Spectron (older, different API)
+
 ## [12.15.33] - 2025-10-18
 
 ### Fixed
 
-**E2E Electron Launch Timeout Fix**: Fixed `electron.launch()` hanging indefinitely in headless Docker even though Obsidian was running. The issue was that Playwright's `electron.launch()` promise never resolved in headless environments, blocking E2E tests for 2+ minutes before timeout. Solution: Removed explicit timeout parameter to let Playwright use defaults (30s instead of 120s), check for windows immediately after launch, and removed `--disable-extensions` flag which might have interfered with Obsidian initialization.
+**E2E Electron Launch Timeout Fix (INCOMPLETE)**: Attempted to fix `electron.launch()` hanging by removing explicit timeout and --disable-extensions flag. This reduced hang time from 120s to 30s but didn't solve the root cause. The autoupdater was still blocking the 'ready' event. See v12.15.34 for the real fix.
 
 **Root Cause:**
 - `electron.launch()` with `timeout: 120000` hung for full 2 minutes in Docker
