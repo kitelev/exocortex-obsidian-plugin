@@ -50,8 +50,8 @@ gh pr checks --watch  # build-and-test + e2e-tests
 git commit --amend --no-edit
 git push --force-with-lease origin feature/description
 
-# 8. Merge when all checks GREEN
-gh pr merge --auto --squash
+# 8. Merge when all checks GREEN (rebase only - linear history)
+gh pr merge --auto --rebase
 
 # 9. Automatic version bump and release (NO manual steps)
 # ✅ pr-auto-version.yml: auto-detects type, bumps version, syncs manifest.json, updates CHANGELOG.md
@@ -106,16 +106,22 @@ gh release list --limit 1
 - NEVER commit broken tests
 - NEVER use `--no-verify` to bypass pre-commit hooks
 
-### RULE 4: Branch Protection
+### RULE 4: Branch Protection & Linear History
 
 **Main branch is protected:**
 - ❌ Direct pushes BLOCKED
 - ✅ PR merge ONLY if all checks GREEN
+- ✅ Linear history REQUIRED (rebase-only, no merge commits)
 - ✅ No administrator bypass
 
 **Required checks:**
 1. **build-and-test**: Type check, lint, build, unit/ui/component tests, BDD coverage
 2. **e2e-tests**: Docker integration tests, screenshot validation
+
+**Merge strategy:**
+- ✅ Only `git rebase` allowed (linear history)
+- ❌ Squash merge DISABLED
+- ❌ Merge commits DISABLED
 
 ### RULE 5: Multi-Instance Awareness
 
@@ -135,6 +141,14 @@ NEW: Instance A: PR merge → auto-version → v12.5.11 ✅
      Instance B: PR merge → auto-version → v12.5.12 ✅
 (GitHub merge queue ensures sequential processing)
 ```
+
+**Worktree Permissions:**
+
+All permissions and agents are automatically available in every worktree because `.claude/settings.local.json` is tracked by git and copied during `git worktree add`.
+
+✅ **No additional setup needed** - all slash commands, agents, and bash permissions work immediately in new worktrees.
+
+The permissions file contains universal wildcards (`Bash(npm *)`, `Bash(git *)`, `SlashCommand(/test*)`, etc.) to cover all operations without requiring approval for each specific command.
 
 ### RULE 6: BDD Coverage Guarantee
 
