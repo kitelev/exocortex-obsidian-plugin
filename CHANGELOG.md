@@ -1,3 +1,47 @@
+## [12.15.54] - 2025-10-18
+
+### Changed
+
+**Archive Command Now Available for All Asset Types**: The archive command is no longer restricted to Done/Trashed Tasks and Projects. You can now archive ANY asset in your vault, regardless of its type (Area, Note, etc.) or status. This makes information lifecycle management much more flexible and universal.
+
+**User Benefit:**
+- Archive any asset type, not just completed efforts
+- Archive Areas when they're no longer active
+- Archive reference notes, contacts, or any other asset type
+- No restrictions based on status - archive whenever it makes sense for your workflow
+- Available in two ways:
+  1. Layout Button: "Archive" button appears on any non-archived asset
+  2. Command Palette: "Exocortex: Archive Task" command (available for any non-archived asset)
+- Archived assets are automatically hidden from relations tables and backlinks
+
+**Use Cases:**
+- Lifecycle management: Archive inactive Areas when projects within them complete
+- Information retirement: Archive old reference notes while preserving them
+- Workspace cleanup: Archive any asset that's no longer actively needed
+- Flexible archiving: Archive based on your needs, not rigid status rules
+
+**Previous Behavior:**
+- Archive was only available for Tasks and Projects
+- Required Done or Trashed status to archive
+- Areas and other asset types couldn't be archived
+
+**New Behavior:**
+- Archive available for ALL asset types
+- No status requirements - archive any non-archived asset
+- Simple rule: if it's not archived, you can archive it
+
+**Technical Implementation:**
+- Simplified `canArchiveTask()` visibility function - now only checks `!isArchived`
+- Removed class-based restrictions (`isEffort` check removed)
+- Removed status-based restrictions (Done/Trashed checks removed)
+- Updated all tests to reflect new universal behavior
+- Command and button now universally available
+
+**Breaking Changes:**
+- None - this is purely an expansion of functionality
+- Previously archived assets remain archived
+- Archive command behavior unchanged for existing use cases
+
 ## [12.15.53] - 2025-10-18
 
 ### Added

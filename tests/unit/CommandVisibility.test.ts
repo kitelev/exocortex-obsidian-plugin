@@ -624,7 +624,7 @@ describe("CommandVisibility", () => {
   });
 
   describe("canArchiveTask", () => {
-    it("should return true for Done Task not archived", () => {
+    it("should return true for any asset not archived", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Task]]",
         currentStatus: "[[ems__EffortStatusDone]]",
@@ -636,7 +636,7 @@ describe("CommandVisibility", () => {
       expect(canArchiveTask(context)).toBe(true);
     });
 
-    it("should return false for Done Task already archived", () => {
+    it("should return false for already archived asset", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Task]]",
         currentStatus: "[[ems__EffortStatusDone]]",
@@ -648,7 +648,7 @@ describe("CommandVisibility", () => {
       expect(canArchiveTask(context)).toBe(false);
     });
 
-    it("should return false for Task without Done status", () => {
+    it("should return true for Task with any status not archived", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Task]]",
         currentStatus: "[[ems__EffortStatusActive]]",
@@ -657,10 +657,10 @@ describe("CommandVisibility", () => {
         currentFolder: "",
         expectedFolder: null,
       };
-      expect(canArchiveTask(context)).toBe(false);
+      expect(canArchiveTask(context)).toBe(true);
     });
 
-    it("should return true for Done Project not archived", () => {
+    it("should return true for Project not archived", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Project]]",
         currentStatus: "[[ems__EffortStatusDone]]",
@@ -672,16 +672,16 @@ describe("CommandVisibility", () => {
       expect(canArchiveTask(context)).toBe(true);
     });
 
-    it("should return false for Area", () => {
+    it("should return true for Area not archived", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Area]]",
-        currentStatus: "[[ems__EffortStatusDone]]",
+        currentStatus: null,
         metadata: {},
         isArchived: false,
         currentFolder: "",
         expectedFolder: null,
       };
-      expect(canArchiveTask(context)).toBe(false);
+      expect(canArchiveTask(context)).toBe(true);
     });
 
     it("should recognize archived as string 'true'", () => {
@@ -720,10 +720,10 @@ describe("CommandVisibility", () => {
       expect(canArchiveTask(context)).toBe(false);
     });
 
-    it("should return true for Trashed Task not archived", () => {
+    it("should return true for asset without instanceClass", () => {
       const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Task]]",
-        currentStatus: "[[ems__EffortStatusTrashed]]",
+        instanceClass: null,
+        currentStatus: null,
         metadata: {},
         isArchived: false,
         currentFolder: "",
@@ -732,28 +732,16 @@ describe("CommandVisibility", () => {
       expect(canArchiveTask(context)).toBe(true);
     });
 
-    it("should return false for Trashed Task already archived", () => {
+    it("should return false for archived asset without instanceClass", () => {
       const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Task]]",
-        currentStatus: "[[ems__EffortStatusTrashed]]",
+        instanceClass: null,
+        currentStatus: null,
         metadata: {},
         isArchived: true,
         currentFolder: "",
         expectedFolder: null,
       };
       expect(canArchiveTask(context)).toBe(false);
-    });
-
-    it("should return true for Trashed Project not archived", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Project]]",
-        currentStatus: "[[ems__EffortStatusTrashed]]",
-        metadata: {},
-        isArchived: false,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canArchiveTask(context)).toBe(true);
     });
   });
 
