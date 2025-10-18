@@ -92,55 +92,77 @@ export class ObsidianLauncher {
     }
 
     await this.window.waitForLoadState('domcontentloaded', { timeout: 30000 });
-    console.log('[ObsidianLauncher] DOM loaded, diagnosing window state...');
+    console.log('[ObsidianLauncher] DOM loaded, checking window state...');
 
-    const windowDiagnostics = await this.window.evaluate(() => {
-      const win = window as any;
-      return {
-        hasApp: !!win.app,
-        hasRequire: !!win.require,
-        hasElectron: !!win.electron,
-        documentTitle: document.title,
-        documentBody: document.body?.className || 'no-body',
-        windowKeys: Object.keys(win).filter(k => !k.startsWith('webkit')).slice(0, 20),
-      };
-    });
-    console.log('[ObsidianLauncher] Window diagnostics:', JSON.stringify(windowDiagnostics, null, 2));
+    const bodyClass = await this.window.evaluate(() => document.body?.className || '');
+    console.log('[ObsidianLauncher] Body class:', bodyClass);
 
-    if (!windowDiagnostics.hasApp) {
-      console.log('[ObsidianLauncher] window.app not immediately available, waiting for initialization...');
+    if (bodyClass.includes('starter')) {
+      console.log('[ObsidianLauncher] Detected starter screen, attempting to open vault via click...');
 
-      let pollCount = 0;
-      const maxPolls = 60;
-      let appFound = false;
+      const vaultClicked = await this.window.evaluate((vaultPath) => {
+        const vaultItems = document.querySelectorAll('.vault');
+        console.log('[ObsidianLauncher] Found vault items:', vaultItems.length);
 
-      while (pollCount < maxPolls && !appFound) {
-        const pollResult = await this.window.evaluate(() => {
-          const win = window as any;
-          return {
-            hasApp: !!win.app,
-            hasWorkspace: !!win.app?.workspace,
-            hasVault: !!win.app?.vault,
-          };
-        });
-
-        if (pollResult.hasApp && pollResult.hasWorkspace && pollResult.hasVault) {
-          appFound = true;
-          console.log('[ObsidianLauncher] App object found after', pollCount, 'polls');
-          break;
+        for (const item of vaultItems) {
+          const pathElement = item.querySelector('.vault-path');
+          if (pathElement && pathElement.textContent?.includes(vaultPath)) {
+            console.log('[ObsidianLauncher] Found matching vault, clicking...');
+            (item as HTMLElement).click();
+            return true;
+          }
         }
 
-        if (pollCount % 5 === 0) {
-          console.log(`[ObsidianLauncher] Poll ${pollCount}/${maxPolls}: app=${pollResult.hasApp}, workspace=${pollResult.hasWorkspace}, vault=${pollResult.hasVault}`);
+        console.log('[ObsidianLauncher] No matching vault found, clicking first vault...');
+        if (vaultItems.length > 0) {
+          (vaultItems[0] as HTMLElement).click();
+          return true;
         }
 
-        await this.window.waitForTimeout(1000);
-        pollCount++;
+        return false;
+      }, this.vaultPath);
+
+      if (vaultClicked) {
+        console.log('[ObsidianLauncher] Vault click executed, waiting for app to initialize...');
+        await this.window.waitForTimeout(3000);
+      } else {
+        console.log('[ObsidianLauncher] Could not find vault to click');
+      }
+    }
+
+    console.log('[ObsidianLauncher] Waiting for window.app to become available...');
+
+    let pollCount = 0;
+    const maxPolls = 60;
+    let appFound = false;
+
+    while (pollCount < maxPolls && !appFound) {
+      const pollResult = await this.window.evaluate(() => {
+        const win = window as any;
+        return {
+          hasApp: !!win.app,
+          hasWorkspace: !!win.app?.workspace,
+          hasVault: !!win.app?.vault,
+          bodyClass: document.body?.className || 'no-body',
+        };
+      });
+
+      if (pollResult.hasApp && pollResult.hasWorkspace && pollResult.hasVault) {
+        appFound = true;
+        console.log('[ObsidianLauncher] App object found after', pollCount, 'polls');
+        break;
       }
 
-      if (!appFound) {
-        throw new Error('window.app not available after 60 seconds');
+      if (pollCount % 5 === 0) {
+        console.log(`[ObsidianLauncher] Poll ${pollCount}/${maxPolls}: app=${pollResult.hasApp}, workspace=${pollResult.hasWorkspace}, vault=${pollResult.hasVault}, body="${pollResult.bodyClass}"`);
       }
+
+      await this.window.waitForTimeout(1000);
+      pollCount++;
+    }
+
+    if (!appFound) {
+      throw new Error('window.app not available after 60 seconds');
     }
 
     console.log('[ObsidianLauncher] Obsidian app object available!');

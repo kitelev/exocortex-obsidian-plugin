@@ -1,3 +1,31 @@
+## [12.15.41] - 2025-10-18
+
+### Fixed
+
+**E2E Starter Screen Fix - BREAKTHROUGH**: Diagnostic logs from v12.15.40 revealed the root cause - Obsidian was stuck on the **starter/welcome screen** (body class contains "starter") and never progressed to opening the vault! The `window.app` object only initializes AFTER a vault is opened. Implemented programmatic vault opening by detecting the starter screen and clicking the vault element to trigger initialization.
+
+**Root Cause Identified from v12.15.40 Diagnostics:**
+- ✅ Obsidian launched successfully via CDP
+- ✅ DOM loaded correctly
+- ✅ `window.require` and `window.electron` available
+- ❌ Body class: "theme-dark **starter** is-frameless..." = STUCK ON WELCOME SCREEN
+- ❌ `window.app` never initialized because vault never opened
+- ❌ App object only appears AFTER vault is opened
+
+**Technical Solution:**
+- `tests/e2e/utils/obsidian-launcher.ts` - Added starter screen detection
+- Check body class for "starter" keyword
+- Find vault element via `.vault` selector matching vault path
+- Programmatically click vault element to open it
+- Wait for app object initialization after vault opens
+- Polling now includes body class monitoring to track screen transitions
+
+**Why This Should Work:**
+- Addresses the actual problem (vault not opening, not timing)
+- Mimics user interaction flow (select vault → app initializes)
+- Diagnostic proven: Obsidian requires vault selection to proceed
+- Should work in both headless Docker and local environments
+
 ## [12.15.40] - 2025-10-18
 
 ### Fixed
