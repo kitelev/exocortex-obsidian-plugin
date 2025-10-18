@@ -292,6 +292,42 @@ describe("TaskCreationService", () => {
 
       expect(frontmatter.exo__Asset_label).toBeUndefined();
     });
+
+    it("should create ems__Task instance from TaskPrototype with ems__Effort_prototype", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!toos]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Code Review Template",
+        "ems__TaskPrototype",
+        "Review PR #123",
+      );
+
+      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Task]]"']);
+      expect(frontmatter.ems__Effort_prototype).toBe('"[[Code Review Template]]"');
+      expect(frontmatter.exo__Asset_label).toBe("Review PR #123");
+      expect(frontmatter.ems__Effort_status).toBe('"[[ems__EffortStatusDraft]]"');
+    });
+
+    it("should create ems__Meeting instance from MeetingPrototype with ems__Effort_prototype", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!toos]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Daily Standup Template",
+        "ems__MeetingPrototype",
+        "Standup 2025-10-19",
+      );
+
+      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Meeting]]"']);
+      expect(frontmatter.ems__Effort_prototype).toBe('"[[Daily Standup Template]]"');
+      expect(frontmatter.exo__Asset_label).toBe("Standup 2025-10-19");
+      expect(frontmatter.ems__Effort_status).toBe('"[[ems__EffortStatusDraft]]"');
+    });
   });
 
   describe("buildFileContent", () => {
