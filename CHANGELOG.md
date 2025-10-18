@@ -1,3 +1,29 @@
+## [12.15.33] - 2025-10-18
+
+### Fixed
+
+**E2E Electron Launch Timeout Fix**: Fixed `electron.launch()` hanging indefinitely in headless Docker even though Obsidian was running. The issue was that Playwright's `electron.launch()` promise never resolved in headless environments, blocking E2E tests for 2+ minutes before timeout. Solution: Removed explicit timeout parameter to let Playwright use defaults (30s instead of 120s), check for windows immediately after launch, and removed `--disable-extensions` flag which might have interfered with Obsidian initialization.
+
+**Root Cause:**
+- `electron.launch()` with `timeout: 120000` hung for full 2 minutes in Docker
+- Even though Obsidian launched successfully ("App is up to date" in logs)
+- Playwright's promise never resolved to provide ElectronApplication object
+- Tests timed out waiting at `await electron.launch()` line
+
+**Solution:**
+1. **Remove Explicit Timeout**: Let Playwright use default 30s timeout instead of 120s
+2. **Immediate Window Check**: Check `app.windows()` immediately after launch
+3. **Remove --disable-extensions**: This flag might prevent Obsidian from fully initializing
+4. **Conditional Window Waiting**: Only wait for window events if windows don't exist yet
+
+**Files Modified:**
+- `tests/e2e/utils/obsidian-launcher.ts` - Removed timeout, added window existence checks, removed --disable-extensions flag
+
+**Why This Matters:**
+- Reduces test timeout from 2 minutes to 30 seconds (4x faster failure)
+- Allows Obsidian plugins/extensions to load (needed for testing)
+- Works around headless Docker electron.launch() quirks
+
 ## [12.15.32] - 2025-10-18
 
 ### Fixed

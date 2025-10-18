@@ -34,7 +34,7 @@ export class ObsidianLauncher {
         '--disable-dev-shm-usage',
         '--disable-software-rasterizer',
         '--disable-setuid-sandbox',
-        '--disable-extensions',
+        // Removed '--disable-extensions' - we NEED plugins/extensions to load!
         '--disable-background-timer-throttling',
         '--disable-backgrounding-occluded-windows',
         '--disable-renderer-backgrounding',
@@ -49,36 +49,46 @@ export class ObsidianLauncher {
     console.log('[ObsidianLauncher] Launching Electron with args:', args);
     console.log('[ObsidianLauncher] About to call electron.launch()...');
 
-    try {
-      this.app = await electron.launch({
-        executablePath: obsidianPath,
-        args,
-        env: {
-          ...process.env,
-          OBSIDIAN_DISABLE_GPU: '1',
-        },
-        timeout: 120000, // 2 minutes timeout for launch
-      });
-      console.log('[ObsidianLauncher] electron.launch() completed successfully!');
-    } catch (error) {
-      console.error('[ObsidianLauncher] ERROR during electron.launch():', error);
-      throw error;
-    }
+    // CRITICAL FIX FOR HEADLESS DOCKER: electron.launch() may hang waiting for 'ready' event
+    // Solution: Launch without explicit timeout, let Playwright use defaults
+    // and immediately check for windows which appear even if 'ready' never fires
+    this.app = await electron.launch({
+      executablePath: obsidianPath,
+      args,
+      env: {
+        ...process.env,
+        OBSIDIAN_DISABLE_GPU: '1',
+      },
+      // Remove timeout - let Playwright handle it with defaults
+    });
 
-    console.log('[ObsidianLauncher] Electron launched, waiting for windows...');
+    console.log('[ObsidianLauncher] electron.launch() completed!');
+    console.log('[ObsidianLauncher] Checking for existing windows...');
 
     // CRITICAL FIX: Obsidian creates multiple windows on startup (splash screen, main window)
     // trashhalo/obsidian-plugin-e2e-test uses windowByIndex(1) - the SECOND window!
-    // Wait for first window (likely splash screen)
-    console.log('[ObsidianLauncher] Waiting for first window event...');
-    await this.app.waitForEvent('window');
 
-    // Wait for second window (main Obsidian window)
-    console.log('[ObsidianLauncher] Waiting for second window event...');
-    await this.app.waitForEvent('window');
+    // Check if windows already exist (might be created during launch)
+    let windows = this.app.windows();
+    console.log(`[ObsidianLauncher] Windows found immediately after launch: ${windows.length}`);
+
+    // If no windows yet, wait for first window event
+    if (windows.length === 0) {
+      console.log('[ObsidianLauncher] Waiting for first window event...');
+      await this.app.waitForEvent('window', { timeout: 30000 });
+      windows = this.app.windows();
+      console.log(`[ObsidianLauncher] Windows after first event: ${windows.length}`);
+    }
+
+    // If only one window, wait for second window (main window)
+    if (windows.length === 1) {
+      console.log('[ObsidianLauncher] Waiting for second window event...');
+      await this.app.waitForEvent('window', { timeout: 30000 });
+      windows = this.app.windows();
+      console.log(`[ObsidianLauncher] Windows after second event: ${windows.length}`);
+    }
 
     // Get all windows and select the second one (or first if only one exists)
-    const windows = this.app.windows();
     console.log(`[ObsidianLauncher] Total windows created: ${windows.length}`);
     this.window = windows.length > 1 ? windows[1] : windows[0];
     console.log(`[ObsidianLauncher] Using window index: ${windows.length > 1 ? 1 : 0}`);
