@@ -1,3 +1,35 @@
+## [12.15.31] - 2025-10-18
+
+### Fixed
+
+**E2E CRITICAL FIX: Use Second Window (trashhalo Pattern) for Obsidian Multi-Window Startup**: Solved firstWindow() timeout! Research into trashhalo/obsidian-plugin-e2e-test repository revealed the REAL issue: Obsidian creates MULTIPLE windows on startup (splash screen + main window), and `firstWindow()` waits for first window creation event which might be a splash screen that closes. Solution: Wait for TWO window events using `waitForEvent('window')` and select the SECOND window (index 1) like trashhalo's `client.windowByIndex(1)` pattern.
+
+**Why second window approach is the solution:**
+- **Multi-Window Startup**: Obsidian creates splash screen (window 0) + main window (window 1) on launch
+- **firstWindow() Limitation**: Waits for first window event, gets stuck on splash screen lifecycle
+- **trashhalo Pattern**: Proven working pattern using `windowByIndex(1)` to select main window
+- **Fallback Safety**: Uses `windows.length > 1 ? windows[1] : windows[0]` for compatibility
+
+**Files Modified:**
+- `tests/e2e/utils/obsidian-launcher.ts` - Replaced `firstWindow()` with multi-window detection pattern
+
+**Implementation:**
+```typescript
+// Wait for first window (likely splash screen)
+await this.app.waitForEvent('window');
+
+// Wait for second window (main Obsidian window)
+await this.app.waitForEvent('window');
+
+// Get all windows and select the second one
+const windows = this.app.windows();
+this.window = windows.length > 1 ? windows[1] : windows[0];
+```
+
+**Reference:**
+- https://github.com/trashhalo/obsidian-plugin-e2e-test (working Obsidian E2E test example)
+- https://github.com/microsoft/playwright/issues/21117 (firstWindow() timeout issues)
+
 ## [12.15.30] - 2025-10-18
 
 ### Fixed
