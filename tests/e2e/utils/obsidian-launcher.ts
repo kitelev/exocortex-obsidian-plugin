@@ -1,11 +1,13 @@
-import { _electron as electron, ElectronApplication, Page } from '@playwright/test';
+import { _electron as electron, ElectronApplication, Page, chromium } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
+import { spawn, ChildProcess } from 'child_process';
 
 export class ObsidianLauncher {
   private app: ElectronApplication | null = null;
   private window: Page | null = null;
   private vaultPath: string;
+  private electronProcess: ChildProcess | null = null;
 
   constructor(vaultPath?: string) {
     this.vaultPath = vaultPath || path.join(__dirname, '../test-vault');
@@ -23,7 +25,10 @@ export class ObsidianLauncher {
       throw new Error(`Obsidian not found at ${obsidianPath}. Set OBSIDIAN_PATH environment variable.`);
     }
 
-    const args = [this.vaultPath];
+    const args = [
+      this.vaultPath,
+      '--remote-debugging-port=9222',
+    ];
 
     // In Docker/CI, we need additional flags to run in headless environment
     if (process.env.CI || process.env.DOCKER) {
@@ -34,62 +39,105 @@ export class ObsidianLauncher {
         '--disable-dev-shm-usage',
         '--disable-software-rasterizer',
         '--disable-setuid-sandbox',
-        // Removed '--disable-extensions' - we NEED plugins/extensions to load!
         '--disable-background-timer-throttling',
         '--disable-backgrounding-occluded-windows',
         '--disable-renderer-backgrounding',
         '--disable-features=VizDisplayCompositor',
         '--use-gl=swiftshader',
-        // Removed --enable-features=UseOzonePlatform and --ozone-platform=headless
-        // These prevent window creation in headless mode!
         '--disable-blink-features=AutomationControlled'
       );
     }
 
-    console.log('[ObsidianLauncher] Launching Electron with args:', args);
-    console.log('[ObsidianLauncher] About to call electron.launch()...');
+    console.log('[ObsidianLauncher] Spawning Electron process with CDP port 9222...');
+    console.log('[ObsidianLauncher] Args:', args);
 
-    // CRITICAL FIX FOR HEADLESS DOCKER: Disable autoupdater which blocks 'ready' event
-    // Add --disable-updates flag to prevent update check from interfering
-    if (process.env.CI || process.env.DOCKER) {
-      args.push('--disable-updates');
-      console.log('[ObsidianLauncher] Disabled autoupdater for CI/Docker environment');
-    }
-
-    this.app = await electron.launch({
-      executablePath: obsidianPath,
-      args,
+    this.electronProcess = spawn(obsidianPath, args, {
       env: {
         ...process.env,
         OBSIDIAN_DISABLE_GPU: '1',
       },
-      timeout: 60000, // Give more time but hopefully autoupdater won't block anymore
+      stdio: 'inherit',
     });
-    console.log('[ObsidianLauncher] electron.launch() completed successfully!');
 
-    console.log('[ObsidianLauncher] Electron launched, waiting for windows...');
+    console.log('[ObsidianLauncher] Electron process spawned, PID:', this.electronProcess.pid);
 
-    // CRITICAL FIX: Obsidian creates multiple windows on startup (splash screen, main window)
-    // trashhalo/obsidian-plugin-e2e-test uses windowByIndex(1) - the SECOND window!
+    await this.waitForPort(9222, 30000);
+    console.log('[ObsidianLauncher] CDP port 9222 is ready');
 
-    // Wait for TWO windows
-    console.log('[ObsidianLauncher] Waiting for first window...');
-    await this.app.waitForEvent('window', { timeout: 30000 });
+    console.log('[ObsidianLauncher] Connecting to Electron via CDP...');
+    const browser = await chromium.connectOverCDP('http://localhost:9222', { timeout: 30000 });
+    console.log('[ObsidianLauncher] Connected to browser via CDP');
 
-    console.log('[ObsidianLauncher] Waiting for second window...');
-    await this.app.waitForEvent('window', { timeout: 30000 });
+    const contexts = browser.contexts();
+    console.log(`[ObsidianLauncher] Found ${contexts.length} browser context(s)`);
 
-    // Get all windows and select the second one (trashhalo pattern)
-    const windows = this.app.windows();
-    console.log(`[ObsidianLauncher] Total windows: ${windows.length}`);
-    this.window = windows.length > 1 ? windows[1] : windows[0];
-    console.log(`[ObsidianLauncher] Using window index: ${windows.length > 1 ? 1 : 0}`);
+    if (contexts.length === 0) {
+      throw new Error('No browser contexts found after CDP connection');
+    }
 
-    await this.window.waitForLoadState('domcontentloaded');
+    const context = contexts[0];
+    const pages = context.pages();
+    console.log(`[ObsidianLauncher] Found ${pages.length} page(s) in first context`);
+
+    if (pages.length > 1) {
+      this.window = pages[1];
+      console.log('[ObsidianLauncher] Using second page (trashhalo pattern)');
+    } else if (pages.length === 1) {
+      this.window = pages[0];
+      console.log('[ObsidianLauncher] Using first page (only one available)');
+    } else {
+      console.log('[ObsidianLauncher] No pages yet, waiting for page event...');
+      this.window = await context.waitForEvent('page', { timeout: 30000 });
+      console.log('[ObsidianLauncher] Got page from event');
+    }
+
+    await this.window.waitForLoadState('domcontentloaded', { timeout: 30000 });
     console.log('[ObsidianLauncher] DOM loaded, waiting 3s for Obsidian initialization...');
 
     await this.window.waitForTimeout(3000);
     console.log('[ObsidianLauncher] Obsidian ready!');
+  }
+
+  private async waitForPort(port: number, timeout: number): Promise<void> {
+    const startTime = Date.now();
+    const http = await import('http');
+
+    return new Promise((resolve, reject) => {
+      const checkPort = () => {
+        const req = http.request(
+          {
+            host: 'localhost',
+            port,
+            path: '/json/version',
+            method: 'GET',
+          },
+          (res) => {
+            if (res.statusCode === 200) {
+              console.log(`[ObsidianLauncher] Port ${port} is accepting connections`);
+              resolve();
+            } else {
+              retryCheck();
+            }
+          }
+        );
+
+        req.on('error', () => {
+          retryCheck();
+        });
+
+        req.end();
+      };
+
+      const retryCheck = () => {
+        if (Date.now() - startTime > timeout) {
+          reject(new Error(`Timeout waiting for port ${port} after ${timeout}ms`));
+        } else {
+          setTimeout(checkPort, 500);
+        }
+      };
+
+      checkPort();
+    });
   }
 
   async openFile(filePath: string): Promise<void> {
@@ -124,10 +172,16 @@ export class ObsidianLauncher {
   }
 
   async close(): Promise<void> {
-    if (this.app) {
-      await this.app.close();
-      this.app = null;
+    if (this.window) {
+      await this.window.close();
       this.window = null;
     }
+
+    if (this.electronProcess) {
+      this.electronProcess.kill('SIGTERM');
+      this.electronProcess = null;
+    }
+
+    this.app = null;
   }
 }

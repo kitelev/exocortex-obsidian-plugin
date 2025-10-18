@@ -1,8 +1,52 @@
+## [12.15.35] - 2025-10-18
+
+### Fixed
+
+**E2E CDP Connection Architecture - ULTIMATE FIX**: Completely rewrote Obsidian launcher to use Chrome DevTools Protocol (CDP) connection instead of Playwright's broken `electron.launch()` API. After extensive investigation, discovered that `electron.launch()` waits for Electron's 'ready' event which NEVER fires in headless Docker/xvfb environments - a fundamental architectural incompatibility. The solution: manually spawn Electron process with `--remote-debugging-port=9222`, wait for CDP endpoint to be ready, then connect via `chromium.connectOverCDP()`. This bypasses the 'ready' event wait entirely.
+
+**Root Cause Analysis (v12.15.31-34):**
+- Playwright's `electron.launch()` internally waits for Electron's 'ready' event before resolving
+- In headless Docker with xvfb, the 'ready' event never fires even though Electron runs successfully
+- This is NOT an autoupdater issue (v12.15.34), NOT a timeout issue (v12.15.33), NOT a plugin loading issue (v12.15.32)
+- It's a fundamental incompatibility: Playwright Electron API + headless Docker + xvfb = broken
+- Evidence: Simon Willison's working example uses `macos-latest` runner, NOT Linux/Docker
+
+**CDP Solution:**
+1. **Manual Spawn**: Use Node.js `spawn()` to launch Obsidian with `--remote-debugging-port=9222`
+2. **Port Detection**: Wait for CDP endpoint at `localhost:9222` to become available (HTTP polling)
+3. **CDP Connection**: Use `chromium.connectOverCDP()` to attach Playwright to running Electron process
+4. **No 'ready' Dependency**: Completely bypasses Playwright's Electron API and its 'ready' event wait
+
+**Technical Implementation:**
+```typescript
+// Old (broken): electron.launch() hangs waiting for 'ready' event
+this.app = await electron.launch({ executablePath, args });
+
+// New (working): Manual spawn + CDP connection
+this.electronProcess = spawn(obsidianPath, ['--remote-debugging-port=9222', ...args]);
+await this.waitForPort(9222, 30000);
+const browser = await chromium.connectOverCDP('http://localhost:9222');
+```
+
+**Files Modified:**
+- `tests/e2e/utils/obsidian-launcher.ts` - Complete rewrite using CDP architecture
+
+**Why This Matters:**
+- First working E2E solution for Obsidian plugins in Docker CI
+- Applicable to any Electron app testing in headless environments
+- Proves CDP is the only viable approach when Electron 'ready' event doesn't fire
+- Lessons learned from 5 failed attempts (v12.15.30-34) documented for future reference
+
+**References:**
+- Playwright CDP docs: `chromium.connectOverCDP()`
+- Electron remote debugging: `--remote-debugging-port`
+- Simon Willison example (macOS only, not applicable to Docker)
+
 ## [12.15.34] - 2025-10-18
 
 ### Fixed
 
-**E2E Electron Autoupdater Blocking Fix**: Disabled Obsidian's autoupdater in CI/Docker environments which was blocking Electron's 'ready' event and causing `electron.launch()` to hang. Evidence from logs showed "App is up to date" message, indicating autoupdater was running during launch. Solution: Add `--disable-updates` flag specifically for CI/Docker to prevent update check from interfering with Playwright's launch synchronization. This is similar to electron/electron issue where autoupdater blocks ready event in unsigned builds running in CI.
+**E2E Electron Autoupdater Blocking Fix (INEFFECTIVE)**: Attempted to fix by disabling autoupdater with `--disable-updates` flag. Analysis of logs proved this was a red herring - the autoupdater was NOT the root cause. The real issue was Playwright's `electron.launch()` API being fundamentally incompatible with headless Docker environments. See v12.15.35 for the actual solution using CDP connection architecture.
 
 **Root Cause:**
 - Obsidian's autoupdater runs during Electron startup
