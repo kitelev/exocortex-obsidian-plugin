@@ -94,11 +94,7 @@ export class ObsidianLauncher {
     }
 
     await this.window.waitForLoadState('domcontentloaded', { timeout: 30000 });
-    console.log('[ObsidianLauncher] DOM loaded, handling trust dialog if present...');
-
-    await this.handleTrustDialog();
-
-    console.log('[ObsidianLauncher] Trust dialog handled, waiting for window.app to become available...');
+    console.log('[ObsidianLauncher] DOM loaded, waiting for window.app to become available...');
 
     let pollCount = 0;
     const maxPolls = 60;
@@ -133,6 +129,11 @@ export class ObsidianLauncher {
     }
 
     console.log('[ObsidianLauncher] Obsidian app object available!');
+
+    // Trust dialog appears AFTER app initialization, so handle it now
+    await this.window.waitForTimeout(2000);
+    console.log('[ObsidianLauncher] Waiting for trust dialog to appear...');
+    await this.handleTrustDialog();
 
     await this.window.waitForTimeout(1000);
     console.log('[ObsidianLauncher] Obsidian ready!');
@@ -174,7 +175,8 @@ export class ObsidianLauncher {
 
       const trustButton = await this.window.locator('button:has-text("Trust author and enable plugins")').first();
 
-      const isVisible = await trustButton.isVisible({ timeout: 5000 }).catch(() => false);
+      // Wait up to 15 seconds for dialog to appear (it appears after app init)
+      const isVisible = await trustButton.isVisible({ timeout: 15000 }).catch(() => false);
 
       if (isVisible) {
         console.log('[ObsidianLauncher] Trust dialog found! Clicking "Trust author and enable plugins" button...');
