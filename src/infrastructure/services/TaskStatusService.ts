@@ -30,6 +30,42 @@ export class TaskStatusService {
     return `"[[${year}-${month}-${day}]]"`;
   }
 
+  async setDraftStatus(taskFile: TFile): Promise<void> {
+    const fileContent = await this.vault.read(taskFile);
+    const updatedContent = this.updateFrontmatterWithDraftStatus(fileContent);
+    await this.vault.modify(taskFile, updatedContent);
+  }
+
+  private updateFrontmatterWithDraftStatus(content: string): string {
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) {
+      const newFrontmatter = `---
+ems__Effort_status: "[[ems__EffortStatusDraft]]"
+---
+${content}`;
+      return newFrontmatter;
+    }
+
+    const frontmatterContent = match[1];
+    let updatedFrontmatter = frontmatterContent;
+
+    if (updatedFrontmatter.includes("ems__Effort_status:")) {
+      updatedFrontmatter = updatedFrontmatter.replace(
+        /ems__Effort_status:.*$/m,
+        'ems__Effort_status: "[[ems__EffortStatusDraft]]"',
+      );
+    } else {
+      updatedFrontmatter += '\nems__Effort_status: "[[ems__EffortStatusDraft]]"';
+    }
+
+    return content.replace(
+      frontmatterRegex,
+      `---\n${updatedFrontmatter}\n---`,
+    );
+  }
+
   async moveToBacklog(taskFile: TFile): Promise<void> {
     const fileContent = await this.vault.read(taskFile);
     const updatedContent = this.updateFrontmatterWithBacklogStatus(fileContent);

@@ -1,6 +1,6 @@
 {
   "name": "exocortex-obsidian-plugin",
-  "version": "12.15.50",
+  "version": "12.15.51",
   "description": "Exocortex: A configurable UI system for Obsidian that transforms knowledge management through ontology-driven layouts and semantic capabilities",
   "main": "main.js",
   "engines": {
@@ -24,7 +24,7 @@
     "test:e2e": "playwright test -c playwright-e2e.config.ts",
     "test:e2e:local": "./scripts/test-e2e-local.sh",
     "test:e2e:docker": "docker build --platform linux/amd64 -f Dockerfile.e2e -t exocortex-e2e . && docker run --rm exocortex-e2e",
-    "test:all": "npm run test:unit && npm run test:ui && npm run test:component && npm run test:e2e",
+    "test:all": "npm test && npm run test:e2e:docker",
     "bdd:coverage": "node scripts/bdd-coverage.js",
     "bdd:report": "node scripts/generate-bdd-report.js",
     "bdd:check": "node scripts/bdd-coverage.js --fail-on-uncovered"
@@ -41,10 +41,12 @@
   "license": "MIT",
   "devDependencies": {
     "@playwright/experimental-ct-react": "^1.55.1",
+    "@playwright/test": "^1.55.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^18.19.129",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^5.29.0",
     "@typescript-eslint/parser": "^5.29.0",
     "builtin-modules": "3.3.0",
@@ -65,8 +67,6 @@
     "typescript": "4.7.4"
   },
   "dependencies": {
-    "@playwright/test": "^1.55.1",
-    "@types/uuid": "^10.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "uuid": "^11.1.0"

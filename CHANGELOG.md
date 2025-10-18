@@ -1,3 +1,23 @@
+## [12.15.51] - 2025-10-18
+
+### Added
+
+**Set Draft Status for Efforts Without Status**: Tasks and Projects without any status now show a "Set Draft Status" button and command, allowing you to quickly initialize them into the workflow. This helps manage legacy or manually created efforts that were created before the workflow system was established.
+
+**User Benefit:**
+- One-click status initialization for efforts without status
+- Available as both Layout button and Command Palette command ("Exocortex: Set Draft Status")
+- Once set to Draft, effort enters the normal workflow (Draft → Backlog → Doing → Done)
+- Particularly useful for migrating existing tasks into the structured workflow
+
+**Technical Implementation:**
+- New `canSetDraftStatus()` visibility function (shows only when status is not set)
+- `setDraftStatus()` service method in TaskStatusService
+- Integrated into UniversalLayoutRenderer Status button group
+- Command Palette command "Set Draft Status" registered
+- BDD specification updated with new scenarios
+- Full test coverage maintained (388/388 tests passing, 100% BDD coverage)
+
 ## [12.15.50] - 2025-10-18
 
 ### Fixed

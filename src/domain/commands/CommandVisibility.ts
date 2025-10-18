@@ -230,6 +230,17 @@ export function canShiftDayForward(context: CommandVisibilityContext): boolean {
 }
 
 /**
+ * Can execute "Set Draft Status" command
+ * Available for: Task/Project without any status
+ */
+export function canSetDraftStatus(context: CommandVisibilityContext): boolean {
+  if (!isEffort(context.instanceClass)) return false;
+
+  // Show only when status is not set
+  return !context.currentStatus;
+}
+
+/**
  * Can execute "Move to Backlog" command
  * Available for: Task/Project with Draft status
  */
