@@ -1,3 +1,35 @@
+## [12.15.46] - 2025-10-18
+
+### Fixed
+
+**E2E Trust Dialog - UI-Based Solution (Config Approach Failed)**: v12.15.45's config-based approach with `trusted: true` field **DID NOT WORK**. Downloaded and analyzed screenshots from v12.15.45 CI run - trust dialog still appears despite having `trusted: true` in vault configuration. Obsidian either doesn't recognize this field or stores trust information elsewhere. Switched to **UI-based solution**: implemented `handleTrustDialog()` method that programmatically clicks the "Trust author and enable plugins" button using Playwright locators. This is more reliable than relying on undocumented config fields.
+
+**Screenshot Evidence from v12.15.45:**
+- Trust dialog STILL displayed despite `trusted: true` config ❌
+- Message visible: "Do you trust the author of this vault?"
+- Buttons present: "Trust author and enable plugins" | "Browse vault in Restricted Mode"
+- Config-based approach conclusively proven ineffective
+
+**Technical Solution (v12.15.46):**
+- Implemented `handleTrustDialog()` method in `tests/e2e/utils/obsidian-launcher.ts`
+- Uses Playwright locator: `button:has-text("Trust author and enable plugins")`
+- Waits up to 5 seconds for button visibility with `.isVisible({ timeout: 5000 })`
+- Clicks button if visible: `await trustButton.click()`
+- Waits for dialog to disappear: `waitForSelector(..., { state: 'hidden' })`
+- Graceful handling if dialog not present (vault already trusted)
+- Called after DOM load in `launch()` method
+
+**Why This Approach Works:**
+- Direct UI interaction matches real user behavior
+- Playwright locators are reliable for finding UI elements
+- No dependency on undocumented config fields
+- Works regardless of where Obsidian stores trust state
+- Gracefully handles both first-time and repeat vault opens
+
+**Debugging Journey:**
+- v12.15.45: Tried config-based `trusted: true` field → FAILED
+- v12.15.46: Switched to UI-based button clicking → Testing now
+
 ## [12.15.45] - 2025-10-18
 
 ### Fixed

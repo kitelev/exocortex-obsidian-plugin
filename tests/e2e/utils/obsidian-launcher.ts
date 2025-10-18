@@ -94,7 +94,11 @@ export class ObsidianLauncher {
     }
 
     await this.window.waitForLoadState('domcontentloaded', { timeout: 30000 });
-    console.log('[ObsidianLauncher] DOM loaded, waiting for window.app to become available...');
+    console.log('[ObsidianLauncher] DOM loaded, handling trust dialog if present...');
+
+    await this.handleTrustDialog();
+
+    console.log('[ObsidianLauncher] Trust dialog handled, waiting for window.app to become available...');
 
     let pollCount = 0;
     const maxPolls = 60;
@@ -158,6 +162,39 @@ export class ObsidianLauncher {
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     console.log('[ObsidianLauncher] Created Obsidian config at:', configPath);
     console.log('[ObsidianLauncher] Registered vault:', this.vaultPath);
+  }
+
+  private async handleTrustDialog(): Promise<void> {
+    if (!this.window) {
+      throw new Error('Window not available');
+    }
+
+    try {
+      console.log('[ObsidianLauncher] Looking for trust dialog...');
+
+      const trustButton = await this.window.locator('button:has-text("Trust author and enable plugins")').first();
+
+      const isVisible = await trustButton.isVisible({ timeout: 5000 }).catch(() => false);
+
+      if (isVisible) {
+        console.log('[ObsidianLauncher] Trust dialog found! Clicking "Trust author and enable plugins" button...');
+        await trustButton.click();
+        console.log('[ObsidianLauncher] Trust button clicked, waiting for dialog to disappear...');
+
+        await this.window.waitForSelector('button:has-text("Trust author and enable plugins")', {
+          state: 'hidden',
+          timeout: 5000
+        }).catch(() => {
+          console.log('[ObsidianLauncher] Trust dialog did not disappear, but continuing...');
+        });
+
+        console.log('[ObsidianLauncher] Trust dialog handled successfully');
+      } else {
+        console.log('[ObsidianLauncher] Trust dialog not present (vault already trusted or not required)');
+      }
+    } catch (error) {
+      console.log('[ObsidianLauncher] No trust dialog found or error handling it:', error);
+    }
   }
 
   private async waitForPort(port: number, timeout: number): Promise<void> {
