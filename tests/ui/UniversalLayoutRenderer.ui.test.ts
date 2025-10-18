@@ -664,7 +664,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(button).toBeFalsy();
     });
 
-    it("should NOT render Archive button for non-Done Task", async () => {
+    it("should render Archive button for Task with any status not archived", async () => {
       const currentFile = {
         basename: "Active Task",
         path: "tasks/active.md",
@@ -685,8 +685,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-archive-task-btn");
-      expect(button).toBeFalsy();
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const archiveBtn = Array.from(buttons).find(btn => btn.textContent === "Archive");
+      expect(archiveBtn).toBeTruthy();
     });
 
     it("should render Archive button for Done Project not archived", async () => {
@@ -741,7 +742,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(button).toBeFalsy();
     });
 
-    it("should NOT render Archive button for non-Done Project", async () => {
+    it("should render Archive button for Project with any status not archived", async () => {
       const currentFile = {
         basename: "Active Project",
         path: "projects/active.md",
@@ -762,11 +763,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-archive-task-btn");
-      expect(button).toBeFalsy();
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const archiveBtn = Array.from(buttons).find(btn => btn.textContent === "Archive");
+      expect(archiveBtn).toBeTruthy();
     });
 
-    it("should NOT render Archive button for non-Task/Project assets (Area)", async () => {
+    it("should render Archive button for any asset type not archived (Area)", async () => {
       const currentFile = {
         basename: "Area",
         path: "areas/area.md",
@@ -775,7 +777,6 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Area]]",
-          ems__Effort_status: "[[ems__EffortStatusDone]]",
           archived: false,
         },
       });
@@ -787,8 +788,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-archive-task-btn");
-      expect(button).toBeFalsy();
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const archiveBtn = Array.from(buttons).find(btn => btn.textContent === "Archive");
+      expect(archiveBtn).toBeTruthy();
     });
   });
 

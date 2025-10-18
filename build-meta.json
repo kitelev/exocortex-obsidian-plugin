@@ -174,7 +174,7 @@
       "format": "esm"
     },
     "src/domain/commands/CommandVisibility.ts": {
-      "bytes": 10616,
+      "bytes": 10329,
       "imports": [],
       "format": "esm"
     },
@@ -1303,7 +1303,7 @@
           "bytesInOutput": 819
         },
         "src/domain/commands/CommandVisibility.ts": {
-          "bytesInOutput": 2679
+          "bytesInOutput": 2535
         },
         "src/presentation/components/CreateTaskButton.tsx": {
           "bytesInOutput": 453
@@ -1399,7 +1399,7 @@
           "bytesInOutput": 500
         }
       },
-      "bytes": 263353
+      "bytes": 263209
     }
   }
 }

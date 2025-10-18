@@ -21,7 +21,7 @@ test.describe("ArchiveTaskButton Component", () => {
     await expect(component).toHaveText("To Archive");
   });
 
-  test("should NOT render button for Task without Done status", async ({
+  test("should render button for Task with any status not archived", async ({
     mount,
   }) => {
     const component = await mount(
@@ -34,8 +34,9 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    // Component returns null when button should not render
-    await expect(component).not.toBeVisible();
+    // Component should now render for any non-archived asset
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("To Archive");
   });
 
   test("should NOT render button for already archived Task", async ({
@@ -55,21 +56,22 @@ test.describe("ArchiveTaskButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should NOT render button for non-Task asset (Area)", async ({
+  test("should render button for any asset type not archived (Area)", async ({
     mount,
   }) => {
     const component = await mount(
       <ArchiveTaskButton
         instanceClass="[[ems__Area]]"
-        currentStatus="[[ems__EffortStatusDone]]"
+        currentStatus={null}
         isArchived={false}
         sourceFile={mockFile}
         onArchive={async () => {}}
       />,
     );
 
-    // Component returns null when button should not render
-    await expect(component).not.toBeVisible();
+    // Component should now render for any non-archived asset
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("To Archive");
   });
 
   test("should render button for Done Project not archived", async ({
@@ -90,7 +92,7 @@ test.describe("ArchiveTaskButton Component", () => {
     await expect(component).toHaveText("To Archive");
   });
 
-  test("should NOT render button for Project without Done status", async ({
+  test("should render button for Project with any status not archived", async ({
     mount,
   }) => {
     const component = await mount(
@@ -103,8 +105,9 @@ test.describe("ArchiveTaskButton Component", () => {
       />,
     );
 
-    // Component returns null when button should not render
-    await expect(component).not.toBeVisible();
+    // Component should now render for any non-archived asset
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("To Archive");
   });
 
   test("should NOT render button for already archived Project", async ({
@@ -124,21 +127,22 @@ test.describe("ArchiveTaskButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should NOT render button when instanceClass is null", async ({
+  test("should render button even when instanceClass is null", async ({
     mount,
   }) => {
     const component = await mount(
       <ArchiveTaskButton
         instanceClass={null}
-        currentStatus="[[ems__EffortStatusDone]]"
+        currentStatus={null}
         isArchived={false}
         sourceFile={mockFile}
         onArchive={async () => {}}
       />,
     );
 
-    // Component returns null when button should not render
-    await expect(component).not.toBeVisible();
+    // Component should now render for any non-archived asset, even without class
+    await expect(component).toBeVisible();
+    await expect(component).toHaveText("To Archive");
   });
 
   test("should handle Task class without brackets", async ({ mount }) => {
