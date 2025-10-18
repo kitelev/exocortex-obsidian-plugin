@@ -423,5 +423,190 @@ describe("TaskCreationService", () => {
       // They should match
       expect(filenameUid).toBe(frontmatterUid);
     });
+
+    it("should copy Algorithm section when creating from TaskPrototype", async () => {
+      const prototypeContent = `---
+exo__Asset_isDefinedBy: "[[!toos]]"
+---
+
+## Description
+
+Task prototype description here.
+
+## Algorithm
+
+Step 1: Do something
+Step 2: Do something else
+Step 3: Finish
+
+## Notes
+
+Some additional notes.`;
+
+      mockVault.read = jest.fn().mockResolvedValue(prototypeContent);
+
+      const mockSourceFile = {
+        basename: "Test Prototype",
+        parent: { path: "03 Knowledge/user" },
+      } as any;
+
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!toos]]"',
+      };
+
+      await service.createTask(mockSourceFile, sourceMetadata, "ems__TaskPrototype");
+
+      const [, content] = mockVault.create.mock.calls[0];
+
+      // Should contain Algorithm section
+      expect(content).toContain("## Algorithm");
+      expect(content).toContain("Step 1: Do something");
+      expect(content).toContain("Step 2: Do something else");
+      expect(content).toContain("Step 3: Finish");
+      // Should NOT contain Description or Notes sections
+      expect(content).not.toContain("## Description");
+      expect(content).not.toContain("## Notes");
+    });
+
+    it("should NOT copy Algorithm section when creating from Area", async () => {
+      const mockSourceFile = {
+        basename: "Test Area",
+        parent: { path: "03 Knowledge/user" },
+      } as any;
+
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!user]]"',
+      };
+
+      await service.createTask(mockSourceFile, sourceMetadata, "ems__Area");
+
+      const [, content] = mockVault.create.mock.calls[0];
+
+      // Should NOT contain Algorithm section
+      expect(content).not.toContain("## Algorithm");
+      // Should end with empty line after frontmatter
+      expect(content).toMatch(/---\n\n$/);
+    });
+
+    it("should handle TaskPrototype without Algorithm section gracefully", async () => {
+      const prototypeContent = `---
+exo__Asset_isDefinedBy: "[[!toos]]"
+---
+
+## Description
+
+Task prototype without algorithm.`;
+
+      mockVault.read = jest.fn().mockResolvedValue(prototypeContent);
+
+      const mockSourceFile = {
+        basename: "Test Prototype",
+        parent: { path: "03 Knowledge/user" },
+      } as any;
+
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!toos]]"',
+      };
+
+      await service.createTask(mockSourceFile, sourceMetadata, "ems__TaskPrototype");
+
+      const [, content] = mockVault.create.mock.calls[0];
+
+      // Should NOT contain Algorithm section since source doesn't have it
+      expect(content).not.toContain("## Algorithm");
+      expect(content).toMatch(/---\n\n$/);
+    });
+  });
+
+  describe("extractH2Section", () => {
+    it("should extract content between H2 headings", () => {
+      const markdown = `## First Section
+
+Content of first section.
+
+## Second Section
+
+Content of second section.
+Multiple lines here.
+
+## Third Section
+
+Content of third section.`;
+
+      const result = (service as any).extractH2Section(markdown, "Second Section");
+
+      expect(result).toBe("Content of second section.\nMultiple lines here.");
+    });
+
+    it("should extract content when H2 is followed by H1", () => {
+      const markdown = `## Algorithm
+
+Step 1: First step
+Step 2: Second step
+
+# Main Heading
+
+Other content.`;
+
+      const result = (service as any).extractH2Section(markdown, "Algorithm");
+
+      expect(result).toBe("Step 1: First step\nStep 2: Second step");
+    });
+
+    it("should return null when section not found", () => {
+      const markdown = `## First Section
+
+Content here.
+
+## Second Section
+
+More content.`;
+
+      const result = (service as any).extractH2Section(markdown, "Missing Section");
+
+      expect(result).toBeNull();
+    });
+
+    it("should return null when section is empty", () => {
+      const markdown = `## Algorithm
+
+## Next Section
+
+Content here.`;
+
+      const result = (service as any).extractH2Section(markdown, "Algorithm");
+
+      expect(result).toBeNull();
+    });
+
+    it("should handle section at end of document", () => {
+      const markdown = `## First Section
+
+Some content.
+
+## Algorithm
+
+Final step 1
+Final step 2`;
+
+      const result = (service as any).extractH2Section(markdown, "Algorithm");
+
+      expect(result).toBe("Final step 1\nFinal step 2");
+    });
+
+    it("should trim whitespace from extracted content", () => {
+      const markdown = `## Algorithm
+
+
+
+Step with spaces
+
+
+## Next Section`;
+
+      const result = (service as any).extractH2Section(markdown, "Algorithm");
+
+      expect(result).toBe("Step with spaces");
+    });
   });
 });
