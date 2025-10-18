@@ -1,3 +1,22 @@
+## [12.15.43] - 2025-10-18
+
+### Fixed
+
+**E2E Docker Configuration Verification**: v12.15.42 successfully bypassed the starter screen using the config file approach, but E2E tests still failed because the plugin didn't render (`hasExocortexContainer: false`). Enhanced Dockerfile.e2e to add comprehensive verification steps during build that check if essential Obsidian configuration files (`community-plugins.json`, `app.json`) are present after the COPY step. This will help diagnose whether plugin configuration files are correctly included in the Docker image and identify any missing files that prevent plugin loading.
+
+**Dockerfile.e2e Enhancements:**
+- Added verification output showing all JSON files in `.obsidian/` directory
+- Display `community-plugins.json` content to confirm plugin is enabled
+- Verify `app.json` existence
+- List installed plugin files with sizes for validation
+- Comprehensive build-time diagnostics to identify configuration issues
+
+**Why This Matters:**
+- v12.15.42 fixed vault opening but plugin still doesn't load
+- Need visibility into whether config files are present in Docker image
+- Build logs will show exactly what files are/aren't being copied
+- Enables quick identification of missing configuration files
+
 ## [12.15.42] - 2025-10-18
 
 ### Fixed
