@@ -1,3 +1,55 @@
+## [12.15.47] - 2025-10-18
+
+### Fixed
+
+**E2E Trust Dialog - Timing Fix (v12.15.46 Button Click Approach Failed)**: v12.15.46's button-clicking approach **FAILED due to wrong timing**. Downloaded and analyzed screenshots from v12.15.46 CI run - trust dialog STILL appeared despite `handleTrustDialog()` implementation. Root cause discovered through log analysis: the method checked for the dialog immediately after DOM load (line 99), but Obsidian displays the trust dialog AFTER `window.app` initialization completes, not before. The logs showed "Trust dialog not present" message, followed by successful `window.app` detection, but then tests failed because the dialog appeared later and blocked plugin execution.
+
+**Evidence from v12.15.46 logs:**
+```
+[ObsidianLauncher] DOM loaded, handling trust dialog if present...
+[ObsidianLauncher] Trust dialog not present (vault already trusted or not required)  ❌ TOO EARLY!
+[ObsidianLauncher] Waiting for window.app to become available...
+[ObsidianLauncher] App object found after 0 polls  ✅
+// Dialog appears HERE (after app init), but we already checked above!
+```
+
+**Technical Solution (v12.15.47):**
+- **Moved `handleTrustDialog()` call** from line 99 (after DOM load) to line 136 (AFTER `window.app` initialization)
+- **Added 2-second wait** before checking for dialog to allow Obsidian time to display it
+- **Increased timeout** from 5 seconds to 15 seconds for dialog visibility check
+- **New execution flow:**
+  1. Wait for DOM load (`domcontentloaded`)
+  2. Wait for `window.app` to become available (polling up to 60 seconds)
+  3. **THEN** wait 2 seconds for dialog to appear
+  4. **THEN** check for trust dialog button and click if visible
+  5. Continue with test execution
+
+**Code Changes in `obsidian-launcher.ts`:**
+```typescript
+// OLD (v12.15.46) - WRONG TIMING:
+await this.window.waitForLoadState('domcontentloaded');
+await this.handleTrustDialog();  // TOO EARLY! ❌
+// wait for window.app...
+
+// NEW (v12.15.47) - CORRECT TIMING:
+await this.window.waitForLoadState('domcontentloaded');
+// wait for window.app first...
+console.log('[ObsidianLauncher] Obsidian app object available!');
+await this.window.waitForTimeout(2000);  // Wait for dialog to appear
+await this.handleTrustDialog();  // NOW check for dialog ✅
+```
+
+**Why This Fix Works:**
+- Trust dialog appears as part of Obsidian's post-initialization flow
+- Checking after app initialization ensures dialog has time to appear
+- 2-second buffer allows for timing variations in CI environment
+- 15-second timeout provides sufficient window for dialog detection
+
+**Debugging Journey:**
+- v12.15.45: Config-based `trusted: true` field → FAILED (dialog still appeared)
+- v12.15.46: Button clicking after DOM load → FAILED (checked too early)
+- v12.15.47: Button clicking after app init + 2s wait → Testing now
+
 ## [12.15.46] - 2025-10-18
 
 ### Fixed
@@ -28,7 +80,7 @@
 
 **Debugging Journey:**
 - v12.15.45: Tried config-based `trusted: true` field → FAILED
-- v12.15.46: Switched to UI-based button clicking → Testing now
+- v12.15.46: Switched to UI-based button clicking → FAILED (timing issue)
 
 ## [12.15.45] - 2025-10-18
 
