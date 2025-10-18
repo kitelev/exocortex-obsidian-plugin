@@ -1,3 +1,64 @@
+## [12.15.48] - 2025-10-18
+
+### Fixed
+
+**E2E Test Selector Fix - Plugin WAS Rendering, Tests Were Looking for Wrong CSS Class**: v12.15.47 successfully fixed the trust dialog timing issue - logs confirmed trust dialog was clicked and handled correctly. However, E2E tests still FAILED with "Timeout waiting for .exocortex-layout-container". Investigation revealed **the problem was NOT the plugin**, but the tests using an **incorrect CSS selector**.
+
+**Root Cause Discovery (v12.15.48):**
+- Analyzed screenshots from v12.15.47: TWO screenshots showed plugin working perfectly (Properties table, pn__DailyNote_day table fully rendered) ✅
+- ONE screenshot showed Settings dialog, BUT pn__DailyNote_day table was visible UNDERNEATH the Settings modal ✅
+- This proved the plugin WAS rendering successfully! 🎉
+- Examined `UniversalLayoutRenderer.ts:419-467`: Plugin creates these CSS classes:
+  - `exocortex-buttons-section` (line 439)
+  - `exocortex-properties-section` (line 1072)
+  - `exocortex-daily-tasks-section` (line 1149)
+  - `exocortex-assets-relations` (line 1196)
+- But **NOWHERE** does it create `.exocortex-layout-container`!
+- Tests in `daily-note-tasks.spec.ts` and `obsidian-launcher.ts:286` were waiting for a selector that **NEVER EXISTS**
+
+**Technical Solution (v12.15.48):**
+
+**1. Updated E2E Tests (`tests/e2e/specs/daily-note-tasks.spec.ts`):**
+```typescript
+// OLD (v12.15.47) - WRONG SELECTOR:
+await launcher.waitForElement('.exocortex-layout-container', 30000);  ❌
+const tasksTable = window.locator('.exocortex-layout-container table').first();
+
+// NEW (v12.15.48) - CORRECT SELECTOR:
+await launcher.waitForElement('.exocortex-daily-tasks-section', 30000);  ✅
+const tasksTable = window.locator('.exocortex-daily-tasks-section table').first();
+```
+
+**2. Updated ObsidianLauncher (`tests/e2e/utils/obsidian-launcher.ts:286`):**
+```typescript
+// OLD (v12.15.47) - CHECKING NON-EXISTENT SELECTOR:
+hasExocortexContainer: !!document.querySelector('.exocortex-layout-container'),  ❌
+
+// NEW (v12.15.48) - CHECKING ACTUAL SELECTORS:
+hasExocortexContainer: !!(
+  document.querySelector('.exocortex-properties-section') ||
+  document.querySelector('.exocortex-daily-tasks-section')
+),  ✅
+```
+
+**Why This Fix Works:**
+- Tests now look for CSS classes the plugin ACTUALLY creates
+- `.exocortex-daily-tasks-section` exists when DailyNote renders tasks table
+- `.exocortex-properties-section` exists when Properties table renders
+- Both selectors accurately detect when the plugin has finished rendering
+- Launcher now checks for real DOM elements that prove plugin loaded successfully
+
+**Evidence from v12.15.47 Screenshots:**
+- Screenshot 1 & 2: Full layout rendered (Properties + pn__DailyNote_day table visible)
+- Screenshot 3: Settings dialog visible, BUT table rendered underneath (proved by visible table header)
+- **Conclusion**: Plugin worked in ALL THREE tests, but tests failed due to wrong selector
+
+**Debugging Journey:**
+- v12.15.45: Config `trusted: true` → FAILED (dialog still appeared)
+- v12.15.46: Button click after DOM load → FAILED (checked too early)
+- v12.15.47: Button click after app init + 2s wait → Trust dialog FIXED ✅, but tests still failed
+- v12.15.48: Correct CSS selectors → Testing now
+
 ## [12.15.47] - 2025-10-18
 
 ### Fixed

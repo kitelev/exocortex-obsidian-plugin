@@ -20,9 +20,9 @@ test.describe('DailyNote Tasks Table', () => {
 
     const window = await launcher.getWindow();
 
-    await launcher.waitForElement('.exocortex-layout-container', 30000);
+    await launcher.waitForElement('.exocortex-daily-tasks-section', 30000);
 
-    const tasksTable = window.locator('.exocortex-layout-container table').first();
+    const tasksTable = window.locator('.exocortex-daily-tasks-section table').first();
     await expect(tasksTable).toBeVisible({ timeout: 10000 });
 
     const rows = tasksTable.locator('tbody tr');
@@ -43,9 +43,9 @@ test.describe('DailyNote Tasks Table', () => {
 
     const window = await launcher.getWindow();
 
-    await launcher.waitForElement('.exocortex-layout-container', 30000);
+    await launcher.waitForElement('.exocortex-daily-tasks-section', 30000);
 
-    const tasksTable = window.locator('.exocortex-layout-container table').first();
+    const tasksTable = window.locator('.exocortex-daily-tasks-section table').first();
     await expect(tasksTable).toBeVisible({ timeout: 10000 });
 
     const tableContent = await tasksTable.textContent();
@@ -62,9 +62,9 @@ test.describe('DailyNote Tasks Table', () => {
 
     const window = await launcher.getWindow();
 
-    await launcher.waitForElement('.exocortex-layout-container', 30000);
+    await launcher.waitForElement('.exocortex-daily-tasks-section', 30000);
 
-    const tasksTable = window.locator('.exocortex-layout-container table').first();
+    const tasksTable = window.locator('.exocortex-daily-tasks-section table').first();
     await expect(tasksTable).toBeVisible({ timeout: 10000 });
 
     const rows = tasksTable.locator('tbody tr');
