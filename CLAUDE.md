@@ -130,6 +130,237 @@ This codebase is optimized for development through AI assistants (Claude Code, G
 - **Success Pattern Learning**: Automated extraction and replication of winning approaches
 - **Quality Gate Integration**: CMMI/ISO standards embedded in every agent interaction
 
+## 🔀 Multi-Instance Development Workflow
+
+⚠️ **CRITICAL AWARENESS**: This plugin is developed in PARALLEL by multiple Claude Code instances. Each instance works in a separate git worktree.
+
+### Multi-Instance Environment Rules
+
+**YOU ARE ONE OF SEVERAL PARALLEL DEVELOPERS:**
+- 2-5 Claude Code instances working simultaneously
+- Each instance operates in its own isolated git worktree
+- Shared main repository - your changes affect others
+- Coordination through git commits and GitHub Actions
+
+### MANDATORY: One Task = One Worktree
+
+**NEVER work directly in main worktree directory**
+
+For EACH new task:
+```bash
+# 1. Create new worktree for the task
+git worktree add ../exocortex-task-name -b feature/task-name
+
+# 2. Move to worktree
+cd ../exocortex-task-name
+
+# 3. Sync with latest main
+git fetch origin main
+git rebase origin/main
+
+# 4. Work on task in isolation
+# ... your changes ...
+
+# 5. Test locally
+npm test:all
+
+# 6. Commit (NO version bump - handled automatically!)
+git commit -am "feat: description"
+
+# 7. Push and create PR
+git push origin feature/task-name
+gh pr create --title "feat: description" --body "Detailed description..."
+
+# 8. Wait for CI checks to complete
+gh pr checks --watch
+
+# 9. Auto-merge when all checks GREEN
+gh pr merge --auto --squash
+
+# 10. Cleanup after successful merge
+cd /Users/kitelev/Documents/exocortex-obsidian-plugin
+git worktree remove ../exocortex-task-name
+git pull origin main  # Get auto-versioned commit
+```
+
+### Task Completion Criteria (MANDATORY)
+
+**A task is COMPLETE only when ALL these steps pass:**
+
+```
+1. ✅ npm test:all - ALL tests passing locally (100%)
+2. ✅ Changes committed with conventional commit message (feat:/fix:/etc)
+3. ✅ PR created and pushed to GitHub
+4. ✅ CI checks passing - build-and-test ✅ + e2e-tests ✅
+5. ✅ PR merged to main (auto-merge or manual)
+6. ✅ Auto-version workflow completed (version bump automatic)
+7. ✅ Release created automatically and visible in GitHub Releases
+```
+
+**INCOMPLETE = NOT DONE**
+
+If ANY step fails:
+- ❌ Task is NOT complete
+- ❌ Do NOT move to next task
+- ❌ FIX the issue immediately (amend commit, force push, rerun checks)
+- ❌ Do NOT leave broken code for other instances
+
+**Version bumping is AUTOMATIC:**
+- ✅ NO manual `npm version patch` needed
+- ✅ NO manual manifest.json sync needed
+- ✅ NO manual CHANGELOG.md update needed
+- ✅ All handled by `pr-auto-version.yml` workflow after PR merge
+
+### Pre-Work Synchronization (MANDATORY)
+
+**BEFORE starting ANY task:**
+
+```bash
+# 1. Check current worktree location
+pwd  # Should be in a task-specific worktree
+
+# 2. Fetch latest from main
+git fetch origin main
+
+# 3. Check for conflicts with recent changes
+git log main..origin/main --oneline  # See what changed
+
+# 4. Rebase if needed
+git rebase origin/main
+
+# 5. Verify clean state
+git status  # Should be clean
+```
+
+### Conflict Prevention in Multi-Instance Environment
+
+1. **Small, Focused Tasks**: One feature/fix per worktree
+2. **Frequent Syncs**: Pull from main before starting, after finishing
+3. **Clear Commit Messages**: Help other instances understand your changes
+4. **Fast Completion**: Don't leave worktrees open for days
+5. **Clean Pipeline**: Never push broken code - it blocks everyone
+
+### Why This Matters - Race Condition Solution
+
+**Problem:** Manual version bumps create race conditions
+```
+Instance A: v12.5.10 → v12.5.11 (push)
+Instance B: v12.5.10 → v12.5.11 (push)  ❌ COLLISION!
+```
+
+**Solution:** PR-based workflow with sequential merging
+```
+Instance A: PR merge → auto-version → v12.5.11 ✅
+Instance B: PR merge → auto-version → v12.5.12 ✅
+(GitHub merge queue ensures sequential processing)
+```
+
+In multi-instance environment:
+- ✅ **No version collisions** - GitHub merge queue is atomic
+- ✅ **No broken pipeline** - branch protection blocks bad merges
+- ✅ **No manual versioning** - automatic and consistent
+- ✅ **Safe rollback** - every change is a revertable PR
+
+**Complete tasks fully. Push green code. Keep pipeline healthy.**
+
+## 🔒 Branch Protection & Required CI Checks
+
+**CRITICAL:** The `main` branch is protected. You CANNOT push directly to main. All changes MUST go through Pull Requests.
+
+### Protected Branch Rules
+
+**Branch:** `main`
+
+**Enforcement:**
+- ❌ **Direct pushes BLOCKED** - must use PR
+- ✅ **PR merge allowed ONLY if** all required checks pass
+- ✅ **Merge button disabled** until checks are GREEN
+- ✅ **Administrators cannot bypass** - rules enforced for everyone
+
+### Required Status Checks
+
+Before PR can be merged, these checks MUST pass:
+
+1. **build-and-test** (from `.github/workflows/ci.yml`)
+   - Type checking
+   - Linting
+   - Build compilation
+   - Unit tests
+   - UI integration tests
+   - Component tests (Playwright)
+   - BDD coverage check (≥80%)
+
+2. **e2e-tests** (from `.github/workflows/ci.yml`)
+   - End-to-end tests in Docker
+   - Full plugin integration tests
+   - Screenshot validation
+
+**Both checks must be GREEN ✅ before merge is possible.**
+
+### Checking CI Status
+
+```bash
+# View current PR check status
+gh pr checks
+
+# Watch checks in real-time (wait until complete)
+gh pr checks --watch
+
+# View detailed status with JSON
+gh pr view --json statusCheckRollup
+
+# Attempt auto-merge (will fail if checks not green)
+gh pr merge --auto --squash
+```
+
+### When Checks Fail
+
+If any check fails (RED ❌):
+
+```bash
+# 1. Identify the failure
+gh pr checks  # See which check failed
+
+# 2. Fix the code locally
+# ... make fixes ...
+
+# 3. Amend commit and force push
+git commit --amend --no-edit
+git push --force-with-lease origin feature/branch-name
+
+# 4. Wait for checks to re-run
+gh pr checks --watch
+
+# 5. Merge when GREEN
+gh pr merge --auto --squash
+```
+
+**NEVER skip failing checks. Fix them.**
+
+### Setup (One-Time)
+
+Branch protection is already configured. If you need to set it up on a new repository:
+
+```bash
+# Run automated setup script
+.github/scripts/setup-branch-protection.sh
+
+# Or see manual instructions
+cat .github/BRANCH_PROTECTION.md
+```
+
+### What You'll See
+
+When trying to push directly to main:
+```
+remote: error: GH006: Protected branch update failed
+To github.com:kitelev/exocortex-obsidian-plugin.git
+ ! [remote rejected] main -> main (protected branch hook declined)
+error: failed to push some refs
+```
+
+**This is CORRECT behavior. Use PR workflow instead.**
+
 ## 🎯 Mission Statement
 
 Execute every request as a highly qualified Senior IT specialist with extensive experience in knowledge management systems, semantic web technologies, and Obsidian plugin development.
@@ -327,27 +558,46 @@ export class Result<T> {
 3. Check `/src/infrastructure/container/DIContainer.ts` - dependency wiring
 4. Read test files for usage examples
 
-### Making Changes
+### Making Changes (PR-Based Workflow)
 
 ```bash
-# 1. Run tests to verify current state (MANDATORY: use /test command)
-/test
+# 1. Create feature branch in separate worktree
+git worktree add ../exocortex-feature-name -b feature/description
+cd ../exocortex-feature-name
 
-# 2. Make your changes following patterns in existing code
+# 2. Sync with latest main
+git fetch origin main
+git rebase origin/main
 
-# 3. Run tests again (MANDATORY: use /test command)
-/test
+# 3. Make your changes following patterns in existing code
+# ... code changes ...
 
-# 4. Build to verify compilation
+# 4. Run tests locally (MANDATORY: use /test command or npm test:all)
+npm test:all
+# OR: /test
+
+# 5. Build to verify compilation
 npm run build
 
-# 5. Update version and CHANGELOG.md
-npm version patch/minor/major
+# 6. Commit with conventional message (NO version bump!)
+git commit -am "feat: your feature description"
 
-# 6. Commit and push (triggers auto-release)
-git add -A
-git commit -m "feat: your feature description"
-git push origin main
+# 7. Push and create PR
+git push origin feature/description
+gh pr create --title "feat: description" --body "Detailed description..."
+
+# 8. Wait for CI checks to pass
+gh pr checks --watch
+
+# 9. Merge when all checks GREEN
+gh pr merge --auto --squash
+
+# 10. Cleanup worktree
+cd /Users/kitelev/Documents/exocortex-obsidian-plugin
+git worktree remove ../exocortex-feature-name
+git pull origin main  # Get auto-versioned commit
+
+# Version bump, CHANGELOG update, and release happen automatically!
 ```
 
 ## 📁 Project Structure
@@ -480,70 +730,162 @@ chore: maintenance task
 
 **NO EXCEPTIONS**: If you changed code, you MUST create a release. Period.
 
+⚠️ **MULTI-INSTANCE CONTEXT**: You are one of several parallel developers. Your incomplete task or broken pipeline blocks other Claude Code instances from releasing. Complete ALL steps before considering task done.
+
+### PR-Based Workflow (MANDATORY)
+
 Every code change MUST follow this exact sequence:
 
-1. Update version in **package.json** (use `npm version patch/minor/major --no-git-tag-version`)
-2. Update version in **manifest.json** (CRITICAL: must match package.json!)
-3. Update CHANGELOG.md with user-focused description
-4. Commit with conventional message (feat:, fix:, chore:, etc.)
-5. Push to trigger auto-release
-6. **WAIT for GitHub Actions pipeline to turn GREEN** ✅
-7. **If pipeline FAILS - FIX immediately, task is NOT complete until pipeline is green**
-8. **VERIFY release was created**: Check `gh release list --limit 1`
-
-**CRITICAL**: `manifest.json` version MUST always match `package.json` version. This is required for:
-- BRAT (Beta Reviewers Auto-update Tester) compatibility
-- Obsidian plugin store compliance
-- User update notifications
-
-**CRITICAL**: After EVERY push, monitor GitHub Actions:
-- Go to: https://github.com/{repo}/actions
-- Watch the pipeline run
-- If RED (❌) - IMMEDIATELY fix the issue
-- If GREEN (✅) - Task complete
-- **A broken pipeline = incomplete task**
-
-**AUTOMATED RELEASE**:
-- **PRIMARY METHOD**: Use `/release` slash command - ALWAYS invokes release-agent
-- **ALTERNATIVE**: Manually use release-agent from `.claude/agents/release-agent.md`
-- **GUARANTEE**: Release-agent follows bulletproof 20-step process with zero-tolerance for skipped steps
-
-**Version Update Checklist:**
-- [ ] package.json version updated
-- [ ] manifest.json version updated (same as package.json)
-- [ ] CHANGELOG.md updated
-- [ ] Both versions match exactly
-- [ ] Code pushed to GitHub
-- [ ] **GitHub Actions pipeline is GREEN ✅**
-- [ ] **Release created and visible in GitHub Releases**
-
-**VIOLATIONS AND CONSEQUENCES:**
-
-❌ **WRONG**: Changing code without releasing
+**1. Create feature branch in separate worktree**
 ```bash
-# Changed src/presentation/components/CreateTaskButton.tsx
+git worktree add ../exocortex-feature-name -b feature/description
+cd ../exocortex-feature-name
+```
+
+**2. Sync with latest main**
+```bash
+git fetch origin main
+git rebase origin/main
+```
+
+**3. Make changes and test locally**
+```bash
+# ... code changes ...
+npm test:all  # MUST pass 100%
+```
+
+**4. Commit with conventional commit message**
+```bash
+git commit -am "feat: user-facing description"
+# OR: fix:, docs:, style:, refactor:, perf:, test:, chore:
+# BREAKING CHANGE in body triggers major version
+```
+
+**5. Push and create PR**
+```bash
+git push origin feature/description
+gh pr create --title "feat: description" --body "Details..."
+```
+
+**6. Wait for CI checks (MANDATORY)**
+```bash
+gh pr checks --watch
+# Both build-and-test and e2e-tests MUST be GREEN ✅
+```
+
+**7. Fix if any check fails (RED ❌)**
+```bash
+# Fix the code
+git commit --amend --no-edit
+git push --force-with-lease origin feature/description
+# Return to step 6
+```
+
+**8. Merge when all checks GREEN**
+```bash
+gh pr merge --auto --squash
+# Branch protection enforces this - merge button disabled until GREEN
+```
+
+**9. Automatic version bump and release**
+- ✅ `pr-auto-version.yml` workflow auto-detects change type (feat/fix/BREAKING)
+- ✅ Auto-bumps version in package.json (patch/minor/major)
+- ✅ Auto-syncs manifest.json version
+- ✅ Auto-updates CHANGELOG.md
+- ✅ Commits changes to main
+- ✅ `auto-release.yml` workflow creates GitHub release
+
+**10. Cleanup worktree**
+```bash
+cd /Users/kitelev/Documents/exocortex-obsidian-plugin
+git worktree remove ../exocortex-feature-name
+git pull origin main  # Get auto-versioned commit
+```
+
+**11. Verify release created**
+```bash
+gh release list --limit 1
+# Should show new version
+```
+
+### What You DON'T Do Anymore
+
+**NO MANUAL VERSION MANAGEMENT:**
+- ❌ NO `npm version patch/minor/major`
+- ❌ NO manual manifest.json editing
+- ❌ NO manual CHANGELOG.md updates
+- ✅ All handled automatically by GitHub Actions
+
+### Race Condition Solution
+
+**OLD PROBLEM** (manual versioning):
+```bash
+Instance A: v12.5.10 → bump → v12.5.11 → push  ❌
+Instance B: v12.5.10 → bump → v12.5.11 → push  ❌ COLLISION!
+```
+
+**NEW SOLUTION** (PR-based with auto-versioning):
+```bash
+Instance A: PR merge → auto-version → v12.5.11  ✅
+Instance B: PR merge → auto-version → v12.5.12  ✅
+(GitHub merge queue ensures sequential atomic processing)
+```
+
+### VIOLATIONS AND CONSEQUENCES
+
+❌ **WRONG**: Trying to push directly to main
+```bash
 git commit -m "fix: button rendering"
-git push
-# ❌ STOPPED HERE - NO RELEASE CREATED
+git push origin main
+# ❌ REJECTED by branch protection
 ```
 
-✅ **CORRECT**: Always create release after code changes
+❌ **WRONG**: Merging PR with failing checks
 ```bash
-# Changed src/presentation/components/CreateTaskButton.tsx
-npm version patch --no-git-tag-version
-# Update manifest.json version to match package.json
-# Update CHANGELOG.md
-git commit -m "fix: button rendering (v12.5.8)"
-git push
-# Wait for CI to turn green
-gh release list --limit 1  # Verify release created
+gh pr merge --admin  # Bypass checks
+# ❌ VIOLATION - breaks pipeline for everyone
 ```
 
-**Why this is CRITICAL:**
-- Users need the fix/feature immediately
-- Broken code in main without a release means users can't get the fix
-- Release discipline ensures every improvement reaches users
-- Skipping releases creates confusion about what version has what features
+✅ **CORRECT**: PR-based workflow with all checks passing
+```bash
+# Feature branch workflow
+git worktree add ../exocortex-fix-button -b fix/button-rendering
+cd ../exocortex-fix-button
+# ... fix code ...
+npm test:all  # ✅ All pass
+git commit -am "fix: button rendering in mobile view"
+git push origin fix/button-rendering
+gh pr create --title "fix: button rendering" --body "..."
+gh pr checks --watch  # ✅ Wait for GREEN
+gh pr merge --auto --squash
+# ✅ Auto-version creates v12.5.11
+# ✅ Auto-release creates GitHub release
+```
+
+### Why This is CRITICAL
+
+**Multi-instance coordination:**
+- ✅ No version collisions - sequential merging
+- ✅ No broken pipeline - branch protection enforces quality
+- ✅ No manual errors - automation handles versioning
+- ✅ Safe rollback - every change is a PR
+
+**User impact:**
+- Users get fixes immediately after PR merge
+- Every improvement reaches users through consistent release process
+- Clear version history with meaningful changes
+- No confusion about what version has what features
+
+**Task completion checklist:**
+- [ ] Feature branch created in separate worktree
+- [ ] Changes tested locally (npm test:all ✅)
+- [ ] Conventional commit created
+- [ ] PR created and pushed
+- [ ] CI checks passed (build-and-test ✅ + e2e-tests ✅)
+- [ ] PR merged to main
+- [ ] Auto-version workflow completed
+- [ ] Release created and visible in GitHub Releases
+- [ ] Worktree cleaned up
 
 ### RULE 2: User-Focused Release Notes
 
