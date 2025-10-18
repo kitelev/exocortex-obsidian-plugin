@@ -9,6 +9,7 @@ const EFFORT_PROPERTY_MAP: Record<string, string> = {
   ems__Area: "ems__Effort_area",
   ems__Project: "ems__Effort_parent",
   ems__TaskPrototype: "ems__Effort_prototype",
+  ems__MeetingPrototype: "ems__Effort_prototype",
 };
 
 /**
@@ -34,6 +35,40 @@ export class TaskCreationService {
   }
 
   /**
+   * Extract content of H2 section from markdown
+   * @param content Full markdown content
+   * @param heading H2 heading name (without ##)
+   * @returns Section content or null if not found
+   */
+  private extractH2Section(content: string, heading: string): string | null {
+    const lines = content.split("\n");
+    const targetHeading = `## ${heading}`;
+    let inSection = false;
+    let sectionContent: string[] = [];
+
+    for (const line of lines) {
+      if (line.trim() === targetHeading) {
+        inSection = true;
+        continue;
+      }
+
+      if (inSection) {
+        if (line.startsWith("## ") || line.startsWith("# ")) {
+          break;
+        }
+        sectionContent.push(line);
+      }
+    }
+
+    if (sectionContent.length === 0) {
+      return null;
+    }
+
+    const content_text = sectionContent.join("\n").trim();
+    return content_text || null;
+  }
+
+  /**
    * Create a new Task file from an Area or Project asset
    * @param sourceFile The source file (Area or Project) from which to create the Task
    * @param sourceMetadata Frontmatter metadata from the source
@@ -56,7 +91,19 @@ export class TaskCreationService {
       label,
       uid,
     );
-    const fileContent = this.buildFileContent(frontmatter);
+
+    // For TaskPrototype, extract Algorithm section
+    let bodyContent = "";
+    const cleanSourceClass = sourceClass.replace(/\[\[|\]\]/g, "").trim();
+    if (cleanSourceClass === "ems__TaskPrototype") {
+      const prototypeContent = await this.vault.read(sourceFile);
+      const algorithmSection = this.extractH2Section(prototypeContent, "Algorithm");
+      if (algorithmSection) {
+        bodyContent = `## Algorithm\n\n${algorithmSection}`;
+      }
+    }
+
+    const fileContent = this.buildFileContent(frontmatter, bodyContent);
 
     // Create file in same folder as source
     const folderPath = sourceFile.parent?.path || "";
@@ -150,8 +197,10 @@ export class TaskCreationService {
   /**
    * Build complete file content with frontmatter
    * Handles arrays in YAML format with proper indentation
+   * @param frontmatter Frontmatter properties
+   * @param bodyContent Optional body content to append after frontmatter
    */
-  private buildFileContent(frontmatter: Record<string, any>): string {
+  private buildFileContent(frontmatter: Record<string, any>, bodyContent?: string): string {
     const frontmatterLines = Object.entries(frontmatter)
       .map(([key, value]) => {
         if (Array.isArray(value)) {
@@ -163,6 +212,7 @@ export class TaskCreationService {
       })
       .join("\n");
 
-    return `---\n${frontmatterLines}\n---\n\n`;
+    const body = bodyContent ? `\n${bodyContent}\n` : "\n";
+    return `---\n${frontmatterLines}\n---\n${body}`;
   }
 }
