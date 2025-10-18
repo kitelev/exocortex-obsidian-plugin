@@ -1,3 +1,21 @@
+## [12.15.32] - 2025-10-18
+
+### Fixed
+
+**E2E Test Vault Plugin Loading**: Added missing `community-plugins.json` file to test vault configuration. Without this file, Obsidian doesn't load community plugins even if they're present in `.obsidian/plugins/` folder. This was causing E2E tests to timeout waiting for plugin UI elements that never appeared because the plugin wasn't loaded.
+
+**Why community-plugins.json is critical:**
+- **Plugin Activation**: Obsidian requires this file to know which community plugins to load
+- **JSON Format**: Simple array of plugin IDs: `["exocortex"]`
+- **Location**: Must be in `.obsidian/community-plugins.json`
+- **Without It**: Plugins exist but never execute, tests timeout waiting for UI
+
+**Files Modified:**
+- `tests/e2e/test-vault/.obsidian/community-plugins.json` - Created with exocortex plugin enabled
+
+**Combined with v12.15.31 Fix:**
+Now E2E tests should both detect windows correctly (trashhalo pattern) AND have the plugin loaded for testing.
+
 ## [12.15.31] - 2025-10-18
 
 ### Fixed
