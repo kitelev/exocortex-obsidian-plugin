@@ -22,7 +22,8 @@
       "SlashCommand(/release:*)",
       "SlashCommand(/test)",
       "SlashCommand(/test:*)",
-      "Read(//Users/kitelev/vault-2025/**)"
+      "Read(//Users/kitelev/vault-2025/**)",
+      "Read(//Users/kitelev/**)"
     ],
     "deny": [],
     "ask": []
