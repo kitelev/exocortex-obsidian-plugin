@@ -65,7 +65,7 @@ RUN mkdir -p tests/e2e/test-vault/.obsidian/plugins/exocortex \
     && cp main.js manifest.json tests/e2e/test-vault/.obsidian/plugins/exocortex/
 
 # Environment variables
-ENV DISPLAY=:99
+# DISPLAY will be set automatically by xvfb-run
 ENV OBSIDIAN_PATH=/opt/obsidian/obsidian
 ENV OBSIDIAN_VAULT=/app/tests/e2e/test-vault
 

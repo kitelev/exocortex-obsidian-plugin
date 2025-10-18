@@ -1,8 +1,39 @@
+## [12.15.22] - 2025-10-18
+
+### Fixed
+
+**E2E Tests Re-enabled with xvfb-run Wrapper Approach**: Switched from background xvfb process to `xvfb-run` wrapper for proper X server initialization. This approach ensures xvfb starts correctly before Playwright attempts to launch Electron. Added comprehensive logging to obsidian-launcher.ts and additional Electron flags for headless mode. E2E tests now enabled in CI on x86_64 runners.
+
+**Why this matters:**
+- **Proper X Server Init**: xvfb-run ensures display server is ready before Electron launch
+- **Better Debugging**: Added verbose logging to track launch progress
+- **More Electron Flags**: Additional flags for headless stability
+- **CI Testing**: Will iterate on x86_64 CI runners until tests pass
+
+**Technical Details:**
+- Switched docker-entrypoint-e2e.sh to use `xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24 -ac +extension GLX +render -noreset'`
+- Removed manual xvfb background process and sleep delays
+- Removed ENV DISPLAY from Dockerfile (xvfb-run sets it automatically)
+- Added console.log() debugging to obsidian-launcher.ts
+- Added timeout: 120000 to electron.launch()
+- Added extra Electron flags: --disable-extensions, --disable-background-timer-throttling, etc.
+
+**Files Modified:**
+- `docker-entrypoint-e2e.sh` - Switched to xvfb-run wrapper
+- `Dockerfile.e2e` - Removed ENV DISPLAY=:99
+- `tests/e2e/utils/obsidian-launcher.ts` - Added logging and extra flags
+- `.github/workflows/ci.yml` - Re-enabled e2e-tests job
+
+**Strategy:**
+- ARM Mac local testing skipped (emulation too slow)
+- Will iterate on CI x86_64 feedback until tests pass
+- CI timeout set to 10 minutes for first-time Docker builds
+
 ## [12.15.21] - 2025-10-18
 
 ### Fixed
 
-**E2E Tests Disabled Due to Playwright + Electron + Docker Incompatibility**: Discovered technical limitation where Playwright cannot connect to Obsidian/Electron in Docker environment (both ARM Mac and x86_64 CI runners). Tests timeout during `launcher.launch()` in beforeEach hook. E2E infrastructure is complete and ready, but requires deeper investigation into Playwright/Electron headless compatibility. CI now runs only unit (172), UI (51), and component (166) tests = 389 tests in ~2 minutes.
+**E2E Tests Disabled Due to Playwright + Electron + Docker Incompatibility**: Discovered technical limitation where Playwright cannot connect to Obsidian/Electron in Docker environment (both ARM Mac and x86_64 CI runners). Tests timeout during `launcher.launch()` in beforeEach hook. E2E infrastructure is complete and ready, but requires deeper investigation into Playwright/Electron headless compatibility. CI now runs only unit (172), UI (51), and component (166) tests = ~2 minutes.
 
 **Why this matters:**
 - **CI Completes Fast**: ~2 minutes (well under 5-minute requirement)
