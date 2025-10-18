@@ -3,12 +3,14 @@ import { ILogger } from "../../infrastructure/logging/ILogger";
 import { LoggerFactory } from "../../infrastructure/logging/LoggerFactory";
 import React from "react";
 import { ReactRenderer } from "../utils/ReactRenderer";
+import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
 import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
 import { DailyTasksTable, DailyTask } from "../components/DailyTasksTable";
 import { ActionButtonsGroup, ButtonGroup, ActionButton } from "../components/ActionButtonsGroup";
 import {
   canCreateTask,
+  canCreateProject,
   canCreateInstance,
   canSetDraftStatus,
   canMoveToBacklog,
@@ -26,6 +28,7 @@ import {
   CommandVisibilityContext,
 } from "../../domain/commands/CommandVisibility";
 import { CreateTaskButton } from "../components/CreateTaskButton";
+import { CreateProjectButton } from "../components/CreateProjectButton";
 import { CreateInstanceButton } from "../components/CreateInstanceButton";
 import { MoveToBacklogButton } from "../components/MoveToBacklogButton";
 import { StartEffortButton } from "../components/StartEffortButton";
@@ -40,6 +43,7 @@ import { RepairFolderButton } from "../components/RepairFolderButton";
 import { RenameToUidButton } from "../components/RenameToUidButton";
 import { LabelInputModal } from "../modals/LabelInputModal";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
+import { ProjectCreationService } from "../../infrastructure/services/ProjectCreationService";
 import { TaskStatusService } from "../../infrastructure/services/TaskStatusService";
 import { PropertyCleanupService } from "../../infrastructure/services/PropertyCleanupService";
 import { FolderRepairService } from "../../infrastructure/services/FolderRepairService";
@@ -79,6 +83,7 @@ type ObsidianApp = any;
 export class UniversalLayoutRenderer {
   private logger: ILogger;
   private app: ObsidianApp;
+  private settings: ExocortexSettings;
   private eventListeners: Array<{
     element: HTMLElement;
     type: string;
@@ -89,11 +94,13 @@ export class UniversalLayoutRenderer {
   private reactRenderer: ReactRenderer;
   private rootContainer: HTMLElement | null = null;
 
-  constructor(app: ObsidianApp) {
+  constructor(app: ObsidianApp, settings: ExocortexSettings) {
     this.app = app;
+    this.settings = settings;
     this.logger = LoggerFactory.create("UniversalLayoutRenderer");
     this.reactRenderer = new ReactRenderer();
     this.taskCreationService = new TaskCreationService(this.app.vault);
+    this.projectCreationService = new ProjectCreationService(this.app.vault);
     this.taskStatusService = new TaskStatusService(this.app.vault);
     this.propertyCleanupService = new PropertyCleanupService(this.app.vault);
     this.folderRepairService = new FolderRepairService(this.app.vault, this.app);
@@ -101,6 +108,7 @@ export class UniversalLayoutRenderer {
   }
 
   private taskCreationService: TaskCreationService;
+  private projectCreationService: ProjectCreationService;
   private taskStatusService: TaskStatusService;
   private propertyCleanupService: PropertyCleanupService;
   private folderRepairService: FolderRepairService;
@@ -206,6 +214,24 @@ export class UniversalLayoutRenderer {
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
           this.logger.info(`Created Task from ${sourceClass}: ${createdFile.path}`);
+        },
+      },
+      {
+        id: "create-project",
+        label: "Create Project",
+        variant: "primary",
+        visible: canCreateProject(context),
+        onClick: async () => {
+          const label = await new Promise<string | null>((resolve) => {
+            new LabelInputModal(this.app, resolve).open();
+          });
+          if (label === null) return;
+
+          const createdFile = await this.projectCreationService.createProject(file, metadata, label);
+          const leaf = this.app.workspace.getLeaf("tab");
+          await leaf.openFile(createdFile);
+          this.app.workspace.setActiveLeaf(leaf, { focus: true });
+          this.logger.info(`Created Project from Area: ${createdFile.path}`);
         },
       },
       {
@@ -469,8 +495,10 @@ export class UniversalLayoutRenderer {
         );
       }
 
-      // Render asset properties
-      await this.renderAssetProperties(el, currentFile);
+      // Render asset properties (if enabled in settings)
+      if (this.settings.showPropertiesSection) {
+        await this.renderAssetProperties(el, currentFile);
+      }
 
       // Render daily tasks for pn__DailyNote assets
       await this.renderDailyTasks(el, currentFile);
@@ -667,6 +695,52 @@ export class UniversalLayoutRenderer {
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
           this.logger.info(`Created Task from ${sourceClass}: ${createdFile.path}`)
+        },
+      }),
+    );
+  }
+
+  /**
+   * Render Create Project button for Area assets
+   * Button appears when exo__Instance_class is ems__Area
+   */
+  private async renderCreateProjectButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+
+    const container = el.createDiv({ cls: "exocortex-create-project-wrapper" });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(CreateProjectButton, {
+        instanceClass,
+        metadata,
+        sourceFile: file,
+        onProjectCreate: async () => {
+          const label = await new Promise<string | null>((resolve) => {
+            new LabelInputModal(this.app, resolve).open();
+          });
+
+          if (label === null) {
+            return;
+          }
+
+          const createdFile = await this.projectCreationService.createProject(
+            file,
+            metadata,
+            label,
+          );
+
+          const leaf = this.app.workspace.getLeaf("tab");
+          await leaf.openFile(createdFile);
+
+          this.app.workspace.setActiveLeaf(leaf, { focus: true });
+
+          this.logger.info(`Created Project from Area: ${createdFile.path}`);
         },
       }),
     );

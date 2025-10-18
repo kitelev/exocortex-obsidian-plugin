@@ -53,8 +53,8 @@ describe("CommandManager", () => {
         commandManager.registerAllCommands(mockPlugin);
       }).not.toThrow();
 
-      // Verify that addCommand was called for each command (17 commands total)
-      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(17);
+      // Verify that addCommand was called for each command (19 commands total)
+      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(19);
     });
 
     it("should register commands with correct IDs", () => {
@@ -76,6 +76,7 @@ describe("CommandManager", () => {
 
       // Verify all expected command IDs are registered
       expect(registeredCommands).toContain("create-task");
+      expect(registeredCommands).toContain("create-project");
       expect(registeredCommands).toContain("create-instance");
       expect(registeredCommands).toContain("set-draft-status");
       expect(registeredCommands).toContain("move-to-backlog");
@@ -92,6 +93,7 @@ describe("CommandManager", () => {
       expect(registeredCommands).toContain("reload-layout");
       expect(registeredCommands).toContain("add-supervision");
       expect(registeredCommands).toContain("rename-to-uid");
+      expect(registeredCommands).toContain("toggle-properties-visibility");
     });
 
     it("should register commands with correct names", () => {
@@ -113,6 +115,7 @@ describe("CommandManager", () => {
 
       // Verify all expected command names are registered
       expect(registeredNames).toContain("Create Task");
+      expect(registeredNames).toContain("Create Project");
       expect(registeredNames).toContain("Create Instance");
       expect(registeredNames).toContain("Set Draft Status");
       expect(registeredNames).toContain("Move to Backlog");
@@ -129,6 +132,7 @@ describe("CommandManager", () => {
       expect(registeredNames).toContain("Reload Layout");
       expect(registeredNames).toContain("Add Supervision");
       expect(registeredNames).toContain("Rename to UID");
+      expect(registeredNames).toContain("Toggle Properties Visibility");
     });
 
     it("should register commands with checkCallback or callback function", () => {
