@@ -1,3 +1,26 @@
+## [12.15.49] - 2025-10-18
+
+### Fixed
+
+**E2E Tests - Removed Obsolete Dataview Dependency for DailyNote Tasks**: The `renderDailyTasks` method was checking for Dataview plugin availability but not actually using Dataview API (it uses Obsidian Vault API directly since v12.x). In E2E test environment where Dataview is not installed, this caused the method to return early without rendering `.exocortex-daily-tasks-section`, leading to test timeouts.
+
+**Root Cause:**
+- `UniversalLayoutRenderer.ts:1132-1138` checked for Dataview plugin existence
+- If Dataview not found, method returned early without rendering tasks table
+- E2E Docker environment doesn't have Dataview installed
+- Tests timed out waiting for `.exocortex-daily-tasks-section` that was never created
+
+**Technical Solution:**
+- Removed Dataview availability check from `renderDailyTasks` method
+- Removed unused `dataviewApi` parameter from `getDailyTasks` method
+- Method now uses only Obsidian Vault API (`this.app.vault.getMarkdownFiles()`)
+- Tasks table renders in all environments (with or without Dataview)
+
+**Impact:**
+- ✅ E2E tests now pass in CI (Docker without Dataview)
+- ✅ Plugin still works in production (with or without Dataview)
+- ✅ Cleaner code without unused dependencies
+
 ## [12.15.48] - 2025-10-18
 
 ### Fixed
