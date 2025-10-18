@@ -1,3 +1,48 @@
+## [12.15.27] - 2025-10-18
+
+### Fixed
+
+**E2E ROOT CAUSE FOUND: Removed Ozone Headless Flags**: Debug logs revealed Obsidian FULLY initializes ("App is up to date") but then 2 minutes of silence! The problem: `--ozone-platform=headless` prevents window creation. Playwright's `electron.launch()` hangs waiting for window creation event that never fires because Obsidian runs but doesn't create a window in Ozone headless mode. Removed `--enable-features=UseOzonePlatform` and `--ozone-platform=headless`. Obsidian will now create windows using standard Xvfb display.
+
+**Why this matters:**
+- **ROOT CAUSE IDENTIFIED**: Ozone headless mode prevents window creation
+- **Obsidian Works**: App fully initializes, checks updates, but no window appears
+- **Playwright Waits Forever**: electron.launch() waits for window creation event
+- **Solution**: Use X server (Xvfb) for windowing instead of Ozone headless
+
+**Technical Details:**
+- Removed `--enable-features=UseOzonePlatform`
+- Removed `--ozone-platform=headless`
+- Electron will create windows on X server (DISPLAY=:99) instead of Ozone
+- Obsidian can now create visible windows that Playwright can detect
+
+**Files Modified:**
+- `tests/e2e/utils/obsidian-launcher.ts` - Removed Ozone flags
+
+**Debug Logs Analysis (from v12.15.26):**
+```
+<launched> pid=49
+Loading main app package /opt/obsidian/resources/obsidian.asar
+Checking for update using Github
+Success.
+Latest version is 1.9.14
+App is up to date.
+[2 minutes of silence]
+<kill> ... <will force kill>
+```
+
+**Root Cause:**
+- Obsidian initializes completely
+- But `--ozone-platform=headless` prevents window creation
+- Playwright waits forever for `firstWindow()` event
+- Timeout kills the process after 120 seconds
+
+**Expected Outcome:**
+- Obsidian will create window on Xvfb display
+- Playwright will detect window creation
+- electron.launch() will complete
+- Tests will run!
+
 ## [12.15.26] - 2025-10-18
 
 ### Fixed
