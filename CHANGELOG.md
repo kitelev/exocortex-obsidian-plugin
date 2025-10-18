@@ -1,3 +1,38 @@
+## [12.15.24] - 2025-10-18
+
+### Fixed
+
+**E2E Docker: Explicit X Server Ready Check Instead of xvfb-run**: Switched from xvfb-run wrapper (which hung silently) to explicit Xvfb background process with xdpyinfo ready-check loop. Previous iteration revealed xvfb-run hangs immediately with NO output despite verbose flags, suggesting xvfb-run itself is waiting for something. New approach starts Xvfb in background, explicitly polls with xdpyinfo for up to 15 seconds, confirms X server is ready, then launches tests. Added x11-utils package for xdpyinfo.
+
+**Why this matters:**
+- **No Silent Hangs**: xdpyinfo will fail explicitly if X server doesn't start
+- **Visible Progress**: Diagnostic output at every step (starting, waiting, ready, launching)
+- **Deterministic**: Explicit ready-check instead of hoping xvfb-run works
+- **Timeout Protection**: 15-second max wait before failing
+
+**Technical Details:**
+- Reverted from `xvfb-run` wrapper to background `Xvfb` process
+- Added `x11-utils` package to Dockerfile (provides `xdpyinfo`)
+- Added explicit ready-check loop: `for i in {1..30}; do xdpyinfo -display $DISPLAY; done`
+- Wait up to 15 seconds (30 attempts × 0.5s) for X server to be ready
+- Print diagnostic messages at each step for full visibility
+- Restored `ENV DISPLAY=:99` in Dockerfile
+- Keep `set -ex` for command tracing
+
+**Files Modified:**
+- `docker-entrypoint-e2e.sh` - Switched to background Xvfb + xdpyinfo ready-check
+- `Dockerfile.e2e` - Added x11-utils package, restored ENV DISPLAY=:99
+
+**Root Cause from v12.15.23:**
+- `xvfb-run` hung silently despite `-e /dev/stderr` and verbose flags
+- No output from xvfb-run, npm, or Playwright for 3 minutes until timeout
+- Suggests xvfb-run itself is waiting for something (display lock?)
+
+**Expected Outcome:**
+- Will see explicit "Starting Xvfb", "Attempt 1", "X server is ready", "Launching tests"
+- If X server fails, will see "ERROR: X server failed to start after 15 seconds"
+- Tests will only launch after X server is confirmed ready
+
 ## [12.15.23] - 2025-10-18
 
 ### Fixed
