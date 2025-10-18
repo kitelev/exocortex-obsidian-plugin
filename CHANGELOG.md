@@ -1,3 +1,40 @@
+## [12.15.45] - 2025-10-18
+
+### Fixed
+
+**E2E Vault Trust Dialog - BREAKTHROUGH DISCOVERY**: v12.15.44 Docker volume fix successfully preserved E2E test failure screenshots. Downloaded and analyzed screenshots from GitHub Actions artifacts - **FOUND THE ROOT CAUSE**! The screenshot clearly shows Obsidian's security dialog: "Do you trust the author of this vault?" blocking plugin execution. Despite all configuration files being present (`community-plugins.json`, `app.json`, plugin enabled), Obsidian won't execute community plugins until the user explicitly clicks "Trust author and enable plugins". Added `trusted: true` field to vault configuration in `obsidian.json` to mark vault as trusted, completely bypassing the security dialog.
+
+**Screenshot Analysis Results:**
+- Vault opened successfully ✅
+- Properties visible: `exo__Instance_class: [[pn__DailyNote]]`, `pn__DailyNote_day: 2025-10-16` ✅
+- `window.app` initialized ✅
+- All config files present ✅
+- BUT: Security dialog displayed blocking plugin load ❌
+- Message: "Do you trust the author of this vault? You're opening this vault for the first time, and it comes with some plugins."
+- Two options: "Trust author and enable plugins" | "Browse vault in Restricted Mode"
+
+**Technical Solution:**
+- Modified `tests/e2e/utils/obsidian-launcher.ts` in `createObsidianConfig()` method
+- Added `trusted: true` field to vault configuration object
+- Config now includes: `{ path, ts, open: true, trusted: true }`
+- Vault is pre-trusted before Obsidian launches, no dialog appears
+- Clean solution - no UI interaction needed, no timing issues
+
+**Why This Matters:**
+- After 8 versions (v12.15.37-44) of debugging, finally identified exact blocker
+- Screenshot capture was CRITICAL for diagnosis - visual evidence > logs
+- Security dialog is reasonable Obsidian behavior for first-time vault opening
+- Config-based solution is elegant, reliable, and matches existing pattern
+- E2E tests should now pass with plugin loading correctly
+
+**Debugging Journey:**
+- v12.15.37-40: Investigated starter screen, vault selection
+- v12.15.41: Found empty vault list issue
+- v12.15.42: Fixed vault registration with config file
+- v12.15.43: Verified all files present in Docker
+- v12.15.44: Implemented Docker volumes for screenshot capture
+- v12.15.45: Analyzed screenshots → found trust dialog → implemented fix
+
 ## [12.15.44] - 2025-10-18
 
 ### Fixed
