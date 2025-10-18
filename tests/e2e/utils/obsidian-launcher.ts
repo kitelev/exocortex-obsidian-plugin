@@ -65,10 +65,23 @@ export class ObsidianLauncher {
       throw error;
     }
 
-    console.log('[ObsidianLauncher] Electron launched, waiting for window...');
+    console.log('[ObsidianLauncher] Electron launched, waiting for windows...');
 
-    this.window = await this.app.firstWindow();
-    console.log('[ObsidianLauncher] Window received, waiting for DOM...');
+    // CRITICAL FIX: Obsidian creates multiple windows on startup (splash screen, main window)
+    // trashhalo/obsidian-plugin-e2e-test uses windowByIndex(1) - the SECOND window!
+    // Wait for first window (likely splash screen)
+    console.log('[ObsidianLauncher] Waiting for first window event...');
+    await this.app.waitForEvent('window');
+
+    // Wait for second window (main Obsidian window)
+    console.log('[ObsidianLauncher] Waiting for second window event...');
+    await this.app.waitForEvent('window');
+
+    // Get all windows and select the second one (or first if only one exists)
+    const windows = this.app.windows();
+    console.log(`[ObsidianLauncher] Total windows created: ${windows.length}`);
+    this.window = windows.length > 1 ? windows[1] : windows[0];
+    console.log(`[ObsidianLauncher] Using window index: ${windows.length > 1 ? 1 : 0}`);
 
     await this.window.waitForLoadState('domcontentloaded');
     console.log('[ObsidianLauncher] DOM loaded, waiting 3s for Obsidian initialization...');
