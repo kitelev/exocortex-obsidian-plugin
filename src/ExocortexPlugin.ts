@@ -104,6 +104,11 @@ export default class ExocortexPlugin extends Plugin {
     // Remove existing auto-rendered layouts
     this.removeAutoRenderedLayouts();
 
+    // If layout is hidden by settings, do not render
+    if (!this.settings.layoutVisible) {
+      return;
+    }
+
     // Get the active MarkdownView using Obsidian API
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 

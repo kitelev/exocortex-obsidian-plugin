@@ -87,6 +87,7 @@ export class CommandManager {
     this.registerReloadLayoutCommand(plugin);
     this.registerAddSupervisionCommand(plugin);
     this.registerTogglePropertiesVisibilityCommand(plugin);
+    this.registerToggleLayoutVisibilityCommand(plugin);
   }
 
   /**
@@ -589,6 +590,25 @@ export class CommandManager {
         plugin.refreshLayout();
         new Notice(
           `Properties section ${plugin.settings.showPropertiesSection ? "shown" : "hidden"}`,
+        );
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Toggle Layout Visibility" command
+   * Always available - toggles the visibility of the entire Layout
+   */
+  private registerToggleLayoutVisibilityCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "toggle-layout-visibility",
+      name: "Toggle Layout Visibility",
+      callback: async () => {
+        plugin.settings.layoutVisible = !plugin.settings.layoutVisible;
+        await plugin.saveSettings();
+        plugin.refreshLayout();
+        new Notice(
+          `Layout ${plugin.settings.layoutVisible ? "shown" : "hidden"}`,
         );
       },
     });
