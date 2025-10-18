@@ -1,0 +1,131 @@
+name: PR Auto Version
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  auto-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if version bump needed
+        id: check
+        run: |
+          LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
+          LAST_COMMIT_AUTHOR=$(git log -1 --pretty=%an)
+
+          echo "Last commit: $LAST_COMMIT_MSG"
+          echo "Author: $LAST_COMMIT_AUTHOR"
+
+          if [[ "$LAST_COMMIT_AUTHOR" == "github-actions[bot]" ]]; then
+            echo "Last commit was by bot, skipping version bump to avoid loop"
+            echo "needs_bump=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if [[ "$LAST_COMMIT_MSG" =~ ^chore:.*release.*v[0-9] ]]; then
+            echo "Last commit was version bump, skipping"
+            echo "needs_bump=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Version bump needed"
+          echo "needs_bump=true" >> $GITHUB_OUTPUT
+
+      - name: Detect version bump type
+        id: bump_type
+        if: steps.check.outputs.needs_bump == 'true'
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+
+          if [[ "$COMMIT_MSG" =~ BREAKING[[:space:]]CHANGE ]] || [[ "$COMMIT_MSG" =~ ^[a-z]+\!: ]]; then
+            echo "Detected BREAKING CHANGE"
+            echo "type=major" >> $GITHUB_OUTPUT
+          elif [[ "$COMMIT_MSG" =~ ^feat(\([a-z]+\))?: ]]; then
+            echo "Detected feature (feat:)"
+            echo "type=minor" >> $GITHUB_OUTPUT
+          elif [[ "$COMMIT_MSG" =~ ^fix(\([a-z]+\))?: ]]; then
+            echo "Detected fix"
+            echo "type=patch" >> $GITHUB_OUTPUT
+          elif [[ "$COMMIT_MSG" =~ ^(docs|style|refactor|perf|test|chore)(\([a-z]+\))?: ]]; then
+            echo "Detected non-versioned change (docs/style/refactor/perf/test/chore)"
+            echo "type=patch" >> $GITHUB_OUTPUT
+          else
+            echo "Unknown commit type, defaulting to patch"
+            echo "type=patch" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Node.js
+        if: steps.check.outputs.needs_bump == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Configure git
+        if: steps.check.outputs.needs_bump == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version in package.json
+        if: steps.check.outputs.needs_bump == 'true'
+        id: version
+        run: |
+          BUMP_TYPE="${{ steps.bump_type.outputs.type }}"
+          echo "Bumping version: $BUMP_TYPE"
+
+          npm version $BUMP_TYPE --no-git-tag-version
+
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "New version: $NEW_VERSION"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Sync manifest.json version
+        if: steps.check.outputs.needs_bump == 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          node -e "
+            const fs = require('fs');
+            const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+            manifest.version = '$VERSION';
+            fs.writeFileSync('manifest.json', JSON.stringify(manifest, null, 2) + '\n');
+            console.log('Updated manifest.json to version: $VERSION');
+          "
+
+      - name: Update CHANGELOG.md
+        if: steps.check.outputs.needs_bump == 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          COMMIT_MSG=$(git log -1 --skip 0 --pretty=%B | head -n1)
+          node .github/scripts/update-changelog.js "$VERSION" "$COMMIT_MSG"
+
+      - name: Commit version bump
+        if: steps.check.outputs.needs_bump == 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+
+          git add package.json manifest.json CHANGELOG.md
+          git commit -m "chore: release v$VERSION [skip ci]"
+          git push origin main
+
+      - name: Summary
+        if: steps.check.outputs.needs_bump == 'true'
+        run: |
+          echo "✅ Version bumped to ${{ steps.version.outputs.version }}"
+          echo "✅ manifest.json synchronized"
+          echo "✅ CHANGELOG.md updated"
+          echo "✅ Changes committed and pushed"
+          echo ""
+          echo "Auto-release workflow will now create GitHub release..."
