@@ -55,10 +55,11 @@ Feature: Effort Lifecycle Workflow
       Given I have a MeetingPrototype "Daily Standup Template"
       When I click "Create Instance" button
       And I enter label "Standup 2025-10-19"
-      Then a new Task is created
-      And Task has property "ems__Effort_status" = "[[ems__EffortStatusDraft]]"
-      And Task has property "ems__Effort_prototype" = "[[Daily Standup Template]]"
-      And Task has property "exo__Asset_label" = "Standup 2025-10-19"
+      Then a new Meeting is created
+      And Meeting has property "exo__Instance_class" = "[[ems__Meeting]]"
+      And Meeting has property "ems__Effort_status" = "[[ems__EffortStatusDraft]]"
+      And Meeting has property "ems__Effort_prototype" = "[[Daily Standup Template]]"
+      And Meeting has property "exo__Asset_label" = "Standup 2025-10-19"
 
   Rule: Draft → Backlog transition
 
