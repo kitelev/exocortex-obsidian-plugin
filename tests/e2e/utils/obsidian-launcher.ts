@@ -1,6 +1,7 @@
 import { _electron as electron, ElectronApplication, Page, chromium } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 import { spawn, ChildProcess } from 'child_process';
 
 export class ObsidianLauncher {
@@ -140,7 +141,10 @@ export class ObsidianLauncher {
   }
 
   private createObsidianConfig(): void {
-    const configDir = '/root/.config/obsidian';
+    const homeDir = process.env.HOME || os.homedir();
+    const configDir = process.env.DOCKER === 'true'
+      ? '/root/.config/obsidian'
+      : path.join(homeDir, '.config', 'obsidian');
     const configPath = path.join(configDir, 'obsidian.json');
 
     if (!fs.existsSync(configDir)) {
