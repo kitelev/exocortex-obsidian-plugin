@@ -92,9 +92,17 @@ export class ObsidianLauncher {
     }
 
     await this.window.waitForLoadState('domcontentloaded', { timeout: 30000 });
-    console.log('[ObsidianLauncher] DOM loaded, waiting 3s for Obsidian initialization...');
+    console.log('[ObsidianLauncher] DOM loaded, waiting for Obsidian app object...');
 
-    await this.window.waitForTimeout(3000);
+    await this.window.waitForFunction(
+      () => {
+        return !!(window as any).app && !!(window as any).app.workspace && !!(window as any).app.vault;
+      },
+      { timeout: 30000 }
+    );
+    console.log('[ObsidianLauncher] Obsidian app object available!');
+
+    await this.window.waitForTimeout(1000);
     console.log('[ObsidianLauncher] Obsidian ready!');
   }
 

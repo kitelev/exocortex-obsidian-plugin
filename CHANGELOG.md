@@ -1,3 +1,27 @@
+## [12.15.39] - 2025-10-18
+
+### Fixed
+
+**E2E Wait for App Object - CRITICAL**: Fixed timing issue where file opening attempted before Obsidian app object was available on window. Even though DOM was loaded and we waited 3 seconds, the `window.app` object wasn't yet initialized. Added `waitForFunction()` to explicitly wait for `window.app`, `window.app.workspace`, and `window.app.vault` to be available before attempting to open files. This prevents "App not available" errors.
+
+**Root Cause from v12.15.38:**
+- DOM loads successfully
+- Fixed 3-second wait didn't guarantee app object initialization
+- File opening tried to access `window.app` before it existed
+- Result: "App not available" error
+
+**Technical Changes:**
+- `tests/e2e/utils/obsidian-launcher.ts` - Added `waitForFunction()` for app object availability
+- Explicitly waits for `window.app`, `window.app.workspace`, and `window.app.vault`
+- Only proceeds with file opening once app is fully initialized
+- More reliable than fixed timeout
+
+**Why This Should Work:**
+- Waits for actual app object, not arbitrary timeout
+- Guarantees app.workspace and app.vault are available
+- File opening code won't execute until app is ready
+- More robust against CI environment timing variations
+
 ## [12.15.38] - 2025-10-18
 
 ### Fixed
