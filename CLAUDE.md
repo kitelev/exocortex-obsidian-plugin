@@ -123,9 +123,10 @@ git push --force-with-lease origin feature/description
 # 8. Merge when all checks GREEN (rebase only - linear history)
 gh pr merge --auto --rebase
 
-# 9. Automatic version bump and release (NO manual steps)
-# ✅ pr-auto-version.yml: auto-detects type, bumps version, syncs manifest.json, updates CHANGELOG.md
-# ✅ auto-release.yml: creates GitHub release
+# 9. Automatic release (NO manual steps - tag-based versioning)
+# ✅ auto-release.yml: analyzes commits, calculates version, builds plugin, creates tag + GitHub release
+# ✅ CHANGELOG generated automatically from commit messages
+# ✅ NO version bump commits (versions exist only as git tags)
 
 # 10. Cleanup worktree
 cd /Users/kitelev/Documents/exocortex-obsidian-plugin
@@ -145,11 +146,23 @@ gh release list --limit 1
 - [ ] Release visible in GitHub Releases
 - [ ] Worktree cleaned up
 
-**Version Management:**
-- ❌ NO `npm version patch/minor/major`
-- ❌ NO manual manifest.json editing
+**Version Management (Tag-Based):**
+- 📌 package.json/manifest.json contain placeholder version `0.0.0-dev` in repository
+- 📌 Real version determined ONLY during release from git tags
+- 📌 auto-release.yml workflow:
+  1. Gets last git tag (e.g., v12.19.0)
+  2. Analyzes commit messages since last tag
+  3. Determines bump type (major/minor/patch) from conventional commits
+  4. Calculates new version (e.g., 12.19.1)
+  5. Temporarily updates package.json/manifest.json for build
+  6. Builds plugin with correct version
+  7. Generates CHANGELOG from commit messages
+  8. Creates git tag and GitHub release
+- ❌ NO manual versioning (`npm version` commands)
+- ❌ NO version bump commits in main branch
 - ❌ NO manual CHANGELOG.md updates
-- ✅ All handled automatically by GitHub Actions
+- ✅ Versions exist only as git tags, not in source files
+- ✅ Clean commit history without version noise
 
 ### RULE 2: Mandatory Agent Usage
 
