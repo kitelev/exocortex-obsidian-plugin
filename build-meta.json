@@ -1077,7 +1077,7 @@
       "format": "esm"
     },
     "src/application/services/CommandManager.ts": {
-      "bytes": 25421,
+      "bytes": 26086,
       "imports": [
         {
           "path": "obsidian",
@@ -1138,12 +1138,12 @@
       "format": "esm"
     },
     "src/domain/settings/ExocortexSettings.ts": {
-      "bytes": 161,
+      "bytes": 210,
       "imports": [],
       "format": "esm"
     },
     "src/presentation/settings/ExocortexSettingTab.ts": {
-      "bytes": 917,
+      "bytes": 1360,
       "imports": [
         {
           "path": "obsidian",
@@ -1154,7 +1154,7 @@
       "format": "esm"
     },
     "src/ExocortexPlugin.ts": {
-      "bytes": 4658,
+      "bytes": 4773,
       "imports": [
         {
           "path": "obsidian",
@@ -1276,7 +1276,7 @@
           "bytesInOutput": 56
         },
         "src/ExocortexPlugin.ts": {
-          "bytesInOutput": 2020
+          "bytesInOutput": 2059
         },
         "src/presentation/renderers/UniversalLayoutRenderer.ts": {
           "bytesInOutput": 21683
@@ -1384,7 +1384,7 @@
           "bytesInOutput": 626
         },
         "src/application/services/CommandManager.ts": {
-          "bytesInOutput": 10921
+          "bytesInOutput": 11266
         },
         "src/infrastructure/services/SupervisionCreationService.ts": {
           "bytesInOutput": 1824
@@ -1393,13 +1393,13 @@
           "bytesInOutput": 2146
         },
         "src/domain/settings/ExocortexSettings.ts": {
-          "bytesInOutput": 34
+          "bytesInOutput": 51
         },
         "src/presentation/settings/ExocortexSettingTab.ts": {
-          "bytesInOutput": 500
+          "bytesInOutput": 792
         }
       },
-      "bytes": 263209
+      "bytes": 263902
     }
   }
 }
