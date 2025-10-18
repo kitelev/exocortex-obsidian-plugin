@@ -117,7 +117,7 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
 
           git add package.json manifest.json CHANGELOG.md
-          git commit -m "chore: release v$VERSION [skip ci]"
+          git commit -m "chore: release v$VERSION"
           git push origin main
 
       - name: Summary
