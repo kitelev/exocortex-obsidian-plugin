@@ -64,7 +64,15 @@ RUN npm run build
 
 # Create test vault and install plugin
 RUN mkdir -p tests/e2e/test-vault/.obsidian/plugins/exocortex \
-    && cp main.js manifest.json tests/e2e/test-vault/.obsidian/plugins/exocortex/
+    && cp main.js manifest.json tests/e2e/test-vault/.obsidian/plugins/exocortex/ \
+    && echo "=== Verifying .obsidian config files ===" \
+    && ls -la tests/e2e/test-vault/.obsidian/*.json || echo "WARNING: No JSON files found" \
+    && echo "=== community-plugins.json content: ===" \
+    && cat tests/e2e/test-vault/.obsidian/community-plugins.json || echo "ERROR: community-plugins.json not found" \
+    && echo "=== app.json exists: ===" \
+    && ls -l tests/e2e/test-vault/.obsidian/app.json || echo "WARNING: app.json not found" \
+    && echo "=== Plugin files installed: ===" \
+    && ls -lh tests/e2e/test-vault/.obsidian/plugins/exocortex/
 
 # Environment variables
 ENV DISPLAY=:99
