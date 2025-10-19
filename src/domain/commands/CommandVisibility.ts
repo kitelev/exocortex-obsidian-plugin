@@ -272,14 +272,45 @@ export function canMoveToBacklog(context: CommandVisibilityContext): boolean {
 }
 
 /**
+ * Can execute "Move to Analysis" command
+ * Available for: Project with Backlog status
+ */
+export function canMoveToAnalysis(context: CommandVisibilityContext): boolean {
+  if (!hasClass(context.instanceClass, "ems__Project")) return false;
+
+  // Show only for Backlog status
+  return hasStatus(context.currentStatus, "ems__EffortStatusBacklog");
+}
+
+/**
+ * Can execute "Move to ToDo" command
+ * Available for: Project with Analysis status
+ */
+export function canMoveToToDo(context: CommandVisibilityContext): boolean {
+  if (!hasClass(context.instanceClass, "ems__Project")) return false;
+
+  // Show only for Analysis status
+  return hasStatus(context.currentStatus, "ems__EffortStatusAnalysis");
+}
+
+/**
  * Can execute "Start Effort" command
- * Available for: Task/Project with Backlog status
+ * Available for: Task with Backlog status OR Project with ToDo status
  */
 export function canStartEffort(context: CommandVisibilityContext): boolean {
   if (!isEffort(context.instanceClass)) return false;
 
-  // Show only for Backlog status
-  return hasStatus(context.currentStatus, "ems__EffortStatusBacklog");
+  // Task: Backlog → Doing
+  if (hasClass(context.instanceClass, "ems__Task")) {
+    return hasStatus(context.currentStatus, "ems__EffortStatusBacklog");
+  }
+
+  // Project: ToDo → Doing
+  if (hasClass(context.instanceClass, "ems__Project")) {
+    return hasStatus(context.currentStatus, "ems__EffortStatusToDo");
+  }
+
+  return false;
 }
 
 /**

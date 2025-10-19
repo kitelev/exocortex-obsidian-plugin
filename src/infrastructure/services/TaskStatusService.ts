@@ -102,6 +102,78 @@ ${content}`;
     );
   }
 
+  async moveToAnalysis(projectFile: TFile): Promise<void> {
+    const fileContent = await this.vault.read(projectFile);
+    const updatedContent = this.updateFrontmatterWithAnalysisStatus(fileContent);
+    await this.vault.modify(projectFile, updatedContent);
+  }
+
+  private updateFrontmatterWithAnalysisStatus(content: string): string {
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) {
+      const newFrontmatter = `---
+ems__Effort_status: "[[ems__EffortStatusAnalysis]]"
+---
+${content}`;
+      return newFrontmatter;
+    }
+
+    const frontmatterContent = match[1];
+    let updatedFrontmatter = frontmatterContent;
+
+    if (updatedFrontmatter.includes("ems__Effort_status:")) {
+      updatedFrontmatter = updatedFrontmatter.replace(
+        /ems__Effort_status:.*$/m,
+        'ems__Effort_status: "[[ems__EffortStatusAnalysis]]"',
+      );
+    } else {
+      updatedFrontmatter += '\nems__Effort_status: "[[ems__EffortStatusAnalysis]]"';
+    }
+
+    return content.replace(
+      frontmatterRegex,
+      `---\n${updatedFrontmatter}\n---`,
+    );
+  }
+
+  async moveToToDo(projectFile: TFile): Promise<void> {
+    const fileContent = await this.vault.read(projectFile);
+    const updatedContent = this.updateFrontmatterWithToDoStatus(fileContent);
+    await this.vault.modify(projectFile, updatedContent);
+  }
+
+  private updateFrontmatterWithToDoStatus(content: string): string {
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) {
+      const newFrontmatter = `---
+ems__Effort_status: "[[ems__EffortStatusToDo]]"
+---
+${content}`;
+      return newFrontmatter;
+    }
+
+    const frontmatterContent = match[1];
+    let updatedFrontmatter = frontmatterContent;
+
+    if (updatedFrontmatter.includes("ems__Effort_status:")) {
+      updatedFrontmatter = updatedFrontmatter.replace(
+        /ems__Effort_status:.*$/m,
+        'ems__Effort_status: "[[ems__EffortStatusToDo]]"',
+      );
+    } else {
+      updatedFrontmatter += '\nems__Effort_status: "[[ems__EffortStatusToDo]]"';
+    }
+
+    return content.replace(
+      frontmatterRegex,
+      `---\n${updatedFrontmatter}\n---`,
+    );
+  }
+
   async startEffort(taskFile: TFile): Promise<void> {
     const fileContent = await this.vault.read(taskFile);
     const updatedContent = this.updateFrontmatterWithDoingStatus(fileContent);

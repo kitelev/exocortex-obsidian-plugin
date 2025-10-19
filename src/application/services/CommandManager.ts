@@ -6,6 +6,8 @@ import {
   canCreateInstance,
   canSetDraftStatus,
   canMoveToBacklog,
+  canMoveToAnalysis,
+  canMoveToToDo,
   canStartEffort,
   canPlanOnToday,
   canPlanForEvening,
@@ -73,6 +75,8 @@ export class CommandManager {
     this.registerCreateInstanceCommand(plugin);
     this.registerSetDraftStatusCommand(plugin);
     this.registerMoveToBacklogCommand(plugin);
+    this.registerMoveToAnalysisCommand(plugin);
+    this.registerMoveToToDoCommand(plugin);
     this.registerStartEffortCommand(plugin);
     this.registerPlanOnTodayCommand(plugin);
     this.registerPlanForEveningCommand(plugin);
@@ -238,6 +242,58 @@ export class CommandManager {
           this.executeMoveToBacklog(file).catch((error) => {
             new Notice(`Failed to move to backlog: ${error.message}`);
             console.error("Move to backlog error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Move to Analysis" command
+   */
+  private registerMoveToAnalysisCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "move-to-analysis",
+      name: "Move to Analysis",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canMoveToAnalysis(context)) return false;
+
+        if (!checking) {
+          this.executeMoveToAnalysis(file).catch((error) => {
+            new Notice(`Failed to move to analysis: ${error.message}`);
+            console.error("Move to analysis error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Move to ToDo" command
+   */
+  private registerMoveToToDoCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "move-to-todo",
+      name: "Move to ToDo",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canMoveToToDo(context)) return false;
+
+        if (!checking) {
+          this.executeMoveToToDo(file).catch((error) => {
+            new Notice(`Failed to move to todo: ${error.message}`);
+            console.error("Move to todo error:", error);
           });
         }
 
@@ -743,6 +799,16 @@ export class CommandManager {
   private async executeMoveToBacklog(file: TFile): Promise<void> {
     await this.taskStatusService.moveToBacklog(file);
     new Notice(`Moved to Backlog: ${file.basename}`);
+  }
+
+  private async executeMoveToAnalysis(file: TFile): Promise<void> {
+    await this.taskStatusService.moveToAnalysis(file);
+    new Notice(`Moved to Analysis: ${file.basename}`);
+  }
+
+  private async executeMoveToToDo(file: TFile): Promise<void> {
+    await this.taskStatusService.moveToToDo(file);
+    new Notice(`Moved to ToDo: ${file.basename}`);
   }
 
   private async executeStartEffort(file: TFile): Promise<void> {

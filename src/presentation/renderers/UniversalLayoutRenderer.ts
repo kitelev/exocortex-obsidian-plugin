@@ -14,6 +14,8 @@ import {
   canCreateInstance,
   canSetDraftStatus,
   canMoveToBacklog,
+  canMoveToAnalysis,
+  canMoveToToDo,
   canStartEffort,
   canMarkDone,
   canPlanOnToday,
@@ -31,6 +33,8 @@ import { CreateTaskButton } from "../components/CreateTaskButton";
 import { CreateProjectButton } from "../components/CreateProjectButton";
 import { CreateInstanceButton } from "../components/CreateInstanceButton";
 import { MoveToBacklogButton } from "../components/MoveToBacklogButton";
+import { MoveToAnalysisButton } from "../components/MoveToAnalysisButton";
+import { MoveToToDoButton } from "../components/MoveToToDoButton";
 import { StartEffortButton } from "../components/StartEffortButton";
 import { PlanOnTodayButton } from "../components/PlanOnTodayButton";
 import { ShiftDayBackwardButton } from "../components/ShiftDayBackwardButton";
@@ -294,6 +298,30 @@ export class UniversalLayoutRenderer {
           await new Promise((resolve) => setTimeout(resolve, 100));
           await this.refresh();
           this.logger.info(`Moved to Backlog: ${file.path}`);
+        },
+      },
+      {
+        id: "move-to-analysis",
+        label: "Move to Analysis",
+        variant: "secondary",
+        visible: canMoveToAnalysis(context),
+        onClick: async () => {
+          await this.taskStatusService.moveToAnalysis(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Moved to Analysis: ${file.path}`);
+        },
+      },
+      {
+        id: "move-to-todo",
+        label: "Move to ToDo",
+        variant: "secondary",
+        visible: canMoveToToDo(context),
+        onClick: async () => {
+          await this.taskStatusService.moveToToDo(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Moved to ToDo: ${file.path}`);
         },
       },
       {
@@ -844,6 +872,66 @@ export class UniversalLayoutRenderer {
           await this.refresh(el);
 
           this.logger.info(`Moved to Backlog: ${file.path}`);
+        },
+      }),
+    );
+  }
+
+  private async renderMoveToAnalysisButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+    const currentStatus = metadata.ems__Effort_status || null;
+
+    const container = el.createDiv({ cls: "exocortex-move-to-analysis-wrapper" });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(MoveToAnalysisButton, {
+        instanceClass,
+        currentStatus,
+        sourceFile: file,
+        onMoveToAnalysis: async () => {
+          await this.taskStatusService.moveToAnalysis(file);
+
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          await this.refresh(el);
+
+          this.logger.info(`Moved to Analysis: ${file.path}`);
+        },
+      }),
+    );
+  }
+
+  private async renderMoveToToDoButton(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+    const currentStatus = metadata.ems__Effort_status || null;
+
+    const container = el.createDiv({ cls: "exocortex-move-to-todo-wrapper" });
+
+    this.reactRenderer.render(
+      container,
+      React.createElement(MoveToToDoButton, {
+        instanceClass,
+        currentStatus,
+        sourceFile: file,
+        onMoveToToDo: async () => {
+          await this.taskStatusService.moveToToDo(file);
+
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          await this.refresh(el);
+
+          this.logger.info(`Moved to ToDo: ${file.path}`);
         },
       }),
     );
