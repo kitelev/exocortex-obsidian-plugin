@@ -312,6 +312,26 @@ export class ObsidianLauncher {
     await this.window.waitForSelector(selector, { timeout });
   }
 
+  async waitForModalsToClose(timeout = 5000): Promise<void> {
+    if (!this.window) {
+      throw new Error('Obsidian not launched. Call launch() first.');
+    }
+
+    console.log('[ObsidianLauncher] Waiting for any modal dialogs to close...');
+
+    try {
+      // Wait for modal container to be hidden or not present
+      await this.window.waitForSelector('.modal-container', {
+        state: 'hidden',
+        timeout
+      });
+      console.log('[ObsidianLauncher] All modals closed');
+    } catch (error) {
+      // Modal not present or already closed - this is fine
+      console.log('[ObsidianLauncher] No modals found (already closed or never appeared)');
+    }
+  }
+
   async close(): Promise<void> {
     console.log('[ObsidianLauncher] Starting cleanup...');
 
