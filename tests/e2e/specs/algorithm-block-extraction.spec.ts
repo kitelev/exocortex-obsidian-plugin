@@ -49,18 +49,20 @@ test.describe('Algorithm Block Extraction from TaskPrototype', () => {
     // Wait for the new file to be created and opened
     await window.waitForTimeout(2000);
 
-    // Get the currently active file content
-    const activeLeaf = window.locator('.workspace-leaf.mod-active .view-content');
-    await expect(activeLeaf).toBeVisible({ timeout: 5000 });
-
-    // Get the markdown content from the editor
-    const editorContent = await window.evaluate(() => {
-      const activeView = (window as any).app.workspace.getActiveViewOfType((window as any).MarkdownView);
-      if (activeView) {
-        return activeView.editor.getValue();
-      }
-      return '';
+    // Get the path of the newly created file
+    const newFilePath = await window.evaluate(() => {
+      const app = (window as any).app;
+      const activeFile = app.workspace.getActiveFile();
+      return activeFile ? activeFile.path : null;
     });
+
+    if (!newFilePath) {
+      throw new Error('No active file after Create Instance');
+    }
+
+    // Read the file content from disk
+    const fullPath = path.join(vaultPath, newFilePath);
+    const editorContent = await fs.readFile(fullPath, 'utf-8');
 
     // Verify the Algorithm section was copied
     expect(editorContent).toContain('## Algorithm');
@@ -130,14 +132,20 @@ Just a simple template.
     // Wait for file creation
     await window.waitForTimeout(2000);
 
-    // Get editor content
-    const editorContent = await window.evaluate(() => {
-      const activeView = (window as any).app.workspace.getActiveViewOfType((window as any).MarkdownView);
-      if (activeView) {
-        return activeView.editor.getValue();
-      }
-      return '';
+    // Get the path of the newly created file
+    const newFilePath = await window.evaluate(() => {
+      const app = (window as any).app;
+      const activeFile = app.workspace.getActiveFile();
+      return activeFile ? activeFile.path : null;
     });
+
+    if (!newFilePath) {
+      throw new Error('No active file after Create Instance');
+    }
+
+    // Read the file content from disk
+    const fullPath = path.join(vaultPath, newFilePath);
+    const editorContent = await fs.readFile(fullPath, 'utf-8');
 
     // Verify NO Algorithm section was created
     expect(editorContent).not.toContain('## Algorithm');
