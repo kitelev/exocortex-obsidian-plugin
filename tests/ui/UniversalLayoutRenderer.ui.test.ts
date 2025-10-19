@@ -1265,7 +1265,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(button).toBeFalsy();
     });
 
-    it("should render Start Effort button for Project with Backlog status", async () => {
+    it("should NOT render Start Effort button for Project with Backlog status", async () => {
       const currentFile = {
         basename: "Backlog Project",
         path: "projects/backlog-project.md",
@@ -1275,6 +1275,32 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         frontmatter: {
           exo__Instance_class: "[[ems__Project]]",
           ems__Effort_status: "[[ems__EffortStatusBacklog]]",
+        },
+      });
+
+      mockApp.metadataCache.resolvedLinks = {};
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+
+      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Find Start Effort button by text content
+      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const startBtn = Array.from(buttons).find(btn => btn.textContent === "Start Effort");
+      expect(startBtn).toBeFalsy();
+    });
+
+    it("should render Start Effort button for Project with ToDo status", async () => {
+      const currentFile = {
+        basename: "ToDo Project",
+        path: "projects/todo-project.md",
+      } as TFile;
+
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "[[ems__EffortStatusToDo]]",
         },
       });
 

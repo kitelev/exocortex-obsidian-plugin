@@ -3,6 +3,8 @@ import {
   canCreateProject,
   canCreateInstance,
   canMoveToBacklog,
+  canMoveToAnalysis,
+  canMoveToToDo,
   canStartEffort,
   canPlanOnToday,
   canMarkDone,
@@ -562,6 +564,82 @@ describe("CommandVisibility", () => {
     });
   });
 
+  describe("canMoveToAnalysis", () => {
+    it("should return true for Project with Backlog status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Project]]",
+        currentStatus: "[[ems__EffortStatusBacklog]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canMoveToAnalysis(context)).toBe(true);
+    });
+
+    it("should return false for Project with Draft status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Project]]",
+        currentStatus: "[[ems__EffortStatusDraft]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canMoveToAnalysis(context)).toBe(false);
+    });
+
+    it("should return false for Task with Backlog status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: "[[ems__EffortStatusBacklog]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canMoveToAnalysis(context)).toBe(false);
+    });
+  });
+
+  describe("canMoveToToDo", () => {
+    it("should return true for Project with Analysis status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Project]]",
+        currentStatus: "[[ems__EffortStatusAnalysis]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canMoveToToDo(context)).toBe(true);
+    });
+
+    it("should return false for Project with Backlog status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Project]]",
+        currentStatus: "[[ems__EffortStatusBacklog]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canMoveToToDo(context)).toBe(false);
+    });
+
+    it("should return false for Task with Analysis status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: "[[ems__EffortStatusAnalysis]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canMoveToToDo(context)).toBe(false);
+    });
+  });
+
   describe("canStartEffort", () => {
     it("should return true for Task with Backlog status", () => {
       const context: CommandVisibilityContext = {
@@ -575,10 +653,22 @@ describe("CommandVisibility", () => {
       expect(canStartEffort(context)).toBe(true);
     });
 
-    it("should return true for Project with Backlog status", () => {
+    it("should return false for Project with Backlog status", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Project]]",
         currentStatus: "[[ems__EffortStatusBacklog]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canStartEffort(context)).toBe(false);
+    });
+
+    it("should return true for Project with ToDo status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Project]]",
+        currentStatus: "[[ems__EffortStatusToDo]]",
         metadata: {},
         isArchived: false,
         currentFolder: "",
