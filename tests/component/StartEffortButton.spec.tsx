@@ -84,13 +84,30 @@ test.describe("StartEffortButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should render button for Project with Backlog status", async ({
+  test("should NOT render button for Project with Backlog status", async ({
     mount,
   }) => {
     const component = await mount(
       <StartEffortButton
         instanceClass="[[ems__Project]]"
         currentStatus="[[ems__EffortStatusBacklog]]"
+        sourceFile={mockFile}
+        onStartEffort={async () => {}}
+      />,
+    );
+
+    // Component returns null when button should not render
+    // Project must go through Analysis → ToDo before Doing
+    await expect(component).not.toBeVisible();
+  });
+
+  test("should render button for Project with ToDo status", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <StartEffortButton
+        instanceClass="[[ems__Project]]"
+        currentStatus="[[ems__EffortStatusToDo]]"
         sourceFile={mockFile}
         onStartEffort={async () => {}}
       />,
@@ -228,11 +245,11 @@ test.describe("StartEffortButton Component", () => {
     await expect(component).toBeVisible();
   });
 
-  test("should handle array of classes with Project", async ({ mount }) => {
+  test("should handle array of classes with Project (requires ToDo)", async ({ mount }) => {
     const component = await mount(
       <StartEffortButton
         instanceClass={["[[SomeOtherClass]]", "[[ems__Project]]"]}
-        currentStatus="[[ems__EffortStatusBacklog]]"
+        currentStatus="[[ems__EffortStatusToDo]]"
         sourceFile={mockFile}
         onStartEffort={async () => {}}
       />,
