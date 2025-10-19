@@ -44,11 +44,7 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
       return "-";
     }
 
-    if (typeof value === "boolean") {
-      return String(value);
-    }
-
-    if (typeof value === "number") {
+    if (typeof value === "boolean" || typeof value === "number") {
       return String(value);
     }
 
@@ -95,9 +91,9 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
     return String(value);
   };
 
-  const entries = Object.entries(metadata || {});
+  const metadataEntries = Object.entries(metadata || {});
 
-  if (entries.length === 0) {
+  if (metadataEntries.length === 0) {
     return null;
   }
 
@@ -112,7 +108,7 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {entries.map(([key, value]) => (
+          {metadataEntries.map(([key, value]) => (
             <tr key={key}>
               <td className="property-key">{key}</td>
               <td className="property-value">{renderValue(value)}</td>
