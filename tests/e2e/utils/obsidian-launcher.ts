@@ -312,24 +312,51 @@ export class ObsidianLauncher {
     await this.window.waitForSelector(selector, { timeout });
   }
 
-  async waitForModalsToClose(timeout = 5000): Promise<void> {
+  async waitForModalsToClose(timeout = 10000): Promise<void> {
     if (!this.window) {
       throw new Error('Obsidian not launched. Call launch() first.');
     }
 
-    console.log('[ObsidianLauncher] Waiting for any modal dialogs to close...');
+    console.log('[ObsidianLauncher] Checking for modal dialogs and dismissing them...');
 
-    try {
-      // Wait for modal container to be hidden or not present
-      await this.window.waitForSelector('.modal-container', {
-        state: 'hidden',
-        timeout
-      });
-      console.log('[ObsidianLauncher] All modals closed');
-    } catch (error) {
-      // Modal not present or already closed - this is fine
-      console.log('[ObsidianLauncher] No modals found (already closed or never appeared)');
+    const maxAttempts = 5;
+    let attempt = 0;
+
+    while (attempt < maxAttempts) {
+      try {
+        // Check if any modal is visible
+        const modalVisible = await this.window.locator('.modal-container').isVisible({ timeout: 1000 }).catch(() => false);
+
+        if (!modalVisible) {
+          console.log('[ObsidianLauncher] No modals present');
+          break;
+        }
+
+        console.log(`[ObsidianLauncher] Modal detected (attempt ${attempt + 1}/${maxAttempts}), dismissing...`);
+
+        // Try to find and click close button
+        const closeButton = this.window.locator('.modal-close-button').first();
+        const closeButtonVisible = await closeButton.isVisible({ timeout: 500 }).catch(() => false);
+
+        if (closeButtonVisible) {
+          console.log('[ObsidianLauncher] Clicking modal close button');
+          await closeButton.click();
+        } else {
+          // No close button, try pressing Escape
+          console.log('[ObsidianLauncher] No close button, pressing Escape');
+          await this.window.keyboard.press('Escape');
+        }
+
+        // Wait a bit for modal to close
+        await this.window.waitForTimeout(500);
+        attempt++;
+      } catch (error) {
+        console.log('[ObsidianLauncher] Error while dismissing modals:', error);
+        break;
+      }
     }
+
+    console.log('[ObsidianLauncher] Finished modal dismissal process');
   }
 
   async close(): Promise<void> {
