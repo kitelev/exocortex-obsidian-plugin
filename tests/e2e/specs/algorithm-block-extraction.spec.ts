@@ -26,6 +26,9 @@ test.describe('Algorithm Block Extraction from TaskPrototype', () => {
     // Wait for the universal layout to render
     await launcher.waitForElement('.exocortex-buttons-section', 30000);
 
+    // Wait for any modal dialogs (e.g., version display) to close
+    await launcher.waitForModalsToClose(10000);
+
     // Find and click the "Create Instance" button
     const createInstanceButton = window.getByRole('button', { name: 'Create Instance' });
     await expect(createInstanceButton).toBeVisible({ timeout: 30000 });
@@ -107,6 +110,9 @@ Just a simple template.
 
     // Wait for the universal layout
     await launcher.waitForElement('.exocortex-buttons-section', 30000);
+
+    // Wait for any modal dialogs to close
+    await launcher.waitForModalsToClose(10000);
 
     // Click "Create Instance" button
     const createInstanceButton = window.getByRole('button', { name: 'Create Instance' });
