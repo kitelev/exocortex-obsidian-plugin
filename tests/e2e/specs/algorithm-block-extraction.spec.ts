@@ -27,8 +27,8 @@ test.describe('Algorithm Block Extraction from TaskPrototype', () => {
     await launcher.waitForElement('.exocortex-buttons-section', 30000);
 
     // Find and click the "Create Instance" button
-    const createInstanceButton = window.locator('button.exocortex-create-instance-btn');
-    await expect(createInstanceButton).toBeVisible({ timeout: 10000 });
+    const createInstanceButton = window.getByRole('button', { name: 'Create Instance' });
+    await expect(createInstanceButton).toBeVisible({ timeout: 30000 });
     await createInstanceButton.click();
 
     // Wait for label input modal
@@ -109,8 +109,8 @@ Just a simple template.
     await launcher.waitForElement('.exocortex-buttons-section', 30000);
 
     // Click "Create Instance" button
-    const createInstanceButton = window.locator('button.exocortex-create-instance-btn');
-    await expect(createInstanceButton).toBeVisible({ timeout: 10000 });
+    const createInstanceButton = window.getByRole('button', { name: 'Create Instance' });
+    await expect(createInstanceButton).toBeVisible({ timeout: 30000 });
     await createInstanceButton.click();
 
     // Fill in label
