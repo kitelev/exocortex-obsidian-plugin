@@ -53,8 +53,8 @@ describe("CommandManager", () => {
         commandManager.registerAllCommands(mockPlugin);
       }).not.toThrow();
 
-      // Verify that addCommand was called for each command (22 commands total)
-      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(22);
+      // Verify that addCommand was called for each command (23 commands total)
+      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(23);
     });
 
     it("should register commands with correct IDs", () => {
@@ -90,9 +90,10 @@ describe("CommandManager", () => {
       expect(registeredCommands).toContain("archive-task");
       expect(registeredCommands).toContain("clean-properties");
       expect(registeredCommands).toContain("repair-folder");
+      expect(registeredCommands).toContain("rename-to-uid");
+      expect(registeredCommands).toContain("vote-on-effort");
       expect(registeredCommands).toContain("reload-layout");
       expect(registeredCommands).toContain("add-supervision");
-      expect(registeredCommands).toContain("rename-to-uid");
       expect(registeredCommands).toContain("toggle-properties-visibility");
       expect(registeredCommands).toContain("toggle-layout-visibility");
     });
@@ -130,9 +131,10 @@ describe("CommandManager", () => {
       expect(registeredNames).toContain("Archive Task");
       expect(registeredNames).toContain("Clean Empty Properties");
       expect(registeredNames).toContain("Repair Folder");
+      expect(registeredNames).toContain("Rename to UID");
+      expect(registeredNames).toContain("Vote on Effort");
       expect(registeredNames).toContain("Reload Layout");
       expect(registeredNames).toContain("Add Supervision");
-      expect(registeredNames).toContain("Rename to UID");
       expect(registeredNames).toContain("Toggle Properties Visibility");
       expect(registeredNames).toContain("Toggle Layout Visibility");
     });
