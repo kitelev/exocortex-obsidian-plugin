@@ -389,3 +389,16 @@ export function canRenameToUid(
 
   return currentFilename !== uid;
 }
+
+/**
+ * Can execute "Vote on Effort" command
+ * Available for: Task and Project efforts (not archived)
+ */
+export function canVoteOnEffort(context: CommandVisibilityContext): boolean {
+  if (!isEffort(context.instanceClass)) return false;
+
+  // Don't show vote button if archived
+  if (isAssetArchived(context.isArchived)) return false;
+
+  return true;
+}
