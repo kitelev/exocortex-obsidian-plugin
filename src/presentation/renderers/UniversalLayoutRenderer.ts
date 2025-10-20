@@ -27,6 +27,7 @@ import {
   canCleanProperties,
   canRepairFolder,
   canRenameToUid,
+  canVoteOnEffort,
   CommandVisibilityContext,
 } from "../../domain/commands/CommandVisibility";
 import { CreateTaskButton } from "../components/CreateTaskButton";
@@ -52,6 +53,7 @@ import { TaskStatusService } from "../../infrastructure/services/TaskStatusServi
 import { PropertyCleanupService } from "../../infrastructure/services/PropertyCleanupService";
 import { FolderRepairService } from "../../infrastructure/services/FolderRepairService";
 import { RenameToUidService } from "../../infrastructure/services/RenameToUidService";
+import { EffortVotingService } from "../../infrastructure/services/EffortVotingService";
 
 /**
  * UniversalLayout configuration options
@@ -109,6 +111,7 @@ export class UniversalLayoutRenderer {
     this.propertyCleanupService = new PropertyCleanupService(this.app.vault);
     this.folderRepairService = new FolderRepairService(this.app.vault, this.app);
     this.renameToUidService = new RenameToUidService(this.app);
+    this.effortVotingService = new EffortVotingService(this.app.vault);
   }
 
   private taskCreationService: TaskCreationService;
@@ -117,6 +120,7 @@ export class UniversalLayoutRenderer {
   private propertyCleanupService: PropertyCleanupService;
   private folderRepairService: FolderRepairService;
   private renameToUidService: RenameToUidService;
+  private effortVotingService: EffortVotingService;
 
   /**
    * Build reverse index of backlinks for O(1) lookups
@@ -406,6 +410,20 @@ export class UniversalLayoutRenderer {
           await new Promise((resolve) => setTimeout(resolve, 100));
           await this.refresh();
           this.logger.info(`Day shifted forward: ${file.path}`);
+        },
+      },
+      {
+        id: "vote-on-effort",
+        label: metadata.ems__Effort_votes && typeof metadata.ems__Effort_votes === "number" && metadata.ems__Effort_votes > 0
+          ? `Vote (${metadata.ems__Effort_votes})`
+          : "Vote",
+        variant: "warning",
+        visible: canVoteOnEffort(context),
+        onClick: async () => {
+          const newVoteCount = await this.effortVotingService.incrementEffortVotes(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Voted on effort: ${file.path} (votes: ${newVoteCount})`);
         },
       },
     ];

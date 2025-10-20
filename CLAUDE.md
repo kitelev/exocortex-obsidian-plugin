@@ -187,6 +187,45 @@ gh release list --limit 1
 
 ### RULE 3: Test Before Push (CRITICAL)
 
+**⚠️ MANDATORY TEST COVERAGE FOR ALL NEW CODE:**
+
+**📝 Golden Rule: Every new feature MUST have tests BEFORE creating PR:**
+
+1. **New Service → Unit Tests (MANDATORY)**
+   - Example: `EffortVotingService.ts` → `EffortVotingService.test.ts`
+   - Coverage: All public methods, edge cases, error scenarios
+   - Pattern: Mock Vault, test file operations, verify frontmatter updates
+
+2. **New Visibility Function → Unit Tests (MANDATORY)**
+   - Example: `canVoteOnEffort()` → tests in `CommandVisibility.test.ts`
+   - Coverage: All true/false branches, archived states, class types
+
+3. **New UI Component → Component Tests (MANDATORY)**
+   - Example: `VoteOnEffortButton.tsx` → `VoteOnEffortButton.spec.tsx`
+   - Coverage: Render conditions, click handlers, prop variations
+   - Use Playwright Component Testing
+
+4. **New Command → Integration via Existing Tests (MANDATORY)**
+   - Example: Vote command → update `CommandManager.test.ts` count
+   - Coverage: Command registration, visibility, execution
+
+**Test-First Development Checklist:**
+```bash
+# Step 1: Write implementation
+# ... create service/component/function ...
+
+# Step 2: IMMEDIATELY write tests (don't postpone!)
+# ... create corresponding .test.ts or .spec.tsx ...
+
+# Step 3: Run tests locally
+/test              # MUST pass 100%
+
+# Step 4: Only then commit and create PR
+git commit -am "feat: description"
+```
+
+**NEVER create PR without tests for new code!**
+
 **ALWAYS use `/test` command before ANY commit:**
 
 ```bash
@@ -200,6 +239,17 @@ gh release list --limit 1
 - BDD coverage ≥80% (enforced automatically)
 - NEVER commit broken tests
 - NEVER use `--no-verify` to bypass pre-commit hooks
+- **NEVER create PR with untested new functionality**
+
+**Test Coverage Matrix (MANDATORY):**
+
+| Code Type | Test Type | Test File Location | Required Coverage |
+|-----------|-----------|-------------------|-------------------|
+| Service (`src/infrastructure/services/*.ts`) | Unit | `tests/unit/*.test.ts` | All methods, edge cases |
+| Visibility Function (`CommandVisibility.ts`) | Unit | `tests/unit/CommandVisibility.test.ts` | All branches |
+| UI Component (`src/presentation/components/*.tsx`) | Component | `tests/component/*.spec.tsx` | Render, clicks, props |
+| Command (`CommandManager.ts`) | Integration | `tests/unit/CommandManager.test.ts` | Registration count |
+| BDD Scenario (`.feature` file) | E2E | Cypress/Playwright test | Auto-checked by coverage |
 
 ### RULE 4: Branch Protection & Linear History
 
@@ -274,6 +324,41 @@ npm run bdd:check       # Enforced in CI (must pass)
 - Self-documenting code with clear naming
 - Follow existing patterns in codebase
 - TypeScript strict mode
+
+### RULE 8: Documentation Updates (MANDATORY)
+
+**NEVER forget to update README.md when adding/changing user-facing functionality.**
+
+**Mandatory README.md updates for:**
+
+1. **New Commands** → Add to "Available Commands" list
+   - Example: "Vote on Effort" added after implementing voting feature
+   - Include brief description in parentheses
+
+2. **New Features** → Add to "Key Features" section
+   - User-facing functionality must be documented
+   - Use clear emoji bullets for scannability
+
+3. **New Properties** → Document in relevant section
+   - Example: `ems__Effort_votes` explained in "Effort Voting" section
+   - Include property name, purpose, and usage
+
+4. **Behavior Changes** → Update affected sections
+   - Commands that change functionality
+   - Modified UI elements
+   - Changed workflows
+
+**Checklist before creating PR:**
+```bash
+# ✅ Did I add a new command? → Update "Available Commands"
+# ✅ Did I add a new feature? → Update "Key Features"
+# ✅ Did I add a new property? → Document in relevant section
+# ✅ Did I change existing behavior? → Update affected documentation
+
+# If ANY of the above is YES, README.md MUST be updated!
+```
+
+**README.md is the user's first impression** - keep it current, accurate, and complete.
 
 ## 📊 Current Architecture
 
