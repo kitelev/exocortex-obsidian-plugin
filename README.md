@@ -20,6 +20,7 @@ Exocortex is a lightweight Obsidian plugin that displays related notes in a clea
 - ⚡ **High Performance**: O(1) relation lookups via reverse indexing
 - 📱 **Mobile Compatible**: Full desktop and mobile support
 - ⌨️ **Command Palette**: Quick access to all actions (Cmd/Ctrl+P)
+- 🗳️ **Effort Voting**: Vote on tasks/projects to prioritize work (increments `ems__Effort_votes`)
 
 ## 🏃‍♂️ Quick Start
 
@@ -49,8 +50,18 @@ The plugin automatically displays related assets below metadata in all notes (re
 - Start Effort tracking
 - Mark Task as Done
 - Archive Task
+- Vote on Effort (increments vote count for tasks/projects)
 - Clean Empty Properties
 - Repair Folder structure
+
+**Effort Voting:**
+
+Prioritize tasks and projects through community voting. Each vote increments the `ems__Effort_votes` property:
+
+- **Via Command Palette**: Cmd/Ctrl+P → "Exocortex: Vote on Effort"
+- **Via Layout Button**: Click "Vote" button on eligible tasks/projects
+- Vote count displays on button: "Vote (5)" shows 5 votes
+- Property auto-created if missing (starts at 1 on first vote)
 
 ### Archive Filtering
 

@@ -34,7 +34,8 @@ export class EffortVotingService {
    * @returns Current vote count (0 if property doesn't exist)
    */
   private extractVoteCount(content: string): number {
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    // Support both Unix (\n) and Windows (\r\n) line endings
+    const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---/;
     const match = content.match(frontmatterRegex);
 
     if (!match) return 0;
@@ -61,15 +62,16 @@ export class EffortVotingService {
     content: string,
     voteCount: number,
   ): string {
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    // Support both Unix (\n) and Windows (\r\n) line endings
+    const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---/;
     const match = content.match(frontmatterRegex);
+
+    // Detect line ending style from original content
+    const lineEnding = content.includes('\r\n') ? '\r\n' : '\n';
 
     if (!match) {
       // No frontmatter - create it
-      const newFrontmatter = `---
-ems__Effort_votes: ${voteCount}
----
-${content}`;
+      const newFrontmatter = `---${lineEnding}ems__Effort_votes: ${voteCount}${lineEnding}---${lineEnding}${content}`;
       return newFrontmatter;
     }
 
@@ -84,13 +86,13 @@ ${content}`;
         `ems__Effort_votes: ${voteCount}`,
       );
     } else {
-      // Add new property
-      updatedFrontmatter += `\nems__Effort_votes: ${voteCount}`;
+      // Add new property (preserving line ending style)
+      updatedFrontmatter += `${lineEnding}ems__Effort_votes: ${voteCount}`;
     }
 
     return content.replace(
       frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
+      `---${lineEnding}${updatedFrontmatter}${lineEnding}---`,
     );
   }
 }
