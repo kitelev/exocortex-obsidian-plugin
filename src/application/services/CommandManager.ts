@@ -19,6 +19,7 @@ import {
   canRenameToUid,
   canShiftDayBackward,
   canShiftDayForward,
+  canVoteOnEffort,
 } from "../../domain/commands/CommandVisibility";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 import { ProjectCreationService } from "../../infrastructure/services/ProjectCreationService";
@@ -27,6 +28,7 @@ import { PropertyCleanupService } from "../../infrastructure/services/PropertyCl
 import { FolderRepairService } from "../../infrastructure/services/FolderRepairService";
 import { SupervisionCreationService } from "../../infrastructure/services/SupervisionCreationService";
 import { RenameToUidService } from "../../infrastructure/services/RenameToUidService";
+import { EffortVotingService } from "../../infrastructure/services/EffortVotingService";
 import { LabelInputModal } from "../../presentation/modals/LabelInputModal";
 import { SupervisionInputModal } from "../../presentation/modals/SupervisionInputModal";
 
@@ -51,6 +53,7 @@ export class CommandManager {
   private folderRepairService: FolderRepairService;
   private supervisionCreationService: SupervisionCreationService;
   private renameToUidService: RenameToUidService;
+  private effortVotingService: EffortVotingService;
   private reloadLayoutCallback?: () => void;
 
   constructor(private app: App) {
@@ -61,6 +64,7 @@ export class CommandManager {
     this.folderRepairService = new FolderRepairService(app.vault, app);
     this.supervisionCreationService = new SupervisionCreationService(app.vault);
     this.renameToUidService = new RenameToUidService(app);
+    this.effortVotingService = new EffortVotingService(app.vault);
   }
 
   /**
@@ -88,6 +92,7 @@ export class CommandManager {
     this.registerCleanPropertiesCommand(plugin);
     this.registerRepairFolderCommand(plugin);
     this.registerRenameToUidCommand(plugin);
+    this.registerVoteOnEffortCommand(plugin);
     this.registerReloadLayoutCommand(plugin);
     this.registerAddSupervisionCommand(plugin);
     this.registerTogglePropertiesVisibilityCommand(plugin);
@@ -596,6 +601,33 @@ export class CommandManager {
   }
 
   /**
+   * Register "Exocortex: Vote on Effort" command
+   * Available for Task and Project efforts (not archived)
+   */
+  private registerVoteOnEffortCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "vote-on-effort",
+      name: "Vote on Effort",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canVoteOnEffort(context)) return false;
+
+        if (!checking) {
+          this.executeVoteOnEffort(file).catch((error) => {
+            new Notice(`Failed to vote: ${error.message}`);
+            console.error("Vote on effort error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
+  /**
    * Register "Exocortex: Reload Layout" command
    * Always available - reloads the Layout display in current note
    */
@@ -911,5 +943,12 @@ export class CommandManager {
     await this.renameToUidService.renameToUid(file, metadata);
 
     new Notice(`Renamed "${oldName}" to "${uid}"`);
+  }
+
+  private async executeVoteOnEffort(file: TFile): Promise<void> {
+    const newVoteCount = await this.effortVotingService.incrementEffortVotes(
+      file,
+    );
+    new Notice(`Voted! New vote count: ${newVoteCount}`);
   }
 }
