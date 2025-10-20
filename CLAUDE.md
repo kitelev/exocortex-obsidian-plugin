@@ -93,6 +93,18 @@ git pull origin main
 
 **NEVER push directly to main.** All changes MUST go through Pull Requests.
 
+**🚨 CRITICAL: Task is NOT complete after creating PR!**
+
+**Task is COMPLETE ONLY when:**
+1. ✅ CI pipeline passes (both checks GREEN)
+2. ✅ PR merged to main
+3. ✅ Auto-release workflow completes successfully
+
+**DO NOT stop after `gh pr create`** - you MUST monitor and wait for:
+- CI checks to pass (watch with `gh pr checks --watch`)
+- PR to be merged (use `gh pr merge --auto --rebase`)
+- Release to be created (verify with `gh release list --limit 1`)
+
 **Complete workflow (11 steps):**
 
 ```bash
