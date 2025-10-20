@@ -31,7 +31,7 @@ Execute comprehensive test suite for Exocortex Obsidian Plugin following the pro
 Parse $ARGUMENTS and determine execution strategy:
 - **"unit"** → Execute unit tests only (`npm run test:unit`)
 - **"ui"** → Execute UI integration tests only (`npm run test:ui`)
-- **"component"** → Execute Playwright CT tests only (`npm run test:component`) with **HANG PREVENTION**
+- **"component"** → Execute Playwright CT tests only (`npm run test:component`)
 - **"all"** or **empty** → Execute full suite sequentially (unit → ui → component)
 - **specific pattern** → Execute pattern-based tests
 
@@ -55,45 +55,15 @@ Parse $ARGUMENTS and determine execution strategy:
    - Coverage: UniversalLayoutRenderer, buttons, services
    - **STOP** if any failures
 
-3. **Component Tests** (slow, ~5-10s) **⚠️ HANG PREVENTION REQUIRED**
+3. **Component Tests** (slow, ~25s)
    ```bash
-   timeout 120 npm run test:component 2>&1 | head -200
+   npm run test:component
    ```
-   - 81 tests expected
-   - **CRITICAL**: Parse results BEFORE "Serving HTML report" message
-   - Extract test counts: "X passed (Ys)"
-   - **DO NOT** wait for process exit after seeing results
+   - 166 tests expected
+   - Coverage: React components, button visibility, user interactions
+   - **STOP** if any failures
 
-#### Phase 3: 🚨 CRITICAL - Playwright Hang Prevention
-
-**When executing component tests, ALWAYS:**
-
-1. Use timeout wrapper (120s maximum)
-2. Capture output stream
-3. Watch for test completion pattern: `X passed (Ys)`
-4. **IMMEDIATELY** parse and extract results when pattern appears
-5. **DO NOT** wait for "Serving HTTP report" message to end
-6. Report parsed results and continue
-
-**Detection Pattern:**
-```
-  81 passed (5.3s)
-
-To open last HTML report run:
-
-  npx playwright show-report playwright-report-ct
-
-Serving HTML report at http://localhost:9323. Press Ctrl+C to quit.
-← THIS LINE CAUSES HANG - ANALYZE RESULTS BEFORE THIS
-```
-
-**Solution:**
-- Results are in the lines ABOVE the HTTP server message
-- Parse "X passed" from output
-- Exit immediately after parsing
-- Don't wait for Ctrl+C
-
-#### Phase 4: Quality Gates Validation
+#### Phase 3: Quality Gates Validation
 
 After all tests pass, validate mandatory gates:
 
@@ -110,7 +80,7 @@ npm run bdd:check
 
 **If any gate fails**: Report failure and suggest fixes
 
-#### Phase 5: Comprehensive Reporting
+#### Phase 4: Comprehensive Reporting
 
 Generate report in this exact format:
 
@@ -140,7 +110,6 @@ Generate report in this exact format:
 - Status: ✅/❌
 - Tests: X/Y passed
 - Duration: Xs
-- Hang Prevention: ✅ Applied
 
 ### Quality Gates
 - ✅/❌ Test Pass Rate: {percent}%
@@ -169,18 +138,16 @@ Generate report in this exact format:
 
 ### Critical Requirements
 
-1. ✅ **ALWAYS handle Playwright hang** - Use timeout + output parsing
-2. ✅ **ALWAYS run BDD coverage check** - Mandatory quality gate
-3. ✅ **ALWAYS provide comprehensive report** - Use format above
-4. ✅ **NEVER skip quality gates** - 100% pass rate mandatory
-5. ✅ **ALWAYS analyze failures** - Root cause + actionable fix
-6. ✅ **INVOKE specialized agents** - For complex issues (test-fixer-agent, ui-test-expert)
+1. ✅ **ALWAYS run BDD coverage check** - Mandatory quality gate
+2. ✅ **ALWAYS provide comprehensive report** - Use format above
+3. ✅ **NEVER skip quality gates** - 100% pass rate mandatory
+4. ✅ **ALWAYS analyze failures** - Root cause + actionable fix
+5. ✅ **INVOKE specialized agents** - For complex issues (test-fixer-agent, ui-test-expert)
 
 ### Success Criteria
 
 Test execution is COMPLETE only when ALL verified:
 - ✅ All test types executed (unit, ui, component)
-- ✅ Playwright hang prevented successfully
 - ✅ All tests passed (100% pass rate)
 - ✅ BDD coverage validated (≥80%)
 - ✅ Quality gates checked and passed
@@ -201,9 +168,6 @@ Test execution is COMPLETE only when ALL verified:
 
 ### Common Issues & Solutions
 
-**Issue**: Playwright hangs on "Serving HTML report"
-**Solution**: Already handled - timeout + parse before hang
-
 **Issue**: BDD coverage <80%
 **Solution**: Identify uncovered scenarios, implement missing tests
 
@@ -216,14 +180,13 @@ Test execution is COMPLETE only when ALL verified:
 ---
 
 **Remember**: You are the expert with 20 years of experience. Your job is to:
-- Execute tests flawlessly (no hangs)
+- Execute tests flawlessly
 - Validate all quality gates
 - Provide actionable analysis on failures
 - Ensure 100% pass rate before release
 
 **Zero tolerance for**:
 - Skipped quality gates
-- Unhandled Playwright hangs
 - Vague failure analysis
 - Missing BDD coverage check
 
