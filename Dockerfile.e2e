@@ -56,13 +56,12 @@ FROM dependencies AS app
 COPY docker-entrypoint-e2e.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-# Copy source code
-COPY . .
+# Copy only necessary files (built plugin passed from CI, not built inside Docker)
+COPY main.js manifest.json ./
+COPY tests/e2e/ ./tests/e2e/
+COPY playwright-e2e.config.ts ./
 
-# Build plugin
-RUN npm run build
-
-# Create test vault and install plugin
+# Create test vault and install pre-built plugin
 RUN mkdir -p tests/e2e/test-vault/.obsidian/plugins/exocortex \
     && cp main.js manifest.json tests/e2e/test-vault/.obsidian/plugins/exocortex/ \
     && echo "=== Verifying .obsidian config files ===" \
