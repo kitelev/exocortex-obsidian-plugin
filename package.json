@@ -21,6 +21,7 @@
     "test:ui": "jest --config jest.ui.config.js",
     "test:component": "playwright test -c playwright-ct.config.ts",
     "test:component:ui": "playwright test -c playwright-ct.config.ts --ui",
+    "test:component:report": "playwright show-report playwright-report-ct",
     "test:e2e": "playwright test -c playwright-e2e.config.ts",
     "test:e2e:local": "./scripts/test-e2e-local.sh",
     "test:e2e:docker": "docker build --platform linux/amd64 -f Dockerfile.e2e -t exocortex-e2e . && docker run --rm exocortex-e2e",
