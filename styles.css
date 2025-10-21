@@ -50,6 +50,16 @@
   background-color: var(--background-secondary);
 }
 
+.exocortex-relation-table tbody tr.archived-asset {
+  opacity: 0.6;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.exocortex-relation-table tbody tr.archived-asset:hover {
+  opacity: 0.7;
+}
+
 .exocortex-relation-row {
   cursor: pointer;
 }

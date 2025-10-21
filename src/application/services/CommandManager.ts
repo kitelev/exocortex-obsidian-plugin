@@ -97,6 +97,7 @@ export class CommandManager {
     this.registerAddSupervisionCommand(plugin);
     this.registerTogglePropertiesVisibilityCommand(plugin);
     this.registerToggleLayoutVisibilityCommand(plugin);
+    this.registerToggleArchivedAssetsCommand(plugin);
   }
 
   /**
@@ -697,6 +698,25 @@ export class CommandManager {
         plugin.refreshLayout();
         new Notice(
           `Layout ${plugin.settings.layoutVisible ? "shown" : "hidden"}`,
+        );
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Toggle Archived Assets Visibility" command
+   * Always available - toggles the visibility of archived assets in relations table
+   */
+  private registerToggleArchivedAssetsCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "toggle-archived-assets-visibility",
+      name: "Toggle Archived Assets Visibility",
+      callback: async () => {
+        plugin.settings.showArchivedAssets = !plugin.settings.showArchivedAssets;
+        await plugin.saveSettings();
+        plugin.refreshLayout();
+        new Notice(
+          `Archived assets ${plugin.settings.showArchivedAssets ? "shown" : "hidden"}`,
         );
       },
     });
