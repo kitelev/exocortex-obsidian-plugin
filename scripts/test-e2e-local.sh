@@ -17,8 +17,13 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🐳 Building E2E Docker image...${NC}"
-docker build -f Dockerfile.e2e -t exocortex-e2e:local .
+echo -e "${BLUE}🐳 Building E2E Docker image with BuildKit cache...${NC}"
+DOCKER_BUILDKIT=1 docker build \
+  -f Dockerfile.e2e \
+  -t exocortex-e2e:local \
+  --cache-from type=local,src=/tmp/.buildx-cache \
+  --cache-to type=local,dest=/tmp/.buildx-cache,mode=max \
+  .
 
 echo ""
 echo -e "${BLUE}🧪 Running E2E tests in Docker container...${NC}"

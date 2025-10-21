@@ -5,13 +5,13 @@ import * as path from 'path';
 test.describe('DailyNote Tasks Table', () => {
   let launcher: ObsidianLauncher;
 
-  test.beforeEach(async () => {
+  test.beforeAll(async ({ }, testInfo) => {
     const vaultPath = path.join(__dirname, '../test-vault');
-    launcher = new ObsidianLauncher(vaultPath);
+    launcher = new ObsidianLauncher(vaultPath, testInfo.parallelIndex);
     await launcher.launch();
   });
 
-  test.afterEach(async () => {
+  test.afterAll(async () => {
     await launcher.close();
   });
 
@@ -20,7 +20,7 @@ test.describe('DailyNote Tasks Table', () => {
 
     const window = await launcher.getWindow();
 
-    await launcher.waitForElement('.exocortex-daily-tasks-section', 30000);
+    await launcher.waitForElement('.exocortex-daily-tasks-section', 15000);
 
     const tasksTable = window.locator('.exocortex-daily-tasks-section table').first();
     await expect(tasksTable).toBeVisible({ timeout: 10000 });
@@ -43,7 +43,7 @@ test.describe('DailyNote Tasks Table', () => {
 
     const window = await launcher.getWindow();
 
-    await launcher.waitForElement('.exocortex-daily-tasks-section', 30000);
+    await launcher.waitForElement('.exocortex-daily-tasks-section', 15000);
 
     const tasksTable = window.locator('.exocortex-daily-tasks-section table').first();
     await expect(tasksTable).toBeVisible({ timeout: 10000 });
@@ -62,7 +62,7 @@ test.describe('DailyNote Tasks Table', () => {
 
     const window = await launcher.getWindow();
 
-    await launcher.waitForElement('.exocortex-daily-tasks-section', 30000);
+    await launcher.waitForElement('.exocortex-daily-tasks-section', 15000);
 
     const tasksTable = window.locator('.exocortex-daily-tasks-section table').first();
     await expect(tasksTable).toBeVisible({ timeout: 10000 });
