@@ -137,6 +137,18 @@ export class TaskCreationService {
   }
 
   /**
+   * Format date as human-readable format (YYYY-MM-DD)
+   * @param date Date object
+   * @returns Formatted date string
+   */
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
    * Generate frontmatter for new Task
    * Inherits exo__Asset_isDefinedBy from source
    * Uses provided UUID and generates timestamp
@@ -187,9 +199,18 @@ export class TaskCreationService {
     frontmatter["ems__Effort_status"] = '"[[ems__EffortStatusDraft]]"';
     frontmatter[effortProperty] = `"[[${sourceName}]]"`;
 
-    // Add label if provided and non-empty
-    if (label && label.trim() !== "") {
-      frontmatter["exo__Asset_label"] = label.trim();
+    // Auto-generate label for ems__Meeting instances if not provided
+    let finalLabel = label;
+    if (instanceClass === "ems__Meeting" && (!label || label.trim() === "")) {
+      // Use exo__Asset_label from source metadata if available, otherwise use sourceName
+      const baseLabel = sourceMetadata.exo__Asset_label || sourceName;
+      const dateStr = this.formatDate(now);
+      finalLabel = `${baseLabel} ${dateStr}`;
+    }
+
+    // Add label if provided or auto-generated
+    if (finalLabel && finalLabel.trim() !== "") {
+      frontmatter["exo__Asset_label"] = finalLabel.trim();
     }
 
     return frontmatter;

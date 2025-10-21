@@ -328,6 +328,70 @@ describe("TaskCreationService", () => {
       expect(frontmatter.exo__Asset_label).toBe("Standup 2025-10-19");
       expect(frontmatter.ems__Effort_status).toBe('"[[ems__EffortStatusDraft]]"');
     });
+
+    it("should auto-generate label from exo__Asset_label + date for ems__Meeting when no label provided", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!toos]]"',
+        exo__Asset_label: "Weekly Team Sync",
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Team Meeting Template",
+        "ems__MeetingPrototype",
+      );
+
+      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Meeting]]"']);
+      expect(frontmatter.exo__Asset_label).toMatch(/^Weekly Team Sync \d{4}-\d{2}-\d{2}$/);
+    });
+
+    it("should auto-generate label from sourceName + date for ems__Meeting when no label and no exo__Asset_label", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!toos]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Sprint Planning Template",
+        "ems__MeetingPrototype",
+      );
+
+      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Meeting]]"']);
+      expect(frontmatter.exo__Asset_label).toMatch(/^Sprint Planning Template \d{4}-\d{2}-\d{2}$/);
+    });
+
+    it("should prefer explicit label over auto-generated one for ems__Meeting", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!toos]]"',
+        exo__Asset_label: "Weekly Team Sync",
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Team Meeting Template",
+        "ems__MeetingPrototype",
+        "Custom Meeting Label",
+      );
+
+      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Meeting]]"']);
+      expect(frontmatter.exo__Asset_label).toBe("Custom Meeting Label");
+    });
+
+    it("should not auto-generate label for ems__Task instances", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!toos]]"',
+        exo__Asset_label: "Sales Area",
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Sales Offering",
+        "ems__Area",
+      );
+
+      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Task]]"']);
+      expect(frontmatter.exo__Asset_label).toBeUndefined();
+    });
   });
 
   describe("buildFileContent", () => {
