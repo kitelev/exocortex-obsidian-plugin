@@ -48,6 +48,24 @@ describe("ProjectCreationService", () => {
       expect(frontmatter.exo__Asset_createdAt).toBeDefined();
     });
 
+    it("should generate frontmatter with ems__Effort_parent for Project", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      };
+
+      const frontmatter = service.generateProjectFrontmatter(
+        sourceMetadata,
+        "Parent Project",
+        "ems__Project",
+      );
+
+      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Project]]"']);
+      expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[Ontology/EMS]]"');
+      expect(frontmatter.ems__Effort_parent).toBe('"[[Parent Project]]"');
+      expect(frontmatter.exo__Asset_uid).toBeDefined();
+      expect(frontmatter.exo__Asset_createdAt).toBeDefined();
+    });
+
     it("should use provided UUID for exo__Asset_uid", () => {
       const testUid = "12345678-1234-4123-8123-123456789abc";
       const frontmatter = service.generateProjectFrontmatter(
