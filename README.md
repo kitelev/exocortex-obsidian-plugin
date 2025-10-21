@@ -48,7 +48,7 @@ The plugin automatically displays related assets below metadata in all notes (re
 
 **Available Commands** (Cmd/Ctrl+P → "Exocortex:"):
 - Create Task from current note
-- Quick Create Area (creates child area without naming dialog)
+- Create Area (creates child area)
 - Start Effort tracking
 - Mark Task as Done
 - Archive Task
