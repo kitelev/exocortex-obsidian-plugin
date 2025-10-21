@@ -41,5 +41,18 @@ export class ExocortexSettingTab extends PluginSettingTab {
             this.plugin.refreshLayout();
           }),
       );
+
+    new Setting(containerEl)
+      .setName("Show Archived Assets")
+      .setDesc("Display archived assets in relations table with visual distinction")
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.showArchivedAssets)
+          .onChange(async (value) => {
+            this.plugin.settings.showArchivedAssets = value;
+            await this.plugin.saveSettings();
+            this.plugin.refreshLayout();
+          }),
+      );
   }
 }
