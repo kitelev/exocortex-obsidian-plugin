@@ -33,7 +33,6 @@ import {
 } from "../../domain/commands/CommandVisibility";
 import { CreateTaskButton } from "../components/CreateTaskButton";
 import { CreateProjectButton } from "../components/CreateProjectButton";
-import { QuickCreateAreaButton } from "../components/QuickCreateAreaButton";
 import { CreateInstanceButton } from "../components/CreateInstanceButton";
 import { MoveToBacklogButton } from "../components/MoveToBacklogButton";
 import { MoveToAnalysisButton } from "../components/MoveToAnalysisButton";
@@ -253,16 +252,21 @@ export class UniversalLayoutRenderer {
         },
       },
       {
-        id: "quick-create-area",
-        label: "⚡ Quick Create Area",
+        id: "create-area",
+        label: "Create Area",
         variant: "primary",
         visible: canCreateChildArea(context),
         onClick: async () => {
-          const createdFile = await this.areaCreationService.createChildArea(file, metadata);
+          const label = await new Promise<string | null>((resolve) => {
+            new LabelInputModal(this.app, resolve).open();
+          });
+          if (label === null) return;
+
+          const createdFile = await this.areaCreationService.createChildArea(file, metadata, label);
           const leaf = this.app.workspace.getLeaf("tab");
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
-          this.logger.info(`Quick created child Area: ${createdFile.path}`);
+          this.logger.info(`Created child Area: ${createdFile.path}`);
         },
       },
       {
