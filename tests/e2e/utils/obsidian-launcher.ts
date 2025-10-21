@@ -66,7 +66,7 @@ export class ObsidianLauncher {
 
     console.log('[ObsidianLauncher] Electron process spawned, PID:', this.electronProcess.pid);
 
-    await this.waitForPort(this.cdpPort, 30000);
+    await this.waitForPort(this.cdpPort, 45000);
     console.log(`[ObsidianLauncher] CDP port ${this.cdpPort} is ready`);
 
     console.log('[ObsidianLauncher] Connecting to Electron via CDP...');
@@ -405,8 +405,10 @@ export class ObsidianLauncher {
     }
 
     console.log(`[ObsidianLauncher] Waiting for CDP port ${this.cdpPort} to be released...`);
-    await this.waitForPortClosed(this.cdpPort, 3000);
+    await this.waitForPortClosed(this.cdpPort, 5000);
     console.log(`[ObsidianLauncher] CDP port ${this.cdpPort} released`);
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     this.app = null;
     console.log('[ObsidianLauncher] Cleanup complete');
