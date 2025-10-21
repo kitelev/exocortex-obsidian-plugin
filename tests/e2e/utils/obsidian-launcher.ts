@@ -267,7 +267,12 @@ export class ObsidianLauncher {
           return { success: false, error: `File not found: ${path}`, retryable: true };
         }
 
-        const leaf = app.workspace.getLeaf(false);
+        // Force new leaf creation to avoid workspace state issues in shared fixtures
+        const leaf = app.workspace.getLeaf(true);
+        if (!leaf) {
+          return { success: false, error: 'Workspace leaf not available', retryable: true };
+        }
+
         await leaf.openFile(file, { state: { mode: 'preview' } });
 
         return { success: true };
