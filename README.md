@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![CI](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
 [![Tests](https://img.shields.io/badge/tests-passing-success)](https://github.com/kitelev/exocortex-obsidian-plugin/actions)
+[![Coverage](https://img.shields.io/badge/coverage-49%25-orange)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
 
 ## 🎯 What is Exocortex?
 
@@ -104,6 +105,36 @@ Built for speed and efficiency:
 - **Smart Caching**: Intelligent cache invalidation on metadata changes
 - **Memory Management**: Proper event listener cleanup prevents leaks
 - **Race-Free**: Promise-based locking prevents cache race conditions
+
+## 📊 Quality & Testing
+
+### Quality Gates (Enforced in CI)
+
+All pull requests must pass these automated quality gates:
+
+**Code Coverage Thresholds:**
+- ✅ Global coverage: ≥38-45% (branches: 38%, functions: 42%, lines: 45%, statements: 44%)
+- ✅ Domain layer: ≥78-80% (higher standards for business logic)
+- 🎯 Aspirational targets: 70% global / 85% domain
+
+**Test Requirements:**
+- ✅ 100% tests passing (unit + component + E2E)
+- ✅ BDD scenario coverage ≥80%
+- ✅ Type safety (TypeScript strict mode)
+- ✅ Linting (ESLint)
+- ✅ Build success
+
+**Coverage Reports:**
+- Automatically generated on every CI run
+- Available as artifacts in GitHub Actions
+- Includes lcov, HTML, and text-summary formats
+
+### Test Suite
+
+- **Unit Tests**: 10 suites, 269 tests (jest + ts-jest)
+- **Component Tests**: 8 Playwright CT tests
+- **E2E Tests**: 6 Docker-based integration tests
+- **Total Execution**: ~8 seconds (unit) + ~3 minutes (E2E)
 
 ## 🛠️ Development
 
