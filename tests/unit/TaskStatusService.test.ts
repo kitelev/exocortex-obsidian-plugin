@@ -277,4 +277,152 @@ ems__Effort_endTimestamp: 2025-10-12T10:30:00
       expect(modifiedContent).toContain(oldEndTimestamp);
     });
   });
+
+  describe("syncEffortEndTimestamp", () => {
+    it("should add both timestamps to file without frontmatter", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = "Task content";
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.syncEffortEndTimestamp(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain("ems__Effort_endTimestamp:");
+      expect(modifiedContent).toContain("ems__Effort_resolutionTimestamp:");
+      expect(modifiedContent).toContain("Task content");
+    });
+
+    it("should update existing endTimestamp and resolutionTimestamp", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class:
+  - "[[ems__Task]]"
+ems__Effort_endTimestamp: 2025-01-01T10:00:00
+ems__Effort_resolutionTimestamp: 2025-01-01T10:00:00
+---
+Task content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.syncEffortEndTimestamp(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain("ems__Effort_endTimestamp:");
+      expect(modifiedContent).toContain("ems__Effort_resolutionTimestamp:");
+      expect(modifiedContent).not.toContain("2025-01-01T10:00:00");
+      expect(modifiedContent).toMatch(/ems__Effort_endTimestamp: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+      expect(modifiedContent).toMatch(/ems__Effort_resolutionTimestamp: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+    });
+
+    it("should add timestamps when only one exists", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class:
+  - "[[ems__Task]]"
+ems__Effort_endTimestamp: 2025-01-01T10:00:00
+---
+Task content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.syncEffortEndTimestamp(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain("ems__Effort_endTimestamp:");
+      expect(modifiedContent).toContain("ems__Effort_resolutionTimestamp:");
+    });
+
+    it("should use custom date when provided", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+ems__Effort_status: "[[ems__EffortStatusDone]]"
+---
+Content`;
+
+      const customDate = new Date("2025-05-15T14:30:45");
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.syncEffortEndTimestamp(mockFile, customDate);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain("ems__Effort_endTimestamp: 2025-05-15T14:30:45");
+      expect(modifiedContent).toContain("ems__Effort_resolutionTimestamp: 2025-05-15T14:30:45");
+    });
+
+    it("should preserve other frontmatter properties", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class:
+  - "[[ems__Task]]"
+exo__Asset_uid: test-uuid-456
+ems__Effort_status: "[[ems__EffortStatusDone]]"
+ems__Effort_area: "[[Development]]"
+---
+Task content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.syncEffortEndTimestamp(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain("exo__Asset_uid: test-uuid-456");
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusDone]]"');
+      expect(modifiedContent).toContain('ems__Effort_area: "[[Development]]"');
+    });
+
+    it("should set both timestamps to same value", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+ems__Effort_status: "[[ems__EffortStatusDone]]"
+---
+Content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.syncEffortEndTimestamp(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      const endTimestampMatch = modifiedContent.match(
+        /ems__Effort_endTimestamp: (\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})/,
+      );
+      const resolutionTimestampMatch = modifiedContent.match(
+        /ems__Effort_resolutionTimestamp: (\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})/,
+      );
+
+      expect(endTimestampMatch).toBeTruthy();
+      expect(resolutionTimestampMatch).toBeTruthy();
+      expect(endTimestampMatch![1]).toBe(resolutionTimestampMatch![1]);
+    });
+
+    it("should generate timestamps in ISO 8601 format without milliseconds", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+ems__Effort_status: "[[ems__EffortStatusDone]]"
+---
+Content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.syncEffortEndTimestamp(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      const timestampMatch = modifiedContent.match(
+        /ems__Effort_endTimestamp: (\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})/,
+      );
+      expect(timestampMatch).toBeTruthy();
+
+      const timestamp = timestampMatch![1];
+      expect(timestamp).not.toContain(".");
+      expect(timestamp.split("T")[0]).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(timestamp.split("T")[1]).toMatch(/\d{2}:\d{2}:\d{2}/);
+    });
+  });
 });

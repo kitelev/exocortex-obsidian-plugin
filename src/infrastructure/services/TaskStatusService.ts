@@ -229,6 +229,64 @@ ${content}`;
     await this.vault.modify(taskFile, updatedContent);
   }
 
+  async syncEffortEndTimestamp(
+    taskFile: TFile,
+    date?: Date,
+  ): Promise<void> {
+    const fileContent = await this.vault.read(taskFile);
+    const updatedContent = this.updateFrontmatterWithSyncedTimestamps(
+      fileContent,
+      date,
+    );
+    await this.vault.modify(taskFile, updatedContent);
+  }
+
+  private updateFrontmatterWithSyncedTimestamps(
+    content: string,
+    date?: Date,
+  ): string {
+    const targetDate = date || new Date();
+    const timestamp = this.formatLocalTimestamp(targetDate);
+
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) {
+      const newFrontmatter = `---
+ems__Effort_endTimestamp: ${timestamp}
+ems__Effort_resolutionTimestamp: ${timestamp}
+---
+${content}`;
+      return newFrontmatter;
+    }
+
+    const frontmatterContent = match[1];
+    let updatedFrontmatter = frontmatterContent;
+
+    if (updatedFrontmatter.includes("ems__Effort_endTimestamp:")) {
+      updatedFrontmatter = updatedFrontmatter.replace(
+        /ems__Effort_endTimestamp:.*$/m,
+        `ems__Effort_endTimestamp: ${timestamp}`,
+      );
+    } else {
+      updatedFrontmatter += `\nems__Effort_endTimestamp: ${timestamp}`;
+    }
+
+    if (updatedFrontmatter.includes("ems__Effort_resolutionTimestamp:")) {
+      updatedFrontmatter = updatedFrontmatter.replace(
+        /ems__Effort_resolutionTimestamp:.*$/m,
+        `ems__Effort_resolutionTimestamp: ${timestamp}`,
+      );
+    } else {
+      updatedFrontmatter += `\nems__Effort_resolutionTimestamp: ${timestamp}`;
+    }
+
+    return content.replace(
+      frontmatterRegex,
+      `---\n${updatedFrontmatter}\n---`,
+    );
+  }
+
   private updateFrontmatterWithDoneStatus(content: string): string {
     const now = new Date();
     const timestamp = this.formatLocalTimestamp(now);
