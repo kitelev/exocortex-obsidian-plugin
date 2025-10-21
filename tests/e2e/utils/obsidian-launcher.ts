@@ -136,6 +136,9 @@ export class ObsidianLauncher {
     console.log('[ObsidianLauncher] Checking for trust dialog...');
     await this.handleTrustDialog();
 
+    console.log('[ObsidianLauncher] Waiting for vault to finish indexing...');
+    await this.waitForVaultReady();
+
     console.log('[ObsidianLauncher] Obsidian ready!');
   }
 
@@ -199,6 +202,43 @@ export class ObsidianLauncher {
     } catch (error) {
       console.log('[ObsidianLauncher] No trust dialog found or error handling it:', error);
     }
+  }
+
+  private async waitForVaultReady(): Promise<void> {
+    if (!this.window) {
+      throw new Error('Window not available');
+    }
+
+    const maxWaitTime = 30000;
+    const checkInterval = 500;
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < maxWaitTime) {
+      const vaultStatus = await this.window.evaluate(() => {
+        const app = (window as any).app;
+        if (!app || !app.vault) {
+          return { ready: false, fileCount: 0 };
+        }
+
+        const allFiles = app.vault.getAllLoadedFiles();
+        const markdownFiles = allFiles.filter((f: any) => f.extension === 'md');
+
+        return {
+          ready: markdownFiles.length > 0,
+          fileCount: markdownFiles.length
+        };
+      });
+
+      if (vaultStatus.ready && vaultStatus.fileCount >= 5) {
+        console.log(`[ObsidianLauncher] Vault ready with ${vaultStatus.fileCount} markdown files indexed`);
+        return;
+      }
+
+      console.log(`[ObsidianLauncher] Vault indexing... (${vaultStatus.fileCount} files found)`);
+      await new Promise(resolve => setTimeout(resolve, checkInterval));
+    }
+
+    console.log('[ObsidianLauncher] WARNING: Vault indexing timeout, continuing anyway...');
   }
 
   private async waitForPort(port: number, timeout: number): Promise<void> {
