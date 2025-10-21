@@ -238,6 +238,41 @@ npm run test:all   # Run ALL tests with quality gates (unit + ui + component + e
 - NEVER commit broken tests
 - NEVER use `--no-verify` to bypass pre-commit hooks
 - **NEVER create PR with untested new functionality**
+- **🚨 NEVER DELETE TESTS WHEN THEY FAIL - FIX THEM INSTEAD! 🚨**
+
+**⛔ ABSOLUTE PROHIBITION: Removing Tests**
+
+When a test fails (especially in CI):
+- ❌ **NEVER** remove the test to make CI green
+- ❌ **NEVER** comment out failing tests
+- ❌ **NEVER** skip tests with `.skip()` or similar
+- ✅ **ALWAYS** debug and fix the failing test
+- ✅ **ALWAYS** investigate why the test fails in CI but not locally
+- ✅ **ALWAYS** add retry logic, increase timeouts, or fix environment issues
+
+**Example of WRONG approach:**
+```bash
+# Test fails in CI
+git rm tests/e2e/failing-test.spec.ts  # ❌ WRONG!
+git commit -am "fix: remove failing test"  # ❌ TERRIBLE!
+```
+
+**Example of CORRECT approach:**
+```bash
+# Test fails in CI - investigate and fix!
+# 1. Check CI logs for actual error
+# 2. Identify environment difference (Docker vs local)
+# 3. Add retry logic, increase timeouts, fix selectors
+# 4. Test in Docker locally: npm run test:e2e:local
+# 5. Fix the test until it passes
+git commit -am "test: fix e2e test for Docker environment"  # ✅ CORRECT!
+```
+
+**Why this is critical:**
+- Tests are documentation of expected behavior
+- Removing tests hides bugs and regressions
+- CI failures usually indicate real environment issues
+- Future developers rely on comprehensive test coverage
 
 **Test Coverage Matrix (MANDATORY):**
 
