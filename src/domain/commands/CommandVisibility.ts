@@ -144,6 +144,14 @@ export function canCreateProject(context: CommandVisibilityContext): boolean {
 }
 
 /**
+ * Can execute "Create Child Area" command
+ * Available for: ems__Area assets only
+ */
+export function canCreateChildArea(context: CommandVisibilityContext): boolean {
+  return hasClass(context.instanceClass, "ems__Area");
+}
+
+/**
  * Can execute "Create Instance" command
  * Available for: ems__TaskPrototype and ems__MeetingPrototype assets
  */

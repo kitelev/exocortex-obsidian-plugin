@@ -11,6 +11,7 @@ import { ActionButtonsGroup, ButtonGroup, ActionButton } from "../components/Act
 import {
   canCreateTask,
   canCreateProject,
+  canCreateChildArea,
   canCreateInstance,
   canSetDraftStatus,
   canMoveToBacklog,
@@ -32,6 +33,7 @@ import {
 } from "../../domain/commands/CommandVisibility";
 import { CreateTaskButton } from "../components/CreateTaskButton";
 import { CreateProjectButton } from "../components/CreateProjectButton";
+import { QuickCreateAreaButton } from "../components/QuickCreateAreaButton";
 import { CreateInstanceButton } from "../components/CreateInstanceButton";
 import { MoveToBacklogButton } from "../components/MoveToBacklogButton";
 import { MoveToAnalysisButton } from "../components/MoveToAnalysisButton";
@@ -49,6 +51,7 @@ import { RenameToUidButton } from "../components/RenameToUidButton";
 import { LabelInputModal } from "../modals/LabelInputModal";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 import { ProjectCreationService } from "../../infrastructure/services/ProjectCreationService";
+import { AreaCreationService } from "../../infrastructure/services/AreaCreationService";
 import { TaskStatusService } from "../../infrastructure/services/TaskStatusService";
 import { PropertyCleanupService } from "../../infrastructure/services/PropertyCleanupService";
 import { FolderRepairService } from "../../infrastructure/services/FolderRepairService";
@@ -108,6 +111,7 @@ export class UniversalLayoutRenderer {
     this.reactRenderer = new ReactRenderer();
     this.taskCreationService = new TaskCreationService(this.app.vault);
     this.projectCreationService = new ProjectCreationService(this.app.vault);
+    this.areaCreationService = new AreaCreationService(this.app.vault);
     this.taskStatusService = new TaskStatusService(this.app.vault);
     this.propertyCleanupService = new PropertyCleanupService(this.app.vault);
     this.folderRepairService = new FolderRepairService(this.app.vault, this.app);
@@ -117,6 +121,7 @@ export class UniversalLayoutRenderer {
 
   private taskCreationService: TaskCreationService;
   private projectCreationService: ProjectCreationService;
+  private areaCreationService: AreaCreationService;
   private taskStatusService: TaskStatusService;
   private propertyCleanupService: PropertyCleanupService;
   private folderRepairService: FolderRepairService;
@@ -245,6 +250,19 @@ export class UniversalLayoutRenderer {
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
           this.logger.info(`Created Project from ${sourceClass}: ${createdFile.path}`);
+        },
+      },
+      {
+        id: "quick-create-area",
+        label: "⚡ Quick Create Area",
+        variant: "primary",
+        visible: canCreateChildArea(context),
+        onClick: async () => {
+          const createdFile = await this.areaCreationService.createChildArea(file, metadata);
+          const leaf = this.app.workspace.getLeaf("tab");
+          await leaf.openFile(createdFile);
+          this.app.workspace.setActiveLeaf(leaf, { focus: true });
+          this.logger.info(`Quick created child Area: ${createdFile.path}`);
         },
       },
       {
