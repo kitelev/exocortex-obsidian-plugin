@@ -2,11 +2,11 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e/specs',
-  fullyParallel: false,
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: 1,
-  timeout: 180000, // 3 minutes for Electron launch in Docker
+  workers: 3,
+  timeout: 60000,
 
   reporter: [
     ['html', { outputFolder: 'playwright-report-e2e', open: 'never' }],

@@ -7,13 +7,13 @@ test.describe('Algorithm Block Extraction from TaskPrototype', () => {
   let launcher: ObsidianLauncher;
   let vaultPath: string;
 
-  test.beforeEach(async () => {
+  test.beforeAll(async ({ }, testInfo) => {
     vaultPath = path.join(__dirname, '../test-vault');
-    launcher = new ObsidianLauncher(vaultPath);
+    launcher = new ObsidianLauncher(vaultPath, testInfo.parallelIndex);
     await launcher.launch();
   });
 
-  test.afterEach(async () => {
+  test.afterAll(async () => {
     await launcher.close();
   });
 
@@ -24,14 +24,14 @@ test.describe('Algorithm Block Extraction from TaskPrototype', () => {
     const window = await launcher.getWindow();
 
     // Wait for the universal layout to render
-    await launcher.waitForElement('.exocortex-buttons-section', 30000);
+    await launcher.waitForElement('.exocortex-buttons-section', 15000);
 
     // Wait for any modal dialogs (e.g., version display) to close
     await launcher.waitForModalsToClose(10000);
 
     // Find and click the "Create Instance" button
     const createInstanceButton = window.getByRole('button', { name: 'Create Instance' });
-    await expect(createInstanceButton).toBeVisible({ timeout: 30000 });
+    await expect(createInstanceButton).toBeVisible({ timeout: 15000 });
     await createInstanceButton.click();
 
     // Wait for label input modal
@@ -46,8 +46,7 @@ test.describe('Algorithm Block Extraction from TaskPrototype', () => {
     const submitButton = window.locator('.modal button.mod-cta');
     await submitButton.click();
 
-    // Wait for the new file to be created and opened
-    await window.waitForTimeout(2000);
+    await window.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
     // Get the path of the newly created file
     const newFilePath = await window.evaluate(() => {
@@ -111,14 +110,14 @@ Just a simple template.
     const window = await launcher.getWindow();
 
     // Wait for the universal layout
-    await launcher.waitForElement('.exocortex-buttons-section', 30000);
+    await launcher.waitForElement('.exocortex-buttons-section', 15000);
 
     // Wait for any modal dialogs to close
     await launcher.waitForModalsToClose(10000);
 
     // Click "Create Instance" button
     const createInstanceButton = window.getByRole('button', { name: 'Create Instance' });
-    await expect(createInstanceButton).toBeVisible({ timeout: 30000 });
+    await expect(createInstanceButton).toBeVisible({ timeout: 15000 });
     await createInstanceButton.click();
 
     // Fill in label
