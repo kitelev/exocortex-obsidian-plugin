@@ -251,22 +251,37 @@ export class ObsidianLauncher {
     const normalizedPath = filePath.replace(/\\/g, '/');
     console.log(`[ObsidianLauncher] Opening file: ${normalizedPath}`);
 
-    const fileOpenResult = await this.window.evaluate(async (path) => {
-      const app = (window as any).app;
-      if (!app || !app.workspace || !app.vault) {
-        return { success: false, error: 'App not available' };
+    const maxRetries = 10;
+    const retryDelay = 1000;
+    let fileOpenResult: any;
+
+    for (let i = 0; i < maxRetries; i++) {
+      fileOpenResult = await this.window.evaluate(async (path) => {
+        const app = (window as any).app;
+        if (!app || !app.workspace || !app.vault) {
+          return { success: false, error: 'App not available', retryable: true };
+        }
+
+        const file = app.vault.getAbstractFileByPath(path);
+        if (!file) {
+          return { success: false, error: `File not found: ${path}`, retryable: true };
+        }
+
+        const leaf = app.workspace.getLeaf(false);
+        await leaf.openFile(file, { state: { mode: 'preview' } });
+
+        return { success: true };
+      }, normalizedPath);
+
+      if (fileOpenResult.success) {
+        break;
       }
 
-      const file = app.vault.getAbstractFileByPath(path);
-      if (!file) {
-        return { success: false, error: `File not found: ${path}` };
+      if (i < maxRetries - 1 && fileOpenResult.retryable) {
+        console.log(`[ObsidianLauncher] File not ready, retrying (${i + 1}/${maxRetries})...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
       }
-
-      const leaf = app.workspace.getLeaf(false);
-      await leaf.openFile(file, { state: { mode: 'preview' } });
-
-      return { success: true };
-    }, normalizedPath);
+    }
 
     console.log('[ObsidianLauncher] File open result:', fileOpenResult);
 
