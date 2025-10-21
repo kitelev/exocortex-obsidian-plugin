@@ -15,7 +15,7 @@ git fetch origin main && git rebase origin/main
 
 ```bash
 /release [major|minor|patch] [desc]  # MANDATORY for releases - auto-versions and creates GitHub release
-/test [unit|ui|component|all]        # MANDATORY for testing - prevents Playwright hangs, enforces quality gates
+npm run test:all                     # MANDATORY for testing - run ALL tests before creating PR
 /execute [task]                      # Complex multi-step tasks with agent orchestration
 /status                              # Check current progress and project health
 /agents                              # List available specialized agents
@@ -24,7 +24,7 @@ git fetch origin main && git rebase origin/main
 ⚠️ **CRITICAL**:
 - **NEVER work in main directory** - ALWAYS create worktree first (see RULE 0)
 - Use `/release` for ANY code change to src/, tests/, or production files
-- Use `/test` instead of `npm test` (prevents hangs, enforces BDD coverage ≥80%)
+- Use `npm run test:all` before creating PR (runs all tests, enforces BDD coverage ≥80%)
 - Use `/execute` for complex tasks requiring multiple agents
 
 ## 🚨 Critical Rules
@@ -116,7 +116,7 @@ cd ../exocortex-feature-name
 git fetch origin main && git rebase origin/main
 
 # 3. Make changes and test (MANDATORY)
-npm test:all  # OR: /test - MUST pass 100%
+npm run test:all  # MUST pass 100% - runs ALL tests
 
 # 4. Commit (NO version bump - automatic!)
 git commit -am "feat: user-facing description"
@@ -218,7 +218,7 @@ gh release list --limit 1
 # ... create corresponding .test.ts or .spec.tsx ...
 
 # Step 3: Run tests locally
-/test              # MUST pass 100%
+npm run test:all   # MUST pass 100%
 
 # Step 4: Only then commit and create PR
 git commit -am "feat: description"
@@ -226,12 +226,10 @@ git commit -am "feat: description"
 
 **NEVER create PR without tests for new code!**
 
-**ALWAYS use `/test` command before ANY commit:**
+**ALWAYS use `npm run test:all` before creating PR:**
 
 ```bash
-/test              # Run all tests with quality gates
-/test unit         # Unit tests only
-/test component    # Playwright CT tests (hang-safe)
+npm run test:all   # Run ALL tests with quality gates (unit + ui + component + e2e)
 ```
 
 **Requirements:**
