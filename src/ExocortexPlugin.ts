@@ -3,6 +3,7 @@ import {
   MarkdownPostProcessorContext,
   MarkdownView,
   Plugin,
+  TFile,
 } from "obsidian";
 import { UniversalLayoutRenderer } from "./presentation/renderers/UniversalLayoutRenderer";
 import { ILogger } from "./infrastructure/logging/ILogger";
@@ -13,6 +14,7 @@ import {
   DEFAULT_SETTINGS,
 } from "./domain/settings/ExocortexSettings";
 import { ExocortexSettingTab } from "./presentation/settings/ExocortexSettingTab";
+import { TaskStatusService } from "./infrastructure/services/TaskStatusService";
 
 /**
  * Exocortex Plugin - Automatic layout rendering
@@ -23,6 +25,8 @@ export default class ExocortexPlugin extends Plugin {
   private logger: ILogger;
   private layoutRenderer: UniversalLayoutRenderer;
   private commandManager: CommandManager;
+  private taskStatusService: TaskStatusService;
+  private metadataCache: Map<string, Record<string, any>>;
   settings: ExocortexSettings;
 
   async onload(): Promise<void> {
@@ -33,6 +37,8 @@ export default class ExocortexPlugin extends Plugin {
       await this.loadSettings();
 
       this.layoutRenderer = new UniversalLayoutRenderer(this.app, this.settings);
+      this.taskStatusService = new TaskStatusService(this.app.vault);
+      this.metadataCache = new Map();
 
       // Initialize CommandManager and register all commands
       this.commandManager = new CommandManager(this.app);
@@ -46,6 +52,12 @@ export default class ExocortexPlugin extends Plugin {
       this.registerEvent(
         this.app.metadataCache.on("resolved", () => {
           this.layoutRenderer.invalidateBacklinksCache();
+        }),
+      );
+
+      this.registerEvent(
+        this.app.metadataCache.on("changed", (file) => {
+          this.handleMetadataChange(file);
         }),
       );
 
@@ -152,6 +164,53 @@ export default class ExocortexPlugin extends Plugin {
       .catch((error) => {
         this.logger.error("Failed to auto-render layout", error);
       });
+  }
+
+  private async handleMetadataChange(file: TFile): Promise<void> {
+    try {
+      const metadata = this.app.metadataCache.getFileCache(file)?.frontmatter;
+
+      if (!metadata) {
+        return;
+      }
+
+      const currentEndTimestamp = metadata.ems__Effort_endTimestamp;
+      const cachedMetadata = this.metadataCache.get(file.path);
+
+      if (!cachedMetadata) {
+        this.metadataCache.set(file.path, { ...metadata });
+        return;
+      }
+
+      const previousEndTimestamp = cachedMetadata.ems__Effort_endTimestamp;
+
+      if (
+        currentEndTimestamp &&
+        currentEndTimestamp !== previousEndTimestamp
+      ) {
+        this.logger.info(
+          `Detected ems__Effort_endTimestamp change in ${file.path}: ${previousEndTimestamp} → ${currentEndTimestamp}`,
+        );
+
+        const parsedDate = new Date(currentEndTimestamp);
+        if (!isNaN(parsedDate.getTime())) {
+          await this.taskStatusService.syncEffortEndTimestamp(
+            file,
+            parsedDate,
+          );
+          this.logger.info(
+            `Auto-synced ems__Effort_resolutionTimestamp to ${currentEndTimestamp}`,
+          );
+        }
+      }
+
+      this.metadataCache.set(file.path, { ...metadata });
+    } catch (error) {
+      this.logger.error(
+        `Failed to handle metadata change for ${file.path}`,
+        error as Error,
+      );
+    }
   }
 
   private removeAutoRenderedLayouts(): void {
