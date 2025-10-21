@@ -7,6 +7,7 @@ export interface AssetRelation {
   isBodyLink: boolean;
   created: number;
   modified: number;
+  isArchived?: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata: Record<string, any>;
 }
@@ -217,8 +218,9 @@ const SingleTable: React.FC<SingleTableProps> = ({
           const instanceClass = getInstanceClass(relation.metadata);
           // Use unique key: path + propertyName to handle multiple relations from same asset via different properties
           const uniqueKey = `${relation.path}-${relation.propertyName || 'body'}-${index}`;
+          const rowClassName = relation.isArchived ? 'archived-asset' : '';
           return (
-            <tr key={uniqueKey} data-path={relation.path}>
+            <tr key={uniqueKey} data-path={relation.path} className={rowClassName}>
               <td className="asset-name">
                 <a
                   data-href={relation.path}

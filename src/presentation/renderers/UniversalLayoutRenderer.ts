@@ -75,6 +75,7 @@ interface AssetRelation {
   metadata: Record<string, any>;
   propertyName?: string; // The property through which this asset references the current one
   isBodyLink: boolean; // True if link is in body, not frontmatter
+  isArchived?: boolean; // True if asset is archived
   created: number;
   modified: number;
 }
@@ -619,8 +620,11 @@ export class UniversalLayoutRenderer {
         const fileCache = cache.getFileCache(sourceFile as TFile);
         const metadata = fileCache?.frontmatter || {};
 
-        // Skip archived assets
-        if (this.isAssetArchived(metadata)) {
+        // Check if asset is archived
+        const isArchived = this.isAssetArchived(metadata);
+
+        // Skip archived assets if setting is disabled
+        if (isArchived && !this.settings.showArchivedAssets) {
           continue;
         }
 
@@ -647,6 +651,7 @@ export class UniversalLayoutRenderer {
               metadata: enrichedMetadata,
               propertyName: propertyName,
               isBodyLink: false,
+              isArchived: isArchived,
               created: sourceFile.stat.ctime,
               modified: sourceFile.stat.mtime,
             };
@@ -661,6 +666,7 @@ export class UniversalLayoutRenderer {
             metadata: enrichedMetadata,
             propertyName: undefined,
             isBodyLink: true,
+            isArchived: isArchived,
             created: sourceFile.stat.ctime,
             modified: sourceFile.stat.mtime,
           };
