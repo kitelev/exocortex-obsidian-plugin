@@ -152,7 +152,7 @@ describe("CommandVisibility", () => {
       expect(canCreateProject(context)).toBe(false);
     });
 
-    it("should return false for ems__Project", () => {
+    it("should return true for ems__Project", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Project]]",
         currentStatus: null,
@@ -161,7 +161,19 @@ describe("CommandVisibility", () => {
         currentFolder: "",
         expectedFolder: null,
       };
-      expect(canCreateProject(context)).toBe(false);
+      expect(canCreateProject(context)).toBe(true);
+    });
+
+    it("should return true for Project without brackets", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "ems__Project",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateProject(context)).toBe(true);
     });
 
     it("should return false when instanceClass is null", () => {
