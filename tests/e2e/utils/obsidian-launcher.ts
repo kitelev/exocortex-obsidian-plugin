@@ -9,9 +9,11 @@ export class ObsidianLauncher {
   private window: Page | null = null;
   private vaultPath: string;
   private electronProcess: ChildProcess | null = null;
+  private cdpPort: number;
 
-  constructor(vaultPath?: string) {
+  constructor(vaultPath?: string, workerIndex: number = 0) {
     this.vaultPath = vaultPath || path.join(__dirname, '../test-vault');
+    this.cdpPort = 9222 + workerIndex;
   }
 
   async launch(): Promise<void> {
@@ -30,7 +32,7 @@ export class ObsidianLauncher {
 
     const args = [
       this.vaultPath,
-      '--remote-debugging-port=9222',
+      `--remote-debugging-port=${this.cdpPort}`,
     ];
 
     // In Docker/CI, we need additional flags to run in headless environment
@@ -51,7 +53,7 @@ export class ObsidianLauncher {
       );
     }
 
-    console.log('[ObsidianLauncher] Spawning Electron process with CDP port 9222...');
+    console.log(`[ObsidianLauncher] Spawning Electron process with CDP port ${this.cdpPort}...`);
     console.log('[ObsidianLauncher] Args:', args);
 
     this.electronProcess = spawn(obsidianPath, args, {
@@ -64,11 +66,11 @@ export class ObsidianLauncher {
 
     console.log('[ObsidianLauncher] Electron process spawned, PID:', this.electronProcess.pid);
 
-    await this.waitForPort(9222, 30000);
-    console.log('[ObsidianLauncher] CDP port 9222 is ready');
+    await this.waitForPort(this.cdpPort, 30000);
+    console.log(`[ObsidianLauncher] CDP port ${this.cdpPort} is ready`);
 
     console.log('[ObsidianLauncher] Connecting to Electron via CDP...');
-    const browser = await chromium.connectOverCDP('http://localhost:9222', { timeout: 30000 });
+    const browser = await chromium.connectOverCDP(`http://localhost:${this.cdpPort}`, { timeout: 30000 });
     console.log('[ObsidianLauncher] Connected to browser via CDP');
 
     const contexts = browser.contexts();
@@ -131,12 +133,9 @@ export class ObsidianLauncher {
 
     console.log('[ObsidianLauncher] Obsidian app object available!');
 
-    // Trust dialog appears AFTER app initialization, so handle it now
-    await this.window.waitForTimeout(2000);
-    console.log('[ObsidianLauncher] Waiting for trust dialog to appear...');
+    console.log('[ObsidianLauncher] Checking for trust dialog...');
     await this.handleTrustDialog();
 
-    await this.window.waitForTimeout(1000);
     console.log('[ObsidianLauncher] Obsidian ready!');
   }
 
@@ -179,8 +178,7 @@ export class ObsidianLauncher {
 
       const trustButton = await this.window.locator('button:has-text("Trust author and enable plugins")').first();
 
-      // Wait up to 15 seconds for dialog to appear (it appears after app init)
-      const isVisible = await trustButton.isVisible({ timeout: 15000 }).catch(() => false);
+      const isVisible = await trustButton.isVisible({ timeout: 10000 }).catch(() => false);
 
       if (isVisible) {
         console.log('[ObsidianLauncher] Trust dialog found! Clicking "Trust author and enable plugins" button...');
@@ -276,8 +274,8 @@ export class ObsidianLauncher {
       throw new Error(`Failed to open file: ${fileOpenResult.error}`);
     }
 
-    await this.window.waitForTimeout(2000);
     console.log('[ObsidianLauncher] Waiting for file load and plugin render...');
+    await this.window.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
 
     const finalViewInfo = await this.window.evaluate(() => {
       const app = (window as any).app;
@@ -347,8 +345,7 @@ export class ObsidianLauncher {
           await this.window.keyboard.press('Escape');
         }
 
-        // Wait a bit for modal to close
-        await this.window.waitForTimeout(500);
+        await this.window.waitForSelector('.modal-container', { state: 'hidden', timeout: 1000 }).catch(() => {});
         attempt++;
       } catch (error) {
         console.log('[ObsidianLauncher] Error while dismissing modals:', error);
@@ -407,10 +404,9 @@ export class ObsidianLauncher {
       this.electronProcess = null;
     }
 
-    // Wait for CDP port to be released
-    console.log('[ObsidianLauncher] Waiting for CDP port 9222 to be released...');
-    await this.waitForPortClosed(9222, 10000);
-    console.log('[ObsidianLauncher] CDP port 9222 released');
+    console.log(`[ObsidianLauncher] Waiting for CDP port ${this.cdpPort} to be released...`);
+    await this.waitForPortClosed(this.cdpPort, 3000);
+    console.log(`[ObsidianLauncher] CDP port ${this.cdpPort} released`);
 
     this.app = null;
     console.log('[ObsidianLauncher] Cleanup complete');

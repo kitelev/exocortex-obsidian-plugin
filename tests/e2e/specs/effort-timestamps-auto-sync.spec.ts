@@ -5,13 +5,13 @@ import * as path from 'path';
 test.describe('Effort Timestamps Auto-Sync', () => {
   let launcher: ObsidianLauncher;
 
-  test.beforeEach(async () => {
+  test.beforeAll(async ({ }, testInfo) => {
     const vaultPath = path.join(__dirname, '../test-vault');
-    launcher = new ObsidianLauncher(vaultPath);
+    launcher = new ObsidianLauncher(vaultPath, testInfo.parallelIndex);
     await launcher.launch();
   });
 
-  test.afterEach(async () => {
+  test.afterAll(async () => {
     await launcher.close();
   });
 

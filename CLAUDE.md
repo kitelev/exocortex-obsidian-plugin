@@ -569,6 +569,57 @@ chore: maintenance task
 4. **E2E Environment ≠ Production**: Docker lacks optional plugins, creates different code paths
 5. **Verify CSS Selectors**: Always check selectors exist in actual rendered output before writing tests
 
+### E2E Tests: Docker-Only Policy (MANDATORY)
+
+**⚠️ CRITICAL: E2E tests MUST run in Docker locally - NEVER directly via npm run test:e2e**
+
+**Why Docker-only is mandatory:**
+
+1. **Environment Parity**: Docker environment matches GitHub Actions CI exactly
+   - Same Obsidian version (1.9.14)
+   - Same OS (Ubuntu Jammy)
+   - Same dependencies and plugins
+   - Prevents "works locally, fails in CI" scenarios
+
+2. **Isolation**: Docker ensures clean, reproducible test environment
+   - No interference from local Obsidian settings
+   - No cached data between runs
+   - No host system pollution
+
+3. **Performance Optimization**: Tests are optimized for Docker
+   - Parallel execution (workers: 3)
+   - Shared Obsidian fixtures per worker
+   - Multi-worker CDP port allocation (9222, 9223, 9224)
+   - Reduced timeouts (60s instead of 180s)
+
+**Correct commands:**
+
+```bash
+# ✅ CORRECT - Local E2E testing (Docker)
+npm run test:e2e:local        # Runs in Docker with BuildKit cache (fast rebuilds)
+
+# ✅ CORRECT - Full test suite (includes E2E via Docker)
+npm run test:all              # Runs unit + ui + component + e2e (Docker)
+
+# ⚠️ CI-ONLY - Direct E2E execution (Docker environment assumed)
+npm run test:e2e              # Used ONLY by Docker entrypoint in CI
+
+# ❌ WRONG - Never run E2E directly on host
+playwright test -c playwright-e2e.config.ts  # BLOCKED - use Docker!
+```
+
+**BuildKit Cache benefits (local development):**
+
+```bash
+# First run: ~60 seconds (builds from scratch)
+npm run test:e2e:local
+
+# Subsequent runs: ~5-10 seconds (cache hit)
+# Only changed layers rebuild
+# Obsidian base image cached (/tmp/.buildx-cache)
+# npm dependencies cached
+```
+
 **Actual CSS classes** (from UniversalLayoutRenderer.ts):
 ```typescript
 exocortex-buttons-section          // line 439
