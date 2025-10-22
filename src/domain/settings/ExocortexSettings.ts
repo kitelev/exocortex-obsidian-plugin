@@ -5,7 +5,7 @@ export interface ExocortexSettings {
 }
 
 export const DEFAULT_SETTINGS: ExocortexSettings = {
-  showPropertiesSection: true,
+  showPropertiesSection: false,
   layoutVisible: true,
   showArchivedAssets: false,
 };

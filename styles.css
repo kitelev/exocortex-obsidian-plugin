@@ -1,5 +1,26 @@
 /* Exocortex Plugin Styles */
 
+/* ============================================================================
+   Universal Layout Sections - Consistent Spacing
+   ============================================================================ */
+
+.exocortex-properties-section,
+.exocortex-daily-tasks-section,
+.exocortex-assets-relations {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 32px;
+}
+
+.exocortex-properties-section h3,
+.exocortex-daily-tasks-section h3 {
+  margin-bottom: 16px;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
 /* Assets Relations Styles - Core feature for grouped asset relationships */
 .exocortex-assets-relations {
   padding: 10px 0;
@@ -624,8 +645,9 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  margin: 16px 0 24px 0;
+  margin: 16px auto 32px auto;
   padding: 20px;
+  max-width: 900px;
   background: var(--background-secondary);
   border-radius: 12px;
   border: 1px solid var(--background-modifier-border);
