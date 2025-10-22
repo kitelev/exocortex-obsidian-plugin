@@ -1831,6 +1831,7 @@ export class UniversalLayoutRenderer {
 
         const isDone = effortStatusStr === "ems__EffortStatusDone";
         const isTrashed = effortStatusStr === "ems__EffortStatusTrashed";
+        const isDoing = effortStatusStr === "ems__EffortStatusDoing";
         const isMeeting = instanceClassArray.some(
           (c: string) => String(c).includes("ems__Meeting"),
         );
@@ -1851,6 +1852,7 @@ export class UniversalLayoutRenderer {
           metadata,
           isDone,
           isTrashed,
+          isDoing,
           isMeeting,
         });
       }
