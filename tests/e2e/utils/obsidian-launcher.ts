@@ -11,9 +11,9 @@ export class ObsidianLauncher {
   private electronProcess: ChildProcess | null = null;
   private cdpPort: number;
 
-  constructor(vaultPath?: string, workerIndex: number = 0) {
+  constructor(vaultPath?: string) {
     this.vaultPath = vaultPath || path.join(__dirname, '../test-vault');
-    this.cdpPort = 9222 + workerIndex;
+    this.cdpPort = 9222;
   }
 
   async launch(): Promise<void> {
