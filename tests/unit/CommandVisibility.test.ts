@@ -13,6 +13,7 @@ import {
   canArchiveTask,
   canCleanProperties,
   canRepairFolder,
+  canRenameToUid,
   canVoteOnEffort,
   CommandVisibilityContext,
 } from "../../src/domain/commands/CommandVisibility";
@@ -1313,6 +1314,128 @@ describe("CommandVisibility", () => {
         expectedFolder: null,
       };
       expect(canTrashEffort(context)).toBe(false);
+    });
+  });
+
+  describe("canRenameToUid", () => {
+    it("should return true when filename differs from UID", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: { exo__Asset_uid: "task-123" },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRenameToUid(context, "Task Name")).toBe(true);
+    });
+
+    it("should return false when filename matches UID", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: { exo__Asset_uid: "task-123" },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRenameToUid(context, "task-123")).toBe(false);
+    });
+
+    it("should return false when UID is not set", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRenameToUid(context, "Task Name")).toBe(false);
+    });
+
+    it("should return false for ims__Concept with brackets", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ims__Concept]]",
+        currentStatus: null,
+        metadata: { exo__Asset_uid: "concept-123" },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRenameToUid(context, "Concept Name")).toBe(false);
+    });
+
+    it("should return false for ims__Concept without brackets", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "ims__Concept",
+        currentStatus: null,
+        metadata: { exo__Asset_uid: "concept-456" },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRenameToUid(context, "Another Concept")).toBe(false);
+    });
+
+    it("should return false for ims__Concept in array", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: ["[[ims__Concept]]", "[[SomeOtherClass]]"],
+        currentStatus: null,
+        metadata: { exo__Asset_uid: "concept-789" },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRenameToUid(context, "Yet Another Concept")).toBe(false);
+    });
+
+    it("should return true for non-Concept class with different filename", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Area]]",
+        currentStatus: null,
+        metadata: { exo__Asset_uid: "area-123" },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRenameToUid(context, "Area Name")).toBe(true);
+    });
+
+    it("should return true for Project with different filename", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Project]]",
+        currentStatus: null,
+        metadata: { exo__Asset_uid: "project-456" },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRenameToUid(context, "Project Name")).toBe(true);
+    });
+
+    it("should return true when UID is null (but metadata exists)", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: { exo__Asset_uid: null },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRenameToUid(context, "Task Name")).toBe(false);
+    });
+
+    it("should work with archived assets", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: { exo__Asset_uid: "task-archived" },
+        isArchived: true,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRenameToUid(context, "Different Name")).toBe(true);
     });
   });
 
