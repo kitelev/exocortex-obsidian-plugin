@@ -85,29 +85,7 @@ test.describe('Algorithm Block Extraction from TaskPrototype', () => {
   });
 
   test('should create empty body when TaskPrototype has no Algorithm section', async () => {
-    // Create a TaskPrototype without Algorithm section
-    const prototypeWithoutAlgorithm = `---
-exo__Instance_class: "[[ems__TaskPrototype]]"
-exo__Asset_label: "Simple Template"
-exo__Asset_uid: test-prototype-002
-exo__Asset_isDefinedBy: "[[test-ontology]]"
----
-# Simple Template
-
-This prototype has no algorithm section.
-
-## Description
-
-Just a simple template.
-`;
-
-    const simplePath = path.join(vaultPath, 'Tasks', 'simple-prototype.md');
-    await fs.writeFile(simplePath, prototypeWithoutAlgorithm, 'utf-8');
-
-    // Give Obsidian time to detect and index the new file
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    // Open the file
+    // Open the pre-existing TaskPrototype file without Algorithm section
     await launcher.openFile('Tasks/simple-prototype.md');
 
     const window = await launcher.getWindow();
@@ -155,8 +133,5 @@ Just a simple template.
     // Verify frontmatter exists
     expect(editorContent).toContain('exo__Instance_class');
     expect(editorContent).toContain('ems__Task');
-
-    // Clean up
-    await fs.unlink(simplePath);
   });
 });
