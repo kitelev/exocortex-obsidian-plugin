@@ -20,11 +20,13 @@ Feature: Daily Tasks Table in Layout
 
   Scenario: Tasks display with icons based on status
     Given I have a pn__DailyNote for "2025-10-16"
-    And task "Meeting" has status "[[ems__EffortStatusDoing]]" and class "[[ems__Meeting]]"
+    And task "Active Work" has status "[[ems__EffortStatusDoing]]"
+    And task "Meeting" has status "[[ems__EffortStatusPlanned]]" and class "[[ems__Meeting]]"
     And task "Completed Work" has status "[[ems__EffortStatusDone]]"
     And task "Cancelled Task" has status "[[ems__EffortStatusTrashed]]"
     When I view the daily note
-    Then task "Meeting" should display with 👥 icon
+    Then task "Active Work" should display with 🔄 icon
+    And task "Meeting" should display with 👥 icon
     And task "Completed Work" should display with ✅ icon
     And task "Cancelled Task" should display with ❌ icon
 

@@ -14,6 +14,7 @@ export interface DailyTask {
   metadata: Record<string, unknown>;
   isDone: boolean;
   isTrashed: boolean;
+  isDoing: boolean;
   isMeeting: boolean;
 }
 
@@ -53,7 +54,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   };
 
   const getDisplayName = (task: DailyTask): string => {
-    const icon = (task.isDone && task.isMeeting) ? "✅ 👥 " : task.isDone ? "✅ " : task.isTrashed ? "❌ " : task.isMeeting ? "👥 " : "";
+    const icon = (task.isDone && task.isMeeting) ? "✅ 👥 " : task.isDone ? "✅ " : task.isTrashed ? "❌ " : task.isDoing ? "🔄 " : task.isMeeting ? "👥 " : "";
 
     let displayText = task.label || task.title;
 
