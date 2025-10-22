@@ -68,6 +68,10 @@ test.describe('DailyNote Tasks Table', () => {
     await expect(tasksTable).toBeVisible({ timeout: 10000 });
 
     const rows = tasksTable.locator('tbody tr');
+
+    // Wait for rows to be populated by Dataview query
+    await expect(rows.first()).toBeVisible({ timeout: 5000 });
+
     const rowCount = await rows.count();
 
     expect(rowCount).toBeGreaterThan(0);
