@@ -6,6 +6,7 @@ set -e
 
 # Set Docker flag for Electron --no-sandbox
 export DOCKER=1
+export CI=1
 export DEBUG=pw:browser*
 export ELECTRON_ENABLE_LOGGING=1
 
