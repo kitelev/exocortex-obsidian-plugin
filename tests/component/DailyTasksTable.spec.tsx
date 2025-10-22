@@ -56,6 +56,19 @@ test.describe("DailyTasksTable", () => {
       isTrashed: true,
       isMeeting: false,
     },
+    {
+      file: { path: "meeting2.md", basename: "meeting2" },
+      path: "meeting2.md",
+      title: "Meeting 2",
+      label: "Completed Meeting",
+      startTime: "16:00",
+      endTime: "17:00",
+      status: "ems__EffortStatusDone",
+      metadata: {},
+      isDone: true,
+      isTrashed: false,
+      isMeeting: true,
+    },
   ];
 
   test("should render tasks table with all columns", async ({ mount }) => {
@@ -72,7 +85,7 @@ test.describe("DailyTasksTable", () => {
     const component = await mount(<DailyTasksTable tasks={mockTasks} />);
 
     const rows = component.locator("tbody tr");
-    await expect(rows).toHaveCount(4);
+    await expect(rows).toHaveCount(5);
   });
 
   test("should display task with done icon", async ({ mount }) => {
@@ -97,6 +110,14 @@ test.describe("DailyTasksTable", () => {
     const meetingTask = component.locator('tr[data-path="meeting1.md"] .task-name a');
     await expect(meetingTask).toContainText("👥");
     await expect(meetingTask).toContainText("Team Sync");
+  });
+
+  test("should display completed meeting with both done and meeting icons", async ({ mount }) => {
+    const component = await mount(<DailyTasksTable tasks={mockTasks} />);
+
+    const completedMeeting = component.locator('tr[data-path="meeting2.md"] .task-name a');
+    await expect(completedMeeting).toContainText("✅ 👥");
+    await expect(completedMeeting).toContainText("Completed Meeting");
   });
 
   test("should display start and end times", async ({ mount }) => {
@@ -214,6 +235,6 @@ test.describe("DailyTasksTable", () => {
     const component = await mount(<DailyTasksTable tasks={mockTasks} />);
 
     const taskLinks = component.locator(".task-name a.internal-link");
-    await expect(taskLinks).toHaveCount(4);
+    await expect(taskLinks).toHaveCount(5);
   });
 });
