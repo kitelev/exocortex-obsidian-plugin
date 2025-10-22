@@ -47,10 +47,12 @@ function isAreaOrProject(instanceClass: string | string[] | null): boolean {
 }
 
 /**
- * Check if instanceClass is ems__Task or ems__Project
+ * Check if instanceClass is ems__Task, ems__Project, or ems__Meeting
  */
 function isEffort(instanceClass: string | string[] | null): boolean {
-  return hasClass(instanceClass, "ems__Task") || hasClass(instanceClass, "ems__Project");
+  return hasClass(instanceClass, "ems__Task") ||
+         hasClass(instanceClass, "ems__Project") ||
+         hasClass(instanceClass, "ems__Meeting");
 }
 
 /**
@@ -212,10 +214,10 @@ export function canPlanOnToday(context: CommandVisibilityContext): boolean {
 
 /**
  * Can execute "Plan for Evening" command
- * Available for: Task with Backlog status
+ * Available for: Task or Meeting with Backlog status
  */
 export function canPlanForEvening(context: CommandVisibilityContext): boolean {
-  if (!hasClass(context.instanceClass, "ems__Task")) return false;
+  if (!hasClass(context.instanceClass, "ems__Task") && !hasClass(context.instanceClass, "ems__Meeting")) return false;
 
   // Show only for Backlog status
   return hasStatus(context.currentStatus, "ems__EffortStatusBacklog");
@@ -305,13 +307,13 @@ export function canMoveToToDo(context: CommandVisibilityContext): boolean {
 
 /**
  * Can execute "Start Effort" command
- * Available for: Task with Backlog status OR Project with ToDo status
+ * Available for: Task or Meeting with Backlog status OR Project with ToDo status
  */
 export function canStartEffort(context: CommandVisibilityContext): boolean {
   if (!isEffort(context.instanceClass)) return false;
 
-  // Task: Backlog → Doing
-  if (hasClass(context.instanceClass, "ems__Task")) {
+  // Task and Meeting: Backlog → Doing
+  if (hasClass(context.instanceClass, "ems__Task") || hasClass(context.instanceClass, "ems__Meeting")) {
     return hasStatus(context.currentStatus, "ems__EffortStatusBacklog");
   }
 

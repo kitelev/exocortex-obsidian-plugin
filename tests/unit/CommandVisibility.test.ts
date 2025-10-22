@@ -1437,7 +1437,7 @@ describe("CommandVisibility", () => {
       expect(canVoteOnEffort(context)).toBe(false);
     });
 
-    it("should return false for Meeting", () => {
+    it("should return true for Meeting", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Meeting]]",
         currentStatus: null,
@@ -1446,7 +1446,7 @@ describe("CommandVisibility", () => {
         currentFolder: "",
         expectedFolder: null,
       };
-      expect(canVoteOnEffort(context)).toBe(false);
+      expect(canVoteOnEffort(context)).toBe(true);
     });
 
     it("should return false when instanceClass is null", () => {
