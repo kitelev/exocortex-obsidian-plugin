@@ -396,7 +396,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(button).toBeFalsy();
     });
 
-    it("should position Create Task button above properties table", async () => {
+    it("should position Create Task button below properties table", async () => {
       const currentFile = {
         basename: "Area",
         path: "area.md",
@@ -416,7 +416,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Verify order: buttons section (containing action buttons) -> properties section -> relations
+      // Verify order: properties section -> buttons section (containing action buttons) -> relations
       const children = Array.from(container.children);
       const buttonsContainerIndex = children.findIndex((el) =>
         el.classList.contains("exocortex-buttons-section"),
@@ -427,7 +427,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       expect(buttonsContainerIndex).toBeGreaterThanOrEqual(0);
       expect(propertiesIndex).toBeGreaterThanOrEqual(0);
-      expect(buttonsContainerIndex).toBeLessThan(propertiesIndex);
+      expect(propertiesIndex).toBeLessThan(buttonsContainerIndex);
 
       // Verify Create Task button is inside the action buttons container (inside buttons section)
       const buttonsSection = children[buttonsContainerIndex];
@@ -1059,7 +1059,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(button).toBeFalsy();
     });
 
-    it("should position Repair Folder button after Clean button and before properties", async () => {
+    it("should position Repair Folder button after Clean button and after properties", async () => {
       const currentFile = {
         basename: "Misplaced",
         path: "wrong/asset.md",
@@ -1091,7 +1091,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      // Verify buttons section is before properties
+      // Verify properties section is before buttons section
       const children = Array.from(container.children);
       const buttonsContainerIndex = children.findIndex((el) =>
         el.classList.contains("exocortex-buttons-section"),
@@ -1102,7 +1102,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       expect(buttonsContainerIndex).toBeGreaterThanOrEqual(0);
       expect(propertiesIndex).toBeGreaterThanOrEqual(0);
-      expect(buttonsContainerIndex).toBeLessThan(propertiesIndex);
+      expect(propertiesIndex).toBeLessThan(buttonsContainerIndex);
 
       // Verify both buttons exist inside the buttons section (via action buttons container)
       const buttonsSection = children[buttonsContainerIndex];
