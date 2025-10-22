@@ -391,6 +391,7 @@ export function canRepairFolder(context: CommandVisibilityContext): boolean {
 /**
  * Can execute "Rename to UID" command
  * Available for: Any asset where filename doesn't match exo__Asset_uid
+ * Excluded: ims__Concept assets (concepts should keep their semantic names)
  */
 export function canRenameToUid(
   context: CommandVisibilityContext,
@@ -398,6 +399,8 @@ export function canRenameToUid(
 ): boolean {
   const uid = context.metadata.exo__Asset_uid;
   if (!uid) return false;
+
+  if (hasClass(context.instanceClass, "ims__Concept")) return false;
 
   return currentFilename !== uid;
 }
