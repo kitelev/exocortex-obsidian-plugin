@@ -7,6 +7,7 @@ import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
 import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
 import { DailyTasksTable, DailyTask } from "../components/DailyTasksTable";
+import { DailyProjectsTable, DailyProject } from "../components/DailyProjectsTable";
 import { ActionButtonsGroup, ButtonGroup, ActionButton } from "../components/ActionButtonsGroup";
 import {
   canCreateTask,
@@ -592,6 +593,9 @@ export class UniversalLayoutRenderer {
 
       // Render daily tasks for pn__DailyNote assets
       await this.renderDailyTasks(el, currentFile);
+
+      // Render daily projects for pn__DailyNote assets
+      await this.renderDailyProjects(el, currentFile);
 
       // Get asset relations for the current file
       const relations = await this.getAssetRelations(currentFile, config);
@@ -1434,6 +1438,76 @@ export class UniversalLayoutRenderer {
     this.logger.info(`Rendered ${tasks.length} tasks for DailyNote: ${day}`);
   }
 
+  private async renderDailyProjects(
+    el: HTMLElement,
+    file: TFile,
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = metadata.exo__Instance_class || null;
+
+    const classes = Array.isArray(instanceClass)
+      ? instanceClass
+      : [instanceClass];
+    const isDailyNote = classes.some(
+      (c: string) => c === "[[pn__DailyNote]]" || c === "pn__DailyNote",
+    );
+
+    if (!isDailyNote) {
+      return;
+    }
+
+    const dayProperty = metadata.pn__DailyNote_day;
+    if (!dayProperty) {
+      this.logger.debug("No pn__DailyNote_day found for daily note");
+      return;
+    }
+
+    const dayMatch =
+      typeof dayProperty === "string"
+        ? dayProperty.match(/\[\[(.+?)\]\]/)
+        : null;
+    const day = dayMatch ? dayMatch[1] : String(dayProperty).replace(/^\[\[|\]\]$/g, "");
+
+    const projects = await this.getDailyProjects(day);
+
+    if (projects.length === 0) {
+      this.logger.debug(`No projects found for day: ${day}`);
+      return;
+    }
+
+    const sectionContainer = el.createDiv({ cls: "exocortex-daily-projects-section" });
+
+    sectionContainer.createEl("h3", {
+      text: "Projects",
+      cls: "exocortex-section-header",
+    });
+
+    const tableContainer = sectionContainer.createDiv({ cls: "exocortex-daily-projects-table-container" });
+
+    this.reactRenderer.render(
+      tableContainer,
+      React.createElement(DailyProjectsTable, {
+        projects,
+        onProjectClick: async (path: string, event: React.MouseEvent) => {
+          const isModPressed = Keymap.isModEvent(
+            event.nativeEvent as MouseEvent,
+          );
+
+          if (isModPressed) {
+            const leaf = this.app.workspace.getLeaf("tab");
+            await leaf.openLinkText(path, "");
+          } else {
+            await this.app.workspace.openLinkText(path, "", false);
+          }
+        },
+        getAssetLabel: (path: string) => this.getAssetLabel(path),
+      }),
+    );
+
+    this.logger.info(`Rendered ${projects.length} projects for DailyNote: ${day}`);
+  }
+
   /**
    * Render assets grouped by the property through which they reference the current asset
    * This is the core Assets Relations feature - Now using React components
@@ -1721,6 +1795,18 @@ export class UniversalLayoutRenderer {
           continue;
         }
 
+        const instanceClass = metadata.exo__Instance_class || [];
+        const instanceClassArray = Array.isArray(instanceClass)
+          ? instanceClass
+          : [instanceClass];
+        const isProject = instanceClassArray.some(
+          (c: string) => String(c).includes("ems__Project"),
+        );
+
+        if (isProject) {
+          continue;
+        }
+
         const effortStatus = metadata.ems__Effort_status || "";
         const effortStatusStr = String(effortStatus).replace(/^\[\[|\]\]$/g, "");
 
@@ -1745,10 +1831,6 @@ export class UniversalLayoutRenderer {
 
         const isDone = effortStatusStr === "ems__EffortStatusDone";
         const isTrashed = effortStatusStr === "ems__EffortStatusTrashed";
-        const instanceClass = metadata.exo__Instance_class || [];
-        const instanceClassArray = Array.isArray(instanceClass)
-          ? instanceClass
-          : [instanceClass];
         const isMeeting = instanceClassArray.some(
           (c: string) => String(c).includes("ems__Meeting"),
         );
@@ -1795,6 +1877,112 @@ export class UniversalLayoutRenderer {
       return tasks.slice(0, 50);
     } catch (error) {
       this.logger.error("Failed to get daily tasks", { error });
+      return [];
+    }
+  }
+
+  private async getDailyProjects(
+    day: string,
+  ): Promise<DailyProject[]> {
+    try {
+      const projects: DailyProject[] = [];
+
+      const allFiles = this.app.vault.getMarkdownFiles();
+
+      for (const file of allFiles) {
+        const cache = this.app.metadataCache.getFileCache(file);
+        const metadata = cache?.frontmatter || {};
+
+        const effortDay = metadata.ems__Effort_day;
+
+        if (!effortDay) {
+          continue;
+        }
+
+        const effortDayStr = String(effortDay).replace(/^\[\[|\]\]$/g, "");
+
+        if (effortDayStr !== day) {
+          continue;
+        }
+
+        const instanceClass = metadata.exo__Instance_class || [];
+        const instanceClassArray = Array.isArray(instanceClass)
+          ? instanceClass
+          : [instanceClass];
+        const isProject = instanceClassArray.some(
+          (c: string) => String(c).includes("ems__Project"),
+        );
+
+        if (!isProject) {
+          continue;
+        }
+
+        const effortStatus = metadata.ems__Effort_status || "";
+        const effortStatusStr = String(effortStatus).replace(/^\[\[|\]\]$/g, "");
+
+        const startTimestamp = metadata.ems__Effort_startTimestamp;
+        const plannedStartTimestamp = metadata.ems__Effort_plannedStartTimestamp;
+        const endTimestamp = metadata.ems__Effort_endTimestamp;
+        const plannedEndTimestamp = metadata.ems__Effort_plannedEndTimestamp;
+
+        const formatTime = (timestamp: string | number | null | undefined): string => {
+          if (!timestamp) return "";
+          const date = new Date(timestamp);
+          if (isNaN(date.getTime())) return "";
+          return date.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          });
+        };
+
+        const startTime = formatTime(startTimestamp) || formatTime(plannedStartTimestamp);
+        const endTime = formatTime(endTimestamp) || formatTime(plannedEndTimestamp);
+
+        const isDone = effortStatusStr === "ems__EffortStatusDone";
+        const isTrashed = effortStatusStr === "ems__EffortStatusTrashed";
+
+        const label = metadata.exo__Asset_label || file.basename;
+
+        projects.push({
+          file: {
+            path: file.path,
+            basename: file.basename,
+          },
+          path: file.path,
+          title: file.basename,
+          label,
+          startTime,
+          endTime,
+          status: effortStatusStr,
+          metadata,
+          isDone,
+          isTrashed,
+        });
+      }
+
+      projects.sort((a, b) => {
+        if (a.isTrashed !== b.isTrashed) {
+          return a.isTrashed ? 1 : -1;
+        }
+
+        if (a.isDone !== b.isDone) {
+          return a.isDone ? 1 : -1;
+        }
+
+        if (a.startTime && b.startTime) {
+          return a.startTime.localeCompare(b.startTime);
+        }
+
+        if (a.startTime) return -1;
+        if (b.startTime) return 1;
+
+        return 0;
+      });
+
+      return projects.slice(0, 50);
+    } catch (error) {
+      this.logger.error("Failed to get daily projects", { error });
       return [];
     }
   }
