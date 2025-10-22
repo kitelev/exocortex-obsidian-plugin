@@ -7,13 +7,13 @@ test.describe('Algorithm Block Extraction from TaskPrototype', () => {
   let launcher: ObsidianLauncher;
   let vaultPath: string;
 
-  test.beforeAll(async ({ }, testInfo) => {
+  test.beforeEach(async () => {
     vaultPath = path.join(__dirname, '../test-vault');
-    launcher = new ObsidianLauncher(vaultPath, testInfo.parallelIndex);
+    launcher = new ObsidianLauncher(vaultPath);
     await launcher.launch();
   });
 
-  test.afterAll(async () => {
+  test.afterEach(async () => {
     await launcher.close();
   });
 
