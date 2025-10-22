@@ -53,8 +53,8 @@ describe("CommandManager", () => {
         commandManager.registerAllCommands(mockPlugin);
       }).not.toThrow();
 
-      // Verify that addCommand was called for each command (24 commands total)
-      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(24);
+      // Verify that addCommand was called for each command (25 commands total)
+      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(25);
     });
 
     it("should register commands with correct IDs", () => {
@@ -78,6 +78,7 @@ describe("CommandManager", () => {
       expect(registeredCommands).toContain("create-task");
       expect(registeredCommands).toContain("create-project");
       expect(registeredCommands).toContain("create-instance");
+      expect(registeredCommands).toContain("create-related-task");
       expect(registeredCommands).toContain("set-draft-status");
       expect(registeredCommands).toContain("move-to-backlog");
       expect(registeredCommands).toContain("start-effort");
@@ -119,6 +120,7 @@ describe("CommandManager", () => {
       expect(registeredNames).toContain("Create Task");
       expect(registeredNames).toContain("Create Project");
       expect(registeredNames).toContain("Create Instance");
+      expect(registeredNames).toContain("Create Related Task");
       expect(registeredNames).toContain("Set Draft Status");
       expect(registeredNames).toContain("Move to Backlog");
       expect(registeredNames).toContain("Start Effort");

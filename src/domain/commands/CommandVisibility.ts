@@ -433,3 +433,16 @@ export function canRollbackStatus(context: CommandVisibilityContext): boolean {
 
   return true;
 }
+
+/**
+ * Can execute "Create Related Task" command
+ * Available for: ems__Task assets (not archived)
+ */
+export function canCreateRelatedTask(context: CommandVisibilityContext): boolean {
+  if (!hasClass(context.instanceClass, "ems__Task")) return false;
+
+  // Don't show button if archived
+  if (isAssetArchived(context.isArchived)) return false;
+
+  return true;
+}
