@@ -14,6 +14,7 @@ import {
   canCreateProject,
   canCreateChildArea,
   canCreateInstance,
+  canCreateRelatedTask,
   canSetDraftStatus,
   canMoveToBacklog,
   canMoveToAnalysis,
@@ -309,6 +310,24 @@ export class UniversalLayoutRenderer {
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
           this.logger.info(`Created Instance from TaskPrototype: ${createdFile.path}`);
+        },
+      },
+      {
+        id: "create-related-task",
+        label: "Create Related Task",
+        variant: "primary",
+        visible: canCreateRelatedTask(context),
+        onClick: async () => {
+          const label = await new Promise<string | null>((resolve) => {
+            new LabelInputModal(this.app, resolve).open();
+          });
+          if (label === null) return;
+
+          const createdFile = await this.taskCreationService.createRelatedTask(file, metadata, label);
+          const leaf = this.app.workspace.getLeaf("tab");
+          await leaf.openFile(createdFile);
+          this.app.workspace.setActiveLeaf(leaf, { focus: true });
+          this.logger.info(`Created Related Task: ${createdFile.path}`);
         },
       },
     ];
