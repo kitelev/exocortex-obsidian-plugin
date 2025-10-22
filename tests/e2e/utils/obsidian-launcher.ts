@@ -229,7 +229,11 @@ export class ObsidianLauncher {
         };
       });
 
-      if (vaultStatus.ready && vaultStatus.fileCount >= 6) {
+      if (vaultStatus.ready && vaultStatus.fileCount > 0) {
+        // Give Obsidian extra time to fully index all files before considering vault ready
+        console.log(`[ObsidianLauncher] Vault has ${vaultStatus.fileCount} files, waiting for stabilization...`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
         console.log(`[ObsidianLauncher] Vault ready with ${vaultStatus.fileCount} markdown files indexed`);
         return;
       }
