@@ -9,9 +9,10 @@ export class LabelInputModal extends Modal {
   private onSubmit: (label: string | null) => void;
   private inputEl: HTMLInputElement | null = null;
 
-  constructor(app: App, onSubmit: (label: string | null) => void) {
+  constructor(app: App, onSubmit: (label: string | null) => void, defaultValue: string = "") {
     super(app);
     this.onSubmit = onSubmit;
+    this.label = defaultValue;
   }
 
   onOpen(): void {

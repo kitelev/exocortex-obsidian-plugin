@@ -127,6 +127,19 @@ export class UniversalLayoutRenderer {
   private renameToUidService: RenameToUidService;
   private effortVotingService: EffortVotingService;
 
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  private generateDefaultMeetingLabel(metadata: Record<string, any>, fileName: string): string {
+    const baseLabel = metadata.exo__Asset_label || fileName;
+    const dateStr = this.formatDate(new Date());
+    return `${baseLabel} ${dateStr}`;
+  }
+
   /**
    * Build reverse index of backlinks for O(1) lookups
    */
@@ -275,14 +288,18 @@ export class UniversalLayoutRenderer {
         variant: "primary",
         visible: canCreateInstance(context),
         onClick: async () => {
-          const label = await new Promise<string | null>((resolve) => {
-            new LabelInputModal(this.app, resolve).open();
-          });
-          if (label === null) return;
-
           const sourceClass = Array.isArray(instanceClass)
             ? (instanceClass[0] || "").replace(/\[\[|\]\]/g, "").trim()
             : (instanceClass || "").replace(/\[\[|\]\]/g, "").trim();
+
+          const defaultValue = sourceClass === "ems__MeetingPrototype"
+            ? this.generateDefaultMeetingLabel(metadata, file.basename)
+            : "";
+
+          const label = await new Promise<string | null>((resolve) => {
+            new LabelInputModal(this.app, resolve, defaultValue).open();
+          });
+          if (label === null) return;
 
           const createdFile = await this.taskCreationService.createTask(file, metadata, sourceClass, label);
           const leaf = this.app.workspace.getLeaf("tab");
