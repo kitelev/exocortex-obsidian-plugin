@@ -1,9 +1,5 @@
 /* Exocortex Plugin Styles */
 
-/* Import relation properties styles */
-@import url('styles/relation-properties.css');
-@import url('styles/simplified-properties.css');
-
 /* Assets Relations Styles - Core feature for grouped asset relationships */
 .exocortex-assets-relations {
   padding: 10px 0;
@@ -627,36 +623,38 @@
 .exocortex-action-buttons-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-bottom: 20px;
-  padding: 16px;
-  background-color: var(--background-secondary);
-  border-radius: 8px;
+  gap: 24px;
+  margin: 16px 0 24px 0;
+  padding: 20px;
+  background: var(--background-secondary);
+  border-radius: 12px;
   border: 1px solid var(--background-modifier-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 /* Individual button group */
 .exocortex-button-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 /* Group title */
 .exocortex-button-group-title {
-  font-size: 0.85em;
-  font-weight: 600;
+  font-size: 0.75em;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
   color: var(--text-muted);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  opacity: 0.8;
 }
 
 /* Container for buttons within a group */
 .exocortex-button-group-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 /* Separator between groups */
@@ -665,32 +663,39 @@
   background: linear-gradient(
     to right,
     transparent,
-    var(--background-modifier-border) 20%,
-    var(--background-modifier-border) 80%,
+    var(--background-modifier-border) 10%,
+    var(--background-modifier-border) 90%,
     transparent
   );
-  margin: 8px 0;
+  margin: 12px 0;
+  opacity: 0.6;
 }
 
 /* Base action button styles */
 .exocortex-action-button {
-  padding: 6px 14px;
-  font-size: 0.9em;
+  padding: 8px 16px;
+  font-size: 0.875em;
   font-weight: 500;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  line-height: 1.5;
+  border: 1.5px solid var(--background-modifier-border);
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .exocortex-action-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .exocortex-action-button:active {
   transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 /* Primary variant - Main actions (Create, etc.) */
