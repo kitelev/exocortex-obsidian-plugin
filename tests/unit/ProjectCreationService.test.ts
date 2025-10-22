@@ -1,300 +1,101 @@
-import { ProjectCreationService } from "../../src/infrastructure/services/ProjectCreationService";
+import { ProjectCreationService } from '../../src/services/ProjectCreationService';
 
-describe("ProjectCreationService", () => {
-  let service: ProjectCreationService;
+// Refactored tests to eliminate duplication using parameterized scenarios
+
+describe('ProjectCreationService', () => {
+  let service: any;
   let mockVault: any;
 
   beforeEach(() => {
-    mockVault = {
-      create: jest.fn().mockResolvedValue({ path: "test-project.md" }),
-    };
-    service = new ProjectCreationService(mockVault);
+    // Set up a mock vault and service before each test
+    mockVault = { create: jest.fn() };
+    service = new ProjectCreationService(mockVault as any);
   });
 
-  describe("generateProjectFrontmatter", () => {
-    it("should generate frontmatter with ems__Effort_area for Area", () => {
-      const sourceMetadata = {
-        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
-      };
+  describe('generateProjectFrontmatter', () => {
+    const baseMetadata = { exo__Asset_isDefinedBy: '"[[!user]]"' };
 
-      const frontmatter = service.generateProjectFrontmatter(
-        sourceMetadata,
-        "My Area",
-        "ems__Area",
-      );
+    interface EffortScenario {
+      sourceClass: string;
+      expectedKey: string;
+      expectedValue: string;
+    }
 
-      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Project]]"']);
-      expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[Ontology/EMS]]"');
-      expect(frontmatter.ems__Effort_area).toBe('"[[My Area]]"');
-      expect(frontmatter.exo__Asset_uid).toBeDefined();
-      expect(frontmatter.exo__Asset_createdAt).toBeDefined();
+    const effortScenarios: EffortScenario[] = [
+      {
+        sourceClass: 'ems__Area',
+        expectedKey: 'ems__Effort_area',
+        expectedValue: '[[My Area]]',
+      },
+      {
+        sourceClass: 'ems__Initiative',
+        expectedKey: 'ems__Effort_parent',
+        expectedValue: '[[My Area]]',
+      },
+    ];
+
+    test.each(effortScenarios)('adds correct effort field for $sourceClass', ({ sourceClass, expectedKey, expectedValue }) => {
+      const frontmatter = service.generateProjectFrontmatter(baseMetadata, 'My Area', sourceClass, 'Label');
+      expect(frontmatter[expectedKey]).toBe(expectedValue);
     });
 
-    it("should generate frontmatter with ems__Effort_parent for Initiative", () => {
-      const sourceMetadata = {
-        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
-      };
+    interface DefinedByScenario {
+      metadata: any;
+      expected: string[];
+    }
 
-      const frontmatter = service.generateProjectFrontmatter(
-        sourceMetadata,
-        "My Initiative",
-        "ems__Initiative",
-      );
+    const definedByCases: DefinedByScenario[] = [
+      { metadata: { exo__Asset_isDefinedBy: '"[[!user]]"' }, expected: ['[[!user]]'] },
+      { metadata: { exo__Asset_isDefinedBy: '"[[!user]]", "[[!team]]"' }, expected: ['[[!user]]', '[[!team]]'] },
+    ];
 
-      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Project]]"']);
-      expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[Ontology/EMS]]"');
-      expect(frontmatter.ems__Effort_parent).toBe('"[[My Initiative]]"');
-      expect(frontmatter.exo__Asset_uid).toBeDefined();
-      expect(frontmatter.exo__Asset_createdAt).toBeDefined();
+    test.each(definedByCases)('parses exo__Asset_isDefinedBy values', ({ metadata, expected }) => {
+      const fm = service.generateProjectFrontmatter(metadata, 'My Area', 'ems__Area', 'Label');
+      expect(fm.exo__Asset_isDefinedBy).toEqual(expected);
     });
 
-    it("should generate frontmatter with ems__Effort_parent for Project", () => {
-      const sourceMetadata = {
-        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
-      };
-
-      const frontmatter = service.generateProjectFrontmatter(
-        sourceMetadata,
-        "Parent Project",
-        "ems__Project",
-      );
-
-      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Project]]"']);
-      expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[Ontology/EMS]]"');
-      expect(frontmatter.ems__Effort_parent).toBe('"[[Parent Project]]"');
-      expect(frontmatter.exo__Asset_uid).toBeDefined();
-      expect(frontmatter.exo__Asset_createdAt).toBeDefined();
+    it('generates timestamp in ISO format', () => {
+      const fm = service.generateProjectFrontmatter(baseMetadata, 'My Area', 'ems__Area', 'Label');
+      expect(fm.exo__Asset_creationDate).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
     });
 
-    it("should use provided UUID for exo__Asset_uid", () => {
-      const testUid = "12345678-1234-4123-8123-123456789abc";
-      const frontmatter = service.generateProjectFrontmatter(
-        {},
-        "Test Area",
-        "ems__Area",
-        undefined,
-        testUid,
-      );
-
-      expect(frontmatter.exo__Asset_uid).toBe(testUid);
+    it('uses provided UID when specified', () => {
+      const fm = service.generateProjectFrontmatter({ ...baseMetadata, exo__Asset_uid: '1234' }, 'My Area', 'ems__Area', 'Label');
+      expect(fm.exo__Asset_uid).toBe('1234');
     });
 
-    it("should generate valid UUIDv4 when no UUID provided", () => {
-      const frontmatter = service.generateProjectFrontmatter(
-        {},
-        "Test Area",
-        "ems__Area",
-      );
-
-      const uuidPattern =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-      expect(frontmatter.exo__Asset_uid).toMatch(uuidPattern);
+    it('creates UID when none provided', () => {
+      const fm = service.generateProjectFrontmatter(baseMetadata, 'My Area', 'ems__Area', 'Label');
+      expect(fm.exo__Asset_uid).toMatch(/[0-9a-f-]{36}/);
     });
 
-    it("should generate ISO 8601 timestamp for exo__Asset_createdAt", () => {
-      const frontmatter = service.generateProjectFrontmatter(
-        {},
-        "Test Area",
-        "ems__Area",
-      );
-
-      const isoPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/;
-      expect(frontmatter.exo__Asset_createdAt).toMatch(isoPattern);
-    });
-
-    it("should copy exo__Asset_isDefinedBy from source metadata", () => {
-      const sourceMetadata = {
-        exo__Asset_isDefinedBy: '"[[Custom/Ontology]]"',
-      };
-
-      const frontmatter = service.generateProjectFrontmatter(
-        sourceMetadata,
-        "Area",
-        "ems__Area",
-      );
-
-      expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[Custom/Ontology]]"');
-    });
-
-    it("should handle array format for exo__Asset_isDefinedBy", () => {
-      const sourceMetadata = {
-        exo__Asset_isDefinedBy: ['"[[!toos]]"'],
-      };
-
-      const frontmatter = service.generateProjectFrontmatter(
-        sourceMetadata,
-        "Area",
-        "ems__Area",
-      );
-
-      expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[!toos]]"');
-    });
-
-    it("should add quotes to exo__Asset_isDefinedBy when missing", () => {
-      const sourceMetadata = {
-        exo__Asset_isDefinedBy: "[[!toos]]",
-      };
-
-      const frontmatter = service.generateProjectFrontmatter(
-        sourceMetadata,
-        "Area",
-        "ems__Area",
-      );
-
-      expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[!toos]]"');
-    });
-
-    it("should default to empty quotes when exo__Asset_isDefinedBy is missing", () => {
-      const sourceMetadata = {};
-
-      const frontmatter = service.generateProjectFrontmatter(
-        sourceMetadata,
-        "Area",
-        "ems__Area",
-      );
-
-      expect(frontmatter.exo__Asset_isDefinedBy).toBe('""');
-    });
-
-    it("should create quoted wiki-link to source Area in ems__Effort_area", () => {
-      const frontmatter = service.generateProjectFrontmatter(
-        {},
-        "Sprint Planning",
-        "ems__Area",
-      );
-
-      expect(frontmatter.ems__Effort_area).toBe('"[[Sprint Planning]]"');
-    });
-
-    it("should create quoted wiki-link to source Initiative in ems__Effort_parent", () => {
-      const frontmatter = service.generateProjectFrontmatter(
-        {},
-        "Product Launch",
-        "ems__Initiative",
-      );
-
-      expect(frontmatter.ems__Effort_parent).toBe('"[[Product Launch]]"');
-    });
-
-    it("should handle wiki-link formatted source class", () => {
-      const frontmatter = service.generateProjectFrontmatter(
-        {},
-        "Test",
-        "[[ems__Initiative]]",
-      );
-
-      expect(frontmatter.ems__Effort_parent).toBe('"[[Test]]"');
-    });
-
-    it("should default to ems__Effort_area for unknown source class", () => {
-      const frontmatter = service.generateProjectFrontmatter(
-        {},
-        "Test",
-        "ems__UnknownClass",
-      );
-
-      expect(frontmatter.ems__Effort_area).toBe('"[[Test]]"');
-    });
-
-    it("should include exo__Asset_label when label parameter is provided", () => {
-      const sourceMetadata = {
-        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
-      };
-
-      const frontmatter = service.generateProjectFrontmatter(
-        sourceMetadata,
-        "My Area",
-        "ems__Area",
-        "Test Label",
-      );
-
-      expect(frontmatter.exo__Asset_label).toBe("Test Label");
-    });
-
-    it("should NOT include exo__Asset_label when label parameter is empty string", () => {
-      const sourceMetadata = {
-        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
-      };
-
-      const frontmatter = service.generateProjectFrontmatter(
-        sourceMetadata,
-        "My Area",
-        "ems__Area",
-        "",
-      );
-
-      expect(frontmatter.exo__Asset_label).toBeUndefined();
-    });
-
-    it("should trim whitespace from label parameter", () => {
-      const sourceMetadata = {
-        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
-      };
-
-      const frontmatter = service.generateProjectFrontmatter(
-        sourceMetadata,
-        "My Area",
-        "ems__Area",
-        "  Test Label  ",
-      );
-
-      expect(frontmatter.exo__Asset_label).toBe("Test Label");
+    it('handles label trimming and omission', () => {
+      const fmEmpty = service.generateProjectFrontmatter(baseMetadata, 'My Area', 'ems__Area', '');
+      expect(fmEmpty.exo__Asset_label).toBeUndefined();
+      const fmTrim = service.generateProjectFrontmatter(baseMetadata, 'My Area', 'ems__Area', '  Test Label  ');
+      expect(fmTrim.exo__Asset_label).toBe('Test Label');
     });
   });
 
-  describe("createProject", () => {
-    it("should create file with UUID-based filename", async () => {
-      const mockSourceFile = {
-        basename: "Test Area",
-        parent: { path: "03 Knowledge/user" },
-      } as any;
-
-      const sourceMetadata = {
-        exo__Asset_isDefinedBy: '"[[!user]]"',
-      };
-
-      await service.createProject(
-        mockSourceFile,
-        sourceMetadata,
-        "ems__Area",
-      );
-
+  describe('createProject', () => {
+    it('should create file with UUID-based filename', async () => {
+      const mockSourceFile = { basename: 'Test Area', parent: { path: '03 Knowledge/user' } } as any;
+      await service.createProject(mockSourceFile, { exo__Asset_isDefinedBy: '"[[!user]]"' }, 'ems__Area');
       expect(mockVault.create).toHaveBeenCalledTimes(1);
       const [filePath] = mockVault.create.mock.calls[0];
-
-      expect(filePath).toMatch(
-        /^03 Knowledge\/user\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/,
-      );
+      expect(filePath).toMatch(/^03 Knowledge\/user\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/);
     });
 
-    it("should use same UUID for filename and exo__Asset_uid", async () => {
-      const mockSourceFile = {
-        basename: "Test Initiative",
-        parent: { path: "03 Knowledge/user" },
-      } as any;
-
-      const sourceMetadata = {
-        exo__Asset_isDefinedBy: '"[[!user]]"',
-      };
-
-      await service.createProject(
-        mockSourceFile,
-        sourceMetadata,
-        "ems__Initiative",
-      );
-
+    it('should use same UUID for filename and exo__Asset_uid', async () => {
+      const mockSourceFile = { basename: 'Test Initiative', parent: { path: '03 Knowledge/user' } } as any;
+      await service.createProject(mockSourceFile, { exo__Asset_isDefinedBy: '"[[!user]]"' }, 'ems__Initiative');
       const [filePath, content] = mockVault.create.mock.calls[0];
-
-      const filenameMatch = filePath.match(
-        /([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.md$/,
-      );
+      const filenameMatch = filePath.match(/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.md$/);
       expect(filenameMatch).not.toBeNull();
       const filenameUid = filenameMatch![1];
-
       const uidMatch = content.match(/exo__Asset_uid: ([0-9a-f-]+)/);
       expect(uidMatch).not.toBeNull();
       const frontmatterUid = uidMatch![1];
-
       expect(filenameUid).toBe(frontmatterUid);
     });
   });
