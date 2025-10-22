@@ -4,6 +4,7 @@ import {
   canCreateTask,
   canCreateProject,
   canCreateInstance,
+  canCreateRelatedTask,
   canSetDraftStatus,
   canMoveToBacklog,
   canMoveToAnalysis,
@@ -77,6 +78,7 @@ export class CommandManager {
     this.registerCreateTaskCommand(plugin);
     this.registerCreateProjectCommand(plugin);
     this.registerCreateInstanceCommand(plugin);
+    this.registerCreateRelatedTaskCommand(plugin);
     this.registerSetDraftStatusCommand(plugin);
     this.registerMoveToBacklogCommand(plugin);
     this.registerMoveToAnalysisCommand(plugin);
@@ -196,6 +198,32 @@ export class CommandManager {
           this.executeCreateInstance(file, context).catch((error) => {
             new Notice(`Failed to create instance: ${error.message}`);
             console.error("Create instance error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
+  /**
+   * Register "Exocortex: Create Related Task" command
+   */
+  private registerCreateRelatedTaskCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "create-related-task",
+      name: "Create Related Task",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canCreateRelatedTask(context)) return false;
+
+        if (!checking) {
+          this.executeCreateRelatedTask(file, context).catch((error) => {
+            new Notice(`Failed to create related task: ${error.message}`);
+            console.error("Create related task error:", error);
           });
         }
 
@@ -841,6 +869,39 @@ export class CommandManager {
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
     new Notice(`Instance created: ${createdFile.basename}`);
+  }
+
+  private async executeCreateRelatedTask(
+    file: TFile,
+    context: CommandVisibilityContext,
+  ): Promise<void> {
+    // Show modal and wait for user input
+    const label = await new Promise<string | null>((resolve) => {
+      new LabelInputModal(this.app, resolve).open();
+    });
+
+    // User cancelled
+    if (label === null) {
+      return;
+    }
+
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+
+    const createdFile = await this.taskCreationService.createRelatedTask(
+      file,
+      metadata,
+      label,
+    );
+
+    // Open the created file in a new tab
+    const leaf = this.app.workspace.getLeaf("tab");
+    await leaf.openFile(createdFile);
+
+    // Switch focus to the new tab
+    this.app.workspace.setActiveLeaf(leaf, { focus: true });
+
+    new Notice(`Related task created: ${createdFile.basename}`);
   }
 
   private async executeSetDraftStatus(file: TFile): Promise<void> {

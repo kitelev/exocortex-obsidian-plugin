@@ -137,6 +137,156 @@ export class TaskCreationService {
   }
 
   /**
+   * Create a new related Task with bidirectional exo__Asset_relates links
+   * @param sourceFile The source Task file to create a related task from
+   * @param sourceMetadata Frontmatter metadata from the source
+   * @param label Optional display label for the new task
+   * @returns The created related Task file
+   */
+  async createRelatedTask(
+    sourceFile: TFile,
+    sourceMetadata: Record<string, any>,
+    label?: string,
+  ): Promise<TFile> {
+    const uid = uuidv4();
+    const fileName = `${uid}.md`;
+
+    // Generate frontmatter with exo__Asset_relates pointing to source
+    const frontmatter = this.generateRelatedTaskFrontmatter(
+      sourceMetadata,
+      sourceFile.basename,
+      label,
+      uid,
+    );
+
+    const fileContent = this.buildFileContent(frontmatter);
+
+    // Create file in same folder as source
+    const folderPath = sourceFile.parent?.path || "";
+    const filePath = folderPath ? `${folderPath}/${fileName}` : fileName;
+
+    const createdFile = await this.vault.create(filePath, fileContent);
+
+    // Update source file to add bidirectional exo__Asset_relates link
+    await this.addRelationToSourceFile(sourceFile, uid);
+
+    return createdFile;
+  }
+
+  /**
+   * Generate frontmatter for related Task
+   * Similar to generateTaskFrontmatter but uses exo__Asset_relates instead of ems__Effort_parent
+   * @param sourceMetadata Frontmatter metadata from source task
+   * @param sourceName Name of the source task
+   * @param label Optional display label for the asset
+   * @param uid UUID for the asset
+   */
+  private generateRelatedTaskFrontmatter(
+    sourceMetadata: Record<string, any>,
+    sourceName: string,
+    label?: string,
+    uid?: string,
+  ): Record<string, any> {
+    const now = new Date();
+    const timestamp = this.formatLocalTimestamp(now);
+
+    // Extract isDefinedBy - handle both string and array formats
+    let isDefinedBy = sourceMetadata.exo__Asset_isDefinedBy || '""';
+    if (Array.isArray(isDefinedBy)) {
+      isDefinedBy = isDefinedBy[0] || '""';
+    }
+
+    // Ensure wiki-links are quoted
+    const ensureQuoted = (value: string): string => {
+      if (!value || value === '""') return '""';
+      if (value.startsWith('"') && value.endsWith('"')) return value;
+      return `"${value}"`;
+    };
+
+    const frontmatter: Record<string, any> = {};
+    frontmatter["exo__Asset_isDefinedBy"] = ensureQuoted(isDefinedBy);
+    frontmatter["exo__Asset_uid"] = uid || uuidv4();
+    frontmatter["exo__Asset_createdAt"] = timestamp;
+    frontmatter["exo__Instance_class"] = ['"[[ems__Task]]"'];
+    frontmatter["ems__Effort_status"] = '"[[ems__EffortStatusDraft]]"';
+    frontmatter["exo__Asset_relates"] = [`"[[${sourceName}]]"`];
+
+    // Add label if provided
+    if (label && label.trim() !== "") {
+      const trimmedLabel = label.trim();
+      frontmatter["exo__Asset_label"] = trimmedLabel;
+      frontmatter["aliases"] = [trimmedLabel];
+    }
+
+    return frontmatter;
+  }
+
+  /**
+   * Add bidirectional exo__Asset_relates link to source file
+   * Handles both creating new property and appending to existing array
+   * @param sourceFile The source Task file to update
+   * @param newTaskUid UID of the newly created related task
+   */
+  private async addRelationToSourceFile(
+    sourceFile: TFile,
+    newTaskUid: string,
+  ): Promise<void> {
+    const content = await this.vault.read(sourceFile);
+    const updatedContent = this.addRelationToFrontmatter(content, newTaskUid);
+    await this.vault.modify(sourceFile, updatedContent);
+  }
+
+  /**
+   * Add exo__Asset_relates link to frontmatter
+   * Creates property if it doesn't exist, or appends to array if it does
+   * @param content Original file content
+   * @param relatedTaskUid UID of the related task to link
+   * @returns Updated file content
+   */
+  private addRelationToFrontmatter(
+    content: string,
+    relatedTaskUid: string,
+  ): string {
+    const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---/;
+    const match = content.match(frontmatterRegex);
+
+    // Detect line ending style from original content
+    const lineEnding = content.includes('\r\n') ? '\r\n' : '\n';
+
+    if (!match) {
+      // No frontmatter - create it with exo__Asset_relates
+      const newFrontmatter = `---${lineEnding}exo__Asset_relates:${lineEnding}  - "[[${relatedTaskUid}]]"${lineEnding}---${lineEnding}${content}`;
+      return newFrontmatter;
+    }
+
+    const frontmatterContent = match[1];
+    let updatedFrontmatter = frontmatterContent;
+
+    // Check if exo__Asset_relates already exists
+    if (updatedFrontmatter.includes("exo__Asset_relates:")) {
+      // Property exists - add new item to array
+      // Find the exo__Asset_relates property and add new item
+      const relatesMatch = updatedFrontmatter.match(/exo__Asset_relates:\r?\n((?:  - .*\r?\n)*)/);
+      if (relatesMatch) {
+        const existingItems = relatesMatch[1];
+        const newItem = `  - "[[${relatedTaskUid}]]"${lineEnding}`;
+        updatedFrontmatter = updatedFrontmatter.replace(
+          /exo__Asset_relates:\r?\n((?:  - .*\r?\n)*)/,
+          `exo__Asset_relates:${lineEnding}${existingItems}${newItem}`,
+        );
+      }
+    } else {
+      // Property doesn't exist - add it
+      updatedFrontmatter += `${lineEnding}exo__Asset_relates:${lineEnding}  - "[[${relatedTaskUid}]]"`;
+    }
+
+    return content.replace(
+      frontmatterRegex,
+      `---${lineEnding}${updatedFrontmatter}${lineEnding}---`,
+    );
+  }
+
+  /**
    * Format date as human-readable format (YYYY-MM-DD)
    * @param date Date object
    * @returns Formatted date string
