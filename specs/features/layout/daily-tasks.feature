@@ -36,7 +36,17 @@ Feature: Daily Tasks Table in Layout
     When I view the daily note
     Then tasks should be sorted with Trashed at bottom
     And Done tasks should appear before Trashed
-    And Active tasks should appear first, sorted by start time
+    And Active tasks should appear first, sorted by votes then by start time
+
+  Scenario: Tasks sorted by votes within same status
+    Given I have a pn__DailyNote for "2025-10-16"
+    And task "High Priority" has status "[[ems__EffortStatusDoing]]" and "ems__Effort_votes" set to 5
+    And task "Medium Priority" has status "[[ems__EffortStatusDoing]]" and "ems__Effort_votes" set to 3
+    And task "Low Priority" has status "[[ems__EffortStatusDoing]]" and "ems__Effort_votes" set to 1
+    And task "No Votes" has status "[[ems__EffortStatusDoing]]" and no "ems__Effort_votes" property
+    When I view the daily note
+    Then tasks should be sorted in order: "High Priority", "Medium Priority", "Low Priority", "No Votes"
+    And tasks with missing votes should be treated as having 0 votes
 
   Scenario: Click on task opens task file
     Given I have a pn__DailyNote with tasks
