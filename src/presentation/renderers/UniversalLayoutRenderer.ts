@@ -293,7 +293,7 @@ export class UniversalLayoutRenderer {
             ? (instanceClass[0] || "").replace(/\[\[|\]\]/g, "").trim()
             : (instanceClass || "").replace(/\[\[|\]\]/g, "").trim();
 
-          const defaultValue = sourceClass === "ems__MeetingPrototype"
+          const defaultValue = sourceClass === "ems__MeetingPrototype" || sourceClass === "ems__TaskPrototype"
             ? this.generateDefaultMeetingLabel(metadata, file.basename)
             : "";
 
