@@ -210,7 +210,9 @@ export class TaskCreationService {
 
     // Add label if provided or auto-generated
     if (finalLabel && finalLabel.trim() !== "") {
-      frontmatter["exo__Asset_label"] = finalLabel.trim();
+      const trimmedLabel = finalLabel.trim();
+      frontmatter["exo__Asset_label"] = trimmedLabel;
+      frontmatter["aliases"] = [trimmedLabel];
     }
 
     return frontmatter;

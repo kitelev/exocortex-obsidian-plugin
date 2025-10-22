@@ -85,7 +85,9 @@ export class ProjectCreationService {
     frontmatter[effortProperty] = `"[[${sourceName}]]"`;
 
     if (label && label.trim() !== "") {
-      frontmatter["exo__Asset_label"] = label.trim();
+      const trimmedLabel = label.trim();
+      frontmatter["exo__Asset_label"] = trimmedLabel;
+      frontmatter["aliases"] = [trimmedLabel];
     }
 
     return frontmatter;
