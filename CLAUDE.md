@@ -569,6 +569,33 @@ chore: maintenance task
 4. **E2E Environment ≠ Production**: Docker lacks optional plugins, creates different code paths
 5. **Verify CSS Selectors**: Always check selectors exist in actual rendered output before writing tests
 
+**4 additional lessons from v12.30.5 debugging (PR #37 after main branch rebase):**
+
+6. **Docker Environment Variables**: Docker containers don't inherit GitHub Actions environment variables automatically
+   - Problem: `process.env.CI` was undefined in Docker → Playwright retries disabled (`retries: 0` instead of `retries: 2`)
+   - Solution: Export `CI=1` explicitly in `docker-entrypoint-e2e.sh`
+   - Location: `docker-entrypoint-e2e.sh:9`
+   - Lesson: Always export required environment variables in Docker entrypoint scripts
+
+7. **Modal Timing Race Condition**: Modal dialogs can appear unpredictably in headless Electron + Docker
+   - Problem: Tests waited for `.exocortex-buttons-section`, but modals blocked plugin rendering
+   - Solution: Always call `waitForModalsToClose()` BEFORE `waitForElement()` for UI elements
+   - Pattern: `await launcher.waitForModalsToClose(10000);` → then `await launcher.waitForElement('.selector', 60000);`
+   - Lesson: Handle transient UI states (modals, loading indicators) before asserting on main UI
+
+8. **Auto-Merge Requirements**: GitHub auto-merge requires branch to be up-to-date with base branch
+   - Problem: PR had `auto-merge: enabled` but stayed OPEN with `mergeStateStatus: BEHIND`
+   - Solution: Rebase feature branch with main: `git fetch origin main && git rebase origin/main && git push --force-with-lease`
+   - Trigger: After rebase, CI reruns and auto-merge activates automatically when all checks GREEN
+   - Lesson: Auto-merge doesn't trigger until: (1) All CI checks GREEN, (2) Branch up-to-date, (3) No conflicts
+
+9. **Playwright Retries Configuration**: Retry behavior depends on runtime environment detection
+   - Config: `retries: process.env.CI ? 2 : 0` in `playwright-e2e.config.ts:7`
+   - Problem: First test (cold start) failed in CI, but no retries happened
+   - Root cause: `CI` variable not set → Playwright treated CI as local environment → 0 retries
+   - Solution: Combined with Lesson #6 (export CI=1 in Docker entrypoint)
+   - Lesson: Verify environment-dependent configurations work in all execution contexts (local, Docker, CI)
+
 ### E2E Tests: Docker-Only Policy (MANDATORY)
 
 **⚠️ CRITICAL: E2E tests MUST run in Docker locally - NEVER directly via npm run test:e2e**
