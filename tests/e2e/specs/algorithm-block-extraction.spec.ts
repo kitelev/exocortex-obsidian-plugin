@@ -23,8 +23,8 @@ test.describe('Algorithm Block Extraction from TaskPrototype', () => {
 
     const window = await launcher.getWindow();
 
-    // Wait for the universal layout to render
-    await launcher.waitForElement('.exocortex-buttons-section', 30000);
+    // Wait for the universal layout to render (increased for stability after main branch changes)
+    await launcher.waitForElement('.exocortex-buttons-section', 60000);
 
     // Wait for any modal dialogs (e.g., version display) to close
     await launcher.waitForModalsToClose(10000);
@@ -112,8 +112,8 @@ Just a simple template.
 
     const window = await launcher.getWindow();
 
-    // Wait for the universal layout
-    await launcher.waitForElement('.exocortex-buttons-section', 30000);
+    // Wait for the universal layout (increased for stability after main branch changes)
+    await launcher.waitForElement('.exocortex-buttons-section', 60000);
 
     // Wait for any modal dialogs to close
     await launcher.waitForModalsToClose(10000);
