@@ -104,6 +104,9 @@ Just a simple template.
     const simplePath = path.join(vaultPath, 'Tasks', 'simple-prototype.md');
     await fs.writeFile(simplePath, prototypeWithoutAlgorithm, 'utf-8');
 
+    // Give Obsidian time to detect and index the new file
+    await new Promise(resolve => setTimeout(resolve, 3000));
+
     // Open the file
     await launcher.openFile('Tasks/simple-prototype.md');
 
