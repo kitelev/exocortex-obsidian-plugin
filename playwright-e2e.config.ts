@@ -18,6 +18,20 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    launchOptions: {
+      args: [
+        '--disable-dev-shm-usage',
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-gpu',
+        '--disable-software-rasterizer',
+        '--disable-extensions',
+        '--log-level=3',
+      ],
+      env: {
+        DBUS_SESSION_BUS_ADDRESS: '/dev/null',
+      },
+    },
   },
 
   projects: [
