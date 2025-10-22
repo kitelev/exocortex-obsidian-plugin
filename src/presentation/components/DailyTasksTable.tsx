@@ -53,7 +53,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   };
 
   const getDisplayName = (task: DailyTask): string => {
-    const icon = task.isDone ? "✅ " : task.isTrashed ? "❌ " : task.isMeeting ? "👥 " : "";
+    const icon = (task.isDone && task.isMeeting) ? "✅ 👥 " : task.isDone ? "✅ " : task.isTrashed ? "❌ " : task.isMeeting ? "👥 " : "";
 
     let displayText = task.label || task.title;
 
