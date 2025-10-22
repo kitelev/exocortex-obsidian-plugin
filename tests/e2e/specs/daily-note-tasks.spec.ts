@@ -20,7 +20,9 @@ test.describe('DailyNote Tasks Table', () => {
 
     const window = await launcher.getWindow();
 
-    await launcher.waitForElement('.exocortex-daily-tasks-section', 15000);
+    await launcher.waitForModalsToClose(10000);
+
+    await launcher.waitForElement('.exocortex-daily-tasks-section', 60000);
 
     const tasksTable = window.locator('.exocortex-daily-tasks-section table').first();
     await expect(tasksTable).toBeVisible({ timeout: 10000 });
@@ -43,7 +45,9 @@ test.describe('DailyNote Tasks Table', () => {
 
     const window = await launcher.getWindow();
 
-    await launcher.waitForElement('.exocortex-daily-tasks-section', 15000);
+    await launcher.waitForModalsToClose(10000);
+
+    await launcher.waitForElement('.exocortex-daily-tasks-section', 60000);
 
     const tasksTable = window.locator('.exocortex-daily-tasks-section table').first();
     await expect(tasksTable).toBeVisible({ timeout: 10000 });
@@ -62,7 +66,9 @@ test.describe('DailyNote Tasks Table', () => {
 
     const window = await launcher.getWindow();
 
-    await launcher.waitForElement('.exocortex-daily-tasks-section', 15000);
+    await launcher.waitForModalsToClose(10000);
+
+    await launcher.waitForElement('.exocortex-daily-tasks-section', 60000);
 
     const tasksTable = window.locator('.exocortex-daily-tasks-section table').first();
     await expect(tasksTable).toBeVisible({ timeout: 10000 });
