@@ -40,7 +40,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       },
     } as unknown as App;
 
-    renderer = new UniversalLayoutRenderer(mockApp, DEFAULT_SETTINGS);
+    renderer = new UniversalLayoutRenderer(mockApp, { ...DEFAULT_SETTINGS, showPropertiesSection: true });
   });
 
   afterEach(() => {
