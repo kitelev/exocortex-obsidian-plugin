@@ -229,7 +229,7 @@ export class ObsidianLauncher {
         };
       });
 
-      if (vaultStatus.ready && vaultStatus.fileCount >= 5) {
+      if (vaultStatus.ready && vaultStatus.fileCount >= 6) {
         console.log(`[ObsidianLauncher] Vault ready with ${vaultStatus.fileCount} markdown files indexed`);
         return;
       }
