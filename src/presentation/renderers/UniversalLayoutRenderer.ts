@@ -576,6 +576,11 @@ export class UniversalLayoutRenderer {
         return;
       }
 
+      // Render asset properties (if enabled in settings)
+      if (this.settings.showPropertiesSection) {
+        await this.renderAssetProperties(el, currentFile);
+      }
+
       // Render action buttons with semantic grouping
       const buttonGroups = await this.buildActionButtonGroups(currentFile);
       if (buttonGroups.length > 0) {
@@ -584,11 +589,6 @@ export class UniversalLayoutRenderer {
           buttonsContainer,
           React.createElement(ActionButtonsGroup, { groups: buttonGroups }),
         );
-      }
-
-      // Render asset properties (if enabled in settings)
-      if (this.settings.showPropertiesSection) {
-        await this.renderAssetProperties(el, currentFile);
       }
 
       // Render daily tasks for pn__DailyNote assets

@@ -108,7 +108,7 @@ describe("Layout Settings and Structure", () => {
   });
 
   describe("Layout Sections Order", () => {
-    it("should render sections in correct order: Buttons -> Properties -> Relations", async () => {
+    it("should render sections in correct order: Properties -> Buttons -> Relations", async () => {
       const settings: ExocortexSettings = {
         ...DEFAULT_SETTINGS,
         showPropertiesSection: true,
@@ -141,7 +141,7 @@ describe("Layout Settings and Structure", () => {
       const propertiesIndex = sectionClasses.findIndex((c) => c === "exocortex-properties-section");
 
       if (buttonsIndex !== -1 && propertiesIndex !== -1) {
-        expect(buttonsIndex).toBeLessThan(propertiesIndex);
+        expect(propertiesIndex).toBeLessThan(buttonsIndex);
       }
     });
   });
