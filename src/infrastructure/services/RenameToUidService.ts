@@ -40,7 +40,7 @@ export class RenameToUidService {
       }
 
       const frontmatterContent = match[1];
-      const newFrontmatter = `${frontmatterContent}\nexo__Asset_label: ${label}`;
+      const newFrontmatter = `${frontmatterContent}\nexo__Asset_label: ${label}\naliases:\n  - ${label}`;
 
       return content.replace(frontmatterRegex, `---\n${newFrontmatter}\n---`);
     });
