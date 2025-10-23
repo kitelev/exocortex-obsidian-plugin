@@ -30,6 +30,7 @@ import {
   canRepairFolder,
   canRenameToUid,
   canVoteOnEffort,
+  canRollbackStatus,
   CommandVisibilityContext,
 } from "../../domain/commands/CommandVisibility";
 import { CreateTaskButton } from "../components/CreateTaskButton";
@@ -48,6 +49,7 @@ import { ArchiveTaskButton } from "../components/ArchiveTaskButton";
 import { CleanEmptyPropertiesButton } from "../components/CleanEmptyPropertiesButton";
 import { RepairFolderButton } from "../components/RepairFolderButton";
 import { RenameToUidButton } from "../components/RenameToUidButton";
+import { RollbackStatusButton } from "../components/RollbackStatusButton";
 import { LabelInputModal } from "../modals/LabelInputModal";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 import { ProjectCreationService } from "../../infrastructure/services/ProjectCreationService";
@@ -391,6 +393,18 @@ export class UniversalLayoutRenderer {
           await new Promise((resolve) => setTimeout(resolve, 100));
           await this.refresh();
           this.logger.info(`Marked task as Done: ${file.path}`);
+        },
+      },
+      {
+        id: "rollback-status",
+        label: "Rollback Status",
+        variant: "warning",
+        visible: canRollbackStatus(context),
+        onClick: async () => {
+          await this.taskStatusService.rollbackStatus(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Rolled back status: ${file.path}`);
         },
       },
     ];

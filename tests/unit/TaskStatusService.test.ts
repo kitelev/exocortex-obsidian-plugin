@@ -425,4 +425,125 @@ Content`;
       expect(timestamp.split("T")[1]).toMatch(/\d{2}:\d{2}:\d{2}/);
     });
   });
+
+  describe("rollbackStatus", () => {
+    it("should rollback to previous status from history", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class:
+  - "[[ems__Task]]"
+ems__Effort_status: "[[ems__EffortStatusDoing]]"
+ems__Effort_statusHistory:
+  - status: "[[ems__EffortStatusDraft]]"
+    timestamp: 2025-10-23T10:00:00
+    action: setDraft
+  - status: "[[ems__EffortStatusBacklog]]"
+    timestamp: 2025-10-23T11:00:00
+    action: moveToBacklog
+---
+Task content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.rollbackStatus(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
+      expect(modifiedContent).not.toContain("ems__EffortStatusDoing");
+      expect(modifiedContent).toContain("ems__Effort_statusHistory:");
+      expect(modifiedContent).toContain("[[ems__EffortStatusDraft]]");
+      expect(modifiedContent).not.toContain("moveToBacklog");
+    });
+
+    it("should throw error when no history exists", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class:
+  - "[[ems__Task]]"
+ems__Effort_status: "[[ems__EffortStatusDoing]]"
+---
+Task content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await expect(service.rollbackStatus(mockFile)).rejects.toThrow(
+        "No status history to rollback",
+      );
+    });
+
+    it("should remove endTimestamp when rolling back from Done", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class:
+  - "[[ems__Task]]"
+ems__Effort_status: "[[ems__EffortStatusDone]]"
+ems__Effort_endTimestamp: 2025-10-23T12:00:00
+ems__Effort_resolutionTimestamp: 2025-10-23T12:00:00
+ems__Effort_statusHistory:
+  - status: "[[ems__EffortStatusDoing]]"
+    timestamp: 2025-10-23T11:00:00
+    action: startEffort
+---
+Task content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.rollbackStatus(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusDoing]]"');
+      expect(modifiedContent).not.toContain("ems__Effort_endTimestamp");
+      expect(modifiedContent).not.toContain("ems__Effort_resolutionTimestamp");
+    });
+
+    it("should remove resolutionTimestamp when rolling back from Trashed", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class:
+  - "[[ems__Task]]"
+ems__Effort_status: "[[ems__EffortStatusTrashed]]"
+ems__Effort_resolutionTimestamp: 2025-10-23T12:00:00
+ems__Effort_statusHistory:
+  - status: "[[ems__EffortStatusBacklog]]"
+    timestamp: 2025-10-23T11:00:00
+    action: moveToBacklog
+---
+Task content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.rollbackStatus(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
+      expect(modifiedContent).not.toContain("ems__Effort_resolutionTimestamp");
+    });
+
+    it("should remove startTimestamp when rolling back from Doing to Backlog", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class:
+  - "[[ems__Task]]"
+ems__Effort_status: "[[ems__EffortStatusDoing]]"
+ems__Effort_startTimestamp: 2025-10-23T12:00:00
+ems__Effort_statusHistory:
+  - status: "[[ems__EffortStatusBacklog]]"
+    timestamp: 2025-10-23T11:00:00
+    action: moveToBacklog
+---
+Task content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.rollbackStatus(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
+      expect(modifiedContent).not.toContain("ems__Effort_startTimestamp");
+    });
+  });
 });
