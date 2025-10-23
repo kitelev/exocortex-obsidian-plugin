@@ -32,7 +32,7 @@ export class AreaHierarchyBuilder {
       return null;
     }
 
-    const allAreas = this.collectAllAreas(currentAreaPath, relations);
+    const allAreas = this.collectAllAreasFromVault();
     const rootPath = this.findRootArea(currentAreaPath, allAreas);
 
     if (!rootPath) {
@@ -66,50 +66,29 @@ export class AreaHierarchyBuilder {
     return value.replace(/^\[\[|\]\]$/g, "").trim();
   }
 
-  private collectAllAreas(
-    currentAreaPath: string,
-    relations: AssetRelation[],
-  ): Map<string, AreaNodeData> {
+  private collectAllAreasFromVault(): Map<string, AreaNodeData> {
     const areas = new Map<string, AreaNodeData>();
     const pathByBasename = new Map<string, string>();
 
-    const currentFile = this.vault.getAbstractFileByPath(currentAreaPath);
-    if (currentFile && this.isFile(currentFile)) {
-      const file = currentFile as TFile;
+    const allFiles = this.vault.getMarkdownFiles();
+
+    for (const file of allFiles) {
       const cache = this.metadataCache.getFileCache(file);
       const metadata = cache?.frontmatter || {};
       const instanceClass = this.extractInstanceClass(metadata);
 
       if (instanceClass === "ems__Area") {
         const parentPath = this.extractParentPath(metadata);
-        areas.set(currentAreaPath, {
-          path: currentAreaPath,
+        areas.set(file.path, {
+          path: file.path,
           title: file.basename,
           label: metadata.exo__Asset_label || undefined,
           isArchived: this.isArchived(metadata),
           depth: 0,
           parentPath: parentPath || undefined,
         });
-        pathByBasename.set(file.basename, currentAreaPath);
+        pathByBasename.set(file.basename, file.path);
       }
-    }
-
-    for (const relation of relations) {
-      const instanceClass = this.extractInstanceClass(relation.metadata);
-      if (instanceClass !== "ems__Area") {
-        continue;
-      }
-
-      const parentPath = this.extractParentPath(relation.metadata);
-      areas.set(relation.path, {
-        path: relation.path,
-        title: relation.title,
-        label: relation.metadata.exo__Asset_label || undefined,
-        isArchived: relation.isArchived || false,
-        depth: 0,
-        parentPath: parentPath || undefined,
-      });
-      pathByBasename.set(relation.title, relation.path);
     }
 
     for (const [path, area] of areas.entries()) {

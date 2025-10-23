@@ -8,6 +8,7 @@ describe("AreaHierarchyBuilder", () => {
   beforeEach(() => {
     mockVault = {
       getAbstractFileByPath: jest.fn(),
+      getMarkdownFiles: jest.fn(() => []),
     };
     mockMetadataCache = {
       getFileCache: jest.fn(),
@@ -34,11 +35,14 @@ describe("AreaHierarchyBuilder", () => {
 
     it("should build single node hierarchy for area without parent", () => {
       const currentAreaPath = "areas/root.md";
-      mockVault.getAbstractFileByPath.mockReturnValue({
+      const rootFile = {
         basename: "root",
         path: currentAreaPath,
         stat: { ctime: 0, mtime: 0 },
-      });
+      };
+
+      mockVault.getAbstractFileByPath.mockReturnValue(rootFile);
+      mockVault.getMarkdownFiles.mockReturnValue([rootFile]);
       mockMetadataCache.getFileCache.mockReturnValue({
         frontmatter: {
           exo__Instance_class: "ems__Area",
@@ -60,23 +64,24 @@ describe("AreaHierarchyBuilder", () => {
       const rootPath = "areas/root.md";
       const childPath = "areas/child.md";
 
+      const rootFile = {
+        basename: "root",
+        path: rootPath,
+        stat: { ctime: 0, mtime: 0 },
+      };
+      const childFile = {
+        basename: "child",
+        path: childPath,
+        stat: { ctime: 0, mtime: 0 },
+      };
+
       mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
-        if (path === rootPath) {
-          return {
-            basename: "root",
-            path: rootPath,
-            stat: { ctime: 0, mtime: 0 },
-          };
-        }
-        if (path === childPath) {
-          return {
-            basename: "child",
-            path: childPath,
-            stat: { ctime: 0, mtime: 0 },
-          };
-        }
+        if (path === rootPath) return rootFile;
+        if (path === childPath) return childFile;
         return null;
       });
+
+      mockVault.getMarkdownFiles.mockReturnValue([rootFile, childFile]);
 
       mockMetadataCache.getFileCache.mockImplementation((file: any) => {
         if (file.path === rootPath) {
@@ -84,6 +89,15 @@ describe("AreaHierarchyBuilder", () => {
             frontmatter: {
               exo__Instance_class: "ems__Area",
               exo__Asset_label: "Root Area",
+            },
+          };
+        }
+        if (file.path === childPath) {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Area",
+              exo__Asset_label: "Child Area",
+              ems__Area_parent: "[[root]]",
             },
           };
         }
@@ -118,26 +132,32 @@ describe("AreaHierarchyBuilder", () => {
       const childPath = "areas/child.md";
       const grandchildPath = "areas/grandchild.md";
 
+      const rootFile = {
+        basename: "root",
+        path: rootPath,
+        stat: { ctime: 0, mtime: 0 },
+      };
+      const childFile = {
+        basename: "child",
+        path: childPath,
+        stat: { ctime: 0, mtime: 0 },
+      };
+      const grandchildFile = {
+        basename: "grandchild",
+        path: grandchildPath,
+        stat: { ctime: 0, mtime: 0 },
+      };
+
       mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
         const fileMap: Record<string, any> = {
-          [rootPath]: {
-            basename: "root",
-            path: rootPath,
-            stat: { ctime: 0, mtime: 0 },
-          },
-          [childPath]: {
-            basename: "child",
-            path: childPath,
-            stat: { ctime: 0, mtime: 0 },
-          },
-          [grandchildPath]: {
-            basename: "grandchild",
-            path: grandchildPath,
-            stat: { ctime: 0, mtime: 0 },
-          },
+          [rootPath]: rootFile,
+          [childPath]: childFile,
+          [grandchildPath]: grandchildFile,
         };
         return fileMap[path] || null;
       });
+
+      mockVault.getMarkdownFiles.mockReturnValue([rootFile, childFile, grandchildFile]);
 
       mockMetadataCache.getFileCache.mockImplementation((file: any) => {
         if (file.path === rootPath) {
@@ -145,6 +165,24 @@ describe("AreaHierarchyBuilder", () => {
             frontmatter: {
               exo__Instance_class: "ems__Area",
               exo__Asset_label: "Root",
+            },
+          };
+        }
+        if (file.path === childPath) {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Area",
+              exo__Asset_label: "Child",
+              ems__Area_parent: "[[root]]",
+            },
+          };
+        }
+        if (file.path === grandchildPath) {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Area",
+              exo__Asset_label: "Grandchild",
+              ems__Area_parent: "[[child]]",
             },
           };
         }
@@ -187,21 +225,43 @@ describe("AreaHierarchyBuilder", () => {
       const rootPath = "areas/root.md";
       const childPath = "areas/archived-child.md";
 
+      const rootFile = {
+        basename: "root",
+        path: rootPath,
+        stat: { ctime: 0, mtime: 0 },
+      };
+      const childFile = {
+        basename: "archived-child",
+        path: childPath,
+        stat: { ctime: 0, mtime: 0 },
+      };
+
       mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
-        if (path === rootPath) {
-          return {
-            basename: "root",
-            path: rootPath,
-            stat: { ctime: 0, mtime: 0 },
-          };
-        }
+        if (path === rootPath) return rootFile;
         return null;
       });
 
-      mockMetadataCache.getFileCache.mockReturnValue({
-        frontmatter: {
-          exo__Instance_class: "ems__Area",
-        },
+      mockVault.getMarkdownFiles.mockReturnValue([rootFile, childFile]);
+
+      mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+        if (file.path === rootPath) {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Area",
+            },
+          };
+        }
+        if (file.path === childPath) {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Area",
+              exo__Asset_label: "Archived Child",
+              ems__Area_parent: "[[root]]",
+              exo__Asset_archived: true,
+            },
+          };
+        }
+        return null;
       });
 
       const relations: AssetRelation[] = [
@@ -229,21 +289,26 @@ describe("AreaHierarchyBuilder", () => {
       const area1Path = "areas/area1.md";
       const area2Path = "areas/area2.md";
 
+      const area1File = {
+        basename: "area1",
+        path: area1Path,
+        stat: { ctime: 0, mtime: 0 },
+      };
+      const area2File = {
+        basename: "area2",
+        path: area2Path,
+        stat: { ctime: 0, mtime: 0 },
+      };
+
       mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
         const fileMap: Record<string, any> = {
-          [area1Path]: {
-            basename: "area1",
-            path: area1Path,
-            stat: { ctime: 0, mtime: 0 },
-          },
-          [area2Path]: {
-            basename: "area2",
-            path: area2Path,
-            stat: { ctime: 0, mtime: 0 },
-          },
+          [area1Path]: area1File,
+          [area2Path]: area2File,
         };
         return fileMap[path] || null;
       });
+
+      mockVault.getMarkdownFiles.mockReturnValue([area1File, area2File]);
 
       mockMetadataCache.getFileCache.mockImplementation((file: any) => {
         if (file.path === area1Path) {
@@ -251,6 +316,14 @@ describe("AreaHierarchyBuilder", () => {
             frontmatter: {
               exo__Instance_class: "ems__Area",
               ems__Area_parent: "[[area2]]",
+            },
+          };
+        }
+        if (file.path === area2Path) {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Area",
+              ems__Area_parent: "[[area1]]",
             },
           };
         }
@@ -280,21 +353,72 @@ describe("AreaHierarchyBuilder", () => {
       const child2Path = "areas/alpha.md";
       const child3Path = "areas/middle.md";
 
+      const rootFile = {
+        basename: "root",
+        path: rootPath,
+        stat: { ctime: 0, mtime: 0 },
+      };
+      const child1File = {
+        basename: "zebra",
+        path: child1Path,
+        stat: { ctime: 0, mtime: 0 },
+      };
+      const child2File = {
+        basename: "alpha",
+        path: child2Path,
+        stat: { ctime: 0, mtime: 0 },
+      };
+      const child3File = {
+        basename: "middle",
+        path: child3Path,
+        stat: { ctime: 0, mtime: 0 },
+      };
+
       mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
         if (path === rootPath) {
-          return {
-            basename: "root",
-            path: rootPath,
-            stat: { ctime: 0, mtime: 0 },
-          };
+          return rootFile;
         }
         return null;
       });
 
-      mockMetadataCache.getFileCache.mockReturnValue({
-        frontmatter: {
-          exo__Instance_class: "ems__Area",
-        },
+      mockVault.getMarkdownFiles.mockReturnValue([rootFile, child1File, child2File, child3File]);
+
+      mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+        if (file.path === rootPath) {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Area",
+            },
+          };
+        }
+        if (file.path === child1Path) {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Area",
+              exo__Asset_label: "Zebra Area",
+              ems__Area_parent: "[[root]]",
+            },
+          };
+        }
+        if (file.path === child2Path) {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Area",
+              exo__Asset_label: "Alpha Area",
+              ems__Area_parent: "[[root]]",
+            },
+          };
+        }
+        if (file.path === child3Path) {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Area",
+              exo__Asset_label: "Middle Area",
+              ems__Area_parent: "[[root]]",
+            },
+          };
+        }
+        return null;
       });
 
       const relations: AssetRelation[] = [
@@ -343,21 +467,44 @@ describe("AreaHierarchyBuilder", () => {
       const rootPath = "areas/root.md";
       const childPath = "areas/child.md";
 
+      const rootFile = {
+        basename: "root",
+        path: rootPath,
+        stat: { ctime: 0, mtime: 0 },
+      };
+      const childFile = {
+        basename: "child",
+        path: childPath,
+        stat: { ctime: 0, mtime: 0 },
+      };
+
       mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
         if (path === rootPath) {
-          return {
-            basename: "root",
-            path: rootPath,
-            stat: { ctime: 0, mtime: 0 },
-          };
+          return rootFile;
         }
         return null;
       });
 
-      mockMetadataCache.getFileCache.mockReturnValue({
-        frontmatter: {
-          exo__Instance_class: "ems__Area",
-        },
+      mockVault.getMarkdownFiles.mockReturnValue([rootFile, childFile]);
+
+      mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+        if (file.path === rootPath) {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Area",
+            },
+          };
+        }
+        if (file.path === childPath) {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Area",
+              exo__Asset_label: "Child Area",
+              ems__Area_parent: ["[[root]]"],
+            },
+          };
+        }
+        return null;
       });
 
       const relations: AssetRelation[] = [
@@ -384,21 +531,26 @@ describe("AreaHierarchyBuilder", () => {
       const rootPath = "areas/root.md";
       const childPath = "areas/child.md";
 
+      const rootFile = {
+        basename: "root",
+        path: rootPath,
+        stat: { ctime: 0, mtime: 0 },
+      };
+      const childFile = {
+        basename: "child",
+        path: childPath,
+        stat: { ctime: 0, mtime: 0 },
+      };
+
       mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
         const fileMap: Record<string, any> = {
-          [rootPath]: {
-            basename: "root",
-            path: rootPath,
-            stat: { ctime: 0, mtime: 0 },
-          },
-          [childPath]: {
-            basename: "child",
-            path: childPath,
-            stat: { ctime: 0, mtime: 0 },
-          },
+          [rootPath]: rootFile,
+          [childPath]: childFile,
         };
         return fileMap[path] || null;
       });
+
+      mockVault.getMarkdownFiles.mockReturnValue([rootFile, childFile]);
 
       mockMetadataCache.getFileCache.mockImplementation((file: any) => {
         if (file.path === rootPath) {
