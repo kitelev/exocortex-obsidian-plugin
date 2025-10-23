@@ -16,7 +16,7 @@ test.describe('Area Tree Collapsible Functionality', () => {
   });
 
   test('should display only child areas, not the root area', async () => {
-    await launcher.openNote('Areas/development.md');
+    await launcher.openFile('Areas/development.md');
     await launcher.waitForModalsToClose(10000);
     await launcher.waitForElement('.exocortex-area-tree', 60000);
 
@@ -29,7 +29,7 @@ test.describe('Area Tree Collapsible Functionality', () => {
   });
 
   test('should display toggle button for areas with children', async () => {
-    await launcher.openNote('Areas/development.md');
+    await launcher.openFile('Areas/development.md');
     await launcher.waitForModalsToClose(10000);
     await launcher.waitForElement('.exocortex-area-tree', 60000);
 
@@ -46,7 +46,7 @@ test.describe('Area Tree Collapsible Functionality', () => {
   });
 
   test('should collapse children when toggle is clicked', async () => {
-    await launcher.openNote('Areas/development.md');
+    await launcher.openFile('Areas/development.md');
     await launcher.waitForModalsToClose(10000);
     await launcher.waitForElement('.exocortex-area-tree', 60000);
 
@@ -63,7 +63,7 @@ test.describe('Area Tree Collapsible Functionality', () => {
   });
 
   test('should expand children when toggle is clicked again', async () => {
-    await launcher.openNote('Areas/development.md');
+    await launcher.openFile('Areas/development.md');
     await launcher.waitForModalsToClose(10000);
     await launcher.waitForElement('.exocortex-area-tree', 60000);
 
@@ -82,7 +82,7 @@ test.describe('Area Tree Collapsible Functionality', () => {
   });
 
   test('should display correct hierarchy depth with collapsible nodes', async () => {
-    await launcher.openNote('Areas/development.md');
+    await launcher.openFile('Areas/development.md');
     await launcher.waitForModalsToClose(10000);
     await launcher.waitForElement('.exocortex-area-tree', 60000);
 
@@ -95,7 +95,7 @@ test.describe('Area Tree Collapsible Functionality', () => {
   });
 
   test('should allow clicking on area links to navigate', async () => {
-    await launcher.openNote('Areas/development.md');
+    await launcher.openFile('Areas/development.md');
     await launcher.waitForModalsToClose(10000);
     await launcher.waitForElement('.exocortex-area-tree', 60000);
 
