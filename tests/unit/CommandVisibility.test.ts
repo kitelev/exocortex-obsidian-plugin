@@ -1590,11 +1590,7 @@ describe("CommandVisibility", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Area]]",
         currentStatus: "[[ems__EffortStatusDoing]]",
-        metadata: {
-          ems__Effort_statusHistory: [
-            { status: "[[ems__EffortStatusBacklog]]", timestamp: "2025-10-23T10:00:00", action: "moveToBacklog" }
-          ]
-        },
+        metadata: {},
         isArchived: false,
         currentFolder: "",
         expectedFolder: null,
@@ -1606,11 +1602,7 @@ describe("CommandVisibility", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Task]]",
         currentStatus: "[[ems__EffortStatusDoing]]",
-        metadata: {
-          ems__Effort_statusHistory: [
-            { status: "[[ems__EffortStatusBacklog]]", timestamp: "2025-10-23T10:00:00", action: "moveToBacklog" }
-          ]
-        },
+        metadata: {},
         isArchived: true,
         currentFolder: "",
         expectedFolder: null,
@@ -1622,22 +1614,6 @@ describe("CommandVisibility", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Task]]",
         currentStatus: null,
-        metadata: {
-          ems__Effort_statusHistory: [
-            { status: "[[ems__EffortStatusBacklog]]", timestamp: "2025-10-23T10:00:00", action: "moveToBacklog" }
-          ]
-        },
-        isArchived: false,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canRollbackStatus(context)).toBe(false);
-    });
-
-    it("should return false when no status history exists", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Task]]",
-        currentStatus: "[[ems__EffortStatusDoing]]",
         metadata: {},
         isArchived: false,
         currentFolder: "",
@@ -1646,11 +1622,11 @@ describe("CommandVisibility", () => {
       expect(canRollbackStatus(context)).toBe(false);
     });
 
-    it("should return false when status history is empty array", () => {
+    it("should return false when status is Trashed", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Task]]",
-        currentStatus: "[[ems__EffortStatusDoing]]",
-        metadata: { ems__Effort_statusHistory: [] },
+        currentStatus: "[[ems__EffortStatusTrashed]]",
+        metadata: {},
         isArchived: false,
         currentFolder: "",
         expectedFolder: null,
@@ -1658,16 +1634,11 @@ describe("CommandVisibility", () => {
       expect(canRollbackStatus(context)).toBe(false);
     });
 
-    it("should return true for Task with valid status history", () => {
+    it("should return true for Task with Doing status", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Task]]",
         currentStatus: "[[ems__EffortStatusDoing]]",
-        metadata: {
-          ems__Effort_statusHistory: [
-            { status: "[[ems__EffortStatusDraft]]", timestamp: "2025-10-23T09:00:00", action: "setDraft" },
-            { status: "[[ems__EffortStatusBacklog]]", timestamp: "2025-10-23T10:00:00", action: "moveToBacklog" }
-          ]
-        },
+        metadata: {},
         isArchived: false,
         currentFolder: "",
         expectedFolder: null,
@@ -1675,15 +1646,47 @@ describe("CommandVisibility", () => {
       expect(canRollbackStatus(context)).toBe(true);
     });
 
-    it("should return true for Project with valid status history", () => {
+    it("should return true for Task with Backlog status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: "[[ems__EffortStatusBacklog]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRollbackStatus(context)).toBe(true);
+    });
+
+    it("should return true for Task with Draft status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: "[[ems__EffortStatusDraft]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRollbackStatus(context)).toBe(true);
+    });
+
+    it("should return true for Task with Done status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: "[[ems__EffortStatusDone]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRollbackStatus(context)).toBe(true);
+    });
+
+    it("should return true for Project with ToDo status", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Project]]",
         currentStatus: "[[ems__EffortStatusToDo]]",
-        metadata: {
-          ems__Effort_statusHistory: [
-            { status: "[[ems__EffortStatusAnalysis]]", timestamp: "2025-10-23T10:00:00", action: "moveToAnalysis" }
-          ]
-        },
+        metadata: {},
         isArchived: false,
         currentFolder: "",
         expectedFolder: null,
@@ -1691,20 +1694,52 @@ describe("CommandVisibility", () => {
       expect(canRollbackStatus(context)).toBe(true);
     });
 
-    it("should return true for Meeting with valid status history", () => {
+    it("should return true for Project with Analysis status", () => {
       const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Meeting]]",
-        currentStatus: "[[ems__EffortStatusDone]]",
-        metadata: {
-          ems__Effort_statusHistory: [
-            { status: "[[ems__EffortStatusDoing]]", timestamp: "2025-10-23T11:00:00", action: "startEffort" }
-          ]
-        },
+        instanceClass: "[[ems__Project]]",
+        currentStatus: "[[ems__EffortStatusAnalysis]]",
+        metadata: {},
         isArchived: false,
         currentFolder: "",
         expectedFolder: null,
       };
       expect(canRollbackStatus(context)).toBe(true);
+    });
+
+    it("should return true for Meeting with Done status", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Meeting]]",
+        currentStatus: "[[ems__EffortStatusDone]]",
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRollbackStatus(context)).toBe(true);
+    });
+
+    it("should handle array currentStatus correctly", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: ["[[ems__EffortStatusDoing]]"],
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRollbackStatus(context)).toBe(true);
+    });
+
+    it("should return false for array currentStatus with Trashed", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: ["[[ems__EffortStatusTrashed]]"],
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canRollbackStatus(context)).toBe(false);
     });
   });
 

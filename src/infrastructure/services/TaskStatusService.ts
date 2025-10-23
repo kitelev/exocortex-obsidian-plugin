@@ -617,174 +617,42 @@ ${content}`;
     return statusMatch[1].trim();
   }
 
-  private extractStatusHistory(content: string): Array<{
-    status: string;
-    timestamp: string;
-    action: string;
-  }> {
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) return [];
-
-    const frontmatterContent = match[1];
-    const lines = frontmatterContent.split("\n");
-
-    const history: Array<{
-      status: string;
-      timestamp: string;
-      action: string;
-    }> = [];
-
-    let currentEntry: Partial<{
-      status: string;
-      timestamp: string;
-      action: string;
-    }> = {};
-
-    let inHistory = false;
-
-    for (const line of lines) {
-      if (line.trim().startsWith("ems__Effort_statusHistory:")) {
-        inHistory = true;
-        continue;
-      }
-
-      if (inHistory) {
-        if (line.match(/^[a-zA-Z]/)) {
-          break;
-        }
-
-        const statusMatch = line.match(/^\s*-?\s*status:\s*(.+)$/);
-        const timestampMatch = line.match(/^\s*timestamp:\s*(.+)$/);
-        const actionMatch = line.match(/^\s*action:\s*(.+)$/);
-
-        if (statusMatch) {
-          if (Object.keys(currentEntry).length > 0 && currentEntry.status) {
-            if (
-              currentEntry.status &&
-              currentEntry.timestamp &&
-              currentEntry.action
-            ) {
-              history.push({
-                status: currentEntry.status,
-                timestamp: currentEntry.timestamp,
-                action: currentEntry.action,
-              });
-            }
-          }
-          currentEntry = { status: statusMatch[1].trim() };
-        } else if (timestampMatch) {
-          currentEntry.timestamp = timestampMatch[1].trim();
-        } else if (actionMatch) {
-          currentEntry.action = actionMatch[1].trim();
-        }
-      }
-    }
-
-    if (
-      currentEntry.status &&
-      currentEntry.timestamp &&
-      currentEntry.action
-    ) {
-      history.push({
-        status: currentEntry.status,
-        timestamp: currentEntry.timestamp,
-        action: currentEntry.action,
-      });
-    }
-
-    return history;
-  }
-
-  private updateFrontmatterWithStatusHistory(
-    content: string,
-    history: Array<{ status: string; timestamp: string; action: string }>,
-  ): string {
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    const historyYaml = history
-      .map(
-        (entry) =>
-          `  - status: ${entry.status}\n    timestamp: ${entry.timestamp}\n    action: ${entry.action}`,
-      )
-      .join("\n");
-
-    if (!match) {
-      const newFrontmatter = `---
-ems__Effort_statusHistory:
-${historyYaml}
----
-${content}`;
-      return newFrontmatter;
-    }
-
-    const frontmatterContent = match[1];
-    const lines = frontmatterContent.split("\n");
-    const updatedLines: string[] = [];
-    let inHistory = false;
-    let historyInserted = false;
-
-    for (const line of lines) {
-      if (line.trim().startsWith("ems__Effort_statusHistory:")) {
-        inHistory = true;
-        updatedLines.push("ems__Effort_statusHistory:");
-        historyYaml.split("\n").forEach(l => updatedLines.push(l));
-        historyInserted = true;
-        continue;
-      }
-
-      if (inHistory) {
-        if (line.match(/^[a-zA-Z]/)) {
-          inHistory = false;
-          updatedLines.push(line);
-        }
-        continue;
-      }
-
-      updatedLines.push(line);
-    }
-
-    if (!historyInserted) {
-      updatedLines.push("ems__Effort_statusHistory:");
-      historyYaml.split("\n").forEach(l => updatedLines.push(l));
-    }
-
-    const updatedFrontmatter = updatedLines.join("\n");
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
-    );
-  }
 
   async rollbackStatus(taskFile: TFile): Promise<void> {
     const fileContent = await this.vault.read(taskFile);
-    const history = this.extractStatusHistory(fileContent);
+    const currentStatus = this.extractCurrentStatus(fileContent);
+    const instanceClass = this.extractInstanceClass(fileContent);
 
-    if (history.length < 1) {
-      throw new Error("No status history to rollback");
+    if (!currentStatus) {
+      throw new Error("No current status to rollback from");
     }
 
-    const previousEntry = history[history.length - 1];
-    history.pop();
+    const previousStatus = this.getPreviousStatusFromWorkflow(
+      currentStatus,
+      instanceClass,
+    );
+
+    if (previousStatus === undefined) {
+      throw new Error("Cannot rollback from current status");
+    }
 
     let updatedContent = fileContent;
 
-    updatedContent = this.updateFrontmatterWithStatus(
-      updatedContent,
-      previousEntry.status,
-    );
+    if (previousStatus === null) {
+      updatedContent = this.removeFrontmatterProperty(
+        updatedContent,
+        "ems__Effort_status",
+      );
+    } else {
+      updatedContent = this.updateFrontmatterWithStatus(
+        updatedContent,
+        previousStatus,
+      );
+    }
 
-    updatedContent = this.updateFrontmatterWithStatusHistory(
-      updatedContent,
-      history,
-    );
+    const normalizedStatus = currentStatus.replace(/["'\[\]]/g, "").trim();
 
-    const currentStatus = this.extractCurrentStatus(fileContent);
-
-    if (currentStatus?.includes("ems__EffortStatusDone")) {
+    if (normalizedStatus === "ems__EffortStatusDone") {
       updatedContent = this.removeFrontmatterProperty(
         updatedContent,
         "ems__Effort_endTimestamp",
@@ -793,24 +661,92 @@ ${content}`;
         updatedContent,
         "ems__Effort_resolutionTimestamp",
       );
-    } else if (currentStatus?.includes("ems__EffortStatusTrashed")) {
+    } else if (normalizedStatus === "ems__EffortStatusDoing") {
       updatedContent = this.removeFrontmatterProperty(
         updatedContent,
-        "ems__Effort_resolutionTimestamp",
+        "ems__Effort_startTimestamp",
       );
-    } else if (currentStatus?.includes("ems__EffortStatusDoing")) {
-      if (
-        previousEntry.status.includes("ems__EffortStatusBacklog") ||
-        previousEntry.status.includes("ems__EffortStatusToDo")
-      ) {
-        updatedContent = this.removeFrontmatterProperty(
-          updatedContent,
-          "ems__Effort_startTimestamp",
-        );
-      }
     }
 
     await this.vault.modify(taskFile, updatedContent);
+  }
+
+  private getPreviousStatusFromWorkflow(
+    currentStatus: string,
+    instanceClass: string | string[] | null,
+  ): string | null | undefined {
+    const normalizedStatus = currentStatus.replace(/["'\[\]]/g, "").trim();
+
+    if (normalizedStatus === "ems__EffortStatusDraft") {
+      return null;
+    }
+
+    if (normalizedStatus === "ems__EffortStatusBacklog") {
+      return '"[[ems__EffortStatusDraft]]"';
+    }
+
+    if (normalizedStatus === "ems__EffortStatusAnalysis") {
+      return '"[[ems__EffortStatusBacklog]]"';
+    }
+
+    if (normalizedStatus === "ems__EffortStatusToDo") {
+      return '"[[ems__EffortStatusAnalysis]]"';
+    }
+
+    if (normalizedStatus === "ems__EffortStatusDoing") {
+      const isProject = this.hasInstanceClass(instanceClass, "ems__Project");
+      return isProject
+        ? '"[[ems__EffortStatusToDo]]"'
+        : '"[[ems__EffortStatusBacklog]]"';
+    }
+
+    if (normalizedStatus === "ems__EffortStatusDone") {
+      return '"[[ems__EffortStatusDoing]]"';
+    }
+
+    return undefined;
+  }
+
+  private hasInstanceClass(
+    instanceClass: string | string[] | null,
+    targetClass: string,
+  ): boolean {
+    if (!instanceClass) return false;
+
+    const classes = Array.isArray(instanceClass)
+      ? instanceClass
+      : [instanceClass];
+    return classes.some(
+      (cls) => cls.replace(/["'\[\]]/g, "").trim() === targetClass,
+    );
+  }
+
+  private extractInstanceClass(content: string): string | string[] | null {
+    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
+    const match = content.match(frontmatterRegex);
+
+    if (!match) return null;
+
+    const frontmatterContent = match[1];
+
+    const arrayMatch = frontmatterContent.match(
+      /exo__Instance_class:\s*\n((?:\s*-\s*.*\n?)+)/,
+    );
+
+    if (arrayMatch) {
+      const lines = arrayMatch[1].split("\n").filter(l => l.trim());
+      return lines.map((line) => line.replace(/^\s*-\s*/, "").trim());
+    }
+
+    const singleMatch = frontmatterContent.match(
+      /exo__Instance_class:\s*(.+)$/m,
+    );
+
+    if (singleMatch) {
+      return singleMatch[1].trim();
+    }
+
+    return null;
   }
 
   private updateFrontmatterWithStatus(
