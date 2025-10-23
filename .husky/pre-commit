@@ -11,8 +11,15 @@ fi
 
 # Run tests
 echo "🧪 Running tests..."
-# Force ARM64 architecture for node to ensure correct rollup binary is loaded
-arch -arm64 npm test || exit 1
+# Force ARM64 architecture for node to ensure correct rollup binary is loaded (macOS only)
+case "$OSTYPE" in
+  darwin*)
+    arch -arm64 npm test || exit 1
+    ;;
+  *)
+    npm test || exit 1
+    ;;
+esac
 
 # Check BDD coverage
 echo "📊 Checking BDD coverage..."
