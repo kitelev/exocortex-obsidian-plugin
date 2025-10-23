@@ -6,7 +6,7 @@ import { ReactRenderer } from "../utils/ReactRenderer";
 import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
 import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
-import { DailyTasksTable, DailyTask } from "../components/DailyTasksTable";
+import { DailyTasksTable, DailyTask, DailyTasksTableWithToggle } from "../components/DailyTasksTable";
 import { DailyProjectsTable, DailyProject } from "../components/DailyProjectsTable";
 import { ActionButtonsGroup, ButtonGroup, ActionButton } from "../components/ActionButtonsGroup";
 import {
@@ -1428,7 +1428,7 @@ export class UniversalLayoutRenderer {
 
     this.reactRenderer.render(
       tableContainer,
-      React.createElement(DailyTasksTable, {
+      React.createElement(DailyTasksTableWithToggle, {
         tasks,
         onTaskClick: async (path: string, event: React.MouseEvent) => {
           // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
