@@ -1564,6 +1564,7 @@ export class UniversalLayoutRenderer {
         showProperties: config.showProperties || [],
         groupSpecificProperties: {
           "ems__Effort_parent": ["ems__Effort_status"],
+          "ems__Effort_area": ["ems__Effort_status"],
         },
         onAssetClick: async (path: string, event: React.MouseEvent) => {
           // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
