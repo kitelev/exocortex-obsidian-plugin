@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 export interface DailyTask {
   file: {
@@ -22,12 +22,14 @@ export interface DailyTasksTableProps {
   tasks: DailyTask[];
   onTaskClick?: (path: string, event: React.MouseEvent) => void;
   getAssetLabel?: (path: string) => string | null;
+  showEffortArea?: boolean;
 }
 
 export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   tasks,
   onTaskClick,
   getAssetLabel,
+  showEffortArea = false,
 }) => {
   interface WikiLink {
     target: string;
@@ -79,6 +81,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
             <th>Start</th>
             <th>End</th>
             <th>Status</th>
+            {showEffortArea && <th>Effort Area</th>}
           </tr>
         </thead>
         <tbody>
@@ -122,10 +125,59 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
                   );
                 })() : "-"}
               </td>
+              {showEffortArea && (
+                <td className="task-effort-area">
+                  {task.metadata.ems__Effort_area ? (() => {
+                    const effortArea = task.metadata.ems__Effort_area;
+                    const isWikiLink = typeof effortArea === "string" && /\[\[.*?\]\]/.test(effortArea);
+                    const parsed = isWikiLink ? parseWikiLink(effortArea as string) : { target: effortArea as string };
+                    const displayText = parsed.alias || parsed.target;
+
+                    return (
+                      <a
+                        data-href={parsed.target}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onTaskClick?.(parsed.target, e);
+                        }}
+                        className="internal-link"
+                        style={{ cursor: "pointer" }}
+                      >
+                        {getAssetLabel?.(parsed.target) || displayText}
+                      </a>
+                    );
+                  })() : "-"}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
       </table>
+    </div>
+  );
+};
+
+export const DailyTasksTableWithToggle: React.FC<Omit<DailyTasksTableProps, 'showEffortArea'>> = (props) => {
+  const [showEffortArea, setShowEffortArea] = useState(false);
+
+  return (
+    <div className="exocortex-daily-tasks-wrapper">
+      <div className="exocortex-daily-tasks-controls">
+        <button
+          className="exocortex-toggle-effort-area"
+          onClick={() => setShowEffortArea(!showEffortArea)}
+          style={{
+            marginBottom: "8px",
+            padding: "4px 8px",
+            cursor: "pointer",
+            fontSize: "12px",
+          }}
+        >
+          {showEffortArea ? "Hide" : "Show"} Effort Area
+        </button>
+      </div>
+      <DailyTasksTable {...props} showEffortArea={showEffortArea} />
     </div>
   );
 };
