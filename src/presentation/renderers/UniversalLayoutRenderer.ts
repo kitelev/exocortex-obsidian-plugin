@@ -681,9 +681,19 @@ export class UniversalLayoutRenderer {
       return;
     }
 
+    const scrollParent = this.rootContainer.closest('.markdown-preview-view')
+      || this.rootContainer.closest('.workspace-leaf-content');
+    const scrollTop = scrollParent?.scrollTop || 0;
+
     const source = this.rootContainer.getAttribute("data-source") || "";
     this.rootContainer.empty();
     await this.render(source, this.rootContainer, {} as MarkdownPostProcessorContext);
+
+    requestAnimationFrame(() => {
+      if (scrollParent) {
+        scrollParent.scrollTop = scrollTop;
+      }
+    });
   }
 
   /**
