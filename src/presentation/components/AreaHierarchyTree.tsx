@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useMemo } from "react";
 
 export interface AreaNode {
   path: string;
@@ -17,122 +17,20 @@ export interface AreaHierarchyTreeProps {
   getAssetLabel?: (path: string) => string | null;
 }
 
-interface TreeNodeProps {
+interface FlatArea {
   node: AreaNode;
-  currentAreaPath: string;
-  onAreaClick?: (path: string, event: React.MouseEvent) => void;
-  getAssetLabel?: (path: string) => string | null;
+  depth: number;
 }
 
-const TreeNode: React.FC<TreeNodeProps> = ({
-  node,
-  currentAreaPath,
-  onAreaClick,
-  getAssetLabel,
-}) => {
-  const [isExpanded, setIsExpanded] = useState<boolean>(true);
+function flattenTree(node: AreaNode, depth = 0): FlatArea[] {
+  const result: FlatArea[] = [{ node, depth }];
 
-  const handleToggle = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsExpanded((prev) => !prev);
-  }, []);
+  node.children.forEach((child) => {
+    result.push(...flattenTree(child, depth + 1));
+  });
 
-  const handleClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      onAreaClick?.(node.path, e);
-    },
-    [node.path, onAreaClick],
-  );
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.key === "Enter") {
-          onAreaClick?.(node.path, e as unknown as React.MouseEvent);
-        } else {
-          setIsExpanded((prev) => !prev);
-        }
-      } else if (e.key === "ArrowRight" && !isExpanded && node.children.length > 0) {
-        e.preventDefault();
-        setIsExpanded(true);
-      } else if (e.key === "ArrowLeft" && isExpanded && node.children.length > 0) {
-        e.preventDefault();
-        setIsExpanded(false);
-      }
-    },
-    [node.path, isExpanded, node.children.length, onAreaClick],
-  );
-
-  const customLabel = getAssetLabel?.(node.path);
-  const displayLabel = customLabel || node.label || node.title;
-
-  const isCurrent = node.path === currentAreaPath;
-  const hasChildren = node.children.length > 0;
-
-  const nodeClasses = [
-    "area-tree-node",
-    isCurrent && "current",
-    node.isArchived && "archived",
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const labelClasses = [
-    "area-tree-label",
-    isCurrent && "current",
-    node.isArchived && "archived",
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  return (
-    <li className={nodeClasses} data-path={node.path}>
-      <div className="area-tree-item">
-        {hasChildren && (
-          <button
-            className="area-tree-toggle"
-            onClick={handleToggle}
-            aria-expanded={isExpanded}
-            aria-label={isExpanded ? "Collapse" : "Expand"}
-            tabIndex={0}
-          >
-            {isExpanded ? "▼" : "▶"}
-          </button>
-        )}
-        {!hasChildren && <span className="area-tree-spacer" />}
-        <a
-          data-href={node.path}
-          onClick={handleClick}
-          onKeyDown={handleKeyDown}
-          className={labelClasses}
-          tabIndex={0}
-          role="link"
-          aria-current={isCurrent ? "page" : undefined}
-        >
-          {displayLabel}
-        </a>
-      </div>
-      {hasChildren && isExpanded && (
-        <ul className="area-tree-children" role="group">
-          {node.children.map((child) => (
-            <TreeNode
-              key={child.path}
-              node={child}
-              currentAreaPath={currentAreaPath}
-              onAreaClick={onAreaClick}
-              getAssetLabel={getAssetLabel}
-            />
-          ))}
-        </ul>
-      )}
-    </li>
-  );
-};
+  return result;
+}
 
 export const AreaHierarchyTree: React.FC<AreaHierarchyTreeProps> = ({
   tree,
@@ -140,16 +38,53 @@ export const AreaHierarchyTree: React.FC<AreaHierarchyTreeProps> = ({
   onAreaClick,
   getAssetLabel,
 }) => {
+  const flatAreas = useMemo(() => {
+    return flattenTree(tree);
+  }, [tree]);
+
   return (
-    <div className="area-hierarchy-tree">
-      <ul className="area-tree-root" role="tree">
-        <TreeNode
-          node={tree}
-          currentAreaPath={currentAreaPath}
-          onAreaClick={onAreaClick}
-          getAssetLabel={getAssetLabel}
-        />
-      </ul>
+    <div className="exocortex-area-tree">
+      <h3>Area Hierarchy</h3>
+      <table className="exocortex-relation-table">
+        <thead>
+          <tr>
+            <th>Area</th>
+            <th>Class</th>
+          </tr>
+        </thead>
+        <tbody>
+          {flatAreas.map((item) => {
+            const customLabel = getAssetLabel?.(item.node.path);
+            const displayLabel = customLabel ?? item.node.label ?? item.node.title;
+            const isCurrent = item.node.path === currentAreaPath;
+
+            const indent = "  ".repeat(item.depth);
+
+            return (
+              <tr key={item.node.path}>
+                <td>
+                  <a
+                    data-href={item.node.path}
+                    className={`internal-link ${isCurrent ? "area-tree-current" : ""} ${item.node.isArchived ? "is-archived" : ""}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onAreaClick?.(item.node.path, e);
+                    }}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {indent}
+                    {displayLabel}
+                  </a>
+                </td>
+                <td>
+                  <a className="internal-link">ems__Area</a>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 };

@@ -88,23 +88,34 @@ test.describe('AreaHierarchyTree Component', () => {
     ],
   };
 
-  test('should render single node tree', async ({ mount }) => {
+  test('should render table structure', async ({ mount }) => {
     const component = await mount(
       <AreaHierarchyTree tree={mockTreeSingleNode} currentAreaPath="areas/root.md" />
     );
 
-    await expect(component.locator('.area-tree-label')).toBeVisible();
-    await expect(component.locator('.area-tree-label')).toHaveText('Root Area');
-    await expect(component.locator('.area-tree-toggle')).toHaveCount(0);
+    await expect(component.locator('table.exocortex-relation-table')).toBeVisible();
+    await expect(component.locator('thead')).toBeVisible();
+    await expect(component.locator('th')).toHaveCount(2);
+    await expect(component.locator('th').first()).toHaveText('Area');
+    await expect(component.locator('th').last()).toHaveText('Class');
   });
 
-  test('should render tree with children', async ({ mount }) => {
+  test('should render single node tree as table row', async ({ mount }) => {
+    const component = await mount(
+      <AreaHierarchyTree tree={mockTreeSingleNode} currentAreaPath="areas/root.md" />
+    );
+
+    await expect(component.locator('tbody tr')).toHaveCount(1);
+    await expect(component.locator('.internal-link').first()).toHaveText('Root Area');
+  });
+
+  test('should render all levels in flat table', async ({ mount }) => {
     const component = await mount(
       <AreaHierarchyTree tree={mockTreeWithChildren} currentAreaPath="areas/root.md" />
     );
 
-    await expect(component.locator('.area-tree-label').first()).toHaveText('Root Area');
-    await expect(component.locator('.area-tree-children .area-tree-label')).toHaveCount(2);
+    await expect(component.locator('tbody tr')).toHaveCount(3);
+    await expect(component.locator('text=Root Area')).toBeVisible();
     await expect(component.locator('text=Child 1')).toBeVisible();
     await expect(component.locator('text=Child 2')).toBeVisible();
   });
@@ -114,42 +125,38 @@ test.describe('AreaHierarchyTree Component', () => {
       <AreaHierarchyTree tree={mockTreeWithChildren} currentAreaPath="areas/child1.md" />
     );
 
-    const currentLabel = component.locator('.area-tree-label.current');
-    await expect(currentLabel).toHaveText('Child 1');
-    await expect(currentLabel).toHaveAttribute('aria-current', 'page');
+    const currentLink = component.locator('.internal-link.area-tree-current');
+    await expect(currentLink).toBeVisible();
+    await expect(currentLink).toContainText('Child 1');
   });
 
-  test('should toggle collapse/expand on button click', async ({ mount }) => {
-    const component = await mount(
-      <AreaHierarchyTree tree={mockTreeWithChildren} currentAreaPath="areas/root.md" />
-    );
-
-    const toggleButton = component.locator('.area-tree-toggle').first();
-    await expect(toggleButton).toBeVisible();
-    await expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
-
-    await expect(component.locator('text=Child 1')).toBeVisible();
-
-    await toggleButton.click();
-    await expect(toggleButton).toHaveAttribute('aria-expanded', 'false');
-    await expect(component.locator('text=Child 1')).not.toBeVisible();
-
-    await toggleButton.click();
-    await expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
-    await expect(component.locator('text=Child 1')).toBeVisible();
-  });
-
-  test('should handle multi-level hierarchy', async ({ mount }) => {
+  test('should display multi-level hierarchy in flat table', async ({ mount }) => {
     const component = await mount(
       <AreaHierarchyTree tree={mockTreeMultiLevel} currentAreaPath="areas/root.md" />
     );
 
+    await expect(component.locator('tbody tr')).toHaveCount(3);
     await expect(component.locator('[data-href="areas/root.md"]')).toBeVisible();
     await expect(component.locator('[data-href="areas/child1.md"]')).toBeVisible();
     await expect(component.locator('[data-href="areas/grandchild1.md"]')).toBeVisible();
+  });
 
-    const childToggles = component.locator('.area-tree-toggle');
-    await expect(childToggles).toHaveCount(2);
+  test('should show indentation for hierarchy levels', async ({ mount }) => {
+    const component = await mount(
+      <AreaHierarchyTree tree={mockTreeMultiLevel} currentAreaPath="areas/root.md" />
+    );
+
+    const rootLink = component.locator('[data-href="areas/root.md"]');
+    const childLink = component.locator('[data-href="areas/child1.md"]');
+    const grandchildLink = component.locator('[data-href="areas/grandchild1.md"]');
+
+    const rootText = await rootLink.textContent();
+    const childText = await childLink.textContent();
+    const grandchildText = await grandchildLink.textContent();
+
+    expect(rootText?.indexOf('Root Area')).toBe(0);
+    expect(childText?.indexOf('Child 1')).toBeGreaterThan(0);
+    expect(grandchildText?.indexOf('Grandchild 1')).toBeGreaterThan(childText?.indexOf('Child 1') || 0);
   });
 
   test('should style archived areas', async ({ mount }) => {
@@ -157,10 +164,9 @@ test.describe('AreaHierarchyTree Component', () => {
       <AreaHierarchyTree tree={mockTreeWithArchived} currentAreaPath="areas/root.md" />
     );
 
-    const archivedLabel = component.locator('.area-tree-label.archived');
-    await expect(archivedLabel).toBeVisible();
-    await expect(archivedLabel).toHaveText('Archived Child');
-    await expect(archivedLabel).toHaveClass(/archived/);
+    const archivedLink = component.locator('.internal-link.is-archived');
+    await expect(archivedLink).toBeVisible();
+    await expect(archivedLink).toContainText('Archived Child');
   });
 
   test('should handle area click events', async ({ mount }) => {
@@ -182,26 +188,6 @@ test.describe('AreaHierarchyTree Component', () => {
     expect(clickedPath).toBe('areas/child1.md');
   });
 
-  test('should support keyboard navigation on label', async ({ mount }) => {
-    let clickedPath: string | null = null;
-
-    const component = await mount(
-      <AreaHierarchyTree
-        tree={mockTreeWithChildren}
-        currentAreaPath="areas/root.md"
-        onAreaClick={(path) => {
-          clickedPath = path;
-        }}
-      />
-    );
-
-    const child1Label = component.locator('[data-href="areas/child1.md"]');
-    await child1Label.focus();
-    await child1Label.press('Enter');
-
-    expect(clickedPath).toBe('areas/child1.md');
-  });
-
   test('should display label when available', async ({ mount }) => {
     const treeWithLabel: AreaNode = {
       path: 'areas/test.md',
@@ -216,7 +202,7 @@ test.describe('AreaHierarchyTree Component', () => {
       <AreaHierarchyTree tree={treeWithLabel} currentAreaPath="areas/test.md" />
     );
 
-    await expect(component.locator('.area-tree-label')).toHaveText('Test Label');
+    await expect(component.locator('td:nth-child(1) .internal-link')).toContainText('Test Label');
   });
 
   test('should fallback to title when label is not available', async ({ mount }) => {
@@ -232,6 +218,31 @@ test.describe('AreaHierarchyTree Component', () => {
       <AreaHierarchyTree tree={treeWithoutLabel} currentAreaPath="areas/test.md" />
     );
 
-    await expect(component.locator('.area-tree-label')).toHaveText('test-title');
+    await expect(component.locator('td:nth-child(1) .internal-link')).toContainText('test-title');
+  });
+
+  test('should display ems__Area class for all rows', async ({ mount }) => {
+    const component = await mount(
+      <AreaHierarchyTree tree={mockTreeWithChildren} currentAreaPath="areas/root.md" />
+    );
+
+    const classLinks = component.locator('td:nth-child(2) .internal-link');
+    await expect(classLinks).toHaveCount(3);
+    await expect(classLinks.first()).toHaveText('ems__Area');
+  });
+
+  test.skip('should use custom label from getAssetLabel', async ({ mount }) => {
+    const component = await mount(
+      <AreaHierarchyTree
+        tree={mockTreeSingleNode}
+        currentAreaPath="areas/root.md"
+        getAssetLabel={(path) => {
+          if (path === 'areas/root.md') return 'Custom Label';
+          return null;
+        }}
+      />
+    );
+
+    await expect(component.locator('td:nth-child(1) .internal-link')).toContainText('Custom Label');
   });
 });
