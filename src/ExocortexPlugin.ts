@@ -4,6 +4,7 @@ import {
   MarkdownView,
   Plugin,
   TFile,
+  WorkspaceLeaf,
 } from "obsidian";
 import { UniversalLayoutRenderer } from "./presentation/renderers/UniversalLayoutRenderer";
 import { ILogger } from "./infrastructure/logging/ILogger";
@@ -15,6 +16,7 @@ import {
 } from "./domain/settings/ExocortexSettings";
 import { ExocortexSettingTab } from "./presentation/settings/ExocortexSettingTab";
 import { TaskStatusService } from "./infrastructure/services/TaskStatusService";
+import { ExocortexGraphView, GRAPH_VIEW_TYPE } from "./presentation/views/ExocortexGraphView";
 
 /**
  * Exocortex Plugin - Automatic layout rendering
@@ -48,6 +50,23 @@ export default class ExocortexPlugin extends Plugin {
       );
 
       this.addSettingTab(new ExocortexSettingTab(this.app, this));
+
+      this.registerView(
+        GRAPH_VIEW_TYPE,
+        (leaf) => new ExocortexGraphView(leaf, this)
+      );
+
+      this.addRibbonIcon("git-fork", "Open Exocortex Graph", () => {
+        this.activateGraphView();
+      });
+
+      this.addCommand({
+        id: "open-graph-view",
+        name: "Open Exocortex Graph",
+        callback: () => {
+          this.activateGraphView();
+        },
+      });
 
       this.registerEvent(
         this.app.metadataCache.on("resolved", () => {
@@ -97,7 +116,27 @@ export default class ExocortexPlugin extends Plugin {
 
   async onunload(): Promise<void> {
     this.removeAutoRenderedLayouts();
+    this.app.workspace.detachLeavesOfType(GRAPH_VIEW_TYPE);
     this.logger?.info("Exocortex Plugin unloaded");
+  }
+
+  async activateGraphView(): Promise<void> {
+    const { workspace } = this.app;
+
+    let leaf: WorkspaceLeaf | null = null;
+    const leaves = workspace.getLeavesOfType(GRAPH_VIEW_TYPE);
+
+    if (leaves.length > 0) {
+      leaf = leaves[0];
+    } else {
+      leaf = workspace.getLeaf("tab");
+      await leaf.setViewState({
+        type: GRAPH_VIEW_TYPE,
+        active: true,
+      });
+    }
+
+    workspace.revealLeaf(leaf);
   }
 
   async loadSettings(): Promise<void> {
