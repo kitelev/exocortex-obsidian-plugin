@@ -1465,6 +1465,7 @@ export class UniversalLayoutRenderer {
           }
         },
         getAssetLabel: (path: string) => this.getAssetLabel(path),
+        getEffortArea: (metadata: Record<string, unknown>) => this.getEffortArea(metadata),
       }),
     );
 
@@ -1636,6 +1637,66 @@ export class UniversalLayoutRenderer {
    * 2. Prototype's exo__Asset_label (via ems__Effort_prototype)
    * 3. null (caller should use filename)
    */
+  private getEffortArea(metadata: Record<string, unknown>, visited: Set<string> = new Set()): string | null {
+    if (!metadata || typeof metadata !== "object") {
+      return null;
+    }
+
+    // Check task's own area first
+    const area = metadata.ems__Effort_area;
+    if (area && typeof area === "string" && area.trim() !== "") {
+      return area;
+    }
+
+    // Fallback 1: check prototype's area (recursively)
+    const prototypeRef = metadata.ems__Effort_prototype;
+    if (prototypeRef) {
+      const prototypePath = typeof prototypeRef === "string"
+        ? prototypeRef.replace(/^\[\[|\]\]$/g, "").trim()
+        : null;
+
+      if (prototypePath && !visited.has(prototypePath)) {
+        visited.add(prototypePath);
+        const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
+        if (prototypeFile && typeof prototypeFile === "object" && "path" in prototypeFile) {
+          const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile as TFile);
+          const prototypeMetadata = prototypeCache?.frontmatter || {};
+
+          // Recursively resolve area through prototype chain
+          const resolvedArea = this.getEffortArea(prototypeMetadata, visited);
+          if (resolvedArea) {
+            return resolvedArea;
+          }
+        }
+      }
+    }
+
+    // Fallback 2: check parent effort's area (recursively)
+    const parentRef = metadata.ems__Effort_parent;
+    if (parentRef) {
+      const parentPath = typeof parentRef === "string"
+        ? parentRef.replace(/^\[\[|\]\]$/g, "").trim()
+        : null;
+
+      if (parentPath && !visited.has(parentPath)) {
+        visited.add(parentPath);
+        const parentFile = this.app.metadataCache.getFirstLinkpathDest(parentPath, "");
+        if (parentFile && typeof parentFile === "object" && "path" in parentFile) {
+          const parentCache = this.app.metadataCache.getFileCache(parentFile as TFile);
+          const parentMetadata = parentCache?.frontmatter || {};
+
+          // Recursively resolve area through parent chain
+          const resolvedArea = this.getEffortArea(parentMetadata, visited);
+          if (resolvedArea) {
+            return resolvedArea;
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
   private getAssetLabel(path: string): string | null {
     // Use getFirstLinkpathDest to resolve file regardless of vault location
     let file = this.app.metadataCache.getFirstLinkpathDest(path, "");
