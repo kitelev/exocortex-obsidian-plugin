@@ -524,4 +524,8 @@ export class ObsidianLauncher {
       checkPort();
     });
   }
+
+  get page(): Page | null {
+    return this.window;
+  }
 }
