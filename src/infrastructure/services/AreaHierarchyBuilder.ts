@@ -33,14 +33,8 @@ export class AreaHierarchyBuilder {
     }
 
     const allAreas = this.collectAllAreasFromVault();
-    const rootPath = this.findRootArea(currentAreaPath, allAreas);
-
-    if (!rootPath) {
-      return null;
-    }
-
     const visited = new Set<string>();
-    return this.buildTree(rootPath, allAreas, visited, 0);
+    return this.buildTree(currentAreaPath, allAreas, visited, 0);
   }
 
   private isFile(file: any): boolean {

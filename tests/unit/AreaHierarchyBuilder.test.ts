@@ -527,7 +527,7 @@ describe("AreaHierarchyBuilder", () => {
       expect(result?.children[0]?.parentPath).toBe(rootPath);
     });
 
-    it("should start from root when current area is a child", () => {
+    it("should start from current area when it is a child", () => {
       const rootPath = "areas/root.md";
       const childPath = "areas/child.md";
 
@@ -586,9 +586,8 @@ describe("AreaHierarchyBuilder", () => {
       const result = builder.buildHierarchy(childPath, relations);
 
       expect(result).not.toBeNull();
-      expect(result?.path).toBe(rootPath);
-      expect(result?.children).toHaveLength(1);
-      expect(result?.children[0]?.path).toBe(childPath);
+      expect(result?.path).toBe(childPath);
+      expect(result?.children).toHaveLength(0);
     });
   });
 });
