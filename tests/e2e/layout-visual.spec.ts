@@ -112,4 +112,90 @@ test.describe("Layout Visual Tests", () => {
 
     expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 1);
   });
+
+  test("should render layout sections with full width (not fixed 900px)", async ({ page }) => {
+    const sections = [
+      ".exocortex-properties-section",
+      ".exocortex-daily-tasks-section",
+      ".exocortex-assets-relations",
+    ];
+
+    for (const selector of sections) {
+      const section = page.locator(selector);
+      const isVisible = await section.isVisible().catch(() => false);
+
+      if (isVisible) {
+        const computedStyle = await section.evaluate((el) => {
+          const style = window.getComputedStyle(el);
+          return {
+            width: style.width,
+            maxWidth: style.maxWidth,
+          };
+        });
+
+        expect(computedStyle.maxWidth).not.toBe("900px");
+        expect(computedStyle.width).not.toBe("900px");
+      }
+    }
+  });
+
+  test("should render action buttons container with full width", async ({ page }) => {
+    const container = page.locator(".exocortex-action-buttons-container");
+    const isVisible = await container.isVisible();
+
+    if (isVisible) {
+      const computedStyle = await container.evaluate((el) => {
+        const style = window.getComputedStyle(el);
+        return {
+          width: style.width,
+          maxWidth: style.maxWidth,
+        };
+      });
+
+      expect(computedStyle.maxWidth).not.toBe("900px");
+    }
+  });
+
+  test("should have tables that stretch to container width", async ({ page }) => {
+    const tables = page.locator(".exocortex-relation-table, .exocortex-table");
+    const count = await tables.count();
+
+    if (count > 0) {
+      for (let i = 0; i < count; i++) {
+        const table = tables.nth(i);
+        const tableBox = await table.boundingBox();
+
+        if (tableBox) {
+          const parent = await table.evaluateHandle((el) => el.parentElement);
+          const parentBox = await parent.evaluate((el) => {
+            if (!el) return null;
+            return el.getBoundingClientRect();
+          });
+
+          if (parentBox) {
+            expect(tableBox.width).toBeGreaterThan(parentBox.width * 0.9);
+          }
+        }
+      }
+    }
+  });
+
+  test("should adapt to viewport width changes", async ({ page }) => {
+    const container = page.locator(".exocortex-action-buttons-container");
+    const isVisible = await container.isVisible();
+
+    if (isVisible) {
+      await page.setViewportSize({ width: 1920, height: 1080 });
+      await page.waitForTimeout(100);
+      const wideBox = await container.boundingBox();
+
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.waitForTimeout(100);
+      const narrowBox = await container.boundingBox();
+
+      if (wideBox && narrowBox) {
+        expect(wideBox.width).toBeGreaterThan(narrowBox.width);
+      }
+    }
+  });
 });

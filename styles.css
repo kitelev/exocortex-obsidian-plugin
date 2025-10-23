@@ -7,9 +7,7 @@
 .exocortex-properties-section,
 .exocortex-daily-tasks-section,
 .exocortex-assets-relations {
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
   margin-bottom: 32px;
 }
 
@@ -645,9 +643,9 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  margin: 16px auto 32px auto;
+  margin: 16px 0 32px 0;
   padding: 20px;
-  max-width: 900px;
+  width: 100%;
   background: var(--background-secondary);
   border-radius: 12px;
   border: 1px solid var(--background-modifier-border);
