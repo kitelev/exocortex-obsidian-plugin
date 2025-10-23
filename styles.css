@@ -815,3 +815,136 @@
     text-align: center;
   }
 }
+
+/* ============================================================================
+   Area Hierarchy Tree Styles
+   ============================================================================ */
+
+.area-hierarchy-tree {
+  width: 100%;
+  margin-bottom: 32px;
+  padding: 16px;
+  background-color: var(--background-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.area-tree-root {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.area-tree-node {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.area-tree-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.area-tree-toggle {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75em;
+  transition: color 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.area-tree-toggle:hover {
+  color: var(--text-normal);
+  transform: scale(1.15);
+}
+
+.area-tree-toggle:focus {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.area-tree-spacer {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.area-tree-label {
+  color: var(--text-normal);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  flex: 1;
+  display: inline-block;
+}
+
+.area-tree-label:hover {
+  background-color: var(--background-modifier-hover);
+  color: var(--interactive-accent);
+}
+
+.area-tree-label:focus {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+  background-color: var(--background-modifier-hover);
+}
+
+.area-tree-label.current {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+  font-weight: 600;
+}
+
+.area-tree-label.current:hover {
+  background-color: var(--interactive-accent-hover);
+  color: var(--text-on-accent);
+}
+
+.area-tree-label.archived {
+  opacity: 0.5;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.area-tree-label.archived:hover {
+  opacity: 0.7;
+}
+
+.area-tree-children {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  padding-left: 28px;
+  border-left: 1px solid var(--background-modifier-border);
+  margin-left: 10px;
+}
+
+.theme-dark .area-hierarchy-tree {
+  background-color: var(--background-primary);
+}
+
+@media (max-width: 768px) {
+  .area-hierarchy-tree {
+    padding: 12px;
+  }
+
+  .area-tree-children {
+    padding-left: 20px;
+    margin-left: 6px;
+  }
+}

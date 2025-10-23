@@ -14,6 +14,7 @@ Exocortex is a lightweight Obsidian plugin that displays related notes in a clea
 ### Key Features
 
 - 📊 **Automatic Layout**: Related notes displayed in clean tables below metadata (reading mode)
+- 🌳 **Area Hierarchy Tree**: Visual navigation of area parent-child relationships via `ems__Area_parent` property
 - 🏷️ **Properties Display**: All frontmatter properties in organized key-value tables
 - 🔗 **Smart Links**: Wiki-links automatically become clickable internal links
 - ↕️ **Interactive Sorting**: Click headers to sort tables with visual indicators (▲/▼)
@@ -43,8 +44,9 @@ The plugin automatically displays related assets below metadata in all notes (re
 
 **What you'll see:**
 1. **Properties Table** - All frontmatter properties in key-value format
-2. **Relations Table** - All notes that reference this note, grouped by property
-3. **Action Buttons** - Quick actions for creating tasks, managing status, etc.
+2. **Area Tree** - For ems__Area assets: Hierarchical tree showing parent-child relationships
+3. **Relations Table** - All notes that reference this note, grouped by property
+4. **Action Buttons** - Quick actions for creating tasks, managing status, etc.
 
 **Available Commands** (Cmd/Ctrl+P → "Exocortex:"):
 - Create Task from current note
@@ -76,6 +78,29 @@ archived: true  # or "yes", "true", 1
 ```
 
 Archived assets are automatically filtered from all relation lists, keeping your views clean and focused on active work.
+
+### Area Hierarchy Tree
+
+For `ems__Area` assets, the plugin automatically displays a hierarchical tree visualization of parent-child relationships defined through the `ems__Area_parent` property. The tree appears above the Relations section.
+
+**Features:**
+- **Collapsible/Expandable**: Click ▶/▼ to toggle child areas
+- **Current Area Highlighting**: The current area is highlighted with an accent color
+- **Archived Area Styling**: Archived areas shown with reduced opacity
+- **Clickable Navigation**: Click any area to navigate to it
+- **Keyboard Support**: Use Arrow keys and Enter to navigate the tree
+- **Automatic Root Detection**: Always starts from the top-level parent area
+
+**Example `ems__Area_parent` usage:**
+```yaml
+---
+exo__Instance_class: ems__Area
+exo__Asset_label: Development
+ems__Area_parent: "[[Projects]]"  # Links to parent area
+---
+```
+
+The tree will automatically build the complete hierarchy from all related areas, displaying the structure from root to leaves with proper indentation and visual indicators.
 
 ## 🏗️ Architecture
 

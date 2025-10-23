@@ -9,6 +9,8 @@ import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
 import { DailyTasksTable, DailyTask, DailyTasksTableWithToggle } from "../components/DailyTasksTable";
 import { DailyProjectsTable, DailyProject } from "../components/DailyProjectsTable";
 import { ActionButtonsGroup, ButtonGroup, ActionButton } from "../components/ActionButtonsGroup";
+import { AreaHierarchyTree } from "../components/AreaHierarchyTree";
+import { AreaHierarchyBuilder } from "../../infrastructure/services/AreaHierarchyBuilder";
 import {
   canCreateTask,
   canCreateProject,
@@ -632,6 +634,9 @@ export class UniversalLayoutRenderer {
 
       // Get asset relations for the current file
       const relations = await this.getAssetRelations(currentFile, config);
+
+      // Render Area Tree for ems__Area assets (before relations)
+      await this.renderAreaTree(el, currentFile, relations);
 
       if (relations.length > 0) {
         // Render as table with Name and exo__Instance_class columns
@@ -1540,6 +1545,76 @@ export class UniversalLayoutRenderer {
     );
 
     this.logger.info(`Rendered ${projects.length} projects for DailyNote: ${day}`);
+  }
+
+  /**
+   * Render Area Hierarchy Tree for ems__Area assets
+   * Displays hierarchical parent-child relationships via ems__Area_parent property
+   */
+  private async renderAreaTree(
+    el: HTMLElement,
+    file: TFile,
+    relations: AssetRelation[],
+  ): Promise<void> {
+    const cache = this.app.metadataCache.getFileCache(file);
+    const metadata = cache?.frontmatter || {};
+    const instanceClass = this.extractInstanceClass(metadata);
+
+    if (instanceClass !== "ems__Area") {
+      return;
+    }
+
+    const hierarchyBuilder = new AreaHierarchyBuilder(
+      this.app.vault,
+      this.app.metadataCache,
+    );
+
+    const tree = hierarchyBuilder.buildHierarchy(file.path, relations);
+
+    if (!tree) {
+      return;
+    }
+
+    const sectionContainer = el.createDiv({ cls: "exocortex-area-tree-section" });
+
+    sectionContainer.createEl("h3", {
+      text: "Area Tree",
+      cls: "exocortex-section-header",
+    });
+
+    const treeContainer = sectionContainer.createDiv({ cls: "exocortex-area-tree-container" });
+
+    this.reactRenderer.render(
+      treeContainer,
+      React.createElement(AreaHierarchyTree, {
+        tree,
+        currentAreaPath: file.path,
+        onAreaClick: async (path: string, event: React.MouseEvent) => {
+          const isModPressed = Keymap.isModEvent(
+            event.nativeEvent as MouseEvent,
+          );
+
+          if (isModPressed) {
+            const leaf = this.app.workspace.getLeaf("tab");
+            await leaf.openLinkText(path, "");
+          } else {
+            await this.app.workspace.openLinkText(path, "", false);
+          }
+        },
+        getAssetLabel: (path: string) => this.getAssetLabel(path),
+      }),
+    );
+
+    this.logger.info(`Rendered Area Tree for ${file.path}`);
+  }
+
+  private extractInstanceClass(metadata: Record<string, any>): string {
+    const instanceClass = metadata.exo__Instance_class || "";
+    if (Array.isArray(instanceClass)) {
+      const firstClass = instanceClass[0] || "";
+      return String(firstClass).replace(/^\[\[|\]\]$/g, "").trim();
+    }
+    return String(instanceClass).replace(/^\[\[|\]\]$/g, "").trim();
   }
 
   /**
