@@ -419,7 +419,7 @@ export function canVoteOnEffort(context: CommandVisibilityContext): boolean {
 
 /**
  * Can execute "Rollback Status" command
- * Available for: Efforts with status history (at least 1 previous status)
+ * Available for: Efforts with non-null, non-Trashed status (workflow-based rollback)
  */
 export function canRollbackStatus(context: CommandVisibilityContext): boolean {
   if (!isEffort(context.instanceClass)) return false;
@@ -428,8 +428,15 @@ export function canRollbackStatus(context: CommandVisibilityContext): boolean {
 
   if (!context.currentStatus) return false;
 
-  const history = context.metadata.ems__Effort_statusHistory;
-  if (!Array.isArray(history) || history.length < 1) return false;
+  const statusValue = Array.isArray(context.currentStatus)
+    ? context.currentStatus[0]
+    : context.currentStatus;
+
+  if (!statusValue) return false;
+
+  const cleanStatus = normalizeClassName(statusValue);
+
+  if (cleanStatus === "ems__EffortStatusTrashed") return false;
 
   return true;
 }
