@@ -412,8 +412,24 @@ export function canRenameToUid(
 export function canVoteOnEffort(context: CommandVisibilityContext): boolean {
   if (!isEffort(context.instanceClass)) return false;
 
-  // Don't show vote button if archived
   if (isAssetArchived(context.isArchived)) return false;
+
+  return true;
+}
+
+/**
+ * Can execute "Rollback Status" command
+ * Available for: Efforts with status history (at least 1 previous status)
+ */
+export function canRollbackStatus(context: CommandVisibilityContext): boolean {
+  if (!isEffort(context.instanceClass)) return false;
+
+  if (isAssetArchived(context.isArchived)) return false;
+
+  if (!context.currentStatus) return false;
+
+  const history = context.metadata.ems__Effort_statusHistory;
+  if (!Array.isArray(history) || history.length < 1) return false;
 
   return true;
 }
