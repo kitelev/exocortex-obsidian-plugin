@@ -86,4 +86,58 @@ test.describe('DailyNote Tasks Table', () => {
     expect(tableContent).not.toContain('ARCHIVED');
     expect(tableContent).not.toContain('archived');
   });
+
+  test('should toggle Effort Area column visibility', async () => {
+    await launcher.openFile('Daily Notes/2025-10-16.md');
+
+    const window = await launcher.getWindow();
+
+    await launcher.waitForModalsToClose(10000);
+
+    await launcher.waitForElement('.exocortex-daily-tasks-section', 60000);
+
+    const toggleButton = window.locator('.exocortex-toggle-effort-area');
+    await expect(toggleButton).toBeVisible({ timeout: 10000 });
+    await expect(toggleButton).toContainText('Show Effort Area');
+
+    const tasksTable = window.locator('.exocortex-daily-tasks-section table').first();
+    await expect(tasksTable).toBeVisible({ timeout: 10000 });
+
+    let headers = tasksTable.locator('thead th');
+    let headerCount = await headers.count();
+    expect(headerCount).toBe(4);
+
+    let headerTexts = await headers.allTextContents();
+    expect(headerTexts).not.toContain('Effort Area');
+
+    await toggleButton.click();
+    await expect(toggleButton).toContainText('Hide Effort Area');
+
+    headers = tasksTable.locator('thead th');
+    headerCount = await headers.count();
+    expect(headerCount).toBe(5);
+
+    headerTexts = await headers.allTextContents();
+    expect(headerTexts).toContain('Effort Area');
+
+    const firstRow = tasksTable.locator('tbody tr').first();
+    const cells = firstRow.locator('td');
+    const cellCount = await cells.count();
+    expect(cellCount).toBe(5);
+
+    const effortAreaCell = cells.nth(4);
+    await expect(effortAreaCell).toBeVisible();
+    const effortAreaContent = await effortAreaCell.textContent();
+    expect(effortAreaContent).toContain('Development');
+
+    await toggleButton.click();
+    await expect(toggleButton).toContainText('Show Effort Area');
+
+    headers = tasksTable.locator('thead th');
+    headerCount = await headers.count();
+    expect(headerCount).toBe(4);
+
+    headerTexts = await headers.allTextContents();
+    expect(headerTexts).not.toContain('Effort Area');
+  });
 });
