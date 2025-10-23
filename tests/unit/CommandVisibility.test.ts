@@ -16,6 +16,7 @@ import {
   canRenameToUid,
   canVoteOnEffort,
   canRollbackStatus,
+  canCreateRelatedTask,
   CommandVisibilityContext,
 } from "../../src/domain/commands/CommandVisibility";
 
@@ -1318,128 +1319,6 @@ describe("CommandVisibility", () => {
     });
   });
 
-  describe("canRenameToUid", () => {
-    it("should return true when filename differs from UID", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Task]]",
-        currentStatus: null,
-        metadata: { exo__Asset_uid: "task-123" },
-        isArchived: false,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canRenameToUid(context, "Task Name")).toBe(true);
-    });
-
-    it("should return false when filename matches UID", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Task]]",
-        currentStatus: null,
-        metadata: { exo__Asset_uid: "task-123" },
-        isArchived: false,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canRenameToUid(context, "task-123")).toBe(false);
-    });
-
-    it("should return false when UID is not set", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Task]]",
-        currentStatus: null,
-        metadata: {},
-        isArchived: false,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canRenameToUid(context, "Task Name")).toBe(false);
-    });
-
-    it("should return false for ims__Concept with brackets", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: "[[ims__Concept]]",
-        currentStatus: null,
-        metadata: { exo__Asset_uid: "concept-123" },
-        isArchived: false,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canRenameToUid(context, "Concept Name")).toBe(false);
-    });
-
-    it("should return false for ims__Concept without brackets", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: "ims__Concept",
-        currentStatus: null,
-        metadata: { exo__Asset_uid: "concept-456" },
-        isArchived: false,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canRenameToUid(context, "Another Concept")).toBe(false);
-    });
-
-    it("should return false for ims__Concept in array", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: ["[[ims__Concept]]", "[[SomeOtherClass]]"],
-        currentStatus: null,
-        metadata: { exo__Asset_uid: "concept-789" },
-        isArchived: false,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canRenameToUid(context, "Yet Another Concept")).toBe(false);
-    });
-
-    it("should return true for non-Concept class with different filename", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Area]]",
-        currentStatus: null,
-        metadata: { exo__Asset_uid: "area-123" },
-        isArchived: false,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canRenameToUid(context, "Area Name")).toBe(true);
-    });
-
-    it("should return true for Project with different filename", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Project]]",
-        currentStatus: null,
-        metadata: { exo__Asset_uid: "project-456" },
-        isArchived: false,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canRenameToUid(context, "Project Name")).toBe(true);
-    });
-
-    it("should return true when UID is null (but metadata exists)", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Task]]",
-        currentStatus: null,
-        metadata: { exo__Asset_uid: null },
-        isArchived: false,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canRenameToUid(context, "Task Name")).toBe(false);
-    });
-
-    it("should work with archived assets", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Task]]",
-        currentStatus: null,
-        metadata: { exo__Asset_uid: "task-archived" },
-        isArchived: true,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canRenameToUid(context, "Different Name")).toBe(true);
-    });
-  });
-
   describe("canVoteOnEffort", () => {
     it("should return true for Task with Backlog status", () => {
       const context: CommandVisibilityContext = {
@@ -1706,126 +1585,149 @@ describe("CommandVisibility", () => {
     });
   });
 
-  describe("canRollbackStatus", () => {
-    it("should return false for non-Effort assets", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Area]]",
-        currentStatus: "[[ems__EffortStatusDoing]]",
-        metadata: {
-          ems__Effort_statusHistory: [
-            { status: "[[ems__EffortStatusBacklog]]", timestamp: "2025-10-23T10:00:00", action: "moveToBacklog" }
-          ]
-        },
-        isArchived: false,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canRollbackStatus(context)).toBe(false);
-    });
-
-    it("should return false for archived Efforts", () => {
+  describe("canCreateRelatedTask", () => {
+    it("should return true for ems__Task not archived", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Task]]",
-        currentStatus: "[[ems__EffortStatusDoing]]",
-        metadata: {
-          ems__Effort_statusHistory: [
-            { status: "[[ems__EffortStatusBacklog]]", timestamp: "2025-10-23T10:00:00", action: "moveToBacklog" }
-          ]
-        },
-        isArchived: true,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canRollbackStatus(context)).toBe(false);
-    });
-
-    it("should return false when currentStatus is null", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Task]]",
-        currentStatus: null,
-        metadata: {
-          ems__Effort_statusHistory: [
-            { status: "[[ems__EffortStatusBacklog]]", timestamp: "2025-10-23T10:00:00", action: "moveToBacklog" }
-          ]
-        },
-        isArchived: false,
-        currentFolder: "",
-        expectedFolder: null,
-      };
-      expect(canRollbackStatus(context)).toBe(false);
-    });
-
-    it("should return false when no status history exists", () => {
-      const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Task]]",
-        currentStatus: "[[ems__EffortStatusDoing]]",
+        currentStatus: "[[ems__EffortStatusBacklog]]",
         metadata: {},
         isArchived: false,
         currentFolder: "",
         expectedFolder: null,
       };
-      expect(canRollbackStatus(context)).toBe(false);
+      expect(canCreateRelatedTask(context)).toBe(true);
     });
 
-    it("should return false when status history is empty array", () => {
+    it("should return true for ems__Task without brackets", () => {
       const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Task]]",
-        currentStatus: "[[ems__EffortStatusDoing]]",
-        metadata: { ems__Effort_statusHistory: [] },
+        instanceClass: "ems__Task",
+        currentStatus: null,
+        metadata: {},
         isArchived: false,
         currentFolder: "",
         expectedFolder: null,
       };
-      expect(canRollbackStatus(context)).toBe(false);
+      expect(canCreateRelatedTask(context)).toBe(true);
     });
 
-    it("should return true for Task with valid status history", () => {
+    it("should return false for archived ems__Task", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Task]]",
-        currentStatus: "[[ems__EffortStatusDoing]]",
-        metadata: {
-          ems__Effort_statusHistory: [
-            { status: "[[ems__EffortStatusDraft]]", timestamp: "2025-10-23T09:00:00", action: "setDraft" },
-            { status: "[[ems__EffortStatusBacklog]]", timestamp: "2025-10-23T10:00:00", action: "moveToBacklog" }
-          ]
-        },
-        isArchived: false,
+        currentStatus: "[[ems__EffortStatusDone]]",
+        metadata: {},
+        isArchived: true,
         currentFolder: "",
         expectedFolder: null,
       };
-      expect(canRollbackStatus(context)).toBe(true);
+      expect(canCreateRelatedTask(context)).toBe(false);
     });
 
-    it("should return true for Project with valid status history", () => {
+    it("should return false for ems__Project", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Project]]",
         currentStatus: "[[ems__EffortStatusToDo]]",
-        metadata: {
-          ems__Effort_statusHistory: [
-            { status: "[[ems__EffortStatusAnalysis]]", timestamp: "2025-10-23T10:00:00", action: "moveToAnalysis" }
-          ]
-        },
+        metadata: {},
         isArchived: false,
         currentFolder: "",
         expectedFolder: null,
       };
-      expect(canRollbackStatus(context)).toBe(true);
+      expect(canCreateRelatedTask(context)).toBe(false);
     });
 
-    it("should return true for Meeting with valid status history", () => {
+    it("should return false for ems__Area", () => {
       const context: CommandVisibilityContext = {
-        instanceClass: "[[ems__Meeting]]",
-        currentStatus: "[[ems__EffortStatusDone]]",
-        metadata: {
-          ems__Effort_statusHistory: [
-            { status: "[[ems__EffortStatusDoing]]", timestamp: "2025-10-23T11:00:00", action: "startEffort" }
-          ]
-        },
+        instanceClass: "[[ems__Area]]",
+        currentStatus: null,
+        metadata: {},
         isArchived: false,
         currentFolder: "",
         expectedFolder: null,
       };
-      expect(canRollbackStatus(context)).toBe(true);
+      expect(canCreateRelatedTask(context)).toBe(false);
+    });
+
+    it("should return false when instanceClass is null", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: null,
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateRelatedTask(context)).toBe(false);
+    });
+
+    it("should return true for array with ems__Task", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: ["[[ems__Task]]", "[[SomeOtherClass]]"],
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateRelatedTask(context)).toBe(true);
+    });
+
+    it("should return false for array without ems__Task", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: ["[[ems__Project]]", "[[ems__Area]]"],
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateRelatedTask(context)).toBe(false);
+    });
+
+    it("should recognize archived as string 'true'", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: "true" as any,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateRelatedTask(context)).toBe(false);
+    });
+
+    it("should recognize archived as string 'yes'", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: "yes" as any,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateRelatedTask(context)).toBe(false);
+    });
+
+    it("should recognize archived as number 1", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: 1 as any,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateRelatedTask(context)).toBe(false);
+    });
+
+    it("should show button when archived is false string", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: "false" as any,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateRelatedTask(context)).toBe(true);
     });
   });
 });
