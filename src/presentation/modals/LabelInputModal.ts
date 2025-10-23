@@ -5,11 +5,11 @@ import { App, Modal } from "obsidian";
  * Allows optional label input with Create/Cancel actions
  */
 export class LabelInputModal extends Modal {
-  private label: string = "";
+  private label = "";
   private onSubmit: (label: string | null) => void;
   private inputEl: HTMLInputElement | null = null;
 
-  constructor(app: App, onSubmit: (label: string | null) => void, defaultValue: string = "") {
+  constructor(app: App, onSubmit: (label: string | null) => void, defaultValue = "") {
     super(app);
     this.onSubmit = onSubmit;
     this.label = defaultValue;

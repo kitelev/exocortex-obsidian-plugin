@@ -55,7 +55,7 @@ export class TaskCreationService {
     const lines = content.split("\n");
     const targetHeading = `## ${heading}`;
     let inSection = false;
-    let sectionContent: string[] = [];
+    const sectionContent: string[] = [];
 
     for (const line of lines) {
       if (line.trim() === targetHeading) {
