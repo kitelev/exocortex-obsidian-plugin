@@ -22,6 +22,7 @@ export interface DailyTasksTableProps {
   tasks: DailyTask[];
   onTaskClick?: (path: string, event: React.MouseEvent) => void;
   getAssetLabel?: (path: string) => string | null;
+  getEffortArea?: (metadata: Record<string, unknown>) => string | null;
   showEffortArea?: boolean;
 }
 
@@ -29,6 +30,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   tasks,
   onTaskClick,
   getAssetLabel,
+  getEffortArea,
   showEffortArea = false,
 }) => {
   interface WikiLink {
@@ -127,8 +129,10 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
               </td>
               {showEffortArea && (
                 <td className="task-effort-area">
-                  {task.metadata.ems__Effort_area ? (() => {
-                    const effortArea = task.metadata.ems__Effort_area;
+                  {(() => {
+                    const effortArea = getEffortArea?.(task.metadata) || task.metadata.ems__Effort_area;
+                    if (!effortArea) return "-";
+
                     const isWikiLink = typeof effortArea === "string" && /\[\[.*?\]\]/.test(effortArea);
                     const parsed = isWikiLink ? parseWikiLink(effortArea as string) : { target: effortArea as string };
                     const displayText = parsed.alias || parsed.target;
@@ -147,7 +151,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
                         {getAssetLabel?.(parsed.target) || displayText}
                       </a>
                     );
-                  })() : "-"}
+                  })()}
                 </td>
               )}
             </tr>
