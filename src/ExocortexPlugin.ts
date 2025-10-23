@@ -36,7 +36,7 @@ export default class ExocortexPlugin extends Plugin {
 
       await this.loadSettings();
 
-      this.layoutRenderer = new UniversalLayoutRenderer(this.app, this.settings);
+      this.layoutRenderer = new UniversalLayoutRenderer(this.app, this.settings, this);
       this.taskStatusService = new TaskStatusService(this.app.vault);
       this.metadataCache = new Map();
 

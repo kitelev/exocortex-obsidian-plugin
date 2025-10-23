@@ -34,6 +34,7 @@ import {
   canRenameToUid,
   canVoteOnEffort,
   canRollbackStatus,
+  canSetActiveFocus,
   CommandVisibilityContext,
 } from "../../domain/commands/CommandVisibility";
 import { CreateTaskButton } from "../components/CreateTaskButton";
@@ -99,6 +100,7 @@ export class UniversalLayoutRenderer {
   private logger: ILogger;
   private app: ObsidianApp;
   private settings: ExocortexSettings;
+  private plugin: any;
   private eventListeners: Array<{
     element: HTMLElement;
     type: string;
@@ -109,9 +111,10 @@ export class UniversalLayoutRenderer {
   private reactRenderer: ReactRenderer;
   private rootContainer: HTMLElement | null = null;
 
-  constructor(app: ObsidianApp, settings: ExocortexSettings) {
+  constructor(app: ObsidianApp, settings: ExocortexSettings, plugin: any) {
     this.app = app;
     this.settings = settings;
+    this.plugin = plugin;
     this.logger = LoggerFactory.create("UniversalLayoutRenderer");
     this.reactRenderer = new ReactRenderer();
     this.taskCreationService = new TaskCreationService(this.app.vault);
@@ -440,6 +443,23 @@ export class UniversalLayoutRenderer {
 
     // Planning Group - Planning actions
     const planningButtons: ActionButton[] = [
+      {
+        id: "set-active-focus",
+        label: this.settings.activeFocusArea === file.basename ? "Clear Active Focus" : "Set Active Focus",
+        variant: "warning",
+        visible: canSetActiveFocus(context),
+        onClick: async () => {
+          if (this.settings.activeFocusArea === file.basename) {
+            this.settings.activeFocusArea = null;
+          } else {
+            this.settings.activeFocusArea = file.basename;
+          }
+          await this.plugin.saveSettings();
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Active focus area set to: ${this.settings.activeFocusArea}`);
+        },
+      },
       {
         id: "plan-on-today",
         label: "Plan on Today",
@@ -1447,6 +1467,21 @@ export class UniversalLayoutRenderer {
       cls: "exocortex-section-header",
     });
 
+    // Add active focus indicator if set
+    if (this.settings.activeFocusArea) {
+      const indicatorContainer = sectionContainer.createDiv({ cls: "exocortex-active-focus-indicator" });
+      indicatorContainer.style.cssText = `
+        padding: 8px 12px;
+        margin-bottom: 12px;
+        background-color: var(--background-modifier-info);
+        border-radius: 4px;
+        font-size: 0.9em;
+      `;
+      indicatorContainer.createSpan({
+        text: `🎯 Active Focus: ${this.settings.activeFocusArea}`,
+      });
+    }
+
     // Create separate container for React component to prevent header replacement
     const tableContainer = sectionContainer.createDiv({ cls: "exocortex-daily-tasks-table-container" });
 
@@ -1940,6 +1975,36 @@ export class UniversalLayoutRenderer {
     return false;
   }
 
+  private getChildAreas(areaName: string, visited: Set<string> = new Set()): Set<string> {
+    const childAreas = new Set<string>();
+
+    if (visited.has(areaName)) {
+      return childAreas;
+    }
+    visited.add(areaName);
+
+    const allFiles = this.app.vault.getMarkdownFiles();
+
+    for (const file of allFiles) {
+      const cache = this.app.metadataCache.getFileCache(file);
+      const metadata = cache?.frontmatter || {};
+
+      const areaParent = metadata.ems__Area_parent;
+      if (!areaParent) continue;
+
+      const areaParentStr = String(areaParent).replace(/^\[\[|\]\]$/g, "");
+
+      if (areaParentStr === areaName) {
+        childAreas.add(file.basename);
+
+        const nestedChildren = this.getChildAreas(file.basename, visited);
+        nestedChildren.forEach(child => childAreas.add(child));
+      }
+    }
+
+    return childAreas;
+  }
+
   private async getDailyTasks(
     day: string,
   ): Promise<DailyTask[]> {
@@ -2027,7 +2092,65 @@ export class UniversalLayoutRenderer {
         });
       }
 
-      tasks.sort((a, b) => {
+      let filteredTasks = tasks;
+
+      if (this.settings.activeFocusArea) {
+        const activeFocusArea = this.settings.activeFocusArea;
+        const childAreas = this.getChildAreas(activeFocusArea);
+        const relevantAreas = new Set([activeFocusArea, ...Array.from(childAreas)]);
+
+        filteredTasks = tasks.filter(task => {
+          const taskMetadata = task.metadata;
+
+          const effortArea = taskMetadata.ems__Effort_area;
+          if (effortArea) {
+            const effortAreaStr = String(effortArea).replace(/^\[\[|\]\]$/g, "");
+            if (relevantAreas.has(effortAreaStr)) {
+              return true;
+            }
+          }
+
+          const effortParent = taskMetadata.ems__Effort_parent;
+          if (effortParent) {
+            const parentPath = String(effortParent).replace(/^\[\[|\]\]$/g, "");
+            const parentFile = this.app.metadataCache.getFirstLinkpathDest(parentPath, "");
+            if (parentFile) {
+              const parentCache = this.app.metadataCache.getFileCache(parentFile);
+              const parentMetadata = parentCache?.frontmatter || {};
+              const parentArea = parentMetadata.ems__Effort_area;
+              if (parentArea) {
+                const parentAreaStr = String(parentArea).replace(/^\[\[|\]\]$/g, "");
+                if (relevantAreas.has(parentAreaStr)) {
+                  return true;
+                }
+              }
+            }
+          }
+
+          const effortPrototype = taskMetadata.ems__Effort_prototype;
+          if (effortPrototype) {
+            const prototypePath = String(effortPrototype).replace(/^\[\[|\]\]$/g, "");
+            const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
+            if (prototypeFile) {
+              const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile);
+              const prototypeMetadata = prototypeCache?.frontmatter || {};
+
+              for (const [key, value] of Object.entries(prototypeMetadata)) {
+                if (value) {
+                  const valueStr = String(value).replace(/^\[\[|\]\]$/g, "");
+                  if (relevantAreas.has(valueStr)) {
+                    return true;
+                  }
+                }
+              }
+            }
+          }
+
+          return false;
+        });
+      }
+
+      filteredTasks.sort((a, b) => {
         if (a.isTrashed !== b.isTrashed) {
           return a.isTrashed ? 1 : -1;
         }
@@ -2059,7 +2182,7 @@ export class UniversalLayoutRenderer {
         return 0;
       });
 
-      return tasks.slice(0, 50);
+      return filteredTasks.slice(0, 50);
     } catch (error) {
       this.logger.error("Failed to get daily tasks", { error });
       return [];
