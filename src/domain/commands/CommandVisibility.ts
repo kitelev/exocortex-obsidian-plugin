@@ -453,3 +453,11 @@ export function canCreateRelatedTask(context: CommandVisibilityContext): boolean
 
   return true;
 }
+
+/**
+ * Can execute "Set Active Focus" command
+ * Available for: ems__Area assets only
+ */
+export function canSetActiveFocus(context: CommandVisibilityContext): boolean {
+  return hasClass(context.instanceClass, "ems__Area");
+}
