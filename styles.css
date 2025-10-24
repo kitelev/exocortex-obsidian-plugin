@@ -845,3 +845,237 @@
   font-style: italic;
   color: var(--text-muted);
 }
+
+/* ============================================================================
+   Area Hierarchy Tree - Professional Tree UI (UX Improvements)
+   ============================================================================ */
+
+/* Table layout reset for tree structure */
+.exocortex-area-tree .exocortex-relation-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.exocortex-area-tree .exocortex-relation-table tbody tr {
+  border-bottom: none;
+}
+
+/* Tree item wrapper - main container for each tree node */
+.area-tree-item {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 6px 12px 6px 0;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+/* Depth-based backgrounds for visual hierarchy (light theme) */
+.area-tree-item[data-depth="0"] {
+  padding-left: 8px;
+}
+
+.area-tree-item[data-depth="1"] {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.area-tree-item[data-depth="2"] {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.area-tree-item[data-depth="3"] {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.area-tree-item[data-depth="4"] {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.area-tree-item[data-depth="5"] {
+  background: rgba(0, 0, 0, 0.10);
+}
+
+/* Dark theme depth backgrounds */
+.theme-dark .area-tree-item[data-depth="1"] {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.theme-dark .area-tree-item[data-depth="2"] {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.theme-dark .area-tree-item[data-depth="3"] {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.theme-dark .area-tree-item[data-depth="4"] {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.theme-dark .area-tree-item[data-depth="5"] {
+  background: rgba(255, 255, 255, 0.11);
+}
+
+/* Hover state - enhanced interactivity */
+.area-tree-item:hover {
+  background-color: var(--background-modifier-hover) !important;
+  cursor: pointer;
+}
+
+/* Current item highlight - clear visual feedback */
+.area-tree-item.is-current {
+  background-color: var(--interactive-accent) !important;
+  color: var(--text-on-accent);
+  border-left: 3px solid var(--interactive-accent-hover);
+  padding-left: calc(8px + var(--depth, 0) * 16px - 3px);
+}
+
+.area-tree-item.is-current .area-tree-link {
+  color: var(--text-on-accent);
+  font-weight: 600;
+}
+
+.area-tree-item.is-current .area-tree-toggle {
+  color: var(--text-on-accent);
+}
+
+/* Archived item state - reduced prominence */
+.area-tree-item.is-archived {
+  opacity: 0.5;
+}
+
+.area-tree-item.is-archived .area-tree-link {
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* Toggle container - fixed width for perfect alignment */
+.area-tree-toggle-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+/* Toggle button - expandable/collapsible control */
+.area-tree-toggle {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: rotate(0deg);
+}
+
+.area-tree-toggle:hover {
+  background-color: var(--background-modifier-hover);
+  color: var(--text-normal);
+  transform: scale(1.15);
+}
+
+.area-tree-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Expanded toggle rotation animation */
+.area-tree-toggle[aria-expanded="true"] {
+  transform: rotate(90deg);
+}
+
+.area-tree-toggle[aria-expanded="true"]:hover {
+  transform: rotate(90deg) scale(1.15);
+}
+
+/* Spacer for leaf nodes - maintains alignment */
+.area-tree-toggle-spacer {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+}
+
+/* Tree link - clickable area label */
+.area-tree-link {
+  flex: 1;
+  color: var(--text-normal);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  padding: 2px 0;
+  border-radius: 3px;
+  transition: color 0.15s ease;
+}
+
+.area-tree-link:hover {
+  color: var(--interactive-accent);
+  text-decoration: underline;
+}
+
+.area-tree-link:focus {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .area-tree-item {
+    min-height: 44px;
+    padding: 8px 12px 8px 0;
+  }
+
+  .area-tree-toggle-container {
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+  }
+
+  .area-tree-toggle {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .area-tree-link {
+    font-size: 1rem;
+  }
+}
+
+/* High contrast mode - accessibility enhancement */
+@media (prefers-contrast: high) {
+  .area-tree-item {
+    border: 1px solid var(--background-modifier-border);
+  }
+
+  .area-tree-toggle {
+    border: 1px solid var(--text-muted);
+  }
+
+  .area-tree-item:hover {
+    border-color: var(--interactive-accent);
+  }
+}
+
+/* Reduced motion - accessibility for motion-sensitive users */
+@media (prefers-reduced-motion: reduce) {
+  .area-tree-item,
+  .area-tree-toggle,
+  .area-tree-link {
+    transition: none;
+  }
+
+  .area-tree-toggle {
+    transform: none !important;
+  }
+}
