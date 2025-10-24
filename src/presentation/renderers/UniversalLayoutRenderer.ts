@@ -67,6 +67,7 @@ import { EffortVotingService } from "../../infrastructure/services/EffortVotingS
 import { LabelToAliasService } from "../../infrastructure/services/LabelToAliasService";
 import { BacklinksCacheManager } from "../../infrastructure/caching/BacklinksCacheManager";
 import { EventListenerManager } from "../../infrastructure/events/EventListenerManager";
+import { MetadataHelpers } from "../../infrastructure/utilities/MetadataHelpers";
 
 /**
  * UniversalLayout configuration options
@@ -707,16 +708,14 @@ export class UniversalLayoutRenderer {
         const fileCache = cache.getFileCache(sourceFile as TFile);
         const metadata = fileCache?.frontmatter || {};
 
-        // Check if asset is archived
-        const isArchived = this.isAssetArchived(metadata);
+        const isArchived = MetadataHelpers.isAssetArchived(metadata);
 
         // Skip archived assets if setting is disabled
         if (isArchived && !this.settings.showArchivedAssets) {
           continue;
         }
 
-        // Find ALL properties that reference the current file
-        const referencingProperties = this.findAllReferencingProperties(
+        const referencingProperties = MetadataHelpers.findAllReferencingProperties(
           metadata,
           file.basename,
         );
@@ -762,12 +761,11 @@ export class UniversalLayoutRenderer {
       }
     }
 
-    // Sort relations
     if (config.sortBy) {
       const sortBy = config.sortBy;
       relations.sort((a, b) => {
-        const aVal = this.getPropertyValue(a, sortBy);
-        const bVal = this.getPropertyValue(b, sortBy);
+        const aVal = MetadataHelpers.getPropertyValue(a, sortBy);
+        const bVal = MetadataHelpers.getPropertyValue(b, sortBy);
         const order = config.sortOrder === "desc" ? -1 : 1;
         return aVal > bVal ? order : -order;
       });
@@ -1849,120 +1847,6 @@ export class UniversalLayoutRenderer {
     return null;
   }
 
-  /**
-   * Helper method to get property value from relation
-   */
-  private getPropertyValue(
-    relation: AssetRelation,
-    propertyName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any {
-    if (propertyName === "Name") return relation.title;
-    if (propertyName === "title") return relation.title;
-    if (propertyName === "created") return relation.created;
-    if (propertyName === "modified") return relation.modified;
-    if (propertyName === "path") return relation.path;
-    return relation.metadata?.[propertyName];
-  }
-
-  /**
-   * Helper method to find referencing property
-   */
-  /**
-   * Find ALL properties that reference the current file
-   * Returns array of property names (can be multiple if same file is referenced via different properties)
-   */
-  private findAllReferencingProperties(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    metadata: Record<string, any>,
-    currentFileName: string,
-  ): string[] {
-    const properties: string[] = [];
-    for (const [key, value] of Object.entries(metadata)) {
-      if (this.containsReference(value, currentFileName)) {
-        properties.push(key);
-      }
-    }
-    return properties;
-  }
-
-  private findReferencingProperty(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    metadata: Record<string, any>,
-    currentFileName: string,
-  ): string | undefined {
-    for (const [key, value] of Object.entries(metadata)) {
-      if (this.containsReference(value, currentFileName)) {
-        return key;
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * Check if a value contains a reference to a file
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private containsReference(value: any, fileName: string): boolean {
-    if (!value) return false;
-
-    const cleanName = fileName.replace(/\.md$/, "");
-
-    if (typeof value === "string") {
-      return value.includes(`[[${cleanName}]]`) || value.includes(cleanName);
-    }
-
-    if (Array.isArray(value)) {
-      return value.some((v) => this.containsReference(v, fileName));
-    }
-
-    return false;
-  }
-
-  /**
-   * Check if an asset is archived based on frontmatter metadata
-   * Supports multiple archived field formats:
-   * - archived: true (boolean)
-   * - archived: "true" or "yes" (string)
-   * - archived: 1 (number)
-   * Also checks legacy exo__Asset_isArchived field for backward compatibility
-   */
-  private isAssetArchived(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    metadata: Record<string, any>,
-  ): boolean {
-    // Check legacy field first
-    if (metadata?.exo__Asset_isArchived === true) {
-      return true;
-    }
-
-    // Check standard 'archived' field
-    const archivedValue = metadata?.archived;
-
-    if (archivedValue === undefined || archivedValue === null) {
-      return false;
-    }
-
-    // Handle boolean
-    if (typeof archivedValue === "boolean") {
-      return archivedValue;
-    }
-
-    // Handle number (1 = archived, 0 = not archived)
-    if (typeof archivedValue === "number") {
-      return archivedValue !== 0;
-    }
-
-    // Handle string ("true", "yes" = archived, "false", "no" = not archived)
-    if (typeof archivedValue === "string") {
-      const normalized = archivedValue.toLowerCase().trim();
-      return (
-        normalized === "true" || normalized === "yes" || normalized === "1"
-      );
-    }
-
-    return false;
-  }
 
   private getChildAreas(areaName: string, visited: Set<string> = new Set()): Set<string> {
     const childAreas = new Set<string>();
