@@ -124,8 +124,9 @@ test.describe('AreaHierarchyTree Component', () => {
       <AreaHierarchyTree tree={mockTreeWithChildren} currentAreaPath="areas/child1.md" />
     );
 
-    const currentLink = component.locator('.internal-link.area-tree-current');
-    await expect(currentLink).toBeVisible();
+    const currentItem = component.locator('.area-tree-item.is-current');
+    await expect(currentItem).toBeVisible();
+    const currentLink = currentItem.locator('.area-tree-link');
     await expect(currentLink).toContainText('Child 1');
   });
 
@@ -145,14 +146,19 @@ test.describe('AreaHierarchyTree Component', () => {
       <AreaHierarchyTree tree={mockTreeMultiLevel} currentAreaPath="areas/root.md" />
     );
 
-    const childLink = component.locator('[data-href="areas/child1.md"]');
-    const grandchildLink = component.locator('[data-href="areas/grandchild1.md"]');
+    const childItem = component.locator('[data-area-path="areas/child1.md"]').locator('.area-tree-item');
+    const grandchildItem = component.locator('[data-area-path="areas/grandchild1.md"]').locator('.area-tree-item');
 
-    const childText = await childLink.textContent();
-    const grandchildText = await grandchildLink.textContent();
+    const childPadding = await childItem.evaluate((el) => {
+      return parseInt(window.getComputedStyle(el).paddingLeft);
+    });
+    const grandchildPadding = await grandchildItem.evaluate((el) => {
+      return parseInt(window.getComputedStyle(el).paddingLeft);
+    });
 
-    expect(childText?.indexOf('Child 1')).toBe(0);
-    expect(grandchildText?.indexOf('Grandchild 1')).toBeGreaterThan(0);
+    expect(childPadding).toBe(8); // 8px base + 0px for depth 0
+    expect(grandchildPadding).toBe(24); // 8px base + 16px for depth 1
+    expect(grandchildPadding).toBeGreaterThan(childPadding); // Visual hierarchy
   });
 
   test('should style archived child areas', async ({ mount }) => {
@@ -160,8 +166,9 @@ test.describe('AreaHierarchyTree Component', () => {
       <AreaHierarchyTree tree={mockTreeWithArchived} currentAreaPath="areas/root.md" />
     );
 
-    const archivedLink = component.locator('.internal-link.is-archived');
-    await expect(archivedLink).toBeVisible();
+    const archivedItem = component.locator('.area-tree-item.is-archived');
+    await expect(archivedItem).toBeVisible();
+    const archivedLink = archivedItem.locator('.area-tree-link');
     await expect(archivedLink).toContainText('Archived Child');
   });
 

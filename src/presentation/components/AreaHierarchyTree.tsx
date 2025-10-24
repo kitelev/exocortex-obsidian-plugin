@@ -39,41 +39,81 @@ const AreaTreeNode: React.FC<AreaTreeNodeProps> = ({
   const isCurrent = node.path === currentAreaPath;
   const hasChildren = node.children.length > 0;
 
-  const indent = "  ".repeat(depth);
+  const handleToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onAreaClick?.(node.path, e);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    switch (e.key) {
+      case "ArrowRight":
+        if (hasChildren && !isExpanded) {
+          setIsExpanded(true);
+        }
+        break;
+      case "ArrowLeft":
+        if (hasChildren && isExpanded) {
+          setIsExpanded(false);
+        }
+        break;
+      case "Enter":
+      case " ":
+        e.preventDefault();
+        onAreaClick?.(node.path, e as any);
+        break;
+    }
+  };
 
   return (
     <>
-      <tr key={node.path} data-area-path={node.path}>
+      <tr
+        key={node.path}
+        data-area-path={node.path}
+        role="treeitem"
+        aria-level={depth + 1}
+        aria-expanded={hasChildren ? isExpanded : undefined}
+        aria-selected={isCurrent}
+      >
         <td>
-          {hasChildren && (
-            <span
-              className="area-tree-toggle"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsExpanded(!isExpanded);
-              }}
-              style={{
-                cursor: "pointer",
-                marginRight: "4px",
-                userSelect: "none"
-              }}
-            >
-              {isExpanded ? "▼" : "▶"}
-            </span>
-          )}
-          <a
-            data-href={node.path}
-            className={`internal-link ${isCurrent ? "area-tree-current" : ""} ${node.isArchived ? "is-archived" : ""}`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onAreaClick?.(node.path, e);
+          <div
+            className={`area-tree-item ${isCurrent ? "is-current" : ""} ${node.isArchived ? "is-archived" : ""}`}
+            data-depth={depth}
+            style={{
+              paddingLeft: `${8 + depth * 16}px`
             }}
-            style={{ cursor: "pointer" }}
+            onKeyDown={handleKeyDown}
           >
-            {indent}
-            {displayLabel}
-          </a>
+            <span className="area-tree-toggle-container">
+              {hasChildren ? (
+                <button
+                  className="area-tree-toggle"
+                  onClick={handleToggle}
+                  aria-expanded={isExpanded}
+                  aria-label={`${isExpanded ? "Collapse" : "Expand"} ${displayLabel}`}
+                  tabIndex={-1}
+                >
+                  {isExpanded ? "▼" : "▶"}
+                </button>
+              ) : (
+                <span className="area-tree-toggle-spacer" aria-hidden="true" />
+              )}
+            </span>
+            <a
+              data-href={node.path}
+              className="area-tree-link internal-link"
+              onClick={handleClick}
+              tabIndex={0}
+              aria-current={isCurrent ? "page" : undefined}
+            >
+              {displayLabel}
+            </a>
+          </div>
         </td>
         <td>
           <a className="internal-link">ems__Area</a>
@@ -106,7 +146,11 @@ export const AreaHierarchyTree: React.FC<AreaHierarchyTreeProps> = ({
   return (
     <div className="exocortex-area-tree">
       <h3>Area Hierarchy</h3>
-      <table className="exocortex-relation-table">
+      <table
+        className="exocortex-relation-table"
+        role="tree"
+        aria-label="Area hierarchy tree"
+      >
         <thead>
           <tr>
             <th>Area</th>
