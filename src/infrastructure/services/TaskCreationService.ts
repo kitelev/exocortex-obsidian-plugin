@@ -1,5 +1,6 @@
 import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
+import { DateFormatter } from "../utilities/DateFormatter";
 
 /**
  * Mapping of source class to effort property name
@@ -29,21 +30,6 @@ const INSTANCE_CLASS_MAP: Record<string, string> = {
  */
 export class TaskCreationService {
   constructor(private vault: Vault) {}
-
-  /**
-   * Format date as ISO 8601 string in local timezone (not UTC)
-   * Format: YYYY-MM-DDTHH:mm:ss
-   */
-  private formatLocalTimestamp(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    const seconds = String(date.getSeconds()).padStart(2, "0");
-
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-  }
 
   /**
    * Extract content of H2 section from markdown
@@ -196,7 +182,7 @@ export class TaskCreationService {
     taskSize?: string | null,
   ): Record<string, any> {
     const now = new Date();
-    const timestamp = this.formatLocalTimestamp(now);
+    const timestamp = DateFormatter.toLocalTimestamp(now);
 
     // Extract isDefinedBy - handle both string and array formats
     let isDefinedBy = sourceMetadata.exo__Asset_isDefinedBy || '""';
@@ -331,7 +317,7 @@ export class TaskCreationService {
     taskSize?: string | null,
   ): Record<string, any> {
     const now = new Date();
-    const timestamp = this.formatLocalTimestamp(now);
+    const timestamp = DateFormatter.toLocalTimestamp(now);
 
     // Extract isDefinedBy - handle both string and array formats
     let isDefinedBy = sourceMetadata.exo__Asset_isDefinedBy || '""';
@@ -393,7 +379,7 @@ export class TaskCreationService {
    */
   generateTaskFileName(): string {
     const now = new Date();
-    const timestamp = this.formatLocalTimestamp(now).replace(/:/g, "-"); // Replace colons for filesystem compatibility
+    const timestamp = DateFormatter.toLocalTimestamp(now).replace(/:/g, "-"); // Replace colons for filesystem compatibility
 
     return `Task-${timestamp}.md`;
   }
