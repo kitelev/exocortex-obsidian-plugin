@@ -33,7 +33,7 @@ test.describe("Graph View E2E Tests", () => {
     await expect(graphView).toBeVisible({ timeout: 5000 });
   });
 
-  test("should render graph canvas SVG element", async () => {
+  test("should render graph canvas element with WebGL", async () => {
     await launcher.openFile('Areas/development.md');
     const window = await launcher.getWindow();
 
@@ -45,8 +45,11 @@ test.describe("Graph View E2E Tests", () => {
 
     await launcher.waitForElement('.exocortex-graph-view-container', 10000);
 
-    const svg = window.locator("svg.exocortex-graph-canvas");
-    await expect(svg).toBeVisible({ timeout: 5000 });
+    const canvasContainer = window.locator("div.exocortex-graph-canvas");
+    await expect(canvasContainer).toBeVisible({ timeout: 5000 });
+
+    const canvas = canvasContainer.locator("canvas");
+    await expect(canvas).toBeVisible({ timeout: 5000 });
   });
 
   test("should display graph controls section", async () => {
