@@ -872,6 +872,7 @@
 }
 
 /* Depth-based backgrounds for visual hierarchy (light theme) */
+/* Note: padding-left is set inline via style={{paddingLeft: 8 + depth * 20}} */
 .area-tree-item[data-depth="0"] {
   padding-left: 8px;
 }
@@ -928,7 +929,7 @@
   background-color: var(--interactive-accent) !important;
   color: var(--text-on-accent);
   border-left: 3px solid var(--interactive-accent-hover);
-  padding-left: calc(8px + var(--depth, 0) * 16px - 3px);
+  padding-left: calc(8px + var(--depth, 0) * 20px - 3px);
 }
 
 .area-tree-item.is-current .area-tree-link {
