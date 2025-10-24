@@ -16,7 +16,7 @@ test.describe("Graph View E2E Tests", () => {
   });
 
   test("should open graph view via ribbon icon", async () => {
-    await launcher.openFile('Areas/Personal.md');
+    await launcher.openFile('Areas/development.md');
     const window = await launcher.getWindow();
 
     await launcher.waitForModalsToClose(10000);
@@ -34,7 +34,7 @@ test.describe("Graph View E2E Tests", () => {
   });
 
   test("should render graph canvas SVG element", async () => {
-    await launcher.openFile('Areas/Personal.md');
+    await launcher.openFile('Areas/development.md');
     const window = await launcher.getWindow();
 
     await launcher.waitForModalsToClose(10000);
@@ -50,7 +50,7 @@ test.describe("Graph View E2E Tests", () => {
   });
 
   test("should display graph controls section", async () => {
-    await launcher.openFile('Areas/Personal.md');
+    await launcher.openFile('Areas/development.md');
     const window = await launcher.getWindow();
 
     await launcher.waitForModalsToClose(10000);
