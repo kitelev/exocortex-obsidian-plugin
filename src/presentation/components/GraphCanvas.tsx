@@ -405,7 +405,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({ app, plugin }) => {
       flexDirection: "row",
       background: "var(--background-primary)"
     }}>
-      <div className="exocortex-graph-sidebar" style={{
+      <div className="exocortex-graph-sidebar exocortex-graph-controls" style={{
         width: "280px",
         padding: "16px",
         borderRight: "1px solid var(--background-modifier-border)",
@@ -425,7 +425,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({ app, plugin }) => {
               color: "var(--text-normal)"
             }}
           >
-            <span>Filters</span>
+            <span>Filters:</span>
             <span style={{ fontSize: "12px" }}>{showFilters ? "▼" : "▶"}</span>
           </div>
           {showFilters && (
