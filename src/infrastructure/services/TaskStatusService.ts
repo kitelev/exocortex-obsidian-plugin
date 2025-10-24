@@ -1,537 +1,173 @@
 import { TFile, Vault } from "obsidian";
+import { FrontmatterService } from "./FrontmatterService";
+import { DateFormatter } from "../utilities/DateFormatter";
 
 export class TaskStatusService {
-  constructor(private vault: Vault) {}
+  private frontmatterService: FrontmatterService;
 
-  /**
-   * Format date as ISO 8601 string in local timezone (not UTC)
-   * Format: YYYY-MM-DDTHH:mm:ss
-   */
-  private formatLocalTimestamp(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    const seconds = String(date.getSeconds()).padStart(2, "0");
-
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-  }
-
-  /**
-   * Format date as YYYY-MM-DD wikilink for ems__Effort_day property
-   * Format: [[YYYY-MM-DD]]
-   */
-  private formatDateAsWikilink(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-
-    return `"[[${year}-${month}-${day}]]"`;
+  constructor(private vault: Vault) {
+    this.frontmatterService = new FrontmatterService();
   }
 
   async setDraftStatus(taskFile: TFile): Promise<void> {
-    const fileContent = await this.vault.read(taskFile);
-    const updatedContent = this.updateFrontmatterWithDraftStatus(fileContent);
-    await this.vault.modify(taskFile, updatedContent);
-  }
-
-  private updateFrontmatterWithDraftStatus(content: string): string {
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) {
-      const newFrontmatter = `---
-ems__Effort_status: "[[ems__EffortStatusDraft]]"
----
-${content}`;
-      return newFrontmatter;
-    }
-
-    const frontmatterContent = match[1];
-    let updatedFrontmatter = frontmatterContent;
-
-    if (updatedFrontmatter.includes("ems__Effort_status:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_status:.*$/m,
-        'ems__Effort_status: "[[ems__EffortStatusDraft]]"',
-      );
-    } else {
-      updatedFrontmatter += '\nems__Effort_status: "[[ems__EffortStatusDraft]]"';
-    }
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
+    const content = await this.vault.read(taskFile);
+    const updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_status",
+      '"[[ems__EffortStatusDraft]]"',
     );
+    await this.vault.modify(taskFile, updated);
   }
 
   async moveToBacklog(taskFile: TFile): Promise<void> {
-    const fileContent = await this.vault.read(taskFile);
-    const updatedContent = this.updateFrontmatterWithBacklogStatus(fileContent);
-    await this.vault.modify(taskFile, updatedContent);
-  }
-
-  private updateFrontmatterWithBacklogStatus(content: string): string {
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) {
-      const newFrontmatter = `---
-ems__Effort_status: "[[ems__EffortStatusBacklog]]"
----
-${content}`;
-      return newFrontmatter;
-    }
-
-    const frontmatterContent = match[1];
-    let updatedFrontmatter = frontmatterContent;
-
-    if (updatedFrontmatter.includes("ems__Effort_status:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_status:.*$/m,
-        'ems__Effort_status: "[[ems__EffortStatusBacklog]]"',
-      );
-    } else {
-      updatedFrontmatter += '\nems__Effort_status: "[[ems__EffortStatusBacklog]]"';
-    }
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
+    const content = await this.vault.read(taskFile);
+    const updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_status",
+      '"[[ems__EffortStatusBacklog]]"',
     );
+    await this.vault.modify(taskFile, updated);
   }
 
   async moveToAnalysis(projectFile: TFile): Promise<void> {
-    const fileContent = await this.vault.read(projectFile);
-    const updatedContent = this.updateFrontmatterWithAnalysisStatus(fileContent);
-    await this.vault.modify(projectFile, updatedContent);
-  }
-
-  private updateFrontmatterWithAnalysisStatus(content: string): string {
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) {
-      const newFrontmatter = `---
-ems__Effort_status: "[[ems__EffortStatusAnalysis]]"
----
-${content}`;
-      return newFrontmatter;
-    }
-
-    const frontmatterContent = match[1];
-    let updatedFrontmatter = frontmatterContent;
-
-    if (updatedFrontmatter.includes("ems__Effort_status:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_status:.*$/m,
-        'ems__Effort_status: "[[ems__EffortStatusAnalysis]]"',
-      );
-    } else {
-      updatedFrontmatter += '\nems__Effort_status: "[[ems__EffortStatusAnalysis]]"';
-    }
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
+    const content = await this.vault.read(projectFile);
+    const updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_status",
+      '"[[ems__EffortStatusAnalysis]]"',
     );
+    await this.vault.modify(projectFile, updated);
   }
 
   async moveToToDo(projectFile: TFile): Promise<void> {
-    const fileContent = await this.vault.read(projectFile);
-    const updatedContent = this.updateFrontmatterWithToDoStatus(fileContent);
-    await this.vault.modify(projectFile, updatedContent);
-  }
-
-  private updateFrontmatterWithToDoStatus(content: string): string {
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) {
-      const newFrontmatter = `---
-ems__Effort_status: "[[ems__EffortStatusToDo]]"
----
-${content}`;
-      return newFrontmatter;
-    }
-
-    const frontmatterContent = match[1];
-    let updatedFrontmatter = frontmatterContent;
-
-    if (updatedFrontmatter.includes("ems__Effort_status:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_status:.*$/m,
-        'ems__Effort_status: "[[ems__EffortStatusToDo]]"',
-      );
-    } else {
-      updatedFrontmatter += '\nems__Effort_status: "[[ems__EffortStatusToDo]]"';
-    }
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
+    const content = await this.vault.read(projectFile);
+    const updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_status",
+      '"[[ems__EffortStatusToDo]]"',
     );
+    await this.vault.modify(projectFile, updated);
   }
 
   async startEffort(taskFile: TFile): Promise<void> {
-    const fileContent = await this.vault.read(taskFile);
-    const updatedContent = this.updateFrontmatterWithDoingStatus(fileContent);
-    await this.vault.modify(taskFile, updatedContent);
-  }
+    const content = await this.vault.read(taskFile);
+    const timestamp = DateFormatter.toLocalTimestamp(new Date());
 
-  private updateFrontmatterWithDoingStatus(content: string): string {
-    const now = new Date();
-    const timestamp = this.formatLocalTimestamp(now);
-
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) {
-      const newFrontmatter = `---
-ems__Effort_status: "[[ems__EffortStatusDoing]]"
-ems__Effort_startTimestamp: ${timestamp}
----
-${content}`;
-      return newFrontmatter;
-    }
-
-    const frontmatterContent = match[1];
-    let updatedFrontmatter = frontmatterContent;
-
-    if (updatedFrontmatter.includes("ems__Effort_status:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_status:.*$/m,
-        'ems__Effort_status: "[[ems__EffortStatusDoing]]"',
-      );
-    } else {
-      updatedFrontmatter += '\nems__Effort_status: "[[ems__EffortStatusDoing]]"';
-    }
-
-    if (updatedFrontmatter.includes("ems__Effort_startTimestamp:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_startTimestamp:.*$/m,
-        `ems__Effort_startTimestamp: ${timestamp}`,
-      );
-    } else {
-      updatedFrontmatter += `\nems__Effort_startTimestamp: ${timestamp}`;
-    }
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
+    let updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_status",
+      '"[[ems__EffortStatusDoing]]"',
     );
+    updated = this.frontmatterService.updateProperty(
+      updated,
+      "ems__Effort_startTimestamp",
+      timestamp,
+    );
+
+    await this.vault.modify(taskFile, updated);
   }
 
   async markTaskAsDone(taskFile: TFile): Promise<void> {
-    const fileContent = await this.vault.read(taskFile);
-    const updatedContent = this.updateFrontmatterWithDoneStatus(fileContent);
-    await this.vault.modify(taskFile, updatedContent);
+    const content = await this.vault.read(taskFile);
+    const timestamp = DateFormatter.toLocalTimestamp(new Date());
+
+    let updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_status",
+      '"[[ems__EffortStatusDone]]"',
+    );
+    updated = this.frontmatterService.updateProperty(
+      updated,
+      "ems__Effort_endTimestamp",
+      timestamp,
+    );
+    updated = this.frontmatterService.updateProperty(
+      updated,
+      "ems__Effort_resolutionTimestamp",
+      timestamp,
+    );
+
+    await this.vault.modify(taskFile, updated);
   }
 
   async syncEffortEndTimestamp(
     taskFile: TFile,
     date?: Date,
   ): Promise<void> {
-    const fileContent = await this.vault.read(taskFile);
-    const updatedContent = this.updateFrontmatterWithSyncedTimestamps(
-      fileContent,
-      date,
-    );
-    await this.vault.modify(taskFile, updatedContent);
-  }
-
-  private updateFrontmatterWithSyncedTimestamps(
-    content: string,
-    date?: Date,
-  ): string {
+    const content = await this.vault.read(taskFile);
     const targetDate = date || new Date();
-    const timestamp = this.formatLocalTimestamp(targetDate);
+    const timestamp = DateFormatter.toLocalTimestamp(targetDate);
 
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) {
-      const newFrontmatter = `---
-ems__Effort_endTimestamp: ${timestamp}
-ems__Effort_resolutionTimestamp: ${timestamp}
----
-${content}`;
-      return newFrontmatter;
-    }
-
-    const frontmatterContent = match[1];
-    let updatedFrontmatter = frontmatterContent;
-
-    if (updatedFrontmatter.includes("ems__Effort_endTimestamp:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_endTimestamp:.*$/m,
-        `ems__Effort_endTimestamp: ${timestamp}`,
-      );
-    } else {
-      updatedFrontmatter += `\nems__Effort_endTimestamp: ${timestamp}`;
-    }
-
-    if (updatedFrontmatter.includes("ems__Effort_resolutionTimestamp:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_resolutionTimestamp:.*$/m,
-        `ems__Effort_resolutionTimestamp: ${timestamp}`,
-      );
-    } else {
-      updatedFrontmatter += `\nems__Effort_resolutionTimestamp: ${timestamp}`;
-    }
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
+    let updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_endTimestamp",
+      timestamp,
     );
-  }
-
-  private updateFrontmatterWithDoneStatus(content: string): string {
-    const now = new Date();
-    const timestamp = this.formatLocalTimestamp(now);
-
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) {
-      const newFrontmatter = `---
-ems__Effort_status: "[[ems__EffortStatusDone]]"
-ems__Effort_endTimestamp: ${timestamp}
-ems__Effort_resolutionTimestamp: ${timestamp}
----
-${content}`;
-      return newFrontmatter;
-    }
-
-    const frontmatterContent = match[1];
-    let updatedFrontmatter = frontmatterContent;
-
-    if (updatedFrontmatter.includes("ems__Effort_status:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_status:.*$/m,
-        'ems__Effort_status: "[[ems__EffortStatusDone]]"',
-      );
-    } else {
-      updatedFrontmatter += '\nems__Effort_status: "[[ems__EffortStatusDone]]"';
-    }
-
-    if (updatedFrontmatter.includes("ems__Effort_endTimestamp:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_endTimestamp:.*$/m,
-        `ems__Effort_endTimestamp: ${timestamp}`,
-      );
-    } else {
-      updatedFrontmatter += `\nems__Effort_endTimestamp: ${timestamp}`;
-    }
-
-    if (updatedFrontmatter.includes("ems__Effort_resolutionTimestamp:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_resolutionTimestamp:.*$/m,
-        `ems__Effort_resolutionTimestamp: ${timestamp}`,
-      );
-    } else {
-      updatedFrontmatter += `\nems__Effort_resolutionTimestamp: ${timestamp}`;
-    }
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
+    updated = this.frontmatterService.updateProperty(
+      updated,
+      "ems__Effort_resolutionTimestamp",
+      timestamp,
     );
+
+    await this.vault.modify(taskFile, updated);
   }
 
   async trashEffort(taskFile: TFile): Promise<void> {
-    const fileContent = await this.vault.read(taskFile);
-    const updatedContent = this.updateFrontmatterWithTrashedStatus(fileContent);
-    await this.vault.modify(taskFile, updatedContent);
-  }
+    const content = await this.vault.read(taskFile);
+    const timestamp = DateFormatter.toLocalTimestamp(new Date());
 
-  private updateFrontmatterWithTrashedStatus(content: string): string {
-    const now = new Date();
-    const timestamp = this.formatLocalTimestamp(now);
-
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) {
-      const newFrontmatter = `---
-ems__Effort_status: "[[ems__EffortStatusTrashed]]"
-ems__Effort_resolutionTimestamp: ${timestamp}
----
-${content}`;
-      return newFrontmatter;
-    }
-
-    const frontmatterContent = match[1];
-    let updatedFrontmatter = frontmatterContent;
-
-    if (updatedFrontmatter.includes("ems__Effort_status:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_status:.*$/m,
-        'ems__Effort_status: "[[ems__EffortStatusTrashed]]"',
-      );
-    } else {
-      updatedFrontmatter += '\nems__Effort_status: "[[ems__EffortStatusTrashed]]"';
-    }
-
-    if (updatedFrontmatter.includes("ems__Effort_resolutionTimestamp:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_resolutionTimestamp:.*$/m,
-        `ems__Effort_resolutionTimestamp: ${timestamp}`,
-      );
-    } else {
-      updatedFrontmatter += `\nems__Effort_resolutionTimestamp: ${timestamp}`;
-    }
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
+    let updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_status",
+      '"[[ems__EffortStatusTrashed]]"',
     );
+    updated = this.frontmatterService.updateProperty(
+      updated,
+      "ems__Effort_resolutionTimestamp",
+      timestamp,
+    );
+
+    await this.vault.modify(taskFile, updated);
   }
 
   async archiveTask(taskFile: TFile): Promise<void> {
-    const fileContent = await this.vault.read(taskFile);
-    const updatedContent = this.updateFrontmatterWithArchived(fileContent);
-    await this.vault.modify(taskFile, updatedContent);
-  }
-
-  private updateFrontmatterWithArchived(content: string): string {
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) {
-      const newFrontmatter = `---
-archived: true
----
-${content}`;
-      return newFrontmatter;
-    }
-
-    const frontmatterContent = match[1];
-    let updatedFrontmatter = frontmatterContent;
-
-    if (updatedFrontmatter.includes("archived:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /archived:.*$/m,
-        "archived: true",
-      );
-    } else {
-      updatedFrontmatter += "\narchived: true";
-    }
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
+    const content = await this.vault.read(taskFile);
+    const updated = this.frontmatterService.updateProperty(
+      content,
+      "archived",
+      "true",
     );
+    await this.vault.modify(taskFile, updated);
   }
 
   async planOnToday(taskFile: TFile): Promise<void> {
-    const fileContent = await this.vault.read(taskFile);
-    const updatedContent = this.updateFrontmatterWithTodayDate(fileContent);
-    await this.vault.modify(taskFile, updatedContent);
+    const content = await this.vault.read(taskFile);
+    const todayWikilink = DateFormatter.getTodayWikilink();
+    const updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_day",
+      todayWikilink,
+    );
+    await this.vault.modify(taskFile, updated);
   }
 
   async planForEvening(taskFile: TFile): Promise<void> {
-    const fileContent = await this.vault.read(taskFile);
-    const updatedContent = this.updateFrontmatterWithEveningTimestamp(fileContent);
-    await this.vault.modify(taskFile, updatedContent);
-  }
+    const content = await this.vault.read(taskFile);
+    const evening = new Date();
+    evening.setHours(19, 0, 0, 0);
+    const eveningTimestamp = DateFormatter.toLocalTimestamp(evening);
 
-  private updateFrontmatterWithEveningTimestamp(content: string): string {
-    const now = new Date();
-    now.setHours(19, 0, 0, 0);
-    const eveningTimestamp = this.formatLocalTimestamp(now);
-
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) {
-      const newFrontmatter = `---
-ems__Effort_plannedStartTimestamp: ${eveningTimestamp}
----
-${content}`;
-      return newFrontmatter;
-    }
-
-    const frontmatterContent = match[1];
-    let updatedFrontmatter = frontmatterContent;
-
-    if (updatedFrontmatter.includes("ems__Effort_plannedStartTimestamp:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_plannedStartTimestamp:.*$/m,
-        `ems__Effort_plannedStartTimestamp: ${eveningTimestamp}`,
-      );
-    } else {
-      updatedFrontmatter += `\nems__Effort_plannedStartTimestamp: ${eveningTimestamp}`;
-    }
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
+    const updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_plannedStartTimestamp",
+      eveningTimestamp,
     );
-  }
-
-  private updateFrontmatterWithTodayDate(content: string): string {
-    const now = new Date();
-    const todayWikilink = this.formatDateAsWikilink(now);
-
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) {
-      const newFrontmatter = `---
-ems__Effort_day: ${todayWikilink}
----
-${content}`;
-      return newFrontmatter;
-    }
-
-    const frontmatterContent = match[1];
-    let updatedFrontmatter = frontmatterContent;
-
-    if (updatedFrontmatter.includes("ems__Effort_day:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_day:.*$/m,
-        `ems__Effort_day: ${todayWikilink}`,
-      );
-    } else {
-      updatedFrontmatter += `\nems__Effort_day: ${todayWikilink}`;
-    }
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
-    );
-  }
-
-  private parseDateFromWikilink(wikilink: string): Date | null {
-    const cleanValue = wikilink.replace(/["'\[\]]/g, "").trim();
-    const date = new Date(cleanValue);
-
-    if (isNaN(date.getTime())) {
-      return null;
-    }
-
-    return date;
-  }
-
-  private extractEffortDay(content: string): string | null {
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) return null;
-
-    const frontmatterContent = match[1];
-    const effortDayMatch = frontmatterContent.match(/ems__Effort_day:\s*(.+)$/m);
-
-    if (!effortDayMatch) return null;
-
-    return effortDayMatch[1].trim();
+    await this.vault.modify(taskFile, updated);
   }
 
   async shiftDayBackward(taskFile: TFile): Promise<void> {
-    const fileContent = await this.vault.read(taskFile);
-    const currentEffortDay = this.extractEffortDay(fileContent);
+    const content = await this.vault.read(taskFile);
+    const currentEffortDay = this.extractEffortDay(content);
 
     if (!currentEffortDay) {
       throw new Error("ems__Effort_day property not found");
@@ -543,16 +179,20 @@ ${content}`;
       throw new Error("Invalid date format in ems__Effort_day");
     }
 
-    const newDate = new Date(currentDate);
-    newDate.setDate(newDate.getDate() - 1);
+    const newDate = DateFormatter.addDays(currentDate, -1);
+    const newWikilink = DateFormatter.toDateWikilink(newDate);
 
-    const updatedContent = this.updateFrontmatterWithDate(fileContent, newDate);
-    await this.vault.modify(taskFile, updatedContent);
+    const updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_day",
+      newWikilink,
+    );
+    await this.vault.modify(taskFile, updated);
   }
 
   async shiftDayForward(taskFile: TFile): Promise<void> {
-    const fileContent = await this.vault.read(taskFile);
-    const currentEffortDay = this.extractEffortDay(fileContent);
+    const content = await this.vault.read(taskFile);
+    const currentEffortDay = this.extractEffortDay(content);
 
     if (!currentEffortDay) {
       throw new Error("ems__Effort_day property not found");
@@ -564,64 +204,21 @@ ${content}`;
       throw new Error("Invalid date format in ems__Effort_day");
     }
 
-    const newDate = new Date(currentDate);
-    newDate.setDate(newDate.getDate() + 1);
+    const newDate = DateFormatter.addDays(currentDate, 1);
+    const newWikilink = DateFormatter.toDateWikilink(newDate);
 
-    const updatedContent = this.updateFrontmatterWithDate(fileContent, newDate);
-    await this.vault.modify(taskFile, updatedContent);
-  }
-
-  private updateFrontmatterWithDate(content: string, date: Date): string {
-    const dateWikilink = this.formatDateAsWikilink(date);
-
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) {
-      const newFrontmatter = `---
-ems__Effort_day: ${dateWikilink}
----
-${content}`;
-      return newFrontmatter;
-    }
-
-    const frontmatterContent = match[1];
-    let updatedFrontmatter = frontmatterContent;
-
-    if (updatedFrontmatter.includes("ems__Effort_day:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_day:.*$/m,
-        `ems__Effort_day: ${dateWikilink}`,
-      );
-    } else {
-      updatedFrontmatter += `\nems__Effort_day: ${dateWikilink}`;
-    }
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
+    const updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_day",
+      newWikilink,
     );
+    await this.vault.modify(taskFile, updated);
   }
-
-  private extractCurrentStatus(content: string): string | null {
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) return null;
-
-    const frontmatterContent = match[1];
-    const statusMatch = frontmatterContent.match(/ems__Effort_status:\s*(.+)$/m);
-
-    if (!statusMatch) return null;
-
-    return statusMatch[1].trim();
-  }
-
 
   async rollbackStatus(taskFile: TFile): Promise<void> {
-    const fileContent = await this.vault.read(taskFile);
-    const currentStatus = this.extractCurrentStatus(fileContent);
-    const instanceClass = this.extractInstanceClass(fileContent);
+    const content = await this.vault.read(taskFile);
+    const currentStatus = this.extractCurrentStatus(content);
+    const instanceClass = this.extractInstanceClass(content);
 
     if (!currentStatus) {
       throw new Error("No current status to rollback from");
@@ -636,16 +233,17 @@ ${content}`;
       throw new Error("Cannot rollback from current status");
     }
 
-    let updatedContent = fileContent;
+    let updated = content;
 
     if (previousStatus === null) {
-      updatedContent = this.removeFrontmatterProperty(
-        updatedContent,
+      updated = this.frontmatterService.removeProperty(
+        updated,
         "ems__Effort_status",
       );
     } else {
-      updatedContent = this.updateFrontmatterWithStatus(
-        updatedContent,
+      updated = this.frontmatterService.updateProperty(
+        updated,
+        "ems__Effort_status",
         previousStatus,
       );
     }
@@ -653,22 +251,53 @@ ${content}`;
     const normalizedStatus = currentStatus.replace(/["'\[\]]/g, "").trim();
 
     if (normalizedStatus === "ems__EffortStatusDone") {
-      updatedContent = this.removeFrontmatterProperty(
-        updatedContent,
+      updated = this.frontmatterService.removeProperty(
+        updated,
         "ems__Effort_endTimestamp",
       );
-      updatedContent = this.removeFrontmatterProperty(
-        updatedContent,
+      updated = this.frontmatterService.removeProperty(
+        updated,
         "ems__Effort_resolutionTimestamp",
       );
     } else if (normalizedStatus === "ems__EffortStatusDoing") {
-      updatedContent = this.removeFrontmatterProperty(
-        updatedContent,
+      updated = this.frontmatterService.removeProperty(
+        updated,
         "ems__Effort_startTimestamp",
       );
     }
 
-    await this.vault.modify(taskFile, updatedContent);
+    await this.vault.modify(taskFile, updated);
+  }
+
+  private parseDateFromWikilink(wikilink: string): Date | null {
+    const cleanValue = wikilink.replace(/["'\[\]]/g, "").trim();
+    const date = new Date(cleanValue);
+
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+
+    return date;
+  }
+
+  private extractEffortDay(content: string): string | null {
+    const parsed = this.frontmatterService.parse(content);
+    if (!parsed.exists) return null;
+
+    return this.frontmatterService.getPropertyValue(
+      parsed.content,
+      "ems__Effort_day",
+    );
+  }
+
+  private extractCurrentStatus(content: string): string | null {
+    const parsed = this.frontmatterService.parse(content);
+    if (!parsed.exists) return null;
+
+    return this.frontmatterService.getPropertyValue(
+      parsed.content,
+      "ems__Effort_status",
+    );
   }
 
   private getPreviousStatusFromWorkflow(
@@ -722,14 +351,10 @@ ${content}`;
   }
 
   private extractInstanceClass(content: string): string | string[] | null {
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
+    const parsed = this.frontmatterService.parse(content);
+    if (!parsed.exists) return null;
 
-    if (!match) return null;
-
-    const frontmatterContent = match[1];
-
-    const arrayMatch = frontmatterContent.match(
+    const arrayMatch = parsed.content.match(
       /exo__Instance_class:\s*\n((?:\s*-\s*.*\n?)+)/,
     );
 
@@ -738,66 +363,9 @@ ${content}`;
       return lines.map((line) => line.replace(/^\s*-\s*/, "").trim());
     }
 
-    const singleMatch = frontmatterContent.match(
-      /exo__Instance_class:\s*(.+)$/m,
-    );
-
-    if (singleMatch) {
-      return singleMatch[1].trim();
-    }
-
-    return null;
-  }
-
-  private updateFrontmatterWithStatus(
-    content: string,
-    status: string,
-  ): string {
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) {
-      const newFrontmatter = `---
-ems__Effort_status: ${status}
----
-${content}`;
-      return newFrontmatter;
-    }
-
-    const frontmatterContent = match[1];
-    let updatedFrontmatter = frontmatterContent;
-
-    if (updatedFrontmatter.includes("ems__Effort_status:")) {
-      updatedFrontmatter = updatedFrontmatter.replace(
-        /ems__Effort_status:.*$/m,
-        `ems__Effort_status: ${status}`,
-      );
-    } else {
-      updatedFrontmatter += `\nems__Effort_status: ${status}`;
-    }
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
-    );
-  }
-
-  private removeFrontmatterProperty(
-    content: string,
-    propertyName: string,
-  ): string {
-    const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
-    const match = content.match(frontmatterRegex);
-
-    if (!match) return content;
-
-    const frontmatterContent = match[1];
-    const propertyRegex = new RegExp(`\\n${propertyName}:.*$`, "m");
-    const updatedFrontmatter = frontmatterContent.replace(propertyRegex, "");
-
-    return content.replace(
-      frontmatterRegex,
-      `---\n${updatedFrontmatter}\n---`,
+    return this.frontmatterService.getPropertyValue(
+      parsed.content,
+      "exo__Instance_class",
     );
   }
 }
