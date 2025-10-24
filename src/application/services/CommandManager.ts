@@ -32,7 +32,7 @@ import { SupervisionCreationService } from "../../infrastructure/services/Superv
 import { RenameToUidService } from "../../infrastructure/services/RenameToUidService";
 import { EffortVotingService } from "../../infrastructure/services/EffortVotingService";
 import { LabelToAliasService } from "../../infrastructure/services/LabelToAliasService";
-import { LabelInputModal } from "../../presentation/modals/LabelInputModal";
+import { LabelInputModal, type LabelInputModalResult } from "../../presentation/modals/LabelInputModal";
 import { SupervisionInputModal } from "../../presentation/modals/SupervisionInputModal";
 
 /**
@@ -786,20 +786,17 @@ export class CommandManager {
     file: TFile,
     context: CommandVisibilityContext,
   ): Promise<void> {
-    // Show modal and wait for user input
-    const label = await new Promise<string | null>((resolve) => {
+    const result = await new Promise<LabelInputModalResult>((resolve) => {
       new LabelInputModal(this.app, resolve).open();
     });
 
-    // User cancelled
-    if (label === null) {
+    if (result.label === null) {
       return;
     }
 
     const cache = this.app.metadataCache.getFileCache(file);
     const metadata = cache?.frontmatter || {};
 
-    // Extract clean source class
     const instanceClass = context.instanceClass;
     const classes = Array.isArray(instanceClass)
       ? instanceClass
@@ -811,7 +808,8 @@ export class CommandManager {
       file,
       metadata,
       sourceClass,
-      label,
+      result.label,
+      result.taskSize,
     );
 
     // Open the created file in a new tab
@@ -828,11 +826,11 @@ export class CommandManager {
     file: TFile,
     context: CommandVisibilityContext,
   ): Promise<void> {
-    const label = await new Promise<string | null>((resolve) => {
+    const result = await new Promise<LabelInputModalResult>((resolve) => {
       new LabelInputModal(this.app, resolve).open();
     });
 
-    if (label === null) {
+    if (result.label === null) {
       return;
     }
 
@@ -846,7 +844,7 @@ export class CommandManager {
       file,
       metadata,
       sourceClass,
-      label,
+      result.label,
     );
 
     const leaf = this.app.workspace.getLeaf("tab");
@@ -861,20 +859,17 @@ export class CommandManager {
     file: TFile,
     context: CommandVisibilityContext,
   ): Promise<void> {
-    // Show modal and wait for user input
-    const label = await new Promise<string | null>((resolve) => {
+    const result = await new Promise<LabelInputModalResult>((resolve) => {
       new LabelInputModal(this.app, resolve).open();
     });
 
-    // User cancelled
-    if (label === null) {
+    if (result.label === null) {
       return;
     }
 
     const cache = this.app.metadataCache.getFileCache(file);
     const metadata = cache?.frontmatter || {};
 
-    // Extract clean source class (ems__TaskPrototype)
     const instanceClass = context.instanceClass;
     const classes = Array.isArray(instanceClass)
       ? instanceClass
@@ -886,7 +881,8 @@ export class CommandManager {
       file,
       metadata,
       sourceClass,
-      label,
+      result.label,
+      result.taskSize,
     );
 
     // Open the created file in a new tab
@@ -903,13 +899,11 @@ export class CommandManager {
     file: TFile,
     context: CommandVisibilityContext,
   ): Promise<void> {
-    // Show modal and wait for user input
-    const label = await new Promise<string | null>((resolve) => {
+    const result = await new Promise<LabelInputModalResult>((resolve) => {
       new LabelInputModal(this.app, resolve).open();
     });
 
-    // User cancelled
-    if (label === null) {
+    if (result.label === null) {
       return;
     }
 
@@ -919,7 +913,8 @@ export class CommandManager {
     const createdFile = await this.taskCreationService.createRelatedTask(
       file,
       metadata,
-      label,
+      result.label,
+      result.taskSize,
     );
 
     // Open the created file in a new tab
