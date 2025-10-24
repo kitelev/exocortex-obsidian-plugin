@@ -65,6 +65,7 @@ import { FolderRepairService } from "../../infrastructure/services/FolderRepairS
 import { RenameToUidService } from "../../infrastructure/services/RenameToUidService";
 import { EffortVotingService } from "../../infrastructure/services/EffortVotingService";
 import { LabelToAliasService } from "../../infrastructure/services/LabelToAliasService";
+import { BacklinksCacheManager } from "../../infrastructure/caching/BacklinksCacheManager";
 
 /**
  * UniversalLayout configuration options
@@ -108,8 +109,7 @@ export class UniversalLayoutRenderer {
     type: string;
     handler: EventListener;
   }> = [];
-  private backlinksCache: Map<string, Set<string>> = new Map();
-  private backlinksCacheValid = false;
+  private backlinksCacheManager: BacklinksCacheManager;
   private reactRenderer: ReactRenderer;
   private rootContainer: HTMLElement | null = null;
 
@@ -119,6 +119,7 @@ export class UniversalLayoutRenderer {
     this.plugin = plugin;
     this.logger = LoggerFactory.create("UniversalLayoutRenderer");
     this.reactRenderer = new ReactRenderer();
+    this.backlinksCacheManager = new BacklinksCacheManager(this.app);
     this.taskCreationService = new TaskCreationService(this.app.vault);
     this.projectCreationService = new ProjectCreationService(this.app.vault);
     this.areaCreationService = new AreaCreationService(this.app.vault);
@@ -153,35 +154,8 @@ export class UniversalLayoutRenderer {
     return `${baseLabel} ${dateStr}`;
   }
 
-  /**
-   * Build reverse index of backlinks for O(1) lookups
-   */
-  private buildBacklinksCache(): void {
-    if (this.backlinksCacheValid) return;
-
-    this.backlinksCache.clear();
-    const resolvedLinks = this.app.metadataCache.resolvedLinks;
-
-    for (const sourcePath in resolvedLinks) {
-      const links = resolvedLinks[sourcePath];
-      for (const targetPath in links) {
-        const existingBacklinks = this.backlinksCache.get(targetPath);
-        if (!existingBacklinks) {
-          this.backlinksCache.set(targetPath, new Set([sourcePath]));
-        } else {
-          existingBacklinks.add(sourcePath);
-        }
-      }
-    }
-
-    this.backlinksCacheValid = true;
-  }
-
-  /**
-   * Invalidate backlinks cache when vault changes
-   */
   public invalidateBacklinksCache(): void {
-    this.backlinksCacheValid = false;
+    this.backlinksCacheManager.invalidate();
   }
 
   /**
@@ -727,11 +701,7 @@ export class UniversalLayoutRenderer {
     const relations: AssetRelation[] = [];
     const cache = this.app.metadataCache;
 
-    // Build reverse index if needed (amortized O(1) per call)
-    this.buildBacklinksCache();
-
-    // O(1) lookup of backlinks instead of O(n) iteration
-    const backlinks = this.backlinksCache.get(file.path);
+    const backlinks = this.backlinksCacheManager.getBacklinks(file.path);
     if (!backlinks) {
       return relations;
     }
