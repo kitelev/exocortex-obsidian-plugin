@@ -35,6 +35,7 @@ import {
   canVoteOnEffort,
   canRollbackStatus,
   canSetActiveFocus,
+  canCopyLabelToAliases,
   CommandVisibilityContext,
 } from "../../domain/commands/CommandVisibility";
 import { CreateTaskButton } from "../components/CreateTaskButton";
@@ -63,6 +64,7 @@ import { PropertyCleanupService } from "../../infrastructure/services/PropertyCl
 import { FolderRepairService } from "../../infrastructure/services/FolderRepairService";
 import { RenameToUidService } from "../../infrastructure/services/RenameToUidService";
 import { EffortVotingService } from "../../infrastructure/services/EffortVotingService";
+import { LabelToAliasService } from "../../infrastructure/services/LabelToAliasService";
 
 /**
  * UniversalLayout configuration options
@@ -125,6 +127,7 @@ export class UniversalLayoutRenderer {
     this.folderRepairService = new FolderRepairService(this.app.vault, this.app);
     this.renameToUidService = new RenameToUidService(this.app);
     this.effortVotingService = new EffortVotingService(this.app.vault);
+    this.labelToAliasService = new LabelToAliasService(this.app.vault);
   }
 
   private taskCreationService: TaskCreationService;
@@ -135,6 +138,7 @@ export class UniversalLayoutRenderer {
   private folderRepairService: FolderRepairService;
   private renameToUidService: RenameToUidService;
   private effortVotingService: EffortVotingService;
+  private labelToAliasService: LabelToAliasService;
 
   private formatDate(date: Date): string {
     const year = date.getFullYear();
@@ -596,6 +600,18 @@ export class UniversalLayoutRenderer {
           await new Promise((resolve) => setTimeout(resolve, 100));
           await this.refresh();
           this.logger.info(`Renamed "${oldName}" to "${uid}"`);
+        },
+      },
+      {
+        id: "copy-label-to-aliases",
+        label: "Copy Label to Aliases",
+        variant: "secondary",
+        visible: canCopyLabelToAliases(context),
+        onClick: async () => {
+          await this.labelToAliasService.copyLabelToAliases(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Copied label to aliases: ${file.path}`);
         },
       },
     ];
