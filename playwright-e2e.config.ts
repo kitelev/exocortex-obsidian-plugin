@@ -12,6 +12,7 @@ export default defineConfig({
     ['html', { outputFolder: 'playwright-report-e2e', open: 'never' }],
     ['list'],
     ...(process.env.CI ? [['github', {}] as ['github', {}]] : []),
+    ['./playwright-no-flaky-reporter.ts'],
   ],
 
   use: {
