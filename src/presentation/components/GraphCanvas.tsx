@@ -132,10 +132,14 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({ app, plugin }) => {
           app.workspace.getLeaf(false).openFile(file);
         }
       })
-      .d3AlphaDecay(0.02)
-      .d3VelocityDecay(0.3)
-      .warmupTicks(100)
-      .cooldownTicks(0);
+      .onNodeDragEnd((node: ForceGraphNode) => {
+        node.fx = node.x;
+        node.fy = node.y;
+      })
+      .d3AlphaDecay(0.0228)
+      .d3VelocityDecay(0.4)
+      .warmupTicks(0)
+      .cooldownTime(0);
 
     graphRef.current = graph;
 
