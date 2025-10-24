@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 export interface DailyTask {
   file: {
@@ -164,15 +164,22 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   );
 };
 
-export const DailyTasksTableWithToggle: React.FC<Omit<DailyTasksTableProps, 'showEffortArea'>> = (props) => {
-  const [showEffortArea, setShowEffortArea] = useState(false);
+export interface DailyTasksTableWithToggleProps extends Omit<DailyTasksTableProps, 'showEffortArea'> {
+  showEffortArea: boolean;
+  onToggleEffortArea: () => void;
+}
 
+export const DailyTasksTableWithToggle: React.FC<DailyTasksTableWithToggleProps> = ({
+  showEffortArea,
+  onToggleEffortArea,
+  ...props
+}) => {
   return (
     <div className="exocortex-daily-tasks-wrapper">
       <div className="exocortex-daily-tasks-controls">
         <button
           className="exocortex-toggle-effort-area"
-          onClick={() => setShowEffortArea(!showEffortArea)}
+          onClick={onToggleEffortArea}
           style={{
             marginBottom: "8px",
             padding: "4px 8px",

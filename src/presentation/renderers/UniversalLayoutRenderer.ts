@@ -697,7 +697,8 @@ export class UniversalLayoutRenderer {
       return;
     }
 
-    const scrollParent = this.rootContainer.closest('.markdown-preview-view')
+    const scrollParent = this.rootContainer.closest('.cm-scroller')
+      || this.rootContainer.closest('.markdown-preview-view')
       || this.rootContainer.closest('.workspace-leaf-content');
     const scrollTop = scrollParent?.scrollTop || 0;
 
@@ -705,11 +706,11 @@ export class UniversalLayoutRenderer {
     this.rootContainer.empty();
     await this.render(source, this.rootContainer, {} as MarkdownPostProcessorContext);
 
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       if (scrollParent) {
         scrollParent.scrollTop = scrollTop;
       }
-    });
+    }, 50);
   }
 
   /**
@@ -1515,6 +1516,12 @@ export class UniversalLayoutRenderer {
       tableContainer,
       React.createElement(DailyTasksTableWithToggle, {
         tasks,
+        showEffortArea: this.settings.showEffortArea,
+        onToggleEffortArea: async () => {
+          this.settings.showEffortArea = !this.settings.showEffortArea;
+          await this.plugin.saveSettings();
+          await this.refresh();
+        },
         onTaskClick: async (path: string, event: React.MouseEvent) => {
           // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
           const isModPressed = Keymap.isModEvent(
