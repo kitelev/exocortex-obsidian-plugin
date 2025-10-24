@@ -1,23 +1,28 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { App, TFile } from "obsidian";
-import * as d3 from "d3-force";
-import { select } from "d3-selection";
-import { zoom as d3Zoom, zoomIdentity } from "d3-zoom";
-import { drag as d3Drag } from "d3-drag";
-import type { D3DragEvent } from "d3-drag";
+import ForceGraph from "force-graph";
+import type { ForceGraphInstance, ForceGraphNode } from "force-graph";
 import type ExocortexPlugin from "../../ExocortexPlugin";
 import { GraphDataService } from "../../infrastructure/services/GraphDataService";
 import type { GraphData } from "../../domain/models/GraphData";
 import type { GraphNode } from "../../domain/models/GraphNode";
-import type { GraphEdge } from "../../domain/models/GraphEdge";
 
 interface GraphCanvasProps {
   app: App;
   plugin: ExocortexPlugin;
 }
 
+interface GraphForceNode extends ForceGraphNode {
+  id: string;
+  label: string;
+  assetClass?: string;
+  path: string;
+  isArchived?: boolean;
+}
+
 export const GraphCanvas: React.FC<GraphCanvasProps> = ({ app, plugin }) => {
-  const svgRef = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const graphRef = useRef<ForceGraphInstance | null>(null);
   const [graphData, setGraphData] = useState<GraphData>({ nodes: [], edges: [] });
   const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set());
   const [showArchived, setShowArchived] = useState<boolean>(false);
@@ -60,119 +65,95 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({ app, plugin }) => {
   }, [graphData, selectedClasses, showArchived]);
 
   useEffect(() => {
-    if (!svgRef.current || filteredData.nodes.length === 0) {
+    if (!containerRef.current || filteredData.nodes.length === 0) {
       return;
     }
 
-    const svg = select(svgRef.current);
-    svg.selectAll("*").remove();
+    const container = containerRef.current;
+    container.innerHTML = "";
 
-    const width = svgRef.current.clientWidth;
-    const height = svgRef.current.clientHeight;
+    const width = container.clientWidth;
+    const height = container.clientHeight;
 
-    const g = svg.append("g");
+    const forceNodes: GraphForceNode[] = filteredData.nodes.map((node: GraphNode) => ({
+      id: node.path,
+      label: node.label,
+      assetClass: node.assetClass,
+      path: node.path,
+      isArchived: node.isArchived,
+    }));
 
-    const zoomBehavior = d3Zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.1, 4])
-      .on("zoom", (event) => {
-        g.attr("transform", event.transform);
-      });
+    const forceLinks = filteredData.edges.map((edge) => ({
+      source: edge.source,
+      target: edge.target,
+    }));
 
-    svg.call(zoomBehavior);
+    const graph = ForceGraph()(container)
+      .width(width)
+      .height(height)
+      .graphData({
+        nodes: forceNodes,
+        links: forceLinks,
+      })
+      .nodeId("id")
+      .nodeLabel((node: ForceGraphNode) => (node as GraphForceNode).label)
+      .nodeColor((node: ForceGraphNode) => getNodeColor((node as GraphForceNode).assetClass))
+      .nodeRelSize(8)
+      .nodeCanvasObject((node: ForceGraphNode, ctx: CanvasRenderingContext2D, globalScale: number) => {
+        const typedNode = node as GraphForceNode;
+        const label = typedNode.label;
+        const fontSize = 12 / globalScale;
+        const nodeSize = 8;
 
-    const simulation = d3
-      .forceSimulation<GraphNode>(filteredData.nodes)
-      .force(
-        "link",
-        d3
-          .forceLink<GraphNode, GraphEdge>(filteredData.edges)
-          .id((d) => d.path)
-          .distance(100)
-      )
-      .force("charge", d3.forceManyBody().strength(-300))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collision", d3.forceCollide().radius(30));
+        ctx.beginPath();
+        ctx.arc(node.x ?? 0, node.y ?? 0, nodeSize, 0, 2 * Math.PI, false);
+        ctx.fillStyle = getNodeColor(typedNode.assetClass);
+        ctx.fill();
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 2 / globalScale;
+        ctx.stroke();
 
-    const link = g
-      .append("g")
-      .selectAll("line")
-      .data(filteredData.edges)
-      .join("line")
-      .attr("stroke", "#999")
-      .attr("stroke-opacity", 0.6)
-      .attr("stroke-width", 1);
+        if (globalScale >= 0.5) {
+          ctx.font = `${fontSize}px Sans-Serif`;
+          ctx.textAlign = "left";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = getComputedStyle(document.documentElement)
+            .getPropertyValue("--text-normal") || "#000";
+          ctx.fillText(label, (node.x ?? 0) + nodeSize + 4 / globalScale, (node.y ?? 0) + 4 / globalScale);
+        }
+      })
+      .nodeCanvasObjectMode(() => "replace")
+      .linkColor(() => "#999")
+      .linkWidth(1)
+      .onNodeClick((node: ForceGraphNode) => {
+        const typedNode = node as GraphForceNode;
+        const file = app.vault.getAbstractFileByPath(typedNode.path);
+        if (file instanceof TFile) {
+          app.workspace.getLeaf(false).openFile(file);
+        }
+      })
+      .d3AlphaDecay(0.02)
+      .d3VelocityDecay(0.3)
+      .warmupTicks(100)
+      .cooldownTicks(0);
 
-    const node = g
-      .append("g")
-      .selectAll("g")
-      .data(filteredData.nodes)
-      .join("g")
-      .call(
-        d3Drag<SVGGElement, GraphNode>()
-          .on("start", (event: D3DragEvent<SVGGElement, GraphNode, GraphNode>, d: GraphNode) => {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-          })
-          .on("drag", (event: D3DragEvent<SVGGElement, GraphNode, GraphNode>, d: GraphNode) => {
-            d.fx = event.x;
-            d.fy = event.y;
-          })
-          .on("end", (event: D3DragEvent<SVGGElement, GraphNode, GraphNode>, d: GraphNode) => {
-            if (!event.active) simulation.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
-          })
-      );
+    graphRef.current = graph;
 
-    node
-      .append("circle")
-      .attr("r", 8)
-      .attr("fill", (d) => getNodeColor(d.assetClass))
-      .attr("stroke", "#fff")
-      .attr("stroke-width", 2);
-
-    node
-      .append("text")
-      .text((d) => d.label)
-      .attr("x", 12)
-      .attr("y", 4)
-      .attr("font-size", "12px")
-      .attr("fill", "var(--text-normal)");
-
-    node.on("click", (_event, d) => {
-      const file = app.vault.getAbstractFileByPath(d.path);
-      if (file instanceof TFile) {
-        app.workspace.getLeaf(false).openFile(file);
+    const handleResize = () => {
+      if (graphRef.current && containerRef.current) {
+        graphRef.current
+          .width(containerRef.current.clientWidth)
+          .height(containerRef.current.clientHeight);
       }
-    });
+    };
 
-    simulation.on("tick", () => {
-      link
-        .attr("x1", (d) => {
-          const source = typeof d.source === "object" ? d.source : filteredData.nodes.find(n => n.path === d.source);
-          return source?.x ?? 0;
-        })
-        .attr("y1", (d) => {
-          const source = typeof d.source === "object" ? d.source : filteredData.nodes.find(n => n.path === d.source);
-          return source?.y ?? 0;
-        })
-        .attr("x2", (d) => {
-          const target = typeof d.target === "object" ? d.target : filteredData.nodes.find(n => n.path === d.target);
-          return target?.x ?? 0;
-        })
-        .attr("y2", (d) => {
-          const target = typeof d.target === "object" ? d.target : filteredData.nodes.find(n => n.path === d.target);
-          return target?.y ?? 0;
-        });
-
-      node.attr("transform", (d) => `translate(${d.x ?? 0},${d.y ?? 0})`);
-    });
-
-    svg.call(zoomBehavior.transform as never, zoomIdentity);
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      simulation.stop();
+      window.removeEventListener("resize", handleResize);
+      if (graphRef.current) {
+        graphRef.current.pauseAnimation();
+      }
     };
   }, [filteredData, app]);
 
@@ -235,8 +216,8 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({ app, plugin }) => {
           </label>
         </div>
       </div>
-      <svg
-        ref={svgRef}
+      <div
+        ref={containerRef}
         className="exocortex-graph-canvas"
         style={{ flex: 1, width: "100%", background: "var(--background-primary)" }}
       />
