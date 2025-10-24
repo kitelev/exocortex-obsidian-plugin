@@ -53,8 +53,8 @@ describe("CommandManager", () => {
         commandManager.registerAllCommands(mockPlugin);
       }).not.toThrow();
 
-      // Verify that addCommand was called for each command (25 commands total)
-      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(25);
+      // Verify that addCommand was called for each command (26 commands total)
+      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(26);
     });
 
     it("should register commands with correct IDs", () => {
@@ -93,6 +93,7 @@ describe("CommandManager", () => {
       expect(registeredCommands).toContain("repair-folder");
       expect(registeredCommands).toContain("rename-to-uid");
       expect(registeredCommands).toContain("vote-on-effort");
+      expect(registeredCommands).toContain("copy-label-to-aliases");
       expect(registeredCommands).toContain("reload-layout");
       expect(registeredCommands).toContain("add-supervision");
       expect(registeredCommands).toContain("toggle-properties-visibility");
@@ -135,6 +136,7 @@ describe("CommandManager", () => {
       expect(registeredNames).toContain("Repair Folder");
       expect(registeredNames).toContain("Rename to UID");
       expect(registeredNames).toContain("Vote on Effort");
+      expect(registeredNames).toContain("Copy Label to Aliases");
       expect(registeredNames).toContain("Reload Layout");
       expect(registeredNames).toContain("Add Supervision");
       expect(registeredNames).toContain("Toggle Properties Visibility");

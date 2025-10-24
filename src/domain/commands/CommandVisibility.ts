@@ -461,3 +461,26 @@ export function canCreateRelatedTask(context: CommandVisibilityContext): boolean
 export function canSetActiveFocus(context: CommandVisibilityContext): boolean {
   return hasClass(context.instanceClass, "ems__Area");
 }
+
+/**
+ * Can execute "Copy Label to Aliases" command
+ * Available for: Assets with exo__Asset_label that don't have this label in aliases yet
+ */
+export function canCopyLabelToAliases(context: CommandVisibilityContext): boolean {
+  const label = context.metadata.exo__Asset_label;
+  if (!label || typeof label !== "string" || label.trim() === "") return false;
+
+  const trimmedLabel = label.trim();
+  const aliases = context.metadata.aliases;
+
+  if (!aliases) return true;
+
+  if (!Array.isArray(aliases)) return true;
+
+  if (aliases.length === 0) return true;
+
+  return !aliases.some((alias) => {
+    if (typeof alias !== "string") return false;
+    return alias.trim() === trimmedLabel;
+  });
+}

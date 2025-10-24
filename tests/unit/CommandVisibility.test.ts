@@ -17,6 +17,7 @@ import {
   canVoteOnEffort,
   canRollbackStatus,
   canCreateRelatedTask,
+  canCopyLabelToAliases,
   CommandVisibilityContext,
 } from "../../src/domain/commands/CommandVisibility";
 
@@ -1886,6 +1887,141 @@ describe("CommandVisibility", () => {
         expectedFolder: null,
       };
       expect(canCreateRelatedTask(context)).toBe(true);
+    });
+  });
+
+  describe("canCopyLabelToAliases", () => {
+    it("should return true when label exists and no aliases", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          exo__Asset_label: "My Label",
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCopyLabelToAliases(context)).toBe(true);
+    });
+
+    it("should return true when label exists and aliases is empty array", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          exo__Asset_label: "My Label",
+          aliases: [],
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCopyLabelToAliases(context)).toBe(true);
+    });
+
+    it("should return true when label exists and aliases don't contain it", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          exo__Asset_label: "My Label",
+          aliases: ["Other Alias", "Another Alias"],
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCopyLabelToAliases(context)).toBe(true);
+    });
+
+    it("should return false when label exists and aliases already contain it", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          exo__Asset_label: "My Label",
+          aliases: ["Other Alias", "My Label"],
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCopyLabelToAliases(context)).toBe(false);
+    });
+
+    it("should return false when label is missing", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          aliases: ["Some Alias"],
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCopyLabelToAliases(context)).toBe(false);
+    });
+
+    it("should return false when label is empty string", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          exo__Asset_label: "",
+          aliases: [],
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCopyLabelToAliases(context)).toBe(false);
+    });
+
+    it("should return false when label is whitespace only", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          exo__Asset_label: "   ",
+          aliases: [],
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCopyLabelToAliases(context)).toBe(false);
+    });
+
+    it("should handle label with leading/trailing whitespace", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          exo__Asset_label: "  My Label  ",
+          aliases: ["My Label"],
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCopyLabelToAliases(context)).toBe(false);
+    });
+
+    it("should return true when aliases is not an array", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {
+          exo__Asset_label: "My Label",
+          aliases: "not an array" as any,
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCopyLabelToAliases(context)).toBe(true);
     });
   });
 });
