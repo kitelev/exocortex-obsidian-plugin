@@ -1,3 +1,5 @@
+import { WikiLinkHelpers } from "../../infrastructure/utilities/WikiLinkHelpers";
+
 /**
  * Command Visibility Utilities
  * Contains pure functions for determining command availability based on asset context
@@ -17,13 +19,6 @@ export interface CommandVisibilityContext {
 }
 
 /**
- * Normalize class name by removing wiki-link brackets and trimming
- */
-function normalizeClassName(cls: string): string {
-  return cls.replace(/\[\[|\]\]/g, "").trim();
-}
-
-/**
  * Check if instanceClass contains specific class
  */
 function hasClass(
@@ -36,7 +31,7 @@ function hasClass(
     ? instanceClass
     : [instanceClass];
 
-  return classes.some((cls) => normalizeClassName(cls) === targetClass);
+  return classes.some((cls) => WikiLinkHelpers.normalize(cls) === targetClass);
 }
 
 /**
@@ -70,7 +65,7 @@ function hasStatus(
 
   if (!statusValue) return false;
 
-  const cleanStatus = normalizeClassName(statusValue);
+  const cleanStatus = WikiLinkHelpers.normalize(statusValue);
   return cleanStatus === targetStatus;
 }
 
@@ -352,7 +347,7 @@ export function canTrashEffort(context: CommandVisibilityContext): boolean {
     : [context.currentStatus];
 
   const hasTrashedOrDone = statuses.some((status) => {
-    const cleanStatus = normalizeClassName(status);
+    const cleanStatus = WikiLinkHelpers.normalize(status);
     return (
       cleanStatus === "ems__EffortStatusTrashed" ||
       cleanStatus === "ems__EffortStatusDone"
@@ -434,7 +429,7 @@ export function canRollbackStatus(context: CommandVisibilityContext): boolean {
 
   if (!statusValue) return false;
 
-  const cleanStatus = normalizeClassName(statusValue);
+  const cleanStatus = WikiLinkHelpers.normalize(statusValue);
 
   if (cleanStatus === "ems__EffortStatusTrashed") return false;
 
