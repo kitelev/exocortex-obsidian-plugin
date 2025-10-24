@@ -26,6 +26,9 @@ test.describe('Algorithm Block Extraction from TaskPrototype', () => {
     // Wait for any modal dialogs (e.g., version display) to close BEFORE waiting for plugin render
     await launcher.waitForModalsToClose(10000);
 
+    // Additional wait for plugin to fully render after modals close
+    await window.waitForTimeout(5000);
+
     // Wait for the universal layout to render (increased for stability after main branch changes)
     await launcher.waitForElement('.exocortex-buttons-section', 60000);
 
@@ -90,11 +93,14 @@ test.describe('Algorithm Block Extraction from TaskPrototype', () => {
 
     const window = await launcher.getWindow();
 
+    // Wait for any modal dialogs to close BEFORE waiting for plugin render
+    await launcher.waitForModalsToClose(10000);
+
+    // Additional wait for plugin to fully render after modals close
+    await window.waitForTimeout(5000);
+
     // Wait for the universal layout (increased for stability after main branch changes)
     await launcher.waitForElement('.exocortex-buttons-section', 60000);
-
-    // Wait for any modal dialogs to close
-    await launcher.waitForModalsToClose(10000);
 
     // Click "Create Instance" button
     const createInstanceButton = window.getByRole('button', { name: 'Create Instance' });

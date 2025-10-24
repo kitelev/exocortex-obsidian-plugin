@@ -60,6 +60,7 @@ RUN chmod +x /docker-entrypoint.sh
 COPY main.js manifest.json ./
 COPY tests/e2e/ ./tests/e2e/
 COPY playwright-e2e.config.ts ./
+COPY playwright-no-flaky-reporter.ts ./
 
 # Create test vault and install pre-built plugin
 RUN mkdir -p tests/e2e/test-vault/.obsidian/plugins/exocortex \
