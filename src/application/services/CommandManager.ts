@@ -859,14 +859,6 @@ export class CommandManager {
     file: TFile,
     context: CommandVisibilityContext,
   ): Promise<void> {
-    const result = await new Promise<LabelInputModalResult>((resolve) => {
-      new LabelInputModal(this.app, resolve).open();
-    });
-
-    if (result.label === null) {
-      return;
-    }
-
     const cache = this.app.metadataCache.getFileCache(file);
     const metadata = cache?.frontmatter || {};
 
@@ -876,6 +868,16 @@ export class CommandManager {
       : [instanceClass];
     const firstClass = classes[0] || "";
     const sourceClass = firstClass.replace(/\[\[|\]\]/g, "").trim();
+
+    const showTaskSize = sourceClass !== "ems__MeetingPrototype";
+
+    const result = await new Promise<LabelInputModalResult>((resolve) => {
+      new LabelInputModal(this.app, resolve, "", showTaskSize).open();
+    });
+
+    if (result.label === null) {
+      return;
+    }
 
     const createdFile = await this.taskCreationService.createTask(
       file,

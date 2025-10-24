@@ -309,8 +309,10 @@ export class UniversalLayoutRenderer {
             ? this.generateDefaultMeetingLabel(metadata, file.basename)
             : "";
 
+          const showTaskSize = sourceClass !== "ems__MeetingPrototype";
+
           const result = await new Promise<LabelInputModalResult>((resolve) => {
-            new LabelInputModal(this.app, resolve, defaultValue).open();
+            new LabelInputModal(this.app, resolve, defaultValue, showTaskSize).open();
           });
           if (result.label === null) return;
 
@@ -964,15 +966,16 @@ export class UniversalLayoutRenderer {
         metadata,
         sourceFile: file,
         onInstanceCreate: async () => {
+          const sourceClass = getCleanSourceClass();
+          const showTaskSize = sourceClass !== "ems__MeetingPrototype";
+
           const result = await new Promise<LabelInputModalResult>((resolve) => {
-            new LabelInputModal(this.app, resolve).open();
+            new LabelInputModal(this.app, resolve, "", showTaskSize).open();
           });
 
           if (result.label === null) {
             return;
           }
-
-          const sourceClass = getCleanSourceClass();
 
           const createdFile = await this.taskCreationService.createTask(
             file,
