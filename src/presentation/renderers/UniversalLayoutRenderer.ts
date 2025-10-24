@@ -55,7 +55,7 @@ import { CleanEmptyPropertiesButton } from "../components/CleanEmptyPropertiesBu
 import { RepairFolderButton } from "../components/RepairFolderButton";
 import { RenameToUidButton } from "../components/RenameToUidButton";
 import { RollbackStatusButton } from "../components/RollbackStatusButton";
-import { LabelInputModal } from "../modals/LabelInputModal";
+import { LabelInputModal, type LabelInputModalResult } from "../modals/LabelInputModal";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 import { ProjectCreationService } from "../../infrastructure/services/ProjectCreationService";
 import { AreaCreationService } from "../../infrastructure/services/AreaCreationService";
@@ -239,16 +239,16 @@ export class UniversalLayoutRenderer {
         variant: "primary",
         visible: canCreateTask(context),
         onClick: async () => {
-          const label = await new Promise<string | null>((resolve) => {
+          const result = await new Promise<LabelInputModalResult>((resolve) => {
             new LabelInputModal(this.app, resolve).open();
           });
-          if (label === null) return;
+          if (result.label === null) return;
 
           const sourceClass = Array.isArray(instanceClass)
             ? (instanceClass[0] || "").replace(/\[\[|\]\]/g, "").trim()
             : (instanceClass || "").replace(/\[\[|\]\]/g, "").trim();
 
-          const createdFile = await this.taskCreationService.createTask(file, metadata, sourceClass, label);
+          const createdFile = await this.taskCreationService.createTask(file, metadata, sourceClass, result.label, result.taskSize);
           const leaf = this.app.workspace.getLeaf("tab");
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
@@ -261,16 +261,16 @@ export class UniversalLayoutRenderer {
         variant: "primary",
         visible: canCreateProject(context),
         onClick: async () => {
-          const label = await new Promise<string | null>((resolve) => {
+          const result = await new Promise<LabelInputModalResult>((resolve) => {
             new LabelInputModal(this.app, resolve).open();
           });
-          if (label === null) return;
+          if (result.label === null) return;
 
           const sourceClass = Array.isArray(instanceClass)
             ? (instanceClass[0] || "").replace(/\[\[|\]\]/g, "").trim()
             : (instanceClass || "").replace(/\[\[|\]\]/g, "").trim();
 
-          const createdFile = await this.projectCreationService.createProject(file, metadata, sourceClass, label);
+          const createdFile = await this.projectCreationService.createProject(file, metadata, sourceClass, result.label);
           const leaf = this.app.workspace.getLeaf("tab");
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
@@ -283,12 +283,12 @@ export class UniversalLayoutRenderer {
         variant: "primary",
         visible: canCreateChildArea(context),
         onClick: async () => {
-          const label = await new Promise<string | null>((resolve) => {
+          const result = await new Promise<LabelInputModalResult>((resolve) => {
             new LabelInputModal(this.app, resolve).open();
           });
-          if (label === null) return;
+          if (result.label === null) return;
 
-          const createdFile = await this.areaCreationService.createChildArea(file, metadata, label);
+          const createdFile = await this.areaCreationService.createChildArea(file, metadata, result.label);
           const leaf = this.app.workspace.getLeaf("tab");
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
@@ -309,12 +309,12 @@ export class UniversalLayoutRenderer {
             ? this.generateDefaultMeetingLabel(metadata, file.basename)
             : "";
 
-          const label = await new Promise<string | null>((resolve) => {
+          const result = await new Promise<LabelInputModalResult>((resolve) => {
             new LabelInputModal(this.app, resolve, defaultValue).open();
           });
-          if (label === null) return;
+          if (result.label === null) return;
 
-          const createdFile = await this.taskCreationService.createTask(file, metadata, sourceClass, label);
+          const createdFile = await this.taskCreationService.createTask(file, metadata, sourceClass, result.label, result.taskSize);
           const leaf = this.app.workspace.getLeaf("tab");
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
@@ -327,12 +327,12 @@ export class UniversalLayoutRenderer {
         variant: "primary",
         visible: canCreateRelatedTask(context),
         onClick: async () => {
-          const label = await new Promise<string | null>((resolve) => {
+          const result = await new Promise<LabelInputModalResult>((resolve) => {
             new LabelInputModal(this.app, resolve).open();
           });
-          if (label === null) return;
+          if (result.label === null) return;
 
-          const createdFile = await this.taskCreationService.createRelatedTask(file, metadata, label);
+          const createdFile = await this.taskCreationService.createRelatedTask(file, metadata, result.label, result.taskSize);
           const leaf = this.app.workspace.getLeaf("tab");
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
@@ -851,24 +851,22 @@ export class UniversalLayoutRenderer {
         metadata,
         sourceFile: file,
         onTaskCreate: async () => {
-          // Show modal and wait for user input
-          const label = await new Promise<string | null>((resolve) => {
+          const result = await new Promise<LabelInputModalResult>((resolve) => {
             new LabelInputModal(this.app, resolve).open();
           });
 
-          // User cancelled
-          if (label === null) {
+          if (result.label === null) {
             return;
           }
 
           const sourceClass = getCleanSourceClass();
 
-          // Create the task file with appropriate effort property
           const createdFile = await this.taskCreationService.createTask(
             file,
             metadata,
             sourceClass,
-            label,
+            result.label,
+            result.taskSize,
           );
 
           // Open the created file in a new tab
@@ -905,11 +903,11 @@ export class UniversalLayoutRenderer {
         metadata,
         sourceFile: file,
         onProjectCreate: async () => {
-          const label = await new Promise<string | null>((resolve) => {
+          const result = await new Promise<LabelInputModalResult>((resolve) => {
             new LabelInputModal(this.app, resolve).open();
           });
 
-          if (label === null) {
+          if (result.label === null) {
             return;
           }
 
@@ -921,7 +919,7 @@ export class UniversalLayoutRenderer {
             file,
             metadata,
             sourceClass,
-            label,
+            result.label,
           );
 
           const leaf = this.app.workspace.getLeaf("tab");
@@ -966,24 +964,22 @@ export class UniversalLayoutRenderer {
         metadata,
         sourceFile: file,
         onInstanceCreate: async () => {
-          // Show modal and wait for user input
-          const label = await new Promise<string | null>((resolve) => {
+          const result = await new Promise<LabelInputModalResult>((resolve) => {
             new LabelInputModal(this.app, resolve).open();
           });
 
-          // User cancelled
-          if (label === null) {
+          if (result.label === null) {
             return;
           }
 
           const sourceClass = getCleanSourceClass();
 
-          // Create the instance (task) from prototype with ems__Effort_prototype property
           const createdFile = await this.taskCreationService.createTask(
             file,
             metadata,
             sourceClass,
-            label,
+            result.label,
+            result.taskSize,
           );
 
           // Open the created file in a new tab

@@ -1,15 +1,22 @@
 import { App, Modal } from "obsidian";
 
+export interface LabelInputModalResult {
+  label: string | null;
+  taskSize: string | null;
+}
+
 /**
- * Modal for inputting asset label during creation
- * Allows optional label input with Create/Cancel actions
+ * Modal for inputting asset label and task size during creation
+ * Allows optional label input and task size selection with Create/Cancel actions
  */
 export class LabelInputModal extends Modal {
   private label = "";
-  private onSubmit: (label: string | null) => void;
+  private taskSize: string | null = null;
+  private onSubmit: (result: LabelInputModalResult) => void;
   private inputEl: HTMLInputElement | null = null;
+  private taskSizeSelectEl: HTMLSelectElement | null = null;
 
-  constructor(app: App, onSubmit: (label: string | null) => void, defaultValue = "") {
+  constructor(app: App, onSubmit: (result: LabelInputModalResult) => void, defaultValue = "") {
     super(app);
     this.onSubmit = onSubmit;
     this.label = defaultValue;
@@ -51,6 +58,37 @@ export class LabelInputModal extends Modal {
       }
     });
 
+    const taskSizeLabel = contentEl.createEl("p", {
+      text: "Task size:",
+      cls: "exocortex-modal-description",
+    });
+
+    const selectContainer = contentEl.createDiv({ cls: "exocortex-modal-input-container" });
+
+    this.taskSizeSelectEl = selectContainer.createEl("select", {
+      cls: "exocortex-modal-select dropdown",
+    });
+
+    const taskSizeOptions = [
+      { value: "", label: "Not specified" },
+      { value: '"[[ems__TaskSize_XXS]]"', label: "XXS" },
+      { value: '"[[ems__TaskSize_XS]]"', label: "XS" },
+      { value: '"[[ems__TaskSize_S]]"', label: "S" },
+      { value: '"[[ems__TaskSize_M]]"', label: "M" },
+    ];
+
+    taskSizeOptions.forEach((option) => {
+      const optionEl = this.taskSizeSelectEl!.createEl("option", {
+        value: option.value,
+        text: option.label,
+      });
+    });
+
+    this.taskSizeSelectEl.addEventListener("change", (e) => {
+      const selectedValue = (e.target as HTMLSelectElement).value;
+      this.taskSize = selectedValue || null;
+    });
+
     const buttonContainer = contentEl.createDiv({ cls: "modal-button-container" });
 
     const createButton = buttonContainer.createEl("button", {
@@ -71,12 +109,15 @@ export class LabelInputModal extends Modal {
 
   private submit(): void {
     const trimmedLabel = this.label.trim();
-    this.onSubmit(trimmedLabel);
+    this.onSubmit({
+      label: trimmedLabel || null,
+      taskSize: this.taskSize,
+    });
     this.close();
   }
 
   private cancel(): void {
-    this.onSubmit(null);
+    this.onSubmit({ label: null, taskSize: null });
     this.close();
   }
 
