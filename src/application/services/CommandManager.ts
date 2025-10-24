@@ -21,6 +21,7 @@ import {
   canShiftDayBackward,
   canShiftDayForward,
   canVoteOnEffort,
+  canCopyLabelToAliases,
 } from "../../domain/commands/CommandVisibility";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 import { ProjectCreationService } from "../../infrastructure/services/ProjectCreationService";
@@ -30,6 +31,7 @@ import { FolderRepairService } from "../../infrastructure/services/FolderRepairS
 import { SupervisionCreationService } from "../../infrastructure/services/SupervisionCreationService";
 import { RenameToUidService } from "../../infrastructure/services/RenameToUidService";
 import { EffortVotingService } from "../../infrastructure/services/EffortVotingService";
+import { LabelToAliasService } from "../../infrastructure/services/LabelToAliasService";
 import { LabelInputModal } from "../../presentation/modals/LabelInputModal";
 import { SupervisionInputModal } from "../../presentation/modals/SupervisionInputModal";
 
@@ -55,6 +57,7 @@ export class CommandManager {
   private supervisionCreationService: SupervisionCreationService;
   private renameToUidService: RenameToUidService;
   private effortVotingService: EffortVotingService;
+  private labelToAliasService: LabelToAliasService;
   private reloadLayoutCallback?: () => void;
 
   constructor(private app: App) {
@@ -66,6 +69,7 @@ export class CommandManager {
     this.supervisionCreationService = new SupervisionCreationService(app.vault);
     this.renameToUidService = new RenameToUidService(app);
     this.effortVotingService = new EffortVotingService(app.vault);
+    this.labelToAliasService = new LabelToAliasService(app.vault);
   }
 
   /**
@@ -95,6 +99,7 @@ export class CommandManager {
     this.registerRepairFolderCommand(plugin);
     this.registerRenameToUidCommand(plugin);
     this.registerVoteOnEffortCommand(plugin);
+    this.registerCopyLabelToAliasesCommand(plugin);
     this.registerReloadLayoutCommand(plugin);
     this.registerAddSupervisionCommand(plugin);
     this.registerTogglePropertiesVisibilityCommand(plugin);
@@ -656,6 +661,29 @@ export class CommandManager {
     });
   }
 
+  private registerCopyLabelToAliasesCommand(plugin: any): void {
+    plugin.addCommand({
+      id: "copy-label-to-aliases",
+      name: "Copy Label to Aliases",
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        if (!file) return false;
+
+        const context = this.getContext(file);
+        if (!context || !canCopyLabelToAliases(context)) return false;
+
+        if (!checking) {
+          this.executeCopyLabelToAliases(file).catch((error) => {
+            new Notice(`Failed to copy label: ${error.message}`);
+            console.error("Copy label to aliases error:", error);
+          });
+        }
+
+        return true;
+      },
+    });
+  }
+
   /**
    * Register "Exocortex: Reload Layout" command
    * Always available - reloads the Layout display in current note
@@ -1031,5 +1059,10 @@ export class CommandManager {
       file,
     );
     new Notice(`Voted! New vote count: ${newVoteCount}`);
+  }
+
+  private async executeCopyLabelToAliases(file: TFile): Promise<void> {
+    await this.labelToAliasService.copyLabelToAliases(file);
+    new Notice("Label copied to aliases");
   }
 }
