@@ -12,11 +12,38 @@ permissions:
   contents: read
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    container:
-      image: mcr.microsoft.com/playwright:v1.55.1-jammy
+    timeout-minutes: 3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload built plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-build
+          path: |
+            main.js
+            manifest.json
+          retention-days: 1
+
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
 
     steps:
       - name: Checkout
@@ -34,17 +61,69 @@ jobs:
       - name: Type check
         run: npm run check:types
 
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Lint
         run: npm run lint
         continue-on-error: true
 
-      - name: Build
-        run: npm run build
+  test-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.1-jammy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run all tests (unit + BDD + component)
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096"
           timeout 180s npm test || exit 1
+
+  test-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.1-jammy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run unit tests with coverage
         run: |
@@ -75,6 +154,23 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
+  test-bdd:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Check BDD Coverage
         run: npm run bdd:check
         continue-on-error: false
@@ -91,6 +187,30 @@ jobs:
           path: bdd-coverage-report.md
           retention-days: 30
           if-no-files-found: ignore
+
+  test-component:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.1-jammy
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run component tests
+        run: |
+          export NODE_OPTIONS="--max-old-space-size=4096"
+          npm run test:component || exit 1
 
       - name: Upload component test report
         if: always()
@@ -110,19 +230,10 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-      - name: Upload built plugin
-        uses: actions/upload-artifact@v4
-        with:
-          name: plugin-build
-          path: |
-            main.js
-            manifest.json
-          retention-days: 1
-
   e2e-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: build-and-test
+    needs: build
 
     steps:
       - name: Checkout
@@ -172,3 +283,10 @@ jobs:
           path: test-results-e2e/
           retention-days: 7
           if-no-files-found: ignore
+
+  build-and-test:
+    runs-on: ubuntu-latest
+    needs: [build, typecheck, lint, test-unit, test-coverage, test-bdd, test-component]
+    steps:
+      - name: All checks passed
+        run: echo "All parallel checks completed successfully"

@@ -14,6 +14,7 @@ Exocortex is a lightweight Obsidian plugin that displays related notes in a clea
 ### Key Features
 
 - 📊 **Automatic Layout**: Related notes displayed in clean tables below metadata (reading mode)
+- 🕸️ **Graph View**: Interactive force-directed graph showing all notes with `exo__Asset_label` instead of UID filenames
 - 🌳 **Area Hierarchy Tree**: Visual navigation of area parent-child relationships via `ems__Area_parent` property
 - 🏷️ **Properties Display**: All frontmatter properties in organized key-value tables
 - 🔗 **Smart Links**: Wiki-links automatically become clickable internal links
@@ -49,6 +50,7 @@ The plugin automatically displays related assets below metadata in all notes (re
 4. **Action Buttons** - Quick actions for creating tasks, managing status, etc.
 
 **Available Commands** (Cmd/Ctrl+P → "Exocortex:"):
+- Open Exocortex Graph (visualize vault as interactive force-directed graph)
 - Create Task from current note
 - Create Area (creates child area)
 - Start Effort tracking
@@ -101,6 +103,38 @@ ems__Area_parent: "[[Projects]]"  # Links to parent area
 ```
 
 The tree will automatically build the complete hierarchy from all related areas, displaying the structure from root to leaves with proper indentation and visual indicators.
+
+### Graph View
+
+Interactive force-directed graph visualization of your entire vault. Displays human-readable labels (`exo__Asset_label`) instead of UID filenames, solving the problem of unreadable UUIDs in Obsidian's native graph.
+
+**Features:**
+- **Label Resolution**: Automatically uses `exo__Asset_label` for node labels, falling back to filename if not set
+- **Prototype Inheritance**: For effort instances, resolves label from `ems__Effort_prototype` if needed
+- **Interactive Navigation**: Click any node to open the corresponding note
+- **Type Filtering**: Filter nodes by `exo__Asset_class` (Area, Effort, Project, etc.)
+- **Archive Toggle**: Show/hide archived assets with single checkbox
+- **Force-Directed Layout**: D3-force simulation for optimal node positioning
+- **Zoom & Pan**: Navigate large graphs with mouse wheel zoom and drag panning
+- **Color Coding**: Different colors for different asset types
+
+**How to open:**
+- **Ribbon Icon**: Click the graph icon (git-fork) in the left sidebar
+- **Command Palette**: Cmd/Ctrl+P → "Open Exocortex Graph"
+
+**Graph View solves the UID problem:**
+```yaml
+# Before: Obsidian Graph shows filename
+File: 550e8400-e29b-41d4-a716-446655440000.md
+Graph: [unreadable UID]
+
+# After: Exocortex Graph shows label
+File: 550e8400-e29b-41d4-a716-446655440000.md
+---
+exo__Asset_label: "My Important Project"
+---
+Graph: [My Important Project]  ✅ Readable!
+```
 
 ## 🏗️ Architecture
 

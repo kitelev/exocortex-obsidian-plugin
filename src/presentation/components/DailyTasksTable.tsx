@@ -16,6 +16,7 @@ export interface DailyTask {
   isTrashed: boolean;
   isDoing: boolean;
   isMeeting: boolean;
+  isBlocked: boolean;
 }
 
 export interface DailyTasksTableProps {
@@ -58,6 +59,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   };
 
   const getDisplayName = (task: DailyTask): string => {
+    const blockerIcon = task.isBlocked ? "🚩 " : "";
     const icon = (task.isDone && task.isMeeting) ? "✅ 👥 " : task.isDone ? "✅ " : task.isTrashed ? "❌ " : task.isDoing ? "🔄 " : task.isMeeting ? "👥 " : "";
 
     let displayText = task.label || task.title;
@@ -71,7 +73,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
       }
     }
 
-    return icon + displayText;
+    return blockerIcon + icon + displayText;
   };
 
   return (
