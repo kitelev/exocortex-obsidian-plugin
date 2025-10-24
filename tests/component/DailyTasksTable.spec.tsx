@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/experimental-ct-react";
 import React from "react";
-import { DailyTasksTable, DailyTask } from "../../src/presentation/components/DailyTasksTable";
+import { DailyTasksTable, DailyTask, DailyTasksTableWithToggle } from "../../src/presentation/components/DailyTasksTable";
 
 test.describe("DailyTasksTable", () => {
   const mockTasks: DailyTask[] = [
@@ -236,5 +236,146 @@ test.describe("DailyTasksTable", () => {
 
     const taskLinks = component.locator(".task-name a.internal-link");
     await expect(taskLinks).toHaveCount(5);
+  });
+
+  test("should show Effort Area column when showEffortArea is true", async ({ mount }) => {
+    const tasksWithArea: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Task 1",
+        label: "First Task",
+        startTime: "09:00",
+        endTime: "10:00",
+        status: "ems__EffortStatusInProgress",
+        metadata: { ems__Effort_area: "[[backend]]" },
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyTasksTable tasks={tasksWithArea} showEffortArea={true} />
+    );
+
+    await expect(component.locator("thead th").nth(4)).toContainText("Effort Area");
+    await expect(component.locator(".task-effort-area")).toBeVisible();
+  });
+
+  test("should hide Effort Area column when showEffortArea is false", async ({ mount }) => {
+    const component = await mount(<DailyTasksTable tasks={mockTasks} showEffortArea={false} />);
+
+    await expect(component.locator("thead th")).toHaveCount(4);
+    await expect(component.locator(".task-effort-area")).toHaveCount(0);
+  });
+});
+
+test.describe("DailyTasksTableWithToggle", () => {
+  const mockTasks: DailyTask[] = [
+    {
+      file: { path: "task1.md", basename: "task1" },
+      path: "task1.md",
+      title: "Task 1",
+      label: "First Task",
+      startTime: "09:00",
+      endTime: "10:00",
+      status: "ems__EffortStatusInProgress",
+      metadata: { ems__Effort_area: "[[backend]]" },
+      isDone: false,
+      isTrashed: false,
+      isDoing: false,
+      isMeeting: false,
+      isBlocked: false,
+    },
+  ];
+
+  test("should render toggle button", async ({ mount }) => {
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+      />
+    );
+
+    await expect(component.locator(".exocortex-toggle-effort-area")).toBeVisible();
+    await expect(component.locator(".exocortex-toggle-effort-area")).toContainText("Show Effort Area");
+  });
+
+  test("should show 'Hide Effort Area' when showEffortArea is true", async ({ mount }) => {
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={true}
+        onToggleEffortArea={() => {}}
+      />
+    );
+
+    await expect(component.locator(".exocortex-toggle-effort-area")).toContainText("Hide Effort Area");
+  });
+
+  test("should call onToggleEffortArea when button is clicked", async ({ mount }) => {
+    let toggleCalled = false;
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={false}
+        onToggleEffortArea={() => {
+          toggleCalled = true;
+        }}
+      />
+    );
+
+    await component.locator(".exocortex-toggle-effort-area").click();
+    expect(toggleCalled).toBe(true);
+  });
+
+  test("should show Effort Area column when showEffortArea is true", async ({ mount }) => {
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={true}
+        onToggleEffortArea={() => {}}
+      />
+    );
+
+    await expect(component.locator("thead th").nth(4)).toContainText("Effort Area");
+    await expect(component.locator(".task-effort-area")).toBeVisible();
+  });
+
+  test("should hide Effort Area column when showEffortArea is false", async ({ mount }) => {
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+      />
+    );
+
+    await expect(component.locator("thead th")).toHaveCount(4);
+    await expect(component.locator(".task-effort-area")).toHaveCount(0);
+  });
+
+  test("should persist showEffortArea state after re-renders", async ({ mount }) => {
+    let currentShowEffortArea = false;
+    const onToggle = () => {
+      currentShowEffortArea = !currentShowEffortArea;
+    };
+
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={currentShowEffortArea}
+        onToggleEffortArea={onToggle}
+      />
+    );
+
+    await expect(component.locator(".exocortex-toggle-effort-area")).toContainText("Show Effort Area");
+
+    await component.locator(".exocortex-toggle-effort-area").click();
+    expect(currentShowEffortArea).toBe(true);
   });
 });
