@@ -85,8 +85,8 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       const ctx = {} as MarkdownPostProcessorContext;
       await renderer.render("", container, ctx);
 
-      // Wait for React to render
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      // Wait for React to render and scroll restoration
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Verify DOM structure - should have both properties and relations sections
       expect(container.querySelector(".exocortex-properties-section")).toBeTruthy();
@@ -138,8 +138,8 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      // Wait for React to render
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      // Wait for React to render and scroll restoration
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Find Instance Class links in RELATIONS table (not properties table)
       const relationsContainer = container.querySelector(".exocortex-assets-relations");
@@ -204,8 +204,8 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("groupByProperty: true", container, {} as MarkdownPostProcessorContext);
 
-      // Wait for React to render
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      // Wait for React to render and scroll restoration
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Verify grouped rendering
       const groups = container.querySelectorAll(".relation-group");
@@ -293,8 +293,8 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      // Wait for React to render
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      // Wait for React to render and scroll restoration
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Verify relations table rendered
       const relationsContainer = container.querySelector(".exocortex-assets-relations");
@@ -336,8 +336,8 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      // Wait for React to render
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      // Wait for React to render and scroll restoration
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Verify button is present - find by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
@@ -363,8 +363,8 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      // Wait for React to render
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      // Wait for React to render and scroll restoration
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Verify button is present - find by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");

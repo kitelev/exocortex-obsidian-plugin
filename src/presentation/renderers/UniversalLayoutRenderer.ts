@@ -697,7 +697,7 @@ export class UniversalLayoutRenderer {
       return;
     }
 
-    const scrollParent = this.rootContainer.closest('.cm-scroller')
+    let scrollParent = this.rootContainer.closest('.cm-scroller')
       || this.rootContainer.closest('.markdown-preview-view')
       || this.rootContainer.closest('.workspace-leaf-content');
     const scrollTop = scrollParent?.scrollTop || 0;
@@ -707,10 +707,14 @@ export class UniversalLayoutRenderer {
     await this.render(source, this.rootContainer, {} as MarkdownPostProcessorContext);
 
     setTimeout(() => {
-      if (scrollParent) {
-        scrollParent.scrollTop = scrollTop;
+      const newScrollParent = this.rootContainer?.closest('.cm-scroller')
+        || this.rootContainer?.closest('.markdown-preview-view')
+        || this.rootContainer?.closest('.workspace-leaf-content');
+
+      if (newScrollParent && scrollTop > 0) {
+        newScrollParent.scrollTop = scrollTop;
       }
-    }, 50);
+    }, 100);
   }
 
   /**
