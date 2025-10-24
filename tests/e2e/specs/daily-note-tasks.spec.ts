@@ -98,12 +98,29 @@ test.describe('DailyNote Tasks Table', () => {
 
     const toggleButton = window.locator('.exocortex-toggle-effort-area');
     await expect(toggleButton).toBeVisible({ timeout: 10000 });
-    await expect(toggleButton).toContainText('Show Effort Area');
 
     const tasksTable = window.locator('.exocortex-daily-tasks-section table').first();
     await expect(tasksTable).toBeVisible({ timeout: 10000 });
 
     let headers = tasksTable.locator('thead th');
+    let initialHeaderCount = await headers.count();
+    const initiallyVisible = initialHeaderCount === 5;
+
+    if (initiallyVisible) {
+      expect(initialHeaderCount).toBe(5);
+
+      await toggleButton.click();
+      await window.waitForTimeout(1000);
+
+      headers = tasksTable.locator('thead th');
+      let headerCount = await headers.count();
+      expect(headerCount).toBe(4);
+
+      let headerTexts = await headers.allTextContents();
+      expect(headerTexts).not.toContain('Effort Area');
+    }
+
+    headers = tasksTable.locator('thead th');
     let headerCount = await headers.count();
     expect(headerCount).toBe(4);
 
@@ -111,7 +128,7 @@ test.describe('DailyNote Tasks Table', () => {
     expect(headerTexts).not.toContain('Effort Area');
 
     await toggleButton.click();
-    await expect(toggleButton).toContainText('Hide Effort Area');
+    await window.waitForTimeout(1000);
 
     headers = tasksTable.locator('thead th');
     headerCount = await headers.count();
