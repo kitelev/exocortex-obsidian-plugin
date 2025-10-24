@@ -66,6 +66,7 @@ import { RenameToUidService } from "../../infrastructure/services/RenameToUidSer
 import { EffortVotingService } from "../../infrastructure/services/EffortVotingService";
 import { LabelToAliasService } from "../../infrastructure/services/LabelToAliasService";
 import { BacklinksCacheManager } from "../../infrastructure/caching/BacklinksCacheManager";
+import { EventListenerManager } from "../../infrastructure/events/EventListenerManager";
 
 /**
  * UniversalLayout configuration options
@@ -104,11 +105,7 @@ export class UniversalLayoutRenderer {
   private app: ObsidianApp;
   private settings: ExocortexSettings;
   private plugin: any;
-  private eventListeners: Array<{
-    element: HTMLElement;
-    type: string;
-    handler: EventListener;
-  }> = [];
+  private eventListenerManager: EventListenerManager;
   private backlinksCacheManager: BacklinksCacheManager;
   private reactRenderer: ReactRenderer;
   private rootContainer: HTMLElement | null = null;
@@ -119,6 +116,7 @@ export class UniversalLayoutRenderer {
     this.plugin = plugin;
     this.logger = LoggerFactory.create("UniversalLayoutRenderer");
     this.reactRenderer = new ReactRenderer();
+    this.eventListenerManager = new EventListenerManager();
     this.backlinksCacheManager = new BacklinksCacheManager(this.app);
     this.taskCreationService = new TaskCreationService(this.app.vault);
     this.projectCreationService = new ProjectCreationService(this.app.vault);
@@ -158,28 +156,17 @@ export class UniversalLayoutRenderer {
     this.backlinksCacheManager.invalidate();
   }
 
-  /**
-   * Clean up all registered event listeners
-   * Should be called when component is unmounted
-   */
   cleanup(): void {
-    this.eventListeners.forEach(({ element, type, handler }) => {
-      element.removeEventListener(type, handler);
-    });
-    this.eventListeners = [];
+    this.eventListenerManager.cleanup();
     this.reactRenderer.cleanup();
   }
 
-  /**
-   * Register event listener for automatic cleanup
-   */
   private registerEventListener(
     element: HTMLElement,
     type: string,
     handler: EventListener,
   ): void {
-    element.addEventListener(type, handler);
-    this.eventListeners.push({ element, type, handler });
+    this.eventListenerManager.register(element, type, handler);
   }
 
   /**
