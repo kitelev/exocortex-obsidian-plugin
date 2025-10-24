@@ -8,7 +8,7 @@
 [![Tests](https://img.shields.io/badge/tests-passing-success)](https://github.com/kitelev/exocortex-obsidian-plugin/actions)
 [![Coverage](https://img.shields.io/badge/coverage-49%25-orange)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
 
-## 🎯 What is Exocortex?
+## 🎯 What is Exocortex? 
 
 Exocortex is a powerful Obsidian plugin that transforms your notes into an interconnected task management and knowledge organization system. It automatically displays related notes, tracks effort across projects, manages task workflows with status transitions, and visualizes hierarchical relationships - all within your existing notes in reading mode.
 
