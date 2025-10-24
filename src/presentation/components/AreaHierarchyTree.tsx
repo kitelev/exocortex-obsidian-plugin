@@ -85,7 +85,7 @@ const AreaTreeNode: React.FC<AreaTreeNodeProps> = ({
             className={`area-tree-item ${isCurrent ? "is-current" : ""} ${node.isArchived ? "is-archived" : ""}`}
             data-depth={depth}
             style={{
-              paddingLeft: `${8 + depth * 16}px`
+              paddingLeft: `${8 + depth * 20}px`
             }}
             onKeyDown={handleKeyDown}
           >
