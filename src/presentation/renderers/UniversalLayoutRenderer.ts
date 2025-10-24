@@ -2127,47 +2127,11 @@ export class UniversalLayoutRenderer {
         filteredTasks = tasks.filter(task => {
           const taskMetadata = task.metadata;
 
-          const effortArea = taskMetadata.ems__Effort_area;
-          if (effortArea) {
-            const effortAreaStr = String(effortArea).replace(/^\[\[|\]\]$/g, "");
-            if (relevantAreas.has(effortAreaStr)) {
+          const resolvedArea = this.getEffortArea(taskMetadata);
+          if (resolvedArea) {
+            const resolvedAreaStr = String(resolvedArea).replace(/^\[\[|\]\]$/g, "");
+            if (relevantAreas.has(resolvedAreaStr)) {
               return true;
-            }
-          }
-
-          const effortParent = taskMetadata.ems__Effort_parent;
-          if (effortParent) {
-            const parentPath = String(effortParent).replace(/^\[\[|\]\]$/g, "");
-            const parentFile = this.app.metadataCache.getFirstLinkpathDest(parentPath, "");
-            if (parentFile) {
-              const parentCache = this.app.metadataCache.getFileCache(parentFile);
-              const parentMetadata = parentCache?.frontmatter || {};
-              const parentArea = parentMetadata.ems__Effort_area;
-              if (parentArea) {
-                const parentAreaStr = String(parentArea).replace(/^\[\[|\]\]$/g, "");
-                if (relevantAreas.has(parentAreaStr)) {
-                  return true;
-                }
-              }
-            }
-          }
-
-          const effortPrototype = taskMetadata.ems__Effort_prototype;
-          if (effortPrototype) {
-            const prototypePath = String(effortPrototype).replace(/^\[\[|\]\]$/g, "");
-            const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
-            if (prototypeFile) {
-              const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile);
-              const prototypeMetadata = prototypeCache?.frontmatter || {};
-
-              for (const [key, value] of Object.entries(prototypeMetadata)) {
-                if (value) {
-                  const valueStr = String(value).replace(/^\[\[|\]\]$/g, "");
-                  if (relevantAreas.has(valueStr)) {
-                    return true;
-                  }
-                }
-              }
             }
           }
 
