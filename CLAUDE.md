@@ -20,7 +20,7 @@ npm run test:all                     # MANDATORY for testing - run ALL tests bef
 /status                              # Check current progress and project health
 /agents                              # List available specialized agents
 ```
-
+ 
 ⚠️ **CRITICAL**:
 - **NEVER work in main directory** - ALWAYS create worktree first (see RULE 0)
 - Use `/release` for ANY code change to src/, tests/, or production files
