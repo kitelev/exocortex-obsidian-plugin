@@ -68,6 +68,7 @@ import { LabelToAliasService } from "../../infrastructure/services/LabelToAliasS
 import { BacklinksCacheManager } from "../../infrastructure/caching/BacklinksCacheManager";
 import { EventListenerManager } from "../../infrastructure/events/EventListenerManager";
 import { MetadataHelpers } from "../../infrastructure/utilities/MetadataHelpers";
+import { WikiLinkHelpers } from "../../infrastructure/utilities/WikiLinkHelpers";
 
 /**
  * UniversalLayout configuration options
@@ -206,9 +207,9 @@ export class UniversalLayoutRenderer {
           });
           if (result.label === null) return;
 
-          const sourceClass = Array.isArray(instanceClass)
-            ? (instanceClass[0] || "").replace(/\[\[|\]\]/g, "").trim()
-            : (instanceClass || "").replace(/\[\[|\]\]/g, "").trim();
+          const sourceClass = WikiLinkHelpers.normalize(
+            Array.isArray(instanceClass) ? instanceClass[0] : instanceClass
+          );
 
           const createdFile = await this.taskCreationService.createTask(file, metadata, sourceClass, result.label, result.taskSize);
           const leaf = this.app.workspace.getLeaf("tab");
@@ -228,9 +229,9 @@ export class UniversalLayoutRenderer {
           });
           if (result.label === null) return;
 
-          const sourceClass = Array.isArray(instanceClass)
-            ? (instanceClass[0] || "").replace(/\[\[|\]\]/g, "").trim()
-            : (instanceClass || "").replace(/\[\[|\]\]/g, "").trim();
+          const sourceClass = WikiLinkHelpers.normalize(
+            Array.isArray(instanceClass) ? instanceClass[0] : instanceClass
+          );
 
           const createdFile = await this.projectCreationService.createProject(file, metadata, sourceClass, result.label);
           const leaf = this.app.workspace.getLeaf("tab");
@@ -263,9 +264,9 @@ export class UniversalLayoutRenderer {
         variant: "primary",
         visible: canCreateInstance(context),
         onClick: async () => {
-          const sourceClass = Array.isArray(instanceClass)
-            ? (instanceClass[0] || "").replace(/\[\[|\]\]/g, "").trim()
-            : (instanceClass || "").replace(/\[\[|\]\]/g, "").trim();
+          const sourceClass = WikiLinkHelpers.normalize(
+            Array.isArray(instanceClass) ? instanceClass[0] : instanceClass
+          );
 
           const defaultValue = sourceClass === "ems__MeetingPrototype" || sourceClass === "ems__TaskPrototype"
             ? this.generateDefaultMeetingLabel(metadata, file.basename)
@@ -798,7 +799,7 @@ export class UniversalLayoutRenderer {
         ? instanceClass
         : [instanceClass];
       const firstClass = classes[0] || "";
-      return firstClass.replace(/\[\[|\]\]/g, "").trim();
+      return WikiLinkHelpers.normalize(firstClass);
     };
 
     this.reactRenderer.render(
@@ -868,9 +869,9 @@ export class UniversalLayoutRenderer {
             return;
           }
 
-          const sourceClass = Array.isArray(instanceClass)
-            ? (instanceClass[0] || "").replace(/\[\[|\]\]/g, "").trim()
-            : (instanceClass || "").replace(/\[\[|\]\]/g, "").trim();
+          const sourceClass = WikiLinkHelpers.normalize(
+            Array.isArray(instanceClass) ? instanceClass[0] : instanceClass
+          );
 
           const createdFile = await this.projectCreationService.createProject(
             file,
@@ -911,7 +912,7 @@ export class UniversalLayoutRenderer {
         ? instanceClass
         : [instanceClass];
       const firstClass = classes[0] || "";
-      return firstClass.replace(/\[\[|\]\]/g, "").trim();
+      return WikiLinkHelpers.normalize(firstClass);
     };
 
     this.reactRenderer.render(

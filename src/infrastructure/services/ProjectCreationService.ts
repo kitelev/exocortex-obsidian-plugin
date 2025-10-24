@@ -1,5 +1,6 @@
 import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
+import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
 
 /**
  * Mapping of source class to effort property name
@@ -72,7 +73,7 @@ export class ProjectCreationService {
     };
 
     // Get appropriate effort property name based on source class
-    const cleanSourceClass = sourceClass.replace(/\[\[|\]\]/g, "").trim();
+    const cleanSourceClass = WikiLinkHelpers.normalize(sourceClass);
     const effortProperty =
       EFFORT_PROPERTY_MAP[cleanSourceClass] || "ems__Effort_area";
 

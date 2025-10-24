@@ -1,6 +1,7 @@
 import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 import { DateFormatter } from "../utilities/DateFormatter";
+import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
 
 /**
  * Mapping of source class to effort property name
@@ -94,7 +95,7 @@ export class TaskCreationService {
 
     // For TaskPrototype, extract Algorithm section
     let bodyContent = "";
-    const cleanSourceClass = sourceClass.replace(/\[\[|\]\]/g, "").trim();
+    const cleanSourceClass = WikiLinkHelpers.normalize(sourceClass);
     if (cleanSourceClass === "ems__TaskPrototype") {
       const prototypeContent = await this.vault.read(sourceFile);
       const algorithmSection = this.extractH2Section(prototypeContent, "Algorithm");
@@ -335,7 +336,7 @@ export class TaskCreationService {
     };
 
     // Get appropriate effort property name and instance class based on source class
-    const cleanSourceClass = sourceClass.replace(/\[\[|\]\]/g, "").trim();
+    const cleanSourceClass = WikiLinkHelpers.normalize(sourceClass);
     const effortProperty =
       EFFORT_PROPERTY_MAP[cleanSourceClass] || "ems__Effort_area";
     const instanceClass =

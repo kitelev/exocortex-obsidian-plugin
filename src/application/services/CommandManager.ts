@@ -34,6 +34,7 @@ import { EffortVotingService } from "../../infrastructure/services/EffortVotingS
 import { LabelToAliasService } from "../../infrastructure/services/LabelToAliasService";
 import { LabelInputModal, type LabelInputModalResult } from "../../presentation/modals/LabelInputModal";
 import { SupervisionInputModal } from "../../presentation/modals/SupervisionInputModal";
+import { WikiLinkHelpers } from "../../infrastructure/utilities/WikiLinkHelpers";
 
 /**
  * Command Manager Service
@@ -802,7 +803,7 @@ export class CommandManager {
       ? instanceClass
       : [instanceClass];
     const firstClass = classes[0] || "";
-    const sourceClass = firstClass.replace(/\[\[|\]\]/g, "").trim();
+    const sourceClass = WikiLinkHelpers.normalize(firstClass);
 
     const createdFile = await this.taskCreationService.createTask(
       file,
@@ -867,7 +868,7 @@ export class CommandManager {
       ? instanceClass
       : [instanceClass];
     const firstClass = classes[0] || "";
-    const sourceClass = firstClass.replace(/\[\[|\]\]/g, "").trim();
+    const sourceClass = WikiLinkHelpers.normalize(firstClass);
 
     const showTaskSize = sourceClass !== "ems__MeetingPrototype";
 
