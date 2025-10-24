@@ -15,11 +15,13 @@ export class LabelInputModal extends Modal {
   private onSubmit: (result: LabelInputModalResult) => void;
   private inputEl: HTMLInputElement | null = null;
   private taskSizeSelectEl: HTMLSelectElement | null = null;
+  private showTaskSize: boolean;
 
-  constructor(app: App, onSubmit: (result: LabelInputModalResult) => void, defaultValue = "") {
+  constructor(app: App, onSubmit: (result: LabelInputModalResult) => void, defaultValue = "", showTaskSize = true) {
     super(app);
     this.onSubmit = onSubmit;
     this.label = defaultValue;
+    this.showTaskSize = showTaskSize;
   }
 
   onOpen(): void {
@@ -58,36 +60,38 @@ export class LabelInputModal extends Modal {
       }
     });
 
-    const taskSizeLabel = contentEl.createEl("p", {
-      text: "Task size:",
-      cls: "exocortex-modal-description",
-    });
-
-    const selectContainer = contentEl.createDiv({ cls: "exocortex-modal-input-container" });
-
-    this.taskSizeSelectEl = selectContainer.createEl("select", {
-      cls: "exocortex-modal-select dropdown",
-    });
-
-    const taskSizeOptions = [
-      { value: "", label: "Not specified" },
-      { value: '"[[ems__TaskSize_XXS]]"', label: "XXS" },
-      { value: '"[[ems__TaskSize_XS]]"', label: "XS" },
-      { value: '"[[ems__TaskSize_S]]"', label: "S" },
-      { value: '"[[ems__TaskSize_M]]"', label: "M" },
-    ];
-
-    taskSizeOptions.forEach((option) => {
-      const optionEl = this.taskSizeSelectEl!.createEl("option", {
-        value: option.value,
-        text: option.label,
+    if (this.showTaskSize) {
+      const taskSizeLabel = contentEl.createEl("p", {
+        text: "Task size:",
+        cls: "exocortex-modal-description",
       });
-    });
 
-    this.taskSizeSelectEl.addEventListener("change", (e) => {
-      const selectedValue = (e.target as HTMLSelectElement).value;
-      this.taskSize = selectedValue || null;
-    });
+      const selectContainer = contentEl.createDiv({ cls: "exocortex-modal-input-container" });
+
+      this.taskSizeSelectEl = selectContainer.createEl("select", {
+        cls: "exocortex-modal-select dropdown",
+      });
+
+      const taskSizeOptions = [
+        { value: "", label: "Not specified" },
+        { value: '"[[ems__TaskSize_XXS]]"', label: "XXS" },
+        { value: '"[[ems__TaskSize_XS]]"', label: "XS" },
+        { value: '"[[ems__TaskSize_S]]"', label: "S" },
+        { value: '"[[ems__TaskSize_M]]"', label: "M" },
+      ];
+
+      taskSizeOptions.forEach((option) => {
+        const optionEl = this.taskSizeSelectEl!.createEl("option", {
+          value: option.value,
+          text: option.label,
+        });
+      });
+
+      this.taskSizeSelectEl.addEventListener("change", (e) => {
+        const selectedValue = (e.target as HTMLSelectElement).value;
+        this.taskSize = selectedValue || null;
+      });
+    }
 
     const buttonContainer = contentEl.createDiv({ cls: "modal-button-container" });
 
