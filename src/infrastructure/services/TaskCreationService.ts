@@ -85,6 +85,7 @@ export class TaskCreationService {
    * @param sourceMetadata Frontmatter metadata from the source
    * @param sourceClass The class of the source asset (ems__Area or ems__Project)
    * @param label Optional display label for the asset (exo__Asset_label)
+   * @param taskSize Optional task size (ems__Task_size)
    * @returns The created Task file
    */
   async createTask(
@@ -92,6 +93,7 @@ export class TaskCreationService {
     sourceMetadata: Record<string, any>,
     sourceClass: string,
     label?: string,
+    taskSize?: string | null,
   ): Promise<TFile> {
     const uid = uuidv4();
     const fileName = `${uid}.md`;
@@ -101,6 +103,7 @@ export class TaskCreationService {
       sourceClass,
       label,
       uid,
+      taskSize,
     );
 
     // For TaskPrototype, extract Algorithm section
@@ -141,12 +144,14 @@ export class TaskCreationService {
    * @param sourceFile The source Task file to create a related task from
    * @param sourceMetadata Frontmatter metadata from the source
    * @param label Optional display label for the new task
+   * @param taskSize Optional task size (ems__Task_size)
    * @returns The created related Task file
    */
   async createRelatedTask(
     sourceFile: TFile,
     sourceMetadata: Record<string, any>,
     label?: string,
+    taskSize?: string | null,
   ): Promise<TFile> {
     const uid = uuidv4();
     const fileName = `${uid}.md`;
@@ -157,6 +162,7 @@ export class TaskCreationService {
       sourceFile.basename,
       label,
       uid,
+      taskSize,
     );
 
     const fileContent = this.buildFileContent(frontmatter);
@@ -180,12 +186,14 @@ export class TaskCreationService {
    * @param sourceName Name of the source task
    * @param label Optional display label for the asset
    * @param uid UUID for the asset
+   * @param taskSize Optional task size (ems__Task_size)
    */
   private generateRelatedTaskFrontmatter(
     sourceMetadata: Record<string, any>,
     sourceName: string,
     label?: string,
     uid?: string,
+    taskSize?: string | null,
   ): Record<string, any> {
     const now = new Date();
     const timestamp = this.formatLocalTimestamp(now);
@@ -216,6 +224,10 @@ export class TaskCreationService {
       const trimmedLabel = label.trim();
       frontmatter["exo__Asset_label"] = trimmedLabel;
       frontmatter["aliases"] = [trimmedLabel];
+    }
+
+    if (taskSize) {
+      frontmatter["ems__Task_size"] = taskSize;
     }
 
     return frontmatter;
@@ -308,6 +320,7 @@ export class TaskCreationService {
    * @param sourceClass Class of source asset (determines effort property)
    * @param label Optional display label for the asset (exo__Asset_label)
    * @param uid UUID for the asset
+   * @param taskSize Optional task size (ems__Task_size)
    */
   generateTaskFrontmatter(
     sourceMetadata: Record<string, any>,
@@ -315,6 +328,7 @@ export class TaskCreationService {
     sourceClass: string,
     label?: string,
     uid?: string,
+    taskSize?: string | null,
   ): Record<string, any> {
     const now = new Date();
     const timestamp = this.formatLocalTimestamp(now);
@@ -363,6 +377,10 @@ export class TaskCreationService {
       const trimmedLabel = finalLabel.trim();
       frontmatter["exo__Asset_label"] = trimmedLabel;
       frontmatter["aliases"] = [trimmedLabel];
+    }
+
+    if (taskSize) {
+      frontmatter["ems__Task_size"] = taskSize;
     }
 
     return frontmatter;

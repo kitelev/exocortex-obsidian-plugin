@@ -709,4 +709,94 @@ Step with spaces
       expect(result).toBe("Step with spaces");
     });
   });
+
+  describe("task size parameter", () => {
+    it("should include ems__Task_size when taskSize is provided", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "My Area",
+        "ems__Area",
+        undefined,
+        undefined,
+        '"[[ems__TaskSize_M]]"',
+      );
+
+      expect(frontmatter.ems__Task_size).toBe('"[[ems__TaskSize_M]]"');
+    });
+
+    it("should NOT include ems__Task_size when taskSize is null", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "My Area",
+        "ems__Area",
+        undefined,
+        undefined,
+        null,
+      );
+
+      expect(frontmatter.ems__Task_size).toBeUndefined();
+    });
+
+    it("should NOT include ems__Task_size when taskSize is not provided", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "My Area",
+        "ems__Area",
+      );
+
+      expect(frontmatter.ems__Task_size).toBeUndefined();
+    });
+
+    it("should handle different task size values", () => {
+      const testCases = [
+        '"[[ems__TaskSize_XXS]]"',
+        '"[[ems__TaskSize_XS]]"',
+        '"[[ems__TaskSize_S]]"',
+        '"[[ems__TaskSize_M]]"',
+      ];
+
+      testCases.forEach((taskSize) => {
+        const frontmatter = service.generateTaskFrontmatter(
+          {},
+          "Test Area",
+          "ems__Area",
+          undefined,
+          undefined,
+          taskSize,
+        );
+
+        expect(frontmatter.ems__Task_size).toBe(taskSize);
+      });
+    });
+
+    it("should work with label and taskSize together", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "My Area",
+        "ems__Area",
+        "Test Label",
+        undefined,
+        '"[[ems__TaskSize_S]]"',
+      );
+
+      expect(frontmatter.exo__Asset_label).toBe("Test Label");
+      expect(frontmatter.ems__Task_size).toBe('"[[ems__TaskSize_S]]"');
+    });
+  });
 });
