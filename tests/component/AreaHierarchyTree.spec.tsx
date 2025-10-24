@@ -157,7 +157,7 @@ test.describe('AreaHierarchyTree Component', () => {
     });
 
     expect(childPadding).toBe(8); // 8px base + 0px for depth 0
-    expect(grandchildPadding).toBe(24); // 8px base + 16px for depth 1
+    expect(grandchildPadding).toBe(28); // 8px base + 20px for depth 1
     expect(grandchildPadding).toBeGreaterThan(childPadding); // Visual hierarchy
   });
 
