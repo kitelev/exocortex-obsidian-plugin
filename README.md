@@ -8,6 +8,24 @@
 [![Tests](https://img.shields.io/badge/tests-passing-success)](https://github.com/kitelev/exocortex-obsidian-plugin/actions)
 [![Coverage](https://img.shields.io/badge/coverage-49%25-orange)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
 
+## Table of Contents
+
+- [What is Exocortex?](#-what-is-exocortex)
+- [Quick Start](#-quick-start)
+- [Available Commands](#-available-commands)
+- [Frontmatter Properties Reference](#-frontmatter-properties-reference)
+- [Layout Sections](#-layout-sections)
+- [Plugin Settings](#-plugin-settings)
+- [Asset Class Types](#-asset-class-types)
+- [Archive Filtering & Graph View](#-archive-filtering)
+- [Architecture](#-architecture)
+- [Performance](#-performance)
+- [Quality & Testing](#-quality--testing)
+- [Development](#-development)
+- [Documentation](#-documentation)
+- [Known Issues](#-known-issues)
+- [License & Support](#-license)
+
 ## 🎯 What is Exocortex?
 
 Exocortex is a powerful Obsidian plugin that transforms your notes into an interconnected task management and knowledge organization system. It automatically displays related notes, tracks effort across projects, manages task workflows with status transitions, and visualizes hierarchical relationships - all within your existing notes in reading mode.
@@ -423,7 +441,9 @@ Graph: [My Important Project]  ✅ Readable!
 
 ## 🏗️ Architecture
 
-Clean Architecture with domain-driven design:
+The Exocortex plugin implements **Clean Architecture** with **Domain-Driven Design** principles, ensuring maintainability, testability, and extensibility.
+
+### Layer Overview
 
 ```
 ┌─────────── Presentation ────────────┐
@@ -435,7 +455,7 @@ Clean Architecture with domain-driven design:
 ┌─────────── Application ─────────────┐
 │  Services (9 specialized services)  │
 │  Use Cases & Business Logic         │
-│  Command Manager (23 commands)      │
+│  Command Manager (24 commands)      │
 └─────────────────────────────────────┘
          ↓
 ┌─────────── Domain ──────────────────┐
@@ -451,7 +471,15 @@ Clean Architecture with domain-driven design:
 └─────────────────────────────────────┘
 ```
 
-**Key Services:**
+### Architecture Principles
+
+- **Separation of Concerns**: Business logic independent of framework
+- **Dependency Inversion**: Domain layer has no external dependencies
+- **SOLID Principles**: Single responsibility, open/closed, interface segregation
+- **Testability First**: All layers designed for comprehensive testing
+- **Performance**: O(1) lookups via reverse indexing
+
+### Key Services
 
 | Service | Purpose |
 |---------|---------|
@@ -464,8 +492,19 @@ Clean Architecture with domain-driven design:
 | RenameToUidService | Synchronize filenames with UIDs |
 | AreaHierarchyBuilder | Build area tree structure |
 | SupervisionCreationService | Create CBT-format fleeting notes |
+| GraphDataService | Build graph visualization data |
 
-**Tech Stack**: TypeScript 4.9+, React 19.2.0, Obsidian API 1.5.0+, ESBuild
+### Technology Stack
+
+| Layer | Technologies |
+|-------|-------------|
+| **UI** | React 19.2.0, TypeScript 4.9+ (strict mode) |
+| **Build** | ESBuild 0.17.3 |
+| **Testing** | Jest, Playwright CT, Playwright E2E, Docker |
+| **CI/CD** | GitHub Actions, Automated releases |
+| **API** | Obsidian Plugin API 1.5.0+ |
+
+**📖 For detailed architecture documentation, see [ARCHITECTURE.md](./ARCHITECTURE.md)**
 
 ## 🚀 Performance
 
@@ -564,10 +603,17 @@ npm run build
 
 ## 📚 Documentation
 
+### User Documentation
+
+- **[README.md](./README.md)** - This file - user guide and feature reference
 - **[CHANGELOG.md](./CHANGELOG.md)** - Complete version history with semantic versioning
-- **[CLAUDE.md](./CLAUDE.md)** - Development guidelines for AI assistants
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System design and patterns
 - **[specs/features/](./specs/features/)** - BDD feature specifications
+
+### Developer Documentation
+
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Complete system design, layer architecture, and technical patterns
+- **[CLAUDE.md](./CLAUDE.md)** - Development guidelines and workflow for AI assistants
+- **[AGENTS.md](./AGENTS.md)** - Agent coordination patterns for parallel development
 
 ## ⚠️ Known Issues
 
