@@ -389,7 +389,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Verify button is NOT present
       const button = container.querySelector(".exocortex-create-task-btn");
@@ -414,7 +414,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Verify order: properties section -> buttons section (containing action buttons) -> relations
       const children = Array.from(container.children);
@@ -457,7 +457,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Find Mark Done button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
@@ -483,7 +483,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-mark-done-btn");
       expect(button).toBeFalsy();
@@ -507,7 +507,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-mark-done-btn");
       expect(button).toBeFalsy();
@@ -531,7 +531,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Find Mark Done button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
@@ -557,7 +557,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-mark-done-btn");
       expect(button).toBeFalsy();
@@ -581,7 +581,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-mark-done-btn");
       expect(button).toBeFalsy();
@@ -604,7 +604,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-mark-done-btn");
       expect(button).toBeFalsy();
@@ -631,7 +631,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Find Archive button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
@@ -658,7 +658,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-archive-task-btn");
       expect(button).toBeFalsy();
@@ -683,7 +683,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const buttons = container.querySelectorAll(".exocortex-action-button");
       const archiveBtn = Array.from(buttons).find(btn => btn.textContent === "Archive");
@@ -709,7 +709,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Find Archive button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
@@ -736,7 +736,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-archive-task-btn");
       expect(button).toBeFalsy();
@@ -761,7 +761,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const buttons = container.querySelectorAll(".exocortex-action-button");
       const archiveBtn = Array.from(buttons).find(btn => btn.textContent === "Archive");
@@ -786,7 +786,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const buttons = container.querySelectorAll(".exocortex-action-button");
       const archiveBtn = Array.from(buttons).find(btn => btn.textContent === "Archive");
@@ -815,7 +815,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Find Clean Properties button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
@@ -843,7 +843,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-clean-properties-btn");
       expect(button).toBeFalsy();
@@ -868,7 +868,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Find Clean Properties button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
@@ -895,7 +895,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Find Clean Properties button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
@@ -965,7 +965,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Find Repair Folder button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
@@ -1001,7 +1001,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-repair-folder-btn");
       expect(button).toBeFalsy();
@@ -1025,7 +1025,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-repair-folder-btn");
       expect(button).toBeFalsy();
@@ -1053,7 +1053,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-repair-folder-btn");
       expect(button).toBeFalsy();
@@ -1089,7 +1089,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Verify properties section is before buttons section
       const children = Array.from(container.children);
@@ -1147,7 +1147,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Get action buttons container
       const buttonsContainer = container.querySelector(".exocortex-action-buttons-container") as HTMLElement;
@@ -1185,7 +1185,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Find Start Effort button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
@@ -1211,7 +1211,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-start-effort-btn");
       expect(button).toBeFalsy();
@@ -1235,7 +1235,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-start-effort-btn");
       expect(button).toBeFalsy();
@@ -1259,7 +1259,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-start-effort-btn");
       expect(button).toBeFalsy();
@@ -1283,7 +1283,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Find Start Effort button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
@@ -1309,7 +1309,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Find Start Effort button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
@@ -1335,7 +1335,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-start-effort-btn");
       expect(button).toBeFalsy();
@@ -1359,7 +1359,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-start-effort-btn");
       expect(button).toBeFalsy();
@@ -1382,7 +1382,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const button = container.querySelector(".exocortex-start-effort-btn");
       expect(button).toBeFalsy();
@@ -1676,7 +1676,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Verify Tasks table is NOT present
       const tasksSection = container.querySelector(".exocortex-daily-tasks-section");
@@ -1701,7 +1701,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Verify Tasks table is NOT present
       const tasksSection = container.querySelector(".exocortex-daily-tasks-section");
@@ -1729,7 +1729,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Verify Tasks table is NOT present (graceful fallback)
       const tasksSection = container.querySelector(".exocortex-daily-tasks-section");
