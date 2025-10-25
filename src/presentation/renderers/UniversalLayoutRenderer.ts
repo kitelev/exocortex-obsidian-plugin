@@ -154,15 +154,6 @@ export class UniversalLayoutRenderer {
     this.reactRenderer.cleanup();
   }
 
-  private registerEventListener(
-    element: HTMLElement,
-    type: string,
-    handler: EventListener,
-  ): void {
-    this.eventListenerManager.register(element, type, handler);
-  }
-
-
   /**
    * Render the UniversalLayout view with Asset Properties and Assets Relations
    */
@@ -220,7 +211,8 @@ export class UniversalLayoutRenderer {
       );
     } catch (error) {
       this.logger.error("Failed to render UniversalLayout", { error });
-      this.renderError(el, error.message);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      this.renderError(el, errorMessage);
     }
   }
 
@@ -647,34 +639,5 @@ export class UniversalLayoutRenderer {
     }
 
     return null;
-  }
-
-  private getChildAreas(areaName: string, visited: Set<string> = new Set()): Set<string> {
-    const childAreas = new Set<string>();
-
-    if (visited.has(areaName)) {
-      return childAreas;
-    }
-    visited.add(areaName);
-
-    const allFiles = this.app.vault.getMarkdownFiles();
-
-    for (const file of allFiles) {
-      const metadata = this.metadataExtractor.extractMetadata(file);
-
-      const areaParent = metadata.ems__Area_parent;
-      if (!areaParent) continue;
-
-      const areaParentStr = String(areaParent).replace(/^\[\[|\]\]$/g, "");
-
-      if (areaParentStr === areaName) {
-        childAreas.add(file.basename);
-
-        const nestedChildren = this.getChildAreas(file.basename, visited);
-        nestedChildren.forEach(child => childAreas.add(child));
-      }
-    }
-
-    return childAreas;
   }
 }

@@ -32,7 +32,8 @@ export const RenameToUidButton: React.FC<RenameToUidButtonProps> = ({
     try {
       await onRename();
     } catch (error) {
-      new Notice(`Failed to rename: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      new Notice(`Failed to rename: ${errorMessage}`);
       console.error("Rename to UID error:", error);
     }
   };
