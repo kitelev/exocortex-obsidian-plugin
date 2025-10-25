@@ -69,6 +69,7 @@ import { BacklinksCacheManager } from "../../infrastructure/caching/BacklinksCac
 import { EventListenerManager } from "../../infrastructure/events/EventListenerManager";
 import { MetadataHelpers } from "../../infrastructure/utilities/MetadataHelpers";
 import { WikiLinkHelpers } from "../../infrastructure/utilities/WikiLinkHelpers";
+import { AssetClass, EffortStatus } from "../../domain/constants";
 
 /**
  * UniversalLayout configuration options
@@ -268,11 +269,11 @@ export class UniversalLayoutRenderer {
             Array.isArray(instanceClass) ? instanceClass[0] : instanceClass
           );
 
-          const defaultValue = sourceClass === "ems__MeetingPrototype" || sourceClass === "ems__TaskPrototype"
+          const defaultValue = sourceClass === AssetClass.MEETING_PROTOTYPE || sourceClass === AssetClass.TASK_PROTOTYPE
             ? this.generateDefaultMeetingLabel(metadata, file.basename)
             : "";
 
-          const showTaskSize = sourceClass !== "ems__MeetingPrototype";
+          const showTaskSize = sourceClass !== AssetClass.MEETING_PROTOTYPE;
 
           const result = await new Promise<LabelInputModalResult>((resolve) => {
             new LabelInputModal(this.app, resolve, defaultValue, showTaskSize).open();
@@ -923,7 +924,7 @@ export class UniversalLayoutRenderer {
         sourceFile: file,
         onInstanceCreate: async () => {
           const sourceClass = getCleanSourceClass();
-          const showTaskSize = sourceClass !== "ems__MeetingPrototype";
+          const showTaskSize = sourceClass !== AssetClass.MEETING_PROTOTYPE;
 
           const result = await new Promise<LabelInputModalResult>((resolve) => {
             new LabelInputModal(this.app, resolve, "", showTaskSize).open();
@@ -1583,7 +1584,7 @@ export class UniversalLayoutRenderer {
     const metadata = cache?.frontmatter || {};
     const instanceClass = this.extractInstanceClass(metadata);
 
-    if (instanceClass !== "ems__Area") {
+    if (instanceClass !== AssetClass.AREA) {
       return;
     }
 
@@ -1909,7 +1910,7 @@ export class UniversalLayoutRenderer {
           ? instanceClass
           : [instanceClass];
         const isProject = instanceClassArray.some(
-          (c: string) => String(c).includes("ems__Project"),
+          (c: string) => String(c).includes(AssetClass.PROJECT),
         );
 
         if (isProject) {
@@ -1938,11 +1939,11 @@ export class UniversalLayoutRenderer {
         const startTime = formatTime(startTimestamp) || formatTime(plannedStartTimestamp);
         const endTime = formatTime(endTimestamp) || formatTime(plannedEndTimestamp);
 
-        const isDone = effortStatusStr === "ems__EffortStatusDone";
-        const isTrashed = effortStatusStr === "ems__EffortStatusTrashed";
-        const isDoing = effortStatusStr === "ems__EffortStatusDoing";
+        const isDone = effortStatusStr === EffortStatus.DONE;
+        const isTrashed = effortStatusStr === EffortStatus.TRASHED;
+        const isDoing = effortStatusStr === EffortStatus.DOING;
         const isMeeting = instanceClassArray.some(
-          (c: string) => String(c).includes("ems__Meeting"),
+          (c: string) => String(c).includes(AssetClass.MEETING),
         );
 
         const label = metadata.exo__Asset_label || file.basename;
@@ -1957,7 +1958,7 @@ export class UniversalLayoutRenderer {
             const blockerMetadata = blockerCache?.frontmatter || {};
             const blockerStatus = blockerMetadata.ems__Effort_status || "";
             const blockerStatusStr = String(blockerStatus).replace(/^\[\[|\]\]$/g, "");
-            isBlocked = blockerStatusStr !== "ems__EffortStatusDone" && blockerStatusStr !== "ems__EffortStatusTrashed";
+            isBlocked = blockerStatusStr !== EffortStatus.DONE && blockerStatusStr !== EffortStatus.TRASHED;
           }
         }
 
@@ -2071,7 +2072,7 @@ export class UniversalLayoutRenderer {
           ? instanceClass
           : [instanceClass];
         const isProject = instanceClassArray.some(
-          (c: string) => String(c).includes("ems__Project"),
+          (c: string) => String(c).includes(AssetClass.PROJECT),
         );
 
         if (!isProject) {
@@ -2100,8 +2101,8 @@ export class UniversalLayoutRenderer {
         const startTime = formatTime(startTimestamp) || formatTime(plannedStartTimestamp);
         const endTime = formatTime(endTimestamp) || formatTime(plannedEndTimestamp);
 
-        const isDone = effortStatusStr === "ems__EffortStatusDone";
-        const isTrashed = effortStatusStr === "ems__EffortStatusTrashed";
+        const isDone = effortStatusStr === EffortStatus.DONE;
+        const isTrashed = effortStatusStr === EffortStatus.TRASHED;
 
         const label = metadata.exo__Asset_label || file.basename;
 

@@ -1,15 +1,16 @@
 import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
+import { AssetClass } from "../../domain/constants";
 
 /**
  * Mapping of source class to effort property name
  * Implements Strategy pattern for property selection
  */
 const EFFORT_PROPERTY_MAP: Record<string, string> = {
-  ems__Area: "ems__Effort_area",
-  ems__Initiative: "ems__Effort_parent",
-  ems__Project: "ems__Effort_parent",
+  [AssetClass.AREA]: "ems__Effort_area",
+  [AssetClass.INITIATIVE]: "ems__Effort_parent",
+  [AssetClass.PROJECT]: "ems__Effort_parent",
 };
 
 export class ProjectCreationService {
@@ -81,7 +82,7 @@ export class ProjectCreationService {
     frontmatter["exo__Asset_isDefinedBy"] = ensureQuoted(isDefinedBy);
     frontmatter["exo__Asset_uid"] = uid || uuidv4();
     frontmatter["exo__Asset_createdAt"] = timestamp;
-    frontmatter["exo__Instance_class"] = ['"[[ems__Project]]"'];
+    frontmatter["exo__Instance_class"] = [`"[[${AssetClass.PROJECT}]]"`];
     frontmatter["ems__Effort_status"] = '"[[ems__EffortStatusDraft]]"';
     frontmatter[effortProperty] = `"[[${sourceName}]]"`;
 

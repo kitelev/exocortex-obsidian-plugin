@@ -1,6 +1,7 @@
 import { TFile, Vault } from "obsidian";
 import { FrontmatterService } from "./FrontmatterService";
 import { DateFormatter } from "../utilities/DateFormatter";
+import { AssetClass, EffortStatus } from "../../domain/constants";
 
 export class TaskStatusService {
   private frontmatterService: FrontmatterService;
@@ -250,7 +251,7 @@ export class TaskStatusService {
 
     const normalizedStatus = currentStatus.replace(/["'\[\]]/g, "").trim();
 
-    if (normalizedStatus === "ems__EffortStatusDone") {
+    if (normalizedStatus === EffortStatus.DONE) {
       updated = this.frontmatterService.removeProperty(
         updated,
         "ems__Effort_endTimestamp",
@@ -259,7 +260,7 @@ export class TaskStatusService {
         updated,
         "ems__Effort_resolutionTimestamp",
       );
-    } else if (normalizedStatus === "ems__EffortStatusDoing") {
+    } else if (normalizedStatus === EffortStatus.DOING) {
       updated = this.frontmatterService.removeProperty(
         updated,
         "ems__Effort_startTimestamp",
@@ -306,31 +307,31 @@ export class TaskStatusService {
   ): string | null | undefined {
     const normalizedStatus = currentStatus.replace(/["'\[\]]/g, "").trim();
 
-    if (normalizedStatus === "ems__EffortStatusDraft") {
+    if (normalizedStatus === EffortStatus.DRAFT) {
       return null;
     }
 
-    if (normalizedStatus === "ems__EffortStatusBacklog") {
-      return '"[[ems__EffortStatusDraft]]"';
+    if (normalizedStatus === EffortStatus.BACKLOG) {
+      return `"[[${EffortStatus.DRAFT}]]"`;
     }
 
-    if (normalizedStatus === "ems__EffortStatusAnalysis") {
-      return '"[[ems__EffortStatusBacklog]]"';
+    if (normalizedStatus === EffortStatus.ANALYSIS) {
+      return `"[[${EffortStatus.BACKLOG}]]"`;
     }
 
-    if (normalizedStatus === "ems__EffortStatusToDo") {
-      return '"[[ems__EffortStatusAnalysis]]"';
+    if (normalizedStatus === EffortStatus.TODO) {
+      return `"[[${EffortStatus.ANALYSIS}]]"`;
     }
 
-    if (normalizedStatus === "ems__EffortStatusDoing") {
-      const isProject = this.hasInstanceClass(instanceClass, "ems__Project");
+    if (normalizedStatus === EffortStatus.DOING) {
+      const isProject = this.hasInstanceClass(instanceClass, AssetClass.PROJECT);
       return isProject
-        ? '"[[ems__EffortStatusToDo]]"'
-        : '"[[ems__EffortStatusBacklog]]"';
+        ? `"[[${EffortStatus.TODO}]]"`
+        : `"[[${EffortStatus.BACKLOG}]]"`;
     }
 
-    if (normalizedStatus === "ems__EffortStatusDone") {
-      return '"[[ems__EffortStatusDoing]]"';
+    if (normalizedStatus === EffortStatus.DONE) {
+      return `"[[${EffortStatus.DOING}]]"`;
     }
 
     return undefined;
@@ -338,7 +339,7 @@ export class TaskStatusService {
 
   private hasInstanceClass(
     instanceClass: string | string[] | null,
-    targetClass: string,
+    targetClass: AssetClass,
   ): boolean {
     if (!instanceClass) return false;
 
