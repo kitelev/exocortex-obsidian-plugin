@@ -72,6 +72,7 @@ import { WikiLinkHelpers } from "../../infrastructure/utilities/WikiLinkHelpers"
 import { AssetClass, EffortStatus } from "../../domain/constants";
 import { MetadataExtractor } from "../../infrastructure/utilities/MetadataExtractor";
 import { DateFormatter } from "../../infrastructure/utilities/DateFormatter";
+import { EffortSortingHelpers } from "../../infrastructure/utilities/EffortSortingHelpers";
 
 /**
  * UniversalLayout configuration options
@@ -1410,37 +1411,7 @@ export class UniversalLayoutRenderer {
         });
       }
 
-      filteredTasks.sort((a, b) => {
-        if (a.isTrashed !== b.isTrashed) {
-          return a.isTrashed ? 1 : -1;
-        }
-
-        if (a.isDone !== b.isDone) {
-          return a.isDone ? 1 : -1;
-        }
-
-        const aVotes =
-          typeof a.metadata.ems__Effort_votes === "number"
-            ? a.metadata.ems__Effort_votes
-            : 0;
-        const bVotes =
-          typeof b.metadata.ems__Effort_votes === "number"
-            ? b.metadata.ems__Effort_votes
-            : 0;
-
-        if (aVotes !== bVotes) {
-          return bVotes - aVotes;
-        }
-
-        if (a.startTime && b.startTime) {
-          return a.startTime.localeCompare(b.startTime);
-        }
-
-        if (a.startTime) return -1;
-        if (b.startTime) return 1;
-
-        return 0;
-      });
+      filteredTasks.sort(EffortSortingHelpers.sortByPriority);
 
       return filteredTasks.slice(0, 50);
     } catch (error) {
@@ -1528,37 +1499,7 @@ export class UniversalLayoutRenderer {
         });
       }
 
-      projects.sort((a, b) => {
-        if (a.isTrashed !== b.isTrashed) {
-          return a.isTrashed ? 1 : -1;
-        }
-
-        if (a.isDone !== b.isDone) {
-          return a.isDone ? 1 : -1;
-        }
-
-        const aVotes =
-          typeof a.metadata.ems__Effort_votes === "number"
-            ? a.metadata.ems__Effort_votes
-            : 0;
-        const bVotes =
-          typeof b.metadata.ems__Effort_votes === "number"
-            ? b.metadata.ems__Effort_votes
-            : 0;
-
-        if (aVotes !== bVotes) {
-          return bVotes - aVotes;
-        }
-
-        if (a.startTime && b.startTime) {
-          return a.startTime.localeCompare(b.startTime);
-        }
-
-        if (a.startTime) return -1;
-        if (b.startTime) return 1;
-
-        return 0;
-      });
+      projects.sort(EffortSortingHelpers.sortByPriority);
 
       return projects.slice(0, 50);
     } catch (error) {
