@@ -1,0 +1,1 @@
+{"version":3,"file":"GraphData.d.ts","sourceRoot":"","sources":["../../../src/domain/models/GraphData.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,aAAa,CAAC;AAC7C,OAAO,KAAK,EAAE,SAAS,EAAE,MAAM,aAAa,CAAC;AAE7C,MAAM,WAAW,SAAS;IACxB,KAAK,EAAE,SAAS,EAAE,CAAC;IACnB,KAAK,EAAE,SAAS,EAAE,CAAC;CACpB"}
