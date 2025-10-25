@@ -397,6 +397,232 @@ describe("MetadataHelpers", () => {
     });
   });
 
+  describe("ensureQuoted", () => {
+    it("should add quotes if missing", () => {
+      const result = MetadataHelpers.ensureQuoted("value");
+      expect(result).toBe('"value"');
+    });
+
+    it("should preserve existing quotes", () => {
+      const result = MetadataHelpers.ensureQuoted('"value"');
+      expect(result).toBe('"value"');
+    });
+
+    it("should handle empty string", () => {
+      const result = MetadataHelpers.ensureQuoted("");
+      expect(result).toBe('""');
+    });
+
+    it("should handle special case empty quoted string", () => {
+      const result = MetadataHelpers.ensureQuoted('""');
+      expect(result).toBe('""');
+    });
+
+    it("should handle value with only opening quote", () => {
+      const result = MetadataHelpers.ensureQuoted('"value');
+      expect(result).toBe('""value"');
+    });
+
+    it("should handle value with only closing quote", () => {
+      const result = MetadataHelpers.ensureQuoted('value"');
+      expect(result).toBe('"value""');
+    });
+
+    it("should handle value with quotes in middle", () => {
+      const result = MetadataHelpers.ensureQuoted('val"ue');
+      expect(result).toBe('"val"ue"');
+    });
+
+    it("should handle value with multiple quotes", () => {
+      const result = MetadataHelpers.ensureQuoted('""value""');
+      expect(result).toBe('""value""');
+    });
+
+    it("should handle whitespace", () => {
+      const result = MetadataHelpers.ensureQuoted("  value  ");
+      expect(result).toBe('"  value  "');
+    });
+
+    it("should handle wikilink", () => {
+      const result = MetadataHelpers.ensureQuoted("[[TaskName]]");
+      expect(result).toBe('"[[TaskName]]"');
+    });
+
+    it("should handle already quoted wikilink", () => {
+      const result = MetadataHelpers.ensureQuoted('"[[TaskName]]"');
+      expect(result).toBe('"[[TaskName]]"');
+    });
+  });
+
+  describe("buildFileContent", () => {
+    it("should build with frontmatter and body", () => {
+      const frontmatter = {
+        "exo__Asset_label": "Test Task",
+        "ems__Effort_status": "ems__EffortStatusDoing",
+      };
+      const body = "This is the task description.";
+
+      const result = MetadataHelpers.buildFileContent(frontmatter, body);
+
+      expect(result).toContain("---");
+      expect(result).toContain("exo__Asset_label: Test Task");
+      expect(result).toContain("ems__Effort_status: ems__EffortStatusDoing");
+      expect(result).toContain("This is the task description.");
+    });
+
+    it("should build with frontmatter only", () => {
+      const frontmatter = {
+        "exo__Asset_label": "Test Task",
+      };
+
+      const result = MetadataHelpers.buildFileContent(frontmatter);
+
+      expect(result).toMatch(/^---\nexo__Asset_label: Test Task\n---\n\n$/);
+    });
+
+    it("should format frontmatter correctly", () => {
+      const frontmatter = {
+        "title": "Test",
+        "archived": true,
+        "votes": 5,
+      };
+
+      const result = MetadataHelpers.buildFileContent(frontmatter);
+
+      expect(result).toContain("title: Test");
+      expect(result).toContain("archived: true");
+      expect(result).toContain("votes: 5");
+    });
+
+    it("should preserve body content", () => {
+      const frontmatter = { "title": "Test" };
+      const body = "Line 1\nLine 2\nLine 3";
+
+      const result = MetadataHelpers.buildFileContent(frontmatter, body);
+
+      expect(result).toContain("Line 1\nLine 2\nLine 3");
+    });
+
+    it("should handle empty body", () => {
+      const frontmatter = { "title": "Test" };
+      const body = "";
+
+      const result = MetadataHelpers.buildFileContent(frontmatter, body);
+
+      expect(result).toMatch(/^---\ntitle: Test\n---\n\n$/);
+    });
+
+    it("should handle complex frontmatter objects", () => {
+      const frontmatter = {
+        "string": "value",
+        "number": 42,
+        "boolean": true,
+        "null": null,
+      };
+
+      const result = MetadataHelpers.buildFileContent(frontmatter);
+
+      expect(result).toContain("string: value");
+      expect(result).toContain("number: 42");
+      expect(result).toContain("boolean: true");
+      expect(result).toContain("null: null");
+    });
+
+    it("should handle array properties", () => {
+      const frontmatter = {
+        "tags": ["tag1", "tag2", "tag3"],
+      };
+
+      const result = MetadataHelpers.buildFileContent(frontmatter);
+
+      expect(result).toContain("tags:");
+      expect(result).toContain("  - tag1");
+      expect(result).toContain("  - tag2");
+      expect(result).toContain("  - tag3");
+    });
+
+    it("should handle mixed scalar and array properties", () => {
+      const frontmatter = {
+        "title": "Test",
+        "tags": ["tag1", "tag2"],
+        "archived": false,
+      };
+
+      const result = MetadataHelpers.buildFileContent(frontmatter);
+
+      expect(result).toContain("title: Test");
+      expect(result).toContain("tags:");
+      expect(result).toContain("  - tag1");
+      expect(result).toContain("  - tag2");
+      expect(result).toContain("archived: false");
+    });
+
+    it("should handle empty array", () => {
+      const frontmatter = {
+        "tags": [],
+      };
+
+      const result = MetadataHelpers.buildFileContent(frontmatter);
+
+      expect(result).toContain("tags:");
+    });
+
+    it("should handle array with wikilinks", () => {
+      const frontmatter = {
+        "blocks": ["[[Task1]]", "[[Task2]]"],
+      };
+
+      const result = MetadataHelpers.buildFileContent(frontmatter);
+
+      expect(result).toContain("blocks:");
+      expect(result).toContain("  - [[Task1]]");
+      expect(result).toContain("  - [[Task2]]");
+    });
+
+    it("should handle body with frontmatter delimiters", () => {
+      const frontmatter = { "title": "Test" };
+      const body = "Some content\n---\nMore content";
+
+      const result = MetadataHelpers.buildFileContent(frontmatter, body);
+
+      expect(result).toContain("Some content\n---\nMore content");
+    });
+
+    it("should handle special characters in values", () => {
+      const frontmatter = {
+        "description": "Test: with special & characters!",
+      };
+
+      const result = MetadataHelpers.buildFileContent(frontmatter);
+
+      expect(result).toContain("description: Test: with special & characters!");
+    });
+
+    it("should handle multiline body", () => {
+      const frontmatter = { "title": "Test" };
+      const body = "Line 1\n\nLine 2\n\nLine 3";
+
+      const result = MetadataHelpers.buildFileContent(frontmatter, body);
+
+      const lines = result.split("\n");
+      expect(lines[lines.length - 2]).toBe("Line 3");
+    });
+
+    it("should format correctly for file writing", () => {
+      const frontmatter = {
+        "exo__Asset_label": "Test Task",
+        "ems__Effort_status": "ems__EffortStatusDoing",
+      };
+      const body = "Task description";
+
+      const result = MetadataHelpers.buildFileContent(frontmatter, body);
+
+      expect(result.startsWith("---\n")).toBe(true);
+      expect(result).toContain("\n---\n");
+      expect(result.endsWith("Task description\n")).toBe(true);
+    });
+  });
+
   describe("integration scenarios", () => {
     it("should work together for finding and checking archived properties", () => {
       const metadata = {
@@ -425,6 +651,18 @@ describe("MetadataHelpers", () => {
       expect(propertiesTask1).toEqual(["ems__Effort_parent", "ems__Task_blocks"]);
       expect(propertiesTask2).toEqual(["ems__Task_blocks"]);
       expect(MetadataHelpers.isAssetArchived(metadata)).toBe(true);
+    });
+
+    it("should build file content with ensured quoted values", () => {
+      const frontmatter = {
+        "exo__Asset_label": MetadataHelpers.ensureQuoted("Test Task"),
+        "exo__Asset_isDefinedBy": MetadataHelpers.ensureQuoted("[[SomeArea]]"),
+      };
+
+      const result = MetadataHelpers.buildFileContent(frontmatter);
+
+      expect(result).toContain('exo__Asset_label: "Test Task"');
+      expect(result).toContain('exo__Asset_isDefinedBy: "[[SomeArea]]"');
     });
   });
 });
