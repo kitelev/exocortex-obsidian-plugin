@@ -6,7 +6,7 @@ import { ReactRenderer } from "../utils/ReactRenderer";
 import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
 import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
-import { ActionButtonsGroup, ButtonGroup, ActionButton } from "../components/ActionButtonsGroup";
+import { ActionButtonsGroup } from "../components/ActionButtonsGroup";
 import { AreaHierarchyTree } from "../components/AreaHierarchyTree";
 import { AreaHierarchyBuilder } from "../../infrastructure/services/AreaHierarchyBuilder";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
@@ -22,10 +22,8 @@ import { LabelToAliasService } from "../../infrastructure/services/LabelToAliasS
 import { BacklinksCacheManager } from "../../infrastructure/caching/BacklinksCacheManager";
 import { EventListenerManager } from "../../infrastructure/events/EventListenerManager";
 import { MetadataHelpers } from "../../infrastructure/utilities/MetadataHelpers";
-import { AssetClass, EffortStatus } from "../../domain/constants";
+import { AssetClass } from "../../domain/constants";
 import { MetadataExtractor } from "../../infrastructure/utilities/MetadataExtractor";
-import { DateFormatter } from "../../infrastructure/utilities/DateFormatter";
-import { EffortSortingHelpers } from "../../infrastructure/utilities/EffortSortingHelpers";
 import { ButtonGroupsBuilder } from "../builders/ButtonGroupsBuilder";
 import { DailyTasksRenderer } from "./DailyTasksRenderer";
 import { DailyProjectsRenderer } from "./DailyProjectsRenderer";
@@ -46,7 +44,7 @@ interface AssetRelation {
   file: TFile;
   path: string;
   title: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   metadata: Record<string, any>;
   propertyName?: string; // The property through which this asset references the current one
   isBodyLink: boolean; // True if link is in body, not frontmatter
@@ -59,7 +57,7 @@ interface AssetRelation {
  * Renderer for UniversalLayout view type
  * Implements Assets Relations - showing assets grouped by the property through which they reference the current asset
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type ObsidianApp = any;
 
 export class UniversalLayoutRenderer {
@@ -272,14 +270,8 @@ export class UniversalLayoutRenderer {
     for (const sourcePath of backlinks) {
       const sourceFile = this.app.vault.getAbstractFileByPath(sourcePath);
       // Duck typing: Check for TFile properties instead of instanceof
-      if (
-        sourceFile &&
-        typeof sourceFile === "object" &&
-        "basename" in sourceFile &&
-        "path" in sourceFile &&
-        "stat" in sourceFile
-      ) {
-        const fileCache = cache.getFileCache(sourceFile as TFile);
+      if (sourceFile instanceof TFile) {
+        const fileCache = cache.getFileCache(sourceFile);
         const metadata = fileCache?.frontmatter || {};
 
         const isArchived = MetadataHelpers.isAssetArchived(metadata);
@@ -415,7 +407,7 @@ export class UniversalLayoutRenderer {
     const sectionContainer = el.createDiv({ cls: "exocortex-area-tree-section" });
 
     sectionContainer.createEl("h3", {
-      text: "Area Tree",
+      text: "Area tree",
       cls: "exocortex-section-header",
     });
 
@@ -551,16 +543,11 @@ export class UniversalLayoutRenderer {
       file = this.app.metadataCache.getFirstLinkpathDest(path + '.md', "");
     }
 
-    if (
-      !file ||
-      typeof file !== "object" ||
-      !("basename" in file) ||
-      !("path" in file)
-    ) {
+    if (!(file instanceof TFile)) {
       return null;
     }
 
-    const cache = this.app.metadataCache.getFileCache(file as TFile);
+    const cache = this.app.metadataCache.getFileCache(file);
     const metadata = cache?.frontmatter || {};
 
     // Check asset's own label first
@@ -580,8 +567,8 @@ export class UniversalLayoutRenderer {
       if (prototypePath) {
         // Use getFirstLinkpathDest to resolve prototype file regardless of vault location
         const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
-        if (prototypeFile && typeof prototypeFile === "object" && "path" in prototypeFile) {
-          const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile as TFile);
+        if (prototypeFile instanceof TFile) {
+          const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile);
           const prototypeMetadata = prototypeCache?.frontmatter || {};
           const prototypeLabel = prototypeMetadata.exo__Asset_label;
 
@@ -631,8 +618,8 @@ export class UniversalLayoutRenderer {
     if (prototypePath && !visited.has(prototypePath)) {
       visited.add(prototypePath);
       const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
-      if (prototypeFile && typeof prototypeFile === "object" && "path" in prototypeFile) {
-        const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile as TFile);
+      if (prototypeFile instanceof TFile) {
+        const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile);
         const prototypeMetadata = prototypeCache?.frontmatter || {};
 
         const resolvedArea = this.getEffortArea(prototypeMetadata, visited);
@@ -648,8 +635,8 @@ export class UniversalLayoutRenderer {
     if (parentPath && !visited.has(parentPath)) {
       visited.add(parentPath);
       const parentFile = this.app.metadataCache.getFirstLinkpathDest(parentPath, "");
-      if (parentFile && typeof parentFile === "object" && "path" in parentFile) {
-        const parentCache = this.app.metadataCache.getFileCache(parentFile as TFile);
+      if (parentFile instanceof TFile) {
+        const parentCache = this.app.metadataCache.getFileCache(parentFile);
         const parentMetadata = parentCache?.frontmatter || {};
 
         const resolvedArea = this.getEffortArea(parentMetadata, visited);

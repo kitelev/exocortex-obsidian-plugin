@@ -1,5 +1,4 @@
 import {
-  App,
   MarkdownPostProcessorContext,
   MarkdownView,
   Plugin,
@@ -56,13 +55,13 @@ export default class ExocortexPlugin extends Plugin {
         (leaf) => new ExocortexGraphView(leaf, this)
       );
 
-      this.addRibbonIcon("git-fork", "Open Exocortex Graph", () => {
+      this.addRibbonIcon("git-fork", "Open exocortex graph", () => {
         this.activateGraphView();
       });
 
       this.addCommand({
         id: "open-graph-view",
-        name: "Open Exocortex Graph",
+        name: "Open graph",
         callback: () => {
           this.activateGraphView();
         },
@@ -116,7 +115,7 @@ export default class ExocortexPlugin extends Plugin {
 
   async onunload(): Promise<void> {
     this.removeAutoRenderedLayouts();
-    this.app.workspace.detachLeavesOfType(GRAPH_VIEW_TYPE);
+    
     this.logger?.info("Exocortex Plugin unloaded");
   }
 

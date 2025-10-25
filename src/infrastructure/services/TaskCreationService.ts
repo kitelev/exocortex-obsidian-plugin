@@ -257,12 +257,12 @@ export class TaskCreationService {
     if (updatedFrontmatter.includes("exo__Asset_relates:")) {
       // Property exists - add new item to array
       // Find the exo__Asset_relates property and add new item
-      const relatesMatch = updatedFrontmatter.match(/exo__Asset_relates:\r?\n((?:  - .*\r?\n)*)/);
+      const relatesMatch = updatedFrontmatter.match(/exo__Asset_relates:\r?\n((?: {2}- .*\r?\n)*)/);
       if (relatesMatch) {
         const existingItems = relatesMatch[1];
         const newItem = `  - "[[${relatedTaskUid}]]"${lineEnding}`;
         updatedFrontmatter = updatedFrontmatter.replace(
-          /exo__Asset_relates:\r?\n((?:  - .*\r?\n)*)/,
+          /exo__Asset_relates:\r?\n((?: {2}- .*\r?\n)*)/,
           `exo__Asset_relates:${lineEnding}${existingItems}${newItem}`,
         );
       }

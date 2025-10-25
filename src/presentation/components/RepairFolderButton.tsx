@@ -10,7 +10,6 @@ export interface RepairFolderButtonProps {
 }
 
 export const RepairFolderButton: React.FC<RepairFolderButtonProps> = ({
-  sourceFile,
   currentFolder,
   expectedFolder,
   onRepair,

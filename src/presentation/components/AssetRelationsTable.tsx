@@ -8,7 +8,7 @@ export interface AssetRelation {
   created: number;
   modified: number;
   isArchived?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   metadata: Record<string, any>;
 }
 
@@ -57,7 +57,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
     }));
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const getInstanceClass = (metadata: Record<string, any>): WikiLink => {
     const instanceClassRaw =
       metadata?.exo__Instance_class || metadata?.["exo__Instance_class"] || "-";

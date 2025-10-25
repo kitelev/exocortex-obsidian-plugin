@@ -47,7 +47,7 @@ import { AssetClass } from "../../domain/constants";
 import { MetadataExtractor } from "../../infrastructure/utilities/MetadataExtractor";
 import { DateFormatter } from "../../infrastructure/utilities/DateFormatter";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type ObsidianApp = any;
 
 export class ButtonGroupsBuilder {

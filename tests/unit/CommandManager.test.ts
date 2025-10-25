@@ -117,30 +117,30 @@ describe("CommandManager", () => {
       const commandManager = new CommandManager(mockApp);
       commandManager.registerAllCommands(mockPlugin);
 
-      // Verify all expected command names are registered
-      expect(registeredNames).toContain("Create Task");
-      expect(registeredNames).toContain("Create Project");
-      expect(registeredNames).toContain("Create Instance");
-      expect(registeredNames).toContain("Create Related Task");
-      expect(registeredNames).toContain("Set Draft Status");
-      expect(registeredNames).toContain("Move to Backlog");
-      expect(registeredNames).toContain("Start Effort");
+      // Verify all expected command names are registered (sentence case)
+      expect(registeredNames).toContain("Create task");
+      expect(registeredNames).toContain("Create project");
+      expect(registeredNames).toContain("Create instance");
+      expect(registeredNames).toContain("Create related task");
+      expect(registeredNames).toContain("Set draft status");
+      expect(registeredNames).toContain("Move to backlog");
+      expect(registeredNames).toContain("Start effort");
       expect(registeredNames).toContain("Plan on today");
-      expect(registeredNames).toContain("Plan for Evening (19:00)");
-      expect(registeredNames).toContain("Shift Day Backward");
-      expect(registeredNames).toContain("Shift Day Forward");
-      expect(registeredNames).toContain("Mark as Done");
+      expect(registeredNames).toContain("Plan for evening (19:00)");
+      expect(registeredNames).toContain("Shift day backward");
+      expect(registeredNames).toContain("Shift day forward");
+      expect(registeredNames).toContain("Mark as done");
       expect(registeredNames).toContain("Trash");
-      expect(registeredNames).toContain("Archive Task");
-      expect(registeredNames).toContain("Clean Empty Properties");
-      expect(registeredNames).toContain("Repair Folder");
-      expect(registeredNames).toContain("Rename to UID");
-      expect(registeredNames).toContain("Vote on Effort");
-      expect(registeredNames).toContain("Copy Label to Aliases");
-      expect(registeredNames).toContain("Reload Layout");
-      expect(registeredNames).toContain("Add Supervision");
-      expect(registeredNames).toContain("Toggle Properties Visibility");
-      expect(registeredNames).toContain("Toggle Layout Visibility");
+      expect(registeredNames).toContain("Archive task");
+      expect(registeredNames).toContain("Clean empty properties");
+      expect(registeredNames).toContain("Repair folder");
+      expect(registeredNames).toContain("Rename to uid");
+      expect(registeredNames).toContain("Vote on effort");
+      expect(registeredNames).toContain("Copy label to aliases");
+      expect(registeredNames).toContain("Reload layout");
+      expect(registeredNames).toContain("Add supervision");
+      expect(registeredNames).toContain("Toggle properties visibility");
+      expect(registeredNames).toContain("Toggle layout visibility");
     });
 
     it("should register commands with checkCallback or callback function", () => {
