@@ -5,6 +5,7 @@ export interface ExocortexSettings {
   activeFocusArea: string | null;
   showEffortArea: boolean;
   showEffortVotes: boolean;
+  [key: string]: unknown;
 }
 
 export const DEFAULT_SETTINGS: ExocortexSettings = {
