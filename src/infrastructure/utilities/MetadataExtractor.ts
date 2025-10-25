@@ -29,6 +29,14 @@ export class MetadataExtractor {
     return false;
   }
 
+  static extractIsDefinedBy(sourceMetadata: Record<string, any>): string {
+    let isDefinedBy = sourceMetadata.exo__Asset_isDefinedBy || '""';
+    if (Array.isArray(isDefinedBy)) {
+      isDefinedBy = isDefinedBy[0] || '""';
+    }
+    return isDefinedBy;
+  }
+
   extractExpectedFolder(metadata: Record<string, any>): string | null {
     const isDefinedBy = metadata.exo__Asset_isDefinedBy;
     if (!isDefinedBy) return null;

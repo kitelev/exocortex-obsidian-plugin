@@ -2,6 +2,7 @@ import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 import { DateFormatter } from "../utilities/DateFormatter";
 import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
+import { MetadataExtractor } from "../utilities/MetadataExtractor";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
 import { AssetClass } from "../../domain/constants";
 
@@ -187,11 +188,7 @@ export class TaskCreationService {
     const now = new Date();
     const timestamp = DateFormatter.toLocalTimestamp(now);
 
-    // Extract isDefinedBy - handle both string and array formats
-    let isDefinedBy = sourceMetadata.exo__Asset_isDefinedBy || '""';
-    if (Array.isArray(isDefinedBy)) {
-      isDefinedBy = isDefinedBy[0] || '""';
-    }
+    const isDefinedBy = MetadataExtractor.extractIsDefinedBy(sourceMetadata);
 
     const frontmatter: Record<string, any> = {};
     frontmatter["exo__Asset_isDefinedBy"] = MetadataHelpers.ensureQuoted(isDefinedBy);
@@ -303,11 +300,7 @@ export class TaskCreationService {
     const now = new Date();
     const timestamp = DateFormatter.toLocalTimestamp(now);
 
-    // Extract isDefinedBy - handle both string and array formats
-    let isDefinedBy = sourceMetadata.exo__Asset_isDefinedBy || '""';
-    if (Array.isArray(isDefinedBy)) {
-      isDefinedBy = isDefinedBy[0] || '""';
-    }
+    const isDefinedBy = MetadataExtractor.extractIsDefinedBy(sourceMetadata);
 
     // Get appropriate effort property name and instance class based on source class
     const cleanSourceClass = WikiLinkHelpers.normalize(sourceClass);

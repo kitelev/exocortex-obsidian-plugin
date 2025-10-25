@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
 import { AssetClass } from "../../domain/constants";
 import { DateFormatter } from "../utilities/DateFormatter";
+import { MetadataExtractor } from "../utilities/MetadataExtractor";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
 
 /**
@@ -53,10 +54,7 @@ export class ProjectCreationService {
     const now = new Date();
     const timestamp = DateFormatter.toLocalTimestamp(now);
 
-    let isDefinedBy = sourceMetadata.exo__Asset_isDefinedBy || '""';
-    if (Array.isArray(isDefinedBy)) {
-      isDefinedBy = isDefinedBy[0] || '""';
-    }
+    const isDefinedBy = MetadataExtractor.extractIsDefinedBy(sourceMetadata);
 
     // Get appropriate effort property name based on source class
     const cleanSourceClass = WikiLinkHelpers.normalize(sourceClass);
