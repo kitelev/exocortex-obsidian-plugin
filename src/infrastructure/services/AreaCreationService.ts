@@ -2,6 +2,7 @@ import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 import { AssetClass } from "../../domain/constants";
 import { DateFormatter } from "../utilities/DateFormatter";
+import { MetadataHelpers } from "../utilities/MetadataHelpers";
 
 export class AreaCreationService {
   constructor(private vault: Vault) {}
@@ -43,14 +44,8 @@ export class AreaCreationService {
       isDefinedBy = isDefinedBy[0] || '""';
     }
 
-    const ensureQuoted = (value: string): string => {
-      if (!value || value === '""') return '""';
-      if (value.startsWith('"') && value.endsWith('"')) return value;
-      return `"${value}"`;
-    };
-
     const frontmatter: Record<string, any> = {};
-    frontmatter["exo__Asset_isDefinedBy"] = ensureQuoted(isDefinedBy);
+    frontmatter["exo__Asset_isDefinedBy"] = MetadataHelpers.ensureQuoted(isDefinedBy);
     frontmatter["exo__Asset_uid"] = uid || uuidv4();
     frontmatter["exo__Asset_createdAt"] = timestamp;
     frontmatter["exo__Instance_class"] = [`"[[${AssetClass.AREA}]]"`];

@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
 import { AssetClass } from "../../domain/constants";
 import { DateFormatter } from "../utilities/DateFormatter";
+import { MetadataHelpers } from "../utilities/MetadataHelpers";
 
 /**
  * Mapping of source class to effort property name
@@ -57,19 +58,13 @@ export class ProjectCreationService {
       isDefinedBy = isDefinedBy[0] || '""';
     }
 
-    const ensureQuoted = (value: string): string => {
-      if (!value || value === '""') return '""';
-      if (value.startsWith('"') && value.endsWith('"')) return value;
-      return `"${value}"`;
-    };
-
     // Get appropriate effort property name based on source class
     const cleanSourceClass = WikiLinkHelpers.normalize(sourceClass);
     const effortProperty =
       EFFORT_PROPERTY_MAP[cleanSourceClass] || "ems__Effort_area";
 
     const frontmatter: Record<string, any> = {};
-    frontmatter["exo__Asset_isDefinedBy"] = ensureQuoted(isDefinedBy);
+    frontmatter["exo__Asset_isDefinedBy"] = MetadataHelpers.ensureQuoted(isDefinedBy);
     frontmatter["exo__Asset_uid"] = uid || uuidv4();
     frontmatter["exo__Asset_createdAt"] = timestamp;
     frontmatter["exo__Instance_class"] = [`"[[${AssetClass.PROJECT}]]"`];
