@@ -1,0 +1,100 @@
+%% Exocortex Architecture Overview
+%% High-level system structure with layers
+
+graph TB
+    subgraph User Interface
+        User[👤 User]
+        UI[Obsidian UI]
+    end
+
+    subgraph Presentation Layer
+        Renderer[UniversalLayoutRenderer]
+        Components[React Components<br/>13 components]
+        Modals[Modals<br/>6 input dialogs]
+        Builders[ButtonGroupsBuilder]
+    end
+
+    subgraph Application Layer
+        CommandMgr[CommandManager<br/>Facade for 26 commands]
+    end
+
+    subgraph Infrastructure Layer - Services
+        TaskCreate[TaskCreationService]
+        ProjectCreate[ProjectCreationService]
+        ConceptCreate[ConceptCreationService]
+        TaskStatus[TaskStatusService]
+        Voting[EffortVotingService]
+        Others[+ 9 more services]
+    end
+
+    subgraph Infrastructure Layer - Utilities
+        Frontmatter[FrontmatterService<br/>PURE]
+        DateFmt[DateFormatter<br/>PURE]
+        WikiLink[WikiLinkHelpers<br/>PURE]
+        MetaHelp[MetadataHelpers<br/>PURE]
+        Sorting[EffortSortingHelpers<br/>PURE]
+    end
+
+    subgraph Domain Layer
+        Constants[AssetClass<br/>EffortStatus]
+        Models[GraphNode<br/>GraphData<br/>AreaNode]
+        Visibility[CommandVisibility<br/>25+ pure functions]
+    end
+
+    subgraph Obsidian API
+        Vault[Vault API<br/>File operations]
+        MetaCache[MetadataCache<br/>Frontmatter cache]
+        App[App API<br/>Workspace, FileManager]
+    end
+
+    User -->|Interacts| UI
+    UI -->|Renders| Renderer
+    UI -->|Opens| Modals
+    Renderer -->|Uses| Components
+    Renderer -->|Uses| Builders
+    Builders -->|Checks| Visibility
+
+    User -->|Commands| CommandMgr
+    CommandMgr -->|Delegates| TaskCreate
+    CommandMgr -->|Delegates| ProjectCreate
+    CommandMgr -->|Delegates| ConceptCreate
+    CommandMgr -->|Delegates| TaskStatus
+    CommandMgr -->|Delegates| Voting
+    CommandMgr -->|Delegates| Others
+
+    TaskCreate -->|Uses| Frontmatter
+    TaskCreate -->|Uses| DateFmt
+    TaskCreate -->|Uses| WikiLink
+    TaskCreate -->|Uses| MetaHelp
+    TaskCreate -->|Reads/Writes| Vault
+
+    ProjectCreate -->|Uses| Frontmatter
+    ConceptCreate -->|Uses| Frontmatter
+    TaskStatus -->|Uses| Frontmatter
+    Voting -->|Uses| Frontmatter
+    Others -->|Use| Frontmatter
+
+    TaskStatus -->|Sorts| Sorting
+    Renderer -->|Sorts| Sorting
+
+    Visibility -->|References| Constants
+    TaskCreate -->|Uses| Constants
+    TaskStatus -->|Uses| Constants
+
+    TaskCreate -->|Builds| Models
+    Renderer -->|Uses| Models
+
+    Vault -->|Caches| MetaCache
+    MetaCache -->|Provides| Renderer
+
+    style Frontmatter fill:#90EE90
+    style DateFmt fill:#90EE90
+    style WikiLink fill:#90EE90
+    style MetaHelp fill:#90EE90
+    style Sorting fill:#90EE90
+    style Visibility fill:#90EE90
+    style Constants fill:#FFD700
+    style Models fill:#FFD700
+
+    classDef pure fill:#90EE90,stroke:#006400,stroke-width:2px
+    classDef domain fill:#FFD700,stroke:#B8860B,stroke-width:2px

@@ -1,0 +1,28 @@
+%% Property Inheritance Rules
+%% How properties flow from parent to child assets
+
+graph TD
+    subgraph Creation Source
+        Area["📁 Area<br/>exo__Asset_isDefinedBy: [[Ontology/EMS]]<br/>exo__Asset_uid: area-uuid<br/>exo__Asset_label: Work"]
+        Project["📋 Project<br/>exo__Asset_isDefinedBy: [[Ontology/EMS]]<br/>exo__Asset_uid: project-uuid<br/>exo__Asset_label: Website"]
+        Prototype["📝 TaskPrototype<br/>exo__Asset_isDefinedBy: [[Ontology/EMS]]<br/>exo__Asset_uid: prototype-uuid<br/>exo__Asset_label: Breakfast<br/><br/>## Algorithm<br/>1. Make coffee"]
+    end
+
+    subgraph Created Child Asset
+        TaskFromArea["✅ Task from Area<br/><br/>INHERITED:<br/>✓ exo__Asset_isDefinedBy: [[Ontology/EMS]]<br/><br/>NEW:<br/>✓ exo__Asset_uid: new-uuid<br/>✓ exo__Asset_label: User input<br/>✓ exo__Asset_createdAt: Now<br/>✓ exo__Instance_class: [[ems__Task]]<br/><br/>RELATIONSHIP:<br/>✓ ems__Effort_area: [[Work]]"]
+
+        TaskFromProject["✅ Task from Project<br/><br/>INHERITED:<br/>✓ exo__Asset_isDefinedBy: [[Ontology/EMS]]<br/><br/>NEW:<br/>✓ exo__Asset_uid: new-uuid<br/>✓ exo__Asset_label: User input<br/>✓ exo__Asset_createdAt: Now<br/>✓ exo__Instance_class: [[ems__Task]]<br/><br/>RELATIONSHIP:<br/>✓ ems__Effort_parent: [[Website]]"]
+
+        Instance["✅ Task Instance<br/><br/>INHERITED:<br/>✓ exo__Asset_isDefinedBy: [[Ontology/EMS]]<br/>✓ Algorithm section (body)<br/><br/>NEW:<br/>✓ exo__Asset_uid: new-uuid<br/>✓ exo__Asset_label: User input<br/>✓ exo__Asset_createdAt: Now<br/>✓ exo__Instance_class: [[ems__Task]]<br/><br/>RELATIONSHIP:<br/>✓ ems__Effort_prototype: [[Breakfast]]"]
+    end
+
+    Area -->|Create Task| TaskFromArea
+    Project -->|Create Task| TaskFromProject
+    Prototype -->|Create Instance| Instance
+
+    style Area fill:#B3E5FC
+    style Project fill:#C5E1A5
+    style Prototype fill:#FFE082
+    style TaskFromArea fill:#90CAF9
+    style TaskFromProject fill:#AED581
+    style Instance fill:#FFD54F

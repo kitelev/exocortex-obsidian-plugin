@@ -1,0 +1,54 @@
+%% Command Execution Flow
+%% How commands are registered and executed
+
+sequenceDiagram
+    participant Plugin as ExocortexPlugin
+    participant CM as CommandManager
+    participant Obsidian as Obsidian API
+    participant Visibility as CommandVisibility
+    participant Service as Service (e.g., TaskCreationService)
+    participant Vault
+    participant User
+
+    Note over Plugin: Plugin initialization (onload)
+    Plugin->>CM: new CommandManager(app, services...)
+    Plugin->>CM: registerAllCommands(plugin, reloadCallback)
+
+    CM->>CM: registerCreateTaskCommand(plugin)
+    CM->>Obsidian: plugin.addCommand({ id, name, checkCallback })
+
+    CM->>CM: registerVoteOnEffortCommand(plugin)
+    CM->>Obsidian: plugin.addCommand({ id, name, checkCallback })
+
+    Note over CM: ... register 24 more commands
+
+    CM-->>Plugin: All commands registered
+
+    Note over User: User opens Command Palette
+    User->>Obsidian: Search for "Create task"
+
+    Note over Obsidian: Visibility check (checkCallback)
+    Obsidian->>CM: checkCallback(checking=true)
+    CM->>CM: getActiveFile()
+    CM->>CM: getContext(file)
+    CM->>Visibility: canCreateTask(context)
+    Visibility-->>CM: true (file is Area)
+    CM-->>Obsidian: true (show command)
+
+    Obsidian-->>User: Show "Create task" in palette
+
+    Note over User: User selects command
+    User->>Obsidian: Execute "Create task"
+    Obsidian->>CM: checkCallback(checking=false)
+    CM->>CM: executeCreateTask(file, context)
+
+    Note over CM: Command execution
+    CM->>Service: createTask(file, metadata, ...)
+    Service->>Vault: Create file with frontmatter
+    Vault-->>Service: TFile
+    Service-->>CM: createdFile
+
+    CM->>Obsidian: Open file in new tab
+    CM->>User: Show success notice
+
+    Note over User: Task created successfully!

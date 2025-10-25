@@ -1,0 +1,52 @@
+%% Effort Status Workflow
+%% State machine for status transitions
+
+stateDiagram-v2
+    [*] --> Draft: Create asset
+
+    Draft --> Backlog: Move to Backlog
+    Draft --> Trashed: Trash
+
+    Backlog --> Draft: Move to Draft
+    Backlog --> Analysis: Move to Analysis
+    Backlog --> Doing: Start (Tasks only)
+    Backlog --> Trashed: Trash
+
+    Analysis --> Backlog: Move to Backlog
+    Analysis --> ToDo: Move to ToDo
+    Analysis --> Trashed: Trash
+
+    ToDo --> Analysis: Move to Analysis
+    ToDo --> Doing: Start
+    ToDo --> Trashed: Trash
+
+    Doing --> Backlog: Move to Backlog (Tasks)
+    Doing --> ToDo: Move to ToDo (Projects)
+    Doing --> Done: Mark Done
+    Doing --> Trashed: Trash
+
+    Done --> Doing: Reopen
+    Done --> Trashed: Trash
+
+    Trashed --> [*]: Terminal state
+
+    note right of Draft
+        Initial state
+        No timestamps
+    end note
+
+    note right of Doing
+        Sets: ems__Effort_startTimestamp
+        On exit: ems__Effort_endTimestamp
+    end note
+
+    note right of Done
+        Sets: ems__Effort_resolutionTimestamp
+        Completion state
+    end note
+
+    note right of Trashed
+        Terminal state
+        Can't transition further
+        Archived but kept for audit
+    end note
