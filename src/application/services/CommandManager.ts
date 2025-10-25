@@ -35,6 +35,7 @@ import { LabelToAliasService } from "../../infrastructure/services/LabelToAliasS
 import { LabelInputModal, type LabelInputModalResult } from "../../presentation/modals/LabelInputModal";
 import { SupervisionInputModal } from "../../presentation/modals/SupervisionInputModal";
 import { WikiLinkHelpers } from "../../infrastructure/utilities/WikiLinkHelpers";
+import { AssetClass } from "../../domain/constants";
 
 /**
  * Command Manager Service
@@ -870,7 +871,7 @@ export class CommandManager {
     const firstClass = classes[0] || "";
     const sourceClass = WikiLinkHelpers.normalize(firstClass);
 
-    const showTaskSize = sourceClass !== "ems__MeetingPrototype";
+    const showTaskSize = sourceClass !== AssetClass.MEETING_PROTOTYPE;
 
     const result = await new Promise<LabelInputModalResult>((resolve) => {
       new LabelInputModal(this.app, resolve, "", showTaskSize).open();

@@ -1,5 +1,6 @@
 import { TFile, Vault, MetadataCache } from "obsidian";
 import { AreaNode, AreaNodeData } from "../../domain/models/AreaNode";
+import { AssetClass } from "../../domain/constants";
 
 export interface AssetRelation {
   path: string;
@@ -28,7 +29,7 @@ export class AreaHierarchyBuilder {
     const metadata = cache?.frontmatter || {};
     const instanceClass = this.extractInstanceClass(metadata);
 
-    if (instanceClass !== "ems__Area") {
+    if (instanceClass !== AssetClass.AREA) {
       return null;
     }
 
@@ -71,7 +72,7 @@ export class AreaHierarchyBuilder {
       const metadata = cache?.frontmatter || {};
       const instanceClass = this.extractInstanceClass(metadata);
 
-      if (instanceClass === "ems__Area") {
+      if (instanceClass === AssetClass.AREA) {
         const parentPath = this.extractParentPath(metadata);
         areas.set(file.path, {
           path: file.path,

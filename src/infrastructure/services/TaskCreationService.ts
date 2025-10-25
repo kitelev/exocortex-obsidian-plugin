@@ -2,16 +2,17 @@ import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 import { DateFormatter } from "../utilities/DateFormatter";
 import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
+import { AssetClass } from "../../domain/constants";
 
 /**
  * Mapping of source class to effort property name
  * Implements Strategy pattern for property selection
  */
 const EFFORT_PROPERTY_MAP: Record<string, string> = {
-  ems__Area: "ems__Effort_area",
-  ems__Project: "ems__Effort_parent",
-  ems__TaskPrototype: "ems__Effort_prototype",
-  ems__MeetingPrototype: "ems__Effort_prototype",
+  [AssetClass.AREA]: "ems__Effort_area",
+  [AssetClass.PROJECT]: "ems__Effort_parent",
+  [AssetClass.TASK_PROTOTYPE]: "ems__Effort_prototype",
+  [AssetClass.MEETING_PROTOTYPE]: "ems__Effort_prototype",
 };
 
 /**
@@ -19,10 +20,10 @@ const EFFORT_PROPERTY_MAP: Record<string, string> = {
  * Determines what type of instance is created from each source
  */
 const INSTANCE_CLASS_MAP: Record<string, string> = {
-  ems__Area: "ems__Task",
-  ems__Project: "ems__Task",
-  ems__TaskPrototype: "ems__Task",
-  ems__MeetingPrototype: "ems__Meeting",
+  [AssetClass.AREA]: AssetClass.TASK,
+  [AssetClass.PROJECT]: AssetClass.TASK,
+  [AssetClass.TASK_PROTOTYPE]: AssetClass.TASK,
+  [AssetClass.MEETING_PROTOTYPE]: AssetClass.MEETING,
 };
 
 /**
@@ -96,7 +97,7 @@ export class TaskCreationService {
     // For TaskPrototype, extract Algorithm section
     let bodyContent = "";
     const cleanSourceClass = WikiLinkHelpers.normalize(sourceClass);
-    if (cleanSourceClass === "ems__TaskPrototype") {
+    if (cleanSourceClass === AssetClass.TASK_PROTOTYPE) {
       const prototypeContent = await this.vault.read(sourceFile);
       const algorithmSection = this.extractH2Section(prototypeContent, "Algorithm");
       if (algorithmSection) {
@@ -123,7 +124,7 @@ export class TaskCreationService {
     sourceFile: TFile,
     sourceMetadata: Record<string, any>,
   ): Promise<TFile> {
-    return this.createTask(sourceFile, sourceMetadata, "ems__Area");
+    return this.createTask(sourceFile, sourceMetadata, AssetClass.AREA);
   }
 
   /**
@@ -202,7 +203,7 @@ export class TaskCreationService {
     frontmatter["exo__Asset_isDefinedBy"] = ensureQuoted(isDefinedBy);
     frontmatter["exo__Asset_uid"] = uid || uuidv4();
     frontmatter["exo__Asset_createdAt"] = timestamp;
-    frontmatter["exo__Instance_class"] = ['"[[ems__Task]]"'];
+    frontmatter["exo__Instance_class"] = [`"[[${AssetClass.TASK}]]"`];
     frontmatter["ems__Effort_status"] = '"[[ems__EffortStatusDraft]]"';
     frontmatter["exo__Asset_relates"] = [`"[[${sourceName}]]"`];
 
@@ -340,7 +341,7 @@ export class TaskCreationService {
     const effortProperty =
       EFFORT_PROPERTY_MAP[cleanSourceClass] || "ems__Effort_area";
     const instanceClass =
-      INSTANCE_CLASS_MAP[cleanSourceClass] || "ems__Task";
+      INSTANCE_CLASS_MAP[cleanSourceClass] || AssetClass.TASK;
 
     const frontmatter: Record<string, any> = {};
     frontmatter["exo__Asset_isDefinedBy"] = ensureQuoted(isDefinedBy);
@@ -352,7 +353,7 @@ export class TaskCreationService {
 
     // Auto-generate label for ems__Meeting instances if not provided
     let finalLabel = label;
-    if (instanceClass === "ems__Meeting" && (!label || label.trim() === "")) {
+    if (instanceClass === AssetClass.MEETING && (!label || label.trim() === "")) {
       // Use exo__Asset_label from source metadata if available, otherwise use sourceName
       const baseLabel = sourceMetadata.exo__Asset_label || sourceName;
       const dateStr = this.formatDate(now);

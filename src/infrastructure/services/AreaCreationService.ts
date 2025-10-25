@@ -1,5 +1,6 @@
 import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
+import { AssetClass } from "../../domain/constants";
 
 export class AreaCreationService {
   constructor(private vault: Vault) {}
@@ -62,7 +63,7 @@ export class AreaCreationService {
     frontmatter["exo__Asset_isDefinedBy"] = ensureQuoted(isDefinedBy);
     frontmatter["exo__Asset_uid"] = uid || uuidv4();
     frontmatter["exo__Asset_createdAt"] = timestamp;
-    frontmatter["exo__Instance_class"] = ['"[[ems__Area]]"'];
+    frontmatter["exo__Instance_class"] = [`"[[${AssetClass.AREA}]]"`];
     frontmatter["ems__Area_parent"] = `"[[${sourceName}]]"`;
 
     if (label && label.trim() !== "") {

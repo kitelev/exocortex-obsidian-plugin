@@ -1,4 +1,5 @@
 import { WikiLinkHelpers } from "../../infrastructure/utilities/WikiLinkHelpers";
+import { AssetClass, EffortStatus } from "../constants";
 
 /**
  * Command Visibility Utilities
@@ -38,16 +39,16 @@ function hasClass(
  * Check if instanceClass is ems__Area or ems__Project
  */
 function isAreaOrProject(instanceClass: string | string[] | null): boolean {
-  return hasClass(instanceClass, "ems__Area") || hasClass(instanceClass, "ems__Project");
+  return hasClass(instanceClass, AssetClass.AREA) || hasClass(instanceClass, AssetClass.PROJECT);
 }
 
 /**
  * Check if instanceClass is ems__Task, ems__Project, or ems__Meeting
  */
 function isEffort(instanceClass: string | string[] | null): boolean {
-  return hasClass(instanceClass, "ems__Task") ||
-         hasClass(instanceClass, "ems__Project") ||
-         hasClass(instanceClass, "ems__Meeting");
+  return hasClass(instanceClass, AssetClass.TASK) ||
+         hasClass(instanceClass, AssetClass.PROJECT) ||
+         hasClass(instanceClass, AssetClass.MEETING);
 }
 
 /**
@@ -135,9 +136,9 @@ export function canCreateTask(context: CommandVisibilityContext): boolean {
  * Available for: ems__Area, ems__Initiative, and ems__Project assets
  */
 export function canCreateProject(context: CommandVisibilityContext): boolean {
-  return hasClass(context.instanceClass, "ems__Area") ||
-         hasClass(context.instanceClass, "ems__Initiative") ||
-         hasClass(context.instanceClass, "ems__Project");
+  return hasClass(context.instanceClass, AssetClass.AREA) ||
+         hasClass(context.instanceClass, AssetClass.INITIATIVE) ||
+         hasClass(context.instanceClass, AssetClass.PROJECT);
 }
 
 /**
@@ -145,7 +146,7 @@ export function canCreateProject(context: CommandVisibilityContext): boolean {
  * Available for: ems__Area assets only
  */
 export function canCreateChildArea(context: CommandVisibilityContext): boolean {
-  return hasClass(context.instanceClass, "ems__Area");
+  return hasClass(context.instanceClass, AssetClass.AREA);
 }
 
 /**
@@ -153,8 +154,8 @@ export function canCreateChildArea(context: CommandVisibilityContext): boolean {
  * Available for: ems__TaskPrototype and ems__MeetingPrototype assets
  */
 export function canCreateInstance(context: CommandVisibilityContext): boolean {
-  return hasClass(context.instanceClass, "ems__TaskPrototype") ||
-         hasClass(context.instanceClass, "ems__MeetingPrototype");
+  return hasClass(context.instanceClass, AssetClass.TASK_PROTOTYPE) ||
+         hasClass(context.instanceClass, AssetClass.MEETING_PROTOTYPE);
 }
 
 /**
@@ -212,10 +213,10 @@ export function canPlanOnToday(context: CommandVisibilityContext): boolean {
  * Available for: Task or Meeting with Backlog status
  */
 export function canPlanForEvening(context: CommandVisibilityContext): boolean {
-  if (!hasClass(context.instanceClass, "ems__Task") && !hasClass(context.instanceClass, "ems__Meeting")) return false;
+  if (!hasClass(context.instanceClass, AssetClass.TASK) && !hasClass(context.instanceClass, AssetClass.MEETING)) return false;
 
   // Show only for Backlog status
-  return hasStatus(context.currentStatus, "ems__EffortStatusBacklog");
+  return hasStatus(context.currentStatus, EffortStatus.BACKLOG);
 }
 
 /**
@@ -275,7 +276,7 @@ export function canMoveToBacklog(context: CommandVisibilityContext): boolean {
   if (!isEffort(context.instanceClass)) return false;
 
   // Show only for Draft status
-  return hasStatus(context.currentStatus, "ems__EffortStatusDraft");
+  return hasStatus(context.currentStatus, EffortStatus.DRAFT);
 }
 
 /**
@@ -283,10 +284,10 @@ export function canMoveToBacklog(context: CommandVisibilityContext): boolean {
  * Available for: Project with Backlog status
  */
 export function canMoveToAnalysis(context: CommandVisibilityContext): boolean {
-  if (!hasClass(context.instanceClass, "ems__Project")) return false;
+  if (!hasClass(context.instanceClass, AssetClass.PROJECT)) return false;
 
   // Show only for Backlog status
-  return hasStatus(context.currentStatus, "ems__EffortStatusBacklog");
+  return hasStatus(context.currentStatus, EffortStatus.BACKLOG);
 }
 
 /**
@@ -294,10 +295,10 @@ export function canMoveToAnalysis(context: CommandVisibilityContext): boolean {
  * Available for: Project with Analysis status
  */
 export function canMoveToToDo(context: CommandVisibilityContext): boolean {
-  if (!hasClass(context.instanceClass, "ems__Project")) return false;
+  if (!hasClass(context.instanceClass, AssetClass.PROJECT)) return false;
 
   // Show only for Analysis status
-  return hasStatus(context.currentStatus, "ems__EffortStatusAnalysis");
+  return hasStatus(context.currentStatus, EffortStatus.ANALYSIS);
 }
 
 /**
@@ -308,13 +309,13 @@ export function canStartEffort(context: CommandVisibilityContext): boolean {
   if (!isEffort(context.instanceClass)) return false;
 
   // Task and Meeting: Backlog → Doing
-  if (hasClass(context.instanceClass, "ems__Task") || hasClass(context.instanceClass, "ems__Meeting")) {
-    return hasStatus(context.currentStatus, "ems__EffortStatusBacklog");
+  if (hasClass(context.instanceClass, AssetClass.TASK) || hasClass(context.instanceClass, AssetClass.MEETING)) {
+    return hasStatus(context.currentStatus, EffortStatus.BACKLOG);
   }
 
   // Project: ToDo → Doing
-  if (hasClass(context.instanceClass, "ems__Project")) {
-    return hasStatus(context.currentStatus, "ems__EffortStatusToDo");
+  if (hasClass(context.instanceClass, AssetClass.PROJECT)) {
+    return hasStatus(context.currentStatus, EffortStatus.TODO);
   }
 
   return false;
@@ -328,7 +329,7 @@ export function canMarkDone(context: CommandVisibilityContext): boolean {
   if (!isEffort(context.instanceClass)) return false;
 
   // Show only for Doing status
-  return hasStatus(context.currentStatus, "ems__EffortStatusDoing");
+  return hasStatus(context.currentStatus, EffortStatus.DOING);
 }
 
 /**
@@ -349,8 +350,8 @@ export function canTrashEffort(context: CommandVisibilityContext): boolean {
   const hasTrashedOrDone = statuses.some((status) => {
     const cleanStatus = WikiLinkHelpers.normalize(status);
     return (
-      cleanStatus === "ems__EffortStatusTrashed" ||
-      cleanStatus === "ems__EffortStatusDone"
+      cleanStatus === EffortStatus.TRASHED ||
+      cleanStatus === EffortStatus.DONE
     );
   });
 
@@ -395,7 +396,7 @@ export function canRenameToUid(
   const uid = context.metadata.exo__Asset_uid;
   if (!uid) return false;
 
-  if (hasClass(context.instanceClass, "ims__Concept")) return false;
+  if (hasClass(context.instanceClass, AssetClass.CONCEPT)) return false;
 
   return currentFilename !== uid;
 }
@@ -431,7 +432,7 @@ export function canRollbackStatus(context: CommandVisibilityContext): boolean {
 
   const cleanStatus = WikiLinkHelpers.normalize(statusValue);
 
-  if (cleanStatus === "ems__EffortStatusTrashed") return false;
+  if (cleanStatus === EffortStatus.TRASHED) return false;
 
   return true;
 }
@@ -441,7 +442,7 @@ export function canRollbackStatus(context: CommandVisibilityContext): boolean {
  * Available for: ems__Task assets (not archived)
  */
 export function canCreateRelatedTask(context: CommandVisibilityContext): boolean {
-  if (!hasClass(context.instanceClass, "ems__Task")) return false;
+  if (!hasClass(context.instanceClass, AssetClass.TASK)) return false;
 
   // Don't show button if archived
   if (isAssetArchived(context.isArchived)) return false;
@@ -454,7 +455,7 @@ export function canCreateRelatedTask(context: CommandVisibilityContext): boolean
  * Available for: ems__Area assets only
  */
 export function canSetActiveFocus(context: CommandVisibilityContext): boolean {
-  return hasClass(context.instanceClass, "ems__Area");
+  return hasClass(context.instanceClass, AssetClass.AREA);
 }
 
 /**
