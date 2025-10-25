@@ -125,30 +125,6 @@ export class AreaHierarchyBuilder {
     return false;
   }
 
-  private findRootArea(
-    currentAreaPath: string,
-    areas: Map<string, AreaNodeData>,
-  ): string | null {
-    const visited = new Set<string>();
-    let current = currentAreaPath;
-
-    while (current && !visited.has(current)) {
-      visited.add(current);
-      const area = areas.get(current);
-      if (!area) {
-        return null;
-      }
-
-      if (!area.parentPath || !areas.has(area.parentPath)) {
-        return current;
-      }
-
-      current = area.parentPath;
-    }
-
-    return current && !visited.has(current) ? null : current;
-  }
-
   private buildTree(
     path: string,
     areas: Map<string, AreaNodeData>,

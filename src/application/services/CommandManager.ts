@@ -1,4 +1,5 @@
 import { App, TFile, Notice } from "obsidian";
+import { ExocortexPluginInterface } from "../../types";
 import {
   CommandVisibilityContext,
   canCreateTask,
@@ -80,7 +81,7 @@ export class CommandManager {
    * Register all commands in Obsidian Command Palette
    * Call this once during plugin initialization
    */
-  registerAllCommands(plugin: any, reloadLayoutCallback?: () => void): void {
+  registerAllCommands(plugin: ExocortexPluginInterface, reloadLayoutCallback?: () => void): void {
     this.reloadLayoutCallback = reloadLayoutCallback;
 
     this.registerCreateTaskCommand(plugin);
@@ -128,7 +129,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Create Task" command
    */
-  private registerCreateTaskCommand(plugin: any): void {
+  private registerCreateTaskCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "create-task",
       name: "Create task",
@@ -154,7 +155,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Create Project" command
    */
-  private registerCreateProjectCommand(plugin: any): void {
+  private registerCreateProjectCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "create-project",
       name: "Create project",
@@ -180,7 +181,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Create Instance" command
    */
-  private registerCreateInstanceCommand(plugin: any): void {
+  private registerCreateInstanceCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "create-instance",
       name: "Create instance",
@@ -206,7 +207,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Create Related Task" command
    */
-  private registerCreateRelatedTaskCommand(plugin: any): void {
+  private registerCreateRelatedTaskCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "create-related-task",
       name: "Create related task",
@@ -232,7 +233,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Set Draft Status" command
    */
-  private registerSetDraftStatusCommand(plugin: any): void {
+  private registerSetDraftStatusCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "set-draft-status",
       name: "Set draft status",
@@ -258,7 +259,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Move to Backlog" command
    */
-  private registerMoveToBacklogCommand(plugin: any): void {
+  private registerMoveToBacklogCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "move-to-backlog",
       name: "Move to backlog",
@@ -284,7 +285,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Move to Analysis" command
    */
-  private registerMoveToAnalysisCommand(plugin: any): void {
+  private registerMoveToAnalysisCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "move-to-analysis",
       name: "Move to analysis",
@@ -310,7 +311,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Move to ToDo" command
    */
-  private registerMoveToToDoCommand(plugin: any): void {
+  private registerMoveToToDoCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "move-to-todo",
       name: "Move to to-do",
@@ -336,7 +337,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Start Effort" command
    */
-  private registerStartEffortCommand(plugin: any): void {
+  private registerStartEffortCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "start-effort",
       name: "Start effort",
@@ -362,7 +363,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Plan on today" command
    */
-  private registerPlanOnTodayCommand(plugin: any): void {
+  private registerPlanOnTodayCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "plan-on-today",
       name: "Plan on today",
@@ -388,7 +389,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Plan for Evening" command
    */
-  private registerPlanForEveningCommand(plugin: any): void {
+  private registerPlanForEveningCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "plan-for-evening",
       name: "Plan for evening (19:00)",
@@ -414,7 +415,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Shift Day Backward" command
    */
-  private registerShiftDayBackwardCommand(plugin: any): void {
+  private registerShiftDayBackwardCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "shift-day-backward",
       name: "Shift day backward",
@@ -440,7 +441,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Shift Day Forward" command
    */
-  private registerShiftDayForwardCommand(plugin: any): void {
+  private registerShiftDayForwardCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "shift-day-forward",
       name: "Shift day forward",
@@ -466,7 +467,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Mark as Done" command
    */
-  private registerMarkDoneCommand(plugin: any): void {
+  private registerMarkDoneCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "mark-done",
       name: "Mark as done",
@@ -492,7 +493,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Trash" command
    */
-  private registerTrashCommand(plugin: any): void {
+  private registerTrashCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "trash-effort",
       name: "Trash",
@@ -518,7 +519,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Archive Task" command
    */
-  private registerArchiveTaskCommand(plugin: any): void {
+  private registerArchiveTaskCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "archive-task",
       name: "Archive task",
@@ -544,7 +545,7 @@ export class CommandManager {
   /**
    * Register "Exocortex: Clean Empty Properties" command
    */
-  private registerCleanPropertiesCommand(plugin: any): void {
+  private registerCleanPropertiesCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "clean-properties",
       name: "Clean empty properties",
@@ -572,7 +573,7 @@ export class CommandManager {
    * Note: Shows command if asset has exo__Asset_isDefinedBy property.
    * Actual folder mismatch check happens during execution.
    */
-  private registerRepairFolderCommand(plugin: any): void {
+  private registerRepairFolderCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "repair-folder",
       name: "Repair folder",
@@ -603,7 +604,7 @@ export class CommandManager {
    * Register "Exocortex: Rename to UID" command
    * Shows when filename doesn't match exo__Asset_uid
    */
-  private registerRenameToUidCommand(plugin: any): void {
+  private registerRenameToUidCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "rename-to-uid",
       name: "Rename to uid",
@@ -630,7 +631,7 @@ export class CommandManager {
    * Register "Exocortex: Vote on Effort" command
    * Available for Task and Project efforts (not archived)
    */
-  private registerVoteOnEffortCommand(plugin: any): void {
+  private registerVoteOnEffortCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "vote-on-effort",
       name: "Vote on effort",
@@ -653,7 +654,7 @@ export class CommandManager {
     });
   }
 
-  private registerCopyLabelToAliasesCommand(plugin: any): void {
+  private registerCopyLabelToAliasesCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "copy-label-to-aliases",
       name: "Copy label to aliases",
@@ -680,7 +681,7 @@ export class CommandManager {
    * Register "Exocortex: Reload Layout" command
    * Always available - reloads the Layout display in current note
    */
-  private registerReloadLayoutCommand(plugin: any): void {
+  private registerReloadLayoutCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "reload-layout",
       name: "Reload layout",
@@ -699,7 +700,7 @@ export class CommandManager {
    * Register "Exocortex: Add Supervision" command
    * Always available - creates a new Supervision FleetingNote
    */
-  private registerAddSupervisionCommand(plugin: any): void {
+  private registerAddSupervisionCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "add-supervision",
       name: "Add supervision",
@@ -716,7 +717,7 @@ export class CommandManager {
    * Register "Exocortex: Toggle Properties Visibility" command
    * Always available - toggles the visibility of the Properties section
    */
-  private registerTogglePropertiesVisibilityCommand(plugin: any): void {
+  private registerTogglePropertiesVisibilityCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "toggle-properties-visibility",
       name: "Toggle properties visibility",
@@ -724,7 +725,7 @@ export class CommandManager {
         plugin.settings.showPropertiesSection =
           !plugin.settings.showPropertiesSection;
         await plugin.saveSettings();
-        plugin.refreshLayout();
+        plugin.refreshLayout?.();
         new Notice(
           `Properties section ${plugin.settings.showPropertiesSection ? "shown" : "hidden"}`,
         );
@@ -736,14 +737,14 @@ export class CommandManager {
    * Register "Exocortex: Toggle Layout Visibility" command
    * Always available - toggles the visibility of the entire Layout
    */
-  private registerToggleLayoutVisibilityCommand(plugin: any): void {
+  private registerToggleLayoutVisibilityCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "toggle-layout-visibility",
       name: "Toggle layout visibility",
       callback: async () => {
         plugin.settings.layoutVisible = !plugin.settings.layoutVisible;
         await plugin.saveSettings();
-        plugin.refreshLayout();
+        plugin.refreshLayout?.();
         new Notice(
           `Layout ${plugin.settings.layoutVisible ? "shown" : "hidden"}`,
         );
@@ -755,14 +756,14 @@ export class CommandManager {
    * Register "Exocortex: Toggle Archived Assets Visibility" command
    * Always available - toggles the visibility of archived assets in relations table
    */
-  private registerToggleArchivedAssetsCommand(plugin: any): void {
+  private registerToggleArchivedAssetsCommand(plugin: ExocortexPluginInterface): void {
     plugin.addCommand({
       id: "toggle-archived-assets-visibility",
       name: "Toggle archived assets visibility",
       callback: async () => {
         plugin.settings.showArchivedAssets = !plugin.settings.showArchivedAssets;
         await plugin.saveSettings();
-        plugin.refreshLayout();
+        plugin.refreshLayout?.();
         new Notice(
           `Archived assets ${plugin.settings.showArchivedAssets ? "shown" : "hidden"}`,
         );
