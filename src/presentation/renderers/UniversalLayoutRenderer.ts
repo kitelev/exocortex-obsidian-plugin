@@ -70,6 +70,7 @@ import { EventListenerManager } from "../../infrastructure/events/EventListenerM
 import { MetadataHelpers } from "../../infrastructure/utilities/MetadataHelpers";
 import { WikiLinkHelpers } from "../../infrastructure/utilities/WikiLinkHelpers";
 import { AssetClass, EffortStatus } from "../../domain/constants";
+import { MetadataExtractor } from "../../infrastructure/utilities/MetadataExtractor";
 
 /**
  * UniversalLayout configuration options
@@ -111,6 +112,7 @@ export class UniversalLayoutRenderer {
   private eventListenerManager: EventListenerManager;
   private backlinksCacheManager: BacklinksCacheManager;
   private reactRenderer: ReactRenderer;
+  private metadataExtractor: MetadataExtractor;
   private rootContainer: HTMLElement | null = null;
 
   constructor(app: ObsidianApp, settings: ExocortexSettings, plugin: any) {
@@ -121,6 +123,7 @@ export class UniversalLayoutRenderer {
     this.reactRenderer = new ReactRenderer();
     this.eventListenerManager = new EventListenerManager();
     this.backlinksCacheManager = new BacklinksCacheManager(this.app);
+    this.metadataExtractor = new MetadataExtractor(this.app.metadataCache);
     this.taskCreationService = new TaskCreationService(this.app.vault);
     this.projectCreationService = new ProjectCreationService(this.app.vault);
     this.areaCreationService = new AreaCreationService(this.app.vault);
@@ -176,11 +179,10 @@ export class UniversalLayoutRenderer {
    * Build action button groups with semantic organization
    */
   private async buildActionButtonGroups(file: TFile): Promise<ButtonGroup[]> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
-    const currentStatus = metadata.ems__Effort_status || null;
-    const isArchived = metadata.archived ?? metadata.exo__Asset_isArchived ?? null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
+    const currentStatus = this.metadataExtractor.extractStatus(metadata);
+    const isArchived = this.metadataExtractor.extractIsArchived(metadata);
     const currentFolder = file.parent?.path || "";
     const expectedFolder = await this.folderRepairService.getExpectedFolder(file, metadata);
 
@@ -787,9 +789,8 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
 
     const container = el.createDiv({ cls: "exocortex-create-task-wrapper" });
 
@@ -849,9 +850,8 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
 
     const container = el.createDiv({ cls: "exocortex-create-project-wrapper" });
 
@@ -900,9 +900,8 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
 
     const container = el.createDiv({ cls: "exocortex-create-instance-wrapper" });
 
@@ -959,10 +958,9 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
-    const currentStatus = metadata.ems__Effort_status || null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
+    const currentStatus = this.metadataExtractor.extractStatus(metadata);
 
     const container = el.createDiv({ cls: "exocortex-move-to-backlog-wrapper" });
 
@@ -989,10 +987,9 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
-    const currentStatus = metadata.ems__Effort_status || null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
+    const currentStatus = this.metadataExtractor.extractStatus(metadata);
 
     const container = el.createDiv({ cls: "exocortex-move-to-analysis-wrapper" });
 
@@ -1019,10 +1016,9 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
-    const currentStatus = metadata.ems__Effort_status || null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
+    const currentStatus = this.metadataExtractor.extractStatus(metadata);
 
     const container = el.createDiv({ cls: "exocortex-move-to-todo-wrapper" });
 
@@ -1049,10 +1045,9 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
-    const currentStatus = metadata.ems__Effort_status || null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
+    const currentStatus = this.metadataExtractor.extractStatus(metadata);
 
     const container = el.createDiv({ cls: "exocortex-mark-done-wrapper" });
 
@@ -1079,10 +1074,9 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
-    const currentStatus = metadata.ems__Effort_status || null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
+    const currentStatus = this.metadataExtractor.extractStatus(metadata);
 
     const container = el.createDiv({ cls: "exocortex-trash-effort-wrapper" });
 
@@ -1109,12 +1103,10 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
-    const currentStatus = metadata.ems__Effort_status || null;
-    const isArchived =
-      metadata.archived ?? metadata.exo__Asset_isArchived ?? null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
+    const currentStatus = this.metadataExtractor.extractStatus(metadata);
+    const isArchived = this.metadataExtractor.extractIsArchived(metadata);
 
     const container = el.createDiv({ cls: "exocortex-archive-task-wrapper" });
 
@@ -1142,10 +1134,9 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
-    const currentStatus = metadata.ems__Effort_status || null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
+    const currentStatus = this.metadataExtractor.extractStatus(metadata);
 
     const container = el.createDiv({ cls: "exocortex-start-effort-wrapper" });
 
@@ -1176,9 +1167,8 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
 
     const container = el.createDiv({ cls: "exocortex-plan-on-today-wrapper" });
 
@@ -1205,9 +1195,8 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
 
     const container = el.createDiv({ cls: "exocortex-shift-day-backward-wrapper" });
 
@@ -1234,9 +1223,8 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
 
     const container = el.createDiv({ cls: "exocortex-shift-day-forward-wrapper" });
 
@@ -1263,8 +1251,7 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
+    const metadata = this.metadataExtractor.extractMetadata(file);
 
     const container = el.createDiv({
       cls: "exocortex-clean-properties-wrapper",
@@ -1292,8 +1279,7 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
+    const metadata = this.metadataExtractor.extractMetadata(file);
 
     // Get current folder
     const currentFolder = file.parent?.path || "";
@@ -1335,8 +1321,7 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
+    const metadata = this.metadataExtractor.extractMetadata(file);
 
     const container = el.createDiv({
       cls: "exocortex-rename-to-uid-wrapper",
@@ -1367,8 +1352,7 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
+    const metadata = this.metadataExtractor.extractMetadata(file);
 
     if (Object.keys(metadata).length === 0) {
       return;
@@ -1402,9 +1386,8 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
 
     // Check if this is a pn__DailyNote
     const classes = Array.isArray(instanceClass)
@@ -1505,9 +1488,8 @@ export class UniversalLayoutRenderer {
     el: HTMLElement,
     file: TFile,
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-    const instanceClass = metadata.exo__Instance_class || null;
+    const metadata = this.metadataExtractor.extractMetadata(file);
+    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
 
     const classes = Array.isArray(instanceClass)
       ? instanceClass
@@ -1580,8 +1562,7 @@ export class UniversalLayoutRenderer {
     file: TFile,
     relations: AssetRelation[],
   ): Promise<void> {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
+    const metadata = this.metadataExtractor.extractMetadata(file);
     const instanceClass = this.extractInstanceClass(metadata);
 
     if (instanceClass !== AssetClass.AREA) {
@@ -1861,8 +1842,7 @@ export class UniversalLayoutRenderer {
     const allFiles = this.app.vault.getMarkdownFiles();
 
     for (const file of allFiles) {
-      const cache = this.app.metadataCache.getFileCache(file);
-      const metadata = cache?.frontmatter || {};
+      const metadata = this.metadataExtractor.extractMetadata(file);
 
       const areaParent = metadata.ems__Area_parent;
       if (!areaParent) continue;
@@ -1890,8 +1870,7 @@ export class UniversalLayoutRenderer {
       const allFiles = this.app.vault.getMarkdownFiles();
 
       for (const file of allFiles) {
-        const cache = this.app.metadataCache.getFileCache(file);
-        const metadata = cache?.frontmatter || {};
+        const metadata = this.metadataExtractor.extractMetadata(file);
 
         const effortDay = metadata.ems__Effort_day;
 
@@ -2052,8 +2031,7 @@ export class UniversalLayoutRenderer {
       const allFiles = this.app.vault.getMarkdownFiles();
 
       for (const file of allFiles) {
-        const cache = this.app.metadataCache.getFileCache(file);
-        const metadata = cache?.frontmatter || {};
+        const metadata = this.metadataExtractor.extractMetadata(file);
 
         const effortDay = metadata.ems__Effort_day;
 
