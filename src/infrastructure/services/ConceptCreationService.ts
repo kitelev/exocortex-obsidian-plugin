@@ -28,7 +28,7 @@ export class ConceptCreationService {
     const folderPath = "concepts";
     const filePath = `${folderPath}/${fullFileName}`;
 
-    let folder = this.vault.getAbstractFileByPath(folderPath);
+    const folder = this.vault.getAbstractFileByPath(folderPath);
     if (!folder) {
       await this.vault.createFolder(folderPath);
     }
