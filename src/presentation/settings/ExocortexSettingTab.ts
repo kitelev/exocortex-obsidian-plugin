@@ -14,10 +14,8 @@ export class ExocortexSettingTab extends PluginSettingTab {
 
     containerEl.empty();
 
-    containerEl.createEl("h2", { text: "Exocortex Settings" });
-
     new Setting(containerEl)
-      .setName("Show Layout")
+      .setName("Show layout")
       .setDesc("Display the automatic layout below metadata in reading mode")
       .addToggle((toggle) =>
         toggle
@@ -30,7 +28,7 @@ export class ExocortexSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Show Properties Section")
+      .setName("Show properties section")
       .setDesc("Display the properties table in the layout")
       .addToggle((toggle) =>
         toggle
@@ -43,7 +41,7 @@ export class ExocortexSettingTab extends PluginSettingTab {
       );
 
     new Setting(containerEl)
-      .setName("Show Archived Assets")
+      .setName("Show archived assets")
       .setDesc("Display archived assets in relations table with visual distinction")
       .addToggle((toggle) =>
         toggle

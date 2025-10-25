@@ -249,7 +249,7 @@ export class TaskStatusService {
       );
     }
 
-    const normalizedStatus = currentStatus.replace(/["'\[\]]/g, "").trim();
+    const normalizedStatus = currentStatus.replace(/["'[\]]/g, "").trim();
 
     if (normalizedStatus === EffortStatus.DONE) {
       updated = this.frontmatterService.removeProperty(
@@ -271,7 +271,7 @@ export class TaskStatusService {
   }
 
   private parseDateFromWikilink(wikilink: string): Date | null {
-    const cleanValue = wikilink.replace(/["'\[\]]/g, "").trim();
+    const cleanValue = wikilink.replace(/["'[\]]/g, "").trim();
     const date = new Date(cleanValue);
 
     if (isNaN(date.getTime())) {
@@ -305,7 +305,7 @@ export class TaskStatusService {
     currentStatus: string,
     instanceClass: string | string[] | null,
   ): string | null | undefined {
-    const normalizedStatus = currentStatus.replace(/["'\[\]]/g, "").trim();
+    const normalizedStatus = currentStatus.replace(/["'[\]]/g, "").trim();
 
     if (normalizedStatus === EffortStatus.DRAFT) {
       return null;
@@ -347,7 +347,7 @@ export class TaskStatusService {
       ? instanceClass
       : [instanceClass];
     return classes.some(
-      (cls) => cls.replace(/["'\[\]]/g, "").trim() === targetClass,
+      (cls) => cls.replace(/["'[\]]/g, "").trim() === targetClass,
     );
   }
 

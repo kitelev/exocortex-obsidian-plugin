@@ -44,7 +44,7 @@ export class MetadataExtractor {
     const definedByValue = Array.isArray(isDefinedBy) ? isDefinedBy[0] : isDefinedBy;
     if (!definedByValue || typeof definedByValue !== "string") return null;
 
-    const cleanValue = definedByValue.replace(/["'\[\]]/g, "").trim();
+    const cleanValue = definedByValue.replace(/["'[\]]/g, "").trim();
     if (!cleanValue) return null;
 
     const parts = cleanValue.split("/");

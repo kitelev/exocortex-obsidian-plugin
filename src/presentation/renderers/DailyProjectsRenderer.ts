@@ -8,7 +8,7 @@ import { AssetClass, EffortStatus } from "../../domain/constants";
 import { MetadataExtractor } from "../../infrastructure/utilities/MetadataExtractor";
 import { EffortSortingHelpers } from "../../infrastructure/utilities/EffortSortingHelpers";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type ObsidianApp = any;
 
 export class DailyProjectsRenderer {
@@ -189,7 +189,7 @@ export class DailyProjectsRenderer {
         });
       }
 
-      projects.sort(EffortSortingHelpers.sortByPriority);
+      projects.sort((a, b) => EffortSortingHelpers.sortByPriority(a, b));
 
       return projects.slice(0, 50);
     } catch (error) {

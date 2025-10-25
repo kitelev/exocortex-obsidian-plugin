@@ -77,7 +77,7 @@ const DEFAULT_SETTINGS: GraphSettings = {
   },
 };
 
-export const GraphCanvas: React.FC<GraphCanvasProps> = ({ app, plugin }) => {
+export const GraphCanvas: React.FC<GraphCanvasProps> = ({ app }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const graphRef = useRef<ForceGraphInstance | null>(null);
   const [graphData, setGraphData] = useState<GraphData>({ nodes: [], edges: [] });
@@ -299,7 +299,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({ app, plugin }) => {
       .d3Force("link", null)
       .d3Force("center", null);
 
-    const d3 = graph.d3Force as any;
+    const d3 = (graph.d3Force as any).bind(graph);
     if (d3) {
       const d3ForceLink = d3("link");
       const d3ForceManyBody = d3("charge");

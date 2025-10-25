@@ -22,7 +22,7 @@ export class ExocortexGraphView extends ItemView {
   }
 
   getDisplayText(): string {
-    return "Exocortex Graph";
+    return "Exocortex graph";
   }
 
   getIcon(): string {

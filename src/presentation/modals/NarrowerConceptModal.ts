@@ -25,9 +25,9 @@ export class NarrowerConceptModal extends Modal {
 
     contentEl.addClass("exocortex-narrower-concept-modal");
 
-    contentEl.createEl("h2", { text: "Create Narrower Concept" });
+    contentEl.createEl("h2", { text: "Create narrower concept" });
 
-    const fileNameLabel = contentEl.createEl("p", {
+    contentEl.createEl("p", {
       text: "File name (required):",
       cls: "exocortex-modal-description",
     });
@@ -44,7 +44,7 @@ export class NarrowerConceptModal extends Modal {
       this.fileName = (e.target as HTMLInputElement).value;
     });
 
-    const definitionLabel = contentEl.createEl("p", {
+    contentEl.createEl("p", {
       text: "Definition (required):",
       cls: "exocortex-modal-description",
     });
@@ -60,7 +60,7 @@ export class NarrowerConceptModal extends Modal {
       this.definition = (e.target as HTMLTextAreaElement).value;
     });
 
-    const aliasesLabel = contentEl.createEl("p", {
+    contentEl.createEl("p", {
       text: "Aliases (optional):",
       cls: "exocortex-modal-description",
     });
@@ -70,7 +70,7 @@ export class NarrowerConceptModal extends Modal {
     this.renderAliases();
 
     const addAliasButton = contentEl.createEl("button", {
-      text: "+ Add Alias",
+      text: "Add alias",
       cls: "exocortex-modal-add-alias-button",
     });
     addAliasButton.addEventListener("click", () => this.addAlias());
@@ -99,7 +99,8 @@ export class NarrowerConceptModal extends Modal {
     this.aliasesContainer.empty();
 
     this.aliases.forEach((alias, index) => {
-      const aliasRow = this.aliasesContainer!.createDiv({ cls: "exocortex-modal-alias-row" });
+      if (!this.aliasesContainer) return;
+      const aliasRow = this.aliasesContainer.createDiv({ cls: "exocortex-modal-alias-row" });
 
       const aliasInput = aliasRow.createEl("input", {
         type: "text",

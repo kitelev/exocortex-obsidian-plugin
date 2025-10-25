@@ -73,6 +73,7 @@ export class GraphDataService {
       if (prototypePath) {
         const prototypeFile = this.metadataCache.getFirstLinkpathDest(prototypePath, "");
         if (prototypeFile && typeof prototypeFile === "object" && "path" in prototypeFile) {
+          // eslint-disable-next-line obsidianmd/no-tfile-tfolder-cast
           const prototypeCache = this.metadataCache.getFileCache(prototypeFile as TFile);
           const prototypeMetadata = prototypeCache?.frontmatter || {};
           const prototypeLabel = prototypeMetadata.exo__Asset_label;

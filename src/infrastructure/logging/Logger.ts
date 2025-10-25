@@ -4,7 +4,7 @@ export class Logger implements ILogger {
   constructor(private context: string) {}
 
   debug(message: string, ...args: unknown[]): void {
-    // eslint-disable-next-line no-console
+     
     console.debug(`[${this.context}] ${message}`, ...args);
   }
 
@@ -14,16 +14,16 @@ export class Logger implements ILogger {
   }
 
   warn(message: string, ...args: unknown[]): void {
-    // eslint-disable-next-line no-console
+     
     console.warn(`[${this.context}] ${message}`, ...args);
   }
 
   error(message: string, error?: Error | unknown): void {
     if (error instanceof Error) {
-      // eslint-disable-next-line no-console
+       
       console.error(`[${this.context}] ${message}`, error);
     } else {
-      // eslint-disable-next-line no-console
+       
       console.error(`[${this.context}] ${message}`, error);
     }
   }

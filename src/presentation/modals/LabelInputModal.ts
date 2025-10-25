@@ -29,9 +29,9 @@ export class LabelInputModal extends Modal {
 
     contentEl.addClass("exocortex-label-input-modal");
 
-    contentEl.createEl("h2", { text: "Create Asset" });
+    contentEl.createEl("h2", { text: "Create asset" });
 
-    const description = contentEl.createEl("p", {
+    contentEl.createEl("p", {
       text: "Enter a display label for the new asset (optional):",
       cls: "exocortex-modal-description",
     });
@@ -61,7 +61,7 @@ export class LabelInputModal extends Modal {
     });
 
     if (this.showTaskSize) {
-      const taskSizeLabel = contentEl.createEl("p", {
+      contentEl.createEl("p", {
         text: "Task size:",
         cls: "exocortex-modal-description",
       });
@@ -81,10 +81,12 @@ export class LabelInputModal extends Modal {
       ];
 
       taskSizeOptions.forEach((option) => {
-        const optionEl = this.taskSizeSelectEl!.createEl("option", {
-          value: option.value,
-          text: option.label,
-        });
+        if (this.taskSizeSelectEl) {
+          this.taskSizeSelectEl.createEl("option", {
+            value: option.value,
+            text: option.label,
+          });
+        }
       });
 
       this.taskSizeSelectEl.addEventListener("change", (e) => {

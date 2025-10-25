@@ -46,10 +46,10 @@ export class LabelToAliasService {
     let updatedFrontmatter = frontmatterContent;
 
     if (updatedFrontmatter.includes("aliases:")) {
-      const aliasesMatch = updatedFrontmatter.match(/(aliases:\r?\n(?:  - .*\r?\n)*)/);
+      const aliasesMatch = updatedFrontmatter.match(/(aliases:\r?\n(?: {2}- .*\r?\n)*)/);
       if (aliasesMatch) {
         updatedFrontmatter = updatedFrontmatter.replace(
-          /(aliases:\r?\n(?:  - .*\r?\n)*)/,
+          /(aliases:\r?\n(?: {2}- .*\r?\n)*)/,
           `$1  - "${label}"${lineEnding}`,
         );
       }

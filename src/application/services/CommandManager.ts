@@ -16,7 +16,6 @@ import {
   canTrashEffort,
   canArchiveTask,
   canCleanProperties,
-  canRepairFolder,
   canRenameToUid,
   canShiftDayBackward,
   canShiftDayForward,
@@ -132,7 +131,7 @@ export class CommandManager {
   private registerCreateTaskCommand(plugin: any): void {
     plugin.addCommand({
       id: "create-task",
-      name: "Create Task",
+      name: "Create task",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -158,7 +157,7 @@ export class CommandManager {
   private registerCreateProjectCommand(plugin: any): void {
     plugin.addCommand({
       id: "create-project",
-      name: "Create Project",
+      name: "Create project",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -184,7 +183,7 @@ export class CommandManager {
   private registerCreateInstanceCommand(plugin: any): void {
     plugin.addCommand({
       id: "create-instance",
-      name: "Create Instance",
+      name: "Create instance",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -210,7 +209,7 @@ export class CommandManager {
   private registerCreateRelatedTaskCommand(plugin: any): void {
     plugin.addCommand({
       id: "create-related-task",
-      name: "Create Related Task",
+      name: "Create related task",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -236,7 +235,7 @@ export class CommandManager {
   private registerSetDraftStatusCommand(plugin: any): void {
     plugin.addCommand({
       id: "set-draft-status",
-      name: "Set Draft Status",
+      name: "Set draft status",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -262,7 +261,7 @@ export class CommandManager {
   private registerMoveToBacklogCommand(plugin: any): void {
     plugin.addCommand({
       id: "move-to-backlog",
-      name: "Move to Backlog",
+      name: "Move to backlog",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -288,7 +287,7 @@ export class CommandManager {
   private registerMoveToAnalysisCommand(plugin: any): void {
     plugin.addCommand({
       id: "move-to-analysis",
-      name: "Move to Analysis",
+      name: "Move to analysis",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -314,7 +313,7 @@ export class CommandManager {
   private registerMoveToToDoCommand(plugin: any): void {
     plugin.addCommand({
       id: "move-to-todo",
-      name: "Move to ToDo",
+      name: "Move to to-do",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -340,7 +339,7 @@ export class CommandManager {
   private registerStartEffortCommand(plugin: any): void {
     plugin.addCommand({
       id: "start-effort",
-      name: "Start Effort",
+      name: "Start effort",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -392,7 +391,7 @@ export class CommandManager {
   private registerPlanForEveningCommand(plugin: any): void {
     plugin.addCommand({
       id: "plan-for-evening",
-      name: "Plan for Evening (19:00)",
+      name: "Plan for evening (19:00)",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -418,7 +417,7 @@ export class CommandManager {
   private registerShiftDayBackwardCommand(plugin: any): void {
     plugin.addCommand({
       id: "shift-day-backward",
-      name: "Shift Day Backward",
+      name: "Shift day backward",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -444,7 +443,7 @@ export class CommandManager {
   private registerShiftDayForwardCommand(plugin: any): void {
     plugin.addCommand({
       id: "shift-day-forward",
-      name: "Shift Day Forward",
+      name: "Shift day forward",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -470,7 +469,7 @@ export class CommandManager {
   private registerMarkDoneCommand(plugin: any): void {
     plugin.addCommand({
       id: "mark-done",
-      name: "Mark as Done",
+      name: "Mark as done",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -522,7 +521,7 @@ export class CommandManager {
   private registerArchiveTaskCommand(plugin: any): void {
     plugin.addCommand({
       id: "archive-task",
-      name: "Archive Task",
+      name: "Archive task",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -548,7 +547,7 @@ export class CommandManager {
   private registerCleanPropertiesCommand(plugin: any): void {
     plugin.addCommand({
       id: "clean-properties",
-      name: "Clean Empty Properties",
+      name: "Clean empty properties",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -576,7 +575,7 @@ export class CommandManager {
   private registerRepairFolderCommand(plugin: any): void {
     plugin.addCommand({
       id: "repair-folder",
-      name: "Repair Folder",
+      name: "Repair folder",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -607,7 +606,7 @@ export class CommandManager {
   private registerRenameToUidCommand(plugin: any): void {
     plugin.addCommand({
       id: "rename-to-uid",
-      name: "Rename to UID",
+      name: "Rename to uid",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -634,7 +633,7 @@ export class CommandManager {
   private registerVoteOnEffortCommand(plugin: any): void {
     plugin.addCommand({
       id: "vote-on-effort",
-      name: "Vote on Effort",
+      name: "Vote on effort",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -657,7 +656,7 @@ export class CommandManager {
   private registerCopyLabelToAliasesCommand(plugin: any): void {
     plugin.addCommand({
       id: "copy-label-to-aliases",
-      name: "Copy Label to Aliases",
+      name: "Copy label to aliases",
       checkCallback: (checking: boolean) => {
         const file = this.app.workspace.getActiveFile();
         if (!file) return false;
@@ -684,7 +683,7 @@ export class CommandManager {
   private registerReloadLayoutCommand(plugin: any): void {
     plugin.addCommand({
       id: "reload-layout",
-      name: "Reload Layout",
+      name: "Reload layout",
       callback: () => {
         if (this.reloadLayoutCallback) {
           this.reloadLayoutCallback();
@@ -703,7 +702,7 @@ export class CommandManager {
   private registerAddSupervisionCommand(plugin: any): void {
     plugin.addCommand({
       id: "add-supervision",
-      name: "Add Supervision",
+      name: "Add supervision",
       callback: () => {
         this.executeAddSupervision().catch((error) => {
           new Notice(`Failed to create supervision: ${error.message}`);
@@ -720,7 +719,7 @@ export class CommandManager {
   private registerTogglePropertiesVisibilityCommand(plugin: any): void {
     plugin.addCommand({
       id: "toggle-properties-visibility",
-      name: "Toggle Properties Visibility",
+      name: "Toggle properties visibility",
       callback: async () => {
         plugin.settings.showPropertiesSection =
           !plugin.settings.showPropertiesSection;
@@ -740,7 +739,7 @@ export class CommandManager {
   private registerToggleLayoutVisibilityCommand(plugin: any): void {
     plugin.addCommand({
       id: "toggle-layout-visibility",
-      name: "Toggle Layout Visibility",
+      name: "Toggle layout visibility",
       callback: async () => {
         plugin.settings.layoutVisible = !plugin.settings.layoutVisible;
         await plugin.saveSettings();
@@ -759,7 +758,7 @@ export class CommandManager {
   private registerToggleArchivedAssetsCommand(plugin: any): void {
     plugin.addCommand({
       id: "toggle-archived-assets-visibility",
-      name: "Toggle Archived Assets Visibility",
+      name: "Toggle archived assets visibility",
       callback: async () => {
         plugin.settings.showArchivedAssets = !plugin.settings.showArchivedAssets;
         await plugin.saveSettings();
@@ -817,7 +816,7 @@ export class CommandManager {
 
   private async executeCreateProject(
     file: TFile,
-    context: CommandVisibilityContext,
+    _context: CommandVisibilityContext,
   ): Promise<void> {
     const result = await new Promise<LabelInputModalResult>((resolve) => {
       new LabelInputModal(this.app, resolve).open();
@@ -892,7 +891,7 @@ export class CommandManager {
 
   private async executeCreateRelatedTask(
     file: TFile,
-    context: CommandVisibilityContext,
+    _context: CommandVisibilityContext,
   ): Promise<void> {
     const result = await new Promise<LabelInputModalResult>((resolve) => {
       new LabelInputModal(this.app, resolve).open();

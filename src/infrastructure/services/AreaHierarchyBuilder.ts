@@ -18,13 +18,14 @@ export class AreaHierarchyBuilder {
 
   buildHierarchy(
     currentAreaPath: string,
-    relations: AssetRelation[],
+    _relations: AssetRelation[],
   ): AreaNode | null {
     const currentFile = this.vault.getAbstractFileByPath(currentAreaPath);
-    if (!currentFile || !this.isFile(currentFile)) {
+    if (!this.isFile(currentFile)) {
       return null;
     }
 
+    // eslint-disable-next-line obsidianmd/no-tfile-tfolder-cast
     const cache = this.metadataCache.getFileCache(currentFile as TFile);
     const metadata = cache?.frontmatter || {};
     const instanceClass = this.extractInstanceClass(metadata);
@@ -39,6 +40,9 @@ export class AreaHierarchyBuilder {
   }
 
   private isFile(file: any): boolean {
+    if (file instanceof TFile) {
+      return true;
+    }
     return (
       file &&
       typeof file === "object" &&
@@ -86,7 +90,7 @@ export class AreaHierarchyBuilder {
       }
     }
 
-    for (const [path, area] of areas.entries()) {
+    for (const [, area] of areas.entries()) {
       if (area.parentPath && pathByBasename.has(area.parentPath)) {
         area.parentPath = pathByBasename.get(area.parentPath);
       }

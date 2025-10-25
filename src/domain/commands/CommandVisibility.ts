@@ -182,13 +182,13 @@ function isPlannedForToday(metadata: Record<string, any>): boolean {
   // Handle string value
   if (typeof effortDay === "string") {
     // Remove quotes and brackets
-    const cleanValue = effortDay.replace(/["'\[\]]/g, "").trim();
+    const cleanValue = effortDay.replace(/["'[\]]/g, "").trim();
     return cleanValue === todayString;
   }
 
   // Handle array value (take first element)
   if (Array.isArray(effortDay) && effortDay.length > 0) {
-    const cleanValue = String(effortDay[0]).replace(/["'\[\]]/g, "").trim();
+    const cleanValue = String(effortDay[0]).replace(/["'[\]]/g, "").trim();
     return cleanValue === todayString;
   }
 
@@ -227,12 +227,12 @@ function hasEffortDay(metadata: Record<string, any>): boolean {
   if (!effortDay) return false;
 
   if (typeof effortDay === "string") {
-    const cleanValue = effortDay.replace(/["'\[\]]/g, "").trim();
+    const cleanValue = effortDay.replace(/["'[\]]/g, "").trim();
     return cleanValue.length > 0;
   }
 
   if (Array.isArray(effortDay) && effortDay.length > 0) {
-    const cleanValue = String(effortDay[0]).replace(/["'\[\]]/g, "").trim();
+    const cleanValue = String(effortDay[0]).replace(/["'[\]]/g, "").trim();
     return cleanValue.length > 0;
   }
 

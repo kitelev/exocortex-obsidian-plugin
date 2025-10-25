@@ -46,7 +46,6 @@ export class PropertyCleanupService {
       // Check if this is a property line (key: value)
       const propertyMatch = trimmed.match(/^([^:]+):\s*(.*)$/);
       if (propertyMatch) {
-        const key = propertyMatch[1];
         const value = propertyMatch[2];
 
         // Check if this is a list property (value is empty and next lines are indented)

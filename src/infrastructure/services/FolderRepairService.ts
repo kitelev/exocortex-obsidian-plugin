@@ -6,7 +6,7 @@ import { TFile, Vault } from "obsidian";
 export class FolderRepairService {
   constructor(
     private vault: Vault,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     private app: any,
   ) {}
 

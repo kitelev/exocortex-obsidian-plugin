@@ -8,7 +8,7 @@ import { AssetClass, EffortStatus } from "../../domain/constants";
 import { MetadataExtractor } from "../../infrastructure/utilities/MetadataExtractor";
 import { EffortSortingHelpers } from "../../infrastructure/utilities/EffortSortingHelpers";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type ObsidianApp = any;
 
 export class DailyTasksRenderer {
@@ -253,7 +253,7 @@ export class DailyTasksRenderer {
         });
       }
 
-      filteredTasks.sort(EffortSortingHelpers.sortByPriority);
+      filteredTasks.sort((a, b) => EffortSortingHelpers.sortByPriority(a, b));
 
       return filteredTasks.slice(0, 50);
     } catch (error) {
@@ -298,8 +298,8 @@ export class DailyTasksRenderer {
     if (prototypePath && !visited.has(prototypePath)) {
       visited.add(prototypePath);
       const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
-      if (prototypeFile && typeof prototypeFile === "object" && "path" in prototypeFile) {
-        const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile as TFile);
+      if (prototypeFile instanceof TFile) {
+        const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile);
         const prototypeMetadata = prototypeCache?.frontmatter || {};
 
         const resolvedArea = this.getEffortArea(prototypeMetadata, visited);
@@ -315,8 +315,8 @@ export class DailyTasksRenderer {
     if (parentPath && !visited.has(parentPath)) {
       visited.add(parentPath);
       const parentFile = this.app.metadataCache.getFirstLinkpathDest(parentPath, "");
-      if (parentFile && typeof parentFile === "object" && "path" in parentFile) {
-        const parentCache = this.app.metadataCache.getFileCache(parentFile as TFile);
+      if (parentFile instanceof TFile) {
+        const parentCache = this.app.metadataCache.getFileCache(parentFile);
         const parentMetadata = parentCache?.frontmatter || {};
 
         const resolvedArea = this.getEffortArea(parentMetadata, visited);
@@ -365,16 +365,11 @@ export class DailyTasksRenderer {
       file = this.app.metadataCache.getFirstLinkpathDest(path + '.md', "");
     }
 
-    if (
-      !file ||
-      typeof file !== "object" ||
-      !("basename" in file) ||
-      !("path" in file)
-    ) {
+    if (!(file instanceof TFile)) {
       return null;
     }
 
-    const cache = this.app.metadataCache.getFileCache(file as TFile);
+    const cache = this.app.metadataCache.getFileCache(file);
     const metadata = cache?.frontmatter || {};
 
     const label = metadata.exo__Asset_label;
@@ -390,8 +385,8 @@ export class DailyTasksRenderer {
 
       if (prototypePath) {
         const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
-        if (prototypeFile && typeof prototypeFile === "object" && "path" in prototypeFile) {
-          const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile as TFile);
+        if (prototypeFile instanceof TFile) {
+          const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile);
           const prototypeMetadata = prototypeCache?.frontmatter || {};
           const prototypeLabel = prototypeMetadata.exo__Asset_label;
 

@@ -52,16 +52,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
   describe("DOM Rendering", () => {
     it("should render React component with proper DOM structure", async () => {
       // Setup test data
-      const currentFile = {
-        basename: "Test Note",
-        path: "test.md",
-      } as TFile;
+      const currentFile = new TFile("test.md");
 
-      const relatedFile = {
-        basename: "Related Task",
-        path: "tasks/task1.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const relatedFile = new TFile("tasks/task1.md");
+      (relatedFile as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
       // Mock file cache with frontmatter
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
@@ -112,16 +106,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should render clickable Instance Class links", async () => {
-      const currentFile = {
-        basename: "Test",
-        path: "test.md",
-      } as TFile;
+      const currentFile = new TFile("test.md");
 
-      const relatedFile = {
-        basename: "Task 1",
-        path: "task1.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const relatedFile = new TFile("task1.md");
+      (relatedFile as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -159,23 +147,14 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should handle grouped relations rendering", async () => {
-      const currentFile = {
-        basename: "test",
-        path: "test.md",
-      } as TFile;
+      const currentFile = new TFile("test.md");
 
       // Create multiple files with different properties
-      const file1 = {
-        basename: "Task 1",
-        path: "task1.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const file1 = new TFile("task1.md");
+      (file1 as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
-      const file2 = {
-        basename: "Task 2",
-        path: "task2.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const file2 = new TFile("task2.md");
+      (file2 as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: any) => {
         if (file?.path === "task1.md") {
@@ -219,10 +198,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should handle empty state gracefully", async () => {
-      const currentFile = {
-        basename: "Test",
-        path: "test.md",
-      } as TFile;
+      const currentFile = new TFile("test.md");
 
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
@@ -242,37 +218,25 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should filter archived notes from relations", async () => {
-      const currentFile = {
-        basename: "My Project",
-        path: "project.md",
-      } as TFile;
+      const currentFile = new TFile("project.md");
 
       // Create three related files - two active, one archived
-      const activeFile1 = {
-        basename: "Active",
-        path: "active1.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const activeFile1 = new TFile("Active.md");
+      (activeFile1 as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
-      const archivedFile = {
-        basename: "Archived",
-        path: "archived.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const archivedFile = new TFile("Archived.md");
+      (archivedFile as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
-      const activeFile2 = {
-        basename: "Also Active",
-        path: "active2.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const activeFile2 = new TFile("Also Active.md");
+      (activeFile2 as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
       // Mock file cache - archived file has exo__Asset_isArchived: true
       (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: any) => {
-        if (file?.path === "active1.md") {
+        if (file?.path === "Active.md") {
           return { frontmatter: { exo__Asset_isArchived: false } };
-        } else if (file?.path === "archived.md") {
+        } else if (file?.path === "Archived.md") {
           return { frontmatter: { exo__Asset_isArchived: true } };
-        } else if (file?.path === "active2.md") {
+        } else if (file?.path === "Also Active.md") {
           return { frontmatter: { exo__Asset_isArchived: false } };
         }
         return { frontmatter: {} };
@@ -280,9 +244,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Setup backlinks - all three files link to current file
       mockApp.metadataCache.resolvedLinks = {
-        "active1.md": { "project.md": 1 },
-        "archived.md": { "project.md": 1 },
-        "active2.md": { "project.md": 1 },
+        "Active.md": { "project.md": 1 },
+        "Archived.md": { "project.md": 1 },
+        "Also Active.md": { "project.md": 1 },
       };
 
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
@@ -319,10 +283,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
   describe("Create Task Button", () => {
     it("should render Create Task button for Area assets", async () => {
-      const currentFile = {
-        basename: "My Project Area",
-        path: "areas/project.md",
-      } as TFile;
+      const currentFile = new TFile("areas/project.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -346,10 +307,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should render Create Task button for Project assets", async () => {
-      const currentFile = {
-        basename: "Website Redesign",
-        path: "projects/redesign.md",
-      } as TFile;
+      const currentFile = new TFile("projects/redesign.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -373,10 +331,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Create Task button for non-Area/Project assets", async () => {
-      const currentFile = {
-        basename: "Regular Task",
-        path: "tasks/task1.md",
-      } as TFile;
+      const currentFile = new TFile("tasks/task1.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -397,10 +352,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should position Create Task button below properties table", async () => {
-      const currentFile = {
-        basename: "Area",
-        path: "area.md",
-      } as TFile;
+      const currentFile = new TFile("area.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -439,10 +391,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
   describe("Mark Task Done Button", () => {
     it("should render Done button for Task with Doing status", async () => {
-      const currentFile = {
-        basename: "My Task",
-        path: "tasks/my-task.md",
-      } as TFile;
+      const currentFile = new TFile("tasks/my-task.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -466,10 +415,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Done button for Task with Backlog status", async () => {
-      const currentFile = {
-        basename: "Backlog Task",
-        path: "tasks/backlog.md",
-      } as TFile;
+      const currentFile = new TFile("tasks/backlog.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -490,10 +436,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Done button for Task with Done status", async () => {
-      const currentFile = {
-        basename: "Completed Task",
-        path: "tasks/completed.md",
-      } as TFile;
+      const currentFile = new TFile("tasks/completed.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -514,10 +457,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should render Done button for Project with Doing status", async () => {
-      const currentFile = {
-        basename: "Project",
-        path: "projects/project.md",
-      } as TFile;
+      const currentFile = new TFile("projects/project.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -540,10 +480,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Done button for Project with Backlog status", async () => {
-      const currentFile = {
-        basename: "Backlog Project",
-        path: "projects/backlog.md",
-      } as TFile;
+      const currentFile = new TFile("projects/backlog.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -564,10 +501,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Done button for Project with Done status", async () => {
-      const currentFile = {
-        basename: "Completed Project",
-        path: "projects/completed.md",
-      } as TFile;
+      const currentFile = new TFile("projects/completed.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -588,10 +522,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Done button for non-Task/Project assets (Area)", async () => {
-      const currentFile = {
-        basename: "Area",
-        path: "areas/area.md",
-      } as TFile;
+      const currentFile = new TFile("areas/area.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -613,10 +544,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
   describe("Archive Task Button", () => {
     it("should render Archive button for Done Task not archived", async () => {
-      const currentFile = {
-        basename: "Completed Task",
-        path: "tasks/completed.md",
-      } as TFile;
+      const currentFile = new TFile("tasks/completed.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -640,10 +568,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Archive button for already archived Task", async () => {
-      const currentFile = {
-        basename: "Archived Task",
-        path: "tasks/archived.md",
-      } as TFile;
+      const currentFile = new TFile("tasks/archived.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -665,10 +590,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should render Archive button for Task with any status not archived", async () => {
-      const currentFile = {
-        basename: "Active Task",
-        path: "tasks/active.md",
-      } as TFile;
+      const currentFile = new TFile("tasks/active.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -691,10 +613,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should render Archive button for Done Project not archived", async () => {
-      const currentFile = {
-        basename: "Completed Project",
-        path: "projects/completed.md",
-      } as TFile;
+      const currentFile = new TFile("projects/completed.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -718,10 +637,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Archive button for already archived Project", async () => {
-      const currentFile = {
-        basename: "Archived Project",
-        path: "projects/archived.md",
-      } as TFile;
+      const currentFile = new TFile("projects/archived.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -743,10 +659,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should render Archive button for Project with any status not archived", async () => {
-      const currentFile = {
-        basename: "Active Project",
-        path: "projects/active.md",
-      } as TFile;
+      const currentFile = new TFile("projects/active.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -769,10 +682,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should render Archive button for any asset type not archived (Area)", async () => {
-      const currentFile = {
-        basename: "Area",
-        path: "areas/area.md",
-      } as TFile;
+      const currentFile = new TFile("areas/area.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -796,10 +706,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
   describe("Clean Empty Properties Button", () => {
     it("should render Clean button when asset has empty properties", async () => {
-      const currentFile = {
-        basename: "Area with Empty Props",
-        path: "areas/empty-props.md",
-      } as TFile;
+      const currentFile = new TFile("areas/empty-props.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -824,10 +731,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Clean button when asset has no empty properties", async () => {
-      const currentFile = {
-        basename: "Area Without Empty Props",
-        path: "areas/no-empty.md",
-      } as TFile;
+      const currentFile = new TFile("areas/no-empty.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -850,10 +754,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should render Clean button for Task with empty properties", async () => {
-      const currentFile = {
-        basename: "Task with Empty Props",
-        path: "tasks/empty-props.md",
-      } as TFile;
+      const currentFile = new TFile("tasks/empty-props.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -877,10 +778,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should render Clean button for Project with empty properties", async () => {
-      const currentFile = {
-        basename: "Project with Empty Props",
-        path: "projects/empty-props.md",
-      } as TFile;
+      const currentFile = new TFile("projects/empty-props.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -938,17 +836,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
   describe("Repair Folder Button", () => {
     it("should render Repair Folder button when asset is in wrong folder", async () => {
-      const currentFile = {
-        basename: "Misplaced Asset",
-        path: "wrong/folder/asset.md",
-        parent: { path: "wrong/folder" },
-      } as TFile;
+      const currentFile = new TFile("wrong/folder/asset.md");
+      (currentFile as any).parent = { path: "wrong/folder" };
 
-      const referencedFile = {
-        basename: "Reference",
-        path: "correct/folder/reference.md",
-        parent: { path: "correct/folder" },
-      } as TFile;
+      const referencedFile = new TFile("correct/folder/reference.md");
+      (referencedFile as any).parent = { path: "correct/folder" };
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -974,17 +866,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Repair Folder button when asset is in correct folder", async () => {
-      const currentFile = {
-        basename: "Correct Asset",
-        path: "correct/folder/asset.md",
-        parent: { path: "correct/folder" },
-      } as TFile;
+      const currentFile = new TFile("correct/folder/asset.md");
+      (currentFile as any).parent = { path: "correct/folder" };
 
-      const referencedFile = {
-        basename: "Reference",
-        path: "correct/folder/reference.md",
-        parent: { path: "correct/folder" },
-      } as TFile;
+      const referencedFile = new TFile("correct/folder/reference.md");
+      (referencedFile as any).parent = { path: "correct/folder" };
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1008,11 +894,8 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Repair Folder button when exo__Asset_isDefinedBy is missing", async () => {
-      const currentFile = {
-        basename: "Asset",
-        path: "folder/asset.md",
-        parent: { path: "folder" },
-      } as TFile;
+      const currentFile = new TFile("folder/asset.md");
+      (currentFile as any).parent = { path: "folder" };
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1032,11 +915,8 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Repair Folder button when referenced file not found", async () => {
-      const currentFile = {
-        basename: "Asset",
-        path: "folder/asset.md",
-        parent: { path: "folder" },
-      } as TFile;
+      const currentFile = new TFile("folder/asset.md");
+      (currentFile as any).parent = { path: "folder" };
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1060,17 +940,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should position Repair Folder button after Clean button and after properties", async () => {
-      const currentFile = {
-        basename: "Misplaced",
-        path: "wrong/asset.md",
-        parent: { path: "wrong" },
-      } as TFile;
+      const currentFile = new TFile("wrong/asset.md");
+      (currentFile as any).parent = { path: "wrong" };
 
-      const referencedFile = {
-        basename: "Ref",
-        path: "correct/ref.md",
-        parent: { path: "correct" },
-      } as TFile;
+      const referencedFile = new TFile("correct/ref.md");
+      (referencedFile as any).parent = { path: "correct" };
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1116,15 +990,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should render buttons in horizontal layout container", async () => {
-      const currentFile = {
-        basename: "Test Asset",
-        path: "test-asset.md",
-        parent: { path: "wrong-folder" },
-      } as TFile;
+      const currentFile = new TFile("test-asset.md");
+      (currentFile as any).parent = { path: "wrong-folder" };
 
-      const targetFile = {
-        parent: { path: "correct-folder" },
-      } as TFile;
+      const targetFile = new TFile("correct-folder/target.md");
+      (targetFile as any).parent = { path: "correct-folder" };
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1168,10 +1038,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
   describe("Start Effort Button", () => {
     it("should render Start Effort button for Task with Backlog status", async () => {
-      const currentFile = {
-        basename: "Backlog Task",
-        path: "tasks/backlog-task.md",
-      } as TFile;
+      const currentFile = new TFile("tasks/backlog-task.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1194,10 +1061,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Start Effort button for Task with Draft status", async () => {
-      const currentFile = {
-        basename: "Draft Task",
-        path: "tasks/draft-task.md",
-      } as TFile;
+      const currentFile = new TFile("tasks/draft-task.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1218,10 +1082,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Start Effort button for Task with Doing status", async () => {
-      const currentFile = {
-        basename: "Doing Task",
-        path: "tasks/doing-task.md",
-      } as TFile;
+      const currentFile = new TFile("tasks/doing-task.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1242,10 +1103,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Start Effort button for Task with Done status", async () => {
-      const currentFile = {
-        basename: "Done Task",
-        path: "tasks/done-task.md",
-      } as TFile;
+      const currentFile = new TFile("tasks/done-task.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1266,10 +1124,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Start Effort button for Project with Backlog status", async () => {
-      const currentFile = {
-        basename: "Backlog Project",
-        path: "projects/backlog-project.md",
-      } as TFile;
+      const currentFile = new TFile("projects/backlog-project.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1292,10 +1147,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should render Start Effort button for Project with ToDo status", async () => {
-      const currentFile = {
-        basename: "ToDo Project",
-        path: "projects/todo-project.md",
-      } as TFile;
+      const currentFile = new TFile("projects/todo-project.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1318,10 +1170,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Start Effort button for Project with Doing status", async () => {
-      const currentFile = {
-        basename: "Doing Project",
-        path: "projects/doing-project.md",
-      } as TFile;
+      const currentFile = new TFile("projects/doing-project.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1342,10 +1191,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Start Effort button for Project with Done status", async () => {
-      const currentFile = {
-        basename: "Done Project",
-        path: "projects/done-project.md",
-      } as TFile;
+      const currentFile = new TFile("projects/done-project.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1366,10 +1212,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Start Effort button for non-Task/Project assets (Area)", async () => {
-      const currentFile = {
-        basename: "Some Area",
-        path: "areas/area.md",
-      } as TFile;
+      const currentFile = new TFile("areas/area.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1391,16 +1234,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
   describe("React Component Cleanup", () => {
     it("should properly cleanup React roots on unmount", async () => {
-      const currentFile = {
-        basename: "Test",
-        path: "test.md",
-      } as TFile;
+      const currentFile = new TFile("test.md");
 
-      const relatedFile = {
-        basename: "Task",
-        path: "task.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const relatedFile = new TFile("task.md");
+      (relatedFile as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: { exo__Instance_class: "ems__Task" },
@@ -1425,21 +1262,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
   describe("Prototype Label Fallback", () => {
     it("should display prototype label when asset has ems__Effort_prototype", async () => {
-      const currentFile = {
-        basename: "Current",
-        path: "current.md",
-      } as TFile;
+      const currentFile = new TFile("current.md");
 
-      const taskFile = {
-        basename: "Task-123",
-        path: "tasks/Task-123.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const taskFile = new TFile("tasks/Task-123.md");
+      (taskFile as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
-      const prototypeFile = {
-        basename: "TaskPrototype",
-        path: "prototypes/TaskPrototype.md",
-      } as TFile;
+      const prototypeFile = new TFile("prototypes/TaskPrototype.md");
 
       // Mock workspace and vault
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
@@ -1508,16 +1336,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     it("should render multiple relations when same asset links via different properties", async () => {
       // BUG: Asset A links to Asset B via property1 and property2
       // Asset B should show BOTH relations, but currently shows only one
-      const currentFile = {
-        basename: "AssetB",
-        path: "assets/AssetB.md",
-      } as TFile;
+      const currentFile = new TFile("assets/AssetB.md");
 
-      const assetAFile = {
-        basename: "AssetA",
-        path: "assets/AssetA.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const assetAFile = new TFile("assets/AssetA.md");
+      (assetAFile as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
 
@@ -1581,16 +1403,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
   describe("Daily Tasks Table for pn__DailyNote", () => {
     it("should render Tasks table for pn__DailyNote with tasks", async () => {
-      const currentFile = {
-        basename: "2025-10-16 Note",
-        path: "daily-notes/2025-10-16 Note.md",
-      } as TFile;
+      const currentFile = new TFile("daily-notes/2025-10-16 Note.md");
 
-      const taskFile = {
-        basename: "Task 1",
-        path: "tasks/task1.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const taskFile = new TFile("tasks/task1.md");
+      (taskFile as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
       // Setup mocks in same order as passing test
       (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: TFile) => {
@@ -1660,10 +1476,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Tasks table for non-DailyNote assets", async () => {
-      const currentFile = {
-        basename: "Regular Note",
-        path: "notes/regular.md",
-      } as TFile;
+      const currentFile = new TFile("notes/regular.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1684,10 +1497,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Tasks table when pn__DailyNote_day is missing", async () => {
-      const currentFile = {
-        basename: "Daily Note",
-        path: "daily-notes/note.md",
-      } as TFile;
+      const currentFile = new TFile("daily-notes/note.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1709,10 +1519,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should NOT render Tasks table when Dataview is not available", async () => {
-      const currentFile = {
-        basename: "2025-10-16 Note",
-        path: "daily-notes/2025-10-16 Note.md",
-      } as TFile;
+      const currentFile = new TFile("daily-notes/2025-10-16 Note.md");
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: {
@@ -1739,28 +1546,16 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     it("should render Tasks table even when vault has tasks matching the day", async () => {
       // REGRESSION TEST: Previously failed when Dataview API returned empty results.
       // This test ensures tasks are always found via vault file enumeration.
-      const currentFile = {
-        basename: "2025-10-16 Note",
-        path: "daily-notes/2025-10-16 Note.md",
-      } as TFile;
+      const currentFile = new TFile("daily-notes/2025-10-16 Note.md");
 
-      const taskFile1 = {
-        basename: "Task 1",
-        path: "tasks/task1.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const taskFile1 = new TFile("tasks/task1.md");
+      (taskFile1 as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
-      const taskFile2 = {
-        basename: "Task 2",
-        path: "tasks/task2.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const taskFile2 = new TFile("tasks/task2.md");
+      (taskFile2 as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
-      const otherDayTaskFile = {
-        basename: "Other Task",
-        path: "tasks/other.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const otherDayTaskFile = new TFile("tasks/other.md");
+      (otherDayTaskFile as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
       // Setup mocks with realistic data
       (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: TFile) => {
@@ -1856,16 +1651,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     });
 
     it("should position Tasks table between Properties and Relations", async () => {
-      const currentFile = {
-        basename: "2025-10-16 Note",
-        path: "daily-notes/2025-10-16 Note.md",
-      } as TFile;
+      const currentFile = new TFile("daily-notes/2025-10-16 Note.md");
 
-      const relatedTask = {
-        basename: "Task 1",
-        path: "tasks/task1.md",
-        stat: { ctime: Date.now(), mtime: Date.now() },
-      } as TFile;
+      const relatedTask = new TFile("tasks/task1.md");
+      (relatedTask as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
       (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: TFile) => {
         if (file.path === "daily-notes/2025-10-16 Note.md") {
