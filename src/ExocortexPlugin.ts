@@ -27,7 +27,7 @@ export default class ExocortexPlugin extends Plugin {
   private layoutRenderer!: UniversalLayoutRenderer;
   private commandManager!: CommandManager;
   private taskStatusService!: TaskStatusService;
-  private metadataCache!: Map<string, Record<string, any>>;
+  private metadataCache!: Map<string, Record<string, unknown>>;
   settings!: ExocortexSettings;
 
   async onload(): Promise<void> {
@@ -227,7 +227,7 @@ export default class ExocortexPlugin extends Plugin {
         currentEndTimestamp !== previousEndTimestamp
       ) {
         this.logger.info(
-          `Detected ems__Effort_endTimestamp change in ${file.path}: ${previousEndTimestamp} → ${currentEndTimestamp}`,
+          `Detected ems__Effort_endTimestamp change in ${file.path}: ${String(previousEndTimestamp)} → ${String(currentEndTimestamp)}`,
         );
 
         const parsedDate = new Date(currentEndTimestamp);
