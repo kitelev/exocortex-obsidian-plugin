@@ -1,0 +1,39 @@
+{
+  "name": "exocortex-cli",
+  "version": "0.1.0",
+  "description": "CLI tool for Exocortex knowledge management system",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "exocortex": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "exocortex",
+    "cli",
+    "knowledge-management",
+    "task-management"
+  ],
+  "author": "A. Kitelev",
+  "license": "MIT",
+  "dependencies": {
+    "@exocortex/core": "file:../core",
+    "commander": "^11.0.0",
+    "chalk": "^5.3.0",
+    "ora": "^7.0.1",
+    "fs-extra": "^11.0.0",
+    "glob": "^10.3.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.0",
+    "@types/js-yaml": "^4.0.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  }
+}
