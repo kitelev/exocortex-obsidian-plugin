@@ -12,6 +12,7 @@ import { AreaHierarchyBuilder } from "../../infrastructure/services/AreaHierarch
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 import { ProjectCreationService } from "../../infrastructure/services/ProjectCreationService";
 import { AreaCreationService } from "../../infrastructure/services/AreaCreationService";
+import { ConceptCreationService } from "../../infrastructure/services/ConceptCreationService";
 import { TaskStatusService } from "../../infrastructure/services/TaskStatusService";
 import { PropertyCleanupService } from "../../infrastructure/services/PropertyCleanupService";
 import { FolderRepairService } from "../../infrastructure/services/FolderRepairService";
@@ -87,6 +88,7 @@ export class UniversalLayoutRenderer {
     this.taskCreationService = new TaskCreationService(this.app.vault);
     this.projectCreationService = new ProjectCreationService(this.app.vault);
     this.areaCreationService = new AreaCreationService(this.app.vault);
+    this.conceptCreationService = new ConceptCreationService(this.app.vault);
     this.taskStatusService = new TaskStatusService(this.app.vault);
     this.propertyCleanupService = new PropertyCleanupService(this.app.vault);
     this.folderRepairService = new FolderRepairService(this.app.vault, this.app);
@@ -100,6 +102,7 @@ export class UniversalLayoutRenderer {
       this.taskCreationService,
       this.projectCreationService,
       this.areaCreationService,
+      this.conceptCreationService,
       this.taskStatusService,
       this.propertyCleanupService,
       this.folderRepairService,
@@ -135,6 +138,7 @@ export class UniversalLayoutRenderer {
   private taskCreationService: TaskCreationService;
   private projectCreationService: ProjectCreationService;
   private areaCreationService: AreaCreationService;
+  private conceptCreationService: ConceptCreationService;
   private taskStatusService: TaskStatusService;
   private propertyCleanupService: PropertyCleanupService;
   private folderRepairService: FolderRepairService;

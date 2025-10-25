@@ -634,6 +634,87 @@
   background-color: var(--interactive-accent-hover);
 }
 
+/* Narrower Concept Modal Styles */
+.exocortex-modal-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 14px;
+  font-family: var(--font-text);
+  resize: vertical;
+}
+
+.exocortex-modal-textarea:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.exocortex-modal-aliases-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.exocortex-modal-alias-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.exocortex-modal-alias-row .exocortex-modal-input {
+  flex: 1;
+}
+
+.exocortex-modal-remove-alias-button {
+  padding: 4px 10px;
+  cursor: pointer;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--interactive-normal);
+  color: var(--text-normal);
+  font-size: 16px;
+  line-height: 1;
+  transition: background-color 0.1s ease;
+  min-width: 32px;
+}
+
+.exocortex-modal-remove-alias-button:hover {
+  background-color: var(--background-modifier-error);
+  color: var(--text-on-accent);
+}
+
+.exocortex-modal-add-alias-button {
+  padding: 6px 12px;
+  cursor: pointer;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--interactive-normal);
+  color: var(--text-normal);
+  font-size: 13px;
+  transition: background-color 0.1s ease;
+  margin-bottom: 16px;
+}
+
+.exocortex-modal-add-alias-button:hover {
+  background-color: var(--interactive-hover);
+}
+
+.exocortex-modal-error {
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  background-color: var(--background-modifier-error);
+  color: var(--text-on-accent);
+  font-size: 13px;
+  font-weight: 500;
+}
+
 /* ============================================================================
    Action Buttons Group - Semantic Grouping with Beautiful Design
    ============================================================================ */
