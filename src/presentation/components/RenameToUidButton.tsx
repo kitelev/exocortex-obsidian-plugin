@@ -1,6 +1,7 @@
 import React from "react";
 import { TFile, Notice } from "obsidian";
 import { canRenameToUid } from "../../domain/commands/CommandVisibility";
+import { LoggingService } from "../../infrastructure/services/LoggingService";
 
 interface RenameToUidButtonProps {
   file: TFile;
@@ -33,7 +34,7 @@ export const RenameToUidButton: React.FC<RenameToUidButtonProps> = ({
       await onRename();
     } catch (error) {
       new Notice(`Failed to rename: ${error.message}`);
-      console.error("Rename to UID error:", error);
+      LoggingService.error("Rename to UID error", error);
     }
   };
 
