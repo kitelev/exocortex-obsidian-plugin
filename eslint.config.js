@@ -45,6 +45,13 @@ export default tseslint.config(
       'no-useless-escape': 'warn',
       'no-prototype-builtins': 'warn',
       'no-regex-spaces': 'error',
+
+      'obsidianmd/commands/no-default-hotkeys': 'warn',
+      'obsidianmd/vault/iterate': 'warn',
+      'obsidianmd/prefer-file-manager-trash-file': 'warn',
+      'obsidianmd/platform': 'warn',
+      'obsidianmd/regex-lookbehind': 'error',
+      'obsidianmd/no-sample-code': 'warn',
     },
   },
   {
