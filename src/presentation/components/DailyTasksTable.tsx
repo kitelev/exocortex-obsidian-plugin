@@ -138,8 +138,25 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
                     const effortArea = getEffortArea?.(task.metadata) || task.metadata.ems__Effort_area;
                     if (!effortArea) return "-";
 
-                    const isWikiLink = typeof effortArea === "string" && /\[\[.*?\]\]/.test(effortArea);
-                    const parsed = isWikiLink ? parseWikiLink(effortArea as string) : { target: effortArea as string };
+                    // Parse both formats: [[UID|Alias]] and UID|Alias
+                    let parsed: WikiLink;
+                    const effortAreaStr = String(effortArea);
+
+                    if (/\[\[.*?\]\]/.test(effortAreaStr)) {
+                      // Format: [[UID|Alias]]
+                      parsed = parseWikiLink(effortAreaStr);
+                    } else if (effortAreaStr.includes("|")) {
+                      // Format: UID|Alias (already extracted from wikilink)
+                      const parts = effortAreaStr.split("|");
+                      parsed = {
+                        target: parts[0].trim(),
+                        alias: parts[1]?.trim()
+                      };
+                    } else {
+                      // Plain value
+                      parsed = { target: effortAreaStr.trim() };
+                    }
+
                     const displayText = parsed.alias || parsed.target;
 
                     return (
