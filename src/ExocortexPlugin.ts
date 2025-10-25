@@ -23,12 +23,12 @@ import { ExocortexGraphView, GRAPH_VIEW_TYPE } from "./presentation/views/Exocor
  * Provides Command Palette integration for all asset commands
  */
 export default class ExocortexPlugin extends Plugin {
-  private logger: ILogger;
-  private layoutRenderer: UniversalLayoutRenderer;
-  private commandManager: CommandManager;
-  private taskStatusService: TaskStatusService;
-  private metadataCache: Map<string, Record<string, any>>;
-  settings: ExocortexSettings;
+  private logger!: ILogger;
+  private layoutRenderer!: UniversalLayoutRenderer;
+  private commandManager!: CommandManager;
+  private taskStatusService!: TaskStatusService;
+  private metadataCache!: Map<string, Record<string, any>>;
+  settings!: ExocortexSettings;
 
   async onload(): Promise<void> {
     try {

@@ -46,7 +46,7 @@ export class DailyTasksRenderer {
       ? instanceClass
       : [instanceClass];
     const isDailyNote = classes.some(
-      (c: string) => c === "[[pn__DailyNote]]" || c === "pn__DailyNote",
+      (c: string | null) => c === "[[pn__DailyNote]]" || c === "pn__DailyNote",
     );
 
     if (!isDailyNote) {

@@ -1,8 +1,6 @@
 import type {
-  FullConfig,
   FullResult,
   Reporter,
-  Suite,
   TestCase,
   TestResult,
 } from '@playwright/test/reporter';
@@ -23,7 +21,7 @@ class NoFlakyReporter implements Reporter {
     }
   }
 
-  onEnd(result: FullResult) {
+  onEnd(_result: FullResult) {
     if (this.hasFlaky) {
       console.error(
         '\n❌ CI FAILURE: Flaky tests detected!\n' +
