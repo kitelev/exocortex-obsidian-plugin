@@ -1,33 +1,42 @@
 import { test, expect } from '@playwright/test';
 import { execSync } from 'child_process';
 
+const GITHUB_REPO = 'kitelev/exocortex-obsidian-plugin';
+const GITHUB_API = 'https://api.github.com';
+
+function githubApiRequest(endpoint: string): any {
+  const response = execSync(
+    `curl -s -H "Accept: application/vnd.github.v3+json" ${GITHUB_API}${endpoint}`,
+    { encoding: 'utf-8' }
+  );
+  return JSON.parse(response);
+}
+
+function downloadReleaseAsset(tagName: string, assetName: string): string {
+  return execSync(
+    `curl -sL -H "Accept: application/octet-stream" https://github.com/${GITHUB_REPO}/releases/download/${tagName}/${assetName}`,
+    { encoding: 'utf-8' }
+  );
+}
+
 test.describe('BRAT Installation Compatibility', () => {
   test('should have no draft releases that could confuse BRAT', async () => {
-    const draftReleases = execSync(
-      'gh api repos/:owner/:repo/releases --jq \'.[] | select(.draft == true) | {tag_name, created_at, draft}\'',
-      { encoding: 'utf-8' }
-    ).trim();
+    const releases = githubApiRequest(`/repos/${GITHUB_REPO}/releases?per_page=100`);
+    const draftReleases = releases.filter((r: any) => r.draft === true);
 
-    expect(draftReleases).toBe('');
+    expect(draftReleases).toHaveLength(0);
   });
 
   test('should have latest release with correct version in manifest.json', async () => {
-    const latestRelease = JSON.parse(
-      execSync('gh release view --json tagName,isDraft,assets', { encoding: 'utf-8' })
-    );
+    const releases = githubApiRequest(`/repos/${GITHUB_REPO}/releases?per_page=1`);
+    const latestRelease = releases[0];
 
-    expect(latestRelease.isDraft).toBe(false);
+    expect(latestRelease.draft).toBe(false);
+    expect(latestRelease.prerelease).toBe(false);
 
-    const manifestAsset = latestRelease.assets.find((a: any) => a.name === 'manifest.json');
-    expect(manifestAsset).toBeDefined();
-
-    const manifestContent = execSync(
-      `gh release download ${latestRelease.tagName} -p manifest.json --clobber -O- 2>/dev/null`,
-      { encoding: 'utf-8' }
-    );
-
+    const manifestContent = downloadReleaseAsset(latestRelease.tag_name, 'manifest.json');
     const manifest = JSON.parse(manifestContent);
-    const expectedVersion = latestRelease.tagName.replace(/^v/, '');
+    const expectedVersion = latestRelease.tag_name.replace(/^v/, '');
 
     expect(manifest.version).toBe(expectedVersion);
     expect(manifest.version).not.toBe('0.0.0-dev');
@@ -36,9 +45,8 @@ test.describe('BRAT Installation Compatibility', () => {
   });
 
   test('should have all required release assets for BRAT installation', async () => {
-    const latestRelease = JSON.parse(
-      execSync('gh release view --json assets', { encoding: 'utf-8' })
-    );
+    const releases = githubApiRequest(`/repos/${GITHUB_REPO}/releases?per_page=1`);
+    const latestRelease = releases[0];
 
     const assetNames = latestRelease.assets.map((a: any) => a.name);
 
@@ -48,15 +56,10 @@ test.describe('BRAT Installation Compatibility', () => {
   });
 
   test('should have manifest.json with minAppVersion for compatibility', async () => {
-    const latestRelease = JSON.parse(
-      execSync('gh release view --json tagName', { encoding: 'utf-8' })
-    );
+    const releases = githubApiRequest(`/repos/${GITHUB_REPO}/releases?per_page=1`);
+    const latestRelease = releases[0];
 
-    const manifestContent = execSync(
-      `gh release download ${latestRelease.tagName} -p manifest.json --clobber -O- 2>/dev/null`,
-      { encoding: 'utf-8' }
-    );
-
+    const manifestContent = downloadReleaseAsset(latestRelease.tag_name, 'manifest.json');
     const manifest = JSON.parse(manifestContent);
 
     expect(manifest.minAppVersion).toBeDefined();
@@ -64,33 +67,24 @@ test.describe('BRAT Installation Compatibility', () => {
   });
 
   test('should have consistent version across manifest.json and git tag', async () => {
-    const latestRelease = JSON.parse(
-      execSync('gh release view --json tagName', { encoding: 'utf-8' })
-    );
+    const releases = githubApiRequest(`/repos/${GITHUB_REPO}/releases?per_page=1`);
+    const latestRelease = releases[0];
 
-    const gitTagVersion = latestRelease.tagName.replace(/^v/, '');
+    const gitTagVersion = latestRelease.tag_name.replace(/^v/, '');
 
-    const manifestContent = execSync(
-      `gh release download ${latestRelease.tagName} -p manifest.json --clobber -O- 2>/dev/null`,
-      { encoding: 'utf-8' }
-    );
-
+    const manifestContent = downloadReleaseAsset(latestRelease.tag_name, 'manifest.json');
     const manifest = JSON.parse(manifestContent);
 
     expect(manifest.version).toBe(gitTagVersion);
   });
 
   test('should have main.js file in latest release', async () => {
-    const latestRelease = JSON.parse(
-      execSync('gh release view --json tagName', { encoding: 'utf-8' })
-    );
+    const releases = githubApiRequest(`/repos/${GITHUB_REPO}/releases?per_page=1`);
+    const latestRelease = releases[0];
 
-    const mainJsSize = execSync(
-      `gh release download ${latestRelease.tagName} -p main.js --clobber -O- 2>/dev/null | wc -c`,
-      { encoding: 'utf-8' }
-    ).trim();
+    const mainJsContent = downloadReleaseAsset(latestRelease.tag_name, 'main.js');
+    const sizeInBytes = Buffer.byteLength(mainJsContent, 'utf-8');
 
-    const sizeInBytes = parseInt(mainJsSize, 10);
     expect(sizeInBytes).toBeGreaterThan(1000);
   });
 });
