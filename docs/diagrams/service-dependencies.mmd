@@ -1,0 +1,110 @@
+%% Service Dependencies Graph
+%% Shows which services depend on which utilities
+
+graph LR
+    subgraph Services
+        TaskCreate[TaskCreationService]
+        ProjectCreate[ProjectCreationService]
+        ConceptCreate[ConceptCreationService]
+        TaskStatus[TaskStatusService]
+        Voting[EffortVotingService]
+        Cleanup[PropertyCleanupService]
+        LabelAlias[LabelToAliasService]
+        AreaCreate[AreaCreationService]
+        Supervision[SupervisionCreationService]
+        AreaHier[AreaHierarchyBuilder]
+        GraphData[GraphDataService]
+        FolderRepair[FolderRepairService]
+        RenameUid[RenameToUidService]
+    end
+
+    subgraph Pure Utilities
+        Frontmatter[FrontmatterService]
+        DateFmt[DateFormatter]
+        WikiLink[WikiLinkHelpers]
+        MetaHelp[MetadataHelpers]
+        Sorting[EffortSortingHelpers]
+        MetaExtract[MetadataExtractor]
+    end
+
+    subgraph Domain
+        AssetClass[AssetClass enum]
+        EffortStatus[EffortStatus enum]
+    end
+
+    subgraph Obsidian API
+        Vault[Vault]
+        MetaCache[MetadataCache]
+        App[App]
+    end
+
+    TaskCreate -->|Uses| Frontmatter
+    TaskCreate -->|Uses| DateFmt
+    TaskCreate -->|Uses| WikiLink
+    TaskCreate -->|Uses| MetaHelp
+    TaskCreate -->|Uses| MetaExtract
+    TaskCreate -->|Uses| AssetClass
+    TaskCreate -->|Reads/Writes| Vault
+
+    ProjectCreate -->|Uses| Frontmatter
+    ProjectCreate -->|Uses| DateFmt
+    ProjectCreate -->|Uses| MetaHelp
+    ProjectCreate -->|Uses| AssetClass
+    ProjectCreate -->|Reads/Writes| Vault
+
+    ConceptCreate -->|Uses| DateFmt
+    ConceptCreate -->|Uses| MetaHelp
+    ConceptCreate -->|Uses| AssetClass
+    ConceptCreate -->|Reads/Writes| Vault
+
+    TaskStatus -->|Uses| WikiLink
+    TaskStatus -->|Uses| AssetClass
+    TaskStatus -->|Uses| EffortStatus
+    TaskStatus -->|Reads/Writes| Vault
+
+    Voting -->|Uses| Frontmatter
+    Voting -->|Reads/Writes| Vault
+
+    Cleanup -->|Uses| Frontmatter
+    Cleanup -->|Reads/Writes| Vault
+
+    LabelAlias -->|Uses| Frontmatter
+    LabelAlias -->|Reads/Writes| Vault
+
+    AreaCreate -->|Uses| Frontmatter
+    AreaCreate -->|Uses| DateFmt
+    AreaCreate -->|Uses| MetaHelp
+    AreaCreate -->|Uses| AssetClass
+    AreaCreate -->|Reads/Writes| Vault
+
+    Supervision -->|Uses| DateFmt
+    Supervision -->|Uses| MetaHelp
+    Supervision -->|Uses| AssetClass
+    Supervision -->|Reads/Writes| Vault
+
+    AreaHier -->|Uses| WikiLink
+    AreaHier -->|Uses| MetaExtract
+    AreaHier -->|Uses| AssetClass
+    AreaHier -->|Queries| Vault
+    AreaHier -->|Queries| MetaCache
+
+    GraphData -->|Uses| WikiLink
+    GraphData -->|Queries| App
+    GraphData -->|Queries| MetaCache
+
+    FolderRepair -->|Uses| MetaExtract
+    FolderRepair -->|Modifies| Vault
+    FolderRepair -->|Queries| MetaCache
+
+    RenameUid -->|Uses| App
+
+    MetaExtract -->|Uses| WikiLink
+    MetaExtract -->|Queries| MetaCache
+
+    style Frontmatter fill:#90EE90
+    style DateFmt fill:#90EE90
+    style WikiLink fill:#90EE90
+    style MetaHelp fill:#90EE90
+    style Sorting fill:#90EE90
+    style AssetClass fill:#FFD700
+    style EffortStatus fill:#FFD700

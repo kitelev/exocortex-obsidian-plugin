@@ -1,0 +1,56 @@
+%% Layout Rendering Flow
+%% How UniversalLayoutRenderer determines what to display
+
+flowchart TD
+    Start[File opened in Reading Mode] --> GetMeta[Get file metadata from cache]
+    GetMeta --> ExtractClass[Extract exo__Instance_class]
+
+    ExtractClass --> CheckClass{What is<br/>asset class?}
+
+    CheckClass -->|Task/Project/Meeting| RenderEffort[Render Effort Sections]
+    CheckClass -->|Area| RenderArea[Render Area Sections]
+    CheckClass -->|Concept| RenderConcept[Render Concept Sections]
+    CheckClass -->|DailyNote| RenderDaily[Render Daily Note Sections]
+    CheckClass -->|Other| RenderGeneric[Render Generic Sections]
+
+    RenderEffort --> ButtonsEffort[Action Buttons<br/>Status, Planning, Vote]
+    ButtonsEffort --> PropsEffort[Properties Table]
+    PropsEffort --> RelationsEffort[Asset Relations]
+    RelationsEffort --> EndEffort[Complete]
+
+    RenderArea --> ButtonsArea[Action Buttons<br/>Create Task, Create Child]
+    ButtonsArea --> Hierarchy[Area Hierarchy Tree]
+    Hierarchy --> PropsArea[Properties Table]
+    PropsArea --> RelationsArea[Asset Relations]
+    RelationsArea --> EndArea[Complete]
+
+    RenderConcept --> ButtonsConcept[Action Buttons<br/>Create Narrower Concept]
+    ButtonsConcept --> PropsConcept[Properties Table]
+    PropsConcept --> RelationsConcept[Asset Relations]
+    RelationsConcept --> EndConcept[Complete]
+
+    RenderDaily --> DailyTasks[Daily Tasks Table<br/>Filter by ems__Effort_day]
+    DailyTasks --> DailyProjects[Daily Projects Table]
+    DailyProjects --> EndDaily[Complete]
+
+    RenderGeneric --> PropsGeneric[Properties Table]
+    PropsGeneric --> RelationsGeneric[Asset Relations]
+    RelationsGeneric --> EndGeneric[Complete]
+
+    subgraph Action Buttons Logic
+        CheckVis{Check command<br/>visibility}
+        CheckVis -->|canCreateTask| ShowCreate[Show Create Task]
+        CheckVis -->|canVoteOnEffort| ShowVote[Show Vote]
+        CheckVis -->|canPlanOnToday| ShowPlan[Show Plan Today]
+        CheckVis -->|isArchived| HideButtons[Hide archived buttons]
+    end
+
+    ButtonsEffort -.->CheckVis
+    ButtonsArea -.->CheckVis
+    ButtonsConcept -.->CheckVis
+
+    style RenderEffort fill:#90CAF9
+    style RenderArea fill:#AED581
+    style RenderConcept fill:#FFD54F
+    style RenderDaily fill:#CE93D8
+    style CheckVis fill:#FF6B6B

@@ -1,0 +1,61 @@
+%% Asset Creation Flow
+%% Sequence diagram showing task creation from area
+
+sequenceDiagram
+    participant User
+    participant CommandPalette
+    participant CommandManager
+    participant Visibility as CommandVisibility<br/>(Pure)
+    participant Modal as LabelInputModal
+    participant Service as TaskCreationService
+    participant Pure as generateTaskFrontmatter<br/>(Pure Function)
+    participant FrontmatterSvc as FrontmatterService<br/>(Pure)
+    participant Vault as Obsidian Vault
+    participant MetaCache as MetadataCache
+    participant UI as UniversalLayoutRenderer
+
+    User->>CommandPalette: Select "Create task"
+    CommandPalette->>CommandManager: Trigger command
+
+    Note over CommandManager: Check visibility first
+    CommandManager->>Visibility: canCreateTask(context)
+    Visibility-->>CommandManager: true (Area or Project)
+
+    CommandManager->>Modal: Open LabelInputModal
+    Modal-->>User: Show input form
+    User->>Modal: Enter label + size
+    Modal-->>CommandManager: { label, taskSize }
+
+    CommandManager->>Service: createTask(sourceFile, metadata, label, size)
+
+    Note over Service: Generate UUID
+    Service->>Service: uid = uuidv4()
+
+    Note over Service: Pure frontmatter generation
+    Service->>Pure: generateTaskFrontmatter(metadata, name, class, label, uid, size)
+    Pure-->>Service: frontmatter object
+
+    alt Source is TaskPrototype
+        Service->>Vault: read(sourceFile)
+        Vault-->>Service: content
+        Service->>Service: extractH2Section("Algorithm")
+    end
+
+    Service->>FrontmatterSvc: buildFileContent(frontmatter, body)
+    FrontmatterSvc-->>Service: markdown content
+
+    Note over Service: Determine file path
+    Service->>Service: folderPath = sourceFile.parent.path
+    Service->>Service: filePath = folderPath/uuid.md
+
+    Service->>Vault: create(filePath, content)
+    Vault-->>Service: createdFile (TFile)
+
+    Vault->>MetaCache: Update cache (auto)
+    MetaCache->>UI: File changed event
+
+    Service-->>CommandManager: createdFile
+    CommandManager->>UI: Open file in new tab
+    CommandManager->>User: Show success notice
+
+    Note over UI: Layout auto-renders<br/>for new file

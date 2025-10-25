@@ -1,0 +1,77 @@
+%% Future Architecture (Post-Issue #122)
+%% Three-tier architecture with Core extraction
+
+graph TB
+    subgraph User Interfaces
+        ObsidianUI[🖥️ Obsidian Plugin<br/>Visual UI, Modals, Graph]
+        CLI[⌨️ CLI Tool<br/>Automation, Batch Ops]
+        Future[🌐 Web Interface<br/>Future: Browser-based]
+    end
+
+    subgraph Storage Adapters
+        ObsidianAdapter[ObsidianVaultAdapter<br/>implements IFileSystemAdapter]
+        NodeAdapter[NodeFsAdapter<br/>implements IFileSystemAdapter]
+        CloudAdapter[CloudFsAdapter<br/>Future: S3, etc.]
+    end
+
+    subgraph Core Package ["@exocortex/core (Pure Business Logic)"]
+        subgraph Core Domain
+            CoreConstants[Constants<br/>AssetClass, EffortStatus]
+            CoreModels[Models<br/>GraphNode, GraphData]
+            CoreVisibility[CommandVisibility<br/>25+ pure functions]
+        end
+
+        subgraph Core Services
+            CoreTaskCreate[TaskCreationService]
+            CoreProjectCreate[ProjectCreationService]
+            CoreConceptCreate[ConceptCreationService]
+            CoreTaskStatus[TaskStatusService]
+            CoreVoting[EffortVotingService]
+            CorePlanning[PlanningService]
+            CoreWorkflow[EffortStatusWorkflow]
+        end
+
+        subgraph Core Utilities
+            CoreFrontmatter[FrontmatterService]
+            CoreDate[DateFormatter]
+            CoreWikiLink[WikiLinkHelpers]
+            CoreMeta[MetadataHelpers]
+            CoreSorting[EffortSortingHelpers]
+        end
+
+        CoreInterface[IFileSystemAdapter<br/>⭐ Key Abstraction]
+    end
+
+    ObsidianUI -->|Uses| ObsidianAdapter
+    CLI -->|Uses| NodeAdapter
+    Future -.->|Future| CloudAdapter
+
+    ObsidianAdapter -->|Implements| CoreInterface
+    NodeAdapter -->|Implements| CoreInterface
+    CloudAdapter -.->|Implements| CoreInterface
+
+    CoreServices -->|Uses| CoreInterface
+    CoreServices -->|Uses| CoreUtilities
+    CoreServices -->|Uses| CoreDomain
+
+    CoreTaskCreate --> CoreInterface
+    CoreProjectCreate --> CoreInterface
+    CoreConceptCreate --> CoreInterface
+    CoreTaskStatus --> CoreInterface
+    CoreVoting --> CoreInterface
+
+    CoreTaskCreate --> CoreFrontmatter
+    CoreTaskCreate --> CoreDate
+    CoreTaskCreate --> CoreWikiLink
+    CoreTaskStatus --> CoreWorkflow
+    CoreTaskStatus --> CoreConstants
+
+    style CoreInterface fill:#FF6B6B,stroke:#C92A2A,stroke-width:3px
+    style CoreFrontmatter fill:#90EE90
+    style CoreDate fill:#90EE90
+    style CoreWikiLink fill:#90EE90
+    style CoreMeta fill:#90EE90
+    style CoreSorting fill:#90EE90
+    style CoreConstants fill:#FFD700
+    style CoreModels fill:#FFD700
+    style CoreVisibility fill:#90EE90
