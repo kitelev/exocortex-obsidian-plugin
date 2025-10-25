@@ -37,6 +37,7 @@ import { SupervisionInputModal } from "../../presentation/modals/SupervisionInpu
 import { WikiLinkHelpers } from "../../infrastructure/utilities/WikiLinkHelpers";
 import { AssetClass } from "../../domain/constants";
 import { MetadataExtractor } from "../../infrastructure/utilities/MetadataExtractor";
+import { LoggingService } from "../../infrastructure/services/LoggingService";
 
 /**
  * Command Manager Service
@@ -143,7 +144,7 @@ export class CommandManager {
         if (!checking) {
           this.executeCreateTask(file, context).catch((error) => {
             new Notice(`Failed to create task: ${error.message}`);
-            console.error("Create task error:", error);
+            LoggingService.error("Create task error", error);
           });
         }
 
@@ -169,7 +170,7 @@ export class CommandManager {
         if (!checking) {
           this.executeCreateProject(file, context).catch((error) => {
             new Notice(`Failed to create project: ${error.message}`);
-            console.error("Create project error:", error);
+            LoggingService.error("Create project error", error);
           });
         }
 
@@ -195,7 +196,7 @@ export class CommandManager {
         if (!checking) {
           this.executeCreateInstance(file, context).catch((error) => {
             new Notice(`Failed to create instance: ${error.message}`);
-            console.error("Create instance error:", error);
+            LoggingService.error("Create instance error", error);
           });
         }
 
@@ -221,7 +222,7 @@ export class CommandManager {
         if (!checking) {
           this.executeCreateRelatedTask(file, context).catch((error) => {
             new Notice(`Failed to create related task: ${error.message}`);
-            console.error("Create related task error:", error);
+            LoggingService.error("Create related task error", error);
           });
         }
 
@@ -247,7 +248,7 @@ export class CommandManager {
         if (!checking) {
           this.executeSetDraftStatus(file).catch((error) => {
             new Notice(`Failed to set draft status: ${error.message}`);
-            console.error("Set draft status error:", error);
+            LoggingService.error("Set draft status error", error);
           });
         }
 
@@ -273,7 +274,7 @@ export class CommandManager {
         if (!checking) {
           this.executeMoveToBacklog(file).catch((error) => {
             new Notice(`Failed to move to backlog: ${error.message}`);
-            console.error("Move to backlog error:", error);
+            LoggingService.error("Move to backlog error", error);
           });
         }
 
@@ -299,7 +300,7 @@ export class CommandManager {
         if (!checking) {
           this.executeMoveToAnalysis(file).catch((error) => {
             new Notice(`Failed to move to analysis: ${error.message}`);
-            console.error("Move to analysis error:", error);
+            LoggingService.error("Move to analysis error", error);
           });
         }
 
@@ -325,7 +326,7 @@ export class CommandManager {
         if (!checking) {
           this.executeMoveToToDo(file).catch((error) => {
             new Notice(`Failed to move to todo: ${error.message}`);
-            console.error("Move to todo error:", error);
+            LoggingService.error("Move to todo error", error);
           });
         }
 
@@ -351,7 +352,7 @@ export class CommandManager {
         if (!checking) {
           this.executeStartEffort(file).catch((error) => {
             new Notice(`Failed to start effort: ${error.message}`);
-            console.error("Start effort error:", error);
+            LoggingService.error("Start effort error", error);
           });
         }
 
@@ -377,7 +378,7 @@ export class CommandManager {
         if (!checking) {
           this.executePlanOnToday(file).catch((error) => {
             new Notice(`Failed to plan on today: ${error.message}`);
-            console.error("Plan on today error:", error);
+            LoggingService.error("Plan on today error", error);
           });
         }
 
@@ -403,7 +404,7 @@ export class CommandManager {
         if (!checking) {
           this.executePlanForEvening(file).catch((error) => {
             new Notice(`Failed to plan for evening: ${error.message}`);
-            console.error("Plan for evening error:", error);
+            LoggingService.error("Plan for evening error", error);
           });
         }
 
@@ -429,7 +430,7 @@ export class CommandManager {
         if (!checking) {
           this.executeShiftDayBackward(file).catch((error) => {
             new Notice(`Failed to shift day backward: ${error.message}`);
-            console.error("Shift day backward error:", error);
+            LoggingService.error("Shift day backward error", error);
           });
         }
 
@@ -455,7 +456,7 @@ export class CommandManager {
         if (!checking) {
           this.executeShiftDayForward(file).catch((error) => {
             new Notice(`Failed to shift day forward: ${error.message}`);
-            console.error("Shift day forward error:", error);
+            LoggingService.error("Shift day forward error", error);
           });
         }
 
@@ -481,7 +482,7 @@ export class CommandManager {
         if (!checking) {
           this.executeMarkDone(file).catch((error) => {
             new Notice(`Failed to mark as done: ${error.message}`);
-            console.error("Mark done error:", error);
+            LoggingService.error("Mark done error", error);
           });
         }
 
@@ -507,7 +508,7 @@ export class CommandManager {
         if (!checking) {
           this.executeTrashEffort(file).catch((error) => {
             new Notice(`Failed to trash effort: ${error.message}`);
-            console.error("Trash effort error:", error);
+            LoggingService.error("Trash effort error", error);
           });
         }
 
@@ -533,7 +534,7 @@ export class CommandManager {
         if (!checking) {
           this.executeArchiveTask(file).catch((error) => {
             new Notice(`Failed to archive task: ${error.message}`);
-            console.error("Archive task error:", error);
+            LoggingService.error("Archive task error", error);
           });
         }
 
@@ -559,7 +560,7 @@ export class CommandManager {
         if (!checking) {
           this.executeCleanProperties(file).catch((error) => {
             new Notice(`Failed to clean properties: ${error.message}`);
-            console.error("Clean properties error:", error);
+            LoggingService.error("Clean properties error", error);
           });
         }
 
@@ -591,7 +592,7 @@ export class CommandManager {
         if (!checking) {
           this.executeRepairFolder(file, metadata).catch((error) => {
             new Notice(`Failed to repair folder: ${error.message}`);
-            console.error("Repair folder error:", error);
+            LoggingService.error("Repair folder error", error);
           });
         }
 
@@ -618,7 +619,7 @@ export class CommandManager {
         if (!checking) {
           this.executeRenameToUid(file, context.metadata).catch((error) => {
             new Notice(`Failed to rename: ${error.message}`);
-            console.error("Rename to UID error:", error);
+            LoggingService.error("Rename to UID error", error);
           });
         }
 
@@ -645,7 +646,7 @@ export class CommandManager {
         if (!checking) {
           this.executeVoteOnEffort(file).catch((error) => {
             new Notice(`Failed to vote: ${error.message}`);
-            console.error("Vote on effort error:", error);
+            LoggingService.error("Vote on effort error", error);
           });
         }
 
@@ -668,7 +669,7 @@ export class CommandManager {
         if (!checking) {
           this.executeCopyLabelToAliases(file).catch((error) => {
             new Notice(`Failed to copy label: ${error.message}`);
-            console.error("Copy label to aliases error:", error);
+            LoggingService.error("Copy label to aliases error", error);
           });
         }
 
@@ -707,7 +708,7 @@ export class CommandManager {
       callback: () => {
         this.executeAddSupervision().catch((error) => {
           new Notice(`Failed to create supervision: ${error.message}`);
-          console.error("Add supervision error:", error);
+          LoggingService.error("Add supervision error", error);
         });
       },
     });
