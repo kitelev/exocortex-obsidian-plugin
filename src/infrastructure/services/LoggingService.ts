@@ -12,6 +12,7 @@ export class LoggingService {
   }
 
   static info(message: string, context?: unknown): void {
+    // eslint-disable-next-line no-console
     console.log(`[Exocortex] ${message}`, context ?? '');
   }
 
