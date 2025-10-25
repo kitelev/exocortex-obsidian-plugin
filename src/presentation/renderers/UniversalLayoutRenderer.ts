@@ -71,6 +71,7 @@ import { MetadataHelpers } from "../../infrastructure/utilities/MetadataHelpers"
 import { WikiLinkHelpers } from "../../infrastructure/utilities/WikiLinkHelpers";
 import { AssetClass, EffortStatus } from "../../domain/constants";
 import { MetadataExtractor } from "../../infrastructure/utilities/MetadataExtractor";
+import { DateFormatter } from "../../infrastructure/utilities/DateFormatter";
 
 /**
  * UniversalLayout configuration options
@@ -145,16 +146,9 @@ export class UniversalLayoutRenderer {
   private effortVotingService: EffortVotingService;
   private labelToAliasService: LabelToAliasService;
 
-  private formatDate(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
-
   private generateDefaultMeetingLabel(metadata: Record<string, any>, fileName: string): string {
     const baseLabel = metadata.exo__Asset_label || fileName;
-    const dateStr = this.formatDate(new Date());
+    const dateStr = DateFormatter.toDateString(new Date());
     return `${baseLabel} ${dateStr}`;
   }
 

@@ -111,6 +111,31 @@ export class DateFormatter {
   }
 
   /**
+   * Format date to simple date string (no brackets, no quotes).
+   *
+   * Format: `YYYY-MM-DD`
+   *
+   * Used for generating default labels or simple date formatting.
+   *
+   * @param date - Date object to format
+   * @returns Simple date string
+   *
+   * @example
+   * ```typescript
+   * const date = new Date('2025-10-24T14:30:45Z');
+   * const dateStr = DateFormatter.toDateString(date);
+   * // "2025-10-24"
+   * ```
+   */
+  static toDateString(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
    * Parse wikilink format back to date string (without quotes).
    *
    * Extracts date from `"[[YYYY-MM-DD]]"` or `[[YYYY-MM-DD]]` format.
