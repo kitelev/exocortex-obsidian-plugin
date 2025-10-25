@@ -2,6 +2,7 @@ import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 import { DateFormatter } from "../utilities/DateFormatter";
 import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
+import { MetadataHelpers } from "../utilities/MetadataHelpers";
 import { AssetClass } from "../../domain/constants";
 
 /**
@@ -192,15 +193,8 @@ export class TaskCreationService {
       isDefinedBy = isDefinedBy[0] || '""';
     }
 
-    // Ensure wiki-links are quoted
-    const ensureQuoted = (value: string): string => {
-      if (!value || value === '""') return '""';
-      if (value.startsWith('"') && value.endsWith('"')) return value;
-      return `"${value}"`;
-    };
-
     const frontmatter: Record<string, any> = {};
-    frontmatter["exo__Asset_isDefinedBy"] = ensureQuoted(isDefinedBy);
+    frontmatter["exo__Asset_isDefinedBy"] = MetadataHelpers.ensureQuoted(isDefinedBy);
     frontmatter["exo__Asset_uid"] = uid || uuidv4();
     frontmatter["exo__Asset_createdAt"] = timestamp;
     frontmatter["exo__Instance_class"] = [`"[[${AssetClass.TASK}]]"`];
@@ -315,15 +309,6 @@ export class TaskCreationService {
       isDefinedBy = isDefinedBy[0] || '""';
     }
 
-    // Ensure wiki-links are quoted
-    const ensureQuoted = (value: string): string => {
-      if (!value || value === '""') return '""';
-      // If already quoted, return as is
-      if (value.startsWith('"') && value.endsWith('"')) return value;
-      // Add quotes around wiki-link
-      return `"${value}"`;
-    };
-
     // Get appropriate effort property name and instance class based on source class
     const cleanSourceClass = WikiLinkHelpers.normalize(sourceClass);
     const effortProperty =
@@ -332,7 +317,7 @@ export class TaskCreationService {
       INSTANCE_CLASS_MAP[cleanSourceClass] || AssetClass.TASK;
 
     const frontmatter: Record<string, any> = {};
-    frontmatter["exo__Asset_isDefinedBy"] = ensureQuoted(isDefinedBy);
+    frontmatter["exo__Asset_isDefinedBy"] = MetadataHelpers.ensureQuoted(isDefinedBy);
     frontmatter["exo__Asset_uid"] = uid || uuidv4();
     frontmatter["exo__Asset_createdAt"] = timestamp;
     frontmatter["exo__Instance_class"] = [`"[[${instanceClass}]]"`];
