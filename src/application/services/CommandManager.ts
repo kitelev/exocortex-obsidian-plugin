@@ -36,6 +36,7 @@ import { LabelInputModal, type LabelInputModalResult } from "../../presentation/
 import { SupervisionInputModal } from "../../presentation/modals/SupervisionInputModal";
 import { WikiLinkHelpers } from "../../infrastructure/utilities/WikiLinkHelpers";
 import { AssetClass } from "../../domain/constants";
+import { MetadataExtractor } from "../../infrastructure/utilities/MetadataExtractor";
 
 /**
  * Command Manager Service
@@ -60,9 +61,11 @@ export class CommandManager {
   private renameToUidService: RenameToUidService;
   private effortVotingService: EffortVotingService;
   private labelToAliasService: LabelToAliasService;
+  private metadataExtractor: MetadataExtractor;
   private reloadLayoutCallback?: () => void;
 
   constructor(private app: App) {
+    this.metadataExtractor = new MetadataExtractor(app.metadataCache);
     this.taskCreationService = new TaskCreationService(app.vault);
     this.projectCreationService = new ProjectCreationService(app.vault);
     this.taskStatusService = new TaskStatusService(app.vault);
@@ -115,22 +118,10 @@ export class CommandManager {
    * Individual command handlers will fetch it async when needed.
    */
   private getContext(file: TFile): CommandVisibilityContext | null {
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-
-    const instanceClass = metadata.exo__Instance_class || null;
-    const currentStatus = metadata.ems__Effort_status || null;
-    const isArchived =
-      metadata.archived ?? metadata.exo__Asset_isArchived ?? false;
-
-    const currentFolder = file.parent?.path || "";
+    const context = this.metadataExtractor.extractCommandVisibilityContext(file);
 
     return {
-      instanceClass,
-      currentStatus,
-      metadata,
-      isArchived,
-      currentFolder,
+      ...context,
       expectedFolder: null, // Will be fetched async by repair folder command
     };
   }
