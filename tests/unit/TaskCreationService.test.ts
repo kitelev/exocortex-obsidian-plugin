@@ -452,31 +452,6 @@ describe("TaskCreationService", () => {
     });
   });
 
-  describe("generateTaskFileName (deprecated)", () => {
-    it("should generate filename with timestamp format (backward compatibility)", () => {
-      const fileName = service.generateTaskFileName();
-
-      // Format: Task-YYYY-MM-DDTHH-MM-SS.md
-      const fileNamePattern = /^Task-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}\.md$/;
-      expect(fileName).toMatch(fileNamePattern);
-    });
-
-    it("should replace colons with hyphens for filesystem compatibility", () => {
-      const fileName = service.generateTaskFileName();
-
-      // Should not contain colons
-      expect(fileName).not.toContain(":");
-      // Should contain hyphens instead
-      expect(fileName).toContain("-");
-    });
-
-    it("should end with .md extension", () => {
-      const fileName = service.generateTaskFileName();
-
-      expect(fileName.endsWith(".md")).toBe(true);
-    });
-  });
-
   describe("createTask", () => {
     it("should create file with UUID-based filename", async () => {
       const mockSourceFile = {
