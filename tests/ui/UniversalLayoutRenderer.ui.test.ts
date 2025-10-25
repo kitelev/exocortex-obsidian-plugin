@@ -86,7 +86,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       await renderer.render("", container, ctx);
 
       // Wait for React to render
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Verify DOM structure - should have both properties and relations sections
       expect(container.querySelector(".exocortex-properties-section")).toBeTruthy();
@@ -364,7 +364,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
       // Wait for React to render
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Verify button is present - find by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");

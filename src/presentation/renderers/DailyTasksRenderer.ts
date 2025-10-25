@@ -262,54 +262,83 @@ export class DailyTasksRenderer {
     }
   }
 
+  private extractFirstValue(value: unknown): string | null {
+    if (!value) {
+      return null;
+    }
+
+    if (typeof value === "string" && value.trim() !== "") {
+      return value.replace(/^\[\[|\]\]$/g, "").trim();
+    }
+
+    if (Array.isArray(value) && value.length > 0) {
+      const firstValue = value[0];
+      if (typeof firstValue === "string" && firstValue.trim() !== "") {
+        return firstValue.replace(/^\[\[|\]\]$/g, "").trim();
+      }
+    }
+
+    return null;
+  }
+
   private getEffortArea(metadata: Record<string, unknown>, visited: Set<string> = new Set()): string | null {
     if (!metadata || typeof metadata !== "object") {
       return null;
     }
 
     const area = metadata.ems__Effort_area;
-    if (area && typeof area === "string" && area.trim() !== "") {
-      return area;
+    const directArea = this.extractFirstValue(area);
+    if (directArea) {
+      return directArea;
     }
 
     const prototypeRef = metadata.ems__Effort_prototype;
-    if (prototypeRef) {
-      const prototypePath = typeof prototypeRef === "string"
-        ? prototypeRef.replace(/^\[\[|\]\]$/g, "").trim()
-        : null;
+    const prototypePath = this.extractFirstValue(prototypeRef);
 
-      if (prototypePath && !visited.has(prototypePath)) {
-        visited.add(prototypePath);
-        const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
-        if (prototypeFile && typeof prototypeFile === "object" && "path" in prototypeFile) {
-          const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile as TFile);
-          const prototypeMetadata = prototypeCache?.frontmatter || {};
+    if (prototypePath && !visited.has(prototypePath)) {
+      visited.add(prototypePath);
+      const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
+      if (prototypeFile && typeof prototypeFile === "object" && "path" in prototypeFile) {
+        const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile as TFile);
+        const prototypeMetadata = prototypeCache?.frontmatter || {};
 
-          const resolvedArea = this.getEffortArea(prototypeMetadata, visited);
-          if (resolvedArea) {
-            return resolvedArea;
-          }
+        const resolvedArea = this.getEffortArea(prototypeMetadata, visited);
+        if (resolvedArea) {
+          return resolvedArea;
+        }
+      }
+    }
+
+    const memberOfRef = metadata.exo__Asset_memberOf;
+    const memberOfPath = this.extractFirstValue(memberOfRef);
+
+    if (memberOfPath && !visited.has(memberOfPath)) {
+      visited.add(memberOfPath);
+      const memberOfFile = this.app.metadataCache.getFirstLinkpathDest(memberOfPath, "");
+      if (memberOfFile && typeof memberOfFile === "object" && "path" in memberOfFile) {
+        const memberOfCache = this.app.metadataCache.getFileCache(memberOfFile as TFile);
+        const memberOfMetadata = memberOfCache?.frontmatter || {};
+
+        const resolvedArea = this.getEffortArea(memberOfMetadata, visited);
+        if (resolvedArea) {
+          return resolvedArea;
         }
       }
     }
 
     const parentRef = metadata.ems__Effort_parent;
-    if (parentRef) {
-      const parentPath = typeof parentRef === "string"
-        ? parentRef.replace(/^\[\[|\]\]$/g, "").trim()
-        : null;
+    const parentPath = this.extractFirstValue(parentRef);
 
-      if (parentPath && !visited.has(parentPath)) {
-        visited.add(parentPath);
-        const parentFile = this.app.metadataCache.getFirstLinkpathDest(parentPath, "");
-        if (parentFile && typeof parentFile === "object" && "path" in parentFile) {
-          const parentCache = this.app.metadataCache.getFileCache(parentFile as TFile);
-          const parentMetadata = parentCache?.frontmatter || {};
+    if (parentPath && !visited.has(parentPath)) {
+      visited.add(parentPath);
+      const parentFile = this.app.metadataCache.getFirstLinkpathDest(parentPath, "");
+      if (parentFile && typeof parentFile === "object" && "path" in parentFile) {
+        const parentCache = this.app.metadataCache.getFileCache(parentFile as TFile);
+        const parentMetadata = parentCache?.frontmatter || {};
 
-          const resolvedArea = this.getEffortArea(parentMetadata, visited);
-          if (resolvedArea) {
-            return resolvedArea;
-          }
+        const resolvedArea = this.getEffortArea(parentMetadata, visited);
+        if (resolvedArea) {
+          return resolvedArea;
         }
       }
     }
