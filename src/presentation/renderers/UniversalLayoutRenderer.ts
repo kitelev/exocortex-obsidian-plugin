@@ -889,6 +889,12 @@ export class UniversalLayoutRenderer {
           await this.plugin.saveSettings();
           await this.refresh();
         },
+        showEffortVotes: this.settings.showEffortVotes,
+        onToggleEffortVotes: async () => {
+          this.settings.showEffortVotes = !this.settings.showEffortVotes;
+          await this.plugin.saveSettings();
+          await this.refresh();
+        },
         onTaskClick: async (path: string, event: React.MouseEvent) => {
           // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
           const isModPressed = Keymap.isModEvent(

@@ -4,6 +4,7 @@ export interface ExocortexSettings {
   showArchivedAssets: boolean;
   activeFocusArea: string | null;
   showEffortArea: boolean;
+  showEffortVotes: boolean;
 }
 
 export const DEFAULT_SETTINGS: ExocortexSettings = {
@@ -12,4 +13,5 @@ export const DEFAULT_SETTINGS: ExocortexSettings = {
   showArchivedAssets: false,
   activeFocusArea: null,
   showEffortArea: false,
+  showEffortVotes: false,
 };
