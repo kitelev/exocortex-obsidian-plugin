@@ -6,7 +6,6 @@ import { ReactRenderer } from "../utils/ReactRenderer";
 import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
 import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
-import { DailyTasksTable, DailyTask, DailyTasksTableWithToggle } from "../components/DailyTasksTable";
 import { DailyProjectsTable, DailyProject } from "../components/DailyProjectsTable";
 import { ActionButtonsGroup, ButtonGroup, ActionButton } from "../components/ActionButtonsGroup";
 import { AreaHierarchyTree } from "../components/AreaHierarchyTree";
@@ -28,6 +27,7 @@ import { MetadataExtractor } from "../../infrastructure/utilities/MetadataExtrac
 import { DateFormatter } from "../../infrastructure/utilities/DateFormatter";
 import { EffortSortingHelpers } from "../../infrastructure/utilities/EffortSortingHelpers";
 import { ButtonGroupsBuilder } from "../builders/ButtonGroupsBuilder";
+import { DailyTasksRenderer } from "./DailyTasksRenderer";
 
 /**
  * UniversalLayout configuration options
@@ -72,6 +72,7 @@ export class UniversalLayoutRenderer {
   private metadataExtractor: MetadataExtractor;
   private rootContainer: HTMLElement | null = null;
   private buttonGroupsBuilder: ButtonGroupsBuilder;
+  private dailyTasksRenderer: DailyTasksRenderer;
 
   constructor(app: ObsidianApp, settings: ExocortexSettings, plugin: any) {
     this.app = app;
@@ -106,6 +107,15 @@ export class UniversalLayoutRenderer {
       this.labelToAliasService,
       this.metadataExtractor,
       this.logger,
+      () => this.refresh(),
+    );
+    this.dailyTasksRenderer = new DailyTasksRenderer(
+      this.app,
+      this.settings,
+      this.plugin,
+      this.logger,
+      this.metadataExtractor,
+      this.reactRenderer,
       () => this.refresh(),
     );
   }
@@ -175,7 +185,7 @@ export class UniversalLayoutRenderer {
       }
 
       // Render daily tasks for pn__DailyNote assets
-      await this.renderDailyTasks(el, currentFile);
+      await this.dailyTasksRenderer.render(el, currentFile);
 
       // Render daily projects for pn__DailyNote assets
       await this.renderDailyProjects(el, currentFile);
@@ -357,114 +367,6 @@ export class UniversalLayoutRenderer {
         getAssetLabel: (path: string) => this.getAssetLabel(path),
       }),
     );
-  }
-
-  private async renderDailyTasks(
-    el: HTMLElement,
-    file: TFile,
-  ): Promise<void> {
-    const metadata = this.metadataExtractor.extractMetadata(file);
-    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
-
-    // Check if this is a pn__DailyNote
-    const classes = Array.isArray(instanceClass)
-      ? instanceClass
-      : [instanceClass];
-    const isDailyNote = classes.some(
-      (c: string) => c === "[[pn__DailyNote]]" || c === "pn__DailyNote",
-    );
-
-    if (!isDailyNote) {
-      return;
-    }
-
-    // Get the day from metadata
-    const dayProperty = metadata.pn__DailyNote_day;
-    if (!dayProperty) {
-      this.logger.debug("No pn__DailyNote_day found for daily note");
-      return;
-    }
-
-    // Extract day link: [[2025-10-16]] -> 2025-10-16
-    const dayMatch =
-      typeof dayProperty === "string"
-        ? dayProperty.match(/\[\[(.+?)\]\]/)
-        : null;
-    const day = dayMatch ? dayMatch[1] : String(dayProperty).replace(/^\[\[|\]\]$/g, "");
-
-    // Dataview no longer required - we use Vault API directly
-    // Get daily tasks
-    const tasks = await this.getDailyTasks(day);
-
-    if (tasks.length === 0) {
-      this.logger.debug(`No tasks found for day: ${day}`);
-      return;
-    }
-
-    // Render the tasks table
-    const sectionContainer = el.createDiv({ cls: "exocortex-daily-tasks-section" });
-
-    // Add section header
-    sectionContainer.createEl("h3", {
-      text: "Tasks",
-      cls: "exocortex-section-header",
-    });
-
-    // Add active focus indicator if set
-    if (this.settings.activeFocusArea) {
-      const indicatorContainer = sectionContainer.createDiv({ cls: "exocortex-active-focus-indicator" });
-      indicatorContainer.style.cssText = `
-        padding: 8px 12px;
-        margin-bottom: 12px;
-        background-color: var(--background-modifier-info);
-        border-radius: 4px;
-        font-size: 0.9em;
-      `;
-      indicatorContainer.createSpan({
-        text: `🎯 Active Focus: ${this.settings.activeFocusArea}`,
-      });
-    }
-
-    // Create separate container for React component to prevent header replacement
-    const tableContainer = sectionContainer.createDiv({ cls: "exocortex-daily-tasks-table-container" });
-
-    this.reactRenderer.render(
-      tableContainer,
-      React.createElement(DailyTasksTableWithToggle, {
-        tasks,
-        showEffortArea: this.settings.showEffortArea,
-        onToggleEffortArea: async () => {
-          this.settings.showEffortArea = !this.settings.showEffortArea;
-          await this.plugin.saveSettings();
-          await this.refresh();
-        },
-        showEffortVotes: this.settings.showEffortVotes,
-        onToggleEffortVotes: async () => {
-          this.settings.showEffortVotes = !this.settings.showEffortVotes;
-          await this.plugin.saveSettings();
-          await this.refresh();
-        },
-        onTaskClick: async (path: string, event: React.MouseEvent) => {
-          // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
-          const isModPressed = Keymap.isModEvent(
-            event.nativeEvent as MouseEvent,
-          );
-
-          if (isModPressed) {
-            // Open in new tab
-            const leaf = this.app.workspace.getLeaf("tab");
-            await leaf.openLinkText(path, "");
-          } else {
-            // Open in current tab
-            await this.app.workspace.openLinkText(path, "", false);
-          }
-        },
-        getAssetLabel: (path: string) => this.getAssetLabel(path),
-        getEffortArea: (metadata: Record<string, unknown>) => this.getEffortArea(metadata),
-      }),
-    );
-
-    this.logger.info(`Rendered ${tasks.length} tasks for DailyNote: ${day}`);
   }
 
   private async renderDailyProjects(
@@ -694,73 +596,6 @@ export class UniversalLayoutRenderer {
     });
   }
 
-  /**
-   * Get asset label for display (exo__Asset_label or prototype's label)
-   * Fallback chain:
-   * 1. Asset's own exo__Asset_label
-   * 2. Prototype's exo__Asset_label (via ems__Effort_prototype)
-   * 3. null (caller should use filename)
-   */
-  private getEffortArea(metadata: Record<string, unknown>, visited: Set<string> = new Set()): string | null {
-    if (!metadata || typeof metadata !== "object") {
-      return null;
-    }
-
-    // Check task's own area first
-    const area = metadata.ems__Effort_area;
-    if (area && typeof area === "string" && area.trim() !== "") {
-      return area;
-    }
-
-    // Fallback 1: check prototype's area (recursively)
-    const prototypeRef = metadata.ems__Effort_prototype;
-    if (prototypeRef) {
-      const prototypePath = typeof prototypeRef === "string"
-        ? prototypeRef.replace(/^\[\[|\]\]$/g, "").trim()
-        : null;
-
-      if (prototypePath && !visited.has(prototypePath)) {
-        visited.add(prototypePath);
-        const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
-        if (prototypeFile && typeof prototypeFile === "object" && "path" in prototypeFile) {
-          const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile as TFile);
-          const prototypeMetadata = prototypeCache?.frontmatter || {};
-
-          // Recursively resolve area through prototype chain
-          const resolvedArea = this.getEffortArea(prototypeMetadata, visited);
-          if (resolvedArea) {
-            return resolvedArea;
-          }
-        }
-      }
-    }
-
-    // Fallback 2: check parent effort's area (recursively)
-    const parentRef = metadata.ems__Effort_parent;
-    if (parentRef) {
-      const parentPath = typeof parentRef === "string"
-        ? parentRef.replace(/^\[\[|\]\]$/g, "").trim()
-        : null;
-
-      if (parentPath && !visited.has(parentPath)) {
-        visited.add(parentPath);
-        const parentFile = this.app.metadataCache.getFirstLinkpathDest(parentPath, "");
-        if (parentFile && typeof parentFile === "object" && "path" in parentFile) {
-          const parentCache = this.app.metadataCache.getFileCache(parentFile as TFile);
-          const parentMetadata = parentCache?.frontmatter || {};
-
-          // Recursively resolve area through parent chain
-          const resolvedArea = this.getEffortArea(parentMetadata, visited);
-          if (resolvedArea) {
-            return resolvedArea;
-          }
-        }
-      }
-    }
-
-    return null;
-  }
-
   private getAssetLabel(path: string): string | null {
     // Use getFirstLinkpathDest to resolve file regardless of vault location
     let file = this.app.metadataCache.getFirstLinkpathDest(path, "");
@@ -813,167 +648,6 @@ export class UniversalLayoutRenderer {
     return null;
   }
 
-
-  private getChildAreas(areaName: string, visited: Set<string> = new Set()): Set<string> {
-    const childAreas = new Set<string>();
-
-    if (visited.has(areaName)) {
-      return childAreas;
-    }
-    visited.add(areaName);
-
-    const allFiles = this.app.vault.getMarkdownFiles();
-
-    for (const file of allFiles) {
-      const metadata = this.metadataExtractor.extractMetadata(file);
-
-      const areaParent = metadata.ems__Area_parent;
-      if (!areaParent) continue;
-
-      const areaParentStr = String(areaParent).replace(/^\[\[|\]\]$/g, "");
-
-      if (areaParentStr === areaName) {
-        childAreas.add(file.basename);
-
-        const nestedChildren = this.getChildAreas(file.basename, visited);
-        nestedChildren.forEach(child => childAreas.add(child));
-      }
-    }
-
-    return childAreas;
-  }
-
-  private async getDailyTasks(
-    day: string,
-  ): Promise<DailyTask[]> {
-    try {
-      const tasks: DailyTask[] = [];
-
-      // Use Obsidian vault API to get all markdown files directly
-      const allFiles = this.app.vault.getMarkdownFiles();
-
-      for (const file of allFiles) {
-        const metadata = this.metadataExtractor.extractMetadata(file);
-
-        const effortDay = metadata.ems__Effort_day;
-
-        if (!effortDay) {
-          continue;
-        }
-
-        const effortDayStr = String(effortDay).replace(/^\[\[|\]\]$/g, "");
-
-        if (effortDayStr !== day) {
-          continue;
-        }
-
-        const instanceClass = metadata.exo__Instance_class || [];
-        const instanceClassArray = Array.isArray(instanceClass)
-          ? instanceClass
-          : [instanceClass];
-        const isProject = instanceClassArray.some(
-          (c: string) => String(c).includes(AssetClass.PROJECT),
-        );
-
-        if (isProject) {
-          continue;
-        }
-
-        const effortStatus = metadata.ems__Effort_status || "";
-        const effortStatusStr = String(effortStatus).replace(/^\[\[|\]\]$/g, "");
-
-        const startTimestamp = metadata.ems__Effort_startTimestamp;
-        const plannedStartTimestamp = metadata.ems__Effort_plannedStartTimestamp;
-        const endTimestamp = metadata.ems__Effort_endTimestamp;
-        const plannedEndTimestamp = metadata.ems__Effort_plannedEndTimestamp;
-
-        const formatTime = (timestamp: string | number | null | undefined): string => {
-          if (!timestamp) return "";
-          const date = new Date(timestamp);
-          if (isNaN(date.getTime())) return "";
-          return date.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          });
-        };
-
-        const startTime = formatTime(startTimestamp) || formatTime(plannedStartTimestamp);
-        const endTime = formatTime(endTimestamp) || formatTime(plannedEndTimestamp);
-
-        const isDone = effortStatusStr === EffortStatus.DONE;
-        const isTrashed = effortStatusStr === EffortStatus.TRASHED;
-        const isDoing = effortStatusStr === EffortStatus.DOING;
-        const isMeeting = instanceClassArray.some(
-          (c: string) => String(c).includes(AssetClass.MEETING),
-        );
-
-        const label = metadata.exo__Asset_label || file.basename;
-
-        let isBlocked = false;
-        const effortBlocker = metadata.ems__Effort_blocker;
-        if (effortBlocker) {
-          const blockerPath = String(effortBlocker).replace(/^\[\[|\]\]$/g, "");
-          const blockerFile = this.app.metadataCache.getFirstLinkpathDest(blockerPath, "");
-          if (blockerFile) {
-            const blockerCache = this.app.metadataCache.getFileCache(blockerFile);
-            const blockerMetadata = blockerCache?.frontmatter || {};
-            const blockerStatus = blockerMetadata.ems__Effort_status || "";
-            const blockerStatusStr = String(blockerStatus).replace(/^\[\[|\]\]$/g, "");
-            isBlocked = blockerStatusStr !== EffortStatus.DONE && blockerStatusStr !== EffortStatus.TRASHED;
-          }
-        }
-
-        tasks.push({
-          file: {
-            path: file.path,
-            basename: file.basename,
-          },
-          path: file.path,
-          title: file.basename,
-          label,
-          startTime,
-          endTime,
-          status: effortStatusStr,
-          metadata,
-          isDone,
-          isTrashed,
-          isDoing,
-          isMeeting,
-          isBlocked,
-        });
-      }
-
-      let filteredTasks = tasks;
-
-      if (this.settings.activeFocusArea) {
-        const activeFocusArea = this.settings.activeFocusArea;
-        const childAreas = this.getChildAreas(activeFocusArea);
-        const relevantAreas = new Set([activeFocusArea, ...Array.from(childAreas)]);
-
-        filteredTasks = tasks.filter(task => {
-          const taskMetadata = task.metadata;
-
-          const resolvedArea = this.getEffortArea(taskMetadata);
-          if (resolvedArea) {
-            const resolvedAreaStr = String(resolvedArea).replace(/^\[\[|\]\]$/g, "");
-            if (relevantAreas.has(resolvedAreaStr)) {
-              return true;
-            }
-          }
-
-          return false;
-        });
-      }
-
-      filteredTasks.sort(EffortSortingHelpers.sortByPriority);
-
-      return filteredTasks.slice(0, 50);
-    } catch (error) {
-      this.logger.error("Failed to get daily tasks", { error });
-      return [];
-    }
-  }
 
   private async getDailyProjects(
     day: string,
