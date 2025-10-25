@@ -24,11 +24,13 @@
   padding: 10px 0;
 }
 
-.exocortex-relation-group {
+.exocortex-relation-group,
+.relation-group {
   margin-bottom: 20px;
 }
 
-.exocortex-relation-group-header {
+.exocortex-relation-group-header,
+.group-header {
   color: var(--text-normal);
   font-size: 1.2em;
   font-weight: 600;
@@ -37,7 +39,170 @@
   border-bottom: 2px solid var(--background-modifier-border);
 }
 
-/* Table styles for asset relations */
+/* Ensure group headers are visible in both modes */
+.markdown-preview-view .group-header,
+.markdown-preview-view .exocortex-relation-group-header,
+.cm-content .group-header,
+.cm-content .exocortex-relation-group-header,
+.cm-scroller .group-header,
+.cm-scroller .exocortex-relation-group-header {
+  border-bottom: 2px solid var(--background-modifier-border) !important;
+}
+
+/* ============================================================================
+   Universal Table Styles - Consistent Rendering in Reading & Live Edit Modes
+   ============================================================================ */
+
+/* Base styles for all Exocortex tables - unified appearance across modes */
+.exocortex-relations-table,
+.exocortex-properties-table,
+.exocortex-tasks-table,
+.exocortex-projects-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+/* Table headers - consistent styling */
+.exocortex-relations-table thead,
+.exocortex-properties-table thead,
+.exocortex-tasks-table thead,
+.exocortex-projects-table thead {
+  background-color: var(--background-secondary);
+  border-bottom: 2px solid var(--background-modifier-border);
+}
+
+.exocortex-relations-table th,
+.exocortex-properties-table th,
+.exocortex-tasks-table th,
+.exocortex-projects-table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-weight: 600;
+  color: var(--text-normal);
+  border-right: 1px solid var(--background-modifier-border);
+  border-bottom: 2px solid var(--background-modifier-border);
+}
+
+.exocortex-relations-table th:last-child,
+.exocortex-properties-table th:last-child,
+.exocortex-tasks-table th:last-child,
+.exocortex-projects-table th:last-child {
+  border-right: none;
+}
+
+/* Table body rows */
+.exocortex-relations-table tbody tr,
+.exocortex-properties-table tbody tr,
+.exocortex-tasks-table tbody tr,
+.exocortex-projects-table tbody tr {
+  border-bottom: 1px solid var(--background-modifier-border);
+  transition: background-color 0.2s ease;
+}
+
+.exocortex-relations-table tbody tr:hover,
+.exocortex-properties-table tbody tr:hover,
+.exocortex-tasks-table tbody tr:hover,
+.exocortex-projects-table tbody tr:hover {
+  background-color: var(--background-secondary);
+}
+
+/* Table cells */
+.exocortex-relations-table td,
+.exocortex-properties-table td,
+.exocortex-tasks-table td,
+.exocortex-projects-table td {
+  padding: 8px 12px;
+  border-right: 1px solid var(--background-modifier-border);
+  color: var(--text-normal);
+}
+
+.exocortex-relations-table td:last-child,
+.exocortex-properties-table td:last-child,
+.exocortex-tasks-table td:last-child,
+.exocortex-projects-table td:last-child {
+  border-right: none;
+}
+
+/* Archived assets styling */
+.exocortex-relations-table tbody tr.archived-asset {
+  opacity: 0.6;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.exocortex-relations-table tbody tr.archived-asset:hover {
+  opacity: 0.7;
+}
+
+/* Links in tables */
+.exocortex-relations-table .internal-link,
+.exocortex-properties-table .internal-link,
+.exocortex-tasks-table .internal-link,
+.exocortex-projects-table .internal-link {
+  color: var(--text-normal);
+  text-decoration: none;
+}
+
+.exocortex-relations-table .internal-link:hover,
+.exocortex-properties-table .internal-link:hover,
+.exocortex-tasks-table .internal-link:hover,
+.exocortex-projects-table .internal-link:hover {
+  color: var(--interactive-accent);
+  text-decoration: underline;
+}
+
+/* Ensure consistent rendering in both Reading View and Live Edit/Source Mode */
+.markdown-preview-view .exocortex-relations-table,
+.markdown-preview-view .exocortex-properties-table,
+.markdown-preview-view .exocortex-tasks-table,
+.markdown-preview-view .exocortex-projects-table,
+.cm-content .exocortex-relations-table,
+.cm-content .exocortex-properties-table,
+.cm-content .exocortex-tasks-table,
+.cm-content .exocortex-projects-table,
+.cm-scroller .exocortex-relations-table,
+.cm-scroller .exocortex-properties-table,
+.cm-scroller .exocortex-tasks-table,
+.cm-scroller .exocortex-projects-table {
+  border-collapse: collapse !important;
+  border: 1px solid var(--background-modifier-border) !important;
+}
+
+.markdown-preview-view .exocortex-relations-table th,
+.markdown-preview-view .exocortex-properties-table th,
+.markdown-preview-view .exocortex-tasks-table th,
+.markdown-preview-view .exocortex-projects-table th,
+.cm-content .exocortex-relations-table th,
+.cm-content .exocortex-properties-table th,
+.cm-content .exocortex-tasks-table th,
+.cm-content .exocortex-projects-table th,
+.cm-scroller .exocortex-relations-table th,
+.cm-scroller .exocortex-properties-table th,
+.cm-scroller .exocortex-tasks-table th,
+.cm-scroller .exocortex-projects-table th {
+  border-right: 1px solid var(--background-modifier-border) !important;
+  border-bottom: 2px solid var(--background-modifier-border) !important;
+}
+
+.markdown-preview-view .exocortex-relations-table td,
+.markdown-preview-view .exocortex-properties-table td,
+.markdown-preview-view .exocortex-tasks-table td,
+.markdown-preview-view .exocortex-projects-table td,
+.cm-content .exocortex-relations-table td,
+.cm-content .exocortex-properties-table td,
+.cm-content .exocortex-tasks-table td,
+.cm-content .exocortex-projects-table td,
+.cm-scroller .exocortex-relations-table td,
+.cm-scroller .exocortex-properties-table td,
+.cm-scroller .exocortex-tasks-table td,
+.cm-scroller .exocortex-projects-table td {
+  border-right: 1px solid var(--background-modifier-border) !important;
+  border-bottom: 1px solid var(--background-modifier-border) !important;
+}
+
+/* Legacy compatibility */
 .exocortex-relation-table {
   width: 100%;
   border-collapse: collapse;
@@ -63,16 +228,6 @@
 
 .exocortex-relation-table tbody tr:hover {
   background-color: var(--background-secondary);
-}
-
-.exocortex-relation-table tbody tr.archived-asset {
-  opacity: 0.6;
-  font-style: italic;
-  color: var(--text-muted);
-}
-
-.exocortex-relation-table tbody tr.archived-asset:hover {
-  opacity: 0.7;
 }
 
 .exocortex-relation-row {
