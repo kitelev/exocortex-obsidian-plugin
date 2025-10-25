@@ -298,6 +298,8 @@ test.describe("DailyTasksTableWithToggle", () => {
         tasks={mockTasks}
         showEffortArea={false}
         onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
       />
     );
 
@@ -311,6 +313,8 @@ test.describe("DailyTasksTableWithToggle", () => {
         tasks={mockTasks}
         showEffortArea={true}
         onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
       />
     );
 
@@ -326,6 +330,8 @@ test.describe("DailyTasksTableWithToggle", () => {
         onToggleEffortArea={() => {
           toggleCalled = true;
         }}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
       />
     );
 
@@ -339,6 +345,8 @@ test.describe("DailyTasksTableWithToggle", () => {
         tasks={mockTasks}
         showEffortArea={true}
         onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
       />
     );
 
@@ -352,6 +360,8 @@ test.describe("DailyTasksTableWithToggle", () => {
         tasks={mockTasks}
         showEffortArea={false}
         onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
       />
     );
 
@@ -370,6 +380,8 @@ test.describe("DailyTasksTableWithToggle", () => {
         tasks={mockTasks}
         showEffortArea={currentShowEffortArea}
         onToggleEffortArea={onToggle}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
       />
     );
 
@@ -377,5 +389,132 @@ test.describe("DailyTasksTableWithToggle", () => {
 
     await component.locator(".exocortex-toggle-effort-area").click();
     expect(currentShowEffortArea).toBe(true);
+  });
+
+  test("should render Votes toggle button", async ({ mount }) => {
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+      />
+    );
+
+    await expect(component.locator(".exocortex-toggle-effort-votes")).toBeVisible();
+    await expect(component.locator(".exocortex-toggle-effort-votes")).toContainText("Show Votes");
+  });
+
+  test("should show 'Hide Votes' when showEffortVotes is true", async ({ mount }) => {
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+        showEffortVotes={true}
+        onToggleEffortVotes={() => {}}
+      />
+    );
+
+    await expect(component.locator(".exocortex-toggle-effort-votes")).toContainText("Hide Votes");
+  });
+
+  test("should call onToggleEffortVotes when button is clicked", async ({ mount }) => {
+    let toggleCalled = false;
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {
+          toggleCalled = true;
+        }}
+      />
+    );
+
+    await component.locator(".exocortex-toggle-effort-votes").click();
+    expect(toggleCalled).toBe(true);
+  });
+
+  test("should show Votes column when showEffortVotes is true", async ({ mount }) => {
+    const tasksWithVotes: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Task 1",
+        label: "First Task",
+        startTime: "09:00",
+        endTime: "10:00",
+        status: "ems__EffortStatusInProgress",
+        metadata: { ems__Effort_votes: 3 },
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={tasksWithVotes}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+        showEffortVotes={true}
+        onToggleEffortVotes={() => {}}
+      />
+    );
+
+    await expect(component.locator("thead th").nth(4)).toContainText("Votes");
+    await expect(component.locator(".task-effort-votes")).toBeVisible();
+    await expect(component.locator(".task-effort-votes")).toContainText("3");
+  });
+
+  test("should hide Votes column when showEffortVotes is false", async ({ mount }) => {
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+      />
+    );
+
+    await expect(component.locator(".task-effort-votes")).toHaveCount(0);
+  });
+
+  test("should display dash when votes are not set", async ({ mount }) => {
+    const tasksWithoutVotes: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Task 1",
+        label: "First Task",
+        startTime: "09:00",
+        endTime: "10:00",
+        status: "ems__EffortStatusInProgress",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={tasksWithoutVotes}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+        showEffortVotes={true}
+        onToggleEffortVotes={() => {}}
+      />
+    );
+
+    await expect(component.locator(".task-effort-votes")).toContainText("-");
   });
 });

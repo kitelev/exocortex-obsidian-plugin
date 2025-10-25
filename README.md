@@ -247,7 +247,8 @@ Aggregates all tasks where `ems__Effort_day` matches the daily note's date.
 **Columns:**
 - Task Name (clickable)
 - Status (with visual indicators)
-- Effort Area
+- Effort Area (toggleable via "Show/Hide Effort Area" button)
+- Votes (toggleable via "Show/Hide Votes" button - displays `ems__Effort_votes` property)
 - Effort Parent (project/initiative)
 
 **Active Focus Feature:**
@@ -260,10 +261,10 @@ When an area is set as "Active Focus" using the "Set Active Focus" button:
 ```
 🎯 Active Focus: Development
 
-Task Name              | Status      | Area        | Parent
------------------------|-------------|-------------|-------------
-Implement API          | Doing       | Development | Backend Project
-Write tests            | ToDo        | Development | Backend Project
+Task Name              | Status      | Area        | Votes | Parent
+-----------------------|-------------|-------------|-------|-------------
+Implement API          | Doing       | Development | 5     | Backend Project
+Write tests            | ToDo        | Development | 3     | Backend Project
 ```
 
 ### Daily Projects Table

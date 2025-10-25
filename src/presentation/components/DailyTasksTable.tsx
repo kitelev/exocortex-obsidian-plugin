@@ -25,6 +25,7 @@ export interface DailyTasksTableProps {
   getAssetLabel?: (path: string) => string | null;
   getEffortArea?: (metadata: Record<string, unknown>) => string | null;
   showEffortArea?: boolean;
+  showEffortVotes?: boolean;
 }
 
 export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
@@ -33,6 +34,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   getAssetLabel,
   getEffortArea,
   showEffortArea = false,
+  showEffortVotes = false,
 }) => {
   interface WikiLink {
     target: string;
@@ -86,6 +88,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
             <th>End</th>
             <th>Status</th>
             {showEffortArea && <th>Effort Area</th>}
+            {showEffortVotes && <th>Votes</th>}
           </tr>
         </thead>
         <tbody>
@@ -156,6 +159,11 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
                   })()}
                 </td>
               )}
+              {showEffortVotes && (
+                <td className="task-effort-votes">
+                  {typeof task.metadata.ems__Effort_votes === "number" ? task.metadata.ems__Effort_votes : "-"}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -164,14 +172,18 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   );
 };
 
-export interface DailyTasksTableWithToggleProps extends Omit<DailyTasksTableProps, 'showEffortArea'> {
+export interface DailyTasksTableWithToggleProps extends Omit<DailyTasksTableProps, 'showEffortArea' | 'showEffortVotes'> {
   showEffortArea: boolean;
   onToggleEffortArea: () => void;
+  showEffortVotes: boolean;
+  onToggleEffortVotes: () => void;
 }
 
 export const DailyTasksTableWithToggle: React.FC<DailyTasksTableWithToggleProps> = ({
   showEffortArea,
   onToggleEffortArea,
+  showEffortVotes,
+  onToggleEffortVotes,
   ...props
 }) => {
   return (
@@ -182,6 +194,7 @@ export const DailyTasksTableWithToggle: React.FC<DailyTasksTableWithToggleProps>
           onClick={onToggleEffortArea}
           style={{
             marginBottom: "8px",
+            marginRight: "8px",
             padding: "4px 8px",
             cursor: "pointer",
             fontSize: "12px",
@@ -189,8 +202,20 @@ export const DailyTasksTableWithToggle: React.FC<DailyTasksTableWithToggleProps>
         >
           {showEffortArea ? "Hide" : "Show"} Effort Area
         </button>
+        <button
+          className="exocortex-toggle-effort-votes"
+          onClick={onToggleEffortVotes}
+          style={{
+            marginBottom: "8px",
+            padding: "4px 8px",
+            cursor: "pointer",
+            fontSize: "12px",
+          }}
+        >
+          {showEffortVotes ? "Hide" : "Show"} Votes
+        </button>
       </div>
-      <DailyTasksTable {...props} showEffortArea={showEffortArea} />
+      <DailyTasksTable {...props} showEffortArea={showEffortArea} showEffortVotes={showEffortVotes} />
     </div>
   );
 };
