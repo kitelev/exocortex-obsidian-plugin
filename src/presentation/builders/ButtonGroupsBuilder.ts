@@ -8,6 +8,7 @@ import {
   canCreateChildArea,
   canCreateInstance,
   canCreateRelatedTask,
+  canCreateNarrowerConcept,
   canSetDraftStatus,
   canMoveToBacklog,
   canMoveToAnalysis,
@@ -30,9 +31,11 @@ import {
   CommandVisibilityContext,
 } from "../../domain/commands/CommandVisibility";
 import { LabelInputModal, type LabelInputModalResult } from "../modals/LabelInputModal";
+import { NarrowerConceptModal, type NarrowerConceptModalResult } from "../modals/NarrowerConceptModal";
 import { TaskCreationService } from "../../infrastructure/services/TaskCreationService";
 import { ProjectCreationService } from "../../infrastructure/services/ProjectCreationService";
 import { AreaCreationService } from "../../infrastructure/services/AreaCreationService";
+import { ConceptCreationService } from "../../infrastructure/services/ConceptCreationService";
 import { TaskStatusService } from "../../infrastructure/services/TaskStatusService";
 import { PropertyCleanupService } from "../../infrastructure/services/PropertyCleanupService";
 import { FolderRepairService } from "../../infrastructure/services/FolderRepairService";
@@ -55,6 +58,7 @@ export class ButtonGroupsBuilder {
     private taskCreationService: TaskCreationService,
     private projectCreationService: ProjectCreationService,
     private areaCreationService: AreaCreationService,
+    private conceptCreationService: ConceptCreationService,
     private taskStatusService: TaskStatusService,
     private propertyCleanupService: PropertyCleanupService,
     private folderRepairService: FolderRepairService,
@@ -198,6 +202,29 @@ export class ButtonGroupsBuilder {
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
           this.logger.info(`Created Related Task: ${createdFile.path}`);
+        },
+      },
+      {
+        id: "create-narrower-concept",
+        label: "Create Narrower Concept",
+        variant: "primary",
+        visible: canCreateNarrowerConcept(context),
+        onClick: async () => {
+          const result = await new Promise<NarrowerConceptModalResult>((resolve) => {
+            new NarrowerConceptModal(this.app, resolve).open();
+          });
+          if (result.fileName === null || result.definition === null) return;
+
+          const createdFile = await this.conceptCreationService.createNarrowerConcept(
+            file,
+            result.fileName,
+            result.definition,
+            result.aliases,
+          );
+          const leaf = this.app.workspace.getLeaf("tab");
+          await leaf.openFile(createdFile);
+          this.app.workspace.setActiveLeaf(leaf, { focus: true });
+          this.logger.info(`Created Narrower Concept: ${createdFile.path}`);
         },
       },
     ];

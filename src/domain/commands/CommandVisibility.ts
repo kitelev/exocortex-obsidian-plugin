@@ -480,3 +480,11 @@ export function canCopyLabelToAliases(context: CommandVisibilityContext): boolea
     return alias.trim() === trimmedLabel;
   });
 }
+
+/**
+ * Can execute "Create Narrower Concept" command
+ * Available for: ims__Concept assets
+ */
+export function canCreateNarrowerConcept(context: CommandVisibilityContext): boolean {
+  return hasClass(context.instanceClass, AssetClass.CONCEPT);
+}
