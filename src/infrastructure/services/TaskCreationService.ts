@@ -106,7 +106,7 @@ export class TaskCreationService {
       }
     }
 
-    const fileContent = this.buildFileContent(frontmatter, bodyContent);
+    const fileContent = MetadataHelpers.buildFileContent(frontmatter, bodyContent);
 
     // Create file in same folder as source
     const folderPath = sourceFile.parent?.path || "";
@@ -154,7 +154,7 @@ export class TaskCreationService {
       taskSize,
     );
 
-    const fileContent = this.buildFileContent(frontmatter);
+    const fileContent = MetadataHelpers.buildFileContent(frontmatter);
 
     // Create file in same folder as source
     const folderPath = sourceFile.parent?.path || "";
@@ -357,27 +357,5 @@ export class TaskCreationService {
     const timestamp = DateFormatter.toLocalTimestamp(now).replace(/:/g, "-"); // Replace colons for filesystem compatibility
 
     return `Task-${timestamp}.md`;
-  }
-
-  /**
-   * Build complete file content with frontmatter
-   * Handles arrays in YAML format with proper indentation
-   * @param frontmatter Frontmatter properties
-   * @param bodyContent Optional body content to append after frontmatter
-   */
-  private buildFileContent(frontmatter: Record<string, any>, bodyContent?: string): string {
-    const frontmatterLines = Object.entries(frontmatter)
-      .map(([key, value]) => {
-        if (Array.isArray(value)) {
-          // YAML array format with indentation
-          const arrayItems = value.map((item) => `  - ${item}`).join("\n");
-          return `${key}:\n${arrayItems}`;
-        }
-        return `${key}: ${value}`;
-      })
-      .join("\n");
-
-    const body = bodyContent ? `\n${bodyContent}\n` : "\n";
-    return `---\n${frontmatterLines}\n---\n${body}`;
   }
 }
