@@ -22,7 +22,7 @@ test.describe("Graph View E2E Tests", () => {
     await launcher.waitForModalsToClose(10000);
     await launcher.waitForElement('.exocortex-buttons-section', 60000);
 
-    const ribbonIcon = window.locator('.side-dock-ribbon-action[aria-label="Open Exocortex Graph"]');
+    const ribbonIcon = window.locator('.side-dock-ribbon-action[aria-label="Open exocortex graph"]');
 
     await ribbonIcon.waitFor({ state: "visible", timeout: 10000 });
     await ribbonIcon.click();
@@ -40,7 +40,7 @@ test.describe("Graph View E2E Tests", () => {
     await launcher.waitForModalsToClose(10000);
     await launcher.waitForElement('.exocortex-buttons-section', 60000);
 
-    const ribbonIcon = window.locator('.side-dock-ribbon-action[aria-label="Open Exocortex Graph"]');
+    const ribbonIcon = window.locator('.side-dock-ribbon-action[aria-label="Open exocortex graph"]');
     await ribbonIcon.click();
 
     await launcher.waitForElement('.exocortex-graph-view-container', 10000);
@@ -59,7 +59,7 @@ test.describe("Graph View E2E Tests", () => {
     await launcher.waitForModalsToClose(10000);
     await launcher.waitForElement('.exocortex-buttons-section', 60000);
 
-    const ribbonIcon = window.locator('.side-dock-ribbon-action[aria-label="Open Exocortex Graph"]');
+    const ribbonIcon = window.locator('.side-dock-ribbon-action[aria-label="Open exocortex graph"]');
     await ribbonIcon.click();
 
     await launcher.waitForElement('.exocortex-graph-view-container', 10000);
