@@ -117,7 +117,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({ app, plugin }) => {
   }, [settings.groups, matchesGroup]);
 
   const filteredData = useMemo(() => {
-    let filteredNodes = graphData.nodes.filter((node) => {
+    const filteredNodes = graphData.nodes.filter((node) => {
       if (!settings.filters.existingFilesOnly) {
         return true;
       }
