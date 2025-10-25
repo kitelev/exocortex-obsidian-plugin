@@ -6,7 +6,6 @@ import { ReactRenderer } from "../utils/ReactRenderer";
 import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
 import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
-import { DailyProjectsTable, DailyProject } from "../components/DailyProjectsTable";
 import { ActionButtonsGroup, ButtonGroup, ActionButton } from "../components/ActionButtonsGroup";
 import { AreaHierarchyTree } from "../components/AreaHierarchyTree";
 import { AreaHierarchyBuilder } from "../../infrastructure/services/AreaHierarchyBuilder";
@@ -28,6 +27,7 @@ import { DateFormatter } from "../../infrastructure/utilities/DateFormatter";
 import { EffortSortingHelpers } from "../../infrastructure/utilities/EffortSortingHelpers";
 import { ButtonGroupsBuilder } from "../builders/ButtonGroupsBuilder";
 import { DailyTasksRenderer } from "./DailyTasksRenderer";
+import { DailyProjectsRenderer } from "./DailyProjectsRenderer";
 
 /**
  * UniversalLayout configuration options
@@ -73,6 +73,7 @@ export class UniversalLayoutRenderer {
   private rootContainer: HTMLElement | null = null;
   private buttonGroupsBuilder: ButtonGroupsBuilder;
   private dailyTasksRenderer: DailyTasksRenderer;
+  private dailyProjectsRenderer: DailyProjectsRenderer;
 
   constructor(app: ObsidianApp, settings: ExocortexSettings, plugin: any) {
     this.app = app;
@@ -117,6 +118,17 @@ export class UniversalLayoutRenderer {
       this.metadataExtractor,
       this.reactRenderer,
       () => this.refresh(),
+    );
+    this.dailyProjectsRenderer = new DailyProjectsRenderer(
+      this.app,
+      this.settings,
+      this.plugin,
+      this.logger,
+      this.metadataExtractor,
+      this.reactRenderer,
+      () => this.refresh(),
+      (path: string) => this.getAssetLabel(path),
+      (metadata: Record<string, unknown>) => this.getEffortArea(metadata),
     );
   }
 
@@ -188,7 +200,7 @@ export class UniversalLayoutRenderer {
       await this.dailyTasksRenderer.render(el, currentFile);
 
       // Render daily projects for pn__DailyNote assets
-      await this.renderDailyProjects(el, currentFile);
+      await this.dailyProjectsRenderer.render(el, currentFile);
 
       // Get asset relations for the current file
       const relations = await this.getAssetRelations(currentFile, config);
@@ -367,75 +379,6 @@ export class UniversalLayoutRenderer {
         getAssetLabel: (path: string) => this.getAssetLabel(path),
       }),
     );
-  }
-
-  private async renderDailyProjects(
-    el: HTMLElement,
-    file: TFile,
-  ): Promise<void> {
-    const metadata = this.metadataExtractor.extractMetadata(file);
-    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
-
-    const classes = Array.isArray(instanceClass)
-      ? instanceClass
-      : [instanceClass];
-    const isDailyNote = classes.some(
-      (c: string) => c === "[[pn__DailyNote]]" || c === "pn__DailyNote",
-    );
-
-    if (!isDailyNote) {
-      return;
-    }
-
-    const dayProperty = metadata.pn__DailyNote_day;
-    if (!dayProperty) {
-      this.logger.debug("No pn__DailyNote_day found for daily note");
-      return;
-    }
-
-    const dayMatch =
-      typeof dayProperty === "string"
-        ? dayProperty.match(/\[\[(.+?)\]\]/)
-        : null;
-    const day = dayMatch ? dayMatch[1] : String(dayProperty).replace(/^\[\[|\]\]$/g, "");
-
-    const projects = await this.getDailyProjects(day);
-
-    if (projects.length === 0) {
-      this.logger.debug(`No projects found for day: ${day}`);
-      return;
-    }
-
-    const sectionContainer = el.createDiv({ cls: "exocortex-daily-projects-section" });
-
-    sectionContainer.createEl("h3", {
-      text: "Projects",
-      cls: "exocortex-section-header",
-    });
-
-    const tableContainer = sectionContainer.createDiv({ cls: "exocortex-daily-projects-table-container" });
-
-    this.reactRenderer.render(
-      tableContainer,
-      React.createElement(DailyProjectsTable, {
-        projects,
-        onProjectClick: async (path: string, event: React.MouseEvent) => {
-          const isModPressed = Keymap.isModEvent(
-            event.nativeEvent as MouseEvent,
-          );
-
-          if (isModPressed) {
-            const leaf = this.app.workspace.getLeaf("tab");
-            await leaf.openLinkText(path, "");
-          } else {
-            await this.app.workspace.openLinkText(path, "", false);
-          }
-        },
-        getAssetLabel: (path: string) => this.getAssetLabel(path),
-      }),
-    );
-
-    this.logger.info(`Rendered ${projects.length} projects for DailyNote: ${day}`);
   }
 
   /**
@@ -648,92 +591,87 @@ export class UniversalLayoutRenderer {
     return null;
   }
 
-
-  private async getDailyProjects(
-    day: string,
-  ): Promise<DailyProject[]> {
-    try {
-      const projects: DailyProject[] = [];
-
-      const allFiles = this.app.vault.getMarkdownFiles();
-
-      for (const file of allFiles) {
-        const metadata = this.metadataExtractor.extractMetadata(file);
-
-        const effortDay = metadata.ems__Effort_day;
-
-        if (!effortDay) {
-          continue;
-        }
-
-        const effortDayStr = String(effortDay).replace(/^\[\[|\]\]$/g, "");
-
-        if (effortDayStr !== day) {
-          continue;
-        }
-
-        const instanceClass = metadata.exo__Instance_class || [];
-        const instanceClassArray = Array.isArray(instanceClass)
-          ? instanceClass
-          : [instanceClass];
-        const isProject = instanceClassArray.some(
-          (c: string) => String(c).includes(AssetClass.PROJECT),
-        );
-
-        if (!isProject) {
-          continue;
-        }
-
-        const effortStatus = metadata.ems__Effort_status || "";
-        const effortStatusStr = String(effortStatus).replace(/^\[\[|\]\]$/g, "");
-
-        const startTimestamp = metadata.ems__Effort_startTimestamp;
-        const plannedStartTimestamp = metadata.ems__Effort_plannedStartTimestamp;
-        const endTimestamp = metadata.ems__Effort_endTimestamp;
-        const plannedEndTimestamp = metadata.ems__Effort_plannedEndTimestamp;
-
-        const formatTime = (timestamp: string | number | null | undefined): string => {
-          if (!timestamp) return "";
-          const date = new Date(timestamp);
-          if (isNaN(date.getTime())) return "";
-          return date.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false,
-          });
-        };
-
-        const startTime = formatTime(startTimestamp) || formatTime(plannedStartTimestamp);
-        const endTime = formatTime(endTimestamp) || formatTime(plannedEndTimestamp);
-
-        const isDone = effortStatusStr === EffortStatus.DONE;
-        const isTrashed = effortStatusStr === EffortStatus.TRASHED;
-
-        const label = metadata.exo__Asset_label || file.basename;
-
-        projects.push({
-          file: {
-            path: file.path,
-            basename: file.basename,
-          },
-          path: file.path,
-          title: file.basename,
-          label,
-          startTime,
-          endTime,
-          status: effortStatusStr,
-          metadata,
-          isDone,
-          isTrashed,
-        });
-      }
-
-      projects.sort(EffortSortingHelpers.sortByPriority);
-
-      return projects.slice(0, 50);
-    } catch (error) {
-      this.logger.error("Failed to get daily projects", { error });
-      return [];
+  private getEffortArea(metadata: Record<string, unknown>, visited: Set<string> = new Set()): string | null {
+    if (!metadata || typeof metadata !== "object") {
+      return null;
     }
+
+    const area = metadata.ems__Effort_area;
+    if (area && typeof area === "string" && area.trim() !== "") {
+      return area;
+    }
+
+    const prototypeRef = metadata.ems__Effort_prototype;
+    if (prototypeRef) {
+      const prototypePath = typeof prototypeRef === "string"
+        ? prototypeRef.replace(/^\[\[|\]\]$/g, "").trim()
+        : null;
+
+      if (prototypePath && !visited.has(prototypePath)) {
+        visited.add(prototypePath);
+        const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
+        if (prototypeFile && typeof prototypeFile === "object" && "path" in prototypeFile) {
+          const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile as TFile);
+          const prototypeMetadata = prototypeCache?.frontmatter || {};
+
+          const resolvedArea = this.getEffortArea(prototypeMetadata, visited);
+          if (resolvedArea) {
+            return resolvedArea;
+          }
+        }
+      }
+    }
+
+    const parentRef = metadata.ems__Effort_parent;
+    if (parentRef) {
+      const parentPath = typeof parentRef === "string"
+        ? parentRef.replace(/^\[\[|\]\]$/g, "").trim()
+        : null;
+
+      if (parentPath && !visited.has(parentPath)) {
+        visited.add(parentPath);
+        const parentFile = this.app.metadataCache.getFirstLinkpathDest(parentPath, "");
+        if (parentFile && typeof parentFile === "object" && "path" in parentFile) {
+          const parentCache = this.app.metadataCache.getFileCache(parentFile as TFile);
+          const parentMetadata = parentCache?.frontmatter || {};
+
+          const resolvedArea = this.getEffortArea(parentMetadata, visited);
+          if (resolvedArea) {
+            return resolvedArea;
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private getChildAreas(areaName: string, visited: Set<string> = new Set()): Set<string> {
+    const childAreas = new Set<string>();
+
+    if (visited.has(areaName)) {
+      return childAreas;
+    }
+    visited.add(areaName);
+
+    const allFiles = this.app.vault.getMarkdownFiles();
+
+    for (const file of allFiles) {
+      const metadata = this.metadataExtractor.extractMetadata(file);
+
+      const areaParent = metadata.ems__Area_parent;
+      if (!areaParent) continue;
+
+      const areaParentStr = String(areaParent).replace(/^\[\[|\]\]$/g, "");
+
+      if (areaParentStr === areaName) {
+        childAreas.add(file.basename);
+
+        const nestedChildren = this.getChildAreas(file.basename, visited);
+        nestedChildren.forEach(child => childAreas.add(child));
+      }
+    }
+
+    return childAreas;
   }
 }
