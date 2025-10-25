@@ -4,6 +4,7 @@
  */
 
 import { TaskCreationService } from "../../src/infrastructure/services/TaskCreationService";
+import { MetadataHelpers } from "../../src/infrastructure/utilities/MetadataHelpers";
 
 describe("TaskCreationService", () => {
   let service: TaskCreationService;
@@ -406,8 +407,8 @@ describe("TaskCreationService", () => {
         "ems__Area",
       );
 
-      // Access private method through TypeScript any
-      const content = (service as any).buildFileContent(frontmatter);
+      // Use MetadataHelpers utility
+      const content = MetadataHelpers.buildFileContent(frontmatter);
 
       // Should contain YAML array format with bullet
       expect(content).toContain('exo__Instance_class:\n  - "[[ems__Task]]"');
@@ -431,7 +432,7 @@ describe("TaskCreationService", () => {
         "ems__Project",
       );
 
-      const content = (service as any).buildFileContent(frontmatter);
+      const content = MetadataHelpers.buildFileContent(frontmatter);
 
       expect(content).toContain('exo__Instance_class:\n  - "[[ems__Task]]"');
       expect(content).toContain('exo__Asset_isDefinedBy: "[[!toos]]"');
@@ -445,7 +446,7 @@ describe("TaskCreationService", () => {
         exo__Asset_uid: "test-uuid",
       };
 
-      const content = (service as any).buildFileContent(frontmatter);
+      const content = MetadataHelpers.buildFileContent(frontmatter);
 
       expect(content).toContain('exo__Instance_class:\n  - "[[ems__Task]]"\n  - "[[ems__Effort]]"');
     });

@@ -86,4 +86,19 @@ export class MetadataHelpers {
     if (value.startsWith('"') && value.endsWith('"')) return value;
     return `"${value}"`;
   }
+
+  static buildFileContent(frontmatter: Record<string, any>, bodyContent?: string): string {
+    const frontmatterLines = Object.entries(frontmatter)
+      .map(([key, value]) => {
+        if (Array.isArray(value)) {
+          const arrayItems = value.map((item) => `  - ${item}`).join("\n");
+          return `${key}:\n${arrayItems}`;
+        }
+        return `${key}: ${value}`;
+      })
+      .join("\n");
+
+    const body = bodyContent ? `\n${bodyContent}\n` : "\n";
+    return `---\n${frontmatterLines}\n---\n${body}`;
+  }
 }

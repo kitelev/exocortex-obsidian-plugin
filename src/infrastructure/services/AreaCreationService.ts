@@ -20,7 +20,7 @@ export class AreaCreationService {
       label,
       uid,
     );
-    const fileContent = this.buildFileContent(frontmatter);
+    const fileContent = MetadataHelpers.buildFileContent(frontmatter);
 
     const folderPath = sourceFile.parent?.path || "";
     const filePath = folderPath ? `${folderPath}/${fileName}` : fileName;
@@ -58,19 +58,5 @@ export class AreaCreationService {
     }
 
     return frontmatter;
-  }
-
-  private buildFileContent(frontmatter: Record<string, any>): string {
-    const frontmatterLines = Object.entries(frontmatter)
-      .map(([key, value]) => {
-        if (Array.isArray(value)) {
-          const arrayItems = value.map((item) => `  - ${item}`).join("\n");
-          return `${key}:\n${arrayItems}`;
-        }
-        return `${key}: ${value}`;
-      })
-      .join("\n");
-
-    return `---\n${frontmatterLines}\n---\n\n`;
   }
 }
