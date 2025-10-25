@@ -642,23 +642,6 @@ export class UniversalLayoutRenderer {
       }
     }
 
-    const memberOfRef = metadata.exo__Asset_memberOf;
-    const memberOfPath = this.extractFirstValue(memberOfRef);
-
-    if (memberOfPath && !visited.has(memberOfPath)) {
-      visited.add(memberOfPath);
-      const memberOfFile = this.app.metadataCache.getFirstLinkpathDest(memberOfPath, "");
-      if (memberOfFile && typeof memberOfFile === "object" && "path" in memberOfFile) {
-        const memberOfCache = this.app.metadataCache.getFileCache(memberOfFile as TFile);
-        const memberOfMetadata = memberOfCache?.frontmatter || {};
-
-        const resolvedArea = this.getEffortArea(memberOfMetadata, visited);
-        if (resolvedArea) {
-          return resolvedArea;
-        }
-      }
-    }
-
     const parentRef = metadata.ems__Effort_parent;
     const parentPath = this.extractFirstValue(parentRef);
 
