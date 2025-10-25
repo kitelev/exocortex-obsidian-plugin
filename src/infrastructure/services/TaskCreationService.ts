@@ -119,17 +119,6 @@ export class TaskCreationService {
   }
 
   /**
-   * @deprecated Use createTask() instead
-   * Backward compatibility wrapper for existing code
-   */
-  async createTaskFromArea(
-    sourceFile: TFile,
-    sourceMetadata: Record<string, any>,
-  ): Promise<TFile> {
-    return this.createTask(sourceFile, sourceMetadata, AssetClass.AREA);
-  }
-
-  /**
    * Create a new related Task with bidirectional exo__Asset_relates links
    * @param sourceFile The source Task file to create a related task from
    * @param sourceMetadata Frontmatter metadata from the source
@@ -338,17 +327,5 @@ export class TaskCreationService {
     }
 
     return frontmatter;
-  }
-
-  /**
-   * @deprecated No longer used - filename is now based on UUID
-   * Generate filename for new Task using timestamp
-   * Format: Task-2025-10-04T16-23-50.md
-   */
-  generateTaskFileName(): string {
-    const now = new Date();
-    const timestamp = DateFormatter.toLocalTimestamp(now).replace(/:/g, "-"); // Replace colons for filesystem compatibility
-
-    return `Task-${timestamp}.md`;
   }
 }
