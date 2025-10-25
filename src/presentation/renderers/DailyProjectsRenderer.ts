@@ -14,34 +14,26 @@ type ObsidianApp = any;
 export class DailyProjectsRenderer {
   private logger: ILogger;
   private app: ObsidianApp;
-  private settings: ExocortexSettings;
-  private plugin: any;
   private metadataExtractor: MetadataExtractor;
   private reactRenderer: ReactRenderer;
-  private refresh: () => Promise<void>;
   private getAssetLabelCallback: (path: string) => string | null;
-  private getEffortAreaCallback: (metadata: Record<string, unknown>) => string | null;
 
   constructor(
     app: ObsidianApp,
-    settings: ExocortexSettings,
-    plugin: any,
+    _settings: ExocortexSettings,
+    _plugin: any,
     logger: ILogger,
     metadataExtractor: MetadataExtractor,
     reactRenderer: ReactRenderer,
-    refresh: () => Promise<void>,
+    _refresh: () => Promise<void>,
     getAssetLabel: (path: string) => string | null,
-    getEffortArea: (metadata: Record<string, unknown>) => string | null,
+    _getEffortArea: (metadata: Record<string, unknown>) => string | null,
   ) {
     this.app = app;
-    this.settings = settings;
-    this.plugin = plugin;
     this.logger = logger;
     this.metadataExtractor = metadataExtractor;
     this.reactRenderer = reactRenderer;
-    this.refresh = refresh;
     this.getAssetLabelCallback = getAssetLabel;
-    this.getEffortAreaCallback = getEffortArea;
   }
 
   public async render(el: HTMLElement, file: TFile): Promise<void> {
@@ -52,7 +44,7 @@ export class DailyProjectsRenderer {
       ? instanceClass
       : [instanceClass];
     const isDailyNote = classes.some(
-      (c: string) => c === "[[pn__DailyNote]]" || c === "pn__DailyNote",
+      (c: string | null) => c === "[[pn__DailyNote]]" || c === "pn__DailyNote",
     );
 
     if (!isDailyNote) {
