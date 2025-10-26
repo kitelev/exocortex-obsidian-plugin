@@ -42,6 +42,7 @@ describe("CommandManager", () => {
       },
       metadataCache: {
         getFileCache: mockGetFileCache,
+        getFirstLinkpathDest: jest.fn(),
       },
       workspace: {
         getActiveFile: jest.fn().mockReturnValue(mockFile),
@@ -1102,6 +1103,420 @@ describe("CommandManager", () => {
       await command.callback();
 
       expect(Notice).toHaveBeenCalledWith("Archived assets hidden");
+    });
+  });
+
+  describe("Command Execution - Error Handling", () => {
+    beforeEach(() => {
+      commandManager.registerAllCommands(mockPlugin);
+    });
+
+
+    it("should handle errors in set draft status execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("set-draft-status");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to set draft status")
+      );
+    });
+
+    it("should handle errors in move to backlog execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "ems__EffortStatusDraft",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("move-to-backlog");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to move to backlog")
+      );
+    });
+
+    it("should handle errors in move to analysis execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "ems__EffortStatusBacklog",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("move-to-analysis");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to move to analysis")
+      );
+    });
+
+    it("should handle errors in move to todo execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "ems__EffortStatusAnalysis",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("move-to-todo");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to move to todo")
+      );
+    });
+
+    it("should handle errors in start effort execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "ems__EffortStatusBacklog",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("start-effort");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to start effort")
+      );
+    });
+
+    it("should handle errors in plan on today execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "ems__EffortStatusToDo",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("plan-on-today");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to plan on today")
+      );
+    });
+
+    it("should handle errors in plan for evening execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "ems__EffortStatusBacklog",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("plan-for-evening");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to plan for evening")
+      );
+    });
+
+    it("should handle errors in shift day backward execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_day: "2025-01-20",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("shift-day-backward");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to shift day backward")
+      );
+    });
+
+    it("should handle errors in shift day forward execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_day: "2025-01-20",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("shift-day-forward");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to shift day forward")
+      );
+    });
+
+    it("should handle errors in mark done execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "ems__EffortStatusDoing",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("mark-done");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to mark as done")
+      );
+    });
+
+    it("should handle errors in trash effort execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("trash-effort");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to trash effort")
+      );
+    });
+
+    it("should handle errors in archive task execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "ems__EffortStatusDone",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("archive-task");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to archive task")
+      );
+    });
+
+    it("should handle errors in clean properties execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          empty_prop: "",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("clean-properties");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to clean properties")
+      );
+    });
+
+    it("should handle errors in repair folder execution", async () => {
+      mockFile = {
+        basename: "test-file",
+        path: "wrong-folder/test-file.md",
+        parent: { path: "wrong-folder" },
+      } as unknown as TFile;
+      mockApp.workspace.getActiveFile.mockReturnValue(mockFile);
+
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Asset_isDefinedBy: "[[test-area]]",
+        },
+      });
+
+      const mockArea = {
+        path: "correct-folder/test-area.md",
+        parent: { path: "correct-folder" },
+      };
+      mockApp.metadataCache.getFirstLinkpathDest = jest
+        .fn()
+        .mockReturnValue(mockArea);
+
+      mockApp.vault.rename = jest.fn().mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("repair-folder");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to repair folder")
+      );
+    });
+
+    it("should handle errors in rename to uid execution", async () => {
+      mockFile = {
+        basename: "wrong-name",
+        path: "test/wrong-name.md",
+        parent: { path: "test" },
+      } as unknown as TFile;
+      mockApp.workspace.getActiveFile.mockReturnValue(mockFile);
+
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Asset_uid: "correct-uid",
+        },
+      });
+
+      mockApp.vault.rename = jest.fn().mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("rename-to-uid");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Failed to rename"));
+    });
+
+    it("should handle errors in vote on effort execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("vote-on-effort");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Failed to vote"));
+    });
+
+    it("should handle errors in copy label to aliases execution", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Asset_label: "Test Label",
+        },
+      });
+
+      mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
+
+      const command = registeredCommands.get("copy-label-to-aliases");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to copy label")
+      );
+    });
+
+  });
+
+  describe("Command Execution - Repair Folder Special Cases", () => {
+    beforeEach(() => {
+      commandManager.registerAllCommands(mockPlugin);
+    });
+
+    it("should handle repair folder when no expected folder found", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Asset_isDefinedBy: "[[ems__NonExistent]]",
+        },
+      });
+
+      mockApp.metadataCache.getFirstLinkpathDest = jest
+        .fn()
+        .mockReturnValue(null);
+
+      const command = registeredCommands.get("repair-folder");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith("No expected folder found");
+    });
+
+    it("should handle repair folder when already in correct folder", async () => {
+      mockFile = {
+        basename: "test-file",
+        path: "correct-folder/test-file.md",
+        parent: { path: "correct-folder" },
+      } as unknown as TFile;
+      mockApp.workspace.getActiveFile.mockReturnValue(mockFile);
+
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Asset_isDefinedBy: "[[test-area]]",
+        },
+      });
+
+      const mockArea = {
+        path: "correct-folder/test-area.md",
+        parent: { path: "correct-folder" },
+      };
+      mockApp.metadataCache.getFirstLinkpathDest = jest
+        .fn()
+        .mockReturnValue(mockArea);
+
+      const command = registeredCommands.get("repair-folder");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(Notice).toHaveBeenCalledWith("Asset is already in correct folder");
     });
   });
 });
