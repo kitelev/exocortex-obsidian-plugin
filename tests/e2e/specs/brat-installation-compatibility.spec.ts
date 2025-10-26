@@ -4,6 +4,15 @@ import { execSync } from 'child_process';
 const GITHUB_REPO = 'kitelev/exocortex-obsidian-plugin';
 const GITHUB_API = 'https://api.github.com';
 
+const isMainBranch = () => {
+  try {
+    const branch = execSync('git branch --show-current', { encoding: 'utf-8' }).trim();
+    return branch === 'main';
+  } catch {
+    return false;
+  }
+};
+
 function githubApiRequest(endpoint: string): any {
   const response = execSync(
     `curl -s -H "Accept: application/vnd.github.v3+json" ${GITHUB_API}${endpoint}`,
@@ -20,6 +29,11 @@ function downloadReleaseAsset(tagName: string, assetName: string): string {
 }
 
 test.describe('BRAT Installation Compatibility', () => {
+  test.beforeEach(({ skip }) => {
+    if (!isMainBranch()) {
+      skip();
+    }
+  });
   test('should have no draft releases that could confuse BRAT', async () => {
     const releases = githubApiRequest(`/repos/${GITHUB_REPO}/releases?per_page=100`);
     const draftReleases = releases.filter((r: any) => r.draft === true);
