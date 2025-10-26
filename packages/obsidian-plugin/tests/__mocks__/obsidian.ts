@@ -1,3 +1,26 @@
+// Mock function helper for both Jest and Playwright environments
+const mockFn = (implementation?: any) => {
+  // If jest is available (Jest environment), use mockFn()
+  if (typeof jest !== 'undefined') {
+    return mockFn(implementation);
+  }
+  // Otherwise (Playwright CT environment), create a simple mock function
+  const fn: any = implementation || (() => {});
+  fn.mockResolvedValue = (value: any) => {
+    fn._mockResolvedValue = value;
+    return fn;
+  };
+  fn.mockRejectedValue = (error: any) => {
+    fn._mockRejectedValue = error;
+    return fn;
+  };
+  fn.mockReturnValue = (value: any) => {
+    fn._mockReturnValue = value;
+    return fn;
+  };
+  return fn;
+};
+
 // Add Obsidian-specific methods to HTMLElement globally
 declare global {
   interface HTMLElement {
@@ -98,7 +121,7 @@ export class Plugin {
     callback: (evt: MouseEvent) => void,
   ): HTMLElement {
     const el = document.createElement("div");
-    el.addClass = jest.fn();
+    el.addClass = mockFn();
     return el;
   }
 
@@ -474,7 +497,7 @@ export class MarkdownView {
 
   constructor() {
     this.previewMode = {
-      rerender: jest.fn(),
+      rerender: mockFn(),
     };
   }
 }
@@ -525,12 +548,12 @@ export class App {
 export class Vault {
   private mockFiles: TFile[] = [];
   adapter: any = {
-    read: jest.fn().mockRejectedValue(new Error("File not found")),
-    write: jest.fn().mockResolvedValue(undefined),
-    exists: jest.fn().mockResolvedValue(false),
-    mkdir: jest.fn().mockResolvedValue(undefined),
-    remove: jest.fn().mockResolvedValue(undefined),
-    list: jest.fn().mockResolvedValue({ files: [], folders: [] }),
+    read: mockFn().mockRejectedValue(new Error("File not found")),
+    write: mockFn().mockResolvedValue(undefined),
+    exists: mockFn().mockResolvedValue(false),
+    mkdir: mockFn().mockResolvedValue(undefined),
+    remove: mockFn().mockResolvedValue(undefined),
+    list: mockFn().mockResolvedValue({ files: [], folders: [] }),
   };
 
   getFiles(): TFile[] {
@@ -925,7 +948,7 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   // Vibration API mock
   if (!navigator.vibrate) {
     Object.defineProperty(navigator, "vibrate", {
-      value: jest.fn((pattern: number | number[]) => {
+      value: mockFn((pattern: number | number[]) => {
         console.log(`Mock vibrate called with:`, pattern);
         return true;
       }),
@@ -989,14 +1012,14 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
 
   // Mock requestAnimationFrame and cancelAnimationFrame if not present
   if (!window.requestAnimationFrame) {
-    window.requestAnimationFrame = jest.fn((callback: FrameRequestCallback) => {
+    window.requestAnimationFrame = mockFn((callback: FrameRequestCallback) => {
       const id = setTimeout(() => callback(performance.now()), 16);
       return id;
     }) as any;
   }
 
   if (!window.cancelAnimationFrame) {
-    window.cancelAnimationFrame = jest.fn((id: number) => {
+    window.cancelAnimationFrame = mockFn((id: number) => {
       clearTimeout(id);
     });
   }
@@ -1007,8 +1030,8 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
       value: {
         angle: 0,
         type: "portrait-primary",
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn(),
+        addEventListener: mockFn(),
+        removeEventListener: mockFn(),
       },
       configurable: true,
     });
@@ -1016,17 +1039,17 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
 
   // Mock matchMedia for responsive design tests
   if (!window.matchMedia) {
-    window.matchMedia = jest.fn((query: string) => ({
+    window.matchMedia = mockFn((query: string) => ({
       matches: query.includes("max-width: 768px")
         ? process.env.TEST_PLATFORM === "mobile"
         : false,
       media: query,
       onchange: null,
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      dispatchEvent: jest.fn(),
+      addListener: mockFn(),
+      removeListener: mockFn(),
+      addEventListener: mockFn(),
+      removeEventListener: mockFn(),
+      dispatchEvent: mockFn(),
     }));
   }
 
@@ -1034,7 +1057,7 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
   if (!window.CSS) {
     Object.defineProperty(window, "CSS", {
       value: {
-        supports: jest.fn((property: string) => {
+        supports: mockFn((property: string) => {
           // Mock support for safe-area CSS
           return property.includes("safe-area") || property.includes("env(");
         }),
@@ -1045,9 +1068,9 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
 
   // Mock computed style for safe area detection
   const originalGetComputedStyle = window.getComputedStyle;
-  window.getComputedStyle = jest.fn((element: Element) => {
+  window.getComputedStyle = mockFn((element: Element) => {
     const mockStyle = {
-      getPropertyValue: jest.fn((prop: string) => {
+      getPropertyValue: mockFn((prop: string) => {
         // Mock safe area insets for iOS
         const safeAreaMap: { [key: string]: string } = {
           "env(safe-area-inset-top)":
@@ -1182,8 +1205,8 @@ export const MobileTestUtils = {
       cancelable: true,
     });
 
-    (event as any).preventDefault = jest.fn();
-    (event as any).stopPropagation = jest.fn();
+    (event as any).preventDefault = mockFn();
+    (event as any).stopPropagation = mockFn();
 
     return event;
   },
@@ -1200,7 +1223,7 @@ export const MobileTestUtils = {
   }) {
     if (capabilities.vibration !== undefined) {
       Object.defineProperty(navigator, "vibrate", {
-        value: capabilities.vibration ? jest.fn() : undefined,
+        value: capabilities.vibration ? mockFn() : undefined,
         configurable: true,
       });
     }
@@ -1209,9 +1232,9 @@ export const MobileTestUtils = {
       Object.defineProperty(navigator, "geolocation", {
         value: capabilities.geolocation
           ? {
-              getCurrentPosition: jest.fn(),
-              watchPosition: jest.fn(),
-              clearWatch: jest.fn(),
+              getCurrentPosition: mockFn(),
+              watchPosition: mockFn(),
+              clearWatch: mockFn(),
             }
           : undefined,
         configurable: true,
