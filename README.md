@@ -1,6 +1,6 @@
 # Exocortex Obsidian Plugin
 
-**A comprehensive task management and knowledge graph system for Obsidian with automatic layout rendering, hierarchical organization, and effort tracking.**
+**A comprehensive task management system for Obsidian with automatic layout rendering, hierarchical organization, and effort tracking.**
 
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
@@ -15,7 +15,6 @@ Exocortex is a powerful Obsidian plugin that transforms your notes into an inter
 ### Key Features
 
 - 📊 **Automatic Layout Rendering**: Context-aware sections displayed below metadata in reading mode
-- 🕸️ **Graph View**: Interactive force-directed graph showing all notes with `exo__Asset_label` instead of UID filenames
 - 🎯 **Daily Task Planning**: Aggregate all tasks scheduled for specific days with active focus filtering
 - 🌳 **Area Hierarchy Visualization**: Interactive collapsible tree showing organizational structure
 - 🔄 **Effort Status Workflow**: Complete lifecycle from Draft → Backlog → Analysis → ToDo → Doing → Done
@@ -27,7 +26,7 @@ Exocortex is a powerful Obsidian plugin that transforms your notes into an inter
 - 📦 **Archive Filtering**: Toggle visibility of completed/archived assets
 - ⚡ **High Performance**: O(1) relation lookups via reverse indexing
 - 📱 **Mobile Compatible**: Full touch-optimized UI for desktop and mobile
-- ⌨️ **24 Commands**: Comprehensive command palette integration for all operations
+- ⌨️ **23 Commands**: Comprehensive command palette integration for all operations
 - 🎨 **Action Buttons**: Context-aware UI buttons for quick access to relevant commands
 
 ## 🏃‍♂️ Quick Start
@@ -135,13 +134,12 @@ Keep your vault organized:
 | **Repair Folder** | Assets with exo__Asset_isDefinedBy | Move file to correct folder based on reference |
 | **Rename to UID** | Filename ≠ exo__Asset_uid | Rename file to match UID, preserve label |
 
-### System Commands (5)
+### System Commands (4)
 
 Control plugin behavior and visualization:
 
 | Command | Always Available | Action |
 |---------|-----------------|--------|
-| **Open Exocortex Graph** | Yes | Visualize vault as interactive force-directed graph with asset labels |
 | **Reload Layout** | Yes | Manually refresh layout rendering |
 | **Add Supervision** | Yes | Create CBT-format fleeting note in 01 Inbox |
 | **Toggle Layout Visibility** | Yes | Show/hide entire layout section |
@@ -389,38 +387,6 @@ exo__Asset_isArchived: true
 - Toggle visibility: Settings → "Show Archived Assets" or Command Palette
 - When visible, archived assets shown with reduced opacity
 - Archive status considered in command visibility logic
-
-### Graph View
-
-Interactive force-directed graph visualization of your entire vault. Displays human-readable labels (`exo__Asset_label`) instead of UID filenames, solving the problem of unreadable UUIDs in Obsidian's native graph.
-
-**Features:**
-- **Label Resolution**: Automatically uses `exo__Asset_label` for node labels, falling back to filename if not set
-- **Prototype Inheritance**: For effort instances, resolves label from `ems__Effort_prototype` if needed
-- **Interactive Navigation**: Click any node to open the corresponding note
-- **Type Filtering**: Filter nodes by `exo__Asset_class` (Area, Effort, Project, etc.)
-- **Archive Toggle**: Show/hide archived assets with single checkbox
-- **Force-Directed Layout**: D3-force simulation for optimal node positioning
-- **Zoom & Pan**: Navigate large graphs with mouse wheel zoom and drag panning
-- **Color Coding**: Different colors for different asset types
-
-**How to open:**
-- **Ribbon Icon**: Click the graph icon (git-fork) in the left sidebar
-- **Command Palette**: Cmd/Ctrl+P → "Open Exocortex Graph"
-
-**Graph View solves the UID problem:**
-```yaml
-# Before: Obsidian Graph shows filename
-File: 550e8400-e29b-41d4-a716-446655440000.md
-Graph: [unreadable UID]
-
-# After: Exocortex Graph shows label
-File: 550e8400-e29b-41d4-a716-446655440000.md
----
-exo__Asset_label: "My Important Project"
----
-Graph: [My Important Project]  ✅ Readable!
-```
 
 ## 🏗️ Architecture
 
