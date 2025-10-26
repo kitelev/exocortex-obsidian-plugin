@@ -1,8 +1,8 @@
 // Mock function helper for both Jest and Playwright environments
 const mockFn = (implementation?: any) => {
-  // If jest is available (Jest environment), use mockFn()
+  // If jest is available (Jest environment), use jest.fn()
   if (typeof jest !== 'undefined') {
-    return mockFn(implementation);
+    return jest.fn(implementation);
   }
   // Otherwise (Playwright CT environment), create a simple mock function
   const fn: any = implementation || (() => {});
