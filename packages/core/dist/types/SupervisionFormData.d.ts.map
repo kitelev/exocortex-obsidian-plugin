@@ -1,0 +1,1 @@
+{"version":3,"file":"SupervisionFormData.d.ts","sourceRoot":"","sources":["../../src/types/SupervisionFormData.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,mBAAmB;IAClC,SAAS,EAAE,MAAM,CAAC;IAClB,QAAQ,EAAE,MAAM,CAAC;IACjB,QAAQ,EAAE,MAAM,CAAC;IACjB,QAAQ,EAAE,MAAM,CAAC;IACjB,qBAAqB,EAAE,MAAM,CAAC;IAC9B,oBAAoB,EAAE,MAAM,CAAC;IAC7B,eAAe,EAAE,MAAM,CAAC;CACzB"}

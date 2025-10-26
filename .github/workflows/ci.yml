@@ -37,8 +37,8 @@ jobs:
         with:
           name: plugin-build
           path: |
-            main.js
-            manifest.json
+            packages/obsidian-plugin/main.js
+            packages/obsidian-plugin/manifest.json
           retention-days: 1
 
   typecheck:

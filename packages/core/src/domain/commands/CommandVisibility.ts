@@ -1,4 +1,4 @@
-import { WikiLinkHelpers } from "../../infrastructure/utilities/WikiLinkHelpers";
+import { WikiLinkHelpers } from "../../utilities/WikiLinkHelpers";
 import { AssetClass, EffortStatus } from "../constants";
 
 /**

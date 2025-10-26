@@ -135,12 +135,12 @@ jobs:
             fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
           "
 
-          # Update manifest.json
+          # Update manifest.json in plugin package
           node -e "
             const fs = require('fs');
-            const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+            const manifest = JSON.parse(fs.readFileSync('packages/obsidian-plugin/manifest.json', 'utf8'));
             manifest.version = '$NEW_VERSION';
-            fs.writeFileSync('manifest.json', JSON.stringify(manifest, null, 2) + '\n');
+            fs.writeFileSync('packages/obsidian-plugin/manifest.json', JSON.stringify(manifest, null, 2) + '\n');
           "
 
           echo "Updated package.json and manifest.json to version $NEW_VERSION"
@@ -157,8 +157,8 @@ jobs:
         if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
         run: |
           mkdir release-files
-          cp main.js manifest.json release-files/
-          [ -f styles.css ] && cp styles.css release-files/ || true
+          cp packages/obsidian-plugin/main.js packages/obsidian-plugin/manifest.json release-files/
+          [ -f packages/obsidian-plugin/styles.css ] && cp packages/obsidian-plugin/styles.css release-files/ || true
           cd release-files
           zip -r ../${{ github.event.repository.name }}.zip ./*
 
@@ -207,9 +207,9 @@ jobs:
         with:
           tag_name: v${{ steps.new_version.outputs.version }}
           files: |
-            main.js
-            manifest.json
-            styles.css
+            packages/obsidian-plugin/main.js
+            packages/obsidian-plugin/manifest.json
+            packages/obsidian-plugin/styles.css
             ${{ github.event.repository.name }}.zip
           body_path: release_notes.md
           draft: false

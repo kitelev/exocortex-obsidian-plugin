@@ -1,0 +1,32 @@
+{
+  "name": "@exocortex/obsidian-plugin",
+  "version": "0.0.0-dev",
+  "description": "Exocortex plugin for Obsidian - UI adapter for the Exocortex knowledge management system",
+  "main": "../../main.js",
+  "private": true,
+  "scripts": {
+    "build": "cd ../.. && node packages/obsidian-plugin/esbuild.config.mjs production",
+    "dev": "cd ../.. && node packages/obsidian-plugin/esbuild.config.mjs",
+    "test": "npm run test:unit && npm run test:ui && npm run test:component",
+    "test:unit": "cd ../.. && ./scripts/test-ci-batched.sh",
+    "test:ui": "jest --config jest.ui.config.js",
+    "test:component": "playwright test -c playwright-ct.config.ts",
+    "test:e2e": "playwright test -c playwright-e2e.config.ts",
+    "test:e2e:local": "cd ../.. && ./scripts/test-e2e-local.sh"
+  },
+  "dependencies": {
+    "@exocortex/core": "*",
+    "obsidian": "latest",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@playwright/experimental-ct-react": "^1.55.1",
+    "@playwright/test": "^1.55.1",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "jest": "^30.0.5",
+    "jest-environment-obsidian": "^0.0.1"
+  }
+}

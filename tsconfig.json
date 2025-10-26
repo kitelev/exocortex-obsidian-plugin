@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "paths": {
+      "@exocortex/core": ["./packages/core/src/index.ts"]
+    },
     "inlineSourceMap": true,
     "inlineSources": true,
     "module": "ESNext",
@@ -28,11 +31,12 @@
     "types": ["jest", "node"],
     "lib": ["DOM", "ES5", "ES6", "ES7", "ESNext"]
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["packages/**/*.ts", "packages/**/*.tsx"],
   "exclude": [
     "node_modules",
     "features/**/*",
-    "tests/**/*",
+    "packages/**/tests/**/*",
+    "packages/**/dist/**/*",
     "wdio.conf*.ts",
     "playwright.config.ts"
   ]

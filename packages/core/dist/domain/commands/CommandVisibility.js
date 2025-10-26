@@ -25,7 +25,7 @@ exports.canCreateRelatedTask = canCreateRelatedTask;
 exports.canSetActiveFocus = canSetActiveFocus;
 exports.canCopyLabelToAliases = canCopyLabelToAliases;
 exports.canCreateNarrowerConcept = canCreateNarrowerConcept;
-const WikiLinkHelpers_1 = require("../../infrastructure/utilities/WikiLinkHelpers");
+const WikiLinkHelpers_1 = require("../../utilities/WikiLinkHelpers");
 const constants_1 = require("../constants");
 /**
  * Check if instanceClass contains specific class
