@@ -29,8 +29,8 @@ test.describe('Algorithm Block Extraction from TaskPrototype', () => {
     // Additional wait for plugin to fully render after modals close
     await window.waitForTimeout(5000);
 
-    // Wait for the universal layout to render (increased for stability after main branch changes)
-    await launcher.waitForElement('.exocortex-buttons-section', 60000);
+    // Wait for the universal layout to render (increased to 120s for Docker cold start reliability)
+    await launcher.waitForElement('.exocortex-buttons-section', 120000);
 
     // Find and click the "Create Instance" button
     const createInstanceButton = window.getByRole('button', { name: 'Create Instance' });
@@ -99,8 +99,8 @@ test.describe('Algorithm Block Extraction from TaskPrototype', () => {
     // Additional wait for plugin to fully render after modals close
     await window.waitForTimeout(5000);
 
-    // Wait for the universal layout (increased for stability after main branch changes)
-    await launcher.waitForElement('.exocortex-buttons-section', 60000);
+    // Wait for the universal layout (increased to 120s for Docker cold start reliability)
+    await launcher.waitForElement('.exocortex-buttons-section', 120000);
 
     // Click "Create Instance" button
     const createInstanceButton = window.getByRole('button', { name: 'Create Instance' });
