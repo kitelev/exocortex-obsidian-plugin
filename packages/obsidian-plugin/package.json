@@ -10,7 +10,7 @@
     "test": "npm run test:unit && npm run test:ui && npm run test:component",
     "test:unit": "cd ../.. && ./scripts/test-ci-batched.sh",
     "test:ui": "jest --config jest.ui.config.js",
-    "test:component": "playwright test -c playwright-ct.config.ts",
+    "test:component": "npx playwright test -c playwright-ct.config.ts",
     "test:e2e": "playwright test -c playwright-e2e.config.ts",
     "test:e2e:local": "cd ../.. && ./scripts/test-e2e-local.sh"
   },

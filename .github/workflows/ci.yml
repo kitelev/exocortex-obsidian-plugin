@@ -211,7 +211,7 @@ jobs:
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096"
           cd packages/obsidian-plugin
-          playwright test -c playwright-ct.config.ts || exit 1
+          npx playwright test -c playwright-ct.config.ts || exit 1
 
       - name: Upload component test report
         if: always()
