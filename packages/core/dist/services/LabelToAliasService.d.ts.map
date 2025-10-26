@@ -1,0 +1,1 @@
+{"version":3,"file":"LabelToAliasService.d.ts","sourceRoot":"","sources":["../../src/services/LabelToAliasService.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,KAAK,EAAE,KAAK,EAAE,MAAM,UAAU,CAAC;AAExC,qBAAa,mBAAmB;IAClB,OAAO,CAAC,KAAK;gBAAL,KAAK,EAAE,KAAK;IAE1B,kBAAkB,CAAC,IAAI,EAAE,KAAK,GAAG,OAAO,CAAC,IAAI,CAAC;IAYpD,OAAO,CAAC,YAAY;IAgBpB,OAAO,CAAC,iBAAiB;CA+B1B"}
