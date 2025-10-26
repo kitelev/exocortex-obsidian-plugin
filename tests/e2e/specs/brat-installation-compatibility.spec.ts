@@ -29,12 +29,9 @@ function downloadReleaseAsset(tagName: string, assetName: string): string {
 }
 
 test.describe('BRAT Installation Compatibility', () => {
-  test.beforeEach(({ skip }) => {
-    if (!isMainBranch()) {
-      skip();
-    }
-  });
-  test('should have no draft releases that could confuse BRAT', async () => {
+  test('should have no draft releases that could confuse BRAT', async ({}, testInfo) => {
+    test.skip(!isMainBranch(), 'Skipping BRAT tests on non-main branches');
+
     const releases = githubApiRequest(`/repos/${GITHUB_REPO}/releases?per_page=100`);
     const draftReleases = releases.filter((r: any) => r.draft === true);
 
@@ -42,6 +39,8 @@ test.describe('BRAT Installation Compatibility', () => {
   });
 
   test('should have latest release with correct version in manifest.json', async () => {
+    test.skip(!isMainBranch(), 'Skipping BRAT tests on non-main branches');
+
     const releases = githubApiRequest(`/repos/${GITHUB_REPO}/releases?per_page=1`);
     const latestRelease = releases[0];
 
@@ -59,6 +58,8 @@ test.describe('BRAT Installation Compatibility', () => {
   });
 
   test('should have all required release assets for BRAT installation', async () => {
+    test.skip(!isMainBranch(), 'Skipping BRAT tests on non-main branches');
+
     const releases = githubApiRequest(`/repos/${GITHUB_REPO}/releases?per_page=1`);
     const latestRelease = releases[0];
 
@@ -70,6 +71,8 @@ test.describe('BRAT Installation Compatibility', () => {
   });
 
   test('should have manifest.json with minAppVersion for compatibility', async () => {
+    test.skip(!isMainBranch(), 'Skipping BRAT tests on non-main branches');
+
     const releases = githubApiRequest(`/repos/${GITHUB_REPO}/releases?per_page=1`);
     const latestRelease = releases[0];
 
@@ -81,6 +84,8 @@ test.describe('BRAT Installation Compatibility', () => {
   });
 
   test('should have consistent version across manifest.json and git tag', async () => {
+    test.skip(!isMainBranch(), 'Skipping BRAT tests on non-main branches');
+
     const releases = githubApiRequest(`/repos/${GITHUB_REPO}/releases?per_page=1`);
     const latestRelease = releases[0];
 
@@ -93,6 +98,8 @@ test.describe('BRAT Installation Compatibility', () => {
   });
 
   test('should have main.js file in latest release', async () => {
+    test.skip(!isMainBranch(), 'Skipping BRAT tests on non-main branches');
+
     const releases = githubApiRequest(`/repos/${GITHUB_REPO}/releases?per_page=1`);
     const latestRelease = releases[0];
 
