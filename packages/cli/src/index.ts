@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import chalk from 'chalk';
 import { createTaskCommand } from './commands/create-task.js';
 import { createInstanceCommand } from './commands/create-instance.js';
 import { statusCommand } from './commands/status.js';
