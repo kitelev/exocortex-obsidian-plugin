@@ -46,14 +46,14 @@ class TaskCreationService {
     generateTaskFrontmatter(sourceMetadata, sourceName, sourceClass, label, uid, taskSize) {
         return this.frontmatterGenerator.generateTaskFrontmatter(sourceMetadata, sourceName, sourceClass, label, uid, taskSize);
     }
-    // Used only by unit tests via (service as any)._generateRelatedTaskFrontmatter
+    // Used only by unit tests via (service as any).generateRelatedTaskFrontmatter
     // @ts-ignore - Used by tests through type casting
-    _generateRelatedTaskFrontmatter(sourceMetadata, sourceName, label, uid, taskSize) {
+    generateRelatedTaskFrontmatter(sourceMetadata, sourceName, label, uid, taskSize) {
         return this.frontmatterGenerator.generateRelatedTaskFrontmatter(sourceMetadata, sourceName, label, uid, taskSize);
     }
-    // Used only by unit tests via (service as any)._extractH2Section
+    // Used only by unit tests via (service as any).extractH2Section
     // @ts-ignore - Used by tests through type casting
-    _extractH2Section(content, heading) {
+    extractH2Section(content, heading) {
         return this.algorithmExtractor.extractH2Section(content, heading);
     }
     async addRelationToSourceFile(sourceFile, newTaskUid) {
