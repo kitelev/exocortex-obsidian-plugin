@@ -53,6 +53,11 @@ export default defineConfig({
         },
         extensions: ['.ts', '.tsx', '.js', '.jsx'],
       },
+      define: {
+        // Provide jest globals for component tests (some code may reference jest)
+        'global.jest': 'undefined',
+        'window.jest': 'undefined',
+      },
     },
   },
 
