@@ -61,28 +61,28 @@ RUN chmod +x /docker-entrypoint.sh
 
 # Copy only necessary files (built plugin passed from CI, not built inside Docker)
 # Build artifacts are downloaded to root by CI (download-artifact step)
-COPY main.js ./
-COPY manifest.json ./
-COPY packages/obsidian-plugin/tests/e2e/ ./tests/e2e/
-COPY packages/obsidian-plugin/playwright-e2e.config.ts ./
-COPY packages/obsidian-plugin/playwright-no-flaky-reporter.ts ./
+COPY main.js ./packages/obsidian-plugin/
+COPY manifest.json ./packages/obsidian-plugin/
+COPY packages/obsidian-plugin/tests/e2e/ ./packages/obsidian-plugin/tests/e2e/
+COPY packages/obsidian-plugin/playwright-e2e.config.ts ./packages/obsidian-plugin/
+COPY packages/obsidian-plugin/playwright-no-flaky-reporter.ts ./packages/obsidian-plugin/
 
 # Create test vault and install pre-built plugin
-RUN mkdir -p tests/e2e/test-vault/.obsidian/plugins/exocortex \
-    && cp main.js manifest.json tests/e2e/test-vault/.obsidian/plugins/exocortex/ \
+RUN mkdir -p packages/obsidian-plugin/tests/e2e/test-vault/.obsidian/plugins/exocortex \
+    && cp packages/obsidian-plugin/main.js packages/obsidian-plugin/manifest.json packages/obsidian-plugin/tests/e2e/test-vault/.obsidian/plugins/exocortex/ \
     && echo "=== Verifying .obsidian config files ===" \
-    && ls -la tests/e2e/test-vault/.obsidian/*.json || echo "WARNING: No JSON files found" \
+    && ls -la packages/obsidian-plugin/tests/e2e/test-vault/.obsidian/*.json || echo "WARNING: No JSON files found" \
     && echo "=== community-plugins.json content: ===" \
-    && cat tests/e2e/test-vault/.obsidian/community-plugins.json || echo "ERROR: community-plugins.json not found" \
+    && cat packages/obsidian-plugin/tests/e2e/test-vault/.obsidian/community-plugins.json || echo "ERROR: community-plugins.json not found" \
     && echo "=== app.json exists: ===" \
-    && ls -l tests/e2e/test-vault/.obsidian/app.json || echo "WARNING: app.json not found" \
+    && ls -l packages/obsidian-plugin/tests/e2e/test-vault/.obsidian/app.json || echo "WARNING: app.json not found" \
     && echo "=== Plugin files installed: ===" \
-    && ls -lh tests/e2e/test-vault/.obsidian/plugins/exocortex/
+    && ls -lh packages/obsidian-plugin/tests/e2e/test-vault/.obsidian/plugins/exocortex/
 
 # Environment variables
 ENV DISPLAY=:99
 ENV OBSIDIAN_PATH=/opt/obsidian/obsidian
-ENV OBSIDIAN_VAULT=/app/tests/e2e/test-vault
+ENV OBSIDIAN_VAULT=/app/packages/obsidian-plugin/tests/e2e/test-vault
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["npm", "run", "test:e2e"]

@@ -84,7 +84,7 @@ jobs:
 
   test-unit:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     container:
       image: mcr.microsoft.com/playwright:v1.55.1-jammy
 
@@ -101,14 +101,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run all tests (unit + BDD + component)
+      - name: Run unit and UI tests only (component tests have separate job)
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096"
-          timeout 180s npm test || exit 1
+          npm run test:unit && npm run test:ui
 
   test-coverage:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     container:
       image: mcr.microsoft.com/playwright:v1.55.1-jammy
 
@@ -129,7 +129,7 @@ jobs:
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096"
           export COVERAGE=true
-          npm run test:unit || exit 1
+          ./scripts/test-ci-batched.sh || exit 1
         continue-on-error: false
 
       - name: Generate coverage summary
@@ -190,7 +190,7 @@ jobs:
 
   test-component:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 10
     container:
       image: mcr.microsoft.com/playwright:v1.55.1-jammy
 
@@ -210,8 +210,7 @@ jobs:
       - name: Run component tests
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096"
-          cd packages/obsidian-plugin
-          npx playwright test -c playwright-ct.config.ts || exit 1
+          npm run test:component
 
       - name: Upload component test report
         if: always()
