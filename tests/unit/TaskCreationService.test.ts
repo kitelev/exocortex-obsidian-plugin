@@ -711,6 +711,395 @@ Step with spaces
     });
   });
 
+  describe("createTaskFromArea (deprecated)", () => {
+    it("should create task from area using wrapper method", async () => {
+      const mockSourceFile = {
+        basename: "Test Area",
+        parent: { path: "03 Knowledge/user" },
+      } as any;
+
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!user]]"',
+      };
+
+      await service.createTaskFromArea(mockSourceFile, sourceMetadata);
+
+      expect(mockVault.create).toHaveBeenCalledTimes(1);
+      const [filePath, content] = mockVault.create.mock.calls[0];
+
+      expect(filePath).toMatch(/^03 Knowledge\/user\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/);
+      expect(content).toContain('ems__Effort_area: "[[Test Area]]"');
+    });
+  });
+
+  describe("createRelatedTask", () => {
+    beforeEach(() => {
+      mockVault.read = jest.fn().mockResolvedValue("---\nexo__Asset_uid: source-uuid\n---\n\n");
+      mockVault.modify = jest.fn().mockResolvedValue(undefined);
+    });
+
+    it("should create related task with exo__Asset_relates link", async () => {
+      const mockSourceFile = {
+        basename: "Source Task",
+        parent: { path: "03 Knowledge/user" },
+      } as any;
+
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!user]]"',
+      };
+
+      await service.createRelatedTask(mockSourceFile, sourceMetadata);
+
+      expect(mockVault.create).toHaveBeenCalledTimes(1);
+      const [filePath, content] = mockVault.create.mock.calls[0];
+
+      expect(filePath).toMatch(/^03 Knowledge\/user\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/);
+      expect(content).toContain('exo__Asset_relates:');
+      expect(content).toContain('- "[[Source Task]]"');
+      expect(content).toContain('"[[ems__Task]]"');
+    });
+
+    it("should create related task with label", async () => {
+      const mockSourceFile = {
+        basename: "Source Task",
+        parent: { path: "03 Knowledge/user" },
+      } as any;
+
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!user]]"',
+      };
+
+      await service.createRelatedTask(mockSourceFile, sourceMetadata, "Related Task Label");
+
+      const [, content] = mockVault.create.mock.calls[0];
+
+      expect(content).toContain('exo__Asset_label: Related Task Label');
+      expect(content).toContain('aliases:');
+      expect(content).toContain('  - Related Task Label');
+    });
+
+    it("should create related task with taskSize", async () => {
+      const mockSourceFile = {
+        basename: "Source Task",
+        parent: { path: "03 Knowledge/user" },
+      } as any;
+
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!user]]"',
+      };
+
+      await service.createRelatedTask(mockSourceFile, sourceMetadata, undefined, '"[[ems__TaskSize_M]]"');
+
+      const [, content] = mockVault.create.mock.calls[0];
+
+      expect(content).toContain('ems__Task_size: "[[ems__TaskSize_M]]"');
+    });
+
+    it("should update source file with bidirectional link", async () => {
+      const mockSourceFile = {
+        basename: "Source Task",
+        parent: { path: "03 Knowledge/user" },
+      } as any;
+
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!user]]"',
+      };
+
+      await service.createRelatedTask(mockSourceFile, sourceMetadata);
+
+      expect(mockVault.read).toHaveBeenCalledWith(mockSourceFile);
+      expect(mockVault.modify).toHaveBeenCalledTimes(1);
+      expect(mockVault.modify).toHaveBeenCalledWith(mockSourceFile, expect.stringContaining('exo__Asset_relates:'));
+    });
+
+    it("should use same UUID for filename and exo__Asset_uid in related task", async () => {
+      const mockSourceFile = {
+        basename: "Source Task",
+        parent: { path: "03 Knowledge/user" },
+      } as any;
+
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!user]]"',
+      };
+
+      await service.createRelatedTask(mockSourceFile, sourceMetadata);
+
+      const [filePath, content] = mockVault.create.mock.calls[0];
+
+      const filenameMatch = filePath.match(/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.md$/);
+      expect(filenameMatch).not.toBeNull();
+      const filenameUid = filenameMatch![1];
+
+      const uidMatch = content.match(/exo__Asset_uid: ([0-9a-f-]+)/);
+      expect(uidMatch).not.toBeNull();
+      const frontmatterUid = uidMatch![1];
+
+      expect(filenameUid).toBe(frontmatterUid);
+    });
+
+    it("should create file in same folder as source when parent exists", async () => {
+      const mockSourceFile = {
+        basename: "Source Task",
+        parent: { path: "03 Knowledge/user/tasks" },
+      } as any;
+
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!user]]"',
+      };
+
+      await service.createRelatedTask(mockSourceFile, sourceMetadata);
+
+      const [filePath] = mockVault.create.mock.calls[0];
+      expect(filePath).toMatch(/^03 Knowledge\/user\/tasks\//);
+    });
+
+    it("should create file in root when source has no parent", async () => {
+      const mockSourceFile = {
+        basename: "Source Task",
+        parent: null,
+      } as any;
+
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!user]]"',
+      };
+
+      await service.createRelatedTask(mockSourceFile, sourceMetadata);
+
+      const [filePath] = mockVault.create.mock.calls[0];
+      expect(filePath).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/);
+      expect(filePath).not.toContain('/');
+    });
+  });
+
+  describe("generateRelatedTaskFrontmatter", () => {
+    it("should generate frontmatter with exo__Asset_relates", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!user]]"',
+      };
+
+      const frontmatter = (service as any).generateRelatedTaskFrontmatter(
+        sourceMetadata,
+        "Source Task",
+      );
+
+      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Task]]"']);
+      expect(frontmatter.exo__Asset_relates).toEqual(['"[[Source Task]]"']);
+      expect(frontmatter.ems__Effort_status).toBe('"[[ems__EffortStatusDraft]]"');
+    });
+
+    it("should include label and aliases when provided", () => {
+      const frontmatter = (service as any).generateRelatedTaskFrontmatter(
+        {},
+        "Source Task",
+        "Related Label",
+      );
+
+      expect(frontmatter.exo__Asset_label).toBe("Related Label");
+      expect(frontmatter.aliases).toEqual(["Related Label"]);
+    });
+
+    it("should trim whitespace from label", () => {
+      const frontmatter = (service as any).generateRelatedTaskFrontmatter(
+        {},
+        "Source Task",
+        "  Trimmed Label  ",
+      );
+
+      expect(frontmatter.exo__Asset_label).toBe("Trimmed Label");
+      expect(frontmatter.aliases).toEqual(["Trimmed Label"]);
+    });
+
+    it("should not include label when empty string", () => {
+      const frontmatter = (service as any).generateRelatedTaskFrontmatter(
+        {},
+        "Source Task",
+        "",
+      );
+
+      expect(frontmatter.exo__Asset_label).toBeUndefined();
+      expect(frontmatter.aliases).toBeUndefined();
+    });
+
+    it("should not include label when only whitespace", () => {
+      const frontmatter = (service as any).generateRelatedTaskFrontmatter(
+        {},
+        "Source Task",
+        "   ",
+      );
+
+      expect(frontmatter.exo__Asset_label).toBeUndefined();
+      expect(frontmatter.aliases).toBeUndefined();
+    });
+
+    it("should include task size when provided", () => {
+      const frontmatter = (service as any).generateRelatedTaskFrontmatter(
+        {},
+        "Source Task",
+        undefined,
+        undefined,
+        '"[[ems__TaskSize_L]]"',
+      );
+
+      expect(frontmatter.ems__Task_size).toBe('"[[ems__TaskSize_L]]"');
+    });
+
+    it("should not include task size when null", () => {
+      const frontmatter = (service as any).generateRelatedTaskFrontmatter(
+        {},
+        "Source Task",
+        undefined,
+        undefined,
+        null,
+      );
+
+      expect(frontmatter.ems__Task_size).toBeUndefined();
+    });
+
+    it("should use provided UUID", () => {
+      const testUid = "test-uuid-12345";
+      const frontmatter = (service as any).generateRelatedTaskFrontmatter(
+        {},
+        "Source Task",
+        undefined,
+        testUid,
+      );
+
+      expect(frontmatter.exo__Asset_uid).toBe(testUid);
+    });
+
+    it("should generate UUID when not provided", () => {
+      const frontmatter = (service as any).generateRelatedTaskFrontmatter(
+        {},
+        "Source Task",
+      );
+
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+      expect(frontmatter.exo__Asset_uid).toMatch(uuidPattern);
+    });
+
+    it("should inherit exo__Asset_isDefinedBy from source", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[Custom Ontology]]"',
+      };
+
+      const frontmatter = (service as any).generateRelatedTaskFrontmatter(
+        sourceMetadata,
+        "Source Task",
+      );
+
+      expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[Custom Ontology]]"');
+    });
+  });
+
+  describe("addRelationToFrontmatter", () => {
+    it("should create frontmatter when none exists", () => {
+      const content = "Just some content";
+      const result = (service as any).addRelationToFrontmatter(content, "new-uuid");
+
+      expect(result).toContain('---');
+      expect(result).toContain('exo__Asset_relates:');
+      expect(result).toContain('- "[[new-uuid]]"');
+      expect(result).toContain('Just some content');
+    });
+
+    it("should add exo__Asset_relates to existing frontmatter without it", () => {
+      const content = `---
+exo__Asset_uid: existing-uuid
+exo__Asset_label: Test Task
+---
+
+Content here`;
+
+      const result = (service as any).addRelationToFrontmatter(content, "related-uuid");
+
+      expect(result).toContain('exo__Asset_uid: existing-uuid');
+      expect(result).toContain('exo__Asset_label: Test Task');
+      expect(result).toContain('exo__Asset_relates:');
+      expect(result).toContain('- "[[related-uuid]]"');
+      expect(result).toContain('Content here');
+    });
+
+    it("should append to existing exo__Asset_relates array", () => {
+      const content = `---
+exo__Asset_uid: existing-uuid
+exo__Asset_relates:
+  - "[[first-related]]"
+  - "[[second-related]]"
+---
+
+Content`;
+
+      const result = (service as any).addRelationToFrontmatter(content, "third-related");
+
+      expect(result).toContain('- "[[first-related]]"');
+      expect(result).toContain('- "[[second-related]]"');
+      expect(result).toContain('- "[[third-related]]"');
+    });
+
+    it("should preserve line ending style (LF)", () => {
+      const content = `---\nexo__Asset_uid: test\n---\n\nContent`;
+      const result = (service as any).addRelationToFrontmatter(content, "new-uuid");
+
+      expect(result).not.toContain('\r\n');
+      expect(result).toContain('---\nexo__Asset_uid: test\nexo__Asset_relates:\n  - "[[new-uuid]]"\n---');
+    });
+
+    it("should preserve line ending style (CRLF)", () => {
+      const content = `---\r\nexo__Asset_uid: test\r\n---\r\n\r\nContent`;
+      const result = (service as any).addRelationToFrontmatter(content, "new-uuid");
+
+      expect(result).toContain('\r\n');
+      expect(result).toContain('---\r\nexo__Asset_uid: test\r\nexo__Asset_relates:\r\n  - "[[new-uuid]]"\r\n---');
+    });
+
+    it("should handle empty frontmatter", () => {
+      const content = `---
+---
+
+Content`;
+
+      const result = (service as any).addRelationToFrontmatter(content, "new-uuid");
+
+      expect(result).toContain('exo__Asset_relates:');
+      expect(result).toContain('- "[[new-uuid]]"');
+    });
+
+    it("should handle frontmatter with only exo__Asset_relates", () => {
+      const content = `---
+exo__Asset_relates:
+  - "[[first]]"
+---
+
+Content`;
+
+      const result = (service as any).addRelationToFrontmatter(content, "second");
+
+      expect(result).toContain('- "[[first]]"');
+      expect(result).toContain('- "[[second]]"');
+    });
+
+    it("should preserve other frontmatter properties", () => {
+      const content = `---
+exo__Asset_uid: test-uid
+exo__Asset_label: Test
+exo__Instance_class:
+  - "[[ems__Task]]"
+ems__Effort_status: "[[ems__EffortStatusDraft]]"
+---
+
+Content`;
+
+      const result = (service as any).addRelationToFrontmatter(content, "related");
+
+      expect(result).toContain('exo__Asset_uid: test-uid');
+      expect(result).toContain('exo__Asset_label: Test');
+      expect(result).toContain('exo__Instance_class:');
+      expect(result).toContain('ems__Effort_status: "[[ems__EffortStatusDraft]]"');
+      expect(result).toContain('exo__Asset_relates:');
+      expect(result).toContain('- "[[related]]"');
+    });
+  });
+
   describe("task size parameter", () => {
     it("should include ems__Task_size when taskSize is provided", () => {
       const sourceMetadata = {

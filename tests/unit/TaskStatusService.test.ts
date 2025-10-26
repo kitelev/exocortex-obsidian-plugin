@@ -613,4 +613,239 @@ Project content`;
       expect(modifiedContent).not.toContain("ems__EffortStatusToDo");
     });
   });
+
+  describe("setDraftStatus", () => {
+    it("should update task status to Draft", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_status: "[[ems__EffortStatusBacklog]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.setDraftStatus(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusDraft]]"');
+    });
+  });
+
+  describe("moveToBacklog", () => {
+    it("should update task status to Backlog", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_status: "[[ems__EffortStatusDraft]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.moveToBacklog(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
+    });
+  });
+
+  describe("moveToAnalysis", () => {
+    it("should update project status to Analysis", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_status: "[[ems__EffortStatusBacklog]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.moveToAnalysis(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusAnalysis]]"');
+    });
+  });
+
+  describe("moveToToDo", () => {
+    it("should update project status to ToDo", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_status: "[[ems__EffortStatusAnalysis]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.moveToToDo(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusToDo]]"');
+    });
+  });
+
+  describe("startEffort", () => {
+    it("should set status to Doing and add startTimestamp", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_status: "[[ems__EffortStatusBacklog]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.startEffort(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusDoing]]"');
+      expect(modifiedContent).toContain('ems__Effort_startTimestamp:');
+      expect(modifiedContent).toMatch(/ems__Effort_startTimestamp: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+    });
+
+    it("should update both properties when starting from Draft", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_status: "[[ems__EffortStatusDraft]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.startEffort(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusDoing]]"');
+      expect(modifiedContent).toContain('ems__Effort_startTimestamp:');
+    });
+  });
+
+  describe("planOnToday", () => {
+    it("should set ems__Effort_day to today", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_status: "[[ems__EffortStatusBacklog]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.planOnToday(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('ems__Effort_day:');
+      expect(modifiedContent).toMatch(/ems__Effort_day: "\[\[\d{4}-\d{2}-\d{2}\]\]"/);
+    });
+
+    it("should update existing ems__Effort_day", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_day: "[[2025-01-01]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.planOnToday(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('ems__Effort_day:');
+      expect(modifiedContent).not.toContain('2025-01-01');
+    });
+  });
+
+  describe("planForEvening", () => {
+    it("should set plannedStartTimestamp to 19:00", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_status: "[[ems__EffortStatusBacklog]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.planForEvening(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('ems__Effort_plannedStartTimestamp:');
+      expect(modifiedContent).toMatch(/ems__Effort_plannedStartTimestamp: \d{4}-\d{2}-\d{2}T19:00:00/);
+    });
+
+    it("should preserve other frontmatter properties", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nexo__Asset_uid: test-uid\nems__Effort_status: "[[ems__EffortStatusBacklog]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.planForEvening(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('exo__Asset_uid: test-uid');
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
+      expect(modifiedContent).toContain('ems__Effort_plannedStartTimestamp:');
+    });
+  });
+
+  describe("shiftDayBackward", () => {
+    it("should shift day backward by 1 day", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_day: "[[2025-10-20]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.shiftDayBackward(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('ems__Effort_day: "[[2025-10-19]]"');
+      expect(modifiedContent).not.toContain('2025-10-20');
+    });
+
+    it("should throw error when ems__Effort_day is missing", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_status: "[[ems__EffortStatusBacklog]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await expect(service.shiftDayBackward(mockFile)).rejects.toThrow(
+        "ems__Effort_day property not found"
+      );
+    });
+
+    it("should throw error when date format is invalid", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_day: "[[invalid-date]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await expect(service.shiftDayBackward(mockFile)).rejects.toThrow(
+        "Invalid date format in ems__Effort_day"
+      );
+    });
+
+    it("should handle month transition backward", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_day: "[[2025-11-01]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.shiftDayBackward(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('ems__Effort_day: "[[2025-10-31]]"');
+    });
+  });
+
+  describe("shiftDayForward", () => {
+    it("should shift day forward by 1 day", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_day: "[[2025-10-20]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.shiftDayForward(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('ems__Effort_day: "[[2025-10-21]]"');
+      expect(modifiedContent).not.toContain('2025-10-20');
+    });
+
+    it("should throw error when ems__Effort_day is missing", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_status: "[[ems__EffortStatusBacklog]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await expect(service.shiftDayForward(mockFile)).rejects.toThrow(
+        "ems__Effort_day property not found"
+      );
+    });
+
+    it("should throw error when date format is invalid", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_day: "[[not-a-date]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await expect(service.shiftDayForward(mockFile)).rejects.toThrow(
+        "Invalid date format in ems__Effort_day"
+      );
+    });
+
+    it("should handle month transition forward", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nems__Effort_day: "[[2025-10-31]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.shiftDayForward(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('ems__Effort_day: "[[2025-11-01]]"');
+    });
+
+    it("should preserve other frontmatter properties", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---\nexo__Asset_uid: test-uid\nems__Effort_day: "[[2025-10-20]]"\nems__Effort_status: "[[ems__EffortStatusBacklog]]"\n---\n\nContent`;
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.shiftDayForward(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain('exo__Asset_uid: test-uid');
+      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
+      expect(modifiedContent).toContain('ems__Effort_day: "[[2025-10-21]]"');
+    });
+  });
 });

@@ -9,7 +9,6 @@ module.exports = {
     "/tests/e2e/", // Exclude Playwright E2E tests
   ],
   collectCoverageFrom: [
-    "main.ts",
     "src/**/*.ts",
     "!**/*.d.ts",
     "!**/node_modules/**",
@@ -21,10 +20,10 @@ module.exports = {
   },
   coverageThreshold: {
     global: {
-      branches: 38, // Current: 38.56% - preventing regression
-      functions: 42, // Current: 42.7% - preventing regression
-      lines: 45, // Current: 46% - preventing regression
-      statements: 44, // Current: 44.73% - preventing regression
+      branches: 73, // Phase 2: 73.12% (was 59.22%) - CommandManager tests added +13.9%
+      functions: 62, // Phase 2: 62.16% (was 55.9%) - CommandManager tests added +6.3%
+      lines: 70, // Phase 2: 70.2% (was 62.89%) - CommandManager tests added +7.3%
+      statements: 70, // Phase 2: 70.06% (was 61.68%) - CommandManager tests added +8.4%
     },
     // Domain layer - higher threshold for business logic
     "./src/domain/": {
