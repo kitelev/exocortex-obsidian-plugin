@@ -65,3 +65,9 @@ reports/
 
 playwright-report-e2e/
 test-results-e2e/
+# Compiled output
+packages/*/src/**/*.js
+packages/*/src/**/*.d.ts
+packages/*/src/**/*.d.ts.map
+!packages/*/src/**/*.test.ts
+!packages/*/src/**/*.spec.ts

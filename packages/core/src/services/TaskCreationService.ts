@@ -104,6 +104,7 @@ export class TaskCreationService {
   }
 
   // Used only by unit tests via (service as any).generateRelatedTaskFrontmatter
+  // @ts-ignore - Used by tests through type casting
   private generateRelatedTaskFrontmatter(
     sourceMetadata: Record<string, any>,
     sourceName: string,
@@ -121,6 +122,7 @@ export class TaskCreationService {
   }
 
   // Used only by unit tests via (service as any).extractH2Section
+  // @ts-ignore - Used by tests through type casting
   private extractH2Section(content: string, heading: string): string | null {
     return this.algorithmExtractor.extractH2Section(content, heading);
   }

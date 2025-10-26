@@ -1,5 +1,4 @@
-import { SupervisionCreationService } from "../../src/infrastructure/services/SupervisionCreationService";
-import { SupervisionFormData } from "../../src/presentation/modals/SupervisionInputModal";
+import { SupervisionCreationService, type SupervisionFormData } from "@exocortex/core";
 
 describe("SupervisionCreationService", () => {
   let service: SupervisionCreationService;

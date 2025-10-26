@@ -1,3 +1,4 @@
+import type { CommandVisibilityContext } from "@exocortex/core";
 import {
   canCreateTask,
   canCreateProject,
@@ -18,8 +19,7 @@ import {
   canRollbackStatus,
   canCreateRelatedTask,
   canCopyLabelToAliases,
-  CommandVisibilityContext,
-} from "../../src/domain/commands/CommandVisibility";
+} from "@exocortex/core";
 
 describe("CommandVisibility", () => {
   describe("canCreateTask", () => {

@@ -1,0 +1,961 @@
+{
+  "version": "1.55.1",
+  "viteVersion": "6.4.1",
+  "registerSourceHash": "ea233d95b980072c81eb49458aee55f5d33fdb02",
+  "components": [
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_ActionButtonsGroup_ActionButtonsGroup",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/ActionButtonsGroup.spec.tsx",
+      "importSource": "../../src/presentation/components/ActionButtonsGroup",
+      "remoteName": "ActionButtonsGroup"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_ArchiveTaskButton_ArchiveTaskButton",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/ArchiveTaskButton.spec.tsx",
+      "importSource": "../../src/presentation/components/ArchiveTaskButton",
+      "remoteName": "ArchiveTaskButton"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_AreaHierarchyTree_AreaHierarchyTree",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/AreaHierarchyTree.spec.tsx",
+      "importSource": "../../src/presentation/components/AreaHierarchyTree",
+      "remoteName": "AreaHierarchyTree"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_AssetPropertiesTable_AssetPropertiesTable",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/AssetPropertiesTable.spec.tsx",
+      "importSource": "../../src/presentation/components/AssetPropertiesTable",
+      "remoteName": "AssetPropertiesTable"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_AssetRelationsTable_AssetRelationsTable",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/ResponsiveLayout.spec.tsx",
+      "importSource": "../../src/presentation/components/AssetRelationsTable",
+      "remoteName": "AssetRelationsTable"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_CleanEmptyPropertiesButton_CleanEmptyPropertiesButton",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/CleanEmptyPropertiesButton.spec.tsx",
+      "importSource": "../../src/presentation/components/CleanEmptyPropertiesButton",
+      "remoteName": "CleanEmptyPropertiesButton"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_CreateInstanceButton_CreateInstanceButton",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/CreateInstanceButton.spec.tsx",
+      "importSource": "../../src/presentation/components/CreateInstanceButton",
+      "remoteName": "CreateInstanceButton"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_CreateTaskButton_CreateTaskButton",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/CreateTaskButton.spec.tsx",
+      "importSource": "../../src/presentation/components/CreateTaskButton",
+      "remoteName": "CreateTaskButton"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_DailyTasksTable_DailyTasksTable",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/ResponsiveLayout.spec.tsx",
+      "importSource": "../../src/presentation/components/DailyTasksTable",
+      "remoteName": "DailyTasksTable"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_DailyTasksTable_DailyTasksTableWithToggle",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/DailyTasksTable.spec.tsx",
+      "importSource": "../../src/presentation/components/DailyTasksTable",
+      "remoteName": "DailyTasksTableWithToggle"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_MarkTaskDoneButton_MarkTaskDoneButton",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/MarkTaskDoneButton.spec.tsx",
+      "importSource": "../../src/presentation/components/MarkTaskDoneButton",
+      "remoteName": "MarkTaskDoneButton"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_MoveToBacklogButton_MoveToBacklogButton",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/MoveToBacklogButton.spec.tsx",
+      "importSource": "../../src/presentation/components/MoveToBacklogButton",
+      "remoteName": "MoveToBacklogButton"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_PlanOnTodayButton_PlanOnTodayButton",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/PlanOnTodayButton.spec.tsx",
+      "importSource": "../../src/presentation/components/PlanOnTodayButton",
+      "remoteName": "PlanOnTodayButton"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_RepairFolderButton_RepairFolderButton",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/RepairFolderButton.spec.tsx",
+      "importSource": "../../src/presentation/components/RepairFolderButton",
+      "remoteName": "RepairFolderButton"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_StartEffortButton_StartEffortButton",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/StartEffortButton.spec.tsx",
+      "importSource": "../../src/presentation/components/StartEffortButton",
+      "remoteName": "StartEffortButton"
+    },
+    {
+      "id": "_Users_kitelev_Documents_exocortex_development_worktrees_exocortex_claude1_refactor_monorepo_simple_packages_obsidian_plugin_src_presentation_components_VoteOnEffortButton_VoteOnEffortButton",
+      "filename": "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/component/VoteOnEffortButton.spec.tsx",
+      "importSource": "../../src/presentation/components/VoteOnEffortButton",
+      "remoteName": "VoteOnEffortButton"
+    }
+  ],
+  "sources": {
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/playwright/index.html": {
+      "timestamp": 1761496425191.5623
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/playwright/index.ts": {
+      "timestamp": 1761496425191.6655
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/react/index.js": {
+      "timestamp": 1761496923463.623
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/react-dom/client.js": {
+      "timestamp": 1761496923419.0557
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/ArchiveTaskButton.tsx": {
+      "timestamp": 1761497037621.314
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/ActionButtonsGroup.tsx": {
+      "timestamp": 1761497037625.4272
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/react/cjs/react.production.js": {
+      "timestamp": 1761496924064.9553
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/react-dom/cjs/react-dom-client.production.js": {
+      "timestamp": 1761496924481.7095
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/AreaHierarchyTree.tsx": {
+      "timestamp": 1761497037620.5051
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/CreateInstanceButton.tsx": {
+      "timestamp": 1761497037616.8804
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/react/jsx-runtime.js": {
+      "timestamp": 1761496923578.3948
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/AssetRelationsTable.tsx": {
+      "timestamp": 1761497037619.7246
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/CleanEmptyPropertiesButton.tsx": {
+      "timestamp": 1761497037616.1196
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/AssetPropertiesTable.tsx": {
+      "timestamp": 1761497037618.9534
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/scheduler/index.js": {
+      "timestamp": 1761496923417.3943
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/react-dom/index.js": {
+      "timestamp": 1761496923507.5095
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/DailyTasksTable.tsx": {
+      "timestamp": 1761497037626.2786
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/MoveToBacklogButton.tsx": {
+      "timestamp": 1761497037627.9607
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/CreateTaskButton.tsx": {
+      "timestamp": 1761497037622.1287
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/MarkTaskDoneButton.tsx": {
+      "timestamp": 1761497037631.0159
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/RepairFolderButton.tsx": {
+      "timestamp": 1761497037627.1367
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/PlanOnTodayButton.tsx": {
+      "timestamp": 1761497037631.8298
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/StartEffortButton.tsx": {
+      "timestamp": 1761497037622.965
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/VoteOnEffortButton.tsx": {
+      "timestamp": 1761497037624.6953
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/index.ts": {
+      "timestamp": 1761498079756.4443
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/react/cjs/react-jsx-runtime.production.js": {
+      "timestamp": 1761496923951.1147
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/scheduler/cjs/scheduler.production.js": {
+      "timestamp": 1761496923897.8965
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/react-dom/cjs/react-dom.production.js": {
+      "timestamp": 1761496925051.892
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ProjectCreationService.ts": {
+      "timestamp": 1761497104910.539
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/interfaces/IFileSystemAdapter.ts": {
+      "timestamp": 1761496425189.1084
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/index.js": {
+      "timestamp": 1761496923831.2744
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskFrontmatterGenerator.ts": {
+      "timestamp": 1761497104925.1348
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/StatusTimestampService.ts": {
+      "timestamp": 1761497104895.8848
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LabelToAliasService.ts": {
+      "timestamp": 1761497104922.4004
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/EffortSortingHelpers.ts": {
+      "timestamp": 1761496425189.4294
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphData.ts": {
+      "timestamp": 1761496425188.556
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/PropertyCleanupService.ts": {
+      "timestamp": 1761497104904.7495
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/DateFormatter.ts": {
+      "timestamp": 1761496425189.3323
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/RenameToUidService.ts": {
+      "timestamp": 1761497104907.5618
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/max.js": {
+      "timestamp": 1761496923949.4758
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/nil.js": {
+      "timestamp": 1761496924074.9255
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/parse.js": {
+      "timestamp": 1761496924097.7085
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/stringify.js": {
+      "timestamp": 1761496924247.565
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1.js": {
+      "timestamp": 1761496924310.256
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1ToV6.js": {
+      "timestamp": 1761496924355.2551
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v3.js": {
+      "timestamp": 1761496924373.6064
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v4.js": {
+      "timestamp": 1761496924416.045
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v5.js": {
+      "timestamp": 1761496924434.8252
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6ToV1.js": {
+      "timestamp": 1761496924465.554
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6.js": {
+      "timestamp": 1761496924449.085
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v7.js": {
+      "timestamp": 1761496924487.7058
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/version.js": {
+      "timestamp": 1761496924511.486
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/validate.js": {
+      "timestamp": 1761496924500.4128
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskCreationService.ts": {
+      "timestamp": 1761497199858.9873
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphEdge.ts": {
+      "timestamp": 1761496425188.6628
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/FrontmatterService.ts": {
+      "timestamp": 1761496425189.915
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataHelpers.ts": {
+      "timestamp": 1761496425190.0945
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/index.ts": {
+      "timestamp": 1761496425188.1707
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/AreaNode.ts": {
+      "timestamp": 1761496425188.4355
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaCreationService.ts": {
+      "timestamp": 1761497104916.535
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ConceptCreationService.ts": {
+      "timestamp": 1761497104889.9915
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/md5.js": {
+      "timestamp": 1761496924019.7605
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v35.js": {
+      "timestamp": 1761496924402.0088
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/rng.js": {
+      "timestamp": 1761496924197.3333
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/native.js": {
+      "timestamp": 1761496924049.2668
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/regex.js": {
+      "timestamp": 1761496924151.4375
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/sha1.js": {
+      "timestamp": 1761496924219.448
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataExtractor.ts": {
+      "timestamp": 1761497190065.0044
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AlgorithmExtractor.ts": {
+      "timestamp": 1761497104898.663
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphNode.ts": {
+      "timestamp": 1761496425188.767
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/AssetClass.ts": {
+      "timestamp": 1761496425187.9346
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LoggingService.ts": {
+      "timestamp": 1761497104892.9302
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortVotingService.ts": {
+      "timestamp": 1761497104934.0059
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/SupervisionCreationService.ts": {
+      "timestamp": 1761497144114.08
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/WikiLinkHelpers.ts": {
+      "timestamp": 1761496425190.2139
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskStatusService.ts": {
+      "timestamp": 1761497104930.8293
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/EffortStatus.ts": {
+      "timestamp": 1761496425188.0308
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortStatusWorkflow.ts": {
+      "timestamp": 1761497104901.8193
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FolderRepairService.ts": {
+      "timestamp": 1761497104927.9656
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaHierarchyBuilder.ts": {
+      "timestamp": 1761497104913.661
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/commands/CommandVisibility.ts": {
+      "timestamp": 1761497179739.5952
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FrontmatterService.ts": {
+      "timestamp": 1761497104937.2961
+    },
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/__mocks__/obsidian.ts": {
+      "timestamp": 1761496425217.7954
+    }
+  },
+  "deps": {
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/ActionButtonsGroup.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/ActionButtonsGroup.tsx"
+    ],
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/ArchiveTaskButton.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/ArchiveTaskButton.tsx",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/AssetClass.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/EffortStatus.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphData.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphEdge.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/AreaNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/commands/CommandVisibility.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/WikiLinkHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/index.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/max.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/nil.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/parse.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/validate.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/regex.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/stringify.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/rng.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1ToV6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v3.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/md5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v35.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v4.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/native.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/sha1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6ToV1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v7.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/version.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskFrontmatterGenerator.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/DateFormatter.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AlgorithmExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ProjectCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskStatusService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortStatusWorkflow.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/StatusTimestampService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaHierarchyBuilder.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/__mocks__/obsidian.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ConceptCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortVotingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FolderRepairService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LabelToAliasService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LoggingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/PropertyCleanupService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/RenameToUidService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/SupervisionCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/EffortSortingHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/interfaces/IFileSystemAdapter.ts"
+    ],
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/AreaHierarchyTree.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/AreaHierarchyTree.tsx"
+    ],
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/AssetPropertiesTable.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/AssetPropertiesTable.tsx"
+    ],
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/AssetRelationsTable.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/AssetRelationsTable.tsx"
+    ],
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/CleanEmptyPropertiesButton.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/CleanEmptyPropertiesButton.tsx",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/AssetClass.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/EffortStatus.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphData.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphEdge.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/AreaNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/commands/CommandVisibility.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/WikiLinkHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/index.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/max.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/nil.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/parse.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/validate.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/regex.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/stringify.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/rng.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1ToV6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v3.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/md5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v35.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v4.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/native.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/sha1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6ToV1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v7.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/version.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskFrontmatterGenerator.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/DateFormatter.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AlgorithmExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ProjectCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskStatusService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortStatusWorkflow.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/StatusTimestampService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaHierarchyBuilder.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/__mocks__/obsidian.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ConceptCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortVotingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FolderRepairService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LabelToAliasService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LoggingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/PropertyCleanupService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/RenameToUidService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/SupervisionCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/EffortSortingHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/interfaces/IFileSystemAdapter.ts"
+    ],
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/CreateInstanceButton.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/CreateInstanceButton.tsx",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/AssetClass.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/EffortStatus.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphData.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphEdge.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/AreaNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/commands/CommandVisibility.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/WikiLinkHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/index.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/max.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/nil.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/parse.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/validate.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/regex.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/stringify.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/rng.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1ToV6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v3.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/md5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v35.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v4.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/native.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/sha1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6ToV1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v7.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/version.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskFrontmatterGenerator.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/DateFormatter.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AlgorithmExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ProjectCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskStatusService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortStatusWorkflow.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/StatusTimestampService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaHierarchyBuilder.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/__mocks__/obsidian.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ConceptCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortVotingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FolderRepairService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LabelToAliasService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LoggingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/PropertyCleanupService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/RenameToUidService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/SupervisionCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/EffortSortingHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/interfaces/IFileSystemAdapter.ts"
+    ],
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/CreateTaskButton.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/CreateTaskButton.tsx",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/AssetClass.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/EffortStatus.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphData.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphEdge.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/AreaNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/commands/CommandVisibility.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/WikiLinkHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/index.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/max.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/nil.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/parse.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/validate.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/regex.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/stringify.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/rng.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1ToV6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v3.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/md5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v35.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v4.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/native.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/sha1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6ToV1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v7.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/version.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskFrontmatterGenerator.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/DateFormatter.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AlgorithmExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ProjectCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskStatusService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortStatusWorkflow.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/StatusTimestampService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaHierarchyBuilder.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/__mocks__/obsidian.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ConceptCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortVotingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FolderRepairService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LabelToAliasService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LoggingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/PropertyCleanupService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/RenameToUidService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/SupervisionCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/EffortSortingHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/interfaces/IFileSystemAdapter.ts"
+    ],
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/DailyTasksTable.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/DailyTasksTable.tsx"
+    ],
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/MarkTaskDoneButton.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/MarkTaskDoneButton.tsx",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/AssetClass.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/EffortStatus.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphData.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphEdge.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/AreaNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/commands/CommandVisibility.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/WikiLinkHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/index.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/max.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/nil.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/parse.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/validate.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/regex.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/stringify.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/rng.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1ToV6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v3.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/md5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v35.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v4.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/native.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/sha1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6ToV1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v7.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/version.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskFrontmatterGenerator.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/DateFormatter.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AlgorithmExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ProjectCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskStatusService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortStatusWorkflow.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/StatusTimestampService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaHierarchyBuilder.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/__mocks__/obsidian.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ConceptCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortVotingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FolderRepairService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LabelToAliasService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LoggingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/PropertyCleanupService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/RenameToUidService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/SupervisionCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/EffortSortingHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/interfaces/IFileSystemAdapter.ts"
+    ],
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/MoveToBacklogButton.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/MoveToBacklogButton.tsx",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/AssetClass.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/EffortStatus.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphData.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphEdge.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/AreaNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/commands/CommandVisibility.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/WikiLinkHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/index.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/max.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/nil.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/parse.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/validate.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/regex.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/stringify.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/rng.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1ToV6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v3.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/md5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v35.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v4.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/native.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/sha1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6ToV1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v7.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/version.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskFrontmatterGenerator.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/DateFormatter.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AlgorithmExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ProjectCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskStatusService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortStatusWorkflow.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/StatusTimestampService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaHierarchyBuilder.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/__mocks__/obsidian.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ConceptCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortVotingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FolderRepairService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LabelToAliasService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LoggingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/PropertyCleanupService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/RenameToUidService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/SupervisionCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/EffortSortingHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/interfaces/IFileSystemAdapter.ts"
+    ],
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/PlanOnTodayButton.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/PlanOnTodayButton.tsx",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/AssetClass.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/EffortStatus.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphData.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphEdge.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/AreaNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/commands/CommandVisibility.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/WikiLinkHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/index.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/max.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/nil.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/parse.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/validate.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/regex.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/stringify.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/rng.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1ToV6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v3.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/md5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v35.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v4.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/native.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/sha1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6ToV1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v7.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/version.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskFrontmatterGenerator.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/DateFormatter.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AlgorithmExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ProjectCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskStatusService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortStatusWorkflow.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/StatusTimestampService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaHierarchyBuilder.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/__mocks__/obsidian.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ConceptCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortVotingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FolderRepairService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LabelToAliasService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LoggingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/PropertyCleanupService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/RenameToUidService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/SupervisionCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/EffortSortingHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/interfaces/IFileSystemAdapter.ts"
+    ],
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/RepairFolderButton.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/RepairFolderButton.tsx",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/AssetClass.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/EffortStatus.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphData.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphEdge.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/AreaNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/commands/CommandVisibility.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/WikiLinkHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/index.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/max.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/nil.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/parse.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/validate.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/regex.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/stringify.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/rng.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1ToV6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v3.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/md5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v35.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v4.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/native.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/sha1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6ToV1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v7.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/version.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskFrontmatterGenerator.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/DateFormatter.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AlgorithmExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ProjectCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskStatusService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortStatusWorkflow.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/StatusTimestampService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaHierarchyBuilder.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/__mocks__/obsidian.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ConceptCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortVotingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FolderRepairService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LabelToAliasService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LoggingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/PropertyCleanupService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/RenameToUidService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/SupervisionCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/EffortSortingHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/interfaces/IFileSystemAdapter.ts"
+    ],
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/StartEffortButton.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/StartEffortButton.tsx",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/AssetClass.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/EffortStatus.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphData.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphEdge.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/AreaNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/commands/CommandVisibility.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/WikiLinkHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/index.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/max.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/nil.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/parse.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/validate.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/regex.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/stringify.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/rng.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1ToV6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v3.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/md5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v35.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v4.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/native.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/sha1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6ToV1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v7.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/version.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskFrontmatterGenerator.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/DateFormatter.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AlgorithmExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ProjectCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskStatusService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortStatusWorkflow.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/StatusTimestampService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaHierarchyBuilder.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/__mocks__/obsidian.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ConceptCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortVotingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FolderRepairService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LabelToAliasService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LoggingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/PropertyCleanupService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/RenameToUidService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/SupervisionCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/EffortSortingHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/interfaces/IFileSystemAdapter.ts"
+    ],
+    "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/VoteOnEffortButton.tsx": [
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/src/presentation/components/VoteOnEffortButton.tsx",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/AssetClass.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/EffortStatus.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphData.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/GraphEdge.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/models/AreaNode.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/commands/CommandVisibility.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/WikiLinkHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/domain/constants/index.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/index.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/max.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/nil.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/parse.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/validate.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/regex.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/stringify.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/rng.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v1ToV6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v3.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/md5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v35.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v4.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/native.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v5.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/sha1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v6ToV1.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/v7.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/node_modules/uuid/dist/esm-browser/version.js",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskFrontmatterGenerator.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/DateFormatter.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/MetadataExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AlgorithmExtractor.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ProjectCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/TaskStatusService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortStatusWorkflow.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/StatusTimestampService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/AreaHierarchyBuilder.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/obsidian-plugin/tests/__mocks__/obsidian.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/ConceptCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/EffortVotingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/FolderRepairService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LabelToAliasService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/LoggingService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/PropertyCleanupService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/RenameToUidService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/services/SupervisionCreationService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/FrontmatterService.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/utilities/EffortSortingHelpers.ts",
+      "/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-refactor-monorepo-simple/packages/core/src/interfaces/IFileSystemAdapter.ts"
+    ]
+  }
+}

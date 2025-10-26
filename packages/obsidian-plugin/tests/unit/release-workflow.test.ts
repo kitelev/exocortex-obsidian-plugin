@@ -2,9 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 describe('Release Workflow Validation', () => {
-  const projectRoot = path.join(__dirname, '../..');
+  const projectRoot = path.join(__dirname, '../../../..');
   const workflowPath = path.join(projectRoot, '.github/workflows/auto-release.yml');
-  const stylesPath = path.join(projectRoot, 'styles.css');
+  const stylesPath = path.join(projectRoot, 'packages/obsidian-plugin/styles.css');
 
   describe('styles.css in GitHub Releases', () => {
     it('should include styles.css in auto-release.yml files list', () => {
@@ -47,7 +47,7 @@ describe('Release Workflow Validation', () => {
       );
 
       expect(createPackageStepMatch).toBeTruthy();
-      expect(createPackageStepMatch![0]).toContain('cp styles.css release-files/');
+      expect(createPackageStepMatch![0]).toContain('cp packages/obsidian-plugin/styles.css release-files/');
     });
   });
 });

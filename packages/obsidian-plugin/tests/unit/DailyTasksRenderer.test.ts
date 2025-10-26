@@ -2,7 +2,7 @@ import { DailyTasksRenderer } from "../../src/presentation/renderers/DailyTasksR
 import { TFile, Keymap } from "obsidian";
 import { ExocortexSettings } from "../../src/domain/settings/ExocortexSettings";
 import { ILogger } from "../../src/infrastructure/logging/ILogger";
-import { MetadataExtractor } from "../../src/infrastructure/utilities/MetadataExtractor";
+import { MetadataExtractor } from "@exocortex/core";
 import { ReactRenderer } from "../../src/presentation/utils/ReactRenderer";
 
 jest.mock("obsidian", () => ({

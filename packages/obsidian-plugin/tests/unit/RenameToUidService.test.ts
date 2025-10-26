@@ -1,4 +1,4 @@
-import { RenameToUidService } from "../../src/infrastructure/services/RenameToUidService";
+import { RenameToUidService } from "@exocortex/core";
 
 describe("RenameToUidService", () => {
   let service: RenameToUidService;

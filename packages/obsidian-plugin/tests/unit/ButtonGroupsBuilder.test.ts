@@ -1,17 +1,19 @@
 import { ButtonGroupsBuilder } from "../../src/presentation/builders/ButtonGroupsBuilder";
 import { TFile } from "obsidian";
 import { ExocortexSettings } from "../../src/domain/settings/ExocortexSettings";
-import { TaskCreationService } from "../../src/infrastructure/services/TaskCreationService";
-import { ProjectCreationService } from "../../src/infrastructure/services/ProjectCreationService";
-import { AreaCreationService } from "../../src/infrastructure/services/AreaCreationService";
-import { ConceptCreationService } from "../../src/infrastructure/services/ConceptCreationService";
-import { TaskStatusService } from "../../src/infrastructure/services/TaskStatusService";
-import { PropertyCleanupService } from "../../src/infrastructure/services/PropertyCleanupService";
-import { FolderRepairService } from "../../src/infrastructure/services/FolderRepairService";
-import { RenameToUidService } from "../../src/infrastructure/services/RenameToUidService";
-import { EffortVotingService } from "../../src/infrastructure/services/EffortVotingService";
-import { LabelToAliasService } from "../../src/infrastructure/services/LabelToAliasService";
-import { MetadataExtractor } from "../../src/infrastructure/utilities/MetadataExtractor";
+import {
+  TaskCreationService,
+  ProjectCreationService,
+  AreaCreationService,
+  ConceptCreationService,
+  TaskStatusService,
+  PropertyCleanupService,
+  FolderRepairService,
+  RenameToUidService,
+  EffortVotingService,
+  LabelToAliasService,
+  MetadataExtractor
+} from "@exocortex/core";
 import { ILogger } from "../../src/infrastructure/logging/ILogger";
 
 describe("ButtonGroupsBuilder", () => {

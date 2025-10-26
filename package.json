@@ -22,7 +22,7 @@
     "test": "npm run test:unit && npm run test:ui && npm run test:component",
     "test:unit": "./scripts/test-ci-batched.sh",
     "test:ui": "jest --config packages/obsidian-plugin/jest.ui.config.js",
-    "test:component": "playwright test -c packages/obsidian-plugin/playwright-ct.config.ts",
+    "test:component": "cd packages/obsidian-plugin && playwright test -c playwright-ct.config.ts && cd ../..",
     "test:component:ui": "playwright test -c packages/obsidian-plugin/playwright-ct.config.ts --ui",
     "test:component:report": "playwright show-report playwright-report-ct",
     "test:e2e": "playwright test -c packages/obsidian-plugin/playwright-e2e.config.ts",

@@ -1,4 +1,4 @@
-import { LabelToAliasService } from "../../src/infrastructure/services/LabelToAliasService";
+import { LabelToAliasService } from "@exocortex/core";
 import { TFile, Vault } from "obsidian";
 
 describe("LabelToAliasService", () => {

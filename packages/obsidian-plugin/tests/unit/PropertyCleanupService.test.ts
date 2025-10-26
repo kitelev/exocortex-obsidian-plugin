@@ -1,4 +1,4 @@
-import { PropertyCleanupService } from "../../src/infrastructure/services/PropertyCleanupService";
+import { PropertyCleanupService } from "@exocortex/core";
 import { TFile, Vault } from "obsidian";
 
 describe("PropertyCleanupService", () => {

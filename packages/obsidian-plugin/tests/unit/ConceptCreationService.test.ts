@@ -1,5 +1,4 @@
-import { ConceptCreationService } from "../../src/infrastructure/services/ConceptCreationService";
-import { AssetClass } from "../../src/domain/constants";
+import { ConceptCreationService, AssetClass } from "@exocortex/core";
 
 describe("ConceptCreationService", () => {
   let service: ConceptCreationService;

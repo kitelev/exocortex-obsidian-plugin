@@ -18,7 +18,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}🐳 Building E2E Docker image with BuildKit...${NC}"
-DOCKER_BUILDKIT=1 docker build -f Dockerfile.e2e -t exocortex-e2e:local .
+DOCKER_BUILDKIT=1 docker build -f packages/obsidian-plugin/Dockerfile.e2e -t exocortex-e2e:local .
 
 echo ""
 echo -e "${BLUE}🧪 Running E2E tests in Docker container...${NC}"

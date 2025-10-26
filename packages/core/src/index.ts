@@ -12,7 +12,7 @@ export { TaskCreationService } from './services/TaskCreationService';
 export { ProjectCreationService } from './services/ProjectCreationService';
 export { TaskStatusService } from './services/TaskStatusService';
 export { AreaCreationService } from './services/AreaCreationService';
-export { AreaHierarchyBuilder } from './services/AreaHierarchyBuilder';
+export { AreaHierarchyBuilder, type AssetRelation } from './services/AreaHierarchyBuilder';
 export { ConceptCreationService } from './services/ConceptCreationService';
 export { EffortStatusWorkflow } from './services/EffortStatusWorkflow';
 export { EffortVotingService } from './services/EffortVotingService';
