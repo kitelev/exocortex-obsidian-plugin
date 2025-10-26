@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/experimental-ct-react';
+import * as path from 'path';
 
 /**
  * Playwright Component Testing Configuration
@@ -46,7 +47,9 @@ export default defineConfig({
     ctViteConfig: {
       resolve: {
         alias: {
-          '@': '/src',
+          '@exocortex/core': path.resolve(__dirname, '../../packages/core/src/index.ts'),
+          'obsidian': path.resolve(__dirname, './tests/__mocks__/obsidian.ts'),
+          '@': path.resolve(__dirname, './src'),
         },
         extensions: ['.ts', '.tsx', '.js', '.jsx'],
       },

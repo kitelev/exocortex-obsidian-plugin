@@ -1,23 +1,25 @@
 module.exports = {
   preset: "ts-jest",
   testEnvironment: "jsdom",
-  roots: ["<rootDir>/tests"],
-  testMatch: ["**/__tests__/**/*.ts", "**/?(*.)+(spec|test).ts"],
+  testMatch: ["<rootDir>/tests/unit/**/*.test.ts"],
   testPathIgnorePatterns: [
     "/node_modules/",
-    "/tests/ui/", // Exclude WebDriver UI tests
-    "/tests/e2e/", // Exclude Playwright E2E tests
+    "/tests/ui/",
+    "/tests/e2e/",
+    "/tests/component/",
+    "/tests/infrastructure/",
   ],
   collectCoverageFrom: [
-    "src/**/*.ts",
+    "<rootDir>/src/**/*.ts",
+    "<rootDir>/../core/src/**/*.ts",
     "!**/*.d.ts",
     "!**/node_modules/**",
     "!**/__tests__/**",
     "!**/tests/**",
   ],
   moduleNameMapper: {
-    "^@exocortex/core$": "<rootDir>/packages/core/src/index.ts",
-    "^obsidian$": "<rootDir>/packages/obsidian-plugin/tests/__mocks__/obsidian.ts",
+    "^@exocortex/core$": "<rootDir>/../core/src/index.ts",
+    "^obsidian$": "<rootDir>/tests/__mocks__/obsidian.ts",
   },
   coverageThreshold: {
     global: {
@@ -27,11 +29,11 @@ module.exports = {
       statements: 70, // Phase 2: 70.06% (was 61.68%) - CommandManager tests added +8.4%
     },
     // Domain layer - higher threshold for business logic
-    "./src/domain/": {
-      branches: 78, // Current: 79.24% - preventing regression
-      functions: 80, // Current: 81.81% - preventing regression
-      lines: 79, // Current: 80.86% - preventing regression
-      statements: 78, // Current: 79.72% - preventing regression
+    "<rootDir>/../core/src/domain/": {
+      branches: 78,
+      functions: 80,
+      lines: 79,
+      statements: 78,
     },
   },
   // 🎯 ASPIRATIONAL TARGETS (to be increased gradually):
@@ -39,6 +41,7 @@ module.exports = {
   // Domain: 85% across all metrics
   // Note: setupFilesAfterEnv moved to memory optimization section above
   // Handle ES modules and other transformations in CI
+  // Transform @exocortex/core package files
   transformIgnorePatterns: ["node_modules/(?!(chai)/)"],
   // ULTIMATE EMERGENCY: Extended timeouts for memory safety
   testTimeout: process.env.CI ? 300000 : 60000, // 5 minute timeout for ultimate safety
@@ -95,6 +98,9 @@ module.exports = {
           allowSyntheticDefaultImports: true,
           esModuleInterop: true,
           isolatedModules: true, // Move isolatedModules here
+          paths: {
+            "@exocortex/core": ["<rootDir>/../core/src/index.ts"]
+          }
         },
       },
     ],

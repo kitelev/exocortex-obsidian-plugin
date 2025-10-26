@@ -210,7 +210,8 @@ jobs:
       - name: Run component tests
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096"
-          npm run test:component || exit 1
+          cd packages/obsidian-plugin
+          playwright test -c playwright-ct.config.ts || exit 1
 
       - name: Upload component test report
         if: always()
@@ -252,7 +253,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: Dockerfile.e2e
+          file: packages/obsidian-plugin/Dockerfile.e2e
           load: true
           tags: exocortex-e2e:latest
           cache-from: type=gha

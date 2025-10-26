@@ -24,16 +24,20 @@ module.exports = {
           allowSyntheticDefaultImports: true,
           esModuleInterop: true,
           isolatedModules: true,
+          paths: {
+            "@exocortex/core": ["<rootDir>/../core/src/index.ts"]
+          }
         },
       },
     ],
   },
   transformIgnorePatterns: ["node_modules/(?!(react|react-dom)/)"],
   moduleNameMapper: {
+    "^@exocortex/core$": "<rootDir>/../core/src/index.ts",
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
     "^obsidian$": "<rootDir>/tests/__mocks__/obsidian.ts",
   },
-  collectCoverageFrom: ["src/presentation/**/*.ts"],
+  collectCoverageFrom: ["<rootDir>/src/presentation/**/*.ts"],
   coveragePathIgnorePatterns: ["/node_modules/", "/tests/"],
   testTimeout: 30000,
   verbose: true,

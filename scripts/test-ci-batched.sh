@@ -18,6 +18,7 @@ export NODE_OPTIONS="--max-old-space-size=4096"
 # Run all tests
 echo "📦 Running all tests..."
 if npx jest \
+    --config packages/obsidian-plugin/jest.config.js \
     --runInBand \
     --forceExit \
     --testTimeout=60000; then

@@ -1,4 +1,4 @@
-import { FolderRepairService } from "../../src/infrastructure/services/FolderRepairService";
+import { FolderRepairService } from "@exocortex/core";
 import { TFile, Vault } from "obsidian";
 
 describe("FolderRepairService", () => {

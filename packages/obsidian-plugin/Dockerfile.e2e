@@ -45,22 +45,27 @@ FROM obsidian-base AS dependencies
 
 WORKDIR /app
 
-# Copy only package files for npm cache
+# Copy package files from root and all workspaces
 COPY package*.json ./
+COPY packages/core/package*.json ./packages/core/
+COPY packages/obsidian-plugin/package*.json ./packages/obsidian-plugin/
+COPY packages/cli/package*.json ./packages/cli/
 RUN npm ci --prefer-offline --no-audit
 
 # Stage 3: Application (rebuilt on code changes)
 FROM dependencies AS app
 
 # Copy entrypoint first (rarely changes)
-COPY docker-entrypoint-e2e.sh /docker-entrypoint.sh
+COPY packages/obsidian-plugin/docker-entrypoint-e2e.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 # Copy only necessary files (built plugin passed from CI, not built inside Docker)
-COPY main.js manifest.json ./
-COPY tests/e2e/ ./tests/e2e/
-COPY playwright-e2e.config.ts ./
-COPY playwright-no-flaky-reporter.ts ./
+# Build artifacts are in packages/obsidian-plugin/ on host
+COPY packages/obsidian-plugin/main.js ./
+COPY packages/obsidian-plugin/manifest.json ./
+COPY packages/obsidian-plugin/tests/e2e/ ./tests/e2e/
+COPY packages/obsidian-plugin/playwright-e2e.config.ts ./
+COPY packages/obsidian-plugin/playwright-no-flaky-reporter.ts ./
 
 # Create test vault and install pre-built plugin
 RUN mkdir -p tests/e2e/test-vault/.obsidian/plugins/exocortex \

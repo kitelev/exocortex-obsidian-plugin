@@ -1,4 +1,4 @@
-import { AreaCreationService } from "../../src/infrastructure/services/AreaCreationService";
+import { AreaCreationService } from "@exocortex/core";
 
 describe("AreaCreationService", () => {
   let service: AreaCreationService;

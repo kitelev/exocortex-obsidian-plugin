@@ -1,4 +1,4 @@
-import { AreaHierarchyBuilder, AssetRelation } from "../../src/infrastructure/services/AreaHierarchyBuilder";
+import { AreaHierarchyBuilder, type AssetRelation } from "@exocortex/core";
 
 describe("AreaHierarchyBuilder", () => {
   let builder: AreaHierarchyBuilder;

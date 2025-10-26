@@ -1,9 +1,10 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
-import * as path from 'path';
-import { PlanningService } from '@exocortex/core';
-import { NodeFsAdapter } from '../adapters/NodeFsAdapter.js';
+// PlanningService temporarily removed from core - needs migration
+// import { PlanningService } from '@exocortex/core';
+// import { NodeFsAdapter } from '../adapters/NodeFsAdapter.js';
+// import * as path from 'path';
 
 export function planCommand(): Command {
   const cmd = new Command('today');
@@ -12,10 +13,15 @@ export function planCommand(): Command {
     .description('Plan task for today')
     .requiredOption('-t, --task <path>', 'Path to task file')
     .option('-r, --root <path>', 'Root directory of vault', process.cwd())
-    .action(async (options) => {
+    .action(async () => {
       const spinner = ora('Planning task for today...').start();
 
       try {
+        // TODO: Re-enable after PlanningService migration to core
+        spinner.fail('Planning command temporarily disabled during monorepo migration');
+        return;
+
+        /*
         const adapter = new NodeFsAdapter(options.root);
         const service = new PlanningService(adapter);
 
@@ -23,6 +29,7 @@ export function planCommand(): Command {
         await service.planOnToday(taskPath);
 
         spinner.succeed(chalk.green(`Task planned for today: ${taskPath}`));
+        */
       } catch (error) {
         spinner.fail(chalk.red(`Failed to plan task: ${(error as Error).message}`));
         process.exit(1);

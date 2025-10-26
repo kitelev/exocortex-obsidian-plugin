@@ -3,8 +3,7 @@
  * Tests frontmatter generation, file naming, and UUID/timestamp formats
  */
 
-import { TaskCreationService } from "../../src/infrastructure/services/TaskCreationService";
-import { MetadataHelpers } from "../../src/infrastructure/utilities/MetadataHelpers";
+import { TaskCreationService, MetadataHelpers } from "@exocortex/core";
 
 describe("TaskCreationService", () => {
   let service: TaskCreationService;

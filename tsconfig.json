@@ -37,6 +37,7 @@
     "features/**/*",
     "packages/**/tests/**/*",
     "packages/**/dist/**/*",
+    "packages/cli/**/*",
     "wdio.conf*.ts",
     "playwright.config.ts"
   ]

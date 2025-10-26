@@ -1,4 +1,4 @@
-import { TaskStatusService } from "../../src/infrastructure/services/TaskStatusService";
+import { TaskStatusService } from "@exocortex/core";
 import { TFile, Vault } from "obsidian";
 
 describe("TaskStatusService", () => {

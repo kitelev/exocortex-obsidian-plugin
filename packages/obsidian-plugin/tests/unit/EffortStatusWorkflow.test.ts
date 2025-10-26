@@ -1,5 +1,4 @@
-import { EffortStatusWorkflow } from "../../src/infrastructure/services/EffortStatusWorkflow";
-import { EffortStatus, AssetClass } from "../../src/domain/constants";
+import { EffortStatusWorkflow, EffortStatus, AssetClass } from "@exocortex/core";
 
 describe("EffortStatusWorkflow", () => {
   let workflow: EffortStatusWorkflow;
