@@ -686,27 +686,6 @@ Step with spaces
     });
   });
 
-  describe("createTaskFromArea (deprecated)", () => {
-    it("should create task from area using wrapper method", async () => {
-      const mockSourceFile = {
-        basename: "Test Area",
-        parent: { path: "03 Knowledge/user" },
-      } as any;
-
-      const sourceMetadata = {
-        exo__Asset_isDefinedBy: '"[[!user]]"',
-      };
-
-      await service.createTaskFromArea(mockSourceFile, sourceMetadata);
-
-      expect(mockVault.create).toHaveBeenCalledTimes(1);
-      const [filePath, content] = mockVault.create.mock.calls[0];
-
-      expect(filePath).toMatch(/^03 Knowledge\/user\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/);
-      expect(content).toContain('ems__Effort_area: "[[Test Area]]"');
-    });
-  });
-
   describe("createRelatedTask", () => {
     beforeEach(() => {
       mockVault.read = jest.fn().mockResolvedValue("---\nexo__Asset_uid: source-uuid\n---\n\n");
