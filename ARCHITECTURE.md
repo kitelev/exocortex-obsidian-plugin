@@ -180,7 +180,6 @@ Exocortex follows **Clean Architecture** principles with clear separation of con
 | **LabelToAliasService** | Copy labels to aliases array | 68 | Vault | 70% |
 | **SupervisionCreationService** | Create CBT supervision notes | 71 | Vault | 80% |
 | **AreaHierarchyBuilder** | Build area hierarchy trees | 195 | Vault, MetadataCache | 50% |
-| **GraphDataService** | Build graph data from notes | 109 | App, MetadataCache | 40% |
 | **FrontmatterService** | Parse/manipulate YAML frontmatter | 303 | **None** | **100%** ✅ |
 | **RenameToUidService** | Rename files to UID format | 49 | App.fileManager | 0% |
 | **FolderRepairService** | Move files to expected folders | 114 | Vault, MetadataCache | 10% |

@@ -152,10 +152,9 @@ src/presentation/modals/
 └── SupervisionInputModal.ts (NO TESTS)
 ```
 
-**Views (2 files, ZERO tests)**:
+**Views (1 file, ZERO tests)**:
 ```
 src/presentation/views/
-├── ExocortexGraphView.ts (NO TESTS)
 └── ExocortexSettingTab.ts (NO TESTS)
 ```
 
@@ -822,13 +821,6 @@ describe("LoggerFactory", () => {
 **Impact**: MEDIUM - User-facing views
 
 ```typescript
-// tests/unit/ExocortexGraphView.test.ts
-describe("ExocortexGraphView", () => {
-  it("should render graph canvas", () => {});
-  it("should update graph on data change", () => {});
-  it("should handle node click", () => {});
-});
-
 // tests/unit/ExocortexSettingTab.test.ts
 describe("ExocortexSettingTab", () => {
   it("should render all settings", () => {});
@@ -1056,7 +1048,7 @@ tests/ui/
 └── UniversalLayoutRenderer.ui.test.ts (56 tests) ⚠️ MONOLITHIC
 ```
 
-### E2E Tests (9 files)
+### E2E Tests (8 files)
 ```
 tests/e2e/specs/
 ├── algorithm-block-extraction.spec.ts
@@ -1064,7 +1056,6 @@ tests/e2e/specs/
 ├── daily-note-tasks.spec.ts
 ├── daily-tasks-and-projects-separation.spec.ts
 ├── effort-timestamps-auto-sync.spec.ts
-├── graph-view.spec.ts
 └── vote-scroll-preservation.spec.ts
 
 tests/e2e/
@@ -1127,10 +1118,9 @@ src/presentation/renderers/
 └── UniversalLayoutRenderer.ts (NO UNIT TESTS) ⚠️ 2,321 LINES
 ```
 
-**Views (2 files, 0 tests)**:
+**Views (1 file, 0 tests)**:
 ```
 src/presentation/views/
-├── ExocortexGraphView.ts (NO TESTS)
 └── ExocortexSettingTab.ts (NO TESTS)
 ```
 
