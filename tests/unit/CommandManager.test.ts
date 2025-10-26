@@ -13,6 +13,27 @@ jest.mock("obsidian", () => ({
   Notice: jest.fn(),
 }));
 
+let mockLabelInputModalCallback: ((result: any) => void) | null = null;
+let mockSupervisionInputModalCallback: ((result: any) => void) | null = null;
+
+jest.mock("../../src/presentation/modals/LabelInputModal", () => ({
+  LabelInputModal: jest.fn().mockImplementation((app, onSubmit) => {
+    mockLabelInputModalCallback = onSubmit;
+    return {
+      open: jest.fn(),
+    };
+  }),
+}));
+
+jest.mock("../../src/presentation/modals/SupervisionInputModal", () => ({
+  SupervisionInputModal: jest.fn().mockImplementation((app, onSubmit) => {
+    mockSupervisionInputModalCallback = onSubmit;
+    return {
+      open: jest.fn(),
+    };
+  }),
+}));
+
 describe("CommandManager", () => {
   let mockApp: any;
   let mockPlugin: any;
@@ -1517,6 +1538,299 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith("Asset is already in correct folder");
+    });
+  });
+
+  describe("Command Execution - Success Paths", () => {
+    beforeEach(() => {
+      commandManager.registerAllCommands(mockPlugin);
+      jest.clearAllMocks();
+    });
+
+    it("should execute set draft status successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+        },
+      });
+
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("set-draft-status");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Draft status"));
+    });
+
+    it("should execute move to backlog successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "ems__EffortStatusDraft",
+        },
+      });
+
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("move-to-backlog");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Backlog"));
+    });
+
+    it("should execute move to analysis successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "ems__EffortStatusBacklog",
+        },
+      });
+
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("move-to-analysis");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Analysis"));
+    });
+
+    it("should execute move to todo successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Project]]",
+          ems__Effort_status: "ems__EffortStatusAnalysis",
+        },
+      });
+
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("move-to-todo");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("ToDo"));
+    });
+
+    it("should execute start effort successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "ems__EffortStatusBacklog",
+        },
+      });
+
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("start-effort");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Started effort"));
+    });
+
+    it("should execute plan on today successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "ems__EffortStatusToDo",
+        },
+      });
+
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("plan-on-today");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Planned on today"));
+    });
+
+    it("should execute plan for evening successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "ems__EffortStatusBacklog",
+        },
+      });
+
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("plan-for-evening");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Planned for evening"));
+    });
+
+    it("should execute shift day backward successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_day: "2025-01-20",
+        },
+      });
+
+      mockApp.vault.read.mockResolvedValue("---\nems__Effort_day: 2025-01-20\n---");
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("shift-day-backward");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Day shifted backward"));
+    });
+
+    it("should execute shift day forward successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_day: "2025-01-20",
+        },
+      });
+
+      mockApp.vault.read.mockResolvedValue("---\nems__Effort_day: 2025-01-20\n---");
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("shift-day-forward");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Day shifted forward"));
+    });
+
+    it("should execute mark done successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "ems__EffortStatusDoing",
+        },
+      });
+
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("mark-done");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Marked as done"));
+    });
+
+    it("should execute trash effort successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+        },
+      });
+
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("trash-effort");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Trashed"));
+    });
+
+    it("should execute archive task successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_status: "ems__EffortStatusDone",
+        },
+      });
+
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("archive-task");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Archived"));
+    });
+
+    it("should execute clean properties successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          empty_prop: "",
+        },
+      });
+
+      mockApp.vault.read.mockResolvedValue("---\nempty_prop: \"\"\n---");
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("clean-properties");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Cleaned empty properties"));
+    });
+
+    it("should execute vote on effort successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "[[ems__Task]]",
+          ems__Effort_votes: 5,
+        },
+      });
+
+      mockApp.vault.read.mockResolvedValue("---\nems__Effort_votes: 5\n---");
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("vote-on-effort");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Voted"));
+    });
+
+    it("should execute copy label to aliases successfully", async () => {
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Asset_label: "Test Label",
+        },
+      });
+
+      mockApp.vault.read.mockResolvedValue("---\nexo__Asset_label: Test Label\n---");
+      mockApp.vault.modify.mockResolvedValue(undefined);
+
+      const command = registeredCommands.get("copy-label-to-aliases");
+      await command.checkCallback(false);
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockApp.vault.modify).toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Label copied to aliases"));
     });
   });
 });
