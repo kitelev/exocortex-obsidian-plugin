@@ -234,5 +234,107 @@ Content`;
       expect(modifiedContent).toContain('- "item1"');
       expect(modifiedContent).toContain('- "item2"');
     });
+
+    it("should handle quoted empty strings", async () => {
+      const mockFile = { path: "test.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class: "[[ems__Task]]"
+emptyQuoted1: ""
+emptyQuoted2: ''
+validProp: "value"
+---
+Content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.cleanEmptyProperties(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).not.toContain('emptyQuoted1: ""');
+      expect(modifiedContent).not.toContain("emptyQuoted2: ''");
+      expect(modifiedContent).toContain('validProp: "value"');
+    });
+
+    it("should handle orphaned list items", async () => {
+      const mockFile = { path: "test.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class: "[[ems__Task]]"
+  - orphaned
+validProp: "value"
+---
+Content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.cleanEmptyProperties(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).not.toContain("  - orphaned");
+      expect(modifiedContent).toContain('validProp: "value"');
+    });
+
+    it("should handle list with mix of empty and non-empty values", async () => {
+      const mockFile = { path: "test.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class: "[[ems__Task]]"
+mixedList:
+  - "valid"
+  - ""
+  - "another"
+---
+Content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.cleanEmptyProperties(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain("mixedList:");
+      expect(modifiedContent).toContain('- "valid"');
+      expect(modifiedContent).toContain('- "another"');
+    });
+
+    it("should handle non-property lines in frontmatter", async () => {
+      const mockFile = { path: "test.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class: "[[ems__Task]]"
+some text without colon
+validProp: "value"
+---
+Content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.cleanEmptyProperties(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).toContain("some text without colon");
+      expect(modifiedContent).toContain('validProp: "value"');
+    });
+
+    it("should preserve empty lines in frontmatter", async () => {
+      const mockFile = { path: "test.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class: "[[ems__Task]]"
+
+validProp: "value"
+emptyProp: ""
+
+---
+Content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.cleanEmptyProperties(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+      expect(modifiedContent).not.toContain('emptyProp: ""');
+      expect(modifiedContent).toContain('validProp: "value"');
+      const frontmatterLines = modifiedContent
+        .split("---")[1]
+        .split("\n")
+        .filter((l: string) => l === "");
+      expect(frontmatterLines.length).toBeGreaterThan(0);
+    });
   });
 });
