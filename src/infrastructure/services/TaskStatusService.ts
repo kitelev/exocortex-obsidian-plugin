@@ -1,53 +1,34 @@
 import { TFile, Vault } from "obsidian";
 import { FrontmatterService } from "./FrontmatterService";
 import { DateFormatter } from "../utilities/DateFormatter";
-import { AssetClass, EffortStatus } from "../../domain/constants";
+import { EffortStatusWorkflow } from "./EffortStatusWorkflow";
+import { StatusTimestampService } from "./StatusTimestampService";
 
 export class TaskStatusService {
   private frontmatterService: FrontmatterService;
+  private workflow: EffortStatusWorkflow;
+  private timestampService: StatusTimestampService;
 
   constructor(private vault: Vault) {
     this.frontmatterService = new FrontmatterService();
+    this.workflow = new EffortStatusWorkflow();
+    this.timestampService = new StatusTimestampService(vault);
   }
 
   async setDraftStatus(taskFile: TFile): Promise<void> {
-    const content = await this.vault.read(taskFile);
-    const updated = this.frontmatterService.updateProperty(
-      content,
-      "ems__Effort_status",
-      '"[[ems__EffortStatusDraft]]"',
-    );
-    await this.vault.modify(taskFile, updated);
+    await this.updateStatus(taskFile, "ems__EffortStatusDraft");
   }
 
   async moveToBacklog(taskFile: TFile): Promise<void> {
-    const content = await this.vault.read(taskFile);
-    const updated = this.frontmatterService.updateProperty(
-      content,
-      "ems__Effort_status",
-      '"[[ems__EffortStatusBacklog]]"',
-    );
-    await this.vault.modify(taskFile, updated);
+    await this.updateStatus(taskFile, "ems__EffortStatusBacklog");
   }
 
   async moveToAnalysis(projectFile: TFile): Promise<void> {
-    const content = await this.vault.read(projectFile);
-    const updated = this.frontmatterService.updateProperty(
-      content,
-      "ems__Effort_status",
-      '"[[ems__EffortStatusAnalysis]]"',
-    );
-    await this.vault.modify(projectFile, updated);
+    await this.updateStatus(projectFile, "ems__EffortStatusAnalysis");
   }
 
   async moveToToDo(projectFile: TFile): Promise<void> {
-    const content = await this.vault.read(projectFile);
-    const updated = this.frontmatterService.updateProperty(
-      content,
-      "ems__Effort_status",
-      '"[[ems__EffortStatusToDo]]"',
-    );
-    await this.vault.modify(projectFile, updated);
+    await this.updateStatus(projectFile, "ems__EffortStatusToDo");
   }
 
   async startEffort(taskFile: TFile): Promise<void> {
@@ -95,22 +76,7 @@ export class TaskStatusService {
     taskFile: TFile,
     date?: Date,
   ): Promise<void> {
-    const content = await this.vault.read(taskFile);
-    const targetDate = date || new Date();
-    const timestamp = DateFormatter.toLocalTimestamp(targetDate);
-
-    let updated = this.frontmatterService.updateProperty(
-      content,
-      "ems__Effort_endTimestamp",
-      timestamp,
-    );
-    updated = this.frontmatterService.updateProperty(
-      updated,
-      "ems__Effort_resolutionTimestamp",
-      timestamp,
-    );
-
-    await this.vault.modify(taskFile, updated);
+    await this.timestampService.addEndAndResolutionTimestamps(taskFile, date);
   }
 
   async trashEffort(taskFile: TFile): Promise<void> {
@@ -167,53 +133,11 @@ export class TaskStatusService {
   }
 
   async shiftDayBackward(taskFile: TFile): Promise<void> {
-    const content = await this.vault.read(taskFile);
-    const currentEffortDay = this.extractEffortDay(content);
-
-    if (!currentEffortDay) {
-      throw new Error("ems__Effort_day property not found");
-    }
-
-    const currentDate = this.parseDateFromWikilink(currentEffortDay);
-
-    if (!currentDate) {
-      throw new Error("Invalid date format in ems__Effort_day");
-    }
-
-    const newDate = DateFormatter.addDays(currentDate, -1);
-    const newWikilink = DateFormatter.toDateWikilink(newDate);
-
-    const updated = this.frontmatterService.updateProperty(
-      content,
-      "ems__Effort_day",
-      newWikilink,
-    );
-    await this.vault.modify(taskFile, updated);
+    await this.shiftDay(taskFile, -1);
   }
 
   async shiftDayForward(taskFile: TFile): Promise<void> {
-    const content = await this.vault.read(taskFile);
-    const currentEffortDay = this.extractEffortDay(content);
-
-    if (!currentEffortDay) {
-      throw new Error("ems__Effort_day property not found");
-    }
-
-    const currentDate = this.parseDateFromWikilink(currentEffortDay);
-
-    if (!currentDate) {
-      throw new Error("Invalid date format in ems__Effort_day");
-    }
-
-    const newDate = DateFormatter.addDays(currentDate, 1);
-    const newWikilink = DateFormatter.toDateWikilink(newDate);
-
-    const updated = this.frontmatterService.updateProperty(
-      content,
-      "ems__Effort_day",
-      newWikilink,
-    );
-    await this.vault.modify(taskFile, updated);
+    await this.shiftDay(taskFile, 1);
   }
 
   async rollbackStatus(taskFile: TFile): Promise<void> {
@@ -225,7 +149,7 @@ export class TaskStatusService {
       throw new Error("No current status to rollback from");
     }
 
-    const previousStatus = this.getPreviousStatusFromWorkflow(
+    const previousStatus = this.workflow.getPreviousStatus(
       currentStatus,
       instanceClass,
     );
@@ -249,9 +173,9 @@ export class TaskStatusService {
       );
     }
 
-    const normalizedStatus = currentStatus.replace(/["'[\]]/g, "").trim();
+    const normalizedStatus = this.workflow.normalizeStatus(currentStatus);
 
-    if (normalizedStatus === EffortStatus.DONE) {
+    if (normalizedStatus === "ems__EffortStatusDone") {
       updated = this.frontmatterService.removeProperty(
         updated,
         "ems__Effort_endTimestamp",
@@ -260,13 +184,51 @@ export class TaskStatusService {
         updated,
         "ems__Effort_resolutionTimestamp",
       );
-    } else if (normalizedStatus === EffortStatus.DOING) {
+    } else if (normalizedStatus === "ems__EffortStatusDoing") {
       updated = this.frontmatterService.removeProperty(
         updated,
         "ems__Effort_startTimestamp",
       );
     }
 
+    await this.vault.modify(taskFile, updated);
+  }
+
+  private async updateStatus(
+    taskFile: TFile,
+    statusValue: string,
+  ): Promise<void> {
+    const content = await this.vault.read(taskFile);
+    const updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_status",
+      `"[[${statusValue}]]"`,
+    );
+    await this.vault.modify(taskFile, updated);
+  }
+
+  private async shiftDay(taskFile: TFile, days: number): Promise<void> {
+    const content = await this.vault.read(taskFile);
+    const currentEffortDay = this.extractEffortDay(content);
+
+    if (!currentEffortDay) {
+      throw new Error("ems__Effort_day property not found");
+    }
+
+    const currentDate = this.parseDateFromWikilink(currentEffortDay);
+
+    if (!currentDate) {
+      throw new Error("Invalid date format in ems__Effort_day");
+    }
+
+    const newDate = DateFormatter.addDays(currentDate, days);
+    const newWikilink = DateFormatter.toDateWikilink(newDate);
+
+    const updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_day",
+      newWikilink,
+    );
     await this.vault.modify(taskFile, updated);
   }
 
@@ -298,56 +260,6 @@ export class TaskStatusService {
     return this.frontmatterService.getPropertyValue(
       parsed.content,
       "ems__Effort_status",
-    );
-  }
-
-  private getPreviousStatusFromWorkflow(
-    currentStatus: string,
-    instanceClass: string | string[] | null,
-  ): string | null | undefined {
-    const normalizedStatus = currentStatus.replace(/["'[\]]/g, "").trim();
-
-    if (normalizedStatus === EffortStatus.DRAFT) {
-      return null;
-    }
-
-    if (normalizedStatus === EffortStatus.BACKLOG) {
-      return `"[[${EffortStatus.DRAFT}]]"`;
-    }
-
-    if (normalizedStatus === EffortStatus.ANALYSIS) {
-      return `"[[${EffortStatus.BACKLOG}]]"`;
-    }
-
-    if (normalizedStatus === EffortStatus.TODO) {
-      return `"[[${EffortStatus.ANALYSIS}]]"`;
-    }
-
-    if (normalizedStatus === EffortStatus.DOING) {
-      const isProject = this.hasInstanceClass(instanceClass, AssetClass.PROJECT);
-      return isProject
-        ? `"[[${EffortStatus.TODO}]]"`
-        : `"[[${EffortStatus.BACKLOG}]]"`;
-    }
-
-    if (normalizedStatus === EffortStatus.DONE) {
-      return `"[[${EffortStatus.DOING}]]"`;
-    }
-
-    return undefined;
-  }
-
-  private hasInstanceClass(
-    instanceClass: string | string[] | null,
-    targetClass: AssetClass,
-  ): boolean {
-    if (!instanceClass) return false;
-
-    const classes = Array.isArray(instanceClass)
-      ? instanceClass
-      : [instanceClass];
-    return classes.some(
-      (cls) => cls.replace(/["'[\]]/g, "").trim() === targetClass,
     );
   }
 
