@@ -811,10 +811,21 @@ export class CommandManager {
 
     // Open the created file in a new tab
     const leaf = this.app.workspace.getLeaf("tab");
-    await leaf.openFile(this.vaultAdapter.toTFile(createdFile));
+    const tfile = this.vaultAdapter.toTFile(createdFile);
+    await leaf.openFile(tfile);
 
     // Switch focus to the new tab
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
+
+    // Wait for workspace to update activeFile (E2E test compatibility)
+    // Poll for up to 2 seconds to ensure state is synchronized
+    const maxAttempts = 20;
+    for (let i = 0; i < maxAttempts; i++) {
+      if (this.app.workspace.getActiveFile()?.path === tfile.path) {
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
 
     new Notice(`Task created: ${createdFile.basename}`);
   }
@@ -845,9 +856,20 @@ export class CommandManager {
     );
 
     const leaf = this.app.workspace.getLeaf("tab");
-    await leaf.openFile(this.vaultAdapter.toTFile(createdFile));
+    const tfile = this.vaultAdapter.toTFile(createdFile);
+    await leaf.openFile(tfile);
 
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
+
+    // Wait for workspace to update activeFile (E2E test compatibility)
+    // Poll for up to 2 seconds to ensure state is synchronized
+    const maxAttempts = 20;
+    for (let i = 0; i < maxAttempts; i++) {
+      if (this.app.workspace.getActiveFile()?.path === tfile.path) {
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
 
     new Notice(`Project created: ${createdFile.basename}`);
   }
@@ -886,10 +908,21 @@ export class CommandManager {
 
     // Open the created file in a new tab
     const leaf = this.app.workspace.getLeaf("tab");
-    await leaf.openFile(this.vaultAdapter.toTFile(createdFile));
+    const tfile = this.vaultAdapter.toTFile(createdFile);
+    await leaf.openFile(tfile);
 
     // Switch focus to the new tab
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
+
+    // Wait for workspace to update activeFile (E2E test compatibility)
+    // Poll for up to 2 seconds to ensure state is synchronized
+    const maxAttempts = 20;
+    for (let i = 0; i < maxAttempts; i++) {
+      if (this.app.workspace.getActiveFile()?.path === tfile.path) {
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
 
     new Notice(`Instance created: ${createdFile.basename}`);
   }
@@ -918,10 +951,21 @@ export class CommandManager {
 
     // Open the created file in a new tab
     const leaf = this.app.workspace.getLeaf("tab");
-    await leaf.openFile(this.vaultAdapter.toTFile(createdFile));
+    const tfile = this.vaultAdapter.toTFile(createdFile);
+    await leaf.openFile(tfile);
 
     // Switch focus to the new tab
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
+
+    // Wait for workspace to update activeFile (E2E test compatibility)
+    // Poll for up to 2 seconds to ensure state is synchronized
+    const maxAttempts = 20;
+    for (let i = 0; i < maxAttempts; i++) {
+      if (this.app.workspace.getActiveFile()?.path === tfile.path) {
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
 
     new Notice(`Related task created: ${createdFile.basename}`);
   }
@@ -1029,9 +1073,20 @@ export class CommandManager {
     );
 
     const leaf = this.app.workspace.getLeaf("tab");
-    await leaf.openFile(this.vaultAdapter.toTFile(createdFile));
+    const tfile = this.vaultAdapter.toTFile(createdFile);
+    await leaf.openFile(tfile);
 
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
+
+    // Wait for workspace to update activeFile (E2E test compatibility)
+    // Poll for up to 2 seconds to ensure state is synchronized
+    const maxAttempts = 20;
+    for (let i = 0; i < maxAttempts; i++) {
+      if (this.app.workspace.getActiveFile()?.path === tfile.path) {
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
 
     new Notice(`Supervision created: ${createdFile.basename}`);
   }

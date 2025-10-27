@@ -15,12 +15,18 @@ import { DEFAULT_SETTINGS } from "../../src/domain/settings/ExocortexSettings";
 describe("UniversalLayoutRenderer UI Integration", () => {
   let renderer: UniversalLayoutRenderer;
   let mockApp: App;
+  let mockPlugin: any;
   let container: HTMLElement;
 
   beforeEach(() => {
     // Create a real DOM container
     container = document.createElement("div");
     document.body.appendChild(container);
+
+    // Create mock plugin with saveSettings
+    mockPlugin = {
+      saveSettings: jest.fn().mockResolvedValue(undefined),
+    };
 
     // Create mock app with essential methods
     mockApp = {
@@ -29,7 +35,20 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         openLinkText: jest.fn(),
       },
       vault: {
-        getAbstractFileByPath: jest.fn(),
+        getAbstractFileByPath: jest.fn((path: string) => {
+          // Return active file if path matches
+          const activeFile = mockApp.workspace.getActiveFile();
+          if (activeFile && activeFile.path === path) {
+            return activeFile;
+          }
+          // Search in resolved links for other files
+          for (const filePath in mockApp.metadataCache.resolvedLinks) {
+            if (filePath === path) {
+              return { path: filePath, basename: filePath.split('/').pop()?.replace('.md', ''), stat: { ctime: Date.now(), mtime: Date.now() } };
+            }
+          }
+          return null;
+        }),
         getMarkdownFiles: jest.fn().mockReturnValue([]),
       },
       metadataCache: {
@@ -38,9 +57,13 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         resolvedLinks: {},
         on: jest.fn(),
       },
+      fileManager: {
+        processFrontMatter: jest.fn().mockResolvedValue(undefined),
+        renameFile: jest.fn().mockResolvedValue(undefined),
+      },
     } as unknown as App;
 
-    renderer = new UniversalLayoutRenderer(mockApp, { ...DEFAULT_SETTINGS, showPropertiesSection: true });
+    renderer = new UniversalLayoutRenderer(mockApp, { ...DEFAULT_SETTINGS, showPropertiesSection: true }, mockPlugin);
   });
 
   afterEach(() => {
@@ -176,6 +199,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
       (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
+        if (path === "test.md") return currentFile;
         if (path === "task1.md") return file1;
         if (path === "task2.md") return file2;
         return null;
@@ -250,10 +274,13 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       };
 
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
-      (mockApp.vault.getAbstractFileByPath as jest.Mock)
-        .mockReturnValueOnce(activeFile1)
-        .mockReturnValueOnce(archivedFile)
-        .mockReturnValueOnce(activeFile2);
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
+        if (path === "project.md") return currentFile;
+        if (path === "Active.md") return activeFile1;
+        if (path === "Archived.md") return archivedFile;
+        if (path === "Also Active.md") return activeFile2;
+        return null;
+      });
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -1298,8 +1325,10 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Mock vault file lookup
       (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
+        if (path === "current.md") return currentFile;
         if (path === "tasks/Task-123.md") return taskFile;
         if (path === "TaskPrototype.md") return prototypeFile;
+        if (path === "prototypes/TaskPrototype.md") return prototypeFile;
         return null;
       });
 
@@ -1456,7 +1485,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       };
 
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
-      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(taskFile);
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
+        if (path === "daily-notes/2025-10-16 Note.md") return currentFile;
+        if (path === "tasks/task1.md") return taskFile;
+        return null;
+      });
       (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue([taskFile]);
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
@@ -1612,6 +1645,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
       (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
+        if (path === "daily-notes/2025-10-16 Note.md") return currentFile;
         if (path === "tasks/task1.md") return taskFile1;
         if (path === "tasks/task2.md") return taskFile2;
         if (path === "tasks/other.md") return otherDayTaskFile;
@@ -1696,7 +1730,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       };
 
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
-      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(relatedTask);
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
+        if (path === "daily-notes/2025-10-16 Note.md") return currentFile;
+        if (path === "tasks/task1.md") return relatedTask;
+        return null;
+      });
       (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue([relatedTask]);
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
