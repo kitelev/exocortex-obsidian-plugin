@@ -13,9 +13,13 @@ The Exocortex plugin uses a comprehensive testing strategy with multiple layers:
 
 ### Unit Tests
 
-**Location**: `tests/unit/`
+**Location**:
+- Core: `packages/core/tests/`
+- Plugin: `packages/obsidian-plugin/tests/unit/`
+- CLI: `packages/cli/tests/`
+
 **Runner**: Jest
-**Command**: `npm run test:unit`
+**Command**: `npm run test:unit` (runs tests across all packages)
 
 Unit tests verify business logic in isolation using mocks for external dependencies.
 
@@ -25,9 +29,9 @@ npm run test:unit
 
 ### UI Integration Tests
 
-**Location**: `tests/ui/`
+**Location**: `packages/obsidian-plugin/tests/ui/`
 **Runner**: Jest with jest-environment-obsidian
-**Command**: `npm run test:ui`
+**Command**: `npm run test:ui --workspace=@exocortex/obsidian-plugin`
 
 UI tests verify that components render correctly with mocked Obsidian API.
 
@@ -37,9 +41,9 @@ npm run test:ui
 
 ### Component Tests
 
-**Location**: `tests/component/`
+**Location**: `packages/obsidian-plugin/tests/component/`
 **Runner**: Playwright Component Testing
-**Command**: `npm run test:component`
+**Command**: `npm run test:component --workspace=@exocortex/obsidian-plugin`
 
 Component tests verify React components in isolation with real browser rendering.
 
@@ -51,7 +55,7 @@ npm run test:component:ui
 
 ### E2E Tests
 
-**Location**: `tests/e2e/`
+**Location**: `packages/obsidian-plugin/tests/e2e/`
 **Runner**: Playwright with Electron
 **Command**: `npm run test:e2e` (local) or `npm run test:e2e:docker` (Docker)
 
@@ -77,7 +81,7 @@ This builds a Docker image with xvfb (headless X server) and Obsidian, then runs
 #### E2E Test Structure
 
 ```
-tests/e2e/
+packages/obsidian-plugin/tests/e2e/
 ├── test-vault/              # Test Obsidian vault
 │   ├── .obsidian/          # Obsidian config
 │   ├── Daily Notes/        # DailyNote fixtures
@@ -162,7 +166,7 @@ Minimum BDD coverage: **80%**
 ### Test Vault Structure
 
 ```
-tests/e2e/test-vault/
+packages/obsidian-plugin/tests/e2e/test-vault/
 ├── .obsidian/
 │   └── app.json           # Obsidian settings
 ├── Daily Notes/
@@ -175,7 +179,7 @@ tests/e2e/test-vault/
 
 ### Creating Test Fixtures
 
-1. Add files to `tests/e2e/test-vault/`
+1. Add files to `packages/obsidian-plugin/tests/e2e/test-vault/`
 2. Include proper frontmatter with Exocortex properties
 3. Reference fixtures in test specs
 

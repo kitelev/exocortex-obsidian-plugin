@@ -29,6 +29,22 @@ Exocortex is a powerful Obsidian plugin that transforms your notes into an inter
 - ⌨️ **23 Commands**: Comprehensive command palette integration for all operations
 - 🎨 **Action Buttons**: Context-aware UI buttons for quick access to relevant commands
 
+## 📦 Monorepo Structure
+
+This project is organized as a monorepo with multiple packages:
+
+```
+packages/
+├── core/                    # @exocortex/core - Core business logic (storage-agnostic)
+├── obsidian-plugin/         # @exocortex/obsidian-plugin - Obsidian UI integration
+└── cli/                     # @exocortex/cli - Command-line automation tool
+```
+
+The monorepo structure enables:
+- Shared core logic between UI and CLI
+- Independent versioning per package
+- Clear separation of concerns (business logic vs UI vs automation)
+
 ## 🏃‍♂️ Quick Start
 
 ### Installation
@@ -390,32 +406,32 @@ exo__Asset_isArchived: true
 
 ## 🏗️ Architecture
 
-Clean Architecture with domain-driven design:
+Clean Architecture with domain-driven design organized in a monorepo:
 
 ```
-┌─────────── Presentation ────────────┐
-│  React Components (24 UI buttons)   │
-│  Layout Renderer (6 sections)       │
-│  Tables, Trees, Interactive UI      │
-└─────────────────────────────────────┘
-         ↓
-┌─────────── Application ─────────────┐
-│  Services (9 specialized services)  │
-│  Use Cases & Business Logic         │
-│  Command Manager (23 commands)      │
-└─────────────────────────────────────┘
-         ↓
-┌─────────── Domain ──────────────────┐
-│  Entities, Value Objects            │
-│  Repository Interfaces              │
-│  Business Rules                     │
-└─────────────────────────────────────┘
-         ↓
-┌─────────── Infrastructure ──────────┐
-│  Obsidian API Integration           │
-│  File System Operations             │
-│  Metadata Cache Management          │
-└─────────────────────────────────────┘
+┌───────────────────────── Monorepo Packages ─────────────────────────┐
+│                                                                       │
+│  📦 @exocortex/core                  📦 @exocortex/obsidian-plugin  │
+│  (Storage-agnostic logic)            (Obsidian UI)                  │
+│  ┌───── Presentation ─────┐          ┌───── Presentation ─────┐     │
+│  │ N/A (headless)          │          │ React Components       │     │
+│  └─────────────────────────┘          │ Layout Renderers       │     │
+│  ┌───── Application ──────┐          │ Tables, Trees, UI      │     │
+│  │ Services (14 total)    │          └────────────────────────┘     │
+│  │ Command Manager        │                     ↓                    │
+│  │ Business Logic         │          Uses @exocortex/core            │
+│  └─────────────────────────┘                                         │
+│  ┌───── Domain ───────────┐                                          │
+│  │ Entities & Rules       │                                          │
+│  │ Value Objects          │          📦 @exocortex/cli               │
+│  └─────────────────────────┘          (Command-line tool)            │
+│  ┌───── Infrastructure ───┐          ┌────────────────────────┐     │
+│  │ IFileSystemAdapter     │          │ CLI Commands           │     │
+│  │ ObsidianVaultAdapter   │          │ Automation Scripts     │     │
+│  │ NodeFsAdapter          │          └────────────────────────┘     │
+│  └─────────────────────────┘                     ↓                    │
+│                                      Uses @exocortex/core            │
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
 **Key Services:**
@@ -489,13 +505,19 @@ All pull requests must pass automated quality gates:
 git clone https://github.com/kitelev/exocortex-obsidian-plugin
 cd exocortex-obsidian-plugin
 
-# Install dependencies
+# Install dependencies (monorepo root installs all packages)
 npm install
 
-# Build plugin
+# Build all packages
 npm run build
 
-# Start development mode (watch mode)
+# Build specific package
+npm run build --workspace=@exocortex/obsidian-plugin
+
+# Start development mode (watch mode for plugin)
+npm run dev --workspace=@exocortex/obsidian-plugin
+
+# Or use shorthand from root
 npm run dev
 ```
 

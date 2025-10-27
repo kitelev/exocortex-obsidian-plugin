@@ -395,43 +395,64 @@ npm run bdd:check       # Enforced in CI (must pass)
 
 ## 📊 Current Architecture
 
+### Monorepo Structure
+
+```
+/packages
+  /core                       - @exocortex/core (storage-agnostic business logic)
+    /src
+      /domain                 - Entities, value objects, repository interfaces
+      /application            - Use cases, services
+      /infrastructure         - File system adapters (IFileSystemAdapter)
+    /tests                    - Unit tests for core logic
+
+  /obsidian-plugin            - @exocortex/obsidian-plugin (Obsidian UI)
+    /src
+      /presentation           - UI components, modals, renderers
+      /infrastructure         - Obsidian API integration (ObsidianVaultAdapter)
+    /tests                    - Component, UI, E2E tests
+
+  /cli                        - @exocortex/cli (command-line automation)
+    /src                      - CLI commands and utilities
+    /tests                    - CLI integration tests
+```
+
 ### Technology Stack
 
 ```yaml
-Core:
+Monorepo:
+  - npm workspaces (package management)
+  - Shared dependencies across packages
+  - Independent versioning per package
+
+Core (@exocortex/core):
   - TypeScript 4.9+ (strict mode)
+  - Zero external dependencies (pure business logic)
+  - Storage-agnostic design
+
+Obsidian Plugin (@exocortex/obsidian-plugin):
   - Obsidian Plugin API 1.5.0+
   - ESBuild (bundling)
   - React 19.2.0 (UI components)
+  - Depends on @exocortex/core
 
-Domain:
-  - RDF triple store (SPO/POS/OSP indexing)
-  - Graph query engine
-  - OWL ontology management
+CLI (@exocortex/cli):
+  - Node.js 18+
+  - Commander.js (CLI framework)
+  - Depends on @exocortex/core
 
 Testing:
+  - Jest (unit tests: 803 total across all packages)
   - Playwright CT (8 component tests)
-  - jest-environment-obsidian (6 UI tests)
-  - Total: 14 tests, ~8s execution
-  - Coverage: 70%+
+  - Playwright E2E (6 Docker-based integration tests)
+  - Total execution: ~15s (unit) + ~3min (E2E)
+  - Coverage: 49% global, 78-80% domain layer
 
 CI/CD:
   - GitHub Actions
   - Automated releases
   - Branch protection
   - Quality gates
-```
-
-### Clean Architecture Layers
-
-```
-/src
-  /domain           - Entities, value objects, repository interfaces
-  /application      - Use cases, services
-  /infrastructure   - Obsidian implementations, DI container
-  /presentation     - UI components, modals, renderers
-
-/tests              - Unit, UI, component tests
 ```
 
 ### Key Features
@@ -489,12 +510,28 @@ if (!assetResult.isSuccess) {
 
 ## 🚀 Quick Start
 
-### Understanding Codebase
+### Understanding Monorepo Codebase
 
-1. `/src/main.ts` - Plugin entry point
-2. `/src/domain/` - Core business logic
-3. `/src/infrastructure/container/DIContainer.ts` - Dependency wiring
-4. `/tests/` - Usage examples and patterns
+**Key Entry Points:**
+
+1. **Core Package** (`packages/core/`)
+   - `src/domain/` - Business entities and rules
+   - `src/application/` - Services and use cases
+   - `src/infrastructure/IFileSystemAdapter.ts` - Storage abstraction
+
+2. **Obsidian Plugin** (`packages/obsidian-plugin/`)
+   - `src/main.ts` - Plugin entry point
+   - `src/presentation/` - UI components and renderers
+   - `src/infrastructure/ObsidianVaultAdapter.ts` - Obsidian API integration
+
+3. **CLI Tool** (`packages/cli/`)
+   - `src/index.ts` - CLI entry point
+   - `src/commands/` - Command implementations
+
+4. **Tests**
+   - `packages/core/tests/` - Core business logic tests
+   - `packages/obsidian-plugin/tests/` - UI, component, E2E tests
+   - `packages/cli/tests/` - CLI integration tests
 
 ### Commit Message Format
 
@@ -537,17 +574,18 @@ chore: maintenance task
 ## 📊 Quality Metrics
 
 **Required:**
-- Test suite: 14 tests (6 UI + 8 component)
-- Coverage: ≥70%
+- Test suite: 803 unit tests + 8 component tests + 6 E2E tests (total: 817 tests)
+- Coverage: ≥49% global, ≥78-80% domain layer
 - BDD coverage: ≥80%
 - TypeScript: Clean compilation (strict mode)
-- Build: <1 minute
+- Build: <2 minutes (all packages)
 - Agent utilization: >80% for complex tasks
 
 **Monitored:**
-- Bundle size: 206kb (React: 171kb, Plugin: 35kb)
-- Test execution: ~8 seconds
+- Bundle size: Obsidian plugin ~206kb (React: 171kb, Plugin: 35kb)
+- Test execution: ~15s (unit) + ~3min (E2E)
 - Task success rate: >95% with agents
+- Monorepo package interdependencies
 
 ## 🆘 Troubleshooting
 
