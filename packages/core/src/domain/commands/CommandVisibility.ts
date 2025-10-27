@@ -39,16 +39,21 @@ function hasClass(
  * Check if instanceClass is ems__Area or ems__Project
  */
 function isAreaOrProject(instanceClass: string | string[] | null): boolean {
-  return hasClass(instanceClass, AssetClass.AREA) || hasClass(instanceClass, AssetClass.PROJECT);
+  return (
+    hasClass(instanceClass, AssetClass.AREA) ||
+    hasClass(instanceClass, AssetClass.PROJECT)
+  );
 }
 
 /**
  * Check if instanceClass is ems__Task, ems__Project, or ems__Meeting
  */
 function isEffort(instanceClass: string | string[] | null): boolean {
-  return hasClass(instanceClass, AssetClass.TASK) ||
-         hasClass(instanceClass, AssetClass.PROJECT) ||
-         hasClass(instanceClass, AssetClass.MEETING);
+  return (
+    hasClass(instanceClass, AssetClass.TASK) ||
+    hasClass(instanceClass, AssetClass.PROJECT) ||
+    hasClass(instanceClass, AssetClass.MEETING)
+  );
 }
 
 /**
@@ -136,9 +141,11 @@ export function canCreateTask(context: CommandVisibilityContext): boolean {
  * Available for: ems__Area, ems__Initiative, and ems__Project assets
  */
 export function canCreateProject(context: CommandVisibilityContext): boolean {
-  return hasClass(context.instanceClass, AssetClass.AREA) ||
-         hasClass(context.instanceClass, AssetClass.INITIATIVE) ||
-         hasClass(context.instanceClass, AssetClass.PROJECT);
+  return (
+    hasClass(context.instanceClass, AssetClass.AREA) ||
+    hasClass(context.instanceClass, AssetClass.INITIATIVE) ||
+    hasClass(context.instanceClass, AssetClass.PROJECT)
+  );
 }
 
 /**
@@ -154,8 +161,10 @@ export function canCreateChildArea(context: CommandVisibilityContext): boolean {
  * Available for: ems__TaskPrototype and ems__MeetingPrototype assets
  */
 export function canCreateInstance(context: CommandVisibilityContext): boolean {
-  return hasClass(context.instanceClass, AssetClass.TASK_PROTOTYPE) ||
-         hasClass(context.instanceClass, AssetClass.MEETING_PROTOTYPE);
+  return (
+    hasClass(context.instanceClass, AssetClass.TASK_PROTOTYPE) ||
+    hasClass(context.instanceClass, AssetClass.MEETING_PROTOTYPE)
+  );
 }
 
 /**
@@ -188,7 +197,9 @@ function isPlannedForToday(metadata: Record<string, any>): boolean {
 
   // Handle array value (take first element)
   if (Array.isArray(effortDay) && effortDay.length > 0) {
-    const cleanValue = String(effortDay[0]).replace(/["'[\]]/g, "").trim();
+    const cleanValue = String(effortDay[0])
+      .replace(/["'[\]]/g, "")
+      .trim();
     return cleanValue === todayString;
   }
 
@@ -213,7 +224,11 @@ export function canPlanOnToday(context: CommandVisibilityContext): boolean {
  * Available for: Task or Meeting with Backlog status
  */
 export function canPlanForEvening(context: CommandVisibilityContext): boolean {
-  if (!hasClass(context.instanceClass, AssetClass.TASK) && !hasClass(context.instanceClass, AssetClass.MEETING)) return false;
+  if (
+    !hasClass(context.instanceClass, AssetClass.TASK) &&
+    !hasClass(context.instanceClass, AssetClass.MEETING)
+  )
+    return false;
 
   // Show only for Backlog status
   return hasStatus(context.currentStatus, EffortStatus.BACKLOG);
@@ -232,7 +247,9 @@ function hasEffortDay(metadata: Record<string, any>): boolean {
   }
 
   if (Array.isArray(effortDay) && effortDay.length > 0) {
-    const cleanValue = String(effortDay[0]).replace(/["'[\]]/g, "").trim();
+    const cleanValue = String(effortDay[0])
+      .replace(/["'[\]]/g, "")
+      .trim();
     return cleanValue.length > 0;
   }
 
@@ -243,7 +260,9 @@ function hasEffortDay(metadata: Record<string, any>): boolean {
  * Can execute "Shift Day Backward" command
  * Available for: Task and Project with ems__Effort_day property
  */
-export function canShiftDayBackward(context: CommandVisibilityContext): boolean {
+export function canShiftDayBackward(
+  context: CommandVisibilityContext,
+): boolean {
   if (!isEffort(context.instanceClass)) return false;
   return hasEffortDay(context.metadata);
 }
@@ -309,7 +328,10 @@ export function canStartEffort(context: CommandVisibilityContext): boolean {
   if (!isEffort(context.instanceClass)) return false;
 
   // Task and Meeting: Backlog → Doing
-  if (hasClass(context.instanceClass, AssetClass.TASK) || hasClass(context.instanceClass, AssetClass.MEETING)) {
+  if (
+    hasClass(context.instanceClass, AssetClass.TASK) ||
+    hasClass(context.instanceClass, AssetClass.MEETING)
+  ) {
     return hasStatus(context.currentStatus, EffortStatus.BACKLOG);
   }
 
@@ -350,8 +372,7 @@ export function canTrashEffort(context: CommandVisibilityContext): boolean {
   const hasTrashedOrDone = statuses.some((status) => {
     const cleanStatus = WikiLinkHelpers.normalize(status);
     return (
-      cleanStatus === EffortStatus.TRASHED ||
-      cleanStatus === EffortStatus.DONE
+      cleanStatus === EffortStatus.TRASHED || cleanStatus === EffortStatus.DONE
     );
   });
 
@@ -370,9 +391,7 @@ export function canArchiveTask(context: CommandVisibilityContext): boolean {
  * Can execute "Clean Empty Properties" command
  * Available for: Any asset with empty properties
  */
-export function canCleanProperties(
-  context: CommandVisibilityContext,
-): boolean {
+export function canCleanProperties(context: CommandVisibilityContext): boolean {
   return hasEmptyProperties(context.metadata);
 }
 
@@ -441,7 +460,9 @@ export function canRollbackStatus(context: CommandVisibilityContext): boolean {
  * Can execute "Create Related Task" command
  * Available for: ems__Task assets (not archived)
  */
-export function canCreateRelatedTask(context: CommandVisibilityContext): boolean {
+export function canCreateRelatedTask(
+  context: CommandVisibilityContext,
+): boolean {
   if (!hasClass(context.instanceClass, AssetClass.TASK)) return false;
 
   // Don't show button if archived
@@ -462,7 +483,9 @@ export function canSetActiveFocus(context: CommandVisibilityContext): boolean {
  * Can execute "Copy Label to Aliases" command
  * Available for: Assets with exo__Asset_label that don't have this label in aliases yet
  */
-export function canCopyLabelToAliases(context: CommandVisibilityContext): boolean {
+export function canCopyLabelToAliases(
+  context: CommandVisibilityContext,
+): boolean {
   const label = context.metadata.exo__Asset_label;
   if (!label || typeof label !== "string" || label.trim() === "") return false;
 
@@ -485,6 +508,8 @@ export function canCopyLabelToAliases(context: CommandVisibilityContext): boolea
  * Can execute "Create Narrower Concept" command
  * Available for: ims__Concept assets
  */
-export function canCreateNarrowerConcept(context: CommandVisibilityContext): boolean {
+export function canCreateNarrowerConcept(
+  context: CommandVisibilityContext,
+): boolean {
   return hasClass(context.instanceClass, AssetClass.CONCEPT);
 }

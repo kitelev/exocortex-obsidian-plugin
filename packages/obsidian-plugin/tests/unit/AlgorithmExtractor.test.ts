@@ -123,7 +123,9 @@ Step 3: Finish
 
       const result = extractor.extractH2Section(markdown, "Algorithm");
 
-      expect(result).toBe("Step 1: Do this\n\nStep 2: Do that\n\nStep 3: Finish");
+      expect(result).toBe(
+        "Step 1: Do this\n\nStep 2: Do that\n\nStep 3: Finish",
+      );
     });
 
     it("should not match partial heading names", () => {

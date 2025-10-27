@@ -1,6 +1,6 @@
 import React from "react";
 import { TFile } from "obsidian";
-import { canRepairFolder, CommandVisibilityContext } from '@exocortex/core';
+import { canRepairFolder, CommandVisibilityContext } from "@exocortex/core";
 
 export interface RepairFolderButtonProps {
   sourceFile: TFile;

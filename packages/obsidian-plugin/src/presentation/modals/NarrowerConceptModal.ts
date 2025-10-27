@@ -15,7 +15,10 @@ export class NarrowerConceptModal extends Modal {
   private definitionEl: HTMLTextAreaElement | null = null;
   private aliasesContainer: HTMLElement | null = null;
 
-  constructor(app: App, onSubmit: (result: NarrowerConceptModalResult) => void) {
+  constructor(
+    app: App,
+    onSubmit: (result: NarrowerConceptModalResult) => void,
+  ) {
     super(app);
     this.onSubmit = onSubmit;
   }
@@ -32,7 +35,9 @@ export class NarrowerConceptModal extends Modal {
       cls: "exocortex-modal-description",
     });
 
-    const fileNameContainer = contentEl.createDiv({ cls: "exocortex-modal-input-container" });
+    const fileNameContainer = contentEl.createDiv({
+      cls: "exocortex-modal-input-container",
+    });
 
     this.fileNameEl = fileNameContainer.createEl("input", {
       type: "text",
@@ -49,7 +54,9 @@ export class NarrowerConceptModal extends Modal {
       cls: "exocortex-modal-description",
     });
 
-    const definitionContainer = contentEl.createDiv({ cls: "exocortex-modal-input-container" });
+    const definitionContainer = contentEl.createDiv({
+      cls: "exocortex-modal-input-container",
+    });
 
     this.definitionEl = definitionContainer.createEl("textarea", {
       placeholder: "Enter concept definition...",
@@ -65,7 +72,9 @@ export class NarrowerConceptModal extends Modal {
       cls: "exocortex-modal-description",
     });
 
-    this.aliasesContainer = contentEl.createDiv({ cls: "exocortex-modal-aliases-container" });
+    this.aliasesContainer = contentEl.createDiv({
+      cls: "exocortex-modal-aliases-container",
+    });
 
     this.renderAliases();
 
@@ -75,7 +84,9 @@ export class NarrowerConceptModal extends Modal {
     });
     addAliasButton.addEventListener("click", () => this.addAlias());
 
-    const buttonContainer = contentEl.createDiv({ cls: "modal-button-container" });
+    const buttonContainer = contentEl.createDiv({
+      cls: "modal-button-container",
+    });
 
     const createButton = buttonContainer.createEl("button", {
       text: "Create",
@@ -100,7 +111,9 @@ export class NarrowerConceptModal extends Modal {
 
     this.aliases.forEach((alias, index) => {
       if (!this.aliasesContainer) return;
-      const aliasRow = this.aliasesContainer.createDiv({ cls: "exocortex-modal-alias-row" });
+      const aliasRow = this.aliasesContainer.createDiv({
+        cls: "exocortex-modal-alias-row",
+      });
 
       const aliasInput = aliasRow.createEl("input", {
         type: "text",
@@ -144,8 +157,8 @@ export class NarrowerConceptModal extends Modal {
     }
 
     const filteredAliases = this.aliases
-      .map(a => a.trim())
-      .filter(a => a.length > 0);
+      .map((a) => a.trim())
+      .filter((a) => a.length > 0);
 
     this.onSubmit({
       fileName: trimmedFileName,
@@ -161,7 +174,9 @@ export class NarrowerConceptModal extends Modal {
   }
 
   private showError(message: string): void {
-    const existingError = this.contentEl.querySelector(".exocortex-modal-error");
+    const existingError = this.contentEl.querySelector(
+      ".exocortex-modal-error",
+    );
     if (existingError) {
       existingError.remove();
     }

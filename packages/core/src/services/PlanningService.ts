@@ -1,6 +1,6 @@
-import { IVaultAdapter, IFile } from '../interfaces/IVaultAdapter';
-import { FrontmatterService } from '../utilities/FrontmatterService';
-import { DateFormatter } from '../utilities/DateFormatter';
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { FrontmatterService } from "../utilities/FrontmatterService";
+import { DateFormatter } from "../utilities/DateFormatter";
 
 export class PlanningService {
   private frontmatterService: FrontmatterService;
@@ -20,13 +20,13 @@ export class PlanningService {
     const todayWikilink = DateFormatter.getTodayWikilink();
     const updated = this.frontmatterService.updateProperty(
       content,
-      'ems__Effort_day',
-      todayWikilink
+      "ems__Effort_day",
+      todayWikilink,
     );
     await this.vault.modify(file, updated);
   }
 
   private isFile(file: any): file is IFile {
-    return 'basename' in file;
+    return "basename" in file;
   }
 }

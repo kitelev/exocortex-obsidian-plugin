@@ -44,7 +44,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
           // Search in resolved links for other files
           for (const filePath in mockApp.metadataCache.resolvedLinks) {
             if (filePath === path) {
-              return { path: filePath, basename: filePath.split('/').pop()?.replace('.md', ''), stat: { ctime: Date.now(), mtime: Date.now() } };
+              return {
+                path: filePath,
+                basename: filePath.split("/").pop()?.replace(".md", ""),
+                stat: { ctime: Date.now(), mtime: Date.now() },
+              };
             }
           }
           return null;
@@ -63,7 +67,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       },
     } as unknown as App;
 
-    renderer = new UniversalLayoutRenderer(mockApp, { ...DEFAULT_SETTINGS, showPropertiesSection: true }, mockPlugin);
+    renderer = new UniversalLayoutRenderer(
+      mockApp,
+      { ...DEFAULT_SETTINGS, showPropertiesSection: true },
+      mockPlugin,
+    );
   });
 
   afterEach(() => {
@@ -95,8 +103,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         },
       };
 
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
-      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(relatedFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(
+        relatedFile,
+      );
 
       // Render
       const ctx = {} as MarkdownPostProcessorContext;
@@ -106,17 +118,27 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Verify DOM structure - should have both properties and relations sections
-      expect(container.querySelector(".exocortex-properties-section")).toBeTruthy();
-      expect(container.querySelector(".exocortex-assets-relations")).toBeTruthy();
+      expect(
+        container.querySelector(".exocortex-properties-section"),
+      ).toBeTruthy();
+      expect(
+        container.querySelector(".exocortex-assets-relations"),
+      ).toBeTruthy();
 
       // Relations table is inside .exocortex-relations or .exocortex-relations-grouped
-      const relationsContainer = container.querySelector(".exocortex-assets-relations");
+      const relationsContainer = container.querySelector(
+        ".exocortex-assets-relations",
+      );
       expect(relationsContainer).toBeTruthy();
-      const relationsTable = relationsContainer?.querySelector(".exocortex-relations-table");
+      const relationsTable = relationsContainer?.querySelector(
+        ".exocortex-relations-table",
+      );
       expect(relationsTable).toBeTruthy();
 
       // Verify properties table rendered
-      const propertiesTable = container.querySelector(".exocortex-properties-table");
+      const propertiesTable = container.querySelector(
+        ".exocortex-properties-table",
+      );
       expect(propertiesTable).toBeTruthy();
 
       // Verify relations table headers
@@ -144,8 +166,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         "task1.md": { "test.md": 1 },
       };
 
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
-      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(relatedFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(
+        relatedFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -153,13 +179,19 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Find Instance Class links in RELATIONS table (not properties table)
-      const relationsContainer = container.querySelector(".exocortex-assets-relations");
+      const relationsContainer = container.querySelector(
+        ".exocortex-assets-relations",
+      );
       expect(relationsContainer).toBeTruthy();
 
-      const relationsTable = relationsContainer?.querySelector(".exocortex-relations-table");
+      const relationsTable = relationsContainer?.querySelector(
+        ".exocortex-relations-table",
+      );
       expect(relationsTable).toBeTruthy();
 
-      const instanceClassLinks = relationsTable?.querySelectorAll(".instance-class a.internal-link");
+      const instanceClassLinks = relationsTable?.querySelectorAll(
+        ".instance-class a.internal-link",
+      );
       expect(instanceClassLinks?.length).toBeGreaterThan(0);
 
       // Verify link text (wiki syntax removed)
@@ -179,33 +211,49 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       const file2 = new TFile("task2.md");
       (file2 as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
-      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: any) => {
-        if (file?.path === "task1.md") {
-          return {
-            frontmatter: { exo__Instance_class: "ems__Task", assignedTo: "[[test]]" },
-          };
-        } else if (file?.path === "task2.md") {
-          return {
-            frontmatter: { exo__Instance_class: "ems__Project", owner: "[[test]]" },
-          };
-        }
-        return { frontmatter: {} };
-      });
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation(
+        (file: any) => {
+          if (file?.path === "task1.md") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "ems__Task",
+                assignedTo: "[[test]]",
+              },
+            };
+          } else if (file?.path === "task2.md") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "ems__Project",
+                owner: "[[test]]",
+              },
+            };
+          }
+          return { frontmatter: {} };
+        },
+      );
 
       mockApp.metadataCache.resolvedLinks = {
         "task1.md": { "test.md": 1 },
         "task2.md": { "test.md": 1 },
       };
 
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
-      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
-        if (path === "test.md") return currentFile;
-        if (path === "task1.md") return file1;
-        if (path === "task2.md") return file2;
-        return null;
-      });
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation(
+        (path: string) => {
+          if (path === "test.md") return currentFile;
+          if (path === "task1.md") return file1;
+          if (path === "task2.md") return file2;
+          return null;
+        },
+      );
 
-      await renderer.render("groupByProperty: true", container, {} as MarkdownPostProcessorContext);
+      await renderer.render(
+        "groupByProperty: true",
+        container,
+        {} as MarkdownPostProcessorContext,
+      );
 
       // Wait for React to render
       await new Promise((resolve) => setTimeout(resolve, 50));
@@ -224,7 +272,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     it("should handle empty state gracefully", async () => {
       const currentFile = new TFile("test.md");
 
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
       (mockApp.metadataCache.getFileCache as jest.Mock).mockReturnValue({
         frontmatter: null, // No frontmatter
       });
@@ -236,9 +286,13 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // With no frontmatter and no relations, nothing should be rendered
       // Properties table should NOT appear (no frontmatter)
-      expect(container.querySelector(".exocortex-properties-section")).toBeFalsy();
+      expect(
+        container.querySelector(".exocortex-properties-section"),
+      ).toBeFalsy();
       // Relations table should NOT appear (no relations)
-      expect(container.querySelector(".exocortex-assets-relations")).toBeFalsy();
+      expect(
+        container.querySelector(".exocortex-assets-relations"),
+      ).toBeFalsy();
     });
 
     it("should filter archived notes from relations", async () => {
@@ -255,16 +309,18 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       (activeFile2 as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
       // Mock file cache - archived file has exo__Asset_isArchived: true
-      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: any) => {
-        if (file?.path === "Active.md") {
-          return { frontmatter: { exo__Asset_isArchived: false } };
-        } else if (file?.path === "Archived.md") {
-          return { frontmatter: { exo__Asset_isArchived: true } };
-        } else if (file?.path === "Also Active.md") {
-          return { frontmatter: { exo__Asset_isArchived: false } };
-        }
-        return { frontmatter: {} };
-      });
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation(
+        (file: any) => {
+          if (file?.path === "Active.md") {
+            return { frontmatter: { exo__Asset_isArchived: false } };
+          } else if (file?.path === "Archived.md") {
+            return { frontmatter: { exo__Asset_isArchived: true } };
+          } else if (file?.path === "Also Active.md") {
+            return { frontmatter: { exo__Asset_isArchived: false } };
+          }
+          return { frontmatter: {} };
+        },
+      );
 
       // Setup backlinks - all three files link to current file
       mockApp.metadataCache.resolvedLinks = {
@@ -273,14 +329,18 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         "Also Active.md": { "project.md": 1 },
       };
 
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
-      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
-        if (path === "project.md") return currentFile;
-        if (path === "Active.md") return activeFile1;
-        if (path === "Archived.md") return archivedFile;
-        if (path === "Also Active.md") return activeFile2;
-        return null;
-      });
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation(
+        (path: string) => {
+          if (path === "project.md") return currentFile;
+          if (path === "Active.md") return activeFile1;
+          if (path === "Archived.md") return archivedFile;
+          if (path === "Also Active.md") return activeFile2;
+          return null;
+        },
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -288,10 +348,14 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify relations table rendered
-      const relationsContainer = container.querySelector(".exocortex-assets-relations");
+      const relationsContainer = container.querySelector(
+        ".exocortex-assets-relations",
+      );
       expect(relationsContainer).toBeTruthy();
 
-      const relationsTable = relationsContainer?.querySelector(".exocortex-relations-table");
+      const relationsTable = relationsContainer?.querySelector(
+        ".exocortex-relations-table",
+      );
       expect(relationsTable).toBeTruthy();
 
       // Verify only 2 rows (active files only)
@@ -301,7 +365,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       // Verify active files are present
       const rowTexts = Array.from(rows || []).map((row) => row.textContent);
       expect(rowTexts.some((text) => text?.includes("Active"))).toBeTruthy();
-      expect(rowTexts.some((text) => text?.includes("Also Active"))).toBeTruthy();
+      expect(
+        rowTexts.some((text) => text?.includes("Also Active")),
+      ).toBeTruthy();
 
       // Verify archived file is NOT present
       expect(rowTexts.some((text) => text?.includes("Archived"))).toBeFalsy();
@@ -320,7 +386,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {}; // No relations
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -329,7 +397,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Verify button is present - find by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const createTaskBtn = Array.from(buttons).find(btn => btn.textContent === "Create Task");
+      const createTaskBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Create Task",
+      );
       expect(createTaskBtn).toBeTruthy();
     });
 
@@ -344,7 +414,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {}; // No relations
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -353,7 +425,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Verify button is present - find by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const createTaskBtn = Array.from(buttons).find(btn => btn.textContent === "Create Task");
+      const createTaskBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Create Task",
+      );
       expect(createTaskBtn).toBeTruthy();
     });
 
@@ -367,7 +441,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -389,7 +465,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -410,8 +488,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Verify Create Task button is inside the action buttons container (inside buttons section)
       const buttonsSection = children[buttonsContainerIndex];
-      const buttons = buttonsSection.querySelectorAll(".exocortex-action-button");
-      const createTaskBtn = Array.from(buttons).find(btn => btn.textContent === "Create Task");
+      const buttons = buttonsSection.querySelectorAll(
+        ".exocortex-action-button",
+      );
+      const createTaskBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Create Task",
+      );
       expect(createTaskBtn).toBeTruthy();
     });
   });
@@ -429,7 +511,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -437,7 +521,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Find Mark Done button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const doneBtn = Array.from(buttons).find(btn => btn.textContent === "Mark Done");
+      const doneBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Mark Done",
+      );
       expect(doneBtn).toBeTruthy();
     });
 
@@ -452,7 +538,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -473,7 +561,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -494,7 +584,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -502,7 +594,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Find Mark Done button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const doneBtn = Array.from(buttons).find(btn => btn.textContent === "Mark Done");
+      const doneBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Mark Done",
+      );
       expect(doneBtn).toBeTruthy();
     });
 
@@ -517,7 +611,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -538,7 +634,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -558,7 +656,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -582,7 +682,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -590,7 +692,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Find Archive button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const archiveBtn = Array.from(buttons).find(btn => btn.textContent === "Archive");
+      const archiveBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Archive",
+      );
       expect(archiveBtn).toBeTruthy();
     });
 
@@ -606,7 +710,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -628,14 +734,18 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const archiveBtn = Array.from(buttons).find(btn => btn.textContent === "Archive");
+      const archiveBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Archive",
+      );
       expect(archiveBtn).toBeTruthy();
     });
 
@@ -651,7 +761,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -659,7 +771,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Find Archive button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const archiveBtn = Array.from(buttons).find(btn => btn.textContent === "Archive");
+      const archiveBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Archive",
+      );
       expect(archiveBtn).toBeTruthy();
     });
 
@@ -675,7 +789,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -697,14 +813,18 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const archiveBtn = Array.from(buttons).find(btn => btn.textContent === "Archive");
+      const archiveBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Archive",
+      );
       expect(archiveBtn).toBeTruthy();
     });
 
@@ -719,14 +839,18 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const archiveBtn = Array.from(buttons).find(btn => btn.textContent === "Archive");
+      const archiveBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Archive",
+      );
       expect(archiveBtn).toBeTruthy();
     });
   });
@@ -745,7 +869,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -753,7 +879,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Find Clean Properties button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const cleanBtn = Array.from(buttons).find(btn => btn.textContent === "Clean Properties");
+      const cleanBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Clean Properties",
+      );
       expect(cleanBtn).toBeTruthy();
     });
 
@@ -770,7 +898,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -792,7 +922,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -800,7 +932,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Find Clean Properties button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const cleanBtn = Array.from(buttons).find(btn => btn.textContent === "Clean Properties");
+      const cleanBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Clean Properties",
+      );
       expect(cleanBtn).toBeTruthy();
     });
 
@@ -816,7 +950,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -824,7 +960,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Find Clean Properties button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const cleanBtn = Array.from(buttons).find(btn => btn.textContent === "Clean Properties");
+      const cleanBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Clean Properties",
+      );
       expect(cleanBtn).toBeTruthy();
     });
   });
@@ -880,7 +1018,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         .mockReturnValue(referencedFile);
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -888,7 +1028,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Find Repair Folder button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const repairBtn = Array.from(buttons).find(btn => btn.textContent === "Repair Folder");
+      const repairBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Repair Folder",
+      );
       expect(repairBtn).toBeTruthy();
     });
 
@@ -910,7 +1052,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         .mockReturnValue(referencedFile);
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -931,7 +1075,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -956,7 +1102,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         .mockReturnValue(null);
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -977,7 +1125,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         frontmatter: {
           exo__Asset_isDefinedBy: "[[Ref]]",
           exo__Instance_class: "[[ems__Task]]",
-          emptyProp: "",  // Add empty property to trigger Clean Properties button
+          emptyProp: "", // Add empty property to trigger Clean Properties button
         },
       });
 
@@ -986,7 +1134,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         .mockReturnValue(referencedFile);
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -1007,10 +1157,16 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Verify both buttons exist inside the buttons section (via action buttons container)
       const buttonsSection = children[buttonsContainerIndex];
-      const buttons = buttonsSection.querySelectorAll(".exocortex-action-button");
+      const buttons = buttonsSection.querySelectorAll(
+        ".exocortex-action-button",
+      );
 
-      const cleanBtn = Array.from(buttons).find(btn => btn.textContent === "Clean Properties");
-      const repairBtn = Array.from(buttons).find(btn => btn.textContent === "Repair Folder");
+      const cleanBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Clean Properties",
+      );
+      const repairBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Repair Folder",
+      );
 
       expect(cleanBtn).toBeTruthy();
       expect(repairBtn).toBeTruthy();
@@ -1039,23 +1195,35 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       (mockApp.metadataCache.getFirstLinkpathDest as jest.Mock) = jest
         .fn()
         .mockReturnValue(targetFile);
-      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(targetFile);
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(
+        targetFile,
+      );
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Get action buttons container
-      const buttonsContainer = container.querySelector(".exocortex-action-buttons-container") as HTMLElement;
+      const buttonsContainer = container.querySelector(
+        ".exocortex-action-buttons-container",
+      ) as HTMLElement;
       expect(buttonsContainer).toBeTruthy();
 
       // Verify container has correct CSS class
-      expect(buttonsContainer.classList.contains("exocortex-action-buttons-container")).toBe(true);
+      expect(
+        buttonsContainer.classList.contains(
+          "exocortex-action-buttons-container",
+        ),
+      ).toBe(true);
 
       // Verify all expected buttons are present
-      const buttons = buttonsContainer.querySelectorAll(".exocortex-action-button");
-      const buttonTexts = Array.from(buttons).map(btn => btn.textContent);
+      const buttons = buttonsContainer.querySelectorAll(
+        ".exocortex-action-button",
+      );
+      const buttonTexts = Array.from(buttons).map((btn) => btn.textContent);
 
       expect(buttonTexts).toContain("Create Task");
       expect(buttonTexts).toContain("Clean Properties");
@@ -1075,7 +1243,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -1083,7 +1253,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Find Start Effort button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const startBtn = Array.from(buttons).find(btn => btn.textContent === "Start Effort");
+      const startBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Start Effort",
+      );
       expect(startBtn).toBeTruthy();
     });
 
@@ -1098,7 +1270,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -1119,7 +1293,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -1140,7 +1316,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -1161,7 +1339,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -1169,7 +1349,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Find Start Effort button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const startBtn = Array.from(buttons).find(btn => btn.textContent === "Start Effort");
+      const startBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Start Effort",
+      );
       expect(startBtn).toBeFalsy();
     });
 
@@ -1184,7 +1366,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -1192,7 +1376,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Find Start Effort button by text content
       const buttons = container.querySelectorAll(".exocortex-action-button");
-      const startBtn = Array.from(buttons).find(btn => btn.textContent === "Start Effort");
+      const startBtn = Array.from(buttons).find(
+        (btn) => btn.textContent === "Start Effort",
+      );
       expect(startBtn).toBeTruthy();
     });
 
@@ -1207,7 +1393,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -1228,7 +1416,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -1248,7 +1438,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
@@ -1271,8 +1463,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = { "task.md": { "test.md": 1 } };
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
-      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(relatedFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(
+        relatedFile,
+      );
 
       // Render
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
@@ -1283,7 +1479,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Verify container is not empty but React internals are cleaned
       // (container still has DOM elements but React roots are unmounted)
-      expect(container.querySelector(".exocortex-assets-relations")).toBeTruthy();
+      expect(
+        container.querySelector(".exocortex-assets-relations"),
+      ).toBeTruthy();
     });
   });
 
@@ -1297,45 +1495,55 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       const prototypeFile = new TFile("prototypes/TaskPrototype.md");
 
       // Mock workspace and vault
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       // Mock cache for current file
-      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: TFile) => {
-        if (file.path === "current.md") {
-          return { frontmatter: { exo__Instance_class: "ems__Area" } };
-        }
-        if (file.path === "tasks/Task-123.md") {
-          return {
-            frontmatter: {
-              exo__Instance_class: "ems__Task",
-              ems__Effort_prototype: "[[TaskPrototype]]",
-              // No exo__Asset_label on task itself
-            },
-          };
-        }
-        if (file.path === "prototypes/TaskPrototype.md") {
-          return {
-            frontmatter: {
-              exo__Asset_label: "Marketing Campaign Template",
-            },
-          };
-        }
-        return null;
-      });
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation(
+        (file: TFile) => {
+          if (file.path === "current.md") {
+            return { frontmatter: { exo__Instance_class: "ems__Area" } };
+          }
+          if (file.path === "tasks/Task-123.md") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "ems__Task",
+                ems__Effort_prototype: "[[TaskPrototype]]",
+                // No exo__Asset_label on task itself
+              },
+            };
+          }
+          if (file.path === "prototypes/TaskPrototype.md") {
+            return {
+              frontmatter: {
+                exo__Asset_label: "Marketing Campaign Template",
+              },
+            };
+          }
+          return null;
+        },
+      );
 
       // Mock vault file lookup
-      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
-        if (path === "current.md") return currentFile;
-        if (path === "tasks/Task-123.md") return taskFile;
-        if (path === "TaskPrototype.md") return prototypeFile;
-        if (path === "prototypes/TaskPrototype.md") return prototypeFile;
-        return null;
-      });
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation(
+        (path: string) => {
+          if (path === "current.md") return currentFile;
+          if (path === "tasks/Task-123.md") return taskFile;
+          if (path === "TaskPrototype.md") return prototypeFile;
+          if (path === "prototypes/TaskPrototype.md") return prototypeFile;
+          return null;
+        },
+      );
 
       // Mock metadataCache.getFirstLinkpathDest (used by new label resolution logic)
-      (mockApp.metadataCache.getFirstLinkpathDest as jest.Mock).mockImplementation((path: string) => {
-        if (path === "tasks/Task-123.md" || path === "tasks/Task-123") return taskFile;
-        if (path === "TaskPrototype" || path === "TaskPrototype.md") return prototypeFile;
+      (
+        mockApp.metadataCache.getFirstLinkpathDest as jest.Mock
+      ).mockImplementation((path: string) => {
+        if (path === "tasks/Task-123.md" || path === "tasks/Task-123")
+          return taskFile;
+        if (path === "TaskPrototype" || path === "TaskPrototype.md")
+          return prototypeFile;
         return null;
       });
 
@@ -1370,34 +1578,44 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       const assetAFile = new TFile("assets/AssetA.md");
       (assetAFile as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       // AssetA has TWO properties linking to AssetB
-      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: TFile) => {
-        if (file.path === "assets/AssetB.md") {
-          return { frontmatter: { exo__Instance_class: "ems__Task" } };
-        }
-        if (file.path === "assets/AssetA.md") {
-          return {
-            frontmatter: {
-              exo__Instance_class: "ems__Task",
-              property1: "[[AssetB]]",
-              property2: "[[AssetB]]",
-            },
-          };
-        }
-        return null;
-      });
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation(
+        (file: TFile) => {
+          if (file.path === "assets/AssetB.md") {
+            return { frontmatter: { exo__Instance_class: "ems__Task" } };
+          }
+          if (file.path === "assets/AssetA.md") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "ems__Task",
+                property1: "[[AssetB]]",
+                property2: "[[AssetB]]",
+              },
+            };
+          }
+          return null;
+        },
+      );
 
       // Mock backlinks - AssetA links to AssetB
       mockApp.metadataCache.resolvedLinks = {
         "assets/AssetA.md": { "assets/AssetB.md": 2 },
       };
 
-      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(assetAFile);
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockReturnValue(
+        assetAFile,
+      );
 
       // Render with groupByProperty to see both relations
-      await renderer.render("groupByProperty: true", container, {} as MarkdownPostProcessorContext);
+      await renderer.render(
+        "groupByProperty: true",
+        container,
+        {} as MarkdownPostProcessorContext,
+      );
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -1412,8 +1630,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(headerTexts).toContain("property2");
 
       // Each group should have 1 row with AssetA
-      const property1Group = Array.from(groups).find((g) => g.querySelector(".group-header")?.textContent === "property1");
-      const property2Group = Array.from(groups).find((g) => g.querySelector(".group-header")?.textContent === "property2");
+      const property1Group = Array.from(groups).find(
+        (g) => g.querySelector(".group-header")?.textContent === "property1",
+      );
+      const property2Group = Array.from(groups).find(
+        (g) => g.querySelector(".group-header")?.textContent === "property2",
+      );
 
       expect(property1Group).toBeTruthy();
       expect(property2Group).toBeTruthy();
@@ -1438,29 +1660,31 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       (taskFile as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
       // Setup mocks in same order as passing test
-      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: TFile) => {
-        if (file.path === "daily-notes/2025-10-16 Note.md") {
-          return {
-            frontmatter: {
-              exo__Instance_class: "[[pn__DailyNote]]",
-              pn__DailyNote_day: "[[2025-10-16]]",
-              some_property: "value",
-            },
-          };
-        }
-        if (file.path === "tasks/task1.md") {
-          return {
-            frontmatter: {
-              exo__Instance_class: "ems__Task",
-              exo__Asset_label: "Task 1",
-              ems__Effort_status: "[[ems__EffortStatusDoing]]",
-              ems__Effort_day: "[[2025-10-16]]",
-              some_reference: "[[2025-10-16 Note]]",
-            },
-          };
-        }
-        return { frontmatter: {} };
-      });
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation(
+        (file: TFile) => {
+          if (file.path === "daily-notes/2025-10-16 Note.md") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "[[pn__DailyNote]]",
+                pn__DailyNote_day: "[[2025-10-16]]",
+                some_property: "value",
+              },
+            };
+          }
+          if (file.path === "tasks/task1.md") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "ems__Task",
+                exo__Asset_label: "Task 1",
+                ems__Effort_status: "[[ems__EffortStatusDoing]]",
+                ems__Effort_day: "[[2025-10-16]]",
+                some_reference: "[[2025-10-16 Note]]",
+              },
+            };
+          }
+          return { frontmatter: {} };
+        },
+      );
 
       // Mock Dataview API
       const mockDataviewApi = {
@@ -1484,12 +1708,16 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         "tasks/task1.md": { "daily-notes/2025-10-16 Note.md": 1 },
       };
 
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
-      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
-        if (path === "daily-notes/2025-10-16 Note.md") return currentFile;
-        if (path === "tasks/task1.md") return taskFile;
-        return null;
-      });
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation(
+        (path: string) => {
+          if (path === "daily-notes/2025-10-16 Note.md") return currentFile;
+          if (path === "tasks/task1.md") return taskFile;
+          return null;
+        },
+      );
       (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue([taskFile]);
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
@@ -1501,7 +1729,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(tasksHeader?.textContent).toBe("Tasks");
 
       // Verify Tasks table is present
-      const tasksSection = container.querySelector(".exocortex-daily-tasks-section");
+      const tasksSection = container.querySelector(
+        ".exocortex-daily-tasks-section",
+      );
       expect(tasksSection).toBeTruthy();
 
       const tasksTable = tasksSection?.querySelector(".exocortex-tasks-table");
@@ -1518,14 +1748,18 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify Tasks table is NOT present
-      const tasksSection = container.querySelector(".exocortex-daily-tasks-section");
+      const tasksSection = container.querySelector(
+        ".exocortex-daily-tasks-section",
+      );
       expect(tasksSection).toBeFalsy();
     });
 
@@ -1540,14 +1774,18 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify Tasks table is NOT present
-      const tasksSection = container.querySelector(".exocortex-daily-tasks-section");
+      const tasksSection = container.querySelector(
+        ".exocortex-daily-tasks-section",
+      );
       expect(tasksSection).toBeFalsy();
     });
 
@@ -1565,14 +1803,18 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       (mockApp as any).plugins = {};
 
       mockApp.metadataCache.resolvedLinks = {};
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify Tasks table is NOT present (graceful fallback)
-      const tasksSection = container.querySelector(".exocortex-daily-tasks-section");
+      const tasksSection = container.querySelector(
+        ".exocortex-daily-tasks-section",
+      );
       expect(tasksSection).toBeFalsy();
     });
 
@@ -1591,48 +1833,50 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       (otherDayTaskFile as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
       // Setup mocks with realistic data
-      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: TFile) => {
-        if (file.path === "daily-notes/2025-10-16 Note.md") {
-          return {
-            frontmatter: {
-              exo__Instance_class: "[[pn__DailyNote]]",
-              pn__DailyNote_day: "[[2025-10-16]]",
-            },
-          };
-        }
-        if (file.path === "tasks/task1.md") {
-          return {
-            frontmatter: {
-              exo__Instance_class: "ems__Task",
-              exo__Asset_label: "Morning standup",
-              ems__Effort_status: "[[ems__EffortStatusDoing]]",
-              ems__Effort_day: "[[2025-10-16]]",
-              ems__Effort_startTimestamp: "2025-10-16T09:00:00",
-            },
-          };
-        }
-        if (file.path === "tasks/task2.md") {
-          return {
-            frontmatter: {
-              exo__Instance_class: "ems__Task",
-              exo__Asset_label: "Code review",
-              ems__Effort_status: "[[ems__EffortStatusDone]]",
-              ems__Effort_day: "[[2025-10-16]]",
-              ems__Effort_endTimestamp: "2025-10-16T15:00:00",
-            },
-          };
-        }
-        if (file.path === "tasks/other.md") {
-          return {
-            frontmatter: {
-              exo__Instance_class: "ems__Task",
-              exo__Asset_label: "Different day task",
-              ems__Effort_day: "[[2025-10-17]]", // Different day!
-            },
-          };
-        }
-        return { frontmatter: {} };
-      });
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation(
+        (file: TFile) => {
+          if (file.path === "daily-notes/2025-10-16 Note.md") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "[[pn__DailyNote]]",
+                pn__DailyNote_day: "[[2025-10-16]]",
+              },
+            };
+          }
+          if (file.path === "tasks/task1.md") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "ems__Task",
+                exo__Asset_label: "Morning standup",
+                ems__Effort_status: "[[ems__EffortStatusDoing]]",
+                ems__Effort_day: "[[2025-10-16]]",
+                ems__Effort_startTimestamp: "2025-10-16T09:00:00",
+              },
+            };
+          }
+          if (file.path === "tasks/task2.md") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "ems__Task",
+                exo__Asset_label: "Code review",
+                ems__Effort_status: "[[ems__EffortStatusDone]]",
+                ems__Effort_day: "[[2025-10-16]]",
+                ems__Effort_endTimestamp: "2025-10-16T15:00:00",
+              },
+            };
+          }
+          if (file.path === "tasks/other.md") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "ems__Task",
+                exo__Asset_label: "Different day task",
+                ems__Effort_day: "[[2025-10-17]]", // Different day!
+              },
+            };
+          }
+          return { frontmatter: {} };
+        },
+      );
 
       // Mock Dataview plugin availability (but implementation doesn't matter for this test)
       (mockApp as any).plugins = {
@@ -1643,14 +1887,18 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       mockApp.metadataCache.resolvedLinks = {};
 
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
-      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
-        if (path === "daily-notes/2025-10-16 Note.md") return currentFile;
-        if (path === "tasks/task1.md") return taskFile1;
-        if (path === "tasks/task2.md") return taskFile2;
-        if (path === "tasks/other.md") return otherDayTaskFile;
-        return null;
-      });
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation(
+        (path: string) => {
+          if (path === "daily-notes/2025-10-16 Note.md") return currentFile;
+          if (path === "tasks/task1.md") return taskFile1;
+          if (path === "tasks/task2.md") return taskFile2;
+          if (path === "tasks/other.md") return otherDayTaskFile;
+          return null;
+        },
+      );
 
       // CRITICAL: Vault returns all task files, renderer should filter by day
       (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue([
@@ -1667,7 +1915,9 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       const tasksHeader = container.querySelector(".exocortex-section-header");
       expect(tasksHeader?.textContent).toBe("Tasks");
 
-      const tasksSection = container.querySelector(".exocortex-daily-tasks-section");
+      const tasksSection = container.querySelector(
+        ".exocortex-daily-tasks-section",
+      );
       expect(tasksSection).toBeTruthy();
 
       const tasksTable = tasksSection?.querySelector(".exocortex-tasks-table");
@@ -1679,9 +1929,15 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Verify task content is rendered correctly
       const rowTexts = Array.from(taskRows || []).map((row) => row.textContent);
-      expect(rowTexts.some((text) => text?.includes("Morning standup"))).toBeTruthy();
-      expect(rowTexts.some((text) => text?.includes("Code review"))).toBeTruthy();
-      expect(rowTexts.some((text) => text?.includes("Different day task"))).toBeFalsy();
+      expect(
+        rowTexts.some((text) => text?.includes("Morning standup")),
+      ).toBeTruthy();
+      expect(
+        rowTexts.some((text) => text?.includes("Code review")),
+      ).toBeTruthy();
+      expect(
+        rowTexts.some((text) => text?.includes("Different day task")),
+      ).toBeFalsy();
     });
 
     it("should position Tasks table between Properties and Relations", async () => {
@@ -1690,32 +1946,39 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       const relatedTask = new TFile("tasks/task1.md");
       (relatedTask as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
-      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation((file: TFile) => {
-        if (file.path === "daily-notes/2025-10-16 Note.md") {
-          return {
-            frontmatter: {
-              exo__Instance_class: "[[pn__DailyNote]]",
-              pn__DailyNote_day: "[[2025-10-16]]",
-              some_property: "value",
-            },
-          };
-        }
-        if (file.path === "tasks/task1.md") {
-          return {
-            frontmatter: {
-              exo__Instance_class: "ems__Task",
-              ems__Effort_day: "[[2025-10-16]]",
-              some_reference: "[[2025-10-16 Note]]",
-            },
-          };
-        }
-        return { frontmatter: {} };
-      });
+      (mockApp.metadataCache.getFileCache as jest.Mock).mockImplementation(
+        (file: TFile) => {
+          if (file.path === "daily-notes/2025-10-16 Note.md") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "[[pn__DailyNote]]",
+                pn__DailyNote_day: "[[2025-10-16]]",
+                some_property: "value",
+              },
+            };
+          }
+          if (file.path === "tasks/task1.md") {
+            return {
+              frontmatter: {
+                exo__Instance_class: "ems__Task",
+                ems__Effort_day: "[[2025-10-16]]",
+                some_reference: "[[2025-10-16 Note]]",
+              },
+            };
+          }
+          return { frontmatter: {} };
+        },
+      );
 
       // Mock Dataview API
       const mockDataviewApi = {
         pages: jest.fn().mockReturnValue({
-          values: [{ file: { path: "tasks/task1.md" }, ems__Effort_day: "[[2025-10-16]]" }],
+          values: [
+            {
+              file: { path: "tasks/task1.md" },
+              ems__Effort_day: "[[2025-10-16]]",
+            },
+          ],
         }),
       };
 
@@ -1729,13 +1992,19 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         "tasks/task1.md": { "daily-notes/2025-10-16 Note.md": 1 },
       };
 
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(currentFile);
-      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
-        if (path === "daily-notes/2025-10-16 Note.md") return currentFile;
-        if (path === "tasks/task1.md") return relatedTask;
-        return null;
-      });
-      (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue([relatedTask]);
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
+        currentFile,
+      );
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation(
+        (path: string) => {
+          if (path === "daily-notes/2025-10-16 Note.md") return currentFile;
+          if (path === "tasks/task1.md") return relatedTask;
+          return null;
+        },
+      );
+      (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue([
+        relatedTask,
+      ]);
 
       await renderer.render("", container, {} as MarkdownPostProcessorContext);
 

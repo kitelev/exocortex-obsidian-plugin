@@ -1,25 +1,29 @@
-import { test, expect } from '@playwright/experimental-ct-react';
-import { AssetPropertiesTable } from '../../src/presentation/components/AssetPropertiesTable';
+import { test, expect } from "@playwright/experimental-ct-react";
+import { AssetPropertiesTable } from "../../src/presentation/components/AssetPropertiesTable";
 
-test.describe('AssetPropertiesTable Component', () => {
+test.describe("AssetPropertiesTable Component", () => {
   const mockMetadata = {
-    title: 'My Task',
-    status: 'in-progress',
-    priority: 'high',
-    exo__Instance_class: '[[ems__Task]]',
-    project: '[[My Project]]',
-    tags: ['work', 'urgent', 'review'],
+    title: "My Task",
+    status: "in-progress",
+    priority: "high",
+    exo__Instance_class: "[[ems__Task]]",
+    project: "[[My Project]]",
+    tags: ["work", "urgent", "review"],
     count: 42,
     price: 99.99,
     active: true,
     archived: false,
   };
 
-  test('should render properties table with metadata', async ({ mount }) => {
-    const component = await mount(<AssetPropertiesTable metadata={mockMetadata} />);
+  test("should render properties table with metadata", async ({ mount }) => {
+    const component = await mount(
+      <AssetPropertiesTable metadata={mockMetadata} />,
+    );
 
     // Check table exists
-    await expect(component.locator('.exocortex-properties-table')).toBeVisible();
+    await expect(
+      component.locator(".exocortex-properties-table"),
+    ).toBeVisible();
 
     // Check header
     await expect(component.locator('h3:has-text("Properties")')).toBeVisible();
@@ -29,12 +33,14 @@ test.describe('AssetPropertiesTable Component', () => {
     await expect(component.locator('th:has-text("Value")')).toBeVisible();
 
     // Check all properties are rendered
-    const rows = component.locator('tbody tr');
+    const rows = component.locator("tbody tr");
     await expect(rows).toHaveCount(10);
   });
 
-  test('should display simple text properties', async ({ mount }) => {
-    const component = await mount(<AssetPropertiesTable metadata={mockMetadata} />);
+  test("should display simple text properties", async ({ mount }) => {
+    const component = await mount(
+      <AssetPropertiesTable metadata={mockMetadata} />,
+    );
 
     // Check simple text values
     await expect(component.locator('td:has-text("title")')).toBeVisible();
@@ -44,25 +50,33 @@ test.describe('AssetPropertiesTable Component', () => {
     await expect(component.locator('td:has-text("in-progress")')).toBeVisible();
   });
 
-  test('should render wiki-links as clickable internal links', async ({ mount }) => {
-    const component = await mount(<AssetPropertiesTable metadata={mockMetadata} />);
+  test("should render wiki-links as clickable internal links", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <AssetPropertiesTable metadata={mockMetadata} />,
+    );
 
     // Check Instance Class link
-    const instanceClassLink = component.locator('a.internal-link:has-text("ems__Task")');
+    const instanceClassLink = component.locator(
+      'a.internal-link:has-text("ems__Task")',
+    );
     await expect(instanceClassLink).toBeVisible();
     await expect(instanceClassLink).toHaveClass(/internal-link/);
 
     // Check project link
-    const projectLink = component.locator('a.internal-link:has-text("My Project")');
+    const projectLink = component.locator(
+      'a.internal-link:has-text("My Project")',
+    );
     await expect(projectLink).toBeVisible();
     await expect(projectLink).toHaveClass(/internal-link/);
 
     // Verify wiki syntax is removed
-    await expect(component.locator('text=[[ems__Task]]')).not.toBeVisible();
-    await expect(component.locator('text=[[My Project]]')).not.toBeVisible();
+    await expect(component.locator("text=[[ems__Task]]")).not.toBeVisible();
+    await expect(component.locator("text=[[My Project]]")).not.toBeVisible();
   });
 
-  test('should handle link clicks', async ({ mount }) => {
+  test("should handle link clicks", async ({ mount }) => {
     let clickedPath: string | null = null;
     let clickedEvent: React.MouseEvent | null = null;
 
@@ -73,18 +87,18 @@ test.describe('AssetPropertiesTable Component', () => {
           clickedPath = path;
           clickedEvent = event;
         }}
-      />
+      />,
     );
 
     // Click on Instance Class link
     await component.locator('a:has-text("ems__Task")').click();
 
     // Verify callback was called with event
-    expect(clickedPath).toBe('ems__Task');
+    expect(clickedPath).toBe("ems__Task");
     expect(clickedEvent).not.toBeNull();
   });
 
-  test('should pass event when Command+Click on link', async ({ mount }) => {
+  test("should pass event when Command+Click on link", async ({ mount }) => {
     let clickedPath: string | null = null;
     let clickedEvent: React.MouseEvent | null = null;
 
@@ -95,30 +109,35 @@ test.describe('AssetPropertiesTable Component', () => {
           clickedPath = path;
           clickedEvent = event;
         }}
-      />
+      />,
     );
 
     // Command+Click on Instance Class link
-    await component.locator('a:has-text("ems__Task")').click({ modifiers: ['Meta'] });
+    await component
+      .locator('a:has-text("ems__Task")')
+      .click({ modifiers: ["Meta"] });
 
     // Verify callback was called with event
-    expect(clickedPath).toBe('ems__Task');
+    expect(clickedPath).toBe("ems__Task");
     expect(clickedEvent).not.toBeNull();
     // Note: We can't easily test metaKey in component tests, but the event is passed correctly
   });
 
-
-  test('should display array properties as comma-separated values', async ({ mount }) => {
-    const component = await mount(<AssetPropertiesTable metadata={mockMetadata} />);
+  test("should display array properties as comma-separated values", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <AssetPropertiesTable metadata={mockMetadata} />,
+    );
 
     // Check tags array is displayed
     await expect(component.locator('td:has-text("tags")')).toBeVisible();
-    await expect(component.locator('text=work, urgent, review')).toBeVisible();
+    await expect(component.locator("text=work, urgent, review")).toBeVisible();
   });
 
-  test('should display array with wiki-links', async ({ mount }) => {
+  test("should display array with wiki-links", async ({ mount }) => {
     const metadata = {
-      references: ['[[Note A]]', '[[Note B]]', '[[Note C]]'],
+      references: ["[[Note A]]", "[[Note B]]", "[[Note C]]"],
     };
 
     const component = await mount(<AssetPropertiesTable metadata={metadata} />);
@@ -129,36 +148,42 @@ test.describe('AssetPropertiesTable Component', () => {
     await expect(component.locator('a:has-text("Note C")')).toBeVisible();
 
     // Check comma separators
-    const valueCell = component.locator('td.property-value').filter({ hasText: 'Note A' });
-    await expect(valueCell).toContainText('Note A, Note B, Note C');
+    const valueCell = component
+      .locator("td.property-value")
+      .filter({ hasText: "Note A" });
+    await expect(valueCell).toContainText("Note A, Note B, Note C");
   });
 
-  test('should display boolean values', async ({ mount }) => {
-    const component = await mount(<AssetPropertiesTable metadata={mockMetadata} />);
+  test("should display boolean values", async ({ mount }) => {
+    const component = await mount(
+      <AssetPropertiesTable metadata={mockMetadata} />,
+    );
 
     // Check boolean values
-    await expect(component.locator('text=active')).toBeVisible();
-    await expect(component.locator('text=true')).toBeVisible();
-    await expect(component.locator('text=archived')).toBeVisible();
-    await expect(component.locator('text=false')).toBeVisible();
+    await expect(component.locator("text=active")).toBeVisible();
+    await expect(component.locator("text=true")).toBeVisible();
+    await expect(component.locator("text=archived")).toBeVisible();
+    await expect(component.locator("text=false")).toBeVisible();
   });
 
-  test('should display number values', async ({ mount }) => {
-    const component = await mount(<AssetPropertiesTable metadata={mockMetadata} />);
+  test("should display number values", async ({ mount }) => {
+    const component = await mount(
+      <AssetPropertiesTable metadata={mockMetadata} />,
+    );
 
     // Check number values
-    await expect(component.locator('text=count')).toBeVisible();
-    await expect(component.locator('text=42')).toBeVisible();
+    await expect(component.locator("text=count")).toBeVisible();
+    await expect(component.locator("text=42")).toBeVisible();
 
-    await expect(component.locator('text=price')).toBeVisible();
-    await expect(component.locator('text=99.99')).toBeVisible();
+    await expect(component.locator("text=price")).toBeVisible();
+    await expect(component.locator("text=99.99")).toBeVisible();
   });
 
-  test('should handle null and undefined values', async ({ mount }) => {
+  test("should handle null and undefined values", async ({ mount }) => {
     const metadata = {
       nullValue: null,
       undefinedValue: undefined,
-      normalValue: 'test',
+      normalValue: "test",
     };
 
     const component = await mount(<AssetPropertiesTable metadata={metadata} />);
@@ -168,59 +193,69 @@ test.describe('AssetPropertiesTable Component', () => {
     await expect(cells).toHaveCount(2);
   });
 
-  test('should not render when metadata is empty', async ({ mount }) => {
+  test("should not render when metadata is empty", async ({ mount }) => {
     const component = await mount(<AssetPropertiesTable metadata={{}} />);
 
     // Component should not render anything
-    await expect(component.locator('.exocortex-asset-properties')).not.toBeVisible();
+    await expect(
+      component.locator(".exocortex-asset-properties"),
+    ).not.toBeVisible();
   });
 
-  test('should preserve property key formatting', async ({ mount }) => {
+  test("should preserve property key formatting", async ({ mount }) => {
     const metadata = {
-      'exo__Instance_class': 'test',
-      'simple_name': 'test',
-      'CamelCaseKey': 'test',
+      exo__Instance_class: "test",
+      simple_name: "test",
+      CamelCaseKey: "test",
     };
 
     const component = await mount(<AssetPropertiesTable metadata={metadata} />);
 
     // Check keys are preserved exactly
-    await expect(component.locator('td:has-text("exo__Instance_class")')).toBeVisible();
+    await expect(
+      component.locator('td:has-text("exo__Instance_class")'),
+    ).toBeVisible();
     await expect(component.locator('td:has-text("simple_name")')).toBeVisible();
-    await expect(component.locator('td:has-text("CamelCaseKey")')).toBeVisible();
+    await expect(
+      component.locator('td:has-text("CamelCaseKey")'),
+    ).toBeVisible();
   });
 
-  test('should handle mixed content in arrays', async ({ mount }) => {
+  test("should handle mixed content in arrays", async ({ mount }) => {
     const metadata = {
-      mixedArray: ['simple text', '[[Note Link]]', 'more text'],
+      mixedArray: ["simple text", "[[Note Link]]", "more text"],
     };
 
     const component = await mount(<AssetPropertiesTable metadata={metadata} />);
 
     // Check plain text is displayed
-    await expect(component.locator('text=simple text')).toBeVisible();
-    await expect(component.locator('text=more text')).toBeVisible();
+    await expect(component.locator("text=simple text")).toBeVisible();
+    await expect(component.locator("text=more text")).toBeVisible();
 
     // Check link is rendered
-    await expect(component.locator('a.internal-link:has-text("Note Link")')).toBeVisible();
+    await expect(
+      component.locator('a.internal-link:has-text("Note Link")'),
+    ).toBeVisible();
   });
 
-  test('should display object values as JSON', async ({ mount }) => {
+  test("should display object values as JSON", async ({ mount }) => {
     const metadata = {
-      nestedObject: { author: 'John', created: '2024-01-01' },
+      nestedObject: { author: "John", created: "2024-01-01" },
     };
 
     const component = await mount(<AssetPropertiesTable metadata={metadata} />);
 
     // Check object is stringified
-    await expect(component.locator('text=nestedObject')).toBeVisible();
-    await expect(component.locator('text={"author":"John","created":"2024-01-01"}')).toBeVisible();
+    await expect(component.locator("text=nestedObject")).toBeVisible();
+    await expect(
+      component.locator('text={"author":"John","created":"2024-01-01"}'),
+    ).toBeVisible();
   });
 
-  test('should handle empty arrays', async ({ mount }) => {
+  test("should handle empty arrays", async ({ mount }) => {
     const metadata = {
       emptyArray: [],
-      normalValue: 'test',
+      normalValue: "test",
     };
 
     const component = await mount(<AssetPropertiesTable metadata={metadata} />);
@@ -230,31 +265,36 @@ test.describe('AssetPropertiesTable Component', () => {
     await expect(emptyRow).toBeVisible();
   });
 
-  test('should use getAssetLabel callback when provided', async ({ mount }) => {
+  test("should use getAssetLabel callback when provided", async ({ mount }) => {
     const metadata = {
-      relatedAsset: '[[TaskFile]]',
+      relatedAsset: "[[TaskFile]]",
     };
 
     const mockGetAssetLabel = (path: string) => {
-      if (path === 'TaskFile') return 'Custom Task Label';
+      if (path === "TaskFile") return "Custom Task Label";
       return null;
     };
 
     const component = await mount(
-      <AssetPropertiesTable metadata={metadata} getAssetLabel={mockGetAssetLabel} />
+      <AssetPropertiesTable
+        metadata={metadata}
+        getAssetLabel={mockGetAssetLabel}
+      />,
     );
 
     // Component should render with the metadata
-    await expect(component.locator('text=relatedAsset')).toBeVisible();
+    await expect(component.locator("text=relatedAsset")).toBeVisible();
 
     // Link should be rendered (either with label or filename)
-    const link = component.locator('a.internal-link');
+    const link = component.locator("a.internal-link");
     await expect(link).toBeVisible();
   });
 
-  test('should display filename when getAssetLabel returns null', async ({ mount }) => {
+  test("should display filename when getAssetLabel returns null", async ({
+    mount,
+  }) => {
     const metadata = {
-      relatedAsset: '[[TaskFile]]',
+      relatedAsset: "[[TaskFile]]",
     };
 
     const mockGetAssetLabel = (path: string) => {
@@ -262,45 +302,58 @@ test.describe('AssetPropertiesTable Component', () => {
     };
 
     const component = await mount(
-      <AssetPropertiesTable metadata={metadata} getAssetLabel={mockGetAssetLabel} />
+      <AssetPropertiesTable
+        metadata={metadata}
+        getAssetLabel={mockGetAssetLabel}
+      />,
     );
 
     // Check that filename is displayed when label is not available
-    await expect(component.locator('a.internal-link:has-text("TaskFile")')).toBeVisible();
+    await expect(
+      component.locator('a.internal-link:has-text("TaskFile")'),
+    ).toBeVisible();
   });
 
-  test('should display filename when getAssetLabel callback is not provided', async ({ mount }) => {
+  test("should display filename when getAssetLabel callback is not provided", async ({
+    mount,
+  }) => {
     const metadata = {
-      relatedAsset: '[[TaskFile]]',
+      relatedAsset: "[[TaskFile]]",
     };
 
     const component = await mount(<AssetPropertiesTable metadata={metadata} />);
 
     // Check that filename is displayed when callback is not provided
-    await expect(component.locator('a.internal-link:has-text("TaskFile")')).toBeVisible();
+    await expect(
+      component.locator('a.internal-link:has-text("TaskFile")'),
+    ).toBeVisible();
   });
 
-  test('should handle array of wiki-links with getAssetLabel', async ({ mount }) => {
+  test("should handle array of wiki-links with getAssetLabel", async ({
+    mount,
+  }) => {
     const metadata = {
-      relatedAssets: ['[[Task1]]', '[[Task2]]', '[[Task3]]'],
+      relatedAssets: ["[[Task1]]", "[[Task2]]", "[[Task3]]"],
     };
 
     const mockGetAssetLabel = (path: string) => {
-      if (path === 'Task1') return 'Label 1';
-      if (path === 'Task2') return 'Label 2';
+      if (path === "Task1") return "Label 1";
+      if (path === "Task2") return "Label 2";
       return null; // Task3 has no label
     };
 
     const component = await mount(
-      <AssetPropertiesTable metadata={metadata} getAssetLabel={mockGetAssetLabel} />
+      <AssetPropertiesTable
+        metadata={metadata}
+        getAssetLabel={mockGetAssetLabel}
+      />,
     );
 
     // Check that array is rendered
-    await expect(component.locator('text=relatedAssets')).toBeVisible();
+    await expect(component.locator("text=relatedAssets")).toBeVisible();
 
     // Check that multiple links are rendered
-    const links = component.locator('a.internal-link');
+    const links = component.locator("a.internal-link");
     await expect(links).toHaveCount(3);
   });
-
 });

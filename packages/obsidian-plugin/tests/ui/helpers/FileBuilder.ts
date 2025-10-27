@@ -8,7 +8,11 @@
 
 export interface FileMetadata {
   frontmatter: Record<string, unknown>;
-  headings: Array<{ level: number; heading: string; position: { start: number; end: number } }>;
+  headings: Array<{
+    level: number;
+    heading: string;
+    position: { start: number; end: number };
+  }>;
   sections: Array<{ type: string; position: { start: number; end: number } }>;
   links: Array<{ link: string; position: { start: number; end: number } }>;
 }

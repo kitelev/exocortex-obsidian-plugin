@@ -147,7 +147,9 @@ test.describe("RepairFolderButton", () => {
     await expect(component).toBeVisible();
   });
 
-  test("should NOT render when expected folder is empty string", async ({ mount }) => {
+  test("should NOT render when expected folder is empty string", async ({
+    mount,
+  }) => {
     const component = await mount(
       <RepairFolderButton
         sourceFile={mockFile}

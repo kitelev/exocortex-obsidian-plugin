@@ -10,7 +10,9 @@ export class MetadataExtractor {
     return this.vault.getFrontmatter(file) || {};
   }
 
-  extractInstanceClass(metadata: Record<string, any>): string | string[] | null {
+  extractInstanceClass(
+    metadata: Record<string, any>,
+  ): string | string[] | null {
     return metadata.exo__Instance_class || null;
   }
 
@@ -40,7 +42,9 @@ export class MetadataExtractor {
     const isDefinedBy = metadata.exo__Asset_isDefinedBy;
     if (!isDefinedBy) return null;
 
-    const definedByValue = Array.isArray(isDefinedBy) ? isDefinedBy[0] : isDefinedBy;
+    const definedByValue = Array.isArray(isDefinedBy)
+      ? isDefinedBy[0]
+      : isDefinedBy;
     if (!definedByValue || typeof definedByValue !== "string") return null;
 
     const cleanValue = definedByValue.replace(/["'[\]]/g, "").trim();

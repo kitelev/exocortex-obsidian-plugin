@@ -17,7 +17,12 @@ export class LabelInputModal extends Modal {
   private taskSizeSelectEl: HTMLSelectElement | null = null;
   private showTaskSize: boolean;
 
-  constructor(app: App, onSubmit: (result: LabelInputModalResult) => void, defaultValue = "", showTaskSize = true) {
+  constructor(
+    app: App,
+    onSubmit: (result: LabelInputModalResult) => void,
+    defaultValue = "",
+    showTaskSize = true,
+  ) {
     super(app);
     this.onSubmit = onSubmit;
     this.label = defaultValue;
@@ -36,7 +41,9 @@ export class LabelInputModal extends Modal {
       cls: "exocortex-modal-description",
     });
 
-    const inputContainer = contentEl.createDiv({ cls: "exocortex-modal-input-container" });
+    const inputContainer = contentEl.createDiv({
+      cls: "exocortex-modal-input-container",
+    });
 
     this.inputEl = inputContainer.createEl("input", {
       type: "text",
@@ -66,7 +73,9 @@ export class LabelInputModal extends Modal {
         cls: "exocortex-modal-description",
       });
 
-      const selectContainer = contentEl.createDiv({ cls: "exocortex-modal-input-container" });
+      const selectContainer = contentEl.createDiv({
+        cls: "exocortex-modal-input-container",
+      });
 
       this.taskSizeSelectEl = selectContainer.createEl("select", {
         cls: "exocortex-modal-select dropdown",
@@ -95,7 +104,9 @@ export class LabelInputModal extends Modal {
       });
     }
 
-    const buttonContainer = contentEl.createDiv({ cls: "modal-button-container" });
+    const buttonContainer = contentEl.createDiv({
+      cls: "modal-button-container",
+    });
 
     const createButton = buttonContainer.createEl("button", {
       text: "Create",

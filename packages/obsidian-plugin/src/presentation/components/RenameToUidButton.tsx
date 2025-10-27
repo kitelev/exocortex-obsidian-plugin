@@ -1,7 +1,7 @@
 import React from "react";
 import { TFile, Notice } from "obsidian";
-import { canRenameToUid } from '@exocortex/core';
-import { LoggingService } from '@exocortex/core';
+import { canRenameToUid } from "@exocortex/core";
+import { LoggingService } from "@exocortex/core";
 
 interface RenameToUidButtonProps {
   file: TFile;
@@ -33,9 +33,13 @@ export const RenameToUidButton: React.FC<RenameToUidButtonProps> = ({
     try {
       await onRename();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       new Notice(`Failed to rename: ${errorMessage}`);
-      LoggingService.error("Rename to UID error", error instanceof Error ? error : new Error(String(error)));
+      LoggingService.error(
+        "Rename to UID error",
+        error instanceof Error ? error : new Error(String(error)),
+      );
     }
   };
 

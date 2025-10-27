@@ -55,22 +55,37 @@ describe("TaskCreationService", () => {
 
     it("should use provided UUID for exo__Asset_uid", () => {
       const testUid = "12345678-1234-4123-8123-123456789abc";
-      const frontmatter = service.generateTaskFrontmatter({}, "Test Area", "ems__Area", undefined, testUid);
+      const frontmatter = service.generateTaskFrontmatter(
+        {},
+        "Test Area",
+        "ems__Area",
+        undefined,
+        testUid,
+      );
 
       expect(frontmatter.exo__Asset_uid).toBe(testUid);
     });
 
     it("should generate valid UUIDv4 when no UUID provided", () => {
-      const frontmatter = service.generateTaskFrontmatter({}, "Test Area", "ems__Area");
+      const frontmatter = service.generateTaskFrontmatter(
+        {},
+        "Test Area",
+        "ems__Area",
+      );
 
       // UUIDv4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
       // where x is any hex digit, y is one of [89ab]
-      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+      const uuidPattern =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
       expect(frontmatter.exo__Asset_uid).toMatch(uuidPattern);
     });
 
     it("should generate ISO 8601 timestamp for exo__Asset_createdAt", () => {
-      const frontmatter = service.generateTaskFrontmatter({}, "Test Area", "ems__Area");
+      const frontmatter = service.generateTaskFrontmatter(
+        {},
+        "Test Area",
+        "ems__Area",
+      );
 
       // ISO 8601 format without milliseconds: YYYY-MM-DDTHH:MM:SS
       const isoPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/;
@@ -184,7 +199,9 @@ describe("TaskCreationService", () => {
         "ems__Project",
       );
 
-      expect(frontmatter.ems__Effort_parent).toBe('"[[Q4 2025 Planning (Project)]]"');
+      expect(frontmatter.ems__Effort_parent).toBe(
+        '"[[Q4 2025 Planning (Project)]]"',
+      );
     });
 
     it("should handle wiki-link formatted source class", () => {
@@ -306,9 +323,13 @@ describe("TaskCreationService", () => {
       );
 
       expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Task]]"']);
-      expect(frontmatter.ems__Effort_prototype).toBe('"[[Code Review Template]]"');
+      expect(frontmatter.ems__Effort_prototype).toBe(
+        '"[[Code Review Template]]"',
+      );
       expect(frontmatter.exo__Asset_label).toBe("Review PR #123");
-      expect(frontmatter.ems__Effort_status).toBe('"[[ems__EffortStatusDraft]]"');
+      expect(frontmatter.ems__Effort_status).toBe(
+        '"[[ems__EffortStatusDraft]]"',
+      );
     });
 
     it("should create ems__Meeting instance from MeetingPrototype with ems__Effort_prototype", () => {
@@ -324,9 +345,13 @@ describe("TaskCreationService", () => {
       );
 
       expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Meeting]]"']);
-      expect(frontmatter.ems__Effort_prototype).toBe('"[[Daily Standup Template]]"');
+      expect(frontmatter.ems__Effort_prototype).toBe(
+        '"[[Daily Standup Template]]"',
+      );
       expect(frontmatter.exo__Asset_label).toBe("Standup 2025-10-19");
-      expect(frontmatter.ems__Effort_status).toBe('"[[ems__EffortStatusDraft]]"');
+      expect(frontmatter.ems__Effort_status).toBe(
+        '"[[ems__EffortStatusDraft]]"',
+      );
     });
 
     it("should auto-generate label from exo__Asset_label + date for ems__Meeting when no label provided", () => {
@@ -342,7 +367,9 @@ describe("TaskCreationService", () => {
       );
 
       expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Meeting]]"']);
-      expect(frontmatter.exo__Asset_label).toMatch(/^Weekly Team Sync \d{4}-\d{2}-\d{2}$/);
+      expect(frontmatter.exo__Asset_label).toMatch(
+        /^Weekly Team Sync \d{4}-\d{2}-\d{2}$/,
+      );
     });
 
     it("should auto-generate label from sourceName + date for ems__Meeting when no label and no exo__Asset_label", () => {
@@ -357,7 +384,9 @@ describe("TaskCreationService", () => {
       );
 
       expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Meeting]]"']);
-      expect(frontmatter.exo__Asset_label).toMatch(/^Sprint Planning Template \d{4}-\d{2}-\d{2}$/);
+      expect(frontmatter.exo__Asset_label).toMatch(
+        /^Sprint Planning Template \d{4}-\d{2}-\d{2}$/,
+      );
     });
 
     it("should prefer explicit label over auto-generated one for ems__Meeting", () => {
@@ -435,7 +464,9 @@ describe("TaskCreationService", () => {
 
       expect(content).toContain('exo__Instance_class:\n  - "[[ems__Task]]"');
       expect(content).toContain('exo__Asset_isDefinedBy: "[[!toos]]"');
-      expect(content).toContain('ems__Effort_parent: "[[Website Redesign (Project)]]"');
+      expect(content).toContain(
+        'ems__Effort_parent: "[[Website Redesign (Project)]]"',
+      );
       expect(content).toMatch(/^---\n[\s\S]+\n---\n\n$/);
     });
 
@@ -447,7 +478,9 @@ describe("TaskCreationService", () => {
 
       const content = MetadataHelpers.buildFileContent(frontmatter);
 
-      expect(content).toContain('exo__Instance_class:\n  - "[[ems__Task]]"\n  - "[[ems__Effort]]"');
+      expect(content).toContain(
+        'exo__Instance_class:\n  - "[[ems__Task]]"\n  - "[[ems__Effort]]"',
+      );
     });
   });
 
@@ -468,7 +501,9 @@ describe("TaskCreationService", () => {
       const [filePath] = mockVault.create.mock.calls[0];
 
       // Should match: 03 Knowledge/user/{uuid}.md
-      expect(filePath).toMatch(/^03 Knowledge\/user\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/);
+      expect(filePath).toMatch(
+        /^03 Knowledge\/user\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/,
+      );
     });
 
     it("should use same UUID for filename and exo__Asset_uid", async () => {
@@ -486,7 +521,9 @@ describe("TaskCreationService", () => {
       const [filePath, content] = mockVault.create.mock.calls[0];
 
       // Extract UUID from filepath
-      const filenameMatch = filePath.match(/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.md$/);
+      const filenameMatch = filePath.match(
+        /([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.md$/,
+      );
       expect(filenameMatch).not.toBeNull();
       const filenameUid = filenameMatch![1];
 
@@ -529,7 +566,11 @@ Some additional notes.`;
         exo__Asset_isDefinedBy: '"[[!toos]]"',
       };
 
-      await service.createTask(mockSourceFile, sourceMetadata, "ems__TaskPrototype");
+      await service.createTask(
+        mockSourceFile,
+        sourceMetadata,
+        "ems__TaskPrototype",
+      );
 
       const [, content] = mockVault.create.mock.calls[0];
 
@@ -583,7 +624,11 @@ Task prototype without algorithm.`;
         exo__Asset_isDefinedBy: '"[[!toos]]"',
       };
 
-      await service.createTask(mockSourceFile, sourceMetadata, "ems__TaskPrototype");
+      await service.createTask(
+        mockSourceFile,
+        sourceMetadata,
+        "ems__TaskPrototype",
+      );
 
       const [, content] = mockVault.create.mock.calls[0];
 
@@ -608,7 +653,10 @@ Multiple lines here.
 
 Content of third section.`;
 
-      const result = (service as any).extractH2Section(markdown, "Second Section");
+      const result = (service as any).extractH2Section(
+        markdown,
+        "Second Section",
+      );
 
       expect(result).toBe("Content of second section.\nMultiple lines here.");
     });
@@ -637,7 +685,10 @@ Content here.
 
 More content.`;
 
-      const result = (service as any).extractH2Section(markdown, "Missing Section");
+      const result = (service as any).extractH2Section(
+        markdown,
+        "Missing Section",
+      );
 
       expect(result).toBeNull();
     });
@@ -687,7 +738,9 @@ Step with spaces
 
   describe("createRelatedTask", () => {
     beforeEach(() => {
-      mockVault.read = jest.fn().mockResolvedValue("---\nexo__Asset_uid: source-uuid\n---\n\n");
+      mockVault.read = jest
+        .fn()
+        .mockResolvedValue("---\nexo__Asset_uid: source-uuid\n---\n\n");
       mockVault.modify = jest.fn().mockResolvedValue(undefined);
     });
 
@@ -706,8 +759,10 @@ Step with spaces
       expect(mockVault.create).toHaveBeenCalledTimes(1);
       const [filePath, content] = mockVault.create.mock.calls[0];
 
-      expect(filePath).toMatch(/^03 Knowledge\/user\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/);
-      expect(content).toContain('exo__Asset_relates:');
+      expect(filePath).toMatch(
+        /^03 Knowledge\/user\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/,
+      );
+      expect(content).toContain("exo__Asset_relates:");
       expect(content).toContain('- "[[Source Task]]"');
       expect(content).toContain('"[[ems__Task]]"');
     });
@@ -722,13 +777,17 @@ Step with spaces
         exo__Asset_isDefinedBy: '"[[!user]]"',
       };
 
-      await service.createRelatedTask(mockSourceFile, sourceMetadata, "Related Task Label");
+      await service.createRelatedTask(
+        mockSourceFile,
+        sourceMetadata,
+        "Related Task Label",
+      );
 
       const [, content] = mockVault.create.mock.calls[0];
 
-      expect(content).toContain('exo__Asset_label: Related Task Label');
-      expect(content).toContain('aliases:');
-      expect(content).toContain('  - Related Task Label');
+      expect(content).toContain("exo__Asset_label: Related Task Label");
+      expect(content).toContain("aliases:");
+      expect(content).toContain("  - Related Task Label");
     });
 
     it("should create related task with taskSize", async () => {
@@ -741,7 +800,12 @@ Step with spaces
         exo__Asset_isDefinedBy: '"[[!user]]"',
       };
 
-      await service.createRelatedTask(mockSourceFile, sourceMetadata, undefined, '"[[ems__TaskSize_M]]"');
+      await service.createRelatedTask(
+        mockSourceFile,
+        sourceMetadata,
+        undefined,
+        '"[[ems__TaskSize_M]]"',
+      );
 
       const [, content] = mockVault.create.mock.calls[0];
 
@@ -762,7 +826,10 @@ Step with spaces
 
       expect(mockVault.read).toHaveBeenCalledWith(mockSourceFile);
       expect(mockVault.modify).toHaveBeenCalledTimes(1);
-      expect(mockVault.modify).toHaveBeenCalledWith(mockSourceFile, expect.stringContaining('exo__Asset_relates:'));
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        mockSourceFile,
+        expect.stringContaining("exo__Asset_relates:"),
+      );
     });
 
     it("should use same UUID for filename and exo__Asset_uid in related task", async () => {
@@ -779,7 +846,9 @@ Step with spaces
 
       const [filePath, content] = mockVault.create.mock.calls[0];
 
-      const filenameMatch = filePath.match(/([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.md$/);
+      const filenameMatch = filePath.match(
+        /([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.md$/,
+      );
       expect(filenameMatch).not.toBeNull();
       const filenameUid = filenameMatch![1];
 
@@ -819,8 +888,10 @@ Step with spaces
       await service.createRelatedTask(mockSourceFile, sourceMetadata);
 
       const [filePath] = mockVault.create.mock.calls[0];
-      expect(filePath).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/);
-      expect(filePath).not.toContain('/');
+      expect(filePath).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/,
+      );
+      expect(filePath).not.toContain("/");
     });
   });
 
@@ -837,7 +908,9 @@ Step with spaces
 
       expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Task]]"']);
       expect(frontmatter.exo__Asset_relates).toEqual(['"[[Source Task]]"']);
-      expect(frontmatter.ems__Effort_status).toBe('"[[ems__EffortStatusDraft]]"');
+      expect(frontmatter.ems__Effort_status).toBe(
+        '"[[ems__EffortStatusDraft]]"',
+      );
     });
 
     it("should include label and aliases when provided", () => {
@@ -926,7 +999,8 @@ Step with spaces
         "Source Task",
       );
 
-      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+      const uuidPattern =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
       expect(frontmatter.exo__Asset_uid).toMatch(uuidPattern);
     });
 
@@ -947,12 +1021,15 @@ Step with spaces
   describe("addRelationToFrontmatter", () => {
     it("should create frontmatter when none exists", () => {
       const content = "Just some content";
-      const result = (service as any).addRelationToFrontmatter(content, "new-uuid");
+      const result = (service as any).addRelationToFrontmatter(
+        content,
+        "new-uuid",
+      );
 
-      expect(result).toContain('---');
-      expect(result).toContain('exo__Asset_relates:');
+      expect(result).toContain("---");
+      expect(result).toContain("exo__Asset_relates:");
       expect(result).toContain('- "[[new-uuid]]"');
-      expect(result).toContain('Just some content');
+      expect(result).toContain("Just some content");
     });
 
     it("should add exo__Asset_relates to existing frontmatter without it", () => {
@@ -963,13 +1040,16 @@ exo__Asset_label: Test Task
 
 Content here`;
 
-      const result = (service as any).addRelationToFrontmatter(content, "related-uuid");
+      const result = (service as any).addRelationToFrontmatter(
+        content,
+        "related-uuid",
+      );
 
-      expect(result).toContain('exo__Asset_uid: existing-uuid');
-      expect(result).toContain('exo__Asset_label: Test Task');
-      expect(result).toContain('exo__Asset_relates:');
+      expect(result).toContain("exo__Asset_uid: existing-uuid");
+      expect(result).toContain("exo__Asset_label: Test Task");
+      expect(result).toContain("exo__Asset_relates:");
       expect(result).toContain('- "[[related-uuid]]"');
-      expect(result).toContain('Content here');
+      expect(result).toContain("Content here");
     });
 
     it("should append to existing exo__Asset_relates array", () => {
@@ -982,7 +1062,10 @@ exo__Asset_relates:
 
 Content`;
 
-      const result = (service as any).addRelationToFrontmatter(content, "third-related");
+      const result = (service as any).addRelationToFrontmatter(
+        content,
+        "third-related",
+      );
 
       expect(result).toContain('- "[[first-related]]"');
       expect(result).toContain('- "[[second-related]]"');
@@ -991,18 +1074,28 @@ Content`;
 
     it("should preserve line ending style (LF)", () => {
       const content = `---\nexo__Asset_uid: test\n---\n\nContent`;
-      const result = (service as any).addRelationToFrontmatter(content, "new-uuid");
+      const result = (service as any).addRelationToFrontmatter(
+        content,
+        "new-uuid",
+      );
 
-      expect(result).not.toContain('\r\n');
-      expect(result).toContain('---\nexo__Asset_uid: test\nexo__Asset_relates:\n  - "[[new-uuid]]"\n---');
+      expect(result).not.toContain("\r\n");
+      expect(result).toContain(
+        '---\nexo__Asset_uid: test\nexo__Asset_relates:\n  - "[[new-uuid]]"\n---',
+      );
     });
 
     it("should preserve line ending style (CRLF)", () => {
       const content = `---\r\nexo__Asset_uid: test\r\n---\r\n\r\nContent`;
-      const result = (service as any).addRelationToFrontmatter(content, "new-uuid");
+      const result = (service as any).addRelationToFrontmatter(
+        content,
+        "new-uuid",
+      );
 
-      expect(result).toContain('\r\n');
-      expect(result).toContain('---\r\nexo__Asset_uid: test\r\nexo__Asset_relates:\r\n  - "[[new-uuid]]"\r\n---');
+      expect(result).toContain("\r\n");
+      expect(result).toContain(
+        '---\r\nexo__Asset_uid: test\r\nexo__Asset_relates:\r\n  - "[[new-uuid]]"\r\n---',
+      );
     });
 
     it("should handle empty frontmatter", () => {
@@ -1011,9 +1104,12 @@ Content`;
 
 Content`;
 
-      const result = (service as any).addRelationToFrontmatter(content, "new-uuid");
+      const result = (service as any).addRelationToFrontmatter(
+        content,
+        "new-uuid",
+      );
 
-      expect(result).toContain('exo__Asset_relates:');
+      expect(result).toContain("exo__Asset_relates:");
       expect(result).toContain('- "[[new-uuid]]"');
     });
 
@@ -1025,7 +1121,10 @@ exo__Asset_relates:
 
 Content`;
 
-      const result = (service as any).addRelationToFrontmatter(content, "second");
+      const result = (service as any).addRelationToFrontmatter(
+        content,
+        "second",
+      );
 
       expect(result).toContain('- "[[first]]"');
       expect(result).toContain('- "[[second]]"');
@@ -1042,13 +1141,18 @@ ems__Effort_status: "[[ems__EffortStatusDraft]]"
 
 Content`;
 
-      const result = (service as any).addRelationToFrontmatter(content, "related");
+      const result = (service as any).addRelationToFrontmatter(
+        content,
+        "related",
+      );
 
-      expect(result).toContain('exo__Asset_uid: test-uid');
-      expect(result).toContain('exo__Asset_label: Test');
-      expect(result).toContain('exo__Instance_class:');
-      expect(result).toContain('ems__Effort_status: "[[ems__EffortStatusDraft]]"');
-      expect(result).toContain('exo__Asset_relates:');
+      expect(result).toContain("exo__Asset_uid: test-uid");
+      expect(result).toContain("exo__Asset_label: Test");
+      expect(result).toContain("exo__Instance_class:");
+      expect(result).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusDraft]]"',
+      );
+      expect(result).toContain("exo__Asset_relates:");
       expect(result).toContain('- "[[related]]"');
     });
   });

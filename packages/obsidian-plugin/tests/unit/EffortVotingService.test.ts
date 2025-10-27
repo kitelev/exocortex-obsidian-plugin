@@ -140,7 +140,9 @@ Task content`;
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
       expect(modifiedContent).toContain('exo__Instance_class: "[[ems__Task]]"');
       expect(modifiedContent).toContain("exo__Asset_uid: task-123");
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusBacklog]]"',
+      );
       expect(modifiedContent).toContain('ems__Effort_day: "[[2025-10-20]]"');
       expect(modifiedContent).toContain("ems__Effort_votes: 1");
     });
@@ -162,7 +164,9 @@ Task content`;
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
       expect(modifiedContent).toContain('exo__Instance_class: "[[ems__Task]]"');
       expect(modifiedContent).toContain("exo__Asset_uid: task-123");
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusBacklog]]"',
+      );
       expect(modifiedContent).toContain("ems__Effort_votes: 4");
     });
 
@@ -189,7 +193,9 @@ More content here.`;
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
       expect(modifiedContent).toContain("# Task Title");
-      expect(modifiedContent).toContain("Task description with **bold** and *italic* text.");
+      expect(modifiedContent).toContain(
+        "Task description with **bold** and *italic* text.",
+      );
       expect(modifiedContent).toContain("- List item 1");
       expect(modifiedContent).toContain("- List item 2");
       expect(modifiedContent).toContain("## Section");
@@ -211,7 +217,9 @@ Project content`;
       expect(voteCount).toBe(1);
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
       expect(modifiedContent).toContain("ems__Effort_votes: 1");
-      expect(modifiedContent).toContain('exo__Instance_class: "[[ems__Project]]"');
+      expect(modifiedContent).toContain(
+        'exo__Instance_class: "[[ems__Project]]"',
+      );
     });
 
     it("should handle files with Windows line endings", async () => {

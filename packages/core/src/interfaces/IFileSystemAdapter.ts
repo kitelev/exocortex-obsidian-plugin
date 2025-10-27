@@ -17,13 +17,13 @@ export interface IFileSystemAdapter {
 export class FileNotFoundError extends Error {
   constructor(path: string) {
     super(`File not found: ${path}`);
-    this.name = 'FileNotFoundError';
+    this.name = "FileNotFoundError";
   }
 }
 
 export class FileAlreadyExistsError extends Error {
   constructor(path: string) {
     super(`File already exists: ${path}`);
-    this.name = 'FileAlreadyExistsError';
+    this.name = "FileAlreadyExistsError";
   }
 }

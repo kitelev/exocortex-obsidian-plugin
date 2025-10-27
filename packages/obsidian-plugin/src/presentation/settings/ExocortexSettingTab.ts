@@ -42,7 +42,9 @@ export class ExocortexSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Show archived assets")
-      .setDesc("Display archived assets in relations table with visual distinction")
+      .setDesc(
+        "Display archived assets in relations table with visual distinction",
+      )
       .addToggle((toggle) =>
         toggle
           .setValue(this.plugin.settings.showArchivedAssets)

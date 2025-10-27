@@ -3,15 +3,29 @@ import { test, expect } from "@playwright/test";
 test.describe("Button CSS Styles Tests", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("http://localhost:8080");
-    await page.waitForSelector(".exocortex-action-buttons-container", { timeout: 10000 });
+    await page.waitForSelector(".exocortex-action-buttons-container", {
+      timeout: 10000,
+    });
   });
 
-  test("should render buttons with different variant colors", async ({ page }) => {
-    const primaryButton = page.locator(".exocortex-action-button--primary").first();
-    const secondaryButton = page.locator(".exocortex-action-button--secondary").first();
-    const successButton = page.locator(".exocortex-action-button--success").first();
-    const warningButton = page.locator(".exocortex-action-button--warning").first();
-    const dangerButton = page.locator(".exocortex-action-button--danger").first();
+  test("should render buttons with different variant colors", async ({
+    page,
+  }) => {
+    const primaryButton = page
+      .locator(".exocortex-action-button--primary")
+      .first();
+    const secondaryButton = page
+      .locator(".exocortex-action-button--secondary")
+      .first();
+    const successButton = page
+      .locator(".exocortex-action-button--success")
+      .first();
+    const warningButton = page
+      .locator(".exocortex-action-button--warning")
+      .first();
+    const dangerButton = page
+      .locator(".exocortex-action-button--danger")
+      .first();
 
     const primaryVisible = await primaryButton.isVisible().catch(() => false);
     if (primaryVisible) {
@@ -26,7 +40,9 @@ test.describe("Button CSS Styles Tests", () => {
       expect(borderColor).toBeTruthy();
     }
 
-    const secondaryVisible = await secondaryButton.isVisible().catch(() => false);
+    const secondaryVisible = await secondaryButton
+      .isVisible()
+      .catch(() => false);
     if (secondaryVisible) {
       const bgColor = await secondaryButton.evaluate((el) => {
         return window.getComputedStyle(el).backgroundColor;
@@ -92,7 +108,9 @@ test.describe("Button CSS Styles Tests", () => {
     expect(hoverBoxShadow).not.toBe("none");
   });
 
-  test("should have proper spacing between buttons in a group", async ({ page }) => {
+  test("should have proper spacing between buttons in a group", async ({
+    page,
+  }) => {
     const buttonGroups = page.locator(".exocortex-button-group");
     const groupCount = await buttonGroups.count();
 
@@ -109,7 +127,8 @@ test.describe("Button CSS Styles Tests", () => {
         expect(secondButtonBox).toBeTruthy();
 
         if (firstButtonBox && secondButtonBox) {
-          const gap = secondButtonBox.y - (firstButtonBox.y + firstButtonBox.height);
+          const gap =
+            secondButtonBox.y - (firstButtonBox.y + firstButtonBox.height);
           expect(gap).toBeGreaterThanOrEqual(10);
           expect(gap).toBeLessThanOrEqual(14);
         }

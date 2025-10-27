@@ -1,9 +1,14 @@
 import { test, expect } from "@playwright/experimental-ct-react";
 import React from "react";
-import { ActionButtonsGroup, ButtonGroup } from "../../src/presentation/components/ActionButtonsGroup";
+import {
+  ActionButtonsGroup,
+  ButtonGroup,
+} from "../../src/presentation/components/ActionButtonsGroup";
 
 test.describe("ActionButtonsGroup Component", () => {
-  test("should render a single group with visible buttons", async ({ mount }) => {
+  test("should render a single group with visible buttons", async ({
+    mount,
+  }) => {
     const groups: ButtonGroup[] = [
       {
         id: "creation",
@@ -23,9 +28,13 @@ test.describe("ActionButtonsGroup Component", () => {
     const component = await mount(<ActionButtonsGroup groups={groups} />);
 
     await expect(component).toBeVisible();
-    await expect(component.locator(".exocortex-button-group-title")).toHaveText("Creation");
+    await expect(component.locator(".exocortex-button-group-title")).toHaveText(
+      "Creation",
+    );
     await expect(component.locator("button")).toHaveText("Create Task");
-    await expect(component.locator("button")).toHaveClass(/exocortex-action-button--primary/);
+    await expect(component.locator("button")).toHaveClass(
+      /exocortex-action-button--primary/,
+    );
   });
 
   test("should render multiple groups with separators", async ({ mount }) => {
@@ -78,7 +87,9 @@ test.describe("ActionButtonsGroup Component", () => {
     await expect(buttons.nth(1)).toHaveText("Mark Done");
   });
 
-  test("should filter out groups with no visible buttons", async ({ mount }) => {
+  test("should filter out groups with no visible buttons", async ({
+    mount,
+  }) => {
     const groups: ButtonGroup[] = [
       {
         id: "creation",
@@ -127,7 +138,9 @@ test.describe("ActionButtonsGroup Component", () => {
     await expect(separators).toHaveCount(0);
   });
 
-  test("should return null when all groups have no visible buttons", async ({ mount }) => {
+  test("should return null when all groups have no visible buttons", async ({
+    mount,
+  }) => {
     const groups: ButtonGroup[] = [
       {
         id: "creation",
@@ -212,14 +225,24 @@ test.describe("ActionButtonsGroup Component", () => {
     await expect(buttons).toHaveCount(5);
 
     // Check each variant has correct class
-    await expect(buttons.nth(0)).toHaveClass(/exocortex-action-button--primary/);
-    await expect(buttons.nth(1)).toHaveClass(/exocortex-action-button--secondary/);
-    await expect(buttons.nth(2)).toHaveClass(/exocortex-action-button--success/);
-    await expect(buttons.nth(3)).toHaveClass(/exocortex-action-button--warning/);
+    await expect(buttons.nth(0)).toHaveClass(
+      /exocortex-action-button--primary/,
+    );
+    await expect(buttons.nth(1)).toHaveClass(
+      /exocortex-action-button--secondary/,
+    );
+    await expect(buttons.nth(2)).toHaveClass(
+      /exocortex-action-button--success/,
+    );
+    await expect(buttons.nth(3)).toHaveClass(
+      /exocortex-action-button--warning/,
+    );
     await expect(buttons.nth(4)).toHaveClass(/exocortex-action-button--danger/);
   });
 
-  test("should default to secondary variant when variant not specified", async ({ mount }) => {
+  test("should default to secondary variant when variant not specified", async ({
+    mount,
+  }) => {
     const groups: ButtonGroup[] = [
       {
         id: "default-variant",
@@ -244,7 +267,9 @@ test.describe("ActionButtonsGroup Component", () => {
     await expect(button).toHaveClass(/exocortex-action-button--secondary/);
   });
 
-  test("should call onClick handler when button is clicked", async ({ mount }) => {
+  test("should call onClick handler when button is clicked", async ({
+    mount,
+  }) => {
     let wasClicked = false;
 
     const groups: ButtonGroup[] = [
@@ -276,7 +301,9 @@ test.describe("ActionButtonsGroup Component", () => {
     expect(wasClicked).toBe(true);
   });
 
-  test("should handle mixed visible/invisible buttons in same group", async ({ mount }) => {
+  test("should handle mixed visible/invisible buttons in same group", async ({
+    mount,
+  }) => {
     const groups: ButtonGroup[] = [
       {
         id: "mixed",

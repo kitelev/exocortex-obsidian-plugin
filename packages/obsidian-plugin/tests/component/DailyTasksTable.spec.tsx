@@ -1,6 +1,10 @@
 import { test, expect } from "@playwright/experimental-ct-react";
 import React from "react";
-import { DailyTasksTable, DailyTask, DailyTasksTableWithToggle } from "../../src/presentation/components/DailyTasksTable";
+import {
+  DailyTasksTable,
+  DailyTask,
+  DailyTasksTableWithToggle,
+} from "../../src/presentation/components/DailyTasksTable";
 
 test.describe("DailyTasksTable", () => {
   const mockTasks: DailyTask[] = [
@@ -99,7 +103,9 @@ test.describe("DailyTasksTable", () => {
   test("should display task with trashed icon", async ({ mount }) => {
     const component = await mount(<DailyTasksTable tasks={mockTasks} />);
 
-    const trashedTask = component.locator('tr[data-path="task3.md"] .task-name a');
+    const trashedTask = component.locator(
+      'tr[data-path="task3.md"] .task-name a',
+    );
     await expect(trashedTask).toContainText("❌");
     await expect(trashedTask).toContainText("Trashed Task");
   });
@@ -107,15 +113,21 @@ test.describe("DailyTasksTable", () => {
   test("should display meeting with meeting icon", async ({ mount }) => {
     const component = await mount(<DailyTasksTable tasks={mockTasks} />);
 
-    const meetingTask = component.locator('tr[data-path="meeting1.md"] .task-name a');
+    const meetingTask = component.locator(
+      'tr[data-path="meeting1.md"] .task-name a',
+    );
     await expect(meetingTask).toContainText("👥");
     await expect(meetingTask).toContainText("Team Sync");
   });
 
-  test("should display completed meeting with both done and meeting icons", async ({ mount }) => {
+  test("should display completed meeting with both done and meeting icons", async ({
+    mount,
+  }) => {
     const component = await mount(<DailyTasksTable tasks={mockTasks} />);
 
-    const completedMeeting = component.locator('tr[data-path="meeting2.md"] .task-name a');
+    const completedMeeting = component.locator(
+      'tr[data-path="meeting2.md"] .task-name a',
+    );
     await expect(completedMeeting).toContainText("✅ 👥");
     await expect(completedMeeting).toContainText("Completed Meeting");
   });
@@ -139,13 +151,20 @@ test.describe("DailyTasksTable", () => {
   test("should display status as clickable link", async ({ mount }) => {
     const component = await mount(<DailyTasksTable tasks={mockTasks} />);
 
-    const statusLink = component.locator('tr[data-path="task1.md"] .task-status a');
+    const statusLink = component.locator(
+      'tr[data-path="task1.md"] .task-status a',
+    );
     await expect(statusLink).toBeVisible();
     await expect(statusLink).toContainText("ems__EffortStatusInProgress");
-    await expect(statusLink).toHaveAttribute("data-href", "ems__EffortStatusInProgress");
+    await expect(statusLink).toHaveAttribute(
+      "data-href",
+      "ems__EffortStatusInProgress",
+    );
   });
 
-  test("should call onTaskClick when task name is clicked", async ({ mount }) => {
+  test("should call onTaskClick when task name is clicked", async ({
+    mount,
+  }) => {
     let clickedPath = "";
     const component = await mount(
       <DailyTasksTable
@@ -178,7 +197,9 @@ test.describe("DailyTasksTable", () => {
   // NOTE: Skipped due to Playwright CT limitation with function props
   // Function props don't serialize correctly across browser/Node boundary
   // Feature is verified working in UI integration tests (UniversalLayoutRenderer.ui.test.ts)
-  test.skip("should use getAssetLabel to resolve task names", async ({ mount }) => {
+  test.skip("should use getAssetLabel to resolve task names", async ({
+    mount,
+  }) => {
     const component = await mount(
       <DailyTasksTable
         tasks={mockTasks}
@@ -215,16 +236,22 @@ test.describe("DailyTasksTable", () => {
       isMeeting: false,
     };
 
-    const component = await mount(<DailyTasksTable tasks={[taskWithoutLabel]} />);
+    const component = await mount(
+      <DailyTasksTable tasks={[taskWithoutLabel]} />,
+    );
 
-    const taskLink = component.locator('tr[data-path="no-label.md"] .task-name a');
+    const taskLink = component.locator(
+      'tr[data-path="no-label.md"] .task-name a',
+    );
     await expect(taskLink).toContainText("No Label Task");
   });
 
   test("should have correct CSS classes", async ({ mount }) => {
     const component = await mount(<DailyTasksTable tasks={mockTasks} />);
 
-    await expect(component.locator("table.exocortex-tasks-table")).toBeVisible();
+    await expect(
+      component.locator("table.exocortex-tasks-table"),
+    ).toBeVisible();
     await expect(component).toContainText("Name");
     await expect(component).toContainText("Start");
     await expect(component).toContainText("End");
@@ -238,7 +265,9 @@ test.describe("DailyTasksTable", () => {
     await expect(taskLinks).toHaveCount(5);
   });
 
-  test("should show Effort Area column when showEffortArea is true", async ({ mount }) => {
+  test("should show Effort Area column when showEffortArea is true", async ({
+    mount,
+  }) => {
     const tasksWithArea: DailyTask[] = [
       {
         file: { path: "task1.md", basename: "task1" },
@@ -258,15 +287,21 @@ test.describe("DailyTasksTable", () => {
     ];
 
     const component = await mount(
-      <DailyTasksTable tasks={tasksWithArea} showEffortArea={true} />
+      <DailyTasksTable tasks={tasksWithArea} showEffortArea={true} />,
     );
 
-    await expect(component.locator("thead th").nth(4)).toContainText("Effort Area");
+    await expect(component.locator("thead th").nth(4)).toContainText(
+      "Effort Area",
+    );
     await expect(component.locator(".task-effort-area")).toBeVisible();
   });
 
-  test("should hide Effort Area column when showEffortArea is false", async ({ mount }) => {
-    const component = await mount(<DailyTasksTable tasks={mockTasks} showEffortArea={false} />);
+  test("should hide Effort Area column when showEffortArea is false", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <DailyTasksTable tasks={mockTasks} showEffortArea={false} />,
+    );
 
     await expect(component.locator("thead th")).toHaveCount(4);
     await expect(component.locator(".task-effort-area")).toHaveCount(0);
@@ -300,14 +335,20 @@ test.describe("DailyTasksTableWithToggle", () => {
         onToggleEffortArea={() => {}}
         showEffortVotes={false}
         onToggleEffortVotes={() => {}}
-      />
+      />,
     );
 
-    await expect(component.locator(".exocortex-toggle-effort-area")).toBeVisible();
-    await expect(component.locator(".exocortex-toggle-effort-area")).toContainText("Show Effort Area");
+    await expect(
+      component.locator(".exocortex-toggle-effort-area"),
+    ).toBeVisible();
+    await expect(
+      component.locator(".exocortex-toggle-effort-area"),
+    ).toContainText("Show Effort Area");
   });
 
-  test("should show 'Hide Effort Area' when showEffortArea is true", async ({ mount }) => {
+  test("should show 'Hide Effort Area' when showEffortArea is true", async ({
+    mount,
+  }) => {
     const component = await mount(
       <DailyTasksTableWithToggle
         tasks={mockTasks}
@@ -315,13 +356,17 @@ test.describe("DailyTasksTableWithToggle", () => {
         onToggleEffortArea={() => {}}
         showEffortVotes={false}
         onToggleEffortVotes={() => {}}
-      />
+      />,
     );
 
-    await expect(component.locator(".exocortex-toggle-effort-area")).toContainText("Hide Effort Area");
+    await expect(
+      component.locator(".exocortex-toggle-effort-area"),
+    ).toContainText("Hide Effort Area");
   });
 
-  test("should call onToggleEffortArea when button is clicked", async ({ mount }) => {
+  test("should call onToggleEffortArea when button is clicked", async ({
+    mount,
+  }) => {
     let toggleCalled = false;
     const component = await mount(
       <DailyTasksTableWithToggle
@@ -332,14 +377,16 @@ test.describe("DailyTasksTableWithToggle", () => {
         }}
         showEffortVotes={false}
         onToggleEffortVotes={() => {}}
-      />
+      />,
     );
 
     await component.locator(".exocortex-toggle-effort-area").click();
     expect(toggleCalled).toBe(true);
   });
 
-  test("should show Effort Area column when showEffortArea is true", async ({ mount }) => {
+  test("should show Effort Area column when showEffortArea is true", async ({
+    mount,
+  }) => {
     const component = await mount(
       <DailyTasksTableWithToggle
         tasks={mockTasks}
@@ -347,14 +394,18 @@ test.describe("DailyTasksTableWithToggle", () => {
         onToggleEffortArea={() => {}}
         showEffortVotes={false}
         onToggleEffortVotes={() => {}}
-      />
+      />,
     );
 
-    await expect(component.locator("thead th").nth(4)).toContainText("Effort Area");
+    await expect(component.locator("thead th").nth(4)).toContainText(
+      "Effort Area",
+    );
     await expect(component.locator(".task-effort-area")).toBeVisible();
   });
 
-  test("should hide Effort Area column when showEffortArea is false", async ({ mount }) => {
+  test("should hide Effort Area column when showEffortArea is false", async ({
+    mount,
+  }) => {
     const component = await mount(
       <DailyTasksTableWithToggle
         tasks={mockTasks}
@@ -362,14 +413,16 @@ test.describe("DailyTasksTableWithToggle", () => {
         onToggleEffortArea={() => {}}
         showEffortVotes={false}
         onToggleEffortVotes={() => {}}
-      />
+      />,
     );
 
     await expect(component.locator("thead th")).toHaveCount(4);
     await expect(component.locator(".task-effort-area")).toHaveCount(0);
   });
 
-  test("should persist showEffortArea state after re-renders", async ({ mount }) => {
+  test("should persist showEffortArea state after re-renders", async ({
+    mount,
+  }) => {
     let currentShowEffortArea = false;
     const onToggle = () => {
       currentShowEffortArea = !currentShowEffortArea;
@@ -382,10 +435,12 @@ test.describe("DailyTasksTableWithToggle", () => {
         onToggleEffortArea={onToggle}
         showEffortVotes={false}
         onToggleEffortVotes={() => {}}
-      />
+      />,
     );
 
-    await expect(component.locator(".exocortex-toggle-effort-area")).toContainText("Show Effort Area");
+    await expect(
+      component.locator(".exocortex-toggle-effort-area"),
+    ).toContainText("Show Effort Area");
 
     await component.locator(".exocortex-toggle-effort-area").click();
     expect(currentShowEffortArea).toBe(true);
@@ -399,14 +454,20 @@ test.describe("DailyTasksTableWithToggle", () => {
         onToggleEffortArea={() => {}}
         showEffortVotes={false}
         onToggleEffortVotes={() => {}}
-      />
+      />,
     );
 
-    await expect(component.locator(".exocortex-toggle-effort-votes")).toBeVisible();
-    await expect(component.locator(".exocortex-toggle-effort-votes")).toContainText("Show Votes");
+    await expect(
+      component.locator(".exocortex-toggle-effort-votes"),
+    ).toBeVisible();
+    await expect(
+      component.locator(".exocortex-toggle-effort-votes"),
+    ).toContainText("Show Votes");
   });
 
-  test("should show 'Hide Votes' when showEffortVotes is true", async ({ mount }) => {
+  test("should show 'Hide Votes' when showEffortVotes is true", async ({
+    mount,
+  }) => {
     const component = await mount(
       <DailyTasksTableWithToggle
         tasks={mockTasks}
@@ -414,13 +475,17 @@ test.describe("DailyTasksTableWithToggle", () => {
         onToggleEffortArea={() => {}}
         showEffortVotes={true}
         onToggleEffortVotes={() => {}}
-      />
+      />,
     );
 
-    await expect(component.locator(".exocortex-toggle-effort-votes")).toContainText("Hide Votes");
+    await expect(
+      component.locator(".exocortex-toggle-effort-votes"),
+    ).toContainText("Hide Votes");
   });
 
-  test("should call onToggleEffortVotes when button is clicked", async ({ mount }) => {
+  test("should call onToggleEffortVotes when button is clicked", async ({
+    mount,
+  }) => {
     let toggleCalled = false;
     const component = await mount(
       <DailyTasksTableWithToggle
@@ -431,14 +496,16 @@ test.describe("DailyTasksTableWithToggle", () => {
         onToggleEffortVotes={() => {
           toggleCalled = true;
         }}
-      />
+      />,
     );
 
     await component.locator(".exocortex-toggle-effort-votes").click();
     expect(toggleCalled).toBe(true);
   });
 
-  test("should show Votes column when showEffortVotes is true", async ({ mount }) => {
+  test("should show Votes column when showEffortVotes is true", async ({
+    mount,
+  }) => {
     const tasksWithVotes: DailyTask[] = [
       {
         file: { path: "task1.md", basename: "task1" },
@@ -464,7 +531,7 @@ test.describe("DailyTasksTableWithToggle", () => {
         onToggleEffortArea={() => {}}
         showEffortVotes={true}
         onToggleEffortVotes={() => {}}
-      />
+      />,
     );
 
     await expect(component.locator("thead th").nth(4)).toContainText("Votes");
@@ -472,7 +539,9 @@ test.describe("DailyTasksTableWithToggle", () => {
     await expect(component.locator(".task-effort-votes")).toContainText("3");
   });
 
-  test("should hide Votes column when showEffortVotes is false", async ({ mount }) => {
+  test("should hide Votes column when showEffortVotes is false", async ({
+    mount,
+  }) => {
     const component = await mount(
       <DailyTasksTableWithToggle
         tasks={mockTasks}
@@ -480,7 +549,7 @@ test.describe("DailyTasksTableWithToggle", () => {
         onToggleEffortArea={() => {}}
         showEffortVotes={false}
         onToggleEffortVotes={() => {}}
-      />
+      />,
     );
 
     await expect(component.locator(".task-effort-votes")).toHaveCount(0);
@@ -512,7 +581,7 @@ test.describe("DailyTasksTableWithToggle", () => {
         onToggleEffortArea={() => {}}
         showEffortVotes={true}
         onToggleEffortVotes={() => {}}
-      />
+      />,
     );
 
     await expect(component.locator(".task-effort-votes")).toContainText("-");

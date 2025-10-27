@@ -24,7 +24,10 @@ export interface IVaultAdapter {
   getAllFiles(): IFile[];
 
   getFrontmatter(file: IFile): IFrontmatter | null;
-  updateFrontmatter(file: IFile, updater: (current: IFrontmatter) => IFrontmatter): Promise<void>;
+  updateFrontmatter(
+    file: IFile,
+    updater: (current: IFrontmatter) => IFrontmatter,
+  ): Promise<void>;
 
   rename(file: IFile, newPath: string): Promise<void>;
   createFolder(path: string): Promise<void>;

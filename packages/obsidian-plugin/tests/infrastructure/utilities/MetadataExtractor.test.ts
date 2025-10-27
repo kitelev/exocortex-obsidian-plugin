@@ -18,8 +18,8 @@ describe("MetadataExtractor", () => {
       const mockFile = { path: "test.md" } as TFile;
       const mockCache: CachedMetadata = {
         frontmatter: {
-          "exo__Asset_label": "Test",
-          "ems__Effort_status": "ems__EffortStatusDoing",
+          exo__Asset_label: "Test",
+          ems__Effort_status: "ems__EffortStatusDoing",
         },
       };
 
@@ -28,8 +28,8 @@ describe("MetadataExtractor", () => {
       const result = extractor.extractMetadata(mockFile);
 
       expect(result).toEqual({
-        "exo__Asset_label": "Test",
-        "ems__Effort_status": "ems__EffortStatusDoing",
+        exo__Asset_label: "Test",
+        ems__Effort_status: "ems__EffortStatusDoing",
       });
     });
 
@@ -75,7 +75,7 @@ describe("MetadataExtractor", () => {
   describe("extractInstanceClass", () => {
     it("should extract single instance class", () => {
       const metadata = {
-        "exo__Instance_class": "ems__Effort",
+        exo__Instance_class: "ems__Effort",
       };
 
       const result = extractor.extractInstanceClass(metadata);
@@ -85,7 +85,7 @@ describe("MetadataExtractor", () => {
 
     it("should extract multiple instance classes as array", () => {
       const metadata = {
-        "exo__Instance_class": ["ems__Effort", "ems__Task"],
+        exo__Instance_class: ["ems__Effort", "ems__Task"],
       };
 
       const result = extractor.extractInstanceClass(metadata);
@@ -95,7 +95,7 @@ describe("MetadataExtractor", () => {
 
     it("should return null when instance class not present", () => {
       const metadata = {
-        "exo__Asset_label": "Test",
+        exo__Asset_label: "Test",
       };
 
       const result = extractor.extractInstanceClass(metadata);
@@ -113,7 +113,7 @@ describe("MetadataExtractor", () => {
   describe("extractStatus", () => {
     it("should extract single status", () => {
       const metadata = {
-        "ems__Effort_status": "ems__EffortStatusDoing",
+        ems__Effort_status: "ems__EffortStatusDoing",
       };
 
       const result = extractor.extractStatus(metadata);
@@ -123,17 +123,23 @@ describe("MetadataExtractor", () => {
 
     it("should extract multiple statuses as array", () => {
       const metadata = {
-        "ems__Effort_status": ["ems__EffortStatusDoing", "ems__EffortStatusWaiting"],
+        ems__Effort_status: [
+          "ems__EffortStatusDoing",
+          "ems__EffortStatusWaiting",
+        ],
       };
 
       const result = extractor.extractStatus(metadata);
 
-      expect(result).toEqual(["ems__EffortStatusDoing", "ems__EffortStatusWaiting"]);
+      expect(result).toEqual([
+        "ems__EffortStatusDoing",
+        "ems__EffortStatusWaiting",
+      ]);
     });
 
     it("should return null when status not present", () => {
       const metadata = {
-        "exo__Asset_label": "Test",
+        exo__Asset_label: "Test",
       };
 
       const result = extractor.extractStatus(metadata);
@@ -151,7 +157,7 @@ describe("MetadataExtractor", () => {
   describe("extractIsArchived", () => {
     it("should detect archived=true", () => {
       const metadata = {
-        "exo__Asset_isArchived": true,
+        exo__Asset_isArchived: true,
       };
 
       const result = extractor.extractIsArchived(metadata);
@@ -161,7 +167,7 @@ describe("MetadataExtractor", () => {
 
     it("should detect archived=1", () => {
       const metadata = {
-        "exo__Asset_isArchived": 1,
+        exo__Asset_isArchived: 1,
       };
 
       const result = extractor.extractIsArchived(metadata);
@@ -171,7 +177,7 @@ describe("MetadataExtractor", () => {
 
     it("should detect archived='true'", () => {
       const metadata = {
-        "exo__Asset_isArchived": "true",
+        exo__Asset_isArchived: "true",
       };
 
       const result = extractor.extractIsArchived(metadata);
@@ -181,7 +187,7 @@ describe("MetadataExtractor", () => {
 
     it("should detect archived='yes'", () => {
       const metadata = {
-        "exo__Asset_isArchived": "yes",
+        exo__Asset_isArchived: "yes",
       };
 
       const result = extractor.extractIsArchived(metadata);
@@ -190,14 +196,20 @@ describe("MetadataExtractor", () => {
     });
 
     it("should handle case-insensitive strings", () => {
-      expect(extractor.extractIsArchived({ "exo__Asset_isArchived": "TRUE" })).toBe(true);
-      expect(extractor.extractIsArchived({ "exo__Asset_isArchived": "Yes" })).toBe(true);
-      expect(extractor.extractIsArchived({ "exo__Asset_isArchived": "YeS" })).toBe(true);
+      expect(
+        extractor.extractIsArchived({ exo__Asset_isArchived: "TRUE" }),
+      ).toBe(true);
+      expect(
+        extractor.extractIsArchived({ exo__Asset_isArchived: "Yes" }),
+      ).toBe(true);
+      expect(
+        extractor.extractIsArchived({ exo__Asset_isArchived: "YeS" }),
+      ).toBe(true);
     });
 
     it("should return false for archived=false", () => {
       const metadata = {
-        "exo__Asset_isArchived": false,
+        exo__Asset_isArchived: false,
       };
 
       const result = extractor.extractIsArchived(metadata);
@@ -207,7 +219,7 @@ describe("MetadataExtractor", () => {
 
     it("should return false for archived=0", () => {
       const metadata = {
-        "exo__Asset_isArchived": 0,
+        exo__Asset_isArchived: 0,
       };
 
       const result = extractor.extractIsArchived(metadata);
@@ -217,7 +229,7 @@ describe("MetadataExtractor", () => {
 
     it("should return false for archived='false'", () => {
       const metadata = {
-        "exo__Asset_isArchived": "false",
+        exo__Asset_isArchived: "false",
       };
 
       const result = extractor.extractIsArchived(metadata);
@@ -227,7 +239,7 @@ describe("MetadataExtractor", () => {
 
     it("should return false for archived='no'", () => {
       const metadata = {
-        "exo__Asset_isArchived": "no",
+        exo__Asset_isArchived: "no",
       };
 
       const result = extractor.extractIsArchived(metadata);
@@ -237,7 +249,7 @@ describe("MetadataExtractor", () => {
 
     it("should return false when not present", () => {
       const metadata = {
-        "exo__Asset_label": "Test",
+        exo__Asset_label: "Test",
       };
 
       const result = extractor.extractIsArchived(metadata);
@@ -247,7 +259,7 @@ describe("MetadataExtractor", () => {
 
     it("should return false for invalid string values", () => {
       const metadata = {
-        "exo__Asset_isArchived": "invalid",
+        exo__Asset_isArchived: "invalid",
       };
 
       const result = extractor.extractIsArchived(metadata);
@@ -265,7 +277,7 @@ describe("MetadataExtractor", () => {
   describe("extractIsDefinedBy (static)", () => {
     it("should extract isDefinedBy from metadata", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": "[[SomeArea]]",
+        exo__Asset_isDefinedBy: "[[SomeArea]]",
       };
 
       const result = MetadataExtractor.extractIsDefinedBy(metadata);
@@ -275,7 +287,7 @@ describe("MetadataExtractor", () => {
 
     it("should extract first element from array", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": ["[[Area1]]", "[[Area2]]"],
+        exo__Asset_isDefinedBy: ["[[Area1]]", "[[Area2]]"],
       };
 
       const result = MetadataExtractor.extractIsDefinedBy(metadata);
@@ -285,7 +297,7 @@ describe("MetadataExtractor", () => {
 
     it("should return empty quoted string when not present", () => {
       const metadata = {
-        "exo__Asset_label": "Test",
+        exo__Asset_label: "Test",
       };
 
       const result = MetadataExtractor.extractIsDefinedBy(metadata);
@@ -295,7 +307,7 @@ describe("MetadataExtractor", () => {
 
     it("should return empty quoted string for empty array", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": [],
+        exo__Asset_isDefinedBy: [],
       };
 
       const result = MetadataExtractor.extractIsDefinedBy(metadata);
@@ -305,7 +317,7 @@ describe("MetadataExtractor", () => {
 
     it("should handle null value in metadata", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": null,
+        exo__Asset_isDefinedBy: null,
       };
 
       const result = MetadataExtractor.extractIsDefinedBy(metadata);
@@ -315,7 +327,7 @@ describe("MetadataExtractor", () => {
 
     it("should handle undefined value in metadata", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": undefined,
+        exo__Asset_isDefinedBy: undefined,
       };
 
       const result = MetadataExtractor.extractIsDefinedBy(metadata);
@@ -333,7 +345,7 @@ describe("MetadataExtractor", () => {
   describe("extractExpectedFolder", () => {
     it("should extract folder from isDefinedBy path", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": "[[Areas/Work/ProjectX]]",
+        exo__Asset_isDefinedBy: "[[Areas/Work/ProjectX]]",
       };
 
       const result = extractor.extractExpectedFolder(metadata);
@@ -343,7 +355,7 @@ describe("MetadataExtractor", () => {
 
     it("should extract folder from array isDefinedBy", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": ["[[Areas/Personal/Health]]"],
+        exo__Asset_isDefinedBy: ["[[Areas/Personal/Health]]"],
       };
 
       const result = extractor.extractExpectedFolder(metadata);
@@ -353,7 +365,7 @@ describe("MetadataExtractor", () => {
 
     it("should handle quoted wikilinks", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": '"[[Areas/Work/ProjectX]]"',
+        exo__Asset_isDefinedBy: '"[[Areas/Work/ProjectX]]"',
       };
 
       const result = extractor.extractExpectedFolder(metadata);
@@ -363,7 +375,7 @@ describe("MetadataExtractor", () => {
 
     it("should handle single-level path", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": "[[Areas/WorkArea]]",
+        exo__Asset_isDefinedBy: "[[Areas/WorkArea]]",
       };
 
       const result = extractor.extractExpectedFolder(metadata);
@@ -373,7 +385,7 @@ describe("MetadataExtractor", () => {
 
     it("should return null for root-level path", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": "[[RootArea]]",
+        exo__Asset_isDefinedBy: "[[RootArea]]",
       };
 
       const result = extractor.extractExpectedFolder(metadata);
@@ -383,7 +395,7 @@ describe("MetadataExtractor", () => {
 
     it("should return null when isDefinedBy not present", () => {
       const metadata = {
-        "exo__Asset_label": "Test",
+        exo__Asset_label: "Test",
       };
 
       const result = extractor.extractExpectedFolder(metadata);
@@ -393,7 +405,7 @@ describe("MetadataExtractor", () => {
 
     it("should return null for empty isDefinedBy", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": "",
+        exo__Asset_isDefinedBy: "",
       };
 
       const result = extractor.extractExpectedFolder(metadata);
@@ -403,7 +415,7 @@ describe("MetadataExtractor", () => {
 
     it("should return null for whitespace-only isDefinedBy", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": "   ",
+        exo__Asset_isDefinedBy: "   ",
       };
 
       const result = extractor.extractExpectedFolder(metadata);
@@ -413,7 +425,7 @@ describe("MetadataExtractor", () => {
 
     it("should handle brackets-only value", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": "[[]]",
+        exo__Asset_isDefinedBy: "[[]]",
       };
 
       const result = extractor.extractExpectedFolder(metadata);
@@ -423,7 +435,7 @@ describe("MetadataExtractor", () => {
 
     it("should return null for non-string isDefinedBy", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": 123,
+        exo__Asset_isDefinedBy: 123,
       };
 
       const result = extractor.extractExpectedFolder(metadata);
@@ -433,7 +445,7 @@ describe("MetadataExtractor", () => {
 
     it("should handle array with non-string first element", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": [null, "[[Areas/Work]]"],
+        exo__Asset_isDefinedBy: [null, "[[Areas/Work]]"],
       };
 
       const result = extractor.extractExpectedFolder(metadata);
@@ -449,7 +461,7 @@ describe("MetadataExtractor", () => {
 
     it("should handle deep folder paths", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": "[[Areas/Work/Projects/2025/Q1/Sprint1/Task]]",
+        exo__Asset_isDefinedBy: "[[Areas/Work/Projects/2025/Q1/Sprint1/Task]]",
       };
 
       const result = extractor.extractExpectedFolder(metadata);
@@ -467,10 +479,10 @@ describe("MetadataExtractor", () => {
 
       const mockCache: CachedMetadata = {
         frontmatter: {
-          "exo__Instance_class": "ems__Effort",
-          "ems__Effort_status": "ems__EffortStatusDoing",
-          "exo__Asset_isArchived": false,
-          "exo__Asset_isDefinedBy": "[[Areas/Work]]",
+          exo__Instance_class: "ems__Effort",
+          ems__Effort_status: "ems__EffortStatusDoing",
+          exo__Asset_isArchived: false,
+          exo__Asset_isDefinedBy: "[[Areas/Work]]",
         },
       };
 
@@ -494,7 +506,7 @@ describe("MetadataExtractor", () => {
 
       const mockCache: CachedMetadata = {
         frontmatter: {
-          "exo__Instance_class": "ems__Effort",
+          exo__Instance_class: "ems__Effort",
         },
       };
 
@@ -513,7 +525,7 @@ describe("MetadataExtractor", () => {
 
       const mockCache: CachedMetadata = {
         frontmatter: {
-          "exo__Asset_isArchived": true,
+          exo__Asset_isArchived: true,
         },
       };
 
@@ -532,7 +544,7 @@ describe("MetadataExtractor", () => {
 
       const mockCache: CachedMetadata = {
         frontmatter: {
-          "exo__Instance_class": "ems__Effort",
+          exo__Instance_class: "ems__Effort",
         },
       };
 
@@ -569,7 +581,7 @@ describe("MetadataExtractor", () => {
       const mockFile = { path: "test.md" } as TFile;
       const mockCache: CachedMetadata = {
         frontmatter: {
-          "exo__Asset_label": "Test",
+          exo__Asset_label: "Test",
         },
         links: [],
       };
@@ -607,12 +619,12 @@ describe("MetadataExtractor", () => {
 
       const mockCache: CachedMetadata = {
         frontmatter: {
-          "exo__Instance_class": ["ems__Effort", "ems__Task"],
-          "ems__Effort_status": "ems__EffortStatusDoing",
-          "exo__Asset_isArchived": false,
-          "exo__Asset_isDefinedBy": "[[Areas/Work/Projects/TaskManager]]",
-          "exo__Asset_label": "Sprint 1 Planning",
-          "ems__Effort_votes": 5,
+          exo__Instance_class: ["ems__Effort", "ems__Task"],
+          ems__Effort_status: "ems__EffortStatusDoing",
+          exo__Asset_isArchived: false,
+          exo__Asset_isDefinedBy: "[[Areas/Work/Projects/TaskManager]]",
+          exo__Asset_label: "Sprint 1 Planning",
+          ems__Effort_votes: 5,
         },
       };
 
@@ -639,7 +651,7 @@ describe("MetadataExtractor", () => {
 
       const mockCache: CachedMetadata = {
         frontmatter: {
-          "exo__Asset_isArchived": true,
+          exo__Asset_isArchived: true,
         },
       };
 

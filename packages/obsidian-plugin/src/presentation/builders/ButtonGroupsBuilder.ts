@@ -1,5 +1,5 @@
 import { TFile } from "obsidian";
-import { ILogger } from '../../adapters/logging/ILogger';
+import { ILogger } from "../../adapters/logging/ILogger";
 import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
 import { ButtonGroup, ActionButton } from "../components/ActionButtonsGroup";
 import {
@@ -29,25 +29,30 @@ import {
   canSetActiveFocus,
   canCopyLabelToAliases,
   CommandVisibilityContext,
-} from '@exocortex/core';
-import { LabelInputModal, type LabelInputModalResult } from "../modals/LabelInputModal";
-import { NarrowerConceptModal, type NarrowerConceptModalResult } from "../modals/NarrowerConceptModal";
-import { TaskCreationService } from '@exocortex/core';
-import { ProjectCreationService } from '@exocortex/core';
-import { AreaCreationService } from '@exocortex/core';
-import { ConceptCreationService } from '@exocortex/core';
-import { TaskStatusService } from '@exocortex/core';
-import { PropertyCleanupService } from '@exocortex/core';
-import { FolderRepairService } from '@exocortex/core';
-import { RenameToUidService } from '@exocortex/core';
-import { EffortVotingService } from '@exocortex/core';
-import { LabelToAliasService } from '@exocortex/core';
-import { WikiLinkHelpers } from '@exocortex/core';
-import { AssetClass } from '@exocortex/core';
-import { MetadataExtractor } from '@exocortex/core';
-import { DateFormatter } from '@exocortex/core';
+} from "@exocortex/core";
+import {
+  LabelInputModal,
+  type LabelInputModalResult,
+} from "../modals/LabelInputModal";
+import {
+  NarrowerConceptModal,
+  type NarrowerConceptModalResult,
+} from "../modals/NarrowerConceptModal";
+import { TaskCreationService } from "@exocortex/core";
+import { ProjectCreationService } from "@exocortex/core";
+import { AreaCreationService } from "@exocortex/core";
+import { ConceptCreationService } from "@exocortex/core";
+import { TaskStatusService } from "@exocortex/core";
+import { PropertyCleanupService } from "@exocortex/core";
+import { FolderRepairService } from "@exocortex/core";
+import { RenameToUidService } from "@exocortex/core";
+import { EffortVotingService } from "@exocortex/core";
+import { LabelToAliasService } from "@exocortex/core";
+import { WikiLinkHelpers } from "@exocortex/core";
+import { AssetClass } from "@exocortex/core";
+import { MetadataExtractor } from "@exocortex/core";
+import { DateFormatter } from "@exocortex/core";
 
- 
 type ObsidianApp = any;
 
 export class ButtonGroupsBuilder {
@@ -70,7 +75,10 @@ export class ButtonGroupsBuilder {
     private refresh: () => Promise<void>,
   ) {}
 
-  private generateDefaultMeetingLabel(metadata: Record<string, any>, fileName: string): string {
+  private generateDefaultMeetingLabel(
+    metadata: Record<string, any>,
+    fileName: string,
+  ): string {
     const baseLabel = metadata.exo__Asset_label || fileName;
     const dateStr = DateFormatter.toDateString(new Date());
     return `${baseLabel} ${dateStr}`;
@@ -82,7 +90,10 @@ export class ButtonGroupsBuilder {
     const currentStatus = this.metadataExtractor.extractStatus(metadata);
     const isArchived = this.metadataExtractor.extractIsArchived(metadata);
     const currentFolder = file.parent?.path || "";
-    const expectedFolder = await this.folderRepairService.getExpectedFolder(file, metadata);
+    const expectedFolder = await this.folderRepairService.getExpectedFolder(
+      file,
+      metadata,
+    );
 
     const context: CommandVisibilityContext = {
       instanceClass,
@@ -108,14 +119,22 @@ export class ButtonGroupsBuilder {
           if (result.label === null) return;
 
           const sourceClass = WikiLinkHelpers.normalize(
-            Array.isArray(instanceClass) ? instanceClass[0] : instanceClass
+            Array.isArray(instanceClass) ? instanceClass[0] : instanceClass,
           );
 
-          const createdFile = await this.taskCreationService.createTask(file, metadata, sourceClass, result.label, result.taskSize);
+          const createdFile = await this.taskCreationService.createTask(
+            file,
+            metadata,
+            sourceClass,
+            result.label,
+            result.taskSize,
+          );
           const leaf = this.app.workspace.getLeaf("tab");
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
-          this.logger.info(`Created Task from ${sourceClass}: ${createdFile.path}`);
+          this.logger.info(
+            `Created Task from ${sourceClass}: ${createdFile.path}`,
+          );
         },
       },
       {
@@ -130,14 +149,21 @@ export class ButtonGroupsBuilder {
           if (result.label === null) return;
 
           const sourceClass = WikiLinkHelpers.normalize(
-            Array.isArray(instanceClass) ? instanceClass[0] : instanceClass
+            Array.isArray(instanceClass) ? instanceClass[0] : instanceClass,
           );
 
-          const createdFile = await this.projectCreationService.createProject(file, metadata, sourceClass, result.label);
+          const createdFile = await this.projectCreationService.createProject(
+            file,
+            metadata,
+            sourceClass,
+            result.label,
+          );
           const leaf = this.app.workspace.getLeaf("tab");
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
-          this.logger.info(`Created Project from ${sourceClass}: ${createdFile.path}`);
+          this.logger.info(
+            `Created Project from ${sourceClass}: ${createdFile.path}`,
+          );
         },
       },
       {
@@ -151,7 +177,11 @@ export class ButtonGroupsBuilder {
           });
           if (result.label === null) return;
 
-          const createdFile = await this.areaCreationService.createChildArea(file, metadata, result.label);
+          const createdFile = await this.areaCreationService.createChildArea(
+            file,
+            metadata,
+            result.label,
+          );
           const leaf = this.app.workspace.getLeaf("tab");
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
@@ -165,25 +195,40 @@ export class ButtonGroupsBuilder {
         visible: canCreateInstance(context),
         onClick: async () => {
           const sourceClass = WikiLinkHelpers.normalize(
-            Array.isArray(instanceClass) ? instanceClass[0] : instanceClass
+            Array.isArray(instanceClass) ? instanceClass[0] : instanceClass,
           );
 
-          const defaultValue = sourceClass === AssetClass.MEETING_PROTOTYPE || sourceClass === AssetClass.TASK_PROTOTYPE
-            ? this.generateDefaultMeetingLabel(metadata, file.basename)
-            : "";
+          const defaultValue =
+            sourceClass === AssetClass.MEETING_PROTOTYPE ||
+            sourceClass === AssetClass.TASK_PROTOTYPE
+              ? this.generateDefaultMeetingLabel(metadata, file.basename)
+              : "";
 
           const showTaskSize = sourceClass !== AssetClass.MEETING_PROTOTYPE;
 
           const result = await new Promise<LabelInputModalResult>((resolve) => {
-            new LabelInputModal(this.app, resolve, defaultValue, showTaskSize).open();
+            new LabelInputModal(
+              this.app,
+              resolve,
+              defaultValue,
+              showTaskSize,
+            ).open();
           });
           if (result.label === null) return;
 
-          const createdFile = await this.taskCreationService.createTask(file, metadata, sourceClass, result.label, result.taskSize);
+          const createdFile = await this.taskCreationService.createTask(
+            file,
+            metadata,
+            sourceClass,
+            result.label,
+            result.taskSize,
+          );
           const leaf = this.app.workspace.getLeaf("tab");
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
-          this.logger.info(`Created Instance from TaskPrototype: ${createdFile.path}`);
+          this.logger.info(
+            `Created Instance from TaskPrototype: ${createdFile.path}`,
+          );
         },
       },
       {
@@ -197,7 +242,12 @@ export class ButtonGroupsBuilder {
           });
           if (result.label === null) return;
 
-          const createdFile = await this.taskCreationService.createRelatedTask(file, metadata, result.label, result.taskSize);
+          const createdFile = await this.taskCreationService.createRelatedTask(
+            file,
+            metadata,
+            result.label,
+            result.taskSize,
+          );
           const leaf = this.app.workspace.getLeaf("tab");
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
@@ -210,17 +260,20 @@ export class ButtonGroupsBuilder {
         variant: "primary",
         visible: canCreateNarrowerConcept(context),
         onClick: async () => {
-          const result = await new Promise<NarrowerConceptModalResult>((resolve) => {
-            new NarrowerConceptModal(this.app, resolve).open();
-          });
+          const result = await new Promise<NarrowerConceptModalResult>(
+            (resolve) => {
+              new NarrowerConceptModal(this.app, resolve).open();
+            },
+          );
           if (result.fileName === null || result.definition === null) return;
 
-          const createdFile = await this.conceptCreationService.createNarrowerConcept(
-            file,
-            result.fileName,
-            result.definition,
-            result.aliases,
-          );
+          const createdFile =
+            await this.conceptCreationService.createNarrowerConcept(
+              file,
+              result.fileName,
+              result.definition,
+              result.aliases,
+            );
           const leaf = this.app.workspace.getLeaf("tab");
           await leaf.openFile(createdFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
@@ -229,7 +282,7 @@ export class ButtonGroupsBuilder {
       },
     ];
 
-    if (creationButtons.some(btn => btn.visible)) {
+    if (creationButtons.some((btn) => btn.visible)) {
       groups.push({
         id: "creation",
         title: "Creation",
@@ -324,7 +377,7 @@ export class ButtonGroupsBuilder {
       },
     ];
 
-    if (statusButtons.some(btn => btn.visible)) {
+    if (statusButtons.some((btn) => btn.visible)) {
       groups.push({
         id: "status",
         title: "Status",
@@ -335,7 +388,10 @@ export class ButtonGroupsBuilder {
     const planningButtons: ActionButton[] = [
       {
         id: "set-active-focus",
-        label: this.settings.activeFocusArea === file.basename ? "Clear Active Focus" : "Set Active Focus",
+        label:
+          this.settings.activeFocusArea === file.basename
+            ? "Clear Active Focus"
+            : "Set Active Focus",
         variant: "warning",
         visible: canSetActiveFocus(context),
         onClick: async () => {
@@ -347,7 +403,9 @@ export class ButtonGroupsBuilder {
           await this.plugin.saveSettings();
           await new Promise((resolve) => setTimeout(resolve, 100));
           await this.refresh();
-          this.logger.info(`Active focus area set to: ${this.settings.activeFocusArea}`);
+          this.logger.info(
+            `Active focus area set to: ${this.settings.activeFocusArea}`,
+          );
         },
       },
       {
@@ -400,21 +458,27 @@ export class ButtonGroupsBuilder {
       },
       {
         id: "vote-on-effort",
-        label: metadata.ems__Effort_votes && typeof metadata.ems__Effort_votes === "number" && metadata.ems__Effort_votes > 0
-          ? `Vote (${metadata.ems__Effort_votes})`
-          : "Vote",
+        label:
+          metadata.ems__Effort_votes &&
+          typeof metadata.ems__Effort_votes === "number" &&
+          metadata.ems__Effort_votes > 0
+            ? `Vote (${metadata.ems__Effort_votes})`
+            : "Vote",
         variant: "warning",
         visible: canVoteOnEffort(context),
         onClick: async () => {
-          const newVoteCount = await this.effortVotingService.incrementEffortVotes(file);
+          const newVoteCount =
+            await this.effortVotingService.incrementEffortVotes(file);
           await new Promise((resolve) => setTimeout(resolve, 100));
           await this.refresh();
-          this.logger.info(`Voted on effort: ${file.path} (votes: ${newVoteCount})`);
+          this.logger.info(
+            `Voted on effort: ${file.path} (votes: ${newVoteCount})`,
+          );
         },
       },
     ];
 
-    if (planningButtons.some(btn => btn.visible)) {
+    if (planningButtons.some((btn) => btn.visible)) {
       groups.push({
         id: "planning",
         title: "Planning",
@@ -469,7 +533,9 @@ export class ButtonGroupsBuilder {
             await this.folderRepairService.repairFolder(file, expectedFolder);
             await new Promise((resolve) => setTimeout(resolve, 100));
             await this.refresh();
-            this.logger.info(`Repaired folder for ${file.path}: ${currentFolder} -> ${expectedFolder}`);
+            this.logger.info(
+              `Repaired folder for ${file.path}: ${currentFolder} -> ${expectedFolder}`,
+            );
           }
         },
       },
@@ -501,7 +567,7 @@ export class ButtonGroupsBuilder {
       },
     ];
 
-    if (maintenanceButtons.some(btn => btn.visible)) {
+    if (maintenanceButtons.some((btn) => btn.visible)) {
       groups.push({
         id: "maintenance",
         title: "Maintenance",

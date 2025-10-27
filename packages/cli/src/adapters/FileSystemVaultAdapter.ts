@@ -1,22 +1,17 @@
-import fs from 'fs-extra';
-import path from 'path';
-import yaml from 'js-yaml';
-import {
-  IVaultAdapter,
-  IFile,
-  IFolder,
-  IFrontmatter
-} from '@exocortex/core';
+import fs from "fs-extra";
+import path from "path";
+import yaml from "js-yaml";
+import { IVaultAdapter, IFile, IFolder, IFrontmatter } from "@exocortex/core";
 
 export class FileSystemVaultAdapter implements IVaultAdapter {
   constructor(private rootPath: string) {}
 
   async read(file: IFile): Promise<string> {
     const fullPath = this.resolvePath(file.path);
-    if (!await fs.pathExists(fullPath)) {
+    if (!(await fs.pathExists(fullPath))) {
       throw new Error(`File not found: ${file.path}`);
     }
-    return fs.readFile(fullPath, 'utf-8');
+    return fs.readFile(fullPath, "utf-8");
   }
 
   async create(filePath: string, content: string): Promise<IFile> {
@@ -25,21 +20,21 @@ export class FileSystemVaultAdapter implements IVaultAdapter {
       throw new Error(`File already exists: ${filePath}`);
     }
     await fs.ensureDir(path.dirname(fullPath));
-    await fs.writeFile(fullPath, content, 'utf-8');
+    await fs.writeFile(fullPath, content, "utf-8");
     return this.createFileObject(filePath);
   }
 
   async modify(file: IFile, newContent: string): Promise<void> {
     const fullPath = this.resolvePath(file.path);
-    if (!await fs.pathExists(fullPath)) {
+    if (!(await fs.pathExists(fullPath))) {
       throw new Error(`File not found: ${file.path}`);
     }
-    await fs.writeFile(fullPath, newContent, 'utf-8');
+    await fs.writeFile(fullPath, newContent, "utf-8");
   }
 
   async delete(file: IFile): Promise<void> {
     const fullPath = this.resolvePath(file.path);
-    if (!await fs.pathExists(fullPath)) {
+    if (!(await fs.pathExists(fullPath))) {
       throw new Error(`File not found: ${file.path}`);
     }
     await fs.remove(fullPath);
@@ -71,7 +66,7 @@ export class FileSystemVaultAdapter implements IVaultAdapter {
   getAllFiles(): IFile[] {
     const files: IFile[] = [];
     this.walkDirectory(this.rootPath, (filePath) => {
-      if (filePath.endsWith('.md')) {
+      if (filePath.endsWith(".md")) {
         const relativePath = path.relative(this.rootPath, filePath);
         files.push(this.createFileObject(relativePath));
       }
@@ -81,7 +76,7 @@ export class FileSystemVaultAdapter implements IVaultAdapter {
 
   getFrontmatter(file: IFile): IFrontmatter | null {
     try {
-      const content = fs.readFileSync(this.resolvePath(file.path), 'utf-8');
+      const content = fs.readFileSync(this.resolvePath(file.path), "utf-8");
       return this.extractFrontmatter(content);
     } catch (error) {
       return null;
@@ -90,7 +85,7 @@ export class FileSystemVaultAdapter implements IVaultAdapter {
 
   async updateFrontmatter(
     file: IFile,
-    updater: (current: IFrontmatter) => IFrontmatter
+    updater: (current: IFrontmatter) => IFrontmatter,
   ): Promise<void> {
     const content = await this.read(file);
     const currentFrontmatter = this.extractFrontmatter(content) || {};
@@ -103,7 +98,7 @@ export class FileSystemVaultAdapter implements IVaultAdapter {
     const oldFullPath = this.resolvePath(file.path);
     const newFullPath = this.resolvePath(newPath);
 
-    if (!await fs.pathExists(oldFullPath)) {
+    if (!(await fs.pathExists(oldFullPath))) {
       throw new Error(`File not found: ${file.path}`);
     }
 
@@ -126,8 +121,8 @@ export class FileSystemVaultAdapter implements IVaultAdapter {
       resolvedPath = path.resolve(sourceDir, linkpath);
     }
 
-    if (!linkpath.endsWith('.md')) {
-      resolvedPath += '.md';
+    if (!linkpath.endsWith(".md")) {
+      resolvedPath += ".md";
     }
 
     if (fs.existsSync(resolvedPath)) {
@@ -161,14 +156,14 @@ export class FileSystemVaultAdapter implements IVaultAdapter {
       path: filePath,
       basename,
       name,
-      parent: parentPath !== '.' ? this.createFolderObject(parentPath) : null
+      parent: parentPath !== "." ? this.createFolderObject(parentPath) : null,
     };
   }
 
   private createFolderObject(folderPath: string): IFolder {
     return {
       path: folderPath,
-      name: path.basename(folderPath)
+      name: path.basename(folderPath),
     };
   }
 
@@ -182,7 +177,7 @@ export class FileSystemVaultAdapter implements IVaultAdapter {
 
     try {
       const parsed = yaml.load(match[1]);
-      return typeof parsed === 'object' && parsed !== null
+      return typeof parsed === "object" && parsed !== null
         ? (parsed as IFrontmatter)
         : null;
     } catch (error) {
@@ -192,12 +187,12 @@ export class FileSystemVaultAdapter implements IVaultAdapter {
 
   private replaceFrontmatter(
     content: string,
-    frontmatter: IFrontmatter
+    frontmatter: IFrontmatter,
   ): string {
     const frontmatterYaml = yaml.dump(frontmatter, {
       lineWidth: -1,
       noRefs: true,
-      quotingType: '"'
+      quotingType: '"',
     });
 
     const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
@@ -206,14 +201,17 @@ export class FileSystemVaultAdapter implements IVaultAdapter {
     if (match) {
       return content.replace(
         frontmatterRegex,
-        `---\n${frontmatterYaml.trim()}\n---`
+        `---\n${frontmatterYaml.trim()}\n---`,
       );
     } else {
       return `---\n${frontmatterYaml.trim()}\n---\n${content}`;
     }
   }
 
-  private walkDirectory(dir: string, callback: (filePath: string) => void): void {
+  private walkDirectory(
+    dir: string,
+    callback: (filePath: string) => void,
+  ): void {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
 
     for (const entry of entries) {

@@ -1,4 +1,8 @@
-import { EffortStatusWorkflow, EffortStatus, AssetClass } from "@exocortex/core";
+import {
+  EffortStatusWorkflow,
+  EffortStatus,
+  AssetClass,
+} from "@exocortex/core";
 
 describe("EffortStatusWorkflow", () => {
   let workflow: EffortStatusWorkflow;
@@ -9,22 +13,34 @@ describe("EffortStatusWorkflow", () => {
 
   describe("getPreviousStatus", () => {
     it("should return null for Draft status (start of workflow)", () => {
-      const result = workflow.getPreviousStatus('"[[ems__EffortStatusDraft]]"', null);
+      const result = workflow.getPreviousStatus(
+        '"[[ems__EffortStatusDraft]]"',
+        null,
+      );
       expect(result).toBeNull();
     });
 
     it("should return Draft for Backlog status", () => {
-      const result = workflow.getPreviousStatus('"[[ems__EffortStatusBacklog]]"', null);
+      const result = workflow.getPreviousStatus(
+        '"[[ems__EffortStatusBacklog]]"',
+        null,
+      );
       expect(result).toBe('"[[ems__EffortStatusDraft]]"');
     });
 
     it("should return Backlog for Analysis status", () => {
-      const result = workflow.getPreviousStatus('"[[ems__EffortStatusAnalysis]]"', null);
+      const result = workflow.getPreviousStatus(
+        '"[[ems__EffortStatusAnalysis]]"',
+        null,
+      );
       expect(result).toBe('"[[ems__EffortStatusBacklog]]"');
     });
 
     it("should return Analysis for ToDo status", () => {
-      const result = workflow.getPreviousStatus('"[[ems__EffortStatusToDo]]"', null);
+      const result = workflow.getPreviousStatus(
+        '"[[ems__EffortStatusToDo]]"',
+        null,
+      );
       expect(result).toBe('"[[ems__EffortStatusAnalysis]]"');
     });
 
@@ -45,12 +61,18 @@ describe("EffortStatusWorkflow", () => {
     });
 
     it("should return Doing for Done status", () => {
-      const result = workflow.getPreviousStatus('"[[ems__EffortStatusDone]]"', null);
+      const result = workflow.getPreviousStatus(
+        '"[[ems__EffortStatusDone]]"',
+        null,
+      );
       expect(result).toBe('"[[ems__EffortStatusDoing]]"');
     });
 
     it("should return undefined for Trashed status (cannot rollback)", () => {
-      const result = workflow.getPreviousStatus('"[[ems__EffortStatusTrashed]]"', null);
+      const result = workflow.getPreviousStatus(
+        '"[[ems__EffortStatusTrashed]]"',
+        null,
+      );
       expect(result).toBeUndefined();
     });
 
@@ -88,7 +110,9 @@ describe("EffortStatusWorkflow", () => {
     });
 
     it("should trim whitespace", () => {
-      const result = workflow.normalizeStatus('  "[[ems__EffortStatusToDo]]"  ');
+      const result = workflow.normalizeStatus(
+        '  "[[ems__EffortStatusToDo]]"  ',
+      );
       expect(result).toBe("ems__EffortStatusToDo");
     });
   });

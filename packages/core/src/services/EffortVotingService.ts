@@ -67,7 +67,7 @@ export class EffortVotingService {
     const match = content.match(frontmatterRegex);
 
     // Detect line ending style from original content
-    const lineEnding = content.includes('\r\n') ? '\r\n' : '\n';
+    const lineEnding = content.includes("\r\n") ? "\r\n" : "\n";
 
     if (!match) {
       // No frontmatter - create it

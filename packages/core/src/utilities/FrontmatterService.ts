@@ -137,7 +137,10 @@ export class FrontmatterService {
 
     // Property already exists - replace value
     if (this.hasProperty(updatedFrontmatter, property)) {
-      const propertyRegex = new RegExp(`${this.escapeRegex(property)}:.*$`, "m");
+      const propertyRegex = new RegExp(
+        `${this.escapeRegex(property)}:.*$`,
+        "m",
+      );
       updatedFrontmatter = updatedFrontmatter.replace(
         propertyRegex,
         `${property}: ${value}`,
@@ -245,10 +248,7 @@ export class FrontmatterService {
    * // result === '---\nstatus: draft\npriority: high\n---\nBody content'
    * ```
    */
-  createFrontmatter(
-    content: string,
-    properties: Record<string, any>,
-  ): string {
+  createFrontmatter(content: string, properties: Record<string, any>): string {
     const frontmatterLines = Object.entries(properties).map(
       ([key, value]) => `${key}: ${value}`,
     );

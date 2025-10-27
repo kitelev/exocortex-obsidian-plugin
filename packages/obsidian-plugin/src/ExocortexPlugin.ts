@@ -5,16 +5,16 @@ import {
   TFile,
 } from "obsidian";
 import { UniversalLayoutRenderer } from "./presentation/renderers/UniversalLayoutRenderer";
-import { ILogger } from './adapters/logging/ILogger';
-import { LoggerFactory } from './adapters/logging/LoggerFactory';
+import { ILogger } from "./adapters/logging/ILogger";
+import { LoggerFactory } from "./adapters/logging/LoggerFactory";
 import { CommandManager } from "./application/services/CommandManager";
 import {
   ExocortexSettings,
   DEFAULT_SETTINGS,
 } from "./domain/settings/ExocortexSettings";
 import { ExocortexSettingTab } from "./presentation/settings/ExocortexSettingTab";
-import { TaskStatusService } from '@exocortex/core';
-import { ObsidianVaultAdapter } from './adapters/ObsidianVaultAdapter';
+import { TaskStatusService } from "@exocortex/core";
+import { ObsidianVaultAdapter } from "./adapters/ObsidianVaultAdapter";
 
 /**
  * Exocortex Plugin - Automatic layout rendering
@@ -37,16 +37,23 @@ export default class ExocortexPlugin extends Plugin {
 
       await this.loadSettings();
 
-      this.vaultAdapter = new ObsidianVaultAdapter(this.app.vault, this.app.metadataCache, this.app);
-      this.layoutRenderer = new UniversalLayoutRenderer(this.app, this.settings, this);
+      this.vaultAdapter = new ObsidianVaultAdapter(
+        this.app.vault,
+        this.app.metadataCache,
+        this.app,
+      );
+      this.layoutRenderer = new UniversalLayoutRenderer(
+        this.app,
+        this.settings,
+        this,
+      );
       this.taskStatusService = new TaskStatusService(this.vaultAdapter);
       this.metadataCache = new Map();
 
       // Initialize CommandManager and register all commands
       this.commandManager = new CommandManager(this.app);
-      this.commandManager.registerAllCommands(
-        this,
-        () => this.autoRenderLayout(),
+      this.commandManager.registerAllCommands(this, () =>
+        this.autoRenderLayout(),
       );
 
       this.addSettingTab(new ExocortexSettingTab(this.app, this));
@@ -187,20 +194,14 @@ export default class ExocortexPlugin extends Plugin {
 
       const previousEndTimestamp = cachedMetadata.ems__Effort_endTimestamp;
 
-      if (
-        currentEndTimestamp &&
-        currentEndTimestamp !== previousEndTimestamp
-      ) {
+      if (currentEndTimestamp && currentEndTimestamp !== previousEndTimestamp) {
         this.logger.info(
           `Detected ems__Effort_endTimestamp change in ${file.path}: ${String(previousEndTimestamp)} → ${String(currentEndTimestamp)}`,
         );
 
         const parsedDate = new Date(currentEndTimestamp);
         if (!isNaN(parsedDate.getTime())) {
-          await this.taskStatusService.syncEffortEndTimestamp(
-            file,
-            parsedDate,
-          );
+          await this.taskStatusService.syncEffortEndTimestamp(file, parsedDate);
           this.logger.info(
             `Auto-synced ems__Effort_resolutionTimestamp to ${currentEndTimestamp}`,
           );

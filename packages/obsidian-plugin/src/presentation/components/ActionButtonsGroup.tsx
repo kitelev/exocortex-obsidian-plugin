@@ -39,7 +39,9 @@ export interface ActionButtonsGroupProps {
  * - Responsive layout adapting to screen size
  * - Clean, modern design with proper spacing
  */
-export const ActionButtonsGroup: React.FC<ActionButtonsGroupProps> = ({ groups }) => {
+export const ActionButtonsGroup: React.FC<ActionButtonsGroupProps> = ({
+  groups,
+}) => {
   // Filter out groups with no visible buttons
   const visibleGroups = groups
     .map((group) => ({

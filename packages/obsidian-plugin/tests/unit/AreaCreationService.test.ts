@@ -175,10 +175,7 @@ describe("AreaCreationService", () => {
         exo__Asset_isDefinedBy: '"[[!user]]"',
       };
 
-      await service.createChildArea(
-        mockSourceFile,
-        sourceMetadata,
-      );
+      await service.createChildArea(mockSourceFile, sourceMetadata);
 
       expect(mockVault.create).toHaveBeenCalledTimes(1);
       const [filePath] = mockVault.create.mock.calls[0];
@@ -198,10 +195,7 @@ describe("AreaCreationService", () => {
         exo__Asset_isDefinedBy: '"[[!user]]"',
       };
 
-      await service.createChildArea(
-        mockSourceFile,
-        sourceMetadata,
-      );
+      await service.createChildArea(mockSourceFile, sourceMetadata);
 
       const [filePath, content] = mockVault.create.mock.calls[0];
 
@@ -228,10 +222,7 @@ describe("AreaCreationService", () => {
         exo__Asset_isDefinedBy: '"[[!user]]"',
       };
 
-      await service.createChildArea(
-        mockSourceFile,
-        sourceMetadata,
-      );
+      await service.createChildArea(mockSourceFile, sourceMetadata);
 
       const [filePath] = mockVault.create.mock.calls[0];
 

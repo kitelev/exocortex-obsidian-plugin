@@ -51,26 +51,41 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     if (pipeIndex !== -1) {
       return {
         target: content.substring(0, pipeIndex).trim(),
-        alias: content.substring(pipeIndex + 1).trim()
+        alias: content.substring(pipeIndex + 1).trim(),
       };
     }
 
     return {
-      target: content.trim()
+      target: content.trim(),
     };
   };
 
   const getDisplayName = (task: DailyTask): string => {
     const blockerIcon = task.isBlocked ? "🚩 " : "";
-    const icon = (task.isDone && task.isMeeting) ? "✅ 👥 " : task.isDone ? "✅ " : task.isTrashed ? "❌ " : task.isDoing ? "🔄 " : task.isMeeting ? "👥 " : "";
+    const icon =
+      task.isDone && task.isMeeting
+        ? "✅ 👥 "
+        : task.isDone
+          ? "✅ "
+          : task.isTrashed
+            ? "❌ "
+            : task.isDoing
+              ? "🔄 "
+              : task.isMeeting
+                ? "👥 "
+                : "";
 
     let displayText = task.label || task.title;
 
     // Check if getAssetLabel function is provided
-    if (typeof getAssetLabel === 'function') {
+    if (typeof getAssetLabel === "function") {
       const customLabel = getAssetLabel(task.path);
       // Only use custom label if it's a non-null, non-empty string
-      if (customLabel !== null && customLabel !== undefined && customLabel !== '') {
+      if (
+        customLabel !== null &&
+        customLabel !== undefined &&
+        customLabel !== ""
+      ) {
         displayText = customLabel;
       }
     }
@@ -111,31 +126,39 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
               <td className="task-start">{task.startTime || "-"}</td>
               <td className="task-end">{task.endTime || "-"}</td>
               <td className="task-status">
-                {task.status ? (() => {
-                  const isWikiLink = typeof task.status === "string" && /\[\[.*?\]\]/.test(task.status);
-                  const parsed = isWikiLink ? parseWikiLink(task.status) : { target: task.status };
-                  const displayText = parsed.alias || parsed.target;
+                {task.status
+                  ? (() => {
+                      const isWikiLink =
+                        typeof task.status === "string" &&
+                        /\[\[.*?\]\]/.test(task.status);
+                      const parsed = isWikiLink
+                        ? parseWikiLink(task.status)
+                        : { target: task.status };
+                      const displayText = parsed.alias || parsed.target;
 
-                  return (
-                    <a
-                      data-href={parsed.target}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        onTaskClick?.(parsed.target, e);
-                      }}
-                      className="internal-link"
-                      style={{ cursor: "pointer" }}
-                    >
-                      {displayText}
-                    </a>
-                  );
-                })() : "-"}
+                      return (
+                        <a
+                          data-href={parsed.target}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onTaskClick?.(parsed.target, e);
+                          }}
+                          className="internal-link"
+                          style={{ cursor: "pointer" }}
+                        >
+                          {displayText}
+                        </a>
+                      );
+                    })()
+                  : "-"}
               </td>
               {showEffortArea && (
                 <td className="task-effort-area">
                   {(() => {
-                    const effortArea = getEffortArea?.(task.metadata) || task.metadata.ems__Effort_area;
+                    const effortArea =
+                      getEffortArea?.(task.metadata) ||
+                      task.metadata.ems__Effort_area;
                     if (!effortArea) return "-";
 
                     // Parse both formats: [[UID|Alias]] and UID|Alias
@@ -150,7 +173,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
                       const parts = effortAreaStr.split("|");
                       parsed = {
                         target: parts[0].trim(),
-                        alias: parts[1]?.trim()
+                        alias: parts[1]?.trim(),
                       };
                     } else {
                       // Plain value
@@ -178,7 +201,9 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
               )}
               {showEffortVotes && (
                 <td className="task-effort-votes">
-                  {typeof task.metadata.ems__Effort_votes === "number" ? task.metadata.ems__Effort_votes : "-"}
+                  {typeof task.metadata.ems__Effort_votes === "number"
+                    ? task.metadata.ems__Effort_votes
+                    : "-"}
                 </td>
               )}
             </tr>
@@ -189,14 +214,17 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   );
 };
 
-export interface DailyTasksTableWithToggleProps extends Omit<DailyTasksTableProps, 'showEffortArea' | 'showEffortVotes'> {
+export interface DailyTasksTableWithToggleProps
+  extends Omit<DailyTasksTableProps, "showEffortArea" | "showEffortVotes"> {
   showEffortArea: boolean;
   onToggleEffortArea: () => void;
   showEffortVotes: boolean;
   onToggleEffortVotes: () => void;
 }
 
-export const DailyTasksTableWithToggle: React.FC<DailyTasksTableWithToggleProps> = ({
+export const DailyTasksTableWithToggle: React.FC<
+  DailyTasksTableWithToggleProps
+> = ({
   showEffortArea,
   onToggleEffortArea,
   showEffortVotes,
@@ -232,7 +260,11 @@ export const DailyTasksTableWithToggle: React.FC<DailyTasksTableWithToggleProps>
           {showEffortVotes ? "Hide" : "Show"} Votes
         </button>
       </div>
-      <DailyTasksTable {...props} showEffortArea={showEffortArea} showEffortVotes={showEffortVotes} />
+      <DailyTasksTable
+        {...props}
+        showEffortArea={showEffortArea}
+        showEffortVotes={showEffortVotes}
+      />
     </div>
   );
 };

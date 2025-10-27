@@ -31,8 +31,9 @@ test.describe("Vote Button Scroll Preservation", () => {
       const element = document.querySelector(".exocortex-buttons-section");
       if (!element) throw new Error("Exocortex buttons section not found");
 
-      const scrollParent = element.closest('.markdown-preview-view')
-        || element.closest('.workspace-leaf-content');
+      const scrollParent =
+        element.closest(".markdown-preview-view") ||
+        element.closest(".workspace-leaf-content");
 
       if (!scrollParent) throw new Error("Scroll container not found");
 
@@ -53,7 +54,7 @@ test.describe("Vote Button Scroll Preservation", () => {
 
     const voteButton = await window.waitForSelector(
       ".exocortex-buttons-section button:has-text('Vote')",
-      { timeout: 10000 }
+      { timeout: 10000 },
     );
 
     await voteButton.click();
@@ -65,8 +66,9 @@ test.describe("Vote Button Scroll Preservation", () => {
       const element = document.querySelector(".exocortex-buttons-section");
       if (!element) throw new Error("Exocortex buttons section not found");
 
-      const scrollParent = element.closest('.markdown-preview-view')
-        || element.closest('.workspace-leaf-content');
+      const scrollParent =
+        element.closest(".markdown-preview-view") ||
+        element.closest(".workspace-leaf-content");
 
       if (!scrollParent) throw new Error("Scroll container not found");
 

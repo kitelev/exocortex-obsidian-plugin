@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { AssetClass } from '../domain/constants';
+import { AssetClass } from "../domain/constants";
 import { DateFormatter } from "../utilities/DateFormatter";
 import { MetadataExtractor } from "../utilities/MetadataExtractor";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
@@ -43,7 +43,8 @@ export class AreaCreationService {
     const isDefinedBy = MetadataExtractor.extractIsDefinedBy(sourceMetadata);
 
     const frontmatter: Record<string, any> = {};
-    frontmatter["exo__Asset_isDefinedBy"] = MetadataHelpers.ensureQuoted(isDefinedBy);
+    frontmatter["exo__Asset_isDefinedBy"] =
+      MetadataHelpers.ensureQuoted(isDefinedBy);
     frontmatter["exo__Asset_uid"] = uid || uuidv4();
     frontmatter["exo__Asset_createdAt"] = timestamp;
     frontmatter["exo__Instance_class"] = [`"[[${AssetClass.AREA}]]"`];

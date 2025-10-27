@@ -4,66 +4,90 @@ describe("MetadataHelpers", () => {
   describe("findAllReferencingProperties", () => {
     it("should find single property referencing file", () => {
       const metadata = {
-        "ems__Effort_parent": "[[ParentTask]]",
-        "exo__Asset_label": "Task Label",
+        ems__Effort_parent: "[[ParentTask]]",
+        exo__Asset_label: "Task Label",
       };
 
-      const properties = MetadataHelpers.findAllReferencingProperties(metadata, "ParentTask");
+      const properties = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "ParentTask",
+      );
       expect(properties).toEqual(["ems__Effort_parent"]);
     });
 
     it("should find multiple properties referencing same file", () => {
       const metadata = {
-        "ems__Effort_parent": "[[Task123]]",
-        "ems__Effort_prototype": "[[Task123]]",
-        "exo__Asset_label": "Some Label",
+        ems__Effort_parent: "[[Task123]]",
+        ems__Effort_prototype: "[[Task123]]",
+        exo__Asset_label: "Some Label",
       };
 
-      const properties = MetadataHelpers.findAllReferencingProperties(metadata, "Task123");
-      expect(properties).toEqual(["ems__Effort_parent", "ems__Effort_prototype"]);
+      const properties = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "Task123",
+      );
+      expect(properties).toEqual([
+        "ems__Effort_parent",
+        "ems__Effort_prototype",
+      ]);
     });
 
     it("should find references in arrays", () => {
       const metadata = {
-        "ems__Task_blocks": ["[[Task1]]", "[[Task2]]", "[[Task3]]"],
-        "exo__Asset_label": "Blocker",
+        ems__Task_blocks: ["[[Task1]]", "[[Task2]]", "[[Task3]]"],
+        exo__Asset_label: "Blocker",
       };
 
-      const properties = MetadataHelpers.findAllReferencingProperties(metadata, "Task2");
+      const properties = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "Task2",
+      );
       expect(properties).toEqual(["ems__Task_blocks"]);
     });
 
     it("should return empty array when no references found", () => {
       const metadata = {
-        "exo__Asset_label": "No References",
-        "ems__Effort_status": "ems__EffortStatusDoing",
+        exo__Asset_label: "No References",
+        ems__Effort_status: "ems__EffortStatusDoing",
       };
 
-      const properties = MetadataHelpers.findAllReferencingProperties(metadata, "NonExistent");
+      const properties = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "NonExistent",
+      );
       expect(properties).toEqual([]);
     });
 
     it("should handle references without brackets", () => {
       const metadata = {
-        "exo__Asset_isDefinedBy": "SomeArea",
-        "exo__Asset_label": "Label",
+        exo__Asset_isDefinedBy: "SomeArea",
+        exo__Asset_label: "Label",
       };
 
-      const properties = MetadataHelpers.findAllReferencingProperties(metadata, "SomeArea");
+      const properties = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "SomeArea",
+      );
       expect(properties).toEqual(["exo__Asset_isDefinedBy"]);
     });
 
     it("should handle file names with .md extension", () => {
       const metadata = {
-        "ems__Effort_parent": "[[ParentTask.md]]",
+        ems__Effort_parent: "[[ParentTask.md]]",
       };
 
-      const properties = MetadataHelpers.findAllReferencingProperties(metadata, "ParentTask.md");
+      const properties = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "ParentTask.md",
+      );
       expect(properties).toEqual(["ems__Effort_parent"]);
     });
 
     it("should handle empty metadata", () => {
-      const properties = MetadataHelpers.findAllReferencingProperties({}, "Task");
+      const properties = MetadataHelpers.findAllReferencingProperties(
+        {},
+        "Task",
+      );
       expect(properties).toEqual([]);
     });
   });
@@ -71,40 +95,54 @@ describe("MetadataHelpers", () => {
   describe("findReferencingProperty", () => {
     it("should find first property referencing file", () => {
       const metadata = {
-        "ems__Effort_parent": "[[ParentTask]]",
-        "exo__Asset_label": "Task Label",
+        ems__Effort_parent: "[[ParentTask]]",
+        exo__Asset_label: "Task Label",
       };
 
-      const property = MetadataHelpers.findReferencingProperty(metadata, "ParentTask");
+      const property = MetadataHelpers.findReferencingProperty(
+        metadata,
+        "ParentTask",
+      );
       expect(property).toBe("ems__Effort_parent");
     });
 
     it("should return first matching property when multiple match", () => {
       const metadata = {
-        "ems__Effort_parent": "[[Task123]]",
-        "ems__Effort_prototype": "[[Task123]]",
+        ems__Effort_parent: "[[Task123]]",
+        ems__Effort_prototype: "[[Task123]]",
       };
 
-      const property = MetadataHelpers.findReferencingProperty(metadata, "Task123");
+      const property = MetadataHelpers.findReferencingProperty(
+        metadata,
+        "Task123",
+      );
       expect(property).toBeDefined();
-      expect(["ems__Effort_parent", "ems__Effort_prototype"]).toContain(property);
+      expect(["ems__Effort_parent", "ems__Effort_prototype"]).toContain(
+        property,
+      );
     });
 
     it("should return undefined when no reference found", () => {
       const metadata = {
-        "exo__Asset_label": "No References",
+        exo__Asset_label: "No References",
       };
 
-      const property = MetadataHelpers.findReferencingProperty(metadata, "NonExistent");
+      const property = MetadataHelpers.findReferencingProperty(
+        metadata,
+        "NonExistent",
+      );
       expect(property).toBeUndefined();
     });
 
     it("should find references in arrays", () => {
       const metadata = {
-        "ems__Task_blocks": ["[[Task1]]", "[[Task2]]"],
+        ems__Task_blocks: ["[[Task1]]", "[[Task2]]"],
       };
 
-      const property = MetadataHelpers.findReferencingProperty(metadata, "Task2");
+      const property = MetadataHelpers.findReferencingProperty(
+        metadata,
+        "Task2",
+      );
       expect(property).toBe("ems__Task_blocks");
     });
 
@@ -116,7 +154,10 @@ describe("MetadataHelpers", () => {
 
   describe("containsReference", () => {
     it("should detect wikilink reference", () => {
-      const result = MetadataHelpers.containsReference("[[TaskName]]", "TaskName");
+      const result = MetadataHelpers.containsReference(
+        "[[TaskName]]",
+        "TaskName",
+      );
       expect(result).toBe(true);
     });
 
@@ -126,17 +167,26 @@ describe("MetadataHelpers", () => {
     });
 
     it("should detect reference in string with .md extension", () => {
-      const result = MetadataHelpers.containsReference("[[TaskName]]", "TaskName.md");
+      const result = MetadataHelpers.containsReference(
+        "[[TaskName]]",
+        "TaskName.md",
+      );
       expect(result).toBe(true);
     });
 
     it("should detect reference in array", () => {
-      const result = MetadataHelpers.containsReference(["[[Task1]]", "[[Task2]]"], "Task2");
+      const result = MetadataHelpers.containsReference(
+        ["[[Task1]]", "[[Task2]]"],
+        "Task2",
+      );
       expect(result).toBe(true);
     });
 
     it("should detect nested references in arrays", () => {
-      const result = MetadataHelpers.containsReference([["[[Task1]]"], "Other"], "Task1");
+      const result = MetadataHelpers.containsReference(
+        [["[[Task1]]"], "Other"],
+        "Task1",
+      );
       expect(result).toBe(true);
     });
 
@@ -151,7 +201,10 @@ describe("MetadataHelpers", () => {
     });
 
     it("should return false when no reference found", () => {
-      const result = MetadataHelpers.containsReference("[[OtherTask]]", "TaskName");
+      const result = MetadataHelpers.containsReference(
+        "[[OtherTask]]",
+        "TaskName",
+      );
       expect(result).toBe(false);
     });
 
@@ -166,14 +219,17 @@ describe("MetadataHelpers", () => {
     });
 
     it("should handle partial matches in strings", () => {
-      const result = MetadataHelpers.containsReference("This contains TaskName in text", "TaskName");
+      const result = MetadataHelpers.containsReference(
+        "This contains TaskName in text",
+        "TaskName",
+      );
       expect(result).toBe(true);
     });
 
     it("should handle complex array structures", () => {
       const result = MetadataHelpers.containsReference(
         [null, "[[Task1]]", undefined, "Other", "[[Task2]]"],
-        "Task2"
+        "Task2",
       );
       expect(result).toBe(true);
     });
@@ -181,7 +237,9 @@ describe("MetadataHelpers", () => {
 
   describe("isAssetArchived", () => {
     it("should return true for legacy exo__Asset_isArchived field", () => {
-      const result = MetadataHelpers.isAssetArchived({ exo__Asset_isArchived: true });
+      const result = MetadataHelpers.isAssetArchived({
+        exo__Asset_isArchived: true,
+      });
       expect(result).toBe(true);
     });
 
@@ -233,11 +291,15 @@ describe("MetadataHelpers", () => {
     it("should handle case-insensitive strings", () => {
       expect(MetadataHelpers.isAssetArchived({ archived: "TRUE" })).toBe(true);
       expect(MetadataHelpers.isAssetArchived({ archived: "YES" })).toBe(true);
-      expect(MetadataHelpers.isAssetArchived({ archived: "False" })).toBe(false);
+      expect(MetadataHelpers.isAssetArchived({ archived: "False" })).toBe(
+        false,
+      );
     });
 
     it("should handle strings with whitespace", () => {
-      expect(MetadataHelpers.isAssetArchived({ archived: " true " })).toBe(true);
+      expect(MetadataHelpers.isAssetArchived({ archived: " true " })).toBe(
+        true,
+      );
       expect(MetadataHelpers.isAssetArchived({ archived: " yes " })).toBe(true);
     });
 
@@ -257,7 +319,9 @@ describe("MetadataHelpers", () => {
     });
 
     it("should return false for missing archived field", () => {
-      const result = MetadataHelpers.isAssetArchived({ exo__Asset_label: "Test" });
+      const result = MetadataHelpers.isAssetArchived({
+        exo__Asset_label: "Test",
+      });
       expect(result).toBe(false);
     });
 
@@ -280,8 +344,12 @@ describe("MetadataHelpers", () => {
     });
 
     it("should return false for invalid string values", () => {
-      expect(MetadataHelpers.isAssetArchived({ archived: "maybe" })).toBe(false);
-      expect(MetadataHelpers.isAssetArchived({ archived: "archived" })).toBe(false);
+      expect(MetadataHelpers.isAssetArchived({ archived: "maybe" })).toBe(
+        false,
+      );
+      expect(MetadataHelpers.isAssetArchived({ archived: "archived" })).toBe(
+        false,
+      );
     });
   });
 
@@ -292,9 +360,9 @@ describe("MetadataHelpers", () => {
       modified: 1234567900,
       path: "test/path.md",
       metadata: {
-        "exo__Asset_label": "Test Label",
-        "ems__Effort_status": "ems__EffortStatusDoing",
-        "custom_property": "Custom Value",
+        exo__Asset_label: "Test Label",
+        ems__Effort_status: "ems__EffortStatusDoing",
+        custom_property: "Custom Value",
       },
     };
 
@@ -324,17 +392,26 @@ describe("MetadataHelpers", () => {
     });
 
     it("should return metadata value for custom property", () => {
-      const result = MetadataHelpers.getPropertyValue(mockRelation, "exo__Asset_label");
+      const result = MetadataHelpers.getPropertyValue(
+        mockRelation,
+        "exo__Asset_label",
+      );
       expect(result).toBe("Test Label");
     });
 
     it("should return metadata value for another custom property", () => {
-      const result = MetadataHelpers.getPropertyValue(mockRelation, "custom_property");
+      const result = MetadataHelpers.getPropertyValue(
+        mockRelation,
+        "custom_property",
+      );
       expect(result).toBe("Custom Value");
     });
 
     it("should return undefined for non-existent property", () => {
-      const result = MetadataHelpers.getPropertyValue(mockRelation, "non_existent");
+      const result = MetadataHelpers.getPropertyValue(
+        mockRelation,
+        "non_existent",
+      );
       expect(result).toBeUndefined();
     });
 
@@ -346,7 +423,10 @@ describe("MetadataHelpers", () => {
         path: "path.md",
       };
 
-      const result = MetadataHelpers.getPropertyValue(relationWithoutMetadata, "exo__Asset_label");
+      const result = MetadataHelpers.getPropertyValue(
+        relationWithoutMetadata,
+        "exo__Asset_label",
+      );
       expect(result).toBeUndefined();
     });
 
@@ -359,7 +439,10 @@ describe("MetadataHelpers", () => {
         metadata: {},
       };
 
-      const result = MetadataHelpers.getPropertyValue(relationEmptyMetadata, "custom_property");
+      const result = MetadataHelpers.getPropertyValue(
+        relationEmptyMetadata,
+        "custom_property",
+      );
       expect(result).toBeUndefined();
     });
 
@@ -370,11 +453,14 @@ describe("MetadataHelpers", () => {
         modified: 456,
         path: "path.md",
         metadata: {
-          "null_property": null,
+          null_property: null,
         },
       };
 
-      const result = MetadataHelpers.getPropertyValue(relationNullValue, "null_property");
+      const result = MetadataHelpers.getPropertyValue(
+        relationNullValue,
+        "null_property",
+      );
       expect(result).toBeNull();
     });
 
@@ -385,15 +471,21 @@ describe("MetadataHelpers", () => {
         modified: 456,
         path: "path.md",
         metadata: {
-          "zero": 0,
-          "false": false,
-          "empty": "",
+          zero: 0,
+          false: false,
+          empty: "",
         },
       };
 
-      expect(MetadataHelpers.getPropertyValue(relationFalsyValues, "zero")).toBe(0);
-      expect(MetadataHelpers.getPropertyValue(relationFalsyValues, "false")).toBe(false);
-      expect(MetadataHelpers.getPropertyValue(relationFalsyValues, "empty")).toBe("");
+      expect(
+        MetadataHelpers.getPropertyValue(relationFalsyValues, "zero"),
+      ).toBe(0);
+      expect(
+        MetadataHelpers.getPropertyValue(relationFalsyValues, "false"),
+      ).toBe(false);
+      expect(
+        MetadataHelpers.getPropertyValue(relationFalsyValues, "empty"),
+      ).toBe("");
     });
   });
 
@@ -457,8 +549,8 @@ describe("MetadataHelpers", () => {
   describe("buildFileContent", () => {
     it("should build with frontmatter and body", () => {
       const frontmatter = {
-        "exo__Asset_label": "Test Task",
-        "ems__Effort_status": "ems__EffortStatusDoing",
+        exo__Asset_label: "Test Task",
+        ems__Effort_status: "ems__EffortStatusDoing",
       };
       const body = "This is the task description.";
 
@@ -472,7 +564,7 @@ describe("MetadataHelpers", () => {
 
     it("should build with frontmatter only", () => {
       const frontmatter = {
-        "exo__Asset_label": "Test Task",
+        exo__Asset_label: "Test Task",
       };
 
       const result = MetadataHelpers.buildFileContent(frontmatter);
@@ -482,9 +574,9 @@ describe("MetadataHelpers", () => {
 
     it("should format frontmatter correctly", () => {
       const frontmatter = {
-        "title": "Test",
-        "archived": true,
-        "votes": 5,
+        title: "Test",
+        archived: true,
+        votes: 5,
       };
 
       const result = MetadataHelpers.buildFileContent(frontmatter);
@@ -495,7 +587,7 @@ describe("MetadataHelpers", () => {
     });
 
     it("should preserve body content", () => {
-      const frontmatter = { "title": "Test" };
+      const frontmatter = { title: "Test" };
       const body = "Line 1\nLine 2\nLine 3";
 
       const result = MetadataHelpers.buildFileContent(frontmatter, body);
@@ -504,7 +596,7 @@ describe("MetadataHelpers", () => {
     });
 
     it("should handle empty body", () => {
-      const frontmatter = { "title": "Test" };
+      const frontmatter = { title: "Test" };
       const body = "";
 
       const result = MetadataHelpers.buildFileContent(frontmatter, body);
@@ -514,10 +606,10 @@ describe("MetadataHelpers", () => {
 
     it("should handle complex frontmatter objects", () => {
       const frontmatter = {
-        "string": "value",
-        "number": 42,
-        "boolean": true,
-        "null": null,
+        string: "value",
+        number: 42,
+        boolean: true,
+        null: null,
       };
 
       const result = MetadataHelpers.buildFileContent(frontmatter);
@@ -530,7 +622,7 @@ describe("MetadataHelpers", () => {
 
     it("should handle array properties", () => {
       const frontmatter = {
-        "tags": ["tag1", "tag2", "tag3"],
+        tags: ["tag1", "tag2", "tag3"],
       };
 
       const result = MetadataHelpers.buildFileContent(frontmatter);
@@ -543,9 +635,9 @@ describe("MetadataHelpers", () => {
 
     it("should handle mixed scalar and array properties", () => {
       const frontmatter = {
-        "title": "Test",
-        "tags": ["tag1", "tag2"],
-        "archived": false,
+        title: "Test",
+        tags: ["tag1", "tag2"],
+        archived: false,
       };
 
       const result = MetadataHelpers.buildFileContent(frontmatter);
@@ -559,7 +651,7 @@ describe("MetadataHelpers", () => {
 
     it("should handle empty array", () => {
       const frontmatter = {
-        "tags": [],
+        tags: [],
       };
 
       const result = MetadataHelpers.buildFileContent(frontmatter);
@@ -569,7 +661,7 @@ describe("MetadataHelpers", () => {
 
     it("should handle array with wikilinks", () => {
       const frontmatter = {
-        "blocks": ["[[Task1]]", "[[Task2]]"],
+        blocks: ["[[Task1]]", "[[Task2]]"],
       };
 
       const result = MetadataHelpers.buildFileContent(frontmatter);
@@ -580,7 +672,7 @@ describe("MetadataHelpers", () => {
     });
 
     it("should handle body with frontmatter delimiters", () => {
-      const frontmatter = { "title": "Test" };
+      const frontmatter = { title: "Test" };
       const body = "Some content\n---\nMore content";
 
       const result = MetadataHelpers.buildFileContent(frontmatter, body);
@@ -590,7 +682,7 @@ describe("MetadataHelpers", () => {
 
     it("should handle special characters in values", () => {
       const frontmatter = {
-        "description": "Test: with special & characters!",
+        description: "Test: with special & characters!",
       };
 
       const result = MetadataHelpers.buildFileContent(frontmatter);
@@ -599,7 +691,7 @@ describe("MetadataHelpers", () => {
     });
 
     it("should handle multiline body", () => {
-      const frontmatter = { "title": "Test" };
+      const frontmatter = { title: "Test" };
       const body = "Line 1\n\nLine 2\n\nLine 3";
 
       const result = MetadataHelpers.buildFileContent(frontmatter, body);
@@ -610,8 +702,8 @@ describe("MetadataHelpers", () => {
 
     it("should format correctly for file writing", () => {
       const frontmatter = {
-        "exo__Asset_label": "Test Task",
-        "ems__Effort_status": "ems__EffortStatusDoing",
+        exo__Asset_label: "Test Task",
+        ems__Effort_status: "ems__EffortStatusDoing",
       };
       const body = "Task description";
 
@@ -626,12 +718,15 @@ describe("MetadataHelpers", () => {
   describe("integration scenarios", () => {
     it("should work together for finding and checking archived properties", () => {
       const metadata = {
-        "ems__Effort_parent": "[[ParentTask]]",
-        "archived": true,
-        "exo__Asset_label": "Archived Task",
+        ems__Effort_parent: "[[ParentTask]]",
+        archived: true,
+        exo__Asset_label: "Archived Task",
       };
 
-      const properties = MetadataHelpers.findAllReferencingProperties(metadata, "ParentTask");
+      const properties = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "ParentTask",
+      );
       const isArchived = MetadataHelpers.isAssetArchived(metadata);
 
       expect(properties).toEqual(["ems__Effort_parent"]);
@@ -640,23 +735,32 @@ describe("MetadataHelpers", () => {
 
     it("should handle complex metadata with multiple references", () => {
       const metadata = {
-        "ems__Effort_parent": "[[Task1]]",
-        "ems__Task_blocks": ["[[Task2]]", "[[Task3]]", "[[Task1]]"],
-        "archived": "yes",
+        ems__Effort_parent: "[[Task1]]",
+        ems__Task_blocks: ["[[Task2]]", "[[Task3]]", "[[Task1]]"],
+        archived: "yes",
       };
 
-      const propertiesTask1 = MetadataHelpers.findAllReferencingProperties(metadata, "Task1");
-      const propertiesTask2 = MetadataHelpers.findAllReferencingProperties(metadata, "Task2");
+      const propertiesTask1 = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "Task1",
+      );
+      const propertiesTask2 = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "Task2",
+      );
 
-      expect(propertiesTask1).toEqual(["ems__Effort_parent", "ems__Task_blocks"]);
+      expect(propertiesTask1).toEqual([
+        "ems__Effort_parent",
+        "ems__Task_blocks",
+      ]);
       expect(propertiesTask2).toEqual(["ems__Task_blocks"]);
       expect(MetadataHelpers.isAssetArchived(metadata)).toBe(true);
     });
 
     it("should build file content with ensured quoted values", () => {
       const frontmatter = {
-        "exo__Asset_label": MetadataHelpers.ensureQuoted("Test Task"),
-        "exo__Asset_isDefinedBy": MetadataHelpers.ensureQuoted("[[SomeArea]]"),
+        exo__Asset_label: MetadataHelpers.ensureQuoted("Test Task"),
+        exo__Asset_isDefinedBy: MetadataHelpers.ensureQuoted("[[SomeArea]]"),
       };
 
       const result = MetadataHelpers.buildFileContent(frontmatter);

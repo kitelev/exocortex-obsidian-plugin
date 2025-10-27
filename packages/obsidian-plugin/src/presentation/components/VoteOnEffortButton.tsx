@@ -1,6 +1,6 @@
 import React from "react";
 import { TFile } from "obsidian";
-import { canVoteOnEffort, CommandVisibilityContext } from '@exocortex/core';
+import { canVoteOnEffort, CommandVisibilityContext } from "@exocortex/core";
 
 export interface VoteOnEffortButtonProps {
   instanceClass: string | string[] | null;

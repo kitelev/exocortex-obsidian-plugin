@@ -1,6 +1,6 @@
 import React from "react";
 import { TFile } from "obsidian";
-import { canCreateProject, CommandVisibilityContext } from '@exocortex/core';
+import { canCreateProject, CommandVisibilityContext } from "@exocortex/core";
 
 export interface CreateProjectButtonProps {
   instanceClass: string | string[] | null;

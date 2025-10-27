@@ -50,9 +50,7 @@ export class FolderRepairService {
     // Check if target path already exists
     const existingFile = this.vault.getAbstractFileByPath(newPath);
     if (existingFile) {
-      throw new Error(
-        `Cannot move file: ${newPath} already exists`,
-      );
+      throw new Error(`Cannot move file: ${newPath} already exists`);
     }
 
     // Ensure target folder exists
