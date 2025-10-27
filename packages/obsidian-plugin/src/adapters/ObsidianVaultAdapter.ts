@@ -2,6 +2,8 @@ import { Vault, TFile, TFolder, MetadataCache, App } from "obsidian";
 import { IVaultAdapter, IFile, IFolder, IFrontmatter } from "@exocortex/core";
 
 export class ObsidianVaultAdapter implements IVaultAdapter {
+  private fileCache: WeakMap<IFile, TFile> = new WeakMap();
+
   constructor(
     private vault: Vault,
     private metadataCache: MetadataCache,
@@ -92,12 +94,14 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
   }
 
   private fromObsidianFile(file: TFile): IFile {
-    return {
+    const iFile: IFile = {
       path: file.path,
       basename: file.basename,
       name: file.name,
       parent: file.parent ? this.fromObsidianFolder(file.parent) : null
     };
+    this.fileCache.set(iFile, file);
+    return iFile;
   }
 
   private fromObsidianFolder(folder: TFolder): IFolder {
@@ -108,6 +112,11 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
   }
 
   private toObsidianFile(file: IFile): TFile {
+    const cachedFile = this.fileCache.get(file);
+    if (cachedFile) {
+      return cachedFile;
+    }
+
     const obsidianFile = this.vault.getAbstractFileByPath(file.path);
     if (!obsidianFile || !(obsidianFile instanceof TFile)) {
       throw new Error(`File not found: ${file.path}`);

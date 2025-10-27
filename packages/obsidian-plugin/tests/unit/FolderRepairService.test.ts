@@ -147,8 +147,8 @@ describe("FolderRepairService", () => {
 
       await service.repairFolder(file, "new/path");
 
-      expect(mockVault.createFolder).toHaveBeenCalledWith("new/path");
-      expect(mockVault.rename).toHaveBeenCalledWith(file, "new/path/file.md");
+      expect(mockVaultAdapter.createFolder).toHaveBeenCalledWith("new/path");
+      expect(mockVaultAdapter.rename).toHaveBeenCalledWith(file, "new/path/file.md");
     });
 
     test("should throw error when target file already exists", async () => {
@@ -175,7 +175,7 @@ describe("FolderRepairService", () => {
 
       await service.repairFolder(file, "new/path");
 
-      expect(mockVault.createFolder).toHaveBeenCalledWith("new/path");
+      expect(mockVaultAdapter.createFolder).toHaveBeenCalledWith("new/path");
     });
 
     test("should not create folder if it already exists", async () => {
@@ -197,8 +197,8 @@ describe("FolderRepairService", () => {
 
       await service.repairFolder(file, "new/path");
 
-      expect(mockVault.createFolder).not.toHaveBeenCalled();
-      expect(mockVault.rename).toHaveBeenCalledWith(file, "new/path/file.md");
+      expect(mockVaultAdapter.createFolder).not.toHaveBeenCalled();
+      expect(mockVaultAdapter.rename).toHaveBeenCalledWith(file, "new/path/file.md");
     });
 
     test("should handle empty folder path (root)", async () => {
@@ -211,8 +211,8 @@ describe("FolderRepairService", () => {
 
       await service.repairFolder(file, "");
 
-      expect(mockVault.createFolder).not.toHaveBeenCalled();
-      expect(mockVault.rename).toHaveBeenCalledWith(file, "/file.md");
+      expect(mockVaultAdapter.createFolder).not.toHaveBeenCalled();
+      expect(mockVaultAdapter.rename).toHaveBeenCalledWith(file, "/file.md");
     });
   });
 

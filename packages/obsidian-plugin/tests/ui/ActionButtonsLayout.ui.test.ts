@@ -7,10 +7,15 @@ describe("Layout Settings and Structure", () => {
   let mockApp: any;
   let mockVault: Vault;
   let mockMetadataCache: MetadataCache;
+  let mockPlugin: any;
 
   beforeEach(() => {
     mockVault = {
-      getAbstractFileByPath: jest.fn(),
+      getAbstractFileByPath: jest.fn((path: string) => {
+        // This will be updated per-test to return the correct mock file
+        // For now, return null - individual tests will override as needed
+        return null;
+      }),
       getMarkdownFiles: jest.fn(() => []),
       adapter: {
         exists: jest.fn(() => Promise.resolve(false)),
@@ -32,6 +37,10 @@ describe("Layout Settings and Structure", () => {
       resolvedLinks: {},
     } as unknown as MetadataCache;
 
+    mockPlugin = {
+      saveSettings: jest.fn().mockResolvedValue(undefined),
+    };
+
     mockApp = {
       vault: mockVault,
       metadataCache: mockMetadataCache,
@@ -43,10 +52,14 @@ describe("Layout Settings and Structure", () => {
         setActiveLeaf: jest.fn(),
         openLinkText: jest.fn(),
       },
+      fileManager: {
+        processFrontMatter: jest.fn().mockResolvedValue(undefined),
+        renameFile: jest.fn().mockResolvedValue(undefined),
+      },
     };
 
     const settings: ExocortexSettings = { ...DEFAULT_SETTINGS };
-    renderer = new UniversalLayoutRenderer(mockApp, settings);
+    renderer = new UniversalLayoutRenderer(mockApp, settings, mockPlugin);
   });
 
   describe("Properties Section Visibility", () => {
@@ -55,7 +68,7 @@ describe("Layout Settings and Structure", () => {
         ...DEFAULT_SETTINGS,
         showPropertiesSection: false,
       };
-      renderer = new UniversalLayoutRenderer(mockApp, settings);
+      renderer = new UniversalLayoutRenderer(mockApp, settings, mockPlugin);
 
       const mockFile = {
         path: "test-area.md",
@@ -79,19 +92,17 @@ describe("Layout Settings and Structure", () => {
     });
 
     it("should render properties section when showPropertiesSection is true", async () => {
-      const settings: ExocortexSettings = {
-        ...DEFAULT_SETTINGS,
-        showPropertiesSection: true,
-      };
-      renderer = new UniversalLayoutRenderer(mockApp, settings);
-
-      const mockFile = {
-        path: "test-area.md",
-        basename: "test-area",
-        parent: { path: "Areas" },
-      } as TFile;
+      const mockFile = new TFile();
+      (mockFile as any).path = "test-area.md";
+      (mockFile as any).basename = "test-area";
+      (mockFile as any).parent = { path: "Areas" };
+      (mockFile as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
       mockApp.workspace.getActiveFile.mockReturnValue(mockFile);
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
+        if (path === "test-area.md") return mockFile;
+        return null;
+      });
       mockMetadataCache.getFileCache = jest.fn(() => ({
         frontmatter: {
           exo__Instance_class: "[[ems__Area]]",
@@ -99,8 +110,17 @@ describe("Layout Settings and Structure", () => {
         },
       }));
 
+      const settings: ExocortexSettings = {
+        ...DEFAULT_SETTINGS,
+        showPropertiesSection: true,
+      };
+      renderer = new UniversalLayoutRenderer(mockApp, settings, mockPlugin);
+
       const container = document.createElement("div");
       await renderer.render("", container, {} as any);
+
+      // Wait for React to render
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       const propertiesSection = container.querySelector(".exocortex-properties-section");
       expect(propertiesSection).toBeTruthy();
@@ -113,7 +133,7 @@ describe("Layout Settings and Structure", () => {
         ...DEFAULT_SETTINGS,
         showPropertiesSection: true,
       };
-      renderer = new UniversalLayoutRenderer(mockApp, settings);
+      renderer = new UniversalLayoutRenderer(mockApp, settings, mockPlugin);
 
       const mockFile = {
         path: "test-area.md",

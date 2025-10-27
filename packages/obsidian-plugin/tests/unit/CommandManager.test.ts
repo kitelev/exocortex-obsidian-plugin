@@ -1442,7 +1442,7 @@ describe("CommandManager", () => {
         },
       });
 
-      mockApp.vault.rename = jest.fn().mockRejectedValue(new Error("Vault error"));
+      mockApp.fileManager.renameFile = jest.fn().mockRejectedValue(new Error("Vault error"));
 
       const command = registeredCommands.get("rename-to-uid");
       await command.checkCallback(false);
