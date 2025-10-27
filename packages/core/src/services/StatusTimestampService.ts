@@ -1,5 +1,5 @@
 import { TFile, Vault } from "obsidian";
-import { FrontmatterService } from "./FrontmatterService";
+import { FrontmatterService } from "../utilities/FrontmatterService";
 import { DateFormatter } from "../utilities/DateFormatter";
 
 export class StatusTimestampService {
