@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { ILogger } from "./ILogger";
 
 export class Logger implements ILogger {
@@ -8,7 +9,6 @@ export class Logger implements ILogger {
   }
 
   info(message: string, ...args: unknown[]): void {
-    // eslint-disable-next-line no-console
     console.info(`[${this.context}] ${message}`, ...args);
   }
 
