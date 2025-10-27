@@ -25,7 +25,9 @@ export class RenameToUidService {
     }
 
     const folderPath = file.parent?.path || "";
-    const newPath = folderPath ? `${folderPath}/${targetBasename}.md` : `${targetBasename}.md`;
+    const newPath = folderPath
+      ? `${folderPath}/${targetBasename}.md`
+      : `${targetBasename}.md`;
 
     await this.vault.rename(file, newPath);
   }

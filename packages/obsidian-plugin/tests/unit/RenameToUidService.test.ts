@@ -113,7 +113,10 @@ Test content`;
 
       await service.renameToUid(mockFile, metadata);
 
-      expect(mockVaultAdapter.rename).toHaveBeenCalledWith(mockFile, "root-uid-123.md");
+      expect(mockVaultAdapter.rename).toHaveBeenCalledWith(
+        mockFile,
+        "root-uid-123.md",
+      );
     });
 
     it("should add label property to frontmatter when needed", async () => {
@@ -127,16 +130,18 @@ Test content`;
       };
 
       let processedContent = "";
-      mockVaultAdapter.process.mockImplementation((file: any, callback: any) => {
-        const originalContent = `---
+      mockVaultAdapter.process.mockImplementation(
+        (file: any, callback: any) => {
+          const originalContent = `---
 exo__Asset_isDefinedBy: "[[!user]]"
 exo__Asset_uid: abc-123-def
 ---
 
 Test content`;
-        processedContent = callback(originalContent);
-        return Promise.resolve();
-      });
+          processedContent = callback(originalContent);
+          return Promise.resolve();
+        },
+      );
 
       await service.renameToUid(mockFile, metadata);
 

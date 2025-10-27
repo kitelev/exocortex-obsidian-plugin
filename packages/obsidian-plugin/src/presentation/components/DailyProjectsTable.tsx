@@ -40,12 +40,12 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
     if (pipeIndex !== -1) {
       return {
         target: content.substring(0, pipeIndex).trim(),
-        alias: content.substring(pipeIndex + 1).trim()
+        alias: content.substring(pipeIndex + 1).trim(),
       };
     }
 
     return {
-      target: content.trim()
+      target: content.trim(),
     };
   };
 
@@ -54,9 +54,13 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
 
     let displayText = project.label || project.title;
 
-    if (typeof getAssetLabel === 'function') {
+    if (typeof getAssetLabel === "function") {
       const customLabel = getAssetLabel(project.path);
-      if (customLabel !== null && customLabel !== undefined && customLabel !== '') {
+      if (
+        customLabel !== null &&
+        customLabel !== undefined &&
+        customLabel !== ""
+      ) {
         displayText = customLabel;
       }
     }
@@ -95,26 +99,32 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
               <td className="project-start">{project.startTime || "-"}</td>
               <td className="project-end">{project.endTime || "-"}</td>
               <td className="project-status">
-                {project.status ? (() => {
-                  const isWikiLink = typeof project.status === "string" && /\[\[.*?\]\]/.test(project.status);
-                  const parsed = isWikiLink ? parseWikiLink(project.status) : { target: project.status };
-                  const displayText = parsed.alias || parsed.target;
+                {project.status
+                  ? (() => {
+                      const isWikiLink =
+                        typeof project.status === "string" &&
+                        /\[\[.*?\]\]/.test(project.status);
+                      const parsed = isWikiLink
+                        ? parseWikiLink(project.status)
+                        : { target: project.status };
+                      const displayText = parsed.alias || parsed.target;
 
-                  return (
-                    <a
-                      data-href={parsed.target}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        onProjectClick?.(parsed.target, e);
-                      }}
-                      className="internal-link"
-                      style={{ cursor: "pointer" }}
-                    >
-                      {displayText}
-                    </a>
-                  );
-                })() : "-"}
+                      return (
+                        <a
+                          data-href={parsed.target}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onProjectClick?.(parsed.target, e);
+                          }}
+                          className="internal-link"
+                          style={{ cursor: "pointer" }}
+                        >
+                          {displayText}
+                        </a>
+                      );
+                    })()
+                  : "-"}
               </td>
             </tr>
           ))}

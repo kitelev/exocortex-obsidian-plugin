@@ -101,11 +101,17 @@ describe("DailyProjectsRenderer", () => {
 
   describe("render", () => {
     it("should not render for non-daily-note files", async () => {
-      const mockFile = { path: "test.md", parent: { path: "Projects" }, basename: "TestProject" } as TFile;
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "Projects" },
+        basename: "TestProject",
+      } as TFile;
       const metadata = { exo__Instance_class: "[[ems__Project]]" };
 
       mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
-      mockMetadataExtractor.extractInstanceClass.mockReturnValue("[[ems__Project]]");
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[ems__Project]]",
+      );
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -115,132 +121,169 @@ describe("DailyProjectsRenderer", () => {
     });
 
     it("should not render when pn__DailyNote_day is missing", async () => {
-      const mockFile = { path: "test.md", parent: { path: "DailyNotes" }, basename: "2025-10-20" } as TFile;
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "DailyNotes" },
+        basename: "2025-10-20",
+      } as TFile;
       const metadata = { exo__Instance_class: "[[pn__DailyNote]]" };
 
       mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
-      mockMetadataExtractor.extractInstanceClass.mockReturnValue("[[pn__DailyNote]]");
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[pn__DailyNote]]",
+      );
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
 
-      expect(mockLogger.debug).toHaveBeenCalledWith("No pn__DailyNote_day found for daily note");
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        "No pn__DailyNote_day found for daily note",
+      );
       expect(mockReactRenderer.render).not.toHaveBeenCalled();
     });
 
     it("should not render when no projects found for the day", async () => {
-      const mockFile = { path: "test.md", parent: { path: "DailyNotes" }, basename: "2025-10-20" } as TFile;
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "DailyNotes" },
+        basename: "2025-10-20",
+      } as TFile;
       const metadata = {
         exo__Instance_class: "[[pn__DailyNote]]",
-        pn__DailyNote_day: "[[2025-10-20]]"
+        pn__DailyNote_day: "[[2025-10-20]]",
       };
 
       mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
-      mockMetadataExtractor.extractInstanceClass.mockReturnValue("[[pn__DailyNote]]");
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[pn__DailyNote]]",
+      );
       mockApp.vault.getMarkdownFiles.mockReturnValue([]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
 
-      expect(mockLogger.debug).toHaveBeenCalledWith("No projects found for day: 2025-10-20");
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        "No projects found for day: 2025-10-20",
+      );
       expect(mockReactRenderer.render).not.toHaveBeenCalled();
     });
 
     it("should render projects section when projects exist", async () => {
-      const mockFile = { path: "test.md", parent: { path: "DailyNotes" }, basename: "2025-10-20" } as TFile;
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "DailyNotes" },
+        basename: "2025-10-20",
+      } as TFile;
       const metadata = {
         exo__Instance_class: "[[pn__DailyNote]]",
-        pn__DailyNote_day: "[[2025-10-20]]"
+        pn__DailyNote_day: "[[2025-10-20]]",
       };
 
       const projectFile = {
         path: "project.md",
-        basename: "test-project"
+        basename: "test-project",
       } as TFile;
 
       const projectMetadata = {
         exo__Instance_class: "[[ems__Project]]",
         ems__Effort_day: "[[2025-10-20]]",
-        ems__Effort_status: "[[ems__EffortStatusToDo]]"
+        ems__Effort_status: "[[ems__EffortStatusToDo]]",
       };
 
       mockMetadataExtractor.extractMetadata
         .mockReturnValueOnce(metadata)
         .mockReturnValueOnce(projectMetadata);
 
-      mockMetadataExtractor.extractInstanceClass
-        .mockReturnValueOnce("[[pn__DailyNote]]");
+      mockMetadataExtractor.extractInstanceClass.mockReturnValueOnce(
+        "[[pn__DailyNote]]",
+      );
 
       mockApp.vault.getMarkdownFiles.mockReturnValue([projectFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
 
-      expect(mockEl.querySelector(".exocortex-daily-projects-section")).toBeTruthy();
+      expect(
+        mockEl.querySelector(".exocortex-daily-projects-section"),
+      ).toBeTruthy();
       expect(mockEl.querySelector("h3")).toBeTruthy();
       expect(mockEl.querySelector("h3")?.textContent).toBe("Projects");
       expect(mockReactRenderer.render).toHaveBeenCalled();
-      expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining("Rendered 1 projects"));
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining("Rendered 1 projects"),
+      );
     });
 
     it("should filter out tasks from daily projects", async () => {
-      const mockFile = { path: "test.md", parent: { path: "DailyNotes" }, basename: "2025-10-20" } as TFile;
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "DailyNotes" },
+        basename: "2025-10-20",
+      } as TFile;
       const metadata = {
         exo__Instance_class: "[[pn__DailyNote]]",
-        pn__DailyNote_day: "[[2025-10-20]]"
+        pn__DailyNote_day: "[[2025-10-20]]",
       };
 
       const taskFile = {
         path: "task.md",
-        basename: "test-task"
+        basename: "test-task",
       } as TFile;
 
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
-        ems__Effort_status: "[[ems__EffortStatusBacklog]]"
+        ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
       mockMetadataExtractor.extractMetadata
         .mockReturnValueOnce(metadata)
         .mockReturnValueOnce(taskMetadata);
 
-      mockMetadataExtractor.extractInstanceClass
-        .mockReturnValueOnce("[[pn__DailyNote]]");
+      mockMetadataExtractor.extractInstanceClass.mockReturnValueOnce(
+        "[[pn__DailyNote]]",
+      );
 
       mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
 
-      expect(mockLogger.debug).toHaveBeenCalledWith("No projects found for day: 2025-10-20");
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        "No projects found for day: 2025-10-20",
+      );
       expect(mockReactRenderer.render).not.toHaveBeenCalled();
     });
 
     it("should handle pn__DailyNote_day without brackets", async () => {
-      const mockFile = { path: "test.md", parent: { path: "DailyNotes" }, basename: "2025-10-20" } as TFile;
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "DailyNotes" },
+        basename: "2025-10-20",
+      } as TFile;
       const metadata = {
         exo__Instance_class: "[[pn__DailyNote]]",
-        pn__DailyNote_day: "2025-10-20"
+        pn__DailyNote_day: "2025-10-20",
       };
 
       const projectFile = {
         path: "project.md",
-        basename: "test-project"
+        basename: "test-project",
       } as TFile;
 
       const projectMetadata = {
         exo__Instance_class: "[[ems__Project]]",
         ems__Effort_day: "2025-10-20",
-        ems__Effort_status: "[[ems__EffortStatusToDo]]"
+        ems__Effort_status: "[[ems__EffortStatusToDo]]",
       };
 
       mockMetadataExtractor.extractMetadata
         .mockReturnValueOnce(metadata)
         .mockReturnValueOnce(projectMetadata);
 
-      mockMetadataExtractor.extractInstanceClass
-        .mockReturnValueOnce("[[pn__DailyNote]]");
+      mockMetadataExtractor.extractInstanceClass.mockReturnValueOnce(
+        "[[pn__DailyNote]]",
+      );
 
       mockApp.vault.getMarkdownFiles.mockReturnValue([projectFile]);
 
@@ -248,36 +291,48 @@ describe("DailyProjectsRenderer", () => {
       await renderer.render(mockEl, mockFile);
 
       expect(mockReactRenderer.render).toHaveBeenCalled();
-      expect(mockLogger.info).toHaveBeenCalledWith(expect.stringContaining("Rendered 1 projects"));
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining("Rendered 1 projects"),
+      );
     });
 
     it("should limit results to 50 projects", async () => {
-      const mockFile = { path: "test.md", parent: { path: "DailyNotes" }, basename: "2025-10-20" } as TFile;
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "DailyNotes" },
+        basename: "2025-10-20",
+      } as TFile;
       const metadata = {
         exo__Instance_class: "[[pn__DailyNote]]",
-        pn__DailyNote_day: "[[2025-10-20]]"
+        pn__DailyNote_day: "[[2025-10-20]]",
       };
 
-      const projectFiles = Array.from({ length: 60 }, (_, i) => ({
-        path: `project-${i}.md`,
-        basename: `project-${i}`
-      } as TFile));
+      const projectFiles = Array.from(
+        { length: 60 },
+        (_, i) =>
+          ({
+            path: `project-${i}.md`,
+            basename: `project-${i}`,
+          }) as TFile,
+      );
 
       const projectMetadata = {
         exo__Instance_class: "[[ems__Project]]",
         ems__Effort_day: "[[2025-10-20]]",
-        ems__Effort_status: "[[ems__EffortStatusToDo]]"
+        ems__Effort_status: "[[ems__EffortStatusToDo]]",
       };
 
-      mockMetadataExtractor.extractMetadata
-        .mockReturnValueOnce(metadata);
+      mockMetadataExtractor.extractMetadata.mockReturnValueOnce(metadata);
 
       projectFiles.forEach(() => {
-        mockMetadataExtractor.extractMetadata.mockReturnValueOnce(projectMetadata);
+        mockMetadataExtractor.extractMetadata.mockReturnValueOnce(
+          projectMetadata,
+        );
       });
 
-      mockMetadataExtractor.extractInstanceClass
-        .mockReturnValueOnce("[[pn__DailyNote]]");
+      mockMetadataExtractor.extractInstanceClass.mockReturnValueOnce(
+        "[[pn__DailyNote]]",
+      );
 
       mockApp.vault.getMarkdownFiles.mockReturnValue(projectFiles);
 
@@ -291,14 +346,20 @@ describe("DailyProjectsRenderer", () => {
     });
 
     it("should handle error gracefully", async () => {
-      const mockFile = { path: "test.md", parent: { path: "DailyNotes" }, basename: "2025-10-20" } as TFile;
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "DailyNotes" },
+        basename: "2025-10-20",
+      } as TFile;
       const metadata = {
         exo__Instance_class: "[[pn__DailyNote]]",
-        pn__DailyNote_day: "[[2025-10-20]]"
+        pn__DailyNote_day: "[[2025-10-20]]",
       };
 
       mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
-      mockMetadataExtractor.extractInstanceClass.mockReturnValue("[[pn__DailyNote]]");
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[pn__DailyNote]]",
+      );
       mockApp.vault.getMarkdownFiles.mockImplementation(() => {
         throw new Error("Vault error");
       });
@@ -306,20 +367,26 @@ describe("DailyProjectsRenderer", () => {
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
 
-      expect(mockLogger.debug).toHaveBeenCalledWith("No projects found for day: 2025-10-20");
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        "No projects found for day: 2025-10-20",
+      );
       expect(mockReactRenderer.render).not.toHaveBeenCalled();
     });
 
     it("should format timestamps correctly", async () => {
-      const mockFile = { path: "test.md", parent: { path: "DailyNotes" }, basename: "2025-10-20" } as TFile;
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "DailyNotes" },
+        basename: "2025-10-20",
+      } as TFile;
       const metadata = {
         exo__Instance_class: "[[pn__DailyNote]]",
-        pn__DailyNote_day: "[[2025-10-20]]"
+        pn__DailyNote_day: "[[2025-10-20]]",
       };
 
       const projectFile = {
         path: "project.md",
-        basename: "test-project"
+        basename: "test-project",
       } as TFile;
 
       const projectMetadata = {
@@ -327,15 +394,16 @@ describe("DailyProjectsRenderer", () => {
         ems__Effort_day: "[[2025-10-20]]",
         ems__Effort_status: "[[ems__EffortStatusDoing]]",
         ems__Effort_startTimestamp: "2025-10-20T09:00:00.000Z",
-        ems__Effort_endTimestamp: "2025-10-20T17:00:00.000Z"
+        ems__Effort_endTimestamp: "2025-10-20T17:00:00.000Z",
       };
 
       mockMetadataExtractor.extractMetadata
         .mockReturnValueOnce(metadata)
         .mockReturnValueOnce(projectMetadata);
 
-      mockMetadataExtractor.extractInstanceClass
-        .mockReturnValueOnce("[[pn__DailyNote]]");
+      mockMetadataExtractor.extractInstanceClass.mockReturnValueOnce(
+        "[[pn__DailyNote]]",
+      );
 
       mockApp.vault.getMarkdownFiles.mockReturnValue([projectFile]);
 

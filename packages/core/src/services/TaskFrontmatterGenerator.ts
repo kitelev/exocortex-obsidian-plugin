@@ -3,7 +3,7 @@ import { DateFormatter } from "../utilities/DateFormatter";
 import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
 import { MetadataExtractor } from "../utilities/MetadataExtractor";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
-import { AssetClass } from '../domain/constants';
+import { AssetClass } from "../domain/constants";
 
 const EFFORT_PROPERTY_MAP: Record<string, string> = {
   [AssetClass.AREA]: "ems__Effort_area",
@@ -40,7 +40,8 @@ export class TaskFrontmatterGenerator {
       INSTANCE_CLASS_MAP[cleanSourceClass] || AssetClass.TASK;
 
     const frontmatter: Record<string, any> = {};
-    frontmatter["exo__Asset_isDefinedBy"] = MetadataHelpers.ensureQuoted(isDefinedBy);
+    frontmatter["exo__Asset_isDefinedBy"] =
+      MetadataHelpers.ensureQuoted(isDefinedBy);
     frontmatter["exo__Asset_uid"] = uid || uuidv4();
     frontmatter["exo__Asset_createdAt"] = timestamp;
     frontmatter["exo__Instance_class"] = [`"[[${instanceClass}]]"`];
@@ -48,7 +49,10 @@ export class TaskFrontmatterGenerator {
     frontmatter[effortProperty] = `"[[${sourceName}]]"`;
 
     let finalLabel = label;
-    if (instanceClass === AssetClass.MEETING && (!label || label.trim() === "")) {
+    if (
+      instanceClass === AssetClass.MEETING &&
+      (!label || label.trim() === "")
+    ) {
       const baseLabel = sourceMetadata.exo__Asset_label || sourceName;
       const dateStr = DateFormatter.toDateString(now);
       finalLabel = `${baseLabel} ${dateStr}`;
@@ -80,7 +84,8 @@ export class TaskFrontmatterGenerator {
     const isDefinedBy = MetadataExtractor.extractIsDefinedBy(sourceMetadata);
 
     const frontmatter: Record<string, any> = {};
-    frontmatter["exo__Asset_isDefinedBy"] = MetadataHelpers.ensureQuoted(isDefinedBy);
+    frontmatter["exo__Asset_isDefinedBy"] =
+      MetadataHelpers.ensureQuoted(isDefinedBy);
     frontmatter["exo__Asset_uid"] = uid || uuidv4();
     frontmatter["exo__Asset_createdAt"] = timestamp;
     frontmatter["exo__Instance_class"] = [`"[[${AssetClass.TASK}]]"`];

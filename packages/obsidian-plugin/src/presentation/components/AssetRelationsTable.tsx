@@ -8,7 +8,7 @@ export interface AssetRelation {
   created: number;
   modified: number;
   isArchived?: boolean;
-   
+
   metadata: Record<string, any>;
 }
 
@@ -57,7 +57,6 @@ const SingleTable: React.FC<SingleTableProps> = ({
     }));
   };
 
-   
   const getInstanceClass = (metadata: Record<string, any>): WikiLink => {
     const instanceClassRaw =
       metadata?.exo__Instance_class || metadata?.["exo__Instance_class"] || "-";
@@ -76,12 +75,12 @@ const SingleTable: React.FC<SingleTableProps> = ({
     if (pipeIndex !== -1) {
       return {
         target: content.substring(0, pipeIndex).trim(),
-        alias: content.substring(pipeIndex + 1).trim()
+        alias: content.substring(pipeIndex + 1).trim(),
       };
     }
 
     return {
-      target: content.trim()
+      target: content.trim(),
     };
   };
 
@@ -112,12 +111,12 @@ const SingleTable: React.FC<SingleTableProps> = ({
     if (pipeIndex !== -1) {
       return {
         target: content.substring(0, pipeIndex).trim(),
-        alias: content.substring(pipeIndex + 1).trim()
+        alias: content.substring(pipeIndex + 1).trim(),
       };
     }
 
     return {
-      target: content.trim()
+      target: content.trim(),
     };
   };
 
@@ -140,7 +139,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
             e.stopPropagation();
             onAssetClick?.(parsed.target, e);
           }}
-          style={{ cursor: 'pointer' }}
+          style={{ cursor: "pointer" }}
         >
           {displayText}
         </a>
@@ -217,10 +216,14 @@ const SingleTable: React.FC<SingleTableProps> = ({
         {sortedItems.map((relation, index) => {
           const instanceClass = getInstanceClass(relation.metadata);
           // Use unique key: path + propertyName to handle multiple relations from same asset via different properties
-          const uniqueKey = `${relation.path}-${relation.propertyName || 'body'}-${index}`;
-          const rowClassName = relation.isArchived ? 'archived-asset' : '';
+          const uniqueKey = `${relation.path}-${relation.propertyName || "body"}-${index}`;
+          const rowClassName = relation.isArchived ? "archived-asset" : "";
           return (
-            <tr key={uniqueKey} data-path={relation.path} className={rowClassName}>
+            <tr
+              key={uniqueKey}
+              data-path={relation.path}
+              className={rowClassName}
+            >
               <td className="asset-name">
                 <a
                   data-href={relation.path}
@@ -230,7 +233,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
                     onAssetClick?.(relation.path, e);
                   }}
                   className="internal-link"
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: "pointer" }}
                 >
                   {getDisplayLabel(relation)}
                 </a>
@@ -245,7 +248,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
                       onAssetClick?.(instanceClass.target, e);
                     }}
                     className="internal-link"
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: "pointer" }}
                   >
                     {instanceClass.alias || instanceClass.target}
                   </a>
@@ -254,7 +257,9 @@ const SingleTable: React.FC<SingleTableProps> = ({
                 )}
               </td>
               {showProperties.map((prop) => (
-                <td key={prop}>{renderPropertyValue(relation.metadata[prop])}</td>
+                <td key={prop}>
+                  {renderPropertyValue(relation.metadata[prop])}
+                </td>
               ))}
             </tr>
           );

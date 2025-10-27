@@ -1,6 +1,6 @@
 import React from "react";
 import { TFile } from "obsidian";
-import { canShiftDayForward, CommandVisibilityContext } from '@exocortex/core';
+import { canShiftDayForward, CommandVisibilityContext } from "@exocortex/core";
 
 export interface ShiftDayForwardButtonProps {
   instanceClass: string | string[] | null;

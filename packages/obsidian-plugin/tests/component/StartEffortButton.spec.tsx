@@ -5,7 +5,9 @@ import { TFile } from "obsidian";
 const mockFile = { path: "test-task.md", basename: "test-task" } as TFile;
 
 test.describe("StartEffortButton Component", () => {
-  test("should render button for Task with Backlog status", async ({ mount }) => {
+  test("should render button for Task with Backlog status", async ({
+    mount,
+  }) => {
     const component = await mount(
       <StartEffortButton
         instanceClass="[[ems__Task]]"
@@ -245,7 +247,9 @@ test.describe("StartEffortButton Component", () => {
     await expect(component).toBeVisible();
   });
 
-  test("should handle array of classes with Project (requires ToDo)", async ({ mount }) => {
+  test("should handle array of classes with Project (requires ToDo)", async ({
+    mount,
+  }) => {
     const component = await mount(
       <StartEffortButton
         instanceClass={["[[SomeOtherClass]]", "[[ems__Project]]"]}

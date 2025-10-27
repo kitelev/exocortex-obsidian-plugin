@@ -22,7 +22,9 @@ export class LabelToAliasService {
     if (!match) return null;
 
     const frontmatterContent = match[1];
-    const labelMatch = frontmatterContent.match(/exo__Asset_label:\s*["']?([^"'\r\n]+)["']?/);
+    const labelMatch = frontmatterContent.match(
+      /exo__Asset_label:\s*["']?([^"'\r\n]+)["']?/,
+    );
 
     if (labelMatch && labelMatch[1]) {
       return labelMatch[1].trim();
@@ -35,7 +37,7 @@ export class LabelToAliasService {
     const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---/;
     const match = content.match(frontmatterRegex);
 
-    const lineEnding = content.includes('\r\n') ? '\r\n' : '\n';
+    const lineEnding = content.includes("\r\n") ? "\r\n" : "\n";
 
     if (!match) {
       const newFrontmatter = `---${lineEnding}aliases:${lineEnding}  - "${label}"${lineEnding}---${lineEnding}${content}`;
@@ -46,7 +48,9 @@ export class LabelToAliasService {
     let updatedFrontmatter = frontmatterContent;
 
     if (updatedFrontmatter.includes("aliases:")) {
-      const aliasesMatch = updatedFrontmatter.match(/(aliases:\r?\n(?: {2}- .*\r?\n)*)/);
+      const aliasesMatch = updatedFrontmatter.match(
+        /(aliases:\r?\n(?: {2}- .*\r?\n)*)/,
+      );
       if (aliasesMatch) {
         updatedFrontmatter = updatedFrontmatter.replace(
           /(aliases:\r?\n(?: {2}- .*\r?\n)*)/,

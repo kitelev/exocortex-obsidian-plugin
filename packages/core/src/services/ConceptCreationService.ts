@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { DateFormatter } from "../utilities/DateFormatter";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
-import { AssetClass } from '../domain/constants';
+import { AssetClass } from "../domain/constants";
 import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 export class ConceptCreationService {

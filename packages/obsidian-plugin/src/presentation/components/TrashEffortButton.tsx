@@ -1,6 +1,6 @@
 import React from "react";
 import { TFile } from "obsidian";
-import { canTrashEffort, CommandVisibilityContext } from '@exocortex/core';
+import { canTrashEffort, CommandVisibilityContext } from "@exocortex/core";
 
 export interface TrashEffortButtonProps {
   instanceClass: string | string[] | null;
@@ -37,11 +37,7 @@ export const TrashEffortButton: React.FC<TrashEffortButtonProps> = ({
   }
 
   return (
-    <button
-      className="exocortex-trash-btn"
-      onClick={handleClick}
-      type="button"
-    >
+    <button className="exocortex-trash-btn" onClick={handleClick} type="button">
       Trash
     </button>
   );

@@ -1,4 +1,7 @@
-import { SupervisionCreationService, type SupervisionFormData } from "@exocortex/core";
+import {
+  SupervisionCreationService,
+  type SupervisionFormData,
+} from "@exocortex/core";
 
 describe("SupervisionCreationService", () => {
   let service: SupervisionCreationService;
@@ -19,8 +22,12 @@ describe("SupervisionCreationService", () => {
       expect(frontmatter.exo__Asset_isDefinedBy).toBe('"[[!kitelev]]"');
       expect(frontmatter.exo__Asset_uid).toBe(uid);
       expect(frontmatter.exo__Asset_createdAt).toBeDefined();
-      expect(frontmatter.exo__Instance_class).toEqual(['"[[ztlk__FleetingNote]]"']);
-      expect(frontmatter.ztlk__FleetingNote_type).toBe('"[[CBT-Diary Record]]"');
+      expect(frontmatter.exo__Instance_class).toEqual([
+        '"[[ztlk__FleetingNote]]"',
+      ]);
+      expect(frontmatter.ztlk__FleetingNote_type).toBe(
+        '"[[CBT-Diary Record]]"',
+      );
     });
 
     it("should generate ISO 8601 timestamp for exo__Asset_createdAt", () => {
@@ -63,8 +70,12 @@ describe("SupervisionCreationService", () => {
       expect(body).toContain("- Эмоции: Тревога, страх");
       expect(body).toContain("- Мысли: Меня сейчас будут ругать");
       expect(body).toContain("- Поведение: Защищаюсь, оправдываюсь");
-      expect(body).toContain("- Краткосрочные последствия поведения: Конфликт усиливается");
-      expect(body).toContain("- Долгосрочные последствия поведения: Потеря доверия");
+      expect(body).toContain(
+        "- Краткосрочные последствия поведения: Конфликт усиливается",
+      );
+      expect(body).toContain(
+        "- Долгосрочные последствия поведения: Потеря доверия",
+      );
     });
 
     it("should generate body with empty values when fields are not filled", () => {
@@ -103,7 +114,9 @@ describe("SupervisionCreationService", () => {
       expect(body).toContain("- Эмоции: ");
       expect(body).toContain("- Мысли: Я всё делаю неправильно");
       expect(body).toContain("- Поведение: ");
-      expect(body).toContain("- Краткосрочные последствия поведения: Замкнулся в себе");
+      expect(body).toContain(
+        "- Краткосрочные последствия поведения: Замкнулся в себе",
+      );
       expect(body).toContain("- Долгосрочные последствия поведения: ");
     });
 
@@ -142,7 +155,9 @@ describe("SupervisionCreationService", () => {
       expect(mockVault.create).toHaveBeenCalledTimes(1);
       const [filePath, content] = mockVault.create.mock.calls[0];
 
-      expect(filePath).toMatch(/^01 Inbox\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/);
+      expect(filePath).toMatch(
+        /^01 Inbox\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.md$/,
+      );
     });
 
     it("should create file with correct frontmatter and body", async () => {
@@ -162,15 +177,23 @@ describe("SupervisionCreationService", () => {
       expect(content).toContain('exo__Asset_isDefinedBy: "[[!kitelev]]"');
       expect(content).toContain("exo__Asset_uid:");
       expect(content).toContain("exo__Asset_createdAt:");
-      expect(content).toContain('exo__Instance_class:\n  - "[[ztlk__FleetingNote]]"');
-      expect(content).toContain('ztlk__FleetingNote_type: "[[CBT-Diary Record]]"');
+      expect(content).toContain(
+        'exo__Instance_class:\n  - "[[ztlk__FleetingNote]]"',
+      );
+      expect(content).toContain(
+        'ztlk__FleetingNote_type: "[[CBT-Diary Record]]"',
+      );
 
       expect(content).toContain("- Ситуация/триггер: Situation text");
       expect(content).toContain("- Эмоции: Emotions text");
       expect(content).toContain("- Мысли: Thoughts text");
       expect(content).toContain("- Поведение: Behavior text");
-      expect(content).toContain("- Краткосрочные последствия поведения: Short term");
-      expect(content).toContain("- Долгосрочные последствия поведения: Long term");
+      expect(content).toContain(
+        "- Краткосрочные последствия поведения: Short term",
+      );
+      expect(content).toContain(
+        "- Долгосрочные последствия поведения: Long term",
+      );
     });
 
     it("should return created file reference", async () => {

@@ -1,6 +1,6 @@
 import React from "react";
 import { TFile } from "obsidian";
-import { canPlanOnToday, CommandVisibilityContext } from '@exocortex/core';
+import { canPlanOnToday, CommandVisibilityContext } from "@exocortex/core";
 
 export interface PlanOnTodayButtonProps {
   instanceClass: string | string[] | null;

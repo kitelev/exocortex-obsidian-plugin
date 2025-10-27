@@ -1,14 +1,16 @@
 import { TFile, Keymap } from "obsidian";
-import { ILogger } from '../../adapters/logging/ILogger';
+import { ILogger } from "../../adapters/logging/ILogger";
 import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
 import React from "react";
 import { ReactRenderer } from "../utils/ReactRenderer";
-import { DailyTask, DailyTasksTableWithToggle } from "../components/DailyTasksTable";
-import { AssetClass, EffortStatus } from '@exocortex/core';
-import { MetadataExtractor } from '@exocortex/core';
-import { EffortSortingHelpers } from '@exocortex/core';
+import {
+  DailyTask,
+  DailyTasksTableWithToggle,
+} from "../components/DailyTasksTable";
+import { AssetClass, EffortStatus } from "@exocortex/core";
+import { MetadataExtractor } from "@exocortex/core";
+import { EffortSortingHelpers } from "@exocortex/core";
 
- 
 type ObsidianApp = any;
 
 export class DailyTasksRenderer {
@@ -63,7 +65,9 @@ export class DailyTasksRenderer {
       typeof dayProperty === "string"
         ? dayProperty.match(/\[\[(.+?)\]\]/)
         : null;
-    const day = dayMatch ? dayMatch[1] : String(dayProperty).replace(/^\[\[|\]\]$/g, "");
+    const day = dayMatch
+      ? dayMatch[1]
+      : String(dayProperty).replace(/^\[\[|\]\]$/g, "");
 
     const tasks = await this.getDailyTasks(day);
 
@@ -72,7 +76,9 @@ export class DailyTasksRenderer {
       return;
     }
 
-    const sectionContainer = el.createDiv({ cls: "exocortex-daily-tasks-section" });
+    const sectionContainer = el.createDiv({
+      cls: "exocortex-daily-tasks-section",
+    });
 
     sectionContainer.createEl("h3", {
       text: "Tasks",
@@ -80,7 +86,9 @@ export class DailyTasksRenderer {
     });
 
     if (this.settings.activeFocusArea) {
-      const indicatorContainer = sectionContainer.createDiv({ cls: "exocortex-active-focus-indicator" });
+      const indicatorContainer = sectionContainer.createDiv({
+        cls: "exocortex-active-focus-indicator",
+      });
       indicatorContainer.style.cssText = `
         padding: 8px 12px;
         margin-bottom: 12px;
@@ -93,7 +101,9 @@ export class DailyTasksRenderer {
       });
     }
 
-    const tableContainer = sectionContainer.createDiv({ cls: "exocortex-daily-tasks-table-container" });
+    const tableContainer = sectionContainer.createDiv({
+      cls: "exocortex-daily-tasks-table-container",
+    });
 
     this.reactRenderer.render(
       tableContainer,
@@ -124,16 +134,15 @@ export class DailyTasksRenderer {
           }
         },
         getAssetLabel: (path: string) => this.getAssetLabel(path),
-        getEffortArea: (metadata: Record<string, unknown>) => this.getEffortArea(metadata),
+        getEffortArea: (metadata: Record<string, unknown>) =>
+          this.getEffortArea(metadata),
       }),
     );
 
     this.logger.info(`Rendered ${tasks.length} tasks for DailyNote: ${day}`);
   }
 
-  private async getDailyTasks(
-    day: string,
-  ): Promise<DailyTask[]> {
+  private async getDailyTasks(day: string): Promise<DailyTask[]> {
     try {
       const tasks: DailyTask[] = [];
 
@@ -158,8 +167,8 @@ export class DailyTasksRenderer {
         const instanceClassArray = Array.isArray(instanceClass)
           ? instanceClass
           : [instanceClass];
-        const isProject = instanceClassArray.some(
-          (c: string) => String(c).includes(AssetClass.PROJECT),
+        const isProject = instanceClassArray.some((c: string) =>
+          String(c).includes(AssetClass.PROJECT),
         );
 
         if (isProject) {
@@ -167,14 +176,20 @@ export class DailyTasksRenderer {
         }
 
         const effortStatus = metadata.ems__Effort_status || "";
-        const effortStatusStr = String(effortStatus).replace(/^\[\[|\]\]$/g, "");
+        const effortStatusStr = String(effortStatus).replace(
+          /^\[\[|\]\]$/g,
+          "",
+        );
 
         const startTimestamp = metadata.ems__Effort_startTimestamp;
-        const plannedStartTimestamp = metadata.ems__Effort_plannedStartTimestamp;
+        const plannedStartTimestamp =
+          metadata.ems__Effort_plannedStartTimestamp;
         const endTimestamp = metadata.ems__Effort_endTimestamp;
         const plannedEndTimestamp = metadata.ems__Effort_plannedEndTimestamp;
 
-        const formatTime = (timestamp: string | number | null | undefined): string => {
+        const formatTime = (
+          timestamp: string | number | null | undefined,
+        ): string => {
           if (!timestamp) return "";
           const date = new Date(timestamp);
           if (isNaN(date.getTime())) return "";
@@ -185,14 +200,16 @@ export class DailyTasksRenderer {
           });
         };
 
-        const startTime = formatTime(startTimestamp) || formatTime(plannedStartTimestamp);
-        const endTime = formatTime(endTimestamp) || formatTime(plannedEndTimestamp);
+        const startTime =
+          formatTime(startTimestamp) || formatTime(plannedStartTimestamp);
+        const endTime =
+          formatTime(endTimestamp) || formatTime(plannedEndTimestamp);
 
         const isDone = effortStatusStr === EffortStatus.DONE;
         const isTrashed = effortStatusStr === EffortStatus.TRASHED;
         const isDoing = effortStatusStr === EffortStatus.DOING;
-        const isMeeting = instanceClassArray.some(
-          (c: string) => String(c).includes(AssetClass.MEETING),
+        const isMeeting = instanceClassArray.some((c: string) =>
+          String(c).includes(AssetClass.MEETING),
         );
 
         const label = metadata.exo__Asset_label || file.basename;
@@ -201,13 +218,22 @@ export class DailyTasksRenderer {
         const effortBlocker = metadata.ems__Effort_blocker;
         if (effortBlocker) {
           const blockerPath = String(effortBlocker).replace(/^\[\[|\]\]$/g, "");
-          const blockerFile = this.app.metadataCache.getFirstLinkpathDest(blockerPath, "");
+          const blockerFile = this.app.metadataCache.getFirstLinkpathDest(
+            blockerPath,
+            "",
+          );
           if (blockerFile) {
-            const blockerCache = this.app.metadataCache.getFileCache(blockerFile);
+            const blockerCache =
+              this.app.metadataCache.getFileCache(blockerFile);
             const blockerMetadata = blockerCache?.frontmatter || {};
             const blockerStatus = blockerMetadata.ems__Effort_status || "";
-            const blockerStatusStr = String(blockerStatus).replace(/^\[\[|\]\]$/g, "");
-            isBlocked = blockerStatusStr !== EffortStatus.DONE && blockerStatusStr !== EffortStatus.TRASHED;
+            const blockerStatusStr = String(blockerStatus).replace(
+              /^\[\[|\]\]$/g,
+              "",
+            );
+            isBlocked =
+              blockerStatusStr !== EffortStatus.DONE &&
+              blockerStatusStr !== EffortStatus.TRASHED;
           }
         }
 
@@ -236,14 +262,20 @@ export class DailyTasksRenderer {
       if (this.settings.activeFocusArea) {
         const activeFocusArea = this.settings.activeFocusArea;
         const childAreas = this.getChildAreas(activeFocusArea);
-        const relevantAreas = new Set([activeFocusArea, ...Array.from(childAreas)]);
+        const relevantAreas = new Set([
+          activeFocusArea,
+          ...Array.from(childAreas),
+        ]);
 
-        filteredTasks = tasks.filter(task => {
+        filteredTasks = tasks.filter((task) => {
           const taskMetadata = task.metadata;
 
           const resolvedArea = this.getEffortArea(taskMetadata);
           if (resolvedArea) {
-            const resolvedAreaStr = String(resolvedArea).replace(/^\[\[|\]\]$/g, "");
+            const resolvedAreaStr = String(resolvedArea).replace(
+              /^\[\[|\]\]$/g,
+              "",
+            );
             if (relevantAreas.has(resolvedAreaStr)) {
               return true;
             }
@@ -281,7 +313,10 @@ export class DailyTasksRenderer {
     return null;
   }
 
-  private getEffortArea(metadata: Record<string, unknown>, visited: Set<string> = new Set()): string | null {
+  private getEffortArea(
+    metadata: Record<string, unknown>,
+    visited: Set<string> = new Set(),
+  ): string | null {
     if (!metadata || typeof metadata !== "object") {
       return null;
     }
@@ -297,9 +332,13 @@ export class DailyTasksRenderer {
 
     if (prototypePath && !visited.has(prototypePath)) {
       visited.add(prototypePath);
-      const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
+      const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(
+        prototypePath,
+        "",
+      );
       if (prototypeFile instanceof TFile) {
-        const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile);
+        const prototypeCache =
+          this.app.metadataCache.getFileCache(prototypeFile);
         const prototypeMetadata = prototypeCache?.frontmatter || {};
 
         const resolvedArea = this.getEffortArea(prototypeMetadata, visited);
@@ -314,7 +353,10 @@ export class DailyTasksRenderer {
 
     if (parentPath && !visited.has(parentPath)) {
       visited.add(parentPath);
-      const parentFile = this.app.metadataCache.getFirstLinkpathDest(parentPath, "");
+      const parentFile = this.app.metadataCache.getFirstLinkpathDest(
+        parentPath,
+        "",
+      );
       if (parentFile instanceof TFile) {
         const parentCache = this.app.metadataCache.getFileCache(parentFile);
         const parentMetadata = parentCache?.frontmatter || {};
@@ -329,7 +371,10 @@ export class DailyTasksRenderer {
     return null;
   }
 
-  private getChildAreas(areaName: string, visited: Set<string> = new Set()): Set<string> {
+  private getChildAreas(
+    areaName: string,
+    visited: Set<string> = new Set(),
+  ): Set<string> {
     const childAreas = new Set<string>();
 
     if (visited.has(areaName)) {
@@ -351,7 +396,7 @@ export class DailyTasksRenderer {
         childAreas.add(file.basename);
 
         const nestedChildren = this.getChildAreas(file.basename, visited);
-        nestedChildren.forEach(child => childAreas.add(child));
+        nestedChildren.forEach((child) => childAreas.add(child));
       }
     }
 
@@ -361,8 +406,8 @@ export class DailyTasksRenderer {
   private getAssetLabel(path: string): string | null {
     let file = this.app.metadataCache.getFirstLinkpathDest(path, "");
 
-    if (!file && !path.endsWith('.md')) {
-      file = this.app.metadataCache.getFirstLinkpathDest(path + '.md', "");
+    if (!file && !path.endsWith(".md")) {
+      file = this.app.metadataCache.getFirstLinkpathDest(path + ".md", "");
     }
 
     if (!(file instanceof TFile)) {
@@ -379,18 +424,27 @@ export class DailyTasksRenderer {
 
     const prototypeRef = metadata.ems__Effort_prototype;
     if (prototypeRef) {
-      const prototypePath = typeof prototypeRef === "string"
-        ? prototypeRef.replace(/^\[\[|\]\]$/g, "").trim()
-        : null;
+      const prototypePath =
+        typeof prototypeRef === "string"
+          ? prototypeRef.replace(/^\[\[|\]\]$/g, "").trim()
+          : null;
 
       if (prototypePath) {
-        const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
+        const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(
+          prototypePath,
+          "",
+        );
         if (prototypeFile instanceof TFile) {
-          const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile);
+          const prototypeCache =
+            this.app.metadataCache.getFileCache(prototypeFile);
           const prototypeMetadata = prototypeCache?.frontmatter || {};
           const prototypeLabel = prototypeMetadata.exo__Asset_label;
 
-          if (prototypeLabel && typeof prototypeLabel === "string" && prototypeLabel.trim() !== "") {
+          if (
+            prototypeLabel &&
+            typeof prototypeLabel === "string" &&
+            prototypeLabel.trim() !== ""
+          ) {
             return prototypeLabel;
           }
         }

@@ -1,5 +1,5 @@
-import { AreaNode, AreaNodeData } from '../domain/models/AreaNode';
-import { AssetClass } from '../domain/constants';
+import { AreaNode, AreaNodeData } from "../domain/models/AreaNode";
+import { AssetClass } from "../domain/constants";
 import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 export interface AssetRelation {
@@ -36,10 +36,7 @@ export class AreaHierarchyBuilder {
 
   private isFile(file: any): file is IFile {
     return (
-      file &&
-      typeof file === "object" &&
-      "basename" in file &&
-      "path" in file
+      file && typeof file === "object" && "basename" in file && "path" in file
     );
   }
 

@@ -1,6 +1,9 @@
 import { TFile, Vault, MetadataCache } from "obsidian";
 import { UniversalLayoutRenderer } from "../../src/presentation/renderers/UniversalLayoutRenderer";
-import { ExocortexSettings, DEFAULT_SETTINGS } from "../../src/domain/settings/ExocortexSettings";
+import {
+  ExocortexSettings,
+  DEFAULT_SETTINGS,
+} from "../../src/domain/settings/ExocortexSettings";
 
 describe("Layout Settings and Structure", () => {
   let renderer: UniversalLayoutRenderer;
@@ -87,7 +90,9 @@ describe("Layout Settings and Structure", () => {
       const container = document.createElement("div");
       await renderer.render("", container, {} as any);
 
-      const propertiesSection = container.querySelector(".exocortex-properties-section");
+      const propertiesSection = container.querySelector(
+        ".exocortex-properties-section",
+      );
       expect(propertiesSection).toBeNull();
     });
 
@@ -99,10 +104,12 @@ describe("Layout Settings and Structure", () => {
       (mockFile as any).stat = { ctime: Date.now(), mtime: Date.now() };
 
       mockApp.workspace.getActiveFile.mockReturnValue(mockFile);
-      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation((path: string) => {
-        if (path === "test-area.md") return mockFile;
-        return null;
-      });
+      (mockApp.vault.getAbstractFileByPath as jest.Mock).mockImplementation(
+        (path: string) => {
+          if (path === "test-area.md") return mockFile;
+          return null;
+        },
+      );
       mockMetadataCache.getFileCache = jest.fn(() => ({
         frontmatter: {
           exo__Instance_class: "[[ems__Area]]",
@@ -122,7 +129,9 @@ describe("Layout Settings and Structure", () => {
       // Wait for React to render
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const propertiesSection = container.querySelector(".exocortex-properties-section");
+      const propertiesSection = container.querySelector(
+        ".exocortex-properties-section",
+      );
       expect(propertiesSection).toBeTruthy();
     });
   });
@@ -154,11 +163,15 @@ describe("Layout Settings and Structure", () => {
 
       const sections = container.children;
       const sectionClasses = Array.from(sections).map((s) =>
-        Array.from(s.classList).find((c) => c.startsWith("exocortex-"))
+        Array.from(s.classList).find((c) => c.startsWith("exocortex-")),
       );
 
-      const buttonsIndex = sectionClasses.findIndex((c) => c === "exocortex-buttons-section");
-      const propertiesIndex = sectionClasses.findIndex((c) => c === "exocortex-properties-section");
+      const buttonsIndex = sectionClasses.findIndex(
+        (c) => c === "exocortex-buttons-section",
+      );
+      const propertiesIndex = sectionClasses.findIndex(
+        (c) => c === "exocortex-properties-section",
+      );
 
       if (buttonsIndex !== -1 && propertiesIndex !== -1) {
         expect(propertiesIndex).toBeLessThan(buttonsIndex);

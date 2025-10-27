@@ -1,14 +1,16 @@
 import { TFile, Keymap } from "obsidian";
-import { ILogger } from '../../adapters/logging/ILogger';
+import { ILogger } from "../../adapters/logging/ILogger";
 import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
 import React from "react";
 import { ReactRenderer } from "../utils/ReactRenderer";
-import { DailyProject, DailyProjectsTable } from "../components/DailyProjectsTable";
-import { AssetClass, EffortStatus } from '@exocortex/core';
-import { MetadataExtractor } from '@exocortex/core';
-import { EffortSortingHelpers } from '@exocortex/core';
+import {
+  DailyProject,
+  DailyProjectsTable,
+} from "../components/DailyProjectsTable";
+import { AssetClass, EffortStatus } from "@exocortex/core";
+import { MetadataExtractor } from "@exocortex/core";
+import { EffortSortingHelpers } from "@exocortex/core";
 
- 
 type ObsidianApp = any;
 
 export class DailyProjectsRenderer {
@@ -61,7 +63,9 @@ export class DailyProjectsRenderer {
       typeof dayProperty === "string"
         ? dayProperty.match(/\[\[(.+?)\]\]/)
         : null;
-    const day = dayMatch ? dayMatch[1] : String(dayProperty).replace(/^\[\[|\]\]$/g, "");
+    const day = dayMatch
+      ? dayMatch[1]
+      : String(dayProperty).replace(/^\[\[|\]\]$/g, "");
 
     const projects = await this.getDailyProjects(day);
 
@@ -70,14 +74,18 @@ export class DailyProjectsRenderer {
       return;
     }
 
-    const sectionContainer = el.createDiv({ cls: "exocortex-daily-projects-section" });
+    const sectionContainer = el.createDiv({
+      cls: "exocortex-daily-projects-section",
+    });
 
     sectionContainer.createEl("h3", {
       text: "Projects",
       cls: "exocortex-section-header",
     });
 
-    const tableContainer = sectionContainer.createDiv({ cls: "exocortex-daily-projects-table-container" });
+    const tableContainer = sectionContainer.createDiv({
+      cls: "exocortex-daily-projects-table-container",
+    });
 
     this.reactRenderer.render(
       tableContainer,
@@ -99,12 +107,12 @@ export class DailyProjectsRenderer {
       }),
     );
 
-    this.logger.info(`Rendered ${projects.length} projects for DailyNote: ${day}`);
+    this.logger.info(
+      `Rendered ${projects.length} projects for DailyNote: ${day}`,
+    );
   }
 
-  private async getDailyProjects(
-    day: string,
-  ): Promise<DailyProject[]> {
+  private async getDailyProjects(day: string): Promise<DailyProject[]> {
     try {
       const projects: DailyProject[] = [];
 
@@ -129,8 +137,8 @@ export class DailyProjectsRenderer {
         const instanceClassArray = Array.isArray(instanceClass)
           ? instanceClass
           : [instanceClass];
-        const isProject = instanceClassArray.some(
-          (c: string) => String(c).includes(AssetClass.PROJECT),
+        const isProject = instanceClassArray.some((c: string) =>
+          String(c).includes(AssetClass.PROJECT),
         );
 
         if (!isProject) {
@@ -138,14 +146,20 @@ export class DailyProjectsRenderer {
         }
 
         const effortStatus = metadata.ems__Effort_status || "";
-        const effortStatusStr = String(effortStatus).replace(/^\[\[|\]\]$/g, "");
+        const effortStatusStr = String(effortStatus).replace(
+          /^\[\[|\]\]$/g,
+          "",
+        );
 
         const startTimestamp = metadata.ems__Effort_startTimestamp;
-        const plannedStartTimestamp = metadata.ems__Effort_plannedStartTimestamp;
+        const plannedStartTimestamp =
+          metadata.ems__Effort_plannedStartTimestamp;
         const endTimestamp = metadata.ems__Effort_endTimestamp;
         const plannedEndTimestamp = metadata.ems__Effort_plannedEndTimestamp;
 
-        const formatTime = (timestamp: string | number | null | undefined): string => {
+        const formatTime = (
+          timestamp: string | number | null | undefined,
+        ): string => {
           if (!timestamp) return "";
           const date = new Date(timestamp);
           if (isNaN(date.getTime())) return "";
@@ -156,8 +170,10 @@ export class DailyProjectsRenderer {
           });
         };
 
-        const startTime = formatTime(startTimestamp) || formatTime(plannedStartTimestamp);
-        const endTime = formatTime(endTimestamp) || formatTime(plannedEndTimestamp);
+        const startTime =
+          formatTime(startTimestamp) || formatTime(plannedStartTimestamp);
+        const endTime =
+          formatTime(endTimestamp) || formatTime(plannedEndTimestamp);
 
         const isDone = effortStatusStr === EffortStatus.DONE;
         const isTrashed = effortStatusStr === EffortStatus.TRASHED;

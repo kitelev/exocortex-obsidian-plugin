@@ -7,7 +7,7 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
   constructor(
     private vault: Vault,
     private metadataCache: MetadataCache,
-    private app: App
+    private app: App,
   ) {}
 
   async read(file: IFile): Promise<string> {
@@ -52,7 +52,7 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
 
   getAllFiles(): IFile[] {
     const markdownFiles = this.vault.getMarkdownFiles();
-    return markdownFiles.map(f => this.fromObsidianFile(f));
+    return markdownFiles.map((f) => this.fromObsidianFile(f));
   }
 
   getFrontmatter(file: IFile): IFrontmatter | null {
@@ -61,16 +61,22 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
     return cache?.frontmatter || null;
   }
 
-  async updateFrontmatter(file: IFile, updater: (current: IFrontmatter) => IFrontmatter): Promise<void> {
+  async updateFrontmatter(
+    file: IFile,
+    updater: (current: IFrontmatter) => IFrontmatter,
+  ): Promise<void> {
     const currentFrontmatter = this.getFrontmatter(file) || {};
     const newFrontmatter = updater(currentFrontmatter);
 
     const obsidianFile = this.toObsidianFile(file);
-    await this.app.fileManager.processFrontMatter(obsidianFile, (frontmatter) => {
-      Object.keys(newFrontmatter).forEach(key => {
-        frontmatter[key] = newFrontmatter[key];
-      });
-    });
+    await this.app.fileManager.processFrontMatter(
+      obsidianFile,
+      (frontmatter) => {
+        Object.keys(newFrontmatter).forEach((key) => {
+          frontmatter[key] = newFrontmatter[key];
+        });
+      },
+    );
   }
 
   async rename(file: IFile, newPath: string): Promise<void> {
@@ -98,7 +104,7 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
       path: file.path,
       basename: file.basename,
       name: file.name,
-      parent: file.parent ? this.fromObsidianFolder(file.parent) : null
+      parent: file.parent ? this.fromObsidianFolder(file.parent) : null,
     };
     this.fileCache.set(iFile, file);
     return iFile;
@@ -107,7 +113,7 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
   private fromObsidianFolder(folder: TFolder): IFolder {
     return {
       path: folder.path,
-      name: folder.name
+      name: folder.name,
     };
   }
 

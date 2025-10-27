@@ -75,7 +75,11 @@ describe("WikiLinkHelpers", () => {
 
   describe("normalizeArray", () => {
     it("should normalize array of wikilinks", () => {
-      const result = WikiLinkHelpers.normalizeArray(["[[Task1]]", "[[Task2]]", "[[Task3]]"]);
+      const result = WikiLinkHelpers.normalizeArray([
+        "[[Task1]]",
+        "[[Task2]]",
+        "[[Task3]]",
+      ]);
       expect(result).toEqual(["Task1", "Task2", "Task3"]);
     });
 
@@ -100,12 +104,21 @@ describe("WikiLinkHelpers", () => {
     });
 
     it("should filter out empty strings after normalization", () => {
-      const result = WikiLinkHelpers.normalizeArray(["[[Task1]]", "", "[[Task2]]", "   "]);
+      const result = WikiLinkHelpers.normalizeArray([
+        "[[Task1]]",
+        "",
+        "[[Task2]]",
+        "   ",
+      ]);
       expect(result).toEqual(["Task1", "Task2"]);
     });
 
     it("should handle mixed formats in array", () => {
-      const result = WikiLinkHelpers.normalizeArray(["[[Task1]]", "Task2", "  [[Task3]]  "]);
+      const result = WikiLinkHelpers.normalizeArray([
+        "[[Task1]]",
+        "Task2",
+        "  [[Task3]]  ",
+      ]);
       expect(result).toEqual(["Task1", "Task2", "Task3"]);
     });
 
@@ -115,17 +128,28 @@ describe("WikiLinkHelpers", () => {
     });
 
     it("should handle array with null/undefined elements", () => {
-      const result = WikiLinkHelpers.normalizeArray(["[[Task1]]", null as any, "[[Task2]]"]);
+      const result = WikiLinkHelpers.normalizeArray([
+        "[[Task1]]",
+        null as any,
+        "[[Task2]]",
+      ]);
       expect(result).toEqual(["Task1", "Task2"]);
     });
 
     it("should handle nested brackets in array", () => {
-      const result = WikiLinkHelpers.normalizeArray(["[[[[Task1]]]]", "[[Task2]]"]);
+      const result = WikiLinkHelpers.normalizeArray([
+        "[[[[Task1]]]]",
+        "[[Task2]]",
+      ]);
       expect(result).toEqual(["Task1", "Task2"]);
     });
 
     it("should preserve order", () => {
-      const result = WikiLinkHelpers.normalizeArray(["[[C]]", "[[A]]", "[[B]]"]);
+      const result = WikiLinkHelpers.normalizeArray([
+        "[[C]]",
+        "[[A]]",
+        "[[B]]",
+      ]);
       expect(result).toEqual(["C", "A", "B"]);
     });
 
@@ -209,7 +233,10 @@ describe("WikiLinkHelpers", () => {
 
   describe("includes", () => {
     it("should check if array includes value", () => {
-      const result = WikiLinkHelpers.includes(["[[Task1]]", "[[Task2]]", "[[Task3]]"], "Task2");
+      const result = WikiLinkHelpers.includes(
+        ["[[Task1]]", "[[Task2]]", "[[Task3]]"],
+        "Task2",
+      );
       expect(result).toBe(true);
     });
 
@@ -219,7 +246,10 @@ describe("WikiLinkHelpers", () => {
     });
 
     it("should normalize before comparison", () => {
-      const result = WikiLinkHelpers.includes(["[[Task1]]", "[[Task2]]"], "[[Task1]]");
+      const result = WikiLinkHelpers.includes(
+        ["[[Task1]]", "[[Task2]]"],
+        "[[Task1]]",
+      );
       expect(result).toBe(true);
     });
 
@@ -239,12 +269,18 @@ describe("WikiLinkHelpers", () => {
     });
 
     it("should return false when value not found", () => {
-      const result = WikiLinkHelpers.includes(["[[Task1]]", "[[Task2]]"], "Task3");
+      const result = WikiLinkHelpers.includes(
+        ["[[Task1]]", "[[Task2]]"],
+        "Task3",
+      );
       expect(result).toBe(false);
     });
 
     it("should handle whitespace in comparisons", () => {
-      const result = WikiLinkHelpers.includes(["  [[Task1]]  ", "[[Task2]]"], "Task1");
+      const result = WikiLinkHelpers.includes(
+        ["  [[Task1]]  ", "[[Task2]]"],
+        "Task1",
+      );
       expect(result).toBe(true);
     });
 
@@ -254,12 +290,18 @@ describe("WikiLinkHelpers", () => {
     });
 
     it("should handle nested brackets in array", () => {
-      const result = WikiLinkHelpers.includes(["[[[[Task1]]]]", "[[Task2]]"], "Task1");
+      const result = WikiLinkHelpers.includes(
+        ["[[[[Task1]]]]", "[[Task2]]"],
+        "Task1",
+      );
       expect(result).toBe(true);
     });
 
     it("should handle nested brackets in search value", () => {
-      const result = WikiLinkHelpers.includes(["[[Task1]]", "[[Task2]]"], "[[[[Task1]]]]");
+      const result = WikiLinkHelpers.includes(
+        ["[[Task1]]", "[[Task2]]"],
+        "[[[[Task1]]]]",
+      );
       expect(result).toBe(true);
     });
 
@@ -282,19 +324,31 @@ describe("WikiLinkHelpers", () => {
   describe("integration scenarios", () => {
     it("should work together for metadata property matching", () => {
       const metadata = {
-        "ems__Effort_parent": "[[ParentTask]]",
-        "ems__Task_blocks": ["[[Task1]]", "[[Task2]]", "[[Task3]]"],
+        ems__Effort_parent: "[[ParentTask]]",
+        ems__Task_blocks: ["[[Task1]]", "[[Task2]]", "[[Task3]]"],
       };
 
-      const hasParent = WikiLinkHelpers.equals(metadata["ems__Effort_parent"], "ParentTask");
-      const blocksTask2 = WikiLinkHelpers.includes(metadata["ems__Task_blocks"], "Task2");
+      const hasParent = WikiLinkHelpers.equals(
+        metadata["ems__Effort_parent"],
+        "ParentTask",
+      );
+      const blocksTask2 = WikiLinkHelpers.includes(
+        metadata["ems__Task_blocks"],
+        "Task2",
+      );
 
       expect(hasParent).toBe(true);
       expect(blocksTask2).toBe(true);
     });
 
     it("should handle complex normalization scenarios", () => {
-      const rawValues = ["[[[[Task1]]]]", "  [[Task2]]  ", "Task3", "[[]]", null];
+      const rawValues = [
+        "[[[[Task1]]]]",
+        "  [[Task2]]  ",
+        "Task3",
+        "[[]]",
+        null,
+      ];
       const normalized = WikiLinkHelpers.normalizeArray(rawValues);
 
       expect(normalized).toEqual(["Task1", "Task2", "Task3"]);

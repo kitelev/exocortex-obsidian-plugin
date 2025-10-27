@@ -418,7 +418,10 @@ Body`;
       const frontmatter = "ems__Effort_status: doing";
 
       // Act
-      const result = service.getPropertyValue(frontmatter, "ems__Effort_status");
+      const result = service.getPropertyValue(
+        frontmatter,
+        "ems__Effort_status",
+      );
 
       // Assert
       expect(result).toBe("doing");
@@ -462,7 +465,9 @@ ems__Effort_created: 2025-10-24T10:00:00
       const result = service.createFrontmatter(content, properties);
 
       // Assert
-      expect(result).toContain('ems__Effort_status: "[[ems__EffortStatusDraft]]"');
+      expect(result).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusDraft]]"',
+      );
       expect(result).toContain("ems__Effort_created: 2025-10-24T10:00:00");
       expect(result).toContain('ems__Effort_area: "[[MyArea]]"');
       expect(result).toContain("# Task Title");
@@ -513,7 +518,9 @@ Body`;
       );
 
       // Assert
-      expect(content).toContain('ems__Effort_status: "[[ems__EffortStatusDoing]]"');
+      expect(content).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusDoing]]"',
+      );
       // Should only have one status line
       const statusMatches = content.match(/ems__Effort_status:/g);
       expect(statusMatches).toHaveLength(1);
@@ -550,7 +557,11 @@ Body`;
       const content = "---\nfoo: bar\n---\nBody";
 
       // Act
-      const result = service.updateProperty(content, "url", "https://example.com");
+      const result = service.updateProperty(
+        content,
+        "url",
+        "https://example.com",
+      );
 
       // Assert
       expect(result).toContain("url: https://example.com");

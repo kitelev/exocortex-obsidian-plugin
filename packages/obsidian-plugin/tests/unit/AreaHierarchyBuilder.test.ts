@@ -1,4 +1,9 @@
-import { AreaHierarchyBuilder, type AssetRelation, type IVaultAdapter, type IFile } from "@exocortex/core";
+import {
+  AreaHierarchyBuilder,
+  type AssetRelation,
+  type IVaultAdapter,
+  type IFile,
+} from "@exocortex/core";
 
 describe("AreaHierarchyBuilder", () => {
   let builder: AreaHierarchyBuilder;
@@ -31,7 +36,9 @@ describe("AreaHierarchyBuilder", () => {
         path: currentAreaPath,
         stat: { ctime: 0, mtime: 0 },
       });
-      mockVaultAdapter.getFrontmatter.mockReturnValue({ exo__Instance_class: "ems__Task" });
+      mockVaultAdapter.getFrontmatter.mockReturnValue({
+        exo__Instance_class: "ems__Task",
+      });
 
       const result = builder.buildHierarchy(currentAreaPath, []);
 
@@ -78,11 +85,13 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
-        if (path === rootPath) return rootFile;
-        if (path === childPath) return childFile;
-        return null;
-      });
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation(
+        (path: string) => {
+          if (path === rootPath) return rootFile;
+          if (path === childPath) return childFile;
+          return null;
+        },
+      );
 
       mockVaultAdapter.getAllFiles.mockReturnValue([rootFile, childFile]);
 
@@ -147,16 +156,22 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
-        const fileMap: Record<string, any> = {
-          [rootPath]: rootFile,
-          [childPath]: childFile,
-          [grandchildPath]: grandchildFile,
-        };
-        return fileMap[path] || null;
-      });
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation(
+        (path: string) => {
+          const fileMap: Record<string, any> = {
+            [rootPath]: rootFile,
+            [childPath]: childFile,
+            [grandchildPath]: grandchildFile,
+          };
+          return fileMap[path] || null;
+        },
+      );
 
-      mockVaultAdapter.getAllFiles.mockReturnValue([rootFile, childFile, grandchildFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([
+        rootFile,
+        childFile,
+        grandchildFile,
+      ]);
 
       mockVaultAdapter.getFrontmatter.mockImplementation((file: any) => {
         if (file.path === rootPath) {
@@ -229,10 +244,12 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
-        if (path === rootPath) return rootFile;
-        return null;
-      });
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation(
+        (path: string) => {
+          if (path === rootPath) return rootFile;
+          return null;
+        },
+      );
 
       mockVaultAdapter.getAllFiles.mockReturnValue([rootFile, childFile]);
 
@@ -289,13 +306,15 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
-        const fileMap: Record<string, any> = {
-          [area1Path]: area1File,
-          [area2Path]: area2File,
-        };
-        return fileMap[path] || null;
-      });
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation(
+        (path: string) => {
+          const fileMap: Record<string, any> = {
+            [area1Path]: area1File,
+            [area2Path]: area2File,
+          };
+          return fileMap[path] || null;
+        },
+      );
 
       mockVaultAdapter.getAllFiles.mockReturnValue([area1File, area2File]);
 
@@ -359,14 +378,21 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
-        if (path === rootPath) {
-          return rootFile;
-        }
-        return null;
-      });
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation(
+        (path: string) => {
+          if (path === rootPath) {
+            return rootFile;
+          }
+          return null;
+        },
+      );
 
-      mockVaultAdapter.getAllFiles.mockReturnValue([rootFile, child1File, child2File, child3File]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([
+        rootFile,
+        child1File,
+        child2File,
+        child3File,
+      ]);
 
       mockVaultAdapter.getFrontmatter.mockImplementation((file: any) => {
         if (file.path === rootPath) {
@@ -455,12 +481,14 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
-        if (path === rootPath) {
-          return rootFile;
-        }
-        return null;
-      });
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation(
+        (path: string) => {
+          if (path === rootPath) {
+            return rootFile;
+          }
+          return null;
+        },
+      );
 
       mockVaultAdapter.getAllFiles.mockReturnValue([rootFile, childFile]);
 
@@ -515,13 +543,15 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
-        const fileMap: Record<string, any> = {
-          [rootPath]: rootFile,
-          [childPath]: childFile,
-        };
-        return fileMap[path] || null;
-      });
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation(
+        (path: string) => {
+          const fileMap: Record<string, any> = {
+            [rootPath]: rootFile,
+            [childPath]: childFile,
+          };
+          return fileMap[path] || null;
+        },
+      );
 
       mockVaultAdapter.getAllFiles.mockReturnValue([rootFile, childFile]);
 

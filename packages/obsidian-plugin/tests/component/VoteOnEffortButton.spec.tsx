@@ -5,7 +5,9 @@ import { TFile } from "obsidian";
 const mockFile = { path: "test-task.md", basename: "test-task" } as TFile;
 
 test.describe("VoteOnEffortButton Component", () => {
-  test("should render button for Task with Backlog status", async ({  mount }) => {
+  test("should render button for Task with Backlog status", async ({
+    mount,
+  }) => {
     const mockOnVote = async () => {};
 
     const component = await mount(
@@ -22,7 +24,9 @@ test.describe("VoteOnEffortButton Component", () => {
     await expect(component).toHaveText("Vote");
   });
 
-  test("should render button for Project with ToDo status", async ({ mount }) => {
+  test("should render button for Project with ToDo status", async ({
+    mount,
+  }) => {
     const mockOnVote = async () => {};
 
     const component = await mount(
@@ -55,7 +59,9 @@ test.describe("VoteOnEffortButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should NOT render button for non-effort asset (Area)", async ({ mount }) => {
+  test("should NOT render button for non-effort asset (Area)", async ({
+    mount,
+  }) => {
     const mockOnVote = async () => {};
 
     const component = await mount(
@@ -190,7 +196,9 @@ test.describe("VoteOnEffortButton Component", () => {
     await expect(component).toHaveClass("exocortex-vote-btn");
   });
 
-  test("should prevent default event when button is clicked", async ({ mount }) => {
+  test("should prevent default event when button is clicked", async ({
+    mount,
+  }) => {
     const mockOnVote = async () => {};
 
     const component = await mount(
@@ -220,7 +228,10 @@ test.describe("VoteOnEffortButton Component", () => {
       />,
     );
 
-    await expect(component).toHaveAttribute("title", "Vote on this effort (current votes: 10)");
+    await expect(component).toHaveAttribute(
+      "title",
+      "Vote on this effort (current votes: 10)",
+    );
   });
 
   test("should show zero votes in tooltip when no votes", async ({ mount }) => {
@@ -236,7 +247,10 @@ test.describe("VoteOnEffortButton Component", () => {
       />,
     );
 
-    await expect(component).toHaveAttribute("title", "Vote on this effort (current votes: 0)");
+    await expect(component).toHaveAttribute(
+      "title",
+      "Vote on this effort (current votes: 0)",
+    );
   });
 
   test("should handle large vote counts", async ({ mount }) => {
@@ -272,7 +286,11 @@ test.describe("VoteOnEffortButton Component", () => {
   });
 
   test("should handle missing parent path", async ({ mount }) => {
-    const mockFileWithoutParent = { path: "test.md", basename: "test", parent: null } as TFile;
+    const mockFileWithoutParent = {
+      path: "test.md",
+      basename: "test",
+      parent: null,
+    } as TFile;
     const mockOnVote = async () => {};
 
     const component = await mount(

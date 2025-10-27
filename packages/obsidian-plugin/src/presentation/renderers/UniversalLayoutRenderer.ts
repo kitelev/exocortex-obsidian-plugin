@@ -1,6 +1,6 @@
 import { MarkdownPostProcessorContext, TFile, Keymap } from "obsidian";
-import { ILogger } from '../../adapters/logging/ILogger';
-import { LoggerFactory } from '../../adapters/logging/LoggerFactory';
+import { ILogger } from "../../adapters/logging/ILogger";
+import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
 import React from "react";
 import { ReactRenderer } from "../utils/ReactRenderer";
 import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
@@ -8,26 +8,26 @@ import { AssetRelationsTable } from "../components/AssetRelationsTable";
 import { AssetPropertiesTable } from "../components/AssetPropertiesTable";
 import { ActionButtonsGroup } from "../components/ActionButtonsGroup";
 import { AreaHierarchyTree } from "../components/AreaHierarchyTree";
-import { AreaHierarchyBuilder } from '@exocortex/core';
-import { TaskCreationService } from '@exocortex/core';
-import { ProjectCreationService } from '@exocortex/core';
-import { AreaCreationService } from '@exocortex/core';
-import { ConceptCreationService } from '@exocortex/core';
-import { TaskStatusService } from '@exocortex/core';
-import { PropertyCleanupService } from '@exocortex/core';
-import { FolderRepairService } from '@exocortex/core';
-import { RenameToUidService } from '@exocortex/core';
-import { EffortVotingService } from '@exocortex/core';
-import { LabelToAliasService } from '@exocortex/core';
-import { BacklinksCacheManager } from '../../adapters/caching/BacklinksCacheManager';
-import { EventListenerManager } from '../../adapters/events/EventListenerManager';
-import { MetadataHelpers } from '@exocortex/core';
-import { AssetClass } from '@exocortex/core';
-import { MetadataExtractor } from '@exocortex/core';
+import { AreaHierarchyBuilder } from "@exocortex/core";
+import { TaskCreationService } from "@exocortex/core";
+import { ProjectCreationService } from "@exocortex/core";
+import { AreaCreationService } from "@exocortex/core";
+import { ConceptCreationService } from "@exocortex/core";
+import { TaskStatusService } from "@exocortex/core";
+import { PropertyCleanupService } from "@exocortex/core";
+import { FolderRepairService } from "@exocortex/core";
+import { RenameToUidService } from "@exocortex/core";
+import { EffortVotingService } from "@exocortex/core";
+import { LabelToAliasService } from "@exocortex/core";
+import { BacklinksCacheManager } from "../../adapters/caching/BacklinksCacheManager";
+import { EventListenerManager } from "../../adapters/events/EventListenerManager";
+import { MetadataHelpers } from "@exocortex/core";
+import { AssetClass } from "@exocortex/core";
+import { MetadataExtractor } from "@exocortex/core";
 import { ButtonGroupsBuilder } from "../builders/ButtonGroupsBuilder";
 import { DailyTasksRenderer } from "./DailyTasksRenderer";
 import { DailyProjectsRenderer } from "./DailyProjectsRenderer";
-import { ObsidianVaultAdapter } from '../../adapters/ObsidianVaultAdapter';
+import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 
 /**
  * UniversalLayout configuration options
@@ -45,7 +45,7 @@ interface AssetRelation {
   file: TFile;
   path: string;
   title: string;
-   
+
   metadata: Record<string, any>;
   propertyName?: string; // The property through which this asset references the current one
   isBodyLink: boolean; // True if link is in body, not frontmatter
@@ -58,7 +58,7 @@ interface AssetRelation {
  * Renderer for UniversalLayout view type
  * Implements Assets Relations - showing assets grouped by the property through which they reference the current asset
  */
- 
+
 type ObsidianApp = any;
 
 export class UniversalLayoutRenderer {
@@ -84,7 +84,11 @@ export class UniversalLayoutRenderer {
     this.reactRenderer = new ReactRenderer();
     this.eventListenerManager = new EventListenerManager();
     this.backlinksCacheManager = new BacklinksCacheManager(this.app);
-    this.vaultAdapter = new ObsidianVaultAdapter(this.app.vault, this.app.metadataCache, this.app);
+    this.vaultAdapter = new ObsidianVaultAdapter(
+      this.app.vault,
+      this.app.metadataCache,
+      this.app,
+    );
     this.metadataExtractor = new MetadataExtractor(this.vaultAdapter);
     this.taskCreationService = new TaskCreationService(this.vaultAdapter);
     this.projectCreationService = new ProjectCreationService(this.vaultAdapter);
@@ -147,7 +151,6 @@ export class UniversalLayoutRenderer {
   private effortVotingService: EffortVotingService;
   private labelToAliasService: LabelToAliasService;
 
-
   public invalidateBacklinksCache(): void {
     this.backlinksCacheManager.invalidate();
   }
@@ -185,7 +188,9 @@ export class UniversalLayoutRenderer {
       // Render action buttons with semantic grouping
       const buttonGroups = await this.buttonGroupsBuilder.build(currentFile);
       if (buttonGroups.length > 0) {
-        const buttonsContainer = el.createDiv({ cls: "exocortex-buttons-section" });
+        const buttonsContainer = el.createDiv({
+          cls: "exocortex-buttons-section",
+        });
         this.reactRenderer.render(
           buttonsContainer,
           React.createElement(ActionButtonsGroup, { groups: buttonGroups }),
@@ -214,7 +219,8 @@ export class UniversalLayoutRenderer {
       );
     } catch (error) {
       this.logger.error("Failed to render UniversalLayout", { error });
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.renderError(el, errorMessage);
     }
   }
@@ -228,14 +234,19 @@ export class UniversalLayoutRenderer {
       return;
     }
 
-    const scrollParent = this.rootContainer.closest('.cm-scroller')
-      || this.rootContainer.closest('.markdown-preview-view')
-      || this.rootContainer.closest('.workspace-leaf-content');
+    const scrollParent =
+      this.rootContainer.closest(".cm-scroller") ||
+      this.rootContainer.closest(".markdown-preview-view") ||
+      this.rootContainer.closest(".workspace-leaf-content");
     const scrollTop = scrollParent?.scrollTop || 0;
 
     const source = this.rootContainer.getAttribute("data-source") || "";
     this.rootContainer.empty();
-    await this.render(source, this.rootContainer, {} as MarkdownPostProcessorContext);
+    await this.render(
+      source,
+      this.rootContainer,
+      {} as MarkdownPostProcessorContext,
+    );
 
     setTimeout(() => {
       if (scrollParent) {
@@ -276,10 +287,8 @@ export class UniversalLayoutRenderer {
           continue;
         }
 
-        const referencingProperties = MetadataHelpers.findAllReferencingProperties(
-          metadata,
-          file.basename,
-        );
+        const referencingProperties =
+          MetadataHelpers.findAllReferencingProperties(metadata, file.basename);
 
         // Enrich metadata with resolved label (asset's own or prototype's)
         const enrichedMetadata = { ...metadata };
@@ -356,12 +365,14 @@ export class UniversalLayoutRenderer {
         metadata,
         onLinkClick: async (path: string, event: React.MouseEvent) => {
           // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
-          const isModPressed = Keymap.isModEvent(event.nativeEvent as MouseEvent);
+          const isModPressed = Keymap.isModEvent(
+            event.nativeEvent as MouseEvent,
+          );
 
           if (isModPressed) {
             // Open in new tab - get a new leaf and open there
-            const leaf = this.app.workspace.getLeaf('tab');
-            await leaf.openLinkText(path, '');
+            const leaf = this.app.workspace.getLeaf("tab");
+            await leaf.openLinkText(path, "");
           } else {
             // Open in current tab
             await this.app.workspace.openLinkText(path, "", false);
@@ -396,14 +407,18 @@ export class UniversalLayoutRenderer {
       return;
     }
 
-    const sectionContainer = el.createDiv({ cls: "exocortex-area-tree-section" });
+    const sectionContainer = el.createDiv({
+      cls: "exocortex-area-tree-section",
+    });
 
     sectionContainer.createEl("h3", {
       text: "Area tree",
       cls: "exocortex-section-header",
     });
 
-    const treeContainer = sectionContainer.createDiv({ cls: "exocortex-area-tree-container" });
+    const treeContainer = sectionContainer.createDiv({
+      cls: "exocortex-area-tree-container",
+    });
 
     this.reactRenderer.render(
       treeContainer,
@@ -433,9 +448,13 @@ export class UniversalLayoutRenderer {
     const instanceClass = metadata.exo__Instance_class || "";
     if (Array.isArray(instanceClass)) {
       const firstClass = instanceClass[0] || "";
-      return String(firstClass).replace(/^\[\[|\]\]$/g, "").trim();
+      return String(firstClass)
+        .replace(/^\[\[|\]\]$/g, "")
+        .trim();
     }
-    return String(instanceClass).replace(/^\[\[|\]\]$/g, "").trim();
+    return String(instanceClass)
+      .replace(/^\[\[|\]\]$/g, "")
+      .trim();
   }
 
   /**
@@ -459,17 +478,19 @@ export class UniversalLayoutRenderer {
         sortOrder: config.sortOrder || "asc",
         showProperties: config.showProperties || [],
         groupSpecificProperties: {
-          "ems__Effort_parent": ["ems__Effort_status"],
-          "ems__Effort_area": ["ems__Effort_status"],
+          ems__Effort_parent: ["ems__Effort_status"],
+          ems__Effort_area: ["ems__Effort_status"],
         },
         onAssetClick: async (path: string, event: React.MouseEvent) => {
           // Use Obsidian's Keymap.isModEvent to detect Cmd/Ctrl properly
-          const isModPressed = Keymap.isModEvent(event.nativeEvent as MouseEvent);
+          const isModPressed = Keymap.isModEvent(
+            event.nativeEvent as MouseEvent,
+          );
 
           if (isModPressed) {
             // Open in new tab - get a new leaf and open there
-            const leaf = this.app.workspace.getLeaf('tab');
-            await leaf.openLinkText(path, '');
+            const leaf = this.app.workspace.getLeaf("tab");
+            await leaf.openLinkText(path, "");
           } else {
             // Open in current tab
             await this.app.workspace.openLinkText(path, "", false);
@@ -531,8 +552,8 @@ export class UniversalLayoutRenderer {
     // Use getFirstLinkpathDest to resolve file regardless of vault location
     let file = this.app.metadataCache.getFirstLinkpathDest(path, "");
 
-    if (!file && !path.endsWith('.md')) {
-      file = this.app.metadataCache.getFirstLinkpathDest(path + '.md', "");
+    if (!file && !path.endsWith(".md")) {
+      file = this.app.metadataCache.getFirstLinkpathDest(path + ".md", "");
     }
 
     if (!(file instanceof TFile)) {
@@ -552,19 +573,28 @@ export class UniversalLayoutRenderer {
     const prototypeRef = metadata.ems__Effort_prototype;
     if (prototypeRef) {
       // Extract clean path from wiki-link format [[path]] or plain path
-      const prototypePath = typeof prototypeRef === "string"
-        ? prototypeRef.replace(/^\[\[|\]\]$/g, "").trim()
-        : null;
+      const prototypePath =
+        typeof prototypeRef === "string"
+          ? prototypeRef.replace(/^\[\[|\]\]$/g, "").trim()
+          : null;
 
       if (prototypePath) {
         // Use getFirstLinkpathDest to resolve prototype file regardless of vault location
-        const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
+        const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(
+          prototypePath,
+          "",
+        );
         if (prototypeFile instanceof TFile) {
-          const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile);
+          const prototypeCache =
+            this.app.metadataCache.getFileCache(prototypeFile);
           const prototypeMetadata = prototypeCache?.frontmatter || {};
           const prototypeLabel = prototypeMetadata.exo__Asset_label;
 
-          if (prototypeLabel && typeof prototypeLabel === "string" && prototypeLabel.trim() !== "") {
+          if (
+            prototypeLabel &&
+            typeof prototypeLabel === "string" &&
+            prototypeLabel.trim() !== ""
+          ) {
             return prototypeLabel;
           }
         }
@@ -593,7 +623,10 @@ export class UniversalLayoutRenderer {
     return null;
   }
 
-  private getEffortArea(metadata: Record<string, unknown>, visited: Set<string> = new Set()): string | null {
+  private getEffortArea(
+    metadata: Record<string, unknown>,
+    visited: Set<string> = new Set(),
+  ): string | null {
     if (!metadata || typeof metadata !== "object") {
       return null;
     }
@@ -609,9 +642,13 @@ export class UniversalLayoutRenderer {
 
     if (prototypePath && !visited.has(prototypePath)) {
       visited.add(prototypePath);
-      const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(prototypePath, "");
+      const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(
+        prototypePath,
+        "",
+      );
       if (prototypeFile instanceof TFile) {
-        const prototypeCache = this.app.metadataCache.getFileCache(prototypeFile);
+        const prototypeCache =
+          this.app.metadataCache.getFileCache(prototypeFile);
         const prototypeMetadata = prototypeCache?.frontmatter || {};
 
         const resolvedArea = this.getEffortArea(prototypeMetadata, visited);
@@ -626,7 +663,10 @@ export class UniversalLayoutRenderer {
 
     if (parentPath && !visited.has(parentPath)) {
       visited.add(parentPath);
-      const parentFile = this.app.metadataCache.getFirstLinkpathDest(parentPath, "");
+      const parentFile = this.app.metadataCache.getFirstLinkpathDest(
+        parentPath,
+        "",
+      );
       if (parentFile instanceof TFile) {
         const parentCache = this.app.metadataCache.getFileCache(parentFile);
         const parentMetadata = parentCache?.frontmatter || {};

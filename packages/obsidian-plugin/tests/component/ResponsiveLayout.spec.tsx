@@ -1,29 +1,35 @@
-import { test, expect } from '@playwright/experimental-ct-react';
-import { AssetRelationsTable, AssetRelation } from '../../src/presentation/components/AssetRelationsTable';
-import { DailyTasksTable, DailyTask } from '../../src/presentation/components/DailyTasksTable';
+import { test, expect } from "@playwright/experimental-ct-react";
+import {
+  AssetRelationsTable,
+  AssetRelation,
+} from "../../src/presentation/components/AssetRelationsTable";
+import {
+  DailyTasksTable,
+  DailyTask,
+} from "../../src/presentation/components/DailyTasksTable";
 
-test.describe('Responsive Layout CSS Tests', () => {
+test.describe("Responsive Layout CSS Tests", () => {
   const mockRelations: AssetRelation[] = [
     {
-      path: 'tasks/task1.md',
-      title: 'Task 1',
-      propertyName: 'assignedTo',
+      path: "tasks/task1.md",
+      title: "Task 1",
+      propertyName: "assignedTo",
       isBodyLink: false,
       created: Date.now(),
       modified: Date.now(),
-      metadata: { exo__Instance_class: 'ems__Task' },
+      metadata: { exo__Instance_class: "ems__Task" },
     },
   ];
 
   const mockTasks: DailyTask[] = [
     {
-      file: { path: 'tasks/task1.md', basename: 'task1' },
-      path: 'tasks/task1.md',
-      title: 'Task 1',
-      label: 'Task 1',
-      startTime: '09:00',
-      endTime: '10:00',
-      status: 'ems__EffortStatusToDo',
+      file: { path: "tasks/task1.md", basename: "task1" },
+      path: "tasks/task1.md",
+      title: "Task 1",
+      label: "Task 1",
+      startTime: "09:00",
+      endTime: "10:00",
+      status: "ems__EffortStatusToDo",
       metadata: {},
       isDone: false,
       isTrashed: false,
@@ -32,25 +38,33 @@ test.describe('Responsive Layout CSS Tests', () => {
     },
   ];
 
-  test('AssetRelationsTable should render tables correctly', async ({ mount }) => {
-    const component = await mount(<AssetRelationsTable relations={mockRelations} />);
+  test("AssetRelationsTable should render tables correctly", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <AssetRelationsTable relations={mockRelations} />,
+    );
 
-    const table = component.locator('.exocortex-relation-table, .exocortex-relations-table').first();
+    const table = component
+      .locator(".exocortex-relation-table, .exocortex-relations-table")
+      .first();
     await expect(table).toBeVisible();
 
-    await expect(component.locator('text=Task 1')).toBeVisible();
+    await expect(component.locator("text=Task 1")).toBeVisible();
   });
 
-  test('DailyTasksTable should render correctly', async ({ mount }) => {
+  test("DailyTasksTable should render correctly", async ({ mount }) => {
     const component = await mount(<DailyTasksTable tasks={mockTasks} />);
 
-    const table = component.locator('table').first();
+    const table = component.locator("table").first();
     await expect(table).toBeVisible();
 
-    await expect(component.locator('text=Task 1')).toBeVisible();
+    await expect(component.locator("text=Task 1")).toBeVisible();
   });
 
-  test('Layout section CSS should have width 100% not max-width 900px', async ({ page }) => {
+  test("Layout section CSS should have width 100% not max-width 900px", async ({
+    page,
+  }) => {
     await page.addStyleTag({
       content: `
         .exocortex-properties-section,
@@ -59,7 +73,7 @@ test.describe('Responsive Layout CSS Tests', () => {
           width: 100%;
           margin-bottom: 32px;
         }
-      `
+      `,
     });
 
     await page.setContent(`
@@ -68,9 +82,9 @@ test.describe('Responsive Layout CSS Tests', () => {
       <div class="exocortex-assets-relations">Test</div>
     `);
 
-    const propertiesSection = page.locator('.exocortex-properties-section');
-    const dailyTasksSection = page.locator('.exocortex-daily-tasks-section');
-    const assetsRelations = page.locator('.exocortex-assets-relations');
+    const propertiesSection = page.locator(".exocortex-properties-section");
+    const dailyTasksSection = page.locator(".exocortex-daily-tasks-section");
+    const assetsRelations = page.locator(".exocortex-assets-relations");
 
     const propsStyle = await propertiesSection.evaluate((el) => {
       const style = window.getComputedStyle(el);
@@ -87,12 +101,14 @@ test.describe('Responsive Layout CSS Tests', () => {
       return { width: style.width, maxWidth: style.maxWidth };
     });
 
-    expect(propsStyle.maxWidth).not.toBe('900px');
-    expect(tasksStyle.maxWidth).not.toBe('900px');
-    expect(relationsStyle.maxWidth).not.toBe('900px');
+    expect(propsStyle.maxWidth).not.toBe("900px");
+    expect(tasksStyle.maxWidth).not.toBe("900px");
+    expect(relationsStyle.maxWidth).not.toBe("900px");
   });
 
-  test('Action buttons container CSS should have width 100%', async ({ page }) => {
+  test("Action buttons container CSS should have width 100%", async ({
+    page,
+  }) => {
     await page.addStyleTag({
       content: `
         .exocortex-action-buttons-container {
@@ -103,7 +119,7 @@ test.describe('Responsive Layout CSS Tests', () => {
           padding: 20px;
           width: 100%;
         }
-      `
+      `,
     });
 
     await page.setContent(`
@@ -112,12 +128,12 @@ test.describe('Responsive Layout CSS Tests', () => {
       </div>
     `);
 
-    const container = page.locator('.exocortex-action-buttons-container');
+    const container = page.locator(".exocortex-action-buttons-container");
     const style = await container.evaluate((el) => {
       const style = window.getComputedStyle(el);
       return { width: style.width, maxWidth: style.maxWidth };
     });
 
-    expect(style.maxWidth).not.toBe('900px');
+    expect(style.maxWidth).not.toBe("900px");
   });
 });

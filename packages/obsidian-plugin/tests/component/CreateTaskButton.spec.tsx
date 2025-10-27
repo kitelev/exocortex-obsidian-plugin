@@ -16,7 +16,9 @@ test.describe("CreateTaskButton Component", () => {
     exo__Asset_uid: "area-123",
   };
 
-  test("should render button for Area asset with [[ems__Area]]", async ({ mount }) => {
+  test("should render button for Area asset with [[ems__Area]]", async ({
+    mount,
+  }) => {
     const component = await mount(
       <CreateTaskButton
         instanceClass="[[ems__Area]]"
@@ -31,7 +33,9 @@ test.describe("CreateTaskButton Component", () => {
     await expect(component).toHaveText("Create Task");
   });
 
-  test("should render button for Area asset with ems__Area (no brackets)", async ({ mount }) => {
+  test("should render button for Area asset with ems__Area (no brackets)", async ({
+    mount,
+  }) => {
     const component = await mount(
       <CreateTaskButton
         instanceClass="ems__Area"
@@ -45,7 +49,9 @@ test.describe("CreateTaskButton Component", () => {
     await expect(component).toBeVisible();
   });
 
-  test("should render button for Project asset with [[ems__Project]]", async ({ mount }) => {
+  test("should render button for Project asset with [[ems__Project]]", async ({
+    mount,
+  }) => {
     const component = await mount(
       <CreateTaskButton
         instanceClass="[[ems__Project]]"
@@ -76,7 +82,9 @@ test.describe("CreateTaskButton Component", () => {
     await expect(component).toBeVisible();
   });
 
-  test("should NOT render button for non-Area/Project asset (ems__Task)", async ({ mount }) => {
+  test("should NOT render button for non-Area/Project asset (ems__Task)", async ({
+    mount,
+  }) => {
     const component = await mount(
       <CreateTaskButton
         instanceClass="[[ems__Task]]"
@@ -90,7 +98,9 @@ test.describe("CreateTaskButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should NOT render button when instanceClass is null", async ({ mount }) => {
+  test("should NOT render button when instanceClass is null", async ({
+    mount,
+  }) => {
     const component = await mount(
       <CreateTaskButton
         instanceClass={null}
@@ -127,5 +137,4 @@ test.describe("CreateTaskButton Component", () => {
     // Verify callback was called
     expect(wasClicked).toBe(true);
   });
-
 });

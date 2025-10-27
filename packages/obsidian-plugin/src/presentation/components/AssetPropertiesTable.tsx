@@ -30,12 +30,12 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
     if (pipeIndex !== -1) {
       return {
         target: content.substring(0, pipeIndex).trim(),
-        alias: content.substring(pipeIndex + 1).trim()
+        alias: content.substring(pipeIndex + 1).trim(),
       };
     }
 
     return {
-      target: content.trim()
+      target: content.trim(),
     };
   };
 
@@ -62,7 +62,7 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
               e.stopPropagation();
               onLinkClick?.(parsed.target, e);
             }}
-            style={{ cursor: 'pointer' }}
+            style={{ cursor: "pointer" }}
           >
             {displayText}
           </a>

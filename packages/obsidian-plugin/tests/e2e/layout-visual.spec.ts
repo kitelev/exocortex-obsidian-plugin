@@ -3,11 +3,15 @@ import { test, expect } from "@playwright/test";
 test.describe("Layout Visual Tests", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("http://localhost:8080");
-    await page.waitForSelector(".exocortex-action-buttons-container", { timeout: 10000 });
+    await page.waitForSelector(".exocortex-action-buttons-container", {
+      timeout: 10000,
+    });
   });
 
   test("should render button groups with proper spacing", async ({ page }) => {
-    const buttonsContainer = page.locator(".exocortex-action-buttons-container");
+    const buttonsContainer = page.locator(
+      ".exocortex-action-buttons-container",
+    );
     await expect(buttonsContainer).toBeVisible();
 
     const containerBox = await buttonsContainer.boundingBox();
@@ -50,7 +54,9 @@ test.describe("Layout Visual Tests", () => {
   });
 
   test("should not overlap sections", async ({ page }) => {
-    const buttonsContainer = page.locator(".exocortex-action-buttons-container");
+    const buttonsContainer = page.locator(
+      ".exocortex-action-buttons-container",
+    );
     const propertiesSection = page.locator(".exocortex-properties-section");
 
     const buttonsVisible = await buttonsContainer.isVisible();
@@ -63,11 +69,15 @@ test.describe("Layout Visual Tests", () => {
       expect(buttonsBox).toBeTruthy();
       expect(propsBox).toBeTruthy();
 
-      expect(buttonsBox!.y + buttonsBox!.height).toBeLessThanOrEqual(propsBox!.y);
+      expect(buttonsBox!.y + buttonsBox!.height).toBeLessThanOrEqual(
+        propsBox!.y,
+      );
     }
   });
 
-  test("should have consistent button widths in same group", async ({ page }) => {
+  test("should have consistent button widths in same group", async ({
+    page,
+  }) => {
     const buttonGroups = page.locator(".exocortex-button-group");
     const groupCount = await buttonGroups.count();
 
@@ -113,7 +123,9 @@ test.describe("Layout Visual Tests", () => {
     expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 1);
   });
 
-  test("should render layout sections with full width (not fixed 900px)", async ({ page }) => {
+  test("should render layout sections with full width (not fixed 900px)", async ({
+    page,
+  }) => {
     const sections = [
       ".exocortex-properties-section",
       ".exocortex-daily-tasks-section",
@@ -139,7 +151,9 @@ test.describe("Layout Visual Tests", () => {
     }
   });
 
-  test("should render action buttons container with full width", async ({ page }) => {
+  test("should render action buttons container with full width", async ({
+    page,
+  }) => {
     const container = page.locator(".exocortex-action-buttons-container");
     const isVisible = await container.isVisible();
 
@@ -156,7 +170,9 @@ test.describe("Layout Visual Tests", () => {
     }
   });
 
-  test("should have tables that stretch to container width", async ({ page }) => {
+  test("should have tables that stretch to container width", async ({
+    page,
+  }) => {
     const tables = page.locator(".exocortex-relation-table, .exocortex-table");
     const count = await tables.count();
 

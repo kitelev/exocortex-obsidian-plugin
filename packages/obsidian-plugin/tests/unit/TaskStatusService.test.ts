@@ -25,7 +25,9 @@ describe("TaskStatusService", () => {
 
       expect(mockVault.modify).toHaveBeenCalledWith(
         mockFile,
-        expect.stringContaining('ems__Effort_status: "[[ems__EffortStatusDone]]"'),
+        expect.stringContaining(
+          'ems__Effort_status: "[[ems__EffortStatusDone]]"',
+        ),
       );
       expect(mockVault.modify).toHaveBeenCalledWith(
         mockFile,
@@ -76,7 +78,9 @@ Task content`;
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
       expect(modifiedContent).toContain("ems__Effort_endTimestamp:");
-      expect(modifiedContent).toMatch(/ems__Effort_endTimestamp: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+      expect(modifiedContent).toMatch(
+        /ems__Effort_endTimestamp: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
+      );
     });
 
     it("should update existing timestamp", async () => {
@@ -97,7 +101,9 @@ Task content`;
 
       expect(modifiedContent).toContain("ems__Effort_endTimestamp:");
       expect(modifiedContent).not.toContain("2025-01-01T10:00:00");
-      expect(modifiedContent).toMatch(/ems__Effort_endTimestamp: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+      expect(modifiedContent).toMatch(
+        /ems__Effort_endTimestamp: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
+      );
     });
 
     it("should preserve other frontmatter properties", async () => {
@@ -118,7 +124,9 @@ Task content`;
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
       expect(modifiedContent).toContain("exo__Asset_uid: test-uuid-123");
-      expect(modifiedContent).toContain('exo__Asset_isDefinedBy: "[[Ontology/EMS]]"');
+      expect(modifiedContent).toContain(
+        'exo__Asset_isDefinedBy: "[[Ontology/EMS]]"',
+      );
       expect(modifiedContent).toContain('ems__Effort_area: "[[Development]]"');
     });
 
@@ -224,7 +232,9 @@ Content`;
 
       expect(mockVault.modify).toHaveBeenCalledWith(
         mockFile,
-        expect.stringContaining('ems__Effort_status: "[[ems__EffortStatusTrashed]]"'),
+        expect.stringContaining(
+          'ems__Effort_status: "[[ems__EffortStatusTrashed]]"',
+        ),
       );
       expect(mockVault.modify).toHaveBeenCalledWith(
         mockFile,
@@ -252,7 +262,9 @@ Task content`;
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusTrashed]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusTrashed]]"',
+      );
       expect(modifiedContent).toContain("ems__Effort_resolutionTimestamp:");
       expect(modifiedContent).not.toContain("ems__EffortStatusDoing");
     });
@@ -271,7 +283,9 @@ ems__Effort_endTimestamp: 2025-10-12T10:30:00
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusTrashed]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusTrashed]]"',
+      );
       expect(modifiedContent).toContain("ems__Effort_resolutionTimestamp:");
       const oldEndTimestamp = "ems__Effort_endTimestamp: 2025-10-12T10:30:00";
       expect(modifiedContent).toContain(oldEndTimestamp);
@@ -313,8 +327,12 @@ Task content`;
       expect(modifiedContent).toContain("ems__Effort_endTimestamp:");
       expect(modifiedContent).toContain("ems__Effort_resolutionTimestamp:");
       expect(modifiedContent).not.toContain("2025-01-01T10:00:00");
-      expect(modifiedContent).toMatch(/ems__Effort_endTimestamp: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
-      expect(modifiedContent).toMatch(/ems__Effort_resolutionTimestamp: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+      expect(modifiedContent).toMatch(
+        /ems__Effort_endTimestamp: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
+      );
+      expect(modifiedContent).toMatch(
+        /ems__Effort_resolutionTimestamp: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
+      );
     });
 
     it("should add timestamps when only one exists", async () => {
@@ -350,8 +368,12 @@ Content`;
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
-      expect(modifiedContent).toContain("ems__Effort_endTimestamp: 2025-05-15T14:30:45");
-      expect(modifiedContent).toContain("ems__Effort_resolutionTimestamp: 2025-05-15T14:30:45");
+      expect(modifiedContent).toContain(
+        "ems__Effort_endTimestamp: 2025-05-15T14:30:45",
+      );
+      expect(modifiedContent).toContain(
+        "ems__Effort_resolutionTimestamp: 2025-05-15T14:30:45",
+      );
     });
 
     it("should preserve other frontmatter properties", async () => {
@@ -372,7 +394,9 @@ Task content`;
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
       expect(modifiedContent).toContain("exo__Asset_uid: test-uuid-456");
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusDone]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusDone]]"',
+      );
       expect(modifiedContent).toContain('ems__Effort_area: "[[Development]]"');
     });
 
@@ -442,7 +466,9 @@ Task content`;
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusBacklog]]"',
+      );
       expect(modifiedContent).not.toContain("ems__EffortStatusDoing");
     });
 
@@ -461,7 +487,9 @@ Project content`;
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusToDo]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusToDo]]"',
+      );
       expect(modifiedContent).not.toContain("ems__EffortStatusDoing");
     });
 
@@ -480,7 +508,9 @@ Task content`;
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusDraft]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusDraft]]"',
+      );
       expect(modifiedContent).not.toContain("ems__EffortStatusBacklog");
     });
 
@@ -550,7 +580,9 @@ Task content`;
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusDoing]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusDoing]]"',
+      );
       expect(modifiedContent).not.toContain("ems__Effort_endTimestamp");
       expect(modifiedContent).not.toContain("ems__Effort_resolutionTimestamp");
     });
@@ -571,7 +603,9 @@ Task content`;
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusBacklog]]"',
+      );
       expect(modifiedContent).not.toContain("ems__Effort_startTimestamp");
     });
 
@@ -590,7 +624,9 @@ Project content`;
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusBacklog]]"',
+      );
       expect(modifiedContent).not.toContain("ems__EffortStatusAnalysis");
     });
 
@@ -609,7 +645,9 @@ Project content`;
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusAnalysis]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusAnalysis]]"',
+      );
       expect(modifiedContent).not.toContain("ems__EffortStatusToDo");
     });
   });
@@ -623,7 +661,9 @@ Project content`;
       await service.setDraftStatus(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusDraft]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusDraft]]"',
+      );
     });
   });
 
@@ -636,7 +676,9 @@ Project content`;
       await service.moveToBacklog(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusBacklog]]"',
+      );
     });
   });
 
@@ -649,7 +691,9 @@ Project content`;
       await service.moveToAnalysis(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusAnalysis]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusAnalysis]]"',
+      );
     });
   });
 
@@ -662,7 +706,9 @@ Project content`;
       await service.moveToToDo(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusToDo]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusToDo]]"',
+      );
     });
   });
 
@@ -675,9 +721,13 @@ Project content`;
       await service.startEffort(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusDoing]]"');
-      expect(modifiedContent).toContain('ems__Effort_startTimestamp:');
-      expect(modifiedContent).toMatch(/ems__Effort_startTimestamp: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusDoing]]"',
+      );
+      expect(modifiedContent).toContain("ems__Effort_startTimestamp:");
+      expect(modifiedContent).toMatch(
+        /ems__Effort_startTimestamp: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
+      );
     });
 
     it("should update both properties when starting from Draft", async () => {
@@ -688,8 +738,10 @@ Project content`;
       await service.startEffort(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusDoing]]"');
-      expect(modifiedContent).toContain('ems__Effort_startTimestamp:');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusDoing]]"',
+      );
+      expect(modifiedContent).toContain("ems__Effort_startTimestamp:");
     });
   });
 
@@ -702,8 +754,10 @@ Project content`;
       await service.planOnToday(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('ems__Effort_day:');
-      expect(modifiedContent).toMatch(/ems__Effort_day: "\[\[\d{4}-\d{2}-\d{2}\]\]"/);
+      expect(modifiedContent).toContain("ems__Effort_day:");
+      expect(modifiedContent).toMatch(
+        /ems__Effort_day: "\[\[\d{4}-\d{2}-\d{2}\]\]"/,
+      );
     });
 
     it("should update existing ems__Effort_day", async () => {
@@ -714,8 +768,8 @@ Project content`;
       await service.planOnToday(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('ems__Effort_day:');
-      expect(modifiedContent).not.toContain('2025-01-01');
+      expect(modifiedContent).toContain("ems__Effort_day:");
+      expect(modifiedContent).not.toContain("2025-01-01");
     });
   });
 
@@ -728,8 +782,10 @@ Project content`;
       await service.planForEvening(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('ems__Effort_plannedStartTimestamp:');
-      expect(modifiedContent).toMatch(/ems__Effort_plannedStartTimestamp: \d{4}-\d{2}-\d{2}T19:00:00/);
+      expect(modifiedContent).toContain("ems__Effort_plannedStartTimestamp:");
+      expect(modifiedContent).toMatch(
+        /ems__Effort_plannedStartTimestamp: \d{4}-\d{2}-\d{2}T19:00:00/,
+      );
     });
 
     it("should preserve other frontmatter properties", async () => {
@@ -740,9 +796,11 @@ Project content`;
       await service.planForEvening(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('exo__Asset_uid: test-uid');
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
-      expect(modifiedContent).toContain('ems__Effort_plannedStartTimestamp:');
+      expect(modifiedContent).toContain("exo__Asset_uid: test-uid");
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusBacklog]]"',
+      );
+      expect(modifiedContent).toContain("ems__Effort_plannedStartTimestamp:");
     });
   });
 
@@ -756,7 +814,7 @@ Project content`;
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
       expect(modifiedContent).toContain('ems__Effort_day: "[[2025-10-19]]"');
-      expect(modifiedContent).not.toContain('2025-10-20');
+      expect(modifiedContent).not.toContain("2025-10-20");
     });
 
     it("should throw error when ems__Effort_day is missing", async () => {
@@ -765,7 +823,7 @@ Project content`;
       mockVault.read.mockResolvedValue(originalContent);
 
       await expect(service.shiftDayBackward(mockFile)).rejects.toThrow(
-        "ems__Effort_day property not found"
+        "ems__Effort_day property not found",
       );
     });
 
@@ -775,7 +833,7 @@ Project content`;
       mockVault.read.mockResolvedValue(originalContent);
 
       await expect(service.shiftDayBackward(mockFile)).rejects.toThrow(
-        "Invalid date format in ems__Effort_day"
+        "Invalid date format in ems__Effort_day",
       );
     });
 
@@ -801,7 +859,7 @@ Project content`;
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
       expect(modifiedContent).toContain('ems__Effort_day: "[[2025-10-21]]"');
-      expect(modifiedContent).not.toContain('2025-10-20');
+      expect(modifiedContent).not.toContain("2025-10-20");
     });
 
     it("should throw error when ems__Effort_day is missing", async () => {
@@ -810,7 +868,7 @@ Project content`;
       mockVault.read.mockResolvedValue(originalContent);
 
       await expect(service.shiftDayForward(mockFile)).rejects.toThrow(
-        "ems__Effort_day property not found"
+        "ems__Effort_day property not found",
       );
     });
 
@@ -820,7 +878,7 @@ Project content`;
       mockVault.read.mockResolvedValue(originalContent);
 
       await expect(service.shiftDayForward(mockFile)).rejects.toThrow(
-        "Invalid date format in ems__Effort_day"
+        "Invalid date format in ems__Effort_day",
       );
     });
 
@@ -843,8 +901,10 @@ Project content`;
       await service.shiftDayForward(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('exo__Asset_uid: test-uid');
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
+      expect(modifiedContent).toContain("exo__Asset_uid: test-uid");
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusBacklog]]"',
+      );
       expect(modifiedContent).toContain('ems__Effort_day: "[[2025-10-21]]"');
     });
   });

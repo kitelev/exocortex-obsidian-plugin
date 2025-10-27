@@ -22,7 +22,7 @@ describe("LabelToAliasService", () => {
       mockVault.read.mockResolvedValue(originalContent);
 
       await expect(service.copyLabelToAliases(mockFile)).rejects.toThrow(
-        "No exo__Asset_label found in file"
+        "No exo__Asset_label found in file",
       );
     });
 
@@ -39,7 +39,7 @@ Task content`;
       await service.copyLabelToAliases(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('aliases:');
+      expect(modifiedContent).toContain("aliases:");
       expect(modifiedContent).toContain('  - "My Task Label"');
       expect(modifiedContent).toContain('exo__Instance_class: "[[ems__Task]]"');
       expect(modifiedContent).toContain("Task content");
@@ -83,7 +83,9 @@ Task content`;
       expect(modifiedContent).toContain('exo__Instance_class: "[[ems__Task]]"');
       expect(modifiedContent).toContain("exo__Asset_uid: task-123");
       expect(modifiedContent).toContain('exo__Asset_label: "Important Task"');
-      expect(modifiedContent).toContain('ems__Effort_status: "[[ems__EffortStatusBacklog]]"');
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusBacklog]]"',
+      );
       expect(modifiedContent).toContain('ems__Effort_day: "[[2025-10-20]]"');
       expect(modifiedContent).toContain('  - "Important Task"');
     });
@@ -111,7 +113,9 @@ More content here.`;
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
       expect(modifiedContent).toContain("# Task Title");
-      expect(modifiedContent).toContain("Task description with **bold** and *italic* text.");
+      expect(modifiedContent).toContain(
+        "Task description with **bold** and *italic* text.",
+      );
       expect(modifiedContent).toContain("- List item 1");
       expect(modifiedContent).toContain("- List item 2");
       expect(modifiedContent).toContain("## Section");
@@ -133,7 +137,9 @@ Project content`;
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
       expect(modifiedContent).toContain('  - "Project Alpha"');
-      expect(modifiedContent).toContain('exo__Instance_class: "[[ems__Project]]"');
+      expect(modifiedContent).toContain(
+        'exo__Instance_class: "[[ems__Project]]"',
+      );
     });
 
     it("should handle files with Windows line endings", async () => {
@@ -173,7 +179,7 @@ Task content`;
       mockVault.read.mockResolvedValue(originalContent);
 
       await expect(service.copyLabelToAliases(mockFile)).rejects.toThrow(
-        "No exo__Asset_label found in file"
+        "No exo__Asset_label found in file",
       );
     });
 
@@ -225,7 +231,7 @@ Task content`;
       mockVault.read.mockResolvedValue(originalContent);
 
       await expect(service.copyLabelToAliases(mockFile)).rejects.toThrow(
-        "No exo__Asset_label found in file"
+        "No exo__Asset_label found in file",
       );
     });
 

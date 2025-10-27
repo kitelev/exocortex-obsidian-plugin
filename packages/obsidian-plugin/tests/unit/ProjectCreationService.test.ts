@@ -253,11 +253,7 @@ describe("ProjectCreationService", () => {
         exo__Asset_isDefinedBy: '"[[!user]]"',
       };
 
-      await service.createProject(
-        mockSourceFile,
-        sourceMetadata,
-        "ems__Area",
-      );
+      await service.createProject(mockSourceFile, sourceMetadata, "ems__Area");
 
       expect(mockVault.create).toHaveBeenCalledTimes(1);
       const [filePath] = mockVault.create.mock.calls[0];

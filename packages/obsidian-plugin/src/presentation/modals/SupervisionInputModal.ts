@@ -38,8 +38,14 @@ export class SupervisionInputModal extends Modal {
       { key: "emotions", label: "Эмоции" },
       { key: "thoughts", label: "Мысли" },
       { key: "behavior", label: "Поведение" },
-      { key: "shortTermConsequences", label: "Краткосрочные последствия поведения" },
-      { key: "longTermConsequences", label: "Долгосрочные последствия поведения" },
+      {
+        key: "shortTermConsequences",
+        label: "Краткосрочные последствия поведения",
+      },
+      {
+        key: "longTermConsequences",
+        label: "Долгосрочные последствия поведения",
+      },
     ];
 
     fields.forEach((field) => {

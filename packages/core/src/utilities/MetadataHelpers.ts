@@ -70,7 +70,13 @@ export class MetadataHelpers {
   }
 
   static getPropertyValue(
-    relation: { title: string; created: number; modified: number; path: string; metadata?: Record<string, any> },
+    relation: {
+      title: string;
+      created: number;
+      modified: number;
+      path: string;
+      metadata?: Record<string, any>;
+    },
     propertyName: string,
   ): any {
     if (propertyName === "Name") return relation.title;
@@ -87,7 +93,10 @@ export class MetadataHelpers {
     return `"${value}"`;
   }
 
-  static buildFileContent(frontmatter: Record<string, any>, bodyContent?: string): string {
+  static buildFileContent(
+    frontmatter: Record<string, any>,
+    bodyContent?: string,
+  ): string {
     const frontmatterLines = Object.entries(frontmatter)
       .map(([key, value]) => {
         if (Array.isArray(value)) {

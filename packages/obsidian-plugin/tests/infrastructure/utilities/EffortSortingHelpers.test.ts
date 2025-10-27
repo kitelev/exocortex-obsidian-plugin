@@ -11,8 +11,18 @@ describe("EffortSortingHelpers", () => {
   describe("sortByPriority", () => {
     it("should sort trashed items last", () => {
       const items: EffortItem[] = [
-        { isTrashed: true, isDone: false, metadata: {}, startTime: "2025-01-01" },
-        { isTrashed: false, isDone: false, metadata: {}, startTime: "2025-01-02" },
+        {
+          isTrashed: true,
+          isDone: false,
+          metadata: {},
+          startTime: "2025-01-01",
+        },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: {},
+          startTime: "2025-01-02",
+        },
       ];
 
       items.sort(EffortSortingHelpers.sortByPriority);
@@ -23,8 +33,18 @@ describe("EffortSortingHelpers", () => {
 
     it("should sort done items after active", () => {
       const items: EffortItem[] = [
-        { isTrashed: false, isDone: true, metadata: {}, startTime: "2025-01-01" },
-        { isTrashed: false, isDone: false, metadata: {}, startTime: "2025-01-02" },
+        {
+          isTrashed: false,
+          isDone: true,
+          metadata: {},
+          startTime: "2025-01-01",
+        },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: {},
+          startTime: "2025-01-02",
+        },
       ];
 
       items.sort(EffortSortingHelpers.sortByPriority);
@@ -36,7 +56,11 @@ describe("EffortSortingHelpers", () => {
     it("should sort by vote count descending", () => {
       const items: EffortItem[] = [
         { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 } },
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 10 } },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: 10 },
+        },
         { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 3 } },
       ];
 
@@ -49,9 +73,24 @@ describe("EffortSortingHelpers", () => {
 
     it("should sort by start time when votes equal", () => {
       const items: EffortItem[] = [
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 }, startTime: "2025-01-03" },
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 }, startTime: "2025-01-01" },
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 }, startTime: "2025-01-02" },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: 5 },
+          startTime: "2025-01-03",
+        },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: 5 },
+          startTime: "2025-01-01",
+        },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: 5 },
+          startTime: "2025-01-02",
+        },
       ];
 
       items.sort(EffortSortingHelpers.sortByPriority);
@@ -78,7 +117,11 @@ describe("EffortSortingHelpers", () => {
     it("should handle items with non-number votes", () => {
       const items: EffortItem[] = [
         { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 } },
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: "invalid" } },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: "invalid" },
+        },
         { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 3 } },
       ];
 
@@ -91,9 +134,19 @@ describe("EffortSortingHelpers", () => {
 
     it("should handle items without start time", () => {
       const items: EffortItem[] = [
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 }, startTime: "2025-01-01" },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: 5 },
+          startTime: "2025-01-01",
+        },
         { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 } },
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 }, startTime: "2025-01-02" },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: 5 },
+          startTime: "2025-01-02",
+        },
       ];
 
       items.sort(EffortSortingHelpers.sortByPriority);
@@ -106,7 +159,12 @@ describe("EffortSortingHelpers", () => {
     it("should prioritize items with start time over those without", () => {
       const items: EffortItem[] = [
         { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 } },
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 }, startTime: "2025-01-01" },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: 5 },
+          startTime: "2025-01-01",
+        },
       ];
 
       items.sort(EffortSortingHelpers.sortByPriority);
@@ -117,11 +175,36 @@ describe("EffortSortingHelpers", () => {
 
     it("should handle complex scenario (mixed trashed/done/votes)", () => {
       const items: EffortItem[] = [
-        { isTrashed: true, isDone: true, metadata: { ems__Effort_votes: 100 }, startTime: "2025-01-01" },
-        { isTrashed: false, isDone: true, metadata: { ems__Effort_votes: 50 }, startTime: "2025-01-02" },
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 10 }, startTime: "2025-01-03" },
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 20 }, startTime: "2025-01-04" },
-        { isTrashed: true, isDone: false, metadata: { ems__Effort_votes: 5 }, startTime: "2025-01-05" },
+        {
+          isTrashed: true,
+          isDone: true,
+          metadata: { ems__Effort_votes: 100 },
+          startTime: "2025-01-01",
+        },
+        {
+          isTrashed: false,
+          isDone: true,
+          metadata: { ems__Effort_votes: 50 },
+          startTime: "2025-01-02",
+        },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: 10 },
+          startTime: "2025-01-03",
+        },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: 20 },
+          startTime: "2025-01-04",
+        },
+        {
+          isTrashed: true,
+          isDone: false,
+          metadata: { ems__Effort_votes: 5 },
+          startTime: "2025-01-05",
+        },
       ];
 
       items.sort(EffortSortingHelpers.sortByPriority);
@@ -180,7 +263,11 @@ describe("EffortSortingHelpers", () => {
 
     it("should handle negative votes", () => {
       const items: EffortItem[] = [
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: -5 } },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: -5 },
+        },
         { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 } },
         { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 0 } },
       ];
@@ -233,9 +320,24 @@ describe("EffortSortingHelpers", () => {
 
     it("should handle lexicographic start time comparison", () => {
       const items: EffortItem[] = [
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 }, startTime: "2025-12-31" },
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 }, startTime: "2025-01-01" },
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 }, startTime: "2025-06-15" },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: 5 },
+          startTime: "2025-12-31",
+        },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: 5 },
+          startTime: "2025-01-01",
+        },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: 5 },
+          startTime: "2025-06-15",
+        },
       ];
 
       items.sort(EffortSortingHelpers.sortByPriority);
@@ -307,9 +409,17 @@ describe("EffortSortingHelpers", () => {
 
     it("should maintain correct order through multiple sorts", () => {
       const items: EffortItem[] = [
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 10 } },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: 10 },
+        },
         { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 5 } },
-        { isTrashed: false, isDone: false, metadata: { ems__Effort_votes: 15 } },
+        {
+          isTrashed: false,
+          isDone: false,
+          metadata: { ems__Effort_votes: 15 },
+        },
       ];
 
       items.sort(EffortSortingHelpers.sortByPriority);

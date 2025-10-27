@@ -39,7 +39,7 @@ export interface AssetMetadata {
 /**
  * Task size options
  */
-export type TaskSize = 'S' | 'M' | 'L' | 'XL';
+export type TaskSize = "S" | "M" | "L" | "XL";
 
 /**
  * Command visibility context for determining which commands are available

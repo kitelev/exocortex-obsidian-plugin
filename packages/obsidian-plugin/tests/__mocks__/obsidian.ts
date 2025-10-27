@@ -1,7 +1,7 @@
 // Mock function helper for both Jest and Playwright environments
 const mockFn = (implementation?: any) => {
   // If jest is available (Jest environment), use jest.fn()
-  if (typeof jest !== 'undefined') {
+  if (typeof jest !== "undefined") {
     return jest.fn(implementation);
   }
   // Otherwise (Playwright CT environment), create a simple mock function
@@ -586,9 +586,7 @@ export class Vault {
     if (file) return file;
 
     // Check if it's a folder path
-    const isFolder = this.mockFiles.some((f) =>
-      f.path.startsWith(path + "/")
-    );
+    const isFolder = this.mockFiles.some((f) => f.path.startsWith(path + "/"));
     if (isFolder) {
       return new TFolder(path);
     }
@@ -767,7 +765,9 @@ export class MetadataCache {
 
     // Simple mock: try to find file by linkpath directly
     const files = this.vault.getMarkdownFiles();
-    return files.find((f) => f.basename === linkpath || f.path === linkpath) || null;
+    return (
+      files.find((f) => f.basename === linkpath || f.path === linkpath) || null
+    );
   }
 
   on(name: string, callback: Function): void {
@@ -850,7 +850,7 @@ export class FileManager {
 
   async processFrontMatter(
     file: TFile,
-    fn: (frontmatter: any) => void
+    fn: (frontmatter: any) => void,
   ): Promise<void> {
     const content = await this.vault.read(file);
     const frontmatter: any = {};

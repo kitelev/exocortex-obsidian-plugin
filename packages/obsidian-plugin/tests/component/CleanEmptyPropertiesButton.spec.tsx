@@ -115,9 +115,7 @@ test.describe("CleanEmptyPropertiesButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should NOT render button when metadata is empty", async ({
-    mount,
-  }) => {
+  test("should NOT render button when metadata is empty", async ({ mount }) => {
     const component = await mount(
       <CleanEmptyPropertiesButton
         sourceFile={mockFile}

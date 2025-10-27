@@ -1,4 +1,8 @@
-import { FolderRepairService, type IVaultAdapter, type IFile } from "@exocortex/core";
+import {
+  FolderRepairService,
+  type IVaultAdapter,
+  type IFile,
+} from "@exocortex/core";
 
 describe("FolderRepairService", () => {
   let service: FolderRepairService;
@@ -148,7 +152,10 @@ describe("FolderRepairService", () => {
       await service.repairFolder(file, "new/path");
 
       expect(mockVaultAdapter.createFolder).toHaveBeenCalledWith("new/path");
-      expect(mockVaultAdapter.rename).toHaveBeenCalledWith(file, "new/path/file.md");
+      expect(mockVaultAdapter.rename).toHaveBeenCalledWith(
+        file,
+        "new/path/file.md",
+      );
     });
 
     test("should throw error when target file already exists", async () => {
@@ -160,9 +167,9 @@ describe("FolderRepairService", () => {
       const existingFile = { path: "new/path/file.md" } as IFile;
       mockVaultAdapter.getAbstractFileByPath.mockReturnValue(existingFile);
 
-      await expect(
-        service.repairFolder(file, "new/path"),
-      ).rejects.toThrow("Cannot move file: new/path/file.md already exists");
+      await expect(service.repairFolder(file, "new/path")).rejects.toThrow(
+        "Cannot move file: new/path/file.md already exists",
+      );
     });
 
     test("should create folder if it does not exist", async () => {
@@ -190,15 +197,20 @@ describe("FolderRepairService", () => {
         children: [],
       };
 
-      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
-        if (path === "new/path") return existingFolder as any;
-        return null;
-      });
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation(
+        (path: string) => {
+          if (path === "new/path") return existingFolder as any;
+          return null;
+        },
+      );
 
       await service.repairFolder(file, "new/path");
 
       expect(mockVaultAdapter.createFolder).not.toHaveBeenCalled();
-      expect(mockVaultAdapter.rename).toHaveBeenCalledWith(file, "new/path/file.md");
+      expect(mockVaultAdapter.rename).toHaveBeenCalledWith(
+        file,
+        "new/path/file.md",
+      );
     });
 
     test("should handle empty folder path (root)", async () => {

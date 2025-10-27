@@ -22,23 +22,26 @@ import {
   canShiftDayForward,
   canVoteOnEffort,
   canCopyLabelToAliases,
-} from '@exocortex/core';
-import { TaskCreationService } from '@exocortex/core';
-import { ProjectCreationService } from '@exocortex/core';
-import { TaskStatusService } from '@exocortex/core';
-import { PropertyCleanupService } from '@exocortex/core';
-import { FolderRepairService } from '@exocortex/core';
-import { SupervisionCreationService } from '@exocortex/core';
-import { RenameToUidService } from '@exocortex/core';
-import { EffortVotingService } from '@exocortex/core';
-import { LabelToAliasService } from '@exocortex/core';
-import { LabelInputModal, type LabelInputModalResult } from "../../presentation/modals/LabelInputModal";
+} from "@exocortex/core";
+import { TaskCreationService } from "@exocortex/core";
+import { ProjectCreationService } from "@exocortex/core";
+import { TaskStatusService } from "@exocortex/core";
+import { PropertyCleanupService } from "@exocortex/core";
+import { FolderRepairService } from "@exocortex/core";
+import { SupervisionCreationService } from "@exocortex/core";
+import { RenameToUidService } from "@exocortex/core";
+import { EffortVotingService } from "@exocortex/core";
+import { LabelToAliasService } from "@exocortex/core";
+import {
+  LabelInputModal,
+  type LabelInputModalResult,
+} from "../../presentation/modals/LabelInputModal";
 import { SupervisionInputModal } from "../../presentation/modals/SupervisionInputModal";
-import { WikiLinkHelpers } from '@exocortex/core';
-import { AssetClass } from '@exocortex/core';
-import { MetadataExtractor } from '@exocortex/core';
-import { LoggingService } from '@exocortex/core';
-import { ObsidianVaultAdapter } from '../../adapters/ObsidianVaultAdapter';
+import { WikiLinkHelpers } from "@exocortex/core";
+import { AssetClass } from "@exocortex/core";
+import { MetadataExtractor } from "@exocortex/core";
+import { LoggingService } from "@exocortex/core";
+import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 
 /**
  * Command Manager Service
@@ -68,14 +71,20 @@ export class CommandManager {
   private vaultAdapter: ObsidianVaultAdapter;
 
   constructor(private app: App) {
-    this.vaultAdapter = new ObsidianVaultAdapter(app.vault, app.metadataCache, app);
+    this.vaultAdapter = new ObsidianVaultAdapter(
+      app.vault,
+      app.metadataCache,
+      app,
+    );
     this.metadataExtractor = new MetadataExtractor(this.vaultAdapter);
     this.taskCreationService = new TaskCreationService(this.vaultAdapter);
     this.projectCreationService = new ProjectCreationService(this.vaultAdapter);
     this.taskStatusService = new TaskStatusService(this.vaultAdapter);
     this.propertyCleanupService = new PropertyCleanupService(this.vaultAdapter);
     this.folderRepairService = new FolderRepairService(this.vaultAdapter);
-    this.supervisionCreationService = new SupervisionCreationService(this.vaultAdapter);
+    this.supervisionCreationService = new SupervisionCreationService(
+      this.vaultAdapter,
+    );
     this.renameToUidService = new RenameToUidService(this.vaultAdapter);
     this.effortVotingService = new EffortVotingService(this.vaultAdapter);
     this.labelToAliasService = new LabelToAliasService(this.vaultAdapter);
@@ -85,7 +94,10 @@ export class CommandManager {
    * Register all commands in Obsidian Command Palette
    * Call this once during plugin initialization
    */
-  registerAllCommands(plugin: ExocortexPluginInterface, reloadLayoutCallback?: () => void): void {
+  registerAllCommands(
+    plugin: ExocortexPluginInterface,
+    reloadLayoutCallback?: () => void,
+  ): void {
     this.reloadLayoutCallback = reloadLayoutCallback;
 
     this.registerCreateTaskCommand(plugin);
@@ -122,7 +134,8 @@ export class CommandManager {
    * Individual command handlers will fetch it async when needed.
    */
   private getContext(file: TFile): CommandVisibilityContext | null {
-    const context = this.metadataExtractor.extractCommandVisibilityContext(file);
+    const context =
+      this.metadataExtractor.extractCommandVisibilityContext(file);
 
     return {
       ...context,
@@ -185,7 +198,9 @@ export class CommandManager {
   /**
    * Register "Exocortex: Create Instance" command
    */
-  private registerCreateInstanceCommand(plugin: ExocortexPluginInterface): void {
+  private registerCreateInstanceCommand(
+    plugin: ExocortexPluginInterface,
+  ): void {
     plugin.addCommand({
       id: "create-instance",
       name: "Create instance",
@@ -211,7 +226,9 @@ export class CommandManager {
   /**
    * Register "Exocortex: Create Related Task" command
    */
-  private registerCreateRelatedTaskCommand(plugin: ExocortexPluginInterface): void {
+  private registerCreateRelatedTaskCommand(
+    plugin: ExocortexPluginInterface,
+  ): void {
     plugin.addCommand({
       id: "create-related-task",
       name: "Create related task",
@@ -237,7 +254,9 @@ export class CommandManager {
   /**
    * Register "Exocortex: Set Draft Status" command
    */
-  private registerSetDraftStatusCommand(plugin: ExocortexPluginInterface): void {
+  private registerSetDraftStatusCommand(
+    plugin: ExocortexPluginInterface,
+  ): void {
     plugin.addCommand({
       id: "set-draft-status",
       name: "Set draft status",
@@ -289,7 +308,9 @@ export class CommandManager {
   /**
    * Register "Exocortex: Move to Analysis" command
    */
-  private registerMoveToAnalysisCommand(plugin: ExocortexPluginInterface): void {
+  private registerMoveToAnalysisCommand(
+    plugin: ExocortexPluginInterface,
+  ): void {
     plugin.addCommand({
       id: "move-to-analysis",
       name: "Move to analysis",
@@ -393,7 +414,9 @@ export class CommandManager {
   /**
    * Register "Exocortex: Plan for Evening" command
    */
-  private registerPlanForEveningCommand(plugin: ExocortexPluginInterface): void {
+  private registerPlanForEveningCommand(
+    plugin: ExocortexPluginInterface,
+  ): void {
     plugin.addCommand({
       id: "plan-for-evening",
       name: "Plan for evening (19:00)",
@@ -419,7 +442,9 @@ export class CommandManager {
   /**
    * Register "Exocortex: Shift Day Backward" command
    */
-  private registerShiftDayBackwardCommand(plugin: ExocortexPluginInterface): void {
+  private registerShiftDayBackwardCommand(
+    plugin: ExocortexPluginInterface,
+  ): void {
     plugin.addCommand({
       id: "shift-day-backward",
       name: "Shift day backward",
@@ -445,7 +470,9 @@ export class CommandManager {
   /**
    * Register "Exocortex: Shift Day Forward" command
    */
-  private registerShiftDayForwardCommand(plugin: ExocortexPluginInterface): void {
+  private registerShiftDayForwardCommand(
+    plugin: ExocortexPluginInterface,
+  ): void {
     plugin.addCommand({
       id: "shift-day-forward",
       name: "Shift day forward",
@@ -549,7 +576,9 @@ export class CommandManager {
   /**
    * Register "Exocortex: Clean Empty Properties" command
    */
-  private registerCleanPropertiesCommand(plugin: ExocortexPluginInterface): void {
+  private registerCleanPropertiesCommand(
+    plugin: ExocortexPluginInterface,
+  ): void {
     plugin.addCommand({
       id: "clean-properties",
       name: "Clean empty properties",
@@ -658,7 +687,9 @@ export class CommandManager {
     });
   }
 
-  private registerCopyLabelToAliasesCommand(plugin: ExocortexPluginInterface): void {
+  private registerCopyLabelToAliasesCommand(
+    plugin: ExocortexPluginInterface,
+  ): void {
     plugin.addCommand({
       id: "copy-label-to-aliases",
       name: "Copy label to aliases",
@@ -704,7 +735,9 @@ export class CommandManager {
    * Register "Exocortex: Add Supervision" command
    * Always available - creates a new Supervision FleetingNote
    */
-  private registerAddSupervisionCommand(plugin: ExocortexPluginInterface): void {
+  private registerAddSupervisionCommand(
+    plugin: ExocortexPluginInterface,
+  ): void {
     plugin.addCommand({
       id: "add-supervision",
       name: "Add supervision",
@@ -721,7 +754,9 @@ export class CommandManager {
    * Register "Exocortex: Toggle Properties Visibility" command
    * Always available - toggles the visibility of the Properties section
    */
-  private registerTogglePropertiesVisibilityCommand(plugin: ExocortexPluginInterface): void {
+  private registerTogglePropertiesVisibilityCommand(
+    plugin: ExocortexPluginInterface,
+  ): void {
     plugin.addCommand({
       id: "toggle-properties-visibility",
       name: "Toggle properties visibility",
@@ -741,7 +776,9 @@ export class CommandManager {
    * Register "Exocortex: Toggle Layout Visibility" command
    * Always available - toggles the visibility of the entire Layout
    */
-  private registerToggleLayoutVisibilityCommand(plugin: ExocortexPluginInterface): void {
+  private registerToggleLayoutVisibilityCommand(
+    plugin: ExocortexPluginInterface,
+  ): void {
     plugin.addCommand({
       id: "toggle-layout-visibility",
       name: "Toggle layout visibility",
@@ -760,12 +797,15 @@ export class CommandManager {
    * Register "Exocortex: Toggle Archived Assets Visibility" command
    * Always available - toggles the visibility of archived assets in relations table
    */
-  private registerToggleArchivedAssetsCommand(plugin: ExocortexPluginInterface): void {
+  private registerToggleArchivedAssetsCommand(
+    plugin: ExocortexPluginInterface,
+  ): void {
     plugin.addCommand({
       id: "toggle-archived-assets-visibility",
       name: "Toggle archived assets visibility",
       callback: async () => {
-        plugin.settings.showArchivedAssets = !plugin.settings.showArchivedAssets;
+        plugin.settings.showArchivedAssets =
+          !plugin.settings.showArchivedAssets;
         await plugin.saveSettings();
         plugin.refreshLayout?.();
         new Notice(
@@ -824,7 +864,7 @@ export class CommandManager {
       if (this.app.workspace.getActiveFile()?.path === tfile.path) {
         break;
       }
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     new Notice(`Task created: ${createdFile.basename}`);
@@ -846,7 +886,9 @@ export class CommandManager {
     const metadata = cache?.frontmatter || {};
     const instanceClass = metadata.exo__Instance_class;
 
-    const sourceClass = Array.isArray(instanceClass) ? instanceClass[0] : instanceClass;
+    const sourceClass = Array.isArray(instanceClass)
+      ? instanceClass[0]
+      : instanceClass;
 
     const createdFile = await this.projectCreationService.createProject(
       file,
@@ -868,7 +910,7 @@ export class CommandManager {
       if (this.app.workspace.getActiveFile()?.path === tfile.path) {
         break;
       }
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     new Notice(`Project created: ${createdFile.basename}`);
@@ -921,7 +963,7 @@ export class CommandManager {
       if (this.app.workspace.getActiveFile()?.path === tfile.path) {
         break;
       }
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     new Notice(`Instance created: ${createdFile.basename}`);
@@ -964,7 +1006,7 @@ export class CommandManager {
       if (this.app.workspace.getActiveFile()?.path === tfile.path) {
         break;
       }
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     new Notice(`Related task created: ${createdFile.basename}`);
@@ -1068,9 +1110,8 @@ export class CommandManager {
       return;
     }
 
-    const createdFile = await this.supervisionCreationService.createSupervision(
-      formData,
-    );
+    const createdFile =
+      await this.supervisionCreationService.createSupervision(formData);
 
     const leaf = this.app.workspace.getLeaf("tab");
     const tfile = this.vaultAdapter.toTFile(createdFile);
@@ -1085,7 +1126,7 @@ export class CommandManager {
       if (this.app.workspace.getActiveFile()?.path === tfile.path) {
         break;
       }
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     new Notice(`Supervision created: ${createdFile.basename}`);
@@ -1104,9 +1145,8 @@ export class CommandManager {
   }
 
   private async executeVoteOnEffort(file: TFile): Promise<void> {
-    const newVoteCount = await this.effortVotingService.incrementEffortVotes(
-      file,
-    );
+    const newVoteCount =
+      await this.effortVotingService.incrementEffortVotes(file);
     new Notice(`Voted! New vote count: ${newVoteCount}`);
   }
 

@@ -72,10 +72,7 @@ export class TaskStatusService {
     await this.vault.modify(taskFile, updated);
   }
 
-  async syncEffortEndTimestamp(
-    taskFile: IFile,
-    date?: Date,
-  ): Promise<void> {
+  async syncEffortEndTimestamp(taskFile: IFile, date?: Date): Promise<void> {
     await this.timestampService.addEndAndResolutionTimestamps(taskFile, date);
   }
 
@@ -272,7 +269,7 @@ export class TaskStatusService {
     );
 
     if (arrayMatch) {
-      const lines = arrayMatch[1].split("\n").filter(l => l.trim());
+      const lines = arrayMatch[1].split("\n").filter((l) => l.trim());
       return lines.map((line) => line.replace(/^\s*-\s*/, "").trim());
     }
 

@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
-import { AssetClass } from '../domain/constants';
+import { AssetClass } from "../domain/constants";
 import { TaskFrontmatterGenerator } from "./TaskFrontmatterGenerator";
 import { AlgorithmExtractor } from "./AlgorithmExtractor";
 import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
@@ -46,7 +46,10 @@ export class TaskCreationService {
       }
     }
 
-    const fileContent = MetadataHelpers.buildFileContent(frontmatter, bodyContent);
+    const fileContent = MetadataHelpers.buildFileContent(
+      frontmatter,
+      bodyContent,
+    );
 
     const folderPath = sourceFile.parent?.path || "";
     const filePath = folderPath ? `${folderPath}/${fileName}` : fileName;
@@ -65,13 +68,14 @@ export class TaskCreationService {
     const uid = uuidv4();
     const fileName = `${uid}.md`;
 
-    const frontmatter = this.frontmatterGenerator.generateRelatedTaskFrontmatter(
-      sourceMetadata,
-      sourceFile.basename,
-      label,
-      uid,
-      taskSize,
-    );
+    const frontmatter =
+      this.frontmatterGenerator.generateRelatedTaskFrontmatter(
+        sourceMetadata,
+        sourceFile.basename,
+        label,
+        uid,
+        taskSize,
+      );
 
     const fileContent = MetadataHelpers.buildFileContent(frontmatter);
 
@@ -143,7 +147,7 @@ export class TaskCreationService {
     const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---/;
     const match = content.match(frontmatterRegex);
 
-    const lineEnding = content.includes('\r\n') ? '\r\n' : '\n';
+    const lineEnding = content.includes("\r\n") ? "\r\n" : "\n";
 
     if (!match) {
       const newFrontmatter = `---${lineEnding}exo__Asset_relates:${lineEnding}  - "[[${relatedTaskUid}]]"${lineEnding}---${lineEnding}${content}`;
@@ -154,7 +158,9 @@ export class TaskCreationService {
     let updatedFrontmatter = frontmatterContent;
 
     if (updatedFrontmatter.includes("exo__Asset_relates:")) {
-      const relatesMatch = updatedFrontmatter.match(/exo__Asset_relates:\r?\n((?: {2}- .*\r?\n)*)/);
+      const relatesMatch = updatedFrontmatter.match(
+        /exo__Asset_relates:\r?\n((?: {2}- .*\r?\n)*)/,
+      );
       if (relatesMatch) {
         const existingItems = relatesMatch[1];
         const newItem = `  - "[[${relatedTaskUid}]]"${lineEnding}`;

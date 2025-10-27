@@ -85,7 +85,7 @@ const AreaTreeNode: React.FC<AreaTreeNodeProps> = ({
             className={`area-tree-item ${isCurrent ? "is-current" : ""} ${node.isArchived ? "is-archived" : ""}`}
             data-depth={depth}
             style={{
-              paddingLeft: `${8 + depth * 20}px`
+              paddingLeft: `${8 + depth * 20}px`,
             }}
             onKeyDown={handleKeyDown}
           >
@@ -119,16 +119,18 @@ const AreaTreeNode: React.FC<AreaTreeNodeProps> = ({
           <a className="internal-link">ems__Area</a>
         </td>
       </tr>
-      {isExpanded && hasChildren && node.children.map((child) => (
-        <AreaTreeNode
-          key={child.path}
-          node={child}
-          currentAreaPath={currentAreaPath}
-          depth={depth + 1}
-          onAreaClick={onAreaClick}
-          getAssetLabel={getAssetLabel}
-        />
-      ))}
+      {isExpanded &&
+        hasChildren &&
+        node.children.map((child) => (
+          <AreaTreeNode
+            key={child.path}
+            node={child}
+            currentAreaPath={currentAreaPath}
+            depth={depth + 1}
+            onAreaClick={onAreaClick}
+            getAssetLabel={getAssetLabel}
+          />
+        ))}
     </>
   );
 };

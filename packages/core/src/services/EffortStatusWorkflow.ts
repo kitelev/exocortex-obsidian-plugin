@@ -1,4 +1,4 @@
-import { AssetClass, EffortStatus } from '../domain/constants';
+import { AssetClass, EffortStatus } from "../domain/constants";
 
 export class EffortStatusWorkflow {
   getPreviousStatus(
@@ -24,7 +24,10 @@ export class EffortStatusWorkflow {
     }
 
     if (normalizedStatus === EffortStatus.DOING) {
-      const isProject = this.hasInstanceClass(instanceClass, AssetClass.PROJECT);
+      const isProject = this.hasInstanceClass(
+        instanceClass,
+        AssetClass.PROJECT,
+      );
       return isProject
         ? this.wrapStatus(EffortStatus.TODO)
         : this.wrapStatus(EffortStatus.BACKLOG);

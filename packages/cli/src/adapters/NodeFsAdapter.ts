@@ -1,22 +1,22 @@
-import fs from 'fs-extra';
-import path from 'path';
-import * as glob from 'glob';
-import yaml from 'js-yaml';
+import fs from "fs-extra";
+import path from "path";
+import * as glob from "glob";
+import yaml from "js-yaml";
 import {
   IFileSystemAdapter,
   FileNotFoundError,
-  FileAlreadyExistsError
-} from '@exocortex/core';
+  FileAlreadyExistsError,
+} from "@exocortex/core";
 
 export class NodeFsAdapter implements IFileSystemAdapter {
   constructor(private rootPath: string) {}
 
   async readFile(filePath: string): Promise<string> {
     const fullPath = this.resolvePath(filePath);
-    if (!await fs.pathExists(fullPath)) {
+    if (!(await fs.pathExists(fullPath))) {
       throw new FileNotFoundError(filePath);
     }
-    return fs.readFile(fullPath, 'utf-8');
+    return fs.readFile(fullPath, "utf-8");
   }
 
   async fileExists(filePath: string): Promise<boolean> {
@@ -35,27 +35,27 @@ export class NodeFsAdapter implements IFileSystemAdapter {
       throw new FileAlreadyExistsError(filePath);
     }
     await fs.ensureDir(path.dirname(fullPath));
-    await fs.writeFile(fullPath, content, 'utf-8');
+    await fs.writeFile(fullPath, content, "utf-8");
     return filePath;
   }
 
   async updateFile(filePath: string, content: string): Promise<void> {
     const fullPath = this.resolvePath(filePath);
-    if (!await fs.pathExists(fullPath)) {
+    if (!(await fs.pathExists(fullPath))) {
       throw new FileNotFoundError(filePath);
     }
-    await fs.writeFile(fullPath, content, 'utf-8');
+    await fs.writeFile(fullPath, content, "utf-8");
   }
 
   async writeFile(filePath: string, content: string): Promise<void> {
     const fullPath = this.resolvePath(filePath);
     await fs.ensureDir(path.dirname(fullPath));
-    await fs.writeFile(fullPath, content, 'utf-8');
+    await fs.writeFile(fullPath, content, "utf-8");
   }
 
   async deleteFile(filePath: string): Promise<void> {
     const fullPath = this.resolvePath(filePath);
-    if (!await fs.pathExists(fullPath)) {
+    if (!(await fs.pathExists(fullPath))) {
       throw new FileNotFoundError(filePath);
     }
     await fs.remove(fullPath);
@@ -64,7 +64,7 @@ export class NodeFsAdapter implements IFileSystemAdapter {
   async renameFile(oldPath: string, newPath: string): Promise<void> {
     const fullOldPath = this.resolvePath(oldPath);
     const fullNewPath = this.resolvePath(newPath);
-    if (!await fs.pathExists(fullOldPath)) {
+    if (!(await fs.pathExists(fullOldPath))) {
       throw new FileNotFoundError(oldPath);
     }
     await fs.ensureDir(path.dirname(fullNewPath));
@@ -78,17 +78,19 @@ export class NodeFsAdapter implements IFileSystemAdapter {
 
   async directoryExists(dirPath: string): Promise<boolean> {
     const fullPath = this.resolvePath(dirPath);
-    if (!await fs.pathExists(fullPath)) return false;
+    if (!(await fs.pathExists(fullPath))) return false;
     const stats = await fs.stat(fullPath);
     return stats.isDirectory();
   }
 
   async getMarkdownFiles(rootPath?: string): Promise<string[]> {
     const searchPath = rootPath ? this.resolvePath(rootPath) : this.rootPath;
-    const pattern = path.join(searchPath, '**/*.md');
+    const pattern = path.join(searchPath, "**/*.md");
 
     const files = await glob.glob(pattern, { nodir: true });
-    const relativePaths = files.map((f: string) => path.relative(this.rootPath, f));
+    const relativePaths = files.map((f: string) =>
+      path.relative(this.rootPath, f),
+    );
     return relativePaths;
   }
 
@@ -111,7 +113,7 @@ export class NodeFsAdapter implements IFileSystemAdapter {
   }
 
   async findFileByUID(uid: string): Promise<string | null> {
-    const files = await this.findFilesByMetadata({ 'exo__Asset_uid': uid });
+    const files = await this.findFilesByMetadata({ exo__Asset_uid: uid });
     return files.length > 0 ? files[0] : null;
   }
 
@@ -132,21 +134,32 @@ export class NodeFsAdapter implements IFileSystemAdapter {
 
     try {
       const parsed = yaml.load(match[1]);
-      return typeof parsed === 'object' && parsed !== null ? parsed as Record<string, any> : {};
+      return typeof parsed === "object" && parsed !== null
+        ? (parsed as Record<string, any>)
+        : {};
     } catch (error) {
       return {};
     }
   }
 
-  private matchesQuery(metadata: Record<string, any>, query: Record<string, any>): boolean {
+  private matchesQuery(
+    metadata: Record<string, any>,
+    query: Record<string, any>,
+  ): boolean {
     for (const [key, value] of Object.entries(query)) {
       const metaValue = metadata[key];
 
       if (Array.isArray(metaValue)) {
-        if (!metaValue.some(v => this.normalizeValue(v) === this.normalizeValue(value))) {
+        if (
+          !metaValue.some(
+            (v) => this.normalizeValue(v) === this.normalizeValue(value),
+          )
+        ) {
           return false;
         }
-      } else if (this.normalizeValue(metaValue) !== this.normalizeValue(value)) {
+      } else if (
+        this.normalizeValue(metaValue) !== this.normalizeValue(value)
+      ) {
         return false;
       }
     }
@@ -154,7 +167,9 @@ export class NodeFsAdapter implements IFileSystemAdapter {
   }
 
   private normalizeValue(value: any): string {
-    if (value === null || value === undefined) return '';
-    return String(value).replace(/["'[\]]/g, '').trim();
+    if (value === null || value === undefined) return "";
+    return String(value)
+      .replace(/["'[\]]/g, "")
+      .trim();
   }
 }

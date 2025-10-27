@@ -57,8 +57,14 @@ describe("EventListenerManager", () => {
       const handler2 = jest.fn();
       const element2 = document.createElement("button");
 
-      const removeEventListenerSpy1 = jest.spyOn(mockElement, "removeEventListener");
-      const removeEventListenerSpy2 = jest.spyOn(element2, "removeEventListener");
+      const removeEventListenerSpy1 = jest.spyOn(
+        mockElement,
+        "removeEventListener",
+      );
+      const removeEventListenerSpy2 = jest.spyOn(
+        element2,
+        "removeEventListener",
+      );
 
       manager.register(mockElement, "click", handler1);
       manager.register(element2, "mouseover", handler2);
@@ -66,7 +72,10 @@ describe("EventListenerManager", () => {
       manager.cleanup();
 
       expect(removeEventListenerSpy1).toHaveBeenCalledWith("click", handler1);
-      expect(removeEventListenerSpy2).toHaveBeenCalledWith("mouseover", handler2);
+      expect(removeEventListenerSpy2).toHaveBeenCalledWith(
+        "mouseover",
+        handler2,
+      );
       expect(manager.getListenerCount()).toBe(0);
     });
 
@@ -97,7 +106,10 @@ describe("EventListenerManager", () => {
 
     it("should handle multiple cleanups", () => {
       const handler = jest.fn();
-      const removeEventListenerSpy = jest.spyOn(mockElement, "removeEventListener");
+      const removeEventListenerSpy = jest.spyOn(
+        mockElement,
+        "removeEventListener",
+      );
 
       manager.register(mockElement, "click", handler);
       manager.cleanup();

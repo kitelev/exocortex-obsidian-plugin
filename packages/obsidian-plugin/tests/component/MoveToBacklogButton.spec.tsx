@@ -19,7 +19,9 @@ test.describe("MoveToBacklogButton Component", () => {
     await expect(component).toHaveText("To Backlog");
   });
 
-  test("should render button for Project with Draft status", async ({ mount }) => {
+  test("should render button for Project with Draft status", async ({
+    mount,
+  }) => {
     const component = await mount(
       <MoveToBacklogButton
         instanceClass="[[ems__Project]]"
@@ -33,7 +35,9 @@ test.describe("MoveToBacklogButton Component", () => {
     await expect(component).toHaveText("To Backlog");
   });
 
-  test("should NOT render button for Task with Backlog status", async ({ mount }) => {
+  test("should NOT render button for Task with Backlog status", async ({
+    mount,
+  }) => {
     const component = await mount(
       <MoveToBacklogButton
         instanceClass="[[ems__Task]]"
@@ -46,7 +50,9 @@ test.describe("MoveToBacklogButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should NOT render button for Task with Doing status", async ({ mount }) => {
+  test("should NOT render button for Task with Doing status", async ({
+    mount,
+  }) => {
     const component = await mount(
       <MoveToBacklogButton
         instanceClass="[[ems__Task]]"
@@ -59,7 +65,9 @@ test.describe("MoveToBacklogButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should NOT render button for Task with Done status", async ({ mount }) => {
+  test("should NOT render button for Task with Done status", async ({
+    mount,
+  }) => {
     const component = await mount(
       <MoveToBacklogButton
         instanceClass="[[ems__Task]]"
@@ -72,7 +80,9 @@ test.describe("MoveToBacklogButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should NOT render button for Task without status", async ({ mount }) => {
+  test("should NOT render button for Task without status", async ({
+    mount,
+  }) => {
     const component = await mount(
       <MoveToBacklogButton
         instanceClass="[[ems__Task]]"
@@ -85,7 +95,9 @@ test.describe("MoveToBacklogButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should NOT render button for non-Task/Project asset (Area)", async ({ mount }) => {
+  test("should NOT render button for non-Task/Project asset (Area)", async ({
+    mount,
+  }) => {
     const component = await mount(
       <MoveToBacklogButton
         instanceClass="[[ems__Area]]"

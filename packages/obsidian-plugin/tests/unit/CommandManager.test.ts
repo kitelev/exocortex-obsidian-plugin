@@ -160,7 +160,9 @@ describe("CommandManager", () => {
       expect(registeredCommandIds).toContain("add-supervision");
       expect(registeredCommandIds).toContain("toggle-properties-visibility");
       expect(registeredCommandIds).toContain("toggle-layout-visibility");
-      expect(registeredCommandIds).toContain("toggle-archived-assets-visibility");
+      expect(registeredCommandIds).toContain(
+        "toggle-archived-assets-visibility",
+      );
     });
 
     it("should register commands with correct names", () => {
@@ -1084,13 +1086,17 @@ describe("CommandManager", () => {
     });
 
     it("should be always available", () => {
-      const command = registeredCommands.get("toggle-archived-assets-visibility");
+      const command = registeredCommands.get(
+        "toggle-archived-assets-visibility",
+      );
       expect(command).toBeDefined();
       expect(typeof command.callback).toBe("function");
     });
 
     it("should toggle archived assets visibility when executed", async () => {
-      const command = registeredCommands.get("toggle-archived-assets-visibility");
+      const command = registeredCommands.get(
+        "toggle-archived-assets-visibility",
+      );
 
       expect(mockPlugin.settings.showArchivedAssets).toBe(false);
       await command.callback();
@@ -1101,14 +1107,18 @@ describe("CommandManager", () => {
     });
 
     it("should save settings when toggled", async () => {
-      const command = registeredCommands.get("toggle-archived-assets-visibility");
+      const command = registeredCommands.get(
+        "toggle-archived-assets-visibility",
+      );
       await command.callback();
 
       expect(mockPlugin.saveSettings).toHaveBeenCalled();
     });
 
     it("should refresh layout when toggled", async () => {
-      const command = registeredCommands.get("toggle-archived-assets-visibility");
+      const command = registeredCommands.get(
+        "toggle-archived-assets-visibility",
+      );
       await command.callback();
 
       expect(mockPlugin.refreshLayout).toHaveBeenCalled();
@@ -1116,7 +1126,9 @@ describe("CommandManager", () => {
 
     it("should show notice when toggled to shown", async () => {
       mockPlugin.settings.showArchivedAssets = false;
-      const command = registeredCommands.get("toggle-archived-assets-visibility");
+      const command = registeredCommands.get(
+        "toggle-archived-assets-visibility",
+      );
       await command.callback();
 
       expect(Notice).toHaveBeenCalledWith("Archived assets shown");
@@ -1124,7 +1136,9 @@ describe("CommandManager", () => {
 
     it("should show notice when toggled to hidden", async () => {
       mockPlugin.settings.showArchivedAssets = true;
-      const command = registeredCommands.get("toggle-archived-assets-visibility");
+      const command = registeredCommands.get(
+        "toggle-archived-assets-visibility",
+      );
       await command.callback();
 
       expect(Notice).toHaveBeenCalledWith("Archived assets hidden");
@@ -1135,7 +1149,6 @@ describe("CommandManager", () => {
     beforeEach(() => {
       commandManager.registerAllCommands(mockPlugin);
     });
-
 
     it("should handle errors in set draft status execution", async () => {
       mockApp.metadataCache.getFileCache.mockReturnValue({
@@ -1152,7 +1165,7 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to set draft status")
+        expect.stringContaining("Failed to set draft status"),
       );
     });
 
@@ -1172,7 +1185,7 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to move to backlog")
+        expect.stringContaining("Failed to move to backlog"),
       );
     });
 
@@ -1192,7 +1205,7 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to move to analysis")
+        expect.stringContaining("Failed to move to analysis"),
       );
     });
 
@@ -1212,7 +1225,7 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to move to todo")
+        expect.stringContaining("Failed to move to todo"),
       );
     });
 
@@ -1232,7 +1245,7 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to start effort")
+        expect.stringContaining("Failed to start effort"),
       );
     });
 
@@ -1252,7 +1265,7 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to plan on today")
+        expect.stringContaining("Failed to plan on today"),
       );
     });
 
@@ -1272,7 +1285,7 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to plan for evening")
+        expect.stringContaining("Failed to plan for evening"),
       );
     });
 
@@ -1292,7 +1305,7 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to shift day backward")
+        expect.stringContaining("Failed to shift day backward"),
       );
     });
 
@@ -1312,7 +1325,7 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to shift day forward")
+        expect.stringContaining("Failed to shift day forward"),
       );
     });
 
@@ -1332,7 +1345,7 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to mark as done")
+        expect.stringContaining("Failed to mark as done"),
       );
     });
 
@@ -1351,7 +1364,7 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to trash effort")
+        expect.stringContaining("Failed to trash effort"),
       );
     });
 
@@ -1371,7 +1384,7 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to archive task")
+        expect.stringContaining("Failed to archive task"),
       );
     });
 
@@ -1390,7 +1403,7 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to clean properties")
+        expect.stringContaining("Failed to clean properties"),
       );
     });
 
@@ -1416,7 +1429,9 @@ describe("CommandManager", () => {
         .fn()
         .mockReturnValue(mockArea);
 
-      mockApp.vault.rename = jest.fn().mockRejectedValue(new Error("Vault error"));
+      mockApp.vault.rename = jest
+        .fn()
+        .mockRejectedValue(new Error("Vault error"));
 
       const command = registeredCommands.get("repair-folder");
       await command.checkCallback(false);
@@ -1424,7 +1439,7 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to repair folder")
+        expect.stringContaining("Failed to repair folder"),
       );
     });
 
@@ -1442,14 +1457,18 @@ describe("CommandManager", () => {
         },
       });
 
-      mockApp.fileManager.renameFile = jest.fn().mockRejectedValue(new Error("Vault error"));
+      mockApp.fileManager.renameFile = jest
+        .fn()
+        .mockRejectedValue(new Error("Vault error"));
 
       const command = registeredCommands.get("rename-to-uid");
       await command.checkCallback(false);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Failed to rename"));
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to rename"),
+      );
     });
 
     it("should handle errors in vote on effort execution", async () => {
@@ -1466,7 +1485,9 @@ describe("CommandManager", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Failed to vote"));
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to vote"),
+      );
     });
 
     it("should handle errors in copy label to aliases execution", async () => {
@@ -1484,10 +1505,9 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(Notice).toHaveBeenCalledWith(
-        expect.stringContaining("Failed to copy label")
+        expect.stringContaining("Failed to copy label"),
       );
     });
-
   });
 
   describe("Command Execution - Repair Folder Special Cases", () => {
@@ -1566,7 +1586,9 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
-      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Draft status"));
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Draft status"),
+      );
     });
 
     it("should execute move to backlog successfully", async () => {
@@ -1642,7 +1664,9 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
-      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Started effort"));
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Started effort"),
+      );
     });
 
     it("should execute plan on today successfully", async () => {
@@ -1661,7 +1685,9 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
-      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Planned on today"));
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Planned on today"),
+      );
     });
 
     it("should execute plan for evening successfully", async () => {
@@ -1680,7 +1706,9 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
-      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Planned for evening"));
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Planned for evening"),
+      );
     });
 
     it("should execute shift day backward successfully", async () => {
@@ -1691,7 +1719,9 @@ describe("CommandManager", () => {
         },
       });
 
-      mockApp.vault.read.mockResolvedValue("---\nems__Effort_day: 2025-01-20\n---");
+      mockApp.vault.read.mockResolvedValue(
+        "---\nems__Effort_day: 2025-01-20\n---",
+      );
       mockApp.vault.modify.mockResolvedValue(undefined);
 
       const command = registeredCommands.get("shift-day-backward");
@@ -1700,7 +1730,9 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
-      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Day shifted backward"));
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Day shifted backward"),
+      );
     });
 
     it("should execute shift day forward successfully", async () => {
@@ -1711,7 +1743,9 @@ describe("CommandManager", () => {
         },
       });
 
-      mockApp.vault.read.mockResolvedValue("---\nems__Effort_day: 2025-01-20\n---");
+      mockApp.vault.read.mockResolvedValue(
+        "---\nems__Effort_day: 2025-01-20\n---",
+      );
       mockApp.vault.modify.mockResolvedValue(undefined);
 
       const command = registeredCommands.get("shift-day-forward");
@@ -1720,7 +1754,9 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
-      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Day shifted forward"));
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Day shifted forward"),
+      );
     });
 
     it("should execute mark done successfully", async () => {
@@ -1739,7 +1775,9 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
-      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Marked as done"));
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Marked as done"),
+      );
     });
 
     it("should execute trash effort successfully", async () => {
@@ -1786,7 +1824,7 @@ describe("CommandManager", () => {
         },
       });
 
-      mockApp.vault.read.mockResolvedValue("---\nempty_prop: \"\"\n---");
+      mockApp.vault.read.mockResolvedValue('---\nempty_prop: ""\n---');
       mockApp.vault.modify.mockResolvedValue(undefined);
 
       const command = registeredCommands.get("clean-properties");
@@ -1795,7 +1833,9 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
-      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Cleaned empty properties"));
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Cleaned empty properties"),
+      );
     });
 
     it("should execute vote on effort successfully", async () => {
@@ -1825,7 +1865,9 @@ describe("CommandManager", () => {
         },
       });
 
-      mockApp.vault.read.mockResolvedValue("---\nexo__Asset_label: Test Label\n---");
+      mockApp.vault.read.mockResolvedValue(
+        "---\nexo__Asset_label: Test Label\n---",
+      );
       mockApp.vault.modify.mockResolvedValue(undefined);
 
       const command = registeredCommands.get("copy-label-to-aliases");
@@ -1834,7 +1876,9 @@ describe("CommandManager", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
-      expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Label copied to aliases"));
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Label copied to aliases"),
+      );
     });
   });
 });

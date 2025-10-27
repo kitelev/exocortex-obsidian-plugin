@@ -1,5 +1,5 @@
-import { defineConfig, devices } from '@playwright/experimental-ct-react';
-import * as path from 'path';
+import { defineConfig, devices } from "@playwright/experimental-ct-react";
+import * as path from "path";
 
 /**
  * Playwright Component Testing Configuration
@@ -7,7 +7,7 @@ import * as path from 'path';
  * Tests React components in isolation without requiring full Obsidian environment
  */
 export default defineConfig({
-  testDir: './tests/component',
+  testDir: "./tests/component",
 
   // Run tests in parallel
   fullyParallel: true,
@@ -23,40 +23,43 @@ export default defineConfig({
 
   // Reporter configuration
   reporter: [
-    ['html', { outputFolder: 'playwright-report-ct', open: 'never' }],
-    ['list'],
-    ...(process.env.CI ? [['github'] as ['github']] : []),
+    ["html", { outputFolder: "playwright-report-ct", open: "never" }],
+    ["list"],
+    ...(process.env.CI ? [["github"] as ["github"]] : []),
   ],
 
   // Timeout configuration
-  timeout: 10000,  // 10 seconds per test
+  timeout: 10000, // 10 seconds per test
   expect: {
-    timeout: 5000,   // 5 seconds for assertions
+    timeout: 5000, // 5 seconds for assertions
   },
 
   // Shared settings for all tests
   use: {
     // Capture trace on first retry
-    trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
+    trace: process.env.CI ? "on-first-retry" : "retain-on-failure",
 
     // Screenshot on failure
-    screenshot: 'only-on-failure',
+    screenshot: "only-on-failure",
 
     // Component testing options
     ctPort: 3100,
     ctViteConfig: {
       resolve: {
         alias: {
-          '@exocortex/core': path.resolve(__dirname, '../../packages/core/src/index.ts'),
-          'obsidian': path.resolve(__dirname, './tests/__mocks__/obsidian.ts'),
-          '@': path.resolve(__dirname, './src'),
+          "@exocortex/core": path.resolve(
+            __dirname,
+            "../../packages/core/src/index.ts",
+          ),
+          obsidian: path.resolve(__dirname, "./tests/__mocks__/obsidian.ts"),
+          "@": path.resolve(__dirname, "./src"),
         },
-        extensions: ['.ts', '.tsx', '.js', '.jsx'],
+        extensions: [".ts", ".tsx", ".js", ".jsx"],
       },
       define: {
         // Provide jest globals for component tests (some code may reference jest)
-        'global.jest': 'undefined',
-        'window.jest': 'undefined',
+        "global.jest": "undefined",
+        "window.jest": "undefined",
       },
     },
   },
@@ -64,8 +67,8 @@ export default defineConfig({
   // Test projects for different browsers
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
     // Firefox and WebKit disabled by default (install with: npx playwright install firefox webkit)
     // {
