@@ -23,17 +23,17 @@
   "license": "MIT",
   "dependencies": {
     "@exocortex/core": "file:../core",
-    "commander": "^11.0.0",
+    "commander": "^14.0.2",
     "chalk": "^5.3.0",
-    "ora": "^7.0.1",
+    "ora": "^9.0.0",
     "fs-extra": "^11.0.0",
-    "glob": "^10.3.0",
+    "glob": "^11.0.3",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.0",
     "@types/js-yaml": "^4.0.0",
-    "@types/node": "^20.0.0",
+    "@types/node": "^24.9.1",
     "typescript": "^5.9.3"
   }
 }
