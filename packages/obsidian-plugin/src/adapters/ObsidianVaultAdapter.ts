@@ -27,7 +27,7 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
 
   async delete(file: IFile): Promise<void> {
     const obsidianFile = this.toObsidianFile(file);
-    await this.vault.delete(obsidianFile);
+    await this.app.fileManager.trashFile(obsidianFile);
   }
 
   async exists(path: string): Promise<boolean> {
