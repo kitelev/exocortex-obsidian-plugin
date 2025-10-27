@@ -86,15 +86,32 @@ Graph: D3.js force-directed (force-graph 1.51.0)
 
 ---
 
+## 📦 Monorepo Organization
+
+Exocortex is organized as a **monorepo** with multiple npm workspaces:
+
+```
+/packages
+  /core                       - @exocortex/core (storage-agnostic business logic)
+  /obsidian-plugin            - @exocortex/obsidian-plugin (Obsidian UI integration)
+  /cli                        - @exocortex/cli (command-line automation tool)
+```
+
+**Benefits:**
+- **Shared Core Logic**: Business logic in `@exocortex/core` is reused by both plugin and CLI
+- **Independent Versioning**: Each package has its own version and release cycle
+- **Clear Boundaries**: Enforces separation between storage-agnostic logic and UI/CLI adapters
+- **Parallel Development**: Teams can work on different packages independently
+
 ## 🏗️ Architecture Layers
 
 Exocortex follows **Clean Architecture** principles with clear separation of concerns.
 
-### Layer 1: Domain Layer
+### Layer 1: Domain Layer (in @exocortex/core)
 
 **Purpose**: Core business entities, rules, and logic independent of any framework
 
-**Location**: `/src/domain/`
+**Location**: `packages/core/src/domain/`
 
 **Components**:
 - **Constants**: `AssetClass`, `EffortStatus` enums
@@ -110,44 +127,50 @@ Exocortex follows **Clean Architecture** principles with clear separation of con
 - ✅ Highly testable (100% unit testable)
 - ✅ Reusable across adapters (CLI, Web, Mobile)
 
-### Layer 2: Application Layer
+### Layer 2: Application Layer (in @exocortex/core)
 
 **Purpose**: Use cases and business services
 
-**Location**: `/src/application/services/`
+**Location**: `packages/core/src/application/services/`
 
 **Components**:
 - `CommandManager` - Facade for all 26 commands
+- 14 specialized services (TaskCreationService, ProjectCreationService, etc.)
 
-**Dependencies**: Domain layer, infrastructure layer
+**Dependencies**: Domain layer, IFileSystemAdapter interface
 
 **Characteristics**:
 - Orchestrates domain logic
-- Uses infrastructure services
+- Uses infrastructure interfaces (not concrete implementations)
 - Framework-agnostic business workflows
+- ✅ Fully testable without Obsidian
 
-### Layer 3: Infrastructure Layer
+### Layer 3: Infrastructure Layer (split between packages)
 
 **Purpose**: Implementation details and external integrations
 
-**Location**: `/src/infrastructure/`
+**Core Infrastructure** (`packages/core/src/infrastructure/`):
+- **IFileSystemAdapter**: Abstract interface for storage operations
+- **Utilities**: Pure helpers (DateFormatter, WikiLinkHelpers, FrontmatterService)
 
-**Components**:
-- **Services** (14 total): File operations, metadata extraction
-- **Utilities**: Reusable helpers (DateFormatter, WikiLinkHelpers, etc.)
+**Obsidian Plugin Infrastructure** (`packages/obsidian-plugin/src/infrastructure/`):
+- **ObsidianVaultAdapter**: Implements IFileSystemAdapter using Obsidian Vault API
+- **Obsidian-specific utilities**: MetadataExtractor, cache management
 
-**Dependencies**: Obsidian API (Vault, MetadataCache, TFile)
+**CLI Infrastructure** (`packages/cli/src/infrastructure/`):
+- **NodeFsAdapter**: Implements IFileSystemAdapter using Node.js fs module
+- **File system operations**: Direct file manipulation
 
-**Characteristics**:
-- ⚠️ Tightly coupled to Obsidian Vault API
-- Implements repository patterns
-- Target for refactoring in Issue #122
+**Dependencies**:
+- Core: Zero external dependencies
+- Plugin: Obsidian API (Vault, MetadataCache, TFile)
+- CLI: Node.js fs, path modules
 
-### Layer 4: Presentation Layer
+### Layer 4: Presentation Layer (in @exocortex/obsidian-plugin)
 
 **Purpose**: User interface and user interactions
 
-**Location**: `/src/presentation/`
+**Location**: `packages/obsidian-plugin/src/presentation/`
 
 **Components**:
 - **Components**: React components (13 total)
@@ -155,12 +178,13 @@ Exocortex follows **Clean Architecture** principles with clear separation of con
 - **Builders**: UI builders (`ButtonGroupsBuilder`)
 - **Modals**: Input dialogs (6 total)
 
-**Dependencies**: Obsidian API (App, Modal), React
+**Dependencies**: Obsidian API (App, Modal), React, @exocortex/core
 
 **Characteristics**:
 - Obsidian-specific UI
 - React state management
 - Event handlers and user interactions
+- Uses core services through dependency injection
 
 ---
 
@@ -602,40 +626,41 @@ const service = new TaskCreationService(this.app.vault);
 
 ---
 
-## 🔍 Current Limitations
+## 🔍 Current State (After Monorepo Migration)
 
-### 1. Tight Obsidian Coupling
+### 1. ✅ RESOLVED: Storage Abstraction
 
-**Problem**: Services directly use `Vault`, `MetadataCache`, `TFile`
+**Previous Problem**: Services directly used Obsidian `Vault`, `MetadataCache`, `TFile`
 
-**Impact**:
-- Cannot run without Obsidian
-- Cannot create standalone CLI
-- Difficult to test (need Obsidian mocks)
+**Solution Implemented**:
+- ✅ Extracted `@exocortex/core` package with `IFileSystemAdapter` interface
+- ✅ Created `ObsidianVaultAdapter` in plugin package
+- ✅ Created `NodeFsAdapter` in CLI package
+- ✅ Services now storage-agnostic
 
-**Solution** (Issue #122): Extract to `@exocortex/core` with `IFileSystemAdapter`
+**Result**: Can run business logic without Obsidian, full testability
 
-### 2. No Core Package
+### 2. ✅ RESOLVED: Core Package Extraction
 
-**Problem**: Business logic mixed with UI code
+**Previous Problem**: Business logic mixed with UI code
 
-**Impact**:
-- Code duplication if building CLI
-- Cannot reuse logic in other contexts
-- Hard to maintain single source of truth
+**Solution Implemented**:
+- ✅ Created `@exocortex/core` package with pure business logic
+- ✅ Zero external dependencies in core
+- ✅ Shared by both plugin and CLI
 
-**Solution** (Issue #122): Create `@exocortex/core` package
+**Result**: Single source of truth for business rules, no code duplication
 
-### 3. Limited Automation
+### 3. ✅ RESOLVED: Command-Line Interface
 
-**Problem**: No command-line interface
+**Previous Problem**: No automation without Obsidian running
 
-**Impact**:
-- Cannot use with Claude Code without Obsidian running
-- No batch operations
-- No CI/CD integration
+**Solution Implemented**:
+- ✅ Created `@exocortex/cli` package
+- ✅ Supports batch operations and automation
+- ✅ Works with Claude Code and CI/CD
 
-**Solution** (Issue #122): Create `exocortex-cli` tool
+**Result**: Full automation capabilities for development workflows
 
 ### 4. Manual Property Management
 
@@ -660,9 +685,9 @@ const service = new TaskCreationService(this.app.vault);
 
 ---
 
-## 🚀 Future Architecture (Post-Issue #122)
+## 🚀 Current Architecture (Monorepo Implementation)
 
-### Three-Tier Architecture
+### Three-Tier Architecture (IMPLEMENTED)
 
 ```mermaid
 graph TB
@@ -674,15 +699,15 @@ graph TB
     end
 
     subgraph Adapters["Storage Adapters"]
-        ObsidianAdapter[ObsidianVaultAdapter<br/>Uses Obsidian Vault API]
-        NodeFsAdapter[NodeFsAdapter<br/>Uses Node.js fs]
-        CloudAdapter[CloudFsAdapter<br/>Future: S3, GCS, etc.]
+        ObsidianAdapter[ObsidianVaultAdapter<br/>✅ IMPLEMENTED<br/>Uses Obsidian Vault API]
+        NodeFsAdapter[NodeFsAdapter<br/>✅ IMPLEMENTED<br/>Uses Node.js fs]
+        CloudAdapter[CloudFsAdapter<br/>🔮 FUTURE: S3, GCS, etc.]
     end
 
     subgraph Interfaces["User Interfaces"]
-        Plugin[Obsidian Plugin<br/>Visual UI, Modals, Graph]
-        CLI[CLI Tool<br/>Automation, Batch Ops]
-        Web[Web Interface<br/>Future: Browser-based]
+        Plugin[Obsidian Plugin<br/>✅ IMPLEMENTED<br/>Visual UI, Modals, Graph]
+        CLI[CLI Tool<br/>✅ IMPLEMENTED<br/>Automation, Batch Ops]
+        Web[Web Interface<br/>🔮 FUTURE: Browser-based]
     end
 
     Core --> IFS
@@ -694,18 +719,20 @@ graph TB
     CloudAdapter -.future.-> Web
 ```
 
-### Benefits After #122
+### Achieved Benefits
 
 **For Users**:
 - ✅ CLI for automation (Claude Code integration)
 - ✅ Faster development (parallel Core/Plugin work)
-- ✅ More reliable (Core has 95% test coverage)
+- ✅ More reliable (Core has 80% test coverage, 803 unit tests)
+- ✅ Batch operations without Obsidian running
 
 **For Developers**:
 - ✅ Testable core logic (no Obsidian mocks needed)
 - ✅ Multiple UIs (Plugin, CLI, future Web)
-- ✅ Clear dependency boundaries
-- ✅ Easier maintenance (one Core, many adapters)
+- ✅ Clear dependency boundaries via npm workspaces
+- ✅ Easier maintenance (one Core, multiple adapters)
+- ✅ Independent package versioning
 
 ---
 

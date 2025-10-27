@@ -167,12 +167,12 @@ docker image prune -a
 The test vault is isolated and includes fixtures:
 
 ```
-tests/e2e/test-vault/
+packages/obsidian-plugin/tests/e2e/test-vault/
 ├── .obsidian/
 │   ├── app.json                    # Obsidian config
 │   └── plugins/
 │       └── exocortex/
-│           ├── main.js             # Your plugin (built)
+│           ├── main.js             # Your plugin (built from packages/obsidian-plugin)
 │           └── manifest.json
 ├── Daily Notes/
 │   └── 2025-10-16.md              # Test DailyNote
