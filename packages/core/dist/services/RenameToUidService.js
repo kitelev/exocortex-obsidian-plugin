@@ -21,7 +21,9 @@ class RenameToUidService {
             await this.updateLabel(file, currentBasename);
         }
         const folderPath = file.parent?.path || "";
-        const newPath = folderPath ? `${folderPath}/${targetBasename}.md` : `${targetBasename}.md`;
+        const newPath = folderPath
+            ? `${folderPath}/${targetBasename}.md`
+            : `${targetBasename}.md`;
         await this.vault.rename(file, newPath);
     }
     async updateLabel(file, label) {

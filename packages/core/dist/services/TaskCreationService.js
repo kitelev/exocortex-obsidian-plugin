@@ -64,7 +64,7 @@ class TaskCreationService {
     addRelationToFrontmatter(content, relatedTaskUid) {
         const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---/;
         const match = content.match(frontmatterRegex);
-        const lineEnding = content.includes('\r\n') ? '\r\n' : '\n';
+        const lineEnding = content.includes("\r\n") ? "\r\n" : "\n";
         if (!match) {
             const newFrontmatter = `---${lineEnding}exo__Asset_relates:${lineEnding}  - "[[${relatedTaskUid}]]"${lineEnding}---${lineEnding}${content}`;
             return newFrontmatter;

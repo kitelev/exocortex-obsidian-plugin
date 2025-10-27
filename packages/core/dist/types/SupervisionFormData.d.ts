@@ -1,10 +1,10 @@
 export interface SupervisionFormData {
-  situation: string;
-  emotions: string;
-  thoughts: string;
-  behavior: string;
-  shortTermConsequences: string;
-  longTermConsequences: string;
-  desiredBehavior: string;
+    situation: string;
+    emotions: string;
+    thoughts: string;
+    behavior: string;
+    shortTermConsequences: string;
+    longTermConsequences: string;
+    desiredBehavior: string;
 }
 //# sourceMappingURL=SupervisionFormData.d.ts.map

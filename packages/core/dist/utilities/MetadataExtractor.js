@@ -37,7 +37,9 @@ class MetadataExtractor {
         const isDefinedBy = metadata.exo__Asset_isDefinedBy;
         if (!isDefinedBy)
             return null;
-        const definedByValue = Array.isArray(isDefinedBy) ? isDefinedBy[0] : isDefinedBy;
+        const definedByValue = Array.isArray(isDefinedBy)
+            ? isDefinedBy[0]
+            : isDefinedBy;
         if (!definedByValue || typeof definedByValue !== "string")
             return null;
         const cleanValue = definedByValue.replace(/["'[\]]/g, "").trim();

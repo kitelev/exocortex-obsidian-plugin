@@ -42,15 +42,16 @@ function hasClass(instanceClass, targetClass) {
  * Check if instanceClass is ems__Area or ems__Project
  */
 function isAreaOrProject(instanceClass) {
-    return hasClass(instanceClass, constants_1.AssetClass.AREA) || hasClass(instanceClass, constants_1.AssetClass.PROJECT);
+    return (hasClass(instanceClass, constants_1.AssetClass.AREA) ||
+        hasClass(instanceClass, constants_1.AssetClass.PROJECT));
 }
 /**
  * Check if instanceClass is ems__Task, ems__Project, or ems__Meeting
  */
 function isEffort(instanceClass) {
-    return hasClass(instanceClass, constants_1.AssetClass.TASK) ||
+    return (hasClass(instanceClass, constants_1.AssetClass.TASK) ||
         hasClass(instanceClass, constants_1.AssetClass.PROJECT) ||
-        hasClass(instanceClass, constants_1.AssetClass.MEETING);
+        hasClass(instanceClass, constants_1.AssetClass.MEETING));
 }
 /**
  * Check if current status is Done
@@ -125,9 +126,9 @@ function canCreateTask(context) {
  * Available for: ems__Area, ems__Initiative, and ems__Project assets
  */
 function canCreateProject(context) {
-    return hasClass(context.instanceClass, constants_1.AssetClass.AREA) ||
+    return (hasClass(context.instanceClass, constants_1.AssetClass.AREA) ||
         hasClass(context.instanceClass, constants_1.AssetClass.INITIATIVE) ||
-        hasClass(context.instanceClass, constants_1.AssetClass.PROJECT);
+        hasClass(context.instanceClass, constants_1.AssetClass.PROJECT));
 }
 /**
  * Can execute "Create Child Area" command
@@ -141,8 +142,8 @@ function canCreateChildArea(context) {
  * Available for: ems__TaskPrototype and ems__MeetingPrototype assets
  */
 function canCreateInstance(context) {
-    return hasClass(context.instanceClass, constants_1.AssetClass.TASK_PROTOTYPE) ||
-        hasClass(context.instanceClass, constants_1.AssetClass.MEETING_PROTOTYPE);
+    return (hasClass(context.instanceClass, constants_1.AssetClass.TASK_PROTOTYPE) ||
+        hasClass(context.instanceClass, constants_1.AssetClass.MEETING_PROTOTYPE));
 }
 /**
  * Get today's date in YYYY-MM-DD format
@@ -171,7 +172,9 @@ function isPlannedForToday(metadata) {
     }
     // Handle array value (take first element)
     if (Array.isArray(effortDay) && effortDay.length > 0) {
-        const cleanValue = String(effortDay[0]).replace(/["'[\]]/g, "").trim();
+        const cleanValue = String(effortDay[0])
+            .replace(/["'[\]]/g, "")
+            .trim();
         return cleanValue === todayString;
     }
     return false;
@@ -193,7 +196,8 @@ function canPlanOnToday(context) {
  * Available for: Task or Meeting with Backlog status
  */
 function canPlanForEvening(context) {
-    if (!hasClass(context.instanceClass, constants_1.AssetClass.TASK) && !hasClass(context.instanceClass, constants_1.AssetClass.MEETING))
+    if (!hasClass(context.instanceClass, constants_1.AssetClass.TASK) &&
+        !hasClass(context.instanceClass, constants_1.AssetClass.MEETING))
         return false;
     // Show only for Backlog status
     return hasStatus(context.currentStatus, constants_1.EffortStatus.BACKLOG);
@@ -210,7 +214,9 @@ function hasEffortDay(metadata) {
         return cleanValue.length > 0;
     }
     if (Array.isArray(effortDay) && effortDay.length > 0) {
-        const cleanValue = String(effortDay[0]).replace(/["'[\]]/g, "").trim();
+        const cleanValue = String(effortDay[0])
+            .replace(/["'[\]]/g, "")
+            .trim();
         return cleanValue.length > 0;
     }
     return false;
@@ -281,7 +287,8 @@ function canStartEffort(context) {
     if (!isEffort(context.instanceClass))
         return false;
     // Task and Meeting: Backlog → Doing
-    if (hasClass(context.instanceClass, constants_1.AssetClass.TASK) || hasClass(context.instanceClass, constants_1.AssetClass.MEETING)) {
+    if (hasClass(context.instanceClass, constants_1.AssetClass.TASK) ||
+        hasClass(context.instanceClass, constants_1.AssetClass.MEETING)) {
         return hasStatus(context.currentStatus, constants_1.EffortStatus.BACKLOG);
     }
     // Project: ToDo → Doing
@@ -316,8 +323,7 @@ function canTrashEffort(context) {
         : [context.currentStatus];
     const hasTrashedOrDone = statuses.some((status) => {
         const cleanStatus = WikiLinkHelpers_1.WikiLinkHelpers.normalize(status);
-        return (cleanStatus === constants_1.EffortStatus.TRASHED ||
-            cleanStatus === constants_1.EffortStatus.DONE);
+        return (cleanStatus === constants_1.EffortStatus.TRASHED || cleanStatus === constants_1.EffortStatus.DONE);
     });
     return !hasTrashedOrDone;
 }

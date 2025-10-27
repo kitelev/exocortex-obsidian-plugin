@@ -148,7 +148,7 @@ class TaskStatusService {
             return null;
         const arrayMatch = parsed.content.match(/exo__Instance_class:\s*\n((?:\s*-\s*.*\n?)+)/);
         if (arrayMatch) {
-            const lines = arrayMatch[1].split("\n").filter(l => l.trim());
+            const lines = arrayMatch[1].split("\n").filter((l) => l.trim());
             return lines.map((line) => line.replace(/^\s*-\s*/, "").trim());
         }
         return this.frontmatterService.getPropertyValue(parsed.content, "exo__Instance_class");

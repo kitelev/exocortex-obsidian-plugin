@@ -4,14 +4,14 @@ exports.FileAlreadyExistsError = exports.FileNotFoundError = void 0;
 class FileNotFoundError extends Error {
     constructor(path) {
         super(`File not found: ${path}`);
-        this.name = 'FileNotFoundError';
+        this.name = "FileNotFoundError";
     }
 }
 exports.FileNotFoundError = FileNotFoundError;
 class FileAlreadyExistsError extends Error {
     constructor(path) {
         super(`File already exists: ${path}`);
-        this.name = 'FileAlreadyExistsError';
+        this.name = "FileAlreadyExistsError";
     }
 }
 exports.FileAlreadyExistsError = FileAlreadyExistsError;

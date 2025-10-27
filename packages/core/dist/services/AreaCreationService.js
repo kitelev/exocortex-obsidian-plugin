@@ -25,7 +25,8 @@ class AreaCreationService {
         const timestamp = DateFormatter_1.DateFormatter.toLocalTimestamp(now);
         const isDefinedBy = MetadataExtractor_1.MetadataExtractor.extractIsDefinedBy(sourceMetadata);
         const frontmatter = {};
-        frontmatter["exo__Asset_isDefinedBy"] = MetadataHelpers_1.MetadataHelpers.ensureQuoted(isDefinedBy);
+        frontmatter["exo__Asset_isDefinedBy"] =
+            MetadataHelpers_1.MetadataHelpers.ensureQuoted(isDefinedBy);
         frontmatter["exo__Asset_uid"] = uid || (0, uuid_1.v4)();
         frontmatter["exo__Asset_createdAt"] = timestamp;
         frontmatter["exo__Instance_class"] = [`"[[${constants_1.AssetClass.AREA}]]"`];

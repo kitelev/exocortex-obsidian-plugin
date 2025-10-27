@@ -28,14 +28,16 @@ class TaskFrontmatterGenerator {
         const effortProperty = EFFORT_PROPERTY_MAP[cleanSourceClass] || "ems__Effort_area";
         const instanceClass = INSTANCE_CLASS_MAP[cleanSourceClass] || constants_1.AssetClass.TASK;
         const frontmatter = {};
-        frontmatter["exo__Asset_isDefinedBy"] = MetadataHelpers_1.MetadataHelpers.ensureQuoted(isDefinedBy);
+        frontmatter["exo__Asset_isDefinedBy"] =
+            MetadataHelpers_1.MetadataHelpers.ensureQuoted(isDefinedBy);
         frontmatter["exo__Asset_uid"] = uid || (0, uuid_1.v4)();
         frontmatter["exo__Asset_createdAt"] = timestamp;
         frontmatter["exo__Instance_class"] = [`"[[${instanceClass}]]"`];
         frontmatter["ems__Effort_status"] = '"[[ems__EffortStatusDraft]]"';
         frontmatter[effortProperty] = `"[[${sourceName}]]"`;
         let finalLabel = label;
-        if (instanceClass === constants_1.AssetClass.MEETING && (!label || label.trim() === "")) {
+        if (instanceClass === constants_1.AssetClass.MEETING &&
+            (!label || label.trim() === "")) {
             const baseLabel = sourceMetadata.exo__Asset_label || sourceName;
             const dateStr = DateFormatter_1.DateFormatter.toDateString(now);
             finalLabel = `${baseLabel} ${dateStr}`;
@@ -55,7 +57,8 @@ class TaskFrontmatterGenerator {
         const timestamp = DateFormatter_1.DateFormatter.toLocalTimestamp(now);
         const isDefinedBy = MetadataExtractor_1.MetadataExtractor.extractIsDefinedBy(sourceMetadata);
         const frontmatter = {};
-        frontmatter["exo__Asset_isDefinedBy"] = MetadataHelpers_1.MetadataHelpers.ensureQuoted(isDefinedBy);
+        frontmatter["exo__Asset_isDefinedBy"] =
+            MetadataHelpers_1.MetadataHelpers.ensureQuoted(isDefinedBy);
         frontmatter["exo__Asset_uid"] = uid || (0, uuid_1.v4)();
         frontmatter["exo__Asset_createdAt"] = timestamp;
         frontmatter["exo__Instance_class"] = [`"[[${constants_1.AssetClass.TASK}]]"`];

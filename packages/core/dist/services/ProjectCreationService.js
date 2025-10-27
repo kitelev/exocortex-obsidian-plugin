@@ -38,7 +38,8 @@ class ProjectCreationService {
         const cleanSourceClass = WikiLinkHelpers_1.WikiLinkHelpers.normalize(sourceClass);
         const effortProperty = EFFORT_PROPERTY_MAP[cleanSourceClass] || "ems__Effort_area";
         const frontmatter = {};
-        frontmatter["exo__Asset_isDefinedBy"] = MetadataHelpers_1.MetadataHelpers.ensureQuoted(isDefinedBy);
+        frontmatter["exo__Asset_isDefinedBy"] =
+            MetadataHelpers_1.MetadataHelpers.ensureQuoted(isDefinedBy);
         frontmatter["exo__Asset_uid"] = uid || (0, uuid_1.v4)();
         frontmatter["exo__Asset_createdAt"] = timestamp;
         frontmatter["exo__Instance_class"] = [`"[[${constants_1.AssetClass.PROJECT}]]"`];
