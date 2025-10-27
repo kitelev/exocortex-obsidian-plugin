@@ -17,13 +17,7 @@ test.describe("Algorithm Block Extraction from TaskPrototype", () => {
     await launcher.close();
   });
 
-  // SKIPPED: These tests are flaky in headless Docker environments.
-  // The Create Instance command executes successfully (files are created),
-  // but workspace.getActiveFile() is unreliable in headless Electron.
-  // This is a known limitation of E2E testing with Obsidian in Docker.
-  // Core functionality verified by 930+ passing unit/component/integration tests.
-  // TODO: Re-enable when Obsidian provides better E2E workspace state support.
-  test.skip("should copy Algorithm section when creating instance from TaskPrototype", async () => {
+  test("should copy Algorithm section when creating instance from TaskPrototype", async () => {
     // Open the TaskPrototype file
     await launcher.openFile("Tasks/bug-fix-prototype.md");
 
@@ -61,19 +55,26 @@ test.describe("Algorithm Block Extraction from TaskPrototype", () => {
       .waitForLoadState("networkidle", { timeout: 5000 })
       .catch(() => {});
 
-    // Get the path of the newly created file
-    const newFilePath = await window.evaluate(() => {
-      const app = (window as any).app;
-      const activeFile = app.workspace.getActiveFile();
-      return activeFile ? activeFile.path : null;
-    });
+    // Wait longer for file creation (command execution + file write)
+    await window.waitForTimeout(5000);
 
-    if (!newFilePath) {
-      throw new Error("No active file after Create Instance");
+    // Instead of relying on workspace.getActiveFile() (unreliable in headless),
+    // find the newly created file by scanning vault directory
+    const tasksDir = path.join(vaultPath, "Tasks");
+    const files = await fs.readdir(tasksDir);
+    const newFiles = files.filter((f) =>
+      f.includes("Fix memory leak in cache"),
+    );
+
+    if (newFiles.length === 0) {
+      const allFiles = await fs.readdir(tasksDir);
+      throw new Error(
+        `New instance file not created. Files in Tasks: ${allFiles.join(", ")}`,
+      );
     }
 
     // Read the file content from disk
-    const fullPath = path.join(vaultPath, newFilePath);
+    const fullPath = path.join(tasksDir, newFiles[0]);
     const editorContent = await fs.readFile(fullPath, "utf-8");
 
     // Verify the Algorithm section was copied
@@ -101,7 +102,7 @@ test.describe("Algorithm Block Extraction from TaskPrototype", () => {
     );
   });
 
-  test.skip("should create empty body when TaskPrototype has no Algorithm section", async () => {
+  test("should create empty body when TaskPrototype has no Algorithm section", async () => {
     // Open the pre-existing TaskPrototype file without Algorithm section
     await launcher.openFile("Tasks/simple-prototype.md");
 
@@ -131,22 +132,24 @@ test.describe("Algorithm Block Extraction from TaskPrototype", () => {
     const submitButton = window.locator(".modal button.mod-cta");
     await submitButton.click();
 
-    // Wait for file creation
-    await window.waitForTimeout(2000);
+    // Wait longer for file creation (command execution + file write)
+    await window.waitForTimeout(5000);
 
-    // Get the path of the newly created file
-    const newFilePath = await window.evaluate(() => {
-      const app = (window as any).app;
-      const activeFile = app.workspace.getActiveFile();
-      return activeFile ? activeFile.path : null;
-    });
+    // Instead of relying on workspace.getActiveFile() (unreliable in headless),
+    // find the newly created file by scanning vault directory
+    const tasksDir = path.join(vaultPath, "Tasks");
+    const files = await fs.readdir(tasksDir);
+    const newFiles = files.filter((f) => f.includes("Simple Task"));
 
-    if (!newFilePath) {
-      throw new Error("No active file after Create Instance");
+    if (newFiles.length === 0) {
+      const allFiles = await fs.readdir(tasksDir);
+      throw new Error(
+        `New instance file not created. Files in Tasks: ${allFiles.join(", ")}`,
+      );
     }
 
     // Read the file content from disk
-    const fullPath = path.join(vaultPath, newFilePath);
+    const fullPath = path.join(tasksDir, newFiles[0]);
     const editorContent = await fs.readFile(fullPath, "utf-8");
 
     // Verify NO Algorithm section was created
