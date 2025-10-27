@@ -38,6 +38,7 @@ import { WikiLinkHelpers } from '@exocortex/core';
 import { AssetClass } from '@exocortex/core';
 import { MetadataExtractor } from '@exocortex/core';
 import { LoggingService } from '@exocortex/core';
+import { ObsidianVaultAdapter } from '../../adapters/ObsidianVaultAdapter';
 
 /**
  * Command Manager Service
@@ -64,18 +65,20 @@ export class CommandManager {
   private labelToAliasService: LabelToAliasService;
   private metadataExtractor: MetadataExtractor;
   private reloadLayoutCallback?: () => void;
+  private vaultAdapter: ObsidianVaultAdapter;
 
   constructor(private app: App) {
-    this.metadataExtractor = new MetadataExtractor(app.metadataCache);
-    this.taskCreationService = new TaskCreationService(app.vault);
-    this.projectCreationService = new ProjectCreationService(app.vault);
-    this.taskStatusService = new TaskStatusService(app.vault);
-    this.propertyCleanupService = new PropertyCleanupService(app.vault);
-    this.folderRepairService = new FolderRepairService(app.vault, app);
-    this.supervisionCreationService = new SupervisionCreationService(app.vault);
-    this.renameToUidService = new RenameToUidService(app);
-    this.effortVotingService = new EffortVotingService(app.vault);
-    this.labelToAliasService = new LabelToAliasService(app.vault);
+    this.vaultAdapter = new ObsidianVaultAdapter(app.vault, app.metadataCache, app);
+    this.metadataExtractor = new MetadataExtractor(this.vaultAdapter);
+    this.taskCreationService = new TaskCreationService(this.vaultAdapter);
+    this.projectCreationService = new ProjectCreationService(this.vaultAdapter);
+    this.taskStatusService = new TaskStatusService(this.vaultAdapter);
+    this.propertyCleanupService = new PropertyCleanupService(this.vaultAdapter);
+    this.folderRepairService = new FolderRepairService(this.vaultAdapter);
+    this.supervisionCreationService = new SupervisionCreationService(this.vaultAdapter);
+    this.renameToUidService = new RenameToUidService(this.vaultAdapter);
+    this.effortVotingService = new EffortVotingService(this.vaultAdapter);
+    this.labelToAliasService = new LabelToAliasService(this.vaultAdapter);
   }
 
   /**
@@ -808,7 +811,7 @@ export class CommandManager {
 
     // Open the created file in a new tab
     const leaf = this.app.workspace.getLeaf("tab");
-    await leaf.openFile(createdFile);
+    await leaf.openFile(this.vaultAdapter.toTFile(createdFile));
 
     // Switch focus to the new tab
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
@@ -842,7 +845,7 @@ export class CommandManager {
     );
 
     const leaf = this.app.workspace.getLeaf("tab");
-    await leaf.openFile(createdFile);
+    await leaf.openFile(this.vaultAdapter.toTFile(createdFile));
 
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
@@ -883,7 +886,7 @@ export class CommandManager {
 
     // Open the created file in a new tab
     const leaf = this.app.workspace.getLeaf("tab");
-    await leaf.openFile(createdFile);
+    await leaf.openFile(this.vaultAdapter.toTFile(createdFile));
 
     // Switch focus to the new tab
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
@@ -915,7 +918,7 @@ export class CommandManager {
 
     // Open the created file in a new tab
     const leaf = this.app.workspace.getLeaf("tab");
-    await leaf.openFile(createdFile);
+    await leaf.openFile(this.vaultAdapter.toTFile(createdFile));
 
     // Switch focus to the new tab
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
@@ -1026,7 +1029,7 @@ export class CommandManager {
     );
 
     const leaf = this.app.workspace.getLeaf("tab");
-    await leaf.openFile(createdFile);
+    await leaf.openFile(this.vaultAdapter.toTFile(createdFile));
 
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
 

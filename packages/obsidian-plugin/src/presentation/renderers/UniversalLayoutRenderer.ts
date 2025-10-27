@@ -27,6 +27,7 @@ import { MetadataExtractor } from '@exocortex/core';
 import { ButtonGroupsBuilder } from "../builders/ButtonGroupsBuilder";
 import { DailyTasksRenderer } from "./DailyTasksRenderer";
 import { DailyProjectsRenderer } from "./DailyProjectsRenderer";
+import { ObsidianVaultAdapter } from '../../adapters/ObsidianVaultAdapter';
 
 /**
  * UniversalLayout configuration options
@@ -73,6 +74,7 @@ export class UniversalLayoutRenderer {
   private buttonGroupsBuilder: ButtonGroupsBuilder;
   private dailyTasksRenderer: DailyTasksRenderer;
   private dailyProjectsRenderer: DailyProjectsRenderer;
+  private vaultAdapter: ObsidianVaultAdapter;
 
   constructor(app: ObsidianApp, settings: ExocortexSettings, plugin: any) {
     this.app = app;
@@ -82,17 +84,18 @@ export class UniversalLayoutRenderer {
     this.reactRenderer = new ReactRenderer();
     this.eventListenerManager = new EventListenerManager();
     this.backlinksCacheManager = new BacklinksCacheManager(this.app);
-    this.metadataExtractor = new MetadataExtractor(this.app.metadataCache);
-    this.taskCreationService = new TaskCreationService(this.app.vault);
-    this.projectCreationService = new ProjectCreationService(this.app.vault);
-    this.areaCreationService = new AreaCreationService(this.app.vault);
-    this.conceptCreationService = new ConceptCreationService(this.app.vault);
-    this.taskStatusService = new TaskStatusService(this.app.vault);
-    this.propertyCleanupService = new PropertyCleanupService(this.app.vault);
-    this.folderRepairService = new FolderRepairService(this.app.vault, this.app);
-    this.renameToUidService = new RenameToUidService(this.app);
-    this.effortVotingService = new EffortVotingService(this.app.vault);
-    this.labelToAliasService = new LabelToAliasService(this.app.vault);
+    this.vaultAdapter = new ObsidianVaultAdapter(this.app.vault, this.app.metadataCache, this.app);
+    this.metadataExtractor = new MetadataExtractor(this.vaultAdapter);
+    this.taskCreationService = new TaskCreationService(this.vaultAdapter);
+    this.projectCreationService = new ProjectCreationService(this.vaultAdapter);
+    this.areaCreationService = new AreaCreationService(this.vaultAdapter);
+    this.conceptCreationService = new ConceptCreationService(this.vaultAdapter);
+    this.taskStatusService = new TaskStatusService(this.vaultAdapter);
+    this.propertyCleanupService = new PropertyCleanupService(this.vaultAdapter);
+    this.folderRepairService = new FolderRepairService(this.vaultAdapter);
+    this.renameToUidService = new RenameToUidService(this.vaultAdapter);
+    this.effortVotingService = new EffortVotingService(this.vaultAdapter);
+    this.labelToAliasService = new LabelToAliasService(this.vaultAdapter);
     this.buttonGroupsBuilder = new ButtonGroupsBuilder(
       this.app,
       this.settings,
@@ -385,10 +388,7 @@ export class UniversalLayoutRenderer {
       return;
     }
 
-    const hierarchyBuilder = new AreaHierarchyBuilder(
-      this.app.vault,
-      this.app.metadataCache,
-    );
+    const hierarchyBuilder = new AreaHierarchyBuilder(this.vaultAdapter);
 
     const tree = hierarchyBuilder.buildHierarchy(file.path, relations);
 

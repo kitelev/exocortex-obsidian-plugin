@@ -5,9 +5,8 @@ exports.FolderRepairService = void 0;
  * Service for repairing asset folder locations based on exo__Asset_isDefinedBy references
  */
 class FolderRepairService {
-    constructor(vault, app) {
+    constructor(vault) {
         this.vault = vault;
-        this.app = app;
     }
     /**
      * Get the expected folder for an asset based on its exo__Asset_isDefinedBy property
@@ -24,7 +23,7 @@ class FolderRepairService {
             return null;
         }
         // Find the referenced file
-        const referencedFile = this.app.metadataCache.getFirstLinkpathDest(reference, file.path);
+        const referencedFile = this.vault.getFirstLinkpathDest(reference, file.path);
         if (!referencedFile) {
             return null;
         }

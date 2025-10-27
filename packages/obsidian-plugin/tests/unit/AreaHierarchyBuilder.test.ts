@@ -1,30 +1,37 @@
-import { AreaHierarchyBuilder, type AssetRelation } from "@exocortex/core";
+import { AreaHierarchyBuilder, type AssetRelation, type IVaultAdapter, type IFile } from "@exocortex/core";
 
 describe("AreaHierarchyBuilder", () => {
   let builder: AreaHierarchyBuilder;
-  let mockVault: any;
-  let mockMetadataCache: any;
+  let mockVaultAdapter: IVaultAdapter;
 
   beforeEach(() => {
-    mockVault = {
+    mockVaultAdapter = {
       getAbstractFileByPath: jest.fn(),
-      getMarkdownFiles: jest.fn(() => []),
-    };
-    mockMetadataCache = {
-      getFileCache: jest.fn(),
-    };
-    builder = new AreaHierarchyBuilder(mockVault, mockMetadataCache);
+      getAllFiles: jest.fn(() => []),
+      getFrontmatter: jest.fn(),
+      read: jest.fn().mockResolvedValue(""),
+      create: jest.fn().mockResolvedValue({} as any),
+      modify: jest.fn().mockResolvedValue(undefined),
+      delete: jest.fn().mockResolvedValue(undefined),
+      exists: jest.fn().mockResolvedValue(false),
+      updateFrontmatter: jest.fn().mockResolvedValue(undefined),
+      rename: jest.fn().mockResolvedValue(undefined),
+      createFolder: jest.fn().mockResolvedValue(undefined),
+      getFirstLinkpathDest: jest.fn().mockReturnValue(null),
+      process: jest.fn().mockResolvedValue(""),
+    } as any;
+    builder = new AreaHierarchyBuilder(mockVaultAdapter);
   });
 
   describe("buildHierarchy", () => {
     it("should return null for non-Area assets", () => {
       const currentAreaPath = "task.md";
-      mockVault.getAbstractFileByPath.mockReturnValue({
+      mockVaultAdapter.getAbstractFileByPath.mockReturnValue({
         basename: "task",
         path: currentAreaPath,
         stat: { ctime: 0, mtime: 0 },
       });
-      mockMetadataCache.getFileCache.mockReturnValue({
+      mockVaultAdapter.getFrontmatter.mockReturnValue({
         frontmatter: { exo__Instance_class: "ems__Task" },
       });
 
@@ -41,9 +48,9 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVault.getAbstractFileByPath.mockReturnValue(rootFile);
-      mockVault.getMarkdownFiles.mockReturnValue([rootFile]);
-      mockMetadataCache.getFileCache.mockReturnValue({
+      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(rootFile);
+      mockVaultAdapter.getAllFiles.mockReturnValue([rootFile]);
+      mockVaultAdapter.getFrontmatter.mockReturnValue({
         frontmatter: {
           exo__Instance_class: "ems__Area",
           exo__Asset_label: "Root Area",
@@ -75,15 +82,15 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
         if (path === rootPath) return rootFile;
         if (path === childPath) return childFile;
         return null;
       });
 
-      mockVault.getMarkdownFiles.mockReturnValue([rootFile, childFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([rootFile, childFile]);
 
-      mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+      mockVaultAdapter.getFrontmatter.mockImplementation((file: any) => {
         if (file.path === rootPath) {
           return {
             frontmatter: {
@@ -148,7 +155,7 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
         const fileMap: Record<string, any> = {
           [rootPath]: rootFile,
           [childPath]: childFile,
@@ -157,9 +164,9 @@ describe("AreaHierarchyBuilder", () => {
         return fileMap[path] || null;
       });
 
-      mockVault.getMarkdownFiles.mockReturnValue([rootFile, childFile, grandchildFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([rootFile, childFile, grandchildFile]);
 
-      mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+      mockVaultAdapter.getFrontmatter.mockImplementation((file: any) => {
         if (file.path === rootPath) {
           return {
             frontmatter: {
@@ -236,14 +243,14 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
         if (path === rootPath) return rootFile;
         return null;
       });
 
-      mockVault.getMarkdownFiles.mockReturnValue([rootFile, childFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([rootFile, childFile]);
 
-      mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+      mockVaultAdapter.getFrontmatter.mockImplementation((file: any) => {
         if (file.path === rootPath) {
           return {
             frontmatter: {
@@ -300,7 +307,7 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
         const fileMap: Record<string, any> = {
           [area1Path]: area1File,
           [area2Path]: area2File,
@@ -308,9 +315,9 @@ describe("AreaHierarchyBuilder", () => {
         return fileMap[path] || null;
       });
 
-      mockVault.getMarkdownFiles.mockReturnValue([area1File, area2File]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([area1File, area2File]);
 
-      mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+      mockVaultAdapter.getFrontmatter.mockImplementation((file: any) => {
         if (file.path === area1Path) {
           return {
             frontmatter: {
@@ -374,16 +381,16 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
         if (path === rootPath) {
           return rootFile;
         }
         return null;
       });
 
-      mockVault.getMarkdownFiles.mockReturnValue([rootFile, child1File, child2File, child3File]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([rootFile, child1File, child2File, child3File]);
 
-      mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+      mockVaultAdapter.getFrontmatter.mockImplementation((file: any) => {
         if (file.path === rootPath) {
           return {
             frontmatter: {
@@ -478,16 +485,16 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
         if (path === rootPath) {
           return rootFile;
         }
         return null;
       });
 
-      mockVault.getMarkdownFiles.mockReturnValue([rootFile, childFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([rootFile, childFile]);
 
-      mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+      mockVaultAdapter.getFrontmatter.mockImplementation((file: any) => {
         if (file.path === rootPath) {
           return {
             frontmatter: {
@@ -542,7 +549,7 @@ describe("AreaHierarchyBuilder", () => {
         stat: { ctime: 0, mtime: 0 },
       };
 
-      mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
         const fileMap: Record<string, any> = {
           [rootPath]: rootFile,
           [childPath]: childFile,
@@ -550,9 +557,9 @@ describe("AreaHierarchyBuilder", () => {
         return fileMap[path] || null;
       });
 
-      mockVault.getMarkdownFiles.mockReturnValue([rootFile, childFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([rootFile, childFile]);
 
-      mockMetadataCache.getFileCache.mockImplementation((file: any) => {
+      mockVaultAdapter.getFrontmatter.mockImplementation((file: any) => {
         if (file.path === rootPath) {
           return {
             frontmatter: {

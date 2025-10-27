@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RenameToUidService = void 0;
 class RenameToUidService {
-    constructor(app) {
-        this.app = app;
+    constructor(vault) {
+        this.vault = vault;
     }
     async renameToUid(file, metadata) {
         const uid = metadata.exo__Asset_uid;
@@ -22,10 +22,10 @@ class RenameToUidService {
         }
         const folderPath = file.parent?.path || "";
         const newPath = folderPath ? `${folderPath}/${targetBasename}.md` : `${targetBasename}.md`;
-        await this.app.fileManager.renameFile(file, newPath);
+        await this.vault.rename(file, newPath);
     }
     async updateLabel(file, label) {
-        await this.app.vault.process(file, (content) => {
+        await this.vault.process(file, (content) => {
             const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
             const match = content.match(frontmatterRegex);
             if (!match) {

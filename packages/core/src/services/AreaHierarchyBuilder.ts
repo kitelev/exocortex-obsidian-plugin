@@ -1,6 +1,6 @@
-import { TFile, Vault, MetadataCache } from "obsidian";
 import { AreaNode, AreaNodeData } from '../domain/models/AreaNode';
 import { AssetClass } from '../domain/constants';
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 export interface AssetRelation {
   path: string;
@@ -11,10 +11,7 @@ export interface AssetRelation {
 }
 
 export class AreaHierarchyBuilder {
-  constructor(
-    private vault: Vault,
-    private metadataCache: MetadataCache,
-  ) {}
+  constructor(private vault: IVaultAdapter) {}
 
   buildHierarchy(
     currentAreaPath: string,
@@ -25,9 +22,7 @@ export class AreaHierarchyBuilder {
       return null;
     }
 
-    // eslint-disable-next-line obsidianmd/no-tfile-tfolder-cast
-    const cache = this.metadataCache.getFileCache(currentFile as TFile);
-    const metadata = cache?.frontmatter || {};
+    const metadata = this.vault.getFrontmatter(currentFile as IFile) || {};
     const instanceClass = this.extractInstanceClass(metadata);
 
     if (instanceClass !== AssetClass.AREA) {
@@ -39,16 +34,12 @@ export class AreaHierarchyBuilder {
     return this.buildTree(currentAreaPath, allAreas, visited, 0);
   }
 
-  private isFile(file: any): boolean {
-    if (file instanceof TFile) {
-      return true;
-    }
+  private isFile(file: any): file is IFile {
     return (
       file &&
       typeof file === "object" &&
       "basename" in file &&
-      "path" in file &&
-      "stat" in file
+      "path" in file
     );
   }
 
@@ -69,11 +60,10 @@ export class AreaHierarchyBuilder {
     const areas = new Map<string, AreaNodeData>();
     const pathByBasename = new Map<string, string>();
 
-    const allFiles = this.vault.getMarkdownFiles();
+    const allFiles = this.vault.getAllFiles();
 
     for (const file of allFiles) {
-      const cache = this.metadataCache.getFileCache(file);
-      const metadata = cache?.frontmatter || {};
+      const metadata = this.vault.getFrontmatter(file) || {};
       const instanceClass = this.extractInstanceClass(metadata);
 
       if (instanceClass === AssetClass.AREA) {

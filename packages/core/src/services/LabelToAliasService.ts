@@ -1,9 +1,9 @@
-import { TFile, Vault } from "obsidian";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 export class LabelToAliasService {
-  constructor(private vault: Vault) {}
+  constructor(private vault: IVaultAdapter) {}
 
-  async copyLabelToAliases(file: TFile): Promise<void> {
+  async copyLabelToAliases(file: IFile): Promise<void> {
     const fileContent = await this.vault.read(file);
     const label = this.extractLabel(fileContent);
 

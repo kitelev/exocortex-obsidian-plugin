@@ -1,15 +1,15 @@
-import { TFile, Vault } from "obsidian";
 import { FrontmatterService } from "../utilities/FrontmatterService";
 import { DateFormatter } from "../utilities/DateFormatter";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 export class StatusTimestampService {
   private frontmatterService: FrontmatterService;
 
-  constructor(private vault: Vault) {
+  constructor(private vault: IVaultAdapter) {
     this.frontmatterService = new FrontmatterService();
   }
 
-  async addStartTimestamp(taskFile: TFile): Promise<void> {
+  async addStartTimestamp(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     const timestamp = DateFormatter.toLocalTimestamp(new Date());
 
@@ -22,7 +22,7 @@ export class StatusTimestampService {
     await this.vault.modify(taskFile, updated);
   }
 
-  async addEndTimestamp(taskFile: TFile, date?: Date): Promise<void> {
+  async addEndTimestamp(taskFile: IFile, date?: Date): Promise<void> {
     const content = await this.vault.read(taskFile);
     const targetDate = date || new Date();
     const timestamp = DateFormatter.toLocalTimestamp(targetDate);
@@ -36,7 +36,7 @@ export class StatusTimestampService {
     await this.vault.modify(taskFile, updated);
   }
 
-  async addResolutionTimestamp(taskFile: TFile): Promise<void> {
+  async addResolutionTimestamp(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     const timestamp = DateFormatter.toLocalTimestamp(new Date());
 
@@ -50,7 +50,7 @@ export class StatusTimestampService {
   }
 
   async addEndAndResolutionTimestamps(
-    taskFile: TFile,
+    taskFile: IFile,
     date?: Date,
   ): Promise<void> {
     const content = await this.vault.read(taskFile);
@@ -71,7 +71,7 @@ export class StatusTimestampService {
     await this.vault.modify(taskFile, updated);
   }
 
-  async removeStartTimestamp(taskFile: TFile): Promise<void> {
+  async removeStartTimestamp(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     const updated = this.frontmatterService.removeProperty(
       content,
@@ -80,7 +80,7 @@ export class StatusTimestampService {
     await this.vault.modify(taskFile, updated);
   }
 
-  async removeEndTimestamp(taskFile: TFile): Promise<void> {
+  async removeEndTimestamp(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     const updated = this.frontmatterService.removeProperty(
       content,
@@ -89,7 +89,7 @@ export class StatusTimestampService {
     await this.vault.modify(taskFile, updated);
   }
 
-  async removeResolutionTimestamp(taskFile: TFile): Promise<void> {
+  async removeResolutionTimestamp(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     const updated = this.frontmatterService.removeProperty(
       content,
@@ -98,7 +98,7 @@ export class StatusTimestampService {
     await this.vault.modify(taskFile, updated);
   }
 
-  async removeEndAndResolutionTimestamps(taskFile: TFile): Promise<void> {
+  async removeEndAndResolutionTimestamps(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     let updated = this.frontmatterService.removeProperty(
       content,

@@ -1,8 +1,8 @@
-import { TFile, Vault } from "obsidian";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 export declare class LabelToAliasService {
     private vault;
-    constructor(vault: Vault);
-    copyLabelToAliases(file: TFile): Promise<void>;
+    constructor(vault: IVaultAdapter);
+    copyLabelToAliases(file: IFile): Promise<void>;
     private extractLabel;
     private addLabelToAliases;
 }

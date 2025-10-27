@@ -1,16 +1,16 @@
-import { TFile, Vault } from "obsidian";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 /**
  * Service for cleaning empty properties from file frontmatter
  */
 export class PropertyCleanupService {
-  constructor(private vault: Vault) {}
+  constructor(private vault: IVaultAdapter) {}
 
   /**
    * Remove all empty properties from file frontmatter
    * Empty properties are: null, undefined, "", [], {}
    */
-  async cleanEmptyProperties(file: TFile): Promise<void> {
+  async cleanEmptyProperties(file: IFile): Promise<void> {
     const fileContent = await this.vault.read(file);
     const updatedContent = this.removeEmptyPropertiesFromContent(fileContent);
     await this.vault.modify(file, updatedContent);

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StatusTimestampService = void 0;
-const FrontmatterService_1 = require("./FrontmatterService");
+const FrontmatterService_1 = require("../utilities/FrontmatterService");
 const DateFormatter_1 = require("../utilities/DateFormatter");
 class StatusTimestampService {
     constructor(vault) {

@@ -1,13 +1,11 @@
-import { RenameToUidService } from "@exocortex/core";
+import { RenameToUidService, type IVaultAdapter } from "@exocortex/core";
 
 describe("RenameToUidService", () => {
   let service: RenameToUidService;
-  let mockApp: any;
-  let mockVault: any;
-  let mockFileManager: any;
+  let mockVaultAdapter: IVaultAdapter;
 
   beforeEach(() => {
-    mockVault = {
+    mockVaultAdapter = {
       rename: jest.fn().mockResolvedValue(undefined),
       process: jest.fn((file, callback) => {
         const content = `---
@@ -18,18 +16,20 @@ exo__Asset_uid: test-uid-123
 Test content`;
         return Promise.resolve(callback(content));
       }),
-    };
+      read: jest.fn().mockResolvedValue(""),
+      create: jest.fn().mockResolvedValue({} as any),
+      modify: jest.fn().mockResolvedValue(undefined),
+      delete: jest.fn().mockResolvedValue(undefined),
+      exists: jest.fn().mockResolvedValue(false),
+      getAbstractFileByPath: jest.fn().mockReturnValue(null),
+      getAllFiles: jest.fn().mockReturnValue([]),
+      getFrontmatter: jest.fn().mockReturnValue(null),
+      updateFrontmatter: jest.fn().mockResolvedValue(undefined),
+      createFolder: jest.fn().mockResolvedValue(undefined),
+      getFirstLinkpathDest: jest.fn().mockReturnValue(null),
+    } as any;
 
-    mockFileManager = {
-      renameFile: jest.fn().mockResolvedValue(undefined),
-    };
-
-    mockApp = {
-      vault: mockVault,
-      fileManager: mockFileManager,
-    };
-
-    service = new RenameToUidService(mockApp);
+    service = new RenameToUidService(mockVaultAdapter);
   });
 
   describe("renameToUid", () => {
@@ -74,8 +74,8 @@ Test content`;
 
       await service.renameToUid(mockFile, metadata);
 
-      expect(mockVault.process).toHaveBeenCalledTimes(1);
-      expect(mockFileManager.renameFile).toHaveBeenCalledWith(
+      expect(mockVaultAdapter.process).toHaveBeenCalledTimes(1);
+      expect(mockVaultAdapter.rename).toHaveBeenCalledWith(
         mockFile,
         "03 Knowledge/user/abc-123-def.md",
       );
@@ -94,8 +94,8 @@ Test content`;
 
       await service.renameToUid(mockFile, metadata);
 
-      expect(mockVault.process).not.toHaveBeenCalled();
-      expect(mockFileManager.renameFile).toHaveBeenCalledWith(
+      expect(mockVaultAdapter.process).not.toHaveBeenCalled();
+      expect(mockVaultAdapter.rename).toHaveBeenCalledWith(
         mockFile,
         "03 Knowledge/user/abc-123-def.md",
       );
@@ -113,7 +113,7 @@ Test content`;
 
       await service.renameToUid(mockFile, metadata);
 
-      expect(mockFileManager.renameFile).toHaveBeenCalledWith(mockFile, "root-uid-123.md");
+      expect(mockVaultAdapter.rename).toHaveBeenCalledWith(mockFile, "root-uid-123.md");
     });
 
     it("should add label property to frontmatter when needed", async () => {
@@ -127,7 +127,7 @@ Test content`;
       };
 
       let processedContent = "";
-      mockVault.process.mockImplementation((file: any, callback: any) => {
+      mockVaultAdapter.process.mockImplementation((file: any, callback: any) => {
         const originalContent = `---
 exo__Asset_isDefinedBy: "[[!user]]"
 exo__Asset_uid: abc-123-def
@@ -156,7 +156,7 @@ Test content`;
 
       await service.renameToUid(mockFile, metadata);
 
-      expect(mockVault.process).toHaveBeenCalledTimes(1);
+      expect(mockVaultAdapter.process).toHaveBeenCalledTimes(1);
     });
 
     it("should treat whitespace-only label as no label", async () => {
@@ -172,7 +172,7 @@ Test content`;
 
       await service.renameToUid(mockFile, metadata);
 
-      expect(mockVault.process).toHaveBeenCalledTimes(1);
+      expect(mockVaultAdapter.process).toHaveBeenCalledTimes(1);
     });
   });
 });

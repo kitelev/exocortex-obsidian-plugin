@@ -1,11 +1,11 @@
-import { TFile, Vault } from "obsidian";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 /**
  * Service for managing effort voting functionality
  * Handles incrementing ems__Effort_votes property on Tasks/Projects
  */
 export class EffortVotingService {
-  constructor(private vault: Vault) {}
+  constructor(private vault: IVaultAdapter) {}
 
   /**
    * Increment the vote count for an effort
@@ -13,7 +13,7 @@ export class EffortVotingService {
    * @param effortFile - The file representing the effort (Task or Project)
    * @returns The new vote count after increment
    */
-  async incrementEffortVotes(effortFile: TFile): Promise<number> {
+  async incrementEffortVotes(effortFile: IFile): Promise<number> {
     const fileContent = await this.vault.read(effortFile);
     const currentVotes = this.extractVoteCount(fileContent);
     const newVoteCount = currentVotes + 1;

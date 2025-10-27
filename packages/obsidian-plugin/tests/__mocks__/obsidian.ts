@@ -502,10 +502,22 @@ export class MarkdownView {
   }
 }
 
+export class TFolder {
+  path: string;
+  name: string;
+
+  constructor(path: string) {
+    this.path = path;
+    this.name = path.split("/").pop() || "";
+  }
+}
+
 export class TFile {
   path: string;
   basename: string;
+  name: string;
   extension: string;
+  parent: TFolder | null;
 
   constructor(path?: string) {
     this.path = path || "";
@@ -515,7 +527,12 @@ export class TFile {
           .pop()
           ?.replace(/\.[^/.]+$/, "") || ""
       : "";
+    this.name = path ? path.split("/").pop() || "" : "";
     this.extension = path ? path.split(".").pop() || "" : "";
+
+    // Set parent folder
+    const parentPath = path ? path.split("/").slice(0, -1).join("/") : "";
+    this.parent = parentPath ? new TFolder(parentPath) : null;
   }
 }
 
@@ -540,7 +557,7 @@ export class App {
   constructor() {
     this.vault = new Vault();
     this.workspace = new Workspace();
-    this.metadataCache = new MetadataCache();
+    this.metadataCache = new MetadataCache(this.vault);
     this.fileManager = new FileManager(this.vault);
   }
 }
@@ -564,8 +581,19 @@ export class Vault {
     return this.mockFiles.filter((file) => file.extension === "md");
   }
 
-  getAbstractFileByPath(path: string): TFile | null {
-    return this.mockFiles.find((file) => file.path === path) || null;
+  getAbstractFileByPath(path: string): TFile | TFolder | null {
+    const file = this.mockFiles.find((file) => file.path === path);
+    if (file) return file;
+
+    // Check if it's a folder path
+    const isFolder = this.mockFiles.some((f) =>
+      f.path.startsWith(path + "/")
+    );
+    if (isFolder) {
+      return new TFolder(path);
+    }
+
+    return null;
   }
 
   create(path: string, content: string): Promise<TFile> {
@@ -616,6 +644,13 @@ export class Vault {
 
   async exists(path: string): Promise<boolean> {
     return this.mockFiles.some((file) => file.path === path);
+  }
+
+  async process(file: TFile, fn: (content: string) => string): Promise<string> {
+    const content = await this.read(file);
+    const newContent = fn(content);
+    await this.modify(file, newContent);
+    return newContent;
   }
 
   on(event: string, callback: any): any {
@@ -695,6 +730,11 @@ export class Workspace {
 
 export class MetadataCache {
   private cache: Map<string, any> = new Map();
+  private vault: Vault | null = null;
+
+  constructor(vault?: Vault) {
+    this.vault = vault || null;
+  }
 
   getFileCache(file: TFile): any {
     return (
@@ -722,6 +762,14 @@ export class MetadataCache {
     return cache.frontmatter?.[property];
   }
 
+  getFirstLinkpathDest(linkpath: string, sourcePath: string): TFile | null {
+    if (!this.vault) return null;
+
+    // Simple mock: try to find file by linkpath directly
+    const files = this.vault.getMarkdownFiles();
+    return files.find((f) => f.basename === linkpath || f.path === linkpath) || null;
+  }
+
   on(name: string, callback: Function): void {
     // Mock event listener
   }
@@ -738,6 +786,11 @@ export class MetadataCache {
   // Helper method to clear cache for tests
   __clearCache(): void {
     this.cache.clear();
+  }
+
+  // Helper method to set vault reference
+  __setVault(vault: Vault): void {
+    this.vault = vault;
   }
 }
 
@@ -793,6 +846,16 @@ export class FileManager {
 
   async renameFile(file: TFile, newPath: string): Promise<void> {
     await this.vault.rename(file, newPath);
+  }
+
+  async processFrontMatter(
+    file: TFile,
+    fn: (frontmatter: any) => void
+  ): Promise<void> {
+    const content = await this.vault.read(file);
+    const frontmatter: any = {};
+    fn(frontmatter);
+    return Promise.resolve();
   }
 }
 

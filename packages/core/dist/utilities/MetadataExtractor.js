@@ -2,14 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MetadataExtractor = void 0;
 class MetadataExtractor {
-    constructor(metadataCache) {
-        this.metadataCache = metadataCache;
+    constructor(vault) {
+        this.vault = vault;
     }
     extractMetadata(file) {
         if (!file)
             return {};
-        const cache = this.metadataCache.getFileCache(file);
-        return cache?.frontmatter || {};
+        return this.vault.getFrontmatter(file) || {};
     }
     extractInstanceClass(metadata) {
         return metadata.exo__Instance_class || null;
@@ -67,7 +66,7 @@ class MetadataExtractor {
     extractCache(file) {
         if (!file)
             return null;
-        return this.metadataCache.getFileCache(file);
+        return this.vault.getFrontmatter(file);
     }
 }
 exports.MetadataExtractor = MetadataExtractor;

@@ -1,21 +1,17 @@
-import { TFile, Vault } from "obsidian";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 /**
  * Service for repairing asset folder locations based on exo__Asset_isDefinedBy references
  */
 export class FolderRepairService {
-  constructor(
-    private vault: Vault,
-     
-    private app: any,
-  ) {}
+  constructor(private vault: IVaultAdapter) {}
 
   /**
    * Get the expected folder for an asset based on its exo__Asset_isDefinedBy property
    * Returns null if no expected folder can be determined
    */
   async getExpectedFolder(
-    file: TFile,
+    file: IFile,
     metadata: Record<string, any>,
   ): Promise<string | null> {
     const isDefinedBy = metadata?.exo__Asset_isDefinedBy;
@@ -31,7 +27,7 @@ export class FolderRepairService {
     }
 
     // Find the referenced file
-    const referencedFile = this.app.metadataCache.getFirstLinkpathDest(
+    const referencedFile = this.vault.getFirstLinkpathDest(
       reference,
       file.path,
     );
@@ -47,7 +43,7 @@ export class FolderRepairService {
   /**
    * Move asset to its expected folder based on exo__Asset_isDefinedBy
    */
-  async repairFolder(file: TFile, expectedFolder: string): Promise<void> {
+  async repairFolder(file: IFile, expectedFolder: string): Promise<void> {
     // Construct new path
     const newPath = `${expectedFolder}/${file.name}`;
 
@@ -69,7 +65,7 @@ export class FolderRepairService {
   /**
    * Get the folder path for a file
    */
-  private getFileFolder(file: TFile): string {
+  private getFileFolder(file: IFile): string {
     const folderPath = file.parent?.path || "";
     return folderPath;
   }

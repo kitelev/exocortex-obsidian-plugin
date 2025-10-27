@@ -1,37 +1,37 @@
-import { TFile, Vault } from "obsidian";
 import { FrontmatterService } from "../utilities/FrontmatterService";
 import { DateFormatter } from "../utilities/DateFormatter";
 import { EffortStatusWorkflow } from "./EffortStatusWorkflow";
 import { StatusTimestampService } from "./StatusTimestampService";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 export class TaskStatusService {
   private frontmatterService: FrontmatterService;
   private workflow: EffortStatusWorkflow;
   private timestampService: StatusTimestampService;
 
-  constructor(private vault: Vault) {
+  constructor(private vault: IVaultAdapter) {
     this.frontmatterService = new FrontmatterService();
     this.workflow = new EffortStatusWorkflow();
     this.timestampService = new StatusTimestampService(vault);
   }
 
-  async setDraftStatus(taskFile: TFile): Promise<void> {
+  async setDraftStatus(taskFile: IFile): Promise<void> {
     await this.updateStatus(taskFile, "ems__EffortStatusDraft");
   }
 
-  async moveToBacklog(taskFile: TFile): Promise<void> {
+  async moveToBacklog(taskFile: IFile): Promise<void> {
     await this.updateStatus(taskFile, "ems__EffortStatusBacklog");
   }
 
-  async moveToAnalysis(projectFile: TFile): Promise<void> {
+  async moveToAnalysis(projectFile: IFile): Promise<void> {
     await this.updateStatus(projectFile, "ems__EffortStatusAnalysis");
   }
 
-  async moveToToDo(projectFile: TFile): Promise<void> {
+  async moveToToDo(projectFile: IFile): Promise<void> {
     await this.updateStatus(projectFile, "ems__EffortStatusToDo");
   }
 
-  async startEffort(taskFile: TFile): Promise<void> {
+  async startEffort(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     const timestamp = DateFormatter.toLocalTimestamp(new Date());
 
@@ -49,7 +49,7 @@ export class TaskStatusService {
     await this.vault.modify(taskFile, updated);
   }
 
-  async markTaskAsDone(taskFile: TFile): Promise<void> {
+  async markTaskAsDone(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     const timestamp = DateFormatter.toLocalTimestamp(new Date());
 
@@ -73,13 +73,13 @@ export class TaskStatusService {
   }
 
   async syncEffortEndTimestamp(
-    taskFile: TFile,
+    taskFile: IFile,
     date?: Date,
   ): Promise<void> {
     await this.timestampService.addEndAndResolutionTimestamps(taskFile, date);
   }
 
-  async trashEffort(taskFile: TFile): Promise<void> {
+  async trashEffort(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     const timestamp = DateFormatter.toLocalTimestamp(new Date());
 
@@ -97,7 +97,7 @@ export class TaskStatusService {
     await this.vault.modify(taskFile, updated);
   }
 
-  async archiveTask(taskFile: TFile): Promise<void> {
+  async archiveTask(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     const updated = this.frontmatterService.updateProperty(
       content,
@@ -107,7 +107,7 @@ export class TaskStatusService {
     await this.vault.modify(taskFile, updated);
   }
 
-  async planOnToday(taskFile: TFile): Promise<void> {
+  async planOnToday(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     const todayWikilink = DateFormatter.getTodayWikilink();
     const updated = this.frontmatterService.updateProperty(
@@ -118,7 +118,7 @@ export class TaskStatusService {
     await this.vault.modify(taskFile, updated);
   }
 
-  async planForEvening(taskFile: TFile): Promise<void> {
+  async planForEvening(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     const evening = new Date();
     evening.setHours(19, 0, 0, 0);
@@ -132,15 +132,15 @@ export class TaskStatusService {
     await this.vault.modify(taskFile, updated);
   }
 
-  async shiftDayBackward(taskFile: TFile): Promise<void> {
+  async shiftDayBackward(taskFile: IFile): Promise<void> {
     await this.shiftDay(taskFile, -1);
   }
 
-  async shiftDayForward(taskFile: TFile): Promise<void> {
+  async shiftDayForward(taskFile: IFile): Promise<void> {
     await this.shiftDay(taskFile, 1);
   }
 
-  async rollbackStatus(taskFile: TFile): Promise<void> {
+  async rollbackStatus(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     const currentStatus = this.extractCurrentStatus(content);
     const instanceClass = this.extractInstanceClass(content);
@@ -195,7 +195,7 @@ export class TaskStatusService {
   }
 
   private async updateStatus(
-    taskFile: TFile,
+    taskFile: IFile,
     statusValue: string,
   ): Promise<void> {
     const content = await this.vault.read(taskFile);
@@ -207,7 +207,7 @@ export class TaskStatusService {
     await this.vault.modify(taskFile, updated);
   }
 
-  private async shiftDay(taskFile: TFile, days: number): Promise<void> {
+  private async shiftDay(taskFile: IFile, days: number): Promise<void> {
     const content = await this.vault.read(taskFile);
     const currentEffortDay = this.extractEffortDay(content);
 

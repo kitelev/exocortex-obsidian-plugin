@@ -1,14 +1,13 @@
-import { TFile, MetadataCache, CachedMetadata } from "obsidian";
 import { CommandVisibilityContext } from "../domain/commands/CommandVisibility";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 export class MetadataExtractor {
-  constructor(private metadataCache: MetadataCache) {}
+  constructor(private vault: IVaultAdapter) {}
 
-  extractMetadata(file: TFile | null): Record<string, any> {
+  extractMetadata(file: IFile | null): Record<string, any> {
     if (!file) return {};
 
-    const cache = this.metadataCache.getFileCache(file);
-    return cache?.frontmatter || {};
+    return this.vault.getFrontmatter(file) || {};
   }
 
   extractInstanceClass(metadata: Record<string, any>): string | string[] | null {
@@ -52,7 +51,7 @@ export class MetadataExtractor {
     return parts.join("/");
   }
 
-  extractCommandVisibilityContext(file: TFile): CommandVisibilityContext {
+  extractCommandVisibilityContext(file: IFile): CommandVisibilityContext {
     const metadata = this.extractMetadata(file);
     const instanceClass = this.extractInstanceClass(metadata);
     const currentStatus = this.extractStatus(metadata);
@@ -70,8 +69,8 @@ export class MetadataExtractor {
     };
   }
 
-  extractCache(file: TFile | null): CachedMetadata | null {
+  extractCache(file: IFile | null): any | null {
     if (!file) return null;
-    return this.metadataCache.getFileCache(file);
+    return this.vault.getFrontmatter(file);
   }
 }

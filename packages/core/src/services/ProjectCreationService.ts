@@ -1,10 +1,10 @@
-import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
 import { AssetClass } from '../domain/constants';
 import { DateFormatter } from "../utilities/DateFormatter";
 import { MetadataExtractor } from "../utilities/MetadataExtractor";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 /**
  * Mapping of source class to effort property name
@@ -17,14 +17,14 @@ const EFFORT_PROPERTY_MAP: Record<string, string> = {
 };
 
 export class ProjectCreationService {
-  constructor(private vault: Vault) {}
+  constructor(private vault: IVaultAdapter) {}
 
   async createProject(
-    sourceFile: TFile,
+    sourceFile: IFile,
     sourceMetadata: Record<string, any>,
     sourceClass: string,
     label?: string,
-  ): Promise<TFile> {
+  ): Promise<IFile> {
     const uid = uuidv4();
     const fileName = `${uid}.md`;
     const frontmatter = this.generateProjectFrontmatter(

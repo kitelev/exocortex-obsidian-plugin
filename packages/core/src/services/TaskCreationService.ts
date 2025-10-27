@@ -1,27 +1,27 @@
-import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
 import { AssetClass } from '../domain/constants';
 import { TaskFrontmatterGenerator } from "./TaskFrontmatterGenerator";
 import { AlgorithmExtractor } from "./AlgorithmExtractor";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 export class TaskCreationService {
   private frontmatterGenerator: TaskFrontmatterGenerator;
   private algorithmExtractor: AlgorithmExtractor;
 
-  constructor(private vault: Vault) {
+  constructor(private vault: IVaultAdapter) {
     this.frontmatterGenerator = new TaskFrontmatterGenerator();
     this.algorithmExtractor = new AlgorithmExtractor();
   }
 
   async createTask(
-    sourceFile: TFile,
+    sourceFile: IFile,
     sourceMetadata: Record<string, any>,
     sourceClass: string,
     label?: string,
     taskSize?: string | null,
-  ): Promise<TFile> {
+  ): Promise<IFile> {
     const uid = uuidv4();
     const fileName = `${uid}.md`;
     const frontmatter = this.frontmatterGenerator.generateTaskFrontmatter(
@@ -57,11 +57,11 @@ export class TaskCreationService {
   }
 
   async createRelatedTask(
-    sourceFile: TFile,
+    sourceFile: IFile,
     sourceMetadata: Record<string, any>,
     label?: string,
     taskSize?: string | null,
-  ): Promise<TFile> {
+  ): Promise<IFile> {
     const uid = uuidv4();
     const fileName = `${uid}.md`;
 
@@ -128,7 +128,7 @@ export class TaskCreationService {
   }
 
   private async addRelationToSourceFile(
-    sourceFile: TFile,
+    sourceFile: IFile,
     newTaskUid: string,
   ): Promise<void> {
     const content = await this.vault.read(sourceFile);

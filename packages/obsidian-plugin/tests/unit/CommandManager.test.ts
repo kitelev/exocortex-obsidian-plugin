@@ -45,11 +45,7 @@ describe("CommandManager", () => {
     jest.clearAllMocks();
     registeredCommands = new Map();
 
-    mockFile = {
-      basename: "test-file",
-      path: "test/path.md",
-      parent: { path: "test" },
-    } as unknown as TFile;
+    mockFile = new TFile("test/path.md");
 
     const mockGetFileCache = jest.fn().mockReturnValue({
       frontmatter: {},
@@ -60,10 +56,18 @@ describe("CommandManager", () => {
         modify: jest.fn().mockResolvedValue(undefined),
         create: jest.fn().mockResolvedValue(mockFile),
         read: jest.fn().mockResolvedValue("---\n---"),
+        getAbstractFileByPath: jest.fn().mockReturnValue(mockFile),
+        rename: jest.fn().mockResolvedValue(undefined),
+        process: jest.fn().mockResolvedValue("processed content"),
+        createFolder: jest.fn().mockResolvedValue(undefined),
       },
       metadataCache: {
         getFileCache: mockGetFileCache,
         getFirstLinkpathDest: jest.fn(),
+      },
+      fileManager: {
+        renameFile: jest.fn().mockResolvedValue(undefined),
+        processFrontMatter: jest.fn().mockResolvedValue(undefined),
       },
       workspace: {
         getActiveFile: jest.fn().mockReturnValue(mockFile),

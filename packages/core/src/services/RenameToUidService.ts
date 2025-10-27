@@ -1,9 +1,9 @@
-import { TFile, App } from "obsidian";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 export class RenameToUidService {
-  constructor(private app: App) {}
+  constructor(private vault: IVaultAdapter) {}
 
-  async renameToUid(file: TFile, metadata: Record<string, any>): Promise<void> {
+  async renameToUid(file: IFile, metadata: Record<string, any>): Promise<void> {
     const uid = metadata.exo__Asset_uid;
 
     if (!uid) {
@@ -27,11 +27,11 @@ export class RenameToUidService {
     const folderPath = file.parent?.path || "";
     const newPath = folderPath ? `${folderPath}/${targetBasename}.md` : `${targetBasename}.md`;
 
-    await this.app.fileManager.renameFile(file, newPath);
+    await this.vault.rename(file, newPath);
   }
 
-  private async updateLabel(file: TFile, label: string): Promise<void> {
-    await this.app.vault.process(file, (content) => {
+  private async updateLabel(file: IFile, label: string): Promise<void> {
+    await this.vault.process(file, (content) => {
       const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
       const match = content.match(frontmatterRegex);
 

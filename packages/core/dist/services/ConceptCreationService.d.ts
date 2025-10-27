@@ -1,8 +1,8 @@
-import { TFile, Vault } from "obsidian";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 export declare class ConceptCreationService {
     private vault;
-    constructor(vault: Vault);
-    createNarrowerConcept(parentFile: TFile, fileName: string, definition: string, aliases: string[]): Promise<TFile>;
+    constructor(vault: IVaultAdapter);
+    createNarrowerConcept(parentFile: IFile, fileName: string, definition: string, aliases: string[]): Promise<IFile>;
     private generateConceptFrontmatter;
 }
 //# sourceMappingURL=ConceptCreationService.d.ts.map
