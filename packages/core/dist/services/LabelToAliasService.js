@@ -29,7 +29,7 @@ class LabelToAliasService {
     addLabelToAliases(content, label) {
         const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---/;
         const match = content.match(frontmatterRegex);
-        const lineEnding = content.includes('\r\n') ? '\r\n' : '\n';
+        const lineEnding = content.includes("\r\n") ? "\r\n" : "\n";
         if (!match) {
             const newFrontmatter = `---${lineEnding}aliases:${lineEnding}  - "${label}"${lineEnding}---${lineEnding}${content}`;
             return newFrontmatter;

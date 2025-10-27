@@ -21,10 +21,7 @@ class AreaHierarchyBuilder {
         return this.buildTree(currentAreaPath, allAreas, visited, 0);
     }
     isFile(file) {
-        return (file &&
-            typeof file === "object" &&
-            "basename" in file &&
-            "path" in file);
+        return (file && typeof file === "object" && "basename" in file && "path" in file);
     }
     extractInstanceClass(metadata) {
         const instanceClass = metadata.exo__Instance_class || "";

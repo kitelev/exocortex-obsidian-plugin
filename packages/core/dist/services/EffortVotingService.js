@@ -55,7 +55,7 @@ class EffortVotingService {
         const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---/;
         const match = content.match(frontmatterRegex);
         // Detect line ending style from original content
-        const lineEnding = content.includes('\r\n') ? '\r\n' : '\n';
+        const lineEnding = content.includes("\r\n") ? "\r\n" : "\n";
         if (!match) {
             // No frontmatter - create it
             const newFrontmatter = `---${lineEnding}ems__Effort_votes: ${voteCount}${lineEnding}---${lineEnding}${content}`;

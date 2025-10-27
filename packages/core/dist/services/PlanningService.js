@@ -15,11 +15,11 @@ class PlanningService {
         }
         const content = await this.vault.read(file);
         const todayWikilink = DateFormatter_1.DateFormatter.getTodayWikilink();
-        const updated = this.frontmatterService.updateProperty(content, 'ems__Effort_day', todayWikilink);
+        const updated = this.frontmatterService.updateProperty(content, "ems__Effort_day", todayWikilink);
         await this.vault.modify(file, updated);
     }
     isFile(file) {
-        return 'basename' in file;
+        return "basename" in file;
     }
 }
 exports.PlanningService = PlanningService;
