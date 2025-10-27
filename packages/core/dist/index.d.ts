@@ -22,6 +22,7 @@ export { StatusTimestampService } from './services/StatusTimestampService';
 export { SupervisionCreationService } from './services/SupervisionCreationService';
 export { TaskFrontmatterGenerator } from './services/TaskFrontmatterGenerator';
 export { AlgorithmExtractor } from './services/AlgorithmExtractor';
+export { PlanningService } from './services/PlanningService';
 export { FrontmatterService } from './utilities/FrontmatterService';
 export { DateFormatter } from './utilities/DateFormatter';
 export { WikiLinkHelpers } from './utilities/WikiLinkHelpers';
