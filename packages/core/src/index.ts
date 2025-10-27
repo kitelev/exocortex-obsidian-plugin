@@ -37,6 +37,7 @@ export { EffortSortingHelpers } from './utilities/EffortSortingHelpers';
 // Interfaces exports
 export type { IFileSystemAdapter } from './interfaces/IFileSystemAdapter';
 export { FileNotFoundError, FileAlreadyExistsError } from './interfaces/IFileSystemAdapter';
+export type { IVaultAdapter, IFile, IFolder, IFrontmatter } from './interfaces/IVaultAdapter';
 
 // Types exports
 export type { SupervisionFormData } from './types/SupervisionFormData';

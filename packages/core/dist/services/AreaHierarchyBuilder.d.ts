@@ -1,5 +1,5 @@
-import { Vault, MetadataCache } from "obsidian";
 import { AreaNode } from '../domain/models/AreaNode';
+import { IVaultAdapter } from "../interfaces/IVaultAdapter";
 export interface AssetRelation {
     path: string;
     title: string;
@@ -9,8 +9,7 @@ export interface AssetRelation {
 }
 export declare class AreaHierarchyBuilder {
     private vault;
-    private metadataCache;
-    constructor(vault: Vault, metadataCache: MetadataCache);
+    constructor(vault: IVaultAdapter);
     buildHierarchy(currentAreaPath: string, _relations: AssetRelation[]): AreaNode | null;
     private isFile;
     private extractInstanceClass;

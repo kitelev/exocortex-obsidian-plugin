@@ -14,6 +14,7 @@ import {
 } from "./domain/settings/ExocortexSettings";
 import { ExocortexSettingTab } from "./presentation/settings/ExocortexSettingTab";
 import { TaskStatusService } from '@exocortex/core';
+import { ObsidianVaultAdapter } from './adapters/ObsidianVaultAdapter';
 
 /**
  * Exocortex Plugin - Automatic layout rendering
@@ -26,6 +27,7 @@ export default class ExocortexPlugin extends Plugin {
   private commandManager!: CommandManager;
   private taskStatusService!: TaskStatusService;
   private metadataCache!: Map<string, Record<string, unknown>>;
+  private vaultAdapter!: ObsidianVaultAdapter;
   settings!: ExocortexSettings;
 
   async onload(): Promise<void> {
@@ -35,8 +37,9 @@ export default class ExocortexPlugin extends Plugin {
 
       await this.loadSettings();
 
+      this.vaultAdapter = new ObsidianVaultAdapter(this.app.vault, this.app.metadataCache, this.app);
       this.layoutRenderer = new UniversalLayoutRenderer(this.app, this.settings, this);
-      this.taskStatusService = new TaskStatusService(this.app.vault);
+      this.taskStatusService = new TaskStatusService(this.vaultAdapter);
       this.metadataCache = new Map();
 
       // Initialize CommandManager and register all commands

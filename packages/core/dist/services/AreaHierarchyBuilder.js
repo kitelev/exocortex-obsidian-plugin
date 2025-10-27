@@ -1,21 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AreaHierarchyBuilder = void 0;
-const obsidian_1 = require("obsidian");
 const constants_1 = require("../domain/constants");
 class AreaHierarchyBuilder {
-    constructor(vault, metadataCache) {
+    constructor(vault) {
         this.vault = vault;
-        this.metadataCache = metadataCache;
     }
     buildHierarchy(currentAreaPath, _relations) {
         const currentFile = this.vault.getAbstractFileByPath(currentAreaPath);
         if (!this.isFile(currentFile)) {
             return null;
         }
-        // eslint-disable-next-line obsidianmd/no-tfile-tfolder-cast
-        const cache = this.metadataCache.getFileCache(currentFile);
-        const metadata = cache?.frontmatter || {};
+        const metadata = this.vault.getFrontmatter(currentFile) || {};
         const instanceClass = this.extractInstanceClass(metadata);
         if (instanceClass !== constants_1.AssetClass.AREA) {
             return null;
@@ -25,14 +21,10 @@ class AreaHierarchyBuilder {
         return this.buildTree(currentAreaPath, allAreas, visited, 0);
     }
     isFile(file) {
-        if (file instanceof obsidian_1.TFile) {
-            return true;
-        }
         return (file &&
             typeof file === "object" &&
             "basename" in file &&
-            "path" in file &&
-            "stat" in file);
+            "path" in file);
     }
     extractInstanceClass(metadata) {
         const instanceClass = metadata.exo__Instance_class || "";
@@ -49,10 +41,9 @@ class AreaHierarchyBuilder {
     collectAllAreasFromVault() {
         const areas = new Map();
         const pathByBasename = new Map();
-        const allFiles = this.vault.getMarkdownFiles();
+        const allFiles = this.vault.getAllFiles();
         for (const file of allFiles) {
-            const cache = this.metadataCache.getFileCache(file);
-            const metadata = cache?.frontmatter || {};
+            const metadata = this.vault.getFrontmatter(file) || {};
             const instanceClass = this.extractInstanceClass(metadata);
             if (instanceClass === constants_1.AssetClass.AREA) {
                 const parentPath = this.extractParentPath(metadata);

@@ -1,12 +1,12 @@
-import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 import { SupervisionFormData } from "../types/SupervisionFormData";
 import { DateFormatter } from "../utilities/DateFormatter";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 export class SupervisionCreationService {
-  constructor(private vault: Vault) {}
+  constructor(private vault: IVaultAdapter) {}
 
-  async createSupervision(formData: SupervisionFormData): Promise<TFile> {
+  async createSupervision(formData: SupervisionFormData): Promise<IFile> {
     const uid = uuidv4();
     const fileName = `${uid}.md`;
     const frontmatter = this.generateFrontmatter(uid);

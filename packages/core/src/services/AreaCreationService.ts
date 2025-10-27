@@ -1,18 +1,18 @@
-import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 import { AssetClass } from '../domain/constants';
 import { DateFormatter } from "../utilities/DateFormatter";
 import { MetadataExtractor } from "../utilities/MetadataExtractor";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 export class AreaCreationService {
-  constructor(private vault: Vault) {}
+  constructor(private vault: IVaultAdapter) {}
 
   async createChildArea(
-    sourceFile: TFile,
+    sourceFile: IFile,
     sourceMetadata: Record<string, any>,
     label?: string,
-  ): Promise<TFile> {
+  ): Promise<IFile> {
     const uid = uuidv4();
     const fileName = `${uid}.md`;
     const frontmatter = this.generateChildAreaFrontmatter(

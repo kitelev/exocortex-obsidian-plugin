@@ -1,30 +1,32 @@
-import { FolderRepairService } from "@exocortex/core";
-import { TFile, Vault } from "obsidian";
+import { FolderRepairService, type IVaultAdapter, type IFile } from "@exocortex/core";
 
 describe("FolderRepairService", () => {
   let service: FolderRepairService;
-  let mockVault: jest.Mocked<Vault>;
-  let mockApp: any;
+  let mockVaultAdapter: IVaultAdapter;
 
   beforeEach(() => {
-    mockVault = {
+    mockVaultAdapter = {
       getAbstractFileByPath: jest.fn(),
-      createFolder: jest.fn(),
-      rename: jest.fn(),
+      createFolder: jest.fn().mockResolvedValue(undefined),
+      rename: jest.fn().mockResolvedValue(undefined),
+      getFirstLinkpathDest: jest.fn(),
+      read: jest.fn().mockResolvedValue(""),
+      create: jest.fn().mockResolvedValue({} as any),
+      modify: jest.fn().mockResolvedValue(undefined),
+      delete: jest.fn().mockResolvedValue(undefined),
+      exists: jest.fn().mockResolvedValue(false),
+      getAllFiles: jest.fn().mockReturnValue([]),
+      getFrontmatter: jest.fn().mockReturnValue(null),
+      updateFrontmatter: jest.fn().mockResolvedValue(undefined),
+      process: jest.fn().mockResolvedValue(""),
     } as any;
 
-    mockApp = {
-      metadataCache: {
-        getFirstLinkpathDest: jest.fn(),
-      },
-    };
-
-    service = new FolderRepairService(mockVault, mockApp);
+    service = new FolderRepairService(mockVaultAdapter);
   });
 
   describe("getExpectedFolder", () => {
     test("should return null when exo__Asset_isDefinedBy is missing", async () => {
-      const file = { path: "file.md" } as TFile;
+      const file = { path: "file.md" } as IFile;
       const metadata = {};
 
       const result = await service.getExpectedFolder(file, metadata);
@@ -33,7 +35,7 @@ describe("FolderRepairService", () => {
     });
 
     test("should return null when exo__Asset_isDefinedBy is null", async () => {
-      const file = { path: "file.md" } as TFile;
+      const file = { path: "file.md" } as IFile;
       const metadata = { exo__Asset_isDefinedBy: null };
 
       const result = await service.getExpectedFolder(file, metadata);
@@ -42,55 +44,55 @@ describe("FolderRepairService", () => {
     });
 
     test("should extract reference from [[Reference]] format", async () => {
-      const file = { path: "file.md" } as TFile;
+      const file = { path: "file.md" } as IFile;
       const metadata = { exo__Asset_isDefinedBy: "[[SomeAsset]]" };
 
       const referencedFile = {
         path: "path/to/SomeAsset.md",
         parent: { path: "path/to" },
-      } as TFile;
+      } as IFile;
 
-      mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(referencedFile);
+      mockVaultAdapter.getFirstLinkpathDest.mockReturnValue(referencedFile);
 
       const result = await service.getExpectedFolder(file, metadata);
 
       expect(result).toBe("path/to");
-      expect(mockApp.metadataCache.getFirstLinkpathDest).toHaveBeenCalledWith(
+      expect(mockVaultAdapter.getFirstLinkpathDest).toHaveBeenCalledWith(
         "SomeAsset",
         "file.md",
       );
     });
 
     test("should extract reference from quoted [[Reference]] format", async () => {
-      const file = { path: "file.md" } as TFile;
+      const file = { path: "file.md" } as IFile;
       const metadata = { exo__Asset_isDefinedBy: '"[[SomeAsset]]"' };
 
       const referencedFile = {
         path: "path/to/SomeAsset.md",
         parent: { path: "path/to" },
-      } as TFile;
+      } as IFile;
 
-      mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(referencedFile);
+      mockVaultAdapter.getFirstLinkpathDest.mockReturnValue(referencedFile);
 
       const result = await service.getExpectedFolder(file, metadata);
 
       expect(result).toBe("path/to");
-      expect(mockApp.metadataCache.getFirstLinkpathDest).toHaveBeenCalledWith(
+      expect(mockVaultAdapter.getFirstLinkpathDest).toHaveBeenCalledWith(
         "SomeAsset",
         "file.md",
       );
     });
 
     test("should extract reference from plain text format", async () => {
-      const file = { path: "file.md" } as TFile;
+      const file = { path: "file.md" } as IFile;
       const metadata = { exo__Asset_isDefinedBy: "SomeAsset" };
 
       const referencedFile = {
         path: "path/to/SomeAsset.md",
         parent: { path: "path/to" },
-      } as TFile;
+      } as IFile;
 
-      mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(referencedFile);
+      mockVaultAdapter.getFirstLinkpathDest.mockReturnValue(referencedFile);
 
       const result = await service.getExpectedFolder(file, metadata);
 
@@ -98,10 +100,10 @@ describe("FolderRepairService", () => {
     });
 
     test("should return null when referenced file not found", async () => {
-      const file = { path: "file.md" } as TFile;
+      const file = { path: "file.md" } as IFile;
       const metadata = { exo__Asset_isDefinedBy: "[[NonExistent]]" };
 
-      mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(null);
+      mockVaultAdapter.getFirstLinkpathDest.mockReturnValue(null);
 
       const result = await service.getExpectedFolder(file, metadata);
 
@@ -109,15 +111,15 @@ describe("FolderRepairService", () => {
     });
 
     test("should handle file in root folder (no parent)", async () => {
-      const file = { path: "file.md" } as TFile;
+      const file = { path: "file.md" } as IFile;
       const metadata = { exo__Asset_isDefinedBy: "[[RootAsset]]" };
 
       const referencedFile = {
         path: "RootAsset.md",
         parent: null,
-      } as TFile;
+      } as IFile;
 
-      mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(referencedFile);
+      mockVaultAdapter.getFirstLinkpathDest.mockReturnValue(referencedFile);
 
       const result = await service.getExpectedFolder(file, metadata);
 
@@ -125,7 +127,7 @@ describe("FolderRepairService", () => {
     });
 
     test("should return null for non-string exo__Asset_isDefinedBy", async () => {
-      const file = { path: "file.md" } as TFile;
+      const file = { path: "file.md" } as IFile;
       const metadata = { exo__Asset_isDefinedBy: 123 };
 
       const result = await service.getExpectedFolder(file, metadata);
@@ -139,9 +141,9 @@ describe("FolderRepairService", () => {
       const file = {
         path: "old/path/file.md",
         name: "file.md",
-      } as TFile;
+      } as IFile;
 
-      mockVault.getAbstractFileByPath.mockReturnValue(null);
+      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(null);
 
       await service.repairFolder(file, "new/path");
 
@@ -153,10 +155,10 @@ describe("FolderRepairService", () => {
       const file = {
         path: "old/path/file.md",
         name: "file.md",
-      } as TFile;
+      } as IFile;
 
-      const existingFile = { path: "new/path/file.md" } as TFile;
-      mockVault.getAbstractFileByPath.mockReturnValue(existingFile);
+      const existingFile = { path: "new/path/file.md" } as IFile;
+      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(existingFile);
 
       await expect(
         service.repairFolder(file, "new/path"),
@@ -167,9 +169,9 @@ describe("FolderRepairService", () => {
       const file = {
         path: "old/path/file.md",
         name: "file.md",
-      } as TFile;
+      } as IFile;
 
-      mockVault.getAbstractFileByPath.mockReturnValue(null);
+      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(null);
 
       await service.repairFolder(file, "new/path");
 
@@ -180,7 +182,7 @@ describe("FolderRepairService", () => {
       const file = {
         path: "old/path/file.md",
         name: "file.md",
-      } as TFile;
+      } as IFile;
 
       // Mock existing folder with children property (duck typing)
       const existingFolder = {
@@ -188,7 +190,7 @@ describe("FolderRepairService", () => {
         children: [],
       };
 
-      mockVault.getAbstractFileByPath.mockImplementation((path: string) => {
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path: string) => {
         if (path === "new/path") return existingFolder as any;
         return null;
       });
@@ -203,9 +205,9 @@ describe("FolderRepairService", () => {
       const file = {
         path: "old/path/file.md",
         name: "file.md",
-      } as TFile;
+      } as IFile;
 
-      mockVault.getAbstractFileByPath.mockReturnValue(null);
+      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(null);
 
       await service.repairFolder(file, "");
 
@@ -216,57 +218,57 @@ describe("FolderRepairService", () => {
 
   describe("extractReference", () => {
     test("should extract reference from [[Name]]", async () => {
-      const file = { path: "file.md" } as TFile;
+      const file = { path: "file.md" } as IFile;
       const metadata = { exo__Asset_isDefinedBy: "[[TestAsset]]" };
 
       const referencedFile = {
         path: "test.md",
         parent: { path: "folder" },
-      } as TFile;
+      } as IFile;
 
-      mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(referencedFile);
+      mockVaultAdapter.getFirstLinkpathDest.mockReturnValue(referencedFile);
 
       await service.getExpectedFolder(file, metadata);
 
-      expect(mockApp.metadataCache.getFirstLinkpathDest).toHaveBeenCalledWith(
+      expect(mockVaultAdapter.getFirstLinkpathDest).toHaveBeenCalledWith(
         "TestAsset",
         "file.md",
       );
     });
 
     test("should extract reference from quoted wiki-link", async () => {
-      const file = { path: "file.md" } as TFile;
+      const file = { path: "file.md" } as IFile;
       const metadata = { exo__Asset_isDefinedBy: '"[[TestAsset]]"' };
 
       const referencedFile = {
         path: "test.md",
         parent: { path: "folder" },
-      } as TFile;
+      } as IFile;
 
-      mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(referencedFile);
+      mockVaultAdapter.getFirstLinkpathDest.mockReturnValue(referencedFile);
 
       await service.getExpectedFolder(file, metadata);
 
-      expect(mockApp.metadataCache.getFirstLinkpathDest).toHaveBeenCalledWith(
+      expect(mockVaultAdapter.getFirstLinkpathDest).toHaveBeenCalledWith(
         "TestAsset",
         "file.md",
       );
     });
 
     test("should handle whitespace around reference", async () => {
-      const file = { path: "file.md" } as TFile;
+      const file = { path: "file.md" } as IFile;
       const metadata = { exo__Asset_isDefinedBy: "  [[TestAsset]]  " };
 
       const referencedFile = {
         path: "test.md",
         parent: { path: "folder" },
-      } as TFile;
+      } as IFile;
 
-      mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(referencedFile);
+      mockVaultAdapter.getFirstLinkpathDest.mockReturnValue(referencedFile);
 
       await service.getExpectedFolder(file, metadata);
 
-      expect(mockApp.metadataCache.getFirstLinkpathDest).toHaveBeenCalledWith(
+      expect(mockVaultAdapter.getFirstLinkpathDest).toHaveBeenCalledWith(
         "TestAsset",
         "file.md",
       );

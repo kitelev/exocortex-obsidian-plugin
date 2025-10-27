@@ -1,18 +1,18 @@
-import { TFile, Vault } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 import { DateFormatter } from "../utilities/DateFormatter";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
 import { AssetClass } from '../domain/constants';
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 
 export class ConceptCreationService {
-  constructor(private vault: Vault) {}
+  constructor(private vault: IVaultAdapter) {}
 
   async createNarrowerConcept(
-    parentFile: TFile,
+    parentFile: IFile,
     fileName: string,
     definition: string,
     aliases: string[],
-  ): Promise<TFile> {
+  ): Promise<IFile> {
     const uid = uuidv4();
     const fullFileName = fileName.endsWith(".md") ? fileName : `${fileName}.md`;
 
