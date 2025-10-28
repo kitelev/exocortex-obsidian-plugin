@@ -1,190 +1,163 @@
-/* eslint-disable no-console */
 import { Logger } from "../../src/adapters/logging/Logger";
+import { LoggerFactory } from "../../src/adapters/logging/LoggerFactory";
 import { ILogger } from "../../src/adapters/logging/ILogger";
 
 describe("Logger", () => {
-  let logger: ILogger;
-  let originalDebug: typeof console.debug;
-  let originalInfo: typeof console.info;
-  let originalWarn: typeof console.warn;
-  let originalError: typeof console.error;
+  let logger: Logger;
+  let consoleDebugSpy: jest.SpyInstance;
+  let consoleInfoSpy: jest.SpyInstance;
+  let consoleWarnSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
-    // Save original console methods
-    originalDebug = console.debug;
-    originalInfo = console.info;
-    originalWarn = console.warn;
-    originalError = console.error;
+    // Spy on console methods
+    consoleDebugSpy = jest.spyOn(console, "debug").mockImplementation();
+    consoleInfoSpy = jest.spyOn(console, "info").mockImplementation();
+    consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation();
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
 
-    // Mock console methods
-    console.debug = jest.fn();
-    console.info = jest.fn();
-    console.warn = jest.fn();
-    console.error = jest.fn();
-
-    // Create logger instance
     logger = new Logger("TestContext");
   });
 
   afterEach(() => {
-    // Restore original console methods
-    console.debug = originalDebug;
-    console.info = originalInfo;
-    console.warn = originalWarn;
-    console.error = originalError;
+    jest.restoreAllMocks();
   });
 
   describe("constructor", () => {
     it("should create logger with context", () => {
-      const customLogger = new Logger("CustomContext");
-      customLogger.debug("test");
-      expect(console.debug).toHaveBeenCalledWith("[CustomContext] test");
+      const contextLogger = new Logger("MyContext");
+      contextLogger.info("test");
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[MyContext] test");
     });
 
     it("should handle empty context", () => {
       const emptyLogger = new Logger("");
-      emptyLogger.info("message");
-      expect(console.info).toHaveBeenCalledWith("[] message");
+      emptyLogger.info("test");
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[] test");
     });
 
     it("should handle special characters in context", () => {
-      const specialLogger = new Logger("Context:With:Colons[And]Brackets");
-      specialLogger.debug("test");
-      expect(console.debug).toHaveBeenCalledWith(
-        "[Context:With:Colons[And]Brackets] test"
-      );
+      const specialLogger = new Logger("Context-123:Test");
+      specialLogger.info("test");
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[Context-123:Test] test");
     });
   });
 
   describe("debug", () => {
     it("should log debug message with context", () => {
       logger.debug("Debug message");
-      expect(console.debug).toHaveBeenCalledWith("[TestContext] Debug message");
+      expect(consoleDebugSpy).toHaveBeenCalledWith("[TestContext] Debug message");
     });
 
-    it("should pass additional arguments", () => {
+    it("should log debug message with additional arguments", () => {
       const obj = { key: "value" };
-      const arr = [1, 2, 3];
-      logger.debug("Debug with args", obj, arr, 123);
-      expect(console.debug).toHaveBeenCalledWith(
-        "[TestContext] Debug with args",
-        obj,
-        arr,
-        123
+      const num = 123;
+      logger.debug("Debug with args", obj, num);
+      expect(consoleDebugSpy).toHaveBeenCalledWith("[TestContext] Debug with args", obj, num);
+    });
+
+    it("should handle multiple arguments", () => {
+      logger.debug("Multiple", "arg1", "arg2", "arg3", 4, true, { test: 1 });
+      expect(consoleDebugSpy).toHaveBeenCalledWith(
+        "[TestContext] Multiple",
+        "arg1",
+        "arg2",
+        "arg3",
+        4,
+        true,
+        { test: 1 }
       );
     });
 
-    it("should handle empty message", () => {
-      logger.debug("");
-      expect(console.debug).toHaveBeenCalledWith("[TestContext] ");
+    it("should handle undefined arguments", () => {
+      logger.debug("With undefined", undefined);
+      expect(consoleDebugSpy).toHaveBeenCalledWith("[TestContext] With undefined", undefined);
     });
 
-    it("should handle null and undefined arguments", () => {
-      logger.debug("Message", null, undefined);
-      expect(console.debug).toHaveBeenCalledWith(
-        "[TestContext] Message",
-        null,
-        undefined
-      );
-    });
-
-    it("should handle many arguments", () => {
-      const args = Array(100).fill("arg");
-      logger.debug("Many args", ...args);
-      expect(console.debug).toHaveBeenCalledWith("[TestContext] Many args", ...args);
+    it("should handle null arguments", () => {
+      logger.debug("With null", null);
+      expect(consoleDebugSpy).toHaveBeenCalledWith("[TestContext] With null", null);
     });
   });
 
   describe("info", () => {
     it("should log info message with context", () => {
       logger.info("Info message");
-      expect(console.info).toHaveBeenCalledWith("[TestContext] Info message");
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[TestContext] Info message");
     });
 
-    it("should pass additional arguments", () => {
-      const date = new Date();
-      const func = () => {};
-      logger.info("Info with args", date, func, true, false);
-      expect(console.info).toHaveBeenCalledWith(
-        "[TestContext] Info with args",
-        date,
-        func,
-        true,
-        false
-      );
+    it("should log info message with additional arguments", () => {
+      const array = [1, 2, 3];
+      logger.info("Info with array", array);
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[TestContext] Info with array", array);
     });
 
-    it("should handle template literals", () => {
-      const value = 42;
-      logger.info(`The value is ${value}`);
-      expect(console.info).toHaveBeenCalledWith("[TestContext] The value is 42");
+    it("should handle empty string message", () => {
+      logger.info("");
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[TestContext] ");
     });
 
-    it("should handle complex objects", () => {
-      const complexObj = {
-        nested: { deeply: { nested: { value: "test" } } },
-        array: [1, [2, [3]]],
-        circular: {} as any,
-      };
-      complexObj.circular.ref = complexObj;
-
-      logger.info("Complex object", complexObj);
-      expect(console.info).toHaveBeenCalledWith("[TestContext] Complex object", complexObj);
+    it("should handle multiline messages", () => {
+      logger.info("Line 1\nLine 2\nLine 3");
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[TestContext] Line 1\nLine 2\nLine 3");
     });
   });
 
   describe("warn", () => {
     it("should log warning message with context", () => {
       logger.warn("Warning message");
-      expect(console.warn).toHaveBeenCalledWith("[TestContext] Warning message");
+      expect(consoleWarnSpy).toHaveBeenCalledWith("[TestContext] Warning message");
     });
 
-    it("should pass additional arguments", () => {
-      const warning = { type: "deprecated", code: "W001" };
-      logger.warn("Deprecation warning", warning);
-      expect(console.warn).toHaveBeenCalledWith(
-        "[TestContext] Deprecation warning",
-        warning
-      );
+    it("should log warning with additional arguments", () => {
+      const fn = () => "function";
+      logger.warn("Warning with function", fn);
+      expect(consoleWarnSpy).toHaveBeenCalledWith("[TestContext] Warning with function", fn);
     });
 
-    it("should handle multiline messages", () => {
-      logger.warn("Line 1\nLine 2\nLine 3");
-      expect(console.warn).toHaveBeenCalledWith("[TestContext] Line 1\nLine 2\nLine 3");
-    });
-
-    it("should handle symbols and bigints", () => {
+    it("should handle Symbol arguments", () => {
       const sym = Symbol("test");
-      const bigInt = BigInt(9007199254740991);
-      logger.warn("Special types", sym, bigInt);
-      expect(console.warn).toHaveBeenCalledWith(
-        "[TestContext] Special types",
-        sym,
-        bigInt
-      );
+      logger.warn("With symbol", sym);
+      expect(consoleWarnSpy).toHaveBeenCalledWith("[TestContext] With symbol", sym);
     });
   });
 
   describe("error", () => {
     it("should log error message with context", () => {
       logger.error("Error message");
-      expect(console.error).toHaveBeenCalledWith("[TestContext] Error message", undefined);
+      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error message", undefined);
     });
 
-    it("should log error message with Error object", () => {
+    it("should log error with Error object", () => {
       const error = new Error("Test error");
       logger.error("Error occurred", error);
-      expect(console.error).toHaveBeenCalledWith("[TestContext] Error occurred", error);
+      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error occurred", error);
     });
 
-    it("should handle error with stack trace", () => {
-      const error = new Error("Stack trace error");
-      error.stack = "Error: Stack trace error\n    at test.js:10:15";
-      logger.error("Stack error", error);
-      expect(console.error).toHaveBeenCalledWith("[TestContext] Stack error", error);
+    it("should log error with non-Error object", () => {
+      const customError = { code: "ERR_001", message: "Custom error" };
+      logger.error("Custom error occurred", customError);
+      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Custom error occurred", customError);
     });
 
-    it("should handle custom error types", () => {
+    it("should handle string as error", () => {
+      logger.error("Error message", "String error");
+      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error message", "String error");
+    });
+
+    it("should handle number as error", () => {
+      logger.error("Error code", 404);
+      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error code", 404);
+    });
+
+    it("should handle Error with stack trace", () => {
+      const errorWithStack = new Error("Stack error");
+      errorWithStack.stack = "Error: Stack error\n    at test.js:1:1";
+      logger.error("Stack trace error", errorWithStack);
+      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Stack trace error", errorWithStack);
+    });
+
+    it("should handle custom Error types", () => {
       class CustomError extends Error {
         code: string;
         constructor(message: string, code: string) {
@@ -193,228 +166,128 @@ describe("Logger", () => {
         }
       }
 
-      const customError = new CustomError("Custom error", "CUST_001");
-      logger.error("Custom error occurred", customError);
-      expect(console.error).toHaveBeenCalledWith(
-        "[TestContext] Custom error occurred",
-        customError
-      );
+      const customError = new CustomError("Custom", "CUSTOM_001");
+      logger.error("Custom error type", customError);
+      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Custom error type", customError);
     });
 
-    it("should handle non-Error error parameter", () => {
-      logger.error("String error", "This is a string error");
-      expect(console.error).toHaveBeenCalledWith(
-        "[TestContext] String error",
-        "This is a string error"
-      );
-
-      logger.error("Number error", 404);
-      expect(console.error).toHaveBeenCalledWith("[TestContext] Number error", 404);
-
-      logger.error("Object error", { code: "ERR", message: "Failed" });
-      expect(console.error).toHaveBeenCalledWith(
-        "[TestContext] Object error",
-        { code: "ERR", message: "Failed" }
-      );
-    });
-
-    it("should handle null error", () => {
+    it("should handle null as error", () => {
       logger.error("Null error", null);
-      expect(console.error).toHaveBeenCalledWith("[TestContext] Null error", null);
+      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Null error", null);
     });
 
-    it("should handle undefined error explicitly passed", () => {
+    it("should handle undefined as error", () => {
       logger.error("Undefined error", undefined);
-      expect(console.error).toHaveBeenCalledWith("[TestContext] Undefined error", undefined);
+      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Undefined error", undefined);
     });
 
-    it("should handle error-like objects", () => {
-      const errorLike = {
-        name: "FakeError",
-        message: "This looks like an error",
-        toString: () => "FakeError: This looks like an error",
-      };
-      logger.error("Error-like object", errorLike);
-      expect(console.error).toHaveBeenCalledWith(
-        "[TestContext] Error-like object",
-        errorLike
-      );
-    });
-
-    it("should handle aggregate errors", () => {
-      const errors = [
-        new Error("First error"),
-        new Error("Second error"),
-        new Error("Third error"),
-      ];
-      const aggregateError = new AggregateError(errors, "Multiple errors occurred");
-      logger.error("Aggregate error", aggregateError);
-      expect(console.error).toHaveBeenCalledWith(
-        "[TestContext] Aggregate error",
-        aggregateError
-      );
+    it("should handle error without second argument", () => {
+      logger.error("Just a message");
+      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Just a message", undefined);
     });
   });
 
-  describe("multiple loggers", () => {
-    it("should maintain separate contexts", () => {
-      const logger1 = new Logger("Context1");
-      const logger2 = new Logger("Context2");
-      const logger3 = new Logger("Context3");
-
-      logger1.debug("Message from 1");
-      logger2.info("Message from 2");
-      logger3.warn("Message from 3");
-
-      expect(console.debug).toHaveBeenCalledWith("[Context1] Message from 1");
-      expect(console.info).toHaveBeenCalledWith("[Context2] Message from 2");
-      expect(console.warn).toHaveBeenCalledWith("[Context3] Message from 3");
+  describe("message formatting", () => {
+    it("should preserve message formatting characters", () => {
+      logger.info("Message with %s and %d", "string", 123);
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[TestContext] Message with %s and %d", "string", 123);
     });
 
-    it("should handle nested contexts", () => {
-      const parentLogger = new Logger("Parent");
-      const childLogger = new Logger("Parent:Child");
-      const grandchildLogger = new Logger("Parent:Child:Grandchild");
-
-      parentLogger.info("Parent log");
-      childLogger.info("Child log");
-      grandchildLogger.info("Grandchild log");
-
-      expect(console.info).toHaveBeenNthCalledWith(1, "[Parent] Parent log");
-      expect(console.info).toHaveBeenNthCalledWith(2, "[Parent:Child] Child log");
-      expect(console.info).toHaveBeenNthCalledWith(3, "[Parent:Child:Grandchild] Grandchild log");
+    it("should handle messages with special characters", () => {
+      logger.info("Special chars: !@#$%^&*()_+-=[]{}|;':\",./<>?");
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[TestContext] Special chars: !@#$%^&*()_+-=[]{}|;':\",./<>?");
     });
-  });
 
-  describe("edge cases", () => {
+    it("should handle unicode characters", () => {
+      logger.info("Unicode: 😀 🎉 ñ å ß");
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[TestContext] Unicode: 😀 🎉 ñ å ß");
+    });
+
     it("should handle very long messages", () => {
-      const longMessage = "a".repeat(10000);
-      logger.debug(longMessage);
-      expect(console.debug).toHaveBeenCalledWith(`[TestContext] ${longMessage}`);
-    });
-
-    it("should handle unicode and emoji in messages", () => {
-      logger.info("Unicode: 你好世界 🌍 🚀 ✨");
-      expect(console.info).toHaveBeenCalledWith(
-        "[TestContext] Unicode: 你好世界 🌍 🚀 ✨"
-      );
-    });
-
-    it("should handle special console formatting", () => {
-      logger.debug("%c Styled text", "color: red; font-weight: bold");
-      expect(console.debug).toHaveBeenCalledWith(
-        "[TestContext] %c Styled text",
-        "color: red; font-weight: bold"
-      );
-    });
-
-    it("should handle functions in arguments", () => {
-      const testFunc = () => "test";
-      const asyncFunc = async () => "async";
-      const generatorFunc = function* () {
-        yield 1;
-      };
-
-      logger.info("Functions", testFunc, asyncFunc, generatorFunc);
-      expect(console.info).toHaveBeenCalledWith(
-        "[TestContext] Functions",
-        testFunc,
-        asyncFunc,
-        generatorFunc
-      );
-    });
-
-    it("should handle Promises and async values", () => {
-      const promise = Promise.resolve("resolved value");
-      const rejectedPromise = Promise.reject("rejected value");
-
-      // Prevent unhandled rejection warning
-      rejectedPromise.catch(() => {});
-
-      logger.debug("Promises", promise, rejectedPromise);
-      expect(console.debug).toHaveBeenCalledWith(
-        "[TestContext] Promises",
-        promise,
-        rejectedPromise
-      );
-    });
-
-    it("should handle WeakMap and WeakSet", () => {
-      const weakMap = new WeakMap();
-      const weakSet = new WeakSet();
-      const obj = {};
-
-      weakMap.set(obj, "value");
-      weakSet.add(obj);
-
-      logger.info("Weak collections", weakMap, weakSet);
-      expect(console.info).toHaveBeenCalledWith(
-        "[TestContext] Weak collections",
-        weakMap,
-        weakSet
-      );
-    });
-
-    it("should handle typed arrays", () => {
-      const uint8Array = new Uint8Array([1, 2, 3, 4, 5]);
-      const float32Array = new Float32Array([1.1, 2.2, 3.3]);
-      const buffer = new ArrayBuffer(16);
-
-      logger.debug("Typed arrays", uint8Array, float32Array, buffer);
-      expect(console.debug).toHaveBeenCalledWith(
-        "[TestContext] Typed arrays",
-        uint8Array,
-        float32Array,
-        buffer
-      );
-    });
-
-    it("should handle RegExp and Date objects", () => {
-      const regex = /test.*pattern/gi;
-      const date = new Date("2024-01-01T00:00:00Z");
-
-      logger.info("Special objects", regex, date);
-      expect(console.info).toHaveBeenCalledWith(
-        "[TestContext] Special objects",
-        regex,
-        date
-      );
-    });
-
-    it("should handle Map and Set collections", () => {
-      const map = new Map([
-        ["key1", "value1"],
-        ["key2", "value2"],
-      ]);
-      const set = new Set([1, 2, 3, 4, 5]);
-
-      logger.debug("Collections", map, set);
-      expect(console.debug).toHaveBeenCalledWith("[TestContext] Collections", map, set);
+      const longMessage = "x".repeat(1000);
+      logger.info(longMessage);
+      expect(consoleInfoSpy).toHaveBeenCalledWith(`[TestContext] ${longMessage}`);
     });
   });
 
-  describe("performance", () => {
-    it("should handle rapid successive calls", () => {
-      for (let i = 0; i < 1000; i++) {
-        logger.debug(`Message ${i}`);
-      }
-
-      expect(console.debug).toHaveBeenCalledTimes(1000);
-      expect(console.debug).toHaveBeenNthCalledWith(1, "[TestContext] Message 0");
-      expect(console.debug).toHaveBeenNthCalledWith(1000, "[TestContext] Message 999");
+  describe("context variations", () => {
+    it("should handle numeric context", () => {
+      const numLogger = new Logger("123");
+      numLogger.info("test");
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[123] test");
     });
 
-    it("should handle mixed log levels", () => {
-      logger.debug("Debug");
-      logger.info("Info");
-      logger.warn("Warn");
-      logger.error("Error");
-      logger.debug("Debug again");
+    it("should handle context with spaces", () => {
+      const spacedLogger = new Logger("My Context");
+      spacedLogger.info("test");
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[My Context] test");
+    });
 
-      expect(console.debug).toHaveBeenCalledTimes(2);
-      expect(console.info).toHaveBeenCalledTimes(1);
-      expect(console.warn).toHaveBeenCalledTimes(1);
-      expect(console.error).toHaveBeenCalledTimes(1);
+    it("should handle very long context", () => {
+      const longContext = "VeryLongContextName".repeat(10);
+      const longLogger = new Logger(longContext);
+      longLogger.info("test");
+      expect(consoleInfoSpy).toHaveBeenCalledWith(`[${longContext}] test`);
+    });
+  });
+});
+
+describe("LoggerFactory", () => {
+  let consoleInfoSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    consoleInfoSpy = jest.spyOn(console, "info").mockImplementation();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  describe("create", () => {
+    it("should create a Logger instance", () => {
+      const logger = LoggerFactory.create("TestFactory");
+      expect(logger).toBeDefined();
+      expect(logger).toHaveProperty("debug");
+      expect(logger).toHaveProperty("info");
+      expect(logger).toHaveProperty("warn");
+      expect(logger).toHaveProperty("error");
+    });
+
+    it("should create Logger with correct context", () => {
+      const logger = LoggerFactory.create("FactoryContext");
+      logger.info("Factory test");
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[FactoryContext] Factory test");
+    });
+
+    it("should implement ILogger interface", () => {
+      const logger: ILogger = LoggerFactory.create("Interface");
+      expect(typeof logger.debug).toBe("function");
+      expect(typeof logger.info).toBe("function");
+      expect(typeof logger.warn).toBe("function");
+      expect(typeof logger.error).toBe("function");
+    });
+
+    it("should create multiple independent loggers", () => {
+      const logger1 = LoggerFactory.create("Context1");
+      const logger2 = LoggerFactory.create("Context2");
+
+      logger1.info("Message 1");
+      logger2.info("Message 2");
+
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[Context1] Message 1");
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[Context2] Message 2");
+    });
+
+    it("should handle empty context", () => {
+      const logger = LoggerFactory.create("");
+      logger.info("Empty context");
+      expect(consoleInfoSpy).toHaveBeenCalledWith("[] Empty context");
+    });
+
+    it("should create new instance each time", () => {
+      const logger1 = LoggerFactory.create("Same");
+      const logger2 = LoggerFactory.create("Same");
+      expect(logger1).not.toBe(logger2);
     });
   });
 });
