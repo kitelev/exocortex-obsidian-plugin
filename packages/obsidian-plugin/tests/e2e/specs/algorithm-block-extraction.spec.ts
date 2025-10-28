@@ -17,13 +17,7 @@ test.describe("Algorithm Block Extraction from TaskPrototype", () => {
     await launcher.close();
   });
 
-  // SKIPPED: These tests are flaky in headless Docker environments.
-  // The Create Instance command executes successfully (files are created),
-  // but workspace.getActiveFile() is unreliable in headless Electron.
-  // This is a known limitation of E2E testing with Obsidian in Docker.
-  // Core functionality verified by 930+ passing unit/component/integration tests.
-  // TODO: Re-enable when Obsidian provides better E2E workspace state support.
-  test.skip("should copy Algorithm section when creating instance from TaskPrototype", async () => {
+  test("should copy Algorithm section when creating instance from TaskPrototype", async () => {
     // Open the TaskPrototype file
     await launcher.openFile("Tasks/bug-fix-prototype.md");
 
@@ -101,7 +95,7 @@ test.describe("Algorithm Block Extraction from TaskPrototype", () => {
     );
   });
 
-  test.skip("should create empty body when TaskPrototype has no Algorithm section", async () => {
+  test("should create empty body when TaskPrototype has no Algorithm section", async () => {
     // Open the pre-existing TaskPrototype file without Algorithm section
     await launcher.openFile("Tasks/simple-prototype.md");
 
