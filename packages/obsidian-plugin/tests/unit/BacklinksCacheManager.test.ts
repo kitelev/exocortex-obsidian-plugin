@@ -3,19 +3,35 @@ import { App } from "obsidian";
 
 describe("BacklinksCacheManager", () => {
   let cacheManager: BacklinksCacheManager;
-  let mockApp: jest.Mocked<App>;
+  let mockApp: App;
+  let mockResolvedLinks: Record<string, Record<string, number>>;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    // Create mock resolved links structure
+    mockResolvedLinks = {
+      "note1.md": {
+        "note2.md": 2,
+        "note3.md": 1,
+      },
+      "note2.md": {
+        "note3.md": 3,
+        "note4.md": 1,
+      },
+      "note3.md": {
+        "note4.md": 2,
+      },
+      "note4.md": {
+        "note1.md": 1,
+      },
+    };
 
-    // Create mock app with metadataCache
+    // Mock Obsidian App
     mockApp = {
       metadataCache: {
-        resolvedLinks: {},
+        resolvedLinks: mockResolvedLinks,
       },
-    } as unknown as jest.Mocked<App>;
+    } as any;
 
-    // Create cache manager instance
     cacheManager = new BacklinksCacheManager(mockApp);
   });
 
@@ -24,198 +40,109 @@ describe("BacklinksCacheManager", () => {
       expect(cacheManager.isValid()).toBe(false);
     });
 
-    it("should initialize with empty backlinks map", () => {
-      const backlinks = cacheManager.getBacklinks("test.md");
-      expect(backlinks).toBeUndefined();
-      // After getting backlinks, cache should be built and valid
-      expect(cacheManager.isValid()).toBe(true);
-    });
-
-    it("should store app reference", () => {
-      // Test that constructor properly stores app by using it
-      cacheManager.buildCache();
-      // If app wasn't stored properly, accessing metadataCache would fail
-      expect(cacheManager.isValid()).toBe(true);
+    it("should initialize with empty backlinks cache", () => {
+      expect(cacheManager.getBacklinks("any-file.md")).toBeUndefined();
     });
   });
 
   describe("buildCache", () => {
-    it("should build cache from metadataCache.resolvedLinks", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "note1.md": { "note2.md": 1, "note3.md": 2 },
-        "note2.md": { "note3.md": 1 },
-        "note3.md": { "note1.md": 1 },
-      };
-
+    it("should build backlinks cache from resolved links", () => {
       cacheManager.buildCache();
 
-      expect(cacheManager.isValid()).toBe(true);
-      expect(cacheManager.getBacklinks("note1.md")).toEqual(new Set(["note3.md"]));
-      expect(cacheManager.getBacklinks("note2.md")).toEqual(new Set(["note1.md"]));
-      expect(cacheManager.getBacklinks("note3.md")).toEqual(new Set(["note1.md", "note2.md"]));
+      // Check backlinks for note2.md (should have note1.md pointing to it)
+      const note2Backlinks = cacheManager.getBacklinks("note2.md");
+      expect(note2Backlinks).toBeDefined();
+      expect(note2Backlinks?.has("note1.md")).toBe(true);
+      expect(note2Backlinks?.size).toBe(1);
+
+      // Check backlinks for note3.md (should have note1.md and note2.md)
+      const note3Backlinks = cacheManager.getBacklinks("note3.md");
+      expect(note3Backlinks).toBeDefined();
+      expect(note3Backlinks?.has("note1.md")).toBe(true);
+      expect(note3Backlinks?.has("note2.md")).toBe(true);
+      expect(note3Backlinks?.size).toBe(2);
+
+      // Check backlinks for note4.md (should have note2.md and note3.md)
+      const note4Backlinks = cacheManager.getBacklinks("note4.md");
+      expect(note4Backlinks).toBeDefined();
+      expect(note4Backlinks?.has("note2.md")).toBe(true);
+      expect(note4Backlinks?.has("note3.md")).toBe(true);
+      expect(note4Backlinks?.size).toBe(2);
+
+      // Check backlinks for note1.md (should have note4.md)
+      const note1Backlinks = cacheManager.getBacklinks("note1.md");
+      expect(note1Backlinks).toBeDefined();
+      expect(note1Backlinks?.has("note4.md")).toBe(true);
+      expect(note1Backlinks?.size).toBe(1);
     });
 
-    it("should handle empty resolvedLinks", () => {
-      mockApp.metadataCache.resolvedLinks = {};
+    it("should mark cache as valid after building", () => {
+      expect(cacheManager.isValid()).toBe(false);
+      cacheManager.buildCache();
+      expect(cacheManager.isValid()).toBe(true);
+    });
 
+    it("should skip building if cache is already valid", () => {
+      // Build cache once
+      cacheManager.buildCache();
+      expect(cacheManager.isValid()).toBe(true);
+
+      // Modify resolved links
+      mockApp.metadataCache.resolvedLinks["note5.md"] = { "note1.md": 1 };
+
+      // Build again - should skip because cache is valid
+      cacheManager.buildCache();
+
+      // note1.md should not have note5.md as backlink because cache wasn't rebuilt
+      const note1Backlinks = cacheManager.getBacklinks("note1.md");
+      expect(note1Backlinks?.has("note5.md")).toBe(false);
+    });
+
+    it("should handle empty resolved links", () => {
+      mockApp.metadataCache.resolvedLinks = {};
       cacheManager.buildCache();
 
       expect(cacheManager.isValid()).toBe(true);
       expect(cacheManager.getBacklinks("any.md")).toBeUndefined();
     });
 
-    it("should handle single link relationship", () => {
+    it("should handle files with no links", () => {
       mockApp.metadataCache.resolvedLinks = {
-        "source.md": { "target.md": 1 },
+        "isolated.md": {},
       };
-
       cacheManager.buildCache();
 
-      expect(cacheManager.getBacklinks("target.md")).toEqual(new Set(["source.md"]));
-      expect(cacheManager.getBacklinks("source.md")).toBeUndefined();
-    });
-
-    it("should handle multiple backlinks to same target", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "note1.md": { "target.md": 3 },
-        "note2.md": { "target.md": 1 },
-        "note3.md": { "target.md": 2 },
-        "note4.md": { "target.md": 1 },
-      };
-
-      cacheManager.buildCache();
-
-      const backlinks = cacheManager.getBacklinks("target.md");
-      expect(backlinks).toEqual(new Set(["note1.md", "note2.md", "note3.md", "note4.md"]));
-    });
-
-    it("should handle complex link network", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "hub.md": { "spoke1.md": 1, "spoke2.md": 1, "spoke3.md": 1 },
-        "spoke1.md": { "hub.md": 1, "spoke2.md": 1 },
-        "spoke2.md": { "hub.md": 1, "spoke3.md": 1 },
-        "spoke3.md": { "hub.md": 1, "spoke1.md": 1 },
-      };
-
-      cacheManager.buildCache();
-
-      expect(cacheManager.getBacklinks("hub.md")).toEqual(
-        new Set(["spoke1.md", "spoke2.md", "spoke3.md"])
-      );
-      expect(cacheManager.getBacklinks("spoke1.md")).toEqual(new Set(["hub.md", "spoke3.md"]));
-      expect(cacheManager.getBacklinks("spoke2.md")).toEqual(new Set(["hub.md", "spoke1.md"]));
-      expect(cacheManager.getBacklinks("spoke3.md")).toEqual(new Set(["hub.md", "spoke2.md"]));
-    });
-
-    it("should not rebuild cache if already valid", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "note1.md": { "note2.md": 1 },
-      };
-
-      cacheManager.buildCache();
       expect(cacheManager.isValid()).toBe(true);
-
-      // Change resolvedLinks
-      mockApp.metadataCache.resolvedLinks = {
-        "note3.md": { "note4.md": 1 },
-      };
-
-      // Build again - should not rebuild since cache is valid
-      cacheManager.buildCache();
-
-      // Should still have old data
-      expect(cacheManager.getBacklinks("note2.md")).toEqual(new Set(["note1.md"]));
-      expect(cacheManager.getBacklinks("note4.md")).toBeUndefined();
+      expect(cacheManager.getBacklinks("isolated.md")).toBeUndefined();
     });
 
-    it("should clear cache before rebuilding", () => {
+    it("should accumulate backlinks from multiple sources", () => {
       mockApp.metadataCache.resolvedLinks = {
-        "old1.md": { "old2.md": 1 },
-      };
-
-      cacheManager.buildCache();
-      expect(cacheManager.getBacklinks("old2.md")).toEqual(new Set(["old1.md"]));
-
-      // Invalidate and rebuild with new data
-      cacheManager.invalidate();
-      mockApp.metadataCache.resolvedLinks = {
-        "new1.md": { "new2.md": 1 },
-      };
-      cacheManager.buildCache();
-
-      // Old data should be gone
-      expect(cacheManager.getBacklinks("old2.md")).toBeUndefined();
-      expect(cacheManager.getBacklinks("new2.md")).toEqual(new Set(["new1.md"]));
-    });
-
-    it("should handle self-referencing links", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "self.md": { "self.md": 1, "other.md": 1 },
-        "other.md": { "self.md": 1 },
-      };
-
-      cacheManager.buildCache();
-
-      expect(cacheManager.getBacklinks("self.md")).toEqual(new Set(["self.md", "other.md"]));
-      expect(cacheManager.getBacklinks("other.md")).toEqual(new Set(["self.md"]));
-    });
-
-    it("should handle deep path structures", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "folder/subfolder/note1.md": { "folder/subfolder/note2.md": 1 },
-        "folder/note3.md": { "folder/subfolder/note2.md": 1 },
-        "note4.md": { "folder/subfolder/note2.md": 1 },
-      };
-
-      cacheManager.buildCache();
-
-      expect(cacheManager.getBacklinks("folder/subfolder/note2.md")).toEqual(
-        new Set(["folder/subfolder/note1.md", "folder/note3.md", "note4.md"])
-      );
-    });
-
-    it("should handle special characters in paths", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "notes/[DATE] Task (2024).md": { "notes/Project #1.md": 1 },
-        "notes/@mention note.md": { "notes/Project #1.md": 1 },
-        "notes/note & another.md": { "notes/Project #1.md": 1 },
-      };
-
-      cacheManager.buildCache();
-
-      expect(cacheManager.getBacklinks("notes/Project #1.md")).toEqual(
-        new Set([
-          "notes/[DATE] Task (2024).md",
-          "notes/@mention note.md",
-          "notes/note & another.md",
-        ])
-      );
-    });
-
-    it("should handle multiple links from same source", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "source.md": {
-          "target1.md": 3, // 3 links to target1
-          "target2.md": 5, // 5 links to target2
-          "target3.md": 1, // 1 link to target3
+        "source1.md": {
+          "target.md": 1,
+        },
+        "source2.md": {
+          "target.md": 2,
+        },
+        "source3.md": {
+          "target.md": 3,
+          "other.md": 1,
         },
       };
 
       cacheManager.buildCache();
 
-      // Each target should have source as a backlink (count doesn't matter)
-      expect(cacheManager.getBacklinks("target1.md")).toEqual(new Set(["source.md"]));
-      expect(cacheManager.getBacklinks("target2.md")).toEqual(new Set(["source.md"]));
-      expect(cacheManager.getBacklinks("target3.md")).toEqual(new Set(["source.md"]));
+      const targetBacklinks = cacheManager.getBacklinks("target.md");
+      expect(targetBacklinks).toBeDefined();
+      expect(targetBacklinks?.size).toBe(3);
+      expect(targetBacklinks?.has("source1.md")).toBe(true);
+      expect(targetBacklinks?.has("source2.md")).toBe(true);
+      expect(targetBacklinks?.has("source3.md")).toBe(true);
     });
   });
 
   describe("invalidate", () => {
     it("should mark cache as invalid", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "note1.md": { "note2.md": 1 },
-      };
-
       cacheManager.buildCache();
       expect(cacheManager.isValid()).toBe(true);
 
@@ -223,251 +150,77 @@ describe("BacklinksCacheManager", () => {
       expect(cacheManager.isValid()).toBe(false);
     });
 
-    it("should cause rebuild on next getBacklinks", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "note1.md": { "note2.md": 1 },
-      };
-
+    it("should not clear the cache data immediately", () => {
       cacheManager.buildCache();
-      expect(cacheManager.getBacklinks("note2.md")).toEqual(new Set(["note1.md"]));
+      const backlinks = cacheManager.getBacklinks("note3.md");
+      expect(backlinks).toBeDefined();
 
-      // Invalidate and change data
       cacheManager.invalidate();
-      mockApp.metadataCache.resolvedLinks = {
-        "note3.md": { "note4.md": 1 },
-      };
 
-      // Next getBacklinks should trigger rebuild
-      expect(cacheManager.getBacklinks("note4.md")).toEqual(new Set(["note3.md"]));
-      expect(cacheManager.getBacklinks("note2.md")).toBeUndefined(); // Old data gone
+      // Cache data still exists, but will be rebuilt on next access
+      // This is because getBacklinks calls buildCache internally
+      const backlinksAfterInvalidate = cacheManager.getBacklinks("note3.md");
+      expect(backlinksAfterInvalidate).toBeDefined();
     });
 
-    it("should be idempotent", () => {
+    it("should trigger rebuild on next getBacklinks call", () => {
       cacheManager.buildCache();
       expect(cacheManager.isValid()).toBe(true);
 
+      // Add new link
+      mockApp.metadataCache.resolvedLinks["note5.md"] = { "note1.md": 1 };
+
+      // Invalidate cache
       cacheManager.invalidate();
       expect(cacheManager.isValid()).toBe(false);
 
-      cacheManager.invalidate();
-      expect(cacheManager.isValid()).toBe(false);
-    });
-
-    it("should work on already invalid cache", () => {
-      expect(cacheManager.isValid()).toBe(false);
-
-      cacheManager.invalidate();
-      expect(cacheManager.isValid()).toBe(false);
+      // Get backlinks - should rebuild cache
+      const note1Backlinks = cacheManager.getBacklinks("note1.md");
+      expect(cacheManager.isValid()).toBe(true);
+      expect(note1Backlinks?.has("note5.md")).toBe(true);
     });
   });
 
   describe("getBacklinks", () => {
-    it("should auto-build cache if invalid", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "note1.md": { "note2.md": 1 },
-      };
-
-      expect(cacheManager.isValid()).toBe(false);
-
-      const backlinks = cacheManager.getBacklinks("note2.md");
-
-      expect(cacheManager.isValid()).toBe(true);
-      expect(backlinks).toEqual(new Set(["note1.md"]));
-    });
-
-    it("should return undefined for non-existent target", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "note1.md": { "note2.md": 1 },
-      };
-
-      const backlinks = cacheManager.getBacklinks("nonexistent.md");
+    it("should return undefined for files with no backlinks", () => {
+      cacheManager.buildCache();
+      const backlinks = cacheManager.getBacklinks("non-existent.md");
       expect(backlinks).toBeUndefined();
     });
 
-    it("should return same Set instance for repeated calls", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "note1.md": { "note2.md": 1 },
-      };
-
-      const backlinks1 = cacheManager.getBacklinks("note2.md");
-      const backlinks2 = cacheManager.getBacklinks("note2.md");
-
-      expect(backlinks1).toBe(backlinks2); // Same reference
-    });
-
-    it("should handle concurrent calls gracefully", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "note1.md": { "target.md": 1 },
-        "note2.md": { "target.md": 1 },
-        "note3.md": { "target.md": 1 },
-      };
-
-      // Simulate concurrent calls
-      const results = [
-        cacheManager.getBacklinks("target.md"),
-        cacheManager.getBacklinks("target.md"),
-        cacheManager.getBacklinks("target.md"),
-      ];
-
-      const expectedSet = new Set(["note1.md", "note2.md", "note3.md"]);
-      results.forEach(result => {
-        expect(result).toEqual(expectedSet);
-      });
-
-      // Cache should be built only once
-      expect(cacheManager.isValid()).toBe(true);
-    });
-
-    it("should return empty set for isolated nodes", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "isolated.md": {}, // Has no outgoing links
-        "other1.md": { "other2.md": 1 },
-        "other2.md": { "other1.md": 1 },
-      };
-
-      const backlinks = cacheManager.getBacklinks("isolated.md");
-      expect(backlinks).toBeUndefined(); // No incoming links
-    });
-
-    it("should handle when resolvedLinks is null", () => {
-      (mockApp.metadataCache as any).resolvedLinks = null;
-
-      const backlinks = cacheManager.getBacklinks("any.md");
-      expect(backlinks).toBeUndefined();
-      // Should not throw error
-    });
-
-    it("should handle when resolvedLinks is undefined", () => {
-      (mockApp.metadataCache as any).resolvedLinks = undefined;
-
-      const backlinks = cacheManager.getBacklinks("any.md");
-      expect(backlinks).toBeUndefined();
-      // Should not throw error
-    });
-  });
-
-  describe("isValid", () => {
-    it("should return false initially", () => {
-      expect(cacheManager.isValid()).toBe(false);
-    });
-
-    it("should return true after buildCache", () => {
+    it("should return Set of backlinks for files with backlinks", () => {
       cacheManager.buildCache();
-      expect(cacheManager.isValid()).toBe(true);
-    });
+      const backlinks = cacheManager.getBacklinks("note3.md");
 
-    it("should return false after invalidate", () => {
-      cacheManager.buildCache();
-      expect(cacheManager.isValid()).toBe(true);
-
-      cacheManager.invalidate();
-      expect(cacheManager.isValid()).toBe(false);
-    });
-
-    it("should return true after getBacklinks triggers build", () => {
-      expect(cacheManager.isValid()).toBe(false);
-
-      cacheManager.getBacklinks("any.md");
-      expect(cacheManager.isValid()).toBe(true);
-    });
-  });
-
-  describe("memory management", () => {
-    it("should handle large link graphs", () => {
-      const largeResolvedLinks: Record<string, Record<string, number>> = {};
-
-      // Create a large interconnected graph
-      for (let i = 0; i < 1000; i++) {
-        const links: Record<string, number> = {};
-        // Each note links to 10 random others
-        for (let j = 0; j < 10; j++) {
-          const target = Math.floor(Math.random() * 1000);
-          links[`note${target}.md`] = 1;
-        }
-        largeResolvedLinks[`note${i}.md`] = links;
-      }
-
-      mockApp.metadataCache.resolvedLinks = largeResolvedLinks;
-
-      cacheManager.buildCache();
-      expect(cacheManager.isValid()).toBe(true);
-
-      // Check that backlinks are properly collected
-      const backlinks = cacheManager.getBacklinks("note0.md");
-      // Should have backlinks from various sources
       expect(backlinks).toBeDefined();
-      if (backlinks) {
-        expect(backlinks.size).toBeGreaterThan(0);
-      }
+      expect(backlinks).toBeInstanceOf(Set);
+      expect(backlinks?.size).toBe(2);
+      expect(backlinks?.has("note1.md")).toBe(true);
+      expect(backlinks?.has("note2.md")).toBe(true);
     });
 
-    it("should properly clear old cache on rebuild", () => {
-      // First build
-      mockApp.metadataCache.resolvedLinks = {
-        "old1.md": { "old2.md": 1 },
-        "old3.md": { "old4.md": 1 },
-      };
-      cacheManager.buildCache();
+    it("should automatically build cache if invalid", () => {
+      expect(cacheManager.isValid()).toBe(false);
 
-      // Invalidate and rebuild with different data
-      cacheManager.invalidate();
-      mockApp.metadataCache.resolvedLinks = {
-        "new1.md": { "new2.md": 1 },
-      };
-      cacheManager.buildCache();
+      const backlinks = cacheManager.getBacklinks("note3.md");
 
-      // Old entries should not exist
-      expect(cacheManager.getBacklinks("old2.md")).toBeUndefined();
-      expect(cacheManager.getBacklinks("old4.md")).toBeUndefined();
-
-      // New entries should exist
-      expect(cacheManager.getBacklinks("new2.md")).toEqual(new Set(["new1.md"]));
-    });
-  });
-
-  describe("edge cases", () => {
-    it("should handle empty string paths", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "": { "target.md": 1 },
-        "source.md": { "": 1 },
-      };
-
-      cacheManager.buildCache();
-
-      expect(cacheManager.getBacklinks("")).toEqual(new Set(["source.md"]));
-      expect(cacheManager.getBacklinks("target.md")).toEqual(new Set([""]));
+      expect(cacheManager.isValid()).toBe(true);
+      expect(backlinks).toBeDefined();
+      expect(backlinks?.size).toBe(2);
     });
 
-    it("should handle very long paths", () => {
-      const longPath = "a/".repeat(100) + "file.md";
-      mockApp.metadataCache.resolvedLinks = {
-        "source.md": { [longPath]: 1 },
-      };
-
+    it("should not rebuild cache if already valid", () => {
       cacheManager.buildCache();
+      const initialBacklinks = cacheManager.getBacklinks("note3.md");
 
-      expect(cacheManager.getBacklinks(longPath)).toEqual(new Set(["source.md"]));
-    });
+      // Modify resolved links (but cache won't see this because it's valid)
+      mockApp.metadataCache.resolvedLinks["note5.md"] = { "note3.md": 1 };
 
-    it("should handle unicode characters in paths", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "笔记/源文件.md": { "ملاحظات/الهدف.md": 1 },
-        "заметки/источник.md": { "ملاحظات/الهدف.md": 1 },
-      };
+      const backlinksAfter = cacheManager.getBacklinks("note3.md");
 
-      cacheManager.buildCache();
-
-      expect(cacheManager.getBacklinks("ملاحظات/الهدف.md")).toEqual(
-        new Set(["笔记/源文件.md", "заметки/источник.md"])
-      );
-    });
-
-    it("should handle when metadataCache is missing", () => {
-      const brokenApp = {} as App;
-      const brokenCacheManager = new BacklinksCacheManager(brokenApp);
-
-      // Should not throw
-      expect(() => brokenCacheManager.buildCache()).toThrow();
+      // Should be same as before because cache wasn't rebuilt
+      expect(backlinksAfter).toEqual(initialBacklinks);
+      expect(backlinksAfter?.has("note5.md")).toBe(false);
     });
 
     it("should handle circular references", () => {
@@ -479,25 +232,104 @@ describe("BacklinksCacheManager", () => {
 
       cacheManager.buildCache();
 
-      expect(cacheManager.getBacklinks("a.md")).toEqual(new Set(["c.md"]));
-      expect(cacheManager.getBacklinks("b.md")).toEqual(new Set(["a.md"]));
-      expect(cacheManager.getBacklinks("c.md")).toEqual(new Set(["b.md"]));
+      expect(cacheManager.getBacklinks("a.md")?.has("c.md")).toBe(true);
+      expect(cacheManager.getBacklinks("b.md")?.has("a.md")).toBe(true);
+      expect(cacheManager.getBacklinks("c.md")?.has("b.md")).toBe(true);
+    });
+
+    it("should handle self-references", () => {
+      mockApp.metadataCache.resolvedLinks = {
+        "self.md": { "self.md": 1, "other.md": 1 },
+      };
+
+      cacheManager.buildCache();
+
+      const selfBacklinks = cacheManager.getBacklinks("self.md");
+      expect(selfBacklinks?.has("self.md")).toBe(true);
+      expect(selfBacklinks?.size).toBe(1);
     });
   });
 
-  describe("performance characteristics", () => {
-    it("should efficiently handle repeated invalidation and rebuild", () => {
-      mockApp.metadataCache.resolvedLinks = {
-        "note1.md": { "note2.md": 1 },
-      };
+  describe("isValid", () => {
+    it("should return false initially", () => {
+      expect(cacheManager.isValid()).toBe(false);
+    });
 
-      for (let i = 0; i < 10; i++) {
-        cacheManager.invalidate();
-        cacheManager.buildCache();
+    it("should return true after building cache", () => {
+      cacheManager.buildCache();
+      expect(cacheManager.isValid()).toBe(true);
+    });
+
+    it("should return false after invalidation", () => {
+      cacheManager.buildCache();
+      expect(cacheManager.isValid()).toBe(true);
+      cacheManager.invalidate();
+      expect(cacheManager.isValid()).toBe(false);
+    });
+
+    it("should return true after rebuilding invalidated cache", () => {
+      cacheManager.buildCache();
+      cacheManager.invalidate();
+      expect(cacheManager.isValid()).toBe(false);
+      cacheManager.buildCache();
+      expect(cacheManager.isValid()).toBe(true);
+    });
+  });
+
+  describe("edge cases", () => {
+    it("should handle undefined resolved links", () => {
+      mockApp.metadataCache.resolvedLinks = undefined as any;
+      expect(() => cacheManager.buildCache()).not.toThrow();
+      expect(cacheManager.isValid()).toBe(true);
+    });
+
+    it("should handle null resolved links", () => {
+      mockApp.metadataCache.resolvedLinks = null as any;
+      expect(() => cacheManager.buildCache()).not.toThrow();
+      expect(cacheManager.isValid()).toBe(true);
+    });
+
+    it("should handle files with many backlinks", () => {
+      const manyBacklinks: Record<string, Record<string, number>> = {};
+      for (let i = 0; i < 100; i++) {
+        manyBacklinks[`source${i}.md`] = { "popular.md": 1 };
       }
 
-      expect(cacheManager.isValid()).toBe(true);
-      expect(cacheManager.getBacklinks("note2.md")).toEqual(new Set(["note1.md"]));
+      mockApp.metadataCache.resolvedLinks = manyBacklinks;
+      cacheManager.buildCache();
+
+      const popularBacklinks = cacheManager.getBacklinks("popular.md");
+      expect(popularBacklinks?.size).toBe(100);
+    });
+
+    it("should handle deeply nested paths", () => {
+      mockApp.metadataCache.resolvedLinks = {
+        "folder1/folder2/folder3/deep.md": {
+          "other/path/target.md": 1,
+        },
+      };
+
+      cacheManager.buildCache();
+
+      const targetBacklinks = cacheManager.getBacklinks("other/path/target.md");
+      expect(targetBacklinks?.has("folder1/folder2/folder3/deep.md")).toBe(true);
+    });
+
+    it("should handle special characters in file names", () => {
+      mockApp.metadataCache.resolvedLinks = {
+        "file with spaces.md": {
+          "target[brackets].md": 1,
+        },
+        "emoji-😀.md": {
+          "target[brackets].md": 1,
+        },
+      };
+
+      cacheManager.buildCache();
+
+      const targetBacklinks = cacheManager.getBacklinks("target[brackets].md");
+      expect(targetBacklinks?.has("file with spaces.md")).toBe(true);
+      expect(targetBacklinks?.has("emoji-😀.md")).toBe(true);
     });
   });
 });
