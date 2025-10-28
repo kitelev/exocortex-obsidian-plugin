@@ -130,7 +130,6 @@ jobs:
           export NODE_OPTIONS="--max-old-space-size=4096"
           export COVERAGE=true
           ./scripts/test-ci-batched.sh || exit 1
-        continue-on-error: true
 
       - name: Generate coverage summary
         if: always()
