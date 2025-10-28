@@ -127,6 +127,8 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
     if (!obsidianFile || !(obsidianFile instanceof TFile)) {
       throw new Error(`File not found: ${file.path}`);
     }
+    // Cache the file for future use
+    this.fileCache.set(file, obsidianFile);
     return obsidianFile;
   }
 
