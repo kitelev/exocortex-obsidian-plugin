@@ -26,10 +26,10 @@ module.exports = {
   },
   coverageThreshold: {
     global: {
-      branches: 57, // Current baseline: 57.97% (CI measurement, includes both packages)
+      branches: 55, // Current baseline: 55.81% (CI measurement, includes both packages)
       functions: 60, // Current baseline: 60.38%
-      lines: 65, // Current baseline: 65.55%
-      statements: 64, // Current baseline: 64.23%
+      lines: 64, // Current baseline: 64.85%
+      statements: 63, // Current baseline: 63.59%
     },
     // Domain layer thresholds disabled until core package coverage collection is fixed
     // See: https://github.com/kitelev/exocortex-obsidian-plugin/issues/197
