@@ -46,9 +46,19 @@ data.json
 # Archive
 .archive/
 
-# Environment
+# Environment and Secrets
 .env
+.env.*
 .env.local
+.env.production
+.env.development
+*.pem
+*.key
+*.cert
+*.p12
+secrets.json
+credentials.json
+config.local.*
 
 # Temporary test files
 test-*.js

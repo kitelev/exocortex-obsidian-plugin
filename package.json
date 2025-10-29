@@ -31,7 +31,10 @@
     "test:all": "npm test && npm run test:e2e:docker",
     "bdd:coverage": "node scripts/bdd-coverage.js",
     "bdd:report": "node scripts/generate-bdd-report.js",
-    "bdd:check": "node scripts/bdd-coverage.js --fail-on-uncovered"
+    "bdd:check": "node scripts/bdd-coverage.js --fail-on-uncovered",
+    "security:audit": "npm audit --audit-level=moderate",
+    "security:audit:fix": "npm audit fix",
+    "security:check": "npm run security:audit && npm run check:all"
   },
   "keywords": [
     "obsidian",
