@@ -5,6 +5,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![CI](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/codeql.yml/badge.svg)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/codeql.yml)
+[![Security Audit](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/security-audit.yml/badge.svg)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/security-audit.yml)
 [![Tests](https://img.shields.io/badge/tests-passing-success)](https://github.com/kitelev/exocortex-obsidian-plugin/actions)
 [![Coverage](https://img.shields.io/badge/coverage-49%25-orange)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
 
@@ -591,9 +593,22 @@ npm run build
 
 MIT License - see [LICENSE](./LICENSE) for details.
 
+## 🔒 Security
+
+Security is a top priority for this project. We've implemented comprehensive security measures:
+
+- **Zero Vulnerabilities**: All dependencies are regularly audited and maintained
+- **Automated Scanning**: CodeQL and npm audit run continuously
+- **Dependency Management**: Dependabot provides weekly automated updates
+- **Local-Only Storage**: All data stays in your Obsidian vault - no external transmission
+- **Type Safety**: Strict TypeScript configuration throughout the codebase
+
+For security concerns, please see our [Security Policy](./SECURITY.md).
+
 ## 🤝 Support
 
 - **Issues**: [GitHub Issues](https://github.com/kitelev/exocortex-obsidian-plugin/issues)
+- **Security**: [Security Policy](./SECURITY.md)
 - **Releases**: [GitHub Releases](https://github.com/kitelev/exocortex-obsidian-plugin/releases)
 - **Documentation**: This README and linked documentation files
 
