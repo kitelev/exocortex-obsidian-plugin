@@ -156,9 +156,16 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
               {showEffortArea && (
                 <td className="task-effort-area">
                   {(() => {
-                    const effortArea =
-                      getEffortArea?.(task.metadata) ||
-                      task.metadata.ems__Effort_area;
+                    let effortArea: unknown = null;
+
+                    if (getEffortArea) {
+                      effortArea = getEffortArea(task.metadata);
+                    }
+
+                    if (!effortArea) {
+                      effortArea = task.metadata.ems__Effort_area;
+                    }
+
                     if (!effortArea) return "-";
 
                     // Parse both formats: [[UID|Alias]] and UID|Alias

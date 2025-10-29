@@ -121,6 +121,54 @@ describe("AssetMetadataService", () => {
 
       expect(result).toBe("prototype-area");
     });
+
+    it("should resolve area from parent effort", () => {
+      const mockParentFile = new TFile();
+      mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(
+        mockParentFile,
+      );
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          ems__Effort_area: "parent-area",
+        },
+      });
+
+      const metadata = {
+        ems__Effort_parent: "[[parent-effort]]",
+      };
+
+      const result = service.getEffortArea(metadata);
+
+      expect(result).toBe("parent-area");
+    });
+
+    it("should inherit area from parent when prototype has no area", () => {
+      const mockPrototypeFile = new TFile();
+      const mockParentFile = new TFile();
+
+      mockApp.metadataCache.getFirstLinkpathDest
+        .mockReturnValueOnce(mockPrototypeFile)
+        .mockReturnValueOnce(mockParentFile);
+
+      mockApp.metadataCache.getFileCache
+        .mockReturnValueOnce({
+          frontmatter: {},
+        })
+        .mockReturnValueOnce({
+          frontmatter: {
+            ems__Effort_area: "parent-area",
+          },
+        });
+
+      const metadata = {
+        ems__Effort_prototype: "[[prototype-path]]",
+        ems__Effort_parent: "[[parent-effort]]",
+      };
+
+      const result = service.getEffortArea(metadata);
+
+      expect(result).toBe("parent-area");
+    });
   });
 
   describe("extractInstanceClass", () => {
