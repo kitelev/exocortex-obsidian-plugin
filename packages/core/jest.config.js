@@ -16,4 +16,10 @@ module.exports = {
       statements: 95,
     },
   },
+  // Handle ES modules from node_modules (uuid v13)
+  transformIgnorePatterns: ['node_modules/(?!(uuid)/)'],
+  transform: {
+    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.(js|mjs)$': 'babel-jest',
+  },
 };
