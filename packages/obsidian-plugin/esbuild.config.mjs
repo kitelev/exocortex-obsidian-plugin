@@ -138,10 +138,16 @@ const baseConfig = {
     ...builtins,
   ],
   format: "cjs",
-  target: "es2018",
+  target: "es2020", // Updated to es2020 for better optimization
   logLevel: isDev ? "info" : "warning",
   treeShaking: true,
   outfile: "packages/obsidian-plugin/main.js",
+  // Preact aliases for massive bundle size reduction
+  alias: {
+    'react': 'preact/compat',
+    'react-dom': 'preact/compat',
+    'react/jsx-runtime': 'preact/jsx-runtime'
+  },
   plugins: [
     performancePlugin,
     cachePlugin,
@@ -169,7 +175,11 @@ const productionConfig = {
   minifyIdentifiers: true,
   minifySyntax: true,
   // Drop debug code in production
-  drop: ["console", "debugger"]
+  drop: ["console", "debugger"],
+  // Additional size optimizations
+  legalComments: "none", // Remove license comments to save space
+  pure: ["console.log", "console.debug", "console.info"], // Mark as pure for tree-shaking
+  ignoreAnnotations: false, // Respect pure annotations
 };
 
 // Development optimizations
