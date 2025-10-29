@@ -1,7 +1,7 @@
 import { TFile, Keymap } from "obsidian";
 import React from "react";
 import { ReactRenderer } from "../../utils/ReactRenderer";
-import { MetadataHelpers } from "@exocortex/core";
+import { MetadataHelpers, EffortStatus } from "@exocortex/core";
 import { AssetRelationsTable } from "../../components/AssetRelationsTable";
 import { BacklinksCacheManager } from "../../../adapters/caching/BacklinksCacheManager";
 import { ExocortexSettings } from "../../../domain/settings/ExocortexSettings";
@@ -58,6 +58,28 @@ export class RelationsRenderer {
           enrichedMetadata.exo__Asset_label = resolvedLabel;
         }
 
+        let isBlocked = false;
+        const effortBlocker = metadata.ems__Effort_blocker;
+        if (effortBlocker) {
+          const blockerPath = String(effortBlocker).replace(/^\[\[|\]\]$/g, "");
+          const blockerFile = this.app.metadataCache.getFirstLinkpathDest(
+            blockerPath,
+            "",
+          );
+          if (blockerFile) {
+            const blockerCache = this.app.metadataCache.getFileCache(blockerFile);
+            const blockerMetadata = blockerCache?.frontmatter || {};
+            const blockerStatus = blockerMetadata.ems__Effort_status || "";
+            const blockerStatusStr = String(blockerStatus).replace(
+              /^\[\[|\]\]$/g,
+              "",
+            );
+            isBlocked =
+              blockerStatusStr !== EffortStatus.DONE &&
+              blockerStatusStr !== EffortStatus.TRASHED;
+          }
+        }
+
         if (referencingProperties.length > 0) {
           for (const propertyName of referencingProperties) {
             const relation: AssetRelation = {
@@ -68,6 +90,7 @@ export class RelationsRenderer {
               propertyName: propertyName,
               isBodyLink: false,
               isArchived: isArchived,
+              isBlocked: isBlocked,
               created: sourceFile.stat.ctime,
               modified: sourceFile.stat.mtime,
             };
@@ -82,6 +105,7 @@ export class RelationsRenderer {
             propertyName: undefined,
             isBodyLink: true,
             isArchived: isArchived,
+            isBlocked: isBlocked,
             created: sourceFile.stat.ctime,
             modified: sourceFile.stat.mtime,
           };

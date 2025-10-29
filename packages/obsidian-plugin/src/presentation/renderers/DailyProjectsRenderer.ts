@@ -180,6 +180,29 @@ export class DailyProjectsRenderer {
 
         const label = metadata.exo__Asset_label || file.basename;
 
+        let isBlocked = false;
+        const effortBlocker = metadata.ems__Effort_blocker;
+        if (effortBlocker) {
+          const blockerPath = String(effortBlocker).replace(/^\[\[|\]\]$/g, "");
+          const blockerFile = this.app.metadataCache.getFirstLinkpathDest(
+            blockerPath,
+            "",
+          );
+          if (blockerFile) {
+            const blockerCache =
+              this.app.metadataCache.getFileCache(blockerFile);
+            const blockerMetadata = blockerCache?.frontmatter || {};
+            const blockerStatus = blockerMetadata.ems__Effort_status || "";
+            const blockerStatusStr = String(blockerStatus).replace(
+              /^\[\[|\]\]$/g,
+              "",
+            );
+            isBlocked =
+              blockerStatusStr !== EffortStatus.DONE &&
+              blockerStatusStr !== EffortStatus.TRASHED;
+          }
+        }
+
         projects.push({
           file: {
             path: file.path,
@@ -194,6 +217,7 @@ export class DailyProjectsRenderer {
           metadata,
           isDone,
           isTrashed,
+          isBlocked,
         });
       }
 
