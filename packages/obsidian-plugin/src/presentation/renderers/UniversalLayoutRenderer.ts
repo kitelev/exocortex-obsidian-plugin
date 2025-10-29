@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext, TFile } from "obsidian";
+import { MarkdownPostProcessorContext } from "obsidian";
 import { ILogger } from "../../adapters/logging/ILogger";
 import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
 import React from "react";
