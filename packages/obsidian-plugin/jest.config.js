@@ -47,7 +47,7 @@ module.exports = {
   // Note: setupFilesAfterEnv moved to memory optimization section above
   // Handle ES modules and other transformations in CI
   // Transform @exocortex/core package files
-  transformIgnorePatterns: ["node_modules/(?!(chai)/)"],
+  transformIgnorePatterns: ["node_modules/(?!(chai|uuid)/)"],
   // ULTIMATE EMERGENCY: Extended timeouts for memory safety
   testTimeout: process.env.CI ? 300000 : 60000, // 5 minute timeout for ultimate safety
   // maxWorkers moved to memory management section above
@@ -109,5 +109,6 @@ module.exports = {
         },
       },
     ],
+    "^.+\\.(js|mjs)$": "babel-jest", // Transform ES modules from node_modules (uuid v13)
   },
 };
