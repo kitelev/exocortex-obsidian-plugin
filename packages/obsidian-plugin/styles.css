@@ -1,6 +1,41 @@
 /* Exocortex Plugin Styles */
 
 /* ============================================================================
+   Daily Navigation - Previous/Next Day Links
+   ============================================================================ */
+
+.exocortex-daily-navigation {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  background-color: var(--background-secondary);
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.exocortex-nav-prev,
+.exocortex-nav-next {
+  display: flex;
+  align-items: center;
+}
+
+.exocortex-daily-navigation a {
+  color: var(--text-normal);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+  min-height: 44px; /* Mobile touch target */
+  display: flex;
+  align-items: center;
+}
+
+.exocortex-daily-navigation a:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+/* ============================================================================
    Universal Layout Sections - Consistent Spacing
    ============================================================================ */
 

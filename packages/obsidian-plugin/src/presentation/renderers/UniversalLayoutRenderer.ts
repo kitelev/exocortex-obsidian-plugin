@@ -22,6 +22,7 @@ import { MetadataExtractor } from "@exocortex/core";
 import { ButtonGroupsBuilder } from "../builders/ButtonGroupsBuilder";
 import { DailyTasksRenderer } from "./DailyTasksRenderer";
 import { DailyProjectsRenderer } from "./DailyProjectsRenderer";
+import { DailyNavigationRenderer } from "./DailyNavigationRenderer";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 import { PropertiesRenderer } from "./layout/PropertiesRenderer";
 import { AreaTreeRenderer } from "./layout/AreaTreeRenderer";
@@ -43,6 +44,7 @@ export class UniversalLayoutRenderer {
   private buttonGroupsBuilder: ButtonGroupsBuilder;
   private dailyTasksRenderer: DailyTasksRenderer;
   private dailyProjectsRenderer: DailyProjectsRenderer;
+  private dailyNavigationRenderer: DailyNavigationRenderer;
   private vaultAdapter: ObsidianVaultAdapter;
   private metadataService: AssetMetadataService;
   private propertiesRenderer: PropertiesRenderer;
@@ -155,6 +157,12 @@ export class UniversalLayoutRenderer {
       (path: string) => this.metadataService.getAssetLabel(path),
       (metadata: Record<string, unknown>) => this.metadataService.getEffortArea(metadata),
     );
+
+    this.dailyNavigationRenderer = new DailyNavigationRenderer(
+      this.app,
+      this.logger,
+      this.metadataExtractor,
+    );
   }
 
   public invalidateBacklinksCache(): void {
@@ -184,6 +192,9 @@ export class UniversalLayoutRenderer {
         this.renderMessage(el, "No active file");
         return;
       }
+
+      // Render daily navigation at the very top (before Properties)
+      this.dailyNavigationRenderer.render(el, currentFile);
 
       if (this.settings.showPropertiesSection) {
         await this.propertiesRenderer.render(el, currentFile);
