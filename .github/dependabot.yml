@@ -28,7 +28,13 @@ updates:
         update-types:
           - "minor"
           - "patch"
-    # Ignore major version updates for stability
+    # Ignore all major version updates for stability and to avoid breaking changes.
+    # Rationale: Major version updates often introduce breaking changes that can disrupt
+    # the stability of our codebase or require significant refactoring. To minimize
+    # the risk of unexpected failures and maintain a predictable update process,
+    # we have chosen to ignore all major version updates by default. This policy ensures
+    # that only minor and patch updates are applied automatically, and major updates
+    # will be reviewed and tested manually before adoption.
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]

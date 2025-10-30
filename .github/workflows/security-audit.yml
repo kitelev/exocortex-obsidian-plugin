@@ -36,7 +36,7 @@ jobs:
         id: npm-audit
         run: |
           # Run audit and capture output
-          npm audit --audit-level=moderate --production > audit-report.txt 2>&1 || echo "vulnerabilities_found=true" >> $GITHUB_OUTPUT
+          npm audit --audit-level=moderate --production > audit-report.txt 2>&1
           cat audit-report.txt
 
       - name: Check audit results

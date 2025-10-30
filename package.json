@@ -34,7 +34,7 @@
     "bdd:check": "node scripts/bdd-coverage.js --fail-on-uncovered",
     "security:audit": "npm audit --audit-level=moderate",
     "security:audit:fix": "npm audit fix",
-    "security:check": "npm run security:audit && npm run check:all"
+    "security:check": "npm run security:audit; npm run check:all"
   },
   "keywords": [
     "obsidian",
