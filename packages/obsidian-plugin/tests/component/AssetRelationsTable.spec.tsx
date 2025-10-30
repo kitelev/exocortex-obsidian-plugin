@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/experimental-ct-react";
 import {
   AssetRelationsTable,
+  AssetRelationsTableWithToggle,
   AssetRelation,
 } from "../../src/presentation/components/AssetRelationsTable";
 
@@ -475,5 +476,218 @@ test.describe("AssetRelationsTable Component", () => {
     );
     await expect(taskName).toContainText("🚩");
     await expect(taskName).toContainText("Custom Blocked Label");
+  });
+
+  test("should hide Votes column when showEffortVotes is false", async ({
+    mount,
+  }) => {
+    const relationsWithVotes: AssetRelation[] = [
+      {
+        path: "tasks/task1.md",
+        title: "Task 1",
+        propertyName: "assignedTo",
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: {
+          exo__Instance_class: "ems__Task",
+          ems__Effort_votes: 5,
+        },
+      },
+    ];
+
+    const component = await mount(
+      <AssetRelationsTable
+        relations={relationsWithVotes}
+        showEffortVotes={false}
+      />,
+    );
+
+    // Votes column should not be visible
+    await expect(component.locator('th:has-text("Votes")')).not.toBeVisible();
+  });
+
+  test("should show Votes column when showEffortVotes is true", async ({
+    mount,
+  }) => {
+    const relationsWithVotes: AssetRelation[] = [
+      {
+        path: "tasks/task1.md",
+        title: "Task 1",
+        propertyName: "assignedTo",
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: {
+          exo__Instance_class: "ems__Task",
+          ems__Effort_votes: 5,
+        },
+      },
+    ];
+
+    const component = await mount(
+      <AssetRelationsTable
+        relations={relationsWithVotes}
+        showEffortVotes={true}
+      />,
+    );
+
+    // Votes column should be visible
+    await expect(component.locator('th:has-text("Votes")')).toBeVisible();
+
+    // Vote value should be displayed
+    await expect(component.locator(".asset-effort-votes")).toContainText("5");
+  });
+
+  test("should display dash when votes value is missing", async ({ mount }) => {
+    const relationsWithoutVotes: AssetRelation[] = [
+      {
+        path: "tasks/task1.md",
+        title: "Task 1",
+        propertyName: "assignedTo",
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: {
+          exo__Instance_class: "ems__Task",
+        },
+      },
+    ];
+
+    const component = await mount(
+      <AssetRelationsTable
+        relations={relationsWithoutVotes}
+        showEffortVotes={true}
+      />,
+    );
+
+    // Should display dash when votes value is missing
+    await expect(component.locator(".asset-effort-votes")).toContainText("-");
+  });
+
+  test("should display votes value of 0", async ({ mount }) => {
+    const relationsWithZeroVotes: AssetRelation[] = [
+      {
+        path: "tasks/task1.md",
+        title: "Task 1",
+        propertyName: "assignedTo",
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: {
+          exo__Instance_class: "ems__Task",
+          ems__Effort_votes: 0,
+        },
+      },
+    ];
+
+    const component = await mount(
+      <AssetRelationsTable
+        relations={relationsWithZeroVotes}
+        showEffortVotes={true}
+      />,
+    );
+
+    // Should display 0 when votes value is 0
+    await expect(component.locator(".asset-effort-votes")).toContainText("0");
+  });
+});
+
+test.describe("AssetRelationsTableWithToggle Component", () => {
+  const mockRelations: AssetRelation[] = [
+    {
+      path: "tasks/task1.md",
+      title: "Task 1",
+      propertyName: "assignedTo",
+      isBodyLink: false,
+      created: Date.now(),
+      modified: Date.now(),
+      metadata: {
+        exo__Instance_class: "ems__Task",
+        ems__Effort_votes: 5,
+      },
+    },
+  ];
+
+  test("should render Votes toggle button", async ({ mount }) => {
+    const component = await mount(
+      <AssetRelationsTableWithToggle
+        relations={mockRelations}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+      />,
+    );
+
+    // Toggle button should be visible
+    await expect(
+      component.locator(".exocortex-toggle-effort-votes"),
+    ).toBeVisible();
+  });
+
+  test("should show 'Show Votes' when votes are hidden", async ({ mount }) => {
+    const component = await mount(
+      <AssetRelationsTableWithToggle
+        relations={mockRelations}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+      />,
+    );
+
+    // Button should say "Show Votes"
+    await expect(
+      component.locator(".exocortex-toggle-effort-votes"),
+    ).toContainText("Show Votes");
+  });
+
+  test("should show 'Hide Votes' when votes are visible", async ({ mount }) => {
+    const component = await mount(
+      <AssetRelationsTableWithToggle
+        relations={mockRelations}
+        showEffortVotes={true}
+        onToggleEffortVotes={() => {}}
+      />,
+    );
+
+    // Button should say "Hide Votes"
+    await expect(
+      component.locator(".exocortex-toggle-effort-votes"),
+    ).toContainText("Hide Votes");
+  });
+
+  test("should call onToggleEffortVotes when button is clicked", async ({
+    mount,
+  }) => {
+    let toggleCalled = false;
+
+    const component = await mount(
+      <AssetRelationsTableWithToggle
+        relations={mockRelations}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {
+          toggleCalled = true;
+        }}
+      />,
+    );
+
+    // Click toggle button
+    await component.locator(".exocortex-toggle-effort-votes").click();
+
+    // Verify callback was called
+    expect(toggleCalled).toBe(true);
+  });
+
+  test("should pass showEffortVotes prop to AssetRelationsTable", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <AssetRelationsTableWithToggle
+        relations={mockRelations}
+        showEffortVotes={true}
+        onToggleEffortVotes={() => {}}
+      />,
+    );
+
+    // Votes column should be visible in the table
+    await expect(component.locator('th:has-text("Votes")')).toBeVisible();
   });
 });
