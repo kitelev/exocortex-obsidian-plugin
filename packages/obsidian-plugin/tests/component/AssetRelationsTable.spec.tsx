@@ -396,4 +396,84 @@ test.describe("AssetRelationsTable Component", () => {
     );
     await expect(property2Group.locator("tbody tr")).toHaveCount(1);
   });
+
+  test("should display blocker icon when relation is blocked", async ({
+    mount,
+  }) => {
+    const blockedRelation: AssetRelation = {
+      path: "tasks/blocked-task.md",
+      title: "Blocked Task",
+      propertyName: "assignedTo",
+      isBodyLink: false,
+      created: Date.now(),
+      modified: Date.now(),
+      isBlocked: true,
+      metadata: {
+        exo__Instance_class: "ems__Task",
+      },
+    };
+
+    const component = await mount(
+      <AssetRelationsTable relations={[blockedRelation]} />,
+    );
+
+    const taskName = component.locator(
+      'tr[data-path="tasks/blocked-task.md"] .asset-name a',
+    );
+    await expect(taskName).toContainText("🚩");
+    await expect(taskName).toContainText("Blocked Task");
+  });
+
+  test("should not display blocker icon when relation is not blocked", async ({
+    mount,
+  }) => {
+    const unblockedRelation: AssetRelation = {
+      path: "tasks/unblocked-task.md",
+      title: "Unblocked Task",
+      propertyName: "assignedTo",
+      isBodyLink: false,
+      created: Date.now(),
+      modified: Date.now(),
+      isBlocked: false,
+      metadata: {
+        exo__Instance_class: "ems__Task",
+      },
+    };
+
+    const component = await mount(
+      <AssetRelationsTable relations={[unblockedRelation]} />,
+    );
+
+    const taskName = component.locator(
+      'tr[data-path="tasks/unblocked-task.md"] .asset-name a',
+    );
+    const text = await taskName.textContent();
+    expect(text).not.toContain("🚩");
+  });
+
+  test("should display blocker icon with custom label", async ({ mount }) => {
+    const blockedRelationWithLabel: AssetRelation = {
+      path: "tasks/blocked-task.md",
+      title: "Blocked Task",
+      propertyName: "assignedTo",
+      isBodyLink: false,
+      created: Date.now(),
+      modified: Date.now(),
+      isBlocked: true,
+      metadata: {
+        exo__Instance_class: "ems__Task",
+        exo__Asset_label: "Custom Blocked Label",
+      },
+    };
+
+    const component = await mount(
+      <AssetRelationsTable relations={[blockedRelationWithLabel]} />,
+    );
+
+    const taskName = component.locator(
+      'tr[data-path="tasks/blocked-task.md"] .asset-name a',
+    );
+    await expect(taskName).toContainText("🚩");
+    await expect(taskName).toContainText("Custom Blocked Label");
+  });
 });

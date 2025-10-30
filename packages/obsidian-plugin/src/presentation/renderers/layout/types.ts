@@ -8,6 +8,7 @@ export interface AssetRelation {
   propertyName?: string;
   isBodyLink: boolean;
   isArchived?: boolean;
+  isBlocked?: boolean;
   created: number;
   modified: number;
 }

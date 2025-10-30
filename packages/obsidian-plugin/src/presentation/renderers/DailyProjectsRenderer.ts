@@ -10,6 +10,7 @@ import {
 import { AssetClass, EffortStatus } from "@exocortex/core";
 import { MetadataExtractor } from "@exocortex/core";
 import { EffortSortingHelpers } from "@exocortex/core";
+import { BlockerHelpers } from "../utils/BlockerHelpers";
 
 type ObsidianApp = any;
 
@@ -180,6 +181,8 @@ export class DailyProjectsRenderer {
 
         const label = metadata.exo__Asset_label || file.basename;
 
+        const isBlocked = BlockerHelpers.isEffortBlocked(this.app, metadata);
+
         projects.push({
           file: {
             path: file.path,
@@ -194,6 +197,7 @@ export class DailyProjectsRenderer {
           metadata,
           isDone,
           isTrashed,
+          isBlocked,
         });
       }
 

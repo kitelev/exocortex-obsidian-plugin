@@ -7,6 +7,7 @@ import { BacklinksCacheManager } from "../../../adapters/caching/BacklinksCacheM
 import { ExocortexSettings } from "../../../domain/settings/ExocortexSettings";
 import { AssetMetadataService } from "./helpers/AssetMetadataService";
 import { AssetRelation } from "./types";
+import { BlockerHelpers } from "../../utils/BlockerHelpers";
 
 type ObsidianApp = any;
 
@@ -58,6 +59,8 @@ export class RelationsRenderer {
           enrichedMetadata.exo__Asset_label = resolvedLabel;
         }
 
+        const isBlocked = BlockerHelpers.isEffortBlocked(this.app, metadata);
+
         if (referencingProperties.length > 0) {
           for (const propertyName of referencingProperties) {
             const relation: AssetRelation = {
@@ -68,6 +71,7 @@ export class RelationsRenderer {
               propertyName: propertyName,
               isBodyLink: false,
               isArchived: isArchived,
+              isBlocked: isBlocked,
               created: sourceFile.stat.ctime,
               modified: sourceFile.stat.mtime,
             };
@@ -82,6 +86,7 @@ export class RelationsRenderer {
             propertyName: undefined,
             isBodyLink: true,
             isArchived: isArchived,
+            isBlocked: isBlocked,
             created: sourceFile.stat.ctime,
             modified: sourceFile.stat.mtime,
           };
