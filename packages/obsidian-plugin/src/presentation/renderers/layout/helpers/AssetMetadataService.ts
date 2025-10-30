@@ -1,4 +1,5 @@
 import { TFile } from "obsidian";
+import { BlockerHelpers } from "../../../utils/BlockerHelpers";
 
 type ObsidianApp = any;
 
@@ -144,5 +145,18 @@ export class AssetMetadataService {
     return String(instanceClass)
       .replace(/^\[\[|\]\]$/g, "")
       .trim();
+  }
+
+  /**
+   * Checks if an effort is blocked by another effort.
+   * An effort is considered blocked when:
+   * - It has an ems__Effort_blocker property referencing another effort
+   * - The referenced blocker effort has a status that is not DONE or TRASHED
+   *
+   * @param metadata The metadata of the effort to check
+   * @returns true if the effort is blocked, false otherwise
+   */
+  isEffortBlocked(metadata: Record<string, unknown>): boolean {
+    return BlockerHelpers.isEffortBlocked(this.app, metadata);
   }
 }
