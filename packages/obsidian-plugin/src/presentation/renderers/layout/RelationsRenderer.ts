@@ -2,7 +2,7 @@ import { TFile, Keymap } from "obsidian";
 import React from "react";
 import { ReactRenderer } from "../../utils/ReactRenderer";
 import { MetadataHelpers } from "@exocortex/core";
-import { AssetRelationsTable } from "../../components/AssetRelationsTable";
+import { AssetRelationsTableWithToggle } from "../../components/AssetRelationsTable";
 import { BacklinksCacheManager } from "../../../adapters/caching/BacklinksCacheManager";
 import { ExocortexSettings } from "../../../domain/settings/ExocortexSettings";
 import { AssetMetadataService } from "./helpers/AssetMetadataService";
@@ -21,9 +21,11 @@ export class RelationsRenderer {
   constructor(
     private app: ObsidianApp,
     private settings: ExocortexSettings,
+    private plugin: any,
     private reactRenderer: ReactRenderer,
     private backlinksCacheManager: BacklinksCacheManager,
     private metadataService: AssetMetadataService,
+    private refresh: () => Promise<void>,
   ) {}
 
   async getAssetRelations(
@@ -121,7 +123,7 @@ export class RelationsRenderer {
 
     this.reactRenderer.render(
       container,
-      React.createElement(AssetRelationsTable, {
+      React.createElement(AssetRelationsTableWithToggle, {
         relations,
         groupByProperty: true,
         sortBy: config.sortBy || "title",
@@ -130,6 +132,12 @@ export class RelationsRenderer {
         groupSpecificProperties: {
           ems__Effort_parent: ["ems__Effort_status"],
           ems__Effort_area: ["ems__Effort_status"],
+        },
+        showEffortVotes: this.settings.showEffortVotes,
+        onToggleEffortVotes: async () => {
+          this.settings.showEffortVotes = !this.settings.showEffortVotes;
+          await this.plugin.saveSettings();
+          await this.refresh();
         },
         onAssetClick: async (path: string, event: React.MouseEvent) => {
           const isModPressed = Keymap.isModEvent(

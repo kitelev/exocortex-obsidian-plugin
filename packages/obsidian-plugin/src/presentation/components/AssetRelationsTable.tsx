@@ -22,6 +22,7 @@ export interface AssetRelationsTableProps {
   groupSpecificProperties?: Record<string, string[]>;
   onAssetClick?: (path: string, event: React.MouseEvent) => void;
   getAssetLabel?: (path: string) => string | null;
+  showEffortVotes?: boolean;
 }
 
 interface SortState {
@@ -36,6 +37,7 @@ interface SingleTableProps {
   showProperties: string[];
   onAssetClick?: (path: string, event: React.MouseEvent) => void;
   getAssetLabel?: (path: string) => string | null;
+  showEffortVotes?: boolean;
 }
 
 const SingleTable: React.FC<SingleTableProps> = ({
@@ -45,6 +47,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
   showProperties,
   onAssetClick,
   getAssetLabel,
+  showEffortVotes = false,
 }) => {
   const [sortState, setSortState] = useState<SortState>({
     column: sortBy,
@@ -212,6 +215,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
           {showProperties.map((prop) => (
             <th key={prop}>{prop}</th>
           ))}
+          {showEffortVotes && <th>Votes</th>}
         </tr>
       </thead>
       <tbody>
@@ -263,6 +267,13 @@ const SingleTable: React.FC<SingleTableProps> = ({
                   {renderPropertyValue(relation.metadata[prop])}
                 </td>
               ))}
+              {showEffortVotes && (
+                <td className="asset-effort-votes">
+                  {typeof relation.metadata.ems__Effort_votes === "number"
+                    ? relation.metadata.ems__Effort_votes
+                    : "-"}
+                </td>
+              )}
             </tr>
           );
         })}
@@ -280,6 +291,7 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
   groupSpecificProperties = {},
   onAssetClick,
   getAssetLabel,
+  showEffortVotes = false,
 }) => {
   const groupedRelations = useMemo(() => {
     if (!groupByProperty) {
@@ -316,6 +328,7 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
                 showProperties={mergedProperties}
                 onAssetClick={onAssetClick}
                 getAssetLabel={getAssetLabel}
+                showEffortVotes={showEffortVotes}
               />
             </div>
           );
@@ -333,7 +346,38 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
         showProperties={showProperties}
         onAssetClick={onAssetClick}
         getAssetLabel={getAssetLabel}
+        showEffortVotes={showEffortVotes}
       />
+    </div>
+  );
+};
+
+export interface AssetRelationsTableWithToggleProps
+  extends Omit<AssetRelationsTableProps, "showEffortVotes"> {
+  showEffortVotes: boolean;
+  onToggleEffortVotes: () => void;
+}
+
+export const AssetRelationsTableWithToggle: React.FC<
+  AssetRelationsTableWithToggleProps
+> = ({ showEffortVotes, onToggleEffortVotes, ...props }) => {
+  return (
+    <div className="exocortex-relations-wrapper">
+      <div className="exocortex-relations-controls">
+        <button
+          className="exocortex-toggle-effort-votes"
+          onClick={onToggleEffortVotes}
+          style={{
+            marginBottom: "8px",
+            padding: "4px 8px",
+            cursor: "pointer",
+            fontSize: "12px",
+          }}
+        >
+          {showEffortVotes ? "Hide" : "Show"} Votes
+        </button>
+      </div>
+      <AssetRelationsTable {...props} showEffortVotes={showEffortVotes} />
     </div>
   );
 };

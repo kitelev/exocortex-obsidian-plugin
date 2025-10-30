@@ -108,9 +108,11 @@ export class UniversalLayoutRenderer {
     this.relationsRenderer = new RelationsRenderer(
       this.app,
       this.settings,
+      this.plugin,
       this.reactRenderer,
       this.backlinksCacheManager,
       this.metadataService,
+      () => this.refresh(),
     );
 
     this.buttonGroupsBuilder = new ButtonGroupsBuilder(
