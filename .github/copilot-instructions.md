@@ -98,9 +98,9 @@ npm run bdd:check       # Enforce ≥80% BDD coverage (CI requirement)
 **CRITICAL:** All changes MUST pass quality gates before merging:
 
 ### Coverage Thresholds (Enforced in CI)
-- Global coverage: ≥38-45% (branches: 38%, functions: 42%, lines: 45%, statements: 44%)
-- Domain layer: ≥78-80% (higher standards for business logic)
-- Aspirational targets: 70% global / 85% domain
+- Global coverage: ≥55-64% (branches: 55%, functions: 60%, lines: 64%, statements: 63%)
+- Domain layer: ≥78-80% (higher standards for business logic; **aspirational, currently disabled in CI – see [issue #197](https://github.com/kitelev/exocortex-obsidian-plugin/issues/197)**)
+- Long-term aspirational targets (not currently enforced): 70% global / 85% domain (current enforced targets are lower; see above and COVERAGE_QUICK_REFERENCE.md)
 
 ### Test Types
 1. **Unit Tests**: Business logic, services, utilities (jest + ts-jest)
