@@ -1,12 +1,13 @@
 import { TFile, Keymap } from "obsidian";
 import React from "react";
 import { ReactRenderer } from "../../utils/ReactRenderer";
-import { MetadataHelpers, EffortStatus } from "@exocortex/core";
+import { MetadataHelpers } from "@exocortex/core";
 import { AssetRelationsTable } from "../../components/AssetRelationsTable";
 import { BacklinksCacheManager } from "../../../adapters/caching/BacklinksCacheManager";
 import { ExocortexSettings } from "../../../domain/settings/ExocortexSettings";
 import { AssetMetadataService } from "./helpers/AssetMetadataService";
 import { AssetRelation } from "./types";
+import { BlockerHelpers } from "../../utils/BlockerHelpers";
 
 type ObsidianApp = any;
 
@@ -58,27 +59,7 @@ export class RelationsRenderer {
           enrichedMetadata.exo__Asset_label = resolvedLabel;
         }
 
-        let isBlocked = false;
-        const effortBlocker = metadata.ems__Effort_blocker;
-        if (effortBlocker) {
-          const blockerPath = String(effortBlocker).replace(/^\[\[|\]\]$/g, "");
-          const blockerFile = this.app.metadataCache.getFirstLinkpathDest(
-            blockerPath,
-            "",
-          );
-          if (blockerFile) {
-            const blockerCache = this.app.metadataCache.getFileCache(blockerFile);
-            const blockerMetadata = blockerCache?.frontmatter || {};
-            const blockerStatus = blockerMetadata.ems__Effort_status || "";
-            const blockerStatusStr = String(blockerStatus).replace(
-              /^\[\[|\]\]$/g,
-              "",
-            );
-            isBlocked =
-              blockerStatusStr !== EffortStatus.DONE &&
-              blockerStatusStr !== EffortStatus.TRASHED;
-          }
-        }
+        const isBlocked = BlockerHelpers.isEffortBlocked(this.app, metadata);
 
         if (referencingProperties.length > 0) {
           for (const propertyName of referencingProperties) {
