@@ -640,4 +640,75 @@ test.describe("DailyTasksTableWithToggle", () => {
 
     await expect(component.locator(".task-effort-votes")).toContainText("-");
   });
+
+  test("should sort tasks by name when clicking Name header", async ({
+    mount,
+  }) => {
+    const component = await mount(<DailyTasksTable tasks={mockTasks} />);
+
+    // Click Name header to sort ascending
+    await component.locator('th:has-text("Name")').click();
+
+    // Check ascending sort indicator
+    await expect(
+      component.locator('th:has-text("Name"):has-text("↑")'),
+    ).toBeVisible();
+
+    // Click again to sort descending
+    await component.locator('th:has-text("Name")').click();
+
+    // Check descending sort indicator
+    await expect(
+      component.locator('th:has-text("Name"):has-text("↓")'),
+    ).toBeVisible();
+
+    // Click third time to reset sorting
+    await component.locator('th:has-text("Name")').click();
+
+    // Check no sort indicator
+    await expect(
+      component.locator('th:has-text("Name"):has-text("↑")'),
+    ).not.toBeVisible();
+    await expect(
+      component.locator('th:has-text("Name"):has-text("↓")'),
+    ).not.toBeVisible();
+  });
+
+  test("should sort tasks by start time when clicking Start header", async ({
+    mount,
+  }) => {
+    const component = await mount(<DailyTasksTable tasks={mockTasks} />);
+
+    // Click Start header to sort
+    await component.locator('th:has-text("Start")').click();
+
+    // Check sort indicator appears
+    await expect(
+      component.locator('th:has-text("Start"):has-text("↑")'),
+    ).toBeVisible();
+  });
+
+  test("should sort tasks by status when clicking Status header", async ({
+    mount,
+  }) => {
+    const component = await mount(<DailyTasksTable tasks={mockTasks} />);
+
+    // Click Status header to sort
+    await component.locator('th:has-text("Status")').click();
+
+    // Check sort indicator appears
+    await expect(
+      component.locator('th:has-text("Status"):has-text("↑")'),
+    ).toBeVisible();
+  });
+
+  test("should have sortable class on all header cells", async ({ mount }) => {
+    const component = await mount(<DailyTasksTable tasks={mockTasks} />);
+
+    // Check that headers have sortable class
+    await expect(component.locator('th.sortable:has-text("Name")')).toBeVisible();
+    await expect(component.locator('th.sortable:has-text("Start")')).toBeVisible();
+    await expect(component.locator('th.sortable:has-text("End")')).toBeVisible();
+    await expect(component.locator('th.sortable:has-text("Status")')).toBeVisible();
+  });
 });

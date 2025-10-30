@@ -476,4 +476,89 @@ test.describe("AssetRelationsTable Component", () => {
     await expect(taskName).toContainText("🚩");
     await expect(taskName).toContainText("Custom Blocked Label");
   });
+
+  test("should sort by dynamic property columns when header is clicked", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <AssetRelationsTable
+        relations={mockRelations}
+        showProperties={["status", "priority"]}
+      />,
+    );
+
+    // Click on status header to sort
+    await component.locator('th:has-text("status")').click();
+
+    // Check ascending sort indicator
+    await expect(
+      component.locator('th:has-text("status"):has-text("↑")'),
+    ).toBeVisible();
+
+    // Click again to sort descending
+    await component.locator('th:has-text("status")').click();
+
+    // Check descending sort indicator
+    await expect(
+      component.locator('th:has-text("status"):has-text("↓")'),
+    ).toBeVisible();
+
+    // Click third time to reset sorting
+    await component.locator('th:has-text("status")').click();
+
+    // Check no sort indicator
+    await expect(
+      component.locator('th:has-text("status"):has-text("↑")'),
+    ).not.toBeVisible();
+    await expect(
+      component.locator('th:has-text("status"):has-text("↓")'),
+    ).not.toBeVisible();
+  });
+
+  test("should have sortable class on dynamic property headers", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <AssetRelationsTable
+        relations={mockRelations}
+        showProperties={["status", "priority"]}
+      />,
+    );
+
+    // Check that dynamic property headers have sortable class
+    await expect(
+      component.locator('th.sortable:has-text("status")'),
+    ).toBeVisible();
+    await expect(
+      component.locator('th.sortable:has-text("priority")'),
+    ).toBeVisible();
+  });
+
+  test("should reset sorting when switching to a different column", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <AssetRelationsTable
+        relations={mockRelations}
+        showProperties={["status"]}
+      />,
+    );
+
+    // Sort by title
+    await component.locator('th:has-text("Name")').click();
+    await expect(
+      component.locator('th:has-text("Name"):has-text("↑")'),
+    ).toBeVisible();
+
+    // Click on status column - should start with ascending
+    await component.locator('th:has-text("status")').click();
+    await expect(
+      component.locator('th:has-text("status"):has-text("↑")'),
+    ).toBeVisible();
+
+    // Title column should not have sort indicator anymore
+    await expect(
+      component.locator('th:has-text("Name"):has-text("↑")'),
+    ).not.toBeVisible();
+  });
 });

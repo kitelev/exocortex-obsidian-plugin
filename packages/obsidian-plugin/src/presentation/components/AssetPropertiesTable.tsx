@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 
 export interface AssetPropertiesTableProps {
   metadata: Record<string, any>;
@@ -6,11 +6,39 @@ export interface AssetPropertiesTableProps {
   getAssetLabel?: (path: string) => string | null;
 }
 
+interface SortState {
+  column: "property" | "value" | null;
+  order: "asc" | "desc" | null;
+}
+
 export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
   metadata,
   onLinkClick,
   getAssetLabel,
 }) => {
+  const [sortState, setSortState] = useState<SortState>({
+    column: null,
+    order: null,
+  });
+
+  const handleSort = (column: "property" | "value") => {
+    setSortState((prev) => {
+      if (prev.column !== column) {
+        // First click on a new column: ascending
+        return { column, order: "asc" };
+      }
+      if (prev.order === "asc") {
+        // Second click: descending
+        return { column, order: "desc" };
+      }
+      if (prev.order === "desc") {
+        // Third click: reset sorting
+        return { column: null, order: null };
+      }
+      // Default to ascending
+      return { column, order: "asc" };
+    });
+  };
   const isWikiLink = (value: any): boolean => {
     return typeof value === "string" && /\[\[.*?\]\]/.test(value);
   };
@@ -93,7 +121,54 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
 
   const metadataEntries = Object.entries(metadata || {});
 
-  if (metadataEntries.length === 0) {
+  const sortedEntries = useMemo(() => {
+    if (!sortState.column || !sortState.order) {
+      return metadataEntries;
+    }
+
+    return [...metadataEntries].sort(([keyA, valueA], [keyB, valueB]) => {
+      let aVal: string;
+      let bVal: string;
+
+      if (sortState.column === "property") {
+        aVal = keyA.toLowerCase();
+        bVal = keyB.toLowerCase();
+      } else {
+        // Sort by value
+        // Convert value to string for comparison
+        const getStringValue = (val: any): string => {
+          if (val === null || val === undefined) return "";
+          if (typeof val === "string") {
+            // Extract text from wiki-links for sorting
+            if (/\[\[.*?\]\]/.test(val)) {
+              const content = val.replace(/^\[\[|\]\]$/g, "");
+              const pipeIndex = content.indexOf("|");
+              return pipeIndex !== -1
+                ? content.substring(pipeIndex + 1).trim()
+                : content.trim();
+            }
+            return val;
+          }
+          if (Array.isArray(val)) {
+            return val.length > 0 ? getStringValue(val[0]) : "";
+          }
+          if (typeof val === "object") {
+            return JSON.stringify(val);
+          }
+          return String(val);
+        };
+
+        aVal = getStringValue(valueA).toLowerCase();
+        bVal = getStringValue(valueB).toLowerCase();
+      }
+
+      return sortState.order === "asc"
+        ? aVal.localeCompare(bVal)
+        : bVal.localeCompare(aVal);
+    });
+  }, [metadataEntries, sortState]);
+
+  if (sortedEntries.length === 0) {
     return null;
   }
 
@@ -103,12 +178,20 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
       <table className="exocortex-properties-table">
         <thead>
           <tr>
-            <th>Property</th>
-            <th>Value</th>
+            <th onClick={() => handleSort("property")} className="sortable">
+              Property{" "}
+              {sortState.column === "property" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
+            <th onClick={() => handleSort("value")} className="sortable">
+              Value{" "}
+              {sortState.column === "value" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
           </tr>
         </thead>
         <tbody>
-          {metadataEntries.map(([key, value]) => (
+          {sortedEntries.map(([key, value]) => (
             <tr key={key}>
               <td className="property-key">{key}</td>
               <td className="property-value">{renderValue(value)}</td>

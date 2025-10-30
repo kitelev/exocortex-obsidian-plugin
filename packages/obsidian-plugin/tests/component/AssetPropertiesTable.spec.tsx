@@ -356,4 +356,99 @@ test.describe("AssetPropertiesTable Component", () => {
     const links = component.locator("a.internal-link");
     await expect(links).toHaveCount(3);
   });
+
+  test("should sort properties by property name when clicking Property header", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <AssetPropertiesTable metadata={mockMetadata} />,
+    );
+
+    // Click Property header to sort ascending
+    await component.locator('th:has-text("Property")').click();
+
+    // Check ascending sort indicator
+    await expect(
+      component.locator('th:has-text("Property"):has-text("↑")'),
+    ).toBeVisible();
+
+    // Get first row key
+    const firstRowKey = component
+      .locator("tbody tr")
+      .first()
+      .locator("td.property-key");
+    const firstKeyText = await firstRowKey.textContent();
+
+    // Click again to sort descending
+    await component.locator('th:has-text("Property")').click();
+
+    // Check descending sort indicator
+    await expect(
+      component.locator('th:has-text("Property"):has-text("↓")'),
+    ).toBeVisible();
+
+    // First row key should be different
+    const newFirstKeyText = await component
+      .locator("tbody tr")
+      .first()
+      .locator("td.property-key")
+      .textContent();
+    expect(newFirstKeyText).not.toBe(firstKeyText);
+
+    // Click third time to reset sorting
+    await component.locator('th:has-text("Property")').click();
+
+    // Check no sort indicator
+    await expect(
+      component.locator('th:has-text("Property"):has-text("↑")'),
+    ).not.toBeVisible();
+    await expect(
+      component.locator('th:has-text("Property"):has-text("↓")'),
+    ).not.toBeVisible();
+  });
+
+  test("should sort properties by value when clicking Value header", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <AssetPropertiesTable metadata={mockMetadata} />,
+    );
+
+    // Click Value header to sort ascending
+    await component.locator('th:has-text("Value")').click();
+
+    // Check ascending sort indicator
+    await expect(
+      component.locator('th:has-text("Value"):has-text("↑")'),
+    ).toBeVisible();
+
+    // Click again to sort descending
+    await component.locator('th:has-text("Value")').click();
+
+    // Check descending sort indicator
+    await expect(
+      component.locator('th:has-text("Value"):has-text("↓")'),
+    ).toBeVisible();
+
+    // Click third time to reset sorting
+    await component.locator('th:has-text("Value")').click();
+
+    // Check no sort indicator
+    await expect(
+      component.locator('th:has-text("Value"):has-text("↑")'),
+    ).not.toBeVisible();
+    await expect(
+      component.locator('th:has-text("Value"):has-text("↓")'),
+    ).not.toBeVisible();
+  });
+
+  test("should have sortable class on header cells", async ({ mount }) => {
+    const component = await mount(
+      <AssetPropertiesTable metadata={mockMetadata} />,
+    );
+
+    // Check that headers have sortable class
+    await expect(component.locator('th.sortable:has-text("Property")')).toBeVisible();
+    await expect(component.locator('th.sortable:has-text("Value")')).toBeVisible();
+  });
 });

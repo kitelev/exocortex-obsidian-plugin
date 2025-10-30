@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 
 export interface DailyTask {
   file: {
@@ -28,6 +28,11 @@ export interface DailyTasksTableProps {
   showEffortVotes?: boolean;
 }
 
+interface SortState {
+  column: string | null;
+  order: "asc" | "desc" | null;
+}
+
 export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   tasks,
   onTaskClick,
@@ -36,6 +41,29 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   showEffortArea = false,
   showEffortVotes = false,
 }) => {
+  const [sortState, setSortState] = useState<SortState>({
+    column: null,
+    order: null,
+  });
+
+  const handleSort = (column: string) => {
+    setSortState((prev) => {
+      if (prev.column !== column) {
+        // First click on a new column: ascending
+        return { column, order: "asc" };
+      }
+      if (prev.order === "asc") {
+        // Second click: descending
+        return { column, order: "desc" };
+      }
+      if (prev.order === "desc") {
+        // Third click: reset sorting
+        return { column: null, order: null };
+      }
+      // Default to ascending
+      return { column, order: "asc" };
+    });
+  };
   interface WikiLink {
     target: string;
     alias?: string;
@@ -93,21 +121,137 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     return blockerIcon + icon + displayText;
   };
 
+  const sortedTasks = useMemo(() => {
+    if (!sortState.column || !sortState.order) {
+      return tasks;
+    }
+
+    return [...tasks].sort((a, b) => {
+      let aVal: any;
+      let bVal: any;
+
+      if (sortState.column === "name") {
+        aVal = getDisplayName(a).toLowerCase();
+        bVal = getDisplayName(b).toLowerCase();
+      } else if (sortState.column === "startTime") {
+        aVal = a.startTime || "";
+        bVal = b.startTime || "";
+      } else if (sortState.column === "endTime") {
+        aVal = a.endTime || "";
+        bVal = b.endTime || "";
+      } else if (sortState.column === "status") {
+        // Extract text from wiki-link status
+        const getStatusText = (status: string): string => {
+          if (!status) return "";
+          if (/\[\[.*?\]\]/.test(status)) {
+            const content = status.replace(/^\[\[|\]\]$/g, "");
+            const pipeIndex = content.indexOf("|");
+            return pipeIndex !== -1
+              ? content.substring(pipeIndex + 1).trim()
+              : content.trim();
+          }
+          return status;
+        };
+        aVal = getStatusText(a.status).toLowerCase();
+        bVal = getStatusText(b.status).toLowerCase();
+      } else if (sortState.column === "effortArea") {
+        const aArea = getEffortArea?.(a.metadata) || a.metadata.ems__Effort_area;
+        const bArea = getEffortArea?.(b.metadata) || b.metadata.ems__Effort_area;
+
+        const getAreaText = (area: any): string => {
+          if (!area) return "";
+          const areaStr = String(area);
+          if (/\[\[.*?\]\]/.test(areaStr)) {
+            const content = areaStr.replace(/^\[\[|\]\]$/g, "");
+            const pipeIndex = content.indexOf("|");
+            return pipeIndex !== -1
+              ? content.substring(pipeIndex + 1).trim()
+              : content.trim();
+          } else if (areaStr.includes("|")) {
+            const parts = areaStr.split("|");
+            return parts[1]?.trim() || parts[0].trim();
+          }
+          return areaStr;
+        };
+
+        aVal = getAreaText(aArea).toLowerCase();
+        bVal = getAreaText(bArea).toLowerCase();
+      } else if (sortState.column === "effortVotes") {
+        aVal =
+          typeof a.metadata.ems__Effort_votes === "number"
+            ? a.metadata.ems__Effort_votes
+            : -1;
+        bVal =
+          typeof b.metadata.ems__Effort_votes === "number"
+            ? b.metadata.ems__Effort_votes
+            : -1;
+      }
+
+      // Handle null/undefined values
+      if (!aVal && aVal !== 0) return 1;
+      if (!bVal && bVal !== 0) return -1;
+
+      // Compare values
+      if (typeof aVal === "string" && typeof bVal === "string") {
+        return sortState.order === "asc"
+          ? aVal.localeCompare(bVal)
+          : bVal.localeCompare(aVal);
+      }
+
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        return sortState.order === "asc" ? aVal - bVal : bVal - aVal;
+      }
+
+      return 0;
+    });
+  }, [tasks, sortState, getAssetLabel, getEffortArea]);
+
   return (
     <div className="exocortex-daily-tasks">
       <table className="exocortex-tasks-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Start</th>
-            <th>End</th>
-            <th>Status</th>
-            {showEffortArea && <th>Effort Area</th>}
-            {showEffortVotes && <th>Votes</th>}
+            <th onClick={() => handleSort("name")} className="sortable">
+              Name{" "}
+              {sortState.column === "name" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
+            <th onClick={() => handleSort("startTime")} className="sortable">
+              Start{" "}
+              {sortState.column === "startTime" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
+            <th onClick={() => handleSort("endTime")} className="sortable">
+              End{" "}
+              {sortState.column === "endTime" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
+            <th onClick={() => handleSort("status")} className="sortable">
+              Status{" "}
+              {sortState.column === "status" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
+            {showEffortArea && (
+              <th onClick={() => handleSort("effortArea")} className="sortable">
+                Effort Area{" "}
+                {sortState.column === "effortArea" &&
+                  (sortState.order === "asc" ? "↑" : "↓")}
+              </th>
+            )}
+            {showEffortVotes && (
+              <th
+                onClick={() => handleSort("effortVotes")}
+                className="sortable"
+              >
+                Votes{" "}
+                {sortState.column === "effortVotes" &&
+                  (sortState.order === "asc" ? "↑" : "↓")}
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
-          {tasks.map((task, index) => (
+          {sortedTasks.map((task, index) => (
             <tr key={`${task.path}-${index}`} data-path={task.path}>
               <td className="task-name">
                 <a
