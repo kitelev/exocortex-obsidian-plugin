@@ -72,3 +72,4 @@ packages/*/src/**/*.d.ts.map
 !packages/*/src/**/*.test.ts
 !packages/*/src/**/*.spec.ts
 packages/*/playwright/.cache/
+packages/*/dist/
