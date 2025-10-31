@@ -11,7 +11,9 @@ export class ConvertProjectToTaskCommand implements ICommand {
   id = "convert-project-to-task";
   name = "Convert Project to Task";
 
-  constructor(private conversionService: AssetConversionService) {}
+  constructor(
+    private conversionService: AssetConversionService,
+  ) {}
 
   checkCallback = (
     checking: boolean,
