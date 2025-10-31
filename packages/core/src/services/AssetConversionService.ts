@@ -43,9 +43,6 @@ export class AssetConversionService {
       // Read current file content
       const content = await this.vault.read(file);
 
-      // Parse to find if we have multi-line format
-      const parsed = this.frontmatterService.parse(content);
-      
       // Remove existing Instance_class (handles both single and multi-line)
       let updatedContent = this.removeInstanceClassProperty(content);
       

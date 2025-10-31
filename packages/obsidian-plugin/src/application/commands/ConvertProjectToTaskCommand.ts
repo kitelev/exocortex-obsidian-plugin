@@ -14,7 +14,7 @@ export class ConvertProjectToTaskCommand implements ICommand {
 
   constructor(
     private conversionService: AssetConversionService,
-    private vaultAdapter: ObsidianVaultAdapter,
+    private _vaultAdapter: ObsidianVaultAdapter,
   ) {}
 
   checkCallback = (
