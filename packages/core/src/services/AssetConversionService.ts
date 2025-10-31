@@ -45,7 +45,7 @@ export class AssetConversionService {
 
       // Remove existing Instance_class (handles both single and multi-line)
       let updatedContent = this.removeInstanceClassProperty(content);
-      
+
       // Add new Instance_class in single-line format
       updatedContent = this.frontmatterService.updateProperty(
         updatedContent,
@@ -61,7 +61,7 @@ export class AssetConversionService {
       );
 
       return file;
-    } catch (error) {
+    } catch (error: unknown) {
       const message = `Failed to convert Task to Project: ${file.path}`;
       LoggingService.error(message, error instanceof Error ? error : undefined);
       throw new Error(message);
@@ -94,7 +94,7 @@ export class AssetConversionService {
 
       // Remove existing Instance_class (handles both single and multi-line)
       let updatedContent = this.removeInstanceClassProperty(content);
-      
+
       // Add new Instance_class in single-line format
       updatedContent = this.frontmatterService.updateProperty(
         updatedContent,
@@ -110,7 +110,7 @@ export class AssetConversionService {
       );
 
       return file;
-    } catch (error) {
+    } catch (error: unknown) {
       const message = `Failed to convert Project to Task: ${file.path}`;
       LoggingService.error(message, error instanceof Error ? error : undefined);
       throw new Error(message);

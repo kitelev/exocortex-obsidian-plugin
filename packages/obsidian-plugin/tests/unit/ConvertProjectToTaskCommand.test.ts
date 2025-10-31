@@ -24,7 +24,9 @@ describe("ConvertProjectToTaskCommand", () => {
       parent: null,
     } as TFile;
 
-    command = new ConvertProjectToTaskCommand(mockConversionService);
+    command = new ConvertProjectToTaskCommand(
+      mockConversionService,
+    );
   });
 
   describe("id and name", () => {
