@@ -15,6 +15,7 @@ import { FolderRepairService } from "@exocortex/core";
 import { RenameToUidService } from "@exocortex/core";
 import { EffortVotingService } from "@exocortex/core";
 import { LabelToAliasService } from "@exocortex/core";
+import { AssetConversionService } from "@exocortex/core";
 import { BacklinksCacheManager } from "../../adapters/caching/BacklinksCacheManager";
 import { EventListenerManager } from "../../adapters/events/EventListenerManager";
 import { MetadataExtractor } from "@exocortex/core";
@@ -58,6 +59,7 @@ export class UniversalLayoutRenderer {
   private renameToUidService: RenameToUidService;
   private effortVotingService: EffortVotingService;
   private labelToAliasService: LabelToAliasService;
+  private assetConversionService: AssetConversionService;
 
   constructor(app: ObsidianApp, settings: ExocortexSettings, plugin: any) {
     this.app = app;
@@ -83,6 +85,7 @@ export class UniversalLayoutRenderer {
     this.renameToUidService = new RenameToUidService(this.vaultAdapter);
     this.effortVotingService = new EffortVotingService(this.vaultAdapter);
     this.labelToAliasService = new LabelToAliasService(this.vaultAdapter);
+    this.assetConversionService = new AssetConversionService(this.vaultAdapter);
 
     this.metadataService = new AssetMetadataService(this.app);
 
@@ -124,6 +127,7 @@ export class UniversalLayoutRenderer {
       this.renameToUidService,
       this.effortVotingService,
       this.labelToAliasService,
+      this.assetConversionService,
       this.metadataExtractor,
       this.logger,
       () => this.refresh(),

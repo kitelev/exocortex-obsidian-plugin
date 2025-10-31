@@ -12,6 +12,7 @@ import {
   RenameToUidService,
   EffortVotingService,
   LabelToAliasService,
+  AssetConversionService,
 } from "@exocortex/core";
 
 import { CreateTaskCommand } from "./CreateTaskCommand";
@@ -40,6 +41,8 @@ import { ReloadLayoutCommand } from "./ReloadLayoutCommand";
 import { TogglePropertiesVisibilityCommand } from "./TogglePropertiesVisibilityCommand";
 import { ToggleLayoutVisibilityCommand } from "./ToggleLayoutVisibilityCommand";
 import { ToggleArchivedAssetsCommand } from "./ToggleArchivedAssetsCommand";
+import { ConvertTaskToProjectCommand } from "./ConvertTaskToProjectCommand";
+import { ConvertProjectToTaskCommand } from "./ConvertProjectToTaskCommand";
 
 export class CommandRegistry {
   private commands: ICommand[] = [];
@@ -61,6 +64,7 @@ export class CommandRegistry {
     const renameToUidService = new RenameToUidService(this.vaultAdapter);
     const effortVotingService = new EffortVotingService(this.vaultAdapter);
     const labelToAliasService = new LabelToAliasService(this.vaultAdapter);
+    const assetConversionService = new AssetConversionService(this.vaultAdapter);
 
     this.commands = [
       new CreateTaskCommand(app, taskCreationService, this.vaultAdapter),
@@ -89,6 +93,8 @@ export class CommandRegistry {
       new TogglePropertiesVisibilityCommand(plugin),
       new ToggleLayoutVisibilityCommand(plugin),
       new ToggleArchivedAssetsCommand(plugin),
+      new ConvertTaskToProjectCommand(assetConversionService),
+      new ConvertProjectToTaskCommand(assetConversionService),
     ];
   }
 

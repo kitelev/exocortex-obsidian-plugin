@@ -124,7 +124,7 @@ describe("CommandManager", () => {
         commandManager.registerAllCommands(mockPlugin);
       }).not.toThrow();
 
-      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(26);
+      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(28);
     });
 
     it("should register commands with correct IDs", () => {

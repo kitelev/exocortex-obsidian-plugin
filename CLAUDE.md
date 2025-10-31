@@ -102,10 +102,10 @@ git pull origin main
 
 **DO NOT stop after `gh pr create`** - you MUST monitor and wait for:
 - CI checks to pass (watch with `gh pr checks --watch`)
-- PR to be merged (use `gh pr merge --auto --rebase`)
+- PR to be merged (use `gh pr merge --auto --squash`)
 - Release to be created (verify with `gh release list --limit 1`)
 
-**Complete workflow (11 steps):**
+**Complete workflow (12 steps):**
 
 ```bash
 # 1. Create feature branch in separate worktree
@@ -132,20 +132,24 @@ gh pr checks --watch  # build-and-test + e2e-tests
 git commit --amend --no-edit
 git push --force-with-lease origin feature/description
 
-# 8. Merge when all checks GREEN (rebase only - linear history)
-gh pr merge --auto --rebase
+# 8. If main changed, manually rebase your branch first
+git fetch origin main && git rebase origin/main
+git push --force-with-lease origin feature/description
 
-# 9. Automatic release (NO manual steps - tag-based versioning)
+# 9. Merge when all checks GREEN (squash merge)
+gh pr merge --auto --squash   # All commits → 1 new commit on main
+
+# 10. Automatic release (NO manual steps - tag-based versioning)
 # ✅ auto-release.yml: analyzes commits, calculates version, builds plugin, creates tag + GitHub release
 # ✅ CHANGELOG generated automatically from commit messages
 # ✅ NO version bump commits (versions exist only as git tags)
 
-# 10. Cleanup worktree
+# 11. Cleanup worktree
 cd /Users/kitelev/Documents/exocortex-obsidian-plugin
 git worktree remove ../exocortex-feature-name
 git pull origin main
 
-# 11. Verify release created
+# 12. Verify release created
 gh release list --limit 1
 ```
 
@@ -297,9 +301,18 @@ git commit -am "test: fix e2e test for Docker environment"  # ✅ CORRECT!
 2. **e2e-tests**: Docker integration tests, screenshot validation
 
 **Merge strategy:**
-- ✅ Only `git rebase` allowed (linear history)
-- ❌ Squash merge DISABLED
-- ❌ Merge commits DISABLED
+- ✅ **Squash merge ONLY** (all commits → 1 new commit on main)
+- ✅ **Combined with `required_linear_history`** (ensures no merge commits)
+- ✅ **Combined with `strict: true`** (requires manual rebase if main changed)
+- ❌ Regular rebase DISABLED (only squash merge allowed)
+- ❌ Merge commits DISABLED (no merge bubbles)
+
+**How it works:**
+1. Developer manually rebases branch if main changed: `git rebase origin/main`
+2. GitHub squash merge creates NEW commit on main with all changes
+3. Result: Linear history with one commit per PR
+
+**Note:** Squash merge is NOT git rebase - it creates a new commit. Manual rebase needed if main changed.
 
 ### RULE 5: Multi-Instance Awareness
 
