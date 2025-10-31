@@ -29,6 +29,7 @@ export { SupervisionCreationService } from "./services/SupervisionCreationServic
 export { TaskFrontmatterGenerator } from "./services/TaskFrontmatterGenerator";
 export { AlgorithmExtractor } from "./services/AlgorithmExtractor";
 export { PlanningService } from "./services/PlanningService";
+export { AssetConversionService } from "./services/AssetConversionService";
 
 // Utilities exports
 export { FrontmatterService } from "./utilities/FrontmatterService";

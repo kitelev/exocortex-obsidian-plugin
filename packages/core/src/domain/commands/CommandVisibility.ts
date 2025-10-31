@@ -513,3 +513,23 @@ export function canCreateNarrowerConcept(
 ): boolean {
   return hasClass(context.instanceClass, AssetClass.CONCEPT);
 }
+
+/**
+ * Can execute "Convert Task to Project" command
+ * Available for: ems__Task assets only
+ */
+export function canConvertTaskToProject(
+  context: CommandVisibilityContext,
+): boolean {
+  return hasClass(context.instanceClass, AssetClass.TASK);
+}
+
+/**
+ * Can execute "Convert Project to Task" command
+ * Available for: ems__Project assets only
+ */
+export function canConvertProjectToTask(
+  context: CommandVisibilityContext,
+): boolean {
+  return hasClass(context.instanceClass, AssetClass.PROJECT);
+}
