@@ -6,7 +6,6 @@ import {
   AssetConversionService,
   LoggingService,
 } from "@exocortex/core";
-import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 
 export class ConvertTaskToProjectCommand implements ICommand {
   id = "convert-task-to-project";
