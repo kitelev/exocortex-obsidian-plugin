@@ -66,7 +66,7 @@ export class AssetConversionService {
       return file;
     } catch (error) {
       const message = `Failed to convert Task to Project: ${file.path}`;
-      LoggingService.error(message, error);
+      LoggingService.error(message, error instanceof Error ? error : undefined);
       throw new Error(message);
     }
   }
@@ -115,7 +115,7 @@ export class AssetConversionService {
       return file;
     } catch (error) {
       const message = `Failed to convert Project to Task: ${file.path}`;
-      LoggingService.error(message, error);
+      LoggingService.error(message, error instanceof Error ? error : undefined);
       throw new Error(message);
     }
   }
