@@ -4,6 +4,7 @@ import { ExocortexSettings } from "../../src/domain/settings/ExocortexSettings";
 import { ILogger } from "../../src/infrastructure/logging/ILogger";
 import { MetadataExtractor } from "@exocortex/core";
 import { ReactRenderer } from "../../src/presentation/utils/ReactRenderer";
+import { AssetMetadataService } from "../../src/presentation/renderers/layout/helpers/AssetMetadataService";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -21,6 +22,7 @@ describe("DailyTasksRenderer", () => {
   let mockMetadataExtractor: jest.Mocked<MetadataExtractor>;
   let mockReactRenderer: jest.Mocked<ReactRenderer>;
   let mockRefresh: jest.Mock;
+  let mockMetadataService: jest.Mocked<AssetMetadataService>;
 
   const createMockElement = (): any => {
     const el: any = document.createElement("div");
@@ -97,6 +99,22 @@ describe("DailyTasksRenderer", () => {
 
     mockRefresh = jest.fn();
 
+    // Create a real AssetMetadataService instance for tests
+    const realMetadataService = new AssetMetadataService(mockApp);
+
+    mockMetadataService = {
+      getAssetLabel: jest.fn((path) => realMetadataService.getAssetLabel(path)),
+      extractFirstValue: jest.fn((value) =>
+        realMetadataService.extractFirstValue(value),
+      ),
+      getEffortArea: jest.fn((metadata, visited) =>
+        realMetadataService.getEffortArea(metadata, visited),
+      ),
+      extractInstanceClass: jest.fn((metadata) =>
+        realMetadataService.extractInstanceClass(metadata),
+      ),
+    } as any;
+
     renderer = new DailyTasksRenderer(
       mockApp,
       mockSettings,
@@ -105,6 +123,7 @@ describe("DailyTasksRenderer", () => {
       mockMetadataExtractor,
       mockReactRenderer,
       mockRefresh,
+      mockMetadataService,
     );
   });
 

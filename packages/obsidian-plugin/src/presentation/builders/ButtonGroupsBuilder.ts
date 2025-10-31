@@ -28,6 +28,8 @@ import {
   canRollbackStatus,
   canSetActiveFocus,
   canCopyLabelToAliases,
+  canConvertTaskToProject,
+  canConvertProjectToTask,
   CommandVisibilityContext,
 } from "@exocortex/core";
 import {
@@ -48,6 +50,7 @@ import { FolderRepairService } from "@exocortex/core";
 import { RenameToUidService } from "@exocortex/core";
 import { EffortVotingService } from "@exocortex/core";
 import { LabelToAliasService } from "@exocortex/core";
+import { AssetConversionService } from "@exocortex/core";
 import { WikiLinkHelpers } from "@exocortex/core";
 import { AssetClass } from "@exocortex/core";
 import { MetadataExtractor } from "@exocortex/core";
@@ -70,6 +73,7 @@ export class ButtonGroupsBuilder {
     private renameToUidService: RenameToUidService,
     private effortVotingService: EffortVotingService,
     private labelToAliasService: LabelToAliasService,
+    private assetConversionService: AssetConversionService,
     private metadataExtractor: MetadataExtractor,
     private logger: ILogger,
     private refresh: () => Promise<void>,
@@ -587,6 +591,30 @@ export class ButtonGroupsBuilder {
           await new Promise((resolve) => setTimeout(resolve, 100));
           await this.refresh();
           this.logger.info(`Copied label to aliases: ${file.path}`);
+        },
+      },
+      {
+        id: "convert-task-to-project",
+        label: "Convert to Project",
+        variant: "primary",
+        visible: canConvertTaskToProject(context),
+        onClick: async () => {
+          await this.assetConversionService.convertTaskToProject(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Converted Task to Project: ${file.path}`);
+        },
+      },
+      {
+        id: "convert-project-to-task",
+        label: "Convert to Task",
+        variant: "primary",
+        visible: canConvertProjectToTask(context),
+        onClick: async () => {
+          await this.assetConversionService.convertProjectToTask(file);
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          await this.refresh();
+          this.logger.info(`Converted Project to Task: ${file.path}`);
         },
       },
     ];

@@ -10,6 +10,8 @@ import {
 import { AssetClass, EffortStatus } from "@exocortex/core";
 import { MetadataExtractor } from "@exocortex/core";
 import { EffortSortingHelpers } from "@exocortex/core";
+import { AssetMetadataService } from "./layout/helpers/AssetMetadataService";
+import { DailyNoteHelpers } from "./helpers/DailyNoteHelpers";
 import { BlockerHelpers } from "../utils/BlockerHelpers";
 
 type ObsidianApp = any;
@@ -22,6 +24,7 @@ export class DailyTasksRenderer {
   private metadataExtractor: MetadataExtractor;
   private reactRenderer: ReactRenderer;
   private refresh: () => Promise<void>;
+  private metadataService: AssetMetadataService;
 
   constructor(
     app: ObsidianApp,
@@ -31,6 +34,7 @@ export class DailyTasksRenderer {
     metadataExtractor: MetadataExtractor,
     reactRenderer: ReactRenderer,
     refresh: () => Promise<void>,
+    metadataService: AssetMetadataService,
   ) {
     this.app = app;
     this.settings = settings;
@@ -39,37 +43,21 @@ export class DailyTasksRenderer {
     this.metadataExtractor = metadataExtractor;
     this.reactRenderer = reactRenderer;
     this.refresh = refresh;
+    this.metadataService = metadataService;
   }
 
   public async render(el: HTMLElement, file: TFile): Promise<void> {
-    const metadata = this.metadataExtractor.extractMetadata(file);
-    const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
-
-    const classes = Array.isArray(instanceClass)
-      ? instanceClass
-      : [instanceClass];
-    const isDailyNote = classes.some(
-      (c: string | null) => c === "[[pn__DailyNote]]" || c === "pn__DailyNote",
+    const dailyNoteInfo = DailyNoteHelpers.extractDailyNoteInfo(
+      file,
+      this.metadataExtractor,
+      this.logger,
     );
 
-    if (!isDailyNote) {
+    if (!dailyNoteInfo.isDailyNote || !dailyNoteInfo.day) {
       return;
     }
 
-    const dayProperty = metadata.pn__DailyNote_day;
-    if (!dayProperty) {
-      this.logger.debug("No pn__DailyNote_day found for daily note");
-      return;
-    }
-
-    const dayMatch =
-      typeof dayProperty === "string"
-        ? dayProperty.match(/\[\[(.+?)\]\]/)
-        : null;
-    const day = dayMatch
-      ? dayMatch[1]
-      : String(dayProperty).replace(/^\[\[|\]\]$/g, "");
-
+    const day = dailyNoteInfo.day;
     const tasks = await this.getDailyTasks(day);
 
     if (tasks.length === 0) {
@@ -134,9 +122,10 @@ export class DailyTasksRenderer {
             await this.app.workspace.openLinkText(path, "", false);
           }
         },
-        getAssetLabel: (path: string) => this.getAssetLabel(path),
+        getAssetLabel: (path: string) =>
+          this.metadataService.getAssetLabel(path),
         getEffortArea: (metadata: Record<string, unknown>) =>
-          this.getEffortArea(metadata),
+          this.metadataService.getEffortArea(metadata),
       }),
     );
 
@@ -250,7 +239,7 @@ export class DailyTasksRenderer {
         filteredTasks = tasks.filter((task) => {
           const taskMetadata = task.metadata;
 
-          const resolvedArea = this.getEffortArea(taskMetadata);
+          const resolvedArea = this.metadataService.getEffortArea(taskMetadata);
           if (resolvedArea) {
             const resolvedAreaStr = String(resolvedArea).replace(
               /^\[\[|\]\]$/g,
@@ -272,83 +261,6 @@ export class DailyTasksRenderer {
       this.logger.error("Failed to get daily tasks", { error });
       return [];
     }
-  }
-
-  private extractFirstValue(value: unknown): string | null {
-    if (!value) {
-      return null;
-    }
-
-    if (typeof value === "string" && value.trim() !== "") {
-      return value.replace(/^\[\[|\]\]$/g, "").trim();
-    }
-
-    if (Array.isArray(value) && value.length > 0) {
-      const firstValue = value[0];
-      if (typeof firstValue === "string" && firstValue.trim() !== "") {
-        return firstValue.replace(/^\[\[|\]\]$/g, "").trim();
-      }
-    }
-
-    return null;
-  }
-
-  private getEffortArea(
-    metadata: Record<string, unknown>,
-    visited: Set<string> = new Set(),
-  ): string | null {
-    if (!metadata || typeof metadata !== "object") {
-      return null;
-    }
-
-    const area = metadata.ems__Effort_area;
-    const directArea = this.extractFirstValue(area);
-    if (directArea) {
-      return directArea;
-    }
-
-    const prototypeRef = metadata.ems__Effort_prototype;
-    const prototypePath = this.extractFirstValue(prototypeRef);
-
-    if (prototypePath && !visited.has(prototypePath)) {
-      visited.add(prototypePath);
-      const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(
-        prototypePath,
-        "",
-      );
-      if (prototypeFile instanceof TFile) {
-        const prototypeCache =
-          this.app.metadataCache.getFileCache(prototypeFile);
-        const prototypeMetadata = prototypeCache?.frontmatter || {};
-
-        const resolvedArea = this.getEffortArea(prototypeMetadata, visited);
-        if (resolvedArea) {
-          return resolvedArea;
-        }
-      }
-    }
-
-    const parentRef = metadata.ems__Effort_parent;
-    const parentPath = this.extractFirstValue(parentRef);
-
-    if (parentPath && !visited.has(parentPath)) {
-      visited.add(parentPath);
-      const parentFile = this.app.metadataCache.getFirstLinkpathDest(
-        parentPath,
-        "",
-      );
-      if (parentFile instanceof TFile) {
-        const parentCache = this.app.metadataCache.getFileCache(parentFile);
-        const parentMetadata = parentCache?.frontmatter || {};
-
-        const resolvedArea = this.getEffortArea(parentMetadata, visited);
-        if (resolvedArea) {
-          return resolvedArea;
-        }
-      }
-    }
-
-    return null;
   }
 
   private getChildAreas(
@@ -381,56 +293,5 @@ export class DailyTasksRenderer {
     }
 
     return childAreas;
-  }
-
-  private getAssetLabel(path: string): string | null {
-    let file = this.app.metadataCache.getFirstLinkpathDest(path, "");
-
-    if (!file && !path.endsWith(".md")) {
-      file = this.app.metadataCache.getFirstLinkpathDest(path + ".md", "");
-    }
-
-    if (!(file instanceof TFile)) {
-      return null;
-    }
-
-    const cache = this.app.metadataCache.getFileCache(file);
-    const metadata = cache?.frontmatter || {};
-
-    const label = metadata.exo__Asset_label;
-    if (label && typeof label === "string" && label.trim() !== "") {
-      return label;
-    }
-
-    const prototypeRef = metadata.ems__Effort_prototype;
-    if (prototypeRef) {
-      const prototypePath =
-        typeof prototypeRef === "string"
-          ? prototypeRef.replace(/^\[\[|\]\]$/g, "").trim()
-          : null;
-
-      if (prototypePath) {
-        const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(
-          prototypePath,
-          "",
-        );
-        if (prototypeFile instanceof TFile) {
-          const prototypeCache =
-            this.app.metadataCache.getFileCache(prototypeFile);
-          const prototypeMetadata = prototypeCache?.frontmatter || {};
-          const prototypeLabel = prototypeMetadata.exo__Asset_label;
-
-          if (
-            prototypeLabel &&
-            typeof prototypeLabel === "string" &&
-            prototypeLabel.trim() !== ""
-          ) {
-            return prototypeLabel;
-          }
-        }
-      }
-    }
-
-    return null;
   }
 }

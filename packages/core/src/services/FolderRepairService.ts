@@ -97,12 +97,20 @@ export class FolderRepairService {
     }
 
     const folder = this.vault.getAbstractFileByPath(folderPath);
-    // Duck typing: Check if it's a folder (has children property, no extension)
     if (folder && "children" in folder) {
       return;
     }
 
-    // Create folder recursively
-    await this.vault.createFolder(folderPath);
+    try {
+      await this.vault.createFolder(folderPath);
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        error.message.includes("Folder already exists")
+      ) {
+        return;
+      }
+      throw error;
+    }
   }
 }

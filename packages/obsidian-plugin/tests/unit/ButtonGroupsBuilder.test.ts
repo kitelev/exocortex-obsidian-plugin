@@ -12,6 +12,7 @@ import {
   RenameToUidService,
   EffortVotingService,
   LabelToAliasService,
+  AssetConversionService,
   MetadataExtractor,
 } from "@exocortex/core";
 import { ILogger } from "../../src/infrastructure/logging/ILogger";
@@ -31,6 +32,7 @@ describe("ButtonGroupsBuilder", () => {
   let mockRenameToUidService: jest.Mocked<RenameToUidService>;
   let mockEffortVotingService: jest.Mocked<EffortVotingService>;
   let mockLabelToAliasService: jest.Mocked<LabelToAliasService>;
+  let mockAssetConversionService: jest.Mocked<AssetConversionService>;
   let mockMetadataExtractor: jest.Mocked<MetadataExtractor>;
   let mockLogger: jest.Mocked<ILogger>;
   let mockRefresh: jest.Mock;
@@ -109,6 +111,11 @@ describe("ButtonGroupsBuilder", () => {
       copyLabelToAliases: jest.fn(),
     } as any;
 
+    mockAssetConversionService = {
+      convertTaskToProject: jest.fn(),
+      convertProjectToTask: jest.fn(),
+    } as any;
+
     mockMetadataExtractor = {
       extractMetadata: jest.fn(),
       extractInstanceClass: jest.fn(),
@@ -139,6 +146,7 @@ describe("ButtonGroupsBuilder", () => {
       mockRenameToUidService,
       mockEffortVotingService,
       mockLabelToAliasService,
+      mockAssetConversionService,
       mockMetadataExtractor,
       mockLogger,
       mockRefresh,
