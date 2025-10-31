@@ -762,7 +762,7 @@ describe("ButtonGroupsBuilder", () => {
       const groups = await builder.build(mockFile);
 
       const maintenanceGroup = groups.find((g) => g.id === "maintenance");
-      
+
       // Maintenance group might not exist if no buttons are visible
       // If it exists, archive button should be marked as not visible
       if (maintenanceGroup) {
