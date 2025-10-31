@@ -6,16 +6,12 @@ import {
   AssetConversionService,
   LoggingService,
 } from "@exocortex/core";
-import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 
 export class ConvertProjectToTaskCommand implements ICommand {
   id = "convert-project-to-task";
   name = "Convert Project to Task";
 
-  constructor(
-    private conversionService: AssetConversionService,
-    private vaultAdapter: ObsidianVaultAdapter,
-  ) {}
+  constructor(private conversionService: AssetConversionService) {}
 
   checkCallback = (
     checking: boolean,
