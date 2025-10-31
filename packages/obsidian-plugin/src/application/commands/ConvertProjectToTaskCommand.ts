@@ -12,10 +12,7 @@ export class ConvertProjectToTaskCommand implements ICommand {
   id = "convert-project-to-task";
   name = "Convert Project to Task";
 
-  constructor(
-    private conversionService: AssetConversionService,
-    private _vaultAdapter: ObsidianVaultAdapter,
-  ) {}
+  constructor(private conversionService: AssetConversionService) {}
 
   checkCallback = (
     checking: boolean,

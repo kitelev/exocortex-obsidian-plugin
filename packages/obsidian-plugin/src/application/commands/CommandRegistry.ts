@@ -93,8 +93,8 @@ export class CommandRegistry {
       new TogglePropertiesVisibilityCommand(plugin),
       new ToggleLayoutVisibilityCommand(plugin),
       new ToggleArchivedAssetsCommand(plugin),
-      new ConvertTaskToProjectCommand(assetConversionService, this.vaultAdapter),
-      new ConvertProjectToTaskCommand(assetConversionService, this.vaultAdapter),
+      new ConvertTaskToProjectCommand(assetConversionService),
+      new ConvertProjectToTaskCommand(assetConversionService),
     ];
   }
 
