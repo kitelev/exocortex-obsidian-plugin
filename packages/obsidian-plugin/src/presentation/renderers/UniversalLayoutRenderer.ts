@@ -141,6 +141,7 @@ export class UniversalLayoutRenderer {
       this.metadataExtractor,
       this.reactRenderer,
       () => this.refresh(),
+      this.metadataService,
     );
 
     this.dailyProjectsRenderer = new DailyProjectsRenderer(
