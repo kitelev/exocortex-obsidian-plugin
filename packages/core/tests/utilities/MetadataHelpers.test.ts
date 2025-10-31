@@ -8,7 +8,10 @@ describe("MetadataHelpers", () => {
         area: "[[MyFile]]",
         priority: "high",
       };
-      const result = MetadataHelpers.findAllReferencingProperties(metadata, "MyFile.md");
+      const result = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "MyFile.md",
+      );
 
       expect(result).toEqual(["area"]);
     });
@@ -20,7 +23,10 @@ describe("MetadataHelpers", () => {
         parent: "[[MyFile]]",
         other: "[[OtherFile]]",
       };
-      const result = MetadataHelpers.findAllReferencingProperties(metadata, "MyFile.md");
+      const result = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "MyFile.md",
+      );
 
       expect(result).toEqual(["area", "related", "parent"]);
     });
@@ -30,7 +36,10 @@ describe("MetadataHelpers", () => {
         tags: ["tag1", "[[MyFile]]", "tag2"],
         links: ["[[MyFile]]", "[[OtherFile]]"],
       };
-      const result = MetadataHelpers.findAllReferencingProperties(metadata, "MyFile.md");
+      const result = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "MyFile.md",
+      );
 
       expect(result).toEqual(["tags", "links"]);
     });
@@ -40,7 +49,10 @@ describe("MetadataHelpers", () => {
         path: "folder/MyFile",
         reference: "MyFile",
       };
-      const result = MetadataHelpers.findAllReferencingProperties(metadata, "MyFile.md");
+      const result = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "MyFile.md",
+      );
 
       expect(result).toEqual(["path", "reference"]);
     });
@@ -49,7 +61,10 @@ describe("MetadataHelpers", () => {
       const metadata = {
         link: "[[MyFile]]",
       };
-      const result = MetadataHelpers.findAllReferencingProperties(metadata, "MyFile.md");
+      const result = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "MyFile.md",
+      );
 
       expect(result).toEqual(["link"]);
     });
@@ -59,13 +74,19 @@ describe("MetadataHelpers", () => {
         status: "draft",
         priority: "high",
       };
-      const result = MetadataHelpers.findAllReferencingProperties(metadata, "MyFile.md");
+      const result = MetadataHelpers.findAllReferencingProperties(
+        metadata,
+        "MyFile.md",
+      );
 
       expect(result).toEqual([]);
     });
 
     it("should handle empty metadata", () => {
-      const result = MetadataHelpers.findAllReferencingProperties({}, "MyFile.md");
+      const result = MetadataHelpers.findAllReferencingProperties(
+        {},
+        "MyFile.md",
+      );
 
       expect(result).toEqual([]);
     });
@@ -78,7 +99,10 @@ describe("MetadataHelpers", () => {
         area: "[[MyFile]]",
         parent: "[[MyFile]]",
       };
-      const result = MetadataHelpers.findReferencingProperty(metadata, "MyFile.md");
+      const result = MetadataHelpers.findReferencingProperty(
+        metadata,
+        "MyFile.md",
+      );
 
       expect(result).toBe("area");
     });
@@ -88,7 +112,10 @@ describe("MetadataHelpers", () => {
         status: "draft",
         priority: "high",
       };
-      const result = MetadataHelpers.findReferencingProperty(metadata, "MyFile.md");
+      const result = MetadataHelpers.findReferencingProperty(
+        metadata,
+        "MyFile.md",
+      );
 
       expect(result).toBeUndefined();
     });
@@ -97,7 +124,10 @@ describe("MetadataHelpers", () => {
       const metadata = {
         tags: ["tag1", "[[MyFile]]"],
       };
-      const result = MetadataHelpers.findReferencingProperty(metadata, "MyFile.md");
+      const result = MetadataHelpers.findReferencingProperty(
+        metadata,
+        "MyFile.md",
+      );
 
       expect(result).toBe("tags");
     });
@@ -111,7 +141,10 @@ describe("MetadataHelpers", () => {
 
   describe("containsReference", () => {
     it("should find wikilink reference", () => {
-      const result = MetadataHelpers.containsReference("[[MyFile]]", "MyFile.md");
+      const result = MetadataHelpers.containsReference(
+        "[[MyFile]]",
+        "MyFile.md",
+      );
 
       expect(result).toBe(true);
     });
@@ -125,7 +158,7 @@ describe("MetadataHelpers", () => {
     it("should find reference in longer string", () => {
       const result = MetadataHelpers.containsReference(
         "See [[MyFile]] for details",
-        "MyFile.md"
+        "MyFile.md",
       );
 
       expect(result).toBe(true);
@@ -134,7 +167,7 @@ describe("MetadataHelpers", () => {
     it("should find reference in array", () => {
       const result = MetadataHelpers.containsReference(
         ["tag1", "[[MyFile]]", "tag2"],
-        "MyFile.md"
+        "MyFile.md",
       );
 
       expect(result).toBe(true);
@@ -143,14 +176,17 @@ describe("MetadataHelpers", () => {
     it("should find nested reference in array", () => {
       const result = MetadataHelpers.containsReference(
         ["tag1", ["nested", "[[MyFile]]"]],
-        "MyFile.md"
+        "MyFile.md",
       );
 
       expect(result).toBe(true);
     });
 
     it("should return false for non-matching string", () => {
-      const result = MetadataHelpers.containsReference("[[OtherFile]]", "MyFile.md");
+      const result = MetadataHelpers.containsReference(
+        "[[OtherFile]]",
+        "MyFile.md",
+      );
 
       expect(result).toBe(false);
     });
@@ -180,7 +216,10 @@ describe("MetadataHelpers", () => {
     });
 
     it("should handle .md extension correctly", () => {
-      const result = MetadataHelpers.containsReference("[[MyFile]]", "MyFile.md");
+      const result = MetadataHelpers.containsReference(
+        "[[MyFile]]",
+        "MyFile.md",
+      );
 
       expect(result).toBe(true);
     });
@@ -484,7 +523,9 @@ describe("MetadataHelpers", () => {
       const body = "This is the body content.";
       const result = MetadataHelpers.buildFileContent(frontmatter, body);
 
-      expect(result).toBe("---\ntitle: My Document\n---\n\nThis is the body content.\n");
+      expect(result).toBe(
+        "---\ntitle: My Document\n---\n\nThis is the body content.\n",
+      );
     });
 
     it("should handle array values", () => {
@@ -494,7 +535,9 @@ describe("MetadataHelpers", () => {
       };
       const result = MetadataHelpers.buildFileContent(frontmatter);
 
-      expect(result).toBe("---\ntitle: My Document\ntags:\n  - tag1\n  - tag2\n  - tag3\n---\n\n");
+      expect(result).toBe(
+        "---\ntitle: My Document\ntags:\n  - tag1\n  - tag2\n  - tag3\n---\n\n",
+      );
     });
 
     it("should handle mixed types", () => {
@@ -507,7 +550,7 @@ describe("MetadataHelpers", () => {
       const result = MetadataHelpers.buildFileContent(frontmatter);
 
       expect(result).toBe(
-        "---\ntitle: My Document\npriority: 1\narchived: true\ntags:\n  - tag1\n  - tag2\n---\n\n"
+        "---\ntitle: My Document\npriority: 1\narchived: true\ntags:\n  - tag1\n  - tag2\n---\n\n",
       );
     });
 

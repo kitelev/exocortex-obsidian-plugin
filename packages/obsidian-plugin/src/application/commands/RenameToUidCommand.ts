@@ -13,7 +13,11 @@ export class RenameToUidCommand implements ICommand {
 
   constructor(private renameToUidService: RenameToUidService) {}
 
-  checkCallback = (checking: boolean, file: TFile, context: CommandVisibilityContext | null): boolean => {
+  checkCallback = (
+    checking: boolean,
+    file: TFile,
+    context: CommandVisibilityContext | null,
+  ): boolean => {
     if (!context || !canRenameToUid(context, file.basename)) return false;
 
     if (!checking) {
@@ -26,7 +30,10 @@ export class RenameToUidCommand implements ICommand {
     return true;
   };
 
-  private async execute(file: TFile, metadata: Record<string, any>): Promise<void> {
+  private async execute(
+    file: TFile,
+    metadata: Record<string, any>,
+  ): Promise<void> {
     const oldName = file.basename;
     const uid = metadata.exo__Asset_uid;
 

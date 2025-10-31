@@ -13,7 +13,11 @@ export class CopyLabelToAliasesCommand implements ICommand {
 
   constructor(private labelToAliasService: LabelToAliasService) {}
 
-  checkCallback = (checking: boolean, file: TFile, context: CommandVisibilityContext | null): boolean => {
+  checkCallback = (
+    checking: boolean,
+    file: TFile,
+    context: CommandVisibilityContext | null,
+  ): boolean => {
     if (!context || !canCopyLabelToAliases(context)) return false;
 
     if (!checking) {

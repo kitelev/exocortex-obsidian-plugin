@@ -46,14 +46,20 @@ describe("Logger", () => {
   describe("debug", () => {
     it("should log debug message with context", () => {
       logger.debug("Debug message");
-      expect(consoleDebugSpy).toHaveBeenCalledWith("[TestContext] Debug message");
+      expect(consoleDebugSpy).toHaveBeenCalledWith(
+        "[TestContext] Debug message",
+      );
     });
 
     it("should log debug message with additional arguments", () => {
       const obj = { key: "value" };
       const num = 123;
       logger.debug("Debug with args", obj, num);
-      expect(consoleDebugSpy).toHaveBeenCalledWith("[TestContext] Debug with args", obj, num);
+      expect(consoleDebugSpy).toHaveBeenCalledWith(
+        "[TestContext] Debug with args",
+        obj,
+        num,
+      );
     });
 
     it("should handle multiple arguments", () => {
@@ -65,18 +71,24 @@ describe("Logger", () => {
         "arg3",
         4,
         true,
-        { test: 1 }
+        { test: 1 },
       );
     });
 
     it("should handle undefined arguments", () => {
       logger.debug("With undefined", undefined);
-      expect(consoleDebugSpy).toHaveBeenCalledWith("[TestContext] With undefined", undefined);
+      expect(consoleDebugSpy).toHaveBeenCalledWith(
+        "[TestContext] With undefined",
+        undefined,
+      );
     });
 
     it("should handle null arguments", () => {
       logger.debug("With null", null);
-      expect(consoleDebugSpy).toHaveBeenCalledWith("[TestContext] With null", null);
+      expect(consoleDebugSpy).toHaveBeenCalledWith(
+        "[TestContext] With null",
+        null,
+      );
     });
   });
 
@@ -89,7 +101,10 @@ describe("Logger", () => {
     it("should log info message with additional arguments", () => {
       const array = [1, 2, 3];
       logger.info("Info with array", array);
-      expect(consoleInfoSpy).toHaveBeenCalledWith("[TestContext] Info with array", array);
+      expect(consoleInfoSpy).toHaveBeenCalledWith(
+        "[TestContext] Info with array",
+        array,
+      );
     });
 
     it("should handle empty string message", () => {
@@ -99,62 +114,90 @@ describe("Logger", () => {
 
     it("should handle multiline messages", () => {
       logger.info("Line 1\nLine 2\nLine 3");
-      expect(consoleInfoSpy).toHaveBeenCalledWith("[TestContext] Line 1\nLine 2\nLine 3");
+      expect(consoleInfoSpy).toHaveBeenCalledWith(
+        "[TestContext] Line 1\nLine 2\nLine 3",
+      );
     });
   });
 
   describe("warn", () => {
     it("should log warning message with context", () => {
       logger.warn("Warning message");
-      expect(consoleWarnSpy).toHaveBeenCalledWith("[TestContext] Warning message");
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        "[TestContext] Warning message",
+      );
     });
 
     it("should log warning with additional arguments", () => {
       const fn = () => "function";
       logger.warn("Warning with function", fn);
-      expect(consoleWarnSpy).toHaveBeenCalledWith("[TestContext] Warning with function", fn);
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        "[TestContext] Warning with function",
+        fn,
+      );
     });
 
     it("should handle Symbol arguments", () => {
       const sym = Symbol("test");
       logger.warn("With symbol", sym);
-      expect(consoleWarnSpy).toHaveBeenCalledWith("[TestContext] With symbol", sym);
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        "[TestContext] With symbol",
+        sym,
+      );
     });
   });
 
   describe("error", () => {
     it("should log error message with context", () => {
       logger.error("Error message");
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error message", undefined);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[TestContext] Error message",
+        undefined,
+      );
     });
 
     it("should log error with Error object", () => {
       const error = new Error("Test error");
       logger.error("Error occurred", error);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error occurred", error);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[TestContext] Error occurred",
+        error,
+      );
     });
 
     it("should log error with non-Error object", () => {
       const customError = { code: "ERR_001", message: "Custom error" };
       logger.error("Custom error occurred", customError);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Custom error occurred", customError);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[TestContext] Custom error occurred",
+        customError,
+      );
     });
 
     it("should handle string as error", () => {
       logger.error("Error message", "String error");
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error message", "String error");
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[TestContext] Error message",
+        "String error",
+      );
     });
 
     it("should handle number as error", () => {
       logger.error("Error code", 404);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error code", 404);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[TestContext] Error code",
+        404,
+      );
     });
 
     it("should handle Error with stack trace", () => {
       const errorWithStack = new Error("Stack error");
       errorWithStack.stack = "Error: Stack error\n    at test.js:1:1";
       logger.error("Stack trace error", errorWithStack);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Stack trace error", errorWithStack);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[TestContext] Stack trace error",
+        errorWithStack,
+      );
     });
 
     it("should handle custom Error types", () => {
@@ -168,45 +211,67 @@ describe("Logger", () => {
 
       const customError = new CustomError("Custom", "CUSTOM_001");
       logger.error("Custom error type", customError);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Custom error type", customError);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[TestContext] Custom error type",
+        customError,
+      );
     });
 
     it("should handle null as error", () => {
       logger.error("Null error", null);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Null error", null);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[TestContext] Null error",
+        null,
+      );
     });
 
     it("should handle undefined as error", () => {
       logger.error("Undefined error", undefined);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Undefined error", undefined);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[TestContext] Undefined error",
+        undefined,
+      );
     });
 
     it("should handle error without second argument", () => {
       logger.error("Just a message");
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Just a message", undefined);
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[TestContext] Just a message",
+        undefined,
+      );
     });
   });
 
   describe("message formatting", () => {
     it("should preserve message formatting characters", () => {
       logger.info("Message with %s and %d", "string", 123);
-      expect(consoleInfoSpy).toHaveBeenCalledWith("[TestContext] Message with %s and %d", "string", 123);
+      expect(consoleInfoSpy).toHaveBeenCalledWith(
+        "[TestContext] Message with %s and %d",
+        "string",
+        123,
+      );
     });
 
     it("should handle messages with special characters", () => {
       logger.info("Special chars: !@#$%^&*()_+-=[]{}|;':\",./<>?");
-      expect(consoleInfoSpy).toHaveBeenCalledWith("[TestContext] Special chars: !@#$%^&*()_+-=[]{}|;':\",./<>?");
+      expect(consoleInfoSpy).toHaveBeenCalledWith(
+        "[TestContext] Special chars: !@#$%^&*()_+-=[]{}|;':\",./<>?",
+      );
     });
 
     it("should handle unicode characters", () => {
       logger.info("Unicode: 😀 🎉 ñ å ß");
-      expect(consoleInfoSpy).toHaveBeenCalledWith("[TestContext] Unicode: 😀 🎉 ñ å ß");
+      expect(consoleInfoSpy).toHaveBeenCalledWith(
+        "[TestContext] Unicode: 😀 🎉 ñ å ß",
+      );
     });
 
     it("should handle very long messages", () => {
       const longMessage = "x".repeat(1000);
       logger.info(longMessage);
-      expect(consoleInfoSpy).toHaveBeenCalledWith(`[TestContext] ${longMessage}`);
+      expect(consoleInfoSpy).toHaveBeenCalledWith(
+        `[TestContext] ${longMessage}`,
+      );
     });
   });
 
@@ -256,7 +321,9 @@ describe("LoggerFactory", () => {
     it("should create Logger with correct context", () => {
       const logger = LoggerFactory.create("FactoryContext");
       logger.info("Factory test");
-      expect(consoleInfoSpy).toHaveBeenCalledWith("[FactoryContext] Factory test");
+      expect(consoleInfoSpy).toHaveBeenCalledWith(
+        "[FactoryContext] Factory test",
+      );
     });
 
     it("should implement ILogger interface", () => {

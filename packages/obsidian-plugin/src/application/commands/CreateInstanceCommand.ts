@@ -8,7 +8,10 @@ import {
   AssetClass,
   LoggingService,
 } from "@exocortex/core";
-import { LabelInputModal, type LabelInputModalResult } from "../../presentation/modals/LabelInputModal";
+import {
+  LabelInputModal,
+  type LabelInputModalResult,
+} from "../../presentation/modals/LabelInputModal";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 
 export class CreateInstanceCommand implements ICommand {
@@ -21,7 +24,11 @@ export class CreateInstanceCommand implements ICommand {
     private vaultAdapter: ObsidianVaultAdapter,
   ) {}
 
-  checkCallback = (checking: boolean, file: TFile, context: CommandVisibilityContext | null): boolean => {
+  checkCallback = (
+    checking: boolean,
+    file: TFile,
+    context: CommandVisibilityContext | null,
+  ): boolean => {
     if (!context || !canCreateInstance(context)) return false;
 
     if (!checking) {
@@ -34,12 +41,17 @@ export class CreateInstanceCommand implements ICommand {
     return true;
   };
 
-  private async execute(file: TFile, context: CommandVisibilityContext): Promise<void> {
+  private async execute(
+    file: TFile,
+    context: CommandVisibilityContext,
+  ): Promise<void> {
     const cache = this.app.metadataCache.getFileCache(file);
     const metadata = cache?.frontmatter || {};
 
     const instanceClass = context.instanceClass;
-    const classes = Array.isArray(instanceClass) ? instanceClass : [instanceClass];
+    const classes = Array.isArray(instanceClass)
+      ? instanceClass
+      : [instanceClass];
     const firstClass = classes[0] || "";
     const sourceClass = WikiLinkHelpers.normalize(firstClass);
 

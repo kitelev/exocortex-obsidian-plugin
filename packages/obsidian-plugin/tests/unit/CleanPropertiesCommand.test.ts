@@ -1,6 +1,10 @@
 import { CleanPropertiesCommand } from "../../src/application/commands/CleanPropertiesCommand";
 import { TFile, Notice } from "obsidian";
-import { PropertyCleanupService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  PropertyCleanupService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -54,26 +58,33 @@ describe("CleanPropertiesCommand", () => {
   });
 
   describe("checkCallback", () => {
-    const mockCanCleanProperties = require("@exocortex/core").canCleanProperties;
+    const mockCanCleanProperties =
+      require("@exocortex/core").canCleanProperties;
 
     it("should return false when context is null", () => {
       const result = command.checkCallback(true, mockFile, null);
       expect(result).toBe(false);
-      expect(mockPropertyCleanupService.cleanEmptyProperties).not.toHaveBeenCalled();
+      expect(
+        mockPropertyCleanupService.cleanEmptyProperties,
+      ).not.toHaveBeenCalled();
     });
 
     it("should return false when canCleanProperties returns false", () => {
       mockCanCleanProperties.mockReturnValue(false);
       const result = command.checkCallback(true, mockFile, mockContext);
       expect(result).toBe(false);
-      expect(mockPropertyCleanupService.cleanEmptyProperties).not.toHaveBeenCalled();
+      expect(
+        mockPropertyCleanupService.cleanEmptyProperties,
+      ).not.toHaveBeenCalled();
     });
 
     it("should return true when canCleanProperties returns true and checking is true", () => {
       mockCanCleanProperties.mockReturnValue(true);
       const result = command.checkCallback(true, mockFile, mockContext);
       expect(result).toBe(true);
-      expect(mockPropertyCleanupService.cleanEmptyProperties).not.toHaveBeenCalled();
+      expect(
+        mockPropertyCleanupService.cleanEmptyProperties,
+      ).not.toHaveBeenCalled();
     });
 
     it("should execute command when checking is false and canCleanProperties returns true", async () => {
@@ -84,10 +95,14 @@ describe("CleanPropertiesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockPropertyCleanupService.cleanEmptyProperties).toHaveBeenCalledWith(mockFile);
-      expect(Notice).toHaveBeenCalledWith("Cleaned empty properties: test-file");
+      expect(
+        mockPropertyCleanupService.cleanEmptyProperties,
+      ).toHaveBeenCalledWith(mockFile);
+      expect(Notice).toHaveBeenCalledWith(
+        "Cleaned empty properties: test-file",
+      );
     });
 
     it("should handle errors and show notice", async () => {
@@ -99,11 +114,18 @@ describe("CleanPropertiesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockPropertyCleanupService.cleanEmptyProperties).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Clean properties error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to clean properties: Failed to clean");
+      expect(
+        mockPropertyCleanupService.cleanEmptyProperties,
+      ).toHaveBeenCalledWith(mockFile);
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Clean properties error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to clean properties: Failed to clean",
+      );
     });
 
     it("should handle files with special characters", async () => {
@@ -119,26 +141,39 @@ describe("CleanPropertiesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockPropertyCleanupService.cleanEmptyProperties).toHaveBeenCalledWith(specialFile);
-      expect(Notice).toHaveBeenCalledWith("Cleaned empty properties: [IMPORTANT] File (2024)");
+      expect(
+        mockPropertyCleanupService.cleanEmptyProperties,
+      ).toHaveBeenCalledWith(specialFile);
+      expect(Notice).toHaveBeenCalledWith(
+        "Cleaned empty properties: [IMPORTANT] File (2024)",
+      );
     });
 
     it("should handle file system errors", async () => {
       mockCanCleanProperties.mockReturnValue(true);
       const fsError = new Error("File locked");
-      mockPropertyCleanupService.cleanEmptyProperties.mockRejectedValue(fsError);
+      mockPropertyCleanupService.cleanEmptyProperties.mockRejectedValue(
+        fsError,
+      );
 
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockPropertyCleanupService.cleanEmptyProperties).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Clean properties error", fsError);
-      expect(Notice).toHaveBeenCalledWith("Failed to clean properties: File locked");
+      expect(
+        mockPropertyCleanupService.cleanEmptyProperties,
+      ).toHaveBeenCalledWith(mockFile);
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Clean properties error",
+        fsError,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to clean properties: File locked",
+      );
     });
 
     it("should handle archived context", () => {
@@ -159,15 +194,21 @@ describe("CleanPropertiesCommand", () => {
       ];
 
       // Execute cleanups concurrently
-      files.forEach(file => command.checkCallback(false, file, mockContext));
+      files.forEach((file) => command.checkCallback(false, file, mockContext));
 
       // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
-      expect(mockPropertyCleanupService.cleanEmptyProperties).toHaveBeenCalledTimes(3);
+      expect(
+        mockPropertyCleanupService.cleanEmptyProperties,
+      ).toHaveBeenCalledTimes(3);
       files.forEach((file, index) => {
-        expect(mockPropertyCleanupService.cleanEmptyProperties).toHaveBeenNthCalledWith(index + 1, file);
-        expect(Notice).toHaveBeenCalledWith(`Cleaned empty properties: ${file.basename}`);
+        expect(
+          mockPropertyCleanupService.cleanEmptyProperties,
+        ).toHaveBeenNthCalledWith(index + 1, file);
+        expect(Notice).toHaveBeenCalledWith(
+          `Cleaned empty properties: ${file.basename}`,
+        );
       });
     });
   });

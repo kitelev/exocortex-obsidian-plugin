@@ -1,6 +1,10 @@
 import { StartEffortCommand } from "../../src/application/commands/StartEffortCommand";
 import { TFile, Notice } from "obsidian";
-import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  TaskStatusService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -84,7 +88,7 @@ describe("StartEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.startEffort).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Started effort: test-effort");
@@ -99,11 +103,16 @@ describe("StartEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.startEffort).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Start effort error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to start effort: Failed to start");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Start effort error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to start effort: Failed to start",
+      );
     });
 
     it("should handle already started effort", () => {
@@ -126,9 +135,11 @@ describe("StartEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.startEffort).toHaveBeenCalledWith(unicodeFile);
+      expect(mockTaskStatusService.startEffort).toHaveBeenCalledWith(
+        unicodeFile,
+      );
       expect(Notice).toHaveBeenCalledWith("Started effort: 努力-测试");
     });
   });

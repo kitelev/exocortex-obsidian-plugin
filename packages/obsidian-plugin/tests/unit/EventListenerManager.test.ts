@@ -59,8 +59,14 @@ describe("EventListenerManager", () => {
 
       expect(addEventListenerSpy).toHaveBeenCalledTimes(3);
       expect(addEventListenerSpy).toHaveBeenCalledWith("click", clickHandler);
-      expect(addEventListenerSpy).toHaveBeenCalledWith("mouseover", mouseoverHandler);
-      expect(addEventListenerSpy).toHaveBeenCalledWith("keydown", keydownHandler);
+      expect(addEventListenerSpy).toHaveBeenCalledWith(
+        "mouseover",
+        mouseoverHandler,
+      );
+      expect(addEventListenerSpy).toHaveBeenCalledWith(
+        "keydown",
+        keydownHandler,
+      );
       expect(manager.getListenerCount()).toBe(3);
     });
 
@@ -124,7 +130,9 @@ describe("EventListenerManager", () => {
     it("should handle bound function handlers", () => {
       const obj = {
         name: "test",
-        handler: function() { return this.name; }
+        handler: function () {
+          return this.name;
+        },
       };
       const boundHandler = obj.handler.bind(obj);
 
@@ -147,7 +155,10 @@ describe("EventListenerManager", () => {
 
       expect(removeEventListenerSpy).toHaveBeenCalledTimes(2);
       expect(removeEventListenerSpy).toHaveBeenCalledWith("click", handler1);
-      expect(removeEventListenerSpy).toHaveBeenCalledWith("mouseover", handler2);
+      expect(removeEventListenerSpy).toHaveBeenCalledWith(
+        "mouseover",
+        handler2,
+      );
       expect(manager.getListenerCount()).toBe(0);
     });
 
@@ -254,11 +265,11 @@ describe("EventListenerManager", () => {
       const elements = [
         document.createElement("button"),
         document.createElement("input"),
-        document.createElement("div")
+        document.createElement("div"),
       ];
       const handler = jest.fn();
 
-      elements.forEach(el => {
+      elements.forEach((el) => {
         manager.register(el, "click", handler);
       });
 
@@ -269,7 +280,7 @@ describe("EventListenerManager", () => {
       const handler = jest.fn();
       const events = ["click", "mouseover", "mouseout", "focus", "blur"];
 
-      events.forEach(event => {
+      events.forEach((event) => {
         manager.register(mockElement, event, handler);
       });
 

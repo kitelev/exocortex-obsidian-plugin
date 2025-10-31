@@ -24,7 +24,9 @@ describe("PlanningService", () => {
       basename: "task",
     } as IFile;
 
-    (DateFormatter.getTodayWikilink as jest.Mock).mockReturnValue(mockTodayWikilink);
+    (DateFormatter.getTodayWikilink as jest.Mock).mockReturnValue(
+      mockTodayWikilink,
+    );
 
     service = new PlanningService(mockVault);
   });
@@ -149,7 +151,9 @@ Task content.`;
 
       expect(mockVault.modify).toHaveBeenCalled();
       const modifiedContent = mockVault.modify.mock.calls[0][1];
-      expect(modifiedContent).toContain(`ems__Effort_day: ${mockTodayWikilink}`);
+      expect(modifiedContent).toContain(
+        `ems__Effort_day: ${mockTodayWikilink}`,
+      );
       expect(modifiedContent).toContain("title: My Task");
       expect(modifiedContent).toContain("exo__Asset_uid: task-123");
     });

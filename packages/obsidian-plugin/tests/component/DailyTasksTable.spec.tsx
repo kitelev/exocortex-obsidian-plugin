@@ -265,7 +265,9 @@ test.describe("DailyTasksTable", () => {
     await expect(taskLinks).toHaveCount(5);
   });
 
-  test("should display blocker icon when task is blocked", async ({ mount }) => {
+  test("should display blocker icon when task is blocked", async ({
+    mount,
+  }) => {
     const blockedTask: DailyTask = {
       file: { path: "blocked-task.md", basename: "blocked-task" },
       path: "blocked-task.md",
@@ -706,9 +708,17 @@ test.describe("DailyTasksTableWithToggle", () => {
     const component = await mount(<DailyTasksTable tasks={mockTasks} />);
 
     // Check that headers have sortable class
-    await expect(component.locator('th.sortable:has-text("Name")')).toBeVisible();
-    await expect(component.locator('th.sortable:has-text("Start")')).toBeVisible();
-    await expect(component.locator('th.sortable:has-text("End")')).toBeVisible();
-    await expect(component.locator('th.sortable:has-text("Status")')).toBeVisible();
+    await expect(
+      component.locator('th.sortable:has-text("Name")'),
+    ).toBeVisible();
+    await expect(
+      component.locator('th.sortable:has-text("Start")'),
+    ).toBeVisible();
+    await expect(
+      component.locator('th.sortable:has-text("End")'),
+    ).toBeVisible();
+    await expect(
+      component.locator('th.sortable:has-text("Status")'),
+    ).toBeVisible();
   });
 });

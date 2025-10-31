@@ -1,4 +1,7 @@
-import { SupervisionInputModal, SupervisionFormData } from "../../src/presentation/modals/SupervisionInputModal";
+import {
+  SupervisionInputModal,
+  SupervisionFormData,
+} from "../../src/presentation/modals/SupervisionInputModal";
 import { App } from "obsidian";
 
 describe("SupervisionInputModal", () => {
@@ -39,12 +42,14 @@ describe("SupervisionInputModal", () => {
     mockContentEl.createDiv.mockImplementation((options?: any) => {
       if (options?.cls === "exocortex-modal-field-container") {
         return {
-          createEl: jest.fn().mockImplementation((tag: string, options?: any) => {
-            if (tag === "input") {
-              return mockInputElements[inputIndex++];
-            }
-            return document.createElement(tag);
-          }),
+          createEl: jest
+            .fn()
+            .mockImplementation((tag: string, options?: any) => {
+              if (tag === "input") {
+                return mockInputElements[inputIndex++];
+              }
+              return document.createElement(tag);
+            }),
         };
       }
       // For button container
@@ -94,12 +99,16 @@ describe("SupervisionInputModal", () => {
 
     it("should add modal class", () => {
       modal.onOpen();
-      expect(mockContentEl.addClass).toHaveBeenCalledWith("exocortex-supervision-modal");
+      expect(mockContentEl.addClass).toHaveBeenCalledWith(
+        "exocortex-supervision-modal",
+      );
     });
 
     it("should create modal header in Russian", () => {
       modal.onOpen();
-      expect(mockContentEl.createEl).toHaveBeenCalledWith("h2", { text: "Добавить супервизию" });
+      expect(mockContentEl.createEl).toHaveBeenCalledWith("h2", {
+        text: "Добавить супервизию",
+      });
     });
 
     it("should create 6 field containers", () => {
@@ -122,13 +131,15 @@ describe("SupervisionInputModal", () => {
       mockContentEl.createDiv.mockImplementation((options?: any) => {
         if (options?.cls === "exocortex-modal-field-container") {
           const mockContainer = {
-            createEl: jest.fn().mockImplementation((tag: string, opts?: any) => {
-              if (tag === "input") {
-                const input = mockInputElements[currentInputIndex++];
-                return input;
-              }
-              return document.createElement(tag);
-            }),
+            createEl: jest
+              .fn()
+              .mockImplementation((tag: string, opts?: any) => {
+                if (tag === "input") {
+                  const input = mockInputElements[currentInputIndex++];
+                  return input;
+                }
+                return document.createElement(tag);
+              }),
           };
           mockFieldContainers.push(mockContainer);
           return mockContainer;
@@ -163,11 +174,11 @@ describe("SupervisionInputModal", () => {
       modal.onOpen();
 
       const fieldContainerCalls = mockContentEl.createDiv.mock.results
-        .filter(result => result.value.createEl)
-        .map(result => result.value);
+        .filter((result) => result.value.createEl)
+        .map((result) => result.value);
 
       // Verify each container created an input
-      fieldContainerCalls.slice(0, 6).forEach(container => {
+      fieldContainerCalls.slice(0, 6).forEach((container) => {
         expect(container.createEl).toHaveBeenCalledWith("input", {
           type: "text",
           cls: "exocortex-modal-input",
@@ -178,7 +189,7 @@ describe("SupervisionInputModal", () => {
     it("should store all inputs in inputs array", () => {
       modal.onOpen();
       expect(modal["inputs"]).toHaveLength(6);
-      modal["inputs"].forEach(input => {
+      modal["inputs"].forEach((input) => {
         expect(input).toBeInstanceOf(HTMLInputElement);
       });
     });
@@ -285,7 +296,9 @@ describe("SupervisionInputModal", () => {
       input.oninput?.(event as any);
       modal["formData"].longTermConsequences = "Lasting improvement";
 
-      expect(modal["formData"].longTermConsequences).toBe("Lasting improvement");
+      expect(modal["formData"].longTermConsequences).toBe(
+        "Lasting improvement",
+      );
     });
   });
 
@@ -460,15 +473,17 @@ describe("SupervisionInputModal", () => {
       submitButton = document.createElement("button");
       cancelButton = document.createElement("button");
 
-      mockContentEl.createEl.mockImplementation((tag: string, options?: any) => {
-        if (tag === "button" && options?.text === "Создать") {
-          return submitButton;
-        }
-        if (tag === "button" && options?.text === "Отмена") {
-          return cancelButton;
-        }
-        return document.createElement(tag);
-      });
+      mockContentEl.createEl.mockImplementation(
+        (tag: string, options?: any) => {
+          if (tag === "button" && options?.text === "Создать") {
+            return submitButton;
+          }
+          if (tag === "button" && options?.text === "Отмена") {
+            return cancelButton;
+          }
+          return document.createElement(tag);
+        },
+      );
 
       modal.onOpen();
     });

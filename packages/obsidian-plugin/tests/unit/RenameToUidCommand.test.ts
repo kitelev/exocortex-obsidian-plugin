@@ -1,6 +1,10 @@
 import { RenameToUidCommand } from "../../src/application/commands/RenameToUidCommand";
 import { TFile, Notice } from "obsidian";
-import { RenameToUidService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  RenameToUidService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -93,10 +97,15 @@ describe("RenameToUidCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(mockFile, mockContext.metadata);
-      expect(Notice).toHaveBeenCalledWith('Renamed "test-file" to "asset-12345"');
+      expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(
+        mockFile,
+        mockContext.metadata,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        'Renamed "test-file" to "asset-12345"',
+      );
     });
 
     it("should handle errors and show notice", async () => {
@@ -108,10 +117,16 @@ describe("RenameToUidCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(mockFile, mockContext.metadata);
-      expect(LoggingService.error).toHaveBeenCalledWith("Rename to UID error", error);
+      expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(
+        mockFile,
+        mockContext.metadata,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Rename to UID error",
+        error,
+      );
       expect(Notice).toHaveBeenCalledWith("Failed to rename: Rename failed");
     });
 
@@ -128,9 +143,12 @@ describe("RenameToUidCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(mockFile, contextWithoutUid.metadata);
+      expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(
+        mockFile,
+        contextWithoutUid.metadata,
+      );
       expect(Notice).toHaveBeenCalledWith('Renamed "test-file" to "undefined"');
     });
 
@@ -147,10 +165,15 @@ describe("RenameToUidCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(specialFile, mockContext.metadata);
-      expect(Notice).toHaveBeenCalledWith('Renamed "[IMPORTANT] File (2024)" to "asset-12345"');
+      expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(
+        specialFile,
+        mockContext.metadata,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        'Renamed "[IMPORTANT] File (2024)" to "asset-12345"',
+      );
     });
 
     it("should handle file already named as UID", async () => {
@@ -166,10 +189,15 @@ describe("RenameToUidCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(uidFile, mockContext.metadata);
-      expect(Notice).toHaveBeenCalledWith('Renamed "asset-12345" to "asset-12345"');
+      expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(
+        uidFile,
+        mockContext.metadata,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        'Renamed "asset-12345" to "asset-12345"',
+      );
     });
 
     it("should handle permission denied error", async () => {
@@ -181,11 +209,19 @@ describe("RenameToUidCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(mockFile, mockContext.metadata);
-      expect(LoggingService.error).toHaveBeenCalledWith("Rename to UID error", permError);
-      expect(Notice).toHaveBeenCalledWith("Failed to rename: Permission denied: cannot rename file");
+      expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(
+        mockFile,
+        mockContext.metadata,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Rename to UID error",
+        permError,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to rename: Permission denied: cannot rename file",
+      );
     });
 
     it("should handle context with complex metadata", async () => {
@@ -206,10 +242,15 @@ describe("RenameToUidCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(mockFile, complexContext.metadata);
-      expect(Notice).toHaveBeenCalledWith('Renamed "test-file" to "complex-uid-98765"');
+      expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(
+        mockFile,
+        complexContext.metadata,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        'Renamed "test-file" to "complex-uid-98765"',
+      );
     });
   });
 });

@@ -74,7 +74,7 @@ describe("LoggerFactory", () => {
         "Context\tWith\tTabs",
       ];
 
-      specialContexts.forEach(context => {
+      specialContexts.forEach((context) => {
         const logger = LoggerFactory.create(context);
         expect(logger).toBeDefined();
         expect(logger).toBeInstanceOf(Logger);
@@ -101,7 +101,7 @@ describe("LoggerFactory", () => {
         "हिंदी संदर्भ",
       ];
 
-      unicodeContexts.forEach(context => {
+      unicodeContexts.forEach((context) => {
         const logger = LoggerFactory.create(context);
         expect(logger).toBeDefined();
         expect(logger).toBeInstanceOf(Logger);
@@ -120,7 +120,7 @@ describe("LoggerFactory", () => {
         "Infinity",
       ];
 
-      numericContexts.forEach(context => {
+      numericContexts.forEach((context) => {
         const logger = LoggerFactory.create(context);
         expect(logger).toBeDefined();
         expect(logger).toBeInstanceOf(Logger);
@@ -148,12 +148,18 @@ describe("LoggerFactory", () => {
       logger.warn("Warning message");
       logger.error("Error message", new Error("Test error"));
 
-      expect(console.debug).toHaveBeenCalledWith("[FunctionalTest] Debug message");
-      expect(console.info).toHaveBeenCalledWith("[FunctionalTest] Info message");
-      expect(console.warn).toHaveBeenCalledWith("[FunctionalTest] Warning message");
+      expect(console.debug).toHaveBeenCalledWith(
+        "[FunctionalTest] Debug message",
+      );
+      expect(console.info).toHaveBeenCalledWith(
+        "[FunctionalTest] Info message",
+      );
+      expect(console.warn).toHaveBeenCalledWith(
+        "[FunctionalTest] Warning message",
+      );
       expect(console.error).toHaveBeenCalledWith(
         "[FunctionalTest] Error message",
-        expect.any(Error)
+        expect.any(Error),
       );
 
       // Restore console
@@ -182,7 +188,9 @@ describe("LoggerFactory", () => {
       const appLogger = LoggerFactory.create("App");
       const moduleLogger = LoggerFactory.create("App:Module");
       const componentLogger = LoggerFactory.create("App:Module:Component");
-      const serviceLogger = LoggerFactory.create("App:Module:Component:Service");
+      const serviceLogger = LoggerFactory.create(
+        "App:Module:Component:Service",
+      );
 
       expect(appLogger).toBeInstanceOf(Logger);
       expect(moduleLogger).toBeInstanceOf(Logger);
@@ -196,14 +204,9 @@ describe("LoggerFactory", () => {
     });
 
     it("should handle context with format specifiers", () => {
-      const contexts = [
-        "%s %d %i",
-        "%c styled",
-        "%%percent%%",
-        "%o object %O",
-      ];
+      const contexts = ["%s %d %i", "%c styled", "%%percent%%", "%o object %O"];
 
-      contexts.forEach(context => {
+      contexts.forEach((context) => {
         const logger = LoggerFactory.create(context);
         expect(logger).toBeDefined();
         expect(logger).toBeInstanceOf(Logger);
@@ -220,7 +223,7 @@ describe("LoggerFactory", () => {
         "ci",
       ];
 
-      environments.forEach(env => {
+      environments.forEach((env) => {
         const logger = LoggerFactory.create(env);
         expect(logger).toBeDefined();
         expect(logger).toBeInstanceOf(Logger);
@@ -233,15 +236,15 @@ describe("LoggerFactory", () => {
       // Simulate concurrent logger creation
       for (let i = 0; i < 100; i++) {
         promises.push(
-          new Promise(resolve => {
+          new Promise((resolve) => {
             resolve(LoggerFactory.create(`Concurrent${i}`));
-          })
+          }),
         );
       }
 
-      return Promise.all(promises).then(loggers => {
+      return Promise.all(promises).then((loggers) => {
         expect(loggers).toHaveLength(100);
-        loggers.forEach(logger => {
+        loggers.forEach((logger) => {
           expect(logger).toBeInstanceOf(Logger);
         });
 
@@ -262,7 +265,7 @@ describe("LoggerFactory", () => {
       }
 
       expect(loggers).toHaveLength(1000);
-      loggers.forEach(logger => {
+      loggers.forEach((logger) => {
         expect(logger).toBeInstanceOf(Logger);
       });
     });

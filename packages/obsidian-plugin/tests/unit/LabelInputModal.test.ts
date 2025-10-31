@@ -1,4 +1,7 @@
-import { LabelInputModal, LabelInputModalResult } from "../../src/presentation/modals/LabelInputModal";
+import {
+  LabelInputModal,
+  LabelInputModalResult,
+} from "../../src/presentation/modals/LabelInputModal";
 import { App } from "obsidian";
 
 describe("LabelInputModal", () => {
@@ -85,13 +88,17 @@ describe("LabelInputModal", () => {
 
     it("should add modal class", () => {
       modal.onOpen();
-      expect(mockContentEl.addClass).toHaveBeenCalledWith("exocortex-label-input-modal");
+      expect(mockContentEl.addClass).toHaveBeenCalledWith(
+        "exocortex-label-input-modal",
+      );
     });
 
     it("should create modal elements", () => {
       modal.onOpen();
 
-      expect(mockContentEl.createEl).toHaveBeenCalledWith("h2", { text: "Create asset" });
+      expect(mockContentEl.createEl).toHaveBeenCalledWith("h2", {
+        text: "Create asset",
+      });
       expect(mockContentEl.createEl).toHaveBeenCalledWith("p", {
         text: "Enter a display label for the new asset (optional):",
         cls: "exocortex-modal-description",
@@ -138,7 +145,10 @@ describe("LabelInputModal", () => {
       modal.contentEl = mockContentEl;
       modal.onOpen();
 
-      expect(mockContentEl.createEl).not.toHaveBeenCalledWith("select", expect.any(Object));
+      expect(mockContentEl.createEl).not.toHaveBeenCalledWith(
+        "select",
+        expect.any(Object),
+      );
     });
 
     it("should create Create and Cancel buttons", () => {
@@ -227,16 +237,18 @@ describe("LabelInputModal", () => {
     it("should create task size options", () => {
       // Mock selectEl with createEl method
       const mockOptions: HTMLOptionElement[] = [];
-      mockSelectEl.createEl = jest.fn().mockImplementation((tag: string, options?: any) => {
-        if (tag === "option") {
-          const option = document.createElement("option");
-          if (options?.value !== undefined) option.value = options.value;
-          if (options?.text) option.textContent = options.text;
-          mockOptions.push(option);
-          return option;
-        }
-        return document.createElement(tag);
-      });
+      mockSelectEl.createEl = jest
+        .fn()
+        .mockImplementation((tag: string, options?: any) => {
+          if (tag === "option") {
+            const option = document.createElement("option");
+            if (options?.value !== undefined) option.value = options.value;
+            if (options?.text) option.textContent = options.text;
+            mockOptions.push(option);
+            return option;
+          }
+          return document.createElement(tag);
+        });
 
       // Re-create modal with proper mock
       modal = new LabelInputModal(mockApp, onSubmitSpy, "", true);
@@ -370,15 +382,17 @@ describe("LabelInputModal", () => {
       createButton = document.createElement("button");
       cancelButton = document.createElement("button");
 
-      mockContentEl.createEl.mockImplementation((tag: string, options?: any) => {
-        if (tag === "button" && options?.text === "Create") {
-          return createButton;
-        }
-        if (tag === "button" && options?.text === "Cancel") {
-          return cancelButton;
-        }
-        return document.createElement(tag);
-      });
+      mockContentEl.createEl.mockImplementation(
+        (tag: string, options?: any) => {
+          if (tag === "button" && options?.text === "Create") {
+            return createButton;
+          }
+          if (tag === "button" && options?.text === "Cancel") {
+            return cancelButton;
+          }
+          return document.createElement(tag);
+        },
+      );
 
       modal.onOpen();
     });

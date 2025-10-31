@@ -1,6 +1,10 @@
 import { PlanOnTodayCommand } from "../../src/application/commands/PlanOnTodayCommand";
 import { TFile, Notice } from "obsidian";
-import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  TaskStatusService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -84,7 +88,7 @@ describe("PlanOnTodayCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.planOnToday).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Planned on today: test-file");
@@ -99,11 +103,16 @@ describe("PlanOnTodayCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.planOnToday).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Plan on today error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to plan on today: Failed to plan");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Plan on today error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to plan on today: Failed to plan",
+      );
     });
 
     it("should handle files with special characters", async () => {
@@ -119,10 +128,14 @@ describe("PlanOnTodayCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.planOnToday).toHaveBeenCalledWith(specialFile);
-      expect(Notice).toHaveBeenCalledWith("Planned on today: [TODAY] Task (2024)");
+      expect(mockTaskStatusService.planOnToday).toHaveBeenCalledWith(
+        specialFile,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Planned on today: [TODAY] Task (2024)",
+      );
     });
 
     it("should handle file system errors", async () => {
@@ -134,11 +147,16 @@ describe("PlanOnTodayCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.planOnToday).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Plan on today error", fsError);
-      expect(Notice).toHaveBeenCalledWith("Failed to plan on today: File locked");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Plan on today error",
+        fsError,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to plan on today: File locked",
+      );
     });
 
     it("should handle permission denied error", async () => {
@@ -150,11 +168,16 @@ describe("PlanOnTodayCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.planOnToday).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Plan on today error", permError);
-      expect(Notice).toHaveBeenCalledWith("Failed to plan on today: Permission denied: cannot write to file");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Plan on today error",
+        permError,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to plan on today: Permission denied: cannot write to file",
+      );
     });
 
     it("should handle multiple concurrent planning operations", async () => {
@@ -168,15 +191,20 @@ describe("PlanOnTodayCommand", () => {
       ];
 
       // Execute planning operations concurrently
-      files.forEach(file => command.checkCallback(false, file, mockContext));
+      files.forEach((file) => command.checkCallback(false, file, mockContext));
 
       // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       expect(mockTaskStatusService.planOnToday).toHaveBeenCalledTimes(3);
       files.forEach((file, index) => {
-        expect(mockTaskStatusService.planOnToday).toHaveBeenNthCalledWith(index + 1, file);
-        expect(Notice).toHaveBeenCalledWith(`Planned on today: ${file.basename}`);
+        expect(mockTaskStatusService.planOnToday).toHaveBeenNthCalledWith(
+          index + 1,
+          file,
+        );
+        expect(Notice).toHaveBeenCalledWith(
+          `Planned on today: ${file.basename}`,
+        );
       });
     });
 
@@ -189,11 +217,16 @@ describe("PlanOnTodayCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.planOnToday).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Plan on today error", alreadyPlannedError);
-      expect(Notice).toHaveBeenCalledWith("Failed to plan on today: Task already planned for today");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Plan on today error",
+        alreadyPlannedError,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to plan on today: Task already planned for today",
+      );
     });
   });
 });

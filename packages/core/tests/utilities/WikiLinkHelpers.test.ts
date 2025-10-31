@@ -5,7 +5,7 @@ describe("WikiLinkHelpers", () => {
     it("should remove brackets", () => {
       expect(WikiLinkHelpers.normalize("[[Note]]")).toBe("Note");
     });
-    
+
     it("should handle null", () => {
       expect(WikiLinkHelpers.normalize(null)).toBe("");
     });
@@ -13,9 +13,12 @@ describe("WikiLinkHelpers", () => {
 
   describe("normalizeArray", () => {
     it("should normalize array", () => {
-      expect(WikiLinkHelpers.normalizeArray(["[[A]]", "[[B]]"])).toEqual(["A", "B"]);
+      expect(WikiLinkHelpers.normalizeArray(["[[A]]", "[[B]]"])).toEqual([
+        "A",
+        "B",
+      ]);
     });
-    
+
     it("should handle single string", () => {
       expect(WikiLinkHelpers.normalizeArray("[[Note]]")).toEqual(["Note"]);
     });

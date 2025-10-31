@@ -87,7 +87,9 @@ describe("ToggleArchivedAssetsCommand", () => {
       const error = new Error("Failed to save settings");
       mockPlugin.saveSettings.mockRejectedValue(error);
 
-      await expect(command.callback()).rejects.toThrow("Failed to save settings");
+      await expect(command.callback()).rejects.toThrow(
+        "Failed to save settings",
+      );
 
       // Settings should still be toggled even if save fails
       expect(mockPlugin.settings.showArchivedAssets).toBe(true);

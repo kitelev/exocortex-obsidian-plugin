@@ -1,6 +1,10 @@
 import { CopyLabelToAliasesCommand } from "../../src/application/commands/CopyLabelToAliasesCommand";
 import { TFile, Notice } from "obsidian";
-import { LabelToAliasService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  LabelToAliasService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -54,7 +58,8 @@ describe("CopyLabelToAliasesCommand", () => {
   });
 
   describe("checkCallback", () => {
-    const mockCanCopyLabelToAliases = require("@exocortex/core").canCopyLabelToAliases;
+    const mockCanCopyLabelToAliases =
+      require("@exocortex/core").canCopyLabelToAliases;
 
     it("should return false when context is null", () => {
       const result = command.checkCallback(true, mockFile, null);
@@ -84,9 +89,11 @@ describe("CopyLabelToAliasesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(mockFile);
+      expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(
+        mockFile,
+      );
       expect(Notice).toHaveBeenCalledWith("Label copied to aliases");
     });
 
@@ -99,11 +106,18 @@ describe("CopyLabelToAliasesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Copy label to aliases error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to copy label: Failed to copy");
+      expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Copy label to aliases error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to copy label: Failed to copy",
+      );
     });
 
     it("should handle files with special characters", async () => {
@@ -119,9 +133,11 @@ describe("CopyLabelToAliasesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(specialFile);
+      expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(
+        specialFile,
+      );
       expect(Notice).toHaveBeenCalledWith("Label copied to aliases");
     });
 
@@ -134,10 +150,15 @@ describe("CopyLabelToAliasesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Copy label to aliases error", fsError);
+      expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Copy label to aliases error",
+        fsError,
+      );
       expect(Notice).toHaveBeenCalledWith("Failed to copy label: File locked");
     });
 
@@ -150,11 +171,18 @@ describe("CopyLabelToAliasesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Copy label to aliases error", permError);
-      expect(Notice).toHaveBeenCalledWith("Failed to copy label: Permission denied: cannot write to file");
+      expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Copy label to aliases error",
+        permError,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to copy label: Permission denied: cannot write to file",
+      );
     });
 
     it("should handle multiple concurrent copy operations", async () => {
@@ -168,14 +196,18 @@ describe("CopyLabelToAliasesCommand", () => {
       ];
 
       // Execute copy operations concurrently
-      files.forEach(file => command.checkCallback(false, file, mockContext));
+      files.forEach((file) => command.checkCallback(false, file, mockContext));
 
       // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
-      expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledTimes(3);
+      expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledTimes(
+        3,
+      );
       files.forEach((file, index) => {
-        expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenNthCalledWith(index + 1, file);
+        expect(
+          mockLabelToAliasService.copyLabelToAliases,
+        ).toHaveBeenNthCalledWith(index + 1, file);
       });
       expect(Notice).toHaveBeenCalledTimes(3);
       expect(Notice).toHaveBeenCalledWith("Label copied to aliases");

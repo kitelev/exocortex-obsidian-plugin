@@ -448,7 +448,11 @@ test.describe("AssetPropertiesTable Component", () => {
     );
 
     // Check that headers have sortable class
-    await expect(component.locator('th.sortable:has-text("Property")')).toBeVisible();
-    await expect(component.locator('th.sortable:has-text("Value")')).toBeVisible();
+    await expect(
+      component.locator('th.sortable:has-text("Property")'),
+    ).toBeVisible();
+    await expect(
+      component.locator('th.sortable:has-text("Value")'),
+    ).toBeVisible();
   });
 });

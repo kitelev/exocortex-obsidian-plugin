@@ -12,6 +12,8 @@ export class ToggleLayoutVisibilityCommand implements ICommand {
     this.plugin.settings.layoutVisible = !this.plugin.settings.layoutVisible;
     await this.plugin.saveSettings();
     this.plugin.refreshLayout?.();
-    new Notice(`Layout ${this.plugin.settings.layoutVisible ? "shown" : "hidden"}`);
+    new Notice(
+      `Layout ${this.plugin.settings.layoutVisible ? "shown" : "hidden"}`,
+    );
   };
 }

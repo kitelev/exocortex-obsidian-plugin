@@ -211,7 +211,10 @@ const SingleTable: React.FC<SingleTableProps> = ({
           const pipeIndex = content.indexOf("|");
           aVal =
             pipeIndex !== -1
-              ? content.substring(pipeIndex + 1).trim().toLowerCase()
+              ? content
+                  .substring(pipeIndex + 1)
+                  .trim()
+                  .toLowerCase()
               : content.trim().toLowerCase();
         } else if (typeof aVal === "string") {
           aVal = aVal.toLowerCase();
@@ -222,7 +225,10 @@ const SingleTable: React.FC<SingleTableProps> = ({
           const pipeIndex = content.indexOf("|");
           bVal =
             pipeIndex !== -1
-              ? content.substring(pipeIndex + 1).trim().toLowerCase()
+              ? content
+                  .substring(pipeIndex + 1)
+                  .trim()
+                  .toLowerCase()
               : content.trim().toLowerCase();
         } else if (typeof bVal === "string") {
           bVal = bVal.toLowerCase();
@@ -275,7 +281,11 @@ const SingleTable: React.FC<SingleTableProps> = ({
               (sortState.order === "asc" ? "↑" : "↓")}
           </th>
           {showProperties.map((prop) => (
-            <th key={prop} onClick={() => handleSort(prop)} className="sortable">
+            <th
+              key={prop}
+              onClick={() => handleSort(prop)}
+              className="sortable"
+            >
               {prop}{" "}
               {sortState.column === prop &&
                 (sortState.order === "asc" ? "↑" : "↓")}

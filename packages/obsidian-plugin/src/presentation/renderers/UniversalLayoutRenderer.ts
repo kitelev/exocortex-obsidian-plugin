@@ -24,7 +24,10 @@ import { DailyProjectsRenderer } from "./DailyProjectsRenderer";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 import { PropertiesRenderer } from "./layout/PropertiesRenderer";
 import { AreaTreeRenderer } from "./layout/AreaTreeRenderer";
-import { RelationsRenderer, UniversalLayoutConfig } from "./layout/RelationsRenderer";
+import {
+  RelationsRenderer,
+  UniversalLayoutConfig,
+} from "./layout/RelationsRenderer";
 import { AssetMetadataService } from "./layout/helpers/AssetMetadataService";
 
 type ObsidianApp = any;
@@ -148,7 +151,8 @@ export class UniversalLayoutRenderer {
       this.reactRenderer,
       () => this.refresh(),
       (path: string) => this.metadataService.getAssetLabel(path),
-      (metadata: Record<string, unknown>) => this.metadataService.getEffortArea(metadata),
+      (metadata: Record<string, unknown>) =>
+        this.metadataService.getEffortArea(metadata),
     );
   }
 
@@ -246,7 +250,6 @@ export class UniversalLayoutRenderer {
       }
     }, 50);
   }
-
 
   /**
    * Parse configuration from source

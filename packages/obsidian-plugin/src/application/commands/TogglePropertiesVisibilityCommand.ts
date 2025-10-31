@@ -9,7 +9,8 @@ export class TogglePropertiesVisibilityCommand implements ICommand {
   constructor(private plugin: ExocortexPluginInterface) {}
 
   callback = async (): Promise<void> => {
-    this.plugin.settings.showPropertiesSection = !this.plugin.settings.showPropertiesSection;
+    this.plugin.settings.showPropertiesSection =
+      !this.plugin.settings.showPropertiesSection;
     await this.plugin.saveSettings();
     this.plugin.refreshLayout?.();
     new Notice(

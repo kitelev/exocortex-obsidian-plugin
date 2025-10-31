@@ -1,6 +1,10 @@
 import { SetDraftStatusCommand } from "../../src/application/commands/SetDraftStatusCommand";
 import { TFile, Notice } from "obsidian";
-import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  TaskStatusService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -84,9 +88,11 @@ describe("SetDraftStatusCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.setDraftStatus).toHaveBeenCalledWith(mockFile);
+      expect(mockTaskStatusService.setDraftStatus).toHaveBeenCalledWith(
+        mockFile,
+      );
       expect(Notice).toHaveBeenCalledWith("Set Draft status: test-draft");
     });
 
@@ -99,11 +105,18 @@ describe("SetDraftStatusCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.setDraftStatus).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Set draft status error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to set draft status: Failed to set draft");
+      expect(mockTaskStatusService.setDraftStatus).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Set draft status error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to set draft status: Failed to set draft",
+      );
     });
 
     it("should handle already draft context", () => {
@@ -126,9 +139,11 @@ describe("SetDraftStatusCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.setDraftStatus).toHaveBeenCalledWith(spaceFile);
+      expect(mockTaskStatusService.setDraftStatus).toHaveBeenCalledWith(
+        spaceFile,
+      );
       expect(Notice).toHaveBeenCalledWith("Set Draft status: my draft task");
     });
 
@@ -142,11 +157,18 @@ describe("SetDraftStatusCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.setDraftStatus).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Set draft status error", networkError);
-      expect(Notice).toHaveBeenCalledWith("Failed to set draft status: Network timeout");
+      expect(mockTaskStatusService.setDraftStatus).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Set draft status error",
+        networkError,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to set draft status: Network timeout",
+      );
     });
   });
 });

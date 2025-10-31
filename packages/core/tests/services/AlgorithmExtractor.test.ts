@@ -20,7 +20,9 @@ Line 2 of algorithm.
 Other content here.
 `;
       const result = extractor.extractH2Section(content, "Algorithm");
-      expect(result).toBe("This is the algorithm content.\nLine 2 of algorithm.");
+      expect(result).toBe(
+        "This is the algorithm content.\nLine 2 of algorithm.",
+      );
     });
 
     it("should return null when heading not found", () => {
@@ -125,7 +127,10 @@ Content here.
 
 ## Next
 `;
-      const result = extractor.extractH2Section(content, "Algorithm: Step-by-step");
+      const result = extractor.extractH2Section(
+        content,
+        "Algorithm: Step-by-step",
+      );
       expect(result).toBe("Content here.");
     });
   });

@@ -1,6 +1,10 @@
 import { TrashEffortCommand } from "../../src/application/commands/TrashEffortCommand";
 import { TFile, Notice } from "obsidian";
-import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  TaskStatusService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -84,7 +88,7 @@ describe("TrashEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Trashed: test-effort");
@@ -99,11 +103,16 @@ describe("TrashEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Trash effort error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to trash effort: Failed to move to trash");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Trash effort error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to trash effort: Failed to move to trash",
+      );
     });
 
     it("should handle already trashed effort", () => {
@@ -126,9 +135,11 @@ describe("TrashEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(specialFile);
+      expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(
+        specialFile,
+      );
       expect(Notice).toHaveBeenCalledWith("Trashed: [URGENT] Important Effort");
     });
 
@@ -141,11 +152,16 @@ describe("TrashEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Trash effort error", permError);
-      expect(Notice).toHaveBeenCalledWith("Failed to trash effort: Permission denied: cannot delete file");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Trash effort error",
+        permError,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to trash effort: Permission denied: cannot delete file",
+      );
     });
 
     it("should handle non-Effort context", () => {

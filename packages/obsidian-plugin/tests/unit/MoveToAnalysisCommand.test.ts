@@ -1,6 +1,10 @@
 import { MoveToAnalysisCommand } from "../../src/application/commands/MoveToAnalysisCommand";
 import { TFile, Notice } from "obsidian";
-import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  TaskStatusService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -84,9 +88,11 @@ describe("MoveToAnalysisCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.moveToAnalysis).toHaveBeenCalledWith(mockFile);
+      expect(mockTaskStatusService.moveToAnalysis).toHaveBeenCalledWith(
+        mockFile,
+      );
       expect(Notice).toHaveBeenCalledWith("Moved to Analysis: test-task");
     });
 
@@ -99,11 +105,18 @@ describe("MoveToAnalysisCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.moveToAnalysis).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Move to analysis error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to move to analysis: Failed to move to analysis");
+      expect(mockTaskStatusService.moveToAnalysis).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Move to analysis error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to move to analysis: Failed to move to analysis",
+      );
     });
 
     it("should handle Analysis status context", () => {
@@ -126,10 +139,14 @@ describe("MoveToAnalysisCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.moveToAnalysis).toHaveBeenCalledWith(underscoreFile);
-      expect(Notice).toHaveBeenCalledWith("Moved to Analysis: important_analysis_task");
+      expect(mockTaskStatusService.moveToAnalysis).toHaveBeenCalledWith(
+        underscoreFile,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Moved to Analysis: important_analysis_task",
+      );
     });
 
     it("should handle database errors", async () => {
@@ -141,11 +158,18 @@ describe("MoveToAnalysisCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.moveToAnalysis).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Move to analysis error", dbError);
-      expect(Notice).toHaveBeenCalledWith("Failed to move to analysis: Database connection failed");
+      expect(mockTaskStatusService.moveToAnalysis).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Move to analysis error",
+        dbError,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to move to analysis: Database connection failed",
+      );
     });
 
     it("should handle archived context", () => {

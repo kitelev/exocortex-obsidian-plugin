@@ -1,5 +1,12 @@
 import { ObsidianVaultAdapter } from "../../src/adapters/ObsidianVaultAdapter";
-import { Vault, TFile, TFolder, MetadataCache, App, FileManager } from "obsidian";
+import {
+  Vault,
+  TFile,
+  TFolder,
+  MetadataCache,
+  App,
+  FileManager,
+} from "obsidian";
 import { IFile, IFolder, IFrontmatter } from "@exocortex/core";
 
 describe("ObsidianVaultAdapter", () => {
@@ -115,7 +122,10 @@ describe("ObsidianVaultAdapter", () => {
         name: "file.md",
         parent: null,
       });
-      expect(mockVault.create).toHaveBeenCalledWith("new/file.md", "New content");
+      expect(mockVault.create).toHaveBeenCalledWith(
+        "new/file.md",
+        "New content",
+      );
     });
 
     it("should create file with parent folder", async () => {
@@ -151,7 +161,10 @@ describe("ObsidianVaultAdapter", () => {
 
       await adapter.modify(file, "Modified content");
 
-      expect(mockVault.modify).toHaveBeenCalledWith(mockTFile, "Modified content");
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        mockTFile,
+        "Modified content",
+      );
     });
 
     it("should throw error if file not found", async () => {
@@ -165,7 +178,7 @@ describe("ObsidianVaultAdapter", () => {
       mockVault.getAbstractFileByPath.mockReturnValue(null);
 
       await expect(adapter.modify(file, "Content")).rejects.toThrow(
-        "File not found: nonexistent.md"
+        "File not found: nonexistent.md",
       );
     });
   });
@@ -197,7 +210,7 @@ describe("ObsidianVaultAdapter", () => {
       mockVault.getAbstractFileByPath.mockReturnValue(null);
 
       await expect(adapter.delete(file)).rejects.toThrow(
-        "File not found: nonexistent.md"
+        "File not found: nonexistent.md",
       );
     });
   });
@@ -209,7 +222,9 @@ describe("ObsidianVaultAdapter", () => {
       const exists = await adapter.exists("test/file.md");
 
       expect(exists).toBe(true);
-      expect(mockVault.getAbstractFileByPath).toHaveBeenCalledWith("test/file.md");
+      expect(mockVault.getAbstractFileByPath).toHaveBeenCalledWith(
+        "test/file.md",
+      );
     });
 
     it("should return false if file does not exist", async () => {
@@ -385,7 +400,7 @@ describe("ObsidianVaultAdapter", () => {
         async (file, processor) => {
           const fm = { ...currentFrontmatter };
           processor(fm);
-        }
+        },
       );
 
       await adapter.updateFrontmatter(file, (current) => ({
@@ -396,7 +411,7 @@ describe("ObsidianVaultAdapter", () => {
 
       expect(mockFileManager.processFrontMatter).toHaveBeenCalledWith(
         mockTFile,
-        expect.any(Function)
+        expect.any(Function),
       );
 
       // Verify processor function
@@ -425,7 +440,7 @@ describe("ObsidianVaultAdapter", () => {
         async (file, processor) => {
           const fm = {};
           processor(fm);
-        }
+        },
       );
 
       await adapter.updateFrontmatter(file, () => ({
@@ -461,7 +476,7 @@ describe("ObsidianVaultAdapter", () => {
 
       expect(mockFileManager.renameFile).toHaveBeenCalledWith(
         mockTFile,
-        "new/path.md"
+        "new/path.md",
       );
     });
 
@@ -476,7 +491,7 @@ describe("ObsidianVaultAdapter", () => {
       mockVault.getAbstractFileByPath.mockReturnValue(null);
 
       await expect(adapter.rename(file, "new.md")).rejects.toThrow(
-        "File not found: nonexistent.md"
+        "File not found: nonexistent.md",
       );
     });
   });
@@ -511,14 +526,17 @@ describe("ObsidianVaultAdapter", () => {
       });
       expect(mockMetadataCache.getFirstLinkpathDest).toHaveBeenCalledWith(
         "[[Linked]]",
-        "source.md"
+        "source.md",
       );
     });
 
     it("should return null if no linked file", () => {
       mockMetadataCache.getFirstLinkpathDest.mockReturnValue(null);
 
-      const result = adapter.getFirstLinkpathDest("[[Nonexistent]]", "source.md");
+      const result = adapter.getFirstLinkpathDest(
+        "[[Nonexistent]]",
+        "source.md",
+      );
 
       expect(result).toBeNull();
     });
@@ -539,13 +557,13 @@ describe("ObsidianVaultAdapter", () => {
       });
 
       const result = await adapter.process(file, (content) =>
-        content.toUpperCase()
+        content.toUpperCase(),
       );
 
       expect(result).toBe("ORIGINAL CONTENT");
       expect(mockVault.process).toHaveBeenCalledWith(
         mockTFile,
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
@@ -559,9 +577,9 @@ describe("ObsidianVaultAdapter", () => {
 
       mockVault.getAbstractFileByPath.mockReturnValue(null);
 
-      await expect(
-        adapter.process(file, (content) => content)
-      ).rejects.toThrow("File not found: nonexistent.md");
+      await expect(adapter.process(file, (content) => content)).rejects.toThrow(
+        "File not found: nonexistent.md",
+      );
     });
   });
 
@@ -592,7 +610,7 @@ describe("ObsidianVaultAdapter", () => {
       mockVault.getAbstractFileByPath.mockReturnValue(null);
 
       expect(() => adapter.toTFile(file)).toThrow(
-        "File not found: nonexistent.md"
+        "File not found: nonexistent.md",
       );
     });
 
@@ -606,9 +624,7 @@ describe("ObsidianVaultAdapter", () => {
 
       mockVault.getAbstractFileByPath.mockReturnValue(mockTFolder);
 
-      expect(() => adapter.toTFile(file)).toThrow(
-        "File not found: folder"
-      );
+      expect(() => adapter.toTFile(file)).toThrow("File not found: folder");
     });
   });
 
@@ -703,7 +719,7 @@ describe("ObsidianVaultAdapter", () => {
 
       expect(content).toBe("Content");
       expect(mockVault.getAbstractFileByPath).toHaveBeenCalledWith(
-        "test/file (with) [special] {chars}.md"
+        "test/file (with) [special] {chars}.md",
       );
     });
 

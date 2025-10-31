@@ -49,7 +49,9 @@ test.describe("DailyProjectsTable", () => {
   ];
 
   test("should render projects table with all columns", async ({ mount }) => {
-    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+    const component = await mount(
+      <DailyProjectsTable projects={mockProjects} />,
+    );
 
     await expect(component.locator("table")).toBeVisible();
     await expect(component.locator("thead th").nth(0)).toContainText("Name");
@@ -59,14 +61,18 @@ test.describe("DailyProjectsTable", () => {
   });
 
   test("should render all projects", async ({ mount }) => {
-    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+    const component = await mount(
+      <DailyProjectsTable projects={mockProjects} />,
+    );
 
     const rows = component.locator("tbody tr");
     await expect(rows).toHaveCount(3);
   });
 
   test("should display project with done icon", async ({ mount }) => {
-    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+    const component = await mount(
+      <DailyProjectsTable projects={mockProjects} />,
+    );
 
     const doneProject = component.locator(
       'tr[data-path="project2.md"] .project-name a',
@@ -76,7 +82,9 @@ test.describe("DailyProjectsTable", () => {
   });
 
   test("should display project with trashed icon", async ({ mount }) => {
-    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+    const component = await mount(
+      <DailyProjectsTable projects={mockProjects} />,
+    );
 
     const trashedProject = component.locator(
       'tr[data-path="project3.md"] .project-name a',
@@ -88,7 +96,9 @@ test.describe("DailyProjectsTable", () => {
   test("should display project with package icon for in-progress", async ({
     mount,
   }) => {
-    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+    const component = await mount(
+      <DailyProjectsTable projects={mockProjects} />,
+    );
 
     const activeProject = component.locator(
       'tr[data-path="project1.md"] .project-name a',
@@ -98,7 +108,9 @@ test.describe("DailyProjectsTable", () => {
   });
 
   test("should display start and end times", async ({ mount }) => {
-    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+    const component = await mount(
+      <DailyProjectsTable projects={mockProjects} />,
+    );
 
     const projectRow = component.locator('tr[data-path="project1.md"]');
     await expect(projectRow.locator(".project-start")).toContainText("09:00");
@@ -106,7 +118,9 @@ test.describe("DailyProjectsTable", () => {
   });
 
   test("should display dash for missing times", async ({ mount }) => {
-    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+    const component = await mount(
+      <DailyProjectsTable projects={mockProjects} />,
+    );
 
     const projectRow = component.locator('tr[data-path="project3.md"]');
     await expect(projectRow.locator(".project-start")).toContainText("-");
@@ -114,7 +128,9 @@ test.describe("DailyProjectsTable", () => {
   });
 
   test("should display status as clickable link", async ({ mount }) => {
-    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+    const component = await mount(
+      <DailyProjectsTable projects={mockProjects} />,
+    );
 
     const statusLink = component.locator(
       'tr[data-path="project1.md"] .project-status a',
@@ -255,7 +271,9 @@ test.describe("DailyProjectsTable", () => {
   });
 
   test("should have correct CSS classes", async ({ mount }) => {
-    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+    const component = await mount(
+      <DailyProjectsTable projects={mockProjects} />,
+    );
 
     await expect(
       component.locator("table.exocortex-projects-table"),
@@ -269,7 +287,9 @@ test.describe("DailyProjectsTable", () => {
   test("should render project links as internal-link class", async ({
     mount,
   }) => {
-    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+    const component = await mount(
+      <DailyProjectsTable projects={mockProjects} />,
+    );
 
     const projectLinks = component.locator(".project-name a.internal-link");
     await expect(projectLinks).toHaveCount(3);
@@ -278,7 +298,9 @@ test.describe("DailyProjectsTable", () => {
   test("should sort projects by name when clicking Name header", async ({
     mount,
   }) => {
-    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+    const component = await mount(
+      <DailyProjectsTable projects={mockProjects} />,
+    );
 
     // Click Name header to sort ascending
     await component.locator('th:has-text("Name")').click();
@@ -311,7 +333,9 @@ test.describe("DailyProjectsTable", () => {
   test("should sort projects by start time when clicking Start header", async ({
     mount,
   }) => {
-    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+    const component = await mount(
+      <DailyProjectsTable projects={mockProjects} />,
+    );
 
     // Click Start header to sort
     await component.locator('th:has-text("Start")').click();
@@ -325,7 +349,9 @@ test.describe("DailyProjectsTable", () => {
   test("should sort projects by status when clicking Status header", async ({
     mount,
   }) => {
-    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+    const component = await mount(
+      <DailyProjectsTable projects={mockProjects} />,
+    );
 
     // Click Status header to sort
     await component.locator('th:has-text("Status")').click();
@@ -337,12 +363,22 @@ test.describe("DailyProjectsTable", () => {
   });
 
   test("should have sortable class on all header cells", async ({ mount }) => {
-    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+    const component = await mount(
+      <DailyProjectsTable projects={mockProjects} />,
+    );
 
     // Check that headers have sortable class
-    await expect(component.locator('th.sortable:has-text("Name")')).toBeVisible();
-    await expect(component.locator('th.sortable:has-text("Start")')).toBeVisible();
-    await expect(component.locator('th.sortable:has-text("End")')).toBeVisible();
-    await expect(component.locator('th.sortable:has-text("Status")')).toBeVisible();
+    await expect(
+      component.locator('th.sortable:has-text("Name")'),
+    ).toBeVisible();
+    await expect(
+      component.locator('th.sortable:has-text("Start")'),
+    ).toBeVisible();
+    await expect(
+      component.locator('th.sortable:has-text("End")'),
+    ).toBeVisible();
+    await expect(
+      component.locator('th.sortable:has-text("Status")'),
+    ).toBeVisible();
   });
 });

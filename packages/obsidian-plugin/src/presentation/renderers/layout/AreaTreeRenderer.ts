@@ -1,7 +1,11 @@
 import { TFile, Keymap } from "obsidian";
 import React from "react";
 import { ReactRenderer } from "../../utils/ReactRenderer";
-import { MetadataExtractor, AssetClass, AreaHierarchyBuilder } from "@exocortex/core";
+import {
+  MetadataExtractor,
+  AssetClass,
+  AreaHierarchyBuilder,
+} from "@exocortex/core";
 import { AreaHierarchyTree } from "../../components/AreaHierarchyTree";
 import { ObsidianVaultAdapter } from "../../../adapters/ObsidianVaultAdapter";
 import { AssetMetadataService } from "./helpers/AssetMetadataService";
@@ -69,7 +73,8 @@ export class AreaTreeRenderer {
             await this.app.workspace.openLinkText(path, "", false);
           }
         },
-        getAssetLabel: (path: string) => this.metadataService.getAssetLabel(path),
+        getAssetLabel: (path: string) =>
+          this.metadataService.getAssetLabel(path),
       }),
     );
 

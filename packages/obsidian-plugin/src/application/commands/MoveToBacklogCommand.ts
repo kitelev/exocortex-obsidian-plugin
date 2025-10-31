@@ -13,7 +13,11 @@ export class MoveToBacklogCommand implements ICommand {
 
   constructor(private taskStatusService: TaskStatusService) {}
 
-  checkCallback = (checking: boolean, file: TFile, context: CommandVisibilityContext | null): boolean => {
+  checkCallback = (
+    checking: boolean,
+    file: TFile,
+    context: CommandVisibilityContext | null,
+  ): boolean => {
     if (!context || !canMoveToBacklog(context)) return false;
 
     if (!checking) {

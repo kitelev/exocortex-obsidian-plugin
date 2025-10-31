@@ -90,7 +90,11 @@ describe("ReactRenderer", () => {
         onClick: () => void;
       }
 
-      const TestComponent: React.FC<TestProps> = ({ title, count, onClick }) => (
+      const TestComponent: React.FC<TestProps> = ({
+        title,
+        count,
+        onClick,
+      }) => (
         <div onClick={onClick}>
           {title}: {count}
         </div>
@@ -155,7 +159,7 @@ describe("ReactRenderer", () => {
 
     it("should handle React.lazy components", () => {
       const LazyComponent = React.lazy(() =>
-        Promise.resolve({ default: () => <div>Lazy</div> })
+        Promise.resolve({ default: () => <div>Lazy</div> }),
       );
 
       renderer.render(mockElement, <LazyComponent />);
@@ -368,7 +372,7 @@ describe("ReactRenderer", () => {
         <div key="5">Component 5</div>,
       ];
 
-      components.forEach(component => {
+      components.forEach((component) => {
         renderer.render(mockElement, component);
       });
 
@@ -400,7 +404,7 @@ describe("ReactRenderer", () => {
 
       renderer.cleanup();
 
-      roots.forEach(root => {
+      roots.forEach((root) => {
         expect(root.unmount).toHaveBeenCalled();
       });
     });
@@ -446,10 +450,7 @@ describe("ReactRenderer", () => {
 
       const component = (
         <div>
-          {ReactDOM.createPortal(
-            <div>Portal content</div>,
-            portalTarget
-          )}
+          {ReactDOM.createPortal(<div>Portal content</div>, portalTarget)}
         </div>
       );
 
@@ -498,7 +499,7 @@ describe("ReactRenderer", () => {
 
     it("should not leak references after cleanup", () => {
       const elements = Array.from({ length: 10 }, () =>
-        document.createElement("div")
+        document.createElement("div"),
       );
 
       elements.forEach((element, i) => {

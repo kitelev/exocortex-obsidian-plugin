@@ -245,7 +245,8 @@ Content.`;
 
   describe("line ending handling", () => {
     it("should preserve Unix line endings (\\n)", async () => {
-      const originalContent = "---\ntitle: Task\nems__Effort_votes: 5\n---\n\nContent.";
+      const originalContent =
+        "---\ntitle: Task\nems__Effort_votes: 5\n---\n\nContent.";
 
       mockVault.read.mockResolvedValue(originalContent);
 
@@ -257,7 +258,8 @@ Content.`;
     });
 
     it("should preserve Windows line endings (\\r\\n)", async () => {
-      const originalContent = "---\r\ntitle: Task\r\nems__Effort_votes: 5\r\n---\r\n\r\nContent.";
+      const originalContent =
+        "---\r\ntitle: Task\r\nems__Effort_votes: 5\r\n---\r\n\r\nContent.";
 
       mockVault.read.mockResolvedValue(originalContent);
 

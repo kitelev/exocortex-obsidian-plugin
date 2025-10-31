@@ -13,7 +13,11 @@ export class CleanPropertiesCommand implements ICommand {
 
   constructor(private propertyCleanupService: PropertyCleanupService) {}
 
-  checkCallback = (checking: boolean, file: TFile, context: CommandVisibilityContext | null): boolean => {
+  checkCallback = (
+    checking: boolean,
+    file: TFile,
+    context: CommandVisibilityContext | null,
+  ): boolean => {
     if (!context || !canCleanProperties(context)) return false;
 
     if (!checking) {

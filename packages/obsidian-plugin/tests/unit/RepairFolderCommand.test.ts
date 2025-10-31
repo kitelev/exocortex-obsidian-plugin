@@ -96,20 +96,25 @@ describe("RepairFolderCommand", () => {
       mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
         frontmatter: { exo__Asset_isDefinedBy: "Asset" },
       });
-      mockFolderRepairService.getExpectedFolder.mockResolvedValue("expected/folder");
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue(
+        "expected/folder",
+      );
       mockFolderRepairService.repairFolder.mockResolvedValue();
 
       const result = command.checkCallback(false, mockFile);
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockFolderRepairService.getExpectedFolder).toHaveBeenCalledWith(
         mockFile,
-        { exo__Asset_isDefinedBy: "Asset" }
+        { exo__Asset_isDefinedBy: "Asset" },
       );
-      expect(mockFolderRepairService.repairFolder).toHaveBeenCalledWith(mockFile, "expected/folder");
+      expect(mockFolderRepairService.repairFolder).toHaveBeenCalledWith(
+        mockFile,
+        "expected/folder",
+      );
       expect(Notice).toHaveBeenCalledWith("Moved to expected/folder");
     });
 
@@ -123,7 +128,7 @@ describe("RepairFolderCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockFolderRepairService.getExpectedFolder).toHaveBeenCalled();
       expect(mockFolderRepairService.repairFolder).not.toHaveBeenCalled();
@@ -134,13 +139,15 @@ describe("RepairFolderCommand", () => {
       mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
         frontmatter: { exo__Asset_isDefinedBy: "Asset" },
       });
-      mockFolderRepairService.getExpectedFolder.mockResolvedValue("current/folder");
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue(
+        "current/folder",
+      );
 
       const result = command.checkCallback(false, mockFile);
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockFolderRepairService.getExpectedFolder).toHaveBeenCalled();
       expect(mockFolderRepairService.repairFolder).not.toHaveBeenCalled();
@@ -157,16 +164,21 @@ describe("RepairFolderCommand", () => {
       mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
         frontmatter: { exo__Asset_isDefinedBy: "Asset" },
       });
-      mockFolderRepairService.getExpectedFolder.mockResolvedValue("expected/folder");
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue(
+        "expected/folder",
+      );
       mockFolderRepairService.repairFolder.mockResolvedValue();
 
       const result = command.checkCallback(false, rootFile);
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockFolderRepairService.repairFolder).toHaveBeenCalledWith(rootFile, "expected/folder");
+      expect(mockFolderRepairService.repairFolder).toHaveBeenCalledWith(
+        rootFile,
+        "expected/folder",
+      );
       expect(Notice).toHaveBeenCalledWith("Moved to expected/folder");
     });
 
@@ -181,17 +193,24 @@ describe("RepairFolderCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(LoggingService.error).toHaveBeenCalledWith("Repair folder error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to repair folder: Failed to repair");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Repair folder error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to repair folder: Failed to repair",
+      );
     });
 
     it("should handle repair folder service errors", async () => {
       mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
         frontmatter: { exo__Asset_isDefinedBy: "Asset" },
       });
-      mockFolderRepairService.getExpectedFolder.mockResolvedValue("expected/folder");
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue(
+        "expected/folder",
+      );
       const error = new Error("Move failed");
       mockFolderRepairService.repairFolder.mockRejectedValue(error);
 
@@ -199,10 +218,15 @@ describe("RepairFolderCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(LoggingService.error).toHaveBeenCalledWith("Repair folder error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to repair folder: Move failed");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Repair folder error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to repair folder: Move failed",
+      );
     });
 
     it("should handle empty expected folder path", async () => {
@@ -215,7 +239,7 @@ describe("RepairFolderCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockFolderRepairService.getExpectedFolder).toHaveBeenCalled();
       expect(mockFolderRepairService.repairFolder).not.toHaveBeenCalled();
@@ -233,20 +257,25 @@ describe("RepairFolderCommand", () => {
       mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
         frontmatter: complexMetadata,
       });
-      mockFolderRepairService.getExpectedFolder.mockResolvedValue("complex/expected/folder");
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue(
+        "complex/expected/folder",
+      );
       mockFolderRepairService.repairFolder.mockResolvedValue();
 
       const result = command.checkCallback(false, mockFile);
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockFolderRepairService.getExpectedFolder).toHaveBeenCalledWith(
         mockFile,
-        complexMetadata
+        complexMetadata,
       );
-      expect(mockFolderRepairService.repairFolder).toHaveBeenCalledWith(mockFile, "complex/expected/folder");
+      expect(mockFolderRepairService.repairFolder).toHaveBeenCalledWith(
+        mockFile,
+        "complex/expected/folder",
+      );
       expect(Notice).toHaveBeenCalledWith("Moved to complex/expected/folder");
     });
 
@@ -254,7 +283,9 @@ describe("RepairFolderCommand", () => {
       mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
         frontmatter: { exo__Asset_isDefinedBy: "Asset" },
       });
-      mockFolderRepairService.getExpectedFolder.mockResolvedValue("expected/folder");
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue(
+        "expected/folder",
+      );
       const permError = new Error("Permission denied: cannot move file");
       mockFolderRepairService.repairFolder.mockRejectedValue(permError);
 
@@ -262,10 +293,15 @@ describe("RepairFolderCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(LoggingService.error).toHaveBeenCalledWith("Repair folder error", permError);
-      expect(Notice).toHaveBeenCalledWith("Failed to repair folder: Permission denied: cannot move file");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Repair folder error",
+        permError,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to repair folder: Permission denied: cannot move file",
+      );
     });
   });
 });

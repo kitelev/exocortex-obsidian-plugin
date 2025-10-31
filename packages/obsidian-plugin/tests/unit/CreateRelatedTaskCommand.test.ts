@@ -83,7 +83,11 @@ describe("CreateRelatedTaskCommand", () => {
     };
 
     // Create command instance
-    command = new CreateRelatedTaskCommand(mockApp, mockTaskCreationService, mockVaultAdapter);
+    command = new CreateRelatedTaskCommand(
+      mockApp,
+      mockTaskCreationService,
+      mockVaultAdapter,
+    );
   });
 
   describe("id and name", () => {
@@ -94,7 +98,8 @@ describe("CreateRelatedTaskCommand", () => {
   });
 
   describe("checkCallback", () => {
-    const mockCanCreateRelatedTask = require("@exocortex/core").canCreateRelatedTask;
+    const mockCanCreateRelatedTask =
+      require("@exocortex/core").canCreateRelatedTask;
 
     it("should return false when context is null", () => {
       const result = command.checkCallback(true, mockFile, null);
@@ -118,13 +123,21 @@ describe("CreateRelatedTaskCommand", () => {
 
     it("should execute command when checking is false and canCreateRelatedTask returns true", async () => {
       mockCanCreateRelatedTask.mockReturnValue(true);
-      const createdFile = { basename: "new-related-task", path: "new-related-task.md" };
-      mockTaskCreationService.createRelatedTask.mockResolvedValue(createdFile as any);
+      const createdFile = {
+        basename: "new-related-task",
+        path: "new-related-task.md",
+      };
+      mockTaskCreationService.createRelatedTask.mockResolvedValue(
+        createdFile as any,
+      );
 
       // Mock modal to return label and task size
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
-          setTimeout(() => callback({ label: "Related Task", taskSize: "large" }), 0);
+          setTimeout(
+            () => callback({ label: "Related Task", taskSize: "large" }),
+            0,
+          );
         }),
       }));
 
@@ -132,22 +145,26 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(LabelInputModal).toHaveBeenCalledWith(
         mockApp,
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(mockTaskCreationService.createRelatedTask).toHaveBeenCalledWith(
         mockFile,
         { key: "value", exo__uid: "original-uid" },
         "Related Task",
-        "large"
+        "large",
       );
       expect(mockVaultAdapter.toTFile).toHaveBeenCalledWith(createdFile);
       expect(mockLeaf.openFile).toHaveBeenCalledWith(mockTFile);
-      expect(mockApp.workspace.setActiveLeaf).toHaveBeenCalledWith(mockLeaf, { focus: true });
-      expect(Notice).toHaveBeenCalledWith("Related task created: new-related-task");
+      expect(mockApp.workspace.setActiveLeaf).toHaveBeenCalledWith(mockLeaf, {
+        focus: true,
+      });
+      expect(Notice).toHaveBeenCalledWith(
+        "Related task created: new-related-task",
+      );
     });
 
     it("should handle modal cancellation", async () => {
@@ -164,7 +181,7 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(LabelInputModal).toHaveBeenCalled();
       expect(mockTaskCreationService.createRelatedTask).not.toHaveBeenCalled();
@@ -186,24 +203,33 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockTaskCreationService.createRelatedTask).toHaveBeenCalled();
-      expect(LoggingService.error).toHaveBeenCalledWith("Create related task error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to create related task: Failed to create task");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Create related task error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to create related task: Failed to create task",
+      );
     });
 
     it("should handle different task sizes", async () => {
       mockCanCreateRelatedTask.mockReturnValue(true);
       const createdFile = { basename: "new-task", path: "new-task.md" };
-      mockTaskCreationService.createRelatedTask.mockResolvedValue(createdFile as any);
+      mockTaskCreationService.createRelatedTask.mockResolvedValue(
+        createdFile as any,
+      );
 
       const taskSizes = ["small", "medium", "large", "epic"];
 
       for (const taskSize of taskSizes) {
         jest.clearAllMocks();
         mockCanCreateRelatedTask.mockReturnValue(true);
-        mockTaskCreationService.createRelatedTask.mockResolvedValue(createdFile as any);
+        mockTaskCreationService.createRelatedTask.mockResolvedValue(
+          createdFile as any,
+        );
         mockVaultAdapter.toTFile.mockReturnValue(mockTFile);
 
         (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
@@ -215,21 +241,26 @@ describe("CreateRelatedTaskCommand", () => {
         command.checkCallback(false, mockFile, mockContext);
 
         // Wait for async execution
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise((resolve) => setTimeout(resolve, 50));
 
         expect(mockTaskCreationService.createRelatedTask).toHaveBeenCalledWith(
           mockFile,
           expect.any(Object),
           "Task",
-          taskSize
+          taskSize,
         );
       }
     });
 
     it("should wait for file to become active", async () => {
       mockCanCreateRelatedTask.mockReturnValue(true);
-      const createdFile = { basename: "new-related-task", path: "new-related-task.md" };
-      mockTaskCreationService.createRelatedTask.mockResolvedValue(createdFile as any);
+      const createdFile = {
+        basename: "new-related-task",
+        path: "new-related-task.md",
+      };
+      mockTaskCreationService.createRelatedTask.mockResolvedValue(
+        createdFile as any,
+      );
 
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
@@ -248,17 +279,24 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await new Promise((resolve) => setTimeout(resolve, 400));
 
       expect(mockApp.workspace.getActiveFile).toHaveBeenCalledTimes(3);
-      expect(Notice).toHaveBeenCalledWith("Related task created: new-related-task");
+      expect(Notice).toHaveBeenCalledWith(
+        "Related task created: new-related-task",
+      );
     });
 
     it("should handle missing frontmatter metadata", async () => {
       mockCanCreateRelatedTask.mockReturnValue(true);
       mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({});
-      const createdFile = { basename: "new-related-task", path: "new-related-task.md" };
-      mockTaskCreationService.createRelatedTask.mockResolvedValue(createdFile as any);
+      const createdFile = {
+        basename: "new-related-task",
+        path: "new-related-task.md",
+      };
+      mockTaskCreationService.createRelatedTask.mockResolvedValue(
+        createdFile as any,
+      );
 
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
@@ -270,22 +308,29 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockTaskCreationService.createRelatedTask).toHaveBeenCalledWith(
         mockFile,
         {}, // Empty metadata
         "Test",
-        "medium"
+        "medium",
       );
-      expect(Notice).toHaveBeenCalledWith("Related task created: new-related-task");
+      expect(Notice).toHaveBeenCalledWith(
+        "Related task created: new-related-task",
+      );
     });
 
     it("should handle null cache from metadataCache", async () => {
       mockCanCreateRelatedTask.mockReturnValue(true);
       mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue(null);
-      const createdFile = { basename: "new-related-task", path: "new-related-task.md" };
-      mockTaskCreationService.createRelatedTask.mockResolvedValue(createdFile as any);
+      const createdFile = {
+        basename: "new-related-task",
+        path: "new-related-task.md",
+      };
+      mockTaskCreationService.createRelatedTask.mockResolvedValue(
+        createdFile as any,
+      );
 
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
@@ -297,21 +342,28 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockTaskCreationService.createRelatedTask).toHaveBeenCalledWith(
         mockFile,
         {}, // Empty metadata
         "Test",
-        "small"
+        "small",
       );
-      expect(Notice).toHaveBeenCalledWith("Related task created: new-related-task");
+      expect(Notice).toHaveBeenCalledWith(
+        "Related task created: new-related-task",
+      );
     });
 
     it("should timeout after max attempts waiting for file", async () => {
       mockCanCreateRelatedTask.mockReturnValue(true);
-      const createdFile = { basename: "new-related-task", path: "new-related-task.md" };
-      mockTaskCreationService.createRelatedTask.mockResolvedValue(createdFile as any);
+      const createdFile = {
+        basename: "new-related-task",
+        path: "new-related-task.md",
+      };
+      mockTaskCreationService.createRelatedTask.mockResolvedValue(
+        createdFile as any,
+      );
 
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
@@ -326,21 +378,31 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution (including max attempts)
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      await new Promise((resolve) => setTimeout(resolve, 2500));
 
       // Should still complete successfully even if file doesn't become active
       expect(mockApp.workspace.getActiveFile).toHaveBeenCalledTimes(20); // max attempts
-      expect(Notice).toHaveBeenCalledWith("Related task created: new-related-task");
+      expect(Notice).toHaveBeenCalledWith(
+        "Related task created: new-related-task",
+      );
     });
 
     it("should handle undefined task size", async () => {
       mockCanCreateRelatedTask.mockReturnValue(true);
-      const createdFile = { basename: "new-related-task", path: "new-related-task.md" };
-      mockTaskCreationService.createRelatedTask.mockResolvedValue(createdFile as any);
+      const createdFile = {
+        basename: "new-related-task",
+        path: "new-related-task.md",
+      };
+      mockTaskCreationService.createRelatedTask.mockResolvedValue(
+        createdFile as any,
+      );
 
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
-          setTimeout(() => callback({ label: "Task Without Size", taskSize: undefined }), 0);
+          setTimeout(
+            () => callback({ label: "Task Without Size", taskSize: undefined }),
+            0,
+          );
         }),
       }));
 
@@ -348,15 +410,17 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockTaskCreationService.createRelatedTask).toHaveBeenCalledWith(
         mockFile,
         { key: "value", exo__uid: "original-uid" },
         "Task Without Size",
-        undefined
+        undefined,
       );
-      expect(Notice).toHaveBeenCalledWith("Related task created: new-related-task");
+      expect(Notice).toHaveBeenCalledWith(
+        "Related task created: new-related-task",
+      );
     });
   });
 });

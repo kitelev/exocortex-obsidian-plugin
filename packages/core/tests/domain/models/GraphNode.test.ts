@@ -8,7 +8,7 @@ describe("GraphNode", () => {
         title: "My Note",
         label: "Note Label",
         assetClass: "ems__Task",
-        isArchived: false
+        isArchived: false,
       };
 
       expect(data.path).toBe("/path/to/note.md");
@@ -23,7 +23,7 @@ describe("GraphNode", () => {
         path: "/path/to/note.md",
         title: "My Note",
         label: "Note Label",
-        isArchived: false
+        isArchived: false,
       };
 
       expect(data.assetClass).toBeUndefined();
@@ -34,7 +34,7 @@ describe("GraphNode", () => {
         path: "/archived/note.md",
         title: "Archived Note",
         label: "Old Label",
-        isArchived: true
+        isArchived: true,
       };
 
       expect(data.isArchived).toBe(true);
@@ -49,7 +49,7 @@ describe("GraphNode", () => {
         label: "Note Label",
         isArchived: false,
         x: 100,
-        y: 200
+        y: 200,
       };
 
       expect(node.x).toBe(100);
@@ -63,7 +63,7 @@ describe("GraphNode", () => {
         label: "Note Label",
         isArchived: false,
         vx: 10,
-        vy: 20
+        vy: 20,
       };
 
       expect(node.vx).toBe(10);
@@ -77,7 +77,7 @@ describe("GraphNode", () => {
         label: "Note Label",
         isArchived: false,
         fx: 150,
-        fy: 250
+        fy: 250,
       };
 
       expect(node.fx).toBe(150);
@@ -91,7 +91,7 @@ describe("GraphNode", () => {
         label: "Note Label",
         isArchived: false,
         fx: null,
-        fy: null
+        fy: null,
       };
 
       expect(node.fx).toBeNull();
@@ -103,7 +103,7 @@ describe("GraphNode", () => {
         path: "/path/to/note.md",
         title: "My Note",
         label: "Note Label",
-        isArchived: false
+        isArchived: false,
       };
 
       expect(node.x).toBeUndefined();

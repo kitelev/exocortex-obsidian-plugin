@@ -1,6 +1,17 @@
 import { CreateTaskCommand } from "../../src/application/commands/CreateTaskCommand";
-import { App, TFile, Notice, MetadataCache, Workspace, WorkspaceLeaf } from "obsidian";
-import { TaskCreationService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  App,
+  TFile,
+  Notice,
+  MetadataCache,
+  Workspace,
+  WorkspaceLeaf,
+} from "obsidian";
+import {
+  TaskCreationService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 import { ObsidianVaultAdapter } from "../../src/adapters/ObsidianVaultAdapter";
 import { LabelInputModal } from "../../src/presentation/modals/LabelInputModal";
 
@@ -81,7 +92,11 @@ describe("CreateTaskCommand", () => {
     };
 
     // Create command instance
-    command = new CreateTaskCommand(mockApp, mockTaskCreationService, mockVaultAdapter);
+    command = new CreateTaskCommand(
+      mockApp,
+      mockTaskCreationService,
+      mockVaultAdapter,
+    );
   });
 
   describe("id and name", () => {
@@ -139,17 +154,19 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,
         { class: "Task", status: "ToDo" },
         "Epic",
         "Test Task",
-        "M"
+        "M",
       );
       expect(mockLeaf.openFile).toHaveBeenCalledWith(createdTFile);
-      expect(mockWorkspace.setActiveLeaf).toHaveBeenCalledWith(mockLeaf, { focus: true });
+      expect(mockWorkspace.setActiveLeaf).toHaveBeenCalledWith(mockLeaf, {
+        focus: true,
+      });
     });
 
     it("should handle modal cancellation", async () => {
@@ -165,7 +182,7 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(mockTaskCreationService.createTask).not.toHaveBeenCalled();
       expect(mockLeaf.openFile).not.toHaveBeenCalled();
@@ -188,10 +205,15 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
-      expect(LoggingService.error).toHaveBeenCalledWith("Create task error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to create task: Creation failed");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Create task error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to create task: Creation failed",
+      );
     });
 
     it("should handle array instance class", async () => {
@@ -228,14 +250,14 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,
         { class: "Task", status: "ToDo" },
         "Epic",
         "Test Task",
-        "S"
+        "S",
       );
     });
 
@@ -273,14 +295,14 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,
         { class: "Task", status: "ToDo" },
         "",
         "Test Task",
-        "L"
+        "L",
       );
     });
 
@@ -315,14 +337,14 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,
         {},
         "Epic",
         "Test Task",
-        "XL"
+        "XL",
       );
     });
 
@@ -358,7 +380,7 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       expect(mockWorkspace.getActiveFile).toHaveBeenCalledTimes(4);
       expect(Notice).toHaveBeenCalledWith("Task created: test-task");
@@ -392,7 +414,7 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution (should timeout after 20 attempts * 100ms = 2 seconds)
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      await new Promise((resolve) => setTimeout(resolve, 2500));
 
       expect(mockWorkspace.getActiveFile).toHaveBeenCalledTimes(20);
       expect(Notice).toHaveBeenCalledWith("Task created: test-task");

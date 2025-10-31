@@ -1,6 +1,10 @@
 import { VoteOnEffortCommand } from "../../src/application/commands/VoteOnEffortCommand";
 import { TFile, Notice } from "obsidian";
-import { EffortVotingService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  EffortVotingService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -59,21 +63,27 @@ describe("VoteOnEffortCommand", () => {
     it("should return false when context is null", () => {
       const result = command.checkCallback(true, mockFile, null);
       expect(result).toBe(false);
-      expect(mockEffortVotingService.incrementEffortVotes).not.toHaveBeenCalled();
+      expect(
+        mockEffortVotingService.incrementEffortVotes,
+      ).not.toHaveBeenCalled();
     });
 
     it("should return false when canVoteOnEffort returns false", () => {
       mockCanVoteOnEffort.mockReturnValue(false);
       const result = command.checkCallback(true, mockFile, mockContext);
       expect(result).toBe(false);
-      expect(mockEffortVotingService.incrementEffortVotes).not.toHaveBeenCalled();
+      expect(
+        mockEffortVotingService.incrementEffortVotes,
+      ).not.toHaveBeenCalled();
     });
 
     it("should return true when canVoteOnEffort returns true and checking is true", () => {
       mockCanVoteOnEffort.mockReturnValue(true);
       const result = command.checkCallback(true, mockFile, mockContext);
       expect(result).toBe(true);
-      expect(mockEffortVotingService.incrementEffortVotes).not.toHaveBeenCalled();
+      expect(
+        mockEffortVotingService.incrementEffortVotes,
+      ).not.toHaveBeenCalled();
     });
 
     it("should execute command and show vote count when checking is false", async () => {
@@ -84,9 +94,11 @@ describe("VoteOnEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(mockFile);
+      expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(
+        mockFile,
+      );
       expect(Notice).toHaveBeenCalledWith("Voted! New vote count: 5");
     });
 
@@ -98,9 +110,11 @@ describe("VoteOnEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(mockFile);
+      expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(
+        mockFile,
+      );
       expect(Notice).toHaveBeenCalledWith("Voted! New vote count: 1");
     });
 
@@ -112,9 +126,11 @@ describe("VoteOnEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(mockFile);
+      expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(
+        mockFile,
+      );
       expect(Notice).toHaveBeenCalledWith("Voted! New vote count: 9999");
     });
 
@@ -127,11 +143,18 @@ describe("VoteOnEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Vote on effort error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to vote: Failed to record vote");
+      expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Vote on effort error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to vote: Failed to record vote",
+      );
     });
 
     it("should handle concurrent votes", async () => {
@@ -148,9 +171,11 @@ describe("VoteOnEffortCommand", () => {
       expect(result3).toBe(true);
 
       // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
-      expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledTimes(3);
+      expect(
+        mockEffortVotingService.incrementEffortVotes,
+      ).toHaveBeenCalledTimes(3);
       expect(Notice).toHaveBeenCalledTimes(3);
       expect(Notice).toHaveBeenCalledWith("Voted! New vote count: 10");
     });
@@ -164,10 +189,15 @@ describe("VoteOnEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Vote on effort error", fsError);
+      expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Vote on effort error",
+        fsError,
+      );
       expect(Notice).toHaveBeenCalledWith("Failed to vote: File is read-only");
     });
 

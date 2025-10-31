@@ -312,7 +312,9 @@ describe("BacklinksCacheManager", () => {
       cacheManager.buildCache();
 
       const targetBacklinks = cacheManager.getBacklinks("other/path/target.md");
-      expect(targetBacklinks?.has("folder1/folder2/folder3/deep.md")).toBe(true);
+      expect(targetBacklinks?.has("folder1/folder2/folder3/deep.md")).toBe(
+        true,
+      );
     });
 
     it("should handle special characters in file names", () => {

@@ -5,7 +5,7 @@ import {
   CommandVisibilityContext,
   LoggingService,
   WikiLinkHelpers,
-  AssetClass
+  AssetClass,
 } from "@exocortex/core";
 import { LabelInputModal } from "../../src/presentation/modals/LabelInputModal";
 import { ObsidianVaultAdapter } from "../../src/adapters/ObsidianVaultAdapter";
@@ -95,7 +95,11 @@ describe("CreateInstanceCommand", () => {
     };
 
     // Create command instance
-    command = new CreateInstanceCommand(mockApp, mockTaskCreationService, mockVaultAdapter);
+    command = new CreateInstanceCommand(
+      mockApp,
+      mockTaskCreationService,
+      mockVaultAdapter,
+    );
   });
 
   describe("id and name", () => {
@@ -136,7 +140,10 @@ describe("CreateInstanceCommand", () => {
       // Mock modal to return label and task size
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
-          setTimeout(() => callback({ label: "Test Instance", taskSize: "medium" }), 0);
+          setTimeout(
+            () => callback({ label: "Test Instance", taskSize: "medium" }),
+            0,
+          );
         }),
       }));
 
@@ -144,24 +151,26 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(LabelInputModal).toHaveBeenCalledWith(
         mockApp,
         expect.any(Function),
         "",
-        true
+        true,
       );
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,
         { key: "value" },
         "Task",
         "Test Instance",
-        "medium"
+        "medium",
       );
       expect(mockVaultAdapter.toTFile).toHaveBeenCalledWith(createdFile);
       expect(mockLeaf.openFile).toHaveBeenCalledWith(mockTFile);
-      expect(mockApp.workspace.setActiveLeaf).toHaveBeenCalledWith(mockLeaf, { focus: true });
+      expect(mockApp.workspace.setActiveLeaf).toHaveBeenCalledWith(mockLeaf, {
+        focus: true,
+      });
       expect(Notice).toHaveBeenCalledWith("Instance created: new-instance");
     });
 
@@ -179,7 +188,7 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(LabelInputModal).toHaveBeenCalled();
       expect(mockTaskCreationService.createTask).not.toHaveBeenCalled();
@@ -201,11 +210,16 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalled();
-      expect(LoggingService.error).toHaveBeenCalledWith("Create instance error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to create instance: Failed to create task");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Create instance error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to create instance: Failed to create task",
+      );
     });
 
     it("should handle array instanceClass", async () => {
@@ -219,7 +233,10 @@ describe("CreateInstanceCommand", () => {
 
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
-          setTimeout(() => callback({ label: "My Task", taskSize: "large" }), 0);
+          setTimeout(
+            () => callback({ label: "My Task", taskSize: "large" }),
+            0,
+          );
         }),
       }));
 
@@ -227,14 +244,14 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,
         { key: "value" },
         "Task", // First class in array
         "My Task",
-        "large"
+        "large",
       );
       expect(Notice).toHaveBeenCalledWith("Instance created: new-task");
     });
@@ -248,25 +265,30 @@ describe("CreateInstanceCommand", () => {
       const createdFile = { basename: "new-meeting", path: "new-meeting.md" };
       mockTaskCreationService.createTask.mockResolvedValue(createdFile as any);
 
-      (LabelInputModal as jest.Mock).mockImplementation((app, callback, title, showTaskSize) => ({
-        open: jest.fn(() => {
-          // Verify showTaskSize is false
-          expect(showTaskSize).toBe(false);
-          setTimeout(() => callback({ label: "Meeting", taskSize: undefined }), 0);
+      (LabelInputModal as jest.Mock).mockImplementation(
+        (app, callback, title, showTaskSize) => ({
+          open: jest.fn(() => {
+            // Verify showTaskSize is false
+            expect(showTaskSize).toBe(false);
+            setTimeout(
+              () => callback({ label: "Meeting", taskSize: undefined }),
+              0,
+            );
+          }),
         }),
-      }));
+      );
 
       const result = command.checkCallback(false, mockFile, meetingContext);
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(LabelInputModal).toHaveBeenCalledWith(
         mockApp,
         expect.any(Function),
         "",
-        false // showTaskSize should be false for MeetingPrototype
+        false, // showTaskSize should be false for MeetingPrototype
       );
     });
 
@@ -292,7 +314,7 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await new Promise((resolve) => setTimeout(resolve, 400));
 
       expect(mockApp.workspace.getActiveFile).toHaveBeenCalledTimes(3);
       expect(Notice).toHaveBeenCalledWith("Instance created: new-instance");
@@ -314,14 +336,14 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,
         {}, // Empty metadata
         "Task", // sourceClass still comes from context.instanceClass
         "Test",
-        "medium"
+        "medium",
       );
       expect(Notice).toHaveBeenCalledWith("Instance created: new-instance");
     });
@@ -342,14 +364,14 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,
         {}, // Empty metadata
         "Task", // sourceClass still comes from context.instanceClass
         "Test",
-        "small"
+        "small",
       );
       expect(Notice).toHaveBeenCalledWith("Instance created: new-instance");
     });

@@ -83,7 +83,11 @@ describe("CreateProjectCommand", () => {
     };
 
     // Create command instance
-    command = new CreateProjectCommand(mockApp, mockProjectCreationService, mockVaultAdapter);
+    command = new CreateProjectCommand(
+      mockApp,
+      mockProjectCreationService,
+      mockVaultAdapter,
+    );
   });
 
   describe("id and name", () => {
@@ -119,12 +123,17 @@ describe("CreateProjectCommand", () => {
     it("should execute command when checking is false and canCreateProject returns true", async () => {
       mockCanCreateProject.mockReturnValue(true);
       const createdFile = { basename: "new-project", path: "new-project.md" };
-      mockProjectCreationService.createProject.mockResolvedValue(createdFile as any);
+      mockProjectCreationService.createProject.mockResolvedValue(
+        createdFile as any,
+      );
 
       // Mock modal to return label
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
-          setTimeout(() => callback({ label: "Test Project", taskSize: null }), 0);
+          setTimeout(
+            () => callback({ label: "Test Project", taskSize: null }),
+            0,
+          );
         }),
       }));
 
@@ -132,21 +141,23 @@ describe("CreateProjectCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(LabelInputModal).toHaveBeenCalledWith(
         mockApp,
-        expect.any(Function)
+        expect.any(Function),
       );
       expect(mockProjectCreationService.createProject).toHaveBeenCalledWith(
         mockFile,
         { exo__Instance_class: "ProjectClass" },
         "ProjectClass",
-        "Test Project"
+        "Test Project",
       );
       expect(mockVaultAdapter.toTFile).toHaveBeenCalledWith(createdFile);
       expect(mockLeaf.openFile).toHaveBeenCalledWith(mockTFile);
-      expect(mockApp.workspace.setActiveLeaf).toHaveBeenCalledWith(mockLeaf, { focus: true });
+      expect(mockApp.workspace.setActiveLeaf).toHaveBeenCalledWith(mockLeaf, {
+        focus: true,
+      });
       expect(Notice).toHaveBeenCalledWith("Project created: new-project");
     });
 
@@ -164,7 +175,7 @@ describe("CreateProjectCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(LabelInputModal).toHaveBeenCalled();
       expect(mockProjectCreationService.createProject).not.toHaveBeenCalled();
@@ -178,7 +189,10 @@ describe("CreateProjectCommand", () => {
 
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
-          setTimeout(() => callback({ label: "Test Project", taskSize: null }), 0);
+          setTimeout(
+            () => callback({ label: "Test Project", taskSize: null }),
+            0,
+          );
         }),
       }));
 
@@ -186,17 +200,24 @@ describe("CreateProjectCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockProjectCreationService.createProject).toHaveBeenCalled();
-      expect(LoggingService.error).toHaveBeenCalledWith("Create project error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to create project: Failed to create project");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Create project error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to create project: Failed to create project",
+      );
     });
 
     it("should handle array instanceClass", async () => {
       mockCanCreateProject.mockReturnValue(true);
       const createdFile = { basename: "new-project", path: "new-project.md" };
-      mockProjectCreationService.createProject.mockResolvedValue(createdFile as any);
+      mockProjectCreationService.createProject.mockResolvedValue(
+        createdFile as any,
+      );
 
       mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
         frontmatter: { exo__Instance_class: ["ProjectClass", "OtherClass"] },
@@ -204,7 +225,10 @@ describe("CreateProjectCommand", () => {
 
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
-          setTimeout(() => callback({ label: "My Project", taskSize: null }), 0);
+          setTimeout(
+            () => callback({ label: "My Project", taskSize: null }),
+            0,
+          );
         }),
       }));
 
@@ -212,13 +236,13 @@ describe("CreateProjectCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockProjectCreationService.createProject).toHaveBeenCalledWith(
         mockFile,
         { exo__Instance_class: ["ProjectClass", "OtherClass"] },
         "ProjectClass", // First class in array
-        "My Project"
+        "My Project",
       );
       expect(Notice).toHaveBeenCalledWith("Project created: new-project");
     });
@@ -226,7 +250,9 @@ describe("CreateProjectCommand", () => {
     it("should handle missing exo__Instance_class in metadata", async () => {
       mockCanCreateProject.mockReturnValue(true);
       const createdFile = { basename: "new-project", path: "new-project.md" };
-      mockProjectCreationService.createProject.mockResolvedValue(createdFile as any);
+      mockProjectCreationService.createProject.mockResolvedValue(
+        createdFile as any,
+      );
 
       mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({
         frontmatter: { otherProp: "value" },
@@ -242,13 +268,13 @@ describe("CreateProjectCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockProjectCreationService.createProject).toHaveBeenCalledWith(
         mockFile,
         { otherProp: "value" },
         undefined, // No exo__Instance_class
-        "Test"
+        "Test",
       );
       expect(Notice).toHaveBeenCalledWith("Project created: new-project");
     });
@@ -256,7 +282,9 @@ describe("CreateProjectCommand", () => {
     it("should wait for file to become active", async () => {
       mockCanCreateProject.mockReturnValue(true);
       const createdFile = { basename: "new-project", path: "new-project.md" };
-      mockProjectCreationService.createProject.mockResolvedValue(createdFile as any);
+      mockProjectCreationService.createProject.mockResolvedValue(
+        createdFile as any,
+      );
 
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
@@ -275,7 +303,7 @@ describe("CreateProjectCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await new Promise((resolve) => setTimeout(resolve, 400));
 
       expect(mockApp.workspace.getActiveFile).toHaveBeenCalledTimes(3);
       expect(Notice).toHaveBeenCalledWith("Project created: new-project");
@@ -285,7 +313,9 @@ describe("CreateProjectCommand", () => {
       mockCanCreateProject.mockReturnValue(true);
       mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue({});
       const createdFile = { basename: "new-project", path: "new-project.md" };
-      mockProjectCreationService.createProject.mockResolvedValue(createdFile as any);
+      mockProjectCreationService.createProject.mockResolvedValue(
+        createdFile as any,
+      );
 
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
@@ -297,13 +327,13 @@ describe("CreateProjectCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockProjectCreationService.createProject).toHaveBeenCalledWith(
         mockFile,
         {}, // Empty metadata
         undefined,
-        "Test"
+        "Test",
       );
       expect(Notice).toHaveBeenCalledWith("Project created: new-project");
     });
@@ -312,7 +342,9 @@ describe("CreateProjectCommand", () => {
       mockCanCreateProject.mockReturnValue(true);
       mockApp.metadataCache.getFileCache = jest.fn().mockReturnValue(null);
       const createdFile = { basename: "new-project", path: "new-project.md" };
-      mockProjectCreationService.createProject.mockResolvedValue(createdFile as any);
+      mockProjectCreationService.createProject.mockResolvedValue(
+        createdFile as any,
+      );
 
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
@@ -324,13 +356,13 @@ describe("CreateProjectCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(mockProjectCreationService.createProject).toHaveBeenCalledWith(
         mockFile,
         {}, // Empty metadata
         undefined,
-        "Test"
+        "Test",
       );
       expect(Notice).toHaveBeenCalledWith("Project created: new-project");
     });
@@ -338,7 +370,9 @@ describe("CreateProjectCommand", () => {
     it("should timeout after max attempts waiting for file", async () => {
       mockCanCreateProject.mockReturnValue(true);
       const createdFile = { basename: "new-project", path: "new-project.md" };
-      mockProjectCreationService.createProject.mockResolvedValue(createdFile as any);
+      mockProjectCreationService.createProject.mockResolvedValue(
+        createdFile as any,
+      );
 
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
@@ -353,7 +387,7 @@ describe("CreateProjectCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution (including max attempts)
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      await new Promise((resolve) => setTimeout(resolve, 2500));
 
       // Should still complete successfully even if file doesn't become active
       expect(mockApp.workspace.getActiveFile).toHaveBeenCalledTimes(20); // max attempts

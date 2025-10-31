@@ -41,10 +41,18 @@ describe("AreaCreationService", () => {
       },
     } as IFile;
 
-    (DateFormatter.toLocalTimestamp as jest.Mock).mockReturnValue(mockTimestamp);
-    (MetadataExtractor.extractIsDefinedBy as jest.Mock).mockReturnValue("source-ontology");
-    (MetadataHelpers.ensureQuoted as jest.Mock).mockImplementation((val) => `"${val}"`);
-    (MetadataHelpers.buildFileContent as jest.Mock).mockReturnValue("---\nfrontmatter\n---\n");
+    (DateFormatter.toLocalTimestamp as jest.Mock).mockReturnValue(
+      mockTimestamp,
+    );
+    (MetadataExtractor.extractIsDefinedBy as jest.Mock).mockReturnValue(
+      "source-ontology",
+    );
+    (MetadataHelpers.ensureQuoted as jest.Mock).mockImplementation(
+      (val) => `"${val}"`,
+    );
+    (MetadataHelpers.buildFileContent as jest.Mock).mockReturnValue(
+      "---\nfrontmatter\n---\n",
+    );
 
     mockVault.create.mockResolvedValue(mockCreatedFile);
 
@@ -60,7 +68,11 @@ describe("AreaCreationService", () => {
       const sourceMetadata = { someProperty: "value" };
       const label = "Test Area";
 
-      const result = await service.createChildArea(mockSourceFile, sourceMetadata, label);
+      const result = await service.createChildArea(
+        mockSourceFile,
+        sourceMetadata,
+        label,
+      );
 
       expect(mockVault.create).toHaveBeenCalledWith(
         "/folder/test-uuid-123.md",
@@ -143,7 +155,12 @@ describe("AreaCreationService", () => {
       const label = "Child Area";
       const uid = "custom-uid-456";
 
-      const result = service.generateChildAreaFrontmatter(sourceMetadata, sourceName, label, uid);
+      const result = service.generateChildAreaFrontmatter(
+        sourceMetadata,
+        sourceName,
+        label,
+        uid,
+      );
 
       expect(result).toEqual({
         exo__Asset_isDefinedBy: '"source-ontology"',
@@ -160,7 +177,10 @@ describe("AreaCreationService", () => {
       const sourceMetadata = {};
       const sourceName = "parent-area";
 
-      const result = service.generateChildAreaFrontmatter(sourceMetadata, sourceName);
+      const result = service.generateChildAreaFrontmatter(
+        sourceMetadata,
+        sourceName,
+      );
 
       expect(result).toEqual({
         exo__Asset_isDefinedBy: '"source-ontology"',
@@ -177,7 +197,10 @@ describe("AreaCreationService", () => {
       const sourceMetadata = {};
       const sourceName = "parent";
 
-      const result = service.generateChildAreaFrontmatter(sourceMetadata, sourceName);
+      const result = service.generateChildAreaFrontmatter(
+        sourceMetadata,
+        sourceName,
+      );
 
       expect(result.exo__Asset_uid).toBe("test-uuid-123");
     });
@@ -187,7 +210,11 @@ describe("AreaCreationService", () => {
       const sourceName = "parent";
       const label = "   ";
 
-      const result = service.generateChildAreaFrontmatter(sourceMetadata, sourceName, label);
+      const result = service.generateChildAreaFrontmatter(
+        sourceMetadata,
+        sourceName,
+        label,
+      );
 
       expect(result.exo__Asset_label).toBeUndefined();
       expect(result.aliases).toBeUndefined();
@@ -198,7 +225,11 @@ describe("AreaCreationService", () => {
       const sourceName = "parent";
       const label = "  Valid Label  ";
 
-      const result = service.generateChildAreaFrontmatter(sourceMetadata, sourceName, label);
+      const result = service.generateChildAreaFrontmatter(
+        sourceMetadata,
+        sourceName,
+        label,
+      );
 
       expect(result.exo__Asset_label).toBe("Valid Label");
       expect(result.aliases).toEqual(["Valid Label"]);
@@ -210,7 +241,9 @@ describe("AreaCreationService", () => {
 
       service.generateChildAreaFrontmatter(sourceMetadata, sourceName);
 
-      expect(MetadataExtractor.extractIsDefinedBy).toHaveBeenCalledWith(sourceMetadata);
+      expect(MetadataExtractor.extractIsDefinedBy).toHaveBeenCalledWith(
+        sourceMetadata,
+      );
     });
 
     it("should call ensureQuoted for isDefinedBy", () => {
@@ -219,14 +252,19 @@ describe("AreaCreationService", () => {
 
       service.generateChildAreaFrontmatter(sourceMetadata, sourceName);
 
-      expect(MetadataHelpers.ensureQuoted).toHaveBeenCalledWith("source-ontology");
+      expect(MetadataHelpers.ensureQuoted).toHaveBeenCalledWith(
+        "source-ontology",
+      );
     });
 
     it("should format parent wikilink correctly", () => {
       const sourceMetadata = {};
       const sourceName = "my-parent-area";
 
-      const result = service.generateChildAreaFrontmatter(sourceMetadata, sourceName);
+      const result = service.generateChildAreaFrontmatter(
+        sourceMetadata,
+        sourceName,
+      );
 
       expect(result.ems__Area_parent).toBe('"[[my-parent-area]]"');
     });
@@ -235,9 +273,14 @@ describe("AreaCreationService", () => {
       const sourceMetadata = {};
       const sourceName = "parent";
 
-      const result = service.generateChildAreaFrontmatter(sourceMetadata, sourceName);
+      const result = service.generateChildAreaFrontmatter(
+        sourceMetadata,
+        sourceName,
+      );
 
-      expect(DateFormatter.toLocalTimestamp).toHaveBeenCalledWith(expect.any(Date));
+      expect(DateFormatter.toLocalTimestamp).toHaveBeenCalledWith(
+        expect.any(Date),
+      );
       expect(result.exo__Asset_createdAt).toBe(mockTimestamp);
     });
 
@@ -245,7 +288,10 @@ describe("AreaCreationService", () => {
       const sourceMetadata = {};
       const sourceName = "parent";
 
-      const result = service.generateChildAreaFrontmatter(sourceMetadata, sourceName);
+      const result = service.generateChildAreaFrontmatter(
+        sourceMetadata,
+        sourceName,
+      );
 
       expect(result.exo__Instance_class).toEqual([`"[[${AssetClass.AREA}]]"`]);
     });

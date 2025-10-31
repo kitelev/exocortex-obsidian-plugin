@@ -202,7 +202,8 @@ Content.`;
 
   describe("line ending handling", () => {
     it("should preserve Unix line endings (\\n)", async () => {
-      const originalContent = "---\nexo__Asset_label: Test Label\n---\n\nContent.";
+      const originalContent =
+        "---\nexo__Asset_label: Test Label\n---\n\nContent.";
 
       mockVault.read.mockResolvedValue(originalContent);
 
@@ -214,7 +215,8 @@ Content.`;
     });
 
     it("should preserve Windows line endings (\\r\\n)", async () => {
-      const originalContent = "---\r\nexo__Asset_label: Test Label\r\n---\r\n\r\nContent.";
+      const originalContent =
+        "---\r\nexo__Asset_label: Test Label\r\n---\r\n\r\nContent.";
 
       mockVault.read.mockResolvedValue(originalContent);
 

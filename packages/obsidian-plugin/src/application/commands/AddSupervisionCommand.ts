@@ -24,7 +24,8 @@ export class AddSupervisionCommand implements ICommand {
         return;
       }
 
-      const createdFile = await this.supervisionCreationService.createSupervision(formData);
+      const createdFile =
+        await this.supervisionCreationService.createSupervision(formData);
 
       const leaf = this.app.workspace.getLeaf("tab");
       const tfile = this.vaultAdapter.toTFile(createdFile);

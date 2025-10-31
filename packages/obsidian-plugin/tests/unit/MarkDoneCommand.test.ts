@@ -1,6 +1,10 @@
 import { MarkDoneCommand } from "../../src/application/commands/MarkDoneCommand";
 import { TFile, Notice } from "obsidian";
-import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  TaskStatusService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -84,9 +88,11 @@ describe("MarkDoneCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(mockFile);
+      expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(
+        mockFile,
+      );
       expect(Notice).toHaveBeenCalledWith("Marked as done: test-task");
     });
 
@@ -99,11 +105,18 @@ describe("MarkDoneCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Mark done error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to mark as done: Failed to mark done");
+      expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Mark done error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to mark as done: Failed to mark done",
+      );
     });
 
     it("should handle different context statuses", () => {
@@ -139,10 +152,14 @@ describe("MarkDoneCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(specialFile);
-      expect(Notice).toHaveBeenCalledWith("Marked as done: task-with-special-chars!@#$");
+      expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(
+        specialFile,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Marked as done: task-with-special-chars!@#$",
+      );
     });
 
     it("should handle concurrent executions", async () => {
@@ -155,7 +172,7 @@ describe("MarkDoneCommand", () => {
 
       // Mock service to take some time
       mockTaskStatusService.markTaskAsDone.mockImplementation(
-        () => new Promise(resolve => setTimeout(resolve, 5))
+        () => new Promise((resolve) => setTimeout(resolve, 5)),
       );
 
       // Execute commands concurrently
@@ -164,7 +181,7 @@ describe("MarkDoneCommand", () => {
       command.checkCallback(false, file3, mockContext);
 
       // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledTimes(3);
       expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(file1);
@@ -183,9 +200,11 @@ describe("MarkDoneCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(mockFile);
+      expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(
+        mockFile,
+      );
       expect(Notice).toHaveBeenCalledWith("Marked as done: test-task");
       expect(LoggingService.error).not.toHaveBeenCalled();
     });
@@ -199,10 +218,15 @@ describe("MarkDoneCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Mark done error", error);
+      expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Mark done error",
+        error,
+      );
       // Since error doesn't have message property, it will use error.message which is undefined
       expect(Notice).toHaveBeenCalledWith("Failed to mark as done: undefined");
     });

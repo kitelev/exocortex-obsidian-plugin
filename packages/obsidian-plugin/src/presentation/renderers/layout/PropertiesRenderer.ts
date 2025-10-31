@@ -40,7 +40,8 @@ export class PropertiesRenderer {
             await this.app.workspace.openLinkText(path, "", false);
           }
         },
-        getAssetLabel: (path: string) => this.metadataService.getAssetLabel(path),
+        getAssetLabel: (path: string) =>
+          this.metadataService.getAssetLabel(path),
       }),
     );
   }

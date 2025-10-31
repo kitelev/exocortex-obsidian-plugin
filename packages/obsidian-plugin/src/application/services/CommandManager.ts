@@ -17,14 +17,21 @@ export class CommandManager {
       app,
     );
     this.metadataExtractor = new MetadataExtractor(this.vaultAdapter);
-    this.commandRegistry = new CommandRegistry(app, {} as ExocortexPluginInterface);
+    this.commandRegistry = new CommandRegistry(
+      app,
+      {} as ExocortexPluginInterface,
+    );
   }
 
   registerAllCommands(
     plugin: ExocortexPluginInterface,
     reloadLayoutCallback?: () => void,
   ): void {
-    this.commandRegistry = new CommandRegistry(this.app, plugin, reloadLayoutCallback);
+    this.commandRegistry = new CommandRegistry(
+      this.app,
+      plugin,
+      reloadLayoutCallback,
+    );
 
     const commands = this.commandRegistry.getAllCommands();
 
@@ -52,7 +59,8 @@ export class CommandManager {
   }
 
   private getContext(file: TFile): CommandVisibilityContext | null {
-    const context = this.metadataExtractor.extractCommandVisibilityContext(file);
+    const context =
+      this.metadataExtractor.extractCommandVisibilityContext(file);
 
     return {
       ...context,

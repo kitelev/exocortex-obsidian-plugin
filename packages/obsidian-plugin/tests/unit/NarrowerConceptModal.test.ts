@@ -1,4 +1,7 @@
-import { NarrowerConceptModal, NarrowerConceptModalResult } from "../../src/presentation/modals/NarrowerConceptModal";
+import {
+  NarrowerConceptModal,
+  NarrowerConceptModalResult,
+} from "../../src/presentation/modals/NarrowerConceptModal";
 import { App } from "obsidian";
 
 describe("NarrowerConceptModal", () => {
@@ -33,7 +36,8 @@ describe("NarrowerConceptModal", () => {
     // Setup createEl mock to return appropriate elements
     mockContentEl.createEl.mockImplementation((tag: string, options?: any) => {
       if (tag === "input") {
-        if (options?.value !== undefined) mockFileNameInput.value = options.value;
+        if (options?.value !== undefined)
+          mockFileNameInput.value = options.value;
         if (options?.placeholder === "concept-file-name") {
           return mockFileNameInput;
         }
@@ -102,12 +106,16 @@ describe("NarrowerConceptModal", () => {
 
     it("should add modal class", () => {
       modal.onOpen();
-      expect(mockContentEl.addClass).toHaveBeenCalledWith("exocortex-narrower-concept-modal");
+      expect(mockContentEl.addClass).toHaveBeenCalledWith(
+        "exocortex-narrower-concept-modal",
+      );
     });
 
     it("should create modal header", () => {
       modal.onOpen();
-      expect(mockContentEl.createEl).toHaveBeenCalledWith("h2", { text: "Create narrower concept" });
+      expect(mockContentEl.createEl).toHaveBeenCalledWith("h2", {
+        text: "Create narrower concept",
+      });
     });
 
     it("should create file name input field", () => {
@@ -507,18 +515,20 @@ describe("NarrowerConceptModal", () => {
       cancelButton = document.createElement("button");
       addAliasButton = document.createElement("button");
 
-      mockContentEl.createEl.mockImplementation((tag: string, options?: any) => {
-        if (tag === "button" && options?.text === "Create") {
-          return createButton;
-        }
-        if (tag === "button" && options?.text === "Cancel") {
-          return cancelButton;
-        }
-        if (tag === "button" && options?.text === "Add alias") {
-          return addAliasButton;
-        }
-        return document.createElement(tag);
-      });
+      mockContentEl.createEl.mockImplementation(
+        (tag: string, options?: any) => {
+          if (tag === "button" && options?.text === "Create") {
+            return createButton;
+          }
+          if (tag === "button" && options?.text === "Cancel") {
+            return cancelButton;
+          }
+          if (tag === "button" && options?.text === "Add alias") {
+            return addAliasButton;
+          }
+          return document.createElement(tag);
+        },
+      );
 
       modal.onOpen();
     });

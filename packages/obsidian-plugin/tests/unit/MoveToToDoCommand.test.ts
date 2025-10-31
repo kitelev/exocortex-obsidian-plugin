@@ -1,6 +1,10 @@
 import { MoveToToDoCommand } from "../../src/application/commands/MoveToToDoCommand";
 import { TFile, Notice } from "obsidian";
-import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  TaskStatusService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -84,7 +88,7 @@ describe("MoveToToDoCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.moveToToDo).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Moved to ToDo: test-task");
@@ -99,11 +103,16 @@ describe("MoveToToDoCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.moveToToDo).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Move to todo error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to move to todo: Failed to move to todo");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Move to todo error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to move to todo: Failed to move to todo",
+      );
     });
 
     it("should handle ToDo status context", () => {
@@ -126,9 +135,11 @@ describe("MoveToToDoCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.moveToToDo).toHaveBeenCalledWith(numberedFile);
+      expect(mockTaskStatusService.moveToToDo).toHaveBeenCalledWith(
+        numberedFile,
+      );
       expect(Notice).toHaveBeenCalledWith("Moved to ToDo: task-123");
     });
 
@@ -141,11 +152,16 @@ describe("MoveToToDoCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.moveToToDo).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Move to todo error", permissionError);
-      expect(Notice).toHaveBeenCalledWith("Failed to move to todo: Permission denied");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Move to todo error",
+        permissionError,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to move to todo: Permission denied",
+      );
     });
   });
 });

@@ -13,7 +13,11 @@ export class SetDraftStatusCommand implements ICommand {
 
   constructor(private taskStatusService: TaskStatusService) {}
 
-  checkCallback = (checking: boolean, file: TFile, context: CommandVisibilityContext | null): boolean => {
+  checkCallback = (
+    checking: boolean,
+    file: TFile,
+    context: CommandVisibilityContext | null,
+  ): boolean => {
     if (!context || !canSetDraftStatus(context)) return false;
 
     if (!checking) {

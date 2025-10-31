@@ -74,7 +74,7 @@ describe("ReloadLayoutCommand", () => {
 
     it("should work with async callback", () => {
       const asyncCallback = jest.fn(async () => {
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 10));
       });
       command = new ReloadLayoutCommand(asyncCallback);
 

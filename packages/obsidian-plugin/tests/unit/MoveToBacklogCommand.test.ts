@@ -1,6 +1,10 @@
 import { MoveToBacklogCommand } from "../../src/application/commands/MoveToBacklogCommand";
 import { TFile, Notice } from "obsidian";
-import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  TaskStatusService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -84,9 +88,11 @@ describe("MoveToBacklogCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.moveToBacklog).toHaveBeenCalledWith(mockFile);
+      expect(mockTaskStatusService.moveToBacklog).toHaveBeenCalledWith(
+        mockFile,
+      );
       expect(Notice).toHaveBeenCalledWith("Moved to Backlog: test-task");
     });
 
@@ -99,11 +105,18 @@ describe("MoveToBacklogCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.moveToBacklog).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Move to backlog error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to move to backlog: Failed to move");
+      expect(mockTaskStatusService.moveToBacklog).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Move to backlog error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to move to backlog: Failed to move",
+      );
     });
 
     it("should handle Backlog status context", () => {
@@ -126,10 +139,14 @@ describe("MoveToBacklogCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.moveToBacklog).toHaveBeenCalledWith(dashedFile);
-      expect(Notice).toHaveBeenCalledWith("Moved to Backlog: my-important-task");
+      expect(mockTaskStatusService.moveToBacklog).toHaveBeenCalledWith(
+        dashedFile,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Moved to Backlog: my-important-task",
+      );
     });
   });
 });

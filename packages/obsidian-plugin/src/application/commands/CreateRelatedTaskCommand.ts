@@ -6,7 +6,10 @@ import {
   TaskCreationService,
   LoggingService,
 } from "@exocortex/core";
-import { LabelInputModal, type LabelInputModalResult } from "../../presentation/modals/LabelInputModal";
+import {
+  LabelInputModal,
+  type LabelInputModalResult,
+} from "../../presentation/modals/LabelInputModal";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 
 export class CreateRelatedTaskCommand implements ICommand {
@@ -19,7 +22,11 @@ export class CreateRelatedTaskCommand implements ICommand {
     private vaultAdapter: ObsidianVaultAdapter,
   ) {}
 
-  checkCallback = (checking: boolean, file: TFile, context: CommandVisibilityContext | null): boolean => {
+  checkCallback = (
+    checking: boolean,
+    file: TFile,
+    context: CommandVisibilityContext | null,
+  ): boolean => {
     if (!context || !canCreateRelatedTask(context)) return false;
 
     if (!checking) {
@@ -32,7 +39,10 @@ export class CreateRelatedTaskCommand implements ICommand {
     return true;
   };
 
-  private async execute(file: TFile, _context: CommandVisibilityContext): Promise<void> {
+  private async execute(
+    file: TFile,
+    _context: CommandVisibilityContext,
+  ): Promise<void> {
     const result = await new Promise<LabelInputModalResult>((resolve) => {
       new LabelInputModal(this.app, resolve).open();
     });

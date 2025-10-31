@@ -50,14 +50,24 @@ export class CommandRegistry {
     plugin: ExocortexPluginInterface,
     reloadLayoutCallback?: () => void,
   ) {
-    this.vaultAdapter = new ObsidianVaultAdapter(app.vault, app.metadataCache, app);
+    this.vaultAdapter = new ObsidianVaultAdapter(
+      app.vault,
+      app.metadataCache,
+      app,
+    );
 
     const taskCreationService = new TaskCreationService(this.vaultAdapter);
-    const projectCreationService = new ProjectCreationService(this.vaultAdapter);
+    const projectCreationService = new ProjectCreationService(
+      this.vaultAdapter,
+    );
     const taskStatusService = new TaskStatusService(this.vaultAdapter);
-    const propertyCleanupService = new PropertyCleanupService(this.vaultAdapter);
+    const propertyCleanupService = new PropertyCleanupService(
+      this.vaultAdapter,
+    );
     const folderRepairService = new FolderRepairService(this.vaultAdapter);
-    const supervisionCreationService = new SupervisionCreationService(this.vaultAdapter);
+    const supervisionCreationService = new SupervisionCreationService(
+      this.vaultAdapter,
+    );
     const renameToUidService = new RenameToUidService(this.vaultAdapter);
     const effortVotingService = new EffortVotingService(this.vaultAdapter);
     const labelToAliasService = new LabelToAliasService(this.vaultAdapter);
@@ -84,7 +94,11 @@ export class CommandRegistry {
       new RenameToUidCommand(renameToUidService),
       new VoteOnEffortCommand(effortVotingService),
       new CopyLabelToAliasesCommand(labelToAliasService),
-      new AddSupervisionCommand(app, supervisionCreationService, this.vaultAdapter),
+      new AddSupervisionCommand(
+        app,
+        supervisionCreationService,
+        this.vaultAdapter,
+      ),
       new ReloadLayoutCommand(reloadLayoutCallback),
       new TogglePropertiesVisibilityCommand(plugin),
       new ToggleLayoutVisibilityCommand(plugin),

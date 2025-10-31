@@ -13,7 +13,11 @@ export class VoteOnEffortCommand implements ICommand {
 
   constructor(private effortVotingService: EffortVotingService) {}
 
-  checkCallback = (checking: boolean, file: TFile, context: CommandVisibilityContext | null): boolean => {
+  checkCallback = (
+    checking: boolean,
+    file: TFile,
+    context: CommandVisibilityContext | null,
+  ): boolean => {
     if (!context || !canVoteOnEffort(context)) return false;
 
     if (!checking) {
@@ -27,7 +31,8 @@ export class VoteOnEffortCommand implements ICommand {
   };
 
   private async execute(file: TFile): Promise<void> {
-    const newVoteCount = await this.effortVotingService.incrementEffortVotes(file);
+    const newVoteCount =
+      await this.effortVotingService.incrementEffortVotes(file);
     new Notice(`Voted! New vote count: ${newVoteCount}`);
   }
 }

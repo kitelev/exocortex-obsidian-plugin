@@ -5,7 +5,11 @@ export interface ICommand {
   id: string;
   name: string;
 
-  checkCallback?: (checking: boolean, file: TFile, context: CommandVisibilityContext | null) => boolean | void;
+  checkCallback?: (
+    checking: boolean,
+    file: TFile,
+    context: CommandVisibilityContext | null,
+  ) => boolean | void;
 
   callback?: () => void | Promise<void>;
 }

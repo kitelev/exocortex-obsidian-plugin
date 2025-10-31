@@ -37,7 +37,10 @@ describe("RenameToUidService", () => {
 
       await service.renameToUid(mockFile, metadata);
 
-      expect(mockVault.rename).toHaveBeenCalledWith(mockFile, "/folder/asset-123.md");
+      expect(mockVault.rename).toHaveBeenCalledWith(
+        mockFile,
+        "/folder/asset-123.md",
+      );
       expect(mockVault.process).not.toHaveBeenCalled();
     });
 
@@ -69,9 +72,9 @@ describe("RenameToUidService", () => {
         exo__Asset_label: "Label",
       };
 
-      await expect(service.renameToUid(fileWithUidName, metadata)).rejects.toThrow(
-        "File is already named according to UID",
-      );
+      await expect(
+        service.renameToUid(fileWithUidName, metadata),
+      ).rejects.toThrow("File is already named according to UID");
 
       expect(mockVault.rename).not.toHaveBeenCalled();
       expect(mockVault.process).not.toHaveBeenCalled();
@@ -84,8 +87,14 @@ describe("RenameToUidService", () => {
 
       await service.renameToUid(mockFile, metadata);
 
-      expect(mockVault.process).toHaveBeenCalledWith(mockFile, expect.any(Function));
-      expect(mockVault.rename).toHaveBeenCalledWith(mockFile, "/folder/asset-123.md");
+      expect(mockVault.process).toHaveBeenCalledWith(
+        mockFile,
+        expect.any(Function),
+      );
+      expect(mockVault.rename).toHaveBeenCalledWith(
+        mockFile,
+        "/folder/asset-123.md",
+      );
     });
 
     it("should update label when empty string", async () => {
@@ -121,7 +130,10 @@ describe("RenameToUidService", () => {
       await service.renameToUid(mockFile, metadata);
 
       expect(mockVault.process).not.toHaveBeenCalled();
-      expect(mockVault.rename).toHaveBeenCalledWith(mockFile, "/folder/asset-123.md");
+      expect(mockVault.rename).toHaveBeenCalledWith(
+        mockFile,
+        "/folder/asset-123.md",
+      );
     });
 
     it("should handle file in root folder", async () => {
@@ -159,7 +171,10 @@ describe("RenameToUidService", () => {
 
       await service.renameToUid(fileWithUndefinedParent, metadata);
 
-      expect(mockVault.rename).toHaveBeenCalledWith(fileWithUndefinedParent, "asset-123.md");
+      expect(mockVault.rename).toHaveBeenCalledWith(
+        fileWithUndefinedParent,
+        "asset-123.md",
+      );
     });
 
     it("should call process with correct function", async () => {

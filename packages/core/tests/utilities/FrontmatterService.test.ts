@@ -52,19 +52,25 @@ describe("FrontmatterService", () => {
     });
 
     it("should handle frontmatter with special characters", () => {
-      const content = '---\nspecial: "value with: colons"\narray: [1, 2, 3]\n---\nBody';
+      const content =
+        '---\nspecial: "value with: colons"\narray: [1, 2, 3]\n---\nBody';
       const result = service.parse(content);
 
       expect(result.exists).toBe(true);
-      expect(result.content).toBe('special: "value with: colons"\narray: [1, 2, 3]');
+      expect(result.content).toBe(
+        'special: "value with: colons"\narray: [1, 2, 3]',
+      );
     });
 
     it("should handle multiline frontmatter values", () => {
-      const content = "---\ndescription: |\n  Line 1\n  Line 2\ntitle: Test\n---\nBody";
+      const content =
+        "---\ndescription: |\n  Line 1\n  Line 2\ntitle: Test\n---\nBody";
       const result = service.parse(content);
 
       expect(result.exists).toBe(true);
-      expect(result.content).toBe("description: |\n  Line 1\n  Line 2\ntitle: Test");
+      expect(result.content).toBe(
+        "description: |\n  Line 1\n  Line 2\ntitle: Test",
+      );
     });
   });
 
@@ -92,7 +98,11 @@ describe("FrontmatterService", () => {
 
     it("should handle wiki-link values", () => {
       const content = "---\nfoo: bar\n---\nBody";
-      const result = service.updateProperty(content, "status", '"[[StatusDone]]"');
+      const result = service.updateProperty(
+        content,
+        "status",
+        '"[[StatusDone]]"',
+      );
 
       expect(result).toBe('---\nfoo: bar\nstatus: "[[StatusDone]]"\n---\nBody');
     });
@@ -113,14 +123,24 @@ describe("FrontmatterService", () => {
 
     it("should handle property names with underscores", () => {
       const content = "---\nfoo: bar\n---\nBody";
-      const result = service.updateProperty(content, "ems__Effort_status", "active");
+      const result = service.updateProperty(
+        content,
+        "ems__Effort_status",
+        "active",
+      );
 
-      expect(result).toBe("---\nfoo: bar\nems__Effort_status: active\n---\nBody");
+      expect(result).toBe(
+        "---\nfoo: bar\nems__Effort_status: active\n---\nBody",
+      );
     });
 
     it("should handle property names with special characters", () => {
       const content = "---\nfoo: bar\n---\nBody";
-      const result = service.updateProperty(content, "special.property", "value");
+      const result = service.updateProperty(
+        content,
+        "special.property",
+        "value",
+      );
 
       expect(result).toBe("---\nfoo: bar\nspecial.property: value\n---\nBody");
     });
@@ -137,7 +157,9 @@ describe("FrontmatterService", () => {
       const content = "---\nfoo: bar\n---\nBody with --- dashes and more ---";
       const result = service.updateProperty(content, "status", "draft");
 
-      expect(result).toBe("---\nfoo: bar\nstatus: draft\n---\nBody with --- dashes and more ---");
+      expect(result).toBe(
+        "---\nfoo: bar\nstatus: draft\n---\nBody with --- dashes and more ---",
+      );
     });
   });
 
@@ -246,7 +268,10 @@ describe("FrontmatterService", () => {
 
     it("should handle property names with underscores", () => {
       const frontmatterContent = "ems__Effort_status: active\nfoo: bar";
-      const result = service.hasProperty(frontmatterContent, "ems__Effort_status");
+      const result = service.hasProperty(
+        frontmatterContent,
+        "ems__Effort_status",
+      );
 
       expect(result).toBe(true);
     });
@@ -275,7 +300,9 @@ describe("FrontmatterService", () => {
         tags: "important",
       });
 
-      expect(result).toBe("---\nstatus: draft\npriority: high\ntags: important\n---\nBody content");
+      expect(result).toBe(
+        "---\nstatus: draft\npriority: high\ntags: important\n---\nBody content",
+      );
     });
 
     it("should handle wiki-link values", () => {
@@ -285,7 +312,9 @@ describe("FrontmatterService", () => {
         area: '"[[AreaWork]]"',
       });
 
-      expect(result).toBe('---\nstatus: "[[StatusDone]]"\narea: "[[AreaWork]]"\n---\nBody content');
+      expect(result).toBe(
+        '---\nstatus: "[[StatusDone]]"\narea: "[[AreaWork]]"\n---\nBody content',
+      );
     });
 
     it("should handle boolean values", () => {
@@ -295,7 +324,9 @@ describe("FrontmatterService", () => {
         draft: false,
       });
 
-      expect(result).toBe("---\narchived: true\ndraft: false\n---\nBody content");
+      expect(result).toBe(
+        "---\narchived: true\ndraft: false\n---\nBody content",
+      );
     });
 
     it("should handle number values", () => {
@@ -375,14 +406,21 @@ describe("FrontmatterService", () => {
 
     it("should get property with underscores in name", () => {
       const frontmatterContent = "ems__Effort_status: active";
-      const result = service.getPropertyValue(frontmatterContent, "ems__Effort_status");
+      const result = service.getPropertyValue(
+        frontmatterContent,
+        "ems__Effort_status",
+      );
 
       expect(result).toBe("active");
     });
 
     it("should get property with special characters in value", () => {
-      const frontmatterContent = 'description: "Value with: colons and | pipes"';
-      const result = service.getPropertyValue(frontmatterContent, "description");
+      const frontmatterContent =
+        'description: "Value with: colons and | pipes"';
+      const result = service.getPropertyValue(
+        frontmatterContent,
+        "description",
+      );
 
       expect(result).toBe('"Value with: colons and | pipes"');
     });
@@ -398,17 +436,22 @@ describe("FrontmatterService", () => {
 
   describe("edge cases", () => {
     it("should handle frontmatter-like content in body", () => {
-      const content = "---\nfoo: bar\n---\nBody with ---\nfake: frontmatter\n---";
+      const content =
+        "---\nfoo: bar\n---\nBody with ---\nfake: frontmatter\n---";
       const result = service.updateProperty(content, "status", "draft");
 
-      expect(result).toBe("---\nfoo: bar\nstatus: draft\n---\nBody with ---\nfake: frontmatter\n---");
+      expect(result).toBe(
+        "---\nfoo: bar\nstatus: draft\n---\nBody with ---\nfake: frontmatter\n---",
+      );
     });
 
     it("should handle property names that are substrings of others", () => {
       const content = "---\nstatus: draft\nstatus_extended: active\n---\nBody";
       const result = service.updateProperty(content, "status", "published");
 
-      expect(result).toBe("---\nstatus: published\nstatus_extended: active\n---\nBody");
+      expect(result).toBe(
+        "---\nstatus: published\nstatus_extended: active\n---\nBody",
+      );
     });
 
     it("should handle CRLF line endings", () => {
@@ -421,7 +464,11 @@ describe("FrontmatterService", () => {
 
     it("should handle unicode characters in values", () => {
       const content = "---\nfoo: bar\n---\nBody";
-      const result = service.updateProperty(content, "title", "Тест 测试 テスト");
+      const result = service.updateProperty(
+        content,
+        "title",
+        "Тест 测试 テスト",
+      );
 
       expect(result).toBe("---\nfoo: bar\ntitle: Тест 测试 テスト\n---\nBody");
     });
@@ -431,7 +478,9 @@ describe("FrontmatterService", () => {
       const longValue = "a".repeat(1000);
       const result = service.updateProperty(content, "description", longValue);
 
-      expect(result).toBe(`---\nfoo: bar\ndescription: ${longValue}\n---\nBody`);
+      expect(result).toBe(
+        `---\nfoo: bar\ndescription: ${longValue}\n---\nBody`,
+      );
     });
   });
 });

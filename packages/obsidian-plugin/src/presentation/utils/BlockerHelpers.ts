@@ -23,10 +23,7 @@ export class BlockerHelpers {
     }
 
     const blockerPath = String(effortBlocker).replace(/^\[\[|\]\]$/g, "");
-    const blockerFile = app.metadataCache.getFirstLinkpathDest(
-      blockerPath,
-      "",
-    );
+    const blockerFile = app.metadataCache.getFirstLinkpathDest(blockerPath, "");
 
     if (!blockerFile) {
       return false;

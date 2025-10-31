@@ -9,7 +9,8 @@ export class ToggleArchivedAssetsCommand implements ICommand {
   constructor(private plugin: ExocortexPluginInterface) {}
 
   callback = async (): Promise<void> => {
-    this.plugin.settings.showArchivedAssets = !this.plugin.settings.showArchivedAssets;
+    this.plugin.settings.showArchivedAssets =
+      !this.plugin.settings.showArchivedAssets;
     await this.plugin.saveSettings();
     this.plugin.refreshLayout?.();
     new Notice(

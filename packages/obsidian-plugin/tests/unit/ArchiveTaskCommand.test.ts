@@ -1,6 +1,10 @@
 import { ArchiveTaskCommand } from "../../src/application/commands/ArchiveTaskCommand";
 import { TFile, Notice } from "obsidian";
-import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  TaskStatusService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -84,7 +88,7 @@ describe("ArchiveTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.archiveTask).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Archived: test-task");
@@ -99,11 +103,16 @@ describe("ArchiveTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.archiveTask).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Archive task error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to archive task: Failed to archive");
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Archive task error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to archive task: Failed to archive",
+      );
     });
 
     it("should handle already archived context", () => {
@@ -126,11 +135,11 @@ describe("ArchiveTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.archiveTask).toHaveBeenCalledWith(longFile);
       expect(Notice).toHaveBeenCalledWith(
-        "Archived: very-long-task-name-that-exceeds-normal-length-expectations"
+        "Archived: very-long-task-name-that-exceeds-normal-length-expectations",
       );
     });
 
@@ -166,10 +175,13 @@ describe("ArchiveTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockTaskStatusService.archiveTask).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Archive task error", customError);
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Archive task error",
+        customError,
+      );
       expect(Notice).toHaveBeenCalledWith("Failed to archive task: undefined");
     });
 
@@ -185,18 +197,21 @@ describe("ArchiveTaskCommand", () => {
 
       // Mock service to take some time
       mockTaskStatusService.archiveTask.mockImplementation(
-        () => new Promise(resolve => setTimeout(resolve, 5))
+        () => new Promise((resolve) => setTimeout(resolve, 5)),
       );
 
       // Execute commands concurrently
-      files.forEach(file => command.checkCallback(false, file, mockContext));
+      files.forEach((file) => command.checkCallback(false, file, mockContext));
 
       // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       expect(mockTaskStatusService.archiveTask).toHaveBeenCalledTimes(3);
       files.forEach((file, index) => {
-        expect(mockTaskStatusService.archiveTask).toHaveBeenNthCalledWith(index + 1, file);
+        expect(mockTaskStatusService.archiveTask).toHaveBeenNthCalledWith(
+          index + 1,
+          file,
+        );
         expect(Notice).toHaveBeenCalledWith(`Archived: ${file.basename}`);
       });
     });

@@ -1,6 +1,10 @@
 import { PlanForEveningCommand } from "../../src/application/commands/PlanForEveningCommand";
 import { TFile, Notice } from "obsidian";
-import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import {
+  TaskStatusService,
+  CommandVisibilityContext,
+  LoggingService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -84,10 +88,14 @@ describe("PlanForEveningCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(mockFile);
-      expect(Notice).toHaveBeenCalledWith("Planned for evening (19:00): test-file");
+      expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Planned for evening (19:00): test-file",
+      );
     });
 
     it("should handle errors and show notice", async () => {
@@ -99,11 +107,18 @@ describe("PlanForEveningCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Plan for evening error", error);
-      expect(Notice).toHaveBeenCalledWith("Failed to plan for evening: Failed to plan");
+      expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Plan for evening error",
+        error,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to plan for evening: Failed to plan",
+      );
     });
 
     it("should handle files with special characters", async () => {
@@ -119,10 +134,14 @@ describe("PlanForEveningCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(specialFile);
-      expect(Notice).toHaveBeenCalledWith("Planned for evening (19:00): [EVENING] Task (2024)");
+      expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(
+        specialFile,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Planned for evening (19:00): [EVENING] Task (2024)",
+      );
     });
 
     it("should handle file system errors", async () => {
@@ -134,11 +153,18 @@ describe("PlanForEveningCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Plan for evening error", fsError);
-      expect(Notice).toHaveBeenCalledWith("Failed to plan for evening: File locked");
+      expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Plan for evening error",
+        fsError,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to plan for evening: File locked",
+      );
     });
 
     it("should handle permission denied error", async () => {
@@ -150,11 +176,18 @@ describe("PlanForEveningCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
 
-      expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Plan for evening error", permError);
-      expect(Notice).toHaveBeenCalledWith("Failed to plan for evening: Permission denied: cannot write to file");
+      expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(LoggingService.error).toHaveBeenCalledWith(
+        "Plan for evening error",
+        permError,
+      );
+      expect(Notice).toHaveBeenCalledWith(
+        "Failed to plan for evening: Permission denied: cannot write to file",
+      );
     });
 
     it("should handle multiple concurrent planning operations", async () => {
@@ -168,15 +201,20 @@ describe("PlanForEveningCommand", () => {
       ];
 
       // Execute planning operations concurrently
-      files.forEach(file => command.checkCallback(false, file, mockContext));
+      files.forEach((file) => command.checkCallback(false, file, mockContext));
 
       // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 20));
 
       expect(mockTaskStatusService.planForEvening).toHaveBeenCalledTimes(3);
       files.forEach((file, index) => {
-        expect(mockTaskStatusService.planForEvening).toHaveBeenNthCalledWith(index + 1, file);
-        expect(Notice).toHaveBeenCalledWith(`Planned for evening (19:00): ${file.basename}`);
+        expect(mockTaskStatusService.planForEvening).toHaveBeenNthCalledWith(
+          index + 1,
+          file,
+        );
+        expect(Notice).toHaveBeenCalledWith(
+          `Planned for evening (19:00): ${file.basename}`,
+        );
       });
     });
   });

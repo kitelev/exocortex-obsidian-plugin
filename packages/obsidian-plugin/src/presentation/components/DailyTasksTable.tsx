@@ -155,8 +155,10 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
         aVal = getStatusText(a.status).toLowerCase();
         bVal = getStatusText(b.status).toLowerCase();
       } else if (sortState.column === "effortArea") {
-        const aArea = getEffortArea?.(a.metadata) || a.metadata.ems__Effort_area;
-        const bArea = getEffortArea?.(b.metadata) || b.metadata.ems__Effort_area;
+        const aArea =
+          getEffortArea?.(a.metadata) || a.metadata.ems__Effort_area;
+        const bArea =
+          getEffortArea?.(b.metadata) || b.metadata.ems__Effort_area;
 
         const getAreaText = (area: any): string => {
           if (!area) return "";
