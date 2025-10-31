@@ -1,6 +1,6 @@
 import { DailyNavigationRenderer } from "../../src/presentation/renderers/DailyNavigationRenderer";
 import { TFile } from "obsidian";
-import { ILogger } from "../../src/infrastructure/logging/ILogger";
+import { ILogger } from "../../src/adapters/logging/ILogger";
 import { MetadataExtractor } from "@exocortex/core";
 
 describe("DailyNavigationRenderer", () => {
