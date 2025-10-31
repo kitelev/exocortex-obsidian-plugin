@@ -26,7 +26,6 @@ describe("ConvertTaskToProjectCommand", () => {
 
     command = new ConvertTaskToProjectCommand(
       mockConversionService,
-      mockVaultAdapter,
     );
   });
 
