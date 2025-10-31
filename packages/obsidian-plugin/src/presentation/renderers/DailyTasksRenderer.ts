@@ -12,6 +12,7 @@ import { MetadataExtractor } from "@exocortex/core";
 import { EffortSortingHelpers } from "@exocortex/core";
 import { AssetMetadataService } from "./layout/helpers/AssetMetadataService";
 import { DailyNoteHelpers } from "./helpers/DailyNoteHelpers";
+import { BlockerHelpers } from "../utils/BlockerHelpers";
 
 type ObsidianApp = any;
 
@@ -202,28 +203,7 @@ export class DailyTasksRenderer {
 
         const label = metadata.exo__Asset_label || file.basename;
 
-        let isBlocked = false;
-        const effortBlocker = metadata.ems__Effort_blocker;
-        if (effortBlocker) {
-          const blockerPath = String(effortBlocker).replace(/^\[\[|\]\]$/g, "");
-          const blockerFile = this.app.metadataCache.getFirstLinkpathDest(
-            blockerPath,
-            "",
-          );
-          if (blockerFile) {
-            const blockerCache =
-              this.app.metadataCache.getFileCache(blockerFile);
-            const blockerMetadata = blockerCache?.frontmatter || {};
-            const blockerStatus = blockerMetadata.ems__Effort_status || "";
-            const blockerStatusStr = String(blockerStatus).replace(
-              /^\[\[|\]\]$/g,
-              "",
-            );
-            isBlocked =
-              blockerStatusStr !== EffortStatus.DONE &&
-              blockerStatusStr !== EffortStatus.TRASHED;
-          }
-        }
+        const isBlocked = BlockerHelpers.isEffortBlocked(this.app, metadata);
 
         tasks.push({
           file: {

@@ -265,6 +265,60 @@ test.describe("DailyTasksTable", () => {
     await expect(taskLinks).toHaveCount(5);
   });
 
+  test("should display blocker icon when task is blocked", async ({ mount }) => {
+    const blockedTask: DailyTask = {
+      file: { path: "blocked-task.md", basename: "blocked-task" },
+      path: "blocked-task.md",
+      title: "Blocked Task",
+      label: "Blocked Task",
+      startTime: "09:00",
+      endTime: "10:00",
+      status: "ems__EffortStatusInProgress",
+      metadata: {},
+      isDone: false,
+      isTrashed: false,
+      isDoing: false,
+      isMeeting: false,
+      isBlocked: true,
+    };
+
+    const component = await mount(<DailyTasksTable tasks={[blockedTask]} />);
+
+    const taskName = component.locator(
+      'tr[data-path="blocked-task.md"] .task-name a',
+    );
+    await expect(taskName).toContainText("🚩");
+    await expect(taskName).toContainText("Blocked Task");
+  });
+
+  test("should not display blocker icon when task is not blocked", async ({
+    mount,
+  }) => {
+    const unblockedTask: DailyTask = {
+      file: { path: "unblocked-task.md", basename: "unblocked-task" },
+      path: "unblocked-task.md",
+      title: "Unblocked Task",
+      label: "Unblocked Task",
+      startTime: "09:00",
+      endTime: "10:00",
+      status: "ems__EffortStatusInProgress",
+      metadata: {},
+      isDone: false,
+      isTrashed: false,
+      isDoing: false,
+      isMeeting: false,
+      isBlocked: false,
+    };
+
+    const component = await mount(<DailyTasksTable tasks={[unblockedTask]} />);
+
+    const taskName = component.locator(
+      'tr[data-path="unblocked-task.md"] .task-name a',
+    );
+    const text = await taskName.textContent();
+    expect(text).not.toContain("🚩");
+  });
+
   test("should show Effort Area column when showEffortArea is true", async ({
     mount,
   }) => {

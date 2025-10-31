@@ -14,6 +14,7 @@ export interface DailyProject {
   metadata: Record<string, unknown>;
   isDone: boolean;
   isTrashed: boolean;
+  isBlocked: boolean;
 }
 
 export interface DailyProjectsTableProps {
@@ -50,6 +51,7 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
   };
 
   const getDisplayName = (project: DailyProject): string => {
+    const blockerIcon = project.isBlocked ? "🚩 " : "";
     const icon = project.isDone ? "✅ " : project.isTrashed ? "❌ " : "📦 ";
 
     let displayText = project.label || project.title;
@@ -65,7 +67,7 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
       }
     }
 
-    return icon + displayText;
+    return blockerIcon + icon + displayText;
   };
 
   return (

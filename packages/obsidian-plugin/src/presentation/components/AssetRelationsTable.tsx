@@ -8,6 +8,7 @@ export interface AssetRelation {
   created: number;
   modified: number;
   isArchived?: boolean;
+  isBlocked?: boolean;
 
   metadata: Record<string, any>;
 }
@@ -85,11 +86,12 @@ const SingleTable: React.FC<SingleTableProps> = ({
   };
 
   const getDisplayLabel = (relation: AssetRelation): string => {
+    const blockerIcon = relation.isBlocked ? "🚩 " : "";
     const label = relation.metadata?.exo__Asset_label;
     if (label && typeof label === "string" && label.trim() !== "") {
-      return label;
+      return blockerIcon + label;
     }
-    return relation.title;
+    return blockerIcon + relation.title;
   };
 
   const isWikiLink = (value: any): boolean => {

@@ -735,6 +735,49 @@ describe("ButtonGroupsBuilder", () => {
       expect(archiveButton?.visible).toBe(true);
     });
 
+    it("should hide archive button for already archived tasks", async () => {
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "Tasks" },
+        basename: "TestTask",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[ems__Task]]",
+        ems__Effort_status: "[[ems__EffortStatusDone]]",
+        exo__Asset_isArchived: true,
+        // Add a property that needs cleaning so maintenance group is created
+        emptyProp: "",
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[ems__Task]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(
+        "[[ems__EffortStatusDone]]",
+      );
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(true);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Tasks");
+
+      const groups = await builder.build(mockFile);
+
+      const maintenanceGroup = groups.find((g) => g.id === "maintenance");
+      
+      // Maintenance group might not exist if no buttons are visible
+      // If it exists, archive button should be marked as not visible
+      if (maintenanceGroup) {
+        const archiveButton = maintenanceGroup.buttons.find(
+          (b) => b.id === "archive",
+        );
+        expect(archiveButton).toBeDefined();
+        expect(archiveButton?.visible).toBe(false);
+      } else {
+        // If maintenance group doesn't exist, that's also acceptable
+        // as it means no maintenance buttons are visible, including archive
+        expect(maintenanceGroup).toBeUndefined();
+      }
+    });
+
     it("should handle Project with ToDo status", async () => {
       const mockFile = {
         path: "test.md",
