@@ -32,7 +32,7 @@ const AreaTreeNode: React.FC<AreaTreeNodeProps> = ({
   onAreaClick,
   getAssetLabel,
 }) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const customLabel = getAssetLabel?.(node.path);
   const displayLabel = customLabel ?? node.label ?? node.title;
