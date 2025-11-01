@@ -8,6 +8,12 @@
 [![Tests](https://img.shields.io/badge/tests-passing-success)](https://github.com/kitelev/exocortex-obsidian-plugin/actions)
 [![Coverage](https://img.shields.io/badge/coverage-49%25-orange)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
 
+## ⚡ Quick Start for AI Agents
+- **Product snapshot**: Exocortex renders ontology-driven layouts in Obsidian, linking Areas → Projects → Tasks, tracking effort/vote signals, and surfacing command actions via the Command Manager.
+- **Core terms**: frontmatter prefixes `exo__` (asset metadata) and `ems__` (effort metrics); layout code sits in `src/presentation`, domain rules in `src/domain`, shared utilities in `packages/core`, and CLI automation in `packages/cli`.
+- **Workflow mandate**: operate from a dedicated worktree under `worktrees/exocortex-<agent>-<type>-<topic>/`; treat `exocortex-obsidian-plugin/` as read-only outside of releases.
+- **Definition of done**: implement the task, run required checks, open a PR, obtain approvals, merge to `main`, and confirm the release pipeline completes before cleaning up the worktree.
+
 ## 🎯 What is Exocortex?
 
 Exocortex is a powerful Obsidian plugin that transforms your notes into an interconnected task management and knowledge organization system. It automatically displays related notes, tracks effort across projects, manages task workflows with status transitions, and visualizes hierarchical relationships - all within your existing notes in reading mode.

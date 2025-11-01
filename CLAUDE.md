@@ -1,5 +1,11 @@
 # AI Assistant Development Guidelines for Exocortex Plugin
 
+## ⚡ Project Snapshot for Agents
+- Exocortex renders ontology-aware layouts inside Obsidian, connecting Areas → Projects → Tasks, tracking effort state transitions, and aggregating vote priorities through the Command Manager.
+- Shared vocabulary: frontmatter prefixes `exo__` (asset identity) and `ems__` (effort + votes); layout renderers under `src/presentation`, domain policies in `src/domain`, reusable primitives in `packages/core`, and tooling in `packages/cli`.
+- Work strictly inside a worktree located at `worktrees/exocortex-<agent>-<type>-<topic>/`; treat the upstream repository as read-only outside CI/release automation.
+- Definition of done: implement the change, run all required checks, open a PR, merge it to `main`, confirm the release pipeline succeeds, and only then remove the worktree.
+
 ## 🎯 Quick Command Reference
 
 **⚠️ STEP 0 (MANDATORY): Before ANY task, create separate worktree!**

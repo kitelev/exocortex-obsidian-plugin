@@ -1,39 +1,37 @@
-# AGENTS.md – GPT Workflow Guide
+# Repository Guidelines
 
-## Overview
-- This repository contains the Exocortex Obsidian plugin. Treat it as a production-grade TypeScript/React codebase with strict quality expectations.
-- Claude-specific slash-command automation described in `CLAUDE.md` is **not** available here. Instead, run the underlying npm scripts yourself while preserving the intent of those guardrails (structured planning, parallel quality checks, and gated releases).
-- Consult architectural background in `ARCHITECTURE.md`, domain references in `docs/`, task history in `.claude/`, and existing specs/tests before making changes.
+## Quick Context
+- Exocortex is an Obsidian plugin that renders ontology-driven layouts, syncs Areas → Projects → Tasks, tracks effort timelines, and surfaces vote-based prioritization signals inside reading mode.
+- Key vocabulary: frontmatter prefixes `exo__` (core assets) and `ems__` (effort metrics); layout renderers live in `src/presentation`, while domain logic sits in `src/domain` and shared services in `packages/core`.
+- Always operate from a worktree under `worktrees/exocortex-<agent>-<type>-<topic>/`; the upstream `exocortex-obsidian-plugin/` directory remains read-only.
+- Definition of done: code lands through a PR, merges to `main`, and a release is completed before the worktree is removed.
 
-## Setup Commands
-- Install dependencies: `npm install`
-- Start the development build (esbuild bundler): `npm run dev`
-- Create a production build: `npm run build`
+## Project Structure & Module Organization
+- `src/` hosts the plugin runtime, split into `domain`, `application`, `infrastructure`, and `presentation` layers with entry points in `main.ts` and `ExocortexPlugin.ts`.
+- `packages/` contains reusable workspaces: `core` for shared domain utilities and `cli` for tooling. Prefer adding cross-cutting logic here instead of duplicating code under `src/`.
+- `tests/` mirrors runtime modules (`unit`, `ui`, `component`, `infrastructure`, `e2e`) and centralizes fixtures in `tests/__mocks__` and `tests/e2e/test-vault`.
+- `docs/`, `ARCHITECTURE.md`, and `specs/` capture design notes and Gherkin flows; update whichever describes the behavior you touch.
 
-## Development Workflow
-1. **Plan deliberately** – outline requirements, risks, and design before coding (mirrors the orchestrated agent flow in `CLAUDE.md`).
-2. **Work incrementally** – keep changes focused and align with existing architecture and result-pattern usage.
-3. **Document decisions** – update relevant markdown docs when behavior or conventions change.
+## Build, Test, and Development Commands
+- Install dependencies with Node 18+ via `npm install`.
+- `npm run dev` starts the esbuild watcher that writes `main.js` for manual Obsidian testing.
+- `npm run build` performs a type check followed by a production bundle; run before tagging releases.
+- `npm run check:all` chains type checking, ESLint, and Prettier verification.
+- `npm test` executes the full suite. Targeted runs: `npm run test:unit` (batched Jest), `npm run test:ui` (Jest DOM), `npm run test:component` (Playwright component), `npm run test:e2e:local` (Playwright vault), and `npm run test:e2e:docker`.
+- Coverage tooling: `npm run bdd:coverage`, `npm run bdd:check`, and `npm run bdd:report`.
 
-## Code Style & Quality
-- Use TypeScript with existing lint/format rules (`npm run lint`, `npm run format:check`).
-- Follow the established project conventions (e.g., double quotes, semicolons, React functional components).
-- Prefer explicit error handling and graceful fallbacks consistent with the patterns documented in `CLAUDE.md` (result objects, safe degradation).
+## Coding Style & Naming Conventions
+- TypeScript + React with ES modules; keep exports explicit and favor composition over inheritance in renderers.
+- Prettier enforces 2-space indentation and single quotes; run `npm run format` on feature branches and let ESLint (`eslint.config.js`) guard TypeScript rules plus Obsidian best practices.
+- Name files after the primary concept (`DailyTasksTable.tsx`, `FrontmatterService.ts`). Tests should mirror targets with `.spec.ts` or `.test.tsx`.
 
-## Testing Requirements
-- Run targeted checks that mirror the `/test` command pipeline:
-  - Unit tests: `npm run test:unit`
-  - UI tests: `npm run test:ui`
-  - Component tests: `npm run test:component`
-- When time permits or before significant merges, execute the full suite: `npm run test`.
-- Validate behavior-driven coverage as expected by the CLAUDE workflow: `npm run bdd:check` (or `npm run bdd:coverage` / `npm run bdd:report` for diagnostics).
-- Investigate and resolve all failures; prevent Playwright hangs by keeping runs scoped when possible.
+## Testing Guidelines
+- Jest powers unit and UI suites; reuse helpers from `tests/ui/helpers`.
+- Playwright drives component and end-to-end coverage via `playwright-ct.config.ts` and `playwright-e2e.config.ts`; store vault fixtures in `tests/e2e/test-vault`.
+- Aim for ≥70% statement coverage (see `COVERAGE_QUICK_REFERENCE.md`) and prioritize hot spots listed there when modifying core services.
+- Update `specs/features` when workflows change and regenerate reports with `npm run bdd:coverage`.
 
-## Release Guidance
-- Do **not** bump versions or craft releases manually. Coordinate with maintainers for release automation that mirrors the `/release` command.
-- Ensure changelog updates and release activities happen through the sanctioned process once available.
-
-## Additional Resources
-- Specialized agent guides in `.claude/agents/` explain domain patterns (QA, architecture, security, performance, etc.). Use them for context even without direct agent orchestration.
-- Review `tests/`, `specs/`, and existing components for examples before introducing new patterns.
-- Record troubleshooting insights and follow-up tasks so they can inform future automation improvements.
+## Commit & Pull Request Guidelines
+- Follow the Conventional Commit style seen in history (`feat:`, `fix:`, `test:`) and include the issue or PR number when applicable (e.g., `feat: make all table columns sortable (#257)`).
+- Keep commits focused, separating refactors from feature logic, and ensure PR descriptions include context, test commands run, and screenshots or GIFs for UI changes.
+- Cross-check `manifest.json`, `versions.json`, and `CHANGELOG.md` before requesting review, and confirm CI (`check:all`, Playwright suites) is green.

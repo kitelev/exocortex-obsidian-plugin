@@ -6,6 +6,12 @@
 
 ---
 
+## ⚡ Quick Agent Orientation
+- **System role**: Exocortex renders context-aware layouts in Obsidian, gluing Areas → Projects → Tasks with effort timelines, votes, and command orchestration via the Command Manager.
+- **Terminology**: `LayoutRenderer` components live in `src/presentation`, domain services (command visibility, effort tracking) are in `src/domain`, and shared primitives sit in `packages/core`. Frontmatter uses prefixes `exo__` for asset identity and `ems__` for effort data.
+- **Working rules**: make changes from a worktree under `worktrees/exocortex-<agent>-<type>-<topic>/`. A task is complete only after its PR merges to `main` and the release pipeline ships successfully.
+- **Reference docs**: see `README.md` for features and `docs/PROPERTY_SCHEMA.md` for frontmatter vocabulary.
+
 ## 📖 Table of Contents
 
 1. [System Overview](#system-overview)
