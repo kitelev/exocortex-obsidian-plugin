@@ -599,4 +599,163 @@ test.describe("AssetRelationsTableWithToggle Component", () => {
       component.locator('th:has-text("ems__Effort_status")'),
     ).toBeVisible();
   });
+
+  test("should have sortable dynamic property headers", async ({ mount }) => {
+    const testRelations: AssetRelation[] = [
+      {
+        path: "task1.md",
+        title: "Task 1",
+        propertyName: undefined,
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { status: "active", priority: "high" },
+      },
+    ];
+
+    const component = await mount(
+      <AssetRelationsTable
+        relations={testRelations}
+        showProperties={["status", "priority"]}
+      />,
+    );
+
+    const statusHeader = component.locator('thead th:has-text("status")');
+    await expect(statusHeader).toHaveClass(/sortable/);
+    await expect(statusHeader).toHaveCSS("cursor", "pointer");
+
+    const priorityHeader = component.locator('thead th:has-text("priority")');
+    await expect(priorityHeader).toHaveClass(/sortable/);
+    await expect(priorityHeader).toHaveCSS("cursor", "pointer");
+  });
+
+  test("should sort by dynamic property column", async ({ mount }) => {
+    const relationsWithProps: AssetRelation[] = [
+      {
+        path: "task1.md",
+        title: "Task 1",
+        propertyName: undefined,
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { priority: "high" },
+      },
+      {
+        path: "task2.md",
+        title: "Task 2",
+        propertyName: undefined,
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { priority: "low" },
+      },
+      {
+        path: "task3.md",
+        title: "Task 3",
+        propertyName: undefined,
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { priority: "medium" },
+      },
+    ];
+
+    const component = await mount(
+      <AssetRelationsTable
+        relations={relationsWithProps}
+        showProperties={["priority"]}
+      />,
+    );
+
+    await component.locator('thead th:has-text("priority")').click();
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(3);
+
+    await expect(component.locator('thead th:has-text("priority")')).toContainText("↑");
+  });
+
+  test("should sort by numeric dynamic property", async ({ mount }) => {
+    const relationsWithNumbers: AssetRelation[] = [
+      {
+        path: "task1.md",
+        title: "Task 1",
+        propertyName: undefined,
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { ems__Effort_votes: 10 },
+      },
+      {
+        path: "task2.md",
+        title: "Task 2",
+        propertyName: undefined,
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { ems__Effort_votes: 3 },
+      },
+      {
+        path: "task3.md",
+        title: "Task 3",
+        propertyName: undefined,
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { ems__Effort_votes: 7 },
+      },
+    ];
+
+    const component = await mount(
+      <AssetRelationsTable
+        relations={relationsWithNumbers}
+        showProperties={["ems__Effort_votes"]}
+      />,
+    );
+
+    await component.locator('thead th:has-text("ems__Effort_votes")').click();
+
+    const firstRow = component.locator("tbody tr").first();
+    const firstValue = await firstRow.locator("td").nth(2).textContent();
+    expect(firstValue).toBe("3");
+
+    await expect(component.locator('thead th:has-text("ems__Effort_votes")')).toContainText("↑");
+  });
+
+  test("should sort by wiki link dynamic property", async ({ mount }) => {
+    const relationsWithLinks: AssetRelation[] = [
+      {
+        path: "task1.md",
+        title: "Task 1",
+        propertyName: undefined,
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { area: "[[area1|Zebra Area]]" },
+      },
+      {
+        path: "task2.md",
+        title: "Task 2",
+        propertyName: undefined,
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        metadata: { area: "[[area2|Alpha Area]]" },
+      },
+    ];
+
+    const component = await mount(
+      <AssetRelationsTable
+        relations={relationsWithLinks}
+        showProperties={["area"]}
+      />,
+    );
+
+    await component.locator('thead th:has-text("area")').click();
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(2);
+
+    await expect(component.locator('thead th:has-text("area")')).toContainText("↑");
+  });
 });
