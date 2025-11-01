@@ -1,4 +1,9 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
+
+interface SortState {
+  column: string;
+  order: "asc" | "desc";
+}
 
 export interface DailyProject {
   file: {
@@ -28,6 +33,18 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
   onProjectClick,
   getAssetLabel,
 }) => {
+  const [sortState, setSortState] = useState<SortState>({
+    column: "",
+    order: "asc",
+  });
+
+  const handleSort = (column: string) => {
+    setSortState((prev) => ({
+      column,
+      order: prev.column === column && prev.order === "asc" ? "desc" : "asc",
+    }));
+  };
+
   interface WikiLink {
     target: string;
     alias?: string;
@@ -70,19 +87,95 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
     return blockerIcon + icon + displayText;
   };
 
+  const sortedProjects = useMemo(() => {
+    if (!sortState.column) {
+      return projects;
+    }
+
+    const sorted = [...projects];
+
+    sorted.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortState.column) {
+        case "name":
+          aValue = getDisplayName(a).toLowerCase();
+          bValue = getDisplayName(b).toLowerCase();
+          break;
+        case "start":
+          aValue = a.startTime || "";
+          bValue = b.startTime || "";
+          break;
+        case "end":
+          aValue = a.endTime || "";
+          bValue = b.endTime || "";
+          break;
+        case "status":
+          aValue = a.status?.toLowerCase() || "";
+          bValue = b.status?.toLowerCase() || "";
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) {
+        return sortState.order === "asc" ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortState.order === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
+
+    return sorted;
+  }, [projects, sortState, getAssetLabel]);
+
   return (
     <div className="exocortex-daily-projects">
       <table className="exocortex-projects-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Start</th>
-            <th>End</th>
-            <th>Status</th>
+            <th
+              onClick={() => handleSort("name")}
+              className="sortable"
+              style={{ cursor: "pointer" }}
+            >
+              Name{" "}
+              {sortState.column === "name" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
+            <th
+              onClick={() => handleSort("start")}
+              className="sortable"
+              style={{ cursor: "pointer" }}
+            >
+              Start{" "}
+              {sortState.column === "start" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
+            <th
+              onClick={() => handleSort("end")}
+              className="sortable"
+              style={{ cursor: "pointer" }}
+            >
+              End{" "}
+              {sortState.column === "end" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
+            <th
+              onClick={() => handleSort("status")}
+              className="sortable"
+              style={{ cursor: "pointer" }}
+            >
+              Status{" "}
+              {sortState.column === "status" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
           </tr>
         </thead>
         <tbody>
-          {projects.map((project, index) => (
+          {sortedProjects.map((project, index) => (
             <tr key={`${project.path}-${index}`} data-path={project.path}>
               <td className="project-name">
                 <a

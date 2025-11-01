@@ -1,4 +1,9 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
+
+interface SortState {
+  column: string;
+  order: "asc" | "desc";
+}
 
 export interface AssetPropertiesTableProps {
   metadata: Record<string, any>;
@@ -11,6 +16,18 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
   onLinkClick,
   getAssetLabel,
 }) => {
+  const [sortState, setSortState] = useState<SortState>({
+    column: "",
+    order: "asc",
+  });
+
+  const handleSort = (column: string) => {
+    setSortState((prev) => ({
+      column,
+      order: prev.column === column && prev.order === "asc" ? "desc" : "asc",
+    }));
+  };
+
   const isWikiLink = (value: any): boolean => {
     return typeof value === "string" && /\[\[.*?\]\]/.test(value);
   };
@@ -93,6 +110,29 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
 
   const metadataEntries = Object.entries(metadata || {});
 
+  const sortedEntries = useMemo(() => {
+    if (!sortState.column) {
+      return metadataEntries;
+    }
+
+    const sorted = [...metadataEntries];
+
+    sorted.sort(([keyA], [keyB]) => {
+      const aValue = keyA.toLowerCase();
+      const bValue = keyB.toLowerCase();
+
+      if (aValue < bValue) {
+        return sortState.order === "asc" ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortState.order === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
+
+    return sorted;
+  }, [metadataEntries, sortState]);
+
   if (metadataEntries.length === 0) {
     return null;
   }
@@ -103,12 +143,20 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
       <table className="exocortex-properties-table">
         <thead>
           <tr>
-            <th>Property</th>
+            <th
+              onClick={() => handleSort("property")}
+              className="sortable"
+              style={{ cursor: "pointer" }}
+            >
+              Property{" "}
+              {sortState.column === "property" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
             <th>Value</th>
           </tr>
         </thead>
         <tbody>
-          {metadataEntries.map(([key, value]) => (
+          {sortedEntries.map(([key, value]) => (
             <tr key={key}>
               <td className="property-key">{key}</td>
               <td className="property-value">{renderValue(value)}</td>

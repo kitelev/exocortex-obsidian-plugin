@@ -1,4 +1,9 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
+
+interface SortState {
+  column: string;
+  order: "asc" | "desc";
+}
 
 export interface DailyTask {
   file: {
@@ -36,6 +41,18 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   showEffortArea = false,
   showEffortVotes = false,
 }) => {
+  const [sortState, setSortState] = useState<SortState>({
+    column: "",
+    order: "asc",
+  });
+
+  const handleSort = (column: string) => {
+    setSortState((prev) => ({
+      column,
+      order: prev.column === column && prev.order === "asc" ? "desc" : "asc",
+    }));
+  };
+
   interface WikiLink {
     target: string;
     alias?: string;
@@ -93,21 +110,97 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     return blockerIcon + icon + displayText;
   };
 
+  const sortedTasks = useMemo(() => {
+    if (!sortState.column) {
+      return tasks;
+    }
+
+    const sorted = [...tasks];
+
+    sorted.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortState.column) {
+        case "name":
+          aValue = getDisplayName(a).toLowerCase();
+          bValue = getDisplayName(b).toLowerCase();
+          break;
+        case "start":
+          aValue = a.startTime || "";
+          bValue = b.startTime || "";
+          break;
+        case "end":
+          aValue = a.endTime || "";
+          bValue = b.endTime || "";
+          break;
+        case "status":
+          aValue = a.status?.toLowerCase() || "";
+          bValue = b.status?.toLowerCase() || "";
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) {
+        return sortState.order === "asc" ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortState.order === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
+
+    return sorted;
+  }, [tasks, sortState, getAssetLabel]);
+
   return (
     <div className="exocortex-daily-tasks">
       <table className="exocortex-tasks-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Start</th>
-            <th>End</th>
-            <th>Status</th>
+            <th
+              onClick={() => handleSort("name")}
+              className="sortable"
+              style={{ cursor: "pointer" }}
+            >
+              Name{" "}
+              {sortState.column === "name" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
+            <th
+              onClick={() => handleSort("start")}
+              className="sortable"
+              style={{ cursor: "pointer" }}
+            >
+              Start{" "}
+              {sortState.column === "start" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
+            <th
+              onClick={() => handleSort("end")}
+              className="sortable"
+              style={{ cursor: "pointer" }}
+            >
+              End{" "}
+              {sortState.column === "end" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
+            <th
+              onClick={() => handleSort("status")}
+              className="sortable"
+              style={{ cursor: "pointer" }}
+            >
+              Status{" "}
+              {sortState.column === "status" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
             {showEffortArea && <th>Effort Area</th>}
             {showEffortVotes && <th>Votes</th>}
           </tr>
         </thead>
         <tbody>
-          {tasks.map((task, index) => (
+          {sortedTasks.map((task, index) => (
             <tr key={`${task.path}-${index}`} data-path={task.path}>
               <td className="task-name">
                 <a
