@@ -76,6 +76,10 @@ export class TaskStatusService {
     await this.timestampService.addEndAndResolutionTimestamps(taskFile, date);
   }
 
+  async syncPlannedEndTimestamp(taskFile: IFile, date?: Date): Promise<void> {
+    await this.timestampService.syncPlannedEndTimestamp(taskFile, date);
+  }
+
   async trashEffort(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     const timestamp = DateFormatter.toLocalTimestamp(new Date());

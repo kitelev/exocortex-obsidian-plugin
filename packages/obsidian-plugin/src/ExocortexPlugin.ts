@@ -185,6 +185,8 @@ export default class ExocortexPlugin extends Plugin {
       }
 
       const currentEndTimestamp = metadata.ems__Effort_endTimestamp;
+      const currentPlannedStartTimestamp =
+        metadata.ems__Effort_plannedStartTimestamp;
       const cachedMetadata = this.metadataCache.get(file.path);
 
       if (!cachedMetadata) {
@@ -193,6 +195,8 @@ export default class ExocortexPlugin extends Plugin {
       }
 
       const previousEndTimestamp = cachedMetadata.ems__Effort_endTimestamp;
+      const previousPlannedStartTimestamp =
+        cachedMetadata.ems__Effort_plannedStartTimestamp;
 
       if (currentEndTimestamp && currentEndTimestamp !== previousEndTimestamp) {
         this.logger.info(
@@ -204,6 +208,26 @@ export default class ExocortexPlugin extends Plugin {
           await this.taskStatusService.syncEffortEndTimestamp(file, parsedDate);
           this.logger.info(
             `Auto-synced ems__Effort_resolutionTimestamp to ${currentEndTimestamp}`,
+          );
+        }
+      }
+
+      if (
+        currentPlannedStartTimestamp &&
+        currentPlannedStartTimestamp !== previousPlannedStartTimestamp
+      ) {
+        this.logger.info(
+          `Detected ems__Effort_plannedStartTimestamp change in ${file.path}: ${String(previousPlannedStartTimestamp)} → ${String(currentPlannedStartTimestamp)}`,
+        );
+
+        const parsedDate = new Date(currentPlannedStartTimestamp);
+        if (!isNaN(parsedDate.getTime())) {
+          await this.taskStatusService.syncPlannedEndTimestamp(
+            file,
+            parsedDate,
+          );
+          this.logger.info(
+            `Auto-synced ems__Effort_plannedEndTimestamp to ${currentPlannedStartTimestamp}`,
           );
         }
       }

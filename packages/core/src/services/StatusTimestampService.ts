@@ -110,4 +110,21 @@ export class StatusTimestampService {
     );
     await this.vault.modify(taskFile, updated);
   }
+
+  async syncPlannedEndTimestamp(
+    taskFile: IFile,
+    date?: Date,
+  ): Promise<void> {
+    const content = await this.vault.read(taskFile);
+    const targetDate = date || new Date();
+    const timestamp = DateFormatter.toLocalTimestamp(targetDate);
+
+    const updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_plannedEndTimestamp",
+      timestamp,
+    );
+
+    await this.vault.modify(taskFile, updated);
+  }
 }
