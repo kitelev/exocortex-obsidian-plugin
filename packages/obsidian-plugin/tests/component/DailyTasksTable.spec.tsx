@@ -429,6 +429,158 @@ test.describe("DailyTasksTable", () => {
     await expect(component.locator("thead th")).toHaveCount(4);
     await expect(component.locator(".task-effort-area")).toHaveCount(0);
   });
+
+  test("should have sortable Effort Area header when showEffortArea is true", async ({
+    mount,
+  }) => {
+    const tasksWithArea: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Task 1",
+        label: "First Task",
+        startTime: "09:00",
+        endTime: "10:00",
+        status: "ems__EffortStatusInProgress",
+        metadata: { ems__Effort_area: "[[backend]]" },
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyTasksTable tasks={tasksWithArea} showEffortArea={true} />,
+    );
+
+    const effortAreaHeader = component.locator('thead th:has-text("Effort Area")');
+    await expect(effortAreaHeader).toHaveClass(/sortable/);
+    await expect(effortAreaHeader).toHaveCSS("cursor", "pointer");
+  });
+
+  test("should sort tasks by Effort Area", async ({ mount }) => {
+    const tasksWithArea: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Task 1",
+        label: "Task 1",
+        startTime: "09:00",
+        endTime: "10:00",
+        status: "ems__EffortStatusInProgress",
+        metadata: { ems__Effort_area: "[[zebra-area]]" },
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "task2.md", basename: "task2" },
+        path: "task2.md",
+        title: "Task 2",
+        label: "Task 2",
+        startTime: "10:00",
+        endTime: "11:00",
+        status: "ems__EffortStatusInProgress",
+        metadata: { ems__Effort_area: "[[alpha-area]]" },
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyTasksTable tasks={tasksWithArea} showEffortArea={true} />,
+    );
+
+    await component.locator('thead th:has-text("Effort Area")').click();
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(2);
+
+    await expect(component.locator('thead th:has-text("Effort Area")')).toContainText("↑");
+  });
+
+  test("should have sortable Votes header when showEffortVotes is true", async ({
+    mount,
+  }) => {
+    const tasksWithVotes: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Task 1",
+        label: "First Task",
+        startTime: "09:00",
+        endTime: "10:00",
+        status: "ems__EffortStatusInProgress",
+        metadata: { ems__Effort_votes: 5 },
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyTasksTable tasks={tasksWithVotes} showEffortVotes={true} />,
+    );
+
+    const votesHeader = component.locator('thead th:has-text("Votes")');
+    await expect(votesHeader).toHaveClass(/sortable/);
+    await expect(votesHeader).toHaveCSS("cursor", "pointer");
+  });
+
+  test("should sort tasks by Votes", async ({ mount }) => {
+    const tasksWithVotes: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Task 1",
+        label: "Task 1",
+        startTime: "09:00",
+        endTime: "10:00",
+        status: "ems__EffortStatusInProgress",
+        metadata: { ems__Effort_votes: 10 },
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "task2.md", basename: "task2" },
+        path: "task2.md",
+        title: "Task 2",
+        label: "Task 2",
+        startTime: "10:00",
+        endTime: "11:00",
+        status: "ems__EffortStatusInProgress",
+        metadata: { ems__Effort_votes: 3 },
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyTasksTable tasks={tasksWithVotes} showEffortVotes={true} />,
+    );
+
+    await component.locator('thead th:has-text("Votes")').click();
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(2);
+
+    await expect(component.locator('thead th:has-text("Votes")')).toContainText("↑");
+  });
 });
 
 test.describe("DailyTasksTableWithToggle", () => {

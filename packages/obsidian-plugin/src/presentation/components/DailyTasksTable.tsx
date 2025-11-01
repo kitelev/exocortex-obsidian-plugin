@@ -110,6 +110,33 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     return blockerIcon + icon + displayText;
   };
 
+  const getEffortAreaDisplayText = (task: DailyTask): string => {
+    let effortArea: unknown = null;
+
+    if (getEffortArea) {
+      effortArea = getEffortArea(task.metadata);
+    }
+
+    if (!effortArea) {
+      effortArea = task.metadata.ems__Effort_area;
+    }
+
+    if (!effortArea) return "";
+
+    const effortAreaStr = String(effortArea);
+
+    if (/\[\[.*?\]\]/.test(effortAreaStr)) {
+      const parsed = parseWikiLink(effortAreaStr);
+      return (parsed.alias || parsed.target).toLowerCase();
+    } else if (effortAreaStr.includes("|")) {
+      const parts = effortAreaStr.split("|");
+      const alias = parts[1]?.trim() || parts[0].trim();
+      return alias.toLowerCase();
+    } else {
+      return effortAreaStr.trim().toLowerCase();
+    }
+  };
+
   const sortedTasks = useMemo(() => {
     if (!sortState.column) {
       return tasks;
@@ -138,6 +165,18 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
           aValue = a.status?.toLowerCase() || "";
           bValue = b.status?.toLowerCase() || "";
           break;
+        case "effortArea":
+          aValue = getEffortAreaDisplayText(a);
+          bValue = getEffortAreaDisplayText(b);
+          break;
+        case "votes":
+          aValue = typeof a.metadata.ems__Effort_votes === "number"
+            ? a.metadata.ems__Effort_votes
+            : -1;
+          bValue = typeof b.metadata.ems__Effort_votes === "number"
+            ? b.metadata.ems__Effort_votes
+            : -1;
+          break;
         default:
           return 0;
       }
@@ -152,7 +191,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     });
 
     return sorted;
-  }, [tasks, sortState, getAssetLabel]);
+  }, [tasks, sortState, getAssetLabel, getEffortArea]);
 
   return (
     <div className="exocortex-daily-tasks">
@@ -195,8 +234,28 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
               {sortState.column === "status" &&
                 (sortState.order === "asc" ? "↑" : "↓")}
             </th>
-            {showEffortArea && <th>Effort Area</th>}
-            {showEffortVotes && <th>Votes</th>}
+            {showEffortArea && (
+              <th
+                onClick={() => handleSort("effortArea")}
+                className="sortable"
+                style={{ cursor: "pointer" }}
+              >
+                Effort Area{" "}
+                {sortState.column === "effortArea" &&
+                  (sortState.order === "asc" ? "↑" : "↓")}
+              </th>
+            )}
+            {showEffortVotes && (
+              <th
+                onClick={() => handleSort("votes")}
+                className="sortable"
+                style={{ cursor: "pointer" }}
+              >
+                Votes{" "}
+                {sortState.column === "votes" &&
+                  (sortState.order === "asc" ? "↑" : "↓")}
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
