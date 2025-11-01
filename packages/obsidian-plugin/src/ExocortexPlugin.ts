@@ -220,14 +220,22 @@ export default class ExocortexPlugin extends Plugin {
           `Detected ems__Effort_plannedStartTimestamp change in ${file.path}: ${String(previousPlannedStartTimestamp)} → ${String(currentPlannedStartTimestamp)}`,
         );
 
-        const parsedDate = new Date(currentPlannedStartTimestamp);
-        if (!isNaN(parsedDate.getTime())) {
-          await this.taskStatusService.syncPlannedEndTimestamp(
-            file,
-            parsedDate,
-          );
+        const currentDate = new Date(
+          String(currentPlannedStartTimestamp),
+        );
+        const previousDate = previousPlannedStartTimestamp
+          ? new Date(String(previousPlannedStartTimestamp))
+          : null;
+
+        if (
+          !isNaN(currentDate.getTime()) &&
+          previousDate &&
+          !isNaN(previousDate.getTime())
+        ) {
+          const deltaMs = currentDate.getTime() - previousDate.getTime();
+          await this.taskStatusService.shiftPlannedEndTimestamp(file, deltaMs);
           this.logger.info(
-            `Auto-synced ems__Effort_plannedEndTimestamp to ${currentPlannedStartTimestamp}`,
+            `Shifted ems__Effort_plannedEndTimestamp by ${deltaMs}ms`,
           );
         }
       }
