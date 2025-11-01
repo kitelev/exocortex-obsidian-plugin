@@ -5,6 +5,7 @@ export * from "./domain/models/GraphNode";
 export * from "./domain/models/GraphData";
 export * from "./domain/models/GraphEdge";
 export * from "./domain/models/AreaNode";
+export * from "./domain/models/rdf";
 export * from "./domain/commands/CommandVisibility";
 
 // Services exports
