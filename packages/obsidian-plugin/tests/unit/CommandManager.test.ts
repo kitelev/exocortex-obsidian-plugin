@@ -2,7 +2,7 @@
  * CommandManager Unit Tests
  *
  * Comprehensive test coverage for command registration, visibility checks,
- * and execution paths. Tests all 26 commands with various file contexts.
+ * and execution paths. Tests all 29 commands with various file contexts.
  */
 
 import { CommandManager } from "../../src/application/services/CommandManager";
@@ -124,7 +124,7 @@ describe("CommandManager", () => {
         commandManager.registerAllCommands(mockPlugin);
       }).not.toThrow();
 
-      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(28);
+      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(29);
     });
 
     it("should register commands with correct IDs", () => {
@@ -138,6 +138,7 @@ describe("CommandManager", () => {
       expect(registeredCommandIds).toContain("create-task");
       expect(registeredCommandIds).toContain("create-project");
       expect(registeredCommandIds).toContain("create-instance");
+      expect(registeredCommandIds).toContain("create-fleeting-note");
       expect(registeredCommandIds).toContain("create-related-task");
       expect(registeredCommandIds).toContain("set-draft-status");
       expect(registeredCommandIds).toContain("move-to-backlog");
@@ -176,6 +177,7 @@ describe("CommandManager", () => {
       expect(registeredNames).toContain("Create task");
       expect(registeredNames).toContain("Create project");
       expect(registeredNames).toContain("Create instance");
+      expect(registeredNames).toContain("Create fleeting note");
       expect(registeredNames).toContain("Create related task");
       expect(registeredNames).toContain("Set draft status");
       expect(registeredNames).toContain("Move to backlog");

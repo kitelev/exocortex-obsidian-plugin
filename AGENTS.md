@@ -5,6 +5,12 @@
 - Claude-specific slash-command automation described in `CLAUDE.md` is **not** available here. Instead, run the underlying npm scripts yourself while preserving the intent of those guardrails (structured planning, parallel quality checks, and gated releases).
 - Consult architectural background in `ARCHITECTURE.md`, domain references in `docs/`, task history in `.claude/`, and existing specs/tests before making changes.
 
+## Worktree Discipline (non-negotiable)
+- **Never edit the root checkout.** All implementation work must happen inside a designated Git worktree (e.g. `worktrees/<branch-name>/…`). If `pwd` shows the repository root, stop and move to the correct worktree before touching files.
+- **Verify location before each change.** Run `pwd` and `git rev-parse --show-toplevel`; the toplevel must resolve inside the active worktree directory. Abort immediately if it points to the main repo.
+- **Create or switch worktrees explicitly.** Use `git worktree list` to inspect existing entries. Add a new one with `git worktree add worktrees/<name> <branch>` when starting fresh, and jump into it with `cd worktrees/<name>`.
+- **Keep tooling scoped to the worktree.** Every command (`npm install`, `npm test`, editor sessions) should execute within the worktree to avoid polluting the main checkout.
+
 ## Setup Commands
 - Install dependencies: `npm install`
 - Start the development build (esbuild bundler): `npm run dev`
