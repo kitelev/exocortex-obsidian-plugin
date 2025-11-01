@@ -39,7 +39,7 @@ describe("FleetingNoteModal", () => {
       ".exocortex-modal-error-message",
     ) as HTMLDivElement;
     expect(errorMessage.textContent).toBe("Label is required");
-    expect(errorMessage.style.display).not.toBe("none");
+    expect(errorMessage.classList.contains("exocortex-modal-error-message--hidden")).toBe(false);
 
     modal.close();
   });
@@ -60,7 +60,7 @@ describe("FleetingNoteModal", () => {
     const errorMessage = modal.contentEl.querySelector(
       ".exocortex-modal-error-message",
     ) as HTMLDivElement;
-    expect(errorMessage.style.display).toBe("none");
+    expect(errorMessage.classList.contains("exocortex-modal-error-message--hidden")).toBe(true);
     expect(errorMessage.textContent).toBe("");
 
     createButton.click();

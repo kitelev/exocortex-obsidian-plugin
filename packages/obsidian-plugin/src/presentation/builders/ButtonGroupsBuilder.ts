@@ -137,7 +137,9 @@ export class ButtonGroupsBuilder {
           if (!tFile || !(tFile instanceof TFile)) {
             throw new Error(`Created file not found: ${createdFile.path}`);
           }
-          const leaf = this.app.workspace.getLeaf("tab");
+          const leaf = result.openInNewTab
+            ? this.app.workspace.getLeaf("tab")
+            : this.app.workspace.getLeaf(false);
           await leaf.openFile(tFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
           this.logger.info(
@@ -170,7 +172,9 @@ export class ButtonGroupsBuilder {
           if (!tFile || !(tFile instanceof TFile)) {
             throw new Error(`Created file not found: ${createdFile.path}`);
           }
-          const leaf = this.app.workspace.getLeaf("tab");
+          const leaf = result.openInNewTab
+            ? this.app.workspace.getLeaf("tab")
+            : this.app.workspace.getLeaf(false);
           await leaf.openFile(tFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
           this.logger.info(
@@ -198,7 +202,9 @@ export class ButtonGroupsBuilder {
           if (!tFile || !(tFile instanceof TFile)) {
             throw new Error(`Created file not found: ${createdFile.path}`);
           }
-          const leaf = this.app.workspace.getLeaf("tab");
+          const leaf = result.openInNewTab
+            ? this.app.workspace.getLeaf("tab")
+            : this.app.workspace.getLeaf(false);
           await leaf.openFile(tFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
           this.logger.info(`Created child Area: ${createdFile.path}`);
@@ -243,7 +249,9 @@ export class ButtonGroupsBuilder {
           if (!tFile || !(tFile instanceof TFile)) {
             throw new Error(`Created file not found: ${createdFile.path}`);
           }
-          const leaf = this.app.workspace.getLeaf("tab");
+          const leaf = result.openInNewTab
+            ? this.app.workspace.getLeaf("tab")
+            : this.app.workspace.getLeaf(false);
           await leaf.openFile(tFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
           this.logger.info(
@@ -272,7 +280,9 @@ export class ButtonGroupsBuilder {
           if (!tFile || !(tFile instanceof TFile)) {
             throw new Error(`Created file not found: ${createdFile.path}`);
           }
-          const leaf = this.app.workspace.getLeaf("tab");
+          const leaf = result.openInNewTab
+            ? this.app.workspace.getLeaf("tab")
+            : this.app.workspace.getLeaf(false);
           await leaf.openFile(tFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
           this.logger.info(`Created Related Task: ${createdFile.path}`);

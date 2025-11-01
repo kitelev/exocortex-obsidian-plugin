@@ -926,6 +926,10 @@
   font-size: 0.85em;
 }
 
+.exocortex-modal-error-message--hidden {
+  display: none;
+}
+
 /* ============================================================================
    Action Buttons Group - Semantic Grouping with Beautiful Design
    ============================================================================ */

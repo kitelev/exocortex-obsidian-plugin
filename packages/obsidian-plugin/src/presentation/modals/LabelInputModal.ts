@@ -3,6 +3,7 @@ import { App, Modal } from "obsidian";
 export interface LabelInputModalResult {
   label: string | null;
   taskSize: string | null;
+  openInNewTab: boolean;
 }
 
 /**
@@ -12,6 +13,7 @@ export interface LabelInputModalResult {
 export class LabelInputModal extends Modal {
   private label = "";
   private taskSize: string | null = null;
+  private openInNewTab = true;
   private onSubmit: (result: LabelInputModalResult) => void;
   private inputEl: HTMLInputElement | null = null;
   private taskSizeSelectEl: HTMLSelectElement | null = null;
@@ -104,6 +106,34 @@ export class LabelInputModal extends Modal {
       });
     }
 
+    const tabPreferenceContainer = contentEl.createDiv({
+      cls: "exocortex-modal-input-container",
+    });
+
+    const checkboxWrapper = tabPreferenceContainer.createDiv({
+      cls: "exocortex-modal-checkbox-wrapper",
+    });
+
+    const checkboxId = `exocortex-open-in-new-tab-${Date.now()}`;
+    const checkboxEl = checkboxWrapper.createEl("input", {
+      type: "checkbox",
+    });
+    checkboxEl.id = checkboxId;
+    checkboxEl.checked = this.openInNewTab;
+    checkboxEl.addEventListener("change", (e) => {
+      this.openInNewTab = (e.target as HTMLInputElement).checked;
+    });
+
+    checkboxWrapper.createEl("label", {
+      text: "Open created asset in a new tab",
+      attr: { for: checkboxId },
+    });
+
+    tabPreferenceContainer.createEl("p", {
+      text: "Uncheck to use the current tab instead.",
+      cls: "exocortex-modal-description",
+    });
+
     const buttonContainer = contentEl.createDiv({
       cls: "modal-button-container",
     });
@@ -129,12 +159,17 @@ export class LabelInputModal extends Modal {
     this.onSubmit({
       label: trimmedLabel || null,
       taskSize: this.taskSize,
+      openInNewTab: this.openInNewTab,
     });
     this.close();
   }
 
   private cancel(): void {
-    this.onSubmit({ label: null, taskSize: null });
+    this.onSubmit({
+      label: null,
+      taskSize: null,
+      openInNewTab: this.openInNewTab,
+    });
     this.close();
   }
 

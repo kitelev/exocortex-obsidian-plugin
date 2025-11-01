@@ -7,6 +7,7 @@ describe("LabelInputModal", () => {
   let onSubmitSpy: jest.Mock<void, [LabelInputModalResult]>;
   let mockContentEl: any;
   let mockInputEl: HTMLInputElement;
+  let mockCheckboxEl: HTMLInputElement;
   let mockSelectEl: HTMLSelectElement;
 
   beforeEach(() => {
@@ -15,6 +16,7 @@ describe("LabelInputModal", () => {
 
     // Mock content element and its methods
     mockInputEl = document.createElement("input");
+    mockCheckboxEl = document.createElement("input");
     mockSelectEl = document.createElement("select");
 
     mockContentEl = {
@@ -27,6 +29,12 @@ describe("LabelInputModal", () => {
     // Setup createEl mock to return appropriate elements
     mockContentEl.createEl.mockImplementation((tag: string, options?: any) => {
       if (tag === "input") {
+        if (options?.type === "checkbox") {
+          mockCheckboxEl = document.createElement("input");
+          mockCheckboxEl.type = "checkbox";
+          mockCheckboxEl.checked = Boolean(options?.checked);
+          return mockCheckboxEl;
+        }
         if (options?.value !== undefined) mockInputEl.value = options.value;
         return mockInputEl;
       }
@@ -50,6 +58,7 @@ describe("LabelInputModal", () => {
     // Setup createDiv mock
     mockContentEl.createDiv.mockImplementation(() => ({
       createEl: mockContentEl.createEl,
+      createDiv: mockContentEl.createDiv,
     }));
 
     onSubmitSpy = jest.fn();
@@ -151,6 +160,18 @@ describe("LabelInputModal", () => {
       expect(mockContentEl.createEl).toHaveBeenCalledWith("button", {
         text: "Cancel",
       });
+    });
+
+    it("should create open-in-new-tab checkbox checked by default", () => {
+      modal.onOpen();
+
+      expect(mockContentEl.createEl).toHaveBeenCalledWith(
+        "input",
+        expect.objectContaining({
+          type: "checkbox",
+        }),
+      );
+      expect(mockCheckboxEl.checked).toBe(true);
     });
   });
 
@@ -293,6 +314,7 @@ describe("LabelInputModal", () => {
       expect(onSubmitSpy).toHaveBeenCalledWith({
         label: "Test Label",
         taskSize: null,
+        openInNewTab: true,
       });
       expect(modal.close).toHaveBeenCalled();
     });
@@ -306,6 +328,7 @@ describe("LabelInputModal", () => {
       expect(onSubmitSpy).toHaveBeenCalledWith({
         label: null,
         taskSize: null,
+        openInNewTab: true,
       });
       expect(modal.close).toHaveBeenCalled();
     });
@@ -319,6 +342,25 @@ describe("LabelInputModal", () => {
       expect(onSubmitSpy).toHaveBeenCalledWith({
         label: "Task Name",
         taskSize: '"[[ems__TaskSize_M]]"',
+        openInNewTab: true,
+      });
+      expect(modal.close).toHaveBeenCalled();
+    });
+
+    it("should submit with openInNewTab false when checkbox unchecked", () => {
+      modal.contentEl = mockContentEl;
+      modal.close = jest.fn();
+      modal.onOpen();
+
+      mockCheckboxEl.checked = false;
+      mockCheckboxEl.dispatchEvent(new Event("change"));
+
+      modal["submit"]();
+
+      expect(onSubmitSpy).toHaveBeenCalledWith({
+        label: null,
+        taskSize: null,
+        openInNewTab: false,
       });
       expect(modal.close).toHaveBeenCalled();
     });
@@ -339,6 +381,7 @@ describe("LabelInputModal", () => {
       expect(onSubmitSpy).toHaveBeenCalledWith({
         label: null,
         taskSize: null,
+        openInNewTab: true,
       });
       expect(modal.close).toHaveBeenCalled();
     });
