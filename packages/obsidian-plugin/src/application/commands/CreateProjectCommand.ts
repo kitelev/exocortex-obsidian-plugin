@@ -54,7 +54,9 @@ export class CreateProjectCommand implements ICommand {
       result.label,
     );
 
-    const leaf = this.app.workspace.getLeaf("tab");
+    const leaf = result.openInNewTab
+      ? this.app.workspace.getLeaf("tab")
+      : this.app.workspace.getLeaf(false);
     const tfile = this.vaultAdapter.toTFile(createdFile);
     await leaf.openFile(tfile);
 

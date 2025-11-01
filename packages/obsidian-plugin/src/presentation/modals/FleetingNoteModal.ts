@@ -38,7 +38,7 @@ export class FleetingNoteModal extends Modal {
     const errorElement = contentEl.createDiv({
       cls: "exocortex-modal-error-message",
     });
-    errorElement.style.display = "none";
+    errorElement.addClass("exocortex-modal-error-message--hidden");
     this.errorEl = errorElement;
 
     this.inputEl.addEventListener("input", (event) => {
@@ -96,14 +96,14 @@ export class FleetingNoteModal extends Modal {
     this.inputEl?.classList.add("exocortex-modal-input--error");
     if (this.errorEl) {
       this.errorEl.textContent = message;
-      this.errorEl.style.display = "";
+      this.errorEl.removeClass("exocortex-modal-error-message--hidden");
     }
   }
 
   private clearErrorState(): void {
     this.inputEl?.classList.remove("exocortex-modal-input--error");
     if (this.errorEl) {
-      this.errorEl.style.display = "none";
+      this.errorEl.addClass("exocortex-modal-error-message--hidden");
       this.errorEl.textContent = "";
     }
   }
