@@ -27,6 +27,8 @@ import { PropertiesRenderer } from "./layout/PropertiesRenderer";
 import { AreaTreeRenderer } from "./layout/AreaTreeRenderer";
 import { RelationsRenderer, UniversalLayoutConfig } from "./layout/RelationsRenderer";
 import { AssetMetadataService } from "./layout/helpers/AssetMetadataService";
+import { DailyNoteHelpers } from "./helpers/DailyNoteHelpers";
+import { DateFormatter } from "@exocortex/core";
 
 type ObsidianApp = any;
 
@@ -187,6 +189,8 @@ export class UniversalLayoutRenderer {
         return;
       }
 
+      this.renderDailyNavigation(el, currentFile);
+
       if (this.settings.showPropertiesSection) {
         await this.propertiesRenderer.render(el, currentFile);
       }
@@ -254,6 +258,55 @@ export class UniversalLayoutRenderer {
     }, 50);
   }
 
+  private renderDailyNavigation(el: HTMLElement, file: any): void {
+    const dailyNoteInfo = DailyNoteHelpers.extractDailyNoteInfo(
+      file,
+      this.metadataExtractor,
+      this.logger,
+    );
+
+    if (!dailyNoteInfo.isDailyNote || !dailyNoteInfo.day) {
+      return;
+    }
+
+    const currentDate = new Date(dailyNoteInfo.day);
+    if (isNaN(currentDate.getTime())) {
+      this.logger.debug(`Invalid date format: ${dailyNoteInfo.day}`);
+      return;
+    }
+
+    const prevDate = DateFormatter.addDays(currentDate, -1);
+    const nextDate = DateFormatter.addDays(currentDate, 1);
+
+    const prevDateStr = DateFormatter.toDateString(prevDate);
+    const nextDateStr = DateFormatter.toDateString(nextDate);
+
+    const navContainer = el.createDiv({
+      cls: "exocortex-daily-navigation",
+    });
+
+    const prevSpan = navContainer.createSpan({ cls: "exocortex-nav-prev" });
+    const prevLink = prevSpan.createEl("a", {
+      text: `← ${prevDateStr}`,
+      cls: "internal-link",
+      attr: { "data-href": prevDateStr },
+    });
+    prevLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      this.app.workspace.openLinkText(prevDateStr, file.path, false);
+    });
+
+    const nextSpan = navContainer.createSpan({ cls: "exocortex-nav-next" });
+    const nextLink = nextSpan.createEl("a", {
+      text: `${nextDateStr} →`,
+      cls: "internal-link",
+      attr: { "data-href": nextDateStr },
+    });
+    nextLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      this.app.workspace.openLinkText(nextDateStr, file.path, false);
+    });
+  }
 
   /**
    * Parse configuration from source
