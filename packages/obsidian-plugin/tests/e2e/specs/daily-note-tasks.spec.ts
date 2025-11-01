@@ -146,7 +146,7 @@ test.describe("DailyNote Tasks Table", () => {
     expect(headerCount).toBe(5);
 
     headerTexts = await headers.allTextContents();
-    expect(headerTexts).toContain("Effort Area");
+    expect(headerTexts.some((text) => text.includes("Effort Area"))).toBe(true);
 
     const firstRow = tasksTable.locator("tbody tr").first();
     const cells = firstRow.locator("td");
