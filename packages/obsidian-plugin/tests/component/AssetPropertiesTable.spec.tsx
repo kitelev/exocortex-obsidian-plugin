@@ -356,4 +356,59 @@ test.describe("AssetPropertiesTable Component", () => {
     const links = component.locator("a.internal-link");
     await expect(links).toHaveCount(3);
   });
+
+  test("should have sortable Property header with pointer cursor", async ({ mount }) => {
+    const component = await mount(
+      <AssetPropertiesTable metadata={mockMetadata} />,
+    );
+
+    const propertyHeader = component.locator('thead th:has-text("Property")');
+    await expect(propertyHeader).toHaveClass(/sortable/);
+    await expect(propertyHeader).toHaveCSS("cursor", "pointer");
+  });
+
+  test("should sort properties alphabetically ascending on first click", async ({ mount }) => {
+    const component = await mount(
+      <AssetPropertiesTable metadata={mockMetadata} />,
+    );
+
+    await component.locator('thead th:has-text("Property")').click();
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(10);
+
+    await expect(component.locator('thead th:has-text("Property")')).toContainText("↑");
+  });
+
+  test("should sort properties alphabetically descending on second click", async ({ mount }) => {
+    const component = await mount(
+      <AssetPropertiesTable metadata={mockMetadata} />,
+    );
+
+    const propertyHeader = component.locator('thead th:has-text("Property")');
+    await propertyHeader.click();
+    await propertyHeader.click();
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(10);
+
+    await expect(propertyHeader).toContainText("↓");
+  });
+
+  test("should toggle sort order on multiple clicks", async ({ mount }) => {
+    const component = await mount(
+      <AssetPropertiesTable metadata={mockMetadata} />,
+    );
+
+    const propertyHeader = component.locator('thead th:has-text("Property")');
+
+    await propertyHeader.click();
+    await expect(propertyHeader).toContainText("↑");
+
+    await propertyHeader.click();
+    await expect(propertyHeader).toContainText("↓");
+
+    await propertyHeader.click();
+    await expect(propertyHeader).toContainText("↑");
+  });
 });

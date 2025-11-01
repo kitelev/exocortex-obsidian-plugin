@@ -274,4 +274,73 @@ test.describe("DailyProjectsTable", () => {
     const projectLinks = component.locator(".project-name a.internal-link");
     await expect(projectLinks).toHaveCount(3);
   });
+
+  test("should have sortable headers with pointer cursor", async ({ mount }) => {
+    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+
+    const nameHeader = component.locator('thead th:has-text("Name")');
+    await expect(nameHeader).toHaveClass(/sortable/);
+    await expect(nameHeader).toHaveCSS("cursor", "pointer");
+
+    const startHeader = component.locator('thead th:has-text("Start")');
+    await expect(startHeader).toHaveClass(/sortable/);
+
+    const endHeader = component.locator('thead th:has-text("End")');
+    await expect(endHeader).toHaveClass(/sortable/);
+
+    const statusHeader = component.locator('thead th:has-text("Status")');
+    await expect(statusHeader).toHaveClass(/sortable/);
+  });
+
+  test("should sort projects by name ascending on first click", async ({ mount }) => {
+    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+
+    await component.locator('thead th:has-text("Name")').click();
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(3);
+
+    await expect(component.locator('thead th:has-text("Name")')).toContainText("↑");
+  });
+
+  test("should sort projects by name descending on second click", async ({ mount }) => {
+    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+
+    const nameHeader = component.locator('thead th:has-text("Name")');
+    await nameHeader.click();
+    await nameHeader.click();
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(3);
+
+    await expect(nameHeader).toContainText("↓");
+  });
+
+  test("should sort projects by start time", async ({ mount }) => {
+    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+
+    await component.locator('thead th:has-text("Start")').click();
+
+    const rows = component.locator("tbody tr");
+    const lastRow = rows.last();
+    await expect(lastRow.locator(".project-start")).toContainText("10:00");
+  });
+
+  test("should sort projects by end time", async ({ mount }) => {
+    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+
+    await component.locator('thead th:has-text("End")').click();
+
+    const rows = component.locator("tbody tr");
+    const lastRow = rows.last();
+    await expect(lastRow.locator(".project-end")).toContainText("18:00");
+  });
+
+  test("should sort projects by status", async ({ mount }) => {
+    const component = await mount(<DailyProjectsTable projects={mockProjects} />);
+
+    await component.locator('thead th:has-text("Status")').click();
+
+    await expect(component.locator('thead th:has-text("Status")')).toContainText("↑");
+  });
 });
