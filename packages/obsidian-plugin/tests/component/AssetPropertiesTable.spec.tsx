@@ -411,4 +411,82 @@ test.describe("AssetPropertiesTable Component", () => {
     await propertyHeader.click();
     await expect(propertyHeader).toContainText("↑");
   });
+
+  test("should have sortable Value header with pointer cursor", async ({ mount }) => {
+    const component = await mount(
+      <AssetPropertiesTable metadata={mockMetadata} />,
+    );
+
+    const valueHeader = component.locator('thead th:has-text("Value")');
+    await expect(valueHeader).toHaveClass(/sortable/);
+    await expect(valueHeader).toHaveCSS("cursor", "pointer");
+  });
+
+  test("should sort properties by value", async ({ mount }) => {
+    const metadata = {
+      zField: "alpha",
+      aField: "zulu",
+      mField: "mike",
+    };
+
+    const component = await mount(<AssetPropertiesTable metadata={metadata} />);
+
+    await component.locator('thead th:has-text("Value")').click();
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(3);
+
+    await expect(component.locator('thead th:has-text("Value")')).toContainText("↑");
+  });
+
+  test("should sort numeric values correctly", async ({ mount }) => {
+    const metadata = {
+      score1: 100,
+      score2: 5,
+      score3: 42,
+    };
+
+    const component = await mount(<AssetPropertiesTable metadata={metadata} />);
+
+    await component.locator('thead th:has-text("Value")').click();
+
+    const firstRow = component.locator("tbody tr").first();
+    await expect(firstRow.locator(".property-value")).toContainText("5");
+
+    await expect(component.locator('thead th:has-text("Value")')).toContainText("↑");
+  });
+
+  test("should sort boolean values", async ({ mount }) => {
+    const metadata = {
+      active: true,
+      archived: false,
+      visible: true,
+    };
+
+    const component = await mount(<AssetPropertiesTable metadata={metadata} />);
+
+    await component.locator('thead th:has-text("Value")').click();
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(3);
+
+    await expect(component.locator('thead th:has-text("Value")')).toContainText("↑");
+  });
+
+  test("should sort wiki links by alias", async ({ mount }) => {
+    const metadata = {
+      link1: "[[uid1|Zebra]]",
+      link2: "[[uid2|Alpha]]",
+      link3: "[[uid3|Mike]]",
+    };
+
+    const component = await mount(<AssetPropertiesTable metadata={metadata} />);
+
+    await component.locator('thead th:has-text("Value")').click();
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(3);
+
+    await expect(component.locator('thead th:has-text("Value")')).toContainText("↑");
+  });
 });

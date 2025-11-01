@@ -160,10 +160,36 @@ const SingleTable: React.FC<SingleTableProps> = ({
     return String(value);
   };
 
+  const normalizeMetadataValue = (value: any): string | number => {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "number") return value;
+    if (typeof value === "boolean") return value ? "true" : "false";
+
+    if (typeof value === "string" && /\[\[.*?\]\]/.test(value)) {
+      const content = value.replace(/^\[\[|\]\]$/g, "");
+      const pipeIndex = content.indexOf("|");
+      return (
+        pipeIndex !== -1
+          ? content.substring(pipeIndex + 1).trim()
+          : content.trim()
+      ).toLowerCase();
+    }
+
+    if (Array.isArray(value)) {
+      return value.length > 0 ? normalizeMetadataValue(value[0]) : "";
+    }
+
+    if (typeof value === "object") {
+      return JSON.stringify(value).toLowerCase();
+    }
+
+    return String(value).toLowerCase();
+  };
+
   const sortedItems = useMemo(() => {
     return [...items].sort((a, b) => {
-      let aVal: unknown;
-      let bVal: unknown;
+      let aVal: string | number;
+      let bVal: string | number;
 
       if (sortState.column === "title") {
         aVal = a.title.toLowerCase();
@@ -174,18 +200,22 @@ const SingleTable: React.FC<SingleTableProps> = ({
         aVal = (aClass.alias || aClass.target).toLowerCase();
         bVal = (bClass.alias || bClass.target).toLowerCase();
       } else {
-        aVal = a[sortState.column as keyof AssetRelation];
-        bVal = b[sortState.column as keyof AssetRelation];
-      }
-
-      if (typeof aVal === "string" && typeof bVal === "string") {
-        return sortState.order === "asc"
-          ? aVal.localeCompare(bVal)
-          : bVal.localeCompare(aVal);
+        aVal = normalizeMetadataValue(a.metadata[sortState.column]);
+        bVal = normalizeMetadataValue(b.metadata[sortState.column]);
       }
 
       if (typeof aVal === "number" && typeof bVal === "number") {
         return sortState.order === "asc" ? aVal - bVal : bVal - aVal;
+      }
+
+      const aStr = String(aVal);
+      const bStr = String(bVal);
+
+      if (aStr < bStr) {
+        return sortState.order === "asc" ? -1 : 1;
+      }
+      if (aStr > bStr) {
+        return sortState.order === "asc" ? 1 : -1;
       }
 
       return 0;
@@ -210,7 +240,16 @@ const SingleTable: React.FC<SingleTableProps> = ({
               (sortState.order === "asc" ? "↑" : "↓")}
           </th>
           {showProperties.map((prop) => (
-            <th key={prop}>{prop}</th>
+            <th
+              key={prop}
+              onClick={() => handleSort(prop)}
+              className="sortable"
+              style={{ cursor: "pointer" }}
+            >
+              {prop}{" "}
+              {sortState.column === prop &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
           ))}
         </tr>
       </thead>

@@ -110,6 +110,32 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
 
   const metadataEntries = Object.entries(metadata || {});
 
+  const getNormalizedValue = (value: any): string | number => {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "number") return value;
+    if (typeof value === "boolean") return value ? "true" : "false";
+
+    if (typeof value === "string" && /\[\[.*?\]\]/.test(value)) {
+      const content = value.replace(/^\[\[|\]\]$/g, "");
+      const pipeIndex = content.indexOf("|");
+      return (
+        pipeIndex !== -1
+          ? content.substring(pipeIndex + 1).trim()
+          : content.trim()
+      ).toLowerCase();
+    }
+
+    if (Array.isArray(value)) {
+      return value.length > 0 ? getNormalizedValue(value[0]) : "";
+    }
+
+    if (typeof value === "object") {
+      return JSON.stringify(value).toLowerCase();
+    }
+
+    return String(value).toLowerCase();
+  };
+
   const sortedEntries = useMemo(() => {
     if (!sortState.column) {
       return metadataEntries;
@@ -117,14 +143,29 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
 
     const sorted = [...metadataEntries];
 
-    sorted.sort(([keyA], [keyB]) => {
-      const aValue = keyA.toLowerCase();
-      const bValue = keyB.toLowerCase();
+    sorted.sort(([keyA, valueA], [keyB, valueB]) => {
+      let aValue: string | number;
+      let bValue: string | number;
 
-      if (aValue < bValue) {
+      if (sortState.column === "property") {
+        aValue = keyA.toLowerCase();
+        bValue = keyB.toLowerCase();
+      } else {
+        aValue = getNormalizedValue(valueA);
+        bValue = getNormalizedValue(valueB);
+      }
+
+      if (typeof aValue === "number" && typeof bValue === "number") {
+        return sortState.order === "asc" ? aValue - bValue : bValue - aValue;
+      }
+
+      const aStr = String(aValue);
+      const bStr = String(bValue);
+
+      if (aStr < bStr) {
         return sortState.order === "asc" ? -1 : 1;
       }
-      if (aValue > bValue) {
+      if (aStr > bStr) {
         return sortState.order === "asc" ? 1 : -1;
       }
       return 0;
@@ -152,7 +193,15 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
               {sortState.column === "property" &&
                 (sortState.order === "asc" ? "↑" : "↓")}
             </th>
-            <th>Value</th>
+            <th
+              onClick={() => handleSort("value")}
+              className="sortable"
+              style={{ cursor: "pointer" }}
+            >
+              Value{" "}
+              {sortState.column === "value" &&
+                (sortState.order === "asc" ? "↑" : "↓")}
+            </th>
           </tr>
         </thead>
         <tbody>
