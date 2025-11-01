@@ -1,4 +1,4 @@
-import { IVaultAdapter, IFile, IFrontmatter } from "../interfaces/IVaultAdapter";
+import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 import { Triple } from "../domain/models/rdf/Triple";
 import { IRI } from "../domain/models/rdf/IRI";
 import { Literal } from "../domain/models/rdf/Literal";
@@ -15,7 +15,6 @@ import { Namespace } from "../domain/models/rdf/Namespace";
  */
 export class NoteToRDFConverter {
   private readonly OBSIDIAN_VAULT_SCHEME = "obsidian://vault/";
-  private readonly WIKILINK_PATTERN = /\[\[([^\]]+)\]\]/g;
 
   constructor(private readonly vault: IVaultAdapter) {}
 
