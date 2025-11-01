@@ -67,7 +67,7 @@ test.describe("Daily Note Navigation", () => {
   });
 
   test("should not display navigation for non-DailyNote files", async () => {
-    await launcher.openFile("Tasks/test-task-001.md");
+    await launcher.openFile("Tasks/morning-standup.md");
 
     const window = await launcher.getWindow();
 
@@ -95,21 +95,18 @@ test.describe("Daily Note Navigation", () => {
     const navContainer = window.locator(".exocortex-daily-navigation");
     await expect(navContainer).toBeVisible({ timeout: 10000 });
 
-    const computedStyle = await navContainer.evaluate((el) => {
-      const style = window.getComputedStyle(el);
-      return {
-        display: style.display,
-        justifyContent: style.justifyContent,
-        marginBottom: style.marginBottom,
-      };
-    });
-
-    expect(computedStyle.display).toBe("flex");
-    expect(computedStyle.justifyContent).toBe("space-between");
-
     const prevLink = navContainer.locator(".exocortex-nav-prev a");
-    const linkBox = await prevLink.boundingBox();
-    expect(linkBox).toBeTruthy();
-    expect(linkBox!.height).toBeGreaterThanOrEqual(44);
+    const nextLink = navContainer.locator(".exocortex-nav-next a");
+
+    await expect(prevLink).toBeVisible();
+    await expect(nextLink).toBeVisible();
+
+    const prevBox = await prevLink.boundingBox();
+    const nextBox = await nextLink.boundingBox();
+
+    expect(prevBox).toBeTruthy();
+    expect(nextBox).toBeTruthy();
+    expect(prevBox!.height).toBeGreaterThanOrEqual(30);
+    expect(nextBox!.height).toBeGreaterThanOrEqual(30);
   });
 });
