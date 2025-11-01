@@ -220,9 +220,11 @@ export default class ExocortexPlugin extends Plugin {
           `Detected ems__Effort_plannedStartTimestamp change in ${file.path}: ${String(previousPlannedStartTimestamp)} → ${String(currentPlannedStartTimestamp)}`,
         );
 
-        const currentDate = new Date(currentPlannedStartTimestamp);
+        const currentDate = new Date(
+          String(currentPlannedStartTimestamp),
+        );
         const previousDate = previousPlannedStartTimestamp
-          ? new Date(previousPlannedStartTimestamp)
+          ? new Date(String(previousPlannedStartTimestamp))
           : null;
 
         if (
