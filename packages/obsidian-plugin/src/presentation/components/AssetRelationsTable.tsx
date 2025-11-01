@@ -337,3 +337,40 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
     </div>
   );
 };
+
+export interface AssetRelationsTableWithToggleProps
+  extends AssetRelationsTableProps {
+  showEffortVotes: boolean;
+  onToggleEffortVotes: () => void;
+}
+
+export const AssetRelationsTableWithToggle: React.FC<
+  AssetRelationsTableWithToggleProps
+> = ({ showEffortVotes, onToggleEffortVotes, showProperties = [], ...props }) => {
+  const enhancedShowProperties = showEffortVotes
+    ? [...showProperties, "ems__Effort_votes"]
+    : showProperties;
+
+  return (
+    <div className="exocortex-relations-wrapper">
+      <div className="exocortex-relations-controls">
+        <button
+          className="exocortex-toggle-effort-votes"
+          onClick={onToggleEffortVotes}
+          style={{
+            marginBottom: "8px",
+            padding: "4px 8px",
+            cursor: "pointer",
+            fontSize: "12px",
+          }}
+        >
+          {showEffortVotes ? "Hide" : "Show"} Votes
+        </button>
+      </div>
+      <AssetRelationsTable
+        {...props}
+        showProperties={enhancedShowProperties}
+      />
+    </div>
+  );
+};

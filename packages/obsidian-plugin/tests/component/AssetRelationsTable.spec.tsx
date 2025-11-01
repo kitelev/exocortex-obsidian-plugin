@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/experimental-ct-react";
 import {
   AssetRelationsTable,
+  AssetRelationsTableWithToggle,
   AssetRelation,
 } from "../../src/presentation/components/AssetRelationsTable";
 
@@ -475,5 +476,127 @@ test.describe("AssetRelationsTable Component", () => {
     );
     await expect(taskName).toContainText("🚩");
     await expect(taskName).toContainText("Custom Blocked Label");
+  });
+});
+
+test.describe("AssetRelationsTableWithToggle Component", () => {
+  const mockRelationsWithVotes: AssetRelation[] = [
+    {
+      path: "tasks/task1.md",
+      title: "Task 1",
+      propertyName: "ems__Effort_parent",
+      isBodyLink: false,
+      created: Date.now(),
+      modified: Date.now(),
+      metadata: {
+        exo__Instance_class: "ems__Task",
+        ems__Effort_votes: 5,
+      },
+    },
+    {
+      path: "tasks/task2.md",
+      title: "Task 2",
+      propertyName: "ems__Effort_parent",
+      isBodyLink: false,
+      created: Date.now(),
+      modified: Date.now(),
+      metadata: {
+        exo__Instance_class: "ems__Task",
+        ems__Effort_votes: 3,
+      },
+    },
+  ];
+
+  test("should render toggle button", async ({ mount }) => {
+    const component = await mount(
+      <AssetRelationsTableWithToggle
+        relations={mockRelationsWithVotes}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+      />,
+    );
+
+    await expect(
+      component.locator("button.exocortex-toggle-effort-votes"),
+    ).toBeVisible();
+    await expect(
+      component.locator("button.exocortex-toggle-effort-votes"),
+    ).toHaveText("Show Votes");
+  });
+
+  test("should show Votes column when showEffortVotes is true", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <AssetRelationsTableWithToggle
+        relations={mockRelationsWithVotes}
+        showEffortVotes={true}
+        onToggleEffortVotes={() => {}}
+      />,
+    );
+
+    await expect(component.locator('th:has-text("ems__Effort_votes")')).toBeVisible();
+    await expect(component.locator("text=5")).toBeVisible();
+    await expect(component.locator("text=3")).toBeVisible();
+    await expect(
+      component.locator("button.exocortex-toggle-effort-votes"),
+    ).toHaveText("Hide Votes");
+  });
+
+  test("should hide Votes column when showEffortVotes is false", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <AssetRelationsTableWithToggle
+        relations={mockRelationsWithVotes}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+      />,
+    );
+
+    await expect(
+      component.locator('th:has-text("ems__Effort_votes")'),
+    ).not.toBeVisible();
+    await expect(
+      component.locator("button.exocortex-toggle-effort-votes"),
+    ).toHaveText("Show Votes");
+  });
+
+  test("should call onToggleEffortVotes when button clicked", async ({
+    mount,
+  }) => {
+    let toggleCalled = false;
+
+    const component = await mount(
+      <AssetRelationsTableWithToggle
+        relations={mockRelationsWithVotes}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {
+          toggleCalled = true;
+        }}
+      />,
+    );
+
+    await component.locator("button.exocortex-toggle-effort-votes").click();
+    expect(toggleCalled).toBe(true);
+  });
+
+  test("should pass through other properties to AssetRelationsTable", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <AssetRelationsTableWithToggle
+        relations={mockRelationsWithVotes}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+        groupByProperty={true}
+        showProperties={["ems__Effort_status"]}
+      />,
+    );
+
+    await expect(component.locator(".relation-group")).toBeVisible();
+    await expect(
+      component.locator('th:has-text("ems__Effort_status")'),
+    ).toBeVisible();
   });
 });
