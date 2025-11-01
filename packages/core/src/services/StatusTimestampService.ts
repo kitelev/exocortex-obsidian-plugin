@@ -111,13 +111,31 @@ export class StatusTimestampService {
     await this.vault.modify(taskFile, updated);
   }
 
-  async syncPlannedEndTimestamp(
+  async shiftPlannedEndTimestamp(
     taskFile: IFile,
-    date?: Date,
+    deltaMs: number,
   ): Promise<void> {
     const content = await this.vault.read(taskFile);
-    const targetDate = date || new Date();
-    const timestamp = DateFormatter.toLocalTimestamp(targetDate);
+    
+    const parsed = this.frontmatterService.parse(content);
+    if (!parsed.exists) return;
+
+    const currentPlannedEnd = this.frontmatterService.getPropertyValue(
+      parsed.content,
+      "ems__Effort_plannedEndTimestamp",
+    );
+
+    if (!currentPlannedEnd) {
+      return;
+    }
+
+    const currentDate = new Date(currentPlannedEnd.replace(/["']/g, ""));
+    if (isNaN(currentDate.getTime())) {
+      return;
+    }
+
+    const newDate = new Date(currentDate.getTime() + deltaMs);
+    const timestamp = DateFormatter.toLocalTimestamp(newDate);
 
     const updated = this.frontmatterService.updateProperty(
       content,

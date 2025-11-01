@@ -76,8 +76,8 @@ export class TaskStatusService {
     await this.timestampService.addEndAndResolutionTimestamps(taskFile, date);
   }
 
-  async syncPlannedEndTimestamp(taskFile: IFile, date?: Date): Promise<void> {
-    await this.timestampService.syncPlannedEndTimestamp(taskFile, date);
+  async shiftPlannedEndTimestamp(taskFile: IFile, deltaMs: number): Promise<void> {
+    await this.timestampService.shiftPlannedEndTimestamp(taskFile, deltaMs);
   }
 
   async trashEffort(taskFile: IFile): Promise<void> {
