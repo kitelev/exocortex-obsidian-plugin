@@ -46,7 +46,7 @@ test.describe("Area Tree Collapsible Functionality", () => {
     const frontendToggle = frontendRow.locator(".area-tree-toggle");
 
     await expect(frontendToggle).toBeVisible();
-    await expect(frontendToggle).toHaveText("▼");
+    await expect(frontendToggle).toHaveText("▶"); // Collapsed by default
 
     const backendRow = launcher.page.locator('[data-area-path*="backend.md"]');
     const backendToggle = backendRow.locator(".area-tree-toggle");
@@ -54,42 +54,44 @@ test.describe("Area Tree Collapsible Functionality", () => {
     await expect(backendToggle).not.toBeVisible();
   });
 
-  test("should collapse children when toggle is clicked", async () => {
+  test("should expand children when toggle is clicked", async () => {
     await launcher.openFile("Areas/development.md");
     await launcher.waitForModalsToClose(10000);
     await launcher.waitForElement(".exocortex-area-tree", 60000);
 
     const areaTree = launcher.page.locator(".exocortex-area-tree");
     const reactComponentsLink = areaTree.locator("text=React Components");
-    await expect(reactComponentsLink).toBeVisible();
+    await expect(reactComponentsLink).not.toBeVisible(); // Collapsed initially
 
     const frontendRow = areaTree.locator('[data-area-path*="frontend.md"]');
     const frontendToggle = frontendRow.locator(".area-tree-toggle");
 
     await frontendToggle.click();
 
-    await expect(frontendToggle).toHaveText("▶");
-    await expect(reactComponentsLink).not.toBeVisible();
-  });
-
-  test("should expand children when toggle is clicked again", async () => {
-    await launcher.openFile("Areas/development.md");
-    await launcher.waitForModalsToClose(10000);
-    await launcher.waitForElement(".exocortex-area-tree", 60000);
-
-    const areaTree = launcher.page.locator(".exocortex-area-tree");
-    const frontendRow = areaTree.locator('[data-area-path*="frontend.md"]');
-    const frontendToggle = frontendRow.locator(".area-tree-toggle");
-
-    await frontendToggle.click();
-    await expect(frontendToggle).toHaveText("▶");
-
-    const reactComponentsLink = areaTree.locator("text=React Components");
-    await expect(reactComponentsLink).not.toBeVisible();
-
-    await frontendToggle.click();
     await expect(frontendToggle).toHaveText("▼");
     await expect(reactComponentsLink).toBeVisible();
+  });
+
+  test("should collapse children when toggle is clicked again", async () => {
+    await launcher.openFile("Areas/development.md");
+    await launcher.waitForModalsToClose(10000);
+    await launcher.waitForElement(".exocortex-area-tree", 60000);
+
+    const areaTree = launcher.page.locator(".exocortex-area-tree");
+    const frontendRow = areaTree.locator('[data-area-path*="frontend.md"]');
+    const frontendToggle = frontendRow.locator(".area-tree-toggle");
+
+    // First click: expand
+    await frontendToggle.click();
+    await expect(frontendToggle).toHaveText("▼");
+
+    const reactComponentsLink = areaTree.locator("text=React Components");
+    await expect(reactComponentsLink).toBeVisible();
+
+    // Second click: collapse
+    await frontendToggle.click();
+    await expect(frontendToggle).toHaveText("▶");
+    await expect(reactComponentsLink).not.toBeVisible();
   });
 
   test("should display correct hierarchy depth with collapsible nodes", async () => {
@@ -99,10 +101,17 @@ test.describe("Area Tree Collapsible Functionality", () => {
 
     const areaTree = launcher.page.locator(".exocortex-area-tree");
     const tableRows = areaTree.locator("tbody tr");
-    await expect(tableRows).toHaveCount(3);
+    await expect(tableRows).toHaveCount(2); // Only 2 top-level children, collapsed
 
     await expect(areaTree.locator("text=Frontend")).toBeVisible();
     await expect(areaTree.locator("text=Backend")).toBeVisible();
+    await expect(areaTree.locator("text=React Components")).not.toBeVisible(); // Hidden initially
+    
+    // Expand frontend to see React Components
+    const frontendRow = areaTree.locator('[data-area-path*="frontend.md"]');
+    const frontendToggle = frontendRow.locator(".area-tree-toggle");
+    await frontendToggle.click();
+    
     await expect(areaTree.locator("text=React Components")).toBeVisible();
   });
 
@@ -118,6 +127,12 @@ test.describe("Area Tree Collapsible Functionality", () => {
     await launcher.waitForElement(".exocortex-area-tree", 60000);
 
     const newAreaTree = launcher.page.locator(".exocortex-area-tree");
+    
+    // Expand to see React Components
+    const reactComponentsRow = newAreaTree.locator('[data-area-path*="react-components.md"]');
+    const reactComponentsToggle = reactComponentsRow.locator(".area-tree-toggle");
+    
+    // First verify React Components node exists but is initially collapsed
     await expect(newAreaTree.locator("text=React Components")).toBeVisible();
     await expect(newAreaTree.locator("text=Backend")).not.toBeVisible();
   });

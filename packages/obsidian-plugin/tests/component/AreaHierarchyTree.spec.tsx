@@ -159,13 +159,21 @@ test.describe("AreaHierarchyTree Component", () => {
       />,
     );
 
-    await expect(component.locator("tbody tr")).toHaveCount(2);
+    // Initially only top-level children visible (collapsed by default)
+    await expect(component.locator("tbody tr")).toHaveCount(1);
     await expect(
       component.locator('[data-href="areas/root.md"]'),
     ).not.toBeVisible();
     await expect(
       component.locator('[data-href="areas/child1.md"]'),
     ).toBeVisible();
+    await expect(
+      component.locator('[data-href="areas/grandchild1.md"]'),
+    ).not.toBeVisible();
+    
+    // Expand to see grandchildren
+    const toggle = component.locator(".area-tree-toggle").first();
+    await toggle.click();
     await expect(
       component.locator('[data-href="areas/grandchild1.md"]'),
     ).toBeVisible();
@@ -178,6 +186,10 @@ test.describe("AreaHierarchyTree Component", () => {
         currentAreaPath="areas/root.md"
       />,
     );
+
+    // Expand to see grandchildren
+    const toggle = component.locator(".area-tree-toggle").first();
+    await toggle.click();
 
     const childItem = component
       .locator('[data-area-path="areas/child1.md"]')
@@ -341,7 +353,7 @@ test.describe("AreaHierarchyTree Component", () => {
 
     const toggle = component.locator(".area-tree-toggle").first();
     await expect(toggle).toBeVisible();
-    await expect(toggle).toHaveText("▼");
+    await expect(toggle).toHaveText("▶"); // Collapsed by default
   });
 
   test("should not display toggle for nodes without children", async ({
@@ -358,7 +370,7 @@ test.describe("AreaHierarchyTree Component", () => {
     await expect(toggles).toHaveCount(0);
   });
 
-  test("should collapse children when toggle is clicked", async ({ mount }) => {
+  test("should expand children when toggle is clicked", async ({ mount }) => {
     const component = await mount(
       <AreaHierarchyTree
         tree={mockTreeMultiLevel}
@@ -366,20 +378,21 @@ test.describe("AreaHierarchyTree Component", () => {
       />,
     );
 
+    // Initially collapsed
     await expect(
       component.locator('[data-href="areas/grandchild1.md"]'),
-    ).toBeVisible();
+    ).not.toBeVisible();
 
     const toggle = component.locator(".area-tree-toggle").first();
     await toggle.click();
 
-    await expect(toggle).toHaveText("▶");
+    await expect(toggle).toHaveText("▼");
     await expect(
       component.locator('[data-href="areas/grandchild1.md"]'),
-    ).not.toBeVisible();
+    ).toBeVisible();
   });
 
-  test("should expand children when toggle is clicked again", async ({
+  test("should collapse children when toggle is clicked again", async ({
     mount,
   }) => {
     const component = await mount(
@@ -391,17 +404,19 @@ test.describe("AreaHierarchyTree Component", () => {
 
     const toggle = component.locator(".area-tree-toggle").first();
 
-    await toggle.click();
-    await expect(
-      component.locator('[data-href="areas/grandchild1.md"]'),
-    ).not.toBeVisible();
-    await expect(toggle).toHaveText("▶");
-
+    // First click: expand
     await toggle.click();
     await expect(
       component.locator('[data-href="areas/grandchild1.md"]'),
     ).toBeVisible();
     await expect(toggle).toHaveText("▼");
+
+    // Second click: collapse
+    await toggle.click();
+    await expect(
+      component.locator('[data-href="areas/grandchild1.md"]'),
+    ).not.toBeVisible();
+    await expect(toggle).toHaveText("▶");
   });
 
   test("should maintain independent collapse states for different nodes", async ({
@@ -465,6 +480,17 @@ test.describe("AreaHierarchyTree Component", () => {
     const toggles = component.locator(".area-tree-toggle");
     await expect(toggles).toHaveCount(2);
 
+    // Initially collapsed - expand both
+    await toggles.nth(0).click();
+    await toggles.nth(1).click();
+    await expect(
+      component.locator('[data-href="areas/grandchild1.md"]'),
+    ).toBeVisible();
+    await expect(
+      component.locator('[data-href="areas/grandchild2.md"]'),
+    ).toBeVisible();
+
+    // Collapse first branch
     await toggles.nth(0).click();
     await expect(
       component.locator('[data-href="areas/grandchild1.md"]'),
@@ -473,6 +499,7 @@ test.describe("AreaHierarchyTree Component", () => {
       component.locator('[data-href="areas/grandchild2.md"]'),
     ).toBeVisible();
 
+    // Collapse second branch
     await toggles.nth(1).click();
     await expect(
       component.locator('[data-href="areas/grandchild1.md"]'),
