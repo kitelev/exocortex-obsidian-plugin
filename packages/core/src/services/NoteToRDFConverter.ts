@@ -160,7 +160,7 @@ export class NoteToRDFConverter {
     if (typeof value === "number") {
       return new Literal(
         value.toString(),
-        new IRI("http://www.w3.org/2001/XMLSchema#number")
+        Namespace.XSD.term("decimal")
       );
     }
 

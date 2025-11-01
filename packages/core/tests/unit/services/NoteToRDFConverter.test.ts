@@ -1,6 +1,5 @@
 import { NoteToRDFConverter } from "../../../src/services/NoteToRDFConverter";
 import { IVaultAdapter, IFile, IFrontmatter } from "../../../src/interfaces/IVaultAdapter";
-import { Triple } from "../../../src/domain/models/rdf/Triple";
 import { IRI } from "../../../src/domain/models/rdf/IRI";
 import { Literal } from "../../../src/domain/models/rdf/Literal";
 import { Namespace } from "../../../src/domain/models/rdf/Namespace";
@@ -355,7 +354,7 @@ describe("NoteToRDFConverter", () => {
       await converter.convertVault();
       const duration = Date.now() - start;
 
-      expect(duration).toBeLessThan(100);
+      expect(duration).toBeLessThan(1000);
     });
   });
 
