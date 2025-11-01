@@ -111,6 +111,8 @@ export class UniversalLayoutRenderer {
       this.reactRenderer,
       this.backlinksCacheManager,
       this.metadataService,
+      this.plugin,
+      () => this.refresh(),
     );
 
     this.buttonGroupsBuilder = new ButtonGroupsBuilder(
