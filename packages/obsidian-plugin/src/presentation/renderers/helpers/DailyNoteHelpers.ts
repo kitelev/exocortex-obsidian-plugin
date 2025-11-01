@@ -46,4 +46,25 @@ export class DailyNoteHelpers {
 
     return { isDailyNote: true, day };
   }
+
+  static findDailyNoteByDate(
+    app: any,
+    metadataExtractor: MetadataExtractor,
+    dateStr: string,
+  ): TFile | null {
+    const files = app.vault.getMarkdownFiles();
+
+    for (const file of files) {
+      const dailyNoteInfo = this.extractDailyNoteInfo(
+        file,
+        metadataExtractor,
+      );
+
+      if (dailyNoteInfo.isDailyNote && dailyNoteInfo.day === dateStr) {
+        return file;
+      }
+    }
+
+    return null;
+  }
 }

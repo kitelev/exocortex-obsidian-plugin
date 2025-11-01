@@ -109,4 +109,58 @@ test.describe("Daily Note Navigation", () => {
     expect(nextText).toContain("2025-10-17");
     expect(nextText).toContain("→");
   });
+
+  test("should use correct file paths for navigation links", async () => {
+    await launcher.openFile("Daily Notes/2025-10-16.md");
+
+    const window = await launcher.getWindow();
+
+    await launcher.waitForModalsToClose(10000);
+    await window.waitForTimeout(5000);
+
+    await launcher.waitForElement(".exocortex-daily-navigation", 60000);
+
+    const navContainer = window.locator(".exocortex-daily-navigation");
+    await expect(navContainer).toBeVisible({ timeout: 10000 });
+
+    const prevLink = navContainer.locator(".exocortex-nav-prev a");
+    const nextLink = navContainer.locator(".exocortex-nav-next a");
+
+    await expect(prevLink).toBeVisible();
+    await expect(nextLink).toBeVisible();
+
+    const prevHref = await prevLink.getAttribute("data-href");
+    const nextHref = await nextLink.getAttribute("data-href");
+
+    expect(prevHref).toContain("Daily Notes/2025-10-15.md");
+    expect(nextHref).toContain("Daily Notes/2025-10-17.md");
+  });
+
+  test("should show disabled text when adjacent DailyNote does not exist", async () => {
+    await launcher.openFile("Daily Notes/2025-10-15.md");
+
+    const window = await launcher.getWindow();
+
+    await launcher.waitForModalsToClose(10000);
+    await window.waitForTimeout(5000);
+
+    await launcher.waitForElement(".exocortex-daily-navigation", 60000);
+
+    const navContainer = window.locator(".exocortex-daily-navigation");
+    await expect(navContainer).toBeVisible({ timeout: 10000 });
+
+    const prevDisabled = navContainer.locator(
+      ".exocortex-nav-prev .exocortex-nav-disabled",
+    );
+    const nextLink = navContainer.locator(".exocortex-nav-next a");
+
+    await expect(prevDisabled).toBeVisible();
+    await expect(nextLink).toBeVisible();
+
+    const prevText = await prevDisabled.textContent();
+    const nextText = await nextLink.textContent();
+
+    expect(prevText).toBe("← 2025-10-14");
+    expect(nextText).toBe("2025-10-16 →");
+  });
 });

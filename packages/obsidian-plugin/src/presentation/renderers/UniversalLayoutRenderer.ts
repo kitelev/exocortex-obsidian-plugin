@@ -281,31 +281,56 @@ export class UniversalLayoutRenderer {
     const prevDateStr = DateFormatter.toDateString(prevDate);
     const nextDateStr = DateFormatter.toDateString(nextDate);
 
+    const prevDailyNote = DailyNoteHelpers.findDailyNoteByDate(
+      this.app,
+      this.metadataExtractor,
+      prevDateStr,
+    );
+    const nextDailyNote = DailyNoteHelpers.findDailyNoteByDate(
+      this.app,
+      this.metadataExtractor,
+      nextDateStr,
+    );
+
     const navContainer = el.createDiv({
       cls: "exocortex-daily-navigation",
     });
 
     const prevSpan = navContainer.createSpan({ cls: "exocortex-nav-prev" });
-    const prevLink = prevSpan.createEl("a", {
-      text: `← ${prevDateStr}`,
-      cls: "internal-link",
-      attr: { "data-href": prevDateStr },
-    });
-    prevLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      this.app.workspace.openLinkText(prevDateStr, file.path, false);
-    });
+    if (prevDailyNote) {
+      const prevLink = prevSpan.createEl("a", {
+        text: `← ${prevDateStr}`,
+        cls: "internal-link",
+        attr: { "data-href": prevDailyNote.path },
+      });
+      prevLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.app.workspace.openLinkText(prevDailyNote.path, file.path, false);
+      });
+    } else {
+      prevSpan.createSpan({
+        text: `← ${prevDateStr}`,
+        cls: "exocortex-nav-disabled",
+      });
+    }
 
     const nextSpan = navContainer.createSpan({ cls: "exocortex-nav-next" });
-    const nextLink = nextSpan.createEl("a", {
-      text: `${nextDateStr} →`,
-      cls: "internal-link",
-      attr: { "data-href": nextDateStr },
-    });
-    nextLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      this.app.workspace.openLinkText(nextDateStr, file.path, false);
-    });
+    if (nextDailyNote) {
+      const nextLink = nextSpan.createEl("a", {
+        text: `${nextDateStr} →`,
+        cls: "internal-link",
+        attr: { "data-href": nextDailyNote.path },
+      });
+      nextLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.app.workspace.openLinkText(nextDailyNote.path, file.path, false);
+      });
+    } else {
+      nextSpan.createSpan({
+        text: `${nextDateStr} →`,
+        cls: "exocortex-nav-disabled",
+      });
+    }
   }
 
   /**
