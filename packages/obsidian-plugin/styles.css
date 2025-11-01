@@ -35,6 +35,16 @@
   background-color: var(--background-modifier-hover);
 }
 
+.exocortex-nav-disabled {
+  color: var(--text-faint);
+  opacity: 0.5;
+  padding: 6px 10px;
+  cursor: not-allowed;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
 /* ============================================================================
    Universal Layout Sections - Consistent Spacing
    ============================================================================ */
