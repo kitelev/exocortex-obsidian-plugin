@@ -101,12 +101,12 @@ test.describe("Daily Note Navigation", () => {
     await expect(prevLink).toBeVisible();
     await expect(nextLink).toBeVisible();
 
-    const prevBox = await prevLink.boundingBox();
-    const nextBox = await nextLink.boundingBox();
+    const prevText = await prevLink.textContent();
+    const nextText = await nextLink.textContent();
 
-    expect(prevBox).toBeTruthy();
-    expect(nextBox).toBeTruthy();
-    expect(prevBox!.height).toBeGreaterThanOrEqual(30);
-    expect(nextBox!.height).toBeGreaterThanOrEqual(30);
+    expect(prevText).toContain("2025-10-15");
+    expect(prevText).toContain("←");
+    expect(nextText).toContain("2025-10-17");
+    expect(nextText).toContain("→");
   });
 });
