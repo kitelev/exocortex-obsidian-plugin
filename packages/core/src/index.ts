@@ -27,6 +27,7 @@ export { PropertyCleanupService } from "./services/PropertyCleanupService";
 export { RenameToUidService } from "./services/RenameToUidService";
 export { StatusTimestampService } from "./services/StatusTimestampService";
 export { SupervisionCreationService } from "./services/SupervisionCreationService";
+export { FleetingNoteCreationService } from "./services/FleetingNoteCreationService";
 export { TaskFrontmatterGenerator } from "./services/TaskFrontmatterGenerator";
 export { AlgorithmExtractor } from "./services/AlgorithmExtractor";
 export { PlanningService } from "./services/PlanningService";

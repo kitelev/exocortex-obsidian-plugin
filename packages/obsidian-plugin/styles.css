@@ -905,6 +905,17 @@
   font-weight: 500;
 }
 
+.exocortex-modal-input--error {
+  border-color: var(--text-error);
+  box-shadow: 0 0 0 1px var(--text-error);
+}
+
+.exocortex-modal-error-message {
+  margin-top: 8px;
+  color: var(--text-error);
+  font-size: 0.85em;
+}
+
 /* ============================================================================
    Action Buttons Group - Semantic Grouping with Beautiful Design
    ============================================================================ */

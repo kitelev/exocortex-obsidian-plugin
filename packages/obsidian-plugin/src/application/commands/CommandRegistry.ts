@@ -13,11 +13,13 @@ import {
   EffortVotingService,
   LabelToAliasService,
   AssetConversionService,
+  FleetingNoteCreationService,
 } from "@exocortex/core";
 
 import { CreateTaskCommand } from "./CreateTaskCommand";
 import { CreateProjectCommand } from "./CreateProjectCommand";
 import { CreateInstanceCommand } from "./CreateInstanceCommand";
+import { CreateFleetingNoteCommand } from "./CreateFleetingNoteCommand";
 import { CreateRelatedTaskCommand } from "./CreateRelatedTaskCommand";
 import { SetDraftStatusCommand } from "./SetDraftStatusCommand";
 import { MoveToBacklogCommand } from "./MoveToBacklogCommand";
@@ -65,11 +67,13 @@ export class CommandRegistry {
     const effortVotingService = new EffortVotingService(this.vaultAdapter);
     const labelToAliasService = new LabelToAliasService(this.vaultAdapter);
     const assetConversionService = new AssetConversionService(this.vaultAdapter);
+    const fleetingNoteCreationService = new FleetingNoteCreationService(this.vaultAdapter);
 
     this.commands = [
       new CreateTaskCommand(app, taskCreationService, this.vaultAdapter),
       new CreateProjectCommand(app, projectCreationService, this.vaultAdapter),
       new CreateInstanceCommand(app, taskCreationService, this.vaultAdapter),
+      new CreateFleetingNoteCommand(app, fleetingNoteCreationService, this.vaultAdapter),
       new CreateRelatedTaskCommand(app, taskCreationService, this.vaultAdapter),
       new SetDraftStatusCommand(taskStatusService),
       new MoveToBacklogCommand(taskStatusService),
