@@ -15,6 +15,7 @@ import {
 import { ExocortexSettingTab } from "./presentation/settings/ExocortexSettingTab";
 import { TaskStatusService } from "@exocortex/core";
 import { ObsidianVaultAdapter } from "./adapters/ObsidianVaultAdapter";
+import { TaskTrackingService } from "./application/services/TaskTrackingService";
 
 /**
  * Exocortex Plugin - Automatic layout rendering
@@ -26,6 +27,7 @@ export default class ExocortexPlugin extends Plugin {
   private layoutRenderer!: UniversalLayoutRenderer;
   private commandManager!: CommandManager;
   private taskStatusService!: TaskStatusService;
+  private taskTrackingService!: TaskTrackingService;
   private metadataCache!: Map<string, Record<string, unknown>>;
   private vaultAdapter!: ObsidianVaultAdapter;
   settings!: ExocortexSettings;
@@ -48,6 +50,11 @@ export default class ExocortexPlugin extends Plugin {
         this,
       );
       this.taskStatusService = new TaskStatusService(this.vaultAdapter);
+      this.taskTrackingService = new TaskTrackingService(
+        this.app,
+        this.app.vault,
+        this.app.metadataCache
+      );
       this.metadataCache = new Map();
 
       // Initialize CommandManager and register all commands
@@ -183,6 +190,9 @@ export default class ExocortexPlugin extends Plugin {
       if (!metadata) {
         return;
       }
+
+      // iOS Live Activities: Track status changes to DOING
+      await this.taskTrackingService.handleFileChange(file);
 
       const currentEndTimestamp = metadata.ems__Effort_endTimestamp;
       const currentPlannedStartTimestamp =
