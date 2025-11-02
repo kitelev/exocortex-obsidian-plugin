@@ -461,6 +461,14 @@ Testing:
   - Total execution: ~15s (unit) + ~3min (E2E)
   - Coverage: 49% global, 78-80% domain layer
 
+#### Testing shortcut
+
+Run a single TypeScript Jest suite with the shared config to avoid parsing errors:
+
+```bash
+npx jest --config packages/obsidian-plugin/jest.config.js path/to/test.ts --runInBand
+```
+
 CI/CD:
   - GitHub Actions
   - Automated releases

@@ -146,19 +146,77 @@ describe("AssetMetadataService", () => {
       const mockPrototypeFile = new TFile();
       const mockParentFile = new TFile();
 
-      mockApp.metadataCache.getFirstLinkpathDest
-        .mockReturnValueOnce(mockPrototypeFile)
-        .mockReturnValueOnce(mockParentFile);
+      mockApp.metadataCache.getFirstLinkpathDest.mockImplementation(
+        (linkpath: string) => {
+          if (linkpath === "parent-effort") {
+            return mockParentFile;
+          }
+          if (linkpath === "prototype-path") {
+            return mockPrototypeFile;
+          }
+          return null;
+        },
+      );
 
-      mockApp.metadataCache.getFileCache
-        .mockReturnValueOnce({
-          frontmatter: {},
-        })
-        .mockReturnValueOnce({
-          frontmatter: {
-            ems__Effort_area: "parent-area",
-          },
-        });
+      mockApp.metadataCache.getFileCache.mockImplementation((file: TFile) => {
+        if (file === mockParentFile) {
+          return {
+            frontmatter: {
+              ems__Effort_area: "parent-area",
+            },
+          };
+        }
+        if (file === mockPrototypeFile) {
+          return {
+            frontmatter: {},
+          };
+        }
+        return null;
+      });
+
+      const metadata = {
+        ems__Effort_prototype: "[[prototype-path]]",
+        ems__Effort_parent: "[[parent-effort]]",
+      };
+
+      const result = service.getEffortArea(metadata);
+
+      expect(result).toBe("parent-area");
+    });
+
+    it("should prefer parent area over prototype area when both are present", () => {
+      const mockPrototypeFile = new TFile();
+      const mockParentFile = new TFile();
+
+      mockApp.metadataCache.getFirstLinkpathDest.mockImplementation(
+        (linkpath: string) => {
+          if (linkpath === "parent-effort") {
+            return mockParentFile;
+          }
+          if (linkpath === "prototype-path") {
+            return mockPrototypeFile;
+          }
+          return null;
+        },
+      );
+
+      mockApp.metadataCache.getFileCache.mockImplementation((file: TFile) => {
+        if (file === mockParentFile) {
+          return {
+            frontmatter: {
+              ems__Effort_area: "parent-area",
+            },
+          };
+        }
+        if (file === mockPrototypeFile) {
+          return {
+            frontmatter: {
+              ems__Effort_area: "prototype-area",
+            },
+          };
+        }
+        return null;
+      });
 
       const metadata = {
         ems__Effort_prototype: "[[prototype-path]]",
