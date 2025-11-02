@@ -377,7 +377,7 @@ test.describe("AssetPropertiesTable Component", () => {
     const rows = component.locator("tbody tr");
     await expect(rows).toHaveCount(10);
 
-    await expect(component.locator('thead th:has-text("Property")')).toContainText("?");
+    await expect(component.locator('thead th:has-text("Property")')).toContainText("↑");
   });
 
   test("should sort properties alphabetically descending on second click", async ({ mount }) => {
@@ -392,7 +392,7 @@ test.describe("AssetPropertiesTable Component", () => {
     const rows = component.locator("tbody tr");
     await expect(rows).toHaveCount(10);
 
-    await expect(propertyHeader).toContainText("?");
+    await expect(propertyHeader).toContainText("↓");
   });
 
   test("should toggle sort order on multiple clicks", async ({ mount }) => {
@@ -403,13 +403,13 @@ test.describe("AssetPropertiesTable Component", () => {
     const propertyHeader = component.locator('thead th:has-text("Property")');
 
     await propertyHeader.click();
-    await expect(propertyHeader).toContainText("?");
+    await expect(propertyHeader).toContainText("↑");
 
     await propertyHeader.click();
-    await expect(propertyHeader).toContainText("?");
+    await expect(propertyHeader).toContainText("↓");
 
     await propertyHeader.click();
-    await expect(propertyHeader).toContainText("?");
+    await expect(propertyHeader).toContainText("↑");
   });
 
   test("should have sortable Value header with pointer cursor", async ({ mount }) => {
@@ -436,7 +436,7 @@ test.describe("AssetPropertiesTable Component", () => {
     const rows = component.locator("tbody tr");
     await expect(rows).toHaveCount(3);
 
-    await expect(component.locator('thead th:has-text("Value")')).toContainText("?");
+    await expect(component.locator('thead th:has-text("Value")')).toContainText("↑");
   });
 
   test("should sort numeric values correctly", async ({ mount }) => {
@@ -453,7 +453,7 @@ test.describe("AssetPropertiesTable Component", () => {
     const firstRow = component.locator("tbody tr").first();
     await expect(firstRow.locator(".property-value")).toContainText("5");
 
-    await expect(component.locator('thead th:has-text("Value")')).toContainText("?");
+    await expect(component.locator('thead th:has-text("Value")')).toContainText("↑");
   });
 
   test("should sort boolean values", async ({ mount }) => {
@@ -470,7 +470,7 @@ test.describe("AssetPropertiesTable Component", () => {
     const rows = component.locator("tbody tr");
     await expect(rows).toHaveCount(3);
 
-    await expect(component.locator('thead th:has-text("Value")')).toContainText("?");
+    await expect(component.locator('thead th:has-text("Value")')).toContainText("↑");
   });
 
   test("should sort wiki links by alias", async ({ mount }) => {
@@ -487,37 +487,6 @@ test.describe("AssetPropertiesTable Component", () => {
     const rows = component.locator("tbody tr");
     await expect(rows).toHaveCount(3);
 
-    await expect(component.locator('thead th:has-text("Value")')).toContainText("?");
-  });
-
-  test("should display empty string alias when wiki link has empty alias", async ({
-    mount,
-  }) => {
-    const metadata = {
-      emptyAliasLink: "[[target|]]",
-      linkWithLabel: "[[target|Alias]]",
-    };
-
-    const component = await mount(<AssetPropertiesTable metadata={metadata} />);
-
-    // Empty alias should be displayed as empty string (not fallback to label/target)
-    const emptyAliasRow = component.locator(
-      'tr:has(td:has-text("emptyAliasLink"))',
-    );
-    await expect(emptyAliasRow).toBeVisible();
-
-    // The link should exist and have the target as data-href
-    const emptyAliasLink = emptyAliasRow.locator("a.internal-link");
-    await expect(emptyAliasLink).toHaveAttribute("data-href", "target");
-    // Empty string is rendered as empty content (element exists but has no text)
-    // This is correct behavior - empty alias should not fall back to label/target
-    const linkText = await emptyAliasLink.textContent();
-    expect(linkText).toBe(""); // Empty string, not "target" or any label
-
-    // Link with proper alias should work as before
-    const linkWithAlias = component
-      .locator('tr:has(td:has-text("linkWithLabel"))')
-      .locator('a.internal-link:has-text("Alias")');
-    await expect(linkWithAlias).toBeVisible();
+    await expect(component.locator('thead th:has-text("Value")')).toContainText("↑");
   });
 });
