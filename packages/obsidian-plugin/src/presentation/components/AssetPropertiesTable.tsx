@@ -69,7 +69,7 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
       if (isWikiLink(value)) {
         const parsed = parseWikiLink(value);
         const label = getAssetLabel?.(parsed.target);
-        const displayText = parsed.alias || label || parsed.target;
+        const displayText = parsed.alias !== undefined ? parsed.alias : label || parsed.target;
         return (
           <a
             data-href={parsed.target}
