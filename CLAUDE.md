@@ -534,6 +534,157 @@ if (!assetResult.isSuccess) {
 - Adaptive caching based on device capabilities
 - Touch gestures with momentum and haptic feedback
 
+### Modal Component Development Pattern
+
+**When creating a new modal component:**
+
+1. **Component structure:**
+```typescript
+export class MyModal extends Modal {
+  private selectedValue: string | null = null;
+  private onSubmit: (result: MyModalResult) => void;
+
+  constructor(app: App, onSubmit: (result: MyModalResult) => void, initialValue: string | null) {
+    super(app);
+    this.onSubmit = onSubmit;
+    this.selectedValue = initialValue;
+  }
+
+  onOpen(): void {
+    const { contentEl } = this;
+    contentEl.addClass("my-modal-class");
+
+    // UI elements with sentence case (ESLint enforced)
+    contentEl.createEl("h2", { text: "modal title" });  // ✅ lowercase
+
+    // Create select dropdown
+    const selectEl = contentEl.createEl("select", { cls: "my-modal-select dropdown" });
+
+    // Buttons
+    const buttonContainer = contentEl.createDiv({ cls: "modal-button-container" });
+    const okButton = buttonContainer.createEl("button", { text: "OK", cls: "mod-cta" });
+    okButton.addEventListener("click", () => this.submit());
+
+    const cancelButton = buttonContainer.createEl("button", { text: "Cancel" });
+    cancelButton.addEventListener("click", () => this.cancel());
+  }
+
+  private submit(): void {
+    this.onSubmit({ selectedValue: this.selectedValue });
+    this.close();
+  }
+
+  private cancel(): void {
+    this.close();
+  }
+
+  onClose(): void {
+    const { contentEl } = this;
+    contentEl.empty();
+  }
+}
+```
+
+2. **Test structure (Jest mocking pattern for modals):**
+```typescript
+jest.mock("obsidian", () => ({
+  Modal: class MockModal { contentEl: any; close = jest.fn(); },
+  App: jest.fn(),
+}));
+
+// CRITICAL: Use two-step mocking pattern for constructor functions
+jest.mock("../../src/presentation/modals/MyModal");
+
+describe("MyModal", () => {
+  let mockContentEl: any;
+  let modal: MyModal;
+  let onSubmitSpy: jest.Mock;
+
+  beforeEach(() => {
+    // Mock contentEl with all methods
+    mockContentEl = {
+      addClass: jest.fn(),
+      createEl: jest.fn().mockImplementation((tag, options) => {
+        if (tag === "select") {
+          const select = document.createElement("select");
+          select.className = options?.cls || "";
+          return select;
+        }
+        if (tag === "button") {
+          const button = document.createElement("button");
+          if (options?.text) button.textContent = options.text;
+          return button;
+        }
+        return document.createElement(tag);
+      }),
+      createDiv: jest.fn().mockImplementation((options) => ({
+        createEl: mockContentEl.createEl,
+        style: {},
+        className: options?.cls || "",
+      })),
+      empty: jest.fn(),
+    };
+
+    onSubmitSpy = jest.fn();
+    modal = new MyModal(mockApp, onSubmitSpy, null);
+    modal.contentEl = mockContentEl;
+    modal.close = jest.fn();
+  });
+
+  it("should render elements", () => {
+    modal.onOpen();
+    expect(mockContentEl.addClass).toHaveBeenCalledWith("my-modal-class");
+    expect(mockContentEl.createEl).toHaveBeenCalledWith("h2", { text: "modal title" });
+  });
+
+  it("should handle submission", () => {
+    modal["selectedValue"] = "test-value";
+    modal["submit"]();
+    expect(onSubmitSpy).toHaveBeenCalledWith({ selectedValue: "test-value" });
+    expect(modal.close).toHaveBeenCalled();
+  });
+});
+```
+
+3. **Command integration pattern:**
+```typescript
+export class MyCommand implements ICommand {
+  id = "my-command";
+  name = "My Command";
+
+  callback = async (): Promise<void> => {
+    const modal = new MyModal(
+      this.app,
+      async (result: MyModalResult) => {
+        await this.handleSelection(result);
+      },
+      this.plugin.settings.currentValue || null,
+    );
+    modal.open();
+  };
+
+  private async handleSelection(result: MyModalResult): Promise<void> {
+    this.plugin.settings.currentValue = result.selectedValue;
+    await this.plugin.saveSettings();
+    this.plugin.refreshLayout?.();
+
+    if (result.selectedValue) {
+      new Notice(`Value set to: ${result.selectedValue}`);
+    } else {
+      new Notice("Value cleared");
+    }
+  }
+}
+```
+
+**Key patterns:**
+- ✅ **Sentence case** for all UI text (ESLint enforced: "modal title", not "Modal Title")
+- ✅ **Mock `contentEl` methods**, return real DOM nodes from `createEl`
+- ✅ **Test rendering** by verifying method calls, not DOM state
+- ✅ **Two-step mock pattern** for constructor functions (see AGENTS.md for details)
+- ✅ **Settings persistence** via `saveSettings()` + `refreshLayout()`
+- ✅ **User feedback** via `Notice` for all state changes
+
 ## 🚀 Quick Start
 
 ### Understanding Monorepo Codebase
