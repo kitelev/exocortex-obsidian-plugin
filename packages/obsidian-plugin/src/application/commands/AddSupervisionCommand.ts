@@ -41,9 +41,14 @@ export class AddSupervisionCommand implements ICommand {
       }
 
       new Notice(`Supervision created: ${createdFile.basename}`);
-    } catch (error: any) {
-      new Notice(`Failed to create supervision: ${error.message}`);
-      LoggingService.error("Add supervision error", error);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      new Notice(`Failed to create supervision: ${errorMessage}`);
+      LoggingService.error(
+        "Add supervision error",
+        error instanceof Error ? error : undefined,
+      );
     }
   };
 }
