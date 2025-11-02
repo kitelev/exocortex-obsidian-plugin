@@ -41,6 +41,15 @@ export { MetadataHelpers } from "./utilities/MetadataHelpers";
 export { MetadataExtractor } from "./utilities/MetadataExtractor";
 export { EffortSortingHelpers } from "./utilities/EffortSortingHelpers";
 
+// Infrastructure exports
+export {
+  RDFSerializer,
+  type RDFSerializationFormat,
+  type RDFSerializeOptions,
+  type RDFStreamOptions,
+  type RDFDeserializeOptions,
+} from "./infrastructure/rdf/RDFSerializer";
+
 // Interfaces exports
 export type { IFileSystemAdapter } from "./interfaces/IFileSystemAdapter";
 export {
