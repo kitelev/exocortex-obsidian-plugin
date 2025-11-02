@@ -1874,7 +1874,7 @@ describe("DailyTasksRenderer", () => {
       expect(result).toBe("Development");
     });
 
-    it.skip("should resolve area from parent when not set directly", async () => {
+    it("should resolve area from parent when not set directly", async () => {
       const mockFile = {
         path: "test.md",
         parent: { path: "DailyNotes" },
@@ -1890,10 +1890,8 @@ describe("DailyTasksRenderer", () => {
         basename: "task",
       } as TFile;
 
-      const parentFile = {
-        path: "parent.md",
-        basename: "parent",
-      } as TFile;
+      const parentFile = new TFile();
+      Object.assign(parentFile, { path: "parent.md", basename: "parent" });
 
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
@@ -1925,8 +1923,18 @@ describe("DailyTasksRenderer", () => {
 
       const renderCall = mockReactRenderer.render.mock.calls[0];
       const getEffortArea = renderCall[1].props.getEffortArea;
-      const result = getEffortArea(taskMetadata);
-      expect(result).toBe("QA");
+      const props = renderCall[1].props;
+      const tasks = props.tasks;
+
+      expect(tasks).toHaveLength(1);
+      expect(props.showEffortArea).toBe(true);
+
+      const resolvedArea = props.getEffortArea(tasks[0].metadata);
+
+      expect(resolvedArea).toBe("QA");
+      expect(mockMetadataService.getEffortArea).toHaveBeenCalledWith(
+        tasks[0].metadata,
+      );
     });
 
     it("should prevent infinite loops with circular references", async () => {
