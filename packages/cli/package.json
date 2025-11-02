@@ -8,10 +8,11 @@
     "exocortex": "./dist/index.js"
   },
   "scripts": {
-    "build": "echo 'CLI build temporarily disabled - needs refactoring for monorepo'",
+    "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "echo 'CLI tests not yet implemented'"
   },
   "keywords": [
     "exocortex",

@@ -3,7 +3,7 @@ import chalk from "chalk";
 import ora from "ora";
 import * as path from "path";
 import { TaskCreationService, AssetClass } from "@exocortex/core";
-import { NodeFsAdapter } from "../adapters/NodeFsAdapter.js";
+import { FileSystemVaultAdapter } from "../adapters/FileSystemVaultAdapter.js";
 
 export function createInstanceCommand(): Command {
   const cmd = new Command("instance");
@@ -18,7 +18,7 @@ export function createInstanceCommand(): Command {
       const spinner = ora("Creating instance from prototype...").start();
 
       try {
-        const adapter = new NodeFsAdapter(options.root);
+        const adapter = new FileSystemVaultAdapter(options.root);
         const service = new TaskCreationService(adapter);
 
         const prototypePath = path.relative(options.root, options.prototype);
@@ -36,8 +36,13 @@ export function createInstanceCommand(): Command {
           }
         }
 
+        const prototypeFile = adapter.getAbstractFileByPath(prototypePath);
+        if (!prototypeFile || !('extension' in prototypeFile)) {
+          throw new Error(`Prototype file not found: ${options.prototype}`);
+        }
+
         const createdPath = await service.createTask(
-          prototypePath,
+          prototypeFile,
           metadata,
           sourceClass,
           options.label,

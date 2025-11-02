@@ -20,6 +20,72 @@ npx exocortex-cli [command]
 exocortex --help
 ```
 
+### SPARQL Query (NEW!)
+
+Execute SPARQL queries against your Obsidian vault as an RDF knowledge graph:
+
+```bash
+exocortex sparql query "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10" \
+  --vault ~/vault
+```
+
+**Options:**
+- `<query>` - SPARQL query string or path to .sparql file **[required]**
+- `--vault <path>` - Path to Obsidian vault (default: current directory)
+- `--format <type>` - Output format: `table` (default), `json`, `csv`
+- `--explain` - Show optimized query plan (for debugging)
+- `--stats` - Show execution statistics (load time, query time, results count)
+- `--no-optimize` - Disable query optimization
+
+**Examples:**
+
+```bash
+# Find all tasks with high effort
+exocortex sparql query \
+  "PREFIX ems: <http://exocortex.org/ems/>
+   SELECT ?task ?label ?effort
+   WHERE {
+     ?task <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ems:Task .
+     ?task ems:label ?label .
+     ?task ems:effort ?effort .
+   }" \
+  --vault ~/vault
+
+# Query from file
+exocortex sparql query queries/high-effort-tasks.sparql --vault ~/vault
+
+# JSON output for automation
+exocortex sparql query "SELECT ?s ?p ?o WHERE { ?s ?p ?o }" \
+  --vault ~/vault \
+  --format json > results.json
+
+# Show query plan
+exocortex sparql query "SELECT ?task WHERE { ?task <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://exocortex.org/ems/Task> }" \
+  --vault ~/vault \
+  --explain \
+  --stats
+```
+
+**Sample Output (Table Format):**
+
+```
+📦 Loading vault: /Users/you/vault...
+✅ Loaded 1,234 triples in 45ms
+
+🔍 Parsing SPARQL query...
+🔄 Translating to algebra...
+🎯 Executing query...
+✅ Found 5 result(s) in 12ms
+
+┌────────────────────────────────────────────────────────────┐
+│ ?label                    │ ?effort                      │
+├────────────────────────────┼───────────────────────────────┤
+│ "Implement SPARQL Engine" │ "240"                        │
+│ "Write Documentation"     │ "120"                        │
+│ "Design Architecture"     │ "180"                        │
+└────────────────────────────────────────────────────────────┘
+```
+
 ### Create Task
 
 Create a new task from an area or project:
@@ -160,6 +226,12 @@ exocortex-cli/
 
 ## Features
 
+- **SPARQL Query Engine** - Execute SPARQL 1.1 queries against vault as RDF knowledge graph
+  - BGP (Basic Graph Pattern) execution with variable bindings
+  - Query optimization (filter push-down, join reordering)
+  - Multiple output formats (table, JSON, CSV)
+  - Query plan visualization (--explain flag)
+  - Performance statistics (--stats flag)
 - **File System Operations** - Read/write markdown files with frontmatter
 - **Task Creation** - Generate tasks from areas, projects, and prototypes
 - **Instance Creation** - Create instances from prototypes

@@ -3,7 +3,7 @@ import chalk from "chalk";
 import ora from "ora";
 import * as path from "path";
 import { TaskStatusService } from "@exocortex/core";
-import { NodeFsAdapter } from "../adapters/NodeFsAdapter.js";
+import { FileSystemVaultAdapter } from "../adapters/FileSystemVaultAdapter.js";
 
 export function statusCommand(): Command {
   const cmd = new Command("todo");
@@ -16,11 +16,16 @@ export function statusCommand(): Command {
       const spinner = ora("Updating task status to ToDo...").start();
 
       try {
-        const adapter = new NodeFsAdapter(options.root);
+        const adapter = new FileSystemVaultAdapter(options.root);
         const service = new TaskStatusService(adapter);
 
         const taskPath = path.relative(options.root, options.task);
-        await service.moveToToDo(taskPath);
+        const taskFile = adapter.getAbstractFileByPath(taskPath);
+        if (!taskFile || !('extension' in taskFile)) {
+          throw new Error(`Task file not found: ${options.task}`);
+        }
+
+        await service.moveToToDo(taskFile);
 
         spinner.succeed(
           chalk.green(`Task status updated to ToDo: ${taskPath}`),
