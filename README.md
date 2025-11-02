@@ -138,7 +138,7 @@ Schedule and prioritize efforts:
 | **Shift Day ◀** | Efforts with day set | Move to previous day | ems__Effort_day |
 | **Shift Day ▶** | Efforts with day set | Move to next day | ems__Effort_day |
 | **Vote on Effort** | Task/Project (not archived) | Increment vote counter | ems__Effort_votes |
-| **Set/Clear Active Focus** | ems__Area | Focus daily tasks on area | Plugin settings |
+| **Set Focus Area** | Always available | Focus daily tasks on area + children | Plugin settings (activeFocusArea) |
 
 ### Maintenance Commands (3)
 
