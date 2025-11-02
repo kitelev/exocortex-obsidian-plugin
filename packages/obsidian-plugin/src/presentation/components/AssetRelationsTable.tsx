@@ -130,7 +130,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
     if (typeof value === "string" && isWikiLink(value)) {
       const parsed = parseWikiLink(value);
       const label = getAssetLabel?.(parsed.target);
-      const displayText = parsed.alias !== undefined ? parsed.alias : label || parsed.target;
+      const displayText = parsed.alias || label || parsed.target;
 
       return (
         <a
