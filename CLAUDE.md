@@ -9,6 +9,9 @@
 git worktree add ../exocortex-[task-name] -b feature/[description]
 cd ../exocortex-[task-name]
 git fetch origin main && git rebase origin/main
+
+# Immediately hydrate dependencies in the new worktree (prevents ts-jest preset errors)
+npm install
 ```
 
 **ALWAYS use slash commands for these operations:**
@@ -468,6 +471,8 @@ Run a single TypeScript Jest suite with the shared config to avoid parsing error
 ```bash
 npx jest --config packages/obsidian-plugin/jest.config.js path/to/test.ts --runInBand
 ```
+
+> **ts-jest quirk**: class-level `async *` methods are not transpiled by the current Jest configuration. When you need an async stream, return an `AsyncIterableIterator` from a helper or closure instead of declaring `async *` directly on a class.
 
 CI/CD:
   - GitHub Actions

@@ -47,6 +47,10 @@
 
 **Prevention**: Always execute `npm install` right after creating a new worktree.
 
+### Jest async generators
+
+The shared ts-jest configuration does not handle class-level `async *` methods. When you need an async stream, expose a helper that returns an `AsyncIterableIterator` instead of adding `async *` directly on a class.
+
 ## Release Guidance
 - Do **not** bump versions or craft releases manually. Coordinate with maintainers for release automation that mirrors the `/release` command.
 - Ensure changelog updates and release activities happen through the sanctioned process once available.
