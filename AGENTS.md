@@ -35,6 +35,18 @@
 - Validate behavior-driven coverage as expected by the CLAUDE workflow: `npm run bdd:check` (or `npm run bdd:coverage` / `npm run bdd:report` for diagnostics).
 - Investigate and resolve all failures; prevent Playwright hangs by keeping runs scoped when possible.
 
+### Troubleshooting: Missing ts-jest preset
+
+**Symptom**: Running Jest yields `Preset ts-jest not found relative to rootDir ...`.
+
+**Root Cause**: Dependencies have not been installed inside the current worktree (common immediately after `git worktree add`).
+
+**Solution**:
+1. From the worktree root, run `npm install`.
+2. Re-run the Jest command.
+
+**Prevention**: Always execute `npm install` right after creating a new worktree.
+
 ## Release Guidance
 - Do **not** bump versions or craft releases manually. Coordinate with maintainers for release automation that mirrors the `/release` command.
 - Ensure changelog updates and release activities happen through the sanctioned process once available.

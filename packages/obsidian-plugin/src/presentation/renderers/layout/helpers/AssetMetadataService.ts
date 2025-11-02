@@ -90,6 +90,26 @@ export class AssetMetadataService {
       return directArea;
     }
 
+    const parentRef = metadata.ems__Effort_parent;
+    const parentPath = this.extractFirstValue(parentRef);
+
+    if (parentPath && !visited.has(parentPath)) {
+      visited.add(parentPath);
+      const parentFile = this.app.metadataCache.getFirstLinkpathDest(
+        parentPath,
+        "",
+      );
+      if (parentFile instanceof TFile) {
+        const parentCache = this.app.metadataCache.getFileCache(parentFile);
+        const parentMetadata = parentCache?.frontmatter || {};
+
+        const resolvedArea = this.getEffortArea(parentMetadata, visited);
+        if (resolvedArea) {
+          return resolvedArea;
+        }
+      }
+    }
+
     const prototypeRef = metadata.ems__Effort_prototype;
     const prototypePath = this.extractFirstValue(prototypeRef);
 
@@ -105,26 +125,6 @@ export class AssetMetadataService {
         const prototypeMetadata = prototypeCache?.frontmatter || {};
 
         const resolvedArea = this.getEffortArea(prototypeMetadata, visited);
-        if (resolvedArea) {
-          return resolvedArea;
-        }
-      }
-    }
-
-    const parentRef = metadata.ems__Effort_parent;
-    const parentPath = this.extractFirstValue(parentRef);
-
-    if (parentPath && !visited.has(parentPath)) {
-      visited.add(parentPath);
-      const parentFile = this.app.metadataCache.getFirstLinkpathDest(
-        parentPath,
-        "",
-      );
-      if (parentFile instanceof TFile) {
-        const parentCache = this.app.metadataCache.getFileCache(parentFile);
-        const parentMetadata = parentCache?.frontmatter || {};
-
-        const resolvedArea = this.getEffortArea(parentMetadata, visited);
         if (resolvedArea) {
           return resolvedArea;
         }
