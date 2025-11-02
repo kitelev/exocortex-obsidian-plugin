@@ -2,7 +2,7 @@
  * CommandManager Unit Tests
  *
  * Comprehensive test coverage for command registration, visibility checks,
- * and execution paths. Tests all 29 commands with various file contexts.
+ * and execution paths. Tests all 30 commands with various file contexts.
  */
 
 import { CommandManager } from "../../src/application/services/CommandManager";
@@ -124,7 +124,7 @@ describe("CommandManager", () => {
         commandManager.registerAllCommands(mockPlugin);
       }).not.toThrow();
 
-      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(29);
+      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(30);
     });
 
     it("should register commands with correct IDs", () => {
@@ -164,6 +164,7 @@ describe("CommandManager", () => {
       expect(registeredCommandIds).toContain(
         "toggle-archived-assets-visibility",
       );
+      expect(registeredCommandIds).toContain("set-focus-area");
     });
 
     it("should register commands with correct names", () => {
