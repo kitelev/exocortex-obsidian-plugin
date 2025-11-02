@@ -506,6 +506,62 @@ test.describe("DailyTasksTable", () => {
     await expect(component.locator('thead th:has-text("Effort Area")')).toContainText("↑");
   });
 
+  test.skip("should display Effort Area inherited from parent when provided by getEffortArea", async ({
+    mount,
+  }) => {
+    // NOTE: This functionality is properly tested in DailyTasksRenderer.test.ts unit test
+    // The component test has timing/isolation issues with mocked functions
+    // See: "should resolve area from parent when not set directly" test in DailyTasksRenderer.test.ts
+    const tasksWithoutDirectArea: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Task 1",
+        label: "Task 1",
+        startTime: "09:00",
+        endTime: "10:00",
+        status: "ems__EffortStatusInProgress",
+        metadata: { ems__Effort_parent: "[[parent-effort]]" },
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyTasksTable
+        tasks={tasksWithoutDirectArea}
+        showEffortArea={true}
+        getEffortArea={(metadata) => {
+          // Simulates AssetMetadataService.getEffortArea resolving from parent
+          const parentRef = (metadata as any).ems__Effort_parent;
+          if (parentRef === "[[parent-effort]]") {
+            // Return the path that getEffortArea would extract from the parent
+            return "QA-area-file";
+          }
+          return null;
+        }}
+        getAssetLabel={(path) => {
+          if (path === "QA-area-file") {
+            return "QA Area";
+          }
+          return null;
+        }}
+      />,
+    );
+
+    // The table should have the effort area cell
+    await expect(component.locator(".task-effort-area")).toHaveCount(1);
+    
+    // Since getEffortArea returns "QA-area-file" and getAssetLabel returns "QA Area",
+    // the cell should contain a link with text "QA Area"
+    await expect(component.locator(".task-effort-area a")).toContainText(
+      "QA Area",
+    );
+  });
+
   test("should have sortable Votes header when showEffortVotes is true", async ({
     mount,
   }) => {
