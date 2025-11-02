@@ -1,10 +1,8 @@
 import type {
   AlgebraOperation,
-  BGPOperation,
   FilterOperation,
   JoinOperation,
   Expression,
-  VariableExpression,
 } from "./AlgebraOperation";
 
 export interface OptimizationStats {
