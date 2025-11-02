@@ -3,7 +3,7 @@ import chalk from "chalk";
 import ora from "ora";
 import * as path from "path";
 import { TaskCreationService, AssetClass } from "@exocortex/core";
-import { NodeFsAdapter } from "../adapters/NodeFsAdapter.js";
+import { FileSystemVaultAdapter } from "../adapters/FileSystemVaultAdapter.js";
 
 export function createTaskCommand(): Command {
   const cmd = new Command("task");
@@ -21,7 +21,7 @@ export function createTaskCommand(): Command {
       const spinner = ora("Creating task...").start();
 
       try {
-        const adapter = new NodeFsAdapter(options.root);
+        const adapter = new FileSystemVaultAdapter(options.root);
         const service = new TaskCreationService(adapter);
 
         const sourcePath = path.relative(options.root, options.source);

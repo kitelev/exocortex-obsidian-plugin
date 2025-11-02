@@ -41,7 +41,7 @@ export class IRI {
       return false;
     }
 
-    const validSchemes = ["http", "https", "ftp", "ftps", "file", "mailto", "tel", "data", "ws", "wss", "urn"];
+    const validSchemes = ["http", "https", "ftp", "ftps", "file", "mailto", "tel", "data", "ws", "wss", "urn", "obsidian"];
     const schemeMatch = value.match(/^([a-z][a-z0-9+.-]*?):/i);
     if (schemeMatch) {
       const scheme = schemeMatch[1].toLowerCase();

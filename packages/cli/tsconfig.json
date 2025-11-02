@@ -14,7 +14,7 @@
     "strict": true,
     "resolveJsonModule": true,
     "paths": {
-      "@exocortex/core": ["../core/dist/index.d.ts"]
+      "@exocortex/core": ["../core/src"]
     }
   },
   "include": ["src/**/*"],

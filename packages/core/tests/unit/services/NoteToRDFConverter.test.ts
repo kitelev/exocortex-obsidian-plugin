@@ -366,7 +366,7 @@ describe("NoteToRDFConverter", () => {
 
     it("should handle spaces in path", () => {
       const iri = converter.notePathToIRI("My Folder/My Note.md");
-      expect(iri.value).toContain("obsidian://vault/My Folder/My Note.md");
+      expect(iri.value).toBe("obsidian://vault/My%20Folder/My%20Note.md");
     });
   });
 });

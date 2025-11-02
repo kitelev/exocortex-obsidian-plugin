@@ -103,7 +103,8 @@ export class NoteToRDFConverter {
    * ```
    */
   notePathToIRI(path: string): IRI {
-    return new IRI(`${this.OBSIDIAN_VAULT_SCHEME}${path}`);
+    const encodedPath = encodeURIComponent(path);
+    return new IRI(`${this.OBSIDIAN_VAULT_SCHEME}${encodedPath}`);
   }
 
   private isExocortexProperty(key: string): boolean {
