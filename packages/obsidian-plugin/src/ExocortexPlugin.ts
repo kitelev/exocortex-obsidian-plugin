@@ -16,6 +16,7 @@ import { ExocortexSettingTab } from "./presentation/settings/ExocortexSettingTab
 import { TaskStatusService } from "@exocortex/core";
 import { ObsidianVaultAdapter } from "./adapters/ObsidianVaultAdapter";
 import { TaskTrackingService } from "./application/services/TaskTrackingService";
+import { SPARQLCodeBlockProcessor } from "./application/processors/SPARQLCodeBlockProcessor";
 
 /**
  * Exocortex Plugin - Automatic layout rendering
@@ -30,6 +31,7 @@ export default class ExocortexPlugin extends Plugin {
   private taskTrackingService!: TaskTrackingService;
   private metadataCache!: Map<string, Record<string, unknown>>;
   private vaultAdapter!: ObsidianVaultAdapter;
+  private sparqlProcessor!: SPARQLCodeBlockProcessor;
   settings!: ExocortexSettings;
 
   async onload(): Promise<void> {
@@ -56,6 +58,7 @@ export default class ExocortexPlugin extends Plugin {
         this.app.metadataCache
       );
       this.metadataCache = new Map();
+      this.sparqlProcessor = new SPARQLCodeBlockProcessor(this);
 
       // Initialize CommandManager and register all commands
       this.commandManager = new CommandManager(this.app);
@@ -64,6 +67,11 @@ export default class ExocortexPlugin extends Plugin {
       );
 
       this.addSettingTab(new ExocortexSettingTab(this.app, this));
+
+      this.registerMarkdownCodeBlockProcessor(
+        "sparql",
+        (source, el, ctx) => this.sparqlProcessor.process(source, el, ctx)
+      );
 
       this.registerEvent(
         this.app.metadataCache.on("resolved", () => {
