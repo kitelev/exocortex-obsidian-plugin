@@ -65,6 +65,7 @@ export interface ExocortexPluginInterface extends Plugin {
     showEffortArea?: boolean;
     showEffortVotes?: boolean;
   };
+  vaultAdapter: any; // ObsidianVaultAdapter - avoiding circular dependency
   saveSettings(): Promise<void>;
   refreshLayout?(): void;
 }

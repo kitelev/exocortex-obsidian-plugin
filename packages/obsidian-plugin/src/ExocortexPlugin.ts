@@ -30,7 +30,7 @@ export default class ExocortexPlugin extends Plugin {
   private taskStatusService!: TaskStatusService;
   private taskTrackingService!: TaskTrackingService;
   private metadataCache!: Map<string, Record<string, unknown>>;
-  private vaultAdapter!: ObsidianVaultAdapter;
+  vaultAdapter!: ObsidianVaultAdapter;
   private sparqlProcessor!: SPARQLCodeBlockProcessor;
   settings!: ExocortexSettings;
 

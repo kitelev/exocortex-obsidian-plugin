@@ -26,6 +26,14 @@ describe("SetFocusAreaCommand", () => {
       },
       saveSettings: jest.fn(),
       refreshLayout: jest.fn(),
+      vaultAdapter: {
+        create: jest.fn().mockResolvedValue({
+          path: "Events/test-uid.md",
+          basename: "test-uid",
+          name: "test-uid.md",
+          parent: null,
+        }),
+      },
     } as unknown as jest.Mocked<ExocortexPluginInterface>;
 
     // Setup modal mock
@@ -148,15 +156,16 @@ describe("SetFocusAreaCommand", () => {
 
       const callback = (AreaSelectionModal as any).lastCallback;
 
-      await expect(
-        callback({
-          selectedArea: "Development",
-        }),
-      ).rejects.toThrow("Save failed");
+      await callback({
+        selectedArea: "Development",
+      });
 
       expect(mockPlugin.settings.activeFocusArea).toBe("Development");
       expect(mockPlugin.saveSettings).toHaveBeenCalled();
       expect(mockPlugin.refreshLayout).not.toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to activate focus area"),
+      );
     });
 
     it("should handle missing refreshLayout gracefully", async () => {
