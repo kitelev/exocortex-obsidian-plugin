@@ -62,6 +62,8 @@ export { BGPExecutor } from "./infrastructure/sparql/executors/BGPExecutor";
 export { FilterExecutor } from "./infrastructure/sparql/executors/FilterExecutor";
 export { OptionalExecutor } from "./infrastructure/sparql/executors/OptionalExecutor";
 export { UnionExecutor } from "./infrastructure/sparql/executors/UnionExecutor";
+export { ConstructExecutor } from "./infrastructure/sparql/executors/ConstructExecutor";
+export { DescribeExecutor } from "./infrastructure/sparql/executors/DescribeExecutor";
 export { SolutionMapping } from "./infrastructure/sparql/SolutionMapping";
 export { BuiltInFunctions } from "./infrastructure/sparql/filters/BuiltInFunctions";
 export { AggregateFunctions } from "./infrastructure/sparql/aggregates/AggregateFunctions";
