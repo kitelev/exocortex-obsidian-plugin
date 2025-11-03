@@ -76,8 +76,10 @@ export class SetFocusAreaCommand implements ICommand {
         }
       }
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       new Notice(
-        `Failed to ${previousArea && newArea ? "switch" : newArea ? "activate" : "deactivate"} focus area. ${error.message || "Unknown error"}`,
+        `Failed to ${previousArea && newArea ? "switch" : newArea ? "activate" : "deactivate"} focus area. ${errorMessage}`,
       );
       console.error("Session event creation failed:", error);
     }
