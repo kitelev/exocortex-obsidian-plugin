@@ -1263,7 +1263,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
-        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
+        ems__Effort_plannedStartTimestamp: "2025-10-20T09:00:00", // Valid timestamp for filtering
         ems__Effort_status: "[[ems__EffortStatusDoing]]",
         ems__Effort_startTimestamp: "invalid",
         ems__Effort_endTimestamp: "also-invalid",
@@ -1309,7 +1309,7 @@ describe("DailyTasksRenderer", () => {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
         ems__Effort_status: "[[ems__EffortStatusDoing]]",
-        ems__Effort_plannedStartTimestamp: "2025-10-20T09:00:00",
+        ems__Effort_plannedEndTimestamp: "2025-10-20T18:00:00", // Valid timestamp for filtering, but not used for display
       };
 
       mockMetadataExtractor.extractMetadata
@@ -2513,8 +2513,8 @@ describe("DailyTasksRenderer", () => {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
         ems__Effort_status: "[[ems__EffortStatusDoing]]",
-        ems__Effort_startTimestamp: 1729411200000,
-        ems__Effort_endTimestamp: 1729440000000,
+        ems__Effort_startTimestamp: 1760932800000, // 2025-10-20T09:00:00
+        ems__Effort_endTimestamp: 1760961600000, // 2025-10-20T17:00:00
       };
 
       mockMetadataExtractor.extractMetadata
