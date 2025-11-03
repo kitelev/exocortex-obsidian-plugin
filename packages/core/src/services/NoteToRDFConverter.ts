@@ -83,8 +83,14 @@ export class NoteToRDFConverter {
     const allTriples: Triple[] = [];
 
     for (const file of files) {
-      const triples = await this.convertNote(file);
-      allTriples.push(...triples);
+      try {
+        const triples = await this.convertNote(file);
+        allTriples.push(...triples);
+      } catch (error) {
+        console.error(`❌ Error converting note: ${file.path}`);
+        console.error(`   Error: ${error instanceof Error ? error.message : String(error)}`);
+        throw error;
+      }
     }
 
     return allTriples;
@@ -185,7 +191,11 @@ export class NoteToRDFConverter {
   }
 
   private isClassReference(value: string): boolean {
-    return value.startsWith("ems__") || value.startsWith("exo__");
+    // Class references cannot contain whitespace or special characters
+    // Valid: "ems__Task", "exo__ObjectProperty"
+    // Invalid: "ems__Effort_blocker сделать массивом" (contains spaces)
+    return (value.startsWith("ems__") || value.startsWith("exo__"))
+      && !/\s/.test(value);
   }
 
   private expandClassValue(value: string): IRI | null {

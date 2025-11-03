@@ -134,9 +134,16 @@ async function executeQuery(
   algebra: any,
   tripleStore: InMemoryTripleStore
 ): Promise<SolutionMapping[]> {
+  // Extract LIMIT from Slice operation before descending to BGP
+  let limit: number | undefined = undefined;
   let operation = algebra;
 
+  // Walk down the algebra tree, extracting LIMIT
   while (operation.type !== "bgp") {
+    if (operation.type === "slice" && operation.limit !== undefined) {
+      limit = operation.limit;
+    }
+
     if ("input" in operation) {
       operation = operation.input;
     } else {
@@ -145,7 +152,14 @@ async function executeQuery(
   }
 
   const executor = new BGPExecutor(tripleStore);
-  return await executor.executeAll(operation);
+  const results = await executor.executeAll(operation);
+
+  // Apply LIMIT if present
+  if (limit !== undefined) {
+    return results.slice(0, limit);
+  }
+
+  return results;
 }
 
 function formatResults(results: SolutionMapping[], format: string): void {
