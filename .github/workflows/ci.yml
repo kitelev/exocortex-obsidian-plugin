@@ -283,10 +283,3 @@ jobs:
           path: test-results-e2e/
           retention-days: 7
           if-no-files-found: ignore
-
-  build-and-test:
-    runs-on: ubuntu-latest
-    needs: [build, typecheck, lint, test-unit, test-coverage, test-bdd, test-component]
-    steps:
-      - name: All checks passed
-        run: echo "All parallel checks completed successfully"
