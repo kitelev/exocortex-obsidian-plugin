@@ -1678,6 +1678,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
                 exo__Asset_label: "Task 1",
                 ems__Effort_status: "[[ems__EffortStatusDoing]]",
                 ems__Effort_day: "[[2025-10-16]]",
+                ems__Effort_startTimestamp: "2025-10-16T09:00:00",
                 some_reference: "[[2025-10-16 Note]]",
               },
             };
@@ -1693,6 +1694,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
             {
               file: { path: "tasks/task1.md" },
               ems__Effort_day: "[[2025-10-16]]",
+                ems__Effort_startTimestamp: "2025-10-16T09:00:00",
             },
           ],
         }),
@@ -1851,6 +1853,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
                 ems__Effort_status: "[[ems__EffortStatusDoing]]",
                 ems__Effort_day: "[[2025-10-16]]",
                 ems__Effort_startTimestamp: "2025-10-16T09:00:00",
+                ems__Effort_startTimestamp: "2025-10-16T09:00:00",
               },
             };
           }
@@ -1861,6 +1864,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
                 exo__Asset_label: "Code review",
                 ems__Effort_status: "[[ems__EffortStatusDone]]",
                 ems__Effort_day: "[[2025-10-16]]",
+                ems__Effort_startTimestamp: "2025-10-16T09:00:00",
                 ems__Effort_endTimestamp: "2025-10-16T15:00:00",
               },
             };
@@ -1871,6 +1875,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
                 exo__Instance_class: "ems__Task",
                 exo__Asset_label: "Different day task",
                 ems__Effort_day: "[[2025-10-17]]", // Different day!
+                ems__Effort_startTimestamp: "2025-10-17T09:00:00",
               },
             };
           }
@@ -1962,6 +1967,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
               frontmatter: {
                 exo__Instance_class: "ems__Task",
                 ems__Effort_day: "[[2025-10-16]]",
+                ems__Effort_startTimestamp: "2025-10-16T09:00:00",
                 some_reference: "[[2025-10-16 Note]]",
               },
             };
@@ -1977,6 +1983,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
             {
               file: { path: "tasks/task1.md" },
               ems__Effort_day: "[[2025-10-16]]",
+                ems__Effort_startTimestamp: "2025-10-16T09:00:00",
             },
           ],
         }),
