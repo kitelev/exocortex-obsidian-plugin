@@ -26,6 +26,14 @@ describe("SetFocusAreaCommand", () => {
       },
       saveSettings: jest.fn(),
       refreshLayout: jest.fn(),
+      vaultAdapter: {
+        create: jest.fn().mockResolvedValue({
+          path: "Events/test-uid.md",
+          basename: "test-uid",
+          name: "test-uid.md",
+          parent: null,
+        }),
+      },
     } as unknown as jest.Mocked<ExocortexPluginInterface>;
 
     // Setup modal mock

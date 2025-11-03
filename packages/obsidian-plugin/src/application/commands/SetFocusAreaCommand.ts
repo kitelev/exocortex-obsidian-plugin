@@ -5,15 +5,21 @@ import {
   AreaSelectionModal,
   AreaSelectionModalResult,
 } from "../../presentation/modals/AreaSelectionModal";
+import { SessionEventService } from "@exocortex/core";
 
 export class SetFocusAreaCommand implements ICommand {
   id = "set-focus-area";
   name = "Set Focus Area";
+  private sessionEventService: SessionEventService;
 
   constructor(
     private app: App,
     private plugin: ExocortexPluginInterface,
-  ) {}
+  ) {
+    this.sessionEventService = new SessionEventService(
+      this.plugin.vaultAdapter,
+    );
+  }
 
   callback = async (): Promise<void> => {
     const modal = new AreaSelectionModal(
@@ -31,13 +37,30 @@ export class SetFocusAreaCommand implements ICommand {
     result: AreaSelectionModalResult,
   ): Promise<void> {
     const previousArea = this.plugin.settings.activeFocusArea;
-    this.plugin.settings.activeFocusArea = result.selectedArea;
+    const newArea = result.selectedArea;
+
+    // Case 1: Switching from one area to another
+    if (previousArea && newArea && previousArea !== newArea) {
+      await this.sessionEventService.createSessionEndEvent(previousArea, null);
+      await this.sessionEventService.createSessionStartEvent(newArea, null);
+    }
+    // Case 2: Activating focus (null → area)
+    else if (!previousArea && newArea) {
+      await this.sessionEventService.createSessionStartEvent(newArea, null);
+    }
+    // Case 3: Deactivating focus (area → null)
+    else if (previousArea && !newArea) {
+      await this.sessionEventService.createSessionEndEvent(previousArea, null);
+    }
+    // Case 4: No change (null → null or same area) - no events created
+
+    this.plugin.settings.activeFocusArea = newArea;
 
     await this.plugin.saveSettings();
     this.plugin.refreshLayout?.();
 
-    if (result.selectedArea) {
-      new Notice(`Focus area set to: ${result.selectedArea}`);
+    if (newArea) {
+      new Notice(`Focus area set to: ${newArea}`);
     } else {
       if (previousArea) {
         new Notice("Focus area cleared - showing all efforts");
