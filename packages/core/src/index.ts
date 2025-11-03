@@ -59,7 +59,11 @@ export { AlgebraOptimizer } from "./infrastructure/sparql/algebra/AlgebraOptimiz
 export { AlgebraSerializer } from "./infrastructure/sparql/algebra/AlgebraSerializer";
 export type { AlgebraOperation } from "./infrastructure/sparql/algebra/AlgebraOperation";
 export { BGPExecutor } from "./infrastructure/sparql/executors/BGPExecutor";
+export { FilterExecutor } from "./infrastructure/sparql/executors/FilterExecutor";
+export { OptionalExecutor } from "./infrastructure/sparql/executors/OptionalExecutor";
+export { UnionExecutor } from "./infrastructure/sparql/executors/UnionExecutor";
 export { SolutionMapping } from "./infrastructure/sparql/SolutionMapping";
+export { BuiltInFunctions } from "./infrastructure/sparql/filters/BuiltInFunctions";
 
 // Interfaces exports
 export type { IFileSystemAdapter } from "./interfaces/IFileSystemAdapter";
