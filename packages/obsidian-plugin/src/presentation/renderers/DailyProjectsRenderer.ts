@@ -5,7 +5,7 @@ import React from "react";
 import { ReactRenderer } from "../utils/ReactRenderer";
 import {
   DailyProject,
-  DailyProjectsTable,
+  DailyProjectsTableWithToggle,
 } from "../components/DailyProjectsTable";
 import { AssetClass, EffortStatus } from "@exocortex/core";
 import { MetadataExtractor } from "@exocortex/core";
@@ -18,25 +18,31 @@ type ObsidianApp = any;
 export class DailyProjectsRenderer {
   private logger: ILogger;
   private app: ObsidianApp;
+  private settings: ExocortexSettings;
+  private plugin: any;
   private metadataExtractor: MetadataExtractor;
   private reactRenderer: ReactRenderer;
+  private refresh: () => Promise<void>;
   private getAssetLabelCallback: (path: string) => string | null;
 
   constructor(
     app: ObsidianApp,
-    _settings: ExocortexSettings,
-    _plugin: any,
+    settings: ExocortexSettings,
+    plugin: any,
     logger: ILogger,
     metadataExtractor: MetadataExtractor,
     reactRenderer: ReactRenderer,
-    _refresh: () => Promise<void>,
+    refresh: () => Promise<void>,
     getAssetLabel: (path: string) => string | null,
     _getEffortArea: (metadata: Record<string, unknown>) => string | null,
   ) {
     this.app = app;
+    this.settings = settings;
+    this.plugin = plugin;
     this.logger = logger;
     this.metadataExtractor = metadataExtractor;
     this.reactRenderer = reactRenderer;
+    this.refresh = refresh;
     this.getAssetLabelCallback = getAssetLabel;
   }
 
@@ -91,8 +97,14 @@ export class DailyProjectsRenderer {
 
     this.reactRenderer.render(
       tableContainer,
-      React.createElement(DailyProjectsTable, {
+      React.createElement(DailyProjectsTableWithToggle, {
         projects,
+        showArchived: this.settings.showArchivedAssets,
+        onToggleArchived: async () => {
+          this.settings.showArchivedAssets = !this.settings.showArchivedAssets;
+          await this.plugin.saveSettings();
+          await this.refresh();
+        },
         onProjectClick: async (path: string, event: React.MouseEvent) => {
           const isModPressed = Keymap.isModEvent(
             event.nativeEvent as MouseEvent,
