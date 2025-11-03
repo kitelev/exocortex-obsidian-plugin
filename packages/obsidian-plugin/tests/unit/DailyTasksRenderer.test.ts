@@ -1285,8 +1285,8 @@ describe("DailyTasksRenderer", () => {
       expect(mockReactRenderer.render).toHaveBeenCalled();
       const renderCall = mockReactRenderer.render.mock.calls[0];
       const tasks = renderCall[1].props.tasks;
-      expect(tasks[0].startTime).toBe("");
-      expect(tasks[0].endTime).toBe("");
+      expect(tasks[0].startTime).toBe("09:00"); // Planned start used as fallback since actual is invalid
+      expect(tasks[0].endTime).toBe(""); // No valid end timestamp
     });
 
     it("should handle null/undefined timestamps", async () => {
@@ -1309,7 +1309,7 @@ describe("DailyTasksRenderer", () => {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
         ems__Effort_status: "[[ems__EffortStatusDoing]]",
-        ems__Effort_plannedEndTimestamp: "2025-10-20T18:00:00", // Valid timestamp for filtering, but not used for display
+        ems__Effort_plannedEndTimestamp: "2025-10-20T18:00:00", // Passes filter, used as fallback for display
       };
 
       mockMetadataExtractor.extractMetadata
@@ -1328,8 +1328,8 @@ describe("DailyTasksRenderer", () => {
       expect(mockReactRenderer.render).toHaveBeenCalled();
       const renderCall = mockReactRenderer.render.mock.calls[0];
       const tasks = renderCall[1].props.tasks;
-      expect(tasks[0].startTime).toBe("");
-      expect(tasks[0].endTime).toBe("");
+      expect(tasks[0].startTime).toBe(""); // No start timestamp
+      expect(tasks[0].endTime).toBe("18:00"); // Planned end timestamp used as fallback
     });
 
     it("should fallback to planned timestamps when actual not available", async () => {
