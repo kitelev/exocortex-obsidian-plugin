@@ -46,6 +46,24 @@ export class SessionEventService {
   }
 
   /**
+   * Find the folder path where the [[!kitelev]] asset is located
+   * @returns Folder path for [[!kitelev]] asset or "Events" as fallback
+   */
+  private async getKitelevAssetFolder(): Promise<string> {
+    const allFiles = this.vault.getAllFiles();
+    
+    for (const file of allFiles) {
+      const frontmatter = this.vault.getFrontmatter(file);
+      if (frontmatter?.exo__Asset_uid === "!kitelev") {
+        return file.parent?.path || "Events";
+      }
+    }
+    
+    // Fallback to "Events" if [[!kitelev]] asset not found
+    return "Events";
+  }
+
+  /**
    * Private helper method to create session event assets
    * @param areaName - Name of the area
    * @param areaFile - Optional file reference for the area
@@ -70,7 +88,7 @@ export class SessionEventService {
     };
 
     const fileContent = MetadataHelpers.buildFileContent(frontmatter);
-    const folderPath = areaFile?.parent?.path || "Events";
+    const folderPath = await this.getKitelevAssetFolder();
     const filePath = `${folderPath}/${uid}.md`;
 
     return await this.vault.create(filePath, fileContent);
