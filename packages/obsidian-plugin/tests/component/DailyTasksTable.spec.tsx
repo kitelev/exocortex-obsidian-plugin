@@ -917,4 +917,172 @@ test.describe("DailyTasksTableWithToggle", () => {
 
     await expect(component.locator(".task-effort-votes")).toContainText("-");
   });
+
+  test("should render toggle button for archived tasks", async ({ mount }) => {
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+        showArchived={false}
+        onToggleArchived={() => {}}
+      />,
+    );
+
+    await expect(
+      component.locator(".exocortex-toggle-archived"),
+    ).toBeVisible();
+    await expect(
+      component.locator(".exocortex-toggle-archived"),
+    ).toContainText("Show Archived");
+  });
+
+  test("should show 'Hide Archived' when showArchived is true", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+        showArchived={true}
+        onToggleArchived={() => {}}
+      />,
+    );
+
+    await expect(
+      component.locator(".exocortex-toggle-archived"),
+    ).toContainText("Hide Archived");
+  });
+
+  test("should call onToggleArchived when button is clicked", async ({
+    mount,
+  }) => {
+    let toggleCalled = false;
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+        showArchived={false}
+        onToggleArchived={() => {
+          toggleCalled = true;
+        }}
+      />,
+    );
+
+    await component.locator(".exocortex-toggle-archived").click();
+    expect(toggleCalled).toBe(true);
+  });
+
+  test("should filter archived tasks when showArchived is false", async ({
+    mount,
+  }) => {
+    const tasksWithArchived: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Active Task",
+        label: "Active",
+        startTime: "09:00",
+        endTime: "10:00",
+        status: "ems__EffortStatusInProgress",
+        metadata: { exo__Asset_isArchived: false },
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "task2.md", basename: "task2" },
+        path: "task2.md",
+        title: "Archived Task",
+        label: "Archived",
+        startTime: "11:00",
+        endTime: "12:00",
+        status: "ems__EffortStatusDone",
+        metadata: { exo__Asset_isArchived: true },
+        isDone: true,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={tasksWithArchived}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+        showArchived={false}
+        onToggleArchived={() => {}}
+      />,
+    );
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(1);
+    await expect(rows.first().locator(".task-name a")).toContainText("Active");
+  });
+
+  test("should show all tasks when showArchived is true", async ({
+    mount,
+  }) => {
+    const tasksWithArchived: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Active Task",
+        label: "Active",
+        startTime: "09:00",
+        endTime: "10:00",
+        status: "ems__EffortStatusInProgress",
+        metadata: { exo__Asset_isArchived: false },
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "task2.md", basename: "task2" },
+        path: "task2.md",
+        title: "Archived Task",
+        label: "Archived",
+        startTime: "11:00",
+        endTime: "12:00",
+        status: "ems__EffortStatusDone",
+        metadata: { exo__Asset_isArchived: true },
+        isDone: true,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={tasksWithArchived}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+        showArchived={true}
+        onToggleArchived={() => {}}
+      />,
+    );
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(2);
+  });
 });
