@@ -523,7 +523,7 @@ describe("CommandVisibility", () => {
       expect(canPlanOnToday(context)).toBe(true);
     });
 
-    it("should return false when ems__Effort_day is array with today", () => {
+    it("should return false when ems__Effort_plannedStartTimestamp is array with today", () => {
       const now = new Date();
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -534,7 +534,7 @@ describe("CommandVisibility", () => {
         instanceClass: "[[ems__Task]]",
         currentStatus: null,
         metadata: {
-          ems__Effort_day: [`"[[${todayString}]]"`],
+          ems__Effort_plannedStartTimestamp: [`${todayString}T00:00:00`],
         },
         isArchived: false,
         currentFolder: "",
@@ -543,12 +543,12 @@ describe("CommandVisibility", () => {
       expect(canPlanOnToday(context)).toBe(false);
     });
 
-    it("should return true when ems__Effort_day is empty string", () => {
+    it("should return true when ems__Effort_plannedStartTimestamp is empty string", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Task]]",
         currentStatus: null,
         metadata: {
-          ems__Effort_day: "",
+          ems__Effort_plannedStartTimestamp: "",
         },
         isArchived: false,
         currentFolder: "",
@@ -557,12 +557,12 @@ describe("CommandVisibility", () => {
       expect(canPlanOnToday(context)).toBe(true);
     });
 
-    it("should return true when ems__Effort_day is null", () => {
+    it("should return true when ems__Effort_plannedStartTimestamp is null", () => {
       const context: CommandVisibilityContext = {
         instanceClass: "[[ems__Task]]",
         currentStatus: null,
         metadata: {
-          ems__Effort_day: null,
+          ems__Effort_plannedStartTimestamp: null,
         },
         isArchived: false,
         currentFolder: "",
