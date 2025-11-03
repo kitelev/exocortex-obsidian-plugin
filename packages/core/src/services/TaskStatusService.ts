@@ -110,11 +110,11 @@ export class TaskStatusService {
 
   async planOnToday(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
-    const todayWikilink = DateFormatter.getTodayWikilink();
+    const todayStartTimestamp = DateFormatter.getTodayStartTimestamp();
     const updated = this.frontmatterService.updateProperty(
       content,
-      "ems__Effort_day",
-      todayWikilink,
+      "ems__Effort_plannedStartTimestamp",
+      todayStartTimestamp,
     );
     await this.vault.modify(taskFile, updated);
   }
@@ -210,32 +210,33 @@ export class TaskStatusService {
 
   private async shiftDay(taskFile: IFile, days: number): Promise<void> {
     const content = await this.vault.read(taskFile);
-    const currentEffortDay = this.extractEffortDay(content);
+    const currentTimestamp = this.extractPlannedStartTimestamp(content);
 
-    if (!currentEffortDay) {
-      throw new Error("ems__Effort_day property not found");
+    if (!currentTimestamp) {
+      throw new Error("ems__Effort_plannedStartTimestamp property not found");
     }
 
-    const currentDate = this.parseDateFromWikilink(currentEffortDay);
+    const currentDate = this.parseDateFromTimestamp(currentTimestamp);
 
     if (!currentDate) {
-      throw new Error("Invalid date format in ems__Effort_day");
+      throw new Error("Invalid date format in ems__Effort_plannedStartTimestamp");
     }
 
     const newDate = DateFormatter.addDays(currentDate, days);
-    const newWikilink = DateFormatter.toDateWikilink(newDate);
+    // Keep time at 00:00:00 for shifted dates
+    newDate.setHours(0, 0, 0, 0);
+    const newTimestamp = DateFormatter.toLocalTimestamp(newDate);
 
     const updated = this.frontmatterService.updateProperty(
       content,
-      "ems__Effort_day",
-      newWikilink,
+      "ems__Effort_plannedStartTimestamp",
+      newTimestamp,
     );
     await this.vault.modify(taskFile, updated);
   }
 
-  private parseDateFromWikilink(wikilink: string): Date | null {
-    const cleanValue = wikilink.replace(/["'[\]]/g, "").trim();
-    const date = new Date(cleanValue);
+  private parseDateFromTimestamp(timestamp: string): Date | null {
+    const date = new Date(timestamp);
 
     if (isNaN(date.getTime())) {
       return null;
@@ -244,13 +245,13 @@ export class TaskStatusService {
     return date;
   }
 
-  private extractEffortDay(content: string): string | null {
+  private extractPlannedStartTimestamp(content: string): string | null {
     const parsed = this.frontmatterService.parse(content);
     if (!parsed.exists) return null;
 
     return this.frontmatterService.getPropertyValue(
       parsed.content,
-      "ems__Effort_day",
+      "ems__Effort_plannedStartTimestamp",
     );
   }
 

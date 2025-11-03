@@ -598,7 +598,7 @@ describe("CommandManager", () => {
       mockApp.metadataCache.getFileCache.mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Task]]",
-          ems__Effort_day: "2025-01-20",
+          ems__Effort_plannedStartTimestamp: "2025-01-20T00:00:00",
         },
       });
 
@@ -629,7 +629,7 @@ describe("CommandManager", () => {
       mockApp.metadataCache.getFileCache.mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Task]]",
-          ems__Effort_day: "2025-01-20",
+          ems__Effort_plannedStartTimestamp: "2025-01-20T00:00:00",
         },
       });
 
@@ -1296,7 +1296,7 @@ describe("CommandManager", () => {
       mockApp.metadataCache.getFileCache.mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Task]]",
-          ems__Effort_day: "2025-01-20",
+          ems__Effort_plannedStartTimestamp: "2025-01-20T00:00:00",
         },
       });
 
@@ -1316,7 +1316,7 @@ describe("CommandManager", () => {
       mockApp.metadataCache.getFileCache.mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Task]]",
-          ems__Effort_day: "2025-01-20",
+          ems__Effort_plannedStartTimestamp: "2025-01-20T00:00:00",
         },
       });
 
@@ -1718,12 +1718,12 @@ describe("CommandManager", () => {
       mockApp.metadataCache.getFileCache.mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Task]]",
-          ems__Effort_day: "2025-01-20",
+          ems__Effort_plannedStartTimestamp: "2025-01-20T00:00:00",
         },
       });
 
       mockApp.vault.read.mockResolvedValue(
-        "---\nems__Effort_day: 2025-01-20\n---",
+        "---\nems__Effort_plannedStartTimestamp: 2025-01-20T00:00:00\n---",
       );
       mockApp.vault.modify.mockResolvedValue(undefined);
 
@@ -1742,12 +1742,12 @@ describe("CommandManager", () => {
       mockApp.metadataCache.getFileCache.mockReturnValue({
         frontmatter: {
           exo__Instance_class: "[[ems__Task]]",
-          ems__Effort_day: "2025-01-20",
+          ems__Effort_plannedStartTimestamp: "2025-01-20T00:00:00",
         },
       });
 
       mockApp.vault.read.mockResolvedValue(
-        "---\nems__Effort_day: 2025-01-20\n---",
+        "---\nems__Effort_plannedStartTimestamp: 2025-01-20T00:00:00\n---",
       );
       mockApp.vault.modify.mockResolvedValue(undefined);
 

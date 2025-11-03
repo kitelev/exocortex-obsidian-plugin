@@ -179,28 +179,26 @@ function getTodayDateString(): string {
 }
 
 /**
- * Check if ems__Effort_day is set to today's date
- * Handles formats: "[[YYYY-MM-DD]]" or [[YYYY-MM-DD]]
+ * Check if ems__Effort_plannedStartTimestamp is set to today's date
+ * Handles timestamp format: YYYY-MM-DDTHH:MM:SS
  */
 function isPlannedForToday(metadata: Record<string, any>): boolean {
-  const effortDay = metadata.ems__Effort_day;
-  if (!effortDay) return false;
+  const plannedTimestamp = metadata.ems__Effort_plannedStartTimestamp;
+  if (!plannedTimestamp) return false;
 
   const todayString = getTodayDateString();
 
   // Handle string value
-  if (typeof effortDay === "string") {
-    // Remove quotes and brackets
-    const cleanValue = effortDay.replace(/["'[\]]/g, "").trim();
-    return cleanValue === todayString;
+  if (typeof plannedTimestamp === "string") {
+    // Extract date part from timestamp (YYYY-MM-DD from YYYY-MM-DDTHH:MM:SS)
+    const datePart = plannedTimestamp.split("T")[0];
+    return datePart === todayString;
   }
 
   // Handle array value (take first element)
-  if (Array.isArray(effortDay) && effortDay.length > 0) {
-    const cleanValue = String(effortDay[0])
-      .replace(/["'[\]]/g, "")
-      .trim();
-    return cleanValue === todayString;
+  if (Array.isArray(plannedTimestamp) && plannedTimestamp.length > 0) {
+    const datePart = String(plannedTimestamp[0]).split("T")[0];
+    return datePart === todayString;
   }
 
   return false;
@@ -235,22 +233,19 @@ export function canPlanForEvening(context: CommandVisibilityContext): boolean {
 }
 
 /**
- * Check if ems__Effort_day property exists
+ * Check if ems__Effort_plannedStartTimestamp property exists
  */
-function hasEffortDay(metadata: Record<string, any>): boolean {
-  const effortDay = metadata.ems__Effort_day;
-  if (!effortDay) return false;
+function hasPlannedStartTimestamp(metadata: Record<string, any>): boolean {
+  const plannedTimestamp = metadata.ems__Effort_plannedStartTimestamp;
+  if (!plannedTimestamp) return false;
 
-  if (typeof effortDay === "string") {
-    const cleanValue = effortDay.replace(/["'[\]]/g, "").trim();
-    return cleanValue.length > 0;
+  if (typeof plannedTimestamp === "string") {
+    return plannedTimestamp.trim().length > 0;
   }
 
-  if (Array.isArray(effortDay) && effortDay.length > 0) {
-    const cleanValue = String(effortDay[0])
-      .replace(/["'[\]]/g, "")
-      .trim();
-    return cleanValue.length > 0;
+  if (Array.isArray(plannedTimestamp) && plannedTimestamp.length > 0) {
+    const value = String(plannedTimestamp[0]).trim();
+    return value.length > 0;
   }
 
   return false;
@@ -258,22 +253,22 @@ function hasEffortDay(metadata: Record<string, any>): boolean {
 
 /**
  * Can execute "Shift Day Backward" command
- * Available for: Task and Project with ems__Effort_day property
+ * Available for: Task and Project with ems__Effort_plannedStartTimestamp property
  */
 export function canShiftDayBackward(
   context: CommandVisibilityContext,
 ): boolean {
   if (!isEffort(context.instanceClass)) return false;
-  return hasEffortDay(context.metadata);
+  return hasPlannedStartTimestamp(context.metadata);
 }
 
 /**
  * Can execute "Shift Day Forward" command
- * Available for: Task and Project with ems__Effort_day property
+ * Available for: Task and Project with ems__Effort_plannedStartTimestamp property
  */
 export function canShiftDayForward(context: CommandVisibilityContext): boolean {
   if (!isEffort(context.instanceClass)) return false;
-  return hasEffortDay(context.metadata);
+  return hasPlannedStartTimestamp(context.metadata);
 }
 
 /**

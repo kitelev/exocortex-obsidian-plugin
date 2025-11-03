@@ -3,7 +3,7 @@ import React from "react";
 import { PlanOnTodayButton } from "../../src/presentation/components/PlanOnTodayButton";
 
 test.describe("PlanOnTodayButton Component", () => {
-  test("should render button for Task without ems__Effort_day", async ({
+  test("should render button for Task without ems__Effort_plannedStartTimestamp", async ({
     mount,
   }) => {
     const mockFile = {
@@ -24,7 +24,7 @@ test.describe("PlanOnTodayButton Component", () => {
     await expect(component).toHaveText("Plan on today");
   });
 
-  test("should render button for Project without ems__Effort_day", async ({
+  test("should render button for Project without ems__Effort_plannedStartTimestamp", async ({
     mount,
   }) => {
     const mockFile = {
@@ -167,7 +167,7 @@ test.describe("PlanOnTodayButton Component", () => {
     await expect(component).toBeVisible();
   });
 
-  test("should render button when ems__Effort_day is set to different date", async ({
+  test("should render button when ems__Effort_plannedStartTimestamp is set to different date", async ({
     mount,
   }) => {
     const mockFile = {
@@ -177,7 +177,7 @@ test.describe("PlanOnTodayButton Component", () => {
     const component = await mount(
       <PlanOnTodayButton
         instanceClass="[[ems__Task]]"
-        metadata={{ ems__Effort_day: '"[[2025-10-12]]"' }}
+        metadata={{ ems__Effort_plannedStartTimestamp: "2025-10-12T00:00:00" }}
         sourceFile={mockFile}
         onPlanOnToday={async () => {}}
       />,
@@ -187,7 +187,7 @@ test.describe("PlanOnTodayButton Component", () => {
     await expect(component).toBeVisible();
   });
 
-  test("should NOT render button when ems__Effort_day is set to today", async ({
+  test("should NOT render button when ems__Effort_plannedStartTimestamp is set to today", async ({
     mount,
   }) => {
     const mockFile = {
@@ -203,7 +203,7 @@ test.describe("PlanOnTodayButton Component", () => {
     const component = await mount(
       <PlanOnTodayButton
         instanceClass="[[ems__Task]]"
-        metadata={{ ems__Effort_day: `"[[${todayString}]]"` }}
+        metadata={{ ems__Effort_plannedStartTimestamp: `${todayString}T00:00:00` }}
         sourceFile={mockFile}
         onPlanOnToday={async () => {}}
       />,
@@ -213,7 +213,7 @@ test.describe("PlanOnTodayButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should NOT render button when ems__Effort_day is set to today without quotes", async ({
+  test("should NOT render button when ems__Effort_plannedStartTimestamp is set to today at different time", async ({
     mount,
   }) => {
     const mockFile = {
@@ -229,7 +229,7 @@ test.describe("PlanOnTodayButton Component", () => {
     const component = await mount(
       <PlanOnTodayButton
         instanceClass="[[ems__Task]]"
-        metadata={{ ems__Effort_day: `[[${todayString}]]` }}
+        metadata={{ ems__Effort_plannedStartTimestamp: `${todayString}T19:00:00` }}
         sourceFile={mockFile}
         onPlanOnToday={async () => {}}
       />,
@@ -239,7 +239,7 @@ test.describe("PlanOnTodayButton Component", () => {
     await expect(component).not.toBeVisible();
   });
 
-  test("should render button when ems__Effort_day is set to yesterday", async ({
+  test("should render button when ems__Effort_plannedStartTimestamp is set to yesterday", async ({
     mount,
   }) => {
     const mockFile = {
@@ -256,7 +256,7 @@ test.describe("PlanOnTodayButton Component", () => {
     const component = await mount(
       <PlanOnTodayButton
         instanceClass="[[ems__Task]]"
-        metadata={{ ems__Effort_day: `"[[${yesterdayString}]]"` }}
+        metadata={{ ems__Effort_plannedStartTimestamp: `${yesterdayString}T00:00:00` }}
         sourceFile={mockFile}
         onPlanOnToday={async () => {}}
       />,
