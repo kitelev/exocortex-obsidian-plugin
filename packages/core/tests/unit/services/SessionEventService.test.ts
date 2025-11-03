@@ -23,11 +23,11 @@ describe("SessionEventService", () => {
       process: jest.fn(),
     } as jest.Mocked<IVaultAdapter>;
 
-    service = new SessionEventService(mockVault);
+    service = new SessionEventService(mockVault, null);
   });
 
   describe("createSessionStartEvent", () => {
-    it("should create start event with correct frontmatter", async () => {
+    it("should create start event with correct frontmatter when no ontology set", async () => {
       const areaName = "Work";
       const mockCreatedFile: IFile = {
         path: "Events/test-uid.md",
@@ -36,7 +36,6 @@ describe("SessionEventService", () => {
         parent: null,
       };
 
-      // Mock !kitelev asset location
       mockVault.getAllFiles.mockReturnValue([]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
@@ -56,6 +55,41 @@ describe("SessionEventService", () => {
       expect(fileContent).toContain("ems__SessionEvent_timestamp:");
       expect(fileContent).not.toContain("exo__Asset_label");
       expect(fileContent).not.toContain("aliases");
+    });
+
+    it("should use ontology asset folder and isDefinedBy when ontology is set", async () => {
+      const ontologyService = new SessionEventService(mockVault, "kitelev");
+      const areaName = "Work";
+      const mockOntologyFile: IFile = {
+        path: "People/kitelev.md",
+        basename: "kitelev",
+        name: "kitelev.md",
+        parent: {
+          path: "People",
+          name: "People",
+        } as any,
+      };
+      const mockCreatedFile: IFile = {
+        path: "People/test-uid.md",
+        basename: "test-uid",
+        name: "test-uid.md",
+        parent: null,
+      };
+
+      mockVault.getAllFiles.mockReturnValue([mockOntologyFile]);
+      mockVault.create.mockResolvedValue(mockCreatedFile);
+
+      const result = await ontologyService.createSessionStartEvent(areaName);
+
+      expect(mockVault.create).toHaveBeenCalled();
+      expect(result).toBe(mockCreatedFile);
+
+      const createCall = mockVault.create.mock.calls[0];
+      const [filePath, fileContent] = createCall;
+
+      expect(filePath).toMatch(/^People\/.+\.md$/);
+      expect(fileContent).toContain('"[[kitelev]]"');
+      expect(fileContent).not.toContain('"[[!kitelev]]"');
     });
 
     it("should use correct timestamp format (ISO 8601)", async () => {
@@ -81,39 +115,7 @@ describe("SessionEventService", () => {
       expect(timestampMatch).toBeTruthy();
     });
 
-    it("should use !kitelev asset folder when found", async () => {
-      const areaName = "Work";
-      const mockKitelevFile: IFile = {
-        path: "People/!kitelev.md",
-        basename: "!kitelev",
-        name: "!kitelev.md",
-        parent: {
-          path: "People",
-          name: "People",
-        } as any,
-      };
-      const mockCreatedFile: IFile = {
-        path: "People/test-uid.md",
-        basename: "test-uid",
-        name: "test-uid.md",
-        parent: null,
-      };
-
-      mockVault.getAllFiles.mockReturnValue([mockKitelevFile]);
-      mockVault.getFrontmatter.mockReturnValue({
-        exo__Asset_uid: "!kitelev",
-      });
-      mockVault.create.mockResolvedValue(mockCreatedFile);
-
-      await service.createSessionStartEvent(areaName);
-
-      const createCall = mockVault.create.mock.calls[0];
-      const [filePath] = createCall;
-
-      expect(filePath).toMatch(/^People\/.+\.md$/);
-    });
-
-    it("should default to Events folder when !kitelev not found", async () => {
+    it("should default to Events folder when no ontology set", async () => {
       const areaName = "Work";
       const mockCreatedFile: IFile = {
         path: "Events/test-uid.md",
@@ -228,36 +230,34 @@ describe("SessionEventService", () => {
       ).resolves.toBe(mockCreatedFile);
     });
 
-    it("should create files in !kitelev folder when found", async () => {
+    it("should use ontology asset folder for end events", async () => {
+      const ontologyService = new SessionEventService(mockVault, "myOntology");
       const areaName = "Work";
-      const mockKitelevFile: IFile = {
-        path: "People/!kitelev.md",
-        basename: "!kitelev",
-        name: "!kitelev.md",
+      const mockOntologyFile: IFile = {
+        path: "Ontologies/myOntology.md",
+        basename: "myOntology",
+        name: "myOntology.md",
         parent: {
-          path: "People",
-          name: "People",
+          path: "Ontologies",
+          name: "Ontologies",
         } as any,
       };
       const mockCreatedFile: IFile = {
-        path: "People/test-uid.md",
+        path: "Ontologies/test-uid.md",
         basename: "test-uid",
         name: "test-uid.md",
         parent: null,
       };
 
-      mockVault.getAllFiles.mockReturnValue([mockKitelevFile]);
-      mockVault.getFrontmatter.mockReturnValue({
-        exo__Asset_uid: "!kitelev",
-      });
+      mockVault.getAllFiles.mockReturnValue([mockOntologyFile]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      await service.createSessionEndEvent(areaName);
+      await ontologyService.createSessionEndEvent(areaName);
 
       const createCall = mockVault.create.mock.calls[0];
       const [filePath] = createCall;
 
-      expect(filePath).toMatch(/^People\/.+\.md$/);
+      expect(filePath).toMatch(/^Ontologies\/.+\.md$/);
     });
   });
 });

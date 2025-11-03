@@ -5,6 +5,7 @@ export interface ExocortexSettings {
   activeFocusArea: string | null;
   showEffortArea: boolean;
   showEffortVotes: boolean;
+  defaultOntologyAsset: string | null;
   [key: string]: unknown;
 }
 
@@ -15,4 +16,5 @@ export const DEFAULT_SETTINGS: ExocortexSettings = {
   activeFocusArea: null,
   showEffortArea: false,
   showEffortVotes: false,
+  defaultOntologyAsset: null,
 };
