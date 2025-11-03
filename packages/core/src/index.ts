@@ -64,6 +64,7 @@ export { OptionalExecutor } from "./infrastructure/sparql/executors/OptionalExec
 export { UnionExecutor } from "./infrastructure/sparql/executors/UnionExecutor";
 export { SolutionMapping } from "./infrastructure/sparql/SolutionMapping";
 export { BuiltInFunctions } from "./infrastructure/sparql/filters/BuiltInFunctions";
+export { AggregateFunctions } from "./infrastructure/sparql/aggregates/AggregateFunctions";
 
 // Interfaces exports
 export type { IFileSystemAdapter } from "./interfaces/IFileSystemAdapter";
