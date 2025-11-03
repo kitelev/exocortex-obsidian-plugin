@@ -206,4 +206,25 @@ export class DateFormatter {
       date1.getDate() === date2.getDate()
     );
   }
+
+  /**
+   * Get start of day timestamp for today (00:00:00).
+   *
+   * Format: `YYYY-MM-DDT00:00:00`
+   *
+   * Used for setting planned start timestamp to beginning of current day.
+   *
+   * @returns Today's date at midnight as ISO timestamp string
+   *
+   * @example
+   * ```typescript
+   * const startOfToday = DateFormatter.getTodayStartTimestamp();
+   * // "2025-11-03T00:00:00"
+   * ```
+   */
+  static getTodayStartTimestamp(): string {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return DateFormatter.toLocalTimestamp(today);
+  }
 }

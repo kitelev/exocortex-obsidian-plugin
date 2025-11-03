@@ -9,7 +9,7 @@ describe("PlanningService", () => {
   let mockVault: jest.Mocked<IVaultAdapter>;
   let mockFile: IFile;
 
-  const mockTodayWikilink = "[[2025-01-15]]";
+  const mockTodayTimestamp = "2025-01-15T00:00:00";
 
   beforeEach(() => {
     mockVault = {
@@ -24,7 +24,7 @@ describe("PlanningService", () => {
       basename: "task",
     } as IFile;
 
-    (DateFormatter.getTodayWikilink as jest.Mock).mockReturnValue(mockTodayWikilink);
+    (DateFormatter.getTodayStartTimestamp as jest.Mock).mockReturnValue(mockTodayTimestamp);
 
     service = new PlanningService(mockVault);
   });
@@ -44,7 +44,7 @@ Task content.`;
 
       const expectedContent = `---
 title: My Task
-ems__Effort_day: ${mockTodayWikilink}
+ems__Effort_plannedStartTimestamp: ${mockTodayTimestamp}
 ---
 
 Task content.`;
@@ -57,7 +57,7 @@ Task content.`;
       expect(mockVault.getAbstractFileByPath).toHaveBeenCalledWith(taskPath);
       expect(mockVault.read).toHaveBeenCalledWith(mockFile);
       expect(mockVault.modify).toHaveBeenCalledWith(mockFile, expectedContent);
-      expect(DateFormatter.getTodayWikilink).toHaveBeenCalled();
+      expect(DateFormatter.getTodayStartTimestamp).toHaveBeenCalled();
     });
 
     it("should throw error when file not found", async () => {
@@ -90,18 +90,18 @@ Task content.`;
       expect(mockVault.modify).not.toHaveBeenCalled();
     });
 
-    it("should update existing ems__Effort_day property", async () => {
+    it("should update existing ems__Effort_plannedStartTimestamp property", async () => {
       const taskPath = "/path/to/task.md";
       const originalContent = `---
 title: My Task
-ems__Effort_day: "[[2025-01-10]]"
+ems__Effort_plannedStartTimestamp: 2025-01-10T00:00:00
 ---
 
 Task content.`;
 
       const expectedContent = `---
 title: My Task
-ems__Effort_day: ${mockTodayWikilink}
+ems__Effort_plannedStartTimestamp: ${mockTodayTimestamp}
 ---
 
 Task content.`;
@@ -119,7 +119,7 @@ Task content.`;
       const originalContent = "Task content without frontmatter.";
 
       const expectedContent = `---
-ems__Effort_day: ${mockTodayWikilink}
+ems__Effort_plannedStartTimestamp: ${mockTodayTimestamp}
 ---
 Task content without frontmatter.`;
 
@@ -149,7 +149,7 @@ Task content.`;
 
       expect(mockVault.modify).toHaveBeenCalled();
       const modifiedContent = mockVault.modify.mock.calls[0][1];
-      expect(modifiedContent).toContain(`ems__Effort_day: ${mockTodayWikilink}`);
+      expect(modifiedContent).toContain(`ems__Effort_plannedStartTimestamp: ${mockTodayTimestamp}`);
       expect(modifiedContent).toContain("title: My Task");
       expect(modifiedContent).toContain("exo__Asset_uid: task-123");
     });
