@@ -327,5 +327,22 @@ describe("DailyNoteHelpers", () => {
       const metadata = { ems__Effort_startTimestamp: "2025-11-03T00:00:00" };
       expect(DailyNoteHelpers.isEffortInDay(metadata, day)).toBe(false);
     });
+
+    it("returns true for early morning timestamps (before 05:00) in local timezone", () => {
+      // Bug fix test: tasks with plannedStartTimestamp < 05:00 should show in correct day
+      // regardless of timezone (e.g., UTC+5)
+      const metadata = {
+        ems__Effort_plannedStartTimestamp: "2025-11-02T02:30:00",
+      };
+      expect(DailyNoteHelpers.isEffortInDay(metadata, day)).toBe(true);
+    });
+
+    it("returns true for midnight timestamp in local timezone", () => {
+      // Verify that 00:00:00 local time is correctly handled
+      const metadata = {
+        ems__Effort_plannedStartTimestamp: "2025-11-02T00:00:00",
+      };
+      expect(DailyNoteHelpers.isEffortInDay(metadata, day)).toBe(true);
+    });
   });
 });

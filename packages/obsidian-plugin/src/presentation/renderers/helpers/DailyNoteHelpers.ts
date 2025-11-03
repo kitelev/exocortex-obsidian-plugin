@@ -74,23 +74,28 @@ export class DailyNoteHelpers {
    *
    * @param metadata - Effort frontmatter metadata
    * @param dayStr - Day string in format "YYYY-MM-DD" (e.g., "2025-11-02")
-   * @returns true if ANY timestamp falls within day's 00:00:00 - 23:59:59 interval
+   * @returns true if ANY timestamp falls within day's 00:00:00 - 23:59:59 interval (local timezone)
    */
   static isEffortInDay(
     metadata: Record<string, unknown>,
     dayStr: string,
   ): boolean {
-    // Parse day string to Date (local midnight)
-    const dayDate = new Date(dayStr);
-    if (isNaN(dayDate.getTime())) {
+    // Parse day string to Date in local timezone
+    // Split "YYYY-MM-DD" and use Date constructor with year, month, day
+    const parts = dayStr.split("-").map(Number);
+    if (parts.length !== 3 || parts.some(isNaN)) {
       return false; // Invalid day format
     }
+    
+    const [year, month, day] = parts;
+    
+    // Create date in local timezone (month is 0-indexed)
+    const dayStart = new Date(year, month - 1, day, 0, 0, 0, 0);
+    if (isNaN(dayStart.getTime())) {
+      return false; // Invalid date
+    }
 
-    // Define day interval (local timezone)
-    const dayStart = new Date(dayDate); // Already at 00:00:00.000
-
-    const dayEnd = new Date(dayDate);
-    dayEnd.setHours(23, 59, 59, 999);
+    const dayEnd = new Date(year, month - 1, day, 23, 59, 59, 999);
 
     // Collect all timestamp fields
     const timestampFields = [
