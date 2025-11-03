@@ -140,7 +140,15 @@ export class DailyTasksRenderer {
       for (const file of allFiles) {
         const metadata = this.metadataExtractor.extractMetadata(file);
 
-        if (!DailyNoteHelpers.isEffortInDay(metadata, day)) {
+        const effortDay = metadata.ems__Effort_day;
+
+        if (!effortDay) {
+          continue;
+        }
+
+        const effortDayStr = String(effortDay).replace(/^\[\[|\]\]$/g, "");
+
+        if (effortDayStr !== day) {
           continue;
         }
 
