@@ -33,6 +33,8 @@ describe("SetFocusAreaCommand", () => {
           name: "test-uid.md",
           parent: null,
         }),
+        getAllFiles: jest.fn().mockReturnValue([]),
+        getFrontmatter: jest.fn().mockReturnValue(null),
       },
     } as unknown as jest.Mocked<ExocortexPluginInterface>;
 

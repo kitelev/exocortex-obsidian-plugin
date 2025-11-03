@@ -36,9 +36,11 @@ describe("SessionEventService", () => {
         parent: null,
       };
 
+      // Mock !kitelev asset location
+      mockVault.getAllFiles.mockReturnValue([]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      const result = await service.createSessionStartEvent(areaName, null);
+      const result = await service.createSessionStartEvent(areaName);
 
       expect(mockVault.create).toHaveBeenCalled();
       expect(result).toBe(mockCreatedFile);
@@ -65,9 +67,10 @@ describe("SessionEventService", () => {
         parent: null,
       };
 
+      mockVault.getAllFiles.mockReturnValue([]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      await service.createSessionStartEvent(areaName, null);
+      await service.createSessionStartEvent(areaName);
 
       const createCall = mockVault.create.mock.calls[0];
       const [, fileContent] = createCall;
@@ -78,35 +81,39 @@ describe("SessionEventService", () => {
       expect(timestampMatch).toBeTruthy();
     });
 
-    it("should use area parent folder when areaFile provided", async () => {
+    it("should use !kitelev asset folder when found", async () => {
       const areaName = "Work";
-      const mockAreaFile: IFile = {
-        path: "Areas/Work.md",
-        basename: "Work",
-        name: "Work.md",
+      const mockKitelevFile: IFile = {
+        path: "People/!kitelev.md",
+        basename: "!kitelev",
+        name: "!kitelev.md",
         parent: {
-          path: "Areas",
-          name: "Areas",
+          path: "People",
+          name: "People",
         } as any,
       };
       const mockCreatedFile: IFile = {
-        path: "Areas/test-uid.md",
+        path: "People/test-uid.md",
         basename: "test-uid",
         name: "test-uid.md",
         parent: null,
       };
 
+      mockVault.getAllFiles.mockReturnValue([mockKitelevFile]);
+      mockVault.getFrontmatter.mockReturnValue({
+        exo__Asset_uid: "!kitelev",
+      });
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      await service.createSessionStartEvent(areaName, mockAreaFile);
+      await service.createSessionStartEvent(areaName);
 
       const createCall = mockVault.create.mock.calls[0];
       const [filePath] = createCall;
 
-      expect(filePath).toMatch(/^Areas\/.+\.md$/);
+      expect(filePath).toMatch(/^People\/.+\.md$/);
     });
 
-    it("should default to Events folder when no areaFile", async () => {
+    it("should default to Events folder when !kitelev not found", async () => {
       const areaName = "Work";
       const mockCreatedFile: IFile = {
         path: "Events/test-uid.md",
@@ -115,9 +122,10 @@ describe("SessionEventService", () => {
         parent: null,
       };
 
+      mockVault.getAllFiles.mockReturnValue([]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      await service.createSessionStartEvent(areaName, null);
+      await service.createSessionStartEvent(areaName);
 
       const createCall = mockVault.create.mock.calls[0];
       const [filePath] = createCall;
@@ -134,9 +142,10 @@ describe("SessionEventService", () => {
         parent: null,
       };
 
+      mockVault.getAllFiles.mockReturnValue([]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      await service.createSessionStartEvent(areaName, null);
+      await service.createSessionStartEvent(areaName);
 
       const createCall = mockVault.create.mock.calls[0];
       const [, fileContent] = createCall;
@@ -158,9 +167,10 @@ describe("SessionEventService", () => {
         parent: null,
       };
 
+      mockVault.getAllFiles.mockReturnValue([]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      const result = await service.createSessionEndEvent(areaName, null);
+      const result = await service.createSessionEndEvent(areaName);
 
       expect(mockVault.create).toHaveBeenCalled();
       expect(result).toBe(mockCreatedFile);
@@ -187,9 +197,10 @@ describe("SessionEventService", () => {
         parent: null,
       };
 
+      mockVault.getAllFiles.mockReturnValue([]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      await service.createSessionEndEvent(areaName, null);
+      await service.createSessionEndEvent(areaName);
 
       const createCall = mockVault.create.mock.calls[0];
       const [, fileContent] = createCall;
@@ -209,30 +220,44 @@ describe("SessionEventService", () => {
         parent: null,
       };
 
+      mockVault.getAllFiles.mockReturnValue([]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
       await expect(
-        service.createSessionEndEvent(areaName, null),
+        service.createSessionEndEvent(areaName),
       ).resolves.toBe(mockCreatedFile);
     });
 
-    it("should create files in correct folder path", async () => {
+    it("should create files in !kitelev folder when found", async () => {
       const areaName = "Work";
+      const mockKitelevFile: IFile = {
+        path: "People/!kitelev.md",
+        basename: "!kitelev",
+        name: "!kitelev.md",
+        parent: {
+          path: "People",
+          name: "People",
+        } as any,
+      };
       const mockCreatedFile: IFile = {
-        path: "Events/test-uid.md",
+        path: "People/test-uid.md",
         basename: "test-uid",
         name: "test-uid.md",
         parent: null,
       };
 
+      mockVault.getAllFiles.mockReturnValue([mockKitelevFile]);
+      mockVault.getFrontmatter.mockReturnValue({
+        exo__Asset_uid: "!kitelev",
+      });
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      await service.createSessionEndEvent(areaName, null);
+      await service.createSessionEndEvent(areaName);
 
       const createCall = mockVault.create.mock.calls[0];
       const [filePath] = createCall;
 
-      expect(filePath).toMatch(/^Events\/.+\.md$/);
+      expect(filePath).toMatch(/^People\/.+\.md$/);
     });
   });
 });

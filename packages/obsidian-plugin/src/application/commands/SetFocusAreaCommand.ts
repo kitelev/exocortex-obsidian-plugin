@@ -42,22 +42,16 @@ export class SetFocusAreaCommand implements ICommand {
     try {
       // Case 1: Switching from one area to another
       if (previousArea && newArea && previousArea !== newArea) {
-        await this.sessionEventService.createSessionEndEvent(
-          previousArea,
-          null,
-        );
-        await this.sessionEventService.createSessionStartEvent(newArea, null);
+        await this.sessionEventService.createSessionEndEvent(previousArea);
+        await this.sessionEventService.createSessionStartEvent(newArea);
       }
       // Case 2: Activating focus (null → area)
       else if (!previousArea && newArea) {
-        await this.sessionEventService.createSessionStartEvent(newArea, null);
+        await this.sessionEventService.createSessionStartEvent(newArea);
       }
       // Case 3: Deactivating focus (area → null)
       else if (previousArea && !newArea) {
-        await this.sessionEventService.createSessionEndEvent(
-          previousArea,
-          null,
-        );
+        await this.sessionEventService.createSessionEndEvent(previousArea);
       }
       // Case 4: No change (null → null or same area) - no events created
 
