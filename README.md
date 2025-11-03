@@ -28,6 +28,7 @@ Exocortex is a powerful Obsidian plugin that transforms your notes into an inter
 - 📱 **Mobile Compatible**: Full touch-optimized UI for desktop and mobile
 - ⌨️ **23 Commands**: Comprehensive command palette integration for all operations
 - 🎨 **Action Buttons**: Context-aware UI buttons for quick access to relevant commands
+- 🔍 **SPARQL Query Blocks**: Execute semantic queries directly in markdown with `sparql` code blocks
 
 ## 📦 Monorepo Structure
 
