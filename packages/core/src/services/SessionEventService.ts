@@ -14,35 +14,19 @@ export class SessionEventService {
   /**
    * Create a session start event when user activates a focus area
    * @param areaName - Name of the area being activated
-   * @param areaFile - Optional file reference for the area
    * @returns Created event file
    */
-  async createSessionStartEvent(
-    areaName: string,
-    areaFile: IFile | null,
-  ): Promise<IFile> {
-    return this.createSessionEvent(
-      areaName,
-      areaFile,
-      AssetClass.SESSION_START_EVENT,
-    );
+  async createSessionStartEvent(areaName: string): Promise<IFile> {
+    return this.createSessionEvent(areaName, AssetClass.SESSION_START_EVENT);
   }
 
   /**
    * Create a session end event when user deactivates a focus area
    * @param areaName - Name of the area being deactivated
-   * @param areaFile - Optional file reference for the area
    * @returns Created event file
    */
-  async createSessionEndEvent(
-    areaName: string,
-    areaFile: IFile | null,
-  ): Promise<IFile> {
-    return this.createSessionEvent(
-      areaName,
-      areaFile,
-      AssetClass.SESSION_END_EVENT,
-    );
+  async createSessionEndEvent(areaName: string): Promise<IFile> {
+    return this.createSessionEvent(areaName, AssetClass.SESSION_END_EVENT);
   }
 
   /**
@@ -66,13 +50,11 @@ export class SessionEventService {
   /**
    * Private helper method to create session event assets
    * @param areaName - Name of the area
-   * @param areaFile - Optional file reference for the area
    * @param eventType - Type of session event (start or end)
    * @returns Created event file
    */
   private async createSessionEvent(
     areaName: string,
-    areaFile: IFile | null,
     eventType: AssetClass,
   ): Promise<IFile> {
     const uid = uuidv4();

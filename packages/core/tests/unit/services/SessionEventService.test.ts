@@ -40,7 +40,7 @@ describe("SessionEventService", () => {
       mockVault.getAllFiles.mockReturnValue([]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      const result = await service.createSessionStartEvent(areaName, null);
+      const result = await service.createSessionStartEvent(areaName);
 
       expect(mockVault.create).toHaveBeenCalled();
       expect(result).toBe(mockCreatedFile);
@@ -70,7 +70,7 @@ describe("SessionEventService", () => {
       mockVault.getAllFiles.mockReturnValue([]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      await service.createSessionStartEvent(areaName, null);
+      await service.createSessionStartEvent(areaName);
 
       const createCall = mockVault.create.mock.calls[0];
       const [, fileContent] = createCall;
@@ -105,7 +105,7 @@ describe("SessionEventService", () => {
       });
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      await service.createSessionStartEvent(areaName, null);
+      await service.createSessionStartEvent(areaName);
 
       const createCall = mockVault.create.mock.calls[0];
       const [filePath] = createCall;
@@ -125,7 +125,7 @@ describe("SessionEventService", () => {
       mockVault.getAllFiles.mockReturnValue([]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      await service.createSessionStartEvent(areaName, null);
+      await service.createSessionStartEvent(areaName);
 
       const createCall = mockVault.create.mock.calls[0];
       const [filePath] = createCall;
@@ -145,7 +145,7 @@ describe("SessionEventService", () => {
       mockVault.getAllFiles.mockReturnValue([]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      await service.createSessionStartEvent(areaName, null);
+      await service.createSessionStartEvent(areaName);
 
       const createCall = mockVault.create.mock.calls[0];
       const [, fileContent] = createCall;
@@ -170,7 +170,7 @@ describe("SessionEventService", () => {
       mockVault.getAllFiles.mockReturnValue([]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      const result = await service.createSessionEndEvent(areaName, null);
+      const result = await service.createSessionEndEvent(areaName);
 
       expect(mockVault.create).toHaveBeenCalled();
       expect(result).toBe(mockCreatedFile);
@@ -200,7 +200,7 @@ describe("SessionEventService", () => {
       mockVault.getAllFiles.mockReturnValue([]);
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      await service.createSessionEndEvent(areaName, null);
+      await service.createSessionEndEvent(areaName);
 
       const createCall = mockVault.create.mock.calls[0];
       const [, fileContent] = createCall;
@@ -224,7 +224,7 @@ describe("SessionEventService", () => {
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
       await expect(
-        service.createSessionEndEvent(areaName, null),
+        service.createSessionEndEvent(areaName),
       ).resolves.toBe(mockCreatedFile);
     });
 
@@ -252,7 +252,7 @@ describe("SessionEventService", () => {
       });
       mockVault.create.mockResolvedValue(mockCreatedFile);
 
-      await service.createSessionEndEvent(areaName, null);
+      await service.createSessionEndEvent(areaName);
 
       const createCall = mockVault.create.mock.calls[0];
       const [filePath] = createCall;
