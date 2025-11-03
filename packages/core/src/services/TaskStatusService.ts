@@ -255,27 +255,6 @@ export class TaskStatusService {
     );
   }
 
-  private parseDateFromWikilink(wikilink: string): Date | null {
-    const cleanValue = wikilink.replace(/["'[\]]/g, "").trim();
-    const date = new Date(cleanValue);
-
-    if (isNaN(date.getTime())) {
-      return null;
-    }
-
-    return date;
-  }
-
-  private extractEffortDay(content: string): string | null {
-    const parsed = this.frontmatterService.parse(content);
-    if (!parsed.exists) return null;
-
-    return this.frontmatterService.getPropertyValue(
-      parsed.content,
-      "ems__Effort_day",
-    );
-  }
-
   private extractCurrentStatus(content: string): string | null {
     const parsed = this.frontmatterService.parse(content);
     if (!parsed.exists) return null;
