@@ -17,11 +17,11 @@ export class PlanningService {
     }
 
     const content = await this.vault.read(file);
-    const todayWikilink = DateFormatter.getTodayWikilink();
+    const todayStartTimestamp = DateFormatter.getTodayStartTimestamp();
     const updated = this.frontmatterService.updateProperty(
       content,
-      "ems__Effort_day",
-      todayWikilink,
+      "ems__Effort_plannedStartTimestamp",
+      todayStartTimestamp,
     );
     await this.vault.modify(file, updated);
   }
