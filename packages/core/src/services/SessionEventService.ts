@@ -25,7 +25,6 @@ export class SessionEventService {
       areaName,
       areaFile,
       AssetClass.SESSION_START_EVENT,
-      "Session Start",
     );
   }
 
@@ -43,7 +42,6 @@ export class SessionEventService {
       areaName,
       areaFile,
       AssetClass.SESSION_END_EVENT,
-      "Session End",
     );
   }
 
@@ -52,28 +50,23 @@ export class SessionEventService {
    * @param areaName - Name of the area
    * @param areaFile - Optional file reference for the area
    * @param eventType - Type of session event (start or end)
-   * @param eventPrefix - Label prefix for the event
    * @returns Created event file
    */
   private async createSessionEvent(
     areaName: string,
     areaFile: IFile | null,
     eventType: AssetClass,
-    eventPrefix: string,
   ): Promise<IFile> {
     const uid = uuidv4();
     const timestamp = DateFormatter.toLocalTimestamp(new Date());
-    const label = `${eventPrefix} - ${areaName}`;
 
     const frontmatter = {
       exo__Asset_uid: uid,
-      exo__Asset_label: label,
       exo__Asset_createdAt: timestamp,
-      exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      exo__Asset_isDefinedBy: '"[[!kitelev]]"',
       exo__Instance_class: [`"[[${eventType}]]"`],
       ems__SessionEvent_timestamp: timestamp,
       ems__Session_area: `"[[${areaName}]]"`,
-      aliases: [label],
     };
 
     const fileContent = MetadataHelpers.buildFileContent(frontmatter);

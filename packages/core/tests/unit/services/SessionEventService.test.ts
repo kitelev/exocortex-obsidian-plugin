@@ -48,10 +48,12 @@ describe("SessionEventService", () => {
 
       expect(filePath).toMatch(/^Events\/.+\.md$/);
       expect(fileContent).toContain("exo__Asset_uid:");
-      expect(fileContent).toContain("exo__Asset_label: Session Start - Work");
+      expect(fileContent).toContain('"[[!kitelev]]"');
       expect(fileContent).toContain(`"[[${AssetClass.SESSION_START_EVENT}]]"`);
       expect(fileContent).toContain('ems__Session_area: "[[Work]]"');
       expect(fileContent).toContain("ems__SessionEvent_timestamp:");
+      expect(fileContent).not.toContain("exo__Asset_label");
+      expect(fileContent).not.toContain("aliases");
     });
 
     it("should use correct timestamp format (ISO 8601)", async () => {
@@ -168,10 +170,12 @@ describe("SessionEventService", () => {
 
       expect(filePath).toMatch(/^Events\/.+\.md$/);
       expect(fileContent).toContain("exo__Asset_uid:");
-      expect(fileContent).toContain("exo__Asset_label: Session End - Work");
+      expect(fileContent).toContain('"[[!kitelev]]"');
       expect(fileContent).toContain(`"[[${AssetClass.SESSION_END_EVENT}]]"`);
       expect(fileContent).toContain('ems__Session_area: "[[Work]]"');
       expect(fileContent).toContain("ems__SessionEvent_timestamp:");
+      expect(fileContent).not.toContain("exo__Asset_label");
+      expect(fileContent).not.toContain("aliases");
     });
 
     it("should use same timestamp format as start event", async () => {
