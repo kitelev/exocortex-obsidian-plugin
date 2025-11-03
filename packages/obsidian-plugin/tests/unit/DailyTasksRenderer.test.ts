@@ -163,6 +163,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_area: "[[Development]]",
       };
@@ -208,6 +209,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -297,6 +299,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -343,6 +346,7 @@ describe("DailyTasksRenderer", () => {
       const projectMetadata = {
         exo__Instance_class: "[[ems__Project]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusToDo]]",
       };
 
@@ -384,6 +388,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "2025-10-20",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -477,6 +482,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_blocker: "[[blocker-task]]",
       };
@@ -532,6 +538,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_blocker: "[[blocker-task]]",
       };
@@ -586,6 +593,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -657,6 +665,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusDoing]]",
         ems__Effort_startTimestamp: "2025-10-20T09:00:00.000Z",
         ems__Effort_endTimestamp: "2025-10-20T17:00:00.000Z",
@@ -703,6 +712,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -749,6 +759,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -795,6 +806,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -847,6 +859,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -915,6 +928,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata2 = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -963,12 +977,14 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata1 = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-21]]",
+        ems__Effort_startTimestamp: "2025-10-21T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
       const taskMetadata2 = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -1017,12 +1033,14 @@ describe("DailyTasksRenderer", () => {
       const projectMetadata = {
         exo__Instance_class: ["[[ems__Project]]"],
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -1073,6 +1091,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata1 = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_area: "[[Development]]",
       };
@@ -1080,6 +1099,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata2 = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_area: "[[Marketing]]",
       };
@@ -1136,6 +1156,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata1 = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_area: "[[Frontend]]",
       };
@@ -1143,6 +1164,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata2 = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_area: "[[Marketing]]",
       };
@@ -1196,6 +1218,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusDoing]]",
         ems__Effort_startTimestamp: "2025-10-20T09:00:00.000Z",
         ems__Effort_endTimestamp: "2025-10-20T17:00:00.000Z",
@@ -1240,6 +1263,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusDoing]]",
         ems__Effort_startTimestamp: "invalid",
         ems__Effort_endTimestamp: "also-invalid",
@@ -1284,6 +1308,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusDoing]]",
       };
 
@@ -1326,6 +1351,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusToDo]]",
         ems__Effort_plannedStartTimestamp: "2025-10-20T10:00:00.000Z",
         ems__Effort_plannedEndTimestamp: "2025-10-20T12:00:00.000Z",
@@ -1372,6 +1398,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: ["[[ems__Task]]", "[[ems__Meeting]]"],
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusToDo]]",
       };
 
@@ -1413,6 +1440,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusDone]]",
       };
 
@@ -1456,6 +1484,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusTrashed]]",
       };
 
@@ -1499,6 +1528,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusDoing]]",
       };
 
@@ -1542,6 +1572,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         exo__Asset_label: "Custom Task Label",
       };
@@ -1584,6 +1615,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -1627,6 +1659,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_area: "[[Development]]",
       };
@@ -1669,6 +1702,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_area: ["[[Development]]", "[[Backend]]"],
       };
@@ -1711,6 +1745,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -1752,6 +1787,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_area: [],
       };
@@ -1794,6 +1830,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_area: "   ",
       };
@@ -1843,6 +1880,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_prototype: "[[prototype]]",
       };
@@ -1896,6 +1934,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_parent: "[[parent]]",
       };
@@ -1956,6 +1995,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_parent: "[[task]]",
       };
@@ -2002,6 +2042,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -2045,6 +2086,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -2100,6 +2142,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -2167,6 +2210,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -2209,6 +2253,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -2267,6 +2312,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
       };
 
@@ -2329,6 +2375,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_blocker: "[[blocker]]",
       };
@@ -2379,6 +2426,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
         ems__Effort_blocker: "[[nonexistent]]",
       };
@@ -2422,6 +2470,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "ems__Task",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "ems__EffortStatusBacklog",
       };
 
@@ -2463,6 +2512,7 @@ describe("DailyTasksRenderer", () => {
       const taskMetadata = {
         exo__Instance_class: "[[ems__Task]]",
         ems__Effort_day: "[[2025-10-20]]",
+        ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusDoing]]",
         ems__Effort_startTimestamp: 1729411200000,
         ems__Effort_endTimestamp: 1729440000000,
