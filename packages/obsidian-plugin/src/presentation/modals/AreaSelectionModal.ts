@@ -133,6 +133,11 @@ export class AreaSelectionModal extends Modal {
         continue;
       }
 
+      // Skip areas from "09 Templates" folder
+      if (file.path.includes("09 Templates")) {
+        continue;
+      }
+
       const label = metadata.exo__Asset_label
         ? String(metadata.exo__Asset_label)
         : undefined;

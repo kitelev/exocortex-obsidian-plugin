@@ -63,17 +63,14 @@ export class SessionEventService {
   ): Promise<IFile> {
     const uid = uuidv4();
     const timestamp = DateFormatter.toLocalTimestamp(new Date());
-    const label = `${eventPrefix} - ${areaName}`;
 
     const frontmatter = {
       exo__Asset_uid: uid,
-      exo__Asset_label: label,
       exo__Asset_createdAt: timestamp,
-      exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      exo__Asset_isDefinedBy: '"[[!kitelev]]"',
       exo__Instance_class: [`"[[${eventType}]]"`],
       ems__SessionEvent_timestamp: timestamp,
       ems__Session_area: `"[[${areaName}]]"`,
-      aliases: [label],
     };
 
     const fileContent = MetadataHelpers.buildFileContent(frontmatter);
