@@ -24,7 +24,7 @@ export class SPARQLCodeBlockProcessor {
   async process(
     source: string,
     el: HTMLElement,
-    ctx: MarkdownPostProcessorContext
+    _ctx: MarkdownPostProcessorContext
   ): Promise<void> {
     el.innerHTML = "";
     el.classList.add("sparql-code-block");
@@ -199,7 +199,7 @@ export class SPARQLCodeBlockProcessor {
   }
 
   private extractVariables(queryString: string): string[] {
-    const selectMatch = queryString.match(/SELECT\s+(.*?)\s+WHERE/is);
+    const selectMatch = queryString.match(/SELECT\s+(.*?)\s+WHERE/i);
     if (!selectMatch) {
       return [];
     }
