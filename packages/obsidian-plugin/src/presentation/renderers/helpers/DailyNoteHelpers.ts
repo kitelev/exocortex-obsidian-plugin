@@ -80,15 +80,14 @@ export class DailyNoteHelpers {
     metadata: Record<string, unknown>,
     dayStr: string,
   ): boolean {
-    // Parse day string to Date
-    const dayDate = new Date(dayStr + "T00:00:00");
+    // Parse day string to Date (local midnight)
+    const dayDate = new Date(dayStr);
     if (isNaN(dayDate.getTime())) {
       return false; // Invalid day format
     }
 
     // Define day interval (local timezone)
-    const dayStart = new Date(dayDate);
-    dayStart.setHours(0, 0, 0, 0);
+    const dayStart = new Date(dayDate); // Already at 00:00:00.000
 
     const dayEnd = new Date(dayDate);
     dayEnd.setHours(23, 59, 59, 999);
