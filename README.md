@@ -23,7 +23,7 @@ Exocortex is a powerful Obsidian plugin that transforms your notes into an inter
 - 🏷️ **Smart Properties Display**: All frontmatter in organized tables with wiki-link resolution
 - 🔗 **Bidirectional Relations**: See all notes referencing current note, grouped by property
 - ↕️ **Interactive Sorting**: Click table headers to sort with visual indicators (▲/▼)
-- 📦 **Archive Filtering**: Toggle visibility of completed/archived assets
+- 📦 **Archive Filtering**: Toggle visibility of archived tasks and projects in DailyNote layouts (default: hidden)
 - ⚡ **High Performance**: O(1) relation lookups via reverse indexing
 - 📱 **Mobile Compatible**: Full touch-optimized UI for desktop and mobile
 - ⌨️ **23 Commands**: Comprehensive command palette integration for all operations
@@ -266,6 +266,11 @@ Aggregates all tasks where `ems__Effort_day` matches the daily note's date.
 - Votes (toggleable via "Show/Hide Votes" button - displays `ems__Effort_votes` property)
 - Effort Parent (project/initiative)
 
+**Control Buttons:**
+- "Show/Hide Effort Area" - Toggle Effort Area column visibility
+- "Show/Hide Votes" - Toggle Votes column visibility
+- "Show/Hide Archived" - Filter archived tasks (based on `exo__Asset_isArchived` property, default: hidden)
+
 **Active Focus Feature:**
 When an area is set as "Active Focus" using the "Set Active Focus" button:
 - Daily tasks filtered to show only tasks from that area
@@ -288,7 +293,14 @@ Visible **only** on notes with `exo__Instance_class: pn__DailyNote`.
 
 Shows all projects scheduled for the daily note's date (via `ems__Effort_day`).
 
-Similar structure to Daily Tasks table with project-specific columns.
+**Columns:**
+- Project Name (clickable)
+- Start Time
+- End Time
+- Status (with visual indicators)
+
+**Control Buttons:**
+- "Show/Hide Archived" - Filter archived projects (based on `exo__Asset_isArchived` property, default: hidden)
 
 ### Area Hierarchy Tree
 
