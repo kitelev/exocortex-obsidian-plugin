@@ -36,7 +36,7 @@ export class SPARQLCodeBlockProcessor {
     try {
       const loadingDiv = document.createElement("div");
       loadingDiv.className = "sparql-loading";
-      loadingDiv.textContent = "Loading SPARQL engine...";
+      loadingDiv.textContent = "Loading query engine";
       container.appendChild(loadingDiv);
 
       await this.ensureTripleStoreLoaded();
@@ -188,7 +188,7 @@ export class SPARQLCodeBlockProcessor {
     errorDiv.className = "sparql-error";
 
     const strong = document.createElement("strong");
-    strong.textContent = "SPARQL Query Error:";
+    strong.textContent = "Query error:";
     errorDiv.appendChild(strong);
 
     const pre = document.createElement("pre");

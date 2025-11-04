@@ -25,7 +25,9 @@ test.describe("DailyNote Archive Filter", () => {
 
     await launcher.waitForElement(".exocortex-daily-tasks-section", 60000);
 
-    const toggleButton = window.locator(".exocortex-toggle-archived");
+    const toggleButton = window.locator(
+      ".exocortex-daily-tasks-section .exocortex-toggle-archived",
+    );
     await expect(toggleButton).toBeVisible({ timeout: 10000 });
 
     const initialButtonText = await toggleButton.textContent();
@@ -141,7 +143,9 @@ test.describe("DailyNote Archive Filter", () => {
 
     await launcher.waitForElement(".exocortex-daily-tasks-section", 60000);
 
-    const toggleButton = window.locator(".exocortex-toggle-archived");
+    const toggleButton = window.locator(
+      ".exocortex-daily-tasks-section .exocortex-toggle-archived",
+    );
     await expect(toggleButton).toBeVisible({ timeout: 10000 });
 
     await toggleButton.click();
@@ -159,7 +163,9 @@ test.describe("DailyNote Archive Filter", () => {
 
     await launcher.waitForElement(".exocortex-daily-tasks-section", 60000);
 
-    const toggleButtonAfterRefresh = window.locator(".exocortex-toggle-archived");
+    const toggleButtonAfterRefresh = window.locator(
+      ".exocortex-daily-tasks-section .exocortex-toggle-archived",
+    );
     await expect(toggleButtonAfterRefresh).toBeVisible({ timeout: 10000 });
 
     buttonText = await toggleButtonAfterRefresh.textContent();

@@ -38,7 +38,8 @@ export class CommandManager {
             if (!file) return false;
 
             const context = this.getContext(file);
-            return command.checkCallback!(checking, file, context);
+            if (!command.checkCallback) return false;
+            return command.checkCallback(checking, file, context);
           },
         });
       } else if (command.callback) {

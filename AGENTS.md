@@ -41,6 +41,23 @@ When adding toggle buttons to table components, reuse the existing `*WithToggle`
 
 **Example:** See PR #326 for archive filtering in DailyNote tables - demonstrates adding "Show/Hide Archived" toggle to both tasks and projects tables.
 
+## Critical Quality Rules
+
+### ⛔ NEVER Use `git commit --no-verify`
+
+**ABSOLUTE PROHIBITION** - bypassing pre-commit hooks is **FORBIDDEN**.
+
+**Why:**
+- Pre-commit hooks catch errors before CI
+- Bypassing pushes broken code that blocks other developers
+- Lint/test failures must be fixed, not ignored
+
+**If pre-commit fails:**
+- ✅ Fix YOUR lint errors: `npx eslint --fix path/to/your/file.ts`
+- ✅ Fix BLOCKING lint errors in other files too
+- ✅ Ask maintainer to address systemic issues
+- ❌ NEVER use `--no-verify`
+
 ## Testing Requirements
 - Run targeted checks that mirror the `/test` command pipeline:
   - Unit tests: `npm run test:unit`
