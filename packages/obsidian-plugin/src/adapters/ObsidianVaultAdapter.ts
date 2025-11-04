@@ -99,6 +99,12 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
     return await this.vault.process(obsidianFile, fn);
   }
 
+  getDefaultNewFileParent(): IFolder | null {
+    const folder = this.app.fileManager.getNewFileParent("");
+    if (!folder) return null;
+    return this.fromObsidianFolder(folder);
+  }
+
   private fromObsidianFile(file: TFile): IFile {
     const iFile: IFile = {
       path: file.path,

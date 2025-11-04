@@ -21,7 +21,13 @@ describe("SessionEventService", () => {
       createFolder: jest.fn(),
       getFirstLinkpathDest: jest.fn(),
       process: jest.fn(),
+      getDefaultNewFileParent: jest.fn().mockReturnValue({
+        path: "",
+        name: "",
+      }),
     } as jest.Mocked<IVaultAdapter>;
+
+    mockVault.exists.mockResolvedValue(true);
 
     service = new SessionEventService(mockVault, null);
   });
@@ -30,7 +36,7 @@ describe("SessionEventService", () => {
     it("should create start event with correct frontmatter when no ontology set", async () => {
       const areaName = "Work";
       const mockCreatedFile: IFile = {
-        path: "Events/test-uid.md",
+        path: "test-uid.md",
         basename: "test-uid",
         name: "test-uid.md",
         parent: null,
@@ -47,7 +53,7 @@ describe("SessionEventService", () => {
       const createCall = mockVault.create.mock.calls[0];
       const [filePath, fileContent] = createCall;
 
-      expect(filePath).toMatch(/^Events\/.+\.md$/);
+      expect(filePath).toMatch(/^[0-9a-f-]+\.md$/);
       expect(fileContent).toContain("exo__Asset_uid:");
       expect(fileContent).toContain('"[[!kitelev]]"');
       expect(fileContent).toContain(`"[[${AssetClass.SESSION_START_EVENT}]]"`);
@@ -95,7 +101,7 @@ describe("SessionEventService", () => {
     it("should use correct timestamp format (ISO 8601)", async () => {
       const areaName = "Personal";
       const mockCreatedFile: IFile = {
-        path: "Events/test-uid.md",
+        path: "test-uid.md",
         basename: "test-uid",
         name: "test-uid.md",
         parent: null,
@@ -115,10 +121,10 @@ describe("SessionEventService", () => {
       expect(timestampMatch).toBeTruthy();
     });
 
-    it("should default to Events folder when no ontology set", async () => {
+    it("should default to vault root folder when no ontology set", async () => {
       const areaName = "Work";
       const mockCreatedFile: IFile = {
-        path: "Events/test-uid.md",
+        path: "test-uid.md",
         basename: "test-uid",
         name: "test-uid.md",
         parent: null,
@@ -132,13 +138,13 @@ describe("SessionEventService", () => {
       const createCall = mockVault.create.mock.calls[0];
       const [filePath] = createCall;
 
-      expect(filePath).toMatch(/^Events\/.+\.md$/);
+      expect(filePath).toMatch(/^[0-9a-f-]+\.md$/);
     });
 
     it("should generate valid UUID for each event", async () => {
       const areaName = "Work";
       const mockCreatedFile: IFile = {
-        path: "Events/test-uid.md",
+        path: "test-uid.md",
         basename: "test-uid",
         name: "test-uid.md",
         parent: null,
@@ -157,13 +163,32 @@ describe("SessionEventService", () => {
       );
       expect(uuidMatch).toBeTruthy();
     });
+
+    it("should create folder if it does not exist", async () => {
+      const areaName = "Work";
+      const mockCreatedFile: IFile = {
+        path: "test-uid.md",
+        basename: "test-uid",
+        name: "test-uid.md",
+        parent: null,
+      };
+
+      mockVault.getAllFiles.mockReturnValue([]);
+      mockVault.exists.mockResolvedValue(false);
+      mockVault.create.mockResolvedValue(mockCreatedFile);
+
+      await service.createSessionStartEvent(areaName);
+
+      expect(mockVault.createFolder).toHaveBeenCalledWith("");
+      expect(mockVault.create).toHaveBeenCalled();
+    });
   });
 
   describe("createSessionEndEvent", () => {
     it("should create end event with correct frontmatter", async () => {
       const areaName = "Work";
       const mockCreatedFile: IFile = {
-        path: "Events/test-uid.md",
+        path: "test-uid.md",
         basename: "test-uid",
         name: "test-uid.md",
         parent: null,
@@ -180,7 +205,7 @@ describe("SessionEventService", () => {
       const createCall = mockVault.create.mock.calls[0];
       const [filePath, fileContent] = createCall;
 
-      expect(filePath).toMatch(/^Events\/.+\.md$/);
+      expect(filePath).toMatch(/^[0-9a-f-]+\.md$/);
       expect(fileContent).toContain("exo__Asset_uid:");
       expect(fileContent).toContain('"[[!kitelev]]"');
       expect(fileContent).toContain(`"[[${AssetClass.SESSION_END_EVENT}]]"`);
@@ -193,7 +218,7 @@ describe("SessionEventService", () => {
     it("should use same timestamp format as start event", async () => {
       const areaName = "Personal";
       const mockCreatedFile: IFile = {
-        path: "Events/test-uid.md",
+        path: "test-uid.md",
         basename: "test-uid",
         name: "test-uid.md",
         parent: null,
@@ -216,7 +241,7 @@ describe("SessionEventService", () => {
     it("should handle null areaFile gracefully", async () => {
       const areaName = "Work";
       const mockCreatedFile: IFile = {
-        path: "Events/test-uid.md",
+        path: "test-uid.md",
         basename: "test-uid",
         name: "test-uid.md",
         parent: null,
@@ -258,6 +283,35 @@ describe("SessionEventService", () => {
       const [filePath] = createCall;
 
       expect(filePath).toMatch(/^Ontologies\/.+\.md$/);
+    });
+
+    it("should create ontology folder if it does not exist", async () => {
+      const ontologyService = new SessionEventService(mockVault, "myOntology");
+      const areaName = "Work";
+      const mockOntologyFile: IFile = {
+        path: "Ontologies/myOntology.md",
+        basename: "myOntology",
+        name: "myOntology.md",
+        parent: {
+          path: "Ontologies",
+          name: "Ontologies",
+        } as any,
+      };
+      const mockCreatedFile: IFile = {
+        path: "Ontologies/test-uid.md",
+        basename: "test-uid",
+        name: "test-uid.md",
+        parent: null,
+      };
+
+      mockVault.getAllFiles.mockReturnValue([mockOntologyFile]);
+      mockVault.exists.mockResolvedValue(false);
+      mockVault.create.mockResolvedValue(mockCreatedFile);
+
+      await ontologyService.createSessionEndEvent(areaName);
+
+      expect(mockVault.createFolder).toHaveBeenCalledWith("Ontologies");
+      expect(mockVault.create).toHaveBeenCalled();
     });
   });
 });

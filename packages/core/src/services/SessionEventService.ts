@@ -36,7 +36,7 @@ export class SessionEventService {
 
   /**
    * Find the folder path where the ontology asset is located
-   * @returns Folder path for ontology asset or "Events" as fallback
+   * @returns Folder path for ontology asset or vault's default new file location as fallback
    */
   private async getOntologyAssetFolder(): Promise<string> {
     // Return cached value if available
@@ -45,22 +45,25 @@ export class SessionEventService {
     }
 
     if (!this.defaultOntologyAsset) {
-      this.folderPathCache = "Events";
+      const defaultFolder = this.vault.getDefaultNewFileParent();
+      this.folderPathCache = defaultFolder?.path || "";
       return this.folderPathCache;
     }
 
     const allFiles = this.vault.getAllFiles();
-    
+
     for (const file of allFiles) {
       // Match by basename without extension
       if (file.basename === this.defaultOntologyAsset) {
-        this.folderPathCache = file.parent?.path || "Events";
+        const folderPath = file.parent?.path || "";
+        this.folderPathCache = folderPath;
         return this.folderPathCache;
       }
     }
-    
-    // Fallback to "Events" if ontology asset not found
-    this.folderPathCache = "Events";
+
+    // Fallback to vault's default new file location if ontology asset not found
+    const defaultFolder = this.vault.getDefaultNewFileParent();
+    this.folderPathCache = defaultFolder?.path || "";
     return this.folderPathCache;
   }
 
@@ -92,7 +95,13 @@ export class SessionEventService {
 
     const fileContent = MetadataHelpers.buildFileContent(frontmatter);
     const folderPath = await this.getOntologyAssetFolder();
-    const filePath = `${folderPath}/${uid}.md`;
+
+    // Ensure folder exists before creating file
+    if (folderPath && !(await this.vault.exists(folderPath))) {
+      await this.vault.createFolder(folderPath);
+    }
+
+    const filePath = folderPath ? `${folderPath}/${uid}.md` : `${uid}.md`;
 
     return await this.vault.create(filePath, fileContent);
   }

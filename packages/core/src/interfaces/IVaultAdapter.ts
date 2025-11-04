@@ -33,4 +33,5 @@ export interface IVaultAdapter {
   createFolder(path: string): Promise<void>;
   getFirstLinkpathDest(linkpath: string, sourcePath: string): IFile | null;
   process(file: IFile, fn: (content: string) => string): Promise<string>;
+  getDefaultNewFileParent(): IFolder | null;
 }
