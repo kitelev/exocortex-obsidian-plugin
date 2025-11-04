@@ -9,6 +9,8 @@ import { MetadataHelpers } from "../utilities/MetadataHelpers";
  * Creates SessionStartEvent and SessionEndEvent assets when users activate/deactivate focus areas
  */
 export class SessionEventService {
+  private folderPathCache: string | null = null;
+
   constructor(
     private vault: IVaultAdapter,
     private defaultOntologyAsset: string | null = null,
@@ -37,8 +39,14 @@ export class SessionEventService {
    * @returns Folder path for ontology asset or "Events" as fallback
    */
   private async getOntologyAssetFolder(): Promise<string> {
+    // Return cached value if available
+    if (this.folderPathCache !== null) {
+      return this.folderPathCache;
+    }
+
     if (!this.defaultOntologyAsset) {
-      return "Events";
+      this.folderPathCache = "Events";
+      return this.folderPathCache;
     }
 
     const allFiles = this.vault.getAllFiles();
@@ -46,12 +54,14 @@ export class SessionEventService {
     for (const file of allFiles) {
       // Match by basename without extension
       if (file.basename === this.defaultOntologyAsset) {
-        return file.parent?.path || "Events";
+        this.folderPathCache = file.parent?.path || "Events";
+        return this.folderPathCache;
       }
     }
     
     // Fallback to "Events" if ontology asset not found
-    return "Events";
+    this.folderPathCache = "Events";
+    return this.folderPathCache;
   }
 
   /**
