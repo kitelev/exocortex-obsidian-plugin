@@ -26,12 +26,14 @@ export interface DailyProjectsTableProps {
   projects: DailyProject[];
   onProjectClick?: (path: string, event: React.MouseEvent) => void;
   getAssetLabel?: (path: string) => string | null;
+  showArchived?: boolean;
 }
 
 export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
   projects,
   onProjectClick,
   getAssetLabel,
+  showArchived = true,
 }) => {
   const [sortState, setSortState] = useState<SortState>({
     column: "",
@@ -88,11 +90,20 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
   };
 
   const sortedProjects = useMemo(() => {
-    if (!sortState.column) {
-      return projects;
+    let filtered = projects;
+
+    if (!showArchived) {
+      filtered = projects.filter((project) => {
+        const isArchived = project.metadata.exo__Asset_isArchived;
+        return !isArchived;
+      });
     }
 
-    const sorted = [...projects];
+    if (!sortState.column) {
+      return filtered;
+    }
+
+    const sorted = [...filtered];
 
     sorted.sort((a, b) => {
       let aValue: any;
@@ -129,7 +140,7 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
     });
 
     return sorted;
-  }, [projects, sortState, getAssetLabel]);
+  }, [projects, sortState, getAssetLabel, showArchived]);
 
   return (
     <div className="exocortex-daily-projects">
@@ -225,6 +236,36 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
           ))}
         </tbody>
       </table>
+    </div>
+  );
+};
+
+export interface DailyProjectsTableWithToggleProps
+  extends Omit<DailyProjectsTableProps, "showArchived"> {
+  showArchived: boolean;
+  onToggleArchived: () => void;
+}
+
+export const DailyProjectsTableWithToggle: React.FC<
+  DailyProjectsTableWithToggleProps
+> = ({ showArchived, onToggleArchived, ...props }) => {
+  return (
+    <div className="exocortex-daily-projects-wrapper">
+      <div className="exocortex-daily-projects-controls">
+        <button
+          className="exocortex-toggle-archived"
+          onClick={onToggleArchived}
+          style={{
+            marginBottom: "8px",
+            padding: "4px 8px",
+            cursor: "pointer",
+            fontSize: "12px",
+          }}
+        >
+          {showArchived ? "Hide" : "Show"} Archived
+        </button>
+      </div>
+      <DailyProjectsTable {...props} showArchived={showArchived} />
     </div>
   );
 };

@@ -3,6 +3,7 @@ import React from "react";
 import {
   DailyProjectsTable,
   DailyProject,
+  DailyProjectsTableWithToggle,
 } from "../../src/presentation/components/DailyProjectsTable";
 
 test.describe("DailyProjectsTable", () => {
@@ -342,5 +343,203 @@ test.describe("DailyProjectsTable", () => {
     await component.locator('thead th:has-text("Status")').click();
 
     await expect(component.locator('thead th:has-text("Status")')).toContainText("↑");
+  });
+
+  test("should filter archived projects when showArchived is false", async ({
+    mount,
+  }) => {
+    const projectsWithArchived: DailyProject[] = [
+      {
+        file: { path: "project1.md", basename: "project1" },
+        path: "project1.md",
+        title: "Active Project",
+        label: "Active",
+        startTime: "09:00",
+        endTime: "10:00",
+        status: "ems__EffortStatusInProgress",
+        metadata: { exo__Asset_isArchived: false },
+        isDone: false,
+        isTrashed: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "project2.md", basename: "project2" },
+        path: "project2.md",
+        title: "Archived Project",
+        label: "Archived",
+        startTime: "11:00",
+        endTime: "12:00",
+        status: "ems__EffortStatusDone",
+        metadata: { exo__Asset_isArchived: true },
+        isDone: true,
+        isTrashed: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyProjectsTable projects={projectsWithArchived} showArchived={false} />,
+    );
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(1);
+    await expect(rows.first().locator(".project-name a")).toContainText("Active");
+  });
+
+  test("should show all projects when showArchived is true", async ({
+    mount,
+  }) => {
+    const projectsWithArchived: DailyProject[] = [
+      {
+        file: { path: "project1.md", basename: "project1" },
+        path: "project1.md",
+        title: "Active Project",
+        label: "Active",
+        startTime: "09:00",
+        endTime: "10:00",
+        status: "ems__EffortStatusInProgress",
+        metadata: { exo__Asset_isArchived: false },
+        isDone: false,
+        isTrashed: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "project2.md", basename: "project2" },
+        path: "project2.md",
+        title: "Archived Project",
+        label: "Archived",
+        startTime: "11:00",
+        endTime: "12:00",
+        status: "ems__EffortStatusDone",
+        metadata: { exo__Asset_isArchived: true },
+        isDone: true,
+        isTrashed: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyProjectsTable projects={projectsWithArchived} showArchived={true} />,
+    );
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(2);
+  });
+});
+
+test.describe("DailyProjectsTableWithToggle", () => {
+  const mockProjects: DailyProject[] = [
+    {
+      file: { path: "project1.md", basename: "project1" },
+      path: "project1.md",
+      title: "Project 1",
+      label: "First Project",
+      startTime: "09:00",
+      endTime: "10:00",
+      status: "ems__EffortStatusInProgress",
+      metadata: { exo__Asset_isArchived: false },
+      isDone: false,
+      isTrashed: false,
+      isBlocked: false,
+    },
+    {
+      file: { path: "project2.md", basename: "project2" },
+      path: "project2.md",
+      title: "Project 2",
+      label: "Archived Project",
+      startTime: "11:00",
+      endTime: "12:00",
+      status: "ems__EffortStatusDone",
+      metadata: { exo__Asset_isArchived: true },
+      isDone: true,
+      isTrashed: false,
+      isBlocked: false,
+    },
+  ];
+
+  test("should render toggle button for archived projects", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <DailyProjectsTableWithToggle
+        projects={mockProjects}
+        showArchived={false}
+        onToggleArchived={() => {}}
+      />,
+    );
+
+    await expect(
+      component.locator(".exocortex-toggle-archived"),
+    ).toBeVisible();
+    await expect(
+      component.locator(".exocortex-toggle-archived"),
+    ).toContainText("Show Archived");
+  });
+
+  test("should show 'Hide Archived' when showArchived is true", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <DailyProjectsTableWithToggle
+        projects={mockProjects}
+        showArchived={true}
+        onToggleArchived={() => {}}
+      />,
+    );
+
+    await expect(
+      component.locator(".exocortex-toggle-archived"),
+    ).toContainText("Hide Archived");
+  });
+
+  test("should call onToggleArchived when button is clicked", async ({
+    mount,
+  }) => {
+    let toggleCalled = false;
+    const component = await mount(
+      <DailyProjectsTableWithToggle
+        projects={mockProjects}
+        showArchived={false}
+        onToggleArchived={() => {
+          toggleCalled = true;
+        }}
+      />,
+    );
+
+    await component.locator(".exocortex-toggle-archived").click();
+    expect(toggleCalled).toBe(true);
+  });
+
+  test("should filter archived projects when showArchived is false", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <DailyProjectsTableWithToggle
+        projects={mockProjects}
+        showArchived={false}
+        onToggleArchived={() => {}}
+      />,
+    );
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(1);
+    await expect(rows.first().locator(".project-name a")).toContainText(
+      "First Project",
+    );
+  });
+
+  test("should show all projects when showArchived is true", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <DailyProjectsTableWithToggle
+        projects={mockProjects}
+        showArchived={true}
+        onToggleArchived={() => {}}
+      />,
+    );
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(2);
   });
 });

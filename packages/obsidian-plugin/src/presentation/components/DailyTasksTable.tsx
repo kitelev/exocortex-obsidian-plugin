@@ -31,6 +31,7 @@ export interface DailyTasksTableProps {
   getEffortArea?: (metadata: Record<string, unknown>) => string | null;
   showEffortArea?: boolean;
   showEffortVotes?: boolean;
+  showArchived?: boolean;
 }
 
 export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
@@ -40,6 +41,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   getEffortArea,
   showEffortArea = false,
   showEffortVotes = false,
+  showArchived = true,
 }) => {
   const [sortState, setSortState] = useState<SortState>({
     column: "",
@@ -138,11 +140,20 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   };
 
   const sortedTasks = useMemo(() => {
-    if (!sortState.column) {
-      return tasks;
+    let filtered = tasks;
+
+    if (!showArchived) {
+      filtered = tasks.filter((task) => {
+        const isArchived = task.metadata.exo__Asset_isArchived;
+        return !isArchived;
+      });
     }
 
-    const sorted = [...tasks];
+    if (!sortState.column) {
+      return filtered;
+    }
+
+    const sorted = [...filtered];
 
     sorted.sort((a, b) => {
       let aValue: any;
@@ -191,7 +202,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     });
 
     return sorted;
-  }, [tasks, sortState, getAssetLabel, getEffortArea]);
+  }, [tasks, sortState, getAssetLabel, getEffortArea, showArchived]);
 
   return (
     <div className="exocortex-daily-tasks">
@@ -374,11 +385,16 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
 };
 
 export interface DailyTasksTableWithToggleProps
-  extends Omit<DailyTasksTableProps, "showEffortArea" | "showEffortVotes"> {
+  extends Omit<
+    DailyTasksTableProps,
+    "showEffortArea" | "showEffortVotes" | "showArchived"
+  > {
   showEffortArea: boolean;
   onToggleEffortArea: () => void;
   showEffortVotes: boolean;
   onToggleEffortVotes: () => void;
+  showArchived: boolean;
+  onToggleArchived: () => void;
 }
 
 export const DailyTasksTableWithToggle: React.FC<
@@ -388,6 +404,8 @@ export const DailyTasksTableWithToggle: React.FC<
   onToggleEffortArea,
   showEffortVotes,
   onToggleEffortVotes,
+  showArchived,
+  onToggleArchived,
   ...props
 }) => {
   return (
@@ -411,6 +429,7 @@ export const DailyTasksTableWithToggle: React.FC<
           onClick={onToggleEffortVotes}
           style={{
             marginBottom: "8px",
+            marginRight: "8px",
             padding: "4px 8px",
             cursor: "pointer",
             fontSize: "12px",
@@ -418,11 +437,24 @@ export const DailyTasksTableWithToggle: React.FC<
         >
           {showEffortVotes ? "Hide" : "Show"} Votes
         </button>
+        <button
+          className="exocortex-toggle-archived"
+          onClick={onToggleArchived}
+          style={{
+            marginBottom: "8px",
+            padding: "4px 8px",
+            cursor: "pointer",
+            fontSize: "12px",
+          }}
+        >
+          {showArchived ? "Hide" : "Show"} Archived
+        </button>
       </div>
       <DailyTasksTable
         {...props}
         showEffortArea={showEffortArea}
         showEffortVotes={showEffortVotes}
+        showArchived={showArchived}
       />
     </div>
   );

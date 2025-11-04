@@ -110,6 +110,12 @@ export class DailyTasksRenderer {
           await this.plugin.saveSettings();
           await this.refresh();
         },
+        showArchived: this.settings.showArchivedAssets,
+        onToggleArchived: async () => {
+          this.settings.showArchivedAssets = !this.settings.showArchivedAssets;
+          await this.plugin.saveSettings();
+          await this.refresh();
+        },
         onTaskClick: async (path: string, event: React.MouseEvent) => {
           const isModPressed = Keymap.isModEvent(
             event.nativeEvent as MouseEvent,
