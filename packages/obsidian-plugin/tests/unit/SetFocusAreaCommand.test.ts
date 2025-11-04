@@ -29,13 +29,19 @@ describe("SetFocusAreaCommand", () => {
       refreshLayout: jest.fn(),
       vaultAdapter: {
         create: jest.fn().mockResolvedValue({
-          path: "Events/test-uid.md",
+          path: "test-uid.md",
           basename: "test-uid",
           name: "test-uid.md",
           parent: null,
         }),
         getAllFiles: jest.fn().mockReturnValue([]),
         getFrontmatter: jest.fn().mockReturnValue(null),
+        getDefaultNewFileParent: jest.fn().mockReturnValue({
+          path: "",
+          name: "",
+        }),
+        exists: jest.fn().mockResolvedValue(true),
+        createFolder: jest.fn().mockResolvedValue(undefined),
       },
     } as unknown as jest.Mocked<ExocortexPluginInterface>;
 

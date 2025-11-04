@@ -140,6 +140,13 @@ export class FileSystemVaultAdapter implements IVaultAdapter {
     return newContent;
   }
 
+  getDefaultNewFileParent(): IFolder | null {
+    return {
+      path: "",
+      name: "",
+    };
+  }
+
   private resolvePath(filePath: string): string {
     if (path.isAbsolute(filePath)) {
       return filePath;
