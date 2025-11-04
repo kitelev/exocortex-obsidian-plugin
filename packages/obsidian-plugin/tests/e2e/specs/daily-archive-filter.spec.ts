@@ -16,7 +16,7 @@ test.describe("DailyNote Archive Filter", () => {
   });
 
   test("should toggle archived tasks visibility with button click", async () => {
-    await launcher.openFile("Daily Notes/2025-10-16.md");
+    await launcher.openFile("Daily Notes/2025-10-18.md");
 
     const window = await launcher.getWindow();
 
@@ -75,7 +75,7 @@ test.describe("DailyNote Archive Filter", () => {
   });
 
   test("should toggle archived projects visibility with button click", async () => {
-    await launcher.openFile("Daily Notes/2025-10-16.md");
+    await launcher.openFile("Daily Notes/2025-10-18.md");
 
     const window = await launcher.getWindow();
 
@@ -134,7 +134,7 @@ test.describe("DailyNote Archive Filter", () => {
   });
 
   test("should persist archived filter state across page refreshes", async () => {
-    await launcher.openFile("Daily Notes/2025-10-16.md");
+    await launcher.openFile("Daily Notes/2025-10-18.md");
 
     const window = await launcher.getWindow();
 
@@ -157,7 +157,7 @@ test.describe("DailyNote Archive Filter", () => {
     await launcher.openFile("Daily Notes/2025-10-17.md");
     await window.waitForTimeout(2000);
 
-    await launcher.openFile("Daily Notes/2025-10-16.md");
+    await launcher.openFile("Daily Notes/2025-10-18.md");
     await launcher.waitForModalsToClose(10000);
     await window.waitForTimeout(5000);
 
