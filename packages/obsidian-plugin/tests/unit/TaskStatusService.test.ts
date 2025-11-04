@@ -219,6 +219,51 @@ Content`;
       expect(modifiedContent).toContain("exo__Asset_uid: task-123");
       expect(modifiedContent).toContain("archived: true");
     });
+
+    it("should remove aliases property when archiving", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class:
+  - "[[ems__Task]]"
+aliases:
+  - Task Alias 1
+  - Task Alias 2
+ems__Effort_status: "[[ems__EffortStatusDone]]"
+---
+Content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.archiveTask(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain("archived: true");
+      expect(modifiedContent).not.toContain("aliases");
+      expect(modifiedContent).not.toContain("Task Alias 1");
+      expect(modifiedContent).not.toContain("Task Alias 2");
+    });
+
+    it("should handle archiving when aliases property does not exist", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+exo__Instance_class:
+  - "[[ems__Task]]"
+ems__Effort_status: "[[ems__EffortStatusDone]]"
+---
+Content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.archiveTask(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain("archived: true");
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusDone]]"',
+      );
+    });
   });
 
   describe("trashEffort", () => {

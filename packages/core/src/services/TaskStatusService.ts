@@ -100,11 +100,12 @@ export class TaskStatusService {
 
   async archiveTask(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
-    const updated = this.frontmatterService.updateProperty(
+    let updated = this.frontmatterService.updateProperty(
       content,
       "archived",
       "true",
     );
+    updated = this.frontmatterService.removeProperty(updated, "aliases");
     await this.vault.modify(taskFile, updated);
   }
 
