@@ -90,13 +90,14 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
   };
 
   const isAssetArchived = (metadata: Record<string, unknown>): boolean => {
-    const isArchived = metadata.exo__Asset_isArchived;
-    if (isArchived === true || isArchived === 1) return true;
-    if (typeof isArchived === "string") {
-      const lowerValue = isArchived.toLowerCase();
-      return lowerValue === "true" || lowerValue === "yes";
+    const value = metadata.exo__Asset_isArchived;
+    if (!value) return false;
+    if (value === true || value === 1) return true;
+    if (typeof value === "string") {
+      const lower = String(value).toLowerCase().trim();
+      return lower === "true" || lower === "yes" || lower === "1";
     }
-    return false;
+    return Boolean(value);
   };
 
   const sortedProjects = useMemo(() => {
