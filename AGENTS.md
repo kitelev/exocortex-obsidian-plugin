@@ -26,6 +26,21 @@
 - Follow the established project conventions (e.g., double quotes, semicolons, React functional components).
 - Prefer explicit error handling and graceful fallbacks consistent with the patterns documented in `CLAUDE.md` (result objects, safe degradation).
 
+## Component Development Patterns
+
+### *WithToggle Components for Table Controls
+
+When adding toggle buttons to table components, reuse the existing `*WithToggle` pattern:
+
+**Pattern (from `DailyTasksTableWithToggle`):**
+- Wrapper component with controls div containing toggle buttons
+- Each button toggles a feature (Effort Area, Votes, Archived, etc.)
+- Settings persist via `plugin.saveSettings()` and trigger `refresh()`
+- Base table component receives filtered/configured props
+- Consistent styling: `marginBottom: 8px`, `padding: 4px 8px`, `fontSize: 12px`
+
+**Example:** See PR #326 for archive filtering in DailyNote tables - demonstrates adding "Show/Hide Archived" toggle to both tasks and projects tables.
+
 ## Testing Requirements
 - Run targeted checks that mirror the `/test` command pipeline:
   - Unit tests: `npm run test:unit`
