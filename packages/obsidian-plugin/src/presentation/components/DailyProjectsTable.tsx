@@ -33,7 +33,7 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
   projects,
   onProjectClick,
   getAssetLabel,
-  showArchived = true,
+  showArchived = false,
 }) => {
   const [sortState, setSortState] = useState<SortState>({
     column: "",

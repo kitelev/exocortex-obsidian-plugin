@@ -41,7 +41,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   getEffortArea,
   showEffortArea = false,
   showEffortVotes = false,
-  showArchived = true,
+  showArchived = false,
 }) => {
   const [sortState, setSortState] = useState<SortState>({
     column: "",
