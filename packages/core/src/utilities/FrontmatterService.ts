@@ -201,10 +201,10 @@ export class FrontmatterService {
       return content;
     }
 
-    // Remove property line (including trailing newline if present)
+    // Remove property line and any following array items (lines starting with "  - ")
     const propertyLineRegex = new RegExp(
-      `\n?${this.escapeRegex(property)}:.*$`,
-      "m",
+      `\n?${this.escapeRegex(property)}:.*(?:\n {2}- .*)*`,
+      "gm",
     );
     const updatedFrontmatter = parsed.content.replace(propertyLineRegex, "");
 

@@ -206,6 +206,48 @@ describe("FrontmatterService", () => {
 
       expect(result).toBe("---\n\nfoo: bar\n---\nBody");
     });
+
+    it("should remove array property with all items", () => {
+      const content = `---
+foo: bar
+aliases:
+  - Alias 1
+  - Alias 2
+  - Alias 3
+status: draft
+---
+Body`;
+      const result = service.removeProperty(content, "aliases");
+
+      expect(result).toBe("---\nfoo: bar\nstatus: draft\n---\nBody");
+      expect(result).not.toContain("aliases");
+      expect(result).not.toContain("Alias 1");
+    });
+
+    it("should remove array property at beginning of frontmatter", () => {
+      const content = `---
+aliases:
+  - First Alias
+  - Second Alias
+foo: bar
+---
+Body`;
+      const result = service.removeProperty(content, "aliases");
+
+      expect(result).toBe("---\n\nfoo: bar\n---\nBody");
+    });
+
+    it("should remove array property at end of frontmatter", () => {
+      const content = `---
+foo: bar
+aliases:
+  - Last Alias
+---
+Body`;
+      const result = service.removeProperty(content, "aliases");
+
+      expect(result).toBe("---\nfoo: bar\n---\nBody");
+    });
   });
 
   describe("hasProperty", () => {
