@@ -86,6 +86,7 @@ describe("CommandManager", () => {
         showPropertiesSection: true,
         layoutVisible: true,
         showArchivedAssets: false,
+        defaultOntologyAsset: null,
       },
       saveSettings: jest.fn().mockResolvedValue(undefined),
       refreshLayout: jest.fn(),

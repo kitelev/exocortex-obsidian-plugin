@@ -18,6 +18,7 @@ export class SetFocusAreaCommand implements ICommand {
   ) {
     this.sessionEventService = new SessionEventService(
       this.plugin.vaultAdapter,
+      (this.plugin.settings?.defaultOntologyAsset as string | null) ?? null,
     );
   }
 

@@ -9,7 +9,12 @@ import { MetadataHelpers } from "../utilities/MetadataHelpers";
  * Creates SessionStartEvent and SessionEndEvent assets when users activate/deactivate focus areas
  */
 export class SessionEventService {
-  constructor(private vault: IVaultAdapter) {}
+  private folderPathCache: string | null = null;
+
+  constructor(
+    private vault: IVaultAdapter,
+    private defaultOntologyAsset: string | null = null,
+  ) {}
 
   /**
    * Create a session start event when user activates a focus area
@@ -30,21 +35,33 @@ export class SessionEventService {
   }
 
   /**
-   * Find the folder path where the [[!kitelev]] asset is located
-   * @returns Folder path for [[!kitelev]] asset or "Events" as fallback
+   * Find the folder path where the ontology asset is located
+   * @returns Folder path for ontology asset or "Events" as fallback
    */
-  private async getKitelevAssetFolder(): Promise<string> {
+  private async getOntologyAssetFolder(): Promise<string> {
+    // Return cached value if available
+    if (this.folderPathCache !== null) {
+      return this.folderPathCache;
+    }
+
+    if (!this.defaultOntologyAsset) {
+      this.folderPathCache = "Events";
+      return this.folderPathCache;
+    }
+
     const allFiles = this.vault.getAllFiles();
     
     for (const file of allFiles) {
-      const frontmatter = this.vault.getFrontmatter(file);
-      if (frontmatter?.exo__Asset_uid === "!kitelev") {
-        return file.parent?.path || "Events";
+      // Match by basename without extension
+      if (file.basename === this.defaultOntologyAsset) {
+        this.folderPathCache = file.parent?.path || "Events";
+        return this.folderPathCache;
       }
     }
     
-    // Fallback to "Events" if [[!kitelev]] asset not found
-    return "Events";
+    // Fallback to "Events" if ontology asset not found
+    this.folderPathCache = "Events";
+    return this.folderPathCache;
   }
 
   /**
@@ -60,17 +77,21 @@ export class SessionEventService {
     const uid = uuidv4();
     const timestamp = DateFormatter.toLocalTimestamp(new Date());
 
+    const ontologyRef = this.defaultOntologyAsset
+      ? `"[[${this.defaultOntologyAsset}]]"`
+      : '"[[!kitelev]]"';
+
     const frontmatter = {
       exo__Asset_uid: uid,
       exo__Asset_createdAt: timestamp,
-      exo__Asset_isDefinedBy: '"[[!kitelev]]"',
+      exo__Asset_isDefinedBy: ontologyRef,
       exo__Instance_class: [`"[[${eventType}]]"`],
       ems__SessionEvent_timestamp: timestamp,
       ems__Session_area: `"[[${areaName}]]"`,
     };
 
     const fileContent = MetadataHelpers.buildFileContent(frontmatter);
-    const folderPath = await this.getKitelevAssetFolder();
+    const folderPath = await this.getOntologyAssetFolder();
     const filePath = `${folderPath}/${uid}.md`;
 
     return await this.vault.create(filePath, fileContent);
