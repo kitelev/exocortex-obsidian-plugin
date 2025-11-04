@@ -139,13 +139,22 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     }
   };
 
+  const isAssetArchived = (metadata: Record<string, unknown>): boolean => {
+    const isArchived = metadata.exo__Asset_isArchived;
+    if (isArchived === true || isArchived === 1) return true;
+    if (typeof isArchived === "string") {
+      const lowerValue = isArchived.toLowerCase();
+      return lowerValue === "true" || lowerValue === "yes";
+    }
+    return false;
+  };
+
   const sortedTasks = useMemo(() => {
     let filtered = tasks;
 
     if (!showArchived) {
       filtered = tasks.filter((task) => {
-        const isArchived = task.metadata.exo__Asset_isArchived;
-        return !isArchived;
+        return !isAssetArchived(task.metadata);
       });
     }
 
