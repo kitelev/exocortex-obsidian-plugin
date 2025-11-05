@@ -17,6 +17,10 @@ describe("SPARQLCodeBlockProcessor", () => {
     processor = new SPARQLCodeBlockProcessor(mockPlugin);
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it("should be instantiable", () => {
     expect(processor).toBeDefined();
     expect(processor).toBeInstanceOf(SPARQLCodeBlockProcessor);

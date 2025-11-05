@@ -132,6 +132,47 @@ jobs:
           export COVERAGE=true
           ./scripts/test-ci-batched.sh || exit 1
 
+      - name: Check coverage thresholds
+        run: |
+          echo "Verifying coverage meets required thresholds..."
+          cd packages/obsidian-plugin
+          npx jest --coverage --coverageReporters=json-summary --silent
+
+          # Extract coverage percentages from JSON
+          STATEMENTS=$(cat coverage/coverage-summary.json | jq -r '.total.statements.pct')
+          BRANCHES=$(cat coverage/coverage-summary.json | jq -r '.total.branches.pct')
+          FUNCTIONS=$(cat coverage/coverage-summary.json | jq -r '.total.functions.pct')
+          LINES=$(cat coverage/coverage-summary.json | jq -r '.total.lines.pct')
+
+          echo "Coverage Report:"
+          echo "  Statements: ${STATEMENTS}% (required: 65%)"
+          echo "  Branches:   ${BRANCHES}% (required: 60%)"
+          echo "  Functions:  ${FUNCTIONS}% (required: 59%)"
+          echo "  Lines:      ${LINES}% (required: 65%)"
+
+          # Check if coverage meets thresholds
+          if (( $(echo "$STATEMENTS < 65" | bc -l) )); then
+            echo "❌ Statement coverage ${STATEMENTS}% is below 65% threshold"
+            exit 1
+          fi
+
+          if (( $(echo "$BRANCHES < 60" | bc -l) )); then
+            echo "❌ Branch coverage ${BRANCHES}% is below 60% threshold"
+            exit 1
+          fi
+
+          if (( $(echo "$FUNCTIONS < 59" | bc -l) )); then
+            echo "❌ Function coverage ${FUNCTIONS}% is below 59% threshold"
+            exit 1
+          fi
+
+          if (( $(echo "$LINES < 65" | bc -l) )); then
+            echo "❌ Line coverage ${LINES}% is below 65% threshold"
+            exit 1
+          fi
+
+          echo "✅ All coverage thresholds met!"
+
       - name: Generate coverage summary
         if: always()
         run: |
