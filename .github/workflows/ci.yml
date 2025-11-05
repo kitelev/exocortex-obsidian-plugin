@@ -126,6 +126,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install jq for coverage parsing
+        run: apt-get update && apt-get install -y jq
+
       - name: Run unit tests with coverage
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096"
