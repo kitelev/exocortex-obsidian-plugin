@@ -26,10 +26,10 @@ module.exports = {
   },
   coverageThreshold: {
     global: {
-      branches: 60, // Updated from 55 to 60 (current: 59.7%)
-      functions: 59, // Keeping at 59 (current: 59.57%)
-      lines: 65, // Updated from 64 to 65 (current: 66.78%)
-      statements: 65, // Updated from 63 to 65 (current: 65.47%)
+      branches: 65, // Updated from 60 to 65 (current: 66.26%)
+      functions: 63, // Updated from 59 to 63 (current: 64.45%)
+      lines: 70, // Updated from 65 to 70 (current: 71.68%)
+      statements: 70, // Updated from 65 to 70 (current: 70.3%)
     },
     // Domain layer thresholds disabled until core package coverage collection is fixed
     // See: https://github.com/kitelev/exocortex-obsidian-plugin/issues/197
