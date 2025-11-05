@@ -33,7 +33,7 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
   projects,
   onProjectClick,
   getAssetLabel,
-  showArchived = true,
+  showArchived = false,
 }) => {
   const [sortState, setSortState] = useState<SortState>({
     column: "",
@@ -89,13 +89,23 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
     return blockerIcon + icon + displayText;
   };
 
+  const isAssetArchived = (metadata: Record<string, unknown>): boolean => {
+    const value = metadata.exo__Asset_isArchived;
+    if (!value) return false;
+    if (value === true || value === 1) return true;
+    if (typeof value === "string") {
+      const lower = String(value).toLowerCase().trim();
+      return lower === "true" || lower === "yes" || lower === "1";
+    }
+    return Boolean(value);
+  };
+
   const sortedProjects = useMemo(() => {
     let filtered = projects;
 
     if (!showArchived) {
       filtered = projects.filter((project) => {
-        const isArchived = project.metadata.exo__Asset_isArchived;
-        return !isArchived;
+        return !isAssetArchived(project.metadata);
       });
     }
 

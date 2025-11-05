@@ -52,10 +52,10 @@ export class ExocortexSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Default ontology asset")
-      .setDesc("Select the ontology asset (exo__Ontology class) to use as isDefinedBy for created events")
+      .setDesc("Choose the ontology asset to use for created events")
       .addDropdown((dropdown) => {
-        
-        dropdown.addOption("", "None (use Events folder)");
+
+        dropdown.addOption("", "None (use events folder)");
         
         ontologyAssets.forEach((assetName) => {
           dropdown.addOption(assetName, assetName);
