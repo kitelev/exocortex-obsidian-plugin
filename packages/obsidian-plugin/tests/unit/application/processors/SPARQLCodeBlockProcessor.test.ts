@@ -67,25 +67,30 @@ describe("SPARQLCodeBlockProcessor", () => {
 
   describe("Result Comparison", () => {
     it("should compare results correctly for equality", () => {
+      // Mock SolutionMapping objects
+      const createMockSolutionMapping = (bindings: Map<string, any>) => ({
+        getBindings: () => bindings,
+      });
+
       const result1 = [
-        new Map([
-          ["var1", "value1"],
-          ["var2", "value2"],
-        ]),
+        createMockSolutionMapping(new Map([
+          ["var1", { toString: () => "value1" }],
+          ["var2", { toString: () => "value2" }],
+        ])),
       ];
 
       const result2 = [
-        new Map([
-          ["var1", "value1"],
-          ["var2", "value2"],
-        ]),
+        createMockSolutionMapping(new Map([
+          ["var1", { toString: () => "value1" }],
+          ["var2", { toString: () => "value2" }],
+        ])),
       ];
 
       const result3 = [
-        new Map([
-          ["var1", "value1"],
-          ["var2", "different"],
-        ]),
+        createMockSolutionMapping(new Map([
+          ["var1", { toString: () => "value1" }],
+          ["var2", { toString: () => "different" }],
+        ])),
       ];
 
       const areEqual = (processor as any).areResultsEqual;

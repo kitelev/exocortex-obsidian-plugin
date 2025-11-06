@@ -144,7 +144,7 @@ export class SPARQLCodeBlockProcessor {
 
     const stringify = (result: SolutionMapping): string => {
       const entries: string[] = [];
-      result.forEach((value, key) => {
+      result.getBindings().forEach((value, key) => {
         entries.push(`${key}:${value.toString()}`);
       });
       return entries.sort().join("|");
