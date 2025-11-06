@@ -252,26 +252,26 @@ describe("RelationsRenderer", () => {
         mockMetadataService.getAssetLabel.mockReturnValue(null);
       });
 
-      it("should filter archived assets when showArchivedAssets is false", async () => {
+      it("should return archived assets with isArchived flag set", async () => {
+        const archivedMetadata = createMockMetadata({ exo__Asset_isArchived: true });
+        mockApp.metadataCache.getFileCache.mockReturnValue({
+          frontmatter: archivedMetadata,
+        });
+        MetadataHelpers.isAssetArchived.mockReturnValue(true);
+
+        const result = await renderer.getAssetRelations(mockFile, {});
+
+        expect(result).toHaveLength(1);
+        expect(result[0].isArchived).toBe(true);
+      });
+
+      it("should return archived assets regardless of showArchivedAssets setting", async () => {
         const archivedMetadata = createMockMetadata({ exo__Asset_isArchived: true });
         mockApp.metadataCache.getFileCache.mockReturnValue({
           frontmatter: archivedMetadata,
         });
         MetadataHelpers.isAssetArchived.mockReturnValue(true);
         mockSettings.showArchivedAssets = false;
-
-        const result = await renderer.getAssetRelations(mockFile, {});
-
-        expect(result).toEqual([]);
-      });
-
-      it("should include archived assets when showArchivedAssets is true", async () => {
-        const archivedMetadata = createMockMetadata({ exo__Asset_isArchived: true });
-        mockApp.metadataCache.getFileCache.mockReturnValue({
-          frontmatter: archivedMetadata,
-        });
-        MetadataHelpers.isAssetArchived.mockReturnValue(true);
-        mockSettings.showArchivedAssets = true;
 
         const result = await renderer.getAssetRelations(mockFile, {});
 
@@ -1038,7 +1038,7 @@ describe("RelationsRenderer", () => {
   });
 
   describe("integration scenarios", () => {
-    it("should handle complete workflow with archived filtering and sorting", async () => {
+    it("should return all relations with isArchived flags and handle sorting", async () => {
       const file1 = createTestTFile("source/z-file.md");
       const file2 = createTestTFile("source/a-file.md");
       file1.stat = { ctime: 1704067200001, mtime: 1704153600001, size: 100 };
@@ -1069,24 +1069,17 @@ describe("RelationsRenderer", () => {
       BlockerHelpers.isEffortBlocked.mockReturnValue(false);
       mockMetadataService.getAssetLabel.mockReturnValue(null);
 
-      // First, include archived assets
-      mockSettings.showArchivedAssets = true;
-      const relationsWithArchived = await renderer.getAssetRelations(mockFile, {
+      // getAssetRelations now returns all relations with isArchived flags
+      const relations = await renderer.getAssetRelations(mockFile, {
         sortBy: "title",
         sortOrder: "asc",
       });
 
-      expect(relationsWithArchived).toHaveLength(2);
-
-      // Now exclude archived
-      mockSettings.showArchivedAssets = false;
-      const relationsWithoutArchived = await renderer.getAssetRelations(mockFile, {
-        sortBy: "title",
-        sortOrder: "asc",
-      });
-
-      expect(relationsWithoutArchived).toHaveLength(1);
-      expect(relationsWithoutArchived[0].path).toBe(file2.path);
+      expect(relations).toHaveLength(2);
+      expect(relations[0].isArchived).toBe(false);
+      expect(relations[0].path).toBe(file2.path);
+      expect(relations[1].isArchived).toBe(true);
+      expect(relations[1].path).toBe(file1.path);
     });
 
     it("should handle effort blocking with property-based relations", async () => {

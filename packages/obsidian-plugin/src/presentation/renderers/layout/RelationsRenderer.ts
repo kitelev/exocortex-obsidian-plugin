@@ -48,10 +48,6 @@ export class RelationsRenderer {
 
         const isArchived = MetadataHelpers.isAssetArchived(metadata);
 
-        if (isArchived && !this.settings.showArchivedAssets) {
-          continue;
-        }
-
         const referencingProperties =
           MetadataHelpers.findAllReferencingProperties(metadata, file.basename);
 
@@ -138,6 +134,12 @@ export class RelationsRenderer {
         showEffortVotes: this.settings.showEffortVotes,
         onToggleEffortVotes: async () => {
           this.settings.showEffortVotes = !this.settings.showEffortVotes;
+          await this.plugin.saveSettings();
+          await this.refresh();
+        },
+        showArchived: this.settings.showArchivedAssets,
+        onToggleArchived: async () => {
+          this.settings.showArchivedAssets = !this.settings.showArchivedAssets;
           await this.plugin.saveSettings();
           await this.refresh();
         },
