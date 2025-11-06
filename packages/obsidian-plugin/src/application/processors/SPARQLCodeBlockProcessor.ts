@@ -1,3 +1,4 @@
+import React from "react";
 import { MarkdownPostProcessorContext, EventRef } from "obsidian";
 import {
   InMemoryTripleStore,
@@ -11,11 +12,14 @@ import {
 } from "@exocortex/core";
 import type ExocortexPlugin from "../../ExocortexPlugin";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
+import { ReactRenderer } from "../../presentation/utils/ReactRenderer";
+import { SPARQLTableView } from "../../presentation/components/sparql/SPARQLTableView";
 
 export class SPARQLCodeBlockProcessor {
   private plugin: ExocortexPlugin;
   private tripleStore: InMemoryTripleStore | null = null;
   private isLoading = false;
+  private reactRenderer: ReactRenderer = new ReactRenderer();
   private activeQueries: Map<HTMLElement, {
     source: string;
     lastResults: SolutionMapping[];
@@ -80,6 +84,7 @@ export class SPARQLCodeBlockProcessor {
             }
             this.activeQueries.delete(el);
           }
+          this.reactRenderer.unmount(container);
         },
       } as any);
 
@@ -281,48 +286,18 @@ export class SPARQLCodeBlockProcessor {
     container: HTMLElement,
     queryString: string
   ): void {
-    if (results.length === 0) {
-      const noResultsDiv = document.createElement("div");
-      noResultsDiv.className = "sparql-no-results";
-      noResultsDiv.textContent = "No results found";
-      container.appendChild(noResultsDiv);
-      return;
-    }
-
     const variables = this.extractVariables(queryString);
-    const table = document.createElement("table");
-    table.className = "sparql-results-table";
 
-    const thead = document.createElement("thead");
-    const headerRow = document.createElement("tr");
-    for (const variable of variables) {
-      const th = document.createElement("th");
-      th.textContent = variable;
-      headerRow.appendChild(th);
-    }
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    const tbody = document.createElement("tbody");
-    for (const result of results) {
-      const row = document.createElement("tr");
-      for (const variable of variables) {
-        const value = result.get(variable);
-        const cell = document.createElement("td");
-        cell.textContent = value ? value.toString() : "";
-        row.appendChild(cell);
-      }
-      tbody.appendChild(row);
-    }
-    table.appendChild(tbody);
-    container.appendChild(table);
-
-    const meta = document.createElement("div");
-    meta.className = "sparql-meta";
-    const small = document.createElement("small");
-    small.textContent = `${results.length} result(s)`;
-    meta.appendChild(small);
-    container.appendChild(meta);
+    this.reactRenderer.render(
+      container,
+      React.createElement(SPARQLTableView, {
+        results,
+        variables,
+        onAssetClick: (path: string) => {
+          this.plugin.app.workspace.openLinkText(path, "", false, { active: true });
+        },
+      })
+    );
   }
 
   private renderError(error: Error, container: HTMLElement): void {

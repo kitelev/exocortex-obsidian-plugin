@@ -1496,3 +1496,68 @@
     animation: none;
   }
 }
+
+/* SPARQL table view with pagination */
+.sparql-table-view {
+  width: 100%;
+}
+
+.sparql-results-table th.sortable {
+  user-select: none;
+}
+
+.sparql-results-table th.sortable:hover {
+  background: var(--background-modifier-hover);
+}
+
+.sparql-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75em 0;
+  margin-top: 0.5em;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.pagination-info {
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 0.25em;
+  align-items: center;
+}
+
+.pagination-button {
+  min-width: 2em;
+  padding: 0.25em 0.5em;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background: var(--background-modifier-hover);
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-button.active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+  font-weight: 600;
+}
+
+.pagination-ellipsis {
+  padding: 0 0.5em;
+  color: var(--text-muted);
+}
