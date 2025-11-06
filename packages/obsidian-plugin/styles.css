@@ -1376,3 +1376,123 @@
     transform: none !important;
   }
 }
+
+/* SPARQL Code Block Styles */
+.sparql-code-block {
+  margin: 1em 0;
+}
+
+.sparql-results-container {
+  position: relative;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 0.5em;
+}
+
+.sparql-loading {
+  text-align: center;
+  padding: 1em;
+  color: var(--text-muted);
+}
+
+.sparql-results-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.sparql-results-table th {
+  background: var(--background-secondary);
+  padding: 0.5em;
+  text-align: left;
+  font-weight: 600;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.sparql-results-table td {
+  padding: 0.5em;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.sparql-results-table tr:hover {
+  background: var(--background-modifier-hover);
+}
+
+.sparql-no-results {
+  text-align: center;
+  padding: 2em;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.sparql-error {
+  padding: 1em;
+  color: var(--text-error);
+  background: var(--background-modifier-error);
+  border: 1px solid var(--text-error);
+  border-radius: 4px;
+}
+
+.sparql-error strong {
+  display: block;
+  margin-bottom: 0.5em;
+}
+
+.sparql-error pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 0.9em;
+}
+
+.sparql-meta {
+  text-align: right;
+  padding: 0.5em 0;
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+/* Refresh indicator styles */
+.sparql-refresh-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em;
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+.sparql-refresh-spinner {
+  animation: sparql-spin 1s linear infinite;
+  color: var(--interactive-accent);
+}
+
+@keyframes sparql-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* High contrast mode for SPARQL blocks */
+@media (prefers-contrast: high) {
+  .sparql-results-container {
+    border-width: 2px;
+  }
+
+  .sparql-results-table th,
+  .sparql-results-table td {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion for SPARQL refresh indicator */
+@media (prefers-reduced-motion: reduce) {
+  .sparql-refresh-spinner {
+    animation: none;
+  }
+}

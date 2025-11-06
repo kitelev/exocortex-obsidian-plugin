@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext } from "obsidian";
+import { MarkdownPostProcessorContext, EventRef } from "obsidian";
 import {
   InMemoryTripleStore,
   SPARQLParser,
@@ -16,6 +16,13 @@ export class SPARQLCodeBlockProcessor {
   private plugin: ExocortexPlugin;
   private tripleStore: InMemoryTripleStore | null = null;
   private isLoading = false;
+  private activeQueries: Map<HTMLElement, {
+    source: string;
+    lastResults: SolutionMapping[];
+    refreshTimeout?: ReturnType<typeof setTimeout>;
+    eventRef?: EventRef;
+  }> = new Map();
+  private readonly DEBOUNCE_DELAY = 500;
 
   constructor(plugin: ExocortexPlugin) {
     this.plugin = plugin;
@@ -24,7 +31,7 @@ export class SPARQLCodeBlockProcessor {
   async process(
     source: string,
     el: HTMLElement,
-    _ctx: MarkdownPostProcessorContext
+    ctx: MarkdownPostProcessorContext
   ): Promise<void> {
     el.innerHTML = "";
     el.classList.add("sparql-code-block");
@@ -51,9 +58,144 @@ export class SPARQLCodeBlockProcessor {
 
       container.innerHTML = "";
       this.renderResults(results, container, source);
+
+      this.activeQueries.set(el, {
+        source,
+        lastResults: results,
+      });
+
+      const eventRef = this.plugin.app.metadataCache.on("changed", () => {
+        this.scheduleRefresh(el, container, source);
+      });
+
+      ctx.addChild({
+        unload: () => {
+          const query = this.activeQueries.get(el);
+          if (query) {
+            if (query.refreshTimeout) {
+              clearTimeout(query.refreshTimeout);
+            }
+            if (query.eventRef) {
+              this.plugin.app.metadataCache.offref(query.eventRef);
+            }
+            this.activeQueries.delete(el);
+          }
+        },
+      } as any);
+
+      const activeQuery = this.activeQueries.get(el);
+      if (activeQuery) {
+        activeQuery.eventRef = eventRef;
+      }
+
     } catch (error) {
       container.innerHTML = "";
       this.renderError(error instanceof Error ? error : new Error(String(error)), container);
+    }
+  }
+
+  private scheduleRefresh(el: HTMLElement, container: HTMLElement, source: string): void {
+    const query = this.activeQueries.get(el);
+    if (!query) return;
+
+    if (query.refreshTimeout) {
+      clearTimeout(query.refreshTimeout);
+    }
+
+    query.refreshTimeout = setTimeout(async () => {
+      await this.refreshQuery(el, container, source);
+    }, this.DEBOUNCE_DELAY);
+  }
+
+  private async refreshQuery(el: HTMLElement, container: HTMLElement, source: string): Promise<void> {
+    const query = this.activeQueries.get(el);
+    if (!query) return;
+
+    try {
+      this.invalidateTripleStore();
+
+      await this.ensureTripleStoreLoaded();
+
+      this.showRefreshIndicator(container);
+
+      const newResults = await this.executeQuery(source);
+
+      if (!this.areResultsEqual(query.lastResults, newResults)) {
+        container.innerHTML = "";
+        this.renderResults(newResults, container, source);
+        query.lastResults = newResults;
+      } else {
+        this.hideRefreshIndicator(container);
+      }
+    } catch (error) {
+      container.innerHTML = "";
+      this.renderError(error instanceof Error ? error : new Error(String(error)), container);
+    }
+  }
+
+  private invalidateTripleStore(): void {
+    this.tripleStore = null;
+  }
+
+  private areResultsEqual(oldResults: SolutionMapping[], newResults: SolutionMapping[]): boolean {
+    if (oldResults.length !== newResults.length) {
+      return false;
+    }
+
+    const stringify = (result: SolutionMapping): string => {
+      const entries: string[] = [];
+      result.getBindings().forEach((value, key) => {
+        entries.push(`${key}:${value.toString()}`);
+      });
+      return entries.sort().join("|");
+    };
+
+    const oldStrings = oldResults.map(stringify).sort();
+    const newStrings = newResults.map(stringify).sort();
+
+    for (let i = 0; i < oldStrings.length; i++) {
+      if (oldStrings[i] !== newStrings[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private showRefreshIndicator(container: HTMLElement): void {
+    const existing = container.querySelector(".sparql-refresh-indicator");
+    if (!existing) {
+      const indicator = document.createElement("div");
+      indicator.className = "sparql-refresh-indicator";
+
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.classList.add("sparql-refresh-spinner");
+      svg.setAttribute("viewBox", "0 0 24 24");
+      svg.setAttribute("width", "16");
+      svg.setAttribute("height", "16");
+
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", "M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16");
+      path.setAttribute("stroke", "currentColor");
+      path.setAttribute("stroke-width", "2");
+      path.setAttribute("fill", "none");
+      path.setAttribute("stroke-linecap", "round");
+
+      svg.appendChild(path);
+      indicator.appendChild(svg);
+
+      const span = document.createElement("span");
+      span.textContent = "Refreshing...";
+      indicator.appendChild(span);
+
+      container.insertBefore(indicator, container.firstChild);
+    }
+  }
+
+  private hideRefreshIndicator(container: HTMLElement): void {
+    const indicator = container.querySelector(".sparql-refresh-indicator");
+    if (indicator) {
+      indicator.remove();
     }
   }
 
