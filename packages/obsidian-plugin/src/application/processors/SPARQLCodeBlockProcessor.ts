@@ -1,5 +1,5 @@
 import React from "react";
-import { MarkdownPostProcessorContext, EventRef } from "obsidian";
+import { MarkdownPostProcessorContext, EventRef, Notice } from "obsidian";
 import {
   InMemoryTripleStore,
   SPARQLParser,
@@ -97,8 +97,13 @@ export class SPARQLCodeBlockProcessor {
       }
 
     } catch (error) {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      console.error("[Exocortex SPARQL] Query execution error:", errorObj);
+      console.error("[Exocortex SPARQL] Stack trace:", errorObj.stack);
+      new Notice(`SPARQL query error: ${errorObj.message}`, 5000);
+
       container.innerHTML = "";
-      this.renderError(error instanceof Error ? error : new Error(String(error)), container);
+      this.renderError(errorObj, container);
     }
   }
 
@@ -136,8 +141,13 @@ export class SPARQLCodeBlockProcessor {
         this.hideRefreshIndicator(container);
       }
     } catch (error) {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      console.error("[Exocortex SPARQL] Query refresh error:", errorObj);
+      console.error("[Exocortex SPARQL] Stack trace:", errorObj.stack);
+      new Notice(`SPARQL query refresh error: ${errorObj.message}`, 5000);
+
       container.innerHTML = "";
-      this.renderError(error instanceof Error ? error : new Error(String(error)), container);
+      this.renderError(errorObj, container);
     }
   }
 
@@ -255,7 +265,16 @@ export class SPARQLCodeBlockProcessor {
       const triples = await converter.convertVault();
 
       this.tripleStore = new InMemoryTripleStore();
-      await this.tripleStore.addAll(triples);
+
+      for (const triple of triples) {
+        this.tripleStore.add(triple);
+      }
+    } catch (error) {
+      const errorObj = error instanceof Error ? error : new Error(String(error));
+      console.error("[Exocortex SPARQL] Triple store initialization error:", errorObj);
+      console.error("[Exocortex SPARQL] Stack trace:", errorObj.stack);
+      new Notice(`Failed to load triple store: ${errorObj.message}`, 5000);
+      throw errorObj;
     } finally {
       this.isLoading = false;
     }
