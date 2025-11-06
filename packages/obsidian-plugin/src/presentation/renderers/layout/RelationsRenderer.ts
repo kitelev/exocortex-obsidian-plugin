@@ -65,10 +65,11 @@ export class RelationsRenderer {
 
         if (referencingProperties.length > 0) {
           for (const propertyName of referencingProperties) {
+            const displayLabel = enrichedMetadata.exo__Asset_label || sourceFile.basename;
             const relation: AssetRelation = {
               file: sourceFile,
               path: sourcePath,
-              title: sourceFile.basename,
+              title: displayLabel,
               metadata: enrichedMetadata,
               propertyName: propertyName,
               isBodyLink: false,
@@ -80,10 +81,11 @@ export class RelationsRenderer {
             relations.push(relation);
           }
         } else {
+          const displayLabel = enrichedMetadata.exo__Asset_label || sourceFile.basename;
           const relation: AssetRelation = {
             file: sourceFile,
             path: sourcePath,
-            title: sourceFile.basename,
+            title: displayLabel,
             metadata: enrichedMetadata,
             propertyName: undefined,
             isBodyLink: true,

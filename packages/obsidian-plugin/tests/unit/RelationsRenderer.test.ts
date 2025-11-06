@@ -191,7 +191,7 @@ describe("RelationsRenderer", () => {
         expect(result[0]).toMatchObject({
           file: sourceFile,
           path: sourceFile.path,
-          title: sourceFile.basename,
+          title: "Resolved Label",
           propertyName: undefined,
           isBodyLink: true,
           isArchived: false,
@@ -459,7 +459,7 @@ describe("RelationsRenderer", () => {
 
         mockApp.vault.getAbstractFileByPath.mockImplementation((path) => fileMap.get(path));
         mockApp.metadataCache.getFileCache.mockReturnValue({
-          frontmatter: createMockMetadata(),
+          frontmatter: createMockMetadata({ exo__Asset_label: null }),
         });
         MetadataHelpers.isAssetArchived.mockReturnValue(false);
         MetadataHelpers.findAllReferencingProperties.mockReturnValue([]);
@@ -602,7 +602,7 @@ describe("RelationsRenderer", () => {
         mockBacklinksCacheManager.getBacklinks.mockReturnValue([sourceFile.path]);
         mockApp.vault.getAbstractFileByPath.mockReturnValue(sourceFile);
         mockApp.metadataCache.getFileCache.mockReturnValue({
-          frontmatter: createMockMetadata(),
+          frontmatter: createMockMetadata({ exo__Asset_label: null }),
         });
         MetadataHelpers.isAssetArchived.mockReturnValue(false);
         MetadataHelpers.findAllReferencingProperties.mockReturnValue([]);
