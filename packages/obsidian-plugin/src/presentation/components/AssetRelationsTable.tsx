@@ -192,8 +192,8 @@ const SingleTable: React.FC<SingleTableProps> = ({
       let bVal: string | number;
 
       if (sortState.column === "title") {
-        aVal = a.title.toLowerCase();
-        bVal = b.title.toLowerCase();
+        aVal = getDisplayLabel(a).toLowerCase();
+        bVal = getDisplayLabel(b).toLowerCase();
       } else if (sortState.column === "exo__Instance_class") {
         const aClass = getInstanceClass(a.metadata);
         const bClass = getInstanceClass(b.metadata);
