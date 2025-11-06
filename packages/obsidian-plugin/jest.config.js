@@ -26,10 +26,10 @@ module.exports = {
   },
   coverageThreshold: {
     global: {
-      branches: 55, // Current baseline: 55.81% (CI measurement, includes both packages)
-      functions: 59, // Lowered from 60 for PR #325 (ontology selector adds uncovered methods)
-      lines: 64, // Current baseline: 64.85%
-      statements: 63, // Current baseline: 63.59%
+      branches: 63, // Updated from 65 to 63 (current: 63.53%)
+      functions: 63, // Updated from 59 to 63 (current: 64.21%)
+      lines: 70, // Updated from 65 to 70 (current: 71.68%)
+      statements: 70, // Updated from 65 to 70 (current: 70.3%)
     },
     // Domain layer thresholds disabled until core package coverage collection is fixed
     // See: https://github.com/kitelev/exocortex-obsidian-plugin/issues/197
@@ -40,10 +40,11 @@ module.exports = {
     //   statements: 78,
     // },
   },
-  // 🎯 ASPIRATIONAL TARGETS (to be increased gradually):
-  // Global: 70% branches, 70% statements, 70% lines, 70% functions
-  // Domain: 85% across all metrics (once core package coverage collection works)
-  // Previous Phase 2: 73% branches, 62% functions, 70% lines, 70% statements
+  // 🎯 COVERAGE TARGETS (enforced in CI):
+  // Current: 65% statements, 65% lines, 60% branches, 59% functions
+  // Next milestone: 70% across all metrics
+  // Ultimate goal: 80% statements/lines, 75% branches/functions
+  // Domain layer: 85% across all metrics (once core package coverage collection works)
   // Note: setupFilesAfterEnv moved to memory optimization section above
   // Handle ES modules and other transformations in CI
   // Transform @exocortex/core package files
@@ -80,9 +81,11 @@ module.exports = {
   cacheDirectory: "<rootDir>/.jest-cache",
   cache: false, // EMERGENCY: Disable all caching to prevent memory buildup
   // Coverage optimization
-  collectCoverage: process.env.CI && process.env.COVERAGE ? true : false,
+  // Note: collectCoverage controlled by --coverage flag, not environment variable
+  // This allows batched test script to control coverage collection
+  collectCoverage: false, // Let --coverage flag control this
   coverageReporters: process.env.CI
-    ? ["lcov", "text-summary"]
+    ? ["lcov", "json-summary", "text-summary"]
     : ["text", "html"],
   // Test result optimization
   passWithNoTests: true,

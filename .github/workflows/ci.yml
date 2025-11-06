@@ -126,19 +126,70 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install jq for coverage parsing
+        run: apt-get update && apt-get install -y jq
+
       - name: Run unit tests with coverage
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096"
           export COVERAGE=true
           ./scripts/test-ci-batched.sh || exit 1
 
+      - name: Check coverage thresholds
+        run: |
+          echo "Verifying coverage meets required thresholds..."
+
+          # Check if coverage report exists
+          COVERAGE_FILE="packages/obsidian-plugin/coverage/coverage-summary.json"
+          if [ ! -f "$COVERAGE_FILE" ]; then
+            echo "❌ Coverage report not found at $COVERAGE_FILE"
+            echo "This means the test-ci-batched.sh script did not collect coverage."
+            exit 1
+          fi
+
+          # Extract coverage percentages from JSON
+          STATEMENTS=$(cat "$COVERAGE_FILE" | jq -r '.total.statements.pct')
+          BRANCHES=$(cat "$COVERAGE_FILE" | jq -r '.total.branches.pct')
+          FUNCTIONS=$(cat "$COVERAGE_FILE" | jq -r '.total.functions.pct')
+          LINES=$(cat "$COVERAGE_FILE" | jq -r '.total.lines.pct')
+
+          echo "Coverage Report:"
+          echo "  Statements: ${STATEMENTS}% (required: 70%)"
+          echo "  Branches:   ${BRANCHES}% (required: 63%)"
+          echo "  Functions:  ${FUNCTIONS}% (required: 63%)"
+          echo "  Lines:      ${LINES}% (required: 70%)"
+
+          # Check if coverage meets thresholds using awk for floating point comparison
+          if [ $(echo "$STATEMENTS < 70" | awk '{print ($1 < $3) ? 1 : 0}') -eq 1 ]; then
+            echo "❌ Statement coverage ${STATEMENTS}% is below 70% threshold"
+            exit 1
+          fi
+
+          if [ $(echo "$BRANCHES < 63" | awk '{print ($1 < $3) ? 1 : 0}') -eq 1 ]; then
+            echo "❌ Branch coverage ${BRANCHES}% is below 63% threshold"
+            exit 1
+          fi
+
+          if [ $(echo "$FUNCTIONS < 63" | awk '{print ($1 < $3) ? 1 : 0}') -eq 1 ]; then
+            echo "❌ Function coverage ${FUNCTIONS}% is below 63% threshold"
+            exit 1
+          fi
+
+          if [ $(echo "$LINES < 70" | awk '{print ($1 < $3) ? 1 : 0}') -eq 1 ]; then
+            echo "❌ Line coverage ${LINES}% is below 70% threshold"
+            exit 1
+          fi
+
+          echo "✅ All coverage thresholds met!"
+
       - name: Generate coverage summary
         if: always()
         run: |
-          if [ -f coverage/lcov.info ]; then
+          COVERAGE_DIR="packages/obsidian-plugin/coverage"
+          if [ -f "$COVERAGE_DIR/lcov.info" ]; then
             echo "## Code Coverage Report" > coverage-summary.md
             echo "" >> coverage-summary.md
-            cat coverage/lcov-report/index.html | grep -A 5 "class='fraction'" | head -20 >> coverage-summary.md || true
+            cat "$COVERAGE_DIR/lcov-report/index.html" | grep -A 5 "class='fraction'" | head -20 >> coverage-summary.md || true
             echo "" >> coverage-summary.md
             echo "Full report available in coverage artifacts" >> coverage-summary.md
           fi
@@ -149,7 +200,7 @@ jobs:
         with:
           name: coverage-reports
           path: |
-            coverage/
+            packages/obsidian-plugin/coverage/
             coverage-summary.md
           retention-days: 30
           if-no-files-found: ignore
