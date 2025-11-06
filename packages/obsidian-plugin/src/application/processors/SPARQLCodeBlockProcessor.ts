@@ -6,14 +6,17 @@ import {
   AlgebraTranslator,
   AlgebraOptimizer,
   BGPExecutor,
+  ConstructExecutor,
   NoteToRDFConverter,
   type SPARQLQuery,
   type SolutionMapping,
+  type Triple,
 } from "@exocortex/core";
 import type ExocortexPlugin from "../../ExocortexPlugin";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 import { ReactRenderer } from "../../presentation/utils/ReactRenderer";
 import { SPARQLTableView } from "../../presentation/components/sparql/SPARQLTableView";
+import { SPARQLListView } from "../../presentation/components/sparql/SPARQLListView";
 
 export class SPARQLCodeBlockProcessor {
   private plugin: ExocortexPlugin;
@@ -22,7 +25,7 @@ export class SPARQLCodeBlockProcessor {
   private reactRenderer: ReactRenderer = new ReactRenderer();
   private activeQueries: Map<HTMLElement, {
     source: string;
-    lastResults: SolutionMapping[];
+    lastResults: SolutionMapping[] | Triple[];
     refreshTimeout?: ReturnType<typeof setTimeout>;
     eventRef?: EventRef;
   }> = new Map();
@@ -142,29 +145,53 @@ export class SPARQLCodeBlockProcessor {
     this.tripleStore = null;
   }
 
-  private areResultsEqual(oldResults: SolutionMapping[], newResults: SolutionMapping[]): boolean {
+  private areResultsEqual(
+    oldResults: SolutionMapping[] | Triple[],
+    newResults: SolutionMapping[] | Triple[]
+  ): boolean {
     if (oldResults.length !== newResults.length) {
       return false;
     }
 
-    const stringify = (result: SolutionMapping): string => {
-      const entries: string[] = [];
-      result.getBindings().forEach((value, key) => {
-        entries.push(`${key}:${value.toString()}`);
-      });
-      return entries.sort().join("|");
-    };
+    if (this.isTripleArray(oldResults) && this.isTripleArray(newResults)) {
+      const stringifyTriple = (triple: Triple): string => {
+        return triple.toString();
+      };
 
-    const oldStrings = oldResults.map(stringify).sort();
-    const newStrings = newResults.map(stringify).sort();
+      const oldStrings = oldResults.map(stringifyTriple).sort();
+      const newStrings = newResults.map(stringifyTriple).sort();
 
-    for (let i = 0; i < oldStrings.length; i++) {
-      if (oldStrings[i] !== newStrings[i]) {
-        return false;
+      for (let i = 0; i < oldStrings.length; i++) {
+        if (oldStrings[i] !== newStrings[i]) {
+          return false;
+        }
       }
+
+      return true;
     }
 
-    return true;
+    if (!this.isTripleArray(oldResults) && !this.isTripleArray(newResults)) {
+      const stringify = (result: SolutionMapping): string => {
+        const entries: string[] = [];
+        result.getBindings().forEach((value, key) => {
+          entries.push(`${key}:${value.toString()}`);
+        });
+        return entries.sort().join("|");
+      };
+
+      const oldStrings = oldResults.map(stringify).sort();
+      const newStrings = newResults.map(stringify).sort();
+
+      for (let i = 0; i < oldStrings.length; i++) {
+        if (oldStrings[i] !== newStrings[i]) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    return false;
   }
 
   private showRefreshIndicator(container: HTMLElement): void {
@@ -234,7 +261,7 @@ export class SPARQLCodeBlockProcessor {
     }
   }
 
-  private async executeQuery(queryString: string): Promise<SolutionMapping[]> {
+  private async executeQuery(queryString: string): Promise<SolutionMapping[] | Triple[]> {
     if (!this.tripleStore) {
       throw new Error("Triple store not initialized");
     }
@@ -248,7 +275,34 @@ export class SPARQLCodeBlockProcessor {
     const optimizer = new AlgebraOptimizer();
     algebra = optimizer.optimize(algebra);
 
-    return await this.executeAlgebra(algebra);
+    if (this.isConstructQuery(queryString)) {
+      return await this.executeConstructQuery(algebra);
+    } else {
+      return await this.executeAlgebra(algebra);
+    }
+  }
+
+  private isConstructQuery(queryString: string): boolean {
+    return /^\s*CONSTRUCT\s+/i.test(queryString);
+  }
+
+  private async executeConstructQuery(algebra: any): Promise<Triple[]> {
+    if (!this.tripleStore) {
+      throw new Error("Triple store not initialized");
+    }
+
+    let operation = algebra;
+    let template: any[] = [];
+
+    if (operation.type === "construct") {
+      template = operation.template;
+      operation = operation.input;
+    }
+
+    const solutions = await this.executeAlgebra(operation);
+
+    const constructExecutor = new ConstructExecutor();
+    return await constructExecutor.execute(template, solutions);
   }
 
   private async executeAlgebra(algebra: any): Promise<SolutionMapping[]> {
@@ -282,22 +336,38 @@ export class SPARQLCodeBlockProcessor {
   }
 
   private renderResults(
-    results: SolutionMapping[],
+    results: SolutionMapping[] | Triple[],
     container: HTMLElement,
     queryString: string
   ): void {
-    const variables = this.extractVariables(queryString);
+    if (this.isTripleArray(results)) {
+      this.reactRenderer.render(
+        container,
+        React.createElement(SPARQLListView, {
+          triples: results,
+          onAssetClick: (path: string) => {
+            this.plugin.app.workspace.openLinkText(path, "", false, { active: true });
+          },
+        })
+      );
+    } else {
+      const variables = this.extractVariables(queryString);
 
-    this.reactRenderer.render(
-      container,
-      React.createElement(SPARQLTableView, {
-        results,
-        variables,
-        onAssetClick: (path: string) => {
-          this.plugin.app.workspace.openLinkText(path, "", false, { active: true });
-        },
-      })
-    );
+      this.reactRenderer.render(
+        container,
+        React.createElement(SPARQLTableView, {
+          results,
+          variables,
+          onAssetClick: (path: string) => {
+            this.plugin.app.workspace.openLinkText(path, "", false, { active: true });
+          },
+        })
+      );
+    }
+  }
+
+  private isTripleArray(results: SolutionMapping[] | Triple[]): results is Triple[] {
+    return results.length > 0 && "subject" in results[0];
   }
 
   private renderError(error: Error, container: HTMLElement): void {
