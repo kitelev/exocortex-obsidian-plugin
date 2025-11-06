@@ -1561,3 +1561,153 @@
   padding: 0 0.5em;
   color: var(--text-muted);
 }
+
+.sparql-list-view {
+  width: 100%;
+}
+
+.sparql-list-controls {
+  display: flex;
+  gap: 0.5em;
+  margin-bottom: 1em;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.sparql-view-toggle,
+.sparql-expand-toggle {
+  padding: 0.4em 0.8em;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 0.9em;
+  transition: all 0.2s;
+}
+
+.sparql-view-toggle:hover,
+.sparql-expand-toggle:hover {
+  background: var(--background-modifier-hover);
+}
+
+.sparql-view-toggle.active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+  font-weight: 600;
+}
+
+.sparql-list-structured {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.sparql-subject-group {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sparql-subject-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.75em;
+  background: var(--background-secondary);
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.sparql-subject-header:hover {
+  background: var(--background-modifier-hover);
+}
+
+.sparql-expand-icon {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  min-width: 1em;
+}
+
+.sparql-subject-icon {
+  font-size: 1.1em;
+}
+
+.sparql-subject-name {
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.sparql-subject-type {
+  margin-left: auto;
+  font-size: 0.85em;
+  color: var(--text-muted);
+}
+
+.sparql-predicates-list {
+  padding: 0.75em 1em;
+  background: var(--background-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.sparql-predicate-row {
+  display: flex;
+  gap: 0.5em;
+  padding-left: 2em;
+  position: relative;
+}
+
+.sparql-predicate-row::before {
+  content: "├─";
+  position: absolute;
+  left: 0.5em;
+  color: var(--text-muted);
+}
+
+.sparql-predicate-row:last-child::before {
+  content: "└─";
+}
+
+.sparql-predicate-name {
+  font-family: var(--font-monospace);
+  color: var(--text-accent);
+  min-width: 150px;
+  flex-shrink: 0;
+}
+
+.sparql-objects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  flex: 1;
+}
+
+.sparql-object-item {
+  color: var(--text-normal);
+}
+
+.sparql-list-raw {
+  padding: 1em;
+  background: var(--background-secondary);
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.sparql-turtle-syntax {
+  font-family: var(--font-monospace);
+  font-size: 0.85em;
+  color: var(--text-normal);
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0;
+}
+
+.sparql-list-info {
+  margin-top: 1em;
+  padding-top: 0.5em;
+  border-top: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+}
