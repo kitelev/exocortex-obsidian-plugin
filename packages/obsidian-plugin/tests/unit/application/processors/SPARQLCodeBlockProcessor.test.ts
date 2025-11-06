@@ -148,4 +148,179 @@ describe("SPARQLCodeBlockProcessor", () => {
       expect((processor as any).tripleStore).toBeNull();
     });
   });
+
+  describe("Refresh Query Method", () => {
+    it("should handle refresh when no active query exists", async () => {
+      const container = document.createElement("div");
+      const el = document.createElement("div");
+
+      await (processor as any).refreshQuery(el, container, "SELECT * WHERE { ?s ?p ?o }");
+
+      // Should exit early when no active query
+      expect(container.innerHTML).toBe("");
+    });
+
+    it("should handle refresh with active query but same results", async () => {
+      const container = document.createElement("div");
+      const el = document.createElement("div");
+      const source = "SELECT * WHERE { ?s ?p ?o }";
+
+      // Set up active query
+      (processor as any).activeQueries.set(el, {
+        source,
+        lastResults: [],
+      });
+
+      // Mock methods
+      (processor as any).invalidateTripleStore = jest.fn();
+      (processor as any).ensureTripleStoreLoaded = jest.fn().mockResolvedValue(undefined);
+      (processor as any).showRefreshIndicator = jest.fn();
+      (processor as any).hideRefreshIndicator = jest.fn();
+      (processor as any).executeQuery = jest.fn().mockResolvedValue([]);
+      (processor as any).areResultsEqual = jest.fn().mockReturnValue(true);
+
+      await (processor as any).refreshQuery(el, container, source);
+
+      expect((processor as any).invalidateTripleStore).toHaveBeenCalled();
+      expect((processor as any).ensureTripleStoreLoaded).toHaveBeenCalled();
+      expect((processor as any).showRefreshIndicator).toHaveBeenCalledWith(container);
+      expect((processor as any).hideRefreshIndicator).toHaveBeenCalledWith(container);
+      expect((processor as any).executeQuery).toHaveBeenCalledWith(source);
+    });
+
+    it("should handle refresh with different results", async () => {
+      const container = document.createElement("div");
+      const el = document.createElement("div");
+      const source = "SELECT * WHERE { ?s ?p ?o }";
+
+      // Set up active query
+      (processor as any).activeQueries.set(el, {
+        source,
+        lastResults: [],
+      });
+
+      const newResults = [
+        {
+          getBindings: () => new Map([["var1", { toString: () => "value1" }]]),
+        },
+      ];
+
+      // Mock methods
+      (processor as any).invalidateTripleStore = jest.fn();
+      (processor as any).ensureTripleStoreLoaded = jest.fn().mockResolvedValue(undefined);
+      (processor as any).showRefreshIndicator = jest.fn();
+      (processor as any).executeQuery = jest.fn().mockResolvedValue(newResults);
+      (processor as any).areResultsEqual = jest.fn().mockReturnValue(false);
+      (processor as any).renderResults = jest.fn();
+
+      await (processor as any).refreshQuery(el, container, source);
+
+      expect((processor as any).renderResults).toHaveBeenCalledWith(newResults, container, source);
+      expect((processor as any).activeQueries.get(el).lastResults).toBe(newResults);
+    });
+
+    it("should handle refresh errors", async () => {
+      const container = document.createElement("div");
+      const el = document.createElement("div");
+      const source = "SELECT * WHERE { ?s ?p ?o }";
+
+      // Set up active query
+      (processor as any).activeQueries.set(el, {
+        source,
+        lastResults: [],
+      });
+
+      const error = new Error("Test error");
+
+      // Mock methods
+      (processor as any).invalidateTripleStore = jest.fn();
+      (processor as any).ensureTripleStoreLoaded = jest.fn().mockRejectedValue(error);
+      (processor as any).renderError = jest.fn();
+
+      await (processor as any).refreshQuery(el, container, source);
+
+      expect((processor as any).renderError).toHaveBeenCalledWith(error, container);
+      expect(container.innerHTML).toBe("");
+    });
+  });
+
+  describe("Schedule Refresh Method", () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it("should schedule refresh with debounce", () => {
+      const el = document.createElement("div");
+      const container = document.createElement("div");
+      const source = "SELECT * WHERE { ?s ?p ?o }";
+
+      // Set up active query
+      (processor as any).activeQueries.set(el, {
+        source,
+        lastResults: [],
+      });
+
+      (processor as any).refreshQuery = jest.fn();
+
+      (processor as any).scheduleRefresh(el, container, source);
+
+      // Should not call immediately
+      expect((processor as any).refreshQuery).not.toHaveBeenCalled();
+
+      // Fast forward time
+      jest.advanceTimersByTime(500);
+
+      // Should call after debounce delay
+      expect((processor as any).refreshQuery).toHaveBeenCalledWith(el, container, source);
+    });
+
+    it("should cancel previous timeout when called multiple times", () => {
+      const el = document.createElement("div");
+      const container = document.createElement("div");
+      const source = "SELECT * WHERE { ?s ?p ?o }";
+
+      // Set up active query
+      (processor as any).activeQueries.set(el, {
+        source,
+        lastResults: [],
+      });
+
+      (processor as any).refreshQuery = jest.fn();
+
+      // Call multiple times rapidly
+      (processor as any).scheduleRefresh(el, container, source);
+      jest.advanceTimersByTime(200);
+      (processor as any).scheduleRefresh(el, container, source);
+      jest.advanceTimersByTime(200);
+      (processor as any).scheduleRefresh(el, container, source);
+
+      // Should not have called yet
+      expect((processor as any).refreshQuery).not.toHaveBeenCalled();
+
+      // Advance past debounce
+      jest.advanceTimersByTime(500);
+
+      // Should call only once
+      expect((processor as any).refreshQuery).toHaveBeenCalledTimes(1);
+    });
+
+    it("should not schedule if no active query", () => {
+      const el = document.createElement("div");
+      const container = document.createElement("div");
+      const source = "SELECT * WHERE { ?s ?p ?o }";
+
+      (processor as any).refreshQuery = jest.fn();
+
+      (processor as any).scheduleRefresh(el, container, source);
+
+      jest.advanceTimersByTime(1000);
+
+      // Should not call
+      expect((processor as any).refreshQuery).not.toHaveBeenCalled();
+    });
+  });
 });
