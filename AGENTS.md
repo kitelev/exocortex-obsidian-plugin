@@ -41,6 +41,44 @@ When adding toggle buttons to table components, reuse the existing `*WithToggle`
 
 **Example:** See PR #326 for archive filtering in DailyNote tables - demonstrates adding "Show/Hide Archived" toggle to both tasks and projects tables.
 
+### Display Name Resolution Pattern
+
+When displaying asset names in tables/lists, always resolve the display name **once at the source** (in the Renderer) rather than repeatedly in UI components.
+
+**Pattern (from PR #337 - Name Sorting Fix):**
+
+✅ **CORRECT - Resolve at Source (Renderer):**
+```typescript
+// In RelationsRenderer.ts
+const displayLabel = enrichedMetadata.exo__Asset_label || sourceFile.basename;
+const relation: AssetRelation = {
+  file: sourceFile,
+  path: sourcePath,
+  title: displayLabel,  // ← Single source of truth
+  metadata: enrichedMetadata,
+  // ...
+};
+```
+
+❌ **WRONG - Resolve in Component:**
+```typescript
+// In AssetRelationsTable.tsx (DON'T DO THIS)
+const getDisplayLabel = (relation: AssetRelation): string => {
+  const label = relation.metadata?.exo__Asset_label;
+  return label && label.trim() !== "" ? label : relation.title;  // ← Repeated logic
+};
+```
+
+**Why this matters:**
+- Single source of truth prevents inconsistencies
+- Sorting works correctly (sorts by displayed value, not internal ID)
+- Performance: resolve once instead of N times per render
+- Maintainability: change display logic in one place
+
+**Rule**: If a property appears in tables/lists and needs display formatting, resolve it in the Renderer and store in the relation object's `title` or dedicated field.
+
+**Example:** See PR #337 for Name column sorting fix using `exo__Asset_label`.
+
 ## Critical Quality Rules
 
 ### ⛔ NEVER Use `git commit --no-verify`

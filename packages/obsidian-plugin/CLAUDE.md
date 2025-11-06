@@ -740,6 +740,89 @@ export class MyCommand implements ICommand {
 - ✅ **Settings persistence** via `saveSettings()` + `refreshLayout()`
 - ✅ **User feedback** via `Notice` for all state changes
 
+### Table Sorting Best Practices
+
+**When implementing sortable tables, always sort by display value rather than internal identifiers.**
+
+**Pattern from PR #337 (Name Sorting Fix):**
+
+**Problem:** Table "Name" column sorted by file basename instead of displayed label (`exo__Asset_label`).
+
+**Root Cause:** Sorting logic used internal identifier (basename) while UI displayed user-facing label.
+
+**Solution:** Resolve display value ONCE in Renderer, then sort by that value:
+
+```typescript
+// ✅ CORRECT - In RelationsRenderer.ts (server-side)
+const displayLabel = enrichedMetadata.exo__Asset_label || sourceFile.basename;
+const relation: AssetRelation = {
+  file: sourceFile,
+  path: sourcePath,
+  title: displayLabel,  // ← Store display value
+  metadata: enrichedMetadata,
+  // ...
+};
+```
+
+```typescript
+// ✅ CORRECT - In AssetRelationsTable.tsx (client-side sorting)
+const sortedRelations = useMemo(() => {
+  let sorted = [...relations];
+
+  if (sortState.column === "title") {
+    sorted.sort((a, b) => {
+      // Sort by display value stored in title field
+      const aVal = a.title.toLowerCase();  // ← Uses resolved display label
+      const bVal = b.title.toLowerCase();
+      return sortState.direction === "asc"
+        ? aVal.localeCompare(bVal)
+        : bVal.localeCompare(aVal);
+    });
+  }
+
+  return sorted;
+}, [relations, sortState]);
+```
+
+**Key principles:**
+1. **Display = Sort**: What user sees should match sort order
+2. **Resolve once**: Display logic in Renderer (single source of truth)
+3. **Test both**: Test rendering AND sorting behavior
+4. **Mock carefully**: Override `exo__Asset_label: null` to test basename fallback (see CLAUDE.md troubleshooting)
+
+**Common mistake:**
+```typescript
+// ❌ WRONG - Sorting by internal ID while displaying label
+sorted.sort((a, b) => {
+  const aVal = a.file.basename;  // ← Internal ID
+  const bVal = b.file.basename;
+  // But UI shows: a.metadata.exo__Asset_label || a.file.basename
+  // Result: Sort order doesn't match display!
+});
+```
+
+**Testing pattern:**
+```typescript
+// Test both display AND sort behavior
+it("should sort by display label, not basename", () => {
+  const relations = [
+    { title: "Zebra Label", file: { basename: "a-file" } },  // Display: "Zebra Label"
+    { title: "Apple Label", file: { basename: "z-file" } },   // Display: "Apple Label"
+  ];
+
+  // Sort by title (display value)
+  const sorted = sortByTitle(relations, "asc");
+
+  // Verify sort order matches display order
+  expect(sorted[0].title).toBe("Apple Label");  // ✅ Display label sorted correctly
+  expect(sorted[1].title).toBe("Zebra Label");
+});
+```
+
+**Test helper location:** `packages/obsidian-plugin/tests/unit/helpers/testHelpers.ts`
+
+**Real-world example:** See PR #337 (Fixed Name sorting across 3 files)
+
 ## 🚀 Quick Start
 
 ### Understanding Monorepo Codebase

@@ -927,6 +927,47 @@ exocortex-assets-relations         // line 1196
 // NOTE: .exocortex-layout-container does NOT exist!
 ```
 
+### Test Mock Default Values Can Mask Bugs
+
+**Problem:** Test passes when it should fail because mock helper provides default value that hides "missing data" scenario.
+
+**Example from PR #337 (Name Sorting Fix):**
+
+After fixing code to use `exo__Asset_label || basename`, tests failed with:
+```
+Expected: "a-file" (basename)
+Received: "Test Asset" (mock default)
+```
+
+**Root Cause:** Test helper `createMockMetadata()` provides default values:
+```typescript
+// In tests/unit/helpers/testHelpers.ts
+export function createMockMetadata(overrides?: Record<string, any>) {
+  return {
+    exo__Asset_label: "Test Asset",  // ⚠️ Default value masks "missing label" tests
+    exo__Instance_class: "ems__Task",
+    // ...
+    ...overrides,
+  };
+}
+```
+
+**Solution:** Explicitly override with `null` to test fallback behavior:
+```typescript
+// ✅ CORRECT - Tests basename fallback when label missing
+frontmatter: createMockMetadata({ exo__Asset_label: null }),
+```
+
+**Prevention:**
+1. Review default values in test helpers before writing tests
+2. Explicitly test missing data scenarios with `null` overrides
+3. Don't assume defaults match your test intention
+4. Read test helper source when tests pass but logic seems wrong
+
+**Test Helper Location:** `packages/obsidian-plugin/tests/unit/helpers/testHelpers.ts`
+
+**Example:** See PR #337 for display label resolution fix and test updates.
+
 ## 📚 Key Resources
 
 **Internal:**
