@@ -83,6 +83,32 @@ When adding toggle buttons to table components, reuse the existing `*WithToggle`
 
 The shared ts-jest configuration does not handle class-level `async *` methods. When you need an async stream, expose a helper that returns an `AsyncIterableIterator` instead of adding `async *` directly on a class.
 
+### Jest Mock Creation Pattern for Obsidian UI
+
+When creating mock elements for Obsidian UI testing, always wrap methods in jest.fn():
+
+```typescript
+// ✅ CORRECT - Methods are jest mocks
+export function createMockElement(): any {
+  const el: any = document.createElement("div");
+  el.createDiv = jest.fn((opts?: any) => {
+    const div: any = document.createElement("div");
+    // ... implementation
+    return div;
+  });
+}
+
+// ❌ WRONG - Plain function, not a jest mock
+export function createMockElement(): any {
+  const el: any = document.createElement("div");
+  el.createDiv = (opts?: any) => {  // Missing jest.fn()!
+    // ...
+  };
+}
+```
+
+This allows tests to use jest mock utilities like `mockReturnValueOnce()`.
+
 ## Release Guidance
 - Do **not** bump versions or craft releases manually. Coordinate with maintainers for release automation that mirrors the `/release` command.
 - Ensure changelog updates and release activities happen through the sanctioned process once available.
