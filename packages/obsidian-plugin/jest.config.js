@@ -26,10 +26,10 @@ module.exports = {
   },
   coverageThreshold: {
     global: {
-      branches: 63, // Updated from 65 to 63 (current: 63.53%)
-      functions: 63, // Updated from 59 to 63 (current: 64.21%)
-      lines: 70, // Updated from 65 to 70 (current: 71.68%)
-      statements: 70, // Updated from 65 to 70 (current: 70.3%)
+      branches: 70, // Updated from 63 to 70 (current: 70.58%)
+      functions: 70, // Updated from 63 to 70 (current: 70.1%)
+      lines: 75, // Updated from 70 to 75 (current: 77.19%)
+      statements: 75, // Updated from 70 to 75 (current: 75.63%)
     },
     // Domain layer thresholds disabled until core package coverage collection is fixed
     // See: https://github.com/kitelev/exocortex-obsidian-plugin/issues/197
@@ -41,8 +41,8 @@ module.exports = {
     // },
   },
   // 🎯 COVERAGE TARGETS (enforced in CI):
-  // Current: 65% statements, 65% lines, 60% branches, 59% functions
-  // Next milestone: 70% across all metrics
+  // Current: 75% statements, 75% lines, 70% branches, 70% functions
+  // Next milestone: 80% statements/lines
   // Ultimate goal: 80% statements/lines, 75% branches/functions
   // Domain layer: 85% across all metrics (once core package coverage collection works)
   // Note: setupFilesAfterEnv moved to memory optimization section above

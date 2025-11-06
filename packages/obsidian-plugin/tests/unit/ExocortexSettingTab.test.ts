@@ -1,0 +1,592 @@
+import { ExocortexSettingTab } from "../../src/presentation/settings/ExocortexSettingTab";
+import { App, Setting } from "obsidian";
+import { createMockApp, createMockTFile, createMockPlugin } from "./helpers/testHelpers";
+
+// Two-step mock pattern for constructor functions
+jest.mock("obsidian", () => ({
+  App: jest.fn(),
+  PluginSettingTab: class MockPluginSettingTab {
+    containerEl: any;
+    app: any;
+    plugin: any;
+    constructor(app: any, plugin: any) {
+      this.app = app;
+      this.plugin = plugin;
+      this.containerEl = { empty: jest.fn() };
+    }
+  },
+  Setting: jest.fn(),
+}));
+
+describe("ExocortexSettingTab", () => {
+  let settingTab: ExocortexSettingTab;
+  let mockApp: any;
+  let mockPlugin: any;
+  let mockContainerEl: any;
+  let MockSetting: any;
+
+  beforeEach(() => {
+    mockContainerEl = {
+      empty: jest.fn(),
+    };
+
+    mockPlugin = createMockPlugin({
+      settings: {
+        defaultOntologyAsset: null,
+        layoutVisible: true,
+        showPropertiesSection: true,
+        showArchivedAssets: false,
+      },
+      saveSettings: jest.fn().mockResolvedValue(undefined),
+      refreshLayout: jest.fn(),
+    });
+
+    mockApp = createMockApp();
+
+    // Setup Setting mock implementation
+    MockSetting = (Setting as jest.Mock);
+    MockSetting.mockImplementation((containerEl: any) => {
+      const setting = {
+        containerEl,
+        setName: jest.fn().mockReturnThis(),
+        setDesc: jest.fn().mockReturnThis(),
+        addDropdown: jest.fn().mockImplementation((callback) => {
+          const dropdown = {
+            addOption: jest.fn().mockReturnThis(),
+            setValue: jest.fn().mockReturnThis(),
+            onChange: jest.fn().mockReturnThis(),
+          };
+          callback(dropdown);
+          return setting;
+        }),
+        addToggle: jest.fn().mockImplementation((callback) => {
+          const toggle = {
+            setValue: jest.fn().mockReturnThis(),
+            onChange: jest.fn().mockReturnThis(),
+          };
+          callback(toggle);
+          return setting;
+        }),
+      };
+      return setting;
+    });
+
+    settingTab = new ExocortexSettingTab(mockApp, mockPlugin);
+    settingTab.containerEl = mockContainerEl;
+
+    jest.clearAllMocks();
+  });
+
+  describe("getOntologyAssets", () => {
+    it("should find files with exo__Ontology class", () => {
+      const mockFiles = [
+        createMockTFile("ontology1.md"),
+        createMockTFile("ontology2.md"),
+        createMockTFile("not-ontology.md"),
+      ];
+
+      mockApp.vault.getMarkdownFiles.mockReturnValue(mockFiles);
+      mockApp.metadataCache.getFileCache.mockImplementation((file: any) => {
+        if (file.basename === "ontology1") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "exo__Ontology",
+            },
+          };
+        } else if (file.basename === "ontology2") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "[[exo__Ontology]]",
+            },
+          };
+        } else {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Task",
+            },
+          };
+        }
+      });
+
+      const result = settingTab["getOntologyAssets"]();
+
+      expect(result).toEqual(["ontology1", "ontology2"]);
+      expect(mockApp.vault.getMarkdownFiles).toHaveBeenCalled();
+    });
+
+    it("should handle multiple class formats", () => {
+      const mockFiles = [
+        createMockTFile("ontology-plain.md"),
+        createMockTFile("ontology-linked.md"),
+        createMockTFile("ontology-quoted.md"),
+      ];
+
+      mockApp.vault.getMarkdownFiles.mockReturnValue(mockFiles);
+      mockApp.metadataCache.getFileCache.mockImplementation((file: any) => {
+        if (file.basename === "ontology-plain") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "exo__Ontology",
+            },
+          };
+        } else if (file.basename === "ontology-linked") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "[[exo__Ontology]]",
+            },
+          };
+        } else if (file.basename === "ontology-quoted") {
+          return {
+            frontmatter: {
+              exo__Instance_class: '"[[exo__Ontology]]"',
+            },
+          };
+        }
+        return null;
+      });
+
+      const result = settingTab["getOntologyAssets"]();
+
+      expect(result).toEqual(["ontology-linked", "ontology-plain", "ontology-quoted"]);
+    });
+
+    it("should handle array of classes", () => {
+      const mockFiles = [
+        createMockTFile("multi-class.md"),
+      ];
+
+      mockApp.vault.getMarkdownFiles.mockReturnValue(mockFiles);
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: ["ems__Task", "exo__Ontology", "ems__Project"],
+        },
+      });
+
+      const result = settingTab["getOntologyAssets"]();
+
+      expect(result).toEqual(["multi-class"]);
+    });
+
+    it("should sort results alphabetically", () => {
+      const mockFiles = [
+        createMockTFile("zebra.md"),
+        createMockTFile("apple.md"),
+        createMockTFile("middle.md"),
+      ];
+
+      mockApp.vault.getMarkdownFiles.mockReturnValue(mockFiles);
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "exo__Ontology",
+        },
+      });
+
+      const result = settingTab["getOntologyAssets"]();
+
+      expect(result).toEqual(["apple", "middle", "zebra"]);
+    });
+
+    it("should ignore files without frontmatter", () => {
+      const mockFiles = [
+        createMockTFile("no-frontmatter.md"),
+        createMockTFile("with-frontmatter.md"),
+      ];
+
+      mockApp.vault.getMarkdownFiles.mockReturnValue(mockFiles);
+      mockApp.metadataCache.getFileCache.mockImplementation((file: any) => {
+        if (file.basename === "no-frontmatter") {
+          return { frontmatter: null };
+        }
+        return {
+          frontmatter: {
+            exo__Instance_class: "exo__Ontology",
+          },
+        };
+      });
+
+      const result = settingTab["getOntologyAssets"]();
+
+      expect(result).toEqual(["with-frontmatter"]);
+    });
+
+    it("should ignore files without exo__Instance_class", () => {
+      const mockFiles = [
+        createMockTFile("no-class.md"),
+        createMockTFile("with-class.md"),
+      ];
+
+      mockApp.vault.getMarkdownFiles.mockReturnValue(mockFiles);
+      mockApp.metadataCache.getFileCache.mockImplementation((file: any) => {
+        if (file.basename === "no-class") {
+          return {
+            frontmatter: {
+              other_property: "value",
+            },
+          };
+        }
+        return {
+          frontmatter: {
+            exo__Instance_class: "exo__Ontology",
+          },
+        };
+      });
+
+      const result = settingTab["getOntologyAssets"]();
+
+      expect(result).toEqual(["with-class"]);
+    });
+
+    it("should ignore files with non-ontology classes", () => {
+      const mockFiles = [
+        createMockTFile("task.md"),
+        createMockTFile("project.md"),
+        createMockTFile("ontology.md"),
+      ];
+
+      mockApp.vault.getMarkdownFiles.mockReturnValue(mockFiles);
+      mockApp.metadataCache.getFileCache.mockImplementation((file: any) => {
+        if (file.basename === "task") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Task",
+            },
+          };
+        } else if (file.basename === "project") {
+          return {
+            frontmatter: {
+              exo__Instance_class: "ems__Project",
+            },
+          };
+        }
+        return {
+          frontmatter: {
+            exo__Instance_class: "exo__Ontology",
+          },
+        };
+      });
+
+      const result = settingTab["getOntologyAssets"]();
+
+      expect(result).toEqual(["ontology"]);
+    });
+
+    it("should return empty array when no ontologies found", () => {
+      const mockFiles = [
+        createMockTFile("file1.md"),
+        createMockTFile("file2.md"),
+      ];
+
+      mockApp.vault.getMarkdownFiles.mockReturnValue(mockFiles);
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          exo__Instance_class: "ems__Task",
+        },
+      });
+
+      const result = settingTab["getOntologyAssets"]();
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe("display", () => {
+    it("should render all settings", () => {
+      const getOntologySpy = jest
+        .spyOn(settingTab as any, "getOntologyAssets")
+        .mockReturnValue(["Ontology1", "Ontology2"]);
+
+      settingTab.display();
+
+      expect(mockContainerEl.empty).toHaveBeenCalled();
+      expect(getOntologySpy).toHaveBeenCalledTimes(1);
+      expect(MockSetting).toHaveBeenCalledTimes(4);
+    });
+
+    it("should render ontology dropdown with correct options", () => {
+      jest.spyOn(settingTab as any, "getOntologyAssets").mockReturnValue([
+        "Ontology1",
+        "Ontology2",
+      ]);
+
+      let dropdownCallbacks: any[] = [];
+      MockSetting.mockImplementation((containerEl: any) => {
+        const setting = {
+          containerEl,
+          setName: jest.fn().mockReturnThis(),
+          setDesc: jest.fn().mockReturnThis(),
+          addDropdown: jest.fn().mockImplementation((callback) => {
+            const dropdown = {
+              addOption: jest.fn().mockReturnThis(),
+              setValue: jest.fn().mockReturnThis(),
+              onChange: jest.fn().mockReturnThis(),
+            };
+            dropdownCallbacks.push({ dropdown, callback });
+            callback(dropdown);
+            return setting;
+          }),
+          addToggle: jest.fn().mockReturnThis(),
+        };
+        return setting;
+      });
+
+      settingTab.display();
+
+      // First Setting should be the ontology dropdown
+      const firstSetting = (MockSetting as jest.Mock).mock.results[0].value;
+      expect(firstSetting.setName).toHaveBeenCalledWith("Default ontology asset");
+      expect(firstSetting.setDesc).toHaveBeenCalledWith(
+        "Choose the ontology asset to use for created events"
+      );
+
+      // Check dropdown options
+      const { dropdown } = dropdownCallbacks[0];
+      expect(dropdown.addOption).toHaveBeenCalledWith("", "None (use events folder)");
+      expect(dropdown.addOption).toHaveBeenCalledWith("Ontology1", "Ontology1");
+      expect(dropdown.addOption).toHaveBeenCalledWith("Ontology2", "Ontology2");
+      expect(dropdown.setValue).toHaveBeenCalledWith("");
+    });
+
+    it("should handle ontology dropdown change", async () => {
+      jest.spyOn(settingTab as any, "getOntologyAssets").mockReturnValue(["Ontology1"]);
+
+      let onChangeCallback: ((value: string) => Promise<void>) | undefined;
+      MockSetting.mockImplementation((containerEl: any) => {
+        const setting = {
+          containerEl,
+          setName: jest.fn().mockReturnThis(),
+          setDesc: jest.fn().mockReturnThis(),
+          addDropdown: jest.fn().mockImplementation((callback) => {
+            const dropdown = {
+              addOption: jest.fn().mockReturnThis(),
+              setValue: jest.fn().mockReturnThis(),
+              onChange: jest.fn().mockImplementation((cb) => {
+                onChangeCallback = cb;
+                return dropdown;
+              }),
+            };
+            callback(dropdown);
+            return setting;
+          }),
+          addToggle: jest.fn().mockReturnThis(),
+        };
+        return setting;
+      });
+
+      settingTab.display();
+
+      // Trigger onChange
+      if (onChangeCallback) {
+        await onChangeCallback("Ontology1");
+      }
+
+      expect(mockPlugin.settings.defaultOntologyAsset).toBe("Ontology1");
+      expect(mockPlugin.saveSettings).toHaveBeenCalled();
+
+      // Test clearing the value
+      if (onChangeCallback) {
+        await onChangeCallback("");
+      }
+
+      expect(mockPlugin.settings.defaultOntologyAsset).toBeNull();
+      expect(mockPlugin.saveSettings).toHaveBeenCalledTimes(2);
+    });
+
+    it("should render layout visibility toggle", () => {
+      jest.spyOn(settingTab as any, "getOntologyAssets").mockReturnValue([]);
+
+      settingTab.display();
+
+      const secondSetting = (MockSetting as jest.Mock).mock.results[1].value;
+      expect(secondSetting.setName).toHaveBeenCalledWith("Show layout");
+      expect(secondSetting.setDesc).toHaveBeenCalledWith(
+        "Display the automatic layout below metadata in reading mode"
+      );
+    });
+
+    it("should handle layout visibility toggle change", async () => {
+      jest.spyOn(settingTab as any, "getOntologyAssets").mockReturnValue([]);
+
+      let toggleCallbacks: any[] = [];
+      MockSetting.mockImplementation((containerEl: any) => {
+        const setting = {
+          containerEl,
+          setName: jest.fn().mockReturnThis(),
+          setDesc: jest.fn().mockReturnThis(),
+          addDropdown: jest.fn().mockReturnThis(),
+          addToggle: jest.fn().mockImplementation((callback) => {
+            const toggle = {
+              setValue: jest.fn().mockReturnThis(),
+              onChange: jest.fn().mockReturnThis(),
+            };
+            toggleCallbacks.push({ toggle, callback, onChange: null });
+            toggle.onChange.mockImplementation((cb: any) => {
+              toggleCallbacks[toggleCallbacks.length - 1].onChange = cb;
+              return toggle;
+            });
+            callback(toggle);
+            return setting;
+          }),
+        };
+        return setting;
+      });
+
+      settingTab.display();
+
+      // Second setting's toggle (layout visibility)
+      const layoutToggle = toggleCallbacks[0];
+      expect(layoutToggle.toggle.setValue).toHaveBeenCalledWith(true);
+
+      // Trigger onChange
+      if (layoutToggle.onChange) {
+        await layoutToggle.onChange(false);
+      }
+
+      expect(mockPlugin.settings.layoutVisible).toBe(false);
+      expect(mockPlugin.saveSettings).toHaveBeenCalled();
+      expect(mockPlugin.refreshLayout).toHaveBeenCalled();
+    });
+
+    it("should render properties section toggle", () => {
+      jest.spyOn(settingTab as any, "getOntologyAssets").mockReturnValue([]);
+
+      settingTab.display();
+
+      const thirdSetting = (MockSetting as jest.Mock).mock.results[2].value;
+      expect(thirdSetting.setName).toHaveBeenCalledWith("Show properties section");
+      expect(thirdSetting.setDesc).toHaveBeenCalledWith(
+        "Display the properties table in the layout"
+      );
+    });
+
+    it("should handle properties section toggle change", async () => {
+      jest.spyOn(settingTab as any, "getOntologyAssets").mockReturnValue([]);
+
+      let toggleCallbacks: any[] = [];
+      MockSetting.mockImplementation((containerEl: any) => {
+        const setting = {
+          containerEl,
+          setName: jest.fn().mockReturnThis(),
+          setDesc: jest.fn().mockReturnThis(),
+          addDropdown: jest.fn().mockReturnThis(),
+          addToggle: jest.fn().mockImplementation((callback) => {
+            const toggle = {
+              setValue: jest.fn().mockReturnThis(),
+              onChange: jest.fn().mockReturnThis(),
+            };
+            toggleCallbacks.push({ toggle, callback, onChange: null });
+            toggle.onChange.mockImplementation((cb: any) => {
+              toggleCallbacks[toggleCallbacks.length - 1].onChange = cb;
+              return toggle;
+            });
+            callback(toggle);
+            return setting;
+          }),
+        };
+        return setting;
+      });
+
+      settingTab.display();
+
+      // Third setting's toggle (properties section)
+      const propertiesToggle = toggleCallbacks[1];
+      expect(propertiesToggle.toggle.setValue).toHaveBeenCalledWith(true);
+
+      if (propertiesToggle.onChange) {
+        await propertiesToggle.onChange(false);
+      }
+
+      expect(mockPlugin.settings.showPropertiesSection).toBe(false);
+      expect(mockPlugin.saveSettings).toHaveBeenCalled();
+      expect(mockPlugin.refreshLayout).toHaveBeenCalled();
+    });
+
+    it("should render archived assets toggle", () => {
+      jest.spyOn(settingTab as any, "getOntologyAssets").mockReturnValue([]);
+
+      settingTab.display();
+
+      const fourthSetting = (MockSetting as jest.Mock).mock.results[3].value;
+      expect(fourthSetting.setName).toHaveBeenCalledWith("Show archived assets");
+      expect(fourthSetting.setDesc).toHaveBeenCalledWith(
+        "Display archived assets in relations table with visual distinction"
+      );
+    });
+
+    it("should handle archived assets toggle change", async () => {
+      jest.spyOn(settingTab as any, "getOntologyAssets").mockReturnValue([]);
+
+      let toggleCallbacks: any[] = [];
+      MockSetting.mockImplementation((containerEl: any) => {
+        const setting = {
+          containerEl,
+          setName: jest.fn().mockReturnThis(),
+          setDesc: jest.fn().mockReturnThis(),
+          addDropdown: jest.fn().mockReturnThis(),
+          addToggle: jest.fn().mockImplementation((callback) => {
+            const toggle = {
+              setValue: jest.fn().mockReturnThis(),
+              onChange: jest.fn().mockReturnThis(),
+            };
+            toggleCallbacks.push({ toggle, callback, onChange: null });
+            toggle.onChange.mockImplementation((cb: any) => {
+              toggleCallbacks[toggleCallbacks.length - 1].onChange = cb;
+              return toggle;
+            });
+            callback(toggle);
+            return setting;
+          }),
+        };
+        return setting;
+      });
+
+      settingTab.display();
+
+      // Fourth setting's toggle (archived assets)
+      const archivedToggle = toggleCallbacks[2];
+      expect(archivedToggle.toggle.setValue).toHaveBeenCalledWith(false);
+
+      if (archivedToggle.onChange) {
+        await archivedToggle.onChange(true);
+      }
+
+      expect(mockPlugin.settings.showArchivedAssets).toBe(true);
+      expect(mockPlugin.saveSettings).toHaveBeenCalled();
+      expect(mockPlugin.refreshLayout).toHaveBeenCalled();
+    });
+
+    it("should set dropdown value to existing setting", () => {
+      mockPlugin.settings.defaultOntologyAsset = "ExistingOntology";
+      jest.spyOn(settingTab as any, "getOntologyAssets").mockReturnValue([
+        "ExistingOntology",
+        "OtherOntology",
+      ]);
+
+      let dropdownSetValue: string | undefined;
+      MockSetting.mockImplementation((containerEl: any) => {
+        const setting = {
+          containerEl,
+          setName: jest.fn().mockReturnThis(),
+          setDesc: jest.fn().mockReturnThis(),
+          addDropdown: jest.fn().mockImplementation((callback) => {
+            const dropdown = {
+              addOption: jest.fn().mockReturnThis(),
+              setValue: jest.fn().mockImplementation((value: string) => {
+                dropdownSetValue = value;
+                return dropdown;
+              }),
+              onChange: jest.fn().mockReturnThis(),
+            };
+            callback(dropdown);
+            return setting;
+          }),
+          addToggle: jest.fn().mockReturnThis(),
+        };
+        return setting;
+      });
+
+      settingTab.display();
+
+      expect(dropdownSetValue).toBe("ExistingOntology");
+    });
+  });
+});
