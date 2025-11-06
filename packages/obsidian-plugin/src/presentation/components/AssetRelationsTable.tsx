@@ -381,14 +381,20 @@ export interface AssetRelationsTableWithToggleProps
   extends AssetRelationsTableProps {
   showEffortVotes: boolean;
   onToggleEffortVotes: () => void;
+  showArchived: boolean;
+  onToggleArchived: () => void;
 }
 
 export const AssetRelationsTableWithToggle: React.FC<
   AssetRelationsTableWithToggleProps
-> = ({ showEffortVotes, onToggleEffortVotes, showProperties = [], ...props }) => {
+> = ({ showEffortVotes, onToggleEffortVotes, showArchived, onToggleArchived, showProperties = [], ...props }) => {
   const enhancedShowProperties = showEffortVotes
     ? [...showProperties, "ems__Effort_votes"]
     : showProperties;
+
+  const filteredRelations = showArchived
+    ? props.relations
+    : props.relations.filter(r => !r.isArchived);
 
   return (
     <div className="exocortex-relations-wrapper">
@@ -398,6 +404,7 @@ export const AssetRelationsTableWithToggle: React.FC<
           onClick={onToggleEffortVotes}
           style={{
             marginBottom: "8px",
+            marginRight: "8px",
             padding: "4px 8px",
             cursor: "pointer",
             fontSize: "12px",
@@ -405,9 +412,22 @@ export const AssetRelationsTableWithToggle: React.FC<
         >
           {showEffortVotes ? "Hide" : "Show"} Votes
         </button>
+        <button
+          className="exocortex-toggle-archived"
+          onClick={onToggleArchived}
+          style={{
+            marginBottom: "8px",
+            padding: "4px 8px",
+            cursor: "pointer",
+            fontSize: "12px",
+          }}
+        >
+          {showArchived ? "Hide" : "Show"} Archived
+        </button>
       </div>
       <AssetRelationsTable
         {...props}
+        relations={filteredRelations}
         showProperties={enhancedShowProperties}
       />
     </div>

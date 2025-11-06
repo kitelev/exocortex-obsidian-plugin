@@ -513,6 +513,8 @@ test.describe("AssetRelationsTableWithToggle Component", () => {
         relations={mockRelationsWithVotes}
         showEffortVotes={false}
         onToggleEffortVotes={() => {}}
+        showArchived={false}
+        onToggleArchived={() => {}}
       />,
     );
 
@@ -532,6 +534,8 @@ test.describe("AssetRelationsTableWithToggle Component", () => {
         relations={mockRelationsWithVotes}
         showEffortVotes={true}
         onToggleEffortVotes={() => {}}
+        showArchived={false}
+        onToggleArchived={() => {}}
       />,
     );
 
@@ -551,6 +555,8 @@ test.describe("AssetRelationsTableWithToggle Component", () => {
         relations={mockRelationsWithVotes}
         showEffortVotes={false}
         onToggleEffortVotes={() => {}}
+        showArchived={false}
+        onToggleArchived={() => {}}
       />,
     );
 
@@ -574,6 +580,8 @@ test.describe("AssetRelationsTableWithToggle Component", () => {
         onToggleEffortVotes={() => {
           toggleCalled = true;
         }}
+        showArchived={false}
+        onToggleArchived={() => {}}
       />,
     );
 
@@ -589,6 +597,8 @@ test.describe("AssetRelationsTableWithToggle Component", () => {
         relations={mockRelationsWithVotes}
         showEffortVotes={false}
         onToggleEffortVotes={() => {}}
+        showArchived={false}
+        onToggleArchived={() => {}}
         groupByProperty={true}
         showProperties={["ems__Effort_status"]}
       />,
@@ -598,6 +608,131 @@ test.describe("AssetRelationsTableWithToggle Component", () => {
     await expect(
       component.locator('th:has-text("ems__Effort_status")'),
     ).toBeVisible();
+  });
+
+  test("should render Show Archived toggle button", async ({ mount }) => {
+    const component = await mount(
+      <AssetRelationsTableWithToggle
+        relations={mockRelationsWithVotes}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+        showArchived={false}
+        onToggleArchived={() => {}}
+      />,
+    );
+
+    await expect(
+      component.locator("button.exocortex-toggle-archived"),
+    ).toBeVisible();
+    await expect(
+      component.locator("button.exocortex-toggle-archived"),
+    ).toHaveText("Show Archived");
+  });
+
+  test("should filter archived relations when showArchived is false", async ({
+    mount,
+  }) => {
+    const relationsWithArchived: AssetRelation[] = [
+      {
+        path: "tasks/active-task.md",
+        title: "Active Task",
+        propertyName: "ems__Effort_parent",
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        isArchived: false,
+        metadata: { exo__Instance_class: "ems__Task" },
+      },
+      {
+        path: "tasks/archived-task.md",
+        title: "Archived Task",
+        propertyName: "ems__Effort_parent",
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        isArchived: true,
+        metadata: { exo__Instance_class: "ems__Task", exo__Asset_isArchived: true },
+      },
+    ];
+
+    const component = await mount(
+      <AssetRelationsTableWithToggle
+        relations={relationsWithArchived}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+        showArchived={false}
+        onToggleArchived={() => {}}
+      />,
+    );
+
+    await expect(component.locator("text=Active Task")).toBeVisible();
+    await expect(component.locator("text=Archived Task")).not.toBeVisible();
+    await expect(component.locator("tbody tr")).toHaveCount(1);
+  });
+
+  test("should show archived relations when showArchived is true", async ({
+    mount,
+  }) => {
+    const relationsWithArchived: AssetRelation[] = [
+      {
+        path: "tasks/active-task.md",
+        title: "Active Task",
+        propertyName: "ems__Effort_parent",
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        isArchived: false,
+        metadata: { exo__Instance_class: "ems__Task" },
+      },
+      {
+        path: "tasks/archived-task.md",
+        title: "Archived Task",
+        propertyName: "ems__Effort_parent",
+        isBodyLink: false,
+        created: Date.now(),
+        modified: Date.now(),
+        isArchived: true,
+        metadata: { exo__Instance_class: "ems__Task", exo__Asset_isArchived: true },
+      },
+    ];
+
+    const component = await mount(
+      <AssetRelationsTableWithToggle
+        relations={relationsWithArchived}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+        showArchived={true}
+        onToggleArchived={() => {}}
+      />,
+    );
+
+    await expect(component.locator("text=Active Task")).toBeVisible();
+    await expect(component.locator("text=Archived Task")).toBeVisible();
+    await expect(component.locator("tbody tr")).toHaveCount(2);
+    await expect(
+      component.locator("button.exocortex-toggle-archived"),
+    ).toHaveText("Hide Archived");
+  });
+
+  test("should call onToggleArchived when button clicked", async ({
+    mount,
+  }) => {
+    let toggleCalled = false;
+
+    const component = await mount(
+      <AssetRelationsTableWithToggle
+        relations={mockRelationsWithVotes}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+        showArchived={false}
+        onToggleArchived={() => {
+          toggleCalled = true;
+        }}
+      />,
+    );
+
+    await component.locator("button.exocortex-toggle-archived").click();
+    expect(toggleCalled).toBe(true);
   });
 
   test("should have sortable dynamic property headers", async ({ mount }) => {
