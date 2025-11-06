@@ -105,6 +105,13 @@ export class DailyProjectsRenderer {
           await this.plugin.saveSettings();
           await this.refresh();
         },
+        showFullDateInEffortTimes: this.settings.showFullDateInEffortTimes,
+        onToggleFullDate: async () => {
+          this.settings.showFullDateInEffortTimes =
+            !this.settings.showFullDateInEffortTimes;
+          await this.plugin.saveSettings();
+          await this.refresh();
+        },
         onProjectClick: async (path: string, event: React.MouseEvent) => {
           const isModPressed = Keymap.isModEvent(
             event.nativeEvent as MouseEvent,
@@ -198,6 +205,8 @@ export class DailyProjectsRenderer {
           label,
           startTime,
           endTime,
+          startTimestamp: startTimestamp || plannedStartTimestamp || null,
+          endTimestamp: endTimestamp || plannedEndTimestamp || null,
           status: effortStatusStr,
           metadata,
           isDone,

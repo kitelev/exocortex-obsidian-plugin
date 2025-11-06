@@ -15,6 +15,8 @@ export interface DailyTask {
   label: string;
   startTime: string;
   endTime: string;
+  startTimestamp: string | number | null;
+  endTimestamp: string | number | null;
   status: string;
   metadata: Record<string, unknown>;
   isDone: boolean;
@@ -32,6 +34,7 @@ export interface DailyTasksTableProps {
   showEffortArea?: boolean;
   showEffortVotes?: boolean;
   showArchived?: boolean;
+  showFullDateInEffortTimes?: boolean;
 }
 
 export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
@@ -42,6 +45,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   showEffortArea = false,
   showEffortVotes = false,
   showArchived = false,
+  showFullDateInEffortTimes = false,
 }) => {
   const [sortState, setSortState] = useState<SortState>({
     column: "",
@@ -139,6 +143,26 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     }
   };
 
+  const formatTimeDisplay = (
+    timestamp: string | number | null | undefined,
+    fallbackFormatted: string,
+  ): string => {
+    if (!timestamp) return fallbackFormatted || "-";
+
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) return fallbackFormatted || "-";
+
+    if (showFullDateInEffortTimes) {
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+      return `${month}-${day} ${hours}:${minutes}`;
+    } else {
+      return fallbackFormatted || "-";
+    }
+  };
+
   const isAssetArchived = (metadata: Record<string, unknown>): boolean => {
     const value = metadata.exo__Asset_isArchived;
     if (!value) return false;
@@ -175,12 +199,16 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
           bValue = getDisplayName(b).toLowerCase();
           break;
         case "start":
-          aValue = a.startTime || "";
-          bValue = b.startTime || "";
+          aValue = a.startTimestamp
+            ? new Date(a.startTimestamp).getTime()
+            : 0;
+          bValue = b.startTimestamp
+            ? new Date(b.startTimestamp).getTime()
+            : 0;
           break;
         case "end":
-          aValue = a.endTime || "";
-          bValue = b.endTime || "";
+          aValue = a.endTimestamp ? new Date(a.endTimestamp).getTime() : 0;
+          bValue = b.endTimestamp ? new Date(b.endTimestamp).getTime() : 0;
           break;
         case "status":
           aValue = a.status?.toLowerCase() || "";
@@ -296,8 +324,12 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
                   {getDisplayName(task)}
                 </a>
               </td>
-              <td className="task-start">{task.startTime || "-"}</td>
-              <td className="task-end">{task.endTime || "-"}</td>
+              <td className="task-start">
+                {formatTimeDisplay(task.startTimestamp, task.startTime)}
+              </td>
+              <td className="task-end">
+                {formatTimeDisplay(task.endTimestamp, task.endTime)}
+              </td>
               <td className="task-status">
                 {task.status
                   ? (() => {
@@ -397,7 +429,10 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
 export interface DailyTasksTableWithToggleProps
   extends Omit<
     DailyTasksTableProps,
-    "showEffortArea" | "showEffortVotes" | "showArchived"
+    | "showEffortArea"
+    | "showEffortVotes"
+    | "showArchived"
+    | "showFullDateInEffortTimes"
   > {
   showEffortArea: boolean;
   onToggleEffortArea: () => void;
@@ -405,6 +440,8 @@ export interface DailyTasksTableWithToggleProps
   onToggleEffortVotes: () => void;
   showArchived: boolean;
   onToggleArchived: () => void;
+  showFullDateInEffortTimes: boolean;
+  onToggleFullDate: () => void;
 }
 
 export const DailyTasksTableWithToggle: React.FC<
@@ -416,6 +453,8 @@ export const DailyTasksTableWithToggle: React.FC<
   onToggleEffortVotes,
   showArchived,
   onToggleArchived,
+  showFullDateInEffortTimes,
+  onToggleFullDate,
   ...props
 }) => {
   return (
@@ -452,6 +491,7 @@ export const DailyTasksTableWithToggle: React.FC<
           onClick={onToggleArchived}
           style={{
             marginBottom: "8px",
+            marginRight: "8px",
             padding: "4px 8px",
             cursor: "pointer",
             fontSize: "12px",
@@ -459,12 +499,25 @@ export const DailyTasksTableWithToggle: React.FC<
         >
           {showArchived ? "Hide" : "Show"} Archived
         </button>
+        <button
+          className="exocortex-toggle-full-date"
+          onClick={onToggleFullDate}
+          style={{
+            marginBottom: "8px",
+            padding: "4px 8px",
+            cursor: "pointer",
+            fontSize: "12px",
+          }}
+        >
+          {showFullDateInEffortTimes ? "HH:mm" : "MM-DD HH:mm"}
+        </button>
       </div>
       <DailyTasksTable
         {...props}
         showEffortArea={showEffortArea}
         showEffortVotes={showEffortVotes}
         showArchived={showArchived}
+        showFullDateInEffortTimes={showFullDateInEffortTimes}
       />
     </div>
   );

@@ -6,6 +6,7 @@ export interface ExocortexSettings {
   showEffortArea: boolean;
   showEffortVotes: boolean;
   defaultOntologyAsset: string | null;
+  showFullDateInEffortTimes: boolean;
   [key: string]: unknown;
 }
 
@@ -17,4 +18,5 @@ export const DEFAULT_SETTINGS: ExocortexSettings = {
   showEffortArea: false,
   showEffortVotes: false,
   defaultOntologyAsset: null,
+  showFullDateInEffortTimes: false,
 };
