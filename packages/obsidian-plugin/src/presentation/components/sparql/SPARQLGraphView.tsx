@@ -9,7 +9,7 @@ interface SPARQLGraphViewProps {
   onAssetClick: (path: string) => void;
 }
 
-const extractPredicateName = (source: string | GraphNode, target: string | GraphNode, triplesData: Triple[]): string => {
+export const extractPredicateName = (source: string | GraphNode, target: string | GraphNode, triplesData: Triple[]): string => {
   const sourcePath = typeof source === "string" ? source : source.path;
   const targetPath = typeof target === "string" ? target : target.path;
 
