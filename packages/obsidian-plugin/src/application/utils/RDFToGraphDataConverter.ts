@@ -14,12 +14,12 @@ export class RDFToGraphDataConverter {
       const predicateStr = triple.predicate.toString();
       const objectStr = triple.object.toString();
 
-      const subjectIRI = this.extractIRI(subjectStr);
+      const subjectIRI = this.extractIRI(subjectStr) || (this.isPlainIRI(subjectStr) ? subjectStr : null);
       if (subjectIRI && !nodeMap.has(subjectIRI)) {
         nodeMap.set(subjectIRI, this.createNode(subjectIRI));
       }
 
-      const objectIRI = this.extractIRI(objectStr);
+      const objectIRI = this.extractIRI(objectStr) || (this.isPlainIRI(objectStr) ? objectStr : null);
       if (objectIRI && !nodeMap.has(objectIRI)) {
         nodeMap.set(objectIRI, this.createNode(objectIRI));
       }
@@ -38,7 +38,7 @@ export class RDFToGraphDataConverter {
       if (predicateStr === this.RDF_TYPE && subjectIRI) {
         const node = nodeMap.get(subjectIRI);
         if (node) {
-          const typeIRI = this.extractIRI(objectStr);
+          const typeIRI = this.extractIRI(objectStr) || (this.isPlainIRI(objectStr) ? objectStr : null);
           if (typeIRI) {
             node.assetClass = this.extractBasename(typeIRI);
           }
@@ -73,6 +73,13 @@ export class RDFToGraphDataConverter {
   private static extractIRI(str: string): string | null {
     const match = str.match(/^<(.+)>$/);
     return match ? match[1] : null;
+  }
+
+  private static isPlainIRI(str: string): boolean {
+    if (str.startsWith('"') || str.startsWith("_:")) {
+      return false;
+    }
+    return /^[a-z][a-z0-9+.-]*:/i.test(str);
   }
 
   private static extractLiteral(str: string): string | null {
