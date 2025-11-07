@@ -23,6 +23,7 @@ module.exports = {
   moduleNameMapper: {
     "^@exocortex/core$": "<rootDir>/../core/src/index.ts",
     "^obsidian$": "<rootDir>/tests/__mocks__/obsidian.ts",
+    "^d3$": "<rootDir>/tests/__mocks__/d3.ts",
   },
   coverageThreshold: {
     global: {

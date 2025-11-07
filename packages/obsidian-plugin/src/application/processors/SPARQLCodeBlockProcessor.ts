@@ -17,6 +17,7 @@ import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 import { ReactRenderer } from "../../presentation/utils/ReactRenderer";
 import { SPARQLTableView } from "../../presentation/components/sparql/SPARQLTableView";
 import { SPARQLListView } from "../../presentation/components/sparql/SPARQLListView";
+import { SPARQLGraphView } from "../../presentation/components/sparql/SPARQLGraphView";
 
 export class SPARQLCodeBlockProcessor {
   private plugin: ExocortexPlugin;
@@ -360,15 +361,27 @@ export class SPARQLCodeBlockProcessor {
     queryString: string
   ): void {
     if (this.isTripleArray(results)) {
-      this.reactRenderer.render(
-        container,
-        React.createElement(SPARQLListView, {
-          triples: results,
-          onAssetClick: (path: string) => {
-            this.plugin.app.workspace.openLinkText(path, "", false, { active: true });
-          },
-        })
-      );
+      if (this.shouldRenderAsGraph(results)) {
+        this.reactRenderer.render(
+          container,
+          React.createElement(SPARQLGraphView, {
+            triples: results,
+            onAssetClick: (path: string) => {
+              this.plugin.app.workspace.openLinkText(path, "", false, { active: true });
+            },
+          })
+        );
+      } else {
+        this.reactRenderer.render(
+          container,
+          React.createElement(SPARQLListView, {
+            triples: results,
+            onAssetClick: (path: string) => {
+              this.plugin.app.workspace.openLinkText(path, "", false, { active: true });
+            },
+          })
+        );
+      }
     } else {
       const variables = this.extractVariables(queryString);
 
@@ -383,6 +396,28 @@ export class SPARQLCodeBlockProcessor {
         })
       );
     }
+  }
+
+  private shouldRenderAsGraph(triples: Triple[]): boolean {
+    if (triples.length === 0) {
+      return false;
+    }
+
+    let relationshipCount = 0;
+
+    for (const triple of triples) {
+      const subjectStr = triple.subject.toString();
+      const objectStr = triple.object.toString();
+
+      const isSubjectIRI = subjectStr.startsWith("<") && subjectStr.endsWith(">");
+      const isObjectIRI = objectStr.startsWith("<") && objectStr.endsWith(">");
+
+      if (isSubjectIRI && isObjectIRI) {
+        relationshipCount++;
+      }
+    }
+
+    return relationshipCount >= 2;
   }
 
   private isTripleArray(results: SolutionMapping[] | Triple[]): results is Triple[] {
