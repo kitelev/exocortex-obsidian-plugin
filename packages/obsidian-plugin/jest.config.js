@@ -27,13 +27,10 @@ module.exports = {
   },
   coverageThreshold: {
     global: {
-      branches: 68, // Temporarily lowered from 70 (current: 68.49% due to SPARQLGraphView component)
+      branches: 70, // Updated from 63 to 70 (current: 70.7%)
       functions: 75, // Updated from 70 to 75 (current: 75.78%)
       lines: 78, // Updated from 75 to 78 (current: 78.42%)
-      statements: 78, // Temporarily lowered from 80 (current: 78.78% due to SPARQLGraphView component)
-      // Note: SPARQLGraphView.tsx (~188 lines) has 0% coverage due to D3.js component testing challenges
-      // RDFToGraphDataConverter.ts has 100% coverage (39 unit tests)
-      // TODO: Restore to statements: 80, branches: 70 after adding SPARQLGraphView component tests
+      statements: 80, // Updated from 75 to 80 (current: 80.67%)
     },
     // Domain layer thresholds disabled until core package coverage collection is fixed
     // See: https://github.com/kitelev/exocortex-obsidian-plugin/issues/197
