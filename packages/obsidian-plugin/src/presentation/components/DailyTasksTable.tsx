@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { MetadataHelpers } from "@exocortex/core";
 
 interface SortState {
   column: string;
@@ -163,23 +164,12 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     }
   };
 
-  const isAssetArchived = (metadata: Record<string, unknown>): boolean => {
-    const value = metadata.exo__Asset_isArchived;
-    if (!value) return false;
-    if (value === true || value === 1) return true;
-    if (typeof value === "string") {
-      const lower = String(value).toLowerCase().trim();
-      return lower === "true" || lower === "yes" || lower === "1";
-    }
-    return Boolean(value);
-  };
-
   const sortedTasks = useMemo(() => {
     let filtered = tasks;
 
     if (!showArchived) {
       filtered = tasks.filter((task) => {
-        return !isAssetArchived(task.metadata);
+        return !MetadataHelpers.isAssetArchived(task.metadata);
       });
     }
 
