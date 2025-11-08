@@ -1,5 +1,6 @@
 import { CommandVisibilityContext } from "../domain/commands/CommandVisibility";
 import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { MetadataHelpers } from "./MetadataHelpers";
 
 export class MetadataExtractor {
   constructor(private vault: IVaultAdapter) {}
@@ -21,13 +22,7 @@ export class MetadataExtractor {
   }
 
   extractIsArchived(metadata: Record<string, any>): boolean {
-    const archived = metadata.exo__Asset_isArchived;
-    if (archived === true || archived === 1) return true;
-    if (typeof archived === "string") {
-      const lowerValue = archived.toLowerCase();
-      return lowerValue === "true" || lowerValue === "yes";
-    }
-    return false;
+    return MetadataHelpers.isAssetArchived(metadata);
   }
 
   static extractIsDefinedBy(sourceMetadata: Record<string, any>): string {
