@@ -1711,3 +1711,50 @@
   border-top: 1px solid var(--background-modifier-border);
   color: var(--text-muted);
 }
+
+.sparql-graph-view {
+  width: 100%;
+  min-height: 600px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  overflow: hidden;
+  position: relative;
+}
+
+.sparql-graph-view svg {
+  display: block;
+  width: 100%;
+  height: 600px;
+}
+
+.sparql-graph-node {
+  transition: r 0.2s, fill 0.2s;
+}
+
+.sparql-graph-node:hover {
+  r: 10;
+  fill: var(--interactive-accent-hover);
+}
+
+.sparql-graph-node-label {
+  pointer-events: none;
+  user-select: none;
+  font-weight: 500;
+}
+
+.sparql-graph-link {
+  opacity: 0.6;
+  transition: opacity 0.2s, stroke-width 0.2s;
+}
+
+.sparql-graph-link:hover {
+  opacity: 1;
+  stroke-width: 3;
+}
+
+.sparql-graph-link-label {
+  pointer-events: none;
+  user-select: none;
+  font-style: italic;
+}
