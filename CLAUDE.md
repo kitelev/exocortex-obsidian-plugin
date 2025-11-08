@@ -968,6 +968,25 @@ frontmatter: createMockMetadata({ exo__Asset_label: null }),
 
 **Example:** See PR #337 for display label resolution fix and test updates.
 
+### Auto-Merge Rebase Loop (Expected Behavior)
+
+**Problem**: PR has auto-merge enabled but keeps falling BEHIND main branch.
+
+**Root Cause**: Multiple AI agents working in parallel - other PRs merge while you monitor yours.
+
+**Solution**: This is NORMAL and EXPECTED with parallel development. Simply rebase:
+```bash
+git fetch origin main
+git rebase origin/main
+git push --force-with-lease origin <branch-name>
+```
+
+**After rebase**: CI reruns automatically and auto-merge activates when all checks GREEN.
+
+**How many rebases to expect**: 1-3 rebases is typical with 2-5 parallel agents working.
+
+**Remember**: This is coordinated parallel development working as designed (see RULE 5).
+
 ## 📚 Key Resources
 
 **Internal:**

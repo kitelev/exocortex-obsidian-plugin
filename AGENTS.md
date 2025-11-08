@@ -79,6 +79,27 @@ const getDisplayLabel = (relation: AssetRelation): string => {
 
 **Example:** See PR #337 for Name column sorting fix using `exo__Asset_label`.
 
+### Error Handling Pattern for UI Components
+
+When implementing error handling in components that display UI:
+
+1. **Dual logging**: Always log to BOTH console AND user-facing UI
+   ```typescript
+   } catch (error) {
+     const errorObj = error instanceof Error ? error : new Error(String(error));
+     console.error("[ComponentName] Error description:", errorObj);
+     console.error("[ComponentName] Stack trace:", errorObj.stack);
+     new Notice(`User-friendly error message: ${errorObj.message}`, 5000);
+   }
+   ```
+
+2. **Searchable prefixes**: Use `[ComponentName]` prefix for easy console filtering
+3. **Include stack traces**: Log `errorObj.stack` separately for full debug info
+4. **User-friendly messages**: Notice popup should explain what went wrong in user terms
+5. **Timeout duration**: 5 seconds (5000ms) for errors, 2 seconds for success messages
+
+**Example from SPARQLCodeBlockProcessor.ts**: See lines 99-106 for query execution error handling pattern.
+
 ## Critical Quality Rules
 
 ### ⛔ NEVER Use `git commit --no-verify`

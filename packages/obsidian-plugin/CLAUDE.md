@@ -823,6 +823,30 @@ it("should sort by display label, not basename", () => {
 
 **Real-world example:** See PR #337 (Fixed Name sorting across 3 files)
 
+### SPARQL Error Handling Pattern
+
+When working with SPARQL queries or other user-facing features:
+
+1. **Comprehensive error logging**: Log at every error boundary
+   - Query execution
+   - Query refresh
+   - Data loading/initialization
+
+2. **Error object normalization**: Always convert to Error instance
+   ```typescript
+   const errorObj = error instanceof Error ? error : new Error(String(error));
+   ```
+
+3. **Separate stack trace logging**: Don't concatenate stack trace, log separately
+   ```typescript
+   console.error("[Exocortex SPARQL] Query execution error:", errorObj);
+   console.error("[Exocortex SPARQL] Stack trace:", errorObj.stack);
+   ```
+
+4. **User feedback timing**: 5 seconds for errors (gives time to read), 2 seconds for success
+
+**Example**: See `SPARQLCodeBlockProcessor.ts` lines 99-106, 143-150, 272-277 for error handling pattern.
+
 ## 🚀 Quick Start
 
 ### Understanding Monorepo Codebase
