@@ -927,6 +927,39 @@ exocortex-assets-relations         // line 1196
 // NOTE: .exocortex-layout-container does NOT exist!
 ```
 
+### GitHub API Workaround for Network Issues
+
+**Problem**: Git fetch/push operations timeout with "Connection to github.com closed by remote host" or "mmap failed: Operation timed out".
+
+**Root Cause**: Unstable network connection, git operations failing repeatedly.
+
+**Solution**: Use GitHub API to update PR branch server-side:
+```bash
+# Get current branch SHA
+CURRENT_SHA=$(git rev-parse HEAD)
+
+# Update PR branch via GitHub API (bypasses git network)
+gh api -X PUT repos/<owner>/<repo>/pulls/<PR-NUMBER>/update-branch \
+  -f expected_head_sha=$CURRENT_SHA
+```
+
+**Result**: GitHub updates PR branch with latest main, CI reruns automatically.
+
+**When to use**: After 2-3 failed git fetch/rebase attempts due to network timeouts.
+
+**Example from PR #346**:
+```bash
+# Multiple git operations failed with timeouts
+git fetch origin main  # ❌ timeout
+git rebase origin/main  # ❌ timeout
+
+# Used GitHub API instead
+gh api -X PUT repos/kitelev/exocortex-obsidian-plugin/pulls/346/update-branch \
+  -f expected_head_sha=d5ec25c1c7e1a457994448e75f57d9ba0cb0d1b7
+
+# ✅ Success - PR updated to SHA 4731e1c, CI restarted
+```
+
 ### Test Mock Default Values Can Mask Bugs
 
 **Problem:** Test passes when it should fail because mock helper provides default value that hides "missing data" scenario.
