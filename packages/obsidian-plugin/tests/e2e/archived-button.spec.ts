@@ -135,4 +135,26 @@ test.describe("Show Archived Button in pn__DailyNote", () => {
     const regularCount = await regularTaskRows.count();
     expect(regularCount).toBe(nonArchivedRowsInitial);
   });
+
+  test("should support both archived field formats (archived and exo__Asset_isArchived)", async ({ page }) => {
+    const relationsSection = page.locator(".exocortex-assets-relations");
+    await expect(relationsSection).toBeVisible({ timeout: 10000 });
+
+    const showArchivedButton = page.locator("button.exocortex-toggle-archived");
+    await expect(showArchivedButton).toBeVisible();
+
+    const rowsBeforeClick = await page.locator(".exocortex-relation-table tbody tr").count();
+
+    await showArchivedButton.click();
+    await page.waitForTimeout(500);
+
+    const newFormatTask = page.locator('text="Archived Task"').first();
+    await expect(newFormatTask).toBeVisible({ timeout: 5000 });
+
+    const legacyFormatTask = page.locator('text="Archived Task (Legacy Format)"');
+    await expect(legacyFormatTask).toBeVisible({ timeout: 5000 });
+
+    const rowsAfterClick = await page.locator(".exocortex-relation-table tbody tr").count();
+    expect(rowsAfterClick).toBeGreaterThanOrEqual(rowsBeforeClick + 2);
+  });
 });
