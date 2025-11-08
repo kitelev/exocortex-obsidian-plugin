@@ -15,9 +15,7 @@ import {
 import type ExocortexPlugin from "../../ExocortexPlugin";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 import { ReactRenderer } from "../../presentation/utils/ReactRenderer";
-import { SPARQLTableView } from "../../presentation/components/sparql/SPARQLTableView";
-import { SPARQLListView } from "../../presentation/components/sparql/SPARQLListView";
-import { SPARQLGraphView } from "../../presentation/components/sparql/SPARQLGraphView";
+import { SPARQLResultViewer } from "../../presentation/components/sparql/SPARQLResultViewer";
 
 export class SPARQLCodeBlockProcessor {
   private plugin: ExocortexPlugin;
@@ -360,64 +358,17 @@ export class SPARQLCodeBlockProcessor {
     container: HTMLElement,
     queryString: string
   ): void {
-    if (this.isTripleArray(results)) {
-      if (this.shouldRenderAsGraph(results)) {
-        this.reactRenderer.render(
-          container,
-          React.createElement(SPARQLGraphView, {
-            triples: results,
-            onAssetClick: (path: string) => {
-              this.plugin.app.workspace.openLinkText(path, "", false, { active: true });
-            },
-          })
-        );
-      } else {
-        this.reactRenderer.render(
-          container,
-          React.createElement(SPARQLListView, {
-            triples: results,
-            onAssetClick: (path: string) => {
-              this.plugin.app.workspace.openLinkText(path, "", false, { active: true });
-            },
-          })
-        );
-      }
-    } else {
-      const variables = this.extractVariables(queryString);
-
-      this.reactRenderer.render(
-        container,
-        React.createElement(SPARQLTableView, {
-          results,
-          variables,
-          onAssetClick: (path: string) => {
-            this.plugin.app.workspace.openLinkText(path, "", false, { active: true });
-          },
-        })
-      );
-    }
-  }
-
-  private shouldRenderAsGraph(triples: Triple[]): boolean {
-    if (triples.length === 0) {
-      return false;
-    }
-
-    let relationshipCount = 0;
-
-    for (const triple of triples) {
-      const subjectStr = triple.subject.toString();
-      const objectStr = triple.object.toString();
-
-      const isSubjectIRI = subjectStr.startsWith("<") && subjectStr.endsWith(">");
-      const isObjectIRI = objectStr.startsWith("<") && objectStr.endsWith(">");
-
-      if (isSubjectIRI && isObjectIRI) {
-        relationshipCount++;
-      }
-    }
-
-    return relationshipCount >= 2;
+    this.reactRenderer.render(
+      container,
+      React.createElement(SPARQLResultViewer, {
+        results,
+        queryString,
+        app: this.plugin.app,
+        onAssetClick: (path: string) => {
+          this.plugin.app.workspace.openLinkText(path, "", false, { active: true });
+        },
+      })
+    );
   }
 
   private isTripleArray(results: SolutionMapping[] | Triple[]): results is Triple[] {
@@ -437,16 +388,5 @@ export class SPARQLCodeBlockProcessor {
     errorDiv.appendChild(pre);
 
     container.appendChild(errorDiv);
-  }
-
-  private extractVariables(queryString: string): string[] {
-    const selectMatch = queryString.match(/SELECT\s+(.*?)\s+WHERE/i);
-    if (!selectMatch) {
-      return [];
-    }
-
-    const selectClause = selectMatch[1];
-    const variables = selectClause.match(/\?(\w+)/g) || [];
-    return variables.map((v) => v.substring(1));
   }
 }
