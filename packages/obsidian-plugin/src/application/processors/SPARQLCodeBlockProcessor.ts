@@ -371,28 +371,6 @@ export class SPARQLCodeBlockProcessor {
     );
   }
 
-  private shouldRenderAsGraph(triples: Triple[]): boolean {
-    if (triples.length === 0) {
-      return false;
-    }
-
-    let relationshipCount = 0;
-
-    for (const triple of triples) {
-      const subjectStr = triple.subject.toString();
-      const objectStr = triple.object.toString();
-
-      const isSubjectIRI = subjectStr.startsWith("<") && subjectStr.endsWith(">");
-      const isObjectIRI = objectStr.startsWith("<") && objectStr.endsWith(">");
-
-      if (isSubjectIRI && isObjectIRI) {
-        relationshipCount++;
-      }
-    }
-
-    return relationshipCount >= 2;
-  }
-
   private isTripleArray(results: SolutionMapping[] | Triple[]): results is Triple[] {
     return results.length > 0 && "subject" in results[0];
   }
@@ -410,16 +388,5 @@ export class SPARQLCodeBlockProcessor {
     errorDiv.appendChild(pre);
 
     container.appendChild(errorDiv);
-  }
-
-  private extractVariables(queryString: string): string[] {
-    const selectMatch = queryString.match(/SELECT\s+(.*?)\s+WHERE/i);
-    if (!selectMatch) {
-      return [];
-    }
-
-    const selectClause = selectMatch[1];
-    const variables = selectClause.match(/\?(\w+)/g) || [];
-    return variables.map((v) => v.substring(1));
   }
 }

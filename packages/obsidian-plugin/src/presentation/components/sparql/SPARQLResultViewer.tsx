@@ -42,7 +42,7 @@ const shouldDefaultToGraph = (triples: Triple[]): boolean => {
 };
 
 const extractVariables = (queryString: string): string[] => {
-  const selectMatch = queryString.match(/SELECT\s+(.*?)\s+WHERE/is);
+  const selectMatch = queryString.match(/SELECT\s+([\s\S]*?)\s+WHERE/i);
   if (!selectMatch) {
     return [];
   }
