@@ -100,6 +100,18 @@ When implementing error handling in components that display UI:
 
 **Example from SPARQLCodeBlockProcessor.ts**: See lines 99-106 for query execution error handling pattern.
 
+**Git Operations During Development:**
+
+When git operations (fetch, push, rebase) fail due to network issues, use GitHub API as fallback:
+```bash
+# Instead of: git fetch && git rebase && git push --force-with-lease
+# Use: gh api to update PR branch server-side
+gh api -X PUT repos/OWNER/REPO/pulls/PR_NUMBER/update-branch \
+  -f expected_head_sha=$(git rev-parse HEAD)
+```
+
+**Benefits**: Bypasses network issues, triggers CI automatically, updates branch on GitHub without local git operations.
+
 ## Critical Quality Rules
 
 ### ⛔ NEVER Use `git commit --no-verify`
