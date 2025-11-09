@@ -227,6 +227,100 @@ describe("AssetMetadataService", () => {
 
       expect(result).toBe("parent-area");
     });
+
+    it("should resolve parent area with .md extension fallback", () => {
+      const mockParentFile = new TFile();
+
+      mockApp.metadataCache.getFirstLinkpathDest.mockImplementation(
+        (linkpath: string) => {
+          if (linkpath === "parent-effort") {
+            return null;
+          }
+          if (linkpath === "parent-effort.md") {
+            return mockParentFile;
+          }
+          return null;
+        },
+      );
+
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          ems__Effort_area: "parent-area",
+        },
+      });
+
+      const metadata = {
+        ems__Effort_parent: "[[parent-effort]]",
+      };
+
+      const result = service.getEffortArea(metadata);
+
+      expect(result).toBe("parent-area");
+    });
+
+    it("should resolve prototype area with .md extension fallback", () => {
+      const mockPrototypeFile = new TFile();
+
+      mockApp.metadataCache.getFirstLinkpathDest.mockImplementation(
+        (linkpath: string) => {
+          if (linkpath === "prototype-effort") {
+            return null;
+          }
+          if (linkpath === "prototype-effort.md") {
+            return mockPrototypeFile;
+          }
+          return null;
+        },
+      );
+
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          ems__Effort_area: "prototype-area",
+        },
+      });
+
+      const metadata = {
+        ems__Effort_prototype: "[[prototype-effort]]",
+      };
+
+      const result = service.getEffortArea(metadata);
+
+      expect(result).toBe("prototype-area");
+    });
+
+    it("should not add .md extension if path already ends with .md", () => {
+      const mockParentFile = new TFile();
+
+      mockApp.metadataCache.getFirstLinkpathDest.mockImplementation(
+        (linkpath: string) => {
+          if (linkpath === "parent-effort.md") {
+            return mockParentFile;
+          }
+          return null;
+        },
+      );
+
+      mockApp.metadataCache.getFileCache.mockReturnValue({
+        frontmatter: {
+          ems__Effort_area: "parent-area",
+        },
+      });
+
+      const metadata = {
+        ems__Effort_parent: "[[parent-effort.md]]",
+      };
+
+      const result = service.getEffortArea(metadata);
+
+      expect(result).toBe("parent-area");
+      expect(mockApp.metadataCache.getFirstLinkpathDest).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(mockApp.metadataCache.getFirstLinkpathDest).toHaveBeenCalledWith(
+        "parent-effort.md",
+        "",
+      );
+    });
   });
 
   describe("extractInstanceClass", () => {

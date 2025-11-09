@@ -95,10 +95,18 @@ export class AssetMetadataService {
 
     if (parentPath && !visited.has(parentPath)) {
       visited.add(parentPath);
-      const parentFile = this.app.metadataCache.getFirstLinkpathDest(
+      let parentFile = this.app.metadataCache.getFirstLinkpathDest(
         parentPath,
         "",
       );
+
+      if (!parentFile && !parentPath.endsWith(".md")) {
+        parentFile = this.app.metadataCache.getFirstLinkpathDest(
+          parentPath + ".md",
+          "",
+        );
+      }
+
       if (parentFile instanceof TFile) {
         const parentCache = this.app.metadataCache.getFileCache(parentFile);
         const parentMetadata = parentCache?.frontmatter || {};
@@ -115,10 +123,18 @@ export class AssetMetadataService {
 
     if (prototypePath && !visited.has(prototypePath)) {
       visited.add(prototypePath);
-      const prototypeFile = this.app.metadataCache.getFirstLinkpathDest(
+      let prototypeFile = this.app.metadataCache.getFirstLinkpathDest(
         prototypePath,
         "",
       );
+
+      if (!prototypeFile && !prototypePath.endsWith(".md")) {
+        prototypeFile = this.app.metadataCache.getFirstLinkpathDest(
+          prototypePath + ".md",
+          "",
+        );
+      }
+
       if (prototypeFile instanceof TFile) {
         const prototypeCache =
           this.app.metadataCache.getFileCache(prototypeFile);
