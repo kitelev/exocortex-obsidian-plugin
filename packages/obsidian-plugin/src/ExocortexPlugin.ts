@@ -17,6 +17,7 @@ import { TaskStatusService } from "@exocortex/core";
 import { ObsidianVaultAdapter } from "./adapters/ObsidianVaultAdapter";
 import { TaskTrackingService } from "./application/services/TaskTrackingService";
 import { SPARQLCodeBlockProcessor } from "./application/processors/SPARQLCodeBlockProcessor";
+import { SPARQLApi } from "./application/api/SPARQLApi";
 
 /**
  * Exocortex Plugin - Automatic layout rendering
@@ -32,6 +33,7 @@ export default class ExocortexPlugin extends Plugin {
   private metadataCache!: Map<string, Record<string, unknown>>;
   vaultAdapter!: ObsidianVaultAdapter;
   private sparqlProcessor!: SPARQLCodeBlockProcessor;
+  sparql!: SPARQLApi;
   settings!: ExocortexSettings;
 
   async onload(): Promise<void> {
@@ -59,6 +61,7 @@ export default class ExocortexPlugin extends Plugin {
       );
       this.metadataCache = new Map();
       this.sparqlProcessor = new SPARQLCodeBlockProcessor(this);
+      this.sparql = new SPARQLApi(this);
 
       // Initialize CommandManager and register all commands
       this.commandManager = new CommandManager(this.app);
@@ -121,6 +124,10 @@ export default class ExocortexPlugin extends Plugin {
 
   async onunload(): Promise<void> {
     this.removeAutoRenderedLayouts();
+
+    if (this.sparql) {
+      await this.sparql.dispose();
+    }
 
     this.logger?.info("Exocortex Plugin unloaded");
   }
