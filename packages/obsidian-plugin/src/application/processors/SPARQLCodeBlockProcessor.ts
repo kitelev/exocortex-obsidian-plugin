@@ -3,6 +3,7 @@ import { MarkdownPostProcessorContext, EventRef, Notice } from "obsidian";
 import {
   InMemoryTripleStore,
   SPARQLParser,
+  SPARQLParseError,
   AlgebraTranslator,
   AlgebraOptimizer,
   BGPExecutor,
@@ -16,6 +17,7 @@ import type ExocortexPlugin from "../../ExocortexPlugin";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 import { ReactRenderer } from "../../presentation/utils/ReactRenderer";
 import { SPARQLResultViewer } from "../../presentation/components/sparql/SPARQLResultViewer";
+import { SPARQLErrorView, type SPARQLError } from "../../presentation/components/sparql/SPARQLErrorView";
 
 export class SPARQLCodeBlockProcessor {
   private plugin: ExocortexPlugin;
@@ -102,7 +104,7 @@ export class SPARQLCodeBlockProcessor {
       new Notice(`SPARQL query error: ${errorObj.message}`, 5000);
 
       container.innerHTML = "";
-      this.renderError(errorObj, container);
+      this.renderError(errorObj, container, source);
     }
   }
 
@@ -146,7 +148,7 @@ export class SPARQLCodeBlockProcessor {
       new Notice(`SPARQL query refresh error: ${errorObj.message}`, 5000);
 
       container.innerHTML = "";
-      this.renderError(errorObj, container);
+      this.renderError(errorObj, container, source);
     }
   }
 
@@ -375,18 +377,20 @@ export class SPARQLCodeBlockProcessor {
     return results.length > 0 && "subject" in results[0];
   }
 
-  private renderError(error: Error, container: HTMLElement): void {
-    const errorDiv = document.createElement("div");
-    errorDiv.className = "sparql-error";
+  private renderError(error: Error, container: HTMLElement, queryString: string): void {
+    const sparqlError: SPARQLError = {
+      message: error.message,
+      queryString,
+    };
 
-    const strong = document.createElement("strong");
-    strong.textContent = "Query error:";
-    errorDiv.appendChild(strong);
+    if (error instanceof SPARQLParseError) {
+      sparqlError.line = error.line;
+      sparqlError.column = error.column;
+    }
 
-    const pre = document.createElement("pre");
-    pre.textContent = error.message;
-    errorDiv.appendChild(pre);
-
-    container.appendChild(errorDiv);
+    this.reactRenderer.render(
+      container,
+      React.createElement(SPARQLErrorView, { error: sparqlError }),
+    );
   }
 }

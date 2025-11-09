@@ -54,7 +54,7 @@ export { InMemoryTripleStore } from "./infrastructure/rdf/InMemoryTripleStore";
 export { NoteToRDFConverter } from "./services/NoteToRDFConverter";
 
 // SPARQL Engine exports
-export { SPARQLParser, type SPARQLQuery, type SelectQuery, type ConstructQuery } from "./infrastructure/sparql/SPARQLParser";
+export { SPARQLParser, SPARQLParseError, type SPARQLQuery, type SelectQuery, type ConstructQuery } from "./infrastructure/sparql/SPARQLParser";
 export { AlgebraTranslator } from "./infrastructure/sparql/algebra/AlgebraTranslator";
 export { AlgebraOptimizer } from "./infrastructure/sparql/algebra/AlgebraOptimizer";
 export { AlgebraSerializer } from "./infrastructure/sparql/algebra/AlgebraSerializer";
