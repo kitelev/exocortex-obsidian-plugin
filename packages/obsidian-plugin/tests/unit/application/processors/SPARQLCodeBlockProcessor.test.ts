@@ -239,7 +239,7 @@ describe("SPARQLCodeBlockProcessor", () => {
 
       await (processor as any).refreshQuery(el, container, source);
 
-      expect((processor as any).renderError).toHaveBeenCalledWith(error, container);
+      expect((processor as any).renderError).toHaveBeenCalledWith(error, container, source);
       expect(container.innerHTML).toBe("");
     });
   });

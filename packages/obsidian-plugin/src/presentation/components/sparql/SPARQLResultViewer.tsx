@@ -5,6 +5,7 @@ import { SPARQLTableView } from "./SPARQLTableView";
 import { SPARQLListView } from "./SPARQLListView";
 import { SPARQLGraphView } from "./SPARQLGraphView";
 import { ViewModeSelector, type ViewMode } from "./ViewModeSelector";
+import { SPARQLEmptyState } from "./SPARQLEmptyState";
 
 export interface SPARQLResultViewerProps {
   results: SolutionMapping[] | Triple[];
@@ -205,11 +206,7 @@ export const SPARQLResultViewer: React.FC<SPARQLResultViewerProps> = ({
   };
 
   if (results.length === 0) {
-    return (
-      <div className="sparql-no-results">
-        no results found
-      </div>
-    );
+    return <SPARQLEmptyState queryString={queryString} />;
   }
 
   return (
