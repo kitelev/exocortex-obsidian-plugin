@@ -362,6 +362,107 @@ For a Project note, relations might show:
 - Areas where this project is mentioned in body content
 - Other projects with cross-references
 
+## 🔍 SPARQL Query System
+
+Execute powerful semantic queries directly in your notes using SPARQL, the W3C standard query language for RDF data. Query results auto-refresh when your vault changes.
+
+### Quick Start
+
+Create a `sparql` code block in any note:
+
+````markdown
+```sparql
+SELECT ?task ?label ?status
+WHERE {
+  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
+  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?task <http://exocortex.ai/ontology#Task_status> ?status .
+}
+LIMIT 10
+```
+````
+
+**Results appear live below the code block** with:
+- Interactive table/list/graph views
+- Export to CSV, JSON, or Turtle formats
+- Automatic updates when vault content changes
+- Error highlighting with syntax hints
+
+### Common Query Patterns
+
+**Find all tasks in a project:**
+```sparql
+SELECT ?task ?taskLabel
+WHERE {
+  ?task <http://exocortex.ai/ontology#belongs_to_project> <vault://Projects/My-Project.md> .
+  ?task <http://exocortex.ai/ontology#Asset_label> ?taskLabel .
+}
+```
+
+**Count tasks by status:**
+```sparql
+SELECT ?status (COUNT(?task) AS ?count)
+WHERE {
+  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
+  ?task <http://exocortex.ai/ontology#Task_status> ?status .
+}
+GROUP BY ?status
+ORDER BY DESC(?count)
+```
+
+**Find high-priority tasks:**
+```sparql
+SELECT ?task ?label ?votes
+WHERE {
+  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
+  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?task <http://exocortex.ai/ontology#Effort_votes> ?votes .
+  FILTER(?votes > 5)
+}
+ORDER BY DESC(?votes)
+```
+
+### Developer API
+
+Access SPARQL programmatically from other plugins:
+
+```typescript
+const plugin = this.app.plugins.getPlugin("exocortex");
+const result = await plugin.sparql.query(`
+  SELECT ?task ?label
+  WHERE {
+    ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
+    ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+  }
+`);
+
+console.log(`Found ${result.count} tasks`);
+result.bindings.forEach(binding => {
+  const label = binding.get("label")?.value;
+  console.log(label);
+});
+```
+
+**API Methods:**
+- `await sparql.query(queryString)` - Execute SELECT query
+- `sparql.getTripleStore()` - Access raw triple store
+- `await sparql.refresh()` - Force re-index vault
+- `await sparql.dispose()` - Cleanup (on plugin unload)
+
+### Documentation
+
+**Learn SPARQL**:
+- 📖 [User Guide](./docs/sparql/User-Guide.md) - Complete SPARQL tutorial for Obsidian
+- 💡 [30+ Query Examples](./docs/sparql/Query-Examples.md) - Ready-to-use query patterns
+- ⚡ [Performance Tips](./docs/sparql/Performance-Tips.md) - Optimize queries for large vaults
+- 🔧 [Developer Guide](./docs/sparql/Developer-Guide.md) - Extend SPARQL functionality
+
+**Quick Tips**:
+- Use `LIMIT` to avoid overwhelming results
+- Filter by `Instance_class` first for better performance
+- Property URIs: `<http://exocortex.ai/ontology#PropertyName>`
+- Vault paths: `<vault://path/to/file.md>`
+
 ## ⚙️ Plugin Settings
 
 Access via Settings → Exocortex.
