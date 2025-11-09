@@ -1034,6 +1034,35 @@ exocortex-assets-relations         // line 1196
 // NOTE: .exocortex-layout-container does NOT exist!
 ```
 
+### Verifying Package Exports Before Re-exporting
+
+**Problem**: TypeScript compilation fails with "Module has no exported member 'X'" when re-exporting types from dependencies.
+
+**Root Cause**: Types exist in source files but aren't in package's public API (`index.ts`).
+
+**Solution**:
+1. Verify what's actually exported:
+   ```bash
+   grep -r "export.*TypeName" packages/*/src/index.ts
+   ```
+
+2. If type not found in index.ts, either:
+   - Add it to the package's exports (if it should be public)
+   - Remove it from your re-export list (if it's internal)
+
+3. Verify locally before pushing:
+   ```bash
+   npm run check:types
+   ```
+
+**Example from PR #352**:
+- Tried to export `TriplePattern` from `@exocortex/core`
+- Exists in `packages/core/src/domain/TriplePattern.ts`
+- NOT in `packages/core/src/index.ts` → not public API
+- Solution: Removed from re-export list
+
+**Prevention**: Always check package index.ts before assuming type availability.
+
 ## 📚 Key Resources
 
 **Internal:**
