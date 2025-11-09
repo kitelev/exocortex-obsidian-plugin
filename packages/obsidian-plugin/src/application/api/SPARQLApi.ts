@@ -1,4 +1,3 @@
-import type { App } from "obsidian";
 import type { InMemoryTripleStore, SolutionMapping, Triple } from "@exocortex/core";
 import { SPARQLQueryService } from "../services/SPARQLQueryService";
 import type ExocortexPlugin from "../../ExocortexPlugin";
@@ -15,10 +14,8 @@ export interface ConstructResult {
 
 export class SPARQLApi {
   private queryService: SPARQLQueryService;
-  private plugin: ExocortexPlugin;
 
   constructor(plugin: ExocortexPlugin) {
-    this.plugin = plugin;
     this.queryService = new SPARQLQueryService(plugin.app);
   }
 

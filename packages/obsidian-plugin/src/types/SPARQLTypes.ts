@@ -1,12 +1,10 @@
 export type {
   SolutionMapping,
   Triple,
-  TriplePattern,
   SPARQLQuery,
   SelectQuery,
   ConstructQuery,
   InMemoryTripleStore,
-  ITripleStore,
 } from "@exocortex/core";
 
 export type {
