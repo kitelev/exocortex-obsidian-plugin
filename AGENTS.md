@@ -180,6 +180,56 @@ export function createMockElement(): any {
 
 This allows tests to use jest mock utilities like `mockReturnValueOnce()`.
 
+### Testing Public API Wrappers
+
+When creating wrapper classes around existing services, follow this pattern:
+
+**Test Strategy**:
+1. Mock the underlying service completely
+2. Test delegation (verify service methods called with correct args)
+3. Test result transformation (verify wrapper returns expected format)
+4. Test error propagation (verify errors bubble up correctly)
+
+**Example Pattern** (from SPARQLApi.test.ts):
+```typescript
+describe("SPARQLApi", () => {
+  let mockQueryService: jest.Mocked<SPARQLQueryService>;
+
+  beforeEach(() => {
+    mockQueryService = {
+      query: jest.fn(),
+      refresh: jest.fn(),
+      dispose: jest.fn(),
+      indexer: {
+        getTripleStore: jest.fn().mockReturnValue({}),
+      },
+    } as any;
+
+    (SPARQLQueryService as jest.Mock).mockImplementation(() => mockQueryService);
+    api = new SPARQLApi(mockPlugin);
+  });
+
+  it("should delegate to service and transform result", async () => {
+    const mockBindings = [/* ... */];
+    mockQueryService.query.mockResolvedValue(mockBindings);
+
+    const result = await api.query("SELECT ?x WHERE { ?x a ?y }");
+
+    // Verify delegation
+    expect(mockQueryService.query).toHaveBeenCalledWith("SELECT ?x WHERE { ?x a ?y }");
+
+    // Verify transformation
+    expect(result.bindings).toEqual(mockBindings);
+    expect(result.count).toBe(mockBindings.length);
+  });
+});
+```
+
+**Key Points**:
+- Don't test the underlying service logic (already tested elsewhere)
+- Focus on delegation, transformation, and error handling
+- Keep tests fast (pure unit tests, no integration)
+
 ## Release Guidance
 - Do **not** bump versions or craft releases manually. Coordinate with maintainers for release automation that mirrors the `/release` command.
 - Ensure changelog updates and release activities happen through the sanctioned process once available.
