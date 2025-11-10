@@ -141,4 +141,79 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
   toTFile(file: IFile): TFile {
     return this.toObsidianFile(file);
   }
+
+  async updateLinks(
+    oldPath: string,
+    newPath: string,
+    oldBasename: string,
+  ): Promise<void> {
+    const newBasename = newPath.replace(/\.md$/, "").split("/").pop() || "";
+
+    const resolvedLinks = this.app.metadataCache.resolvedLinks;
+    const filesToUpdate: string[] = [];
+
+    for (const sourcePath in resolvedLinks) {
+      const links = resolvedLinks[sourcePath];
+      if (links[oldPath] !== undefined) {
+        filesToUpdate.push(sourcePath);
+      }
+    }
+
+    for (const sourcePath of filesToUpdate) {
+      const sourceFile = this.vault.getAbstractFileByPath(sourcePath);
+      if (!(sourceFile instanceof TFile)) continue;
+
+      let content = await this.vault.read(sourceFile);
+
+      const escapedOldBasename = oldBasename.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&",
+      );
+
+      const patterns = [
+        {
+          regex: new RegExp(
+            `\\[\\[${escapedOldBasename}(#[^\\]|]+)\\|([^\\]]+)\\]\\]`,
+            "g",
+          ),
+          replacement: `[[${newBasename}$1|$2]]`,
+        },
+        {
+          regex: new RegExp(
+            `\\[\\[${escapedOldBasename}(\\^[^\\]|]+)\\|([^\\]]+)\\]\\]`,
+            "g",
+          ),
+          replacement: `[[${newBasename}$1|$2]]`,
+        },
+        {
+          regex: new RegExp(
+            `\\[\\[${escapedOldBasename}\\|([^\\]]+)\\]\\]`,
+            "g",
+          ),
+          replacement: `[[${newBasename}|$1]]`,
+        },
+        {
+          regex: new RegExp(`\\[\\[${escapedOldBasename}(#[^\\]|]+)\\]\\]`, "g"),
+          replacement: `[[${newBasename}$1|${oldBasename}]]`,
+        },
+        {
+          regex: new RegExp(
+            `\\[\\[${escapedOldBasename}(\\^[^\\]|]+)\\]\\]`,
+            "g",
+          ),
+          replacement: `[[${newBasename}$1|${oldBasename}]]`,
+        },
+        {
+          regex: new RegExp(`\\[\\[${escapedOldBasename}\\]\\]`, "g"),
+          replacement: `[[${newBasename}|${oldBasename}]]`,
+        },
+      ];
+
+      for (const { regex, replacement } of patterns) {
+        content = content.replace(regex, replacement);
+      }
+
+      await this.vault.modify(sourceFile, content);
+    }
+  }
 }
