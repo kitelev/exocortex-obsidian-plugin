@@ -680,9 +680,52 @@ npm run build
 
 ## 📚 Documentation
 
+### Getting Started
+
+New to Exocortex? Start here:
+
+- **[Getting Started Guide](./docs/Getting-Started.md)** - Step-by-step tutorial from installation to first workflow
+- **[Command Reference](./docs/Command-Reference.md)** - Complete documentation of all 32 commands
+
+### Workflow Guides
+
+Learn common patterns and best practices:
+
+- **[Task Workflow](./docs/workflows/Task-Workflow.md)** - Complete task lifecycle from creation to completion
+- **[Project Workflow](./docs/workflows/Project-Workflow.md)** - Managing multi-task initiatives
+- **[Daily Planning](./docs/workflows/Daily-Planning.md)** - Organize your day with daily notes
+- **[Area Organization](./docs/workflows/Area-Organization.md)** - Structure knowledge domains hierarchically
+- **[Effort Voting](./docs/workflows/Effort-Voting.md)** - Collaborative prioritization system
+
+### SPARQL Queries
+
+Execute semantic queries on your knowledge base:
+
+- **[SPARQL User Guide](./docs/sparql/User-Guide.md)** - Complete tutorial for writing queries
+- **[Query Examples](./docs/sparql/Query-Examples.md)** - 30+ ready-to-use query patterns
+- **[Performance Tips](./docs/sparql/Performance-Tips.md)** - Optimize queries for large vaults
+- **[Developer Guide](./docs/sparql/Developer-Guide.md)** - Extend SPARQL functionality
+
+### Developer Documentation
+
+For plugin developers and contributors:
+
+- **[Core API Reference](./docs/api/Core-API.md)** - @exocortex/core package documentation
+- **[Plugin Development Guide](./docs/Plugin-Development-Guide.md)** - Extend Exocortex with custom functionality
+- **[Testing Guide](./docs/Testing-Guide.md)** - Testing patterns and best practices
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System design and Clean Architecture patterns
+
+### Advanced Topics
+
+- **[Performance Guide](./docs/Performance-Guide.md)** - Optimization tips and benchmarks
+- **[Troubleshooting](./docs/Troubleshooting.md)** - Common issues and solutions
+- **[Property Schema](./docs/PROPERTY_SCHEMA.md)** - Complete frontmatter property reference
+
+### Project Information
+
 - **[CHANGELOG.md](./CHANGELOG.md)** - Complete version history with semantic versioning
-- **[CLAUDE.md](./CLAUDE.md)** - Development guidelines for AI assistants
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System design and patterns
+- **[CLAUDE.md](./CLAUDE.md)** - Development guidelines for AI assistants (Claude Code)
+- **[AGENTS.md](./AGENTS.md)** - Universal guidelines for all AI coding assistants
 - **[specs/features/](./specs/features/)** - BDD feature specifications
 
 ## ⚠️ Known Issues
