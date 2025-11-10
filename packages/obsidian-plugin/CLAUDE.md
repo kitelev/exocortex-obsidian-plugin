@@ -577,6 +577,41 @@ if (!assetResult.isSuccess) {
 }
 ```
 
+### Service Layer Pattern
+
+**When implementing new features, ALWAYS check for existing `*Service` classes before using low-level APIs.**
+
+**Pattern**: High-level services abstract complex operations
+
+**Example from PR #358**:
+```typescript
+// ❌ WRONG - Using low-level APIs directly
+const parser = new SPARQLParser();
+const translator = new AlgebraTranslator();
+const executor = new BGPExecutor(tripleStore);
+// ... 25+ lines of manual execution logic ...
+
+// ✅ CORRECT - Using service abstraction
+const queryService = new SPARQLQueryService(app);
+await queryService.initialize();
+const results = await queryService.query(queryString);
+```
+
+**Available services** (search codebase for `*Service.ts`):
+- `SPARQLQueryService` - SPARQL query execution
+- `TaskCreationService` - Task/Project creation
+- `TaskStatusService` - Status transitions
+- `PropertyCleanupService` - Frontmatter cleanup
+- ... (see `CommandRegistry.ts` for full list)
+
+**Benefits**:
+- Encapsulates initialization logic
+- Consistent error handling
+- Tested and proven implementation
+- Reduces code duplication
+
+**Prevention**: Search for `*Service` classes before implementing features that might already have abstractions.
+
 ### Performance Optimization
 
 **IndexedGraph** (10x query speed):
@@ -732,6 +767,28 @@ export class MyCommand implements ICommand {
 }
 ```
 
+**⚠️ CRITICAL - ReactRenderer Parameter Order**
+
+**ReactRenderer API**: `render(container: HTMLElement, component: React.ReactElement)`
+
+```typescript
+// ❌ WRONG - Reversed parameters
+this.reactRenderer.render(
+  React.createElement(MyComponent, {...}),  // component first
+  container                                  // container second
+);
+
+// ✅ CORRECT - Correct order
+this.reactRenderer.render(
+  container,                                 // container first
+  React.createElement(MyComponent, {...})    // component second
+);
+```
+
+**Gotcha**: Different from `ReactDOM.render(element, container)` - parameters are REVERSED!
+
+---
+
 **Key patterns:**
 - ✅ **Sentence case** for all UI text (ESLint enforced: "modal title", not "Modal Title")
 - ✅ **Mock `contentEl` methods**, return real DOM nodes from `createEl`
@@ -739,6 +796,7 @@ export class MyCommand implements ICommand {
 - ✅ **Two-step mock pattern** for constructor functions (see AGENTS.md for details)
 - ✅ **Settings persistence** via `saveSettings()` + `refreshLayout()`
 - ✅ **User feedback** via `Notice` for all state changes
+- ✅ **ReactRenderer correct parameter order** (container first, component second)
 
 ### Table Sorting Best Practices
 
@@ -936,6 +994,32 @@ chore: maintenance task
 4. **E2E timeout**: Verify CSS selectors match actual rendered classes in screenshots
 5. **Obsolete dependencies**: Audit code for unused plugin availability checks
 6. **Pre-commit lint blocks due to errors**: Fix ALL lint errors, never bypass with --no-verify
+
+### TypeScript Property Errors
+
+**Problem**: TypeScript compilation fails with "Object literal may only specify known properties, and 'X' does not exist in type 'Y'"
+
+**Root Cause**: Using incorrect property name that doesn't exist in interface definition
+
+**Solution**:
+1. Find interface definition:
+   ```bash
+   grep -r "export interface Y" packages/*/src/**/*.ts
+   ```
+2. Read actual properties in interface
+3. Update code to use correct property names
+4. Run `npm run check:types` to verify
+
+**Example from PR #358**:
+```typescript
+// ❌ WRONG - 'details' doesn't exist in SPARQLError
+setError({ message: "error", details: "info" });
+
+// ✅ CORRECT - SPARQLError uses 'queryString'
+setError({ message: "error", queryString: "SELECT ..." });
+```
+
+**Prevention**: Use TypeScript IntelliSense/autocomplete to discover correct property names. Always read interface definitions before first use.
 
 ### E2E Testing Critical Lessons
 
