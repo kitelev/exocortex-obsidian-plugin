@@ -148,9 +148,9 @@ export class FileSystemVaultAdapter implements IVaultAdapter {
   }
 
   async updateLinks(
-    oldPath: string,
-    newPath: string,
-    oldBasename: string,
+    _oldPath: string,
+    _newPath: string,
+    _oldBasename: string,
   ): Promise<void> {
     return Promise.resolve();
   }
