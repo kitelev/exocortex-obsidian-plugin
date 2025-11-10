@@ -1047,6 +1047,27 @@ pwd  # Check current directory
 # If missing "worktrees/" in path → STOP! You're in the wrong place!
 ```
 
+### Flaky UI Test Failures
+
+**Problem**: UI test fails intermittently during pre-commit hook but passes when run independently.
+
+**Root Cause**: Race condition in test timing, not related to code changes.
+
+**Solution**:
+```bash
+# Verify test passes independently
+npm run test:ui
+
+# If test passes, failure was likely flaky - commit again
+git commit -am "your message"
+```
+
+**When to investigate further**:
+- ✅ CSS-only changes: Flaky test likely unrelated
+- ❌ Logic changes: Investigate if test fails consistently
+
+**Prevention**: Re-run tests once before assuming code is broken. UI tests can be timing-sensitive.
+
 ### Auto-Merge Troubleshooting
 
 **Problem: Auto-merge enabled but PR not merging**
