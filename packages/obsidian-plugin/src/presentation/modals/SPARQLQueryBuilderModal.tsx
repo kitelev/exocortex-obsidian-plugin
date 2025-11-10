@@ -1,31 +1,22 @@
 import { Modal, App, Notice } from "obsidian";
 import React from "react";
-import {
-  InMemoryTripleStore,
-  SPARQLParser,
-  AlgebraTranslator,
-  AlgebraOptimizer,
-  BGPExecutor,
-  ConstructExecutor,
-  NoteToRDFConverter,
-  type SolutionMapping,
-  type Triple,
-} from "@exocortex/core";
+import type { SolutionMapping, Triple } from "@exocortex/core";
 import type ExocortexPlugin from "../../ExocortexPlugin";
-import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 import { ReactRenderer } from "../utils/ReactRenderer";
 import { QueryBuilder } from "../components/sparql/QueryBuilder";
+import { SPARQLQueryService } from "../../application/services/SPARQLQueryService";
 
 export class SPARQLQueryBuilderModal extends Modal {
   private plugin: ExocortexPlugin;
   private reactRenderer: ReactRenderer;
-  private tripleStore: InMemoryTripleStore | null = null;
-  private isLoading = false;
+  private queryService: SPARQLQueryService;
+  private isInitialized = false;
 
   constructor(app: App, plugin: ExocortexPlugin) {
     super(app);
     this.plugin = plugin;
     this.reactRenderer = new ReactRenderer();
+    this.queryService = new SPARQLQueryService(app);
   }
 
   async onOpen(): Promise<void> {
@@ -34,30 +25,30 @@ export class SPARQLQueryBuilderModal extends Modal {
     contentEl.addClass("sparql-query-builder-modal");
 
     const titleEl = contentEl.createEl("div", { cls: "modal-title" });
-    titleEl.textContent = "sparql query builder";
+    titleEl.textContent = "Sparql query builder";
 
     const container = contentEl.createEl("div", { cls: "sparql-query-builder-container" });
 
     const loadingDiv = container.createEl("div", { cls: "sparql-loading" });
-    loadingDiv.textContent = "loading query engine...";
+    loadingDiv.textContent = "Loading query engine...";
 
     try {
-      await this.ensureTripleStoreLoaded();
+      await this.ensureQueryServiceInitialized();
       container.innerHTML = "";
 
       this.reactRenderer.render(
+        container,
         React.createElement(QueryBuilder, {
           app: this.app,
           onExecuteQuery: this.executeQuery.bind(this),
           onAssetClick: this.handleAssetClick.bind(this),
           onCopyQuery: this.handleCopyQuery.bind(this),
-        }),
-        container
+        })
       );
     } catch (error) {
       container.innerHTML = "";
       const errorDiv = container.createEl("div", { cls: "sparql-error" });
-      errorDiv.textContent = `failed to load query engine: ${error instanceof Error ? error.message : String(error)}`;
+      errorDiv.textContent = `Failed to load query engine: ${error instanceof Error ? error.message : String(error)}`;
       console.error("[Exocortex Query Builder] Failed to load:", error);
     }
   }
@@ -68,70 +59,17 @@ export class SPARQLQueryBuilderModal extends Modal {
     contentEl.empty();
   }
 
-  private async ensureTripleStoreLoaded(): Promise<void> {
-    if (this.tripleStore) {
+  private async ensureQueryServiceInitialized(): Promise<void> {
+    if (this.isInitialized) {
       return;
     }
 
-    if (this.isLoading) {
-      while (this.isLoading) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      }
-      return;
-    }
-
-    this.isLoading = true;
-
-    try {
-      const vaultAdapter = new ObsidianVaultAdapter(this.plugin.app.vault);
-      const allFiles = this.plugin.app.vault.getMarkdownFiles();
-
-      const converter = new NoteToRDFConverter(vaultAdapter);
-      const store = new InMemoryTripleStore();
-
-      for (const file of allFiles) {
-        try {
-          const triples = await converter.convertNote(file.path);
-          for (const triple of triples) {
-            store.add(triple);
-          }
-        } catch (error) {
-          console.warn(`[Exocortex Query Builder] Skipping file ${file.path}:`, error);
-        }
-      }
-
-      this.tripleStore = store;
-    } finally {
-      this.isLoading = false;
-    }
+    await this.queryService.initialize();
+    this.isInitialized = true;
   }
 
   private async executeQuery(query: string): Promise<SolutionMapping[] | Triple[]> {
-    if (!this.tripleStore) {
-      throw new Error("triple store not loaded");
-    }
-
-    const parser = new SPARQLParser();
-    const parsedQuery = parser.parse(query);
-
-    const translator = new AlgebraTranslator();
-    const algebra = translator.translate(parsedQuery);
-
-    const optimizer = new AlgebraOptimizer();
-    const optimized = optimizer.optimize(algebra);
-
-    if (parsedQuery.queryType === "SELECT" || parsedQuery.queryType === "ASK") {
-      const executor = new BGPExecutor(this.tripleStore);
-      return executor.execute(optimized);
-    } else if (parsedQuery.queryType === "CONSTRUCT" || parsedQuery.queryType === "DESCRIBE") {
-      const constructExecutor = new ConstructExecutor(
-        this.tripleStore,
-        new BGPExecutor(this.tripleStore)
-      );
-      return constructExecutor.execute(parsedQuery as any, optimized);
-    } else {
-      throw new Error(`unsupported query type: ${parsedQuery.queryType}`);
-    }
+    return await this.queryService.query(query);
   }
 
   private handleAssetClick(path: string, event?: React.MouseEvent): void {
@@ -152,7 +90,7 @@ export class SPARQLQueryBuilderModal extends Modal {
     }
   }
 
-  private handleCopyQuery(query: string): void {
-    new Notice("query copied to clipboard", 2000);
+  private handleCopyQuery(_query: string): void {
+    new Notice("Query copied to clipboard", 2000);
   }
 }

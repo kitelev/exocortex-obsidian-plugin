@@ -2,7 +2,6 @@ import React, { useState, useCallback, useMemo } from "react";
 import type { App } from "obsidian";
 import type { SolutionMapping, Triple } from "@exocortex/core";
 import {
-  QUERY_TEMPLATES,
   TEMPLATE_CATEGORIES,
   getTemplatesByCategory,
   type QueryTemplate,
@@ -66,8 +65,7 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
     if (!activeQuery.trim()) {
       setError({
         message: "no query to execute",
-        details: "select a template or write a custom query",
-        query: "",
+        queryString: "",
       });
       return;
     }
@@ -83,8 +81,7 @@ export const QueryBuilder: React.FC<QueryBuilderProps> = ({
       const errorObj = err instanceof Error ? err : new Error(String(err));
       setError({
         message: errorObj.message,
-        details: errorObj.stack || "unknown error",
-        query: activeQuery,
+        queryString: activeQuery,
       });
     } finally {
       setIsExecuting(false);
