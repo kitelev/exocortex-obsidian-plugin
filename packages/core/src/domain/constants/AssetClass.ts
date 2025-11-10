@@ -6,6 +6,8 @@ export enum AssetClass {
   INITIATIVE = "ems__Initiative",
   TASK_PROTOTYPE = "ems__TaskPrototype",
   MEETING_PROTOTYPE = "ems__MeetingPrototype",
+  EVENT_PROTOTYPE = "exo__EventPrototype",
+  EVENT = "exo__Event",
   DAILY_NOTE = "pn__DailyNote",
   CONCEPT = "ims__Concept",
   SESSION_START_EVENT = "ems__SessionStartEvent",
