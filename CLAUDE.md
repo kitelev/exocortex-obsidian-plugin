@@ -1183,6 +1183,47 @@ frontmatter: createMockMetadata({ exo__Asset_label: null }),
 
 **Real-world example:** See PR #337 (Fixed 3 tests after display label resolution fix)
 
+### "SPARQL queries return empty results in CLI but work in Obsidian"
+
+**Problem**: SPARQL query executes without errors but returns 0 results in CLI, while same query works in Obsidian plugin.
+
+**Root Cause**: Namespace URI mismatch between:
+- Code definitions (`Namespace.ts`)
+- Vault ontology files (`exo__Ontology_url` property)
+- SPARQL query PREFIX declarations
+
+**Quick Detection**:
+```bash
+# Check namespace URIs in code
+grep -A2 "static readonly EXO" packages/core/src/domain/models/rdf/Namespace.ts
+
+# Check namespace URIs in vault
+grep "exo__Ontology_url" vault-path/03\ Knowledge/exo/!exo.md
+```
+
+**Solution**:
+1. Read vault ontology files to get canonical URIs
+2. Update `Namespace.ts` to match vault definitions
+3. Use hash-style URIs (`https://example.com/ontology#`) not slash-style
+4. Update all SPARQL test files with new namespaces
+5. Verify CLI execution returns results
+
+**Example Fix**: See PR #363 for complete namespace unification example.
+
+**Diagnostic Query**:
+```sparql
+# Run this to see actual namespace URIs in triple store
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT DISTINCT ?predicate
+WHERE {
+  ?subject ?predicate ?object .
+}
+LIMIT 20
+```
+
+If you see predicates like `http://exocortex.org/ontology/Asset_label` but your query uses `PREFIX exo: <https://exocortex.my/ontology/exo#>`, that's the mismatch.
+
 ### Common Approval Workflow Questions
 
 **Q: User said "not now" - should I delete my post-mortem report?**

@@ -1075,6 +1075,67 @@ function createJoin(left: AlgebraOperation, right: AlgebraOperation): AlgebraOpe
 npm run check:types  # Catches unused imports, type errors
 ```
 
+### RDF Namespace URI Standards
+
+**CRITICAL**: RDF/RDFS/OWL ontologies MUST use **hash-style URIs**:
+
+- ✅ CORRECT: `https://exocortex.my/ontology/exo#`
+- ❌ WRONG: `https://exocortex.my/ontology/exo/`
+
+**Why hash-style?** The `#` (fragment identifier) is the RDF standard for ontology vocabularies. It allows multiple terms to reference the same ontology document.
+
+**Source of Truth**: Vault ontology files (`!ontology-name.md`) contain canonical URIs in `exo__Ontology_url` property.
+
+**Before implementing SPARQL features:**
+1. Read vault ontology files to get correct namespace URIs
+2. Update code to match vault definitions (vault is source of truth)
+3. Verify both CLI and Obsidian plugin use same `packages/core/src/domain/models/rdf/Namespace.ts` constants
+4. Test SPARQL queries in both environments
+
+**Example**:
+```typescript
+// packages/core/src/domain/models/rdf/Namespace.ts
+static readonly EXO = new Namespace("exo", "https://exocortex.my/ontology/exo#");
+static readonly EMS = new Namespace("ems", "https://exocortex.my/ontology/ems#");
+```
+
+**Verification**:
+```bash
+# Test CLI execution returns results
+node packages/cli/dist/index.js sparql query test.sparql --vault /path/to/vault
+# Should return > 0 results if query is correct
+```
+
+**Troubleshooting empty results:**
+
+If SPARQL query executes without errors but returns 0 results:
+
+1. **Check namespace URI mismatch**:
+   ```bash
+   # Compare code URIs
+   grep -A2 "static readonly EXO" packages/core/src/domain/models/rdf/Namespace.ts
+
+   # Compare vault URIs
+   grep "exo__Ontology_url" /path/to/vault/03\ Knowledge/exo/!exo.md
+   ```
+
+2. **Run diagnostic query** to see actual triple store URIs:
+   ```sparql
+   SELECT DISTINCT ?predicate WHERE {
+     ?subject ?predicate ?object .
+   } LIMIT 20
+   ```
+
+   If predicates show `http://exocortex.org/...` but query uses `https://exocortex.my/...`, that's the mismatch.
+
+3. **Fix steps**:
+   - Update `Namespace.ts` with vault's canonical URIs
+   - Update all SPARQL test files with new prefixes
+   - Update vault README examples
+   - Verify CLI execution returns results
+
+**Reference**: See PR #363 for complete namespace unification example.
+
 ---
 
 ## 🔐 Security Considerations
