@@ -26,7 +26,7 @@ Exocortex is a powerful Obsidian plugin that transforms your notes into an inter
 - 📦 **Archive Filtering**: Toggle visibility of archived tasks and projects in DailyNote layouts (default: hidden)
 - ⚡ **High Performance**: O(1) relation lookups via reverse indexing
 - 📱 **Mobile Compatible**: Full touch-optimized UI for desktop and mobile
-- ⌨️ **23 Commands**: Comprehensive command palette integration for all operations
+- ⌨️ **24 Commands**: Comprehensive command palette integration for all operations
 - 🎨 **Action Buttons**: Context-aware UI buttons for quick access to relevant commands
 - 🔍 **SPARQL Query Blocks**: Execute semantic queries directly in markdown with `sparql` code blocks - results auto-refresh on vault changes
 
@@ -151,7 +151,7 @@ Keep your vault organized:
 | **Repair Folder** | Assets with exo__Asset_isDefinedBy | Move file to correct folder based on reference |
 | **Rename to UID** | Filename ≠ exo__Asset_uid | Rename file to match UID, preserve label |
 
-### System Commands (4)
+### System Commands (5)
 
 Control plugin behavior and visualization:
 
@@ -161,6 +161,7 @@ Control plugin behavior and visualization:
 | **Add Supervision** | Yes | Create CBT-format fleeting note in 01 Inbox |
 | **Toggle Layout Visibility** | Yes | Show/hide entire layout section |
 | **Toggle Properties Visibility** | Yes | Show/hide properties table |
+| **Open SPARQL Query Builder** | Yes | Visual query builder with templates, live preview, and copy-to-clipboard |
 
 ## 🏷️ Frontmatter Properties Reference
 
@@ -387,6 +388,18 @@ LIMIT 10
 - Export to CSV, JSON, or Turtle formats
 - Automatic updates when vault content changes
 - Error highlighting with syntax hints
+
+### Visual Query Builder
+
+Open the **SPARQL Query Builder** from the command palette (`Cmd/Ctrl+P` → "Open SPARQL Query Builder") for an interactive query building experience:
+
+- **15+ Ready-to-Use Templates**: Pre-built queries for common tasks (all assets, active tasks, project hierarchy, etc.)
+- **Category Filtering**: Browse templates by Basic, Tasks, Projects, Relationships, Time-Based, and Aggregations
+- **Live Preview**: See results immediately as you select templates or edit queries
+- **Copy to Clipboard**: One-click copy of generated SPARQL code for use in code blocks
+- **Custom Query Editing**: Full SPARQL editor with syntax support
+
+Perfect for users new to SPARQL or those who want quick access to common query patterns.
 
 ### Common Query Patterns
 
