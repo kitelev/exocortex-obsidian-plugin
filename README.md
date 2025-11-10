@@ -503,7 +503,7 @@ Understanding the class hierarchy:
 | **ems__TaskPrototype** | Task template | Used for instance creation |
 | **ems__MeetingPrototype** | Meeting template | Used for instance creation |
 | **exo__EventPrototype** | Event template | Used for instance creation |
-| **exo__Event** | Event instance | ems__Effort_status, ems__Effort_prototype |
+| **exo__Event** | Event instance | ems__Effort_status, exo__Asset_prototype |
 | **pn__DailyNote** | Daily planning note | pn__DailyNote_day |
 | **ztlk__FleetingNote** | Supervision/fleeting note | Created in 01 Inbox |
 
