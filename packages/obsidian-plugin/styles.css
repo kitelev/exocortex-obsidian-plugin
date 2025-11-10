@@ -1839,3 +1839,91 @@
     transition: none;
   }
 }
+
+/* ============================================================================
+   Relation Group Collapse/Expand (Nested within Asset Relations)
+   ============================================================================ */
+
+/* Relation group container */
+.relation-group {
+  margin-bottom: 16px;
+  border-left: 2px solid var(--background-modifier-border);
+  padding-left: 12px;
+}
+
+/* Relation group header with toggle button */
+.relation-group-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.relation-group-header .group-header {
+  margin: 0;
+  font-size: 1em;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+/* Relation group toggle button (smaller than main section toggle) */
+.relation-group-toggle {
+  width: 20px;
+  height: 20px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.relation-group-toggle:hover {
+  background-color: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.relation-group-toggle:focus {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+/* Relation group content container */
+.relation-group-content {
+  overflow: hidden;
+  transition: opacity 0.2s ease-out, max-height 0.2s ease-out;
+}
+
+.relation-group-content[data-collapsed="false"] {
+  opacity: 1;
+  max-height: none;
+}
+
+.relation-group-content[data-collapsed="true"] {
+  opacity: 0;
+  max-height: 0;
+  display: none;
+}
+
+/* Mobile responsive adjustments for nested toggles */
+@media (max-width: 768px) {
+  .relation-group-toggle {
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 14px;
+  }
+}
+
+/* Reduced motion for nested collapse */
+@media (prefers-reduced-motion: reduce) {
+  .relation-group-content {
+    transition: none;
+  }
+}

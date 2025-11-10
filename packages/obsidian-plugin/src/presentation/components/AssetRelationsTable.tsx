@@ -320,6 +320,11 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
   onAssetClick,
   getAssetLabel,
 }) => {
+  // State to track collapsed groups (all expanded by default)
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+    new Set()
+  );
+
   const groupedRelations = useMemo(() => {
     if (!groupByProperty) {
       return { ungrouped: relations };
@@ -338,24 +343,66 @@ export const AssetRelationsTable: React.FC<AssetRelationsTableProps> = ({
     return grouped;
   }, [relations, groupByProperty]);
 
+  const toggleGroup = (groupName: string) => {
+    setCollapsedGroups((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupName)) {
+        newSet.delete(groupName);
+      } else {
+        newSet.add(groupName);
+      }
+      return newSet;
+    });
+  };
+
+  const handleKeyDown = (
+    event: React.KeyboardEvent,
+    groupName: string
+  ) => {
+    if (event.key === " " || event.key === "Enter") {
+      event.preventDefault();
+      toggleGroup(groupName);
+    }
+  };
+
   if (groupByProperty) {
     return (
       <div className="exocortex-relations-grouped">
         {Object.entries(groupedRelations).map(([groupName, items]) => {
           const groupProps = groupSpecificProperties[groupName] || [];
           const mergedProperties = [...showProperties, ...groupProps];
+          const isCollapsed = collapsedGroups.has(groupName);
 
           return (
             <div key={groupName} className="relation-group">
-              <h3 className="group-header">{groupName}</h3>
-              <SingleTable
-                items={items}
-                sortBy={sortBy}
-                sortOrder={sortOrder}
-                showProperties={mergedProperties}
-                onAssetClick={onAssetClick}
-                getAssetLabel={getAssetLabel}
-              />
+              <div className="relation-group-header">
+                <button
+                  className="relation-group-toggle"
+                  onClick={() => toggleGroup(groupName)}
+                  onKeyDown={(e) => handleKeyDown(e, groupName)}
+                  aria-expanded={!isCollapsed}
+                  aria-label={`${isCollapsed ? "Expand" : "Collapse"} ${groupName} relations`}
+                  type="button"
+                >
+                  {isCollapsed ? "▶" : "▼"}
+                </button>
+                <h3 className="group-header">{groupName}</h3>
+              </div>
+              <div
+                className="relation-group-content"
+                data-collapsed={isCollapsed.toString()}
+              >
+                {!isCollapsed && (
+                  <SingleTable
+                    items={items}
+                    sortBy={sortBy}
+                    sortOrder={sortOrder}
+                    showProperties={mergedProperties}
+                    onAssetClick={onAssetClick}
+                    getAssetLabel={getAssetLabel}
+                  />
+                )}
+              </div>
             </div>
           );
         })}
