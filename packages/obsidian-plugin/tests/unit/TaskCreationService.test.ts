@@ -310,7 +310,7 @@ describe("TaskCreationService", () => {
       expect(frontmatter.exo__Asset_label).toBeUndefined();
     });
 
-    it("should create ems__Task instance from TaskPrototype with ems__Effort_prototype", () => {
+    it("should create ems__Task instance from TaskPrototype with exo__Asset_prototype", () => {
       const sourceMetadata = {
         exo__Asset_isDefinedBy: '"[[!toos]]"',
       };
@@ -323,7 +323,7 @@ describe("TaskCreationService", () => {
       );
 
       expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Task]]"']);
-      expect(frontmatter.ems__Effort_prototype).toBe(
+      expect(frontmatter.exo__Asset_prototype).toBe(
         '"[[Code Review Template]]"',
       );
       expect(frontmatter.exo__Asset_label).toBe("Review PR #123");
@@ -332,7 +332,7 @@ describe("TaskCreationService", () => {
       );
     });
 
-    it("should create ems__Meeting instance from MeetingPrototype with ems__Effort_prototype", () => {
+    it("should create ems__Meeting instance from MeetingPrototype with exo__Asset_prototype", () => {
       const sourceMetadata = {
         exo__Asset_isDefinedBy: '"[[!toos]]"',
       };
@@ -345,7 +345,7 @@ describe("TaskCreationService", () => {
       );
 
       expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Meeting]]"']);
-      expect(frontmatter.ems__Effort_prototype).toBe(
+      expect(frontmatter.exo__Asset_prototype).toBe(
         '"[[Daily Standup Template]]"',
       );
       expect(frontmatter.exo__Asset_label).toBe("Standup 2025-10-19");

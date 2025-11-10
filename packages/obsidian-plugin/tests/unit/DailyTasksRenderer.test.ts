@@ -1882,7 +1882,7 @@ describe("DailyTasksRenderer", () => {
         ems__Effort_day: "[[2025-10-20]]",
         ems__Effort_startTimestamp: "2025-10-20T09:00:00",
         ems__Effort_status: "[[ems__EffortStatusBacklog]]",
-        ems__Effort_prototype: "[[prototype]]",
+        exo__Asset_prototype: "[[prototype]]",
       };
 
       const prototypeMetadata = {
@@ -2167,7 +2167,7 @@ describe("DailyTasksRenderer", () => {
       } as TFile;
 
       const linkedMetadata = {
-        ems__Effort_prototype: "[[prototype]]",
+        exo__Asset_prototype: "[[prototype]]",
       };
 
       const prototypeMetadata = {

@@ -8,8 +8,8 @@ import { AssetClass } from "../domain/constants";
 const EFFORT_PROPERTY_MAP: Record<string, string> = {
   [AssetClass.AREA]: "ems__Effort_area",
   [AssetClass.PROJECT]: "ems__Effort_parent",
-  [AssetClass.TASK_PROTOTYPE]: "ems__Effort_prototype",
-  [AssetClass.MEETING_PROTOTYPE]: "ems__Effort_prototype",
+  [AssetClass.TASK_PROTOTYPE]: "exo__Asset_prototype",
+  [AssetClass.MEETING_PROTOTYPE]: "exo__Asset_prototype",
   [AssetClass.EVENT_PROTOTYPE]: "exo__Asset_prototype",
 };
 

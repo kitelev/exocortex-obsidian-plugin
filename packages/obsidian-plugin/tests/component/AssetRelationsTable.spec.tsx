@@ -329,7 +329,7 @@ test.describe("AssetRelationsTable Component", () => {
         metadata: {
           exo__Instance_class: "ems__Task",
           exo__Asset_label: "Prototype Label",
-          ems__Effort_prototype: "[[TaskPrototype]]",
+          exo__Asset_prototype: "[[TaskPrototype]]",
         },
       },
     ];

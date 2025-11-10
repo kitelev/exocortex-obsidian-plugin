@@ -138,7 +138,7 @@ Feature: Daily Tasks Table in Layout
   Scenario: Area column inherits from prototype when task has no area
     Given I have a pn__DailyNote for "2025-10-16"
     And task "Child Task" has NO "ems__Effort_area" property
-    And task "Child Task" has "ems__Effort_prototype" set to "[[Prototype Task]]"
+    And task "Child Task" has "exo__Asset_prototype" set to "[[Prototype Task]]"
     And file "Prototype Task" has "ems__Effort_area" set to "[[Research]]"
     And the Area column is visible
     When I view the daily note
@@ -148,7 +148,7 @@ Feature: Daily Tasks Table in Layout
   Scenario: Area column inherits from parent when task has no area or prototype
     Given I have a pn__DailyNote for "2025-10-16"
     And task "Child Task" has NO "ems__Effort_area" property
-    And task "Child Task" has NO "ems__Effort_prototype" property
+    And task "Child Task" has NO "exo__Asset_prototype" property
     And task "Child Task" has "ems__Effort_parent" set to "[[Parent Project]]"
     And file "Parent Project" has "ems__Effort_area" set to "[[Design]]"
     And the Area column is visible
@@ -159,7 +159,7 @@ Feature: Daily Tasks Table in Layout
   Scenario: Area column prefers direct value over prototype
     Given I have a pn__DailyNote for "2025-10-16"
     And task "Override Task" has "ems__Effort_area" set to "[[Development]]"
-    And task "Override Task" has "ems__Effort_prototype" set to "[[Prototype Task]]"
+    And task "Override Task" has "exo__Asset_prototype" set to "[[Prototype Task]]"
     And file "Prototype Task" has "ems__Effort_area" set to "[[Research]]"
     And the Area column is visible
     When I view the daily note
@@ -169,7 +169,7 @@ Feature: Daily Tasks Table in Layout
   Scenario: Area column prefers prototype over parent
     Given I have a pn__DailyNote for "2025-10-16"
     And task "Nested Task" has NO "ems__Effort_area" property
-    And task "Nested Task" has "ems__Effort_prototype" set to "[[Prototype Task]]"
+    And task "Nested Task" has "exo__Asset_prototype" set to "[[Prototype Task]]"
     And task "Nested Task" has "ems__Effort_parent" set to "[[Parent Project]]"
     And file "Prototype Task" has "ems__Effort_area" set to "[[Research]]"
     And file "Parent Project" has "ems__Effort_area" set to "[[Design]]"
@@ -181,7 +181,7 @@ Feature: Daily Tasks Table in Layout
   Scenario: Area column shows dash when no area found in chain
     Given I have a pn__DailyNote for "2025-10-16"
     And task "Orphan Task" has NO "ems__Effort_area" property
-    And task "Orphan Task" has NO "ems__Effort_prototype" property
+    And task "Orphan Task" has NO "exo__Asset_prototype" property
     And task "Orphan Task" has NO "ems__Effort_parent" property
     And the Area column is visible
     When I view the daily note
@@ -189,9 +189,9 @@ Feature: Daily Tasks Table in Layout
 
   Scenario: Area column resolves through prototype chain
     Given I have a pn__DailyNote for "2025-10-16"
-    And task "Deep Task" has "ems__Effort_prototype" set to "[[Mid Prototype]]"
+    And task "Deep Task" has "exo__Asset_prototype" set to "[[Mid Prototype]]"
     And file "Mid Prototype" has NO "ems__Effort_area" property
-    And file "Mid Prototype" has "ems__Effort_prototype" set to "[[Base Prototype]]"
+    And file "Mid Prototype" has "exo__Asset_prototype" set to "[[Base Prototype]]"
     And file "Base Prototype" has "ems__Effort_area" set to "[[Engineering]]"
     And the Area column is visible
     When I view the daily note

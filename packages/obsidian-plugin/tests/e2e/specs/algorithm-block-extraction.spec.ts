@@ -88,7 +88,7 @@ test.describe("Algorithm Block Extraction from TaskPrototype", () => {
     // Verify frontmatter properties
     expect(editorContent).toContain("exo__Instance_class");
     expect(editorContent).toContain("ems__Task");
-    expect(editorContent).toContain("ems__Effort_prototype");
+    expect(editorContent).toContain("exo__Asset_prototype");
     expect(editorContent).toContain("bug-fix-prototype");
     expect(editorContent).toContain(
       "exo__Asset_label: Fix memory leak in cache",

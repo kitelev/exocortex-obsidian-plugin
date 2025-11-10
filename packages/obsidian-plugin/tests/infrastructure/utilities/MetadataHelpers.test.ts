@@ -18,7 +18,7 @@ describe("MetadataHelpers", () => {
     it("should find multiple properties referencing same file", () => {
       const metadata = {
         ems__Effort_parent: "[[Task123]]",
-        ems__Effort_prototype: "[[Task123]]",
+        exo__Asset_prototype: "[[Task123]]",
         exo__Asset_label: "Some Label",
       };
 
@@ -28,7 +28,7 @@ describe("MetadataHelpers", () => {
       );
       expect(properties).toEqual([
         "ems__Effort_parent",
-        "ems__Effort_prototype",
+        "exo__Asset_prototype",
       ]);
     });
 
@@ -109,7 +109,7 @@ describe("MetadataHelpers", () => {
     it("should return first matching property when multiple match", () => {
       const metadata = {
         ems__Effort_parent: "[[Task123]]",
-        ems__Effort_prototype: "[[Task123]]",
+        exo__Asset_prototype: "[[Task123]]",
       };
 
       const property = MetadataHelpers.findReferencingProperty(
@@ -117,7 +117,7 @@ describe("MetadataHelpers", () => {
         "Task123",
       );
       expect(property).toBeDefined();
-      expect(["ems__Effort_parent", "ems__Effort_prototype"]).toContain(
+      expect(["ems__Effort_parent", "exo__Asset_prototype"]).toContain(
         property,
       );
     });
