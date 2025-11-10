@@ -705,6 +705,41 @@ WHERE {
    ```
    Verify tasks exist in your vault with correct frontmatter.
 
+### Pitfall 7: Namespace URI Mismatch
+
+**Problem**: Query executes without errors but returns 0 results.
+
+**Root Cause**: Namespace URIs in query don't match actual URIs used in triple store.
+
+**Diagnostic Query**:
+```sparql
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT DISTINCT ?predicate
+WHERE {
+  ?subject ?predicate ?object .
+}
+LIMIT 20
+```
+
+If you see predicates like `http://exocortex.org/ontology/Asset_label` but your query uses:
+```sparql
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+```
+
+That's a mismatch!
+
+**Solution**:
+1. Check vault ontology files (`!exo.md`, `!ems.md`) for canonical URIs in `exo__Ontology_url` property
+2. Update PREFIX declarations to match:
+   ```sparql
+   PREFIX exo: <https://exocortex.my/ontology/exo#>
+   PREFIX ems: <https://exocortex.my/ontology/ems#>
+   ```
+3. Use hash-style URIs (`#` at end), not slash-style (`/` at end)
+
+**Reference**: See PR #363 for namespace unification example.
+
 ---
 
 ## Next Steps
