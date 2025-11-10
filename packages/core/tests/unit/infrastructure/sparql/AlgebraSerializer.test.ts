@@ -66,7 +66,7 @@ describe("AlgebraSerializer", () => {
 
     it("serializes OPTIONAL (LeftJoin) operation", () => {
       const query = `
-        PREFIX ems: <http://exocortex.org/ems#>
+        PREFIX ems: <https://exocortex.my/ontology/ems#>
         SELECT ?task ?label ?priority
         WHERE {
           ?task ems:label ?label .

@@ -60,7 +60,7 @@ describe("AlgebraTranslator", () => {
 
     it("translates SELECT with PREFIX declarations", () => {
       const query = `
-        PREFIX ems: <http://exocortex.org/ems#>
+        PREFIX ems: <https://exocortex.my/ontology/ems#>
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
         SELECT ?task ?label
         WHERE {
@@ -150,7 +150,7 @@ describe("AlgebraTranslator", () => {
   describe("OPTIONAL Translation", () => {
     it("translates SELECT with OPTIONAL", () => {
       const query = `
-        PREFIX ems: <http://exocortex.org/ems#>
+        PREFIX ems: <https://exocortex.my/ontology/ems#>
         SELECT ?task ?label ?priority
         WHERE {
           ?task ems:label ?label .
@@ -172,7 +172,7 @@ describe("AlgebraTranslator", () => {
   describe("UNION Translation", () => {
     it("translates SELECT with UNION", () => {
       const query = `
-        PREFIX ems: <http://exocortex.org/ems#>
+        PREFIX ems: <https://exocortex.my/ontology/ems#>
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
         SELECT ?asset
         WHERE {

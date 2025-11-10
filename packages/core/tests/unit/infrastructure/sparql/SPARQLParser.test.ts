@@ -20,7 +20,7 @@ describe("SPARQLParser", () => {
       {
         name: "SELECT with PREFIX declarations",
         query: `
-          PREFIX ems: <http://exocortex.org/ems#>
+          PREFIX ems: <https://exocortex.my/ontology/ems#>
           PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
           SELECT ?task ?label
           WHERE {
@@ -32,7 +32,7 @@ describe("SPARQLParser", () => {
       {
         name: "SELECT with FILTER regex",
         query: `
-          PREFIX ems: <http://exocortex.org/ems#>
+          PREFIX ems: <https://exocortex.my/ontology/ems#>
           PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
           SELECT ?task ?label
           WHERE {
@@ -66,7 +66,7 @@ describe("SPARQLParser", () => {
       {
         name: "SELECT with OPTIONAL",
         query: `
-          PREFIX ems: <http://exocortex.org/ems#>
+          PREFIX ems: <https://exocortex.my/ontology/ems#>
           PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
           SELECT ?task ?label ?priority
           WHERE {
@@ -79,7 +79,7 @@ describe("SPARQLParser", () => {
       {
         name: "SELECT with UNION",
         query: `
-          PREFIX ems: <http://exocortex.org/ems#>
+          PREFIX ems: <https://exocortex.my/ontology/ems#>
           PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
           SELECT ?asset
           WHERE {
@@ -112,7 +112,7 @@ describe("SPARQLParser", () => {
       {
         name: "SELECT with LIMIT",
         query: `
-          PREFIX ems: <http://exocortex.org/ems#>
+          PREFIX ems: <https://exocortex.my/ontology/ems#>
           PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
           SELECT ?task WHERE { ?task rdf:type ems:Task } LIMIT 10
         `,
@@ -120,7 +120,7 @@ describe("SPARQLParser", () => {
       {
         name: "SELECT with LIMIT and OFFSET",
         query: `
-          PREFIX ems: <http://exocortex.org/ems#>
+          PREFIX ems: <https://exocortex.my/ontology/ems#>
           PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
           SELECT ?task WHERE { ?task rdf:type ems:Task } LIMIT 10 OFFSET 20
         `,
@@ -136,7 +136,7 @@ describe("SPARQLParser", () => {
       {
         name: "SELECT with nested graph patterns",
         query: `
-          PREFIX ems: <http://exocortex.org/ems#>
+          PREFIX ems: <https://exocortex.my/ontology/ems#>
           PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
           SELECT ?task ?label
           WHERE {
@@ -160,7 +160,7 @@ describe("SPARQLParser", () => {
       {
         name: "SELECT with VALUES",
         query: `
-          PREFIX ems: <http://exocortex.org/ems#>
+          PREFIX ems: <https://exocortex.my/ontology/ems#>
           PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
           SELECT ?task
           WHERE {
@@ -238,7 +238,7 @@ describe("SPARQLParser", () => {
       {
         name: "CONSTRUCT with complex template",
         query: `
-          PREFIX ems: <http://exocortex.org/ems#>
+          PREFIX ems: <https://exocortex.my/ontology/ems#>
           PREFIX ex: <http://example.org/>
           PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
           CONSTRUCT {
@@ -282,7 +282,7 @@ describe("SPARQLParser", () => {
       {
         name: "simple ASK query",
         query: `
-          PREFIX ems: <http://exocortex.org/ems#>
+          PREFIX ems: <https://exocortex.my/ontology/ems#>
           PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
           ASK {
             ?task rdf:type ems:Task .
@@ -314,7 +314,7 @@ describe("SPARQLParser", () => {
       {
         name: "simple DESCRIBE query",
         query: `
-          PREFIX ems: <http://exocortex.org/ems#>
+          PREFIX ems: <https://exocortex.my/ontology/ems#>
           PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
           DESCRIBE ?task
           WHERE {
@@ -389,7 +389,7 @@ describe("SPARQLParser", () => {
   describe("Round-trip serialization", () => {
     it("serializes and re-parses SELECT query", () => {
       const original = `
-        PREFIX ems: <http://exocortex.org/ems#>
+        PREFIX ems: <https://exocortex.my/ontology/ems#>
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
         SELECT ?task ?label
         WHERE {
@@ -427,7 +427,7 @@ describe("SPARQLParser", () => {
 
     it("serializes and re-parses complex query", () => {
       const original = `
-        PREFIX ems: <http://exocortex.org/ems#>
+        PREFIX ems: <https://exocortex.my/ontology/ems#>
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
         SELECT DISTINCT ?task ?effort
         WHERE {
@@ -465,7 +465,7 @@ describe("SPARQLParser", () => {
 
     it("parses medium complexity query in <10ms", () => {
       const query = `
-        PREFIX ems: <http://exocortex.org/ems#>
+        PREFIX ems: <https://exocortex.my/ontology/ems#>
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
         SELECT ?task ?label ?effort
         WHERE {
