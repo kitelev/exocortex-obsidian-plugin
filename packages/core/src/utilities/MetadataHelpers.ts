@@ -24,13 +24,41 @@ export class MetadataHelpers {
     return undefined;
   }
 
+  /**
+   * Check if a value contains a reference to a file via wiki-link syntax.
+   * Only explicit wiki-links [[...]] are matched, plain text is ignored.
+   *
+   * @param value - The value to check (string, array, etc.)
+   * @param fileName - The target file name to look for
+   * @returns true if value contains a wiki-link reference to the file
+   *
+   * @example
+   * containsReference("[[Project]]", "Project.md") // true
+   * containsReference("[[Project|Alias]]", "Project.md") // true
+   * containsReference("[[folder/Project]]", "Project.md") // true
+   * containsReference("Project", "Project.md") // false (plain text, not a wiki-link)
+   */
   static containsReference(value: any, fileName: string): boolean {
     if (!value) return false;
 
     const cleanName = fileName.replace(/\.md$/, "");
 
     if (typeof value === "string") {
-      return value.includes(`[[${cleanName}]]`) || value.includes(cleanName);
+      // Match only wiki-link syntax: [[Page]], [[Page|Alias]], [[folder/Page]]
+      const wikiLinkRegex = /\[\[([^\]]+)\]\]/g;
+      let match;
+      while ((match = wikiLinkRegex.exec(value)) !== null) {
+        const linkContent = match[1];
+        // Handle [[Page|Alias]] format - use the target part before |
+        const target = linkContent.split("|")[0].trim();
+
+        // Check if target matches filename (with or without path)
+        // Match: "Project" === "Project" OR "folder/Project" ends with "/Project"
+        if (target === cleanName || target.endsWith(`/${cleanName}`)) {
+          return true;
+        }
+      }
+      return false; // No wiki-link match found
     }
 
     if (Array.isArray(value)) {

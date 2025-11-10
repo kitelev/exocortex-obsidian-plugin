@@ -191,8 +191,14 @@ export class UniversalLayoutRenderer {
 
       this.renderDailyNavigation(el, currentFile);
 
+      // Check if Relations will be rendered to determine if we should hide aliases
+      const backlinks = this.backlinksCacheManager.getBacklinks(currentFile.path);
+      const hasRelations = backlinks && backlinks.size > 0;
+
       if (this.settings.showPropertiesSection) {
-        await this.propertiesRenderer.render(el, currentFile);
+        await this.propertiesRenderer.render(el, currentFile, {
+          hideAliases: hasRelations,
+        });
       }
 
       const buttonGroups = await this.buttonGroupsBuilder.build(currentFile);

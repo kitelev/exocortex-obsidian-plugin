@@ -7,6 +7,14 @@ import { AssetMetadataService } from "./helpers/AssetMetadataService";
 
 type ObsidianApp = any;
 
+export interface PropertiesRendererOptions {
+  /**
+   * If true, the aliases property will be filtered out from the displayed metadata.
+   * Useful when Relations block is present to avoid redundant information.
+   */
+  hideAliases?: boolean;
+}
+
 export class PropertiesRenderer {
   constructor(
     private app: ObsidianApp,
@@ -15,19 +23,30 @@ export class PropertiesRenderer {
     private metadataService: AssetMetadataService,
   ) {}
 
-  async render(el: HTMLElement, file: TFile): Promise<void> {
+  async render(
+    el: HTMLElement,
+    file: TFile,
+    options?: PropertiesRendererOptions,
+  ): Promise<void> {
     const metadata = this.metadataExtractor.extractMetadata(file);
 
     if (Object.keys(metadata).length === 0) {
       return;
     }
 
+    // Filter out aliases if requested (when Relations block is present)
+    const filteredMetadata = options?.hideAliases
+      ? Object.fromEntries(
+          Object.entries(metadata).filter(([key]) => key !== "aliases"),
+        )
+      : metadata;
+
     const container = el.createDiv({ cls: "exocortex-properties-section" });
 
     this.reactRenderer.render(
       container,
       React.createElement(AssetPropertiesTable, {
-        metadata,
+        metadata: filteredMetadata,
         onLinkClick: async (path: string, event: React.MouseEvent) => {
           const isModPressed = Keymap.isModEvent(
             event.nativeEvent as MouseEvent,

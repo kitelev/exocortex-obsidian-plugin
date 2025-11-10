@@ -247,5 +247,96 @@ describe("PropertiesRenderer", () => {
       );
       expect(mockReactRenderer.render).toHaveBeenCalled();
     });
+
+    describe("hideAliases option", () => {
+      it("should include aliases when hideAliases is false", async () => {
+        const metadata = {
+          exo__Asset_label: "Test Task",
+          aliases: ["Task A", "Task B"],
+          status: "active",
+        };
+        mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+
+        await renderer.render(mockElement, mockFile, { hideAliases: false });
+
+        expect(mockReactRenderer.render).toHaveBeenCalled();
+        const createElementCall = (React.createElement as jest.Mock).mock.calls[0];
+        expect(createElementCall[1].metadata).toEqual(metadata);
+        expect(createElementCall[1].metadata.aliases).toEqual(["Task A", "Task B"]);
+      });
+
+      it("should include aliases when hideAliases option is not provided", async () => {
+        const metadata = {
+          exo__Asset_label: "Test Task",
+          aliases: ["Task A", "Task B"],
+          status: "active",
+        };
+        mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+
+        await renderer.render(mockElement, mockFile);
+
+        expect(mockReactRenderer.render).toHaveBeenCalled();
+        const createElementCall = (React.createElement as jest.Mock).mock.calls[0];
+        expect(createElementCall[1].metadata).toEqual(metadata);
+        expect(createElementCall[1].metadata.aliases).toEqual(["Task A", "Task B"]);
+      });
+
+      it("should exclude aliases when hideAliases is true", async () => {
+        const metadata = {
+          exo__Asset_label: "Test Task",
+          aliases: ["Task A", "Task B"],
+          status: "active",
+        };
+        mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+
+        await renderer.render(mockElement, mockFile, { hideAliases: true });
+
+        expect(mockReactRenderer.render).toHaveBeenCalled();
+        const createElementCall = (React.createElement as jest.Mock).mock.calls[0];
+        const renderedMetadata = createElementCall[1].metadata;
+
+        // Should contain other properties but NOT aliases
+        expect(renderedMetadata.exo__Asset_label).toBe("Test Task");
+        expect(renderedMetadata.status).toBe("active");
+        expect(renderedMetadata.aliases).toBeUndefined();
+      });
+
+      it("should handle missing aliases property when hideAliases is true", async () => {
+        const metadata = {
+          exo__Asset_label: "Test Task",
+          status: "active",
+        };
+        mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+
+        await renderer.render(mockElement, mockFile, { hideAliases: true });
+
+        expect(mockReactRenderer.render).toHaveBeenCalled();
+        const createElementCall = (React.createElement as jest.Mock).mock.calls[0];
+        expect(createElementCall[1].metadata).toEqual(metadata);
+      });
+
+      it("should not filter other properties when hideAliases is true", async () => {
+        const metadata = {
+          exo__Asset_label: "Test Task",
+          aliases: ["Task A"],
+          status: "active",
+          priority: "high",
+          tags: ["tag1", "tag2"],
+        };
+        mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+
+        await renderer.render(mockElement, mockFile, { hideAliases: true });
+
+        const createElementCall = (React.createElement as jest.Mock).mock.calls[0];
+        const renderedMetadata = createElementCall[1].metadata;
+
+        // All properties except aliases should be present
+        expect(renderedMetadata.exo__Asset_label).toBe("Test Task");
+        expect(renderedMetadata.status).toBe("active");
+        expect(renderedMetadata.priority).toBe("high");
+        expect(renderedMetadata.tags).toEqual(["tag1", "tag2"]);
+        expect(renderedMetadata.aliases).toBeUndefined();
+      });
+    });
   });
 });

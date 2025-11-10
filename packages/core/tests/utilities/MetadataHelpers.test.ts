@@ -35,14 +35,15 @@ describe("MetadataHelpers", () => {
       expect(result).toEqual(["tags", "links"]);
     });
 
-    it("should find references without brackets", () => {
+    it("should NOT find plain text references (wiki-links only)", () => {
       const metadata = {
         path: "folder/MyFile",
         reference: "MyFile",
       };
       const result = MetadataHelpers.findAllReferencingProperties(metadata, "MyFile.md");
 
-      expect(result).toEqual(["path", "reference"]);
+      // Plain text without [[ ]] should NOT create relations
+      expect(result).toEqual([]);
     });
 
     it("should handle .md extension in filename", () => {
@@ -110,25 +111,83 @@ describe("MetadataHelpers", () => {
   });
 
   describe("containsReference", () => {
-    it("should find wikilink reference", () => {
-      const result = MetadataHelpers.containsReference("[[MyFile]]", "MyFile.md");
+    describe("wiki-link matching", () => {
+      it("should find wikilink reference [[Page]]", () => {
+        const result = MetadataHelpers.containsReference("[[MyFile]]", "MyFile.md");
 
-      expect(result).toBe(true);
+        expect(result).toBe(true);
+      });
+
+      it("should find wikilink with alias [[Page|Alias]]", () => {
+        const result = MetadataHelpers.containsReference("[[MyFile|Alias Text]]", "MyFile.md");
+
+        expect(result).toBe(true);
+      });
+
+      it("should find wikilink with path [[folder/Page]]", () => {
+        const result = MetadataHelpers.containsReference("[[folder/MyFile]]", "MyFile.md");
+
+        expect(result).toBe(true);
+      });
+
+      it("should find wikilink with nested path [[a/b/Page]]", () => {
+        const result = MetadataHelpers.containsReference("[[a/b/MyFile]]", "MyFile.md");
+
+        expect(result).toBe(true);
+      });
+
+      it("should find reference in longer string", () => {
+        const result = MetadataHelpers.containsReference(
+          "See [[MyFile]] for details",
+          "MyFile.md"
+        );
+
+        expect(result).toBe(true);
+      });
+
+      it("should find multiple wikilinks in string", () => {
+        const result = MetadataHelpers.containsReference(
+          "See [[OtherFile]] and [[MyFile]] for info",
+          "MyFile.md"
+        );
+
+        expect(result).toBe(true);
+      });
     });
 
-    it("should find plain text reference", () => {
-      const result = MetadataHelpers.containsReference("MyFile", "MyFile.md");
+    describe("plain text NOT matching (wiki-links only)", () => {
+      it("should NOT find plain text reference", () => {
+        const result = MetadataHelpers.containsReference("MyFile", "MyFile.md");
 
-      expect(result).toBe(true);
-    });
+        expect(result).toBe(false);
+      });
 
-    it("should find reference in longer string", () => {
-      const result = MetadataHelpers.containsReference(
-        "See [[MyFile]] for details",
-        "MyFile.md"
-      );
+      it("should NOT find plain text in sentence", () => {
+        const result = MetadataHelpers.containsReference(
+          "This mentions MyFile in plain text",
+          "MyFile.md"
+        );
 
-      expect(result).toBe(true);
+        expect(result).toBe(false);
+      });
+
+      it("should NOT find plain text with path", () => {
+        const result = MetadataHelpers.containsReference("folder/MyFile", "MyFile.md");
+
+        expect(result).toBe(false);
+      });
+
+      it("should NOT find partial match", () => {
+        const result = MetadataHelpers.containsReference("[[MyFileExtended]]", "MyFile.md");
+
+        expect(result).toBe(false);
+      });
+
+      it("should NOT find mismatched wikilink", () => {
+        const result = MetadataHelpers.containsReference("[[OtherFile]]", "MyFile.md");
+
+        expect(result).toBe(false);
+      });
     });
 
     it("should find reference in array", () => {
