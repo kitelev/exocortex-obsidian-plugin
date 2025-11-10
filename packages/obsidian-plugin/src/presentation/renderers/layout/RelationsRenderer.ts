@@ -112,6 +112,8 @@ export class RelationsRenderer {
     el: HTMLElement,
     relations: AssetRelation[],
     config: UniversalLayoutConfig,
+    renderHeader?: (container: HTMLElement, sectionId: string, title: string) => void,
+    isCollapsed?: boolean,
   ): Promise<void> {
     if (relations.length === 0) {
       return;
@@ -119,8 +121,26 @@ export class RelationsRenderer {
 
     const container = el.createDiv({ cls: "exocortex-assets-relations" });
 
+    // Render collapsible header if function provided
+    if (renderHeader) {
+      renderHeader(container, "relations", "Asset Relations");
+    }
+
+    // Create content container
+    const contentContainer = container.createDiv({
+      cls: "exocortex-section-content",
+      attr: {
+        "data-collapsed": (isCollapsed || false).toString(),
+      },
+    });
+
+    // Only render content if not collapsed
+    if (isCollapsed) {
+      return;
+    }
+
     this.reactRenderer.render(
-      container,
+      contentContainer,
       React.createElement(AssetRelationsTableWithToggle, {
         relations,
         groupByProperty: true,

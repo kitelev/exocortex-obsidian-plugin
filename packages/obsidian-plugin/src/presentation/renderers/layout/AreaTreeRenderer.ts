@@ -24,6 +24,8 @@ export class AreaTreeRenderer {
     el: HTMLElement,
     file: TFile,
     relations: AssetRelation[],
+    renderHeader?: (container: HTMLElement, sectionId: string, title: string) => void,
+    isCollapsed?: boolean,
   ): Promise<void> {
     const metadata = this.metadataExtractor.extractMetadata(file);
     const instanceClass = this.metadataService.extractInstanceClass(metadata);
@@ -43,12 +45,30 @@ export class AreaTreeRenderer {
       cls: "exocortex-area-tree-section",
     });
 
-    sectionContainer.createEl("h3", {
-      text: "Area tree",
-      cls: "exocortex-section-header",
+    // Render collapsible header if function provided
+    if (renderHeader) {
+      renderHeader(sectionContainer, "area-tree", "Area tree");
+    } else {
+      sectionContainer.createEl("h3", {
+        text: "Area tree",
+        cls: "exocortex-section-header",
+      });
+    }
+
+    // Create content container
+    const contentContainer = sectionContainer.createDiv({
+      cls: "exocortex-section-content",
+      attr: {
+        "data-collapsed": (isCollapsed || false).toString(),
+      },
     });
 
-    const treeContainer = sectionContainer.createDiv({
+    // Only render content if not collapsed
+    if (isCollapsed) {
+      return;
+    }
+
+    const treeContainer = contentContainer.createDiv({
       cls: "exocortex-area-tree-container",
     });
 

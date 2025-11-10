@@ -46,7 +46,12 @@ export class DailyTasksRenderer {
     this.metadataService = metadataService;
   }
 
-  public async render(el: HTMLElement, file: TFile): Promise<void> {
+  public async render(
+    el: HTMLElement,
+    file: TFile,
+    renderHeader?: (container: HTMLElement, sectionId: string, title: string) => void,
+    isCollapsed?: boolean,
+  ): Promise<void> {
     const dailyNoteInfo = DailyNoteHelpers.extractDailyNoteInfo(
       file,
       this.metadataExtractor,
@@ -69,13 +74,31 @@ export class DailyTasksRenderer {
       cls: "exocortex-daily-tasks-section",
     });
 
-    sectionContainer.createEl("h3", {
-      text: "Tasks",
-      cls: "exocortex-section-header",
+    // Render collapsible header if function provided
+    if (renderHeader) {
+      renderHeader(sectionContainer, "daily-tasks", "Tasks");
+    } else {
+      sectionContainer.createEl("h3", {
+        text: "Tasks",
+        cls: "exocortex-section-header",
+      });
+    }
+
+    // Create content container
+    const contentContainer = sectionContainer.createDiv({
+      cls: "exocortex-section-content",
+      attr: {
+        "data-collapsed": (isCollapsed || false).toString(),
+      },
     });
 
+    // Only render content if not collapsed
+    if (isCollapsed) {
+      return;
+    }
+
     if (this.settings.activeFocusArea) {
-      const indicatorContainer = sectionContainer.createDiv({
+      const indicatorContainer = contentContainer.createDiv({
         cls: "exocortex-active-focus-indicator",
       });
       indicatorContainer.style.cssText = `
@@ -90,7 +113,7 @@ export class DailyTasksRenderer {
       });
     }
 
-    const tableContainer = sectionContainer.createDiv({
+    const tableContainer = contentContainer.createDiv({
       cls: "exocortex-daily-tasks-table-container",
     });
 

@@ -51,6 +51,19 @@ export class UniversalLayoutRenderer {
   private areaTreeRenderer: AreaTreeRenderer;
   private relationsRenderer: RelationsRenderer;
 
+  /**
+   * Collapse state for layout sections
+   * Key: section ID, Value: collapsed state (true = collapsed, false = expanded)
+   */
+  private collapsedSections: Map<string, boolean> = new Map([
+    ["properties", false],
+    ["buttons", false],
+    ["daily-tasks", false],
+    ["daily-projects", false],
+    ["area-tree", false],
+    ["relations", false],
+  ]);
+
   private taskCreationService: TaskCreationService;
   private projectCreationService: ProjectCreationService;
   private areaCreationService: AreaCreationService;
@@ -171,6 +184,77 @@ export class UniversalLayoutRenderer {
   }
 
   /**
+   * Toggle the collapsed state of a section
+   */
+  private toggleSection(sectionId: string, container: HTMLElement): void {
+    const currentState = this.collapsedSections.get(sectionId) || false;
+    this.collapsedSections.set(sectionId, !currentState);
+
+    const contentElement = container.querySelector(
+      ".exocortex-section-content",
+    ) as HTMLElement;
+    const toggleButton = container.querySelector(
+      ".exocortex-section-toggle",
+    ) as HTMLElement;
+
+    if (contentElement && toggleButton) {
+      const newState = !currentState;
+      contentElement.setAttribute("data-collapsed", newState.toString());
+      toggleButton.textContent = newState ? "▶" : "▼";
+      toggleButton.setAttribute("aria-expanded", (!newState).toString());
+      toggleButton.setAttribute(
+        "aria-label",
+        `${newState ? "Expand" : "Collapse"} section`,
+      );
+    }
+  }
+
+  /**
+   * Check if a section is collapsed
+   */
+  private isSectionCollapsed(sectionId: string): boolean {
+    return this.collapsedSections.get(sectionId) || false;
+  }
+
+  /**
+   * Render a collapsible section header with toggle button
+   */
+  private renderSectionHeader(
+    container: HTMLElement,
+    sectionId: string,
+    title: string,
+  ): void {
+    const isCollapsed = this.isSectionCollapsed(sectionId);
+
+    const header = container.createDiv({ cls: "exocortex-section-header" });
+
+    const toggleButton = header.createEl("button", {
+      cls: "exocortex-section-toggle",
+      attr: {
+        "aria-expanded": (!isCollapsed).toString(),
+        "aria-label": `${isCollapsed ? "Expand" : "Collapse"} ${title}`,
+        type: "button",
+      },
+    });
+    toggleButton.textContent = isCollapsed ? "▶" : "▼";
+
+    this.eventListenerManager.register(toggleButton, "click", (e: Event) => {
+      e.stopPropagation();
+      this.toggleSection(sectionId, container);
+    });
+
+    this.eventListenerManager.register(toggleButton, "keydown", (e: Event) => {
+      const keyboardEvent = e as KeyboardEvent;
+      if (keyboardEvent.key === " " || keyboardEvent.key === "Enter") {
+        e.preventDefault();
+        this.toggleSection(sectionId, container);
+      }
+    });
+
+    header.createEl("h3", { text: title });
+  }
+
+  /**
    * Render the UniversalLayout view with Asset Properties and Assets Relations
    */
   public async render(
@@ -196,9 +280,13 @@ export class UniversalLayoutRenderer {
       const hasRelations = backlinks && backlinks.size > 0;
 
       if (this.settings.showPropertiesSection) {
-        await this.propertiesRenderer.render(el, currentFile, {
-          hideAliases: hasRelations,
-        });
+        await this.propertiesRenderer.render(
+          el,
+          currentFile,
+          { hideAliases: hasRelations },
+          this.renderSectionHeader.bind(this),
+          this.isSectionCollapsed("properties"),
+        );
       }
 
       const buttonGroups = await this.buttonGroupsBuilder.build(currentFile);
@@ -212,16 +300,38 @@ export class UniversalLayoutRenderer {
         );
       }
 
-      await this.dailyTasksRenderer.render(el, currentFile);
-      await this.dailyProjectsRenderer.render(el, currentFile);
+      await this.dailyTasksRenderer.render(
+        el,
+        currentFile,
+        this.renderSectionHeader.bind(this),
+        this.isSectionCollapsed("daily-tasks"),
+      );
+      await this.dailyProjectsRenderer.render(
+        el,
+        currentFile,
+        this.renderSectionHeader.bind(this),
+        this.isSectionCollapsed("daily-projects"),
+      );
 
       const relations = await this.relationsRenderer.getAssetRelations(
         currentFile,
         config,
       );
 
-      await this.areaTreeRenderer.render(el, currentFile, relations);
-      await this.relationsRenderer.render(el, relations, config);
+      await this.areaTreeRenderer.render(
+        el,
+        currentFile,
+        relations,
+        this.renderSectionHeader.bind(this),
+        this.isSectionCollapsed("area-tree"),
+      );
+      await this.relationsRenderer.render(
+        el,
+        relations,
+        config,
+        this.renderSectionHeader.bind(this),
+        this.isSectionCollapsed("relations"),
+      );
 
       this.logger.info(
         `Rendered UniversalLayout with properties and ${relations.length} asset relations`,

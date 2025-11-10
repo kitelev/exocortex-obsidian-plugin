@@ -1726,14 +1726,15 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      // Verify Tasks section header is present
-      const tasksHeader = container.querySelector(".exocortex-section-header");
-      expect(tasksHeader?.textContent).toBe("Tasks");
-
       // Verify Tasks table is present
       const tasksSection = container.querySelector(
         ".exocortex-daily-tasks-section",
       );
+
+      // Verify Tasks section header is present
+      const tasksHeader = tasksSection?.querySelector(".exocortex-section-header");
+      const headerH3 = tasksHeader?.querySelector("h3");
+      expect(headerH3?.textContent).toBe("Tasks");
       expect(tasksSection).toBeTruthy();
 
       const tasksTable = tasksSection?.querySelector(".exocortex-tasks-table");
@@ -1917,12 +1918,13 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify Tasks section rendered
-      const tasksHeader = container.querySelector(".exocortex-section-header");
-      expect(tasksHeader?.textContent).toBe("Tasks");
-
       const tasksSection = container.querySelector(
         ".exocortex-daily-tasks-section",
       );
+
+      const tasksHeader = tasksSection?.querySelector(".exocortex-section-header");
+      const headerH3 = tasksHeader?.querySelector("h3");
+      expect(headerH3?.textContent).toBe("Tasks");
       expect(tasksSection).toBeTruthy();
 
       const tasksTable = tasksSection?.querySelector(".exocortex-tasks-table");

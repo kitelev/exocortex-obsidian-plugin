@@ -46,7 +46,12 @@ export class DailyProjectsRenderer {
     this.getAssetLabelCallback = getAssetLabel;
   }
 
-  public async render(el: HTMLElement, file: TFile): Promise<void> {
+  public async render(
+    el: HTMLElement,
+    file: TFile,
+    renderHeader?: (container: HTMLElement, sectionId: string, title: string) => void,
+    isCollapsed?: boolean,
+  ): Promise<void> {
     const metadata = this.metadataExtractor.extractMetadata(file);
     const instanceClass = this.metadataExtractor.extractInstanceClass(metadata);
 
@@ -86,12 +91,30 @@ export class DailyProjectsRenderer {
       cls: "exocortex-daily-projects-section",
     });
 
-    sectionContainer.createEl("h3", {
-      text: "Projects",
-      cls: "exocortex-section-header",
+    // Render collapsible header if function provided
+    if (renderHeader) {
+      renderHeader(sectionContainer, "daily-projects", "Projects");
+    } else {
+      sectionContainer.createEl("h3", {
+        text: "Projects",
+        cls: "exocortex-section-header",
+      });
+    }
+
+    // Create content container
+    const contentContainer = sectionContainer.createDiv({
+      cls: "exocortex-section-content",
+      attr: {
+        "data-collapsed": (isCollapsed || false).toString(),
+      },
     });
 
-    const tableContainer = sectionContainer.createDiv({
+    // Only render content if not collapsed
+    if (isCollapsed) {
+      return;
+    }
+
+    const tableContainer = contentContainer.createDiv({
       cls: "exocortex-daily-projects-table-container",
     });
 

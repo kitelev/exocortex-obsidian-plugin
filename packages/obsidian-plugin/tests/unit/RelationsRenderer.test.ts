@@ -1006,7 +1006,8 @@ describe("RelationsRenderer", () => {
 
       await renderer.render(mockElement, relations, {});
 
-      expect(mockElement.createDiv).toHaveBeenCalledTimes(1);
+      // createDiv is called twice: once for main container, once for content container
+      expect(mockElement.createDiv).toHaveBeenCalledTimes(2);
       expect(React.createElement).toHaveBeenCalledTimes(1);
       expect(mockReactRenderer.render).toHaveBeenCalledTimes(1);
     });
@@ -1026,12 +1027,18 @@ describe("RelationsRenderer", () => {
     it("should call reactRenderer.render with container and component", async () => {
       const relations = [createMockAssetRelation()];
       const mockContainer = document.createElement("div");
+      const mockContentContainer = document.createElement("div");
+
+      // Mock createDiv to return content container
+      const createDivMock = jest.fn().mockReturnValue(mockContentContainer);
+      (mockContainer as any).createDiv = createDivMock;
+
       mockElement.createDiv.mockReturnValue(mockContainer);
 
       await renderer.render(mockElement, relations, {});
 
       expect(mockReactRenderer.render).toHaveBeenCalledWith(
-        mockContainer,
+        mockContentContainer,
         expect.anything(),
       );
     });

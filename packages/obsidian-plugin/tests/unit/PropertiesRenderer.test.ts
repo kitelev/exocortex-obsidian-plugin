@@ -225,12 +225,20 @@ describe("PropertiesRenderer", () => {
 
       const mockContainer = document.createElement("div");
       mockContainer.className = "exocortex-properties-section";
+
+      const mockContentContainer = document.createElement("div");
+      mockContentContainer.className = "exocortex-section-content";
+
+      // Mock createDiv to return the content container
+      const createDivMock = jest.fn().mockReturnValue(mockContentContainer);
+      (mockContainer as any).createDiv = createDivMock;
+
       mockElement.createDiv.mockReturnValue(mockContainer);
 
       await renderer.render(mockElement, mockFile);
 
       expect(mockReactRenderer.render).toHaveBeenCalledWith(
-        mockContainer,
+        mockContentContainer,
         expect.anything()
       );
     });
