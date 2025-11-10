@@ -138,6 +138,7 @@ const baseConfig = {
     ...builtins,
   ],
   format: "cjs",
+  platform: "browser", // Browser platform for proper module resolution
   target: "es2020", // Updated to es2020 for better optimization
   logLevel: isDev ? "info" : "warning",
   treeShaking: true,
