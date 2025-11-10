@@ -149,6 +149,14 @@ export function canCreateProject(context: CommandVisibilityContext): boolean {
 }
 
 /**
+ * Can execute "Create Event" command
+ * Available for: ems__Area and ems__Project assets
+ */
+export function canCreateEvent(context: CommandVisibilityContext): boolean {
+  return isAreaOrProject(context.instanceClass);
+}
+
+/**
  * Can execute "Create Child Area" command
  * Available for: ems__Area assets only
  */
@@ -158,12 +166,13 @@ export function canCreateChildArea(context: CommandVisibilityContext): boolean {
 
 /**
  * Can execute "Create Instance" command
- * Available for: ems__TaskPrototype and ems__MeetingPrototype assets
+ * Available for: ems__TaskPrototype, ems__MeetingPrototype, and exo__EventPrototype assets
  */
 export function canCreateInstance(context: CommandVisibilityContext): boolean {
   return (
     hasClass(context.instanceClass, AssetClass.TASK_PROTOTYPE) ||
-    hasClass(context.instanceClass, AssetClass.MEETING_PROTOTYPE)
+    hasClass(context.instanceClass, AssetClass.MEETING_PROTOTYPE) ||
+    hasClass(context.instanceClass, AssetClass.EVENT_PROTOTYPE)
   );
 }
 

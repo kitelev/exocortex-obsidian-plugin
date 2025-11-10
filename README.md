@@ -109,7 +109,7 @@ All commands accessible via Command Palette (Cmd/Ctrl+P → "Exocortex:"). Comma
 |---------|---------------|---------|---------------------|
 | **Create Task** | ems__Area, ems__Project | ems__Task | Parent reference, area, prototype |
 | **Create Project** | ems__Area, ems__Initiative, ems__Project | ems__Project | Area, initiative reference |
-| **Create Instance** | ems__TaskPrototype, ems__MeetingPrototype | ems__Task or ems__Meeting | Prototype template content |
+| **Create Instance** | ems__TaskPrototype, ems__MeetingPrototype, exo__EventPrototype | ems__Task, ems__Meeting, or exo__Event | Prototype template content |
 | **Create Related Task** | ems__Project | ems__Task with project parent | Parent project, area |
 | **Create Area** | ems__Area | Child ems__Area | Parent area reference |
 
@@ -502,6 +502,8 @@ Understanding the class hierarchy:
 | **ems__Initiative** | High-level initiative | Similar to Project |
 | **ems__TaskPrototype** | Task template | Used for instance creation |
 | **ems__MeetingPrototype** | Meeting template | Used for instance creation |
+| **exo__EventPrototype** | Event template | Used for instance creation |
+| **exo__Event** | Event instance | ems__Effort_status, ems__Effort_prototype |
 | **pn__DailyNote** | Daily planning note | pn__DailyNote_day |
 | **ztlk__FleetingNote** | Supervision/fleeting note | Created in 01 Inbox |
 
