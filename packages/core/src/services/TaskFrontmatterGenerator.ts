@@ -10,6 +10,7 @@ const EFFORT_PROPERTY_MAP: Record<string, string> = {
   [AssetClass.PROJECT]: "ems__Effort_parent",
   [AssetClass.TASK_PROTOTYPE]: "ems__Effort_prototype",
   [AssetClass.MEETING_PROTOTYPE]: "ems__Effort_prototype",
+  [AssetClass.EVENT_PROTOTYPE]: "ems__Effort_prototype",
 };
 
 const INSTANCE_CLASS_MAP: Record<string, string> = {
@@ -17,6 +18,7 @@ const INSTANCE_CLASS_MAP: Record<string, string> = {
   [AssetClass.PROJECT]: AssetClass.TASK,
   [AssetClass.TASK_PROTOTYPE]: AssetClass.TASK,
   [AssetClass.MEETING_PROTOTYPE]: AssetClass.MEETING,
+  [AssetClass.EVENT_PROTOTYPE]: AssetClass.EVENT,
 };
 
 export class TaskFrontmatterGenerator {
