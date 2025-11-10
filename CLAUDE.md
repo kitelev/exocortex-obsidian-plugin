@@ -878,7 +878,7 @@ if (file instanceof TFile) {
 
 **When to use**:
 - Looking up parent/child relationships (e.g., `ems__Effort_parent`)
-- Resolving prototype references (e.g., `ems__Effort_prototype`)
+- Resolving prototype references (e.g., `exo__Asset_prototype`)
 - Following any property that contains wiki-links to other notes
 - Any file lookup based on frontmatter property values
 

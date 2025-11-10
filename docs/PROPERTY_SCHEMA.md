@@ -339,7 +339,7 @@ ems__Effort_parent: "[[Q4 Goals]]"
 
 ---
 
-### ems__Effort_prototype
+### exo__Asset_prototype
 
 **Prototype template reference (for instances)**
 
@@ -355,7 +355,7 @@ ems__Effort_parent: "[[Q4 Goals]]"
 
 **Example**:
 ```yaml
-ems__Effort_prototype: "[[Breakfast]]"
+exo__Asset_prototype: "[[Breakfast]]"
 ```
 
 ---
@@ -724,8 +724,8 @@ exo__Asset_isDefinedBy: "[[Ontology/EMS]]"
 |--------------|----------------|-------|
 | `ems__Area` | `ems__Effort_area` | `"[[{area-name}]]"` |
 | `ems__Project` | `ems__Effort_parent` | `"[[{project-name}]]"` |
-| `ems__TaskPrototype` | `ems__Effort_prototype` | `"[[{prototype-name}]]"` |
-| `ems__MeetingPrototype` | `ems__Effort_prototype` | `"[[{prototype-name}]]"` |
+| `ems__TaskPrototype` | `exo__Asset_prototype` | `"[[{prototype-name}]]"` |
+| `ems__MeetingPrototype` | `exo__Asset_prototype` | `"[[{prototype-name}]]"` |
 | `ems__Initiative` | `ems__Effort_parent` | `"[[{initiative-name}]]"` |
 
 **INSTANCE_CLASS_MAP** (determines child type):
@@ -913,7 +913,7 @@ exo__Asset_isDefinedBy: "[[Ontology/EMS]]"
 exo__Instance_class:
   - "[[ems__Task]]"
 ems__Effort_status: "[[ems__EffortStatusDraft]]"
-ems__Effort_prototype: "[[Breakfast]]"
+exo__Asset_prototype: "[[Breakfast]]"
 ems__Task_size: S
 aliases:
   - 2025-10-26 Breakfast

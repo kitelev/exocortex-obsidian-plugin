@@ -25,7 +25,7 @@ export class AssetMetadataService {
       return label;
     }
 
-    const prototypeRef = metadata.ems__Effort_prototype;
+    const prototypeRef = metadata.exo__Asset_prototype;
     if (prototypeRef) {
       const prototypePath =
         typeof prototypeRef === "string"
@@ -118,7 +118,7 @@ export class AssetMetadataService {
       }
     }
 
-    const prototypeRef = metadata.ems__Effort_prototype;
+    const prototypeRef = metadata.exo__Asset_prototype;
     const prototypePath = this.extractFirstValue(prototypeRef);
 
     if (prototypePath && !visited.has(prototypePath)) {

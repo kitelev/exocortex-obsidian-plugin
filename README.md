@@ -193,7 +193,7 @@ Complete lifecycle tracking for tasks and projects:
 | `ems__Effort_votes` | Integer | "Vote on Effort" command | Vote counter for prioritization |
 | `ems__Effort_parent` | Wiki-link | Task creation | Parent project/effort reference |
 | `ems__Effort_area` | Wiki-link | Task creation | Organizational area reference |
-| `ems__Effort_prototype` | Wiki-link | Instance creation | Template prototype reference |
+| `exo__Asset_prototype` | Wiki-link | Instance creation | Template prototype reference |
 
 **Status Values** (ems__EffortStatus* enum):
 

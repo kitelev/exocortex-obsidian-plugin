@@ -98,7 +98,7 @@ generateTaskFrontmatter(
   ems__Effort_status: '"[[ems__EffortStatusDraft]]"',
   ems__Effort_area: '"[[{sourceName}]]"',  // If sourceClass is Area
   ems__Effort_parent: '"[[{sourceName}]]"',  // If sourceClass is Project
-  ems__Effort_prototype: '"[[{sourceName}]]"',  // If sourceClass is Prototype
+  exo__Asset_prototype: '"[[{sourceName}]]"',  // If sourceClass is Prototype
   ems__Task_size: taskSize || undefined,
   aliases: [label]
 }

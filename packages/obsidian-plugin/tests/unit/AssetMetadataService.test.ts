@@ -47,7 +47,7 @@ describe("AssetMetadataService", () => {
       mockApp.metadataCache.getFileCache
         .mockReturnValueOnce({
           frontmatter: {
-            ems__Effort_prototype: "[[prototype-path]]",
+            exo__Asset_prototype: "[[prototype-path]]",
           },
         })
         .mockReturnValueOnce({
@@ -114,7 +114,7 @@ describe("AssetMetadataService", () => {
       });
 
       const metadata = {
-        ems__Effort_prototype: "[[prototype-path]]",
+        exo__Asset_prototype: "[[prototype-path]]",
       };
 
       const result = service.getEffortArea(metadata);
@@ -175,7 +175,7 @@ describe("AssetMetadataService", () => {
       });
 
       const metadata = {
-        ems__Effort_prototype: "[[prototype-path]]",
+        exo__Asset_prototype: "[[prototype-path]]",
         ems__Effort_parent: "[[parent-effort]]",
       };
 
@@ -219,7 +219,7 @@ describe("AssetMetadataService", () => {
       });
 
       const metadata = {
-        ems__Effort_prototype: "[[prototype-path]]",
+        exo__Asset_prototype: "[[prototype-path]]",
         ems__Effort_parent: "[[parent-effort]]",
       };
 
@@ -280,7 +280,7 @@ describe("AssetMetadataService", () => {
       });
 
       const metadata = {
-        ems__Effort_prototype: "[[prototype-effort]]",
+        exo__Asset_prototype: "[[prototype-effort]]",
       };
 
       const result = service.getEffortArea(metadata);

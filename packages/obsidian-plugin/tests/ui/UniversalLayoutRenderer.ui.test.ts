@@ -1486,7 +1486,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
   });
 
   describe("Prototype Label Fallback", () => {
-    it("should display prototype label when asset has ems__Effort_prototype", async () => {
+    it("should display prototype label when asset has exo__Asset_prototype", async () => {
       const currentFile = new TFile("current.md");
 
       const taskFile = new TFile("tasks/Task-123.md");
@@ -1509,7 +1509,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
             return {
               frontmatter: {
                 exo__Instance_class: "ems__Task",
-                ems__Effort_prototype: "[[TaskPrototype]]",
+                exo__Asset_prototype: "[[TaskPrototype]]",
                 // No exo__Asset_label on task itself
               },
             };

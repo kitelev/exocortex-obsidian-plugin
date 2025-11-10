@@ -401,7 +401,7 @@ sequenceDiagram
 | `ems__Effort_status` | String | Task, Project, Meeting | Current status |
 | `ems__Effort_area` | String | Task | Parent area reference |
 | `ems__Effort_parent` | String | Task | Parent project reference |
-| `ems__Effort_prototype` | String | Task, Meeting | Prototype template |
+| `exo__Asset_prototype` | String | Task, Meeting | Prototype template |
 | `ems__Effort_votes` | Number | Task, Project | Priority vote count |
 | `ems__Effort_day` | String | Task, Project | Planned day (WikiLink) |
 | `ems__Effort_startTimestamp` | String | Task, Project | When started (→ Doing) |

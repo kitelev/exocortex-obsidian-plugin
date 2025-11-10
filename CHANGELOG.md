@@ -1263,14 +1263,14 @@ App is up to date.
 
 **Why this matters:**
 - **Human-Readable Names**: Properties now show meaningful labels like "Dinner" instead of cryptic UIDs
-- **Prototype Labels Work**: When an asset references a prototype via `ems__Effort_prototype`, the prototype's label is correctly displayed
+- **Prototype Labels Work**: When an asset references a prototype via `exo__Asset_prototype`, the prototype's label is correctly displayed
 - **Consistent Display**: All wiki-link properties now consistently show labels throughout the Properties table
 - **Better UX**: No more confusion about what UID-named files represent
 
 **What you see:**
 - **Before**: Property value shows `[[442f3928-9d64-46d7-ad8a-a054f7b7854c]]` (UID)
 - **After**: Property value shows `Dinner` (from `exo__Asset_label`)
-- **Applies to all properties**: Works for `ems__Effort_prototype` and any property that references assets by UID
+- **Applies to all properties**: Works for `exo__Asset_prototype` and any property that references assets by UID
 
 **Technical Details:**
 - Switched from `getAbstractFileByPath()` to `getFirstLinkpathDest()` for file resolution
@@ -1483,7 +1483,7 @@ When viewing a Project with multiple child Tasks:
 
 **Properties Label Display**: Fixed bug where `exo__Asset_label` was not displayed for wiki-links in Properties table when files were referenced without `.md` extension. Now all wiki-link formats (with or without extension) correctly display asset labels instead of filenames.
 
-- Prototype references (`ems__Effort_prototype`) now properly show label values
+- Prototype references (`exo__Asset_prototype`) now properly show label values
 - Consistent label display across all property links
 - Improved user experience with meaningful labels instead of technical filenames
 
@@ -1861,11 +1861,11 @@ When you have files with human-readable names like "Task-2025-10-15T14-30-45.md"
 
 ### Added
 
-- **Prototype Label Fallback**: When an asset doesn't have its own `exo__Asset_label` but has `ems__Effort_prototype` property pointing to a prototype with a label, the prototype's label will be used for display. This creates a template-based naming system where task instances automatically inherit display names from their prototypes. Example: A task without a label but linked to "Marketing Campaign Template" prototype will display as "Marketing Campaign Template" in all views. Asset's own label always takes priority over prototype label when both exist.
+- **Prototype Label Fallback**: When an asset doesn't have its own `exo__Asset_label` but has `exo__Asset_prototype` property pointing to a prototype with a label, the prototype's label will be used for display. This creates a template-based naming system where task instances automatically inherit display names from their prototypes. Example: A task without a label but linked to "Marketing Campaign Template" prototype will display as "Marketing Campaign Template" in all views. Asset's own label always takes priority over prototype label when both exist.
 
 ### Technical
 
-- Extended `getAssetLabel()` method to check `ems__Effort_prototype` when asset has no label
+- Extended `getAssetLabel()` method to check `exo__Asset_prototype` when asset has no label
 - Added prototype file lookup with wiki-link format handling (`[[path]]` → `path.md`)
 - Enriched relation metadata with resolved labels during `getAssetRelations()`
 - Added UI integration test for prototype label fallback scenario
@@ -2188,7 +2188,7 @@ When you have files with human-readable names like "Task-2025-10-15T14-30-45.md"
 
 - **Create Instance Button for Task Prototypes**: New "Create Instance" button for ems__TaskPrototype assets
   - Button appears in layout for TaskPrototype assets (below properties table)
-  - Creates new ems__Task instances linked via `ems__Effort_prototype` property
+  - Creates new ems__Task instances linked via `exo__Asset_prototype` property
   - Available in both UI button and Command Palette ("Exocortex: Create Instance")
   - Created task automatically opens in new tab with focus
   - Follows same pattern as existing "Create Task" functionality for Areas/Projects
@@ -2204,7 +2204,7 @@ When you have files with human-readable names like "Task-2025-10-15T14-30-45.md"
 
 ### Technical
 
-- Added `ems__TaskPrototype` → `ems__Effort_prototype` mapping to EFFORT_PROPERTY_MAP
+- Added `ems__TaskPrototype` → `exo__Asset_prototype` mapping to EFFORT_PROPERTY_MAP
 - Created CreateInstanceButton React component with visibility logic
 - Added `canCreateInstance()` function to CommandVisibility domain layer
 - Integrated button into UniversalLayoutRenderer (positioned after Create Task button)
