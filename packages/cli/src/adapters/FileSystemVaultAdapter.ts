@@ -147,6 +147,14 @@ export class FileSystemVaultAdapter implements IVaultAdapter {
     };
   }
 
+  async updateLinks(
+    _oldPath: string,
+    _newPath: string,
+    _oldBasename: string,
+  ): Promise<void> {
+    return Promise.resolve();
+  }
+
   private resolvePath(filePath: string): string {
     if (path.isAbsolute(filePath)) {
       return filePath;

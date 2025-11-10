@@ -29,6 +29,8 @@ export class RenameToUidService {
       ? `${folderPath}/${targetBasename}.md`
       : `${targetBasename}.md`;
 
+    await this.vault.updateLinks(file.path, newPath, currentBasename);
+
     await this.vault.rename(file, newPath);
   }
 

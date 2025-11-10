@@ -774,4 +774,250 @@ describe("ObsidianVaultAdapter", () => {
       expect(result).toEqual(specialFrontmatter);
     });
   });
+
+  describe("updateLinks", () => {
+    beforeEach(() => {
+      mockApp.metadataCache = {
+        ...mockMetadataCache,
+        resolvedLinks: {},
+      } as any;
+    });
+
+    it("should update simple wikilinks with alias", async () => {
+      const sourceFile = Object.create(TFile.prototype);
+      Object.assign(sourceFile, {
+        path: "source.md",
+        basename: "source",
+        name: "source.md",
+        parent: null,
+      });
+
+      mockApp.metadataCache.resolvedLinks = {
+        "source.md": {
+          "old/asset1.md": 1,
+        },
+      };
+
+      mockVault.getAbstractFileByPath.mockReturnValue(sourceFile);
+      mockVault.read.mockResolvedValue("Content with [[asset1]] link");
+
+      await adapter.updateLinks("old/asset1.md", "new/uid-123.md", "asset1");
+
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        sourceFile,
+        "Content with [[uid-123|asset1]] link"
+      );
+    });
+
+    it("should update heading links with alias", async () => {
+      const sourceFile = Object.create(TFile.prototype);
+      Object.assign(sourceFile, {
+        path: "source.md",
+        basename: "source",
+        name: "source.md",
+        parent: null,
+      });
+
+      mockApp.metadataCache.resolvedLinks = {
+        "source.md": {
+          "asset1.md": 1,
+        },
+      };
+
+      mockVault.getAbstractFileByPath.mockReturnValue(sourceFile);
+      mockVault.read.mockResolvedValue("Link to [[asset1#section]]");
+
+      await adapter.updateLinks("asset1.md", "uid-123.md", "asset1");
+
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        sourceFile,
+        "Link to [[uid-123#section|asset1]]"
+      );
+    });
+
+    it("should update block links with alias", async () => {
+      const sourceFile = Object.create(TFile.prototype);
+      Object.assign(sourceFile, {
+        path: "source.md",
+        basename: "source",
+        name: "source.md",
+        parent: null,
+      });
+
+      mockApp.metadataCache.resolvedLinks = {
+        "source.md": {
+          "asset1.md": 1,
+        },
+      };
+
+      mockVault.getAbstractFileByPath.mockReturnValue(sourceFile);
+      mockVault.read.mockResolvedValue("Link to [[asset1^block-id]]");
+
+      await adapter.updateLinks("asset1.md", "uid-123.md", "asset1");
+
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        sourceFile,
+        "Link to [[uid-123^block-id|asset1]]"
+      );
+    });
+
+    it("should preserve custom aliases", async () => {
+      const sourceFile = Object.create(TFile.prototype);
+      Object.assign(sourceFile, {
+        path: "source.md",
+        basename: "source",
+        name: "source.md",
+        parent: null,
+      });
+
+      mockApp.metadataCache.resolvedLinks = {
+        "source.md": {
+          "asset1.md": 1,
+        },
+      };
+
+      mockVault.getAbstractFileByPath.mockReturnValue(sourceFile);
+      mockVault.read.mockResolvedValue(
+        "Links: [[asset1|Custom Alias]] and [[asset1#section|Another Alias]]"
+      );
+
+      await adapter.updateLinks("asset1.md", "uid-123.md", "asset1");
+
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        sourceFile,
+        "Links: [[uid-123|Custom Alias]] and [[uid-123#section|Another Alias]]"
+      );
+    });
+
+    it("should update multiple files with links", async () => {
+      const source1 = Object.create(TFile.prototype);
+      Object.assign(source1, {
+        path: "source1.md",
+        basename: "source1",
+        name: "source1.md",
+        parent: null,
+      });
+
+      const source2 = Object.create(TFile.prototype);
+      Object.assign(source2, {
+        path: "source2.md",
+        basename: "source2",
+        name: "source2.md",
+        parent: null,
+      });
+
+      mockApp.metadataCache.resolvedLinks = {
+        "source1.md": {
+          "asset1.md": 1,
+        },
+        "source2.md": {
+          "asset1.md": 2,
+        },
+      };
+
+      mockVault.getAbstractFileByPath
+        .mockReturnValueOnce(source1)
+        .mockReturnValueOnce(source2);
+      mockVault.read
+        .mockResolvedValueOnce("Link in file 1: [[asset1]]")
+        .mockResolvedValueOnce("Link in file 2: [[asset1]]");
+
+      await adapter.updateLinks("asset1.md", "uid-123.md", "asset1");
+
+      expect(mockVault.modify).toHaveBeenCalledTimes(2);
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        source1,
+        "Link in file 1: [[uid-123|asset1]]"
+      );
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        source2,
+        "Link in file 2: [[uid-123|asset1]]"
+      );
+    });
+
+    it("should handle no files with links", async () => {
+      mockApp.metadataCache.resolvedLinks = {};
+
+      await adapter.updateLinks("asset1.md", "uid-123.md", "asset1");
+
+      expect(mockVault.getAbstractFileByPath).not.toHaveBeenCalled();
+      expect(mockVault.read).not.toHaveBeenCalled();
+      expect(mockVault.modify).not.toHaveBeenCalled();
+    });
+
+    it("should skip non-TFile entries", async () => {
+      mockApp.metadataCache.resolvedLinks = {
+        "folder": {
+          "asset1.md": 1,
+        },
+      };
+
+      mockVault.getAbstractFileByPath.mockReturnValue(mockTFolder);
+
+      await adapter.updateLinks("asset1.md", "uid-123.md", "asset1");
+
+      expect(mockVault.read).not.toHaveBeenCalled();
+      expect(mockVault.modify).not.toHaveBeenCalled();
+    });
+
+    it("should handle special characters in basename", async () => {
+      const sourceFile = Object.create(TFile.prototype);
+      Object.assign(sourceFile, {
+        path: "source.md",
+        basename: "source",
+        name: "source.md",
+        parent: null,
+      });
+
+      mockApp.metadataCache.resolvedLinks = {
+        "source.md": {
+          "asset (with) [special].md": 1,
+        },
+      };
+
+      mockVault.getAbstractFileByPath.mockReturnValue(sourceFile);
+      mockVault.read.mockResolvedValue(
+        "Link to [[asset (with) [special]]]"
+      );
+
+      await adapter.updateLinks(
+        "asset (with) [special].md",
+        "uid-123.md",
+        "asset (with) [special]"
+      );
+
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        sourceFile,
+        "Link to [[uid-123|asset (with) [special]]]"
+      );
+    });
+
+    it("should update multiple links in same file", async () => {
+      const sourceFile = Object.create(TFile.prototype);
+      Object.assign(sourceFile, {
+        path: "source.md",
+        basename: "source",
+        name: "source.md",
+        parent: null,
+      });
+
+      mockApp.metadataCache.resolvedLinks = {
+        "source.md": {
+          "asset1.md": 3,
+        },
+      };
+
+      mockVault.getAbstractFileByPath.mockReturnValue(sourceFile);
+      mockVault.read.mockResolvedValue(
+        "Links: [[asset1]], [[asset1#heading]], [[asset1|Custom]]"
+      );
+
+      await adapter.updateLinks("asset1.md", "uid-123.md", "asset1");
+
+      expect(mockVault.modify).toHaveBeenCalledWith(
+        sourceFile,
+        "Links: [[uid-123|asset1]], [[uid-123#heading|asset1]], [[uid-123|Custom]]"
+      );
+    });
+  });
 });

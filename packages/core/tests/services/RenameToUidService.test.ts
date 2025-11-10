@@ -10,6 +10,7 @@ describe("RenameToUidService", () => {
     mockVault = {
       rename: jest.fn(),
       process: jest.fn().mockResolvedValue(""),
+      updateLinks: jest.fn(),
     } as any;
 
     mockFile = {
@@ -195,6 +196,113 @@ describe("RenameToUidService", () => {
       await service.renameToUid(mockFile, metadata);
 
       expect(mockVault.process).toHaveBeenCalled();
+    });
+  });
+
+  describe("updateLinks integration", () => {
+    it("should call updateLinks before rename", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+        exo__Asset_label: "Existing Label",
+      };
+
+      const callOrder: string[] = [];
+      mockVault.updateLinks.mockImplementation(async () => {
+        callOrder.push("updateLinks");
+      });
+      mockVault.rename.mockImplementation(async () => {
+        callOrder.push("rename");
+      });
+
+      await service.renameToUid(mockFile, metadata);
+
+      expect(callOrder).toEqual(["updateLinks", "rename"]);
+    });
+
+    it("should call updateLinks with correct parameters", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+        exo__Asset_label: "Existing Label",
+      };
+
+      await service.renameToUid(mockFile, metadata);
+
+      expect(mockVault.updateLinks).toHaveBeenCalledWith(
+        "/folder/old-name.md",
+        "/folder/asset-123.md",
+        "old-name"
+      );
+      expect(mockVault.rename).toHaveBeenCalledWith(mockFile, "/folder/asset-123.md");
+    });
+
+    it("should call updateLinks when label is updated", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+      };
+
+      const callOrder: string[] = [];
+      mockVault.process.mockImplementation(async () => {
+        callOrder.push("process");
+        return "";
+      });
+      mockVault.updateLinks.mockImplementation(async () => {
+        callOrder.push("updateLinks");
+      });
+      mockVault.rename.mockImplementation(async () => {
+        callOrder.push("rename");
+      });
+
+      await service.renameToUid(mockFile, metadata);
+
+      expect(callOrder).toEqual(["process", "updateLinks", "rename"]);
+      expect(mockVault.updateLinks).toHaveBeenCalledWith(
+        "/folder/old-name.md",
+        "/folder/asset-123.md",
+        "old-name"
+      );
+    });
+
+    it("should handle updateLinks for file in root folder", async () => {
+      const rootFile: IFile = {
+        path: "old-name.md",
+        name: "old-name.md",
+        basename: "old-name",
+        parent: null,
+      } as any;
+
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+        exo__Asset_label: "Label",
+      };
+
+      await service.renameToUid(rootFile, metadata);
+
+      expect(mockVault.updateLinks).toHaveBeenCalledWith(
+        "old-name.md",
+        "asset-123.md",
+        "old-name"
+      );
+      expect(mockVault.rename).toHaveBeenCalledWith(rootFile, "asset-123.md");
+    });
+
+    it("should not call updateLinks if rename validation fails", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+      };
+
+      const fileWithUidName: IFile = {
+        path: "/folder/asset-123.md",
+        name: "asset-123.md",
+        basename: "asset-123",
+        parent: {
+          path: "/folder",
+        },
+      } as IFile;
+
+      await expect(service.renameToUid(fileWithUidName, metadata)).rejects.toThrow();
+
+      expect(mockVault.updateLinks).not.toHaveBeenCalled();
+      expect(mockVault.rename).not.toHaveBeenCalled();
     });
   });
 });

@@ -27,6 +27,7 @@ Test content`;
       updateFrontmatter: jest.fn().mockResolvedValue(undefined),
       createFolder: jest.fn().mockResolvedValue(undefined),
       getFirstLinkpathDest: jest.fn().mockReturnValue(null),
+      updateLinks: jest.fn().mockResolvedValue(undefined),
     } as any;
 
     service = new RenameToUidService(mockVaultAdapter);
