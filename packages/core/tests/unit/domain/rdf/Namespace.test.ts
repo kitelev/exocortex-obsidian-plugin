@@ -85,13 +85,13 @@ describe("Namespace", () => {
     it("should provide EXO namespace", () => {
       const exo = Namespace.EXO;
       expect(exo.prefix).toBe("exo");
-      expect(exo.iri.value).toBe("http://exocortex.org/ontology/");
+      expect(exo.iri.value).toBe("https://exocortex.my/ontology/exo#");
     });
 
     it("should provide EMS namespace", () => {
       const ems = Namespace.EMS;
       expect(ems.prefix).toBe("ems");
-      expect(ems.iri.value).toBe("http://exocortex.org/ems/");
+      expect(ems.iri.value).toBe("https://exocortex.my/ontology/ems#");
     });
   });
 

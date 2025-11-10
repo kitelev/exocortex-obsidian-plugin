@@ -56,7 +56,7 @@ export class Namespace {
     "http://www.w3.org/2001/XMLSchema#"
   );
 
-  static readonly EXO = new Namespace("exo", "http://exocortex.org/ontology/");
+  static readonly EXO = new Namespace("exo", "https://exocortex.my/ontology/exo#");
 
-  static readonly EMS = new Namespace("ems", "http://exocortex.org/ems/");
+  static readonly EMS = new Namespace("ems", "https://exocortex.my/ontology/ems#");
 }
