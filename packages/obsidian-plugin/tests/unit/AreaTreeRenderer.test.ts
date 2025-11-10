@@ -159,11 +159,11 @@ describe("AreaTreeRenderer", () => {
       ];
 
       const mockSectionContainer = createMockElement();
+      const mockContentContainer = createMockElement();
       const mockTreeContainer = createMockElement();
-      mockElement.createDiv
-        .mockReturnValueOnce(mockSectionContainer) // section container
-        .mockReturnValueOnce(mockTreeContainer); // tree container
-      mockSectionContainer.createDiv.mockReturnValue(mockTreeContainer);
+      mockElement.createDiv.mockReturnValue(mockSectionContainer); // section container
+      mockSectionContainer.createDiv.mockReturnValue(mockContentContainer); // content container
+      mockContentContainer.createDiv.mockReturnValue(mockTreeContainer); // tree container
 
       await renderer.render(mockElement, mockFile, relations);
 
@@ -175,7 +175,15 @@ describe("AreaTreeRenderer", () => {
         text: "Area tree",
         cls: "exocortex-section-header",
       });
-      expect(mockSectionContainer.createDiv).toHaveBeenCalledWith({
+      // First createDiv call is for content container
+      expect(mockSectionContainer.createDiv).toHaveBeenNthCalledWith(1, {
+        cls: "exocortex-section-content",
+        attr: {
+          "data-collapsed": "false",
+        },
+      });
+      // Second createDiv call is for tree container
+      expect(mockContentContainer.createDiv).toHaveBeenCalledWith({
         cls: "exocortex-area-tree-container",
       });
 

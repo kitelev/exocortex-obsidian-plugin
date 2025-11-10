@@ -27,6 +27,8 @@ export class PropertiesRenderer {
     el: HTMLElement,
     file: TFile,
     options?: PropertiesRendererOptions,
+    renderHeader?: (container: HTMLElement, sectionId: string, title: string) => void,
+    isCollapsed?: boolean,
   ): Promise<void> {
     const metadata = this.metadataExtractor.extractMetadata(file);
 
@@ -43,24 +45,41 @@ export class PropertiesRenderer {
 
     const container = el.createDiv({ cls: "exocortex-properties-section" });
 
-    this.reactRenderer.render(
-      container,
-      React.createElement(AssetPropertiesTable, {
-        metadata: filteredMetadata,
-        onLinkClick: async (path: string, event: React.MouseEvent) => {
-          const isModPressed = Keymap.isModEvent(
-            event.nativeEvent as MouseEvent,
-          );
+    // Render collapsible header if function provided
+    if (renderHeader) {
+      renderHeader(container, "properties", "Properties");
+    }
 
-          if (isModPressed) {
-            const leaf = this.app.workspace.getLeaf("tab");
-            await leaf.openLinkText(path, "");
-          } else {
-            await this.app.workspace.openLinkText(path, "", false);
-          }
-        },
-        getAssetLabel: (path: string) => this.metadataService.getAssetLabel(path),
-      }),
-    );
+    // Create content container
+    const contentContainer = container.createDiv({
+      cls: "exocortex-section-content",
+      attr: {
+        "data-collapsed": (isCollapsed || false).toString(),
+      },
+    });
+
+    // Only render content if not collapsed
+    if (!isCollapsed) {
+      this.reactRenderer.render(
+        contentContainer,
+        React.createElement(AssetPropertiesTable, {
+          metadata: filteredMetadata,
+          onLinkClick: async (path: string, event: React.MouseEvent) => {
+            const isModPressed = Keymap.isModEvent(
+              event.nativeEvent as MouseEvent,
+            );
+
+            if (isModPressed) {
+              const leaf = this.app.workspace.getLeaf("tab");
+              await leaf.openLinkText(path, "");
+            } else {
+              await this.app.workspace.openLinkText(path, "", false);
+            }
+          },
+          getAssetLabel: (path: string) =>
+            this.metadataService.getAssetLabel(path),
+        }),
+      );
+    }
   }
 }
