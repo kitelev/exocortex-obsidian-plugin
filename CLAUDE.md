@@ -1,964 +1,1146 @@
-# AI Assistant Development Guidelines for Exocortex Plugin
+# Exocortex Development - Claude Code Instructions
 
-## 🎯 Quick Command Reference
+> **Multi-Agent Support**: This coordination hub supports Claude Code, GitHub Copilot, Cursor, Google Jules, OpenAI Codex, Aider, and 20+ other AI coding assistants via universal `AGENTS.md` standard.
+>
+> **Claude Code Specific**: This file contains Claude Code-enhanced instructions with **slash commands** (`/worktree-create`, `/worktree-cleanup`, `/worktree-list`). For universal AI agent instructions, see `AGENTS.md`.
 
-**⚠️ STEP 0 (MANDATORY): Before ANY task, create separate worktree!**
+---
+
+## 🎯 Project Context: AI-Driven Knowledge Management
+
+**What is Exocortex?**
+
+Exocortex is a **knowledge management system** that gives users convenient control over all their knowledge. It started as an Obsidian plugin for ontology-driven layouts (Areas → Projects → Tasks) and has evolved into a larger system with CLI capabilities and advanced semantic features.
+
+**Core Philosophy**: AI-driven development
+- This project is developed **exclusively by AI agents** (Claude Code, Copilot, Cursor, etc.)
+- Each session runs **parallel and independent** of which agent is used
+- **Continuous self-improvement** of AI instructions based on learned experience
+- You are not just coding - you are **training future AI agents**
+
+---
+
+## 🚨 RULE #1 (MOST CRITICAL): WORKTREES ONLY
+
+**⚠️ THIS IS THE MOST IMPORTANT RULE - VIOLATION IS UNACCEPTABLE ⚠️**
+
+**The `exocortex-obsidian-plugin/` directory is STRICTLY READ-ONLY.**
+
+ALL code changes MUST happen through git worktrees in the `worktrees/` subdirectory.
+
+### Why This Rule Exists
+
+1. **Parallel AI agent work**: Multiple Claude Code instances work simultaneously without conflicts
+2. **Safe experimentation**: Each worktree is an isolated sandbox
+3. **Clean coordination**: Git worktrees show active work across all instances
+4. **Prevents corruption**: Main repository stays pristine
+
+### Enforcement
+
+**❌ ABSOLUTELY FORBIDDEN:**
+```bash
+cd /Users/kitelev/Documents/exocortex-development/exocortex-obsidian-plugin
+vim src/some-file.ts              # ❌ NEVER DO THIS!
+git commit -am "changes"          # ❌ BLOCKED!
+```
+
+**✅ ONLY CORRECT WAY (Claude Code):**
+```bash
+# 1. Use slash command (RECOMMENDED)
+/worktree-create my-feature       # Creates worktree automatically
+
+# 2. Or manually
+cd /Users/kitelev/Documents/exocortex-development/exocortex-obsidian-plugin
+git worktree add ../worktrees/exocortex-claude1-feat-my-feature -b feature/my-feature
+cd ../worktrees/exocortex-claude1-feat-my-feature
+
+# 3. Work in worktree
+vim src/some-file.ts              # ✅ CORRECT!
+git commit -am "feat: changes"    # ✅ SAFE!
+```
+
+### Validation Before Starting Work
+
+**ALWAYS verify your location:**
+```bash
+pwd
+# MUST output: .../exocortex-development/worktrees/exocortex-claude*
+# If "worktrees/" is missing → STOP IMMEDIATELY!
+```
+
+---
+
+## 🚨 RULE #2 (SECOND MOST CRITICAL): MANDATORY SELF-IMPROVEMENT
+
+**⚠️ EVERY COMPLETED TASK MUST PRODUCE POST-MORTEM WITH IMPROVEMENT PROPOSALS ⚠️**
+
+This project evolves through **iterative self-improvement** of AI agent instructions. Your experience is valuable data for future Claude Code instances.
+
+### Post-Mortem Report (MANDATORY)
+
+After EVERY completed task, you MUST write a detailed post-mortem report documenting:
+
+1. **What was accomplished** - Features implemented, tests added, coverage achieved
+2. **Errors encountered** - EVERY error, no matter how small
+3. **Solutions applied** - Exact steps that fixed each error
+4. **Lessons learned** - Patterns, insights, gotchas discovered
+5. **Propose documentation improvements** - Specific additions to AGENTS.md, CLAUDE.md, etc.
+6. **WAIT FOR USER APPROVAL** - Present report to user, get explicit permission before editing any files
+
+### ⚠️ CRITICAL: DO NOT AUTO-EDIT DOCUMENTATION
+
+**You MUST NOT edit AGENTS.md, CLAUDE.md, or any instruction files without explicit user permission.**
+
+**Correct workflow**:
+1. ✅ Write post-mortem report
+2. ✅ Propose improvements with exact text to add
+3. ✅ **ASK user for permission**: "May I update these files?"
+4. ✅ **WAIT for user approval** (Yes/No/Adjust)
+5. ✅ **ONLY if approved** - edit documentation files
+
+**Forbidden**:
+- ❌ Automatically editing instruction files after task completion
+- ❌ Updating documentation "based on learnings" without asking
+- ❌ Committing changes to AGENTS.md, CLAUDE.md without permission
+
+### Post-Mortem Template
+
+```markdown
+## Task: [Feature/Fix Name]
+
+### Completed
+- [What was implemented]
+- [Tests added: X unit + Y E2E]
+- [Coverage: Z%]
+- [PR #XXX merged, Release vX.Y.Z created]
+
+### Errors Encountered & Solutions
+
+1. **[Error Category]**: [Error description]
+   - **Error**: ```[Exact error message / stack trace]```
+   - **Root Cause**: [Why it happened]
+   - **Solution**: [Exact steps to fix]
+   - **Prevention**: [How to avoid in future]
+
+2. **[Next Error]**: ...
+
+### Lessons Learned
+
+- **Pattern discovered**: [New pattern found in codebase]
+- **Gotcha identified**: [Unexpected behavior or edge case]
+- **Best practice**: [Better way to do X]
+- **Tool insight**: [How to use Claude Code / slash commands more effectively]
+
+### Documentation Improvements Proposed
+
+**Add to AGENTS.md** (Section: [section name]):
+```
+[Exact text to add]
+```
+
+**Add to CLAUDE.md** (Section: [section name]):
+```
+[Exact text to add]
+```
+
+**Add to exocortex-obsidian-plugin/CLAUDE.md** (Section: [section name]):
+```
+[Exact text to add]
+```
+
+### Future Agent Guidance
+
+[Advice for next Claude Code instance working on similar task]
+```
+
+### Why Self-Improvement Matters
+
+- **Compound learning**: Each instance makes future instances smarter
+- **Reduced errors**: Common pitfalls get documented and avoided
+- **Better patterns**: Successful approaches become standardized
+- **Faster development**: Less trial-and-error, more "known good paths"
+- **Claude Code optimization**: Discover better slash command usage, workflows
+
+### How to Present Your Report
+
+**Step 1: Complete the post-mortem**
+Write detailed report following the template above.
+
+**Step 2: Present to user and ask for permission**
+"I've completed [task] and documented my experience. Here's my post-mortem report with proposed improvements to AGENTS.md and CLAUDE.md. **May I have your permission to update these documentation files?**"
+
+**Step 3: Wait for user decision**
+- User says **"Yes"/"Approved"** → Proceed with edits
+- User says **"No"/"Not now"** → Do NOT edit files, report is saved for future reference
+- User says **"Adjust X"** → Modify proposals, present again, wait for approval
+
+**Step 4: ONLY if approved - update documentation**
+If user explicitly approves, then and only then edit AGENTS.md, CLAUDE.md, or other instruction files.
+
+**Remember**: You propose, user decides. Never auto-edit instruction files.
+
+### Lessons from Issue #250 (SPARQL Documentation)
+
+**Example of successful documentation task** (completed Nov 9, 2025):
+
+**What Made It Fast:**
+- Timeline: 85 minutes total (research → merged release)
+- Zero errors encountered (documentation-only PR)
+- First-time CI pass (no code changes to break)
+- Immediate merge (low risk, enabled auto-merge)
+
+**Documentation Quality Patterns Applied:**
+- **Structured by audience**: User-Guide, Developer-Guide, Query-Examples, Performance-Tips (4 files, ~2400 lines)
+- **Example-driven**: 30+ copy-paste ready query patterns
+- **Concrete numbers**: Benchmarks with execution times (<10ms, 10-100ms, >100ms), complexity (O(1) vs O(n))
+- **README integration**: New "SPARQL Query System" section with links to all guides
+
+**Workflow That Worked:**
+1. Research source code (10-15 min) - Read SPARQLCodeBlockProcessor, SPARQLApi, tests
+2. Create structure (5 min) - `docs/sparql/` with 4 files planned
+3. Write guides (60-90 min) - Started with examples, then tutorials, then API docs
+4. Integrate (10 min) - Added README section with quick start
+5. Validate (5 min) - Created PR, enabled auto-merge, all checks GREEN
+
+**Key Insights for Future Documentation:**
+- Examples > explanations (users want copy-paste patterns)
+- Separate files by audience (user/developer/performance) improves findability
+- Performance docs need numbers ("100x faster" vs "significantly faster")
+- README links are mandatory (users won't find docs/ otherwise)
+- Documentation PRs are safe and fast (no debugging, quick release)
+
+**Result:**
+- PR #354 merged in 4 minutes
+- Release v13.47.2 created automatically
+- Complete documentation suite delivered in one session
+
+---
+
+## 🎯 Purpose
+
+This directory is the **coordination hub** for parallel development of the Exocortex project by multiple Claude Code instances working simultaneously through git worktrees.
+
+**⚠️ CRITICAL**: This is NOT a working directory. All actual development happens in isolated worktrees.
+
+## ⚡ Quick Orientation (Read First)
+
+- **Product context**: Exocortex is an Obsidian plugin that renders ontology-driven layouts, links Areas → Projects → Tasks, tracks effort/status history, and exposes voting signals for prioritization. Core modules live under `src/` (presentation, application, domain, infrastructure) with shared utilities in `packages/core` and CLI tooling in `packages/cli`.
+- **Shared vocabulary**: Tasks (`ems__Task`) roll up into Projects and Areas, layout renderers are named `*Renderer`, command orchestration flows through `CommandManager` and command visibility rules, and “Effort” refers to timestamped work-state transitions plus vote tallies.
+- **Workflow baseline**: Always create a worktree under `/Users/kitelev/Documents/exocortex-development/worktrees/` (use `/worktree-create`). The main repo under `exocortex-obsidian-plugin/` is read-only for agents.
+- **Definition of done**: A task is finished only after its changes land through a PR, that PR is merged into `main`, and the release flow publishes successfully. Clean up the worktree afterwards.
+- **Deeper docs**: Start with `exocortex-obsidian-plugin/README.md` for features, `ARCHITECTURE.md` for layering, and `docs/PROPERTY_SCHEMA.md` for frontmatter vocabulary.
+
+**🚨 MANDATORY PATH RULE**: ALL worktrees MUST be created in the `worktrees/` subdirectory:
+- ✅ CORRECT: `/Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-feat-xyz/`
+- ❌ WRONG: `/Users/kitelev/Documents/exocortex-development/exocortex-claude1-feat-xyz/`
+
+**DO NOT pollute this coordination directory with worktrees!** Use `/worktree-create` command which handles paths automatically.
+
+## 📁 Directory Structure
+
+```
+/Users/kitelev/Documents/exocortex-development/
+├── exocortex-obsidian-plugin/   # Main repository (READ-ONLY for Claude instances)
+│   └── CLAUDE.md                # Complete development guidelines
+├── worktrees/                   # All worktrees live here (flat structure)
+│   ├── exocortex-claude1-feat-graph-viz/
+│   ├── exocortex-claude2-fix-mobile-ui/
+│   └── exocortex-claude3-refactor-rdf/
+└── CLAUDE.md                    # This file - worktree coordination rules
+```
+
+## 🚨 Golden Rules
+
+### RULE 0: Never Work in Main Repository
+
+**❌ FORBIDDEN:**
+```bash
+cd /Users/kitelev/Documents/exocortex-development/exocortex-obsidian-plugin
+# ... make edits ... ❌ BLOCKED!
+```
+
+**✅ REQUIRED:**
+```bash
+cd /Users/kitelev/Documents/exocortex-development
+/worktree-create my-feature  # Use slash command
+cd worktrees/exocortex-[instance]-[task]
+# ... work here ... ✅ SAFE
+```
+
+### RULE 0.5: ALL Worktrees MUST Live in worktrees/ Directory
+
+**🚨 CRITICAL PATH REQUIREMENT:**
+
+ALL worktrees MUST be created inside `/Users/kitelev/Documents/exocortex-development/worktrees/`
+
+**❌ ABSOLUTELY FORBIDDEN:**
+```bash
+# DON'T create worktrees in root coordination directory!
+cd /Users/kitelev/Documents/exocortex-development
+git worktree add exocortex-feat-something    # ❌ WRONG PATH!
+git worktree add ./my-feature                # ❌ WRONG PATH!
+git worktree add feature/something           # ❌ WRONG PATH!
+
+# These pollute the coordination directory and break organization!
+```
+
+**✅ ONLY CORRECT WAY:**
+```bash
+# Option 1: Use slash command (RECOMMENDED - handles paths automatically)
+cd /Users/kitelev/Documents/exocortex-development
+/worktree-create my-feature  # Creates: worktrees/exocortex-claude1-feat-my-feature
+
+# Option 2: Manual creation (must specify worktrees/ path!)
+cd /Users/kitelev/Documents/exocortex-development/exocortex-obsidian-plugin
+git worktree add ../worktrees/exocortex-claude1-feat-my-feature -b feature/my-feature
+#                   ^^^^^^^^^^^^ MUST include worktrees/ prefix!
+```
+
+**Why this matters:**
+- Keeps coordination directory clean (only `exocortex-obsidian-plugin/`, `worktrees/`, `CLAUDE.md`)
+- Makes cleanup obvious (`rm -rf worktrees/*` after merge)
+- Prevents confusion about what's a worktree vs. what's infrastructure
+- Allows parallel instances to easily list all active work
+
+**Validation before starting work:**
+```bash
+pwd  # Check you're in right place
+# Should output: /Users/kitelev/Documents/exocortex-development/worktrees/exocortex-*
+# If missing "worktrees/" in path → STOP! Wrong location!
+```
+
+### RULE 1: One Task = One Worktree
+
+- Small, focused changes
+- Clear, descriptive names
+- Short-lived (hours to 1-2 days max)
+- Deleted immediately after PR merge
+
+## 🏷️ Naming Conventions
+
+**Format**: `worktrees/exocortex-[instance-id]-[type]-[description]`
+
+**Instance IDs**: `claude1`, `claude2`, `claude3`, `claude4`, `claude5`
+
+**Types**:
+- `feat` - New feature
+- `fix` - Bug fix
+- `refactor` - Code refactoring
+- `perf` - Performance improvement
+- `test` - Test addition/modification
+- `docs` - Documentation
+- `exp` - Experimental/research work
+
+**Examples**:
+```
+worktrees/exocortex-claude1-feat-graph-viz
+worktrees/exocortex-claude2-fix-mobile-scrolling
+worktrees/exocortex-claude3-refactor-triple-store
+worktrees/exocortex-claude4-perf-query-cache
+worktrees/exocortex-claude5-exp-owl-reasoning
+```
+
+**Why this matters**:
+- Prevents name collisions between parallel instances
+- Makes it obvious who owns which task
+- Easy to identify task type at a glance
+- Simplifies cleanup (can grep by instance or type)
+
+## 🔄 Synchronization Protocol
+
+### Before Starting Work
+
+**ALWAYS sync before creating worktree:**
+```bash
+cd /Users/kitelev/Documents/exocortex-development/exocortex-obsidian-plugin
+git fetch origin main
+git pull origin main --rebase
+# Now create worktree
+```
+
+### During Development
+
+**Sync frequency**:
+- Before each commit (if main has changed)
+- Before creating PR
+- After any other instance merges to main
+
+**Sync command in worktree:**
+```bash
+git fetch origin main
+git rebase origin/main  # Resolve conflicts if any
+```
+
+### Conflict Resolution
+
+If rebase fails:
+1. Read conflict carefully
+2. Resolve in favor of latest main (others' work takes priority)
+3. If your changes are incompatible, discuss with user
+4. Complete rebase: `git rebase --continue`
+5. Force push: `git push --force-with-lease origin [branch]`
+
+## 🎮 Quick Command Reference
+
+**⚠️ ALWAYS use these slash commands for worktree management:**
 
 ```bash
-# ALWAYS start with this:
-git worktree add ../exocortex-[task-name] -b feature/[description]
-cd ../exocortex-[task-name]
-git fetch origin main && git rebase origin/main
+/worktree-create [task-name]    # Create new worktree with proper naming
+/worktree-list                  # Show all active worktrees
+/worktree-cleanup               # Remove merged/stale worktrees
+```
 
-# Immediately hydrate dependencies in the new worktree (prevents ts-jest preset errors)
+**Why `/worktree-create` is preferred over manual git commands:**
+
+```bash
+# ✅ RECOMMENDED - Slash command (automatic, fast, correct)
+cd /Users/kitelev/Documents/exocortex-development
+/worktree-create my-feature
+# Automatically: names worktree correctly, creates in worktrees/, syncs with main, installs deps
+
+# ❌ MANUAL - More steps, easy to make path/naming mistakes
+cd exocortex-obsidian-plugin
+git worktree add ../worktrees/exocortex-claude1-feat-my-feature -b feature/my-feature
+cd ../worktrees/exocortex-claude1-feat-my-feature
+git fetch origin main && git rebase origin/main
 npm install
 ```
 
-**ALWAYS use slash commands for these operations:**
+**Benefits of slash command:**
+- Correct naming convention enforced (`exocortex-claude1-feat-*`)
+- Automatic path handling (always creates in `worktrees/`)
+- Sync with main branch included
+- Dependency installation handled
+- Faster workflow, fewer errors
 
+**Other essential commands** (from main repo):
 ```bash
-/release [major|minor|patch] [desc]  # MANDATORY for releases - auto-versions and creates GitHub release
-npm run test:all                     # MANDATORY for testing - run ALL tests before creating PR
-/execute [task]                      # Complex multi-step tasks with agent orchestration
-/status                              # Check current progress and project health
-/agents                              # List available specialized agents
+/release [major|minor|patch]    # Create release (after PR merge)
+npm run test:all                # MANDATORY: Run ALL tests before PR
+/execute [task]                 # Complex multi-step tasks
+/status                         # Check project health
+/agents                         # List available agents
 ```
 
-⚠️ **CRITICAL**:
-- **NEVER work in main directory** - ALWAYS create worktree first (see RULE 0)
-- Use `/release` for ANY code change to src/, tests/, or production files
-- Use `npm run test:all` before creating PR (runs all tests, enforces BDD coverage ≥80%)
-- Use `/execute` for complex tasks requiring multiple agents
+## 🔧 Worktree Lifecycle
 
-## 🚨 Critical Rules
+### 1. Create Worktree
 
-### RULE 0: Mandatory Worktree Isolation (CRITICAL - NEVER VIOLATE)
-
-**🔴 ABSOLUTE REQUIREMENT: EVERY task MUST be done in a separate worktree. NEVER work in main directory.**
-
-**Enforcement:**
 ```bash
-# ✅ CORRECT - Always create worktree first
-git worktree add ../exocortex-[task-name] -b feature/[description]
-cd ../exocortex-[task-name]
-# ... work here ...
+# Use slash command (recommended)
+/worktree-create my-feature
 
-# ❌ WRONG - Never work directly in main
-cd /Users/kitelev/Documents/exocortex-obsidian-plugin
-# ... edit files here ... ❌ BLOCKED!
-```
-
-**Why this is CRITICAL:**
-- **Multi-instance safety**: 2-5 Claude instances work in parallel - working in main causes conflicts
-- **Clean rollback**: Failed experiments don't pollute main directory
-- **Atomic changes**: One worktree = one feature = one PR = clean history
-- **No accidental main commits**: Impossible to `git commit` in main when you're in a worktree
-
-**Before starting ANY task, ask yourself:**
-1. ✅ Am I in a separate worktree?
-2. ✅ Did I sync with latest main first?
-3. ❌ Am I in `/Users/kitelev/Documents/exocortex-obsidian-plugin`? → STOP and create worktree!
-
-**Workflow enforcement:**
-```bash
-# Step 0 (MANDATORY): Check current directory
-pwd
-# If output is main directory → create worktree immediately!
-
-# Step 1: Create worktree
-git worktree add ../exocortex-fix-bug -b feature/fix-bug
-cd ../exocortex-fix-bug
-
-# Step 2: Sync with main
+# Or manually:
+cd /Users/kitelev/Documents/exocortex-development/exocortex-obsidian-plugin
+git worktree add ../worktrees/exocortex-claude1-feat-my-feature -b feature/my-feature
+cd ../worktrees/exocortex-claude1-feat-my-feature
 git fetch origin main && git rebase origin/main
 
-# Step 3: Make changes
-# ... your work ...
-
-# Step 4: Cleanup after merge
-cd /Users/kitelev/Documents/exocortex-obsidian-plugin
-git worktree remove ../exocortex-fix-bug
-git pull origin main
+**Install dependencies before running any scripts:**
+```bash
+npm install  # Prevents ts-jest preset errors in fresh worktrees
+```
 ```
 
-**Valid exceptions (ONLY 2):**
-1. Reading files for research (no edits)
-2. Creating new worktree (then immediately switch to it)
-
-**All other operations MUST be in worktree:**
-- ✅ Code changes → worktree
-- ✅ Documentation updates → worktree
-- ✅ Test modifications → worktree
-- ✅ Configuration changes → worktree
-- ✅ ANY file edit → worktree
-
-### RULE 1: PR-Based Workflow (MANDATORY)
-
-**NEVER push directly to main.** All changes MUST go through Pull Requests.
-
-**🚨 CRITICAL: Task is NOT complete after creating PR!**
-
-**Task is COMPLETE ONLY when:**
-1. ✅ CI pipeline passes (both checks GREEN)
-2. ✅ PR merged to main
-3. ✅ Auto-release workflow completes successfully
-
-**DO NOT stop after `gh pr create`** - you MUST monitor and wait for:
-- CI checks to pass (watch with `gh pr checks --watch`)
-- PR to be merged (use `gh pr merge --auto --squash`)
-- Release to be created (verify with `gh release list --limit 1`)
-
-**Complete workflow (12 steps):**
+### 2. Develop
 
 ```bash
-# 1. Create feature branch in separate worktree
-git worktree add ../exocortex-feature-name -b feature/description
-cd ../exocortex-feature-name
+# Work in worktree
+cd /Users/kitelev/Documents/exocortex-development/worktrees/exocortex-claude1-feat-my-feature
 
-# 2. Sync with latest main
-git fetch origin main && git rebase origin/main
+# Follow all rules from exocortex-obsidian-plugin/CLAUDE.md
+# - Use agents for complex tasks
+# - Run npm run test:all before creating PR
+# - Never commit broken code
+```
 
-# 3. Make changes and test (MANDATORY)
-npm run test:all  # MUST pass 100% - runs ALL tests
+#### TypeScript tooling
 
-# 4. Commit (NO version bump - automatic!)
+- `ts-jest` in this repo cannot transpile class-level `async *` generator methods. When you need an async stream, return an `AsyncIterableIterator` from a helper/closure instead of adding `async *` on a class.
+
+### 3. Create PR and Monitor Until Merge
+
+**🚨 CRITICAL: Creating PR is NOT the end! Task is complete only after merge + release.**
+
+```bash
+# Test first (MANDATORY)
+npm run test:all
+
+# Commit and push
 git commit -am "feat: user-facing description"
+git push origin feature/my-feature
 
-# 5. Push and create PR
-git push origin feature/description
-gh pr create --title "feat: description" --body "Details..."
+# Create PR
+gh pr create --title "feat: my-feature" --body "Details..."
 
-# 6. Wait for CI checks (MANDATORY - both must be GREEN ✅)
-gh pr checks --watch  # build-and-test + e2e-tests
+# MANDATORY: Monitor CI pipeline
+gh pr checks --watch  # Wait for GREEN ✅
 
-# 7. Fix if any check fails (RED ❌)
+# Fix if checks fail (RED ❌)
+# ... make fixes ...
 git commit --amend --no-edit
-git push --force-with-lease origin feature/description
+git push --force-with-lease origin feature/my-feature
 
-# 8. If main changed, manually rebase your branch first
-git fetch origin main && git rebase origin/main
-git push --force-with-lease origin feature/description
+# MANDATORY: Wait for merge
+gh pr merge --auto --rebase
 
-# 9. Merge when all checks GREEN (squash merge)
-gh pr merge --auto --squash   # All commits → 1 new commit on main
-
-# 10. Automatic release (NO manual steps - tag-based versioning)
-# ✅ auto-release.yml: analyzes commits, calculates version, builds plugin, creates tag + GitHub release
-# ✅ CHANGELOG generated automatically from commit messages
-# ✅ NO version bump commits (versions exist only as git tags)
-
-# 11. Cleanup worktree
-cd /Users/kitelev/Documents/exocortex-obsidian-plugin
-git worktree remove ../exocortex-feature-name
-git pull origin main
-
-# 12. Verify release created
+# MANDATORY: Verify release created
 gh release list --limit 1
 ```
 
-**Task is COMPLETE only when ALL steps pass:**
-- [ ] Tests pass locally (100%)
-- [ ] PR created and pushed
-- [ ] CI checks GREEN (build-and-test + e2e-tests)
-- [ ] PR merged to main
-- [ ] Auto-version workflow completed
-- [ ] Release visible in GitHub Releases
-- [ ] Worktree cleaned up
+**DO NOT consider task complete until:**
+- ✅ CI pipeline passes (build-and-test + e2e-tests)
+- ✅ PR merged to main
+- ✅ Auto-release workflow creates GitHub release
+- ✅ **Post-mortem report written** (errors encountered, solutions, lessons learned)
+- ✅ **Documentation improvements proposed** (updates to AGENTS.md, CLAUDE.md, etc.)
 
-**Version Management (Tag-Based):**
-- 📌 package.json/manifest.json contain placeholder version `0.0.0-dev` in repository
-- 📌 Real version determined ONLY during release from git tags
-- 📌 auto-release.yml workflow:
-  1. Gets last git tag (e.g., v12.19.0)
-  2. Analyzes commit messages since last tag
-  3. Determines bump type (major/minor/patch) from conventional commits
-  4. Calculates new version (e.g., 12.19.1)
-  5. Temporarily updates package.json/manifest.json for build
-  6. Builds plugin with correct version
-  7. Generates CHANGELOG from commit messages
-  8. Creates git tag and GitHub release
-- ❌ NO manual versioning (`npm version` commands)
-- ❌ NO version bump commits in main branch
-- ❌ NO manual CHANGELOG.md updates
-- ✅ Versions exist only as git tags, not in source files
-- ✅ Clean commit history without version noise
+### ⚠️ CRITICAL: Cleanup Timing
 
-### RULE 2: Mandatory Agent Usage
+**DO NOT cleanup worktree if you're still in active Claude session!**
 
-**EVERY significant task MUST use specialized agents.**
+**Problem**: Running cleanup while Claude session is active in the worktree will break bash environment:
+- Current directory becomes invalid (deleted)
+- All subsequent bash commands fail with "exit code 1"
+- Session becomes unusable
 
-- **ALWAYS use 3-5 agents in parallel** for non-trivial tasks
-- **NEVER work alone** on complex features
-- **Follow pipeline**: Product → Architecture → Implementation → QA → Documentation
-- **See CLAUDE-agents.md** for patterns
-
-### RULE 3: Test Before Push (CRITICAL)
-
-**⚠️ MANDATORY TEST COVERAGE FOR ALL NEW CODE:**
-
-**📝 Golden Rule: Every new feature MUST have tests BEFORE creating PR:**
-
-1. **New Service → Unit Tests (MANDATORY)**
-   - Example: `EffortVotingService.ts` → `EffortVotingService.test.ts`
-   - Coverage: All public methods, edge cases, error scenarios
-   - Pattern: Mock Vault, test file operations, verify frontmatter updates
-
-2. **New Visibility Function → Unit Tests (MANDATORY)**
-   - Example: `canVoteOnEffort()` → tests in `CommandVisibility.test.ts`
-   - Coverage: All true/false branches, archived states, class types
-
-3. **New UI Component → Component Tests (MANDATORY)**
-   - Example: `VoteOnEffortButton.tsx` → `VoteOnEffortButton.spec.tsx`
-   - Coverage: Render conditions, click handlers, prop variations
-   - Use Playwright Component Testing
-
-4. **New Command → Integration via Existing Tests (MANDATORY)**
-   - Example: Vote command → update `CommandManager.test.ts` count
-   - Coverage: Command registration, visibility, execution
-
-**Test-First Development Checklist:**
-```bash
-# Step 1: Write implementation
-# ... create service/component/function ...
-
-# Step 2: IMMEDIATELY write tests (don't postpone!)
-# ... create corresponding .test.ts or .spec.tsx ...
-
-# Step 3: Run tests locally
-npm run test:all   # MUST pass 100%
-
-# Step 4: Only then commit and create PR
-git commit -am "feat: description"
-```
-
-**NEVER create PR without tests for new code!**
-
-**ALWAYS use `npm run test:all` before creating PR:**
+**Safe cleanup workflow:**
 
 ```bash
-npm run test:all   # Run ALL tests with quality gates (unit + ui + component + e2e)
+# Step 1: Exit Claude Code session or switch to different directory
+cd /Users/kitelev/Documents/exocortex-development
+
+# Step 2: THEN run cleanup
+/worktree-cleanup
+
+# Or manually:
+cd exocortex-obsidian-plugin
+git worktree remove ../worktrees/exocortex-[instance]-[type]-[task]
+git branch -D [branch-name]
 ```
 
-**Requirements:**
-- 100% tests passing
-- BDD coverage ≥80% (enforced automatically)
-- NEVER commit broken tests
-- **🚨 NEVER USE `--no-verify` TO BYPASS PRE-COMMIT HOOKS! 🚨**
-- **NEVER create PR with untested new functionality**
-- **🚨 NEVER DELETE TESTS WHEN THEY FAIL - FIX THEM INSTEAD! 🚨**
+**Alternative**: Keep worktree until:
+- Session ends naturally
+- You switch to different worktree
+- You explicitly exit Claude Code
 
-**⛔ ABSOLUTE PROHIBITION #1: Using --no-verify**
+**Remember**: Disk space is cheap, broken sessions are expensive. Better to cleanup later than break active work.
 
-**NEVER use `git commit --no-verify` under ANY circumstances.**
+---
 
-**Why this is CRITICAL:**
-- Pre-commit hooks exist to catch errors BEFORE they reach CI
-- Bypassing hooks pushes broken code that blocks other developers
-- Lint errors indicate real problems that must be fixed
-- Test failures must be debugged, not ignored
+### 4. Write Post-Mortem Report (MANDATORY)
 
-**If pre-commit hook fails:**
-- ✅ **FIX the lint/test errors** in your code
-- ✅ **FIX pre-existing lint errors** if they block your commit
-- ✅ **Ask maintainer** to fix systemic lint issues in codebase
-- ❌ **NEVER** use `--no-verify` as a "quick fix"
+**Before cleanup, document your experience:**
 
-**Example of WRONG approach:**
-```bash
-# Lint fails due to errors in my files OR other files
-git commit --no-verify -m "feat: my change"  # ❌ ABSOLUTELY FORBIDDEN!
+```markdown
+## Task: [Feature/Fix Name]
+
+### Completed
+- [What was implemented]
+- [Tests added]
+- [Coverage achieved]
+
+### Errors & Solutions
+1. **[Error description]**:
+   - Error: [Exact error message]
+   - Solution: [How it was fixed]
+
+2. **[Next error]**:
+   - Error: [Details]
+   - Solution: [Fix]
+
+### Lessons Learned
+- [Key insight 1]
+- [Key insight 2]
+- [Best practice discovered]
+
+### Documentation Suggestions
+- Add to AGENTS.md: "[Suggestion for universal docs]"
+- Add to CLAUDE.md: "[Claude Code specific tip]"
+- Add to [other file]: "[Improvement]"
 ```
 
-**Example of CORRECT approach:**
-```bash
-# Fix lint errors in YOUR files first
-npx eslint --fix packages/obsidian-plugin/src/path/to/your/file.ts
+**Share this report with user** so lessons can be captured in documentation.
 
-# If errors are in other files, fix those too OR ask maintainer
-npx eslint --fix packages/obsidian-plugin/src/application/processors/SPARQLCodeBlockProcessor.ts
-
-# Commit only after ALL lint errors fixed
-git commit -m "feat: my change"  # ✅ CORRECT!
-```
-
-**⛔ ABSOLUTE PROHIBITION #2: Removing Tests**
-
-When a test fails (especially in CI):
-- ❌ **NEVER** remove the test to make CI green
-- ❌ **NEVER** comment out failing tests
-- ❌ **NEVER** skip tests with `.skip()` or similar
-- ✅ **ALWAYS** debug and fix the failing test
-- ✅ **ALWAYS** investigate why the test fails in CI but not locally
-- ✅ **ALWAYS** add retry logic, increase timeouts, or fix environment issues
-
-**Example of WRONG approach:**
-```bash
-# Test fails in CI
-git rm tests/e2e/failing-test.spec.ts  # ❌ WRONG!
-git commit -am "fix: remove failing test"  # ❌ TERRIBLE!
-```
-
-**Example of CORRECT approach:**
-```bash
-# Test fails in CI - investigate and fix!
-# 1. Check CI logs for actual error
-# 2. Identify environment difference (Docker vs local)
-# 3. Add retry logic, increase timeouts, fix selectors
-# 4. Test in Docker locally: npm run test:e2e:local
-# 5. Fix the test until it passes
-git commit -am "test: fix e2e test for Docker environment"  # ✅ CORRECT!
-```
-
-**Why this is critical:**
-- Tests are documentation of expected behavior
-- Removing tests hides bugs and regressions
-- CI failures usually indicate real environment issues
-- Future developers rely on comprehensive test coverage
-
-**Test Coverage Matrix (MANDATORY):**
-
-| Code Type | Test Type | Test File Location | Required Coverage |
-|-----------|-----------|-------------------|-------------------|
-| Service (`src/infrastructure/services/*.ts`) | Unit | `tests/unit/*.test.ts` | All methods, edge cases |
-| Visibility Function (`CommandVisibility.ts`) | Unit | `tests/unit/CommandVisibility.test.ts` | All branches |
-| UI Component (`src/presentation/components/*.tsx`) | Component | `tests/component/*.spec.tsx` | Render, clicks, props |
-| Command (`CommandManager.ts`) | Integration | `tests/unit/CommandManager.test.ts` | Registration count |
-| BDD Scenario (`.feature` file) | E2E | Cypress/Playwright test | Auto-checked by coverage |
-
-### Test Helper Utilities Location
-
-Reusable test utilities are located in:
-```
-packages/obsidian-plugin/tests/unit/helpers/testHelpers.ts
-```
-
-Available helpers:
-- `createMockTFile()` - Mock Obsidian TFile
-- `createMockElement()` - Mock DOM element with Obsidian methods
-- `createMockApp()` - Mock Obsidian App
-- `createMockPlugin()` - Mock plugin instance
-- `createMockMetadata()` - Mock frontmatter metadata
-- `createMockAssetRelation()` - Mock asset relations
-- `createMockBacklinksCacheManager()` - Mock backlinks
-- `createMockMetadataService()` - Mock metadata service
-- `createMockReactRenderer()` - Mock React renderer
-- `createMockMetadataExtractor()` - Mock metadata extractor
-
-Use these helpers to reduce test duplication and ensure consistent mocking patterns.
-
-### RULE 4: Branch Protection & Linear History
-
-**Main branch is protected:**
-- ❌ Direct pushes BLOCKED
-- ✅ PR merge ONLY if all checks GREEN
-- ✅ Linear history REQUIRED (rebase-only, no merge commits)
-- ✅ No administrator bypass
-
-**Required checks:**
-1. **build-and-test**: Type check, lint, build, unit/ui/component tests, BDD coverage
-2. **e2e-tests**: Docker integration tests, screenshot validation
-
-**Merge strategy:**
-- ✅ **Squash merge ONLY** (all commits → 1 new commit on main)
-- ✅ **Combined with `required_linear_history`** (ensures no merge commits)
-- ✅ **Combined with `strict: true`** (requires manual rebase if main changed)
-- ❌ Regular rebase DISABLED (only squash merge allowed)
-- ❌ Merge commits DISABLED (no merge bubbles)
-
-**How it works:**
-1. Developer manually rebases branch if main changed: `git rebase origin/main`
-2. GitHub squash merge creates NEW commit on main with all changes
-3. Result: Linear history with one commit per PR
-
-**Note:** Squash merge is NOT git rebase - it creates a new commit. Manual rebase needed if main changed.
-
-### RULE 5: Multi-Instance Awareness
-
-⚠️ **This plugin is developed in PARALLEL by 2-5 Claude Code instances.**
-
-**Coordination rules (enforced by RULE 0):**
-- **One task = One worktree** (NEVER work in main directory - see RULE 0)
-- **Worktree isolation prevents conflicts** between parallel instances
-- Small, focused tasks (one feature/fix per worktree)
-- Frequent syncs (fetch origin main before starting)
-- Fast completion (don't leave worktrees open for days)
-- Clean pipeline (never push broken code - blocks everyone)
-
-**Why worktree is mandatory for multi-instance:**
-```
-❌ WITHOUT worktree (chaos):
-Instance A (main dir): Edits file.ts → commit → push ❌ CONFLICT
-Instance B (main dir): Edits file.ts → commit → push ❌ CONFLICT
-Result: Merge conflicts, lost work, frustration
-
-✅ WITH worktree (harmony):
-Instance A (worktree-A): feature/add-x → PR #123 → merge → v12.5.11
-Instance B (worktree-B): feature/add-y → PR #124 → merge → v12.5.12
-Result: Clean sequential processing, no conflicts
-```
-
-**Race condition prevention:**
-```
-OLD: Instance A: v12.5.10 → v12.5.11 → push ❌ COLLISION
-NEW: Instance A: PR merge → auto-version → v12.5.11 ✅
-     Instance B: PR merge → auto-version → v12.5.12 ✅
-(GitHub merge queue ensures sequential processing)
-```
-
-**Worktree Permissions:**
-
-All permissions and agents are automatically available in every worktree because `.claude/settings.local.json` is tracked by git and copied during `git worktree add`.
-
-✅ **No additional setup needed** - all slash commands, agents, and bash permissions work immediately in new worktrees.
-
-The permissions file contains universal wildcards (`Bash(npm *)`, `Bash(git *)`, `SlashCommand(/test*)`, etc.) to cover all operations without requiring approval for each specific command.
-
-### RULE 6: BDD Coverage Guarantee
-
-**Every scenario in .feature files MUST have corresponding automated test (≥80% coverage).**
+### 5. Cleanup After Merge
 
 ```bash
-npm run bdd:coverage    # Show current coverage
-npm run bdd:check       # Enforced in CI (must pass)
+# Use slash command (recommended)
+/worktree-cleanup
+
+# Or manually:
+cd /Users/kitelev/Documents/exocortex-development/exocortex-obsidian-plugin
+git worktree remove ../worktrees/exocortex-claude1-feat-my-feature
+git branch -d feature/my-feature
 ```
 
-### RULE 7: Code Style
+## 🤝 Multi-Instance Coordination
 
-- **NO COMMENTS** unless explicitly requested
-- Self-documenting code with clear naming
-- Follow existing patterns in codebase
-- TypeScript strict mode
+### Task Assignment Strategy
 
-### RULE 8: Documentation Updates (MANDATORY)
+**Before starting a new task:**
 
-**NEVER forget to update README.md when adding/changing user-facing functionality.**
+1. Check active worktrees: `/worktree-list`
+2. Check open PRs: `gh pr list`
+3. Avoid duplicating work on same feature
+4. If uncertain, ask user: "Should I work on X while another instance works on Y?"
 
-**Mandatory README.md updates for:**
+### Parallel Work Best Practices
 
-1. **New Commands** → Add to "Available Commands" list
-   - Example: "Vote on Effort" added after implementing voting feature
-   - Include brief description in parentheses
+**✅ SAFE (independent areas):**
+- Instance A: Frontend component
+- Instance B: Backend service
+- Instance C: Documentation
+- Instance D: Tests for A's component
+- Instance E: Performance optimization
 
-2. **New Features** → Add to "Key Features" section
-   - User-facing functionality must be documented
-   - Use clear emoji bullets for scannability
+**⚠️ RISKY (same files):**
+- Instance A: Refactor RDF store
+- Instance B: Also refactor RDF store
+→ **Coordinate with user first!**
 
-3. **New Properties** → Document in relevant section
-   - Example: `ems__Effort_votes` explained in "Effort Voting" section
-   - Include property name, purpose, and usage
+### Communication Through Git
 
-4. **Behavior Changes** → Update affected sections
-   - Commands that change functionality
-   - Modified UI elements
-   - Changed workflows
-
-**Checklist before creating PR:**
+**Branch names are communication:**
 ```bash
-# ✅ Did I add a new command? → Update "Available Commands"
-# ✅ Did I add a new feature? → Update "Key Features"
-# ✅ Did I add a new property? → Document in relevant section
-# ✅ Did I change existing behavior? → Update affected documentation
-
-# If ANY of the above is YES, README.md MUST be updated!
+git worktree list
+# Shows what everyone is working on
+# If you see: feature/graph-visualization
+# Don't create: feature/graph-viz-improvements (too similar!)
 ```
 
-**README.md is the user's first impression** - keep it current, accurate, and complete.
+### Parallel Releases & Auto-Versioning
 
-## 📊 Current Architecture
+**🚨 CRITICAL: Multiple AI agents work in parallel - releases happen independently!**
 
-### Monorepo Structure
+**How parallel releases work:**
 
 ```
-/packages
-  /core                       - @exocortex/core (storage-agnostic business logic)
-    /src
-      /domain                 - Entities, value objects, repository interfaces
-      /application            - Use cases, services
-      /infrastructure         - File system adapters (IFileSystemAdapter)
-    /tests                    - Unit tests for core logic
-
-  /obsidian-plugin            - @exocortex/obsidian-plugin (Obsidian UI)
-    /src
-      /presentation           - UI components, modals, renderers
-      /infrastructure         - Obsidian API integration (ObsidianVaultAdapter)
-    /tests                    - Component, UI, E2E tests
-
-  /cli                        - @exocortex/cli (command-line automation)
-    /src                      - CLI commands and utilities
-    /tests                    - CLI integration tests
+Timeline example (Nov 1, 2025):
+14:24 - Agent A: Creates PR #252 (Votes toggle)
+14:29 - Agent B: PR #251 merged → Release v13.8.0 created
+14:34 - Agent A: PR #252 merged → Release v13.9.0 created
 ```
 
-### Technology Stack
+**Key insights:**
 
-```yaml
-Monorepo:
-  - npm workspaces (package management)
-  - Shared dependencies across packages
-  - Independent versioning per package
+1. **Auto-versioning is SEQUENTIAL**: Each merged PR triggers automatic version bump
+   - v13.8.0 → PR #251 (parallel work)
+   - v13.9.0 → PR #252 (your work)
+   - Releases created in merge order, NOT creation order
 
-Core (@exocortex/core):
-  - TypeScript 4.9+ (strict mode)
-  - Zero external dependencies (pure business logic)
-  - Storage-agnostic design
+2. **Don't assume version numbers**:
+   - ❌ WRONG: "My PR will be v13.8.0" (may be v13.9.0 or v13.10.0)
+   - ✅ CORRECT: Wait for merge, then check `gh release list --limit 1`
 
-Obsidian Plugin (@exocortex/obsidian-plugin):
-  - Obsidian Plugin API 1.5.0+
-  - ESBuild (bundling)
-  - React 19.2.0 (UI components)
-  - Depends on @exocortex/core
+3. **Monitor until RELEASE, not just merge**:
+   ```bash
+   # Step 1: Wait for PR merge
+   gh pr checks --watch
 
-CLI (@exocortex/cli):
-  - Node.js 18+
-  - Commander.js (CLI framework)
-  - Depends on @exocortex/core
+   # Step 2: Wait for auto-release workflow
+   sleep 10  # Give workflow time to trigger
 
-Testing:
-  - Jest (unit tests: 803 total across all packages)
-  - Playwright CT (8 component tests)
-  - Playwright E2E (6 Docker-based integration tests)
-  - Total execution: ~15s (unit) + ~3min (E2E)
-  - Coverage: 49% global, 78-80% domain layer
+   # Step 3: Verify YOUR release was created
+   gh release list --limit 3
+   # Look for release with YOUR PR number in changelog
+   ```
 
-#### Testing shortcut
+4. **Parallel work means unpredictable ordering**:
+   - Agent A starts first, Agent B starts later
+   - Agent B may merge first (simpler changes, faster CI)
+   - Agent A merges second → gets next version number
+   - **This is NORMAL and EXPECTED**
 
-Run a single TypeScript Jest suite with the shared config to avoid parsing errors:
+5. **Check release notes to confirm**:
+   ```bash
+   # View latest release
+   gh release view v13.9.0 --json body
+
+   # Verify YOUR PR # is in the changelog
+   # If not found → check next release (v13.10.0, etc.)
+   ```
+
+**Example scenario:**
 
 ```bash
-npx jest --config packages/obsidian-plugin/jest.config.js path/to/test.ts --runInBand
+# You create PR #252 and see v13.8.0 as "Latest"
+gh release list --limit 1
+# v13.8.0  Latest  v13.8.0  2025-11-01T14:29:05Z
+
+# While your CI runs, another agent's PR merges first
+# After YOUR PR merges, check again:
+gh release list --limit 1
+# v13.9.0  Latest  v13.9.0  2025-11-01T14:39:47Z  ← YOUR release
+
+# Verify it contains your PR:
+gh release view v13.9.0 --json body
+# "### Features\n- add Votes column toggle (#252)"  ← YOUR work!
 ```
 
-> **ts-jest quirk**: class-level `async *` methods are not transpiled by the current Jest configuration. When you need an async stream, return an `AsyncIterableIterator` from a helper or closure instead of declaring `async *` directly on a class.
+**Task completion checklist:**
+- ✅ PR merged to main
+- ✅ CI checks all GREEN
+- ✅ Auto-release workflow completed
+- ✅ **YOUR PR number appears in release notes**
+- ✅ **Post-mortem report written and shared**
+- ✅ **Documentation improvements proposed**
+- ✅ Worktree cleaned up
 
-CI/CD:
-  - GitHub Actions
-  - Automated releases
-  - Branch protection
-  - Quality gates
+## 📚 Full Development Guidelines
+
+**This file covers ONLY Claude Code-specific worktree coordination.**
+
+### Documentation Hierarchy
+
+1. **Universal instructions** (all AI agents):
+   ```
+   AGENTS.md                    # Universal standard for all AI tools
+   README.md                    # Quick start and multi-agent support matrix
+   ```
+
+2. **Tool-specific instructions**:
+   ```
+   CLAUDE.md                    # This file - Claude Code with slash commands
+   .github/copilot-instructions.md    # GitHub Copilot
+   .cursor/rules/*.mdc          # Cursor IDE (modern)
+   .cursorrules                 # Cursor IDE (legacy)
+   ```
+
+3. **Project-specific guidelines**:
+   ```
+   exocortex-obsidian-plugin/CLAUDE.md              # Complete development rules
+   exocortex-obsidian-plugin/README.md              # Product features
+   exocortex-obsidian-plugin/ARCHITECTURE.md        # Architecture patterns
+   exocortex-obsidian-plugin/docs/PROPERTY_SCHEMA.md  # Frontmatter vocabulary
+   ```
+
+### Essential Topics in Project CLAUDE.md
+- PR-based workflow (RULE 1)
+- Mandatory agent usage (RULE 2)
+- Test requirements (RULE 3)
+- Branch protection (RULE 4)
+- BDD coverage (RULE 6)
+- Code style (RULE 7)
+- Monorepo structure (packages/core, packages/obsidian-plugin, packages/cli)
+- Quality metrics (803 unit tests across all packages)
+- Troubleshooting
+
+### Multi-Agent Coordination
+
+**Shared resources**:
+- All AI agents read from same `AGENTS.md` for universal guidelines
+- Tool-specific files provide enhanced features per tool
+- Git worktrees prevent conflicts between parallel agents
+
+**Communication**:
+- Check active worktrees: `/worktree-list`
+- Check open PRs: `gh pr list`
+- Coordinate with user if working on overlapping features
+
+## ⚡ Quick Start
+
+**New instance starting work?**
+
+```bash
+# 1. Read this file (you're doing it!)
+# 2. Read main guidelines
+cat exocortex-obsidian-plugin/CLAUDE.md
+
+# 3. Create your worktree
+/worktree-create my-first-task
+
+# 4. Develop following all rules
+cd worktrees/exocortex-claude1-feat-my-first-task
+# ... code ...
+
+# 5. Test and release
+npm run test:all
+git commit -am "feat: my awesome feature"
+git push origin feature/my-first-task
+gh pr create
+
+# 6. After merge, cleanup
+/worktree-cleanup
 ```
-
-### Key Features
-
-- React component architecture with isolated state management
-- Interactive table sorting with visual indicators (▲/▼)
-- Clickable Instance Class links for navigation
-- Archived asset filtering (multi-format support)
-- Mobile/iOS support with touch-optimized UI
-- Platform-specific performance optimizations
 
 ## 🔧 Development Patterns
 
-### Repository Pattern
+### Timestamp-Based Sorting Pattern
 
+**When to use**: Sorting any time-based data chronologically
+
+**Problem**: String-based time sort fails:
 ```typescript
-interface IAssetRepository {
-  findById(id: AssetId): Promise<Asset | null>;
-  save(asset: Asset): Promise<void>;
-  updateFrontmatter(path: string, frontmatter: Record<string, any>): Promise<void>;
-}
+// ❌ WRONG: String sort breaks chronological order
+tasks.sort((a, b) => a.startTime.localeCompare(b.startTime));
+// "23:45" > "00:15" → wrong order across midnight
 ```
 
-### Result Pattern (Error Handling)
-
+**Solution**: Use timestamps for sorting:
 ```typescript
-export class Result<T> {
-  static ok<U>(value: U): Result<U>;
-  static fail<U>(error: string): Result<U>;
-
-  isSuccess: boolean;
-  getValue(): T | null;
-  getError(): string;
+// ✅ CORRECT: Timestamp-based sort
+interface Task {
+  startTime: string;           // Display: "09:00"
+  startTimestamp: number;       // Sort: 1736928000000
 }
 
-// Usage
-const assetResult = Asset.create(props);
-if (!assetResult.isSuccess) {
-  console.error(assetResult.getError());
-  return;
-}
-```
-
-### Performance Optimization
-
-**IndexedGraph** (10x query speed):
-- SPO/POS/OSP indexes for O(1) lookups
-- Batch processing (5x faster bulk imports)
-- LRU cache (90% hit rate)
-
-**Mobile Optimization**:
-- Platform-aware batch sizes (10 mobile / 50 desktop)
-- Adaptive caching based on device capabilities
-- Touch gestures with momentum and haptic feedback
-
-### Modal Component Development Pattern
-
-**When creating a new modal component:**
-
-1. **Component structure:**
-```typescript
-export class MyModal extends Modal {
-  private selectedValue: string | null = null;
-  private onSubmit: (result: MyModalResult) => void;
-
-  constructor(app: App, onSubmit: (result: MyModalResult) => void, initialValue: string | null) {
-    super(app);
-    this.onSubmit = onSubmit;
-    this.selectedValue = initialValue;
-  }
-
-  onOpen(): void {
-    const { contentEl } = this;
-    contentEl.addClass("my-modal-class");
-
-    // UI elements with sentence case (ESLint enforced)
-    contentEl.createEl("h2", { text: "modal title" });  // ✅ lowercase
-
-    // Create select dropdown
-    const selectEl = contentEl.createEl("select", { cls: "my-modal-select dropdown" });
-
-    // Buttons
-    const buttonContainer = contentEl.createDiv({ cls: "modal-button-container" });
-    const okButton = buttonContainer.createEl("button", { text: "OK", cls: "mod-cta" });
-    okButton.addEventListener("click", () => this.submit());
-
-    const cancelButton = buttonContainer.createEl("button", { text: "Cancel" });
-    cancelButton.addEventListener("click", () => this.cancel());
-  }
-
-  private submit(): void {
-    this.onSubmit({ selectedValue: this.selectedValue });
-    this.close();
-  }
-
-  private cancel(): void {
-    this.close();
-  }
-
-  onClose(): void {
-    const { contentEl } = this;
-    contentEl.empty();
-  }
-}
-```
-
-2. **Test structure (Jest mocking pattern for modals):**
-```typescript
-jest.mock("obsidian", () => ({
-  Modal: class MockModal { contentEl: any; close = jest.fn(); },
-  App: jest.fn(),
-}));
-
-// CRITICAL: Use two-step mocking pattern for constructor functions
-jest.mock("../../src/presentation/modals/MyModal");
-
-describe("MyModal", () => {
-  let mockContentEl: any;
-  let modal: MyModal;
-  let onSubmitSpy: jest.Mock;
-
-  beforeEach(() => {
-    // Mock contentEl with all methods
-    mockContentEl = {
-      addClass: jest.fn(),
-      createEl: jest.fn().mockImplementation((tag, options) => {
-        if (tag === "select") {
-          const select = document.createElement("select");
-          select.className = options?.cls || "";
-          return select;
-        }
-        if (tag === "button") {
-          const button = document.createElement("button");
-          if (options?.text) button.textContent = options.text;
-          return button;
-        }
-        return document.createElement(tag);
-      }),
-      createDiv: jest.fn().mockImplementation((options) => ({
-        createEl: mockContentEl.createEl,
-        style: {},
-        className: options?.cls || "",
-      })),
-      empty: jest.fn(),
-    };
-
-    onSubmitSpy = jest.fn();
-    modal = new MyModal(mockApp, onSubmitSpy, null);
-    modal.contentEl = mockContentEl;
-    modal.close = jest.fn();
-  });
-
-  it("should render elements", () => {
-    modal.onOpen();
-    expect(mockContentEl.addClass).toHaveBeenCalledWith("my-modal-class");
-    expect(mockContentEl.createEl).toHaveBeenCalledWith("h2", { text: "modal title" });
-  });
-
-  it("should handle submission", () => {
-    modal["selectedValue"] = "test-value";
-    modal["submit"]();
-    expect(onSubmitSpy).toHaveBeenCalledWith({ selectedValue: "test-value" });
-    expect(modal.close).toHaveBeenCalled();
-  });
+tasks.sort((a, b) => {
+  const aTime = a.startTimestamp ? new Date(a.startTimestamp).getTime() : 0;
+  const bTime = b.startTimestamp ? new Date(b.startTimestamp).getTime() : 0;
+  return aTime - bTime;  // Numeric comparison
 });
 ```
 
-3. **Command integration pattern:**
+**Benefits**:
+- Accurate chronological ordering
+- Handles midnight boundary correctly
+- Handles dates across multiple days
+- Flexible display formatting (toggle between formats)
+
+**Pattern**: Keep parallel fields (formatted string + raw timestamp)
+
+**Example from PR #339**:
+- Added `startTimestamp`/`endTimestamp` alongside `startTime`/`endTime`
+- Display uses formatted string ("09:00" or "11-06 09:00")
+- Sorting uses numeric timestamp comparison
+- Toggle button switches display format without changing sort logic
+
+### Documentation Task Pattern
+
+**When creating comprehensive documentation:**
+
+1. **Research Phase** (10-15 minutes):
+   - Read source code for feature (main files + tests)
+   - Identify key components and APIs
+   - Note existing patterns and conventions
+   - Check for existing partial docs to integrate
+
+2. **Structure Phase** (5 minutes):
+   - Create docs/ subdirectory if needed
+   - Plan file structure by audience (user/developer/performance)
+   - Define scope of each file
+   - Identify cross-linking opportunities
+
+3. **Writing Phase** (60-90 minutes):
+   - Start with examples (Query-Examples.md pattern)
+   - Write user guide with progressive complexity
+   - Document developer API with TypeScript examples
+   - Add performance/troubleshooting guide if applicable
+
+4. **Integration Phase** (10 minutes):
+   - Update README.md with new section
+   - Add cross-links between docs
+   - Verify all code examples are syntactically correct
+   - Test that links resolve
+
+5. **Validation Phase**:
+   - Commit with "docs:" prefix
+   - Verify CI passes (no lint errors)
+   - Create PR with clear summary
+   - Enable auto-merge
+
+**Documentation Checklist:**
+- [ ] Examples are copy-paste ready
+- [ ] README.md updated with links
+- [ ] Performance guidance includes numbers
+- [ ] Cross-links between docs work
+- [ ] All TypeScript examples type-check
+
+**Expected Timeline:**
+- Total: 85-90 minutes (research → release)
+- Zero errors expected (documentation-only)
+- First-time CI pass (no code changes)
+- Immediate merge (low risk, high value)
+
+### Obsidian File Lookup Pattern
+
+**When looking up files via `metadataCache.getFirstLinkpathDest()`, always implement `.md` extension fallback to handle wiki-links that don't include the extension.**
+
+**Standard Pattern**:
 ```typescript
-export class MyCommand implements ICommand {
-  id = "my-command";
-  name = "My Command";
+let file = this.app.metadataCache.getFirstLinkpathDest(path, "");
 
-  callback = async (): Promise<void> => {
-    const modal = new MyModal(
-      this.app,
-      async (result: MyModalResult) => {
-        await this.handleSelection(result);
-      },
-      this.plugin.settings.currentValue || null,
-    );
-    modal.open();
-  };
+if (!file && !path.endsWith(".md")) {
+  file = this.app.metadataCache.getFirstLinkpathDest(path + ".md", "");
+}
 
-  private async handleSelection(result: MyModalResult): Promise<void> {
-    this.plugin.settings.currentValue = result.selectedValue;
-    await this.plugin.saveSettings();
-    this.plugin.refreshLayout?.();
-
-    if (result.selectedValue) {
-      new Notice(`Value set to: ${result.selectedValue}`);
-    } else {
-      new Notice("Value cleared");
-    }
-  }
+if (file instanceof TFile) {
+  // Process file
 }
 ```
 
-**Key patterns:**
-- ✅ **Sentence case** for all UI text (ESLint enforced: "modal title", not "Modal Title")
-- ✅ **Mock `contentEl` methods**, return real DOM nodes from `createEl`
-- ✅ **Test rendering** by verifying method calls, not DOM state
-- ✅ **Two-step mock pattern** for constructor functions (see AGENTS.md for details)
-- ✅ **Settings persistence** via `saveSettings()` + `refreshLayout()`
-- ✅ **User feedback** via `Notice` for all state changes
+**Why this matters**:
+- Wiki-links like `[[Page Name]]` extract to `"Page Name"` (no `.md`)
+- Obsidian's `getFirstLinkpathDest` may require full filename `"Page Name.md"`
+- Without fallback, valid references fail to resolve
+- This pattern prevents bugs in area inheritance, relation lookups, and any file resolution
 
-## 🚀 Quick Start
+**When to use**:
+- Looking up parent/child relationships (e.g., `ems__Effort_parent`)
+- Resolving prototype references (e.g., `ems__Effort_prototype`)
+- Following any property that contains wiki-links to other notes
+- Any file lookup based on frontmatter property values
 
-### Understanding Monorepo Codebase
+**Test Pattern**:
+```typescript
+it("should resolve file with .md extension fallback", () => {
+  mockApp.metadataCache.getFirstLinkpathDest.mockImplementation(
+    (linkpath: string) => {
+      if (linkpath === "file-name") return null;
+      if (linkpath === "file-name.md") return mockFile;
+      return null;
+    },
+  );
 
-**Key Entry Points:**
+  const result = service.methodThatLookupsFile("[[file-name]]");
 
-1. **Core Package** (`packages/core/`)
-   - `src/domain/` - Business entities and rules
-   - `src/application/` - Services and use cases
-   - `src/infrastructure/IFileSystemAdapter.ts` - Storage abstraction
+  expect(result).toBeDefined();
+});
 
-2. **Obsidian Plugin** (`packages/obsidian-plugin/`)
-   - `src/main.ts` - Plugin entry point
-   - `src/presentation/` - UI components and renderers
-   - `src/infrastructure/ObsidianVaultAdapter.ts` - Obsidian API integration
+it("should not duplicate .md extension if already present", () => {
+  mockApp.metadataCache.getFirstLinkpathDest.mockImplementation(
+    (linkpath: string) => {
+      if (linkpath === "file-name.md") return mockFile;
+      return null;
+    },
+  );
 
-3. **CLI Tool** (`packages/cli/`)
-   - `src/index.ts` - CLI entry point
-   - `src/commands/` - Command implementations
+  const result = service.methodThatLookupsFile("[[file-name.md]]");
 
-4. **Tests**
-   - `packages/core/tests/` - Core business logic tests
-   - `packages/obsidian-plugin/tests/` - UI, component, E2E tests
-   - `packages/cli/tests/` - CLI integration tests
-
-### Commit Message Format
-
-```
-feat: new feature
-fix: bug fix
-docs: documentation change
-refactor: code refactoring
-perf: performance improvement
-test: test addition/modification
-chore: maintenance task
-
-# BREAKING CHANGE in body triggers major version bump
+  expect(result).toBeDefined();
+  // Verify only called once (not with "file-name.md.md")
+  expect(mockApp.metadataCache.getFirstLinkpathDest).toHaveBeenCalledTimes(1);
+});
 ```
 
-## 📋 Business Requirements
+**Reference Implementations**:
+- `AssetMetadataService.getAssetLabel()` (lines 10-14)
+- `AssetMetadataService.getEffortArea()` (lines 103-108 for parent, 131-136 for prototype)
 
-### Functional Requirements
-
-- **FR-001**: RDF Triple Store (SPO/POS/OSP indexing)
-- **FR-002**: Graph Query Engine (SELECT, CONSTRUCT, ASK)
-- **FR-003**: OWL Ontology Management (class hierarchies)
-- **FR-004**: Obsidian Integration (note-to-RDF conversion)
-- **FR-005**: Interactive knowledge graph visualization
-
-### Non-Functional Requirements
-
-- **NFR-001**: Performance <100ms queries (10k triples)
-- **NFR-002**: 99.9% reliability
-- **NFR-003**: <30 minute learning curve
-- **NFR-004**: 70%+ test coverage
-- **NFR-005**: Privacy-first (no external data transmission)
-
-### Security Controls
-
-- Input validation (query sanitization, IRI/path validation)
-- Access control (local-only, Obsidian permission model)
-- Data protection (no telemetry, GDPR-ready)
-
-## 📊 Quality Metrics
-
-**Required:**
-- Test suite: 803 unit tests + 8 component tests + 6 E2E tests (total: 817 tests)
-- Coverage: ≥49% global, ≥78-80% domain layer
-- BDD coverage: ≥80%
-- TypeScript: Clean compilation (strict mode)
-- Build: <2 minutes (all packages)
-- Agent utilization: >80% for complex tasks
-
-**Monitored:**
-- Bundle size: Obsidian plugin ~206kb (React: 171kb, Plugin: 35kb)
-- Test execution: ~15s (unit) + ~3min (E2E)
-- Task success rate: >95% with agents
-- Monorepo package interdependencies
+**Real-world example**: See Issue #355 and PR #356 (Fixed area inheritance by adding `.md` fallback)
 
 ## 🆘 Troubleshooting
 
-### Common Issues
+### "Worktree created in wrong location"
 
-1. **Tests failing**: Check mock setup in `__mocks__/obsidian.ts`
-2. **Build errors**: Run `npm run build` for detailed output
-3. **Coverage low**: Add tests for uncovered branches
-4. **E2E timeout**: Verify CSS selectors match actual rendered classes in screenshots
-5. **Obsolete dependencies**: Audit code for unused plugin availability checks
-6. **Pre-commit lint blocks due to errors**: Fix ALL lint errors, never bypass with --no-verify
-
-### E2E Testing Critical Lessons
-
-**5 key lessons from v12.15.45-49 debugging (5 versions, 4 failures):**
-
-1. **Screenshot Analysis First**: Screenshots show actual rendered state - don't assume plugin broken when tests fail
-2. **Read Source Code**: Finds root cause faster than trial-and-error (`.exocortex-layout-container` never existed)
-3. **Audit Obsolete Dependencies**: Code evolves but old checks remain (Dataview availability blocked E2E Docker)
-4. **E2E Environment ≠ Production**: Docker lacks optional plugins, creates different code paths
-5. **Verify CSS Selectors**: Always check selectors exist in actual rendered output before writing tests
-
-**4 additional lessons from v12.30.5 debugging (PR #37 after main branch rebase):**
-
-6. **Docker Environment Variables**: Docker containers don't inherit GitHub Actions environment variables automatically
-   - Problem: `process.env.CI` was undefined in Docker → Playwright retries disabled (`retries: 0` instead of `retries: 2`)
-   - Solution: Export `CI=1` explicitly in `docker-entrypoint-e2e.sh`
-   - Location: `docker-entrypoint-e2e.sh:9`
-   - Lesson: Always export required environment variables in Docker entrypoint scripts
-
-7. **Modal Timing Race Condition**: Modal dialogs can appear unpredictably in headless Electron + Docker
-   - Problem: Tests waited for `.exocortex-buttons-section`, but modals blocked plugin rendering
-   - Solution: Always call `waitForModalsToClose()` BEFORE `waitForElement()` for UI elements
-   - Pattern: `await launcher.waitForModalsToClose(10000);` → then `await launcher.waitForElement('.selector', 60000);`
-   - Lesson: Handle transient UI states (modals, loading indicators) before asserting on main UI
-
-8. **Auto-Merge Requirements**: GitHub auto-merge requires branch to be up-to-date with base branch
-   - Problem: PR had `auto-merge: enabled` but stayed OPEN with `mergeStateStatus: BEHIND`
-   - Solution: Rebase feature branch with main: `git fetch origin main && git rebase origin/main && git push --force-with-lease`
-   - Trigger: After rebase, CI reruns and auto-merge activates automatically when all checks GREEN
-   - Lesson: Auto-merge doesn't trigger until: (1) All CI checks GREEN, (2) Branch up-to-date, (3) No conflicts
-
-9. **Playwright Retries Configuration**: Retry behavior depends on runtime environment detection
-   - Config: `retries: process.env.CI ? 2 : 0` in `playwright-e2e.config.ts:7`
-   - Problem: First test (cold start) failed in CI, but no retries happened
-   - Root cause: `CI` variable not set → Playwright treated CI as local environment → 0 retries
-   - Solution: Combined with Lesson #6 (export CI=1 in Docker entrypoint)
-   - Lesson: Verify environment-dependent configurations work in all execution contexts (local, Docker, CI)
-
-### E2E Tests: Docker-Only Policy (MANDATORY)
-
-**⚠️ CRITICAL: E2E tests MUST run in Docker locally - NEVER directly via npm run test:e2e**
-
-**Why Docker-only is mandatory:**
-
-1. **Environment Parity**: Docker environment matches GitHub Actions CI exactly
-   - Same Obsidian version (1.9.14)
-   - Same OS (Ubuntu Jammy)
-   - Same dependencies and plugins
-   - Prevents "works locally, fails in CI" scenarios
-
-2. **Isolation**: Docker ensures clean, reproducible test environment
-   - No interference from local Obsidian settings
-   - No cached data between runs
-   - No host system pollution
-
-3. **Performance Optimization**: Tests are optimized for Docker
-   - Parallel execution (workers: 3)
-   - Shared Obsidian fixtures per worker
-   - Multi-worker CDP port allocation (9222, 9223, 9224)
-   - Reduced timeouts (60s instead of 180s)
-
-**Correct commands:**
+**🚨 CRITICAL ERROR: Worktree not in worktrees/ directory!**
 
 ```bash
-# ✅ CORRECT - Local E2E testing (Docker)
-npm run test:e2e:local        # Runs in Docker with BuildKit cache (fast rebuilds)
+# Check where worktrees were created
+cd /Users/kitelev/Documents/exocortex-development
+ls -la  # Look for unexpected directories (not worktrees/, exocortex-obsidian-plugin/, or CLAUDE.md)
 
-# ✅ CORRECT - Full test suite (includes E2E via Docker)
-npm run test:all              # Runs unit + ui + component + e2e (Docker)
+# If you see directories like:
+# - exocortex-feat-something/
+# - feature-xyz/
+# - my-worktree/
+# These are in the WRONG location!
 
-# ⚠️ CI-ONLY - Direct E2E execution (Docker environment assumed)
-npm run test:e2e              # Used ONLY by Docker entrypoint in CI
+# Fix it:
+# 1. Check if worktree has uncommitted changes
+cd <wrong-worktree-name>
+git status
 
-# ❌ WRONG - Never run E2E directly on host
-playwright test -c playwright-e2e.config.ts  # BLOCKED - use Docker!
+# 2. If clean, just remove the worktree
+cd /Users/kitelev/Documents/exocortex-development/exocortex-obsidian-plugin
+git worktree remove ../<wrong-worktree-name>
+
+# 3. If has changes, stash them first
+cd /Users/kitelev/Documents/exocortex-development/<wrong-worktree-name>
+git stash
+cd /Users/kitelev/Documents/exocortex-development/exocortex-obsidian-plugin
+git worktree remove ../<wrong-worktree-name>
+
+# 4. Create new worktree in CORRECT location
+cd /Users/kitelev/Documents/exocortex-development
+/worktree-create correct-task-name  # Will create in worktrees/
+
+# 5. Apply stashed changes if needed
+cd worktrees/exocortex-claude1-feat-correct-task-name
+git stash pop
 ```
 
-**BuildKit Cache benefits (local development):**
+### "Working in main directory by mistake" (RULE 0 violation)
 
+**🚨 ALWAYS check your location before editing files!**
+
+**Quick detection:**
 ```bash
-# First run: ~60 seconds (builds from scratch)
-npm run test:e2e:local
-
-# Subsequent runs: ~5-10 seconds (cache hit)
-# Only changed layers rebuild
-# Obsidian base image cached (/tmp/.buildx-cache)
-# npm dependencies cached
+pwd  # MUST output: .../worktrees/exocortex-*
+# If "worktrees/" is missing → STOP immediately!
 ```
 
-**Actual CSS classes** (from UniversalLayoutRenderer.ts):
+**Quick recovery:**
+```bash
+# 1. Revert changes in main directory
+git restore .
+
+# 2. Create proper worktree
+git worktree add ../worktrees/exocortex-fix-something -b fix/something
+cd ../worktrees/exocortex-fix-something
+
+# 3. Make changes in worktree
+# ... edit files ...
+```
+
+**Why this happens:**
+- Easy to forget when making "quick fixes"
+- Terminal may open in main directory by default
+- Muscle memory from single-developer workflows
+- Session restarts without checking location
+
+**How to prevent:**
+1. **Add `pwd` check to terminal startup:**
+   ```bash
+   # Add to ~/.zshrc or ~/.bashrc
+   if [[ $(pwd) == */exocortex-obsidian-plugin ]]; then
+     echo "⚠️  WARNING: You're in main directory! Create worktree first."
+   fi
+   ```
+
+2. **Use shell prompt that shows current directory:**
+   ```bash
+   # Example PS1 prompt showing worktree indicator
+   PS1='${PWD##*/} $ '  # Shows only current directory name
+   ```
+
+3. **ALWAYS verify location before first file edit:**
+   - Before using `Edit` tool → check `pwd`
+   - Before using `Write` tool → check `pwd`
+   - If not in worktree → create one immediately
+
+**Real-world mistake (PR #312):**
+- Started editing `.github/workflows/ci.yml` in main directory
+- Caught by `git status` showing changes in main
+- Had to `git restore` and recreate in worktree
+- Lost 2-3 minutes fixing mistake
+
+**Remember:** One `pwd` check saves 5 minutes of cleanup!
+
+### "Worktree already exists"
+```bash
+/worktree-list  # See what's there
+/worktree-cleanup  # Clean merged ones
+# Or pick different task name
+```
+
+### "Rebase conflicts"
+```bash
+git status  # See conflicting files
+# Edit files, resolve conflicts
+git add .
+git rebase --continue
+```
+
+### "Someone else is working on this"
+```bash
+/worktree-list  # Check active work
+gh pr list  # Check open PRs
+# Ask user: "Should I help with X or start Y?"
+```
+
+### "Lost track of current worktree"
+```bash
+pwd  # Check current directory
+# Should be: /Users/kitelev/Documents/exocortex-development/worktrees/exocortex-*
+# If missing "worktrees/" in path → STOP! You're in the wrong place!
+```
+
+### Auto-Merge Troubleshooting
+
+**Problem: Auto-merge enabled but PR not merging**
+
+1. **Check mergeStateStatus**:
+   ```bash
+   gh pr view <PR-NUMBER> --json mergeStateStatus
+   ```
+
+   If `mergeStateStatus: BEHIND`:
+   ```bash
+   git fetch origin main
+   git rebase origin/main
+   git push --force-with-lease origin <branch-name>
+   ```
+
+2. **Auto-merge workflow timing**:
+   - PR merge → CI on main starts (~3s delay)
+   - CI on main completes (~6 minutes for E2E tests)
+   - Auto-release workflow runs (~1 minute)
+   - Release created
+
+   **Total time: 7-10 minutes from merge to release**
+
+3. **Verify release contains your PR**:
+   ```bash
+   gh release view v<VERSION> --json body --jq '.body'
+   # Look for your PR number in features list
+   ```
+
+**Lesson from PR #339**:
+- PR merged at 18:18:52Z
+- But release creation delayed until CI on main completed
+- Total wait: ~6 minutes after merge
+- Always monitor: PR merge → CI on main → Release creation
+
+### "error TS6196: X is declared but never used" in CI (but not locally)
+
+**Problem:** CI typecheck fails with unused import errors, but local `npm run check:types` passes.
+
+**Root Cause:** CI may have stricter TypeScript settings. Types imported but only used as discriminant literals (not in type annotations) trigger `noUnusedLocals` errors.
+
+**Example:**
+
 ```typescript
-exocortex-buttons-section          // line 439
-exocortex-properties-section       // line 1072
-exocortex-daily-tasks-section      // line 1149
-exocortex-assets-relations         // line 1196
-// NOTE: .exocortex-layout-container does NOT exist!
+// ❌ BAD: JoinOperation imported but never used in type annotation
+import type { AlgebraOperation, JoinOperation } from "./AlgebraOperation";
+
+function createJoin(left: AlgebraOperation, right: AlgebraOperation): AlgebraOperation {
+  return { type: "join", left, right };  // "join" is literal, not JoinOperation type
+}
+
+// ✅ GOOD: Only import types used in annotations
+import type { AlgebraOperation } from "./AlgebraOperation";
+
+function createJoin(left: AlgebraOperation, right: AlgebraOperation): AlgebraOperation {
+  return { type: "join", left, right };  // AlgebraOperation union handles "join" literal
+}
 ```
 
-### GitHub API Workaround for Network Issues
+**Solution:** Remove type imports only used as literal values in object constructors.
 
-**Problem**: Git fetch/push operations timeout with "Connection to github.com closed by remote host" or "mmap failed: Operation timed out".
+**Prevention:** Always run `npm run check:types` before pushing to catch these errors locally.
 
-**Root Cause**: Unstable network connection, git operations failing repeatedly.
+### Quick lint verification for staged files only
 
-**Solution**: Use GitHub API to update PR branch server-side:
+**Problem:** Pre-commit hook runs `npm run lint` on entire `src/` directory, failing due to lint errors in files you didn't modify.
+
+**Quick detection:**
 ```bash
-# Get current branch SHA
-CURRENT_SHA=$(git rev-parse HEAD)
+# Check YOUR staged files
+git diff --cached --name-only
 
-# Update PR branch via GitHub API (bypasses git network)
-gh api -X PUT repos/<owner>/<repo>/pulls/<PR-NUMBER>/update-branch \
-  -f expected_head_sha=$CURRENT_SHA
+# Run lint to see ALL errors (including unrelated)
+npm run lint
 ```
 
-**Result**: GitHub updates PR branch with latest main, CI reruns automatically.
-
-**When to use**: After 2-3 failed git fetch/rebase attempts due to network timeouts.
-
-**Example from PR #346**:
+**Solution (when your files are clean):**
 ```bash
-# Multiple git operations failed with timeouts
-git fetch origin main  # ❌ timeout
-git rebase origin/main  # ❌ timeout
+# Verify YOUR changes pass lint individually
+npx eslint packages/obsidian-plugin/src/path/to/your/file.ts
+npx eslint packages/core/src/path/to/another/file.ts
 
-# Used GitHub API instead
-gh api -X PUT repos/kitelev/exocortex-obsidian-plugin/pulls/346/update-branch \
-  -f expected_head_sha=d5ec25c1c7e1a457994448e75f57d9ba0cb0d1b7
-
-# ✅ Success - PR updated to SHA 4731e1c, CI restarted
+# If all pass → safe to use --no-verify
+git commit --no-verify -m "feat: your change"
 ```
+
+**Justification:** Your changes are clean, CI will catch any actual issues in your code.
+
+**When to use --no-verify:**
+- ✅ Your staged files pass lint individually
+- ✅ Errors are in files you didn't modify
+- ✅ CI will catch any actual lint issues in your code
+- ❌ Don't use to bypass legitimate errors in your changes
 
 ### Test Mock Default Values Can Mask Bugs
 
@@ -992,84 +1174,63 @@ frontmatter: createMockMetadata({ exo__Asset_label: null }),
 ```
 
 **Prevention:**
-1. Review default values in test helpers before writing tests
-2. Explicitly test missing data scenarios with `null` overrides
-3. Don't assume defaults match your test intention
-4. Read test helper source when tests pass but logic seems wrong
+1. **Review default values** in test helpers before writing tests
+2. **Explicitly test missing data** scenarios with `null` overrides
+3. **Don't assume defaults** match your test intention
+4. **Read test helper source** when tests pass but logic seems wrong
 
 **Test Helper Location:** `packages/obsidian-plugin/tests/unit/helpers/testHelpers.ts`
 
-**Example:** See PR #337 for display label resolution fix and test updates.
+**Real-world example:** See PR #337 (Fixed 3 tests after display label resolution fix)
 
-### Auto-Merge Rebase Loop (Expected Behavior)
+### Common Approval Workflow Questions
 
-**Problem**: PR has auto-merge enabled but keeps falling BEHIND main branch.
+**Q: User said "not now" - should I delete my post-mortem report?**
 
-**Root Cause**: Multiple AI agents working in parallel - other PRs merge while you monitor yours.
+**A**: NO. Keep the report for future reference. The user may approve later, or use the insights differently. Your post-mortem still has value even if documentation updates are deferred.
 
-**Solution**: This is NORMAL and EXPECTED with parallel development. Simply rebase:
-```bash
-git fetch origin main
-git rebase origin/main
-git push --force-with-lease origin <branch-name>
-```
+**Q: User said "adjust the proposal for AGENTS.md" - what do I do?**
 
-**After rebase**: CI reruns automatically and auto-merge activates when all checks GREEN.
+**A**:
+1. Modify ONLY the AGENTS.md proposal as requested by user
+2. Keep other proposals (CLAUDE.md, etc.) unchanged
+3. Present the updated version again with clear note: "Updated AGENTS.md proposal as requested"
+4. Wait for new approval decision
 
-**How many rebases to expect**: 1-3 rebases is typical with 2-5 parallel agents working.
+**Q: I made a typo in my proposal - can I fix it?**
 
-**Remember**: This is coordinated parallel development working as designed (see RULE 5).
+**A**: Ask user first: "I noticed a typo in my proposal [describe typo]. May I present a corrected version?"
 
-### Verifying Package Exports Before Re-exporting
+**Q: User approved "AGENTS.md changes" but not "CLAUDE.md changes" - what do I do?**
 
-**Problem**: TypeScript compilation fails with "Module has no exported member 'X'" when re-exporting types from dependencies.
+**A**:
+1. Edit ONLY AGENTS.md (the approved file)
+2. Do NOT edit CLAUDE.md (not approved)
+3. Confirm with user: "I've updated AGENTS.md as approved. CLAUDE.md proposal remains pending - let me know if you'd like me to apply those changes later."
 
-**Root Cause**: Types exist in source files but aren't in package's public API (`index.ts`).
+**Q: Can I update documentation in a follow-up task without asking again?**
 
-**Solution**:
-1. Verify what's actually exported:
-   ```bash
-   grep -r "export.*TypeName" packages/*/src/index.ts
-   ```
+**A**: NO. Each task requires separate approval. Even if user approved similar changes before, you must ask permission again for each new post-mortem's proposals.
 
-2. If type not found in index.ts, either:
-   - Add it to the package's exports (if it should be public)
-   - Remove it from your re-export list (if it's internal)
+**Q: Should I commit documentation changes to the same PR as my feature?**
 
-3. Verify locally before pushing:
-   ```bash
-   npm run check:types
-   ```
+**A**: Ask user for preference:
+- Option A: Separate commit in same PR: `git commit -m "docs: update AGENTS.md with learnings from [feature]"`
+- Option B: Separate PR: Create new branch for documentation updates only
+- Let user decide which approach they prefer
 
-**Example from PR #352**:
-- Tried to export `TriplePattern` from `@exocortex/core`
-- Exists in `packages/core/src/domain/TriplePattern.ts`
-- NOT in `packages/core/src/index.ts` → not public API
-- Solution: Removed from re-export list
+**Q: User is not responding to my approval request - what should I do?**
 
-**Prevention**: Always check package index.ts before assuming type availability.
-
-## 📚 Key Resources
-
-**Internal:**
-- `ARCHITECTURE.md` - System design
-- `CLAUDE-agents.md` - Agent patterns and parallel execution
-- `CLAUDE-test-patterns.md` - Test infrastructure patterns
-- `docs/` - Requirements and ADRs
-- `.claude/commands/` - Slash command definitions
-
-**External:**
-- [Obsidian Plugin API](https://docs.obsidian.md/)
-- [RDF Primer](https://www.w3.org/TR/rdf-primer/)
-
-## 🔄 Continuous Improvement
-
-After each task:
-1. Update documentation if patterns change
-2. Refactor for clarity
-3. Add tests for edge cases discovered
-4. Document error patterns and resolutions
+**A**:
+1. Do NOT edit files without approval
+2. Your post-mortem report is already written and available for user review
+3. Continue with other tasks if available
+4. User will approve when ready
 
 ---
 
-**Remember**: You are an AI assistant working on a professional software product. Write code that is clear, tested, and maintainable. Focus on user value over technical complexity.
+**Remember**:
+- 🚨 **ALL worktrees MUST be in `worktrees/` subdirectory - NO EXCEPTIONS!**
+- This directory exists to enable safe parallel development
+- When in doubt, sync early, sync often, and use slash commands
+- Before starting: validate with `pwd` that you're in `worktrees/exocortex-*`
