@@ -186,7 +186,7 @@
 .exocortex-properties-table .internal-link,
 .exocortex-tasks-table .internal-link,
 .exocortex-projects-table .internal-link {
-  color: var(--text-normal);
+  color: var(--link-color);
   text-decoration: none;
 }
 
@@ -194,7 +194,7 @@
 .exocortex-properties-table .internal-link:hover,
 .exocortex-tasks-table .internal-link:hover,
 .exocortex-projects-table .internal-link:hover {
-  color: var(--interactive-accent);
+  color: var(--link-color-hover);
   text-decoration: underline;
 }
 
@@ -284,14 +284,14 @@
 }
 
 .exocortex-relation-link {
-  color: var(--text-normal);
+  color: var(--link-color);
   text-decoration: none;
   display: block;
   width: 100%;
 }
 
 .exocortex-relation-link:hover {
-  color: var(--interactive-accent);
+  color: var(--link-color-hover);
   text-decoration: underline;
 }
 
@@ -520,12 +520,12 @@
 }
 
 .exocortex-card-title .internal-link {
-  color: var(--text-normal);
+  color: var(--link-color);
   text-decoration: none;
 }
 
 .exocortex-card-title .internal-link:hover {
-  color: var(--link-color);
+  color: var(--link-color-hover);
   text-decoration: underline;
 }
 
@@ -647,14 +647,14 @@
 }
 
 .exocortex-asset-title .internal-link {
-  color: var(--text-normal);
+  color: var(--link-color);
   text-decoration: none;
   font-weight: 600;
   font-size: 1.05em;
 }
 
 .exocortex-asset-title .internal-link:hover {
-  color: var(--link-color);
+  color: var(--link-color-hover);
   text-decoration: underline;
 }
 
@@ -1305,7 +1305,7 @@
 /* Tree link - clickable area label */
 .area-tree-link {
   flex: 1;
-  color: var(--text-normal);
+  color: var(--link-color);
   text-decoration: none;
   font-size: 0.9375rem;
   line-height: 1.5;
@@ -1315,7 +1315,7 @@
 }
 
 .area-tree-link:hover {
-  color: var(--interactive-accent);
+  color: var(--link-color-hover);
   text-decoration: underline;
 }
 
