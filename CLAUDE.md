@@ -956,6 +956,84 @@ it("should not duplicate .md extension if already present", () => {
 
 **Real-world example**: See Issue #355 and PR #356 (Fixed area inheritance by adding `.md` fallback)
 
+### Playwright Component Testing Patterns
+
+**When writing Playwright Component Tests, follow these patterns to avoid common pitfalls.**
+
+#### CSS Inline Style Assertions
+
+**Problem**: `toHaveCSS()` computes styles to pixel values, failing for percentage-based widths.
+
+**Solution**: Check style attribute directly:
+
+```typescript
+// ❌ WRONG - Playwright computes to pixels (e.g., "1024px" instead of "100%")
+await expect(component).toHaveCSS("width", "100%");
+
+// ✅ CORRECT - Check style attribute directly
+const styleAttr = await component.getAttribute("style");
+expect(styleAttr).toContain("width: 100%");
+```
+
+**Why**: Playwright's `toHaveCSS()` returns computed CSS values (resolved to pixels), not the original declaration.
+
+#### onBlur Event Testing
+
+**Problem**: Calling `blur()` directly doesn't trigger blur handler in Playwright.
+
+**Solution**: Focus element first, then click outside:
+
+```typescript
+// ❌ WRONG - blur() doesn't trigger handler reliably
+await component.blur();
+await expect.poll(() => onBlurCalled).toBe(true);  // Fails!
+
+// ✅ CORRECT - Focus first, then click outside
+await component.focus();
+await page.locator("body").click({ position: { x: 0, y: 0 } });
+await expect.poll(() => onBlurCalled).toBe(true);  // Works!
+```
+
+**Why**: Playwright requires explicit focus before blur events fire correctly.
+
+#### Cancellation Flags with Async State
+
+**When state updates are async but you need synchronous cancellation:**
+
+**Problem**: User presses Escape → local value reverts (async) → blur fires → onChange called before revert completes.
+
+**Solution**: Use ref-based synchronous flag:
+
+```typescript
+const cancelledRef = useRef(false);
+
+const handleKeyDown = (e: React.KeyboardEvent) => {
+  if (e.key === "Escape") {
+    e.preventDefault();
+    cancelledRef.current = true;  // ← Synchronous flag
+    setLocalValue(value);         // ← Async state update
+    inputRef.current?.blur();
+  }
+};
+
+const handleBlur = () => {
+  if (cancelledRef.current) {     // ← Check flag immediately
+    cancelledRef.current = false;
+    onBlur?.();
+    return;  // ← Skip onChange
+  }
+
+  if (localValue !== value) {
+    onChange(localValue);
+  }
+  onBlur?.();
+};
+```
+
+**Why**: Refs provide synchronous flags that work across render cycles, preventing race conditions with async state updates.
+
+**Real-world example**: See PR #396 (Property field UX improvements - fixed Escape key calling onChange)
+
 ## 🆘 Troubleshooting
 
 ### "Worktree created in wrong location"
@@ -1285,6 +1363,42 @@ LIMIT 20
 ```
 
 If you see predicates like `http://exocortex.org/ontology/Asset_label` but your query uses `PREFIX exo: <https://exocortex.my/ontology/exo#>`, that's the mismatch.
+
+### Playwright Dev Server Stale After Worktree Switch
+
+**Problem**: Component tests fail with "Unregistered component" error after switching worktrees.
+
+**Root Cause**: Vite dev server persists across worktree switches and caches components from the previous worktree path. When you switch to a different worktree, the dev server continues serving components from the old path, causing "Unregistered component" errors.
+
+**Solution**:
+
+```bash
+# Kill all Vite dev server processes
+pkill -f vite
+
+# Restart tests (dev server will start fresh with correct worktree)
+npm run test:component
+```
+
+**Alternative solution** (if pkill doesn't work):
+
+```bash
+# Find and kill all node processes running vite
+ps aux | grep vite
+kill -9 <PID>
+
+# Or kill all node processes (more aggressive)
+pkill -9 node
+```
+
+**Prevention**:
+- Always kill dev servers before switching worktrees
+- Use separate terminal windows per worktree
+- Close terminal completely when switching worktrees
+
+**Why this matters**: The Vite dev server caches component registrations based on file paths. When you switch worktrees, file paths change (e.g., `worktrees/exocortex-claude1-feat-a/` → `worktrees/exocortex-claude1-feat-b/`), but the cached dev server still points to old paths.
+
+**Real-world example**: See PR #396 (Component tests failed with "Unregistered component" after switching from another worktree - fixed by killing dev server)
 
 ### Common Approval Workflow Questions
 
