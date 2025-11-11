@@ -227,4 +227,36 @@ export class DateFormatter {
     today.setHours(0, 0, 0, 0);
     return DateFormatter.toLocalTimestamp(today);
   }
+
+  /**
+   * Convert date string (YYYY-MM-DD) to timestamp at start of day (00:00:00).
+   *
+   * Format: `YYYY-MM-DDT00:00:00`
+   *
+   * Used for creating tasks from DailyNote with planned start at beginning of day.
+   *
+   * @param dateStr - Date string in format "YYYY-MM-DD" (e.g., "2025-11-11")
+   * @returns Date at midnight as ISO timestamp string
+   *
+   * @example
+   * ```typescript
+   * const timestamp = DateFormatter.toTimestampAtStartOfDay("2025-11-11");
+   * // "2025-11-11T00:00:00"
+   * ```
+   */
+  static toTimestampAtStartOfDay(dateStr: string): string {
+    const parts = dateStr.split("-").map(Number);
+    if (parts.length !== 3 || parts.some(isNaN)) {
+      throw new Error(`Invalid date format: ${dateStr}. Expected YYYY-MM-DD`);
+    }
+
+    const [year, month, day] = parts;
+    const date = new Date(year, month - 1, day, 0, 0, 0, 0);
+
+    if (isNaN(date.getTime())) {
+      throw new Error(`Invalid date values: ${dateStr}`);
+    }
+
+    return DateFormatter.toLocalTimestamp(date);
+  }
 }

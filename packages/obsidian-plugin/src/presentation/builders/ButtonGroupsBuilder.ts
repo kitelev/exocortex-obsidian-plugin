@@ -30,6 +30,7 @@ import {
   canCopyLabelToAliases,
   canConvertTaskToProject,
   canConvertProjectToTask,
+  canCreateTaskForDailyNote,
   CommandVisibilityContext,
 } from "@exocortex/core";
 import {
@@ -86,6 +87,24 @@ export class ButtonGroupsBuilder {
     const baseLabel = metadata.exo__Asset_label || fileName;
     const dateStr = DateFormatter.toDateString(new Date());
     return `${baseLabel} ${dateStr}`;
+  }
+
+  private extractDailyNoteDate(metadata: Record<string, any>): string | null {
+    const dayProperty = metadata.pn__DailyNote_day;
+    if (!dayProperty) return null;
+
+    if (typeof dayProperty === "string") {
+      const wikiLinkMatch = dayProperty.match(/\[\[(.+?)\]\]/);
+      return wikiLinkMatch ? wikiLinkMatch[1] : dayProperty;
+    }
+
+    if (Array.isArray(dayProperty) && dayProperty.length > 0) {
+      const firstValue = String(dayProperty[0]);
+      const wikiLinkMatch = firstValue.match(/\[\[(.+?)\]\]/);
+      return wikiLinkMatch ? wikiLinkMatch[1] : firstValue;
+    }
+
+    return null;
   }
 
   public async build(file: TFile): Promise<ButtonGroup[]> {
@@ -316,6 +335,53 @@ export class ButtonGroupsBuilder {
           await leaf.openFile(tFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
           this.logger.info(`Created Narrower Concept: ${createdFile.path}`);
+        },
+      },
+      {
+        id: "create-task-for-dailynote",
+        label: "Create Task",
+        variant: "primary",
+        visible: canCreateTaskForDailyNote(context),
+        onClick: async () => {
+          const result = await new Promise<LabelInputModalResult>((resolve) => {
+            new LabelInputModal(this.app, resolve).open();
+          });
+          if (result.label === null) return;
+
+          const dailyNoteDate = this.extractDailyNoteDate(metadata);
+          if (!dailyNoteDate) {
+            this.logger.error("Failed to extract DailyNote date");
+            return;
+          }
+
+          const plannedStartTimestamp = DateFormatter.toTimestampAtStartOfDay(
+            dailyNoteDate,
+          );
+
+          const sourceClass = WikiLinkHelpers.normalize(
+            Array.isArray(instanceClass) ? instanceClass[0] : instanceClass,
+          );
+
+          const createdFile = await this.taskCreationService.createTask(
+            file,
+            metadata,
+            sourceClass,
+            result.label,
+            result.taskSize,
+            plannedStartTimestamp,
+          );
+          const tFile = this.app.vault.getAbstractFileByPath(createdFile.path);
+          if (!tFile || !(tFile instanceof TFile)) {
+            throw new Error(`Created file not found: ${createdFile.path}`);
+          }
+          const leaf = result.openInNewTab
+            ? this.app.workspace.getLeaf("tab")
+            : this.app.workspace.getLeaf(false);
+          await leaf.openFile(tFile);
+          this.app.workspace.setActiveLeaf(leaf, { focus: true });
+          this.logger.info(
+            `Created Task for DailyNote with planned start: ${createdFile.path}`,
+          );
         },
       },
     ];

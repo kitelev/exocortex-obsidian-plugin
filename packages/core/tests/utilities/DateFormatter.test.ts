@@ -290,6 +290,132 @@ describe("DateFormatter", () => {
     });
   });
 
+  describe("getTodayStartTimestamp", () => {
+    it("should return today at midnight", () => {
+      const result = DateFormatter.getTodayStartTimestamp();
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const expected = DateFormatter.toLocalTimestamp(today);
+
+      expect(result).toBe(expected);
+    });
+
+    it("should return correct format", () => {
+      const result = DateFormatter.getTodayStartTimestamp();
+
+      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T00:00:00$/);
+    });
+
+    it("should return midnight timestamp regardless of current time", () => {
+      const result = DateFormatter.getTodayStartTimestamp();
+
+      expect(result).toContain("T00:00:00");
+    });
+  });
+
+  describe("toTimestampAtStartOfDay", () => {
+    it("should convert date string to timestamp at midnight", () => {
+      const result = DateFormatter.toTimestampAtStartOfDay("2025-11-11");
+
+      expect(result).toBe("2025-11-11T00:00:00");
+    });
+
+    it("should handle single-digit months and days", () => {
+      const result = DateFormatter.toTimestampAtStartOfDay("2025-01-05");
+
+      expect(result).toBe("2025-01-05T00:00:00");
+    });
+
+    it("should handle leap year dates", () => {
+      const result = DateFormatter.toTimestampAtStartOfDay("2024-02-29");
+
+      expect(result).toBe("2024-02-29T00:00:00");
+    });
+
+    it("should handle year boundaries", () => {
+      const resultNewYear = DateFormatter.toTimestampAtStartOfDay("2025-01-01");
+      const resultLastDay = DateFormatter.toTimestampAtStartOfDay("2025-12-31");
+
+      expect(resultNewYear).toBe("2025-01-01T00:00:00");
+      expect(resultLastDay).toBe("2025-12-31T00:00:00");
+    });
+
+    it("should handle dates before 2000", () => {
+      const result = DateFormatter.toTimestampAtStartOfDay("1999-12-31");
+
+      expect(result).toBe("1999-12-31T00:00:00");
+    });
+
+    it("should handle dates after 2100", () => {
+      const result = DateFormatter.toTimestampAtStartOfDay("2150-06-15");
+
+      expect(result).toBe("2150-06-15T00:00:00");
+    });
+
+    it("should throw error for invalid format (missing dashes)", () => {
+      expect(() => {
+        DateFormatter.toTimestampAtStartOfDay("20251111");
+      }).toThrow("Invalid date format: 20251111. Expected YYYY-MM-DD");
+    });
+
+    it("should throw error for invalid format (wrong separator)", () => {
+      expect(() => {
+        DateFormatter.toTimestampAtStartOfDay("2025/11/11");
+      }).toThrow("Invalid date format: 2025/11/11. Expected YYYY-MM-DD");
+    });
+
+    it("should throw error for invalid format (incomplete date)", () => {
+      expect(() => {
+        DateFormatter.toTimestampAtStartOfDay("2025-11");
+      }).toThrow("Invalid date format: 2025-11. Expected YYYY-MM-DD");
+    });
+
+    it("should throw error for non-numeric values", () => {
+      expect(() => {
+        DateFormatter.toTimestampAtStartOfDay("2025-AA-11");
+      }).toThrow("Invalid date format: 2025-AA-11. Expected YYYY-MM-DD");
+    });
+
+    it("should throw error for invalid date values (month out of range)", () => {
+      expect(() => {
+        DateFormatter.toTimestampAtStartOfDay("2025-13-01");
+      }).toThrow("Invalid date values: 2025-13-01");
+    });
+
+    it("should throw error for invalid date values (day out of range)", () => {
+      expect(() => {
+        DateFormatter.toTimestampAtStartOfDay("2025-02-30");
+      }).toThrow("Invalid date values: 2025-02-30");
+    });
+
+    it("should throw error for invalid date values (day zero)", () => {
+      expect(() => {
+        DateFormatter.toTimestampAtStartOfDay("2025-11-00");
+      }).toThrow("Invalid date values: 2025-11-00");
+    });
+
+    it("should throw error for empty string", () => {
+      expect(() => {
+        DateFormatter.toTimestampAtStartOfDay("");
+      }).toThrow("Invalid date format: . Expected YYYY-MM-DD");
+    });
+
+    it("should handle dates with leading zeros", () => {
+      const result = DateFormatter.toTimestampAtStartOfDay("2025-03-07");
+
+      expect(result).toBe("2025-03-07T00:00:00");
+    });
+
+    it("should always return midnight time regardless of input format", () => {
+      const result1 = DateFormatter.toTimestampAtStartOfDay("2025-11-11");
+      const result2 = DateFormatter.toTimestampAtStartOfDay("2025-01-01");
+
+      expect(result1.endsWith("T00:00:00")).toBe(true);
+      expect(result2.endsWith("T00:00:00")).toBe(true);
+    });
+  });
+
   describe("edge cases", () => {
     it("should handle dates before 1900", () => {
       const date = new Date(1800, 0, 1);

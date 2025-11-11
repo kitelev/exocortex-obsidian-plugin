@@ -537,3 +537,49 @@ export function canConvertProjectToTask(
 ): boolean {
   return hasClass(context.instanceClass, AssetClass.PROJECT);
 }
+
+/**
+ * Extract date string from pn__DailyNote_day property
+ * Handles wiki-link format: [[2025-11-11]] -> 2025-11-11
+ */
+function extractDailyNoteDate(metadata: Record<string, any>): string | null {
+  const dayProperty = metadata.pn__DailyNote_day;
+  if (!dayProperty) return null;
+
+  if (typeof dayProperty === "string") {
+    const wikiLinkMatch = dayProperty.match(/\[\[(.+?)\]\]/);
+    return wikiLinkMatch ? wikiLinkMatch[1] : dayProperty;
+  }
+
+  if (Array.isArray(dayProperty) && dayProperty.length > 0) {
+    const firstValue = String(dayProperty[0]);
+    const wikiLinkMatch = firstValue.match(/\[\[(.+?)\]\]/);
+    return wikiLinkMatch ? wikiLinkMatch[1] : firstValue;
+  }
+
+  return null;
+}
+
+/**
+ * Check if current date is greater than or equal to DailyNote date
+ */
+function isCurrentDateGteDay(dailyNoteDate: string): boolean {
+  const today = getTodayDateString();
+  return today >= dailyNoteDate;
+}
+
+/**
+ * Can execute "Create Task for DailyNote" command
+ * Available for: pn__DailyNote assets when current date >= pn__DailyNote_day
+ */
+export function canCreateTaskForDailyNote(
+  context: CommandVisibilityContext,
+): boolean {
+  if (!hasClass(context.instanceClass, AssetClass.DAILY_NOTE)) return false;
+  if (context.isArchived) return false;
+
+  const dailyNoteDate = extractDailyNoteDate(context.metadata);
+  if (!dailyNoteDate) return false;
+
+  return isCurrentDateGteDay(dailyNoteDate);
+}

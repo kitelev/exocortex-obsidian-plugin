@@ -29,6 +29,7 @@ export class TaskFrontmatterGenerator {
     label?: string,
     uid?: string,
     taskSize?: string | null,
+    plannedStartTimestamp?: string,
   ): Record<string, any> {
     const now = new Date();
     const timestamp = DateFormatter.toLocalTimestamp(now);
@@ -68,6 +69,10 @@ export class TaskFrontmatterGenerator {
 
     if (taskSize) {
       frontmatter["ems__Task_size"] = taskSize;
+    }
+
+    if (plannedStartTimestamp) {
+      frontmatter["ems__Effort_plannedStartTimestamp"] = plannedStartTimestamp;
     }
 
     return frontmatter;
