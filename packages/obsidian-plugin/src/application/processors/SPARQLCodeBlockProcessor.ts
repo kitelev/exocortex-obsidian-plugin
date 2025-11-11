@@ -1,5 +1,5 @@
 import React from "react";
-import { MarkdownPostProcessorContext, EventRef, Notice } from "obsidian";
+import { MarkdownPostProcessorContext, EventRef, Notice, MarkdownRenderChild } from "obsidian";
 import {
   InMemoryTripleStore,
   SPARQLParser,
@@ -18,6 +18,42 @@ import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 import { ReactRenderer } from "../../presentation/utils/ReactRenderer";
 import { SPARQLResultViewer } from "../../presentation/components/sparql/SPARQLResultViewer";
 import { SPARQLErrorView, type SPARQLError } from "../../presentation/components/sparql/SPARQLErrorView";
+
+class SPARQLCleanupComponent extends MarkdownRenderChild {
+  constructor(
+    containerEl: HTMLElement,
+    private el: HTMLElement,
+    private activeQueries: Map<HTMLElement, {
+      source: string;
+      lastResults: SolutionMapping[] | Triple[];
+      refreshTimeout?: ReturnType<typeof setTimeout>;
+      eventRef?: EventRef;
+    }>,
+    private reactRenderer: ReactRenderer,
+    private container: HTMLElement,
+    private plugin: ExocortexPlugin
+  ) {
+    super(containerEl);
+  }
+
+  onload(): void {
+    // Nothing needed on load
+  }
+
+  onunload(): void {
+    const query = this.activeQueries.get(this.el);
+    if (query) {
+      if (query.refreshTimeout) {
+        clearTimeout(query.refreshTimeout);
+      }
+      if (query.eventRef) {
+        this.plugin.app.metadataCache.offref(query.eventRef);
+      }
+      this.activeQueries.delete(this.el);
+    }
+    this.reactRenderer.unmount(this.container);
+  }
+}
 
 export class SPARQLCodeBlockProcessor {
   private plugin: ExocortexPlugin;
@@ -76,21 +112,16 @@ export class SPARQLCodeBlockProcessor {
         this.scheduleRefresh(el, container, source);
       });
 
-      ctx.addChild({
-        unload: () => {
-          const query = this.activeQueries.get(el);
-          if (query) {
-            if (query.refreshTimeout) {
-              clearTimeout(query.refreshTimeout);
-            }
-            if (query.eventRef) {
-              this.plugin.app.metadataCache.offref(query.eventRef);
-            }
-            this.activeQueries.delete(el);
-          }
-          this.reactRenderer.unmount(container);
-        },
-      } as any);
+      ctx.addChild(
+        new SPARQLCleanupComponent(
+          el,
+          el,
+          this.activeQueries,
+          this.reactRenderer,
+          container,
+          this.plugin
+        )
+      );
 
       const activeQuery = this.activeQueries.get(el);
       if (activeQuery) {
