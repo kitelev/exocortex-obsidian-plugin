@@ -985,4 +985,374 @@ describe("ButtonGroupsBuilder", () => {
       expect(createTaskButton?.visible).toBe(true);
     });
   });
+
+  describe("onClick handlers", () => {
+    it("should call taskStatusService.setDraftStatus when Set Draft Status button clicked", async () => {
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "Tasks" },
+        basename: "TestTask",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[ems__Task]]",
+        ems__Effort_status: null,
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[ems__Task]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(null);
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Tasks");
+
+      const groups = await builder.build(mockFile);
+      const statusGroup = groups.find((g) => g.id === "status");
+      const draftButton = statusGroup?.buttons.find(
+        (b) => b.id === "set-draft-status",
+      );
+
+      expect(draftButton).toBeDefined();
+      if (draftButton?.onClick) {
+        await draftButton.onClick();
+      }
+
+      expect(mockTaskStatusService.setDraftStatus).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+
+    it("should call taskStatusService.moveToBacklog when Move to Backlog button clicked", async () => {
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "Tasks" },
+        basename: "TestTask",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[ems__Task]]",
+        ems__Effort_status: "[[ems__EffortStatusDraft]]",
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[ems__Task]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(
+        "[[ems__EffortStatusDraft]]",
+      );
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Tasks");
+
+      const groups = await builder.build(mockFile);
+      const statusGroup = groups.find((g) => g.id === "status");
+      const backlogButton = statusGroup?.buttons.find(
+        (b) => b.id === "move-to-backlog",
+      );
+
+      expect(backlogButton).toBeDefined();
+      if (backlogButton?.onClick) {
+        await backlogButton.onClick();
+      }
+
+      expect(mockTaskStatusService.moveToBacklog).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+
+    it("should call taskStatusService.moveToAnalysis when Move to Analysis button clicked", async () => {
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "Tasks" },
+        basename: "TestTask",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[ems__Task]]",
+        ems__Effort_status: "[[ems__EffortStatusBacklog]]",
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[ems__Task]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(
+        "[[ems__EffortStatusBacklog]]",
+      );
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Tasks");
+
+      const groups = await builder.build(mockFile);
+      const statusGroup = groups.find((g) => g.id === "status");
+      const analysisButton = statusGroup?.buttons.find(
+        (b) => b.id === "move-to-analysis",
+      );
+
+      expect(analysisButton).toBeDefined();
+      if (analysisButton?.onClick) {
+        await analysisButton.onClick();
+      }
+
+      expect(mockTaskStatusService.moveToAnalysis).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+
+    it("should call taskStatusService.moveToToDo when Move to ToDo button clicked", async () => {
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "Tasks" },
+        basename: "TestTask",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[ems__Task]]",
+        ems__Effort_status: "[[ems__EffortStatusAnalysis]]",
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[ems__Task]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(
+        "[[ems__EffortStatusAnalysis]]",
+      );
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Tasks");
+
+      const groups = await builder.build(mockFile);
+      const statusGroup = groups.find((g) => g.id === "status");
+      const todoButton = statusGroup?.buttons.find(
+        (b) => b.id === "move-to-todo",
+      );
+
+      expect(todoButton).toBeDefined();
+      if (todoButton?.onClick) {
+        await todoButton.onClick();
+      }
+
+      expect(mockTaskStatusService.moveToToDo).toHaveBeenCalledWith(mockFile);
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+
+    it("should call taskStatusService.startEffort when Start Effort button clicked", async () => {
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "Tasks" },
+        basename: "TestTask",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[ems__Task]]",
+        ems__Effort_status: "[[ems__EffortStatusToDo]]",
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[ems__Task]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(
+        "[[ems__EffortStatusToDo]]",
+      );
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Tasks");
+
+      const groups = await builder.build(mockFile);
+      const statusGroup = groups.find((g) => g.id === "status");
+      const startButton = statusGroup?.buttons.find(
+        (b) => b.id === "start-effort",
+      );
+
+      expect(startButton).toBeDefined();
+      if (startButton?.onClick) {
+        await startButton.onClick();
+      }
+
+      expect(mockTaskStatusService.startEffort).toHaveBeenCalledWith(mockFile);
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+
+    it("should call taskStatusService.markTaskAsDone when Mark Done button clicked", async () => {
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "Tasks" },
+        basename: "TestTask",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[ems__Task]]",
+        ems__Effort_status: "[[ems__EffortStatusInProgress]]",
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[ems__Task]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(
+        "[[ems__EffortStatusInProgress]]",
+      );
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Tasks");
+
+      const groups = await builder.build(mockFile);
+      const statusGroup = groups.find((g) => g.id === "status");
+      const doneButton = statusGroup?.buttons.find((b) => b.id === "mark-done");
+
+      expect(doneButton).toBeDefined();
+      if (doneButton?.onClick) {
+        await doneButton.onClick();
+      }
+
+      expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+
+    it("should call taskStatusService.rollbackStatus when Rollback Status button clicked", async () => {
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "Tasks" },
+        basename: "TestTask",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[ems__Task]]",
+        ems__Effort_status: "[[ems__EffortStatusBacklog]]",
+        ems__Effort_statusHistory: [
+          "2024-01-01T00:00:00 → [[ems__EffortStatusBacklog]]",
+        ],
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[ems__Task]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(
+        "[[ems__EffortStatusBacklog]]",
+      );
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Tasks");
+
+      const groups = await builder.build(mockFile);
+      const statusGroup = groups.find((g) => g.id === "status");
+      const rollbackButton = statusGroup?.buttons.find(
+        (b) => b.id === "rollback-status",
+      );
+
+      expect(rollbackButton).toBeDefined();
+      if (rollbackButton?.onClick) {
+        await rollbackButton.onClick();
+      }
+
+      expect(mockTaskStatusService.rollbackStatus).toHaveBeenCalledWith(
+        mockFile,
+      );
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+
+    it("should call taskStatusService.trashEffort when Trash button clicked", async () => {
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "Tasks" },
+        basename: "TestTask",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[ems__Task]]",
+        ems__Effort_status: "[[ems__EffortStatusBacklog]]",
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[ems__Task]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(
+        "[[ems__EffortStatusBacklog]]",
+      );
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Tasks");
+
+      const groups = await builder.build(mockFile);
+      const maintenanceGroup = groups.find((g) => g.id === "maintenance");
+      const trashButton = maintenanceGroup?.buttons.find(
+        (b) => b.id === "trash",
+      );
+
+      expect(trashButton).toBeDefined();
+      if (trashButton?.onClick) {
+        await trashButton.onClick();
+      }
+
+      expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(mockFile);
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+
+    it("should call taskStatusService.archiveTask when Archive button clicked", async () => {
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "Tasks" },
+        basename: "TestTask",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[ems__Task]]",
+        ems__Effort_status: "[[ems__EffortStatusDone]]",
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[ems__Task]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(
+        "[[ems__EffortStatusDone]]",
+      );
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Tasks");
+
+      const groups = await builder.build(mockFile);
+      const maintenanceGroup = groups.find((g) => g.id === "maintenance");
+      const archiveButton = maintenanceGroup?.buttons.find(
+        (b) => b.id === "archive",
+      );
+
+      expect(archiveButton).toBeDefined();
+      if (archiveButton?.onClick) {
+        await archiveButton.onClick();
+      }
+
+      expect(mockTaskStatusService.archiveTask).toHaveBeenCalledWith(mockFile);
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+
+    it("should call propertyCleanupService.cleanEmptyProperties when Clean Properties button clicked", async () => {
+      const mockFile = {
+        path: "test.md",
+        parent: { path: "Tasks" },
+        basename: "TestTask",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[ems__Task]]",
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[ems__Task]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(null);
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Tasks");
+
+      const groups = await builder.build(mockFile);
+      const maintenanceGroup = groups.find((g) => g.id === "maintenance");
+      const cleanButton = maintenanceGroup?.buttons.find(
+        (b) => b.id === "clean-properties",
+      );
+
+      expect(cleanButton).toBeDefined();
+      if (cleanButton?.onClick) {
+        await cleanButton.onClick();
+      }
+
+      expect(
+        mockPropertyCleanupService.cleanEmptyProperties,
+      ).toHaveBeenCalledWith(mockFile);
+      expect(mockRefresh).toHaveBeenCalled();
+    });
+  });
 });
