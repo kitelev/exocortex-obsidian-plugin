@@ -1114,11 +1114,16 @@ git commit -am "your message"
    ```
 
    If `mergeStateStatus: BEHIND`:
+   - **Cause**: Another PR merged to main while your PR was in CI pipeline
+   - **Solution**: Branch must be up-to-date before auto-merge activates
    ```bash
    git fetch origin main
    git rebase origin/main
    git push --force-with-lease origin <branch-name>
+   # CI will rerun automatically, auto-merge activates when checks GREEN
    ```
+
+   **Prevention**: Monitor `mergeStateStatus` regularly when using auto-merge. If you see another PR merged to main while yours is running, rebase proactively to avoid delays.
 
 2. **Auto-merge workflow timing**:
    - PR merge → CI on main starts (~3s delay)

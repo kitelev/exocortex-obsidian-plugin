@@ -1474,6 +1474,42 @@ it("should resolve file with .md extension fallback", () => {
 
 **Related Issues**: #355 (Area inheritance fix)
 
+### TypeScript Error: Parameter Declared But Never Used
+
+**Problem**: TypeScript compilation fails with `error TS6138: Property 'X' is declared but its value is never read`.
+
+**Root Cause**: Parameter declared in constructor or function but not referenced in the implementation body.
+
+**Solution**:
+```typescript
+// ❌ WRONG - 'vault' declared but never used
+constructor(
+  private vault: Vault,
+  private metadataCache: MetadataCache,
+  private app: App,
+) {
+  // Only uses metadataCache and app, not vault
+}
+
+// ✅ CORRECT - Remove unused parameter
+constructor(
+  private metadataCache: MetadataCache,
+  private app: App,
+) {
+  // Uses only what's needed
+}
+
+// Alternative: Use underscore prefix for intentionally unused
+constructor(
+  private _vault: Vault,  // Signals "intentionally unused"
+  private app: App,
+) {}
+```
+
+**Prevention**: Run `npm run check:types` locally before pushing to catch unused parameter errors early.
+
+**Related Issues**: PR #391 (AliasSyncService unused vault parameter)
+
 ---
 
 ## 📚 Additional Documentation
