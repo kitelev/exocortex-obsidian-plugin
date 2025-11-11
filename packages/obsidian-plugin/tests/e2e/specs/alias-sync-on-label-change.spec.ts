@@ -52,12 +52,9 @@ test.describe("Alias Sync on Label Change", () => {
         return { success: false, error: "File not found" };
       }
 
-      // Get old label for tracking
-      const beforeContent = await app.vault.read(file);
-      const beforeMatch = beforeContent.match(/^---\n([\s\S]*?)\n---/);
-      const oldLabel = beforeMatch
-        ? beforeMatch[1].match(/exo__Asset_label:\s*(.+)$/m)?.[1]?.trim()
-        : null;
+      // Get old label from parsed frontmatter (matches what AliasSyncService reads)
+      const fileCache = app.metadataCache.getFileCache(file);
+      const oldLabel = fileCache?.frontmatter?.exo__Asset_label || null;
 
       // Change the frontmatter
       await app.fileManager.processFrontMatter(file, (frontmatter: any) => {
@@ -170,12 +167,9 @@ test.describe("Alias Sync on Label Change", () => {
         return { success: false, error: "File not found" };
       }
 
-      // Get old label
-      const beforeContent = await app.vault.read(file);
-      const beforeMatch = beforeContent.match(/^---\n([\s\S]*?)\n---/);
-      const oldLabel = beforeMatch
-        ? beforeMatch[1].match(/exo__Asset_label:\s*(.+)$/m)?.[1]?.trim()
-        : null;
+      // Get old label from parsed frontmatter (matches what AliasSyncService reads)
+      const fileCache = app.metadataCache.getFileCache(file);
+      const oldLabel = fileCache?.frontmatter?.exo__Asset_label || null;
 
       // Change the frontmatter
       await app.fileManager.processFrontMatter(file, (frontmatter: any) => {
