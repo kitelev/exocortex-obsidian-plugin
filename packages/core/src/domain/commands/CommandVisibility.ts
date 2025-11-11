@@ -576,6 +576,7 @@ export function canCreateTaskForDailyNote(
   context: CommandVisibilityContext,
 ): boolean {
   if (!hasClass(context.instanceClass, AssetClass.DAILY_NOTE)) return false;
+  if (context.isArchived) return false;
 
   const dailyNoteDate = extractDailyNoteDate(context.metadata);
   if (!dailyNoteDate) return false;

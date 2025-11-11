@@ -2439,5 +2439,75 @@ describe("CommandVisibility", () => {
       };
       expect(canCreateTaskForDailyNote(context)).toBe(true);
     });
+
+    it("should handle day property with extra whitespace", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.DAILY_NOTE,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: "  2020-01-01  ",
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(true);
+    });
+
+    it("should return false when day property is null", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.DAILY_NOTE,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: null,
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(false);
+    });
+
+    it("should return false when day property is undefined", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.DAILY_NOTE,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: undefined,
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(false);
+    });
+
+    it("should handle mixed case instance class array", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: [AssetClass.AREA, AssetClass.DAILY_NOTE],
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: "2020-01-01",
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(true);
+    });
+
+    it("should return false for archived DailyNote", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.DAILY_NOTE,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: "2020-01-01",
+        },
+        isArchived: true,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(false);
+    });
   });
 });
