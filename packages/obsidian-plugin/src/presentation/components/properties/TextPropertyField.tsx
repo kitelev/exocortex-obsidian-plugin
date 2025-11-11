@@ -13,6 +13,7 @@ export const TextPropertyField: React.FC<TextPropertyFieldProps> = ({
 }) => {
   const [localValue, setLocalValue] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
+  const cancelledRef = useRef(false);
 
   useEffect(() => {
     setLocalValue(value);
@@ -23,6 +24,12 @@ export const TextPropertyField: React.FC<TextPropertyFieldProps> = ({
   };
 
   const handleBlur = () => {
+    if (cancelledRef.current) {
+      cancelledRef.current = false;
+      onBlur?.();
+      return;
+    }
+
     if (localValue !== value) {
       onChange(localValue);
     }
@@ -36,6 +43,7 @@ export const TextPropertyField: React.FC<TextPropertyFieldProps> = ({
     }
     if (e.key === "Escape") {
       e.preventDefault();
+      cancelledRef.current = true;
       setLocalValue(value);
       inputRef.current?.blur();
     }
@@ -51,6 +59,7 @@ export const TextPropertyField: React.FC<TextPropertyFieldProps> = ({
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       placeholder="Enter value..."
+      style={{ width: "100%" }}
     />
   );
 };
