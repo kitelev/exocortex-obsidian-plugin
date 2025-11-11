@@ -61,6 +61,7 @@ export const DateTimePropertyField: React.FC<DateTimePropertyFieldProps> = ({
           day: "numeric",
           hour: "2-digit",
           minute: "2-digit",
+          hour12: false,
         });
       } else {
         return date.toLocaleDateString(undefined, {
@@ -109,7 +110,7 @@ export const DateTimePropertyField: React.FC<DateTimePropertyFieldProps> = ({
   const handleToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsOpen(!isOpen);
+    setIsOpen((prev) => !prev);
   };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,7 +135,7 @@ export const DateTimePropertyField: React.FC<DateTimePropertyFieldProps> = ({
       <div
         ref={buttonRef}
         className="exocortex-property-datetime-display"
-        onClick={handleToggle}
+        onMouseDown={handleToggle}
         style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
       >
         <svg
