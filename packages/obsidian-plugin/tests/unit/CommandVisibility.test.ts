@@ -22,6 +22,8 @@ import {
   canCopyLabelToAliases,
   canConvertTaskToProject,
   canConvertProjectToTask,
+  canCreateTaskForDailyNote,
+  AssetClass,
 } from "@exocortex/core";
 
 describe("CommandVisibility", () => {
@@ -2247,6 +2249,195 @@ describe("CommandVisibility", () => {
         expectedFolder: null,
       };
       expect(canConvertProjectToTask(context)).toBe(false);
+    });
+  });
+
+  describe("canCreateTaskForDailyNote", () => {
+    it("should return true for DailyNote with past date", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.DAILY_NOTE,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: "2020-01-01",
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(true);
+    });
+
+    it("should return true for DailyNote with today's date", () => {
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.DAILY_NOTE,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: dateStr,
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(true);
+    });
+
+    it("should return false for DailyNote with future date", () => {
+      const future = new Date();
+      future.setFullYear(future.getFullYear() + 1);
+      const futureStr = `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, "0")}-${String(future.getDate()).padStart(2, "0")}`;
+
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.DAILY_NOTE,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: futureStr,
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(false);
+    });
+
+    it("should return false for non-DailyNote asset", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.AREA,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: "2025-11-11",
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(false);
+    });
+
+    it("should return false when pn__DailyNote_day is missing", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.DAILY_NOTE,
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(false);
+    });
+
+    it("should handle wiki-link format for day property", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.DAILY_NOTE,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: "[[2025-11-11]]",
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(true);
+    });
+
+    it("should handle quoted wiki-link format for day property", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.DAILY_NOTE,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: '"[[2025-11-11]]"',
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(true);
+    });
+
+    it("should handle array format for day property", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.DAILY_NOTE,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: ["[[2025-11-11]]"],
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(true);
+    });
+
+    it("should handle array with plain string for day property", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.DAILY_NOTE,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: ["2025-11-11"],
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(true);
+    });
+
+    it("should return false when instanceClass is null", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: null,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: "2025-11-11",
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(false);
+    });
+
+    it("should return false when day property is empty string", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.DAILY_NOTE,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: "",
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(false);
+    });
+
+    it("should return false when day property is empty array", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: AssetClass.DAILY_NOTE,
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: [],
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(false);
+    });
+
+    it("should handle instanceClass as array", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: [AssetClass.DAILY_NOTE],
+        currentStatus: null,
+        metadata: {
+          pn__DailyNote_day: "2025-11-11",
+        },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateTaskForDailyNote(context)).toBe(true);
     });
   });
 });

@@ -21,6 +21,7 @@ export class TaskCreationService {
     sourceClass: string,
     label?: string,
     taskSize?: string | null,
+    plannedStartTimestamp?: string,
   ): Promise<IFile> {
     const uid = uuidv4();
     const fileName = `${uid}.md`;
@@ -31,6 +32,7 @@ export class TaskCreationService {
       label,
       uid,
       taskSize,
+      plannedStartTimestamp,
     );
 
     let bodyContent = "";
@@ -96,6 +98,7 @@ export class TaskCreationService {
     label?: string,
     uid?: string,
     taskSize?: string | null,
+    plannedStartTimestamp?: string,
   ): Record<string, any> {
     return this.frontmatterGenerator.generateTaskFrontmatter(
       sourceMetadata,
@@ -104,6 +107,7 @@ export class TaskCreationService {
       label,
       uid,
       taskSize,
+      plannedStartTimestamp,
     );
   }
 
