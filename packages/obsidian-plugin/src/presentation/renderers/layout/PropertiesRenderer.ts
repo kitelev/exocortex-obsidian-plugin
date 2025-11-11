@@ -4,6 +4,7 @@ import { ReactRenderer } from "../../utils/ReactRenderer";
 import { MetadataExtractor } from "@exocortex/core";
 import { AssetPropertiesTable } from "../../components/AssetPropertiesTable";
 import { AssetMetadataService } from "./helpers/AssetMetadataService";
+import { PropertyUpdateService } from "../../../application/services/PropertyUpdateService";
 
 type ObsidianApp = any;
 
@@ -13,15 +14,23 @@ export interface PropertiesRendererOptions {
    * Useful when Relations block is present to avoid redundant information.
    */
   hideAliases?: boolean;
+  /**
+   * If true, properties will be editable inline.
+   */
+  editable?: boolean;
 }
 
 export class PropertiesRenderer {
+  private propertyUpdateService: PropertyUpdateService;
+
   constructor(
     private app: ObsidianApp,
     private reactRenderer: ReactRenderer,
     private metadataExtractor: MetadataExtractor,
     private metadataService: AssetMetadataService,
-  ) {}
+  ) {
+    this.propertyUpdateService = new PropertyUpdateService(app);
+  }
 
   async render(
     el: HTMLElement,
@@ -78,6 +87,9 @@ export class PropertiesRenderer {
           },
           getAssetLabel: (path: string) =>
             this.metadataService.getAssetLabel(path),
+          file: file,
+          propertyUpdateService: this.propertyUpdateService,
+          editable: options?.editable ?? true,
         }),
       );
     }

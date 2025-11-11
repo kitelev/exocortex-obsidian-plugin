@@ -1,4 +1,8 @@
 import React, { useState, useMemo } from "react";
+import { TFile } from "obsidian";
+import { PropertyUpdateService } from "../../application/services/PropertyUpdateService";
+import { TextPropertyField } from "./properties/TextPropertyField";
+import { DateTimePropertyField } from "./properties/DateTimePropertyField";
 
 interface SortState {
   column: string;
@@ -9,12 +13,18 @@ export interface AssetPropertiesTableProps {
   metadata: Record<string, any>;
   onLinkClick?: (path: string, event: React.MouseEvent) => void;
   getAssetLabel?: (path: string) => string | null;
+  file?: TFile;
+  propertyUpdateService?: PropertyUpdateService;
+  editable?: boolean;
 }
 
 export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
   metadata,
   onLinkClick,
   getAssetLabel,
+  file,
+  propertyUpdateService,
+  editable = false,
 }) => {
   const [sortState, setSortState] = useState<SortState>({
     column: "",
@@ -54,6 +64,72 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
     return {
       target: content.trim(),
     };
+  };
+
+  const detectPropertyType = (
+    value: any,
+  ): "datetime" | "text" | "number" | "boolean" | "wikilink" | "array" | "object" => {
+    if (value === null || value === undefined) return "text";
+    if (typeof value === "boolean") return "boolean";
+    if (typeof value === "number") return "number";
+    if (Array.isArray(value)) return "array";
+    if (typeof value === "object") return "object";
+
+    if (typeof value === "string") {
+      if (isWikiLink(value)) return "wikilink";
+
+      const dateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d{3})?)?Z?)?$/;
+      if (dateRegex.test(value)) {
+        const date = new Date(value);
+        if (!isNaN(date.getTime())) {
+          return "datetime";
+        }
+      }
+
+      return "text";
+    }
+
+    return "text";
+  };
+
+  const handlePropertyUpdate = async (key: string, newValue: any) => {
+    if (!file || !propertyUpdateService) return;
+
+    try {
+      await propertyUpdateService.updateProperty(file, key, newValue);
+    } catch (error) {
+      console.error(`Failed to update property "${key}":`, error);
+    }
+  };
+
+  const renderEditableField = (key: string, value: any): React.ReactNode => {
+    const propertyType = detectPropertyType(value);
+
+    switch (propertyType) {
+      case "datetime":
+        return (
+          <DateTimePropertyField
+            value={value}
+            onChange={(newValue) => handlePropertyUpdate(key, newValue)}
+          />
+        );
+
+      case "text":
+        return (
+          <TextPropertyField
+            value={String(value || "")}
+            onChange={(newValue) => handlePropertyUpdate(key, newValue)}
+          />
+        );
+
+      case "wikilink":
+      case "array":
+      case "object":
+      case "boolean":
+      case "number":
+      default:
+        return renderValue(value);
+    }
   };
 
   const renderValue = (value: any): React.ReactNode => {
@@ -208,7 +284,11 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
           {sortedEntries.map(([key, value]) => (
             <tr key={key}>
               <td className="property-key">{key}</td>
-              <td className="property-value">{renderValue(value)}</td>
+              <td className="property-value">
+                {editable && file && propertyUpdateService
+                  ? renderEditableField(key, value)
+                  : renderValue(value)}
+              </td>
             </tr>
           ))}
         </tbody>
