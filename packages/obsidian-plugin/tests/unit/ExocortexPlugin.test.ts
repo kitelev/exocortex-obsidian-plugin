@@ -79,7 +79,9 @@ describe("ExocortexPlugin", () => {
     };
 
     // Setup mock vault
-    mockVault = {};
+    mockVault = {
+      on: jest.fn().mockReturnValue({ unsubscribe: jest.fn() }),
+    };
 
     // Setup mock app
     mockApp = {
@@ -170,7 +172,7 @@ describe("ExocortexPlugin", () => {
         "sparql",
         expect.any(Function)
       );
-      expect(plugin.registerEvent).toHaveBeenCalledTimes(5);
+      expect(plugin.registerEvent).toHaveBeenCalledTimes(6);
       expect(mockLogger.info).toHaveBeenCalledWith("Exocortex Plugin loaded successfully");
     });
 

@@ -94,6 +94,14 @@ export default class ExocortexPlugin extends Plugin {
         }),
       );
 
+      this.registerEvent(
+        this.app.vault.on("modify", (file) => {
+          if (file instanceof TFile) {
+            this.handleMetadataChange(file);
+          }
+        }),
+      );
+
       // AutoLayout: Automatic rendering on file open
       this.registerEvent(
         this.app.workspace.on("file-open", (file) => {
