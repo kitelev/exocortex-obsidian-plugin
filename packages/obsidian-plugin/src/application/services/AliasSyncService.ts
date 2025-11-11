@@ -1,8 +1,7 @@
-import { TFile, Vault, MetadataCache, App } from "obsidian";
+import { TFile, MetadataCache, App } from "obsidian";
 
 export class AliasSyncService {
   constructor(
-    private vault: Vault,
     private metadataCache: MetadataCache,
     private app: App,
   ) {}

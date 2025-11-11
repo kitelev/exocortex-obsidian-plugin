@@ -16,7 +16,6 @@ describe("AliasSyncService", () => {
     };
 
     service = new AliasSyncService(
-      mockApp.vault,
       mockApp.metadataCache,
       mockApp
     );

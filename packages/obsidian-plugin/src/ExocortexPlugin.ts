@@ -62,7 +62,6 @@ export default class ExocortexPlugin extends Plugin {
         this.app.metadataCache
       );
       this.aliasSyncService = new AliasSyncService(
-        this.app.vault,
         this.app.metadataCache,
         this.app
       );
