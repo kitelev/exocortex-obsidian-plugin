@@ -37,8 +37,7 @@ export class TaskFrontmatterGenerator {
     const isDefinedBy = MetadataExtractor.extractIsDefinedBy(sourceMetadata);
 
     const cleanSourceClass = WikiLinkHelpers.normalize(sourceClass);
-    const effortProperty =
-      EFFORT_PROPERTY_MAP[cleanSourceClass] || "ems__Effort_area";
+    const effortProperty = EFFORT_PROPERTY_MAP[cleanSourceClass];
     const instanceClass =
       INSTANCE_CLASS_MAP[cleanSourceClass] || AssetClass.TASK;
 
@@ -49,7 +48,10 @@ export class TaskFrontmatterGenerator {
     frontmatter["exo__Asset_createdAt"] = timestamp;
     frontmatter["exo__Instance_class"] = [`"[[${instanceClass}]]"`];
     frontmatter["ems__Effort_status"] = '"[[ems__EffortStatusDraft]]"';
-    frontmatter[effortProperty] = `"[[${sourceName}]]"`;
+
+    if (effortProperty) {
+      frontmatter[effortProperty] = `"[[${sourceName}]]"`;
+    }
 
     let finalLabel = label;
     if (
