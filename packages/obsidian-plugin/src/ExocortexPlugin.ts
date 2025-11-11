@@ -16,6 +16,7 @@ import { ExocortexSettingTab } from "./presentation/settings/ExocortexSettingTab
 import { TaskStatusService } from "@exocortex/core";
 import { ObsidianVaultAdapter } from "./adapters/ObsidianVaultAdapter";
 import { TaskTrackingService } from "./application/services/TaskTrackingService";
+import { AliasSyncService } from "./application/services/AliasSyncService";
 import { SPARQLCodeBlockProcessor } from "./application/processors/SPARQLCodeBlockProcessor";
 import { SPARQLApi } from "./application/api/SPARQLApi";
 
@@ -30,6 +31,7 @@ export default class ExocortexPlugin extends Plugin {
   private commandManager!: CommandManager;
   private taskStatusService!: TaskStatusService;
   private taskTrackingService!: TaskTrackingService;
+  private aliasSyncService!: AliasSyncService;
   private metadataCache!: Map<string, Record<string, unknown>>;
   vaultAdapter!: ObsidianVaultAdapter;
   private sparqlProcessor!: SPARQLCodeBlockProcessor;
@@ -58,6 +60,10 @@ export default class ExocortexPlugin extends Plugin {
         this.app,
         this.app.vault,
         this.app.metadataCache
+      );
+      this.aliasSyncService = new AliasSyncService(
+        this.app.metadataCache,
+        this.app
       );
       this.metadataCache = new Map();
       this.sparqlProcessor = new SPARQLCodeBlockProcessor(this);
@@ -209,6 +215,7 @@ export default class ExocortexPlugin extends Plugin {
       // iOS Live Activities: Track status changes to DOING
       await this.taskTrackingService.handleFileChange(file);
 
+      const currentAssetLabel = metadata.exo__Asset_label;
       const currentEndTimestamp = metadata.ems__Effort_endTimestamp;
       const currentPlannedStartTimestamp =
         metadata.ems__Effort_plannedStartTimestamp;
@@ -219,6 +226,7 @@ export default class ExocortexPlugin extends Plugin {
         return;
       }
 
+      const previousAssetLabel = cachedMetadata.exo__Asset_label;
       const previousEndTimestamp = cachedMetadata.ems__Effort_endTimestamp;
       const previousPlannedStartTimestamp =
         cachedMetadata.ems__Effort_plannedStartTimestamp;
@@ -263,6 +271,26 @@ export default class ExocortexPlugin extends Plugin {
             `Shifted ems__Effort_plannedEndTimestamp by ${deltaMs}ms`,
           );
         }
+      }
+
+      if (
+        currentAssetLabel &&
+        typeof currentAssetLabel === "string" &&
+        currentAssetLabel !== previousAssetLabel
+      ) {
+        this.logger.info(
+          `Detected exo__Asset_label change in ${file.path}: ${String(previousAssetLabel)} → ${currentAssetLabel}`,
+        );
+
+        await this.aliasSyncService.syncAliases(
+          file,
+          typeof previousAssetLabel === "string" ? previousAssetLabel : null,
+          currentAssetLabel,
+        );
+
+        this.logger.info(
+          `Auto-synced aliases for exo__Asset_label change`,
+        );
       }
 
       this.metadataCache.set(file.path, { ...metadata });

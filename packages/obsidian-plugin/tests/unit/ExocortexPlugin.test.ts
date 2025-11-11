@@ -6,6 +6,7 @@ import { UniversalLayoutRenderer } from "../../src/presentation/renderers/Univer
 import { CommandManager } from "../../src/application/services/CommandManager";
 import { TaskStatusService } from "@exocortex/core";
 import { TaskTrackingService } from "../../src/application/services/TaskTrackingService";
+import { AliasSyncService } from "../../src/application/services/AliasSyncService";
 import { SPARQLCodeBlockProcessor } from "../../src/application/processors/SPARQLCodeBlockProcessor";
 import { ExocortexSettingTab } from "../../src/presentation/settings/ExocortexSettingTab";
 import { DEFAULT_SETTINGS } from "../../src/domain/settings/ExocortexSettings";
@@ -23,6 +24,7 @@ jest.mock("@exocortex/core", () => ({
   })),
 }));
 jest.mock("../../src/application/services/TaskTrackingService");
+jest.mock("../../src/application/services/AliasSyncService");
 jest.mock("../../src/application/processors/SPARQLCodeBlockProcessor");
 jest.mock("../../src/presentation/settings/ExocortexSettingTab");
 
@@ -34,6 +36,7 @@ describe("ExocortexPlugin", () => {
   let mockCommandManager: any;
   let mockTaskStatusService: any;
   let mockTaskTrackingService: any;
+  let mockAliasSyncService: any;
   let mockSparqlProcessor: any;
   let mockWorkspace: any;
   let mockMetadataCache: any;
@@ -110,6 +113,12 @@ describe("ExocortexPlugin", () => {
       handleFileChange: jest.fn().mockResolvedValue(undefined),
     };
     (TaskTrackingService as jest.Mock).mockImplementation(() => mockTaskTrackingService);
+
+    // Setup mock alias sync service
+    mockAliasSyncService = {
+      syncAliases: jest.fn().mockResolvedValue(undefined),
+    };
+    (AliasSyncService as jest.Mock).mockImplementation(() => mockAliasSyncService);
 
     // Setup mock SPARQL processor
     mockSparqlProcessor = {
@@ -540,6 +549,175 @@ describe("ExocortexPlugin", () => {
         `Failed to handle metadata change for ${mockFile.path}`,
         error
       );
+    });
+
+    describe("alias sync integration", () => {
+      it("should sync aliases when exo__Asset_label changes", async () => {
+        // Arrange
+        const oldLabel = "Old Label";
+        const newLabel = "New Label";
+        const metadata = {
+          exo__Asset_label: oldLabel,
+        };
+        mockMetadataCache.getFileCache.mockReturnValue({
+          frontmatter: metadata,
+        });
+
+        // Act - First call caches metadata
+        await (plugin as any).handleMetadataChange(mockFile);
+
+        // Change label
+        metadata.exo__Asset_label = newLabel;
+
+        // Act - Second call detects change
+        await (plugin as any).handleMetadataChange(mockFile);
+
+        // Assert
+        expect(mockAliasSyncService.syncAliases).toHaveBeenCalledWith(
+          mockFile,
+          oldLabel,
+          newLabel
+        );
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          expect.stringContaining("Detected exo__Asset_label change")
+        );
+        expect(mockLogger.info).toHaveBeenCalledWith(
+          expect.stringContaining("Auto-synced aliases")
+        );
+      });
+
+      it("should not sync aliases when label doesn't change", async () => {
+        // Arrange
+        const label = "Same Label";
+        const metadata = {
+          exo__Asset_label: label,
+        };
+        mockMetadataCache.getFileCache.mockReturnValue({
+          frontmatter: metadata,
+        });
+
+        // Act
+        await (plugin as any).handleMetadataChange(mockFile);
+        await (plugin as any).handleMetadataChange(mockFile);
+
+        // Assert
+        expect(mockAliasSyncService.syncAliases).not.toHaveBeenCalled();
+      });
+
+      it("should not sync aliases when label is not a string", async () => {
+        // Arrange
+        const metadata = {
+          exo__Asset_label: 123,
+        };
+        mockMetadataCache.getFileCache.mockReturnValue({
+          frontmatter: metadata,
+        });
+
+        // Act
+        await (plugin as any).handleMetadataChange(mockFile);
+
+        const newMetadata = {
+          exo__Asset_label: 456,
+        };
+        mockMetadataCache.getFileCache.mockReturnValue({
+          frontmatter: newMetadata,
+        });
+
+        await (plugin as any).handleMetadataChange(mockFile);
+
+        // Assert
+        expect(mockAliasSyncService.syncAliases).not.toHaveBeenCalled();
+      });
+
+      it("should not sync aliases when label is added (no previous value)", async () => {
+        // Arrange
+        const metadata = {};
+        mockMetadataCache.getFileCache.mockReturnValue({
+          frontmatter: metadata,
+        });
+
+        // Act
+        await (plugin as any).handleMetadataChange(mockFile);
+
+        // Add label
+        const newMetadata = {
+          exo__Asset_label: "New Label",
+        };
+        mockMetadataCache.getFileCache.mockReturnValue({
+          frontmatter: newMetadata,
+        });
+
+        await (plugin as any).handleMetadataChange(mockFile);
+
+        // Assert - syncAliases should be called with null as oldLabel
+        expect(mockAliasSyncService.syncAliases).toHaveBeenCalledWith(
+          mockFile,
+          null,
+          "New Label"
+        );
+      });
+
+      it("should handle label change from string to non-string", async () => {
+        // Arrange
+        const metadata = {
+          exo__Asset_label: "Original Label",
+        };
+        mockMetadataCache.getFileCache.mockReturnValue({
+          frontmatter: metadata,
+        });
+
+        // Act
+        await (plugin as any).handleMetadataChange(mockFile);
+
+        // Change to non-string
+        const newMetadata = {
+          exo__Asset_label: null,
+        };
+        mockMetadataCache.getFileCache.mockReturnValue({
+          frontmatter: newMetadata,
+        });
+
+        await (plugin as any).handleMetadataChange(mockFile);
+
+        // Assert
+        expect(mockAliasSyncService.syncAliases).not.toHaveBeenCalled();
+      });
+
+      it("should cache label value correctly", async () => {
+        // Arrange
+        const label1 = "Label 1";
+        const label2 = "Label 2";
+        const label3 = "Label 3";
+
+        const metadata = {
+          exo__Asset_label: label1,
+        };
+        mockMetadataCache.getFileCache.mockReturnValue({
+          frontmatter: metadata,
+        });
+
+        // Act
+        await (plugin as any).handleMetadataChange(mockFile);
+        metadata.exo__Asset_label = label2;
+        await (plugin as any).handleMetadataChange(mockFile);
+        metadata.exo__Asset_label = label3;
+        await (plugin as any).handleMetadataChange(mockFile);
+
+        // Assert
+        expect(mockAliasSyncService.syncAliases).toHaveBeenCalledTimes(2);
+        expect(mockAliasSyncService.syncAliases).toHaveBeenNthCalledWith(
+          1,
+          mockFile,
+          label1,
+          label2
+        );
+        expect(mockAliasSyncService.syncAliases).toHaveBeenNthCalledWith(
+          2,
+          mockFile,
+          label2,
+          label3
+        );
+      });
     });
   });
 
