@@ -421,6 +421,35 @@ describe("TaskCreationService", () => {
       expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Task]]"']);
       expect(frontmatter.exo__Asset_label).toBeUndefined();
     });
+
+    it("should NOT set ems__Effort_area when creating task from pn__DailyNote", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!toos]]"',
+        pn__DailyNote_day: "2025-11-12",
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "2025-11-12",
+        "pn__DailyNote",
+        "Morning planning",
+        undefined,
+        null,
+        "1730937600000",
+      );
+
+      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Task]]"']);
+      expect(frontmatter.ems__Effort_status).toBe(
+        '"[[ems__EffortStatusDraft]]"',
+      );
+      expect(frontmatter.exo__Asset_label).toBe("Morning planning");
+      expect(frontmatter.ems__Effort_plannedStartTimestamp).toBe(
+        "1730937600000",
+      );
+      expect(frontmatter.ems__Effort_area).toBeUndefined();
+      expect(frontmatter.ems__Effort_parent).toBeUndefined();
+      expect(frontmatter.exo__Asset_prototype).toBeUndefined();
+    });
   });
 
   describe("buildFileContent", () => {
