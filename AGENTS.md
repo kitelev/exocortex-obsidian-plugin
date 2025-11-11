@@ -938,6 +938,176 @@ const getDisplayLabel = (relation: AssetRelation): string => {
 
 **Real-world example:** See PR #337 (Fixed Name column sorting to use `exo__Asset_label`)
 
+### Pattern: Obsidian FileManager API for Frontmatter Updates
+
+**When updating note frontmatter programmatically, use `app.fileManager.processFrontMatter()` instead of raw file manipulation.**
+
+**Pattern from PR #390 (Editable Properties):**
+
+✅ **CORRECT - Use FileManager API:**
+```typescript
+// In PropertyUpdateService.ts
+async updateProperty(file: TFile, propertyKey: string, newValue: any): Promise<void> {
+  await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+    if (newValue === null || newValue === undefined || newValue === "") {
+      delete frontmatter[propertyKey];  // Remove property
+    } else {
+      frontmatter[propertyKey] = newValue;  // Update property
+    }
+  });
+}
+```
+
+❌ **WRONG - Manual YAML Parsing:**
+```typescript
+// DON'T DO THIS - fraught with edge cases
+const content = await app.vault.read(file);
+const yamlMatch = content.match(/^---\n([\s\S]*?)\n---/);
+const yaml = YAML.parse(yamlMatch[1]);
+yaml[propertyKey] = newValue;
+await app.vault.modify(file, `---\n${YAML.stringify(yaml)}\n---\n${body}`);
+```
+
+**Why FileManager API is better:**
+- **Automatic YAML handling**: Correctly formats all YAML types (strings, numbers, booleans, arrays, objects)
+- **Preserves formatting**: Maintains indentation, comments, and key ordering
+- **Type safety**: Handles special characters, multiline strings, and escape sequences correctly
+- **Metadata cache sync**: Triggers automatic metadata cache updates in Obsidian
+- **Error handling**: Built-in error handling for invalid frontmatter
+- **Transaction safety**: Atomic updates prevent partial writes
+
+**Testing pattern:**
+```typescript
+// Mock processFrontMatter in tests
+mockProcessFrontMatter = jest.fn(async (file: TFile, callback: (fm: any) => void) => {
+  const frontmatter = {};
+  callback(frontmatter);
+  // Verify frontmatter was modified correctly
+});
+
+mockApp = {
+  fileManager: {
+    processFrontMatter: mockProcessFrontMatter,
+  },
+} as unknown as App;
+```
+
+**Benefits:**
+- Works with all Obsidian-supported YAML formats
+- Compatible with Obsidian Mobile
+- No third-party YAML parser dependency
+- Respects Obsidian's internal metadata structure
+
+**Real-world example:** See PR #390 (PropertyUpdateService + editable DateTime/Text fields)
+
+### Pattern: React Hooks for Local/Remote State Sync
+
+**When building editable form fields that sync with server-side data (frontmatter, settings, etc.), use `useState` for local state and `useEffect` for prop synchronization.**
+
+**Pattern from PR #390 (Editable Properties):**
+
+✅ **CORRECT - Local State + useEffect Sync:**
+```typescript
+// In TextPropertyField.tsx
+const [localValue, setLocalValue] = useState(value);  // Local editing state
+const inputRef = useRef<HTMLInputElement>(null);
+
+// Sync local state when prop changes (external update)
+useEffect(() => {
+  setLocalValue(value);
+}, [value]);
+
+const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  setLocalValue(e.target.value);  // Update local state immediately
+};
+
+const handleBlur = () => {
+  if (localValue !== value) {
+    onChange(localValue);  // Save to server only if changed
+  }
+  onBlur?.();
+};
+
+const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    inputRef.current?.blur();  // Trigger save via onBlur
+  }
+  if (e.key === "Escape") {
+    e.preventDefault();
+    setLocalValue(value);  // Revert to original value
+    inputRef.current?.blur();
+  }
+};
+```
+
+❌ **WRONG - Controlled Input Without Local State:**
+```typescript
+// DON'T DO THIS - triggers onChange on every keystroke
+<input
+  value={value}  // Prop value directly
+  onChange={(e) => onChange(e.target.value)}  // Server update per keystroke!
+/>
+```
+
+**Why local state is better:**
+- **Responsive UX**: Input feels instant, no network lag per keystroke
+- **Debounced saves**: Only call onChange when editing complete (onBlur)
+- **Optimistic updates**: User sees changes immediately
+- **Undo support**: Escape key reverts to original value
+- **Reduced API calls**: onChange fires once (on blur) instead of per keystroke
+
+**Pattern for datetime picker:**
+```typescript
+// In DateTimePropertyField.tsx
+const [isOpen, setIsOpen] = useState(false);  // Dropdown visibility
+const [localValue, setLocalValue] = useState(value || "");  // Local edit state
+
+useEffect(() => {
+  setLocalValue(value || "");  // Sync with prop changes
+}, [value]);
+
+const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const newLocalValue = e.target.value;
+  setLocalValue(newLocalValue);  // Update local immediately
+
+  const isoValue = convertToISOFormat(newLocalValue);
+  onChange(isoValue);  // Save to server (safe for datetime - single change)
+};
+```
+
+**Key principles:**
+1. **Local state for immediate feedback** - `useState(value)`
+2. **useEffect for prop sync** - External changes update local state
+3. **onChange on blur, not keystroke** - Reduce server calls
+4. **Escape key for undo** - Revert to original prop value
+5. **Enter key for save** - Explicit save trigger
+
+**Testing pattern:**
+```typescript
+it("should update local state on change", () => {
+  const { getByRole } = render(<TextPropertyField value="initial" onChange={jest.fn()} />);
+  const input = getByRole("textbox");
+
+  fireEvent.change(input, { target: { value: "modified" } });
+  expect(input.value).toBe("modified");  // Local state updated
+});
+
+it("should call onChange only on blur", () => {
+  const onChange = jest.fn();
+  const { getByRole } = render(<TextPropertyField value="initial" onChange={onChange} />);
+  const input = getByRole("textbox");
+
+  fireEvent.change(input, { target: { value: "modified" } });
+  expect(onChange).not.toHaveBeenCalled();  // Not called yet
+
+  fireEvent.blur(input);
+  expect(onChange).toHaveBeenCalledWith("modified");  // Called on blur
+});
+```
+
+**Real-world example:** See PR #390 (TextPropertyField + DateTimePropertyField components)
+
 ---
 
 ## 📝 YAML Frontmatter Patterns
