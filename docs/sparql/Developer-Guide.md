@@ -181,7 +181,7 @@ import { Triple, IRI, Literal } from "@exocortex/core";
 
 const triple = new Triple(
   IRI("vault://Notes/My-Note.md"),
-  IRI("http://exocortex.ai/ontology#Asset_label"),
+  IRI("https://exocortex.my/ontology/exo#Asset_label"),
   Literal("My Note")
 );
 
@@ -193,7 +193,7 @@ tripleStore.add(triple);
 ```typescript
 const allTasks = tripleStore.match(
   null,  // Any subject
-  IRI("http://exocortex.ai/ontology#Instance_class"),
+  IRI("https://exocortex.my/ontology/exo#Instance_class"),
   Literal("ems__Task")
 );
 
@@ -253,8 +253,8 @@ const parser = new SPARQLParser();
 const ast = parser.parse(`
   SELECT ?task ?label
   WHERE {
-    ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-    ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+    ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+    ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
   }
 `);
 ```
@@ -620,7 +620,7 @@ describe("InMemoryTripleStore", () => {
   it("should add and retrieve triples", () => {
     const triple = new Triple(
       IRI("vault://test.md"),
-      IRI("http://exocortex.ai/ontology#Asset_label"),
+      IRI("https://exocortex.my/ontology/exo#Asset_label"),
       Literal("Test")
     );
 
@@ -639,7 +639,7 @@ describe("InMemoryTripleStore", () => {
   it("should use SPO index for (s, p, ?) pattern", () => {
     const triple = new Triple(
       IRI("vault://test.md"),
-      IRI("http://exocortex.ai/ontology#Asset_label"),
+      IRI("https://exocortex.my/ontology/exo#Asset_label"),
       Literal("Test")
     );
 
@@ -647,7 +647,7 @@ describe("InMemoryTripleStore", () => {
 
     const results = store.match(
       IRI("vault://test.md"),
-      IRI("http://exocortex.ai/ontology#Asset_label"),
+      IRI("https://exocortex.my/ontology/exo#Asset_label"),
       null
     );
 
@@ -671,7 +671,7 @@ describe("BGPExecutor", () => {
 
     store.add(new Triple(
       IRI("vault://task1.md"),
-      IRI("http://exocortex.ai/ontology#Instance_class"),
+      IRI("https://exocortex.my/ontology/exo#Instance_class"),
       Literal("ems__Task")
     ));
   });
@@ -681,7 +681,7 @@ describe("BGPExecutor", () => {
     const ast = parser.parse(`
       SELECT ?task
       WHERE {
-        ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
+        ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
       }
     `);
 
@@ -763,8 +763,8 @@ test.describe("SPARQL Code Block", () => {
       codeBlock.textContent = `
         SELECT ?task ?label
         WHERE {
-          ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-          ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+          ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+          ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
         }
       `;
       codeBlock.classList.add("language-sparql");
@@ -884,8 +884,8 @@ async function getTasks(): Promise<SolutionMapping[]> {
   const result: QueryResult = await plugin.sparql.query(`
     SELECT ?task ?label
     WHERE {
-      ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-      ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+      ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+      ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
     }
   `);
 

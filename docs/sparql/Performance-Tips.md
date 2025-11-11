@@ -70,7 +70,7 @@ Exocortex uses a **triple-indexed storage system** with three indexes:
 SELECT ?task ?status
 WHERE {
   ?task ?p ?status .  # No index match
-  FILTER(?p = <http://exocortex.ai/ontology#Task_status>)
+  FILTER(?p = <https://exocortex.my/ontology/ems#Task_status>)
 }
 ```
 
@@ -78,7 +78,7 @@ WHERE {
 ```sparql
 SELECT ?task ?status
 WHERE {
-  ?task <http://exocortex.ai/ontology#Task_status> ?status .  # POS index
+  ?task <https://exocortex.my/ontology/ems#Task_status> ?status .  # POS index
 }
 ```
 
@@ -91,7 +91,7 @@ WHERE {
 SELECT ?task ?p ?o
 WHERE {
   ?task ?p ?o .  # Wildcard predicate
-  FILTER(?p = <http://exocortex.ai/ontology#Task_status>)
+  FILTER(?p = <https://exocortex.my/ontology/ems#Task_status>)
 }
 ```
 
@@ -99,7 +99,7 @@ WHERE {
 ```sparql
 SELECT ?task ?status
 WHERE {
-  ?task <http://exocortex.ai/ontology#Task_status> ?status .
+  ?task <https://exocortex.my/ontology/ems#Task_status> ?status .
 }
 ```
 
@@ -117,8 +117,8 @@ WHERE {
 ```sparql
 SELECT ?task ?label
 WHERE {
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .  # Matches ~1000 assets
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .  # Filters to ~200 tasks
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .  # Matches ~1000 assets
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .  # Filters to ~200 tasks
 }
 ```
 
@@ -126,8 +126,8 @@ WHERE {
 ```sparql
 SELECT ?task ?label
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .  # Matches ~200 tasks
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .  # Gets labels for 200
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .  # Matches ~200 tasks
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .  # Gets labels for 200
 }
 ```
 
@@ -139,9 +139,9 @@ WHERE {
 ```sparql
 SELECT ?task ?label ?project
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
   FILTER(regex(?label, "urgent", "i"))  # Filter at end
 }
 ```
@@ -150,10 +150,10 @@ WHERE {
 ```sparql
 SELECT ?task ?label ?project
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
   FILTER(regex(?label, "urgent", "i"))  # Filter reduces set early
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
 }
 ```
 
@@ -187,8 +187,8 @@ LIMIT 1000
 ```sparql
 SELECT ?task ?label
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
 }
 ```
 
@@ -200,7 +200,7 @@ WHERE {
 ```sparql
 SELECT ?asset ?label
 WHERE {
-  ?asset <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?asset <https://exocortex.my/ontology/exo#Asset_label> ?label .
   FILTER(regex(?label, ".*", "i"))  # Match everything
 }
 ```
@@ -211,8 +211,8 @@ WHERE {
 ```sparql
 SELECT ?asset ?label
 WHERE {
-  ?asset <http://exocortex.ai/ontology#Instance_class> "ems__Task" .  # Reduce set first
-  ?asset <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?asset <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .  # Reduce set first
+  ?asset <https://exocortex.my/ontology/exo#Asset_label> ?label .
   FILTER(regex(?label, "urgent", "i"))  # Specific pattern
 }
 ```
@@ -223,8 +223,8 @@ WHERE {
 ```sparql
 SELECT DISTINCT ?task ?label
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
 }
 ```
 
@@ -234,8 +234,8 @@ WHERE {
 ```sparql
 SELECT ?task ?label
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
 }
 ```
 
@@ -247,13 +247,13 @@ WHERE {
 ```sparql
 SELECT ?task ?label ?status ?priority ?votes ?project ?area
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  OPTIONAL { ?task <http://exocortex.ai/ontology#Asset_label> ?label . }
-  OPTIONAL { ?task <http://exocortex.ai/ontology#Task_status> ?status . }
-  OPTIONAL { ?task <http://exocortex.ai/ontology#Task_priority> ?priority . }
-  OPTIONAL { ?task <http://exocortex.ai/ontology#Effort_votes> ?votes . }
-  OPTIONAL { ?task <http://exocortex.ai/ontology#belongs_to_project> ?project . }
-  OPTIONAL { ?project <http://exocortex.ai/ontology#belongs_to_area> ?area . }
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  OPTIONAL { ?task <https://exocortex.my/ontology/exo#Asset_label> ?label . }
+  OPTIONAL { ?task <https://exocortex.my/ontology/ems#Task_status> ?status . }
+  OPTIONAL { ?task <https://exocortex.my/ontology/ems#Task_priority> ?priority . }
+  OPTIONAL { ?task <https://exocortex.my/ontology/ems#Effort_votes> ?votes . }
+  OPTIONAL { ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project . }
+  OPTIONAL { ?project <https://exocortex.my/ontology/ems#belongs_to_area> ?area . }
 }
 ```
 
@@ -263,8 +263,8 @@ WHERE {
 ```sparql
 SELECT ?task ?label
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
 }
 ```
 
@@ -276,9 +276,9 @@ WHERE {
 ```sparql
 SELECT (COUNT(?task) AS ?count)
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
-  ?task <http://exocortex.ai/ontology#Task_status> ?status .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/ems#Task_status> ?status .
 }
 ```
 
@@ -288,7 +288,7 @@ WHERE {
 ```sparql
 SELECT (COUNT(?task) AS ?count)
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
 }
 ```
 
@@ -340,7 +340,7 @@ console.log(`Query took ${elapsed}ms, returned ${results.count} results`);
 ```sparql
 SELECT ?task
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
 }
 ```
 
@@ -349,8 +349,8 @@ WHERE {
 ```sparql
 SELECT ?task ?label
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
 }
 ```
 
@@ -359,8 +359,8 @@ WHERE {
 ```sparql
 SELECT ?task ?label
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
   FILTER(regex(?label, "urgent", "i"))
 }
 ```
@@ -378,8 +378,8 @@ WHERE {
 ```sparql
 SELECT ?task ?label
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
 }
 LIMIT 10  # Safe for testing
 ```
@@ -389,8 +389,8 @@ LIMIT 10  # Safe for testing
 ```sparql
 SELECT ?task ?label
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
 }
 # Only omit LIMIT if you're sure result set is small
 ```
@@ -410,7 +410,7 @@ async function getTaskStatuses() {
   cachedResults = await plugin.sparql.query(`
     SELECT DISTINCT ?status
     WHERE {
-      ?task <http://exocortex.ai/ontology#Task_status> ?status .
+      ?task <https://exocortex.my/ontology/ems#Task_status> ?status .
     }
   `);
 
@@ -425,8 +425,8 @@ async function getTaskStatuses() {
 ```sparql
 SELECT ?task ?label
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
 }
 LIMIT 50
 OFFSET 0
@@ -448,7 +448,7 @@ OFFSET 50
 
 ✅ **DO** (specific):
 ```sparql
-?task <http://exocortex.ai/ontology#Task_status> ?status .
+?task <https://exocortex.my/ontology/ems#Task_status> ?status .
 ```
 
 ### 5. Avoid Complex Filters
@@ -483,7 +483,7 @@ Instead of:
 ```sparql
 SELECT ?project (COUNT(?task) AS ?count)
 WHERE {
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
 }
 GROUP BY ?project
 ```

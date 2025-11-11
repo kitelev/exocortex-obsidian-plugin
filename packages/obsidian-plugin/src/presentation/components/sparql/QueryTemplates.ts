@@ -13,9 +13,11 @@ export const QUERY_TEMPLATES: QueryTemplate[] = [
     name: "all assets",
     description: "get all notes in your vault",
     category: "basic",
-    query: `SELECT ?asset ?label
+    query: `PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?asset ?label
 WHERE {
-  ?asset <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?asset exo:Asset_label ?label .
 }
 LIMIT 100`,
     useCase: "quick overview of vault contents",
@@ -25,9 +27,11 @@ LIMIT 100`,
     name: "list entity types",
     description: "find all unique entity classes",
     category: "basic",
-    query: `SELECT DISTINCT ?class
+    query: `PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT DISTINCT ?class
 WHERE {
-  ?asset <http://exocortex.ai/ontology#Instance_class> ?class .
+  ?asset exo:Instance_class ?class .
 }`,
     useCase: "understanding vault structure",
   },
@@ -36,9 +40,11 @@ WHERE {
     name: "count assets by type",
     description: "count assets grouped by entity type",
     category: "basic",
-    query: `SELECT ?class (COUNT(?asset) AS ?count)
+    query: `PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?class (COUNT(?asset) AS ?count)
 WHERE {
-  ?asset <http://exocortex.ai/ontology#Instance_class> ?class .
+  ?asset exo:Instance_class ?class .
 }
 GROUP BY ?class
 ORDER BY DESC(?count)`,
@@ -49,13 +55,16 @@ ORDER BY DESC(?count)`,
     name: "all active tasks",
     description: "list all non-archived tasks",
     category: "tasks",
-    query: `SELECT ?task ?label ?status
+    query: `PREFIX exo: <https://exocortex.my/ontology/exo#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?task ?label ?status
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
-  OPTIONAL { ?task <http://exocortex.ai/ontology#Task_status> ?status . }
+  ?task exo:Instance_class "ems__Task" .
+  ?task exo:Asset_label ?label .
+  OPTIONAL { ?task ems:Task_status ?status . }
   FILTER NOT EXISTS {
-    ?task <http://exocortex.ai/ontology#Asset_archived> ?archived .
+    ?task exo:Asset_archived ?archived .
     FILTER(?archived = true || ?archived = "true" || ?archived = "archived")
   }
 }
@@ -67,10 +76,13 @@ ORDER BY ?label`,
     name: "tasks by status",
     description: "count tasks grouped by status",
     category: "tasks",
-    query: `SELECT ?status (COUNT(?task) AS ?count)
+    query: `PREFIX exo: <https://exocortex.my/ontology/exo#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?status (COUNT(?task) AS ?count)
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Task_status> ?status .
+  ?task exo:Instance_class "ems__Task" .
+  ?task ems:Task_status ?status .
 }
 GROUP BY ?status
 ORDER BY DESC(?count)`,
@@ -81,13 +93,16 @@ ORDER BY DESC(?count)`,
     name: "in-progress tasks",
     description: "show tasks currently being worked on",
     category: "tasks",
-    query: `SELECT ?task ?label ?project
+    query: `PREFIX exo: <https://exocortex.my/ontology/exo#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?task ?label ?project
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
-  ?task <http://exocortex.ai/ontology#Task_status> "in-progress" .
+  ?task exo:Instance_class "ems__Task" .
+  ?task exo:Asset_label ?label .
+  ?task ems:Task_status "in-progress" .
   OPTIONAL {
-    ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
+    ?task ems:belongs_to_project ?project .
   }
 }
 ORDER BY ?project ?label`,
@@ -98,11 +113,14 @@ ORDER BY ?project ?label`,
     name: "high-effort tasks",
     description: "find tasks with significant effort votes",
     category: "tasks",
-    query: `SELECT ?task ?label ?votes
+    query: `PREFIX exo: <https://exocortex.my/ontology/exo#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?task ?label ?votes
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
-  ?task <http://exocortex.ai/ontology#Effort_votes> ?votes .
+  ?task exo:Instance_class "ems__Task" .
+  ?task exo:Asset_label ?label .
+  ?task ems:Effort_votes ?votes .
   FILTER(?votes > 5)
 }
 ORDER BY DESC(?votes)`,
@@ -113,13 +131,16 @@ ORDER BY DESC(?votes)`,
     name: "tasks without project",
     description: "find orphaned tasks not assigned to projects",
     category: "tasks",
-    query: `SELECT ?task ?label ?status
+    query: `PREFIX exo: <https://exocortex.my/ontology/exo#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?task ?label ?status
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
-  OPTIONAL { ?task <http://exocortex.ai/ontology#Task_status> ?status . }
+  ?task exo:Instance_class "ems__Task" .
+  ?task exo:Asset_label ?label .
+  OPTIONAL { ?task ems:Task_status ?status . }
   FILTER NOT EXISTS {
-    ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
+    ?task ems:belongs_to_project ?project .
   }
 }
 ORDER BY ?label`,
@@ -130,11 +151,14 @@ ORDER BY ?label`,
     name: "tasks by priority",
     description: "list tasks sorted by priority",
     category: "tasks",
-    query: `SELECT ?task ?label ?priority
+    query: `PREFIX exo: <https://exocortex.my/ontology/exo#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?task ?label ?priority
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
-  OPTIONAL { ?task <http://exocortex.ai/ontology#Task_priority> ?priority . }
+  ?task exo:Instance_class "ems__Task" .
+  ?task exo:Asset_label ?label .
+  OPTIONAL { ?task ems:Task_priority ?priority . }
 }
 ORDER BY ?priority ?label`,
     useCase: "priority-based task planning",
@@ -144,12 +168,15 @@ ORDER BY ?priority ?label`,
     name: "tasks in project",
     description: "find all tasks belonging to specific project",
     category: "projects",
-    query: `SELECT ?task ?label ?status
+    query: `PREFIX exo: <https://exocortex.my/ontology/exo#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?task ?label ?status
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
-  OPTIONAL { ?task <http://exocortex.ai/ontology#Task_status> ?status . }
+  ?task exo:Instance_class "ems__Task" .
+  ?task exo:Asset_label ?label .
+  ?task ems:belongs_to_project ?project .
+  OPTIONAL { ?task ems:Task_status ?status . }
 }
 ORDER BY ?label
 LIMIT 50`,
@@ -160,13 +187,16 @@ LIMIT 50`,
     name: "project hierarchy",
     description: "show projects with their parent areas",
     category: "projects",
-    query: `SELECT ?project ?projectLabel ?area ?areaLabel
+    query: `PREFIX exo: <https://exocortex.my/ontology/exo#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?project ?projectLabel ?area ?areaLabel
 WHERE {
-  ?project <http://exocortex.ai/ontology#Instance_class> "ems__Project" .
-  ?project <http://exocortex.ai/ontology#Asset_label> ?projectLabel .
+  ?project exo:Instance_class "ems__Project" .
+  ?project exo:Asset_label ?projectLabel .
   OPTIONAL {
-    ?project <http://exocortex.ai/ontology#belongs_to_area> ?area .
-    ?area <http://exocortex.ai/ontology#Asset_label> ?areaLabel .
+    ?project ems:belongs_to_area ?area .
+    ?area exo:Asset_label ?areaLabel .
   }
 }
 ORDER BY ?areaLabel ?projectLabel`,
@@ -177,14 +207,17 @@ ORDER BY ?areaLabel ?projectLabel`,
     name: "task relationships",
     description: "visualize task relationships (CONSTRUCT query)",
     category: "relationships",
-    query: `CONSTRUCT {
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
-  ?project <http://exocortex.ai/ontology#belongs_to_area> ?area .
+    query: `PREFIX exo: <https://exocortex.my/ontology/exo#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+CONSTRUCT {
+  ?task ems:belongs_to_project ?project .
+  ?project ems:belongs_to_area ?area .
 }
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
-  ?project <http://exocortex.ai/ontology#belongs_to_area> ?area .
+  ?task exo:Instance_class "ems__Task" .
+  ?task ems:belongs_to_project ?project .
+  ?project ems:belongs_to_area ?area .
 }
 LIMIT 100`,
     useCase: "graph visualization of task hierarchy",
@@ -194,11 +227,14 @@ LIMIT 100`,
     name: "recent effort activity",
     description: "find assets with recent effort history",
     category: "time-based",
-    query: `SELECT ?asset ?label ?lastEffort
+    query: `PREFIX exo: <https://exocortex.my/ontology/exo#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?asset ?label ?lastEffort
 WHERE {
-  ?asset <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?asset <http://exocortex.ai/ontology#Asset_label> ?label .
-  ?asset <http://exocortex.ai/ontology#Effort_last_entry> ?lastEffort .
+  ?asset exo:Instance_class "ems__Task" .
+  ?asset exo:Asset_label ?label .
+  ?asset ems:Effort_last_entry ?lastEffort .
 }
 ORDER BY DESC(?lastEffort)
 LIMIT 20`,
@@ -209,11 +245,13 @@ LIMIT 20`,
     name: "project completion rate",
     description: "calculate completion percentage per project",
     category: "aggregations",
-    query: `SELECT ?project (COUNT(?task) AS ?totalTasks) (SUM(?isDone) AS ?completedTasks)
+    query: `PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?project (COUNT(?task) AS ?totalTasks) (SUM(?isDone) AS ?completedTasks)
 WHERE {
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
+  ?task ems:belongs_to_project ?project .
   BIND(IF(?status = "done", 1, 0) AS ?isDone)
-  OPTIONAL { ?task <http://exocortex.ai/ontology#Task_status> ?status . }
+  OPTIONAL { ?task ems:Task_status ?status . }
 }
 GROUP BY ?project
 ORDER BY DESC(?completedTasks)`,
@@ -224,10 +262,12 @@ ORDER BY DESC(?completedTasks)`,
     name: "effort distribution",
     description: "sum effort votes by project",
     category: "aggregations",
-    query: `SELECT ?project (SUM(?votes) AS ?totalEffort)
+    query: `PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?project (SUM(?votes) AS ?totalEffort)
 WHERE {
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
-  ?task <http://exocortex.ai/ontology#Effort_votes> ?votes .
+  ?task ems:belongs_to_project ?project .
+  ?task ems:Effort_votes ?votes .
 }
 GROUP BY ?project
 ORDER BY DESC(?totalEffort)`,

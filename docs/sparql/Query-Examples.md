@@ -24,7 +24,7 @@ Get all notes in your vault:
 ```sparql
 SELECT ?asset ?label
 WHERE {
-  ?asset <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?asset <https://exocortex.my/ontology/exo#Asset_label> ?label .
 }
 LIMIT 100
 ```
@@ -40,7 +40,7 @@ Find all unique entity classes in your vault:
 ```sparql
 SELECT DISTINCT ?class
 WHERE {
-  ?asset <http://exocortex.ai/ontology#Instance_class> ?class .
+  ?asset <https://exocortex.my/ontology/exo#Instance_class> ?class .
 }
 ```
 
@@ -58,7 +58,7 @@ Count how many assets of each type you have:
 ```sparql
 SELECT ?class (COUNT(?asset) AS ?count)
 WHERE {
-  ?asset <http://exocortex.ai/ontology#Instance_class> ?class .
+  ?asset <https://exocortex.my/ontology/exo#Instance_class> ?class .
 }
 GROUP BY ?class
 ORDER BY DESC(?count)
@@ -77,11 +77,11 @@ List all non-archived tasks:
 ```sparql
 SELECT ?task ?label ?status
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
-  OPTIONAL { ?task <http://exocortex.ai/ontology#Task_status> ?status . }
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  OPTIONAL { ?task <https://exocortex.my/ontology/ems#Task_status> ?status . }
   FILTER NOT EXISTS {
-    ?task <http://exocortex.ai/ontology#Asset_archived> ?archived .
+    ?task <https://exocortex.my/ontology/exo#Asset_archived> ?archived .
     FILTER(?archived = true || ?archived = "true" || ?archived = "archived")
   }
 }
@@ -99,8 +99,8 @@ Get tasks grouped by their status:
 ```sparql
 SELECT ?status (COUNT(?task) AS ?count)
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Task_status> ?status .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/ems#Task_status> ?status .
 }
 GROUP BY ?status
 ORDER BY DESC(?count)
@@ -117,11 +117,11 @@ Show all tasks currently being worked on:
 ```sparql
 SELECT ?task ?label ?project
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
-  ?task <http://exocortex.ai/ontology#Task_status> "in-progress" .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/ems#Task_status> "in-progress" .
   OPTIONAL {
-    ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
+    ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
   }
 }
 ORDER BY ?project ?label
@@ -138,9 +138,9 @@ Find tasks with significant effort votes:
 ```sparql
 SELECT ?task ?label ?votes
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
-  ?task <http://exocortex.ai/ontology#Effort_votes> ?votes .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/ems#Effort_votes> ?votes .
   FILTER(?votes > 5)
 }
 ORDER BY DESC(?votes)
@@ -157,11 +157,11 @@ Find orphaned tasks not assigned to any project:
 ```sparql
 SELECT ?task ?label ?status
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
-  OPTIONAL { ?task <http://exocortex.ai/ontology#Task_status> ?status . }
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  OPTIONAL { ?task <https://exocortex.my/ontology/ems#Task_status> ?status . }
   FILTER NOT EXISTS {
-    ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
+    ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
   }
 }
 ORDER BY ?label
@@ -178,9 +178,9 @@ List tasks sorted by priority:
 ```sparql
 SELECT ?task ?label ?priority
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
-  OPTIONAL { ?task <http://exocortex.ai/ontology#Task_priority> ?priority . }
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  OPTIONAL { ?task <https://exocortex.my/ontology/ems#Task_priority> ?priority . }
 }
 ORDER BY ?priority ?label
 ```
@@ -196,9 +196,9 @@ Find tasks created recently (assuming you have a creation date property):
 ```sparql
 SELECT ?task ?label ?created
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?label .
-  ?task <http://exocortex.ai/ontology#created_at> ?created .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/exo#created_at> ?created .
   FILTER(?created > "2025-01-01")
 }
 ORDER BY DESC(?created)
@@ -218,10 +218,10 @@ List projects and count their tasks:
 ```sparql
 SELECT ?project ?projectLabel (COUNT(?task) AS ?taskCount)
 WHERE {
-  ?project <http://exocortex.ai/ontology#Instance_class> "ems__Project" .
-  ?project <http://exocortex.ai/ontology#Asset_label> ?projectLabel .
+  ?project <https://exocortex.my/ontology/exo#Instance_class> "ems__Project" .
+  ?project <https://exocortex.my/ontology/exo#Asset_label> ?projectLabel .
   OPTIONAL {
-    ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
+    ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
   }
 }
 GROUP BY ?project ?projectLabel
@@ -239,10 +239,10 @@ Group projects by their parent area:
 ```sparql
 SELECT ?area ?areaLabel ?project ?projectLabel
 WHERE {
-  ?area <http://exocortex.ai/ontology#Instance_class> "ems__Area" .
-  ?area <http://exocortex.ai/ontology#Asset_label> ?areaLabel .
-  ?project <http://exocortex.ai/ontology#belongs_to_area> ?area .
-  ?project <http://exocortex.ai/ontology#Asset_label> ?projectLabel .
+  ?area <https://exocortex.my/ontology/exo#Instance_class> "ems__Area" .
+  ?area <https://exocortex.my/ontology/exo#Asset_label> ?areaLabel .
+  ?project <https://exocortex.my/ontology/ems#belongs_to_area> ?area .
+  ?project <https://exocortex.my/ontology/exo#Asset_label> ?projectLabel .
 }
 ORDER BY ?areaLabel ?projectLabel
 ```
@@ -258,10 +258,10 @@ Find projects with at least one in-progress task:
 ```sparql
 SELECT DISTINCT ?project ?projectLabel
 WHERE {
-  ?project <http://exocortex.ai/ontology#Instance_class> "ems__Project" .
-  ?project <http://exocortex.ai/ontology#Asset_label> ?projectLabel .
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
-  ?task <http://exocortex.ai/ontology#Task_status> "in-progress" .
+  ?project <https://exocortex.my/ontology/exo#Instance_class> "ems__Project" .
+  ?project <https://exocortex.my/ontology/exo#Asset_label> ?projectLabel .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+  ?task <https://exocortex.my/ontology/ems#Task_status> "in-progress" .
 }
 ORDER BY ?projectLabel
 ```
@@ -277,10 +277,10 @@ Find empty projects that might need cleanup:
 ```sparql
 SELECT ?project ?projectLabel
 WHERE {
-  ?project <http://exocortex.ai/ontology#Instance_class> "ems__Project" .
-  ?project <http://exocortex.ai/ontology#Asset_label> ?projectLabel .
+  ?project <https://exocortex.my/ontology/exo#Instance_class> "ems__Project" .
+  ?project <https://exocortex.my/ontology/exo#Asset_label> ?projectLabel .
   FILTER NOT EXISTS {
-    ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
+    ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
   }
 }
 ORDER BY ?projectLabel
@@ -300,10 +300,10 @@ SELECT ?project ?projectLabel
        (SUM(IF(?status = "done", 1, 0)) AS ?doneTasks)
        (SUM(IF(?status = "done", 1, 0)) * 100 / COUNT(?task) AS ?completionRate)
 WHERE {
-  ?project <http://exocortex.ai/ontology#Instance_class> "ems__Project" .
-  ?project <http://exocortex.ai/ontology#Asset_label> ?projectLabel .
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
-  ?task <http://exocortex.ai/ontology#Task_status> ?status .
+  ?project <https://exocortex.my/ontology/exo#Instance_class> "ems__Project" .
+  ?project <https://exocortex.my/ontology/exo#Asset_label> ?projectLabel .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+  ?task <https://exocortex.my/ontology/ems#Task_status> ?status .
 }
 GROUP BY ?project ?projectLabel
 HAVING (COUNT(?task) > 0)
@@ -323,14 +323,14 @@ Show full hierarchy for each task:
 ```sparql
 SELECT ?task ?taskLabel ?project ?projectLabel ?area ?areaLabel
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?taskLabel .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?taskLabel .
   OPTIONAL {
-    ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
-    ?project <http://exocortex.ai/ontology#Asset_label> ?projectLabel .
+    ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+    ?project <https://exocortex.my/ontology/exo#Asset_label> ?projectLabel .
     OPTIONAL {
-      ?project <http://exocortex.ai/ontology#belongs_to_area> ?area .
-      ?area <http://exocortex.ai/ontology#Asset_label> ?areaLabel .
+      ?project <https://exocortex.my/ontology/ems#belongs_to_area> ?area .
+      ?area <https://exocortex.my/ontology/exo#Asset_label> ?areaLabel .
     }
   }
 }
@@ -349,7 +349,7 @@ Find assets linked to a specific note (replace path):
 SELECT ?related ?relatedLabel ?relationType
 WHERE {
   <vault://path/to/your/note.md> ?relationType ?related .
-  ?related <http://exocortex.ai/ontology#Asset_label> ?relatedLabel .
+  ?related <https://exocortex.my/ontology/exo#Asset_label> ?relatedLabel .
 }
 ```
 
@@ -364,10 +364,10 @@ Find notes that link to each other:
 ```sparql
 SELECT ?note1 ?note1Label ?note2 ?note2Label
 WHERE {
-  ?note1 <http://exocortex.ai/ontology#Asset_label> ?note1Label .
-  ?note2 <http://exocortex.ai/ontology#Asset_label> ?note2Label .
-  ?note1 <http://exocortex.ai/ontology#links_to> ?note2 .
-  ?note2 <http://exocortex.ai/ontology#links_to> ?note1 .
+  ?note1 <https://exocortex.my/ontology/exo#Asset_label> ?note1Label .
+  ?note2 <https://exocortex.my/ontology/exo#Asset_label> ?note2Label .
+  ?note1 <https://exocortex.my/ontology/exo#links_to> ?note2 .
+  ?note2 <https://exocortex.my/ontology/exo#links_to> ?note1 .
   FILTER(?note1 != ?note2)
 }
 ```
@@ -385,9 +385,9 @@ Find tasks scheduled for today (assuming time properties):
 ```sparql
 SELECT ?task ?taskLabel ?startTime
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?taskLabel .
-  ?task <http://exocortex.ai/ontology#Effort_startTime> ?startTime .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?taskLabel .
+  ?task <https://exocortex.my/ontology/ems#Effort_startTime> ?startTime .
   FILTER(regex(?startTime, "2025-01-09"))
 }
 ORDER BY ?startTime
@@ -404,9 +404,9 @@ Find long-running tasks (high effort time):
 ```sparql
 SELECT ?task ?taskLabel ?duration
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?taskLabel .
-  ?task <http://exocortex.ai/ontology#Effort_duration_minutes> ?duration .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?taskLabel .
+  ?task <https://exocortex.my/ontology/ems#Effort_duration_minutes> ?duration .
   FILTER(?duration > 120)
 }
 ORDER BY DESC(?duration)
@@ -425,10 +425,10 @@ Sum effort votes per project:
 ```sparql
 SELECT ?project ?projectLabel (SUM(?votes) AS ?totalVotes)
 WHERE {
-  ?project <http://exocortex.ai/ontology#Instance_class> "ems__Project" .
-  ?project <http://exocortex.ai/ontology#Asset_label> ?projectLabel .
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
-  ?task <http://exocortex.ai/ontology#Effort_votes> ?votes .
+  ?project <https://exocortex.my/ontology/exo#Instance_class> "ems__Project" .
+  ?project <https://exocortex.my/ontology/exo#Asset_label> ?projectLabel .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+  ?task <https://exocortex.my/ontology/ems#Effort_votes> ?votes .
 }
 GROUP BY ?project ?projectLabel
 ORDER BY DESC(?totalVotes)
@@ -445,9 +445,9 @@ Calculate average effort per status:
 ```sparql
 SELECT ?status (AVG(?votes) AS ?avgVotes) (COUNT(?task) AS ?taskCount)
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Task_status> ?status .
-  ?task <http://exocortex.ai/ontology#Effort_votes> ?votes .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/ems#Task_status> ?status .
+  ?task <https://exocortex.my/ontology/ems#Effort_votes> ?votes .
 }
 GROUP BY ?status
 ORDER BY DESC(?avgVotes)
@@ -464,10 +464,10 @@ Count tasks across all areas (including nested projects):
 ```sparql
 SELECT ?area ?areaLabel (COUNT(?task) AS ?taskCount)
 WHERE {
-  ?area <http://exocortex.ai/ontology#Instance_class> "ems__Area" .
-  ?area <http://exocortex.ai/ontology#Asset_label> ?areaLabel .
-  ?project <http://exocortex.ai/ontology#belongs_to_area> ?area .
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
+  ?area <https://exocortex.my/ontology/exo#Instance_class> "ems__Area" .
+  ?area <https://exocortex.my/ontology/exo#Asset_label> ?areaLabel .
+  ?project <https://exocortex.my/ontology/ems#belongs_to_area> ?area .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
 }
 GROUP BY ?area ?areaLabel
 ORDER BY DESC(?taskCount)
@@ -490,9 +490,9 @@ CONSTRUCT {
   ?project <http://example.org/has_label> ?projectLabel .
 }
 WHERE {
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?taskLabel .
-  ?project <http://exocortex.ai/ontology#Asset_label> ?projectLabel .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?taskLabel .
+  ?project <https://exocortex.my/ontology/exo#Asset_label> ?projectLabel .
 }
 ```
 
@@ -509,8 +509,8 @@ CONSTRUCT {
   ?task <http://example.org/belongs_to_area> ?area .
 }
 WHERE {
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
-  ?project <http://exocortex.ai/ontology#belongs_to_area> ?area .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+  ?project <https://exocortex.my/ontology/ems#belongs_to_area> ?area .
 }
 ```
 
@@ -527,7 +527,7 @@ CONSTRUCT {
   ?task <http://example.org/priority_class> ?priorityClass .
 }
 WHERE {
-  ?task <http://exocortex.ai/ontology#Effort_votes> ?votes .
+  ?task <https://exocortex.my/ontology/ems#Effort_votes> ?votes .
   BIND(
     IF(?votes > 10, "critical",
       IF(?votes > 5, "high",
@@ -551,9 +551,9 @@ Find tasks incorrectly assigned to multiple projects:
 ```sparql
 SELECT ?task ?taskLabel (COUNT(?project) AS ?projectCount)
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?taskLabel .
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?taskLabel .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
 }
 GROUP BY ?task ?taskLabel
 HAVING (COUNT(?project) > 1)
@@ -571,12 +571,12 @@ Find all descendants of an area (projects + tasks):
 SELECT ?descendant ?descendantLabel ?type
 WHERE {
   {
-    <vault://Areas/My-Area.md> ^<http://exocortex.ai/ontology#belongs_to_area> ?descendant .
-    ?descendant <http://exocortex.ai/ontology#Asset_label> ?descendantLabel .
+    <vault://Areas/My-Area.md> ^<https://exocortex.my/ontology/ems#belongs_to_area> ?descendant .
+    ?descendant <https://exocortex.my/ontology/exo#Asset_label> ?descendantLabel .
     BIND("project" AS ?type)
   } UNION {
-    <vault://Areas/My-Area.md> ^<http://exocortex.ai/ontology#belongs_to_area> / ^<http://exocortex.ai/ontology#belongs_to_project> ?descendant .
-    ?descendant <http://exocortex.ai/ontology#Asset_label> ?descendantLabel .
+    <vault://Areas/My-Area.md> ^<https://exocortex.my/ontology/ems#belongs_to_area> / ^<https://exocortex.my/ontology/ems#belongs_to_project> ?descendant .
+    ?descendant <https://exocortex.my/ontology/exo#Asset_label> ?descendantLabel .
     BIND("task" AS ?type)
   }
 }
@@ -593,7 +593,7 @@ Search for assets by label content:
 ```sparql
 SELECT ?asset ?label
 WHERE {
-  ?asset <http://exocortex.ai/ontology#Asset_label> ?label .
+  ?asset <https://exocortex.my/ontology/exo#Asset_label> ?label .
   FILTER(regex(?label, "machine learning", "i"))
 }
 LIMIT 50
@@ -610,17 +610,17 @@ Complex multi-condition query:
 ```sparql
 SELECT ?task ?taskLabel ?status ?votes ?project
 WHERE {
-  ?task <http://exocortex.ai/ontology#Instance_class> "ems__Task" .
-  ?task <http://exocortex.ai/ontology#Asset_label> ?taskLabel .
-  ?task <http://exocortex.ai/ontology#Task_status> ?status .
-  ?task <http://exocortex.ai/ontology#Effort_votes> ?votes .
-  ?task <http://exocortex.ai/ontology#belongs_to_project> ?project .
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?taskLabel .
+  ?task <https://exocortex.my/ontology/ems#Task_status> ?status .
+  ?task <https://exocortex.my/ontology/ems#Effort_votes> ?votes .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
 
   FILTER(?status = "in-progress" || ?status = "backlog")
   FILTER(?votes > 3)
   FILTER(regex(?taskLabel, "urgent|important", "i"))
   FILTER NOT EXISTS {
-    ?task <http://exocortex.ai/ontology#Asset_archived> ?archived .
+    ?task <https://exocortex.my/ontology/exo#Asset_archived> ?archived .
   }
 }
 ORDER BY DESC(?votes) ?taskLabel
@@ -638,7 +638,7 @@ LIMIT 20
 Replace URIs with your actual property names:
 
 ```sparql
-<http://exocortex.ai/ontology#Asset_label> → Your property URI
+<https://exocortex.my/ontology/exo#Asset_label> → Your property URI
 "ems__Task" → Your class name
 ```
 
