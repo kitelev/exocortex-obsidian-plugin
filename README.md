@@ -222,22 +222,46 @@ Complete lifecycle tracking for tasks and projects:
 
 ### Properties Table
 
-Displays all frontmatter properties in a clean key-value format.
+Displays all frontmatter properties in a clean key-value format with inline editing capabilities.
 
 **Features:**
 - Wiki-links automatically resolved to display labels
 - Clickable internal links for navigation
 - Supports alias display: `[[target|alias]]`
 - Toggle visibility via settings or "Toggle Properties Visibility" command
+- **Inline property editing** for DateTime and Text properties (enabled by default)
+
+#### Editable Properties
+
+The Properties block supports inline editing for multiple property types:
+
+**DateTime Properties:**
+- Click the calendar icon (📅) to open a dropdown picker
+- Select date and time using native HTML5 datetime-local input
+- Displays in user-friendly format: "Jan 15, 2025, 10:30 AM" or "Jan 15, 2025" (date-only)
+- Click "Clear" button to remove the property value
+- Changes save automatically to frontmatter
+
+**Text Properties:**
+- Click any text property to edit inline
+- Type to modify, press Enter to save, Escape to cancel
+- Empty values automatically remove the property
+- Changes save automatically on blur (clicking away)
+
+**Auto-Detection:**
+Properties are automatically detected as editable based on their values:
+- ISO 8601 datetime strings → DateTime editor (e.g., `2025-01-15T10:30:00.000Z`)
+- Plain text strings → Text editor
+- Other types (numbers, booleans, wiki-links, arrays) → Read-only display
 
 **Example:**
 ```
 Key                      | Value
 -------------------------|-----------------
 exo__Instance_class      | ems__Task
-exo__Asset_label         | Implement feature
+exo__Asset_label         | Implement feature (editable)
 ems__Effort_status       | ems__EffortStatusDoing
-ems__Effort_day          | 2025-10-23
+ems__Effort_day          | 📅 Jan 15, 2025 (click to edit)
 ems__Effort_votes        | 5
 ```
 
