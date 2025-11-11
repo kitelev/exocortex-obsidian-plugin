@@ -147,7 +147,7 @@ export const DateTimePropertyField: React.FC<DateTimePropertyFieldProps> = ({
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          style={{ marginRight: "6px" }}
+          style={{ marginRight: "6px", pointerEvents: "none" }}
         >
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
           <line x1="16" y1="2" x2="16" y2="6"></line>
