@@ -422,6 +422,42 @@ npm run test:all                # MANDATORY: Run ALL tests before PR
 /agents                         # List available agents
 ```
 
+### Quick Audit Commands (Before Implementation)
+
+**Before implementing a feature, run these commands:**
+
+```bash
+# Search for feature implementation
+grep -r "feature_keyword" packages/*/src/ | grep -v node_modules
+
+# Find helper utilities
+grep -r "FeatureHelpers" packages/*/src/
+
+# List all tables and renderers
+ls packages/obsidian-plugin/src/presentation/components/*Table*.tsx
+ls packages/obsidian-plugin/src/presentation/renderers/*.ts
+
+# Check test coverage
+grep -r "feature_keyword" packages/*/tests/ | grep -v node_modules
+
+# Run specific test suite
+npm run test -- --testNamePattern="feature keyword"
+```
+
+**Example (Blocker Indicator Audit):**
+```bash
+# 1. Search for blocker-related code
+grep -r "isBlocked" packages/obsidian-plugin/src/
+
+# 2. Find blocker helpers
+grep -r "BlockerHelpers" packages/obsidian-plugin/src/
+
+# 3. Check test coverage
+grep -r "blocker" packages/obsidian-plugin/tests/component/
+
+# Result: Feature already in 3 tables (DailyTasks, DailyProjects, AssetRelations)
+```
+
 ## 🔧 Worktree Lifecycle
 
 ### 1. Create Worktree
