@@ -843,5 +843,146 @@ describe("ButtonGroupsBuilder", () => {
       const doneButton = statusGroup?.buttons.find((b) => b.id === "mark-done");
       expect(doneButton?.visible).toBe(true);
     });
+
+    it("should show Create Task button for DailyNote with past date", async () => {
+      const mockFile = {
+        path: "2020-01-01.md",
+        parent: { path: "Daily" },
+        basename: "2020-01-01",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[pn__DailyNote]]",
+        pn__DailyNote_day: "2020-01-01",
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[pn__DailyNote]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(null);
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Daily");
+
+      const groups = await builder.build(mockFile);
+
+      const creationGroup = groups.find((g) => g.id === "creation");
+      const createTaskButton = creationGroup?.buttons.find(
+        (b) => b.id === "create-task-for-dailynote",
+      );
+      expect(createTaskButton?.visible).toBe(true);
+      expect(createTaskButton?.label).toBe("Create Task");
+    });
+
+    it("should not show Create Task button for DailyNote with future date", async () => {
+      const mockFile = {
+        path: "2099-12-31.md",
+        parent: { path: "Daily" },
+        basename: "2099-12-31",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[pn__DailyNote]]",
+        pn__DailyNote_day: "2099-12-31",
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[pn__DailyNote]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(null);
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Daily");
+
+      const groups = await builder.build(mockFile);
+
+      const creationGroup = groups.find((g) => g.id === "creation");
+      const createTaskButton = creationGroup?.buttons.find(
+        (b) => b.id === "create-task-for-dailynote",
+      );
+      expect(createTaskButton?.visible ?? false).toBe(false);
+    });
+
+    it("should handle DailyNote with wiki-link date format", async () => {
+      const mockFile = {
+        path: "2020-01-01.md",
+        parent: { path: "Daily" },
+        basename: "2020-01-01",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[pn__DailyNote]]",
+        pn__DailyNote_day: "[[2020-01-01]]",
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[pn__DailyNote]]",
+        );
+      mockMetadataExtractor.extractStatus.mockReturnValue(null);
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Daily");
+
+      const groups = await builder.build(mockFile);
+
+      const creationGroup = groups.find((g) => g.id === "creation");
+      const createTaskButton = creationGroup?.buttons.find(
+        (b) => b.id === "create-task-for-dailynote",
+      );
+      expect(createTaskButton?.visible).toBe(true);
+    });
+
+    it("should handle DailyNote with array day property", async () => {
+      const mockFile = {
+        path: "2020-01-01.md",
+        parent: { path: "Daily" },
+        basename: "2020-01-01",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[pn__DailyNote]]",
+        pn__DailyNote_day: ["2020-01-01"],
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[pn__DailyNote]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(null);
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Daily");
+
+      const groups = await builder.build(mockFile);
+
+      const creationGroup = groups.find((g) => g.id === "creation");
+      const createTaskButton = creationGroup?.buttons.find(
+        (b) => b.id === "create-task-for-dailynote",
+      );
+      expect(createTaskButton?.visible).toBe(true);
+    });
+
+    it("should handle DailyNote with array containing wiki-link", async () => {
+      const mockFile = {
+        path: "2020-01-01.md",
+        parent: { path: "Daily" },
+        basename: "2020-01-01",
+      } as TFile;
+      const metadata = {
+        exo__Instance_class: "[[pn__DailyNote]]",
+        pn__DailyNote_day: ["[[2020-01-01]]"],
+      };
+
+      mockMetadataExtractor.extractMetadata.mockReturnValue(metadata);
+      mockMetadataExtractor.extractInstanceClass.mockReturnValue(
+        "[[pn__DailyNote]]",
+      );
+      mockMetadataExtractor.extractStatus.mockReturnValue(null);
+      mockMetadataExtractor.extractIsArchived.mockReturnValue(false);
+      mockFolderRepairService.getExpectedFolder.mockResolvedValue("Daily");
+
+      const groups = await builder.build(mockFile);
+
+      const creationGroup = groups.find((g) => g.id === "creation");
+      const createTaskButton = creationGroup?.buttons.find(
+        (b) => b.id === "create-task-for-dailynote",
+      );
+      expect(createTaskButton?.visible).toBe(true);
+    });
   });
 });
