@@ -21,7 +21,8 @@ export class RenameToUidService {
     const needsLabelUpdate = !currentLabel || currentLabel.trim() === "";
 
     if (needsLabelUpdate) {
-      await this.updateLabel(file, currentBasename);
+      const isArchived = this.isAssetArchived(metadata);
+      await this.updateLabel(file, currentBasename, isArchived);
     }
 
     const folderPath = file.parent?.path || "";
@@ -34,7 +35,11 @@ export class RenameToUidService {
     await this.vault.rename(file, newPath);
   }
 
-  private async updateLabel(file: IFile, label: string): Promise<void> {
+  private async updateLabel(
+    file: IFile,
+    label: string,
+    isArchived: boolean,
+  ): Promise<void> {
     await this.vault.process(file, (content) => {
       const frontmatterRegex = /^---\n([\s\S]*?)\n---/;
       const match = content.match(frontmatterRegex);
@@ -44,9 +49,40 @@ export class RenameToUidService {
       }
 
       const frontmatterContent = match[1];
-      const newFrontmatter = `${frontmatterContent}\nexo__Asset_label: ${label}\naliases:\n  - ${label}`;
+      const newFrontmatter = isArchived
+        ? `${frontmatterContent}\nexo__Asset_label: ${label}`
+        : `${frontmatterContent}\nexo__Asset_label: ${label}\naliases:\n  - ${label}`;
 
       return content.replace(frontmatterRegex, `---\n${newFrontmatter}\n---`);
     });
+  }
+
+  private isAssetArchived(metadata: Record<string, any>): boolean {
+    if (metadata?.exo__Asset_isArchived === true) {
+      return true;
+    }
+
+    const archivedValue = metadata?.archived;
+
+    if (archivedValue === undefined || archivedValue === null) {
+      return false;
+    }
+
+    if (typeof archivedValue === "boolean") {
+      return archivedValue;
+    }
+
+    if (typeof archivedValue === "number") {
+      return archivedValue !== 0;
+    }
+
+    if (typeof archivedValue === "string") {
+      const normalized = archivedValue.toLowerCase().trim();
+      return (
+        normalized === "true" || normalized === "yes" || normalized === "1"
+      );
+    }
+
+    return false;
   }
 }

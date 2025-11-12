@@ -199,6 +199,211 @@ describe("RenameToUidService", () => {
     });
   });
 
+  describe("archived asset handling", () => {
+    it("should NOT add alias for archived asset (exo__Asset_isArchived: true)", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+        exo__Asset_isArchived: true,
+      };
+
+      mockVault.process.mockImplementation(async (file, fn) => {
+        const content = "---\ntitle: Test\n---\nContent";
+        const result = fn(content);
+        expect(result).toContain("exo__Asset_label: old-name");
+        expect(result).not.toContain("aliases:");
+        return result;
+      });
+
+      await service.renameToUid(mockFile, metadata);
+
+      expect(mockVault.process).toHaveBeenCalled();
+      expect(mockVault.rename).toHaveBeenCalled();
+    });
+
+    it("should NOT add alias for archived asset (archived: true)", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+        archived: true,
+      };
+
+      mockVault.process.mockImplementation(async (file, fn) => {
+        const content = "---\ntitle: Test\n---\nContent";
+        const result = fn(content);
+        expect(result).toContain("exo__Asset_label: old-name");
+        expect(result).not.toContain("aliases:");
+        return result;
+      });
+
+      await service.renameToUid(mockFile, metadata);
+
+      expect(mockVault.process).toHaveBeenCalled();
+    });
+
+    it("should support multi-format archived values (string 'true')", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+        exo__Asset_isArchived: "true",
+      };
+
+      mockVault.process.mockImplementation(async (file, fn) => {
+        const content = "---\ntitle: Test\n---\nContent";
+        const result = fn(content);
+        expect(result).not.toContain("aliases:");
+        return result;
+      });
+
+      await service.renameToUid(mockFile, metadata);
+
+      expect(mockVault.process).toHaveBeenCalled();
+    });
+
+    it("should support multi-format archived values (string 'yes')", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+        archived: "yes",
+      };
+
+      mockVault.process.mockImplementation(async (file, fn) => {
+        const content = "---\ntitle: Test\n---\nContent";
+        const result = fn(content);
+        expect(result).not.toContain("aliases:");
+        return result;
+      });
+
+      await service.renameToUid(mockFile, metadata);
+
+      expect(mockVault.process).toHaveBeenCalled();
+    });
+
+    it("should support multi-format archived values (number 1)", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+        exo__Asset_isArchived: 1,
+      };
+
+      mockVault.process.mockImplementation(async (file, fn) => {
+        const content = "---\ntitle: Test\n---\nContent";
+        const result = fn(content);
+        expect(result).not.toContain("aliases:");
+        return result;
+      });
+
+      await service.renameToUid(mockFile, metadata);
+
+      expect(mockVault.process).toHaveBeenCalled();
+    });
+
+    it("should NOT add alias when both archived properties are true", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+        exo__Asset_isArchived: true,
+        archived: true,
+      };
+
+      mockVault.process.mockImplementation(async (file, fn) => {
+        const content = "---\ntitle: Test\n---\nContent";
+        const result = fn(content);
+        expect(result).toContain("exo__Asset_label: old-name");
+        expect(result).not.toContain("aliases:");
+        return result;
+      });
+
+      await service.renameToUid(mockFile, metadata);
+
+      expect(mockVault.process).toHaveBeenCalled();
+    });
+
+    it("SHOULD add alias for non-archived asset (backward compatibility)", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+        exo__Asset_isArchived: false,
+      };
+
+      mockVault.process.mockImplementation(async (file, fn) => {
+        const content = "---\ntitle: Test\n---\nContent";
+        const result = fn(content);
+        expect(result).toContain("exo__Asset_label: old-name");
+        expect(result).toContain("aliases:");
+        expect(result).toContain("- old-name");
+        return result;
+      });
+
+      await service.renameToUid(mockFile, metadata);
+
+      expect(mockVault.process).toHaveBeenCalled();
+    });
+
+    it("SHOULD add alias when no archived property (backward compatibility)", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+      };
+
+      mockVault.process.mockImplementation(async (file, fn) => {
+        const content = "---\ntitle: Test\n---\nContent";
+        const result = fn(content);
+        expect(result).toContain("exo__Asset_label: old-name");
+        expect(result).toContain("aliases:");
+        expect(result).toContain("- old-name");
+        return result;
+      });
+
+      await service.renameToUid(mockFile, metadata);
+
+      expect(mockVault.process).toHaveBeenCalled();
+    });
+
+    it("SHOULD add alias when archived: false (backward compatibility)", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+        archived: false,
+      };
+
+      mockVault.process.mockImplementation(async (file, fn) => {
+        const content = "---\ntitle: Test\n---\nContent";
+        const result = fn(content);
+        expect(result).toContain("exo__Asset_label: old-name");
+        expect(result).toContain("aliases:");
+        expect(result).toContain("- old-name");
+        return result;
+      });
+
+      await service.renameToUid(mockFile, metadata);
+
+      expect(mockVault.process).toHaveBeenCalled();
+    });
+
+    it("SHOULD add alias when archived: null (backward compatibility)", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+        archived: null,
+      };
+
+      mockVault.process.mockImplementation(async (file, fn) => {
+        const content = "---\ntitle: Test\n---\nContent";
+        const result = fn(content);
+        expect(result).toContain("aliases:");
+        return result;
+      });
+
+      await service.renameToUid(mockFile, metadata);
+
+      expect(mockVault.process).toHaveBeenCalled();
+    });
+
+    it("should handle archived asset with existing label (no frontmatter modification)", async () => {
+      const metadata = {
+        exo__Asset_uid: "asset-123",
+        exo__Asset_label: "Existing Label",
+        exo__Asset_isArchived: true,
+      };
+
+      await service.renameToUid(mockFile, metadata);
+
+      expect(mockVault.process).not.toHaveBeenCalled();
+      expect(mockVault.rename).toHaveBeenCalledWith(mockFile, "/folder/asset-123.md");
+    });
+  });
+
   describe("updateLinks integration", () => {
     it("should call updateLinks before rename", async () => {
       const metadata = {

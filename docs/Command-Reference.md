@@ -443,6 +443,12 @@ aliases:
 
 **Use case**: Standardize filenames for consistency.
 
+**Behavior**:
+- Renames file: `old-name.md` → `{exo__Asset_uid}.md`
+- Updates `exo__Asset_label` if missing (uses old filename)
+- For **non-archived assets**: Adds old filename to `aliases` for searchability
+- For **archived assets** (`exo__Asset_isArchived: true` or `archived: true`): Does NOT add aliases (reduces namespace clutter)
+
 **Visibility**: Available on notes with UID property.
 
 ---
