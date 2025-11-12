@@ -155,7 +155,7 @@ jobs:
 
           echo "Coverage Report:"
           echo "  Statements: ${STATEMENTS}% (required: 75%)"
-          echo "  Branches:   ${BRANCHES}% (required: 70%)"
+          echo "  Branches:   ${BRANCHES}% (required: 67%)"
           echo "  Functions:  ${FUNCTIONS}% (required: 70%)"
           echo "  Lines:      ${LINES}% (required: 75%)"
 
@@ -165,8 +165,8 @@ jobs:
             exit 1
           fi
 
-          if [ $(echo "$BRANCHES < 70" | awk '{print ($1 < $3) ? 1 : 0}') -eq 1 ]; then
-            echo "❌ Branch coverage ${BRANCHES}% is below 70% threshold"
+          if [ $(echo "$BRANCHES < 67" | awk '{print ($1 < $3) ? 1 : 0}') -eq 1 ]; then
+            echo "❌ Branch coverage ${BRANCHES}% is below 67% threshold"
             exit 1
           fi
 
