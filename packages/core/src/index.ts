@@ -56,6 +56,7 @@ export {
   type RDFDeserializeOptions,
 } from "./infrastructure/rdf/RDFSerializer";
 export { InMemoryTripleStore } from "./infrastructure/rdf/InMemoryTripleStore";
+export { RDFVocabularyMapper } from "./infrastructure/rdf/RDFVocabularyMapper";
 export { NoteToRDFConverter } from "./services/NoteToRDFConverter";
 
 // SPARQL Engine exports
