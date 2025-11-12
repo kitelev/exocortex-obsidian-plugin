@@ -18,6 +18,7 @@ export {
   AreaHierarchyBuilder,
   type AssetRelation,
 } from "./services/AreaHierarchyBuilder";
+export { ClassCreationService } from "./services/ClassCreationService";
 export { ConceptCreationService } from "./services/ConceptCreationService";
 export { EffortStatusWorkflow } from "./services/EffortStatusWorkflow";
 export { EffortVotingService } from "./services/EffortVotingService";

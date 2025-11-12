@@ -519,6 +519,16 @@ export function canCreateNarrowerConcept(
 }
 
 /**
+ * Can execute "Create Subclass" command
+ * Available for: exo__Class assets
+ */
+export function canCreateSubclass(
+  context: CommandVisibilityContext,
+): boolean {
+  return hasClass(context.instanceClass, "exo__Class");
+}
+
+/**
  * Can execute "Convert Task to Project" command
  * Available for: ems__Task assets only
  */

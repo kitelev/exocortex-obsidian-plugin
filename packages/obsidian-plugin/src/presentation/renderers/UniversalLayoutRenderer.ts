@@ -8,6 +8,7 @@ import { ActionButtonsGroup } from "../components/ActionButtonsGroup";
 import { TaskCreationService } from "@exocortex/core";
 import { ProjectCreationService } from "@exocortex/core";
 import { AreaCreationService } from "@exocortex/core";
+import { ClassCreationService } from "@exocortex/core";
 import { ConceptCreationService } from "@exocortex/core";
 import { TaskStatusService } from "@exocortex/core";
 import { PropertyCleanupService } from "@exocortex/core";
@@ -67,6 +68,7 @@ export class UniversalLayoutRenderer {
   private taskCreationService: TaskCreationService;
   private projectCreationService: ProjectCreationService;
   private areaCreationService: AreaCreationService;
+  private classCreationService: ClassCreationService;
   private conceptCreationService: ConceptCreationService;
   private taskStatusService: TaskStatusService;
   private propertyCleanupService: PropertyCleanupService;
@@ -93,6 +95,7 @@ export class UniversalLayoutRenderer {
     this.taskCreationService = new TaskCreationService(this.vaultAdapter);
     this.projectCreationService = new ProjectCreationService(this.vaultAdapter);
     this.areaCreationService = new AreaCreationService(this.vaultAdapter);
+    this.classCreationService = new ClassCreationService(this.vaultAdapter);
     this.conceptCreationService = new ConceptCreationService(this.vaultAdapter);
     this.taskStatusService = new TaskStatusService(this.vaultAdapter);
     this.propertyCleanupService = new PropertyCleanupService(this.vaultAdapter);
@@ -137,6 +140,7 @@ export class UniversalLayoutRenderer {
       this.taskCreationService,
       this.projectCreationService,
       this.areaCreationService,
+      this.classCreationService,
       this.conceptCreationService,
       this.taskStatusService,
       this.propertyCleanupService,
