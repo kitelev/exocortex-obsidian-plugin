@@ -85,7 +85,7 @@ test.describe("DateTimePropertyField Component", () => {
     await expect(dropdown).not.toBeVisible();
   });
 
-  test("should call onChange when date is selected", async ({ mount }) => {
+  test("should call onChange when date is entered", async ({ mount }) => {
     let changedValue: string | null | undefined = undefined;
     const onChange = (value: string | null) => {
       changedValue = value;
@@ -101,9 +101,10 @@ test.describe("DateTimePropertyField Component", () => {
     // Open dropdown
     await component.click();
 
-    // Select date in datetime-local input
-    const dateInput = component.locator("input[type='datetime-local']");
-    await dateInput.fill("2024-11-11T15:30");
+    // Enter date in text input
+    const dateInput = component.locator("input[type='text']");
+    await dateInput.fill("2024-11-11");
+    await dateInput.press("Enter");
 
     // onChange should be called with ISO string
     await expect.poll(() => changedValue).toBeTruthy();
@@ -126,12 +127,13 @@ test.describe("DateTimePropertyField Component", () => {
     // Open dropdown
     await component.click();
 
-    // Click Clear button
+    // Click Clear button (wait for it to be visible first)
     const clearButton = component.locator("button:has-text('Clear')");
+    await expect(clearButton).toBeVisible();
     await clearButton.click();
 
-    // onChange should be called with null
-    await expect.poll(() => changedValue).toBeNull();
+    // onChange should be called with null (with increased timeout)
+    await expect.poll(() => changedValue, { timeout: 2000 }).toBeNull();
   });
 
   test("should close dropdown after Clear button clicked", async ({ mount }) => {
@@ -261,5 +263,164 @@ test.describe("DateTimePropertyField Component", () => {
     expect(text).not.toContain("pm");
     // Should contain time with colon
     expect(text).toContain(":");
+  });
+
+  test("should parse 'tomorrow' natural language date", async ({ mount }) => {
+    let changedValue: string | null | undefined = undefined;
+    const onChange = (value: string | null) => {
+      changedValue = value;
+    };
+
+    const component = await mount(
+      <DateTimePropertyField
+        value={null}
+        onChange={onChange}
+      />,
+    );
+
+    // Open dropdown
+    await component.click();
+
+    // Enter natural language date
+    const dateInput = component.locator("input[type='text']");
+    await dateInput.fill("tomorrow");
+    await dateInput.press("Enter");
+
+    // onChange should be called with ISO string for tomorrow
+    await expect.poll(() => changedValue).toBeTruthy();
+    await expect.poll(() => typeof changedValue).toBe("string");
+
+    // Verify it's a valid ISO date
+    if (changedValue) {
+      const parsedDate = new Date(changedValue);
+      expect(parsedDate.getTime()).not.toBeNaN();
+    }
+  });
+
+  test("should parse 'today' natural language date", async ({ mount }) => {
+    let changedValue: string | null | undefined = undefined;
+    const onChange = (value: string | null) => {
+      changedValue = value;
+    };
+
+    const component = await mount(
+      <DateTimePropertyField
+        value={null}
+        onChange={onChange}
+      />,
+    );
+
+    // Open dropdown
+    await component.click();
+
+    // Enter natural language date
+    const dateInput = component.locator("input[type='text']");
+    await dateInput.fill("today");
+    await dateInput.press("Enter");
+
+    // onChange should be called with ISO string
+    await expect.poll(() => changedValue).toBeTruthy();
+    await expect.poll(() => typeof changedValue).toBe("string");
+  });
+
+  test("should parse 'in 3 days' natural language date", async ({ mount }) => {
+    let changedValue: string | null | undefined = undefined;
+    const onChange = (value: string | null) => {
+      changedValue = value;
+    };
+
+    const component = await mount(
+      <DateTimePropertyField
+        value={null}
+        onChange={onChange}
+      />,
+    );
+
+    // Open dropdown
+    await component.click();
+
+    // Enter natural language date
+    const dateInput = component.locator("input[type='text']");
+    await dateInput.fill("in 3 days");
+    await dateInput.press("Enter");
+
+    // onChange should be called with ISO string
+    await expect.poll(() => changedValue).toBeTruthy();
+    await expect.poll(() => typeof changedValue).toBe("string");
+  });
+
+  test("should show error for invalid date format", async ({ mount }) => {
+    const component = await mount(
+      <DateTimePropertyField
+        value={null}
+        onChange={() => {}}
+      />,
+    );
+
+    // Open dropdown
+    await component.click();
+
+    // Enter invalid date
+    const dateInput = component.locator("input[type='text']");
+    await dateInput.fill("not a valid date");
+    await dateInput.press("Enter");
+
+    // Error message should be visible (use more specific selector)
+    const errorMessage = component.locator("div").filter({ hasText: /^Invalid date format/ }).first();
+    await expect(errorMessage).toBeVisible();
+  });
+
+  test("should close dropdown on Escape key", async ({ mount }) => {
+    const component = await mount(
+      <DateTimePropertyField
+        value={null}
+        onChange={() => {}}
+      />,
+    );
+
+    // Open dropdown
+    await component.click();
+
+    const dropdown = component.locator(".exocortex-property-datetime-dropdown");
+    await expect(dropdown).toBeVisible();
+
+    // Press Escape
+    const dateInput = component.locator("input[type='text']");
+    await dateInput.press("Escape");
+
+    // Dropdown should close
+    await expect(dropdown).not.toBeVisible();
+  });
+
+  test("should show placeholder with examples", async ({ mount }) => {
+    const component = await mount(
+      <DateTimePropertyField
+        value={null}
+        onChange={() => {}}
+      />,
+    );
+
+    // Open dropdown
+    await component.click();
+
+    // Check for placeholder
+    const dateInput = component.locator("input[type='text']");
+    await expect(dateInput).toHaveAttribute("placeholder", "tomorrow, 2025-01-15, next week");
+  });
+
+  test("should show helpful examples text", async ({ mount }) => {
+    const component = await mount(
+      <DateTimePropertyField
+        value={null}
+        onChange={() => {}}
+      />,
+    );
+
+    // Open dropdown
+    await component.click();
+
+    // Check for examples text (use more specific selector)
+    const examplesText = component.locator("div").filter({ hasText: /^Examples: tomorrow/ }).first();
+    await expect(examplesText).toBeVisible();
   });
 });

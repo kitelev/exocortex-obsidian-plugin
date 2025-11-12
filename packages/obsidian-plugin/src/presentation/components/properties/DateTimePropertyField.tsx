@@ -12,13 +12,25 @@ export const DateTimePropertyField: React.FC<DateTimePropertyFieldProps> = ({
   onBlur,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [localValue, setLocalValue] = useState(value || "");
+  const [textInput, setTextInput] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const clearClickedRef = useRef(false);
 
   useEffect(() => {
-    setLocalValue(value || "");
-  }, [value]);
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+      if (value) {
+        const formatted = formatForInput(value);
+        setTextInput(formatted);
+      } else {
+        setTextInput("");
+      }
+      setError(null);
+    }
+  }, [isOpen, value]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -75,12 +87,10 @@ export const DateTimePropertyField: React.FC<DateTimePropertyFieldProps> = ({
     }
   };
 
-  const convertToDateTimeLocalFormat = (isoString: string | null): string => {
-    if (!isoString) return "";
-
+  const formatForInput = (isoString: string): string => {
     try {
       const date = new Date(isoString);
-      if (isNaN(date.getTime())) return "";
+      if (isNaN(date.getTime())) return isoString;
 
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -88,23 +98,76 @@ export const DateTimePropertyField: React.FC<DateTimePropertyFieldProps> = ({
       const hours = String(date.getHours()).padStart(2, "0");
       const minutes = String(date.getMinutes()).padStart(2, "0");
 
-      return `${year}-${month}-${day}T${hours}:${minutes}`;
+      if (date.getHours() !== 0 || date.getMinutes() !== 0) {
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+      } else {
+        return `${year}-${month}-${day}`;
+      }
     } catch {
-      return "";
+      return isoString;
     }
   };
 
-  const convertToISOFormat = (localDateTimeString: string): string | null => {
-    if (!localDateTimeString) return null;
+  const parseDate = (input: string): Date | null => {
+    if (!input.trim()) return null;
+
+    const lowerInput = input.toLowerCase().trim();
+
+    if (lowerInput === "today") {
+      const date = new Date();
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }
+
+    if (lowerInput === "tomorrow") {
+      const date = new Date();
+      date.setDate(date.getDate() + 1);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }
+
+    if (lowerInput === "yesterday") {
+      const date = new Date();
+      date.setDate(date.getDate() - 1);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }
+
+    if (lowerInput === "next week") {
+      const date = new Date();
+      date.setDate(date.getDate() + 7);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }
+
+    const inDaysMatch = lowerInput.match(/^in (\d+) days?$/i);
+    if (inDaysMatch) {
+      const days = parseInt(inDaysMatch[1]);
+      const date = new Date();
+      date.setDate(date.getDate() + days);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }
+
+    const inWeeksMatch = lowerInput.match(/^in (\d+) weeks?$/i);
+    if (inWeeksMatch) {
+      const weeks = parseInt(inWeeksMatch[1]);
+      const date = new Date();
+      date.setDate(date.getDate() + weeks * 7);
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }
 
     try {
-      const date = new Date(localDateTimeString);
-      if (isNaN(date.getTime())) return null;
-
-      return date.toISOString();
+      const date = new Date(input);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
     } catch {
-      return null;
+      // Fall through
     }
+
+    return null;
   };
 
   const handleToggle = (e: React.MouseEvent) => {
@@ -113,18 +176,57 @@ export const DateTimePropertyField: React.FC<DateTimePropertyFieldProps> = ({
     setIsOpen((prev) => !prev);
   };
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newLocalValue = e.target.value;
-    setLocalValue(newLocalValue);
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    setTextInput(input);
+    setError(null);
+  };
 
-    const isoValue = convertToISOFormat(newLocalValue);
-    onChange(isoValue);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSubmit();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setIsOpen(false);
+      setError(null);
+      onBlur?.();
+    }
+  };
+
+  const handleSubmit = () => {
+    if (!textInput.trim()) {
+      onChange(null);
+      setIsOpen(false);
+      onBlur?.();
+      return;
+    }
+
+    const parsed = parseDate(textInput);
+
+    if (parsed) {
+      onChange(parsed.toISOString());
+      setIsOpen(false);
+      setError(null);
+      onBlur?.();
+    } else {
+      setError("Invalid date format. Try: YYYY-MM-DD, tomorrow, next week");
+    }
+  };
+
+  const handleBlur = () => {
+    // Skip submission if Clear button was clicked
+    if (clearClickedRef.current) {
+      clearClickedRef.current = false;
+      return;
+    }
+    handleSubmit();
   };
 
   const handleClear = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setLocalValue("");
+    clearClickedRef.current = true;
     onChange(null);
     setIsOpen(false);
     onBlur?.();
@@ -134,9 +236,15 @@ export const DateTimePropertyField: React.FC<DateTimePropertyFieldProps> = ({
     <div className="exocortex-property-datetime-container">
       <div
         ref={buttonRef}
-        className="exocortex-property-datetime-display"
+        className="exocortex-property-datetime-display clickable-icon"
         onMouseDown={handleToggle}
-        style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+        style={{
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          padding: "2px 6px",
+          borderRadius: "3px",
+        }}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -167,39 +275,74 @@ export const DateTimePropertyField: React.FC<DateTimePropertyFieldProps> = ({
             zIndex: 1000,
             background: "var(--background-primary)",
             border: "1px solid var(--background-modifier-border)",
-            borderRadius: "4px",
-            padding: "12px",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+            borderRadius: "var(--radius-m)",
+            padding: "var(--size-4-3)",
+            boxShadow: "var(--shadow-s)",
             marginTop: "4px",
+            minWidth: "250px",
           }}
         >
           <input
-            type="datetime-local"
-            value={convertToDateTimeLocalFormat(localValue)}
-            onChange={handleDateChange}
+            ref={inputRef}
+            type="text"
+            value={textInput}
+            onChange={handleTextChange}
+            onKeyDown={handleKeyDown}
+            onBlur={handleBlur}
+            placeholder="tomorrow, 2025-01-15, next week"
             className="exocortex-property-datetime-input"
             style={{
               width: "100%",
-              padding: "6px",
-              border: "1px solid var(--background-modifier-border)",
-              borderRadius: "3px",
-              marginBottom: "8px",
+              padding: "var(--size-4-2)",
+              border: error
+                ? "1px solid var(--text-error)"
+                : "1px solid var(--background-modifier-border)",
+              borderRadius: "var(--radius-s)",
+              marginBottom: "var(--size-4-2)",
+              backgroundColor: "var(--background-primary)",
+              color: "var(--text-normal)",
             }}
           />
-          <button
-            onClick={handleClear}
-            className="exocortex-property-datetime-clear"
+
+          {error && (
+            <div
+              style={{
+                color: "var(--text-error)",
+                fontSize: "var(--font-smallest)",
+                marginBottom: "var(--size-4-2)",
+              }}
+            >
+              {error}
+            </div>
+          )}
+
+          <div
             style={{
-              width: "100%",
-              padding: "6px",
-              border: "1px solid var(--background-modifier-border)",
-              borderRadius: "3px",
-              background: "var(--background-secondary)",
-              cursor: "pointer",
+              fontSize: "var(--font-smallest)",
+              color: "var(--text-muted)",
+              marginBottom: "var(--size-4-2)",
             }}
           >
-            Clear
-          </button>
+            Examples: tomorrow, 2025-01-15, next week, in 3 days
+          </div>
+
+          <div style={{ display: "flex", gap: "var(--size-4-2)" }}>
+            <button
+              onMouseDown={handleClear}
+              className="exocortex-property-datetime-clear mod-warning"
+              style={{
+                flex: 1,
+                padding: "var(--size-4-2)",
+                border: "1px solid var(--background-modifier-border)",
+                borderRadius: "var(--radius-s)",
+                backgroundColor: "var(--background-secondary)",
+                color: "var(--text-normal)",
+                cursor: "pointer",
+              }}
+            >
+              Clear
+            </button>
+          </div>
         </div>
       )}
     </div>
