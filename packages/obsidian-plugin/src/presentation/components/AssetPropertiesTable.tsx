@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { TFile } from "obsidian";
 import { PropertyUpdateService } from "../../application/services/PropertyUpdateService";
+import { PropertyValidationService } from "../../application/services/PropertyValidationService";
 import { TextPropertyField } from "./properties/TextPropertyField";
 import { DateTimePropertyField } from "./properties/DateTimePropertyField";
 
@@ -9,12 +10,20 @@ interface SortState {
   order: "asc" | "desc";
 }
 
+interface PropertyValidationErrors {
+  [key: string]: {
+    domainError?: string;
+    rangeError?: string;
+  };
+}
+
 export interface AssetPropertiesTableProps {
   metadata: Record<string, any>;
   onLinkClick?: (path: string, event: React.MouseEvent) => void;
   getAssetLabel?: (path: string) => string | null;
   file?: TFile;
   propertyUpdateService?: PropertyUpdateService;
+  propertyValidationService?: PropertyValidationService;
   editable?: boolean;
 }
 
@@ -24,12 +33,56 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
   getAssetLabel,
   file,
   propertyUpdateService,
+  propertyValidationService,
   editable = false,
 }) => {
   const [sortState, setSortState] = useState<SortState>({
     column: "",
     order: "asc",
   });
+  const [validationErrors, setValidationErrors] =
+    useState<PropertyValidationErrors>({});
+
+  useEffect(() => {
+    const validateProperties = async () => {
+      if (!propertyValidationService || !metadata) {
+        setValidationErrors({});
+        return;
+      }
+
+      const assetClass = metadata["exo__Instance_class"] || "";
+      const errors: PropertyValidationErrors = {};
+
+      for (const [key, value] of Object.entries(metadata)) {
+        if (key === "exo__Instance_class" || key === "position") {
+          continue;
+        }
+
+        const domainResult =
+          await propertyValidationService.validatePropertyDomain(
+            key,
+            assetClass,
+          );
+        const rangeResult =
+          await propertyValidationService.validatePropertyRange(key, value);
+
+        if (!domainResult.isValid || !rangeResult.isValid) {
+          errors[key] = {
+            domainError: domainResult.isValid
+              ? undefined
+              : domainResult.errorMessage,
+            rangeError: rangeResult.isValid
+              ? undefined
+              : rangeResult.errorMessage,
+          };
+        }
+      }
+
+      setValidationErrors(errors);
+    };
+
+    validateProperties();
+  }, [metadata, propertyValidationService]);
 
   const handleSort = (column: string) => {
     setSortState((prev) => ({
@@ -281,16 +334,40 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {sortedEntries.map(([key, value]) => (
-            <tr key={key}>
-              <td className="property-key">{key}</td>
-              <td className="property-value">
-                {editable && file && propertyUpdateService
-                  ? renderEditableField(key, value)
-                  : renderValue(value)}
-              </td>
-            </tr>
-          ))}
+          {sortedEntries.map(([key, value]) => {
+            const hasError = validationErrors[key];
+            const keyClasses = [
+              "property-key",
+              hasError?.domainError ? "exocortex-property-error-key" : "",
+            ]
+              .filter(Boolean)
+              .join(" ");
+            const valueClasses = [
+              "property-value",
+              hasError?.rangeError ? "exocortex-property-error-value" : "",
+            ]
+              .filter(Boolean)
+              .join(" ");
+
+            return (
+              <tr key={key}>
+                <td
+                  className={keyClasses}
+                  title={hasError?.domainError || undefined}
+                >
+                  {key}
+                </td>
+                <td
+                  className={valueClasses}
+                  title={hasError?.rangeError || undefined}
+                >
+                  {editable && file && propertyUpdateService
+                    ? renderEditableField(key, value)
+                    : renderValue(value)}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

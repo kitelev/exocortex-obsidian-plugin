@@ -1927,3 +1927,28 @@
     transition: none;
   }
 }
+
+/* ============================================================================
+   Property Validation Error Highlighting
+   ============================================================================ */
+
+.exocortex-property-error-key {
+  color: var(--text-error);
+  background-color: var(--background-modifier-error);
+  font-weight: 600;
+  position: relative;
+}
+
+.exocortex-property-error-key::after {
+  content: " ⚠️";
+  font-size: 0.9em;
+  margin-left: 4px;
+}
+
+.exocortex-property-error-value {
+  color: var(--text-error);
+  border: 1px solid var(--text-error);
+  padding: 2px 4px;
+  border-radius: 3px;
+  background-color: var(--background-modifier-error-hover);
+}
