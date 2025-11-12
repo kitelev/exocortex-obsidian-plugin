@@ -9,6 +9,7 @@ import {
   canCreateInstance,
   canCreateRelatedTask,
   canCreateNarrowerConcept,
+  canCreateSubclass,
   canSetDraftStatus,
   canMoveToBacklog,
   canMoveToAnalysis,
@@ -41,9 +42,14 @@ import {
   NarrowerConceptModal,
   type NarrowerConceptModalResult,
 } from "../modals/NarrowerConceptModal";
+import {
+  SubclassCreationModal,
+  type SubclassCreationModalResult,
+} from "../modals/SubclassCreationModal";
 import { TaskCreationService } from "@exocortex/core";
 import { ProjectCreationService } from "@exocortex/core";
 import { AreaCreationService } from "@exocortex/core";
+import { ClassCreationService } from "@exocortex/core";
 import { ConceptCreationService } from "@exocortex/core";
 import { TaskStatusService } from "@exocortex/core";
 import { PropertyCleanupService } from "@exocortex/core";
@@ -67,6 +73,7 @@ export class ButtonGroupsBuilder {
     private taskCreationService: TaskCreationService,
     private projectCreationService: ProjectCreationService,
     private areaCreationService: AreaCreationService,
+    private classCreationService: ClassCreationService,
     private conceptCreationService: ConceptCreationService,
     private taskStatusService: TaskStatusService,
     private propertyCleanupService: PropertyCleanupService,
@@ -335,6 +342,34 @@ export class ButtonGroupsBuilder {
           await leaf.openFile(tFile);
           this.app.workspace.setActiveLeaf(leaf, { focus: true });
           this.logger.info(`Created Narrower Concept: ${createdFile.path}`);
+        },
+      },
+      {
+        id: "create-subclass",
+        label: "Create Subclass",
+        variant: "primary",
+        visible: canCreateSubclass(context),
+        onClick: async () => {
+          const result = await new Promise<SubclassCreationModalResult>(
+            (resolve) => {
+              new SubclassCreationModal(this.app, resolve).open();
+            },
+          );
+          if (result.label === null) return;
+
+          const createdFile = await this.classCreationService.createSubclass(
+            file,
+            result.label,
+            metadata,
+          );
+          const tFile = this.app.vault.getAbstractFileByPath(createdFile.path);
+          if (!tFile || !(tFile instanceof TFile)) {
+            throw new Error(`Created file not found: ${createdFile.path}`);
+          }
+          const leaf = this.app.workspace.getLeaf("tab");
+          await leaf.openFile(tFile);
+          this.app.workspace.setActiveLeaf(leaf, { focus: true });
+          this.logger.info(`Created Subclass: ${createdFile.path}`);
         },
       },
       {

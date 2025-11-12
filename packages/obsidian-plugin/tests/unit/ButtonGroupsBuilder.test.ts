@@ -5,6 +5,7 @@ import {
   TaskCreationService,
   ProjectCreationService,
   AreaCreationService,
+  ClassCreationService,
   ConceptCreationService,
   TaskStatusService,
   PropertyCleanupService,
@@ -25,6 +26,7 @@ describe("ButtonGroupsBuilder", () => {
   let mockTaskCreationService: jest.Mocked<TaskCreationService>;
   let mockProjectCreationService: jest.Mocked<ProjectCreationService>;
   let mockAreaCreationService: jest.Mocked<AreaCreationService>;
+  let mockClassCreationService: jest.Mocked<ClassCreationService>;
   let mockConceptCreationService: jest.Mocked<ConceptCreationService>;
   let mockTaskStatusService: jest.Mocked<TaskStatusService>;
   let mockPropertyCleanupService: jest.Mocked<PropertyCleanupService>;
@@ -68,6 +70,10 @@ describe("ButtonGroupsBuilder", () => {
 
     mockAreaCreationService = {
       createChildArea: jest.fn(),
+    } as any;
+
+    mockClassCreationService = {
+      createSubclass: jest.fn(),
     } as any;
 
     mockConceptCreationService = {
@@ -139,6 +145,7 @@ describe("ButtonGroupsBuilder", () => {
       mockTaskCreationService,
       mockProjectCreationService,
       mockAreaCreationService,
+      mockClassCreationService,
       mockConceptCreationService,
       mockTaskStatusService,
       mockPropertyCleanupService,

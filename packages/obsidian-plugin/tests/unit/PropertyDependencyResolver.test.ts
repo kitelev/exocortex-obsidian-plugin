@@ -1,0 +1,280 @@
+import {
+  LayoutSection,
+  PropertyDependencyResolver,
+} from "../../src/application/services/PropertyDependencyResolver";
+
+describe("PropertyDependencyResolver", () => {
+  let resolver: PropertyDependencyResolver;
+
+  beforeEach(() => {
+    resolver = new PropertyDependencyResolver();
+  });
+
+  describe("Core properties (exo__)", () => {
+    it("should map exo__Asset_label to Properties + Relations + Area Tree", () => {
+      const sections = resolver.getAffectedSections(["exo__Asset_label"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.RELATIONS);
+      expect(sections).toContain(LayoutSection.AREA_TREE);
+      expect(sections).toHaveLength(3);
+    });
+
+    it("should map exo__Instance_class to Properties + Buttons + Relations", () => {
+      const sections = resolver.getAffectedSections(["exo__Instance_class"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.BUTTONS);
+      expect(sections).toContain(LayoutSection.RELATIONS);
+      expect(sections).toHaveLength(3);
+    });
+
+    it("should map exo__Asset_isArchived to Properties + Buttons + Daily Tasks + Daily Projects + Relations", () => {
+      const sections = resolver.getAffectedSections(["exo__Asset_isArchived"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.BUTTONS);
+      expect(sections).toContain(LayoutSection.DAILY_TASKS);
+      expect(sections).toContain(LayoutSection.DAILY_PROJECTS);
+      expect(sections).toContain(LayoutSection.RELATIONS);
+      expect(sections).toHaveLength(5);
+    });
+
+    it("should map timestamp properties to Properties only", () => {
+      const sections = resolver.getAffectedSections([
+        "exo__Asset_createdAt",
+        "exo__Asset_uid",
+      ]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toHaveLength(1);
+    });
+  });
+
+  describe("Effort properties (ems__Effort_)", () => {
+    it("should map ems__Effort_status to Properties + Buttons + Daily Tasks + Daily Projects", () => {
+      const sections = resolver.getAffectedSections(["ems__Effort_status"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.BUTTONS);
+      expect(sections).toContain(LayoutSection.DAILY_TASKS);
+      expect(sections).toContain(LayoutSection.DAILY_PROJECTS);
+      expect(sections).toHaveLength(4);
+    });
+
+    it("should map ems__Effort_votes to Properties + Daily Tasks", () => {
+      const sections = resolver.getAffectedSections(["ems__Effort_votes"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.DAILY_TASKS);
+      expect(sections).toHaveLength(2);
+    });
+
+    it("should map ems__Effort_day to Properties + Daily Tasks", () => {
+      const sections = resolver.getAffectedSections(["ems__Effort_day"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.DAILY_TASKS);
+      expect(sections).toHaveLength(2);
+    });
+
+    it("should map ems__Effort_area to Properties + Daily Tasks + Daily Projects", () => {
+      const sections = resolver.getAffectedSections(["ems__Effort_area"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.DAILY_TASKS);
+      expect(sections).toContain(LayoutSection.DAILY_PROJECTS);
+      expect(sections).toHaveLength(3);
+    });
+
+    it("should map ems__Effort_parent to Properties + Relations", () => {
+      const sections = resolver.getAffectedSections(["ems__Effort_parent"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.RELATIONS);
+      expect(sections).toHaveLength(2);
+    });
+
+    it("should map effort timestamp properties to Properties only", () => {
+      const sections = resolver.getAffectedSections([
+        "ems__Effort_startTimestamp",
+        "ems__Effort_endTimestamp",
+        "ems__Effort_resolutionTimestamp",
+      ]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toHaveLength(1);
+    });
+  });
+
+  describe("Area properties (ems__Area_)", () => {
+    it("should map ems__Area_parent to Properties + Area Tree", () => {
+      const sections = resolver.getAffectedSections(["ems__Area_parent"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.AREA_TREE);
+      expect(sections).toHaveLength(2);
+    });
+  });
+
+  describe("Task properties (ems__Task_)", () => {
+    it("should map ems__Task_size to Properties + Daily Tasks", () => {
+      const sections = resolver.getAffectedSections(["ems__Task_size"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.DAILY_TASKS);
+      expect(sections).toHaveLength(2);
+    });
+
+    it("should map ems__Task_blockedBy to Properties + Daily Tasks + Relations", () => {
+      const sections = resolver.getAffectedSections(["ems__Task_blockedBy"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.DAILY_TASKS);
+      expect(sections).toContain(LayoutSection.RELATIONS);
+      expect(sections).toHaveLength(3);
+    });
+
+    it("should map ems__Task_blocks to Properties + Relations", () => {
+      const sections = resolver.getAffectedSections(["ems__Task_blocks"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.RELATIONS);
+      expect(sections).toHaveLength(2);
+    });
+  });
+
+  describe("Project properties (ems__Project_)", () => {
+    it("should map ems__Project_blockedBy to Properties + Daily Projects + Relations", () => {
+      const sections = resolver.getAffectedSections([
+        "ems__Project_blockedBy",
+      ]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.DAILY_PROJECTS);
+      expect(sections).toContain(LayoutSection.RELATIONS);
+      expect(sections).toHaveLength(3);
+    });
+
+    it("should map ems__Project_blocks to Properties + Relations", () => {
+      const sections = resolver.getAffectedSections(["ems__Project_blocks"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.RELATIONS);
+      expect(sections).toHaveLength(2);
+    });
+  });
+
+  describe("Daily Note properties (pn__DailyNote_)", () => {
+    it("should map pn__DailyNote_day to Properties + Daily Tasks + Daily Projects", () => {
+      const sections = resolver.getAffectedSections(["pn__DailyNote_day"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.DAILY_TASKS);
+      expect(sections).toContain(LayoutSection.DAILY_PROJECTS);
+      expect(sections).toHaveLength(3);
+    });
+  });
+
+  describe("Concept properties (ims__Concept_)", () => {
+    it("should map ims__Concept_broader to Properties + Relations", () => {
+      const sections = resolver.getAffectedSections(["ims__Concept_broader"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.RELATIONS);
+      expect(sections).toHaveLength(2);
+    });
+
+    it("should map ims__Concept_narrower to Properties + Relations", () => {
+      const sections = resolver.getAffectedSections(["ims__Concept_narrower"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.RELATIONS);
+      expect(sections).toHaveLength(2);
+    });
+
+    it("should map ims__Concept_related to Properties + Relations", () => {
+      const sections = resolver.getAffectedSections(["ims__Concept_related"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.RELATIONS);
+      expect(sections).toHaveLength(2);
+    });
+  });
+
+  describe("Obsidian standard properties", () => {
+    it("should map aliases to Properties + Relations + Area Tree", () => {
+      const sections = resolver.getAffectedSections(["aliases"]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.RELATIONS);
+      expect(sections).toContain(LayoutSection.AREA_TREE);
+      expect(sections).toHaveLength(3);
+    });
+  });
+
+  describe("Unknown properties", () => {
+    it("should map unknown property to Properties only (fallback)", () => {
+      const sections = resolver.getAffectedSections([
+        "custom__Unknown_property",
+      ]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toHaveLength(1);
+    });
+  });
+
+  describe("Multiple properties", () => {
+    it("should return union of affected sections for multiple properties", () => {
+      const sections = resolver.getAffectedSections([
+        "ems__Effort_votes",
+        "ems__Effort_status",
+      ]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.BUTTONS);
+      expect(sections).toContain(LayoutSection.DAILY_TASKS);
+      expect(sections).toContain(LayoutSection.DAILY_PROJECTS);
+      expect(sections).toHaveLength(4);
+    });
+
+    it("should deduplicate sections when multiple properties affect same section", () => {
+      const sections = resolver.getAffectedSections([
+        "exo__Asset_label",
+        "exo__Instance_class",
+      ]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.BUTTONS);
+      expect(sections).toContain(LayoutSection.RELATIONS);
+      expect(sections).toContain(LayoutSection.AREA_TREE);
+      expect(sections).toHaveLength(4);
+    });
+
+    it("should handle bulk property changes efficiently", () => {
+      const sections = resolver.getAffectedSections([
+        "exo__Asset_label",
+        "ems__Effort_status",
+        "ems__Effort_votes",
+        "ems__Area_parent",
+        "aliases",
+      ]);
+
+      expect(sections).toContain(LayoutSection.PROPERTIES);
+      expect(sections).toContain(LayoutSection.BUTTONS);
+      expect(sections).toContain(LayoutSection.DAILY_TASKS);
+      expect(sections).toContain(LayoutSection.DAILY_PROJECTS);
+      expect(sections).toContain(LayoutSection.AREA_TREE);
+      expect(sections).toContain(LayoutSection.RELATIONS);
+      expect(sections).toHaveLength(6);
+    });
+  });
+
+  describe("Empty input", () => {
+    it("should return empty array when no properties changed", () => {
+      const sections = resolver.getAffectedSections([]);
+
+      expect(sections).toEqual([]);
+    });
+  });
+});
