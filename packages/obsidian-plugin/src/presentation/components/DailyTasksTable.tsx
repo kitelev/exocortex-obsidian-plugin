@@ -173,63 +173,73 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
       });
     }
 
-    if (!sortState.column) {
-      return filtered;
-    }
+    const doingTasks = filtered.filter((task) => task.isDoing);
+    const otherTasks = filtered.filter((task) => !task.isDoing);
 
-    const sorted = [...filtered];
-
-    sorted.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
-
-      switch (sortState.column) {
-        case "name":
-          aValue = getDisplayName(a).toLowerCase();
-          bValue = getDisplayName(b).toLowerCase();
-          break;
-        case "start":
-          aValue = a.startTimestamp
-            ? new Date(a.startTimestamp).getTime()
-            : 0;
-          bValue = b.startTimestamp
-            ? new Date(b.startTimestamp).getTime()
-            : 0;
-          break;
-        case "end":
-          aValue = a.endTimestamp ? new Date(a.endTimestamp).getTime() : 0;
-          bValue = b.endTimestamp ? new Date(b.endTimestamp).getTime() : 0;
-          break;
-        case "status":
-          aValue = a.status?.toLowerCase() || "";
-          bValue = b.status?.toLowerCase() || "";
-          break;
-        case "effortArea":
-          aValue = getEffortAreaDisplayText(a);
-          bValue = getEffortAreaDisplayText(b);
-          break;
-        case "votes":
-          aValue = typeof a.metadata.ems__Effort_votes === "number"
-            ? a.metadata.ems__Effort_votes
-            : -1;
-          bValue = typeof b.metadata.ems__Effort_votes === "number"
-            ? b.metadata.ems__Effort_votes
-            : -1;
-          break;
-        default:
-          return 0;
+    const applySorting = (taskList: DailyTask[]): DailyTask[] => {
+      if (!sortState.column) {
+        return taskList;
       }
 
-      if (aValue < bValue) {
-        return sortState.order === "asc" ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return sortState.order === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
+      const sorted = [...taskList];
 
-    return sorted;
+      sorted.sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+
+        switch (sortState.column) {
+          case "name":
+            aValue = getDisplayName(a).toLowerCase();
+            bValue = getDisplayName(b).toLowerCase();
+            break;
+          case "start":
+            aValue = a.startTimestamp
+              ? new Date(a.startTimestamp).getTime()
+              : 0;
+            bValue = b.startTimestamp
+              ? new Date(b.startTimestamp).getTime()
+              : 0;
+            break;
+          case "end":
+            aValue = a.endTimestamp ? new Date(a.endTimestamp).getTime() : 0;
+            bValue = b.endTimestamp ? new Date(b.endTimestamp).getTime() : 0;
+            break;
+          case "status":
+            aValue = a.status?.toLowerCase() || "";
+            bValue = b.status?.toLowerCase() || "";
+            break;
+          case "effortArea":
+            aValue = getEffortAreaDisplayText(a);
+            bValue = getEffortAreaDisplayText(b);
+            break;
+          case "votes":
+            aValue = typeof a.metadata.ems__Effort_votes === "number"
+              ? a.metadata.ems__Effort_votes
+              : -1;
+            bValue = typeof b.metadata.ems__Effort_votes === "number"
+              ? b.metadata.ems__Effort_votes
+              : -1;
+            break;
+          default:
+            return 0;
+        }
+
+        if (aValue < bValue) {
+          return sortState.order === "asc" ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortState.order === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+
+      return sorted;
+    };
+
+    const sortedDoing = applySorting(doingTasks);
+    const sortedOthers = applySorting(otherTasks);
+
+    return [...sortedDoing, ...sortedOthers];
   }, [tasks, sortState, getAssetLabel, getEffortArea, showArchived]);
 
   return (
