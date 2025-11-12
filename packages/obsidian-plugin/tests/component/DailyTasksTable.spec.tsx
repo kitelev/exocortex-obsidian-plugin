@@ -15,11 +15,15 @@ test.describe("DailyTasksTable", () => {
       label: "First Task",
       startTime: "09:00",
       endTime: "10:00",
+      startTimestamp: null,
+      endTimestamp: null,
       status: "ems__EffortStatusInProgress",
       metadata: {},
       isDone: false,
       isTrashed: false,
+      isDoing: false,
       isMeeting: false,
+      isBlocked: false,
     },
     {
       file: { path: "task2.md", basename: "task2" },
@@ -28,11 +32,15 @@ test.describe("DailyTasksTable", () => {
       label: "Second Task",
       startTime: "10:30",
       endTime: "11:30",
+      startTimestamp: null,
+      endTimestamp: null,
       status: "ems__EffortStatusDone",
       metadata: {},
       isDone: true,
       isTrashed: false,
+      isDoing: false,
       isMeeting: false,
+      isBlocked: false,
     },
     {
       file: { path: "meeting1.md", basename: "meeting1" },
@@ -41,11 +49,15 @@ test.describe("DailyTasksTable", () => {
       label: "Team Sync",
       startTime: "14:00",
       endTime: "15:00",
+      startTimestamp: null,
+      endTimestamp: null,
       status: "ems__EffortStatusInProgress",
       metadata: {},
       isDone: false,
       isTrashed: false,
+      isDoing: false,
       isMeeting: true,
+      isBlocked: false,
     },
     {
       file: { path: "task3.md", basename: "task3" },
@@ -54,11 +66,15 @@ test.describe("DailyTasksTable", () => {
       label: "Trashed Task",
       startTime: "",
       endTime: "",
+      startTimestamp: null,
+      endTimestamp: null,
       status: "ems__EffortStatusTrashed",
       metadata: {},
       isDone: false,
       isTrashed: true,
+      isDoing: false,
       isMeeting: false,
+      isBlocked: false,
     },
     {
       file: { path: "meeting2.md", basename: "meeting2" },
@@ -67,11 +83,15 @@ test.describe("DailyTasksTable", () => {
       label: "Completed Meeting",
       startTime: "16:00",
       endTime: "17:00",
+      startTimestamp: null,
+      endTimestamp: null,
       status: "ems__EffortStatusDone",
       metadata: {},
       isDone: true,
       isTrashed: false,
+      isDoing: false,
       isMeeting: true,
+      isBlocked: false,
     },
   ];
 
@@ -636,6 +656,258 @@ test.describe("DailyTasksTable", () => {
     await expect(rows).toHaveCount(2);
 
     await expect(component.locator('thead th:has-text("Votes")')).toContainText("↑");
+  });
+
+  test("should prioritize Doing status tasks at top", async ({ mount }) => {
+    const mixedTasks: DailyTask[] = [
+      {
+        file: { path: "task-a.md", basename: "task-a" },
+        path: "task-a.md",
+        title: "Task A",
+        label: "Task A",
+        startTime: "09:00",
+        endTime: "10:00",
+        startTimestamp: null,
+        endTimestamp: null,
+        status: "ems__EffortStatusBacklog",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "task-b.md", basename: "task-b" },
+        path: "task-b.md",
+        title: "Task B",
+        label: "Task B",
+        startTime: "10:00",
+        endTime: "11:00",
+        startTimestamp: null,
+        endTimestamp: null,
+        status: "ems__EffortStatusDoing",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: true,
+        isMeeting: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "task-c.md", basename: "task-c" },
+        path: "task-c.md",
+        title: "Task C",
+        label: "Task C",
+        startTime: "11:00",
+        endTime: "12:00",
+        startTimestamp: null,
+        endTimestamp: null,
+        status: "ems__EffortStatusTodo",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(<DailyTasksTable tasks={mixedTasks} />);
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(3);
+
+    const firstRow = rows.first();
+    await expect(firstRow.locator(".task-name a")).toContainText("Task B");
+  });
+
+  test("should maintain column sort within Doing tasks", async ({ mount }) => {
+    const multipleDoingTasks: DailyTask[] = [
+      {
+        file: { path: "task-z.md", basename: "task-z" },
+        path: "task-z.md",
+        title: "Task Z",
+        label: "Z Task",
+        startTime: "09:00",
+        endTime: "10:00",
+        startTimestamp: null,
+        endTimestamp: null,
+        status: "ems__EffortStatusDoing",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: true,
+        isMeeting: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "task-a.md", basename: "task-a" },
+        path: "task-a.md",
+        title: "Task A",
+        label: "A Task",
+        startTime: "10:00",
+        endTime: "11:00",
+        startTimestamp: null,
+        endTimestamp: null,
+        status: "ems__EffortStatusDoing",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: true,
+        isMeeting: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "task-m.md", basename: "task-m" },
+        path: "task-m.md",
+        title: "Task M",
+        label: "M Task",
+        startTime: "11:00",
+        endTime: "12:00",
+        startTimestamp: null,
+        endTimestamp: null,
+        status: "ems__EffortStatusBacklog",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(<DailyTasksTable tasks={multipleDoingTasks} />);
+
+    await component.locator('thead th:has-text("Name")').click();
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(3);
+
+    const firstRowText = await rows.nth(0).locator(".task-name a").textContent();
+    const secondRowText = await rows.nth(1).locator(".task-name a").textContent();
+    const thirdRowText = await rows.nth(2).locator(".task-name a").textContent();
+
+    expect(firstRowText).toContain("A Task");
+    expect(secondRowText).toContain("Z Task");
+    expect(thirdRowText).toContain("M Task");
+  });
+
+  test("should keep Doing tasks first when sorting by start time", async ({ mount }) => {
+    const tasksWithTimes: DailyTask[] = [
+      {
+        file: { path: "task-early.md", basename: "task-early" },
+        path: "task-early.md",
+        title: "Early Task",
+        label: "Early Task",
+        startTime: "08:00",
+        endTime: "09:00",
+        startTimestamp: new Date("2025-01-01T08:00:00").getTime(),
+        endTimestamp: new Date("2025-01-01T09:00:00").getTime(),
+        status: "ems__EffortStatusBacklog",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "task-late-doing.md", basename: "task-late-doing" },
+        path: "task-late-doing.md",
+        title: "Late Doing Task",
+        label: "Late Doing Task",
+        startTime: "15:00",
+        endTime: "16:00",
+        startTimestamp: new Date("2025-01-01T15:00:00").getTime(),
+        endTimestamp: new Date("2025-01-01T16:00:00").getTime(),
+        status: "ems__EffortStatusDoing",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: true,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(<DailyTasksTable tasks={tasksWithTimes} />);
+
+    await component.locator('thead th:has-text("Start")').click();
+
+    const rows = component.locator("tbody tr");
+    const firstRow = rows.first();
+    await expect(firstRow.locator(".task-name a")).toContainText("Late Doing Task");
+  });
+
+  test("should handle empty Doing partition gracefully", async ({ mount }) => {
+    const noDoingTasks: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Task 1",
+        label: "Task 1",
+        startTime: "09:00",
+        endTime: "10:00",
+        startTimestamp: null,
+        endTimestamp: null,
+        status: "ems__EffortStatusBacklog",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "task2.md", basename: "task2" },
+        path: "task2.md",
+        title: "Task 2",
+        label: "Task 2",
+        startTime: "10:00",
+        endTime: "11:00",
+        startTimestamp: null,
+        endTimestamp: null,
+        status: "ems__EffortStatusTodo",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(<DailyTasksTable tasks={noDoingTasks} />);
+
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(2);
+  });
+
+  test("should display Doing icon for Doing tasks", async ({ mount }) => {
+    const doingTask: DailyTask = {
+      file: { path: "doing-task.md", basename: "doing-task" },
+      path: "doing-task.md",
+      title: "Doing Task",
+      label: "Doing Task",
+      startTime: "09:00",
+      endTime: "10:00",
+      startTimestamp: null,
+      endTimestamp: null,
+      status: "ems__EffortStatusDoing",
+      metadata: {},
+      isDone: false,
+      isTrashed: false,
+      isDoing: true,
+      isMeeting: false,
+      isBlocked: false,
+    };
+
+    const component = await mount(<DailyTasksTable tasks={[doingTask]} />);
+
+    const taskName = component.locator('tr[data-path="doing-task.md"] .task-name a');
+    await expect(taskName).toContainText("🔄");
+    await expect(taskName).toContainText("Doing Task");
   });
 });
 
