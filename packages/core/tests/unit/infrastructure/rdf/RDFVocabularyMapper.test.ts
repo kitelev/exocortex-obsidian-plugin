@@ -17,13 +17,13 @@ describe("RDFVocabularyMapper", () => {
 
       const taskSubclassTriple = triples.find(
         (t) =>
-          t.subject.value.includes("Task") &&
-          t.predicate.value ===
+          (t.subject as IRI).value.includes("Task") &&
+          (t.predicate as IRI).value ===
             "http://www.w3.org/2000/01/rdf-schema#subClassOf",
       );
 
       expect(taskSubclassTriple).toBeDefined();
-      expect(taskSubclassTriple!.object.value).toContain("Asset");
+      expect((taskSubclassTriple!.object as IRI).value).toContain("Asset");
     });
 
     it("should generate triples for all ExoRDF classes", () => {
@@ -33,7 +33,7 @@ describe("RDFVocabularyMapper", () => {
 
       for (const className of classNames) {
         const classTriple = triples.find((t) =>
-          t.subject.value.includes(className),
+          (t.subject as IRI).value.includes(className),
         );
         expect(classTriple).toBeDefined();
       }
@@ -44,8 +44,8 @@ describe("RDFVocabularyMapper", () => {
 
       const assetTriple = triples.find(
         (t) =>
-          t.subject.value.includes("Asset") &&
-          t.object.value ===
+          (t.subject as IRI).value.includes("Asset") &&
+          (t.object as IRI).value ===
             "http://www.w3.org/2000/01/rdf-schema#Resource",
       );
 
@@ -57,8 +57,8 @@ describe("RDFVocabularyMapper", () => {
 
       const classTriple = triples.find(
         (t) =>
-          t.subject.value.includes("/Class") &&
-          t.object.value === "http://www.w3.org/2000/01/rdf-schema#Class",
+          (t.subject as IRI).value.includes("#Class") &&
+          (t.object as IRI).value === "http://www.w3.org/2000/01/rdf-schema#Class",
       );
 
       expect(classTriple).toBeDefined();
@@ -69,8 +69,8 @@ describe("RDFVocabularyMapper", () => {
 
       const propertyTriple = triples.find(
         (t) =>
-          t.subject.value.includes("/Property") &&
-          t.object.value ===
+          (t.subject as IRI).value.includes("#Property") &&
+          (t.object as IRI).value ===
             "http://www.w3.org/1999/02/22-rdf-syntax-ns#Property",
       );
 
@@ -90,8 +90,8 @@ describe("RDFVocabularyMapper", () => {
 
       const instanceClassTriple = triples.find(
         (t) =>
-          t.subject.value.includes("Instance_class") &&
-          t.object.value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+          (t.subject as IRI).value.includes("Instance_class") &&
+          (t.object as IRI).value === "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       );
 
       expect(instanceClassTriple).toBeDefined();
@@ -102,8 +102,8 @@ describe("RDFVocabularyMapper", () => {
 
       const isDefinedByTriple = triples.find(
         (t) =>
-          t.subject.value.includes("Asset_isDefinedBy") &&
-          t.object.value ===
+          (t.subject as IRI).value.includes("Asset_isDefinedBy") &&
+          (t.object as IRI).value ===
             "http://www.w3.org/2000/01/rdf-schema#isDefinedBy",
       );
 
@@ -115,8 +115,8 @@ describe("RDFVocabularyMapper", () => {
 
       const superClassTriple = triples.find(
         (t) =>
-          t.subject.value.includes("Class_superClass") &&
-          t.object.value ===
+          (t.subject as IRI).value.includes("Class_superClass") &&
+          (t.object as IRI).value ===
             "http://www.w3.org/2000/01/rdf-schema#subClassOf",
       );
 
@@ -128,8 +128,8 @@ describe("RDFVocabularyMapper", () => {
 
       const rangeTriple = triples.find(
         (t) =>
-          t.subject.value.includes("Property_range") &&
-          t.object.value === "http://www.w3.org/2000/01/rdf-schema#range",
+          (t.subject as IRI).value.includes("Property_range") &&
+          (t.object as IRI).value === "http://www.w3.org/2000/01/rdf-schema#range",
       );
 
       expect(rangeTriple).toBeDefined();
@@ -140,8 +140,8 @@ describe("RDFVocabularyMapper", () => {
 
       const domainTriple = triples.find(
         (t) =>
-          t.subject.value.includes("Property_domain") &&
-          t.object.value === "http://www.w3.org/2000/01/rdf-schema#domain",
+          (t.subject as IRI).value.includes("Property_domain") &&
+          (t.object as IRI).value === "http://www.w3.org/2000/01/rdf-schema#domain",
       );
 
       expect(domainTriple).toBeDefined();
@@ -152,8 +152,8 @@ describe("RDFVocabularyMapper", () => {
 
       const superPropertyTriple = triples.find(
         (t) =>
-          t.subject.value.includes("Property_superProperty") &&
-          t.object.value ===
+          (t.subject as IRI).value.includes("Property_superProperty") &&
+          (t.object as IRI).value ===
             "http://www.w3.org/2000/01/rdf-schema#subPropertyOf",
       );
 
@@ -174,10 +174,10 @@ describe("RDFVocabularyMapper", () => {
       );
 
       expect(triple).toBeDefined();
-      expect(triple!.predicate.value).toBe(
+      expect((triple!.predicate as IRI).value).toBe(
         "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
       );
-      expect(triple!.object.value).toContain("Task");
+      expect((triple!.object as IRI).value).toContain("Task");
     });
 
     it("should generate rdfs:isDefinedBy triple for exo__Asset_isDefinedBy", () => {
@@ -224,7 +224,7 @@ describe("RDFVocabularyMapper", () => {
 
       expect(triple).toBeDefined();
       expect(triple!.object).toBeInstanceOf(IRI);
-      expect(triple!.object.value).toContain("Project");
+      expect((triple!.object as IRI).value).toContain("Project");
     });
 
     it("should handle IRI values directly", () => {
@@ -241,7 +241,7 @@ describe("RDFVocabularyMapper", () => {
 
       expect(triple).toBeDefined();
       expect(triple!.object).toBeInstanceOf(IRI);
-      expect(triple!.object.value).toBe(valueIRI.value);
+      expect((triple!.object as IRI).value).toBe(valueIRI.value);
     });
   });
 
