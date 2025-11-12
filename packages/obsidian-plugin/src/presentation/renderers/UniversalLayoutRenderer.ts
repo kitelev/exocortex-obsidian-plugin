@@ -30,6 +30,11 @@ import { RelationsRenderer, UniversalLayoutConfig } from "./layout/RelationsRend
 import { AssetMetadataService } from "./layout/helpers/AssetMetadataService";
 import { DailyNoteHelpers } from "./helpers/DailyNoteHelpers";
 import { DateFormatter } from "@exocortex/core";
+import {
+  PropertyDependencyResolver,
+  LayoutSection,
+} from "../../application/services/PropertyDependencyResolver";
+import { FrontmatterDeltaDetector } from "../../application/services/FrontmatterDeltaDetector";
 
 type ObsidianApp = any;
 
@@ -77,6 +82,13 @@ export class UniversalLayoutRenderer {
   private effortVotingService: EffortVotingService;
   private labelToAliasService: LabelToAliasService;
   private assetConversionService: AssetConversionService;
+
+  private dependencyResolver: PropertyDependencyResolver;
+  private deltaDetector: FrontmatterDeltaDetector;
+  private metadataCache: Map<string, Record<string, unknown>> = new Map();
+  private debounceTimeout: NodeJS.Timeout | null = null;
+  private currentFilePath: string | null = null;
+  private currentConfig: UniversalLayoutConfig = {};
 
   constructor(app: ObsidianApp, settings: ExocortexSettings, plugin: any) {
     this.app = app;
@@ -176,6 +188,9 @@ export class UniversalLayoutRenderer {
       (path: string) => this.metadataService.getAssetLabel(path),
       (metadata: Record<string, unknown>) => this.metadataService.getEffortArea(metadata),
     );
+
+    this.dependencyResolver = new PropertyDependencyResolver();
+    this.deltaDetector = new FrontmatterDeltaDetector();
   }
 
   public invalidateBacklinksCache(): void {
@@ -183,8 +198,220 @@ export class UniversalLayoutRenderer {
   }
 
   cleanup(): void {
+    if (this.debounceTimeout) {
+      clearTimeout(this.debounceTimeout);
+      this.debounceTimeout = null;
+    }
     this.eventListenerManager.cleanup();
     this.reactRenderer.cleanup();
+  }
+
+  public async handleMetadataChange(filePath: string): Promise<void> {
+    if (this.debounceTimeout) {
+      clearTimeout(this.debounceTimeout);
+    }
+
+    this.debounceTimeout = setTimeout(async () => {
+      if (!this.rootContainer || filePath !== this.currentFilePath) {
+        return;
+      }
+
+      const currentFile = this.app.vault.getAbstractFileByPath(filePath);
+      if (!currentFile || currentFile.extension !== "md") {
+        return;
+      }
+
+      const oldMetadata = this.metadataCache.get(filePath) || {};
+      const newMetadata = this.metadataExtractor.extractMetadata(currentFile);
+
+      const delta = this.deltaDetector.detectChanges(oldMetadata, newMetadata);
+      const changedProps = this.deltaDetector.getAllChangedProperties(delta);
+
+      if (changedProps.length === 0) {
+        return;
+      }
+
+      this.metadataCache.set(filePath, newMetadata);
+
+      const affectedSections =
+        this.dependencyResolver.getAffectedSections(changedProps);
+
+      await this.incrementalUpdate(currentFile, affectedSections);
+    }, 50);
+  }
+
+  private async incrementalUpdate(
+    file: any,
+    sections: LayoutSection[],
+  ): Promise<void> {
+    if (!this.rootContainer) {
+      return;
+    }
+
+    for (const section of sections) {
+      switch (section) {
+        case LayoutSection.PROPERTIES:
+          await this.updatePropertiesSection(file);
+          break;
+        case LayoutSection.BUTTONS:
+          await this.updateButtonsSection(file);
+          break;
+        case LayoutSection.DAILY_TASKS:
+          await this.updateDailyTasksSection(file);
+          break;
+        case LayoutSection.DAILY_PROJECTS:
+          await this.updateDailyProjectsSection(file);
+          break;
+        case LayoutSection.AREA_TREE:
+          await this.updateAreaTreeSection(file);
+          break;
+        case LayoutSection.RELATIONS:
+          await this.updateRelationsSection(file);
+          break;
+      }
+    }
+  }
+
+  private async updatePropertiesSection(file: any): Promise<void> {
+    const sectionContainer = this.rootContainer?.querySelector(
+      ".exocortex-properties-section",
+    ) as HTMLElement;
+
+    if (!sectionContainer || !this.rootContainer) {
+      return;
+    }
+
+    sectionContainer.empty();
+
+    const backlinks = this.backlinksCacheManager.getBacklinks(file.path);
+    const hasRelations = backlinks && backlinks.size > 0;
+
+    const parent = sectionContainer.parentElement || this.rootContainer;
+
+    await this.propertiesRenderer.render(
+      parent,
+      file,
+      { hideAliases: hasRelations },
+      this.renderSectionHeader.bind(this),
+      this.isSectionCollapsed("properties"),
+    );
+  }
+
+  private async updateButtonsSection(file: any): Promise<void> {
+    const sectionContainer = this.rootContainer?.querySelector(
+      ".exocortex-buttons-section",
+    ) as HTMLElement;
+
+    if (sectionContainer) {
+      sectionContainer.remove();
+    }
+
+    const buttonGroups = await this.buttonGroupsBuilder.build(file);
+    if (buttonGroups.length > 0 && this.rootContainer) {
+      const buttonsContainer = this.rootContainer.createDiv({
+        cls: "exocortex-buttons-section",
+      });
+      this.reactRenderer.render(
+        buttonsContainer,
+        React.createElement(ActionButtonsGroup, { groups: buttonGroups }),
+      );
+    }
+  }
+
+  private async updateDailyTasksSection(file: any): Promise<void> {
+    const sectionContainer = this.rootContainer?.querySelector(
+      ".exocortex-daily-tasks-section",
+    ) as HTMLElement;
+
+    if (!sectionContainer || !this.rootContainer) {
+      return;
+    }
+
+    sectionContainer.empty();
+
+    const parent = sectionContainer.parentElement || this.rootContainer;
+
+    await this.dailyTasksRenderer.render(
+      parent,
+      file,
+      this.renderSectionHeader.bind(this),
+      this.isSectionCollapsed("daily-tasks"),
+    );
+  }
+
+  private async updateDailyProjectsSection(file: any): Promise<void> {
+    const sectionContainer = this.rootContainer?.querySelector(
+      ".exocortex-daily-projects-section",
+    ) as HTMLElement;
+
+    if (!sectionContainer || !this.rootContainer) {
+      return;
+    }
+
+    sectionContainer.empty();
+
+    const parent = sectionContainer.parentElement || this.rootContainer;
+
+    await this.dailyProjectsRenderer.render(
+      parent,
+      file,
+      this.renderSectionHeader.bind(this),
+      this.isSectionCollapsed("daily-projects"),
+    );
+  }
+
+  private async updateAreaTreeSection(file: any): Promise<void> {
+    const sectionContainer = this.rootContainer?.querySelector(
+      ".exocortex-area-tree-section",
+    ) as HTMLElement;
+
+    if (!sectionContainer || !this.rootContainer) {
+      return;
+    }
+
+    sectionContainer.empty();
+
+    const relations = await this.relationsRenderer.getAssetRelations(
+      file,
+      this.currentConfig,
+    );
+
+    const parent = sectionContainer.parentElement || this.rootContainer;
+
+    await this.areaTreeRenderer.render(
+      parent,
+      file,
+      relations,
+      this.renderSectionHeader.bind(this),
+      this.isSectionCollapsed("area-tree"),
+    );
+  }
+
+  private async updateRelationsSection(file: any): Promise<void> {
+    const sectionContainer = this.rootContainer?.querySelector(
+      ".exocortex-assets-relations",
+    ) as HTMLElement;
+
+    if (!sectionContainer || !this.rootContainer) {
+      return;
+    }
+
+    sectionContainer.empty();
+
+    const relations = await this.relationsRenderer.getAssetRelations(
+      file,
+      this.currentConfig,
+    );
+
+    const parent = sectionContainer.parentElement || this.rootContainer;
+
+    await this.relationsRenderer.render(
+      parent,
+      relations,
+      this.currentConfig,
+      this.renderSectionHeader.bind(this),
+      this.isSectionCollapsed("relations"),
+    );
   }
 
   /**
@@ -336,6 +563,11 @@ export class UniversalLayoutRenderer {
         this.renderSectionHeader.bind(this),
         this.isSectionCollapsed("relations"),
       );
+
+      this.currentFilePath = currentFile.path;
+      this.currentConfig = config;
+      const currentMetadata = this.metadataExtractor.extractMetadata(currentFile);
+      this.metadataCache.set(currentFile.path, currentMetadata);
 
       this.logger.info(
         `Rendered UniversalLayout with properties and ${relations.length} asset relations`,
