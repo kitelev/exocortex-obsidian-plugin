@@ -493,6 +493,7 @@ result.bindings.forEach(binding => {
 - 💡 [30+ Query Examples](./docs/sparql/Query-Examples.md) - Ready-to-use query patterns
 - ⚡ [Performance Tips](./docs/sparql/Performance-Tips.md) - Optimize queries for large vaults
 - 🔧 [Developer Guide](./docs/sparql/Developer-Guide.md) - Extend SPARQL functionality
+- 🌐 [ExoRDF to RDF/RDFS Mapping](./docs/rdf/ExoRDF-Mapping.md) - Semantic interoperability specification
 
 **Quick Tips**:
 - Use `LIMIT` to avoid overwhelming results
