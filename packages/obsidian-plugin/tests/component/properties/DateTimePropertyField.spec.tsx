@@ -242,4 +242,24 @@ test.describe("DateTimePropertyField Component", () => {
     const text = await displayText.textContent();
     expect(text).toContain("Nov");
   });
+
+  test("should format time in 24h format (not AM/PM)", async ({ mount }) => {
+    const component = await mount(
+      <DateTimePropertyField
+        value="2024-11-11T15:30:00.000Z"
+        onChange={() => {}}
+      />,
+    );
+
+    const displayText = component.locator("span");
+    const text = await displayText.textContent();
+
+    // Should NOT contain AM/PM indicators
+    expect(text).not.toContain("AM");
+    expect(text).not.toContain("PM");
+    expect(text).not.toContain("am");
+    expect(text).not.toContain("pm");
+    // Should contain time with colon
+    expect(text).toContain(":");
+  });
 });
