@@ -391,6 +391,8 @@ For a Project note, relations might show:
 
 Execute powerful semantic queries directly in your notes using SPARQL, the W3C standard query language for RDF data. Query results auto-refresh when your vault changes.
 
+**NEW**: Supports standard RDF/RDFS vocabulary (`rdf:type`, `rdfs:subClassOf*`, etc.) for semantic web interoperability and inference queries alongside custom ExoRDF predicates. See [SPARQL Documentation](docs/sparql/User-Guide.md) for RDF/RDFS mapping details.
+
 ### Quick Start
 
 Create a `sparql` code block in any note:

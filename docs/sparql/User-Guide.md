@@ -410,6 +410,48 @@ GROUP BY ?status
 
 ---
 
+## Using Standard RDF/RDFS Vocabulary
+
+Exocortex maps its custom ExoRDF properties to W3C standard RDF/RDFS vocabulary, enabling semantic web interoperability and inference.
+
+### Standard Predicates Supported
+
+| ExoRDF Property | RDF/RDFS Equivalent | Example |
+|----------------|---------------------|------------|
+| exo__Instance_class | rdf:type | ?asset rdf:type ems:Task |
+| exo__Asset_isDefinedBy | rdfs:isDefinedBy | ?asset rdfs:isDefinedBy <ontology> |
+| exo__Class_superClass | rdfs:subClassOf | ?class rdfs:subClassOf exo:Asset |
+| exo__Property_range | rdfs:range | ?property rdfs:range xsd:string |
+| exo__Property_domain | rdfs:domain | ?property rdfs:domain ems:Task |
+| exo__Property_superProperty | rdfs:subPropertyOf | ?prop rdfs:subPropertyOf rdf:type |
+
+### Query All Assets Using Class Hierarchy
+
+```sparql
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?asset ?type ?label
+WHERE {
+  ?asset rdf:type ?type .
+  ?type rdfs:subClassOf* exo:Asset .
+  ?asset exo:Asset_label ?label .
+}
+ORDER BY ?type ?label
+```
+
+This query returns ALL assets (tasks, projects, areas) by leveraging the rdfs:subClassOf* transitive property. The * means "zero or more" subclass relationships.
+
+### Benefits of Standard Vocabulary
+
+1. **Semantic Interoperability** - Queries work with any RDF tool
+2. **Inference** - Automatic reasoning over class hierarchies
+3. **Standardization** - Well-known predicates, better tooling
+4. **Compatibility** - Export data to other semantic web systems
+
+---
+
 ## Graph Construction
 
 ### CONSTRUCT Queries
@@ -739,6 +781,63 @@ That's a mismatch!
 3. Use hash-style URIs (`#` at end), not slash-style (`/` at end)
 
 **Reference**: See PR #363 for namespace unification example.
+
+---
+
+## Troubleshooting RDF/RDFS Queries
+
+### Issue: "No results when using rdf:type"
+
+**Symptom:** Query returns empty results despite assets existing.
+
+**Cause:** RDF/RDFS triples not generated (mapping not enabled).
+
+**Solution:**
+1. Verify triple store includes RDF/RDFS triples:
+   ```sparql
+   SELECT * WHERE { ?s ?p ?o } LIMIT 100
+   ```
+2. Check for rdfs:subClassOf triples
+3. Rebuild triple store: Command Palette → "Reload Layout"
+
+---
+
+### Issue: "rdfs:subClassOf* query very slow"
+
+**Symptom:** Transitive queries take >1 second.
+
+**Cause:** Large result set, no LIMIT.
+
+**Solution:**
+1. Add LIMIT clause
+2. Filter by specific type before transitive closure
+3. Use ExoRDF queries if performance critical
+
+---
+
+### Issue: "Assets have no URIs in results"
+
+**Symptom:** Query returns blank nodes instead of URIs.
+
+**Cause:** Assets missing exo__Asset_uid property.
+
+**Solution:**
+1. Check asset frontmatter for exo__Asset_uid
+2. Run "Repair Folder" command to add missing UIDs
+3. Rebuild triple store
+
+---
+
+### Issue: "Ontology URL not found"
+
+**Symptom:** Error: "Invalid ontology URL"
+
+**Cause:** Asset references non-existent ontology file.
+
+**Solution:**
+1. Verify exo__Asset_isDefinedBy references valid file
+2. Check ontology file has exo__Ontology_url property
+3. Use default ontology URL if needed
 
 ---
 
