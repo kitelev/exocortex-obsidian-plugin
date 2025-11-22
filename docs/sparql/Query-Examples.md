@@ -542,9 +542,222 @@ WHERE {
 
 ---
 
+## RDF/RDFS Standard Queries
+
+### 27. Query Assets by Type (Using rdf:type)
+
+```sparql
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?task ?label
+WHERE {
+  ?task rdf:type ems:Task .
+  ?task exo:Asset_label ?label .
+}
+```
+
+**Use Case**: Find all tasks using standard RDF vocabulary instead of ExoRDF-specific predicates.
+
+**Performance**: O(n) - Same as exo__Instance_class queries
+
+---
+
+### 28. Query All Asset Subtypes (Using rdfs:subClassOf*)
+
+```sparql
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?asset ?type ?label
+WHERE {
+  ?asset rdf:type ?type .
+  ?type rdfs:subClassOf* exo:Asset .
+  ?asset exo:Asset_label ?label .
+}
+LIMIT 100
+```
+
+**Use Case**: Find ALL assets (tasks, projects, areas) regardless of specific type, using transitive subclass inference.
+
+**Performance**: O(n×m) where m is class hierarchy depth. Use LIMIT to avoid large result sets.
+
+---
+
+### 29. Query Class Hierarchy (Using rdfs:subClassOf)
+
+```sparql
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?class ?superClass
+WHERE {
+  ?class rdfs:subClassOf ?superClass .
+}
+```
+
+**Use Case**: Explore the Exocortex class hierarchy to understand asset type relationships.
+
+**Result Example**:
+```
+ems:Task        rdfs:subClassOf exo:Asset
+ems:Project     rdfs:subClassOf exo:Asset
+ems:Area        rdfs:subClassOf exo:Asset
+exo:Asset       rdfs:subClassOf rdfs:Resource
+```
+
+---
+
+### 30. Query by Ontology (Using rdfs:isDefinedBy)
+
+```sparql
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?asset ?label
+WHERE {
+  ?asset rdfs:isDefinedBy <https://exocortex.my/ontology/ems/> .
+  ?asset exo:Asset_label ?label .
+}
+```
+
+**Use Case**: Find all assets defined by a specific ontology (EMS, IMS, etc.).
+
+---
+
+### 31. Count Assets by Type Hierarchy
+
+```sparql
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?type (COUNT(?asset) AS ?count)
+WHERE {
+  ?asset rdf:type ?type .
+  ?type rdfs:subClassOf* exo:Asset .
+}
+GROUP BY ?type
+ORDER BY DESC(?count)
+```
+
+**Use Case**: Statistics on asset distribution across types.
+
+**Performance**: O(n) with grouping overhead.
+
+---
+
+### 32. Find All Superclasses of a Type
+
+```sparql
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?superClass
+WHERE {
+  ems:Task rdfs:subClassOf+ ?superClass .
+}
+```
+
+**Use Case**: Discover class hierarchy for a specific type.
+
+**Result Example**:
+```
+exo:Asset
+rdfs:Resource
+```
+
+---
+
+### 33. Query with Multiple RDF/RDFS Predicates
+
+```sparql
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?task ?label ?ontology
+WHERE {
+  ?task rdf:type ems:Task .
+  ?task rdfs:label ?label .
+  ?task rdfs:isDefinedBy ?ontology .
+}
+LIMIT 50
+```
+
+**Use Case**: Combine multiple standard RDF/RDFS properties in one query.
+
+---
+
+### 34. Transitive Property Queries
+
+```sparql
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?property ?superProperty
+WHERE {
+  ?property rdfs:subPropertyOf+ rdfs:label .
+}
+```
+
+**Use Case**: Find all properties that are subproperties of rdfs:label (transitively).
+
+---
+
+### 35. Combined ExoRDF and RDF/RDFS Query
+
+```sparql
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?task ?label ?status
+WHERE {
+  # Use RDF/RDFS for type
+  ?task rdf:type ems:Task .
+
+  # Use ExoRDF for specific properties
+  ?task exo:Asset_label ?label .
+  ?task ems:Task_status ?status .
+
+  FILTER(?status = "in-progress")
+}
+```
+
+**Use Case**: Mix standard RDF/RDFS predicates with domain-specific ExoRDF predicates.
+
+**Best Practice**: Use RDF/RDFS for interoperability, ExoRDF for performance-critical queries.
+
+---
+
+### 36. Validate Class Membership
+
+```sparql
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+ASK {
+  ?task rdf:type ems:Task .
+  ems:Task rdfs:subClassOf exo:Asset .
+}
+```
+
+**Use Case**: Validate that tasks are properly classified as assets via class hierarchy.
+
+**Result**: `true` or `false`
+
+---
+
 ## Advanced Patterns
 
-### 27. Tasks with Multiple Projects (Data Quality Check)
+### 37. Tasks with Multiple Projects (Data Quality Check)
 
 Find tasks incorrectly assigned to multiple projects:
 

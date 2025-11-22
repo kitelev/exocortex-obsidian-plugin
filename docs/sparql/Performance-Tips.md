@@ -554,6 +554,95 @@ Before deploying a query, verify:
 
 ---
 
+## RDF/RDFS Inference Performance
+
+### Transitive Closure Queries
+
+Queries using `rdfs:subClassOf*` or `rdfs:subPropertyOf*` compute transitive closures.
+
+**Performance Characteristics:**
+- **Complexity**: O(n×m) where n = assets, m = hierarchy depth
+- **Cached**: First query slow, subsequent queries fast
+- **Memory**: Closure cached in-memory
+
+**Optimization Tips:**
+
+#### 1. Use LIMIT
+
+❌ **Slow: Returns all assets**
+```sparql
+SELECT ?asset WHERE {
+  ?asset rdf:type ?type .
+  ?type rdfs:subClassOf* exo:Asset .
+}
+```
+
+✅ **Fast: Returns only 10 assets**
+```sparql
+SELECT ?asset WHERE {
+  ?asset rdf:type ?type .
+  ?type rdfs:subClassOf* exo:Asset .
+}
+LIMIT 10
+```
+
+#### 2. Filter by Specific Type First
+
+✅ **Faster: Filter before transitive closure**
+```sparql
+SELECT ?asset
+WHERE {
+  ?asset rdf:type ems:Task .  # Filter first
+  ems:Task rdfs:subClassOf* exo:Asset .
+}
+```
+
+#### 3. Avoid Deep Hierarchies in Hot Paths
+
+- Exocortex class hierarchy is shallow (max depth: 3)
+- Custom ontologies with deep hierarchies: consider caching
+- **Recommendation**: Use ExoRDF for performance-critical queries, RDF/RDFS for interoperability
+
+### RDF/RDFS vs ExoRDF Performance
+
+| Query Type | RDF/RDFS | ExoRDF | Winner |
+|-----------|----------|--------|--------|
+| Direct type query | ~same | ~same | Tie |
+| Transitive hierarchy | Slower (inference) | N/A | ExoRDF |
+| Standard tooling | Compatible | Incompatible | RDF/RDFS |
+
+**Recommendation**: Use ExoRDF for performance-critical queries, RDF/RDFS for interoperability.
+
+### Inference Examples
+
+**Simple class query** (<10ms):
+```sparql
+SELECT ?task WHERE {
+  ?task rdf:type ems:Task .
+}
+```
+
+**Transitive query** (10-100ms):
+```sparql
+SELECT ?asset WHERE {
+  ?asset rdf:type ?type .
+  ?type rdfs:subClassOf* exo:Asset .
+}
+LIMIT 100
+```
+
+**Deep transitive query** (100ms+):
+```sparql
+SELECT ?asset ?type1 ?type2 ?type3 WHERE {
+  ?asset rdf:type ?type1 .
+  ?type1 rdfs:subClassOf ?type2 .
+  ?type2 rdfs:subClassOf ?type3 .
+  ?type3 rdfs:subClassOf* exo:Asset .
+}
+```
+
+---
+
 ## Next Steps
 
 - **Learn Query Syntax**: Read [User-Guide.md](./User-Guide.md)
