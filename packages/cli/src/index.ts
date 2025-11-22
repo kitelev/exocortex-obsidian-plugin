@@ -2,6 +2,7 @@
 
 import { Command } from "commander";
 import { sparqlQueryCommand } from "./commands/sparql-query.js";
+import { commandCommand } from "./commands/command.js";
 
 const program = new Command();
 
@@ -14,5 +15,7 @@ program
   .command("sparql")
   .description("SPARQL query execution")
   .addCommand(sparqlQueryCommand());
+
+program.addCommand(commandCommand());
 
 program.parse();
