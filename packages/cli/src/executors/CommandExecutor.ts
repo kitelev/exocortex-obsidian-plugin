@@ -3,7 +3,7 @@ import { NodeFsAdapter } from "../adapters/NodeFsAdapter.js";
 import { PathResolver } from "../utils/PathResolver.js";
 import { ErrorHandler } from "../utils/ErrorHandler.js";
 import { ExitCodes } from "../utils/ExitCodes.js";
-import { FrontmatterService } from "@exocortex/core";
+import { FrontmatterService, DateFormatter } from "@exocortex/core";
 
 /**
  * Executes plugin commands on single assets via CLI
@@ -277,5 +277,308 @@ export class CommandExecutor {
 
     const aliasLines = aliasesMatch[1].split("\n").filter((line) => line.trim());
     return aliasLines.map((line) => line.replace(/^\s*-\s*/, "").trim());
+  }
+
+  /**
+   * Executes start command
+   *
+   * Transitions task from ToDo to Doing status and records start timestamp.
+   *
+   * @param filepath - Path to the task file
+   *
+   * @example
+   * executor.executeStart("03 Knowledge/tasks/my-task.md")
+   */
+  async executeStart(filepath: string): Promise<void> {
+    try {
+      // Resolve and validate path
+      const resolvedPath = this.pathResolver.resolve(filepath);
+      this.pathResolver.validate(resolvedPath);
+
+      // Get relative path for NodeFsAdapter
+      const relativePath = resolvedPath.replace(
+        this.pathResolver.getVaultRoot() + "/",
+        "",
+      );
+
+      // Read current content
+      const content = await this.fsAdapter.readFile(relativePath);
+      const timestamp = DateFormatter.toLocalTimestamp(new Date());
+
+      // Update status to Doing
+      let updated = this.frontmatterService.updateProperty(
+        content,
+        "ems__Effort_status",
+        '"[[ems__EffortStatusDoing]]"',
+      );
+
+      // Add start timestamp
+      updated = this.frontmatterService.updateProperty(
+        updated,
+        "ems__Effort_startTimestamp",
+        timestamp,
+      );
+
+      // Write updated content
+      await this.fsAdapter.updateFile(relativePath, updated);
+
+      console.log(`✅ Started: ${filepath}`);
+      console.log(`   Status: Doing`);
+      console.log(`   Start time: ${timestamp}`);
+      process.exit(ExitCodes.SUCCESS);
+    } catch (error) {
+      ErrorHandler.handle(error as Error);
+    }
+  }
+
+  /**
+   * Executes complete command
+   *
+   * Transitions task from Doing to Done status and records completion timestamps.
+   *
+   * @param filepath - Path to the task file
+   *
+   * @example
+   * executor.executeComplete("03 Knowledge/tasks/my-task.md")
+   */
+  async executeComplete(filepath: string): Promise<void> {
+    try {
+      // Resolve and validate path
+      const resolvedPath = this.pathResolver.resolve(filepath);
+      this.pathResolver.validate(resolvedPath);
+
+      // Get relative path for NodeFsAdapter
+      const relativePath = resolvedPath.replace(
+        this.pathResolver.getVaultRoot() + "/",
+        "",
+      );
+
+      // Read current content
+      const content = await this.fsAdapter.readFile(relativePath);
+      const timestamp = DateFormatter.toLocalTimestamp(new Date());
+
+      // Update status to Done
+      let updated = this.frontmatterService.updateProperty(
+        content,
+        "ems__Effort_status",
+        '"[[ems__EffortStatusDone]]"',
+      );
+
+      // Add end timestamp
+      updated = this.frontmatterService.updateProperty(
+        updated,
+        "ems__Effort_endTimestamp",
+        timestamp,
+      );
+
+      // Add resolution timestamp
+      updated = this.frontmatterService.updateProperty(
+        updated,
+        "ems__Effort_resolutionTimestamp",
+        timestamp,
+      );
+
+      // Write updated content
+      await this.fsAdapter.updateFile(relativePath, updated);
+
+      console.log(`✅ Completed: ${filepath}`);
+      console.log(`   Status: Done`);
+      console.log(`   Completion time: ${timestamp}`);
+      process.exit(ExitCodes.SUCCESS);
+    } catch (error) {
+      ErrorHandler.handle(error as Error);
+    }
+  }
+
+  /**
+   * Executes trash command
+   *
+   * Transitions task to Trashed status from any current status.
+   *
+   * @param filepath - Path to the task file
+   *
+   * @example
+   * executor.executeTrash("03 Knowledge/tasks/abandoned-task.md")
+   */
+  async executeTrash(filepath: string): Promise<void> {
+    try {
+      // Resolve and validate path
+      const resolvedPath = this.pathResolver.resolve(filepath);
+      this.pathResolver.validate(resolvedPath);
+
+      // Get relative path for NodeFsAdapter
+      const relativePath = resolvedPath.replace(
+        this.pathResolver.getVaultRoot() + "/",
+        "",
+      );
+
+      // Read current content
+      const content = await this.fsAdapter.readFile(relativePath);
+      const timestamp = DateFormatter.toLocalTimestamp(new Date());
+
+      // Update status to Trashed
+      let updated = this.frontmatterService.updateProperty(
+        content,
+        "ems__Effort_status",
+        '"[[ems__EffortStatusTrashed]]"',
+      );
+
+      // Add resolution timestamp
+      updated = this.frontmatterService.updateProperty(
+        updated,
+        "ems__Effort_resolutionTimestamp",
+        timestamp,
+      );
+
+      // Write updated content
+      await this.fsAdapter.updateFile(relativePath, updated);
+
+      console.log(`✅ Trashed: ${filepath}`);
+      console.log(`   Status: Trashed`);
+      console.log(`   Resolution time: ${timestamp}`);
+      process.exit(ExitCodes.SUCCESS);
+    } catch (error) {
+      ErrorHandler.handle(error as Error);
+    }
+  }
+
+  /**
+   * Executes archive command
+   *
+   * Sets archived property to true and removes aliases.
+   *
+   * @param filepath - Path to the task file
+   *
+   * @example
+   * executor.executeArchive("03 Knowledge/tasks/old-task.md")
+   */
+  async executeArchive(filepath: string): Promise<void> {
+    try {
+      // Resolve and validate path
+      const resolvedPath = this.pathResolver.resolve(filepath);
+      this.pathResolver.validate(resolvedPath);
+
+      // Get relative path for NodeFsAdapter
+      const relativePath = resolvedPath.replace(
+        this.pathResolver.getVaultRoot() + "/",
+        "",
+      );
+
+      // Read current content
+      const content = await this.fsAdapter.readFile(relativePath);
+
+      // Set archived flag
+      let updated = this.frontmatterService.updateProperty(
+        content,
+        "archived",
+        "true",
+      );
+
+      // Remove aliases
+      updated = this.frontmatterService.removeProperty(updated, "aliases");
+
+      // Write updated content
+      await this.fsAdapter.updateFile(relativePath, updated);
+
+      console.log(`✅ Archived: ${filepath}`);
+      console.log(`   Archived: true`);
+      console.log(`   Aliases removed`);
+      process.exit(ExitCodes.SUCCESS);
+    } catch (error) {
+      ErrorHandler.handle(error as Error);
+    }
+  }
+
+  /**
+   * Executes move-to-backlog command
+   *
+   * Transitions task to Backlog status.
+   *
+   * @param filepath - Path to the task file
+   *
+   * @example
+   * executor.executeMoveToBacklog("03 Knowledge/tasks/my-task.md")
+   */
+  async executeMoveToBacklog(filepath: string): Promise<void> {
+    try {
+      await this.updateStatus(filepath, "ems__EffortStatusBacklog", "Backlog");
+      process.exit(ExitCodes.SUCCESS);
+    } catch (error) {
+      ErrorHandler.handle(error as Error);
+    }
+  }
+
+  /**
+   * Executes move-to-analysis command
+   *
+   * Transitions project to Analysis status.
+   *
+   * @param filepath - Path to the project file
+   *
+   * @example
+   * executor.executeMoveToAnalysis("03 Knowledge/projects/my-project.md")
+   */
+  async executeMoveToAnalysis(filepath: string): Promise<void> {
+    try {
+      await this.updateStatus(filepath, "ems__EffortStatusAnalysis", "Analysis");
+      process.exit(ExitCodes.SUCCESS);
+    } catch (error) {
+      ErrorHandler.handle(error as Error);
+    }
+  }
+
+  /**
+   * Executes move-to-todo command
+   *
+   * Transitions task/project to ToDo status.
+   *
+   * @param filepath - Path to the task/project file
+   *
+   * @example
+   * executor.executeMoveToToDo("03 Knowledge/tasks/my-task.md")
+   */
+  async executeMoveToToDo(filepath: string): Promise<void> {
+    try {
+      await this.updateStatus(filepath, "ems__EffortStatusToDo", "ToDo");
+      process.exit(ExitCodes.SUCCESS);
+    } catch (error) {
+      ErrorHandler.handle(error as Error);
+    }
+  }
+
+  /**
+   * Helper method to update status
+   * @private
+   */
+  private async updateStatus(
+    filepath: string,
+    statusValue: string,
+    displayName: string,
+  ): Promise<void> {
+    // Resolve and validate path
+    const resolvedPath = this.pathResolver.resolve(filepath);
+    this.pathResolver.validate(resolvedPath);
+
+    // Get relative path for NodeFsAdapter
+    const relativePath = resolvedPath.replace(
+      this.pathResolver.getVaultRoot() + "/",
+      "",
+    );
+
+    // Read current content
+    const content = await this.fsAdapter.readFile(relativePath);
+
+    // Update status
+    const updated = this.frontmatterService.updateProperty(
+      content,
+      "ems__Effort_status",
+      `"[[${statusValue}]]"`,
+    );
+
+    // Write updated content
+    await this.fsAdapter.updateFile(relativePath, updated);
+
+    console.log(`✅ Moved to ${displayName}: ${filepath}`);
+    console.log(`   Status: ${displayName}`);
   }
 }

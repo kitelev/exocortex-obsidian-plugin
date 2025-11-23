@@ -19,7 +19,7 @@ export interface CommandOptions {
 export function commandCommand(): Command {
   return new Command("command")
     .description("Execute plugin command on single asset")
-    .argument("<command-name>", "Command to execute (rename-to-uid, update-label, etc.)")
+    .argument("<command-name>", "Command to execute (rename-to-uid, start, complete, etc.)")
     .argument("<filepath>", "Path to asset file (relative to vault root or absolute)")
     .option("--vault <path>", "Path to Obsidian vault", process.cwd())
     .option("--label <value>", "New label value (required for update-label command)")
@@ -28,6 +28,7 @@ export function commandCommand(): Command {
       const executor = new CommandExecutor(vaultPath);
 
       switch (commandName) {
+        // Maintenance commands
         case "rename-to-uid":
           await executor.executeRenameToUid(filepath);
           break;
@@ -39,6 +40,35 @@ export function commandCommand(): Command {
             process.exit(2); // ExitCodes.INVALID_ARGUMENTS
           }
           await executor.executeUpdateLabel(filepath, options.label);
+          break;
+
+        // Status transition commands
+        case "start":
+          await executor.executeStart(filepath);
+          break;
+
+        case "complete":
+          await executor.executeComplete(filepath);
+          break;
+
+        case "trash":
+          await executor.executeTrash(filepath);
+          break;
+
+        case "archive":
+          await executor.executeArchive(filepath);
+          break;
+
+        case "move-to-backlog":
+          await executor.executeMoveToBacklog(filepath);
+          break;
+
+        case "move-to-analysis":
+          await executor.executeMoveToAnalysis(filepath);
+          break;
+
+        case "move-to-todo":
+          await executor.executeMoveToToDo(filepath);
           break;
 
         default:
