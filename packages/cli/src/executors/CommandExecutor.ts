@@ -21,11 +21,13 @@ export class CommandExecutor {
   private pathResolver: PathResolver;
   private fsAdapter: NodeFsAdapter;
   private frontmatterService: FrontmatterService;
+  private dryRun: boolean;
 
-  constructor(vaultRoot: string) {
+  constructor(vaultRoot: string, dryRun: boolean = false) {
     this.pathResolver = new PathResolver(vaultRoot);
     this.fsAdapter = new NodeFsAdapter(vaultRoot);
     this.frontmatterService = new FrontmatterService();
+    this.dryRun = dryRun;
   }
 
   /**
@@ -223,6 +225,26 @@ export class CommandExecutor {
             `${currentAliases.map((a) => `\n  - ${a}`).join("")}\n  - ${trimmedLabel}`,
           );
         }
+      }
+
+      // Dry-run mode: preview changes without modifying
+      if (this.dryRun) {
+        console.log(`🔍 DRY RUN: Preview of changes (not applied)`);
+        console.log(`   File: ${filepath}`);
+        console.log(`   Changes:`);
+        console.log(`     • exo__Asset_label: "${trimmedLabel}"`);
+
+        if (!currentAliases.includes(trimmedLabel)) {
+          const newAliases = currentAliases.length === 0
+            ? [trimmedLabel]
+            : [...currentAliases, trimmedLabel];
+          console.log(`     • aliases: [${newAliases.map(a => `"${a}"`).join(", ")}]`);
+        } else {
+          console.log(`     • aliases: unchanged (label already present)`);
+        }
+
+        console.log(`\n💡 Run without --dry-run to apply changes`);
+        process.exit(ExitCodes.SUCCESS);
       }
 
       // Write updated content

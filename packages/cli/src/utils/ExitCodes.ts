@@ -27,4 +27,7 @@ export enum ExitCodes {
 
   /** Transaction failed (atomic operation could not complete) */
   TRANSACTION_FAILED = 7,
+
+  /** Concurrent modification detected (file changed during operation) */
+  CONCURRENT_MODIFICATION = 8,
 }

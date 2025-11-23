@@ -9,6 +9,7 @@ export interface CommandOptions {
   area?: string;
   parent?: string;
   date?: string;
+  dryRun?: boolean;
 }
 
 /**
@@ -31,9 +32,10 @@ export function commandCommand(): Command {
     .option("--area <uid>", "Area UID for effort linkage (creation commands)")
     .option("--parent <uid>", "Parent UID for effort linkage (creation commands)")
     .option("--date <value>", "Date in YYYY-MM-DD format (required for schedule and set-deadline commands)")
+    .option("--dry-run", "Preview changes without modifying files")
     .action(async (commandName: string, filepath: string, options: CommandOptions) => {
       const vaultPath = resolve(options.vault);
-      const executor = new CommandExecutor(vaultPath);
+      const executor = new CommandExecutor(vaultPath, options.dryRun);
 
       switch (commandName) {
         // Maintenance commands
