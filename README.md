@@ -735,6 +735,15 @@ Execute semantic queries on your knowledge base:
 - **[Performance Tips](./docs/sparql/Performance-Tips.md)** - Optimize queries for large vaults
 - **[Developer Guide](./docs/sparql/Developer-Guide.md)** - Extend SPARQL functionality
 
+### CLI Commands
+
+Automate Exocortex workflows from the command line:
+
+- **[Command Reference](./docs/cli/Command-Reference.md)** - Complete syntax for all 15 CLI commands
+- **[Scripting Patterns](./docs/cli/Scripting-Patterns.md)** - Bash automation examples and batch operations
+- **[Integration Examples](./docs/cli/Integration-Examples.md)** - CI/CD workflows with GitHub Actions and GitLab
+- **[Troubleshooting](./docs/cli/Troubleshooting.md)** - Common errors and debugging techniques
+
 ### Developer Documentation
 
 For plugin developers and contributors:
