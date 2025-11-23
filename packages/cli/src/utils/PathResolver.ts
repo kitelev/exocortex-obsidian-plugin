@@ -1,5 +1,6 @@
 import path from "path";
 import fs from "fs-extra";
+import { FileNotFoundError, InvalidArgumentsError } from "./errors/index.js";
 
 /**
  * Resolves and validates file paths for CLI commands
@@ -41,8 +42,10 @@ export class PathResolver {
     const normalizedVault = path.resolve(this.vaultRoot);
 
     if (!resolved.startsWith(normalizedVault)) {
-      throw new Error(
+      throw new InvalidArgumentsError(
         `File path ${filepath} is outside vault root ${this.vaultRoot}`,
+        "Provide a file path within the vault directory.",
+        { filepath, vaultRoot: this.vaultRoot },
       );
     }
 
@@ -63,16 +66,24 @@ export class PathResolver {
    */
   validate(filepath: string): void {
     if (!fs.existsSync(filepath)) {
-      throw new Error(`File not found: ${filepath}`);
+      throw new FileNotFoundError(filepath);
     }
 
     const stats = fs.statSync(filepath);
     if (!stats.isFile()) {
-      throw new Error(`Not a file: ${filepath}`);
+      throw new InvalidArgumentsError(
+        `Not a file: ${filepath}`,
+        "Provide a path to a file, not a directory.",
+        { filepath },
+      );
     }
 
     if (!filepath.endsWith(".md")) {
-      throw new Error(`Not a Markdown file: ${filepath}`);
+      throw new InvalidArgumentsError(
+        `Not a Markdown file: ${filepath}`,
+        "Provide a path to a .md file.",
+        { filepath },
+      );
     }
   }
 

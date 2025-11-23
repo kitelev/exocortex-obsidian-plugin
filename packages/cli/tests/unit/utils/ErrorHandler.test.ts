@@ -1,5 +1,10 @@
 import { ErrorHandler } from "../../../src/utils/ErrorHandler";
 import { ExitCodes } from "../../../src/utils/ExitCodes";
+import {
+  FileNotFoundError,
+  InvalidArgumentsError,
+  ConcurrentModificationError,
+} from "../../../src/utils/errors/index";
 
 describe("ErrorHandler", () => {
   let consoleErrorSpy: jest.SpyInstance;
@@ -69,6 +74,80 @@ describe("ErrorHandler", () => {
       const error = new Error("Some other error");
 
       expect(() => ErrorHandler.handle(error)).toThrow("process.exit(1)");
+    });
+  });
+
+  describe("handle() with typed CLI errors", () => {
+    it("should handle FileNotFoundError with formatted output and correct exit code", () => {
+      const error = new FileNotFoundError("/path/to/file.md");
+
+      expect(() => ErrorHandler.handle(error)).toThrow("process.exit(3)");
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("FileNotFoundError"),
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("File not found: /path/to/file.md"),
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("💡"),
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Verify the file path is correct"),
+      );
+    });
+
+    it("should handle InvalidArgumentsError with formatted output and correct exit code", () => {
+      const error = new InvalidArgumentsError(
+        "Invalid file path",
+        "Provide a valid file path within the vault.",
+      );
+
+      expect(() => ErrorHandler.handle(error)).toThrow("process.exit(2)");
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("InvalidArgumentsError"),
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Invalid file path"),
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Provide a valid file path within the vault"),
+      );
+    });
+
+    it("should handle ConcurrentModificationError with formatted output and exit code 8", () => {
+      const error = new ConcurrentModificationError(
+        "/path/to/file.md",
+        "file hash mismatch",
+      );
+
+      expect(() => ErrorHandler.handle(error)).toThrow("process.exit(8)");
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("ConcurrentModificationError"),
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Concurrent modification detected"),
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("file hash mismatch"),
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Retry the command"),
+      );
+    });
+
+    it("should include context in formatted error output", () => {
+      const error = new FileNotFoundError("/path/to/file.md", {
+        attemptedPath: "/absolute/path",
+        vaultRoot: "/vault",
+      });
+
+      expect(() => ErrorHandler.handle(error)).toThrow("process.exit(3)");
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("📋 Context"),
+      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("attemptedPath"),
+      );
     });
   });
 
