@@ -667,4 +667,336 @@ describe("CommandExecutor", () => {
       );
     });
   });
+
+  describe("executeCreateTask()", () => {
+    beforeEach(() => {
+      mockPathResolver.resolve.mockReturnValue("/test/vault/task.md");
+      mockFsAdapter.fileExists = jest.fn().mockResolvedValue(false);
+      mockFsAdapter.createFile = jest.fn().mockResolvedValue("task.md");
+    });
+
+    it("should create task with minimal parameters", async () => {
+      await expect(
+        executor.executeCreateTask("task.md", "My Task"),
+      ).rejects.toThrow("process.exit(0)");
+
+      expect(mockFsAdapter.createFile).toHaveBeenCalled();
+      const createCall = mockFsAdapter.createFile.mock.calls[0];
+      const content = createCall[1];
+
+      expect(content).toContain("exo__Asset_label: My Task");
+      expect(content).toContain("exo__Asset_uid:");
+      expect(content).toContain("exo__Instance_class:");
+      expect(content).toContain("\"[[ems__Task]]\"");
+      expect(content).toContain("ems__Effort_status: \"[[ems__EffortStatusDraft]]\"");
+      expect(processExitSpy).toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should create task with prototype", async () => {
+      await expect(
+        executor.executeCreateTask("task.md", "My Task", { prototype: "proto-123" }),
+      ).rejects.toThrow("process.exit(0)");
+
+      const createCall = mockFsAdapter.createFile.mock.calls[0];
+      const content = createCall[1];
+      expect(content).toContain("ems__Effort_prototype: \"[[proto-123]]\"");
+    });
+
+    it("should create task with area", async () => {
+      await expect(
+        executor.executeCreateTask("task.md", "My Task", { area: "area-456" }),
+      ).rejects.toThrow("process.exit(0)");
+
+      const createCall = mockFsAdapter.createFile.mock.calls[0];
+      const content = createCall[1];
+      expect(content).toContain("ems__Effort_area: \"[[area-456]]\"");
+    });
+
+    it("should create task with parent", async () => {
+      await expect(
+        executor.executeCreateTask("task.md", "My Task", { parent: "parent-789" }),
+      ).rejects.toThrow("process.exit(0)");
+
+      const createCall = mockFsAdapter.createFile.mock.calls[0];
+      const content = createCall[1];
+      expect(content).toContain("ems__Effort_parent: \"[[parent-789]]\"");
+    });
+
+    it("should create task with all optional parameters", async () => {
+      await expect(
+        executor.executeCreateTask("task.md", "My Task", {
+          prototype: "proto-123",
+          area: "area-456",
+          parent: "parent-789",
+        }),
+      ).rejects.toThrow("process.exit(0)");
+
+      const createCall = mockFsAdapter.createFile.mock.calls[0];
+      const content = createCall[1];
+      expect(content).toContain("ems__Effort_prototype: \"[[proto-123]]\"");
+      expect(content).toContain("ems__Effort_area: \"[[area-456]]\"");
+      expect(content).toContain("ems__Effort_parent: \"[[parent-789]]\"");
+    });
+
+    it("should trim whitespace from label", async () => {
+      await expect(
+        executor.executeCreateTask("task.md", "  Trimmed Task  "),
+      ).rejects.toThrow("process.exit(0)");
+
+      const createCall = mockFsAdapter.createFile.mock.calls[0];
+      const content = createCall[1];
+      expect(content).toContain("exo__Asset_label: Trimmed Task");
+    });
+
+    it("should throw error if label is empty", async () => {
+      await expect(
+        executor.executeCreateTask("task.md", ""),
+      ).rejects.toThrow("process.exit");
+
+      expect(mockFsAdapter.createFile).not.toHaveBeenCalled();
+      expect(processExitSpy).not.toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should throw error if label is whitespace only", async () => {
+      await expect(
+        executor.executeCreateTask("task.md", "   "),
+      ).rejects.toThrow("process.exit");
+
+      expect(mockFsAdapter.createFile).not.toHaveBeenCalled();
+    });
+
+    it("should throw error if file already exists", async () => {
+      mockFsAdapter.fileExists = jest.fn().mockResolvedValue(true);
+
+      await expect(
+        executor.executeCreateTask("task.md", "My Task"),
+      ).rejects.toThrow("process.exit");
+
+      expect(mockFsAdapter.createFile).not.toHaveBeenCalled();
+      expect(processExitSpy).not.toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should display creation confirmation with UID", async () => {
+      await expect(
+        executor.executeCreateTask("task.md", "My Task"),
+      ).rejects.toThrow("process.exit(0)");
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Created task:"),
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("UID:"),
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Label: My Task"),
+      );
+    });
+
+    it("should include created timestamp", async () => {
+      const mockDate = new Date("2025-11-23T14:30:00");
+      jest.spyOn(global, "Date").mockImplementation(() => mockDate as any);
+      const expectedTimestamp = DateFormatter.toLocalTimestamp(mockDate);
+
+      await expect(
+        executor.executeCreateTask("task.md", "My Task"),
+      ).rejects.toThrow("process.exit(0)");
+
+      const createCall = mockFsAdapter.createFile.mock.calls[0];
+      const content = createCall[1];
+      expect(content).toContain(`exo__Asset_createdAt: ${expectedTimestamp}`);
+    });
+  });
+
+  describe("executeCreateMeeting()", () => {
+    beforeEach(() => {
+      mockPathResolver.resolve.mockReturnValue("/test/vault/meeting.md");
+      mockFsAdapter.fileExists = jest.fn().mockResolvedValue(false);
+      mockFsAdapter.createFile = jest.fn().mockResolvedValue("meeting.md");
+    });
+
+    it("should create meeting with minimal parameters", async () => {
+      await expect(
+        executor.executeCreateMeeting("meeting.md", "Team Sync"),
+      ).rejects.toThrow("process.exit(0)");
+
+      expect(mockFsAdapter.createFile).toHaveBeenCalled();
+      const createCall = mockFsAdapter.createFile.mock.calls[0];
+      const content = createCall[1];
+
+      expect(content).toContain("exo__Asset_label: Team Sync");
+      expect(content).toContain("\"[[ems__Meeting]]\"");
+      expect(content).toContain("ems__Effort_status: \"[[ems__EffortStatusDraft]]\"");
+      expect(processExitSpy).toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should create meeting with all optional parameters", async () => {
+      await expect(
+        executor.executeCreateMeeting("meeting.md", "Team Sync", {
+          prototype: "meeting-proto",
+          area: "area-123",
+          parent: "parent-456",
+        }),
+      ).rejects.toThrow("process.exit(0)");
+
+      const createCall = mockFsAdapter.createFile.mock.calls[0];
+      const content = createCall[1];
+      expect(content).toContain("ems__Effort_prototype: \"[[meeting-proto]]\"");
+      expect(content).toContain("ems__Effort_area: \"[[area-123]]\"");
+      expect(content).toContain("ems__Effort_parent: \"[[parent-456]]\"");
+    });
+
+    it("should display creation confirmation", async () => {
+      await expect(
+        executor.executeCreateMeeting("meeting.md", "Team Sync"),
+      ).rejects.toThrow("process.exit(0)");
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Created meeting:"),
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Label: Team Sync"),
+      );
+    });
+
+    it("should throw error if file already exists", async () => {
+      mockFsAdapter.fileExists = jest.fn().mockResolvedValue(true);
+
+      await expect(
+        executor.executeCreateMeeting("meeting.md", "Team Sync"),
+      ).rejects.toThrow("process.exit");
+
+      expect(mockFsAdapter.createFile).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("executeCreateProject()", () => {
+    beforeEach(() => {
+      mockPathResolver.resolve.mockReturnValue("/test/vault/project.md");
+      mockFsAdapter.fileExists = jest.fn().mockResolvedValue(false);
+      mockFsAdapter.createFile = jest.fn().mockResolvedValue("project.md");
+    });
+
+    it("should create project with minimal parameters", async () => {
+      await expect(
+        executor.executeCreateProject("project.md", "Website Redesign"),
+      ).rejects.toThrow("process.exit(0)");
+
+      expect(mockFsAdapter.createFile).toHaveBeenCalled();
+      const createCall = mockFsAdapter.createFile.mock.calls[0];
+      const content = createCall[1];
+
+      expect(content).toContain("exo__Asset_label: Website Redesign");
+      expect(content).toContain("\"[[ems__Project]]\"");
+      expect(content).toContain("ems__Effort_status: \"[[ems__EffortStatusDraft]]\"");
+      expect(processExitSpy).toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should create project with all optional parameters", async () => {
+      await expect(
+        executor.executeCreateProject("project.md", "Website Redesign", {
+          prototype: "project-proto",
+          area: "area-789",
+          parent: "parent-012",
+        }),
+      ).rejects.toThrow("process.exit(0)");
+
+      const createCall = mockFsAdapter.createFile.mock.calls[0];
+      const content = createCall[1];
+      expect(content).toContain("ems__Effort_prototype: \"[[project-proto]]\"");
+      expect(content).toContain("ems__Effort_area: \"[[area-789]]\"");
+      expect(content).toContain("ems__Effort_parent: \"[[parent-012]]\"");
+    });
+
+    it("should display creation confirmation", async () => {
+      await expect(
+        executor.executeCreateProject("project.md", "Website Redesign"),
+      ).rejects.toThrow("process.exit(0)");
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Created project:"),
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Label: Website Redesign"),
+      );
+    });
+
+    it("should throw error if label is empty", async () => {
+      await expect(
+        executor.executeCreateProject("project.md", ""),
+      ).rejects.toThrow("process.exit");
+
+      expect(mockFsAdapter.createFile).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("executeCreateArea()", () => {
+    beforeEach(() => {
+      mockPathResolver.resolve.mockReturnValue("/test/vault/area.md");
+      mockFsAdapter.fileExists = jest.fn().mockResolvedValue(false);
+      mockFsAdapter.createFile = jest.fn().mockResolvedValue("area.md");
+    });
+
+    it("should create area with minimal parameters", async () => {
+      await expect(
+        executor.executeCreateArea("area.md", "Engineering"),
+      ).rejects.toThrow("process.exit(0)");
+
+      expect(mockFsAdapter.createFile).toHaveBeenCalled();
+      const createCall = mockFsAdapter.createFile.mock.calls[0];
+      const content = createCall[1];
+
+      expect(content).toContain("exo__Asset_label: Engineering");
+      expect(content).toContain("\"[[ems__Area]]\"");
+      expect(content).not.toContain("ems__Effort_status"); // Areas don't have status
+      expect(processExitSpy).toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should create area with optional parameters", async () => {
+      await expect(
+        executor.executeCreateArea("area.md", "Engineering", {
+          prototype: "area-proto",
+        }),
+      ).rejects.toThrow("process.exit(0)");
+
+      const createCall = mockFsAdapter.createFile.mock.calls[0];
+      const content = createCall[1];
+      expect(content).toContain("ems__Effort_prototype: \"[[area-proto]]\"");
+    });
+
+    it("should display creation confirmation", async () => {
+      await expect(
+        executor.executeCreateArea("area.md", "Engineering"),
+      ).rejects.toThrow("process.exit(0)");
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Created area:"),
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Label: Engineering"),
+      );
+    });
+
+    it("should include all required frontmatter properties", async () => {
+      await expect(
+        executor.executeCreateArea("area.md", "Engineering"),
+      ).rejects.toThrow("process.exit(0)");
+
+      const createCall = mockFsAdapter.createFile.mock.calls[0];
+      const content = createCall[1];
+      expect(content).toContain("exo__Asset_isDefinedBy: \"[[Ontology/EMS]]\"");
+      expect(content).toContain("exo__Asset_uid:");
+      expect(content).toContain("exo__Asset_createdAt:");
+      expect(content).toContain("aliases:");
+    });
+
+    it("should throw error if file already exists", async () => {
+      mockFsAdapter.fileExists = jest.fn().mockResolvedValue(true);
+
+      await expect(
+        executor.executeCreateArea("area.md", "Engineering"),
+      ).rejects.toThrow("process.exit");
+
+      expect(mockFsAdapter.createFile).not.toHaveBeenCalled();
+    });
+  });
 });

@@ -1,9 +1,15 @@
 import path from "path";
+import { v4 as uuidv4 } from "uuid";
 import { NodeFsAdapter } from "../adapters/NodeFsAdapter.js";
 import { PathResolver } from "../utils/PathResolver.js";
 import { ErrorHandler } from "../utils/ErrorHandler.js";
 import { ExitCodes } from "../utils/ExitCodes.js";
-import { FrontmatterService, DateFormatter } from "@exocortex/core";
+import {
+  FrontmatterService,
+  DateFormatter,
+  MetadataHelpers,
+  FileAlreadyExistsError,
+} from "@exocortex/core";
 
 /**
  * Executes plugin commands on single assets via CLI
@@ -580,5 +586,222 @@ export class CommandExecutor {
 
     console.log(`✅ Moved to ${displayName}: ${filepath}`);
     console.log(`   Status: ${displayName}`);
+  }
+
+  /**
+   * Executes create-task command
+   *
+   * Creates new task file with complete frontmatter initialization.
+   *
+   * @param filepath - Path where task file should be created
+   * @param label - Task label
+   * @param options - Optional parameters (prototype, area, parent)
+   *
+   * @example
+   * executor.executeCreateTask("03 Knowledge/tasks/my-task.md", "My Task", {})
+   */
+  async executeCreateTask(
+    filepath: string,
+    label: string,
+    options: Record<string, any> = {},
+  ): Promise<void> {
+    try {
+      await this.createAsset(filepath, label, "ems__Task", options);
+      process.exit(ExitCodes.SUCCESS);
+    } catch (error) {
+      ErrorHandler.handle(error as Error);
+    }
+  }
+
+  /**
+   * Executes create-meeting command
+   *
+   * Creates new meeting file with complete frontmatter initialization.
+   *
+   * @param filepath - Path where meeting file should be created
+   * @param label - Meeting label
+   * @param options - Optional parameters (prototype, area, parent)
+   *
+   * @example
+   * executor.executeCreateMeeting("03 Knowledge/meetings/standup.md", "Daily Standup", {})
+   */
+  async executeCreateMeeting(
+    filepath: string,
+    label: string,
+    options: Record<string, any> = {},
+  ): Promise<void> {
+    try {
+      await this.createAsset(filepath, label, "ems__Meeting", options);
+      process.exit(ExitCodes.SUCCESS);
+    } catch (error) {
+      ErrorHandler.handle(error as Error);
+    }
+  }
+
+  /**
+   * Executes create-project command
+   *
+   * Creates new project file with complete frontmatter initialization.
+   *
+   * @param filepath - Path where project file should be created
+   * @param label - Project label
+   * @param options - Optional parameters (area, parent)
+   *
+   * @example
+   * executor.executeCreateProject("03 Knowledge/projects/my-project.md", "My Project", {})
+   */
+  async executeCreateProject(
+    filepath: string,
+    label: string,
+    options: Record<string, any> = {},
+  ): Promise<void> {
+    try {
+      await this.createAsset(filepath, label, "ems__Project", options);
+      process.exit(ExitCodes.SUCCESS);
+    } catch (error) {
+      ErrorHandler.handle(error as Error);
+    }
+  }
+
+  /**
+   * Executes create-area command
+   *
+   * Creates new area file with complete frontmatter initialization.
+   *
+   * @param filepath - Path where area file should be created
+   * @param label - Area label
+   * @param options - Optional parameters
+   *
+   * @example
+   * executor.executeCreateArea("03 Knowledge/areas/my-area.md", "My Area", {})
+   */
+  async executeCreateArea(
+    filepath: string,
+    label: string,
+    options: Record<string, any> = {},
+  ): Promise<void> {
+    try {
+      await this.createAsset(filepath, label, "ems__Area", options);
+      process.exit(ExitCodes.SUCCESS);
+    } catch (error) {
+      ErrorHandler.handle(error as Error);
+    }
+  }
+
+  /**
+   * Helper method to create asset with frontmatter
+   * @private
+   */
+  private async createAsset(
+    filepath: string,
+    label: string,
+    assetClass: string,
+    options: Record<string, any> = {},
+  ): Promise<void> {
+    // Validate label
+    if (!label || label.trim().length === 0) {
+      throw new Error("Label cannot be empty");
+    }
+
+    const trimmedLabel = label.trim();
+
+    // Resolve and validate path
+    const resolvedPath = this.pathResolver.resolve(filepath);
+    this.pathResolver.validate(resolvedPath);
+
+    const relativePath = resolvedPath.replace(
+      this.pathResolver.getVaultRoot() + "/",
+      "",
+    );
+
+    // Check if file already exists
+    const exists = await this.fsAdapter.fileExists(relativePath);
+    if (exists) {
+      throw new FileAlreadyExistsError(filepath);
+    }
+
+    // Generate UID
+    const uid = uuidv4();
+
+    // Build frontmatter based on asset class
+    const frontmatter = this.buildAssetFrontmatter(
+      assetClass,
+      uid,
+      trimmedLabel,
+      options,
+    );
+
+    // Build file content
+    const content = MetadataHelpers.buildFileContent(frontmatter);
+
+    // Create file
+    await this.fsAdapter.createFile(relativePath, content);
+
+    console.log(`✅ Created ${this.getAssetTypeName(assetClass)}: ${filepath}`);
+    console.log(`   UID: ${uid}`);
+    console.log(`   Label: ${trimmedLabel}`);
+    console.log(`   Class: ${assetClass}`);
+  }
+
+  /**
+   * Build frontmatter for asset creation
+   * @private
+   */
+  private buildAssetFrontmatter(
+    assetClass: string,
+    uid: string,
+    label: string,
+    options: Record<string, any> = {},
+  ): Record<string, any> {
+    const timestamp = DateFormatter.toLocalTimestamp(new Date());
+
+    const frontmatter: Record<string, any> = {
+      exo__Asset_isDefinedBy: '"[[Ontology/EMS]]"',
+      exo__Asset_uid: uid,
+      exo__Asset_label: label,
+      exo__Asset_createdAt: timestamp,
+      exo__Instance_class: [`"[[${assetClass}]]"`],
+      aliases: [label],
+    };
+
+    // Add status for efforts (tasks, projects, meetings)
+    if (
+      assetClass === "ems__Task" ||
+      assetClass === "ems__Project" ||
+      assetClass === "ems__Meeting"
+    ) {
+      frontmatter["ems__Effort_status"] = '"[[ems__EffortStatusDraft]]"';
+    }
+
+    // Add optional prototype reference
+    if (options.prototype) {
+      frontmatter["ems__Effort_prototype"] = `"[[${options.prototype}]]"`;
+    }
+
+    // Add optional area reference
+    if (options.area) {
+      frontmatter["ems__Effort_area"] = `"[[${options.area}]]"`;
+    }
+
+    // Add optional parent reference
+    if (options.parent) {
+      frontmatter["ems__Effort_parent"] = `"[[${options.parent}]]"`;
+    }
+
+    return frontmatter;
+  }
+
+  /**
+   * Get human-readable asset type name
+   * @private
+   */
+  private getAssetTypeName(assetClass: string): string {
+    const classMap: Record<string, string> = {
+      ems__Task: "task",
+      ems__Meeting: "meeting",
+      ems__Project: "project",
+      ems__Area: "area",
+    };
+    return classMap[assetClass] || "asset";
   }
 }
