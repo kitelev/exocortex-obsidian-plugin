@@ -2,19 +2,19 @@ import { INotificationService } from "@exocortex/core";
 import * as readline from "readline";
 
 export class NodeNotificationService implements INotificationService {
-  info(message: string, duration?: number): void {
+  info(message: string, _duration?: number): void {
     console.log(`ℹ ${message}`);
   }
 
-  success(message: string, duration?: number): void {
+  success(message: string, _duration?: number): void {
     console.log(`✓ ${message}`);
   }
 
-  error(message: string, duration?: number): void {
+  error(message: string, _duration?: number): void {
     console.error(`✗ ${message}`);
   }
 
-  warn(message: string, duration?: number): void {
+  warn(message: string, _duration?: number): void {
     console.warn(`⚠ ${message}`);
   }
 
