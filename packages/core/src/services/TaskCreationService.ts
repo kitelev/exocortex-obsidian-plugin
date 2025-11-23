@@ -1,3 +1,4 @@
+import { injectable, inject } from "tsyringe";
 import { v4 as uuidv4 } from "uuid";
 import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
@@ -5,15 +6,15 @@ import { AssetClass } from "../domain/constants";
 import { TaskFrontmatterGenerator } from "./TaskFrontmatterGenerator";
 import { AlgorithmExtractor } from "./AlgorithmExtractor";
 import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { DI_TOKENS } from "../interfaces/tokens";
 
+@injectable()
 export class TaskCreationService {
-  private frontmatterGenerator: TaskFrontmatterGenerator;
-  private algorithmExtractor: AlgorithmExtractor;
-
-  constructor(private vault: IVaultAdapter) {
-    this.frontmatterGenerator = new TaskFrontmatterGenerator();
-    this.algorithmExtractor = new AlgorithmExtractor();
-  }
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+    private frontmatterGenerator: TaskFrontmatterGenerator,
+    private algorithmExtractor: AlgorithmExtractor,
+  ) {}
 
   async createTask(
     sourceFile: IFile,

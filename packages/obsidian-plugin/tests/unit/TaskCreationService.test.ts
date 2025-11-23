@@ -3,17 +3,38 @@
  * Tests frontmatter generation, file naming, and UUID/timestamp formats
  */
 
-import { TaskCreationService, MetadataHelpers } from "@exocortex/core";
+import "reflect-metadata";
+import { container } from "tsyringe";
+import {
+  TaskCreationService,
+  MetadataHelpers,
+  IVaultAdapter,
+  TaskFrontmatterGenerator,
+  AlgorithmExtractor,
+  DI_TOKENS,
+} from "@exocortex/core";
 
 describe("TaskCreationService", () => {
   let service: TaskCreationService;
   let mockVault: any;
 
   beforeEach(() => {
+    container.clearInstances();
+
     mockVault = {
       create: jest.fn().mockResolvedValue({ path: "test-task.md" }),
     };
-    service = new TaskCreationService(mockVault);
+
+    container.registerInstance<IVaultAdapter>(DI_TOKENS.IVaultAdapter, mockVault);
+    container.register(TaskFrontmatterGenerator, { useClass: TaskFrontmatterGenerator });
+    container.register(AlgorithmExtractor, { useClass: AlgorithmExtractor });
+    container.register(TaskCreationService, { useClass: TaskCreationService });
+
+    service = container.resolve(TaskCreationService);
+  });
+
+  afterEach(() => {
+    container.clearInstances();
   });
 
   describe("generateTaskFrontmatter", () => {

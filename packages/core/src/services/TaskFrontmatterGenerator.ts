@@ -1,3 +1,4 @@
+import { injectable } from "tsyringe";
 import { v4 as uuidv4 } from "uuid";
 import { DateFormatter } from "../utilities/DateFormatter";
 import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
@@ -21,6 +22,7 @@ const INSTANCE_CLASS_MAP: Record<string, string> = {
   [AssetClass.EVENT_PROTOTYPE]: AssetClass.EVENT,
 };
 
+@injectable()
 export class TaskFrontmatterGenerator {
   generateTaskFrontmatter(
     sourceMetadata: Record<string, any>,

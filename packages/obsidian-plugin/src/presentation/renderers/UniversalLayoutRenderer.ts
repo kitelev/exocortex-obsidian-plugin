@@ -1,4 +1,5 @@
 import { MarkdownPostProcessorContext } from "obsidian";
+import { container } from "tsyringe";
 import { ILogger } from "../../adapters/logging/ILogger";
 import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
 import React from "react";
@@ -104,7 +105,8 @@ export class UniversalLayoutRenderer {
       this.app,
     );
     this.metadataExtractor = new MetadataExtractor(this.vaultAdapter);
-    this.taskCreationService = new TaskCreationService(this.vaultAdapter);
+    // Phase 2: Resolve TaskCreationService from DI container
+    this.taskCreationService = container.resolve(TaskCreationService);
     this.projectCreationService = new ProjectCreationService(this.vaultAdapter);
     this.areaCreationService = new AreaCreationService(this.vaultAdapter);
     this.classCreationService = new ClassCreationService(this.vaultAdapter);

@@ -1,13 +1,24 @@
+import "reflect-metadata";
+import { container } from "tsyringe";
 import { UniversalLayoutRenderer } from "../../src/presentation/renderers/UniversalLayoutRenderer";
 import { ExocortexSettings } from "../../src/domain/settings/ExocortexSettings";
 import { TFile } from "obsidian";
+import {
+  DI_TOKENS,
+  IVaultAdapter,
+  TaskFrontmatterGenerator,
+  AlgorithmExtractor,
+  TaskCreationService,
+} from "@exocortex/core";
 
 describe("UniversalLayoutRenderer", () => {
   let mockApp: any;
   let mockSettings: ExocortexSettings;
   let mockPlugin: any;
+  let mockVault: any;
 
   beforeEach(() => {
+    container.clearInstances();
     jest.useFakeTimers();
 
     mockApp = {
@@ -39,9 +50,22 @@ describe("UniversalLayoutRenderer", () => {
     mockPlugin = {
       saveSettings: jest.fn(),
     };
+
+    // Setup DI container for TaskCreationService
+    mockVault = {
+      create: jest.fn().mockResolvedValue({ path: "test-task.md" }),
+      read: jest.fn().mockResolvedValue(""),
+      modify: jest.fn().mockResolvedValue(undefined),
+    };
+
+    container.registerInstance<IVaultAdapter>(DI_TOKENS.IVaultAdapter, mockVault);
+    container.register(TaskFrontmatterGenerator, { useClass: TaskFrontmatterGenerator });
+    container.register(AlgorithmExtractor, { useClass: AlgorithmExtractor });
+    container.register(TaskCreationService, { useClass: TaskCreationService });
   });
 
   afterEach(() => {
+    container.clearInstances();
     jest.useRealTimers();
   });
 
