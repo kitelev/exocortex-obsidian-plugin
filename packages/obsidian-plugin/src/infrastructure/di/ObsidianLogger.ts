@@ -1,0 +1,22 @@
+import { ILogger } from "@exocortex/core";
+import { Plugin } from "obsidian";
+
+export class ObsidianLogger implements ILogger {
+  constructor(private plugin: Plugin) {}
+
+  debug(message: string, context?: Record<string, any>): void {
+    console.debug(`[${this.plugin.manifest.id}]`, message, context || "");
+  }
+
+  info(message: string, context?: Record<string, any>): void {
+    console.debug(`[${this.plugin.manifest.id}] [INFO]`, message, context || "");
+  }
+
+  warn(message: string, context?: Record<string, any>): void {
+    console.warn(`[${this.plugin.manifest.id}]`, message, context || "");
+  }
+
+  error(message: string, error?: Error, context?: Record<string, any>): void {
+    console.error(`[${this.plugin.manifest.id}]`, message, error || "", context || "");
+  }
+}

@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import {
   MarkdownPostProcessorContext,
   MarkdownView,
@@ -19,6 +20,7 @@ import { TaskTrackingService } from "./application/services/TaskTrackingService"
 import { AliasSyncService } from "./application/services/AliasSyncService";
 import { SPARQLCodeBlockProcessor } from "./application/processors/SPARQLCodeBlockProcessor";
 import { SPARQLApi } from "./application/api/SPARQLApi";
+import { PluginContainer } from "./infrastructure/di/PluginContainer";
 
 /**
  * Exocortex Plugin - Automatic layout rendering
@@ -40,6 +42,9 @@ export default class ExocortexPlugin extends Plugin {
 
   async onload(): Promise<void> {
     try {
+      // Initialize DI container (Phase 1 infrastructure)
+      PluginContainer.setup(this.app, this);
+
       this.logger = LoggerFactory.create("ExocortexPlugin");
       this.logger.info("Loading Exocortex Plugin");
 

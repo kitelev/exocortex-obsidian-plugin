@@ -11,12 +11,13 @@
 1. [System Overview](#system-overview)
 2. [Technology Stack](#technology-stack)
 3. [Architecture Layers](#architecture-layers)
-4. [Component Responsibilities](#component-responsibilities)
-5. [Data Flow](#data-flow)
-6. [Property Schema](#property-schema)
-7. [Design Patterns](#design-patterns)
-8. [Current Limitations](#current-limitations)
-9. [Future Architecture](#future-architecture)
+4. [Dependency Injection](#dependency-injection)
+5. [Component Responsibilities](#component-responsibilities)
+6. [Data Flow](#data-flow)
+7. [Property Schema](#property-schema)
+8. [Design Patterns](#design-patterns)
+9. [Current Limitations](#current-limitations)
+10. [Future Architecture](#future-architecture)
 
 ---
 
@@ -185,6 +186,353 @@ Exocortex follows **Clean Architecture** principles with clear separation of con
 - React state management
 - Event handlers and user interactions
 - Uses core services through dependency injection
+
+---
+
+## 🧩 Dependency Injection
+
+### Overview
+
+Exocortex uses **TSyringe** (Microsoft's lightweight DI container) for dependency injection across all packages. This enables clean architecture patterns, testability, and cross-platform support.
+
+**Why TSyringe?**
+- **Lightweight**: ~2KB bundle size (vs InversifyJS ~50KB)
+- **Simple API**: Decorator-based with minimal boilerplate
+- **TypeScript-native**: Full type safety with Symbol tokens
+- **Cross-platform**: Works in both Obsidian (browser) and Node.js (CLI)
+
+**Architecture Benefits:**
+- **Separation of concerns**: Business logic independent of infrastructure
+- **Testability**: Easy mocking of dependencies
+- **Platform abstraction**: Same service works in Obsidian and CLI
+- **Configuration flexibility**: Swap implementations without changing services
+
+### Injectable Interfaces
+
+All cross-cutting concerns are abstracted through interfaces in `@exocortex/core`:
+
+| Interface | Purpose | Obsidian Implementation | CLI Implementation |
+|-----------|---------|------------------------|-------------------|
+| **ILogger** | Structured logging | `ObsidianLogger` (console) | `NodeLogger` (stdout) |
+| **IEventBus** | Pub/sub messaging | `ObsidianEventBus` (in-memory) | `NodeEventBus` (in-memory) |
+| **IConfiguration** | Settings management | `ObsidianConfiguration` (plugin data) | `NodeConfiguration` (~/.exocortexrc) |
+| **INotificationService** | User notifications | `ObsidianNotificationService` (Notice API) | `NodeNotificationService` (console) |
+| **IVaultAdapter** | File operations | `ObsidianVaultAdapter` (Vault API) | `NodeFileSystemAdapter` (fs module) |
+
+**Interface Definitions:**
+```typescript
+// packages/core/src/interfaces/ILogger.ts
+export interface ILogger {
+  debug(message: string, context?: Record<string, any>): void;
+  info(message: string, context?: Record<string, any>): void;
+  warn(message: string, context?: Record<string, any>): void;
+  error(message: string, error?: Error, context?: Record<string, any>): void;
+}
+
+// packages/core/src/interfaces/IEventBus.ts
+export interface IEventBus {
+  publish<T = any>(eventName: string, data: T): void;
+  subscribe<T = any>(eventName: string, handler: (data: T) => void): () => void;
+  unsubscribe(eventName: string, handler: (data: any) => void): void;
+}
+
+// packages/core/src/interfaces/IConfiguration.ts
+export interface IConfiguration {
+  get<T = any>(key: string): T | undefined;
+  set<T = any>(key: string, value: T): Promise<void>;
+  getAll(): Record<string, any>;
+}
+
+// packages/core/src/interfaces/INotificationService.ts
+export interface INotificationService {
+  info(message: string, duration?: number): void;
+  success(message: string, duration?: number): void;
+  error(message: string, duration?: number): void;
+  warn(message: string, duration?: number): void;
+  confirm(title: string, message: string): Promise<boolean>;
+}
+```
+
+### DI Tokens (Type-Safe Injection)
+
+Tokens are Symbol-based constants defined in `@exocortex/core/interfaces/tokens.ts`:
+
+```typescript
+export const DI_TOKENS = {
+  IFileSystemAdapter: Symbol.for("IFileSystemAdapter"),
+  IVaultAdapter: Symbol.for("IVaultAdapter"),
+  ILogger: Symbol.for("ILogger"),
+  IEventBus: Symbol.for("IEventBus"),
+  IConfiguration: Symbol.for("IConfiguration"),
+  INotificationService: Symbol.for("INotificationService"),
+} as const;
+
+export type DIToken = typeof DI_TOKENS[keyof typeof DI_TOKENS];
+```
+
+**Why Symbols over strings?**
+- **Type safety**: TypeScript checks prevent typos
+- **No collisions**: Symbol.for() ensures global uniqueness
+- **Refactoring-safe**: Rename interface, Symbol stays same
+- **IntelliSense**: Autocomplete shows all available tokens
+
+### Container Setup
+
+#### Obsidian Plugin Container
+
+**Location**: `packages/obsidian-plugin/src/infrastructure/di/PluginContainer.ts`
+
+```typescript
+import "reflect-metadata";
+import { container } from "tsyringe";
+import { DI_TOKENS } from "@exocortex/core";
+import { ObsidianLogger } from "./ObsidianLogger";
+import { ObsidianEventBus } from "./ObsidianEventBus";
+import { ObsidianConfiguration } from "./ObsidianConfiguration";
+import { ObsidianNotificationService } from "./ObsidianNotificationService";
+import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
+
+export class PluginContainer {
+  static setup(app: App, plugin: Plugin): void {
+    // Register logger
+    container.register(DI_TOKENS.ILogger, {
+      useFactory: () => new ObsidianLogger(plugin),
+    });
+
+    // Register event bus
+    container.register(DI_TOKENS.IEventBus, {
+      useValue: new ObsidianEventBus(),
+    });
+
+    // Register configuration
+    container.register(DI_TOKENS.IConfiguration, {
+      useFactory: () => new ObsidianConfiguration(plugin),
+    });
+
+    // Register notification service
+    container.register(DI_TOKENS.INotificationService, {
+      useValue: new ObsidianNotificationService(),
+    });
+
+    // Register vault adapter
+    container.register(DI_TOKENS.IVaultAdapter, {
+      useFactory: () => new ObsidianVaultAdapter(app.vault, app.metadataCache, app),
+    });
+  }
+
+  static reset(): void {
+    container.clearInstances();
+  }
+}
+```
+
+**Usage in Plugin**:
+```typescript
+// packages/obsidian-plugin/src/ExocortexPlugin.ts
+import "reflect-metadata";
+import { PluginContainer } from "./infrastructure/di/PluginContainer";
+
+export default class ExocortexPlugin extends Plugin {
+  async onload(): Promise<void> {
+    // Initialize DI container (Phase 1 infrastructure)
+    PluginContainer.setup(this.app, this);
+
+    // ... rest of plugin initialization
+  }
+}
+```
+
+#### CLI Container
+
+**Location**: `packages/cli/src/infrastructure/di/CLIContainer.ts`
+
+```typescript
+import "reflect-metadata";
+import { container } from "tsyringe";
+import { DI_TOKENS } from "@exocortex/core";
+import { NodeLogger } from "./NodeLogger";
+import { NodeEventBus } from "./NodeEventBus";
+import { NodeConfiguration } from "./NodeConfiguration";
+import { NodeNotificationService } from "./NodeNotificationService";
+
+export class CLIContainer {
+  static setup(): void {
+    container.register(DI_TOKENS.ILogger, {
+      useFactory: () => new NodeLogger("exocortex-cli"),
+    });
+
+    container.register(DI_TOKENS.IEventBus, {
+      useValue: new NodeEventBus(),
+    });
+
+    container.register(DI_TOKENS.IConfiguration, {
+      useValue: new NodeConfiguration(),
+    });
+
+    container.register(DI_TOKENS.INotificationService, {
+      useValue: new NodeNotificationService(),
+    });
+  }
+
+  static reset(): void {
+    container.clearInstances();
+  }
+}
+```
+
+### Service Migration Pattern
+
+**Migrating existing services to use DI:**
+
+**Before (manual dependency passing):**
+```typescript
+export class PropertyCleanupService {
+  constructor(
+    private vault: IVaultAdapter
+  ) {}
+
+  async cleanEmptyProperties(file: IFile): Promise<void> {
+    const content = await this.vault.read(file);
+    // ... implementation
+  }
+}
+
+// Manual instantiation
+const vaultAdapter = new ObsidianVaultAdapter(app.vault, app.metadataCache, app);
+const service = new PropertyCleanupService(vaultAdapter);
+```
+
+**After (DI with @injectable and @inject):**
+```typescript
+import { injectable, inject } from "tsyringe";
+import { DI_TOKENS, IVaultAdapter, ILogger, IFile } from "@exocortex/core";
+
+@injectable()
+export class PropertyCleanupService {
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+    @inject(DI_TOKENS.ILogger) private logger: ILogger
+  ) {
+    this.logger.debug("PropertyCleanupService initialized");
+  }
+
+  async cleanEmptyProperties(file: IFile): Promise<void> {
+    this.logger.debug("Cleaning empty properties", { path: file.path });
+    const content = await this.vault.read(file);
+    // ... implementation
+    this.logger.info("Empty properties cleaned", { path: file.path });
+  }
+}
+
+// Automatic resolution via container
+const service = container.resolve(PropertyCleanupService);
+```
+
+**Migration Steps:**
+1. Add `@injectable()` decorator to class
+2. Add `@inject(DI_TOKENS.X)` to constructor parameters
+3. Import dependencies from `@exocortex/core`
+4. Enable TypeScript decorators in `tsconfig.json`:
+   ```json
+   {
+     "compilerOptions": {
+       "experimentalDecorators": true,
+       "emitDecoratorMetadata": true
+     }
+   }
+   ```
+5. Replace manual instantiation with `container.resolve(ServiceClass)`
+
+### Testing with Dependency Injection
+
+**Test Pattern: Mock Dependencies via Container**
+
+```typescript
+import "reflect-metadata";
+import { container } from "tsyringe";
+import { PropertyCleanupService, DI_TOKENS, IVaultAdapter, ILogger, IFile } from "@exocortex/core";
+
+describe("PropertyCleanupService with DI", () => {
+  let mockVaultAdapter: jest.Mocked<IVaultAdapter>;
+  let mockLogger: jest.Mocked<ILogger>;
+  let service: PropertyCleanupService;
+
+  beforeEach(() => {
+    // Clear container before each test
+    container.clearInstances();
+
+    // Create mocks
+    mockVaultAdapter = {
+      read: jest.fn(),
+      modify: jest.fn(),
+      // ... other methods
+    } as any;
+
+    mockLogger = {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    };
+
+    // Register mocks in container
+    container.register(DI_TOKENS.IVaultAdapter, { useValue: mockVaultAdapter });
+    container.register(DI_TOKENS.ILogger, { useValue: mockLogger });
+
+    // Resolve service (automatically injects mocks)
+    service = container.resolve(PropertyCleanupService);
+  });
+
+  afterEach(() => {
+    container.clearInstances();
+  });
+
+  it("should use injected logger when cleaning properties", async () => {
+    const mockFile: IFile = { path: "test.md", name: "test.md", basename: "test", extension: "md" };
+    mockVaultAdapter.read.mockResolvedValue("---\ntitle: Test\nemptyProp:\n---\nContent");
+
+    await service.cleanEmptyProperties(mockFile);
+
+    expect(mockLogger.debug).toHaveBeenCalledWith("Cleaning empty properties", { path: "test.md" });
+    expect(mockLogger.info).toHaveBeenCalledWith("Empty properties cleaned", { path: "test.md" });
+  });
+
+  it("should resolve service singleton from container", () => {
+    const service1 = container.resolve(PropertyCleanupService);
+    const service2 = container.resolve(PropertyCleanupService);
+
+    expect(service1).toBe(service2);  // Same instance
+  });
+});
+```
+
+**Key Testing Patterns:**
+- ✅ Always `container.clearInstances()` in beforeEach/afterEach
+- ✅ Register mocks before resolving service
+- ✅ Verify injected dependencies are called correctly
+- ✅ Test singleton behavior when needed
+- ✅ Use `jest.Mocked<Interface>` for type-safe mocks
+
+### Phase 1 Implementation Status
+
+**✅ Completed:**
+- TSyringe + reflect-metadata installed
+- 4 core interfaces defined (ILogger, IEventBus, IConfiguration, INotificationService)
+- Symbol-based DI_TOKENS created
+- 4 Obsidian adapters implemented
+- 4 CLI adapters implemented
+- PluginContainer and CLIContainer created
+- TypeScript decorator support enabled
+- PropertyCleanupService refactored as proof-of-concept
+- DI initialization added to ExocortexPlugin.ts
+- Unit tests for DI infrastructure (PluginContainer.test.ts)
+- Unit tests for POC service (PropertyCleanupService.di.test.ts)
+
+**📋 Future Phases (Not in Scope):**
+- Phase 2: Migrate remaining services to DI
+- Phase 3: Implement factory pattern for complex objects
+- Phase 4: Add lifecycle management (scoped instances)
+- Phase 5: Performance optimization (lazy loading)
 
 ---
 

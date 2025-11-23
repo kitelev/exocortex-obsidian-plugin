@@ -1,19 +1,30 @@
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { injectable, inject } from "tsyringe";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import type { ILogger } from "../interfaces/ILogger";
+import { DI_TOKENS } from "../interfaces/tokens";
 
 /**
  * Service for cleaning empty properties from file frontmatter
  */
+@injectable()
 export class PropertyCleanupService {
-  constructor(private vault: IVaultAdapter) {}
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+    @inject(DI_TOKENS.ILogger) private logger: ILogger
+  ) {
+    this.logger.debug("PropertyCleanupService initialized");
+  }
 
   /**
    * Remove all empty properties from file frontmatter
    * Empty properties are: null, undefined, "", [], {}
    */
   async cleanEmptyProperties(file: IFile): Promise<void> {
+    this.logger.debug("Cleaning empty properties", { path: file.path });
     const fileContent = await this.vault.read(file);
     const updatedContent = this.removeEmptyPropertiesFromContent(fileContent);
     await this.vault.modify(file, updatedContent);
+    this.logger.info("Empty properties cleaned", { path: file.path });
   }
 
   /**

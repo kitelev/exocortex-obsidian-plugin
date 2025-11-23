@@ -78,6 +78,7 @@ module.exports = {
   logHeapUsage: false, // Disabled - saves memory
   // EMERGENCY: Enhanced memory management setup
   setupFilesAfterEnv: [
+    "<rootDir>/tests/setup-reflect-metadata.ts", // Global reflect-metadata for TSyringe
     // "<rootDir>/tests/setup.ts", // File doesn't exist
     // '<rootDir>/tests/emergency-memory-setup.ts', // TEMPORARY: Disabled for debugging
     // "<rootDir>/tests/test-cleanup.ts", // File doesn't exist

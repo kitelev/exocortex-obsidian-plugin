@@ -41,4 +41,5 @@ module.exports = {
   coveragePathIgnorePatterns: ["/node_modules/", "/tests/"],
   testTimeout: 30000,
   verbose: true,
+  setupFilesAfterEnv: ["<rootDir>/tests/setup-reflect-metadata.ts"],
 };
