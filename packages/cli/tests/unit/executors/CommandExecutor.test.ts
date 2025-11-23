@@ -2,7 +2,7 @@ import { CommandExecutor } from "../../../src/executors/CommandExecutor";
 import { PathResolver } from "../../../src/utils/PathResolver";
 import { NodeFsAdapter } from "../../../src/adapters/NodeFsAdapter";
 import { ExitCodes } from "../../../src/utils/ExitCodes";
-import { FrontmatterService } from "@exocortex/core";
+import { FrontmatterService, DateFormatter } from "@exocortex/core";
 
 jest.mock("../../../src/utils/PathResolver");
 jest.mock("../../../src/adapters/NodeFsAdapter");
@@ -13,12 +13,26 @@ jest.mock("@exocortex/core", () => ({
         return `---\n${fm}\n${prop}: ${value}\n---`;
       });
     }),
+    removeProperty: jest.fn((content: string, prop: string) => {
+      return content.replace(new RegExp(`${prop}:.*\\n`, "g"), "");
+    }),
     parse: jest.fn((content: string) => ({
       exists: content.includes("---"),
       content: content.match(/---\n([\s\S]*?)\n---/)?.[1] || "",
       originalContent: content,
     })),
   })),
+  DateFormatter: {
+    toLocalTimestamp: jest.fn((date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+      const seconds = String(date.getSeconds()).padStart(2, "0");
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    }),
+  },
   FileNotFoundError: class FileNotFoundError extends Error {},
   FileAlreadyExistsError: class FileAlreadyExistsError extends Error {},
 }));
@@ -364,6 +378,293 @@ describe("CommandExecutor", () => {
 
       expect(mockFsAdapter.updateFile).not.toHaveBeenCalled();
       expect(processExitSpy).not.toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+  });
+
+  describe("executeStart()", () => {
+    beforeEach(() => {
+      mockPathResolver.resolve.mockReturnValue("/test/vault/task.md");
+      mockFsAdapter.readFile.mockResolvedValue(
+        "---\nexo__Asset_label: My Task\nems__Effort_status: \"[[ems__EffortStatusToDo]]\"\n---\n# Content",
+      );
+    });
+
+    it("should transition to Doing status", async () => {
+      await expect(executor.executeStart("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(mockFsAdapter.updateFile).toHaveBeenCalled();
+      const updateCall = mockFsAdapter.updateFile.mock.calls[0];
+      expect(updateCall[1]).toContain("ems__Effort_status: \"[[ems__EffortStatusDoing]]\"");
+      expect(processExitSpy).toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should add start timestamp", async () => {
+      const mockDate = new Date("2025-11-23T10:30:00");
+      jest.spyOn(global, "Date").mockImplementation(() => mockDate as any);
+      const expectedTimestamp = DateFormatter.toLocalTimestamp(mockDate);
+
+      await expect(executor.executeStart("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(mockFsAdapter.updateFile).toHaveBeenCalled();
+      const updateCall = mockFsAdapter.updateFile.mock.calls[0];
+      expect(updateCall[1]).toContain(`ems__Effort_startTimestamp: ${expectedTimestamp}`);
+    });
+
+    it("should display status confirmation", async () => {
+      await expect(executor.executeStart("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Started:"),
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Status: Doing"),
+      );
+    });
+
+    it("should handle file read errors", async () => {
+      mockFsAdapter.readFile.mockRejectedValue(
+        new Error("File not found: task.md"),
+      );
+
+      await expect(executor.executeStart("task.md")).rejects.toThrow(
+        "process.exit",
+      );
+
+      expect(processExitSpy).not.toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+  });
+
+  describe("executeComplete()", () => {
+    beforeEach(() => {
+      mockPathResolver.resolve.mockReturnValue("/test/vault/task.md");
+      mockFsAdapter.readFile.mockResolvedValue(
+        "---\nexo__Asset_label: My Task\nems__Effort_status: \"[[ems__EffortStatusDoing]]\"\n---\n# Content",
+      );
+    });
+
+    it("should transition to Done status", async () => {
+      await expect(executor.executeComplete("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(mockFsAdapter.updateFile).toHaveBeenCalled();
+      const updateCall = mockFsAdapter.updateFile.mock.calls[0];
+      expect(updateCall[1]).toContain("ems__Effort_status: \"[[ems__EffortStatusDone]]\"");
+      expect(processExitSpy).toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should add end and resolution timestamps", async () => {
+      const mockDate = new Date("2025-11-23T15:45:00");
+      jest.spyOn(global, "Date").mockImplementation(() => mockDate as any);
+      const expectedTimestamp = DateFormatter.toLocalTimestamp(mockDate);
+
+      await expect(executor.executeComplete("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(mockFsAdapter.updateFile).toHaveBeenCalled();
+      const updateCall = mockFsAdapter.updateFile.mock.calls[0];
+      expect(updateCall[1]).toContain(`ems__Effort_endTimestamp: ${expectedTimestamp}`);
+      expect(updateCall[1]).toContain(`ems__Effort_resolutionTimestamp: ${expectedTimestamp}`);
+    });
+
+    it("should display completion confirmation", async () => {
+      await expect(executor.executeComplete("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Completed:"),
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Status: Done"),
+      );
+    });
+  });
+
+  describe("executeTrash()", () => {
+    beforeEach(() => {
+      mockPathResolver.resolve.mockReturnValue("/test/vault/task.md");
+      mockFsAdapter.readFile.mockResolvedValue(
+        "---\nexo__Asset_label: My Task\nems__Effort_status: \"[[ems__EffortStatusDoing]]\"\n---\n# Content",
+      );
+    });
+
+    it("should transition to Trashed status", async () => {
+      await expect(executor.executeTrash("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(mockFsAdapter.updateFile).toHaveBeenCalled();
+      const updateCall = mockFsAdapter.updateFile.mock.calls[0];
+      expect(updateCall[1]).toContain("ems__Effort_status: \"[[ems__EffortStatusTrashed]]\"");
+      expect(processExitSpy).toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should add resolution timestamp", async () => {
+      const mockDate = new Date("2025-11-23T12:00:00");
+      jest.spyOn(global, "Date").mockImplementation(() => mockDate as any);
+      const expectedTimestamp = DateFormatter.toLocalTimestamp(mockDate);
+
+      await expect(executor.executeTrash("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(mockFsAdapter.updateFile).toHaveBeenCalled();
+      const updateCall = mockFsAdapter.updateFile.mock.calls[0];
+      expect(updateCall[1]).toContain(`ems__Effort_resolutionTimestamp: ${expectedTimestamp}`);
+    });
+
+    it("should display trash confirmation", async () => {
+      await expect(executor.executeTrash("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Trashed:"),
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Status: Trashed"),
+      );
+    });
+  });
+
+  describe("executeArchive()", () => {
+    beforeEach(() => {
+      mockPathResolver.resolve.mockReturnValue("/test/vault/task.md");
+      mockFsAdapter.readFile.mockResolvedValue(
+        "---\nexo__Asset_label: My Task\naliases:\n  - My Task\n---\n# Content",
+      );
+    });
+
+    it("should set archived flag to true", async () => {
+      await expect(executor.executeArchive("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(mockFsAdapter.updateFile).toHaveBeenCalled();
+      const updateCall = mockFsAdapter.updateFile.mock.calls[0];
+      expect(updateCall[1]).toContain("archived: true");
+      expect(processExitSpy).toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should remove aliases", async () => {
+      await expect(executor.executeArchive("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Aliases removed"),
+      );
+    });
+
+    it("should display archive confirmation", async () => {
+      await expect(executor.executeArchive("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Archived:"),
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Archived: true"),
+      );
+    });
+  });
+
+  describe("executeMoveToBacklog()", () => {
+    beforeEach(() => {
+      mockPathResolver.resolve.mockReturnValue("/test/vault/task.md");
+      mockFsAdapter.readFile.mockResolvedValue(
+        "---\nexo__Asset_label: My Task\n---\n# Content",
+      );
+    });
+
+    it("should transition to Backlog status", async () => {
+      await expect(executor.executeMoveToBacklog("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(mockFsAdapter.updateFile).toHaveBeenCalled();
+      const updateCall = mockFsAdapter.updateFile.mock.calls[0];
+      expect(updateCall[1]).toContain("ems__Effort_status: \"[[ems__EffortStatusBacklog]]\"");
+      expect(processExitSpy).toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should display status confirmation", async () => {
+      await expect(executor.executeMoveToBacklog("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Moved to Backlog:"),
+      );
+    });
+  });
+
+  describe("executeMoveToAnalysis()", () => {
+    beforeEach(() => {
+      mockPathResolver.resolve.mockReturnValue("/test/vault/project.md");
+      mockFsAdapter.readFile.mockResolvedValue(
+        "---\nexo__Asset_label: My Project\n---\n# Content",
+      );
+    });
+
+    it("should transition to Analysis status", async () => {
+      await expect(executor.executeMoveToAnalysis("project.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(mockFsAdapter.updateFile).toHaveBeenCalled();
+      const updateCall = mockFsAdapter.updateFile.mock.calls[0];
+      expect(updateCall[1]).toContain("ems__Effort_status: \"[[ems__EffortStatusAnalysis]]\"");
+      expect(processExitSpy).toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should display status confirmation", async () => {
+      await expect(executor.executeMoveToAnalysis("project.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Moved to Analysis:"),
+      );
+    });
+  });
+
+  describe("executeMoveToToDo()", () => {
+    beforeEach(() => {
+      mockPathResolver.resolve.mockReturnValue("/test/vault/task.md");
+      mockFsAdapter.readFile.mockResolvedValue(
+        "---\nexo__Asset_label: My Task\n---\n# Content",
+      );
+    });
+
+    it("should transition to ToDo status", async () => {
+      await expect(executor.executeMoveToToDo("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(mockFsAdapter.updateFile).toHaveBeenCalled();
+      const updateCall = mockFsAdapter.updateFile.mock.calls[0];
+      expect(updateCall[1]).toContain("ems__Effort_status: \"[[ems__EffortStatusToDo]]\"");
+      expect(processExitSpy).toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should display status confirmation", async () => {
+      await expect(executor.executeMoveToToDo("task.md")).rejects.toThrow(
+        "process.exit(0)",
+      );
+
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Moved to ToDo:"),
+      );
     });
   });
 });
