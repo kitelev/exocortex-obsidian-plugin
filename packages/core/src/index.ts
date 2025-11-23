@@ -90,5 +90,12 @@ export type {
   IFrontmatter,
 } from "./interfaces/IVaultAdapter";
 
+// DI Interfaces exports
+export type { ILogger } from "./interfaces/ILogger";
+export type { IEventBus } from "./interfaces/IEventBus";
+export type { IConfiguration } from "./interfaces/IConfiguration";
+export type { INotificationService } from "./interfaces/INotificationService";
+export { DI_TOKENS, type DIToken } from "./interfaces/tokens";
+
 // Types exports
 export type { SupervisionFormData } from "./types/SupervisionFormData";

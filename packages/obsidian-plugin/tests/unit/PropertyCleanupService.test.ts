@@ -1,9 +1,10 @@
-import { PropertyCleanupService } from "@exocortex/core";
+import { PropertyCleanupService, ILogger } from "@exocortex/core";
 import { TFile, Vault } from "obsidian";
 
 describe("PropertyCleanupService", () => {
   let service: PropertyCleanupService;
   let mockVault: jest.Mocked<Vault>;
+  let mockLogger: jest.Mocked<ILogger>;
 
   beforeEach(() => {
     mockVault = {
@@ -11,7 +12,14 @@ describe("PropertyCleanupService", () => {
       modify: jest.fn(),
     } as unknown as jest.Mocked<Vault>;
 
-    service = new PropertyCleanupService(mockVault);
+    mockLogger = {
+      debug: jest.fn(),
+      info: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    };
+
+    service = new PropertyCleanupService(mockVault, mockLogger);
   });
 
   describe("cleanEmptyProperties", () => {

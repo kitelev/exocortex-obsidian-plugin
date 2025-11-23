@@ -15,6 +15,7 @@ import {
   AssetConversionService,
   FleetingNoteCreationService,
 } from "@exocortex/core";
+import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
 
 import { CreateTaskCommand } from "./CreateTaskCommand";
 import { CreateProjectCommand } from "./CreateProjectCommand";
@@ -59,10 +60,13 @@ export class CommandRegistry {
   ) {
     this.vaultAdapter = new ObsidianVaultAdapter(app.vault, app.metadataCache, app);
 
+    // Create logger for services (Phase 1 DI infrastructure)
+    const logger = LoggerFactory.create("CommandRegistry");
+
     const taskCreationService = new TaskCreationService(this.vaultAdapter);
     const projectCreationService = new ProjectCreationService(this.vaultAdapter);
     const taskStatusService = new TaskStatusService(this.vaultAdapter);
-    const propertyCleanupService = new PropertyCleanupService(this.vaultAdapter);
+    const propertyCleanupService = new PropertyCleanupService(this.vaultAdapter, logger);
     const folderRepairService = new FolderRepairService(this.vaultAdapter);
     const supervisionCreationService = new SupervisionCreationService(this.vaultAdapter);
     const renameToUidService = new RenameToUidService(this.vaultAdapter);

@@ -110,7 +110,7 @@ export class UniversalLayoutRenderer {
     this.classCreationService = new ClassCreationService(this.vaultAdapter);
     this.conceptCreationService = new ConceptCreationService(this.vaultAdapter);
     this.taskStatusService = new TaskStatusService(this.vaultAdapter);
-    this.propertyCleanupService = new PropertyCleanupService(this.vaultAdapter);
+    this.propertyCleanupService = new PropertyCleanupService(this.vaultAdapter, this.logger);
     this.folderRepairService = new FolderRepairService(this.vaultAdapter);
     this.renameToUidService = new RenameToUidService(this.vaultAdapter);
     this.effortVotingService = new EffortVotingService(this.vaultAdapter);

@@ -87,6 +87,8 @@
     "d3-zoom": "^3.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "reflect-metadata": "^0.2.2",
+    "tsyringe": "^4.10.0",
     "uuid": "^13.0.0"
   }
 }
