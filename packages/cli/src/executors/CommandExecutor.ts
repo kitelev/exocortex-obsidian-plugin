@@ -689,6 +689,54 @@ export class CommandExecutor {
   }
 
   /**
+   * Executes schedule command
+   *
+   * Sets planned start timestamp for an effort (task/project/meeting).
+   *
+   * @param filepath - Path to effort file
+   * @param date - Date string in YYYY-MM-DD format
+   *
+   * @example
+   * executor.executeSchedule("03 Knowledge/tasks/task.md", "2025-11-25")
+   */
+  async executeSchedule(filepath: string, date: string): Promise<void> {
+    try {
+      await this.updatePlannedTimestamp(
+        filepath,
+        date,
+        "ems__Effort_plannedStartTimestamp",
+      );
+      process.exit(ExitCodes.SUCCESS);
+    } catch (error) {
+      ErrorHandler.handle(error as Error);
+    }
+  }
+
+  /**
+   * Executes set-deadline command
+   *
+   * Sets planned end timestamp for an effort (task/project/meeting).
+   *
+   * @param filepath - Path to effort file
+   * @param date - Date string in YYYY-MM-DD format
+   *
+   * @example
+   * executor.executeSetDeadline("03 Knowledge/tasks/task.md", "2025-12-01")
+   */
+  async executeSetDeadline(filepath: string, date: string): Promise<void> {
+    try {
+      await this.updatePlannedTimestamp(
+        filepath,
+        date,
+        "ems__Effort_plannedEndTimestamp",
+      );
+      process.exit(ExitCodes.SUCCESS);
+    } catch (error) {
+      ErrorHandler.handle(error as Error);
+    }
+  }
+
+  /**
    * Helper method to create asset with frontmatter
    * @private
    */
@@ -803,5 +851,61 @@ export class CommandExecutor {
       ems__Area: "area",
     };
     return classMap[assetClass] || "asset";
+  }
+
+  /**
+   * Update planned timestamp property in frontmatter
+   * @private
+   */
+  private async updatePlannedTimestamp(
+    filepath: string,
+    dateStr: string,
+    property: string,
+  ): Promise<void> {
+    // Resolve and validate path
+    const resolvedPath = this.pathResolver.resolve(filepath);
+    this.pathResolver.validate(resolvedPath);
+
+    const relativePath = resolvedPath.replace(
+      this.pathResolver.getVaultRoot() + "/",
+      "",
+    );
+
+    // Check if file exists
+    const exists = await this.fsAdapter.fileExists(relativePath);
+    if (!exists) {
+      throw new Error(`File not found: ${filepath}`);
+    }
+
+    // Validate date format (YYYY-MM-DD)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      throw new Error(
+        `Invalid date format: ${dateStr}. Expected YYYY-MM-DD (e.g., 2025-11-25)`,
+      );
+    }
+
+    // Convert date to timestamp at start of day
+    const timestamp = DateFormatter.toTimestampAtStartOfDay(dateStr);
+
+    // Read file content
+    const content = await this.fsAdapter.readFile(relativePath);
+
+    // Update frontmatter property
+    const updatedContent = this.frontmatterService.updateProperty(
+      content,
+      property,
+      timestamp,
+    );
+
+    // Write updated content
+    await this.fsAdapter.writeFile(relativePath, updatedContent);
+
+    const actionName =
+      property === "ems__Effort_plannedStartTimestamp"
+        ? "Scheduled"
+        : "Set deadline for";
+    console.log(`✅ ${actionName}: ${filepath}`);
+    console.log(`   Date: ${dateStr}`);
+    console.log(`   Timestamp: ${timestamp}`);
   }
 }

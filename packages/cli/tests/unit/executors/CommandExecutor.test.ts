@@ -999,4 +999,130 @@ describe("CommandExecutor", () => {
       expect(mockFsAdapter.createFile).not.toHaveBeenCalled();
     });
   });
+
+  describe("executeSchedule()", () => {
+    beforeEach(() => {
+      mockPathResolver.resolve.mockReturnValue("/test/vault/task.md");
+      mockFsAdapter.fileExists = jest.fn().mockResolvedValue(true);
+      mockFsAdapter.readFile = jest.fn().mockResolvedValue(
+        "---\nexo__Asset_label: Test Task\n---\nBody content",
+      );
+      mockFsAdapter.writeFile = jest.fn().mockResolvedValue(undefined);
+    });
+
+    it("should schedule task with valid date", async () => {
+      await expect(
+        executor.executeSchedule("task.md", "2025-11-25"),
+      ).rejects.toThrow("process.exit(0)");
+
+      expect(mockFsAdapter.readFile).toHaveBeenCalledWith("task.md");
+      expect(mockFsAdapter.writeFile).toHaveBeenCalled();
+
+      const writeCall = mockFsAdapter.writeFile.mock.calls[0];
+      const updatedContent = writeCall[1];
+
+      expect(updatedContent).toContain("ems__Effort_plannedStartTimestamp:");
+      expect(updatedContent).toContain("2025-11-25T00:00:00");
+      expect(processExitSpy).toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should throw error if file does not exist", async () => {
+      mockFsAdapter.fileExists = jest.fn().mockResolvedValue(false);
+
+      await expect(
+        executor.executeSchedule("task.md", "2025-11-25"),
+      ).rejects.toThrow("process.exit");
+
+      expect(mockFsAdapter.readFile).not.toHaveBeenCalled();
+      expect(mockFsAdapter.writeFile).not.toHaveBeenCalled();
+    });
+
+    it("should throw error for invalid date format", async () => {
+      await expect(
+        executor.executeSchedule("task.md", "11/25/2025"),
+      ).rejects.toThrow("process.exit");
+
+      expect(mockFsAdapter.writeFile).not.toHaveBeenCalled();
+    });
+
+    it("should throw error for malformed date", async () => {
+      await expect(
+        executor.executeSchedule("task.md", "2025-13-45"),
+      ).rejects.toThrow("process.exit");
+    });
+
+    it("should handle different date values", async () => {
+      await expect(
+        executor.executeSchedule("task.md", "2025-12-31"),
+      ).rejects.toThrow("process.exit(0)");
+
+      const writeCall = mockFsAdapter.writeFile.mock.calls[0];
+      const updatedContent = writeCall[1];
+
+      expect(updatedContent).toContain("2025-12-31T00:00:00");
+    });
+  });
+
+  describe("executeSetDeadline()", () => {
+    beforeEach(() => {
+      mockPathResolver.resolve.mockReturnValue("/test/vault/task.md");
+      mockFsAdapter.fileExists = jest.fn().mockResolvedValue(true);
+      mockFsAdapter.readFile = jest.fn().mockResolvedValue(
+        "---\nexo__Asset_label: Test Task\n---\nBody content",
+      );
+      mockFsAdapter.writeFile = jest.fn().mockResolvedValue(undefined);
+    });
+
+    it("should set deadline with valid date", async () => {
+      await expect(
+        executor.executeSetDeadline("task.md", "2025-12-01"),
+      ).rejects.toThrow("process.exit(0)");
+
+      expect(mockFsAdapter.readFile).toHaveBeenCalledWith("task.md");
+      expect(mockFsAdapter.writeFile).toHaveBeenCalled();
+
+      const writeCall = mockFsAdapter.writeFile.mock.calls[0];
+      const updatedContent = writeCall[1];
+
+      expect(updatedContent).toContain("ems__Effort_plannedEndTimestamp:");
+      expect(updatedContent).toContain("2025-12-01T00:00:00");
+      expect(processExitSpy).toHaveBeenCalledWith(ExitCodes.SUCCESS);
+    });
+
+    it("should throw error if file does not exist", async () => {
+      mockFsAdapter.fileExists = jest.fn().mockResolvedValue(false);
+
+      await expect(
+        executor.executeSetDeadline("task.md", "2025-12-01"),
+      ).rejects.toThrow("process.exit");
+
+      expect(mockFsAdapter.readFile).not.toHaveBeenCalled();
+      expect(mockFsAdapter.writeFile).not.toHaveBeenCalled();
+    });
+
+    it("should throw error for invalid date format", async () => {
+      await expect(
+        executor.executeSetDeadline("task.md", "12/01/2025"),
+      ).rejects.toThrow("process.exit");
+
+      expect(mockFsAdapter.writeFile).not.toHaveBeenCalled();
+    });
+
+    it("should throw error for malformed date", async () => {
+      await expect(
+        executor.executeSetDeadline("task.md", "2025-13-99"),
+      ).rejects.toThrow("process.exit");
+    });
+
+    it("should handle different date values", async () => {
+      await expect(
+        executor.executeSetDeadline("task.md", "2026-01-15"),
+      ).rejects.toThrow("process.exit(0)");
+
+      const writeCall = mockFsAdapter.writeFile.mock.calls[0];
+      const updatedContent = writeCall[1];
+
+      expect(updatedContent).toContain("2026-01-15T00:00:00");
+    });
+  });
 });
