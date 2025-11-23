@@ -8,6 +8,7 @@ export interface CommandOptions {
   prototype?: string;
   area?: string;
   parent?: string;
+  date?: string;
 }
 
 /**
@@ -22,13 +23,14 @@ export interface CommandOptions {
 export function commandCommand(): Command {
   return new Command("command")
     .description("Execute plugin command on single asset")
-    .argument("<command-name>", "Command to execute (rename-to-uid, start, complete, create-task, etc.)")
+    .argument("<command-name>", "Command to execute (rename-to-uid, start, complete, schedule, set-deadline, etc.)")
     .argument("<filepath>", "Path to asset file (relative to vault root or absolute)")
     .option("--vault <path>", "Path to Obsidian vault", process.cwd())
     .option("--label <value>", "Asset label (required for update-label and creation commands)")
     .option("--prototype <uid>", "Prototype UID for inheritance (creation commands)")
     .option("--area <uid>", "Area UID for effort linkage (creation commands)")
     .option("--parent <uid>", "Parent UID for effort linkage (creation commands)")
+    .option("--date <value>", "Date in YYYY-MM-DD format (required for schedule and set-deadline commands)")
     .action(async (commandName: string, filepath: string, options: CommandOptions) => {
       const vaultPath = resolve(options.vault);
       const executor = new CommandExecutor(vaultPath);
@@ -128,6 +130,25 @@ export function commandCommand(): Command {
             area: options.area,
             parent: options.parent,
           });
+          break;
+
+        // Planning commands
+        case "schedule":
+          if (!options.date) {
+            console.error("Error: --date option is required for schedule command");
+            console.error("Usage: exocortex command schedule <filepath> --date \"YYYY-MM-DD\"");
+            process.exit(2); // ExitCodes.INVALID_ARGUMENTS
+          }
+          await executor.executeSchedule(filepath, options.date);
+          break;
+
+        case "set-deadline":
+          if (!options.date) {
+            console.error("Error: --date option is required for set-deadline command");
+            console.error("Usage: exocortex command set-deadline <filepath> --date \"YYYY-MM-DD\"");
+            process.exit(2); // ExitCodes.INVALID_ARGUMENTS
+          }
+          await executor.executeSetDeadline(filepath, options.date);
           break;
 
         default:
