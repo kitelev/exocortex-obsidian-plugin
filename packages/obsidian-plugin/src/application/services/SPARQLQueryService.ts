@@ -8,6 +8,7 @@ import {
   type SolutionMapping,
   type AlgebraOperation,
 } from "@exocortex/core";
+import { ValidationError, ServiceError } from "@exocortex/core/domain/errors";
 import { VaultRDFIndexer } from "../../infrastructure/VaultRDFIndexer";
 
 export class SPARQLQueryService {
@@ -30,12 +31,23 @@ export class SPARQLQueryService {
       return;
     }
 
-    await this.indexer.initialize();
+    try {
+      await this.indexer.initialize();
 
-    const tripleStore = this.indexer.getTripleStore();
-    this.executor = new BGPExecutor(tripleStore);
+      const tripleStore = this.indexer.getTripleStore();
+      this.executor = new BGPExecutor(tripleStore);
 
-    this.isInitialized = true;
+      this.isInitialized = true;
+    } catch (error) {
+      throw new ServiceError(
+        "failed to initialize sparql query service",
+        {
+          service: "SPARQLQueryService",
+          operation: "initialize",
+          originalError: error instanceof Error ? error.message : String(error),
+        }
+      );
+    }
   }
 
   async query(queryString: string): Promise<SolutionMapping[]> {
@@ -44,21 +56,55 @@ export class SPARQLQueryService {
     }
 
     if (!this.executor) {
-      throw new Error("Query executor not initialized");
+      throw new ServiceError(
+        "query executor not initialized",
+        {
+          service: "SPARQLQueryService",
+          operation: "query",
+        }
+      );
     }
 
-    const ast: SPARQLQuery = this.parser.parse(queryString);
+    try {
+      const ast: SPARQLQuery = this.parser.parse(queryString);
 
-    let algebra: AlgebraOperation = this.translator.translate(ast);
-    algebra = this.optimizer.optimize(algebra);
+      let algebra: AlgebraOperation = this.translator.translate(ast);
+      algebra = this.optimizer.optimize(algebra);
 
-    const resultIterator = this.executor.execute(algebra as any);
-    const results: SolutionMapping[] = [];
-    for await (const mapping of resultIterator) {
-      results.push(mapping);
+      const resultIterator = this.executor.execute(algebra as any);
+      const results: SolutionMapping[] = [];
+      for await (const mapping of resultIterator) {
+        results.push(mapping);
+      }
+
+      return results;
+    } catch (error) {
+      if (error instanceof ServiceError) {
+        throw error;
+      }
+
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      if (errorMessage.includes("parse") || errorMessage.includes("syntax")) {
+        throw new ValidationError(
+          "invalid sparql query",
+          {
+            query: queryString,
+            originalError: errorMessage,
+          }
+        );
+      }
+
+      throw new ServiceError(
+        "sparql query execution failed",
+        {
+          service: "SPARQLQueryService",
+          operation: "query",
+          query: queryString,
+          originalError: errorMessage,
+        }
+      );
     }
-
-    return results;
   }
 
   async refresh(): Promise<void> {

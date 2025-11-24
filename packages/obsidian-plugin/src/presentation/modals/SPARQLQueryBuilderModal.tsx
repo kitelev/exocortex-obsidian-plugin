@@ -5,11 +5,14 @@ import type ExocortexPlugin from "../../ExocortexPlugin";
 import { ReactRenderer } from "../utils/ReactRenderer";
 import { QueryBuilder } from "../components/sparql/QueryBuilder";
 import { SPARQLQueryService } from "../../application/services/SPARQLQueryService";
+import { ErrorBoundary } from "../components/ErrorBoundary";
+import { ApplicationErrorHandler } from "@exocortex/core/application/errors";
 
 export class SPARQLQueryBuilderModal extends Modal {
   private plugin: ExocortexPlugin;
   private reactRenderer: ReactRenderer;
   private queryService: SPARQLQueryService;
+  private errorHandler: ApplicationErrorHandler;
   private isInitialized = false;
 
   constructor(app: App, plugin: ExocortexPlugin) {
@@ -17,6 +20,7 @@ export class SPARQLQueryBuilderModal extends Modal {
     this.plugin = plugin;
     this.reactRenderer = new ReactRenderer();
     this.queryService = new SPARQLQueryService(app);
+    this.errorHandler = new ApplicationErrorHandler();
   }
 
   async onOpen(): Promise<void> {
@@ -38,12 +42,23 @@ export class SPARQLQueryBuilderModal extends Modal {
 
       this.reactRenderer.render(
         container,
-        React.createElement(QueryBuilder, {
-          app: this.app,
-          onExecuteQuery: this.executeQuery.bind(this),
-          onAssetClick: this.handleAssetClick.bind(this),
-          onCopyQuery: this.handleCopyQuery.bind(this),
-        })
+        React.createElement(
+          ErrorBoundary,
+          {
+            children: React.createElement(QueryBuilder, {
+              app: this.app,
+              onExecuteQuery: this.executeQuery.bind(this),
+              onAssetClick: this.handleAssetClick.bind(this),
+              onCopyQuery: this.handleCopyQuery.bind(this),
+            }),
+            onError: (error, errorInfo) => {
+              this.errorHandler.handle(error, {
+                componentStack: errorInfo.componentStack,
+                timestamp: new Date().toISOString(),
+              });
+            },
+          }
+        )
       );
     } catch (error) {
       container.innerHTML = "";
