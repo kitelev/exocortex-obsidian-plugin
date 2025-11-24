@@ -284,7 +284,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       await renderer.render(
         "groupByProperty: true",
-        container,
+        domContainer,
         {} as MarkdownPostProcessorContext,
       );
 
@@ -1641,7 +1641,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       // Render with groupByProperty to see both relations
       await renderer.render(
         "groupByProperty: true",
-        container,
+        domContainer,
         {} as MarkdownPostProcessorContext,
       );
 
