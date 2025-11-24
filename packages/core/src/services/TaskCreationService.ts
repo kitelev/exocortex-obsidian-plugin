@@ -5,8 +5,11 @@ import { MetadataHelpers } from "../utilities/MetadataHelpers";
 import { AssetClass } from "../domain/constants";
 import { TaskFrontmatterGenerator } from "./TaskFrontmatterGenerator";
 import { AlgorithmExtractor } from "./AlgorithmExtractor";
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import * as IVaultAdapterModule from "../interfaces/IVaultAdapter";
 import { DI_TOKENS } from "../interfaces/tokens";
+
+type IVaultAdapter = IVaultAdapterModule.IVaultAdapter;
+type IFile = IVaultAdapterModule.IFile;
 
 @injectable()
 export class TaskCreationService {
