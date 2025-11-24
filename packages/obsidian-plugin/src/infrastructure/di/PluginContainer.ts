@@ -1,7 +1,12 @@
 import "reflect-metadata";
 import { container } from "tsyringe";
 import { App, Plugin } from "obsidian";
-import { DI_TOKENS } from "@exocortex/core";
+import {
+  DI_TOKENS,
+  TaskFrontmatterGenerator,
+  AlgorithmExtractor,
+  TaskCreationService,
+} from "@exocortex/core";
 import { ObsidianLogger } from "./ObsidianLogger";
 import { ObsidianEventBus } from "./ObsidianEventBus";
 import { ObsidianConfiguration } from "./ObsidianConfiguration";
@@ -29,6 +34,11 @@ export class PluginContainer {
     container.register(DI_TOKENS.IVaultAdapter, {
       useFactory: () => new ObsidianVaultAdapter(app.vault, app.metadataCache, app),
     });
+
+    // Phase 2: Register TaskCreationService and its dependencies explicitly
+    container.register(TaskFrontmatterGenerator, { useClass: TaskFrontmatterGenerator });
+    container.register(AlgorithmExtractor, { useClass: AlgorithmExtractor });
+    container.register(TaskCreationService, { useClass: TaskCreationService });
   }
 
   static reset(): void {
