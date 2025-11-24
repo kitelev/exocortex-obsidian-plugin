@@ -7,21 +7,41 @@
  * Tests actual DOM rendering using Obsidian API mocks
  */
 
+import "reflect-metadata";
+import { container } from "tsyringe";
 import { App, TFile, MarkdownPostProcessorContext } from "obsidian";
 import { UniversalLayoutRenderer } from "../../src/presentation/renderers/UniversalLayoutRenderer";
 import { FileBuilder, ListBuilder } from "./helpers/FileBuilder";
 import { DEFAULT_SETTINGS } from "../../src/domain/settings/ExocortexSettings";
+import {
+  DI_TOKENS,
+  IVaultAdapter,
+  TaskFrontmatterGenerator,
+  AlgorithmExtractor,
+  TaskCreationService,
+} from "@exocortex/core";
 
 describe("UniversalLayoutRenderer UI Integration", () => {
   let renderer: UniversalLayoutRenderer;
   let mockApp: App;
   let mockPlugin: any;
-  let container: HTMLElement;
+  let domContainer: HTMLElement;
+  let mockVault: any;
 
   beforeEach(() => {
+    container.clearInstances();
+
     // Create a real DOM container
-    container = document.createElement("div");
-    document.body.appendChild(container);
+    domContainer = document.createElement("div");
+    // Add Obsidian-specific methods
+    (domContainer as any).createDiv = jest.fn((options?: { text?: string; cls?: string }) => {
+      const div = document.createElement("div");
+      if (options?.text) div.textContent = options.text;
+      if (options?.cls) div.className = options.cls;
+      domContainer.appendChild(div);
+      return div;
+    });
+    document.body.appendChild(domContainer);
 
     // Create mock plugin with saveSettings
     mockPlugin = {
@@ -67,6 +87,18 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       },
     } as unknown as App;
 
+    // Setup DI container for TaskCreationService
+    mockVault = {
+      create: jest.fn().mockResolvedValue({ path: "test-task.md" }),
+      read: jest.fn().mockResolvedValue(""),
+      modify: jest.fn().mockResolvedValue(undefined),
+    };
+
+    container.registerInstance<IVaultAdapter>(DI_TOKENS.IVaultAdapter, mockVault);
+    container.register(TaskFrontmatterGenerator, { useClass: TaskFrontmatterGenerator });
+    container.register(AlgorithmExtractor, { useClass: AlgorithmExtractor });
+    container.register(TaskCreationService, { useClass: TaskCreationService });
+
     renderer = new UniversalLayoutRenderer(
       mockApp,
       { ...DEFAULT_SETTINGS, showPropertiesSection: true },
@@ -77,7 +109,8 @@ describe("UniversalLayoutRenderer UI Integration", () => {
   afterEach(() => {
     // Cleanup
     renderer.cleanup();
-    document.body.removeChild(container);
+    document.body.removeChild(domContainer);
+    container.clearInstances();
   });
 
   describe("DOM Rendering", () => {
@@ -112,21 +145,21 @@ describe("UniversalLayoutRenderer UI Integration", () => {
 
       // Render
       const ctx = {} as MarkdownPostProcessorContext;
-      await renderer.render("", container, ctx);
+      await renderer.render("", domContainer, ctx);
 
       // Wait for React to render
       await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Verify DOM structure - should have both properties and relations sections
       expect(
-        container.querySelector(".exocortex-properties-section"),
+        domContainer.querySelector(".exocortex-properties-section"),
       ).toBeTruthy();
       expect(
-        container.querySelector(".exocortex-assets-relations"),
+        domContainer.querySelector(".exocortex-assets-relations"),
       ).toBeTruthy();
 
       // Relations table is inside .exocortex-relations or .exocortex-relations-grouped
-      const relationsContainer = container.querySelector(
+      const relationsContainer = domContainer.querySelector(
         ".exocortex-assets-relations",
       );
       expect(relationsContainer).toBeTruthy();
@@ -136,7 +169,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       expect(relationsTable).toBeTruthy();
 
       // Verify properties table rendered
-      const propertiesTable = container.querySelector(
+      const propertiesTable = domContainer.querySelector(
         ".exocortex-properties-table",
       );
       expect(propertiesTable).toBeTruthy();
@@ -173,13 +206,13 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         relatedFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       // Wait for React to render
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Find Instance Class links in RELATIONS table (not properties table)
-      const relationsContainer = container.querySelector(
+      const relationsContainer = domContainer.querySelector(
         ".exocortex-assets-relations",
       );
       expect(relationsContainer).toBeTruthy();
@@ -259,11 +292,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify grouped rendering
-      const groups = container.querySelectorAll(".relation-group");
+      const groups = domContainer.querySelectorAll(".relation-group");
       expect(groups.length).toBeGreaterThan(0);
 
       // Verify group headers
-      const groupHeaders = container.querySelectorAll(".group-header");
+      const groupHeaders = domContainer.querySelectorAll(".group-header");
       const headerTexts = Array.from(groupHeaders).map((h) => h.textContent);
       expect(headerTexts).toContain("assignedTo");
       expect(headerTexts).toContain("owner");
@@ -280,18 +313,18 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       });
       mockApp.metadataCache.resolvedLinks = {}; // No backlinks
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 0));
 
       // With no frontmatter and no relations, nothing should be rendered
       // Properties table should NOT appear (no frontmatter)
       expect(
-        container.querySelector(".exocortex-properties-section"),
+        domContainer.querySelector(".exocortex-properties-section"),
       ).toBeFalsy();
       // Relations table should NOT appear (no relations)
       expect(
-        container.querySelector(".exocortex-assets-relations"),
+        domContainer.querySelector(".exocortex-assets-relations"),
       ).toBeFalsy();
     });
 
@@ -342,13 +375,13 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         },
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       // Wait for React to render
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify relations table rendered
-      const relationsContainer = container.querySelector(
+      const relationsContainer = domContainer.querySelector(
         ".exocortex-assets-relations",
       );
       expect(relationsContainer).toBeTruthy();
@@ -390,13 +423,13 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       // Wait for React to render
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify button is present - find by text content
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const createTaskBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Create Task",
       );
@@ -418,13 +451,13 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       // Wait for React to render
       await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Verify button is present - find by text content
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const createTaskBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Create Task",
       );
@@ -445,12 +478,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify button is NOT present
-      const button = container.querySelector(".exocortex-create-task-btn");
+      const button = domContainer.querySelector(".exocortex-create-task-btn");
       expect(button).toBeFalsy();
     });
 
@@ -469,12 +502,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify order: properties section -> buttons section (containing action buttons) -> relations
-      const children = Array.from(container.children);
+      const children = Array.from(domContainer.children);
       const buttonsContainerIndex = children.findIndex((el) =>
         el.classList.contains("exocortex-buttons-section"),
       );
@@ -515,12 +548,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Find Mark Done button by text content
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const doneBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Mark Done",
       );
@@ -542,11 +575,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-mark-done-btn");
+      const button = domContainer.querySelector(".exocortex-mark-done-btn");
       expect(button).toBeFalsy();
     });
 
@@ -565,11 +598,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-mark-done-btn");
+      const button = domContainer.querySelector(".exocortex-mark-done-btn");
       expect(button).toBeFalsy();
     });
 
@@ -588,12 +621,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Find Mark Done button by text content
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const doneBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Mark Done",
       );
@@ -615,11 +648,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-mark-done-btn");
+      const button = domContainer.querySelector(".exocortex-mark-done-btn");
       expect(button).toBeFalsy();
     });
 
@@ -638,11 +671,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-mark-done-btn");
+      const button = domContainer.querySelector(".exocortex-mark-done-btn");
       expect(button).toBeFalsy();
     });
 
@@ -660,11 +693,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-mark-done-btn");
+      const button = domContainer.querySelector(".exocortex-mark-done-btn");
       expect(button).toBeFalsy();
     });
   });
@@ -686,12 +719,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Find Archive button by text content
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const archiveBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Archive",
       );
@@ -714,11 +747,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-archive-task-btn");
+      const button = domContainer.querySelector(".exocortex-archive-task-btn");
       expect(button).toBeFalsy();
     });
 
@@ -738,11 +771,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const archiveBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Archive",
       );
@@ -765,12 +798,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Find Archive button by text content
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const archiveBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Archive",
       );
@@ -793,11 +826,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-archive-task-btn");
+      const button = domContainer.querySelector(".exocortex-archive-task-btn");
       expect(button).toBeFalsy();
     });
 
@@ -817,11 +850,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const archiveBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Archive",
       );
@@ -843,11 +876,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const archiveBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Archive",
       );
@@ -873,12 +906,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Find Clean Properties button by text content
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const cleanBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Clean Properties",
       );
@@ -902,11 +935,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-clean-properties-btn");
+      const button = domContainer.querySelector(".exocortex-clean-properties-btn");
       expect(button).toBeFalsy();
     });
 
@@ -926,12 +959,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Find Clean Properties button by text content
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const cleanBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Clean Properties",
       );
@@ -954,12 +987,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Find Clean Properties button by text content
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const cleanBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Clean Properties",
       );
@@ -1022,12 +1055,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Find Repair Folder button by text content
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const repairBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Repair Folder",
       );
@@ -1056,11 +1089,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-repair-folder-btn");
+      const button = domContainer.querySelector(".exocortex-repair-folder-btn");
       expect(button).toBeFalsy();
     });
 
@@ -1079,11 +1112,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-repair-folder-btn");
+      const button = domContainer.querySelector(".exocortex-repair-folder-btn");
       expect(button).toBeFalsy();
     });
 
@@ -1106,11 +1139,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-repair-folder-btn");
+      const button = domContainer.querySelector(".exocortex-repair-folder-btn");
       expect(button).toBeFalsy();
     });
 
@@ -1138,12 +1171,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify properties section is before buttons section
-      const children = Array.from(container.children);
+      const children = Array.from(domContainer.children);
       const buttonsContainerIndex = children.findIndex((el) =>
         el.classList.contains("exocortex-buttons-section"),
       );
@@ -1202,12 +1235,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Get action buttons container
-      const buttonsContainer = container.querySelector(
+      const buttonsContainer = domContainer.querySelector(
         ".exocortex-buttons-section",
       ) as HTMLElement;
       expect(buttonsContainer).toBeTruthy();
@@ -1242,12 +1275,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Find Start Effort button by text content
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const startBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Start Effort",
       );
@@ -1269,11 +1302,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-start-effort-btn");
+      const button = domContainer.querySelector(".exocortex-start-effort-btn");
       expect(button).toBeFalsy();
     });
 
@@ -1292,11 +1325,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-start-effort-btn");
+      const button = domContainer.querySelector(".exocortex-start-effort-btn");
       expect(button).toBeFalsy();
     });
 
@@ -1315,11 +1348,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-start-effort-btn");
+      const button = domContainer.querySelector(".exocortex-start-effort-btn");
       expect(button).toBeFalsy();
     });
 
@@ -1338,12 +1371,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Find Start Effort button by text content
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const startBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Start Effort",
       );
@@ -1365,12 +1398,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Find Start Effort button by text content
-      const buttons = container.querySelectorAll(".exocortex-action-button");
+      const buttons = domContainer.querySelectorAll(".exocortex-action-button");
       const startBtn = Array.from(buttons).find(
         (btn) => btn.textContent === "Start Effort",
       );
@@ -1392,11 +1425,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-start-effort-btn");
+      const button = domContainer.querySelector(".exocortex-start-effort-btn");
       expect(button).toBeFalsy();
     });
 
@@ -1415,11 +1448,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-start-effort-btn");
+      const button = domContainer.querySelector(".exocortex-start-effort-btn");
       expect(button).toBeFalsy();
     });
 
@@ -1437,11 +1470,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const button = container.querySelector(".exocortex-start-effort-btn");
+      const button = domContainer.querySelector(".exocortex-start-effort-btn");
       expect(button).toBeFalsy();
     });
   });
@@ -1466,8 +1499,8 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       );
 
       // Render
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
-      expect(container.children.length).toBeGreaterThan(0);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
+      expect(domContainer.children.length).toBeGreaterThan(0);
 
       // Cleanup
       renderer.cleanup();
@@ -1475,7 +1508,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       // Verify container is not empty but React internals are cleaned
       // (container still has DOM elements but React roots are unmounted)
       expect(
-        container.querySelector(".exocortex-assets-relations"),
+        domContainer.querySelector(".exocortex-assets-relations"),
       ).toBeTruthy();
     });
   });
@@ -1548,11 +1581,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       };
 
       // Render
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Check that prototype label is displayed (not filename)
-      const assetLinks = container.querySelectorAll("a.internal-link");
+      const assetLinks = domContainer.querySelectorAll("a.internal-link");
       let foundPrototypeLabel = false;
       assetLinks.forEach((link) => {
         if (link.textContent === "Marketing Campaign Template") {
@@ -1615,11 +1648,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Should show 2 groups (property1 and property2)
-      const groups = container.querySelectorAll(".relation-group");
+      const groups = domContainer.querySelectorAll(".relation-group");
       expect(groups.length).toBe(2);
 
       // Should have headers for both properties
-      const groupHeaders = container.querySelectorAll(".group-header");
+      const groupHeaders = domContainer.querySelectorAll(".group-header");
       const headerTexts = Array.from(groupHeaders).map((h) => h.textContent);
       expect(headerTexts).toContain("property1");
       expect(headerTexts).toContain("property2");
@@ -1717,12 +1750,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       );
       (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue([taskFile]);
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify Tasks table is present
-      const tasksSection = container.querySelector(
+      const tasksSection = domContainer.querySelector(
         ".exocortex-daily-tasks-section",
       );
 
@@ -1750,12 +1783,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify Tasks table is NOT present
-      const tasksSection = container.querySelector(
+      const tasksSection = domContainer.querySelector(
         ".exocortex-daily-tasks-section",
       );
       expect(tasksSection).toBeFalsy();
@@ -1776,12 +1809,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify Tasks table is NOT present
-      const tasksSection = container.querySelector(
+      const tasksSection = domContainer.querySelector(
         ".exocortex-daily-tasks-section",
       );
       expect(tasksSection).toBeFalsy();
@@ -1805,12 +1838,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         currentFile,
       );
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify Tasks table is NOT present (graceful fallback)
-      const tasksSection = container.querySelector(
+      const tasksSection = domContainer.querySelector(
         ".exocortex-daily-tasks-section",
       );
       expect(tasksSection).toBeFalsy();
@@ -1908,12 +1941,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         otherDayTaskFile, // This should be filtered out!
       ]);
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify Tasks section rendered
-      const tasksSection = container.querySelector(
+      const tasksSection = domContainer.querySelector(
         ".exocortex-daily-tasks-section",
       );
 
@@ -2010,12 +2043,12 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         relatedTask,
       ]);
 
-      await renderer.render("", container, {} as MarkdownPostProcessorContext);
+      await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Verify order: Properties -> Tasks -> Relations
-      const children = Array.from(container.children);
+      const children = Array.from(domContainer.children);
       const propertiesIndex = children.findIndex((el) =>
         el.classList.contains("exocortex-properties-section"),
       );
