@@ -8,25 +8,22 @@ import { AlgorithmExtractor } from "./AlgorithmExtractor";
 import * as IVaultAdapterModule from "../interfaces/IVaultAdapter";
 import { DI_TOKENS } from "../interfaces/tokens";
 
-type IVaultAdapter = IVaultAdapterModule.IVaultAdapter;
-type IFile = IVaultAdapterModule.IFile;
-
 @injectable()
 export class TaskCreationService {
   constructor(
-    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapterModule.IVaultAdapter,
     private frontmatterGenerator: TaskFrontmatterGenerator,
     private algorithmExtractor: AlgorithmExtractor,
   ) {}
 
   async createTask(
-    sourceFile: IFile,
+    sourceFile: IVaultAdapterModule.IFile,
     sourceMetadata: Record<string, any>,
     sourceClass: string,
     label?: string,
     taskSize?: string | null,
     plannedStartTimestamp?: string,
-  ): Promise<IFile> {
+  ): Promise<IVaultAdapterModule.IFile> {
     const uid = uuidv4();
     const fileName = `${uid}.md`;
     const frontmatter = this.frontmatterGenerator.generateTaskFrontmatter(
@@ -66,11 +63,11 @@ export class TaskCreationService {
   }
 
   async createRelatedTask(
-    sourceFile: IFile,
+    sourceFile: IVaultAdapterModule.IFile,
     sourceMetadata: Record<string, any>,
     label?: string,
     taskSize?: string | null,
-  ): Promise<IFile> {
+  ): Promise<IVaultAdapterModule.IFile> {
     const uid = uuidv4();
     const fileName = `${uid}.md`;
 
@@ -140,7 +137,7 @@ export class TaskCreationService {
   }
 
   private async addRelationToSourceFile(
-    sourceFile: IFile,
+    sourceFile: IVaultAdapterModule.IFile,
     newTaskUid: string,
   ): Promise<void> {
     const content = await this.vault.read(sourceFile);
