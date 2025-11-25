@@ -346,6 +346,28 @@ Available helpers:
 
 Use these helpers to reduce test duplication and ensure consistent mocking patterns.
 
+### Import Pattern for Tests
+
+**Different test frameworks have different requirements:**
+
+1. **Jest Unit Tests**: Use main package imports
+   ```typescript
+   import { ValidationError, ServiceError } from "@exocortex/core";
+   ```
+
+2. **Playwright Component Tests**: Use subpath imports
+   ```typescript
+   import { ValidationError } from "@exocortex/core/domain/errors";
+   import { ApplicationErrorHandler } from "@exocortex/core/application/errors";
+   ```
+
+3. **Production Code**: Use main package imports
+   ```typescript
+   import { ValidationError, ServiceError } from "@exocortex/core";
+   ```
+
+**Why**: Playwright CT cannot parse TypeScript decorators. Subpath imports avoid loading services with decorators.
+
 ### RULE 4: Branch Protection & Linear History
 
 **Main branch is protected:**
@@ -994,6 +1016,26 @@ chore: maintenance task
 4. **E2E timeout**: Verify CSS selectors match actual rendered classes in screenshots
 5. **Obsolete dependencies**: Audit code for unused plugin availability checks
 6. **Pre-commit lint blocks due to errors**: Fix ALL lint errors, never bypass with --no-verify
+
+### CI Component Tests Fail with "Cannot find module"
+
+**Problem**: Component tests fail in CI with error "Cannot find module '@exocortex/core/dist/domain/errors/index.js'"
+
+**Root Cause**: CI workflow doesn't build core package before running component tests, so dist/ folder doesn't exist.
+
+**Solution**: Add build step before component tests in CI workflow:
+```yaml
+- name: Install dependencies
+  run: npm ci
+
+- name: Build packages
+  run: npm run build
+
+- name: Run component tests
+  run: npm run test:component
+```
+
+**Prevention**: Always build packages before running tests that depend on dist/ artifacts.
 
 ### TypeScript Property Errors
 
