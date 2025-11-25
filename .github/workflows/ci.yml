@@ -258,6 +258,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build packages
+        run: npm run build
+
       - name: Run component tests
         run: |
           export NODE_OPTIONS="--max-old-space-size=4096"
