@@ -1,4 +1,4 @@
-import { ApplicationError } from "../../domain/errors/ApplicationError.js";
+import { ApplicationError } from "../../domain/errors/ApplicationError";
 
 /**
  * Retry configuration for error handling

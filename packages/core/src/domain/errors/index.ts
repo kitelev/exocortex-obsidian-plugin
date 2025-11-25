@@ -8,11 +8,12 @@
  * - User-friendly error messages with actionable guidance
  */
 
-export { ErrorCode } from "./ErrorCode.js";
-export { ApplicationError } from "./ApplicationError.js";
-export { ValidationError } from "./ValidationError.js";
-export { NetworkError } from "./NetworkError.js";
-export { StateTransitionError } from "./StateTransitionError.js";
-export { PermissionError } from "./PermissionError.js";
-export { NotFoundError } from "./NotFoundError.js";
-export { ResourceExhaustedError } from "./ResourceExhaustedError.js";
+export { ErrorCode } from "./ErrorCode";
+export { ApplicationError } from "./ApplicationError";
+export { ValidationError } from "./ValidationError";
+export { NetworkError } from "./NetworkError";
+export { StateTransitionError } from "./StateTransitionError";
+export { PermissionError } from "./PermissionError";
+export { NotFoundError } from "./NotFoundError";
+export { ResourceExhaustedError } from "./ResourceExhaustedError";
+export { ServiceError } from "./ServiceError";

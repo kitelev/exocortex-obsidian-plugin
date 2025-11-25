@@ -11,4 +11,4 @@ export {
   ApplicationErrorHandler,
   type RetryConfig,
   type ErrorTelemetryHook,
-} from "./ApplicationErrorHandler.js";
+} from "./ApplicationErrorHandler";

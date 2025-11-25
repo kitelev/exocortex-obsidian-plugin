@@ -99,3 +99,7 @@ export { DI_TOKENS, type DIToken } from "./interfaces/tokens";
 
 // Types exports
 export type { SupervisionFormData } from "./types/SupervisionFormData";
+
+// Error exports
+export * from "./domain/errors";
+export * from "./application/errors";

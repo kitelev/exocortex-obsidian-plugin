@@ -1,4 +1,4 @@
-import { ErrorCode } from "./ErrorCode.js";
+import { ErrorCode } from "./ErrorCode";
 
 /**
  * Base class for all application errors with structured metadata

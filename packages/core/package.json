@@ -8,10 +8,19 @@
   "source": "src/index.ts",
   "exports": {
     ".": {
-      "development": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js"
+    },
+    "./domain/errors": {
+      "types": "./dist/domain/errors/index.d.ts",
+      "import": "./dist/domain/errors/index.js",
+      "require": "./dist/domain/errors/index.js"
+    },
+    "./application/errors": {
+      "types": "./dist/application/errors/index.d.ts",
+      "import": "./dist/application/errors/index.js",
+      "require": "./dist/application/errors/index.js"
     }
   },
   "scripts": {

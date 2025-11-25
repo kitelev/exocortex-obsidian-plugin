@@ -49,7 +49,7 @@ export default defineConfig({
         alias: {
           "@exocortex/core": path.resolve(
             __dirname,
-            "../../packages/core/src/index.ts",
+            "../../packages/core/src",
           ),
           obsidian: path.resolve(__dirname, "./tests/__mocks__/obsidian.ts"),
           "@": path.resolve(__dirname, "./src"),
