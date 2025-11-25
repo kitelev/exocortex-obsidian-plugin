@@ -35,10 +35,10 @@ export class PluginContainer {
       useFactory: () => new ObsidianVaultAdapter(app.vault, app.metadataCache, app),
     });
 
-    // Phase 2: Register TaskCreationService and its dependencies explicitly
-    container.register(TaskFrontmatterGenerator, { useClass: TaskFrontmatterGenerator });
-    container.register(AlgorithmExtractor, { useClass: AlgorithmExtractor });
-    container.register(TaskCreationService, { useClass: TaskCreationService });
+    // Phase 2: Register TaskCreationService and its dependencies explicitly as singletons
+    container.registerSingleton(TaskFrontmatterGenerator);
+    container.registerSingleton(AlgorithmExtractor);
+    container.registerSingleton(TaskCreationService);
   }
 
   static reset(): void {
