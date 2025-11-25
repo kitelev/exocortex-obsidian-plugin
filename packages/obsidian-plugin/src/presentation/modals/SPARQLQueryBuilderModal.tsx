@@ -1,12 +1,12 @@
 import { Modal, App, Notice } from "obsidian";
 import React from "react";
 import type { SolutionMapping, Triple } from "@exocortex/core";
+import { ApplicationErrorHandler } from "@exocortex/core";
 import type ExocortexPlugin from "../../ExocortexPlugin";
 import { ReactRenderer } from "../utils/ReactRenderer";
 import { QueryBuilder } from "../components/sparql/QueryBuilder";
 import { SPARQLQueryService } from "../../application/services/SPARQLQueryService";
 import { ErrorBoundary } from "../components/ErrorBoundary";
-import { ApplicationErrorHandler } from "@exocortex/core/application/errors";
 
 export class SPARQLQueryBuilderModal extends Modal {
   private plugin: ExocortexPlugin;

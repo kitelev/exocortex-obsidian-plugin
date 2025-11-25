@@ -1,5 +1,5 @@
-import { ApplicationError } from "./ApplicationError.js";
-import { ErrorCode } from "./ErrorCode.js";
+import { ApplicationError } from "./ApplicationError";
+import { ErrorCode } from "./ErrorCode";
 
 /**
  * Error thrown when invalid state transition is attempted

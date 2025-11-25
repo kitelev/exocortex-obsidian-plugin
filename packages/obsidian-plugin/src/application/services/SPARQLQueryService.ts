@@ -7,8 +7,9 @@ import {
   type SPARQLQuery,
   type SolutionMapping,
   type AlgebraOperation,
+  ValidationError,
+  ServiceError,
 } from "@exocortex/core";
-import { ValidationError, ServiceError } from "@exocortex/core/domain/errors";
 import { VaultRDFIndexer } from "../../infrastructure/VaultRDFIndexer";
 
 export class SPARQLQueryService {

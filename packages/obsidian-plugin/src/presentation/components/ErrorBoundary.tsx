@@ -1,6 +1,5 @@
 import React, { Component, ReactNode, ErrorInfo } from "react";
-import { ApplicationError } from "@exocortex/core/domain/errors";
-import { ApplicationErrorHandler } from "@exocortex/core/application/errors";
+import { ApplicationError, ApplicationErrorHandler } from "@exocortex/core";
 
 /**
  * Props for ErrorBoundary component
