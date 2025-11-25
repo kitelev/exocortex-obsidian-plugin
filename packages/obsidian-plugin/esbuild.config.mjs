@@ -161,6 +161,7 @@ const productionConfig = {
   ...baseConfig,
   minify: true,
   sourcemap: false,
+  keepNames: true, // CRITICAL: Required for TSyringe DI to work (uses constructor param names)
   define: {
     "process.env.NODE_ENV": '"production"',
   },
