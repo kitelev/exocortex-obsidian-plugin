@@ -1,5 +1,13 @@
 import { App, TFile, EventRef } from "obsidian";
-import { InMemoryTripleStore, NoteToRDFConverter } from "@exocortex/core";
+import {
+  InMemoryTripleStore,
+  NoteToRDFConverter,
+  ApplicationErrorHandler,
+  NetworkError,
+  ServiceError,
+  type ILogger,
+  type INotificationService,
+} from "@exocortex/core";
 import { ObsidianVaultAdapter } from "../adapters/ObsidianVaultAdapter";
 
 export class VaultRDFIndexer {
@@ -8,8 +16,14 @@ export class VaultRDFIndexer {
   private vaultAdapter: ObsidianVaultAdapter;
   private isInitialized = false;
   private eventRefs: EventRef[] = [];
+  private errorHandler: ApplicationErrorHandler;
+  private logger: ILogger;
 
-  constructor(private app: App) {
+  constructor(
+    private app: App,
+    logger?: ILogger,
+    notifier?: INotificationService
+  ) {
     this.tripleStore = new InMemoryTripleStore();
     this.vaultAdapter = new ObsidianVaultAdapter(
       app.vault,
@@ -17,6 +31,27 @@ export class VaultRDFIndexer {
       app
     );
     this.converter = new NoteToRDFConverter(this.vaultAdapter);
+
+    this.logger = logger || {
+      debug: () => {},
+      info: () => {},
+      warn: console.warn.bind(console),
+      error: console.error.bind(console),
+    };
+
+    const defaultNotifier: INotificationService = {
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+      success: () => {},
+      confirm: async () => false,
+    };
+
+    this.errorHandler = new ApplicationErrorHandler(
+      {},
+      this.logger,
+      notifier || defaultNotifier
+    );
   }
 
   async initialize(): Promise<void> {
@@ -24,12 +59,23 @@ export class VaultRDFIndexer {
       return;
     }
 
-    const triples = await this.converter.convertVault();
-    await this.tripleStore.addAll(triples);
+    try {
+      const triples = await this.errorHandler.executeWithRetry(
+        async () => this.converter.convertVault(),
+        { context: "VaultRDFIndexer.initialize", operation: "convertVault" }
+      );
+      await this.tripleStore.addAll(triples);
 
-    this.registerEventListeners();
+      this.registerEventListeners();
 
-    this.isInitialized = true;
+      this.isInitialized = true;
+    } catch (error) {
+      throw new ServiceError("failed to initialize vault rdf indexer", {
+        service: "VaultRDFIndexer",
+        operation: "initialize",
+        originalError: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
 
   private registerEventListeners(): void {
@@ -37,7 +83,7 @@ export class VaultRDFIndexer {
       this.app.vault.on("modify", (file) => {
         if (file instanceof TFile) {
           this.updateFile(file).catch((error) => {
-            console.error(`Failed to update file ${file.path}:`, error);
+            this.handleFileError("modify", file.path, error);
           });
         }
       })
@@ -47,7 +93,7 @@ export class VaultRDFIndexer {
       this.app.vault.on("delete", (file) => {
         if (file instanceof TFile) {
           this.removeFile(file).catch((error) => {
-            console.error(`Failed to remove file ${file.path}:`, error);
+            this.handleFileError("delete", file.path, error);
           });
         }
       })
@@ -57,7 +103,7 @@ export class VaultRDFIndexer {
       this.app.vault.on("create", (file) => {
         if (file instanceof TFile) {
           this.updateFile(file).catch((error) => {
-            console.error(`Failed to add file ${file.path}:`, error);
+            this.handleFileError("create", file.path, error);
           });
         }
       })
@@ -67,11 +113,30 @@ export class VaultRDFIndexer {
       this.app.vault.on("rename", (file, oldPath) => {
         if (file instanceof TFile) {
           this.renameFile(file, oldPath).catch((error) => {
-            console.error(`Failed to rename file ${file.path}:`, error);
+            this.handleFileError("rename", file.path, error, { oldPath });
           });
         }
       })
     );
+  }
+
+  private handleFileError(
+    operation: string,
+    filePath: string,
+    error: unknown,
+    context?: Record<string, unknown>
+  ): void {
+    const networkError = new NetworkError(
+      `failed to ${operation} file in rdf index`,
+      {
+        service: "VaultRDFIndexer",
+        operation,
+        filePath,
+        ...context,
+        originalError: error instanceof Error ? error.message : String(error),
+      }
+    );
+    this.errorHandler.handle(networkError);
   }
 
   async updateFile(file: TFile): Promise<void> {
@@ -79,19 +144,31 @@ export class VaultRDFIndexer {
       return;
     }
 
-    await this.removeFileTriples(file.path);
-
-    const triples = await this.converter.convertNote(file as any);
-    await this.tripleStore.addAll(triples);
+    await this.errorHandler.executeWithRetry(
+      async () => {
+        await this.removeFileTriples(file.path);
+        const triples = await this.converter.convertNote(file as any);
+        await this.tripleStore.addAll(triples);
+      },
+      { context: "VaultRDFIndexer.updateFile", filePath: file.path }
+    );
   }
 
   async removeFile(file: TFile): Promise<void> {
-    await this.removeFileTriples(file.path);
+    await this.errorHandler.executeWithRetry(
+      async () => this.removeFileTriples(file.path),
+      { context: "VaultRDFIndexer.removeFile", filePath: file.path }
+    );
   }
 
   async renameFile(file: TFile, oldPath: string): Promise<void> {
-    await this.removeFileTriples(oldPath);
-    await this.updateFile(file);
+    await this.errorHandler.executeWithRetry(
+      async () => {
+        await this.removeFileTriples(oldPath);
+        await this.updateFile(file);
+      },
+      { context: "VaultRDFIndexer.renameFile", filePath: file.path, oldPath }
+    );
   }
 
   private async removeFileTriples(filePath: string): Promise<void> {
@@ -101,9 +178,14 @@ export class VaultRDFIndexer {
   }
 
   async refresh(): Promise<void> {
-    await this.tripleStore.clear();
-    const triples = await this.converter.convertVault();
-    await this.tripleStore.addAll(triples);
+    await this.errorHandler.executeWithRetry(
+      async () => {
+        await this.tripleStore.clear();
+        const triples = await this.converter.convertVault();
+        await this.tripleStore.addAll(triples);
+      },
+      { context: "VaultRDFIndexer.refresh", operation: "refresh" }
+    );
   }
 
   getTripleStore(): InMemoryTripleStore {

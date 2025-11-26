@@ -1,6 +1,6 @@
 import { VaultRDFIndexer } from "../../../src/infrastructure/VaultRDFIndexer";
 import type { App, TFile, EventRef } from "obsidian";
-import { InMemoryTripleStore, NoteToRDFConverter } from "@exocortex/core";
+import { InMemoryTripleStore, NoteToRDFConverter, ApplicationErrorHandler } from "@exocortex/core";
 import { ObsidianVaultAdapter } from "../../../src/adapters/ObsidianVaultAdapter";
 
 jest.mock("@exocortex/core");
@@ -16,6 +16,14 @@ describe("VaultRDFIndexer", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Set up ApplicationErrorHandler mock to execute operations directly
+    (ApplicationErrorHandler as jest.MockedClass<typeof ApplicationErrorHandler>).mockImplementation(() => ({
+      executeWithRetry: jest.fn().mockImplementation(async (operation: () => Promise<unknown>) => {
+        return await operation();
+      }),
+      handle: jest.fn(),
+    } as any));
 
     mockEventRefs = [];
     mockApp = {

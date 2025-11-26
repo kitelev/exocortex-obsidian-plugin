@@ -1,16 +1,56 @@
 import { SPARQLQueryService } from "../../../src/application/services/SPARQLQueryService";
 import { VaultRDFIndexer } from "../../../src/infrastructure/VaultRDFIndexer";
+import { ApplicationErrorHandler } from "@exocortex/core";
 import type { App, TFile } from "obsidian";
 
-jest.mock("../../../src/infrastructure/VaultRDFIndexer");
+// Mock VaultRDFIndexer - define the mock methods object in the factory
+jest.mock("../../../src/infrastructure/VaultRDFIndexer", () => {
+  return {
+    VaultRDFIndexer: jest.fn(),
+  };
+});
+
+// Mock @exocortex/core - ApplicationErrorHandler
+jest.mock("@exocortex/core", () => {
+  return {
+    ...jest.requireActual("@exocortex/core"),
+    ApplicationErrorHandler: jest.fn(),
+  };
+});
 
 describe("SPARQLQueryService", () => {
   let service: SPARQLQueryService;
   let mockApp: App;
-  let mockIndexer: jest.Mocked<VaultRDFIndexer>;
+  let mockIndexer: {
+    initialize: jest.Mock;
+    refresh: jest.Mock;
+    updateFile: jest.Mock;
+    dispose: jest.Mock;
+    getTripleStore: jest.Mock;
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Set up mock indexer methods
+    mockIndexer = {
+      initialize: jest.fn().mockResolvedValue(undefined),
+      refresh: jest.fn().mockResolvedValue(undefined),
+      updateFile: jest.fn().mockResolvedValue(undefined),
+      dispose: jest.fn(),
+      getTripleStore: jest.fn().mockReturnValue({}),
+    };
+
+    // Set up VaultRDFIndexer mock implementation
+    (VaultRDFIndexer as jest.MockedClass<typeof VaultRDFIndexer>).mockImplementation(() => mockIndexer as any);
+
+    // Set up ApplicationErrorHandler mock implementation
+    (ApplicationErrorHandler as jest.MockedClass<typeof ApplicationErrorHandler>).mockImplementation(() => ({
+      executeWithRetry: jest.fn().mockImplementation(async (operation: () => Promise<unknown>) => {
+        return await operation();
+      }),
+      handle: jest.fn(),
+    } as any));
 
     mockApp = {
       vault: {
@@ -26,8 +66,6 @@ describe("SPARQLQueryService", () => {
     } as unknown as App;
 
     service = new SPARQLQueryService(mockApp);
-
-    mockIndexer = (VaultRDFIndexer as jest.MockedClass<typeof VaultRDFIndexer>).mock.instances[0] as jest.Mocked<VaultRDFIndexer>;
   });
 
   describe("initialization", () => {
@@ -40,7 +78,11 @@ describe("SPARQLQueryService", () => {
     });
 
     it("should create VaultRDFIndexer", () => {
-      expect(VaultRDFIndexer).toHaveBeenCalledWith(mockApp);
+      expect(VaultRDFIndexer).toHaveBeenCalledWith(
+        mockApp,
+        expect.any(Object), // logger (default or provided)
+        undefined           // notifier (undefined when not provided to SPARQLQueryService)
+      );
     });
   });
 
