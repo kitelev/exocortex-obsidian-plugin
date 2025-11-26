@@ -1,9 +1,18 @@
+import "reflect-metadata";
+import { container } from "tsyringe";
 import { TFile, Vault, MetadataCache } from "obsidian";
 import { UniversalLayoutRenderer } from "../../src/presentation/renderers/UniversalLayoutRenderer";
 import {
   ExocortexSettings,
   DEFAULT_SETTINGS,
 } from "../../src/domain/settings/ExocortexSettings";
+import {
+  DI_TOKENS,
+  IVaultAdapter,
+  TaskFrontmatterGenerator,
+  AlgorithmExtractor,
+  TaskCreationService,
+} from "@exocortex/core";
 
 describe("Layout Settings and Structure", () => {
   let renderer: UniversalLayoutRenderer;
@@ -11,8 +20,11 @@ describe("Layout Settings and Structure", () => {
   let mockVault: Vault;
   let mockMetadataCache: MetadataCache;
   let mockPlugin: any;
+  let mockDIVault: any;
 
   beforeEach(() => {
+    container.clearInstances();
+
     mockVault = {
       getAbstractFileByPath: jest.fn((path: string) => {
         // This will be updated per-test to return the correct mock file
@@ -61,8 +73,24 @@ describe("Layout Settings and Structure", () => {
       },
     };
 
+    // Setup DI container for TaskCreationService
+    mockDIVault = {
+      create: jest.fn().mockResolvedValue({ path: "test-task.md" }),
+      read: jest.fn().mockResolvedValue(""),
+      modify: jest.fn().mockResolvedValue(undefined),
+    };
+
+    container.registerInstance<IVaultAdapter>(DI_TOKENS.IVaultAdapter, mockDIVault);
+    container.register(TaskFrontmatterGenerator, { useClass: TaskFrontmatterGenerator });
+    container.register(AlgorithmExtractor, { useClass: AlgorithmExtractor });
+    container.register(TaskCreationService, { useClass: TaskCreationService });
+
     const settings: ExocortexSettings = { ...DEFAULT_SETTINGS };
     renderer = new UniversalLayoutRenderer(mockApp, settings, mockPlugin);
+  });
+
+  afterEach(() => {
+    container.clearInstances();
   });
 
   describe("Properties Section Visibility", () => {

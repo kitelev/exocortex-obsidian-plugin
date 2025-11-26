@@ -58,8 +58,8 @@ export const SPARQLGraphView: React.FC<SPARQLGraphViewProps> = ({ triples, onAss
     const zoom = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 4])
-      .on("zoom", (event) => {
-        g.attr("transform", event.transform);
+      .on("zoom", (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
+        g.attr("transform", event.transform.toString());
       });
 
     svg.call(zoom);
@@ -70,7 +70,7 @@ export const SPARQLGraphView: React.FC<SPARQLGraphViewProps> = ({ triples, onAss
         "link",
         d3
           .forceLink<GraphNode, GraphEdge>(edges)
-          .id((d) => d.path)
+          .id((d: GraphNode) => d.path)
           .distance(150)
       )
       .force("charge", d3.forceManyBody().strength(-400))
@@ -97,7 +97,7 @@ export const SPARQLGraphView: React.FC<SPARQLGraphViewProps> = ({ triples, onAss
       .attr("font-size", "10px")
       .attr("fill", "var(--text-faint)")
       .attr("text-anchor", "middle")
-      .text((d) => extractPredicateName(d.source, d.target, triples));
+      .text((d: GraphEdge) => extractPredicateName(d.source, d.target, triples));
 
     const node = g
       .append("g")
@@ -111,22 +111,22 @@ export const SPARQLGraphView: React.FC<SPARQLGraphViewProps> = ({ triples, onAss
       .attr("stroke", "var(--background-primary)")
       .attr("stroke-width", 2)
       .attr("cursor", "pointer")
-      .on("click", (_event, d) => {
+      .on("click", (_event: MouseEvent, d: GraphNode) => {
         onAssetClick(d.path);
       })
       .call(
         d3
           .drag<SVGCircleElement, GraphNode>()
-          .on("start", (event, d) => {
+          .on("start", (event: d3.D3DragEvent<SVGCircleElement, GraphNode, GraphNode>, d: GraphNode) => {
             if (!event.active) simulation.alphaTarget(0.3).restart();
             d.fx = d.x;
             d.fy = d.y;
           })
-          .on("drag", (event, d) => {
+          .on("drag", (event: d3.D3DragEvent<SVGCircleElement, GraphNode, GraphNode>, d: GraphNode) => {
             d.fx = event.x;
             d.fy = event.y;
           })
-          .on("end", (event, d) => {
+          .on("end", (event: d3.D3DragEvent<SVGCircleElement, GraphNode, GraphNode>, d: GraphNode) => {
             if (!event.active) simulation.alphaTarget(0);
             d.fx = null;
             d.fy = null;
@@ -145,33 +145,33 @@ export const SPARQLGraphView: React.FC<SPARQLGraphViewProps> = ({ triples, onAss
       .attr("text-anchor", "middle")
       .attr("dy", "20px")
       .attr("cursor", "pointer")
-      .text((d) => d.label)
-      .on("click", (_event, d) => {
+      .text((d: GraphNode) => d.label)
+      .on("click", (_event: MouseEvent, d: GraphNode) => {
         onAssetClick(d.path);
       });
 
     simulation.on("tick", () => {
       link
-        .attr("x1", (d) => (typeof d.source === "object" ? (d.source as GraphNode).x ?? 0 : 0))
-        .attr("y1", (d) => (typeof d.source === "object" ? (d.source as GraphNode).y ?? 0 : 0))
-        .attr("x2", (d) => (typeof d.target === "object" ? (d.target as GraphNode).x ?? 0 : 0))
-        .attr("y2", (d) => (typeof d.target === "object" ? (d.target as GraphNode).y ?? 0 : 0));
+        .attr("x1", (d: GraphEdge) => (typeof d.source === "object" ? (d.source as GraphNode).x ?? 0 : 0))
+        .attr("y1", (d: GraphEdge) => (typeof d.source === "object" ? (d.source as GraphNode).y ?? 0 : 0))
+        .attr("x2", (d: GraphEdge) => (typeof d.target === "object" ? (d.target as GraphNode).x ?? 0 : 0))
+        .attr("y2", (d: GraphEdge) => (typeof d.target === "object" ? (d.target as GraphNode).y ?? 0 : 0));
 
       linkLabel
-        .attr("x", (d) => {
+        .attr("x", (d: GraphEdge) => {
           const sx = typeof d.source === "object" ? (d.source as GraphNode).x ?? 0 : 0;
           const tx = typeof d.target === "object" ? (d.target as GraphNode).x ?? 0 : 0;
           return (sx + tx) / 2;
         })
-        .attr("y", (d) => {
+        .attr("y", (d: GraphEdge) => {
           const sy = typeof d.source === "object" ? (d.source as GraphNode).y ?? 0 : 0;
           const ty = typeof d.target === "object" ? (d.target as GraphNode).y ?? 0 : 0;
           return (sy + ty) / 2;
         });
 
-      node.attr("cx", (d) => d.x ?? 0).attr("cy", (d) => d.y ?? 0);
+      node.attr("cx", (d: GraphNode) => d.x ?? 0).attr("cy", (d: GraphNode) => d.y ?? 0);
 
-      nodeLabel.attr("x", (d) => d.x ?? 0).attr("y", (d) => d.y ?? 0);
+      nodeLabel.attr("x", (d: GraphNode) => d.x ?? 0).attr("y", (d: GraphNode) => d.y ?? 0);
     });
 
     return () => {

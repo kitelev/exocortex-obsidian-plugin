@@ -5,8 +5,17 @@
  * and execution paths. Tests all 30 commands with various file contexts.
  */
 
+import "reflect-metadata";
+import { container } from "tsyringe";
 import { CommandManager } from "../../src/application/services/CommandManager";
 import { TFile, Notice } from "obsidian";
+import {
+  DI_TOKENS,
+  IVaultAdapter,
+  TaskFrontmatterGenerator,
+  AlgorithmExtractor,
+  TaskCreationService,
+} from "@exocortex/core";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -42,6 +51,7 @@ describe("CommandManager", () => {
   let registeredCommands: Map<string, any>;
 
   beforeEach(() => {
+    container.clearInstances();
     jest.clearAllMocks();
     registeredCommands = new Map();
 
@@ -91,6 +101,18 @@ describe("CommandManager", () => {
       saveSettings: jest.fn().mockResolvedValue(undefined),
       refreshLayout: jest.fn(),
     };
+
+    // Setup DI container for TaskCreationService
+    const mockVault: any = {
+      create: jest.fn().mockResolvedValue({ path: "test-task.md" }),
+      read: jest.fn().mockResolvedValue(""),
+      modify: jest.fn().mockResolvedValue(undefined),
+    };
+
+    container.registerInstance<IVaultAdapter>(DI_TOKENS.IVaultAdapter, mockVault);
+    container.register(TaskFrontmatterGenerator, { useClass: TaskFrontmatterGenerator });
+    container.register(AlgorithmExtractor, { useClass: AlgorithmExtractor });
+    container.register(TaskCreationService, { useClass: TaskCreationService });
 
     commandManager = new CommandManager(mockApp);
   });

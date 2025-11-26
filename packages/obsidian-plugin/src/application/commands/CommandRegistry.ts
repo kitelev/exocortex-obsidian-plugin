@@ -1,4 +1,5 @@
 import { App } from "obsidian";
+import { container } from "tsyringe";
 import { ICommand } from "./ICommand";
 import { ExocortexPluginInterface } from "../../types";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
@@ -63,7 +64,8 @@ export class CommandRegistry {
     // Create logger for services (Phase 1 DI infrastructure)
     const logger = LoggerFactory.create("CommandRegistry");
 
-    const taskCreationService = new TaskCreationService(this.vaultAdapter);
+    // Phase 2: Resolve TaskCreationService from DI container
+    const taskCreationService = container.resolve(TaskCreationService);
     const projectCreationService = new ProjectCreationService(this.vaultAdapter);
     const taskStatusService = new TaskStatusService(this.vaultAdapter);
     const propertyCleanupService = new PropertyCleanupService(this.vaultAdapter, logger);

@@ -1,3 +1,6 @@
+import { injectable } from "tsyringe";
+
+@injectable()
 export class AlgorithmExtractor {
   extractH2Section(content: string, heading: string): string | null {
     const lines = content.split("\n");
