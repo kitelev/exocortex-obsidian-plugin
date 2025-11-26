@@ -1,10 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import { MetadataHelpers } from "@exocortex/core";
-
-interface SortState {
-  column: string;
-  order: "asc" | "desc";
-}
+import { useTableSortStore, useUIStore } from "../stores";
 
 export interface DailyTask {
   file: {
@@ -43,21 +39,28 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   onTaskClick,
   getAssetLabel,
   getEffortArea,
-  showEffortArea = false,
-  showEffortVotes = false,
-  showArchived = false,
-  showFullDateInEffortTimes = false,
+  showEffortArea: propShowEffortArea,
+  showEffortVotes: propShowEffortVotes,
+  showArchived: propShowArchived,
+  showFullDateInEffortTimes: propShowFullDate,
 }) => {
-  const [sortState, setSortState] = useState<SortState>({
-    column: "",
-    order: "asc",
-  });
+  const sortState = useTableSortStore((state) => state.dailyTasks);
+  const toggleSort = useTableSortStore((state) => state.toggleSort);
+
+  const storeShowArchived = useUIStore((state) => state.showArchived);
+  const storeShowEffortArea = useUIStore((state) => state.showEffortArea);
+  const storeShowEffortVotes = useUIStore((state) => state.showEffortVotes);
+  const storeShowFullDate = useUIStore(
+    (state) => state.showFullDateInEffortTimes,
+  );
+
+  const showArchived = propShowArchived ?? storeShowArchived;
+  const showEffortArea = propShowEffortArea ?? storeShowEffortArea;
+  const showEffortVotes = propShowEffortVotes ?? storeShowEffortVotes;
+  const showFullDateInEffortTimes = propShowFullDate ?? storeShowFullDate;
 
   const handleSort = (column: string) => {
-    setSortState((prev) => ({
-      column,
-      order: prev.column === column && prev.order === "asc" ? "desc" : "asc",
-    }));
+    toggleSort("dailyTasks", column);
   };
 
   interface WikiLink {
@@ -434,35 +437,84 @@ export interface DailyTasksTableWithToggleProps
     | "showArchived"
     | "showFullDateInEffortTimes"
   > {
-  showEffortArea: boolean;
-  onToggleEffortArea: () => void;
-  showEffortVotes: boolean;
-  onToggleEffortVotes: () => void;
-  showArchived: boolean;
-  onToggleArchived: () => void;
-  showFullDateInEffortTimes: boolean;
-  onToggleFullDate: () => void;
+  showEffortArea?: boolean;
+  onToggleEffortArea?: () => void;
+  showEffortVotes?: boolean;
+  onToggleEffortVotes?: () => void;
+  showArchived?: boolean;
+  onToggleArchived?: () => void;
+  showFullDateInEffortTimes?: boolean;
+  onToggleFullDate?: () => void;
 }
 
 export const DailyTasksTableWithToggle: React.FC<
   DailyTasksTableWithToggleProps
 > = ({
-  showEffortArea,
+  showEffortArea: propShowEffortArea,
   onToggleEffortArea,
-  showEffortVotes,
+  showEffortVotes: propShowEffortVotes,
   onToggleEffortVotes,
-  showArchived,
+  showArchived: propShowArchived,
   onToggleArchived,
-  showFullDateInEffortTimes,
+  showFullDateInEffortTimes: propShowFullDate,
   onToggleFullDate,
   ...props
 }) => {
+  const storeShowEffortArea = useUIStore((state) => state.showEffortArea);
+  const storeShowEffortVotes = useUIStore((state) => state.showEffortVotes);
+  const storeShowArchived = useUIStore((state) => state.showArchived);
+  const storeShowFullDate = useUIStore(
+    (state) => state.showFullDateInEffortTimes,
+  );
+
+  const storeToggleEffortArea = useUIStore((state) => state.toggleEffortArea);
+  const storeToggleEffortVotes = useUIStore((state) => state.toggleEffortVotes);
+  const storeToggleArchived = useUIStore((state) => state.toggleArchived);
+  const storeToggleFullDate = useUIStore((state) => state.toggleFullDate);
+
+  const showEffortArea = propShowEffortArea ?? storeShowEffortArea;
+  const showEffortVotes = propShowEffortVotes ?? storeShowEffortVotes;
+  const showArchived = propShowArchived ?? storeShowArchived;
+  const showFullDateInEffortTimes = propShowFullDate ?? storeShowFullDate;
+
+  const handleToggleEffortArea = () => {
+    if (onToggleEffortArea) {
+      onToggleEffortArea();
+    } else {
+      storeToggleEffortArea();
+    }
+  };
+
+  const handleToggleEffortVotes = () => {
+    if (onToggleEffortVotes) {
+      onToggleEffortVotes();
+    } else {
+      storeToggleEffortVotes();
+    }
+  };
+
+  const handleToggleArchived = () => {
+    if (onToggleArchived) {
+      onToggleArchived();
+    } else {
+      storeToggleArchived();
+    }
+  };
+
+  const handleToggleFullDate = () => {
+    if (onToggleFullDate) {
+      onToggleFullDate();
+    } else {
+      storeToggleFullDate();
+    }
+  };
+
   return (
     <div className="exocortex-daily-tasks-wrapper">
       <div className="exocortex-daily-tasks-controls">
         <button
           className="exocortex-toggle-effort-area"
-          onClick={onToggleEffortArea}
+          onClick={handleToggleEffortArea}
           style={{
             marginBottom: "8px",
             marginRight: "8px",
@@ -475,7 +527,7 @@ export const DailyTasksTableWithToggle: React.FC<
         </button>
         <button
           className="exocortex-toggle-effort-votes"
-          onClick={onToggleEffortVotes}
+          onClick={handleToggleEffortVotes}
           style={{
             marginBottom: "8px",
             marginRight: "8px",
@@ -488,7 +540,7 @@ export const DailyTasksTableWithToggle: React.FC<
         </button>
         <button
           className="exocortex-toggle-archived"
-          onClick={onToggleArchived}
+          onClick={handleToggleArchived}
           style={{
             marginBottom: "8px",
             marginRight: "8px",
@@ -501,7 +553,7 @@ export const DailyTasksTableWithToggle: React.FC<
         </button>
         <button
           className="exocortex-toggle-full-date"
-          onClick={onToggleFullDate}
+          onClick={handleToggleFullDate}
           style={{
             marginBottom: "8px",
             padding: "4px 8px",
