@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@exocortex/core": "*",
+    "@tanstack/react-query": "^5.90.11",
     "@tanstack/react-virtual": "^3.13.12",
     "d3": "^7.9.0",
     "obsidian": "latest",

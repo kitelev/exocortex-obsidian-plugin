@@ -163,6 +163,10 @@ export default class ExocortexPlugin extends Plugin {
     this.autoRenderLayout();
   }
 
+  getSPARQLApi(): SPARQLApi | null {
+    return this.sparql ?? null;
+  }
+
   private autoRenderLayout(): void {
     // Remove existing auto-rendered layouts
     this.removeAutoRenderedLayouts();
