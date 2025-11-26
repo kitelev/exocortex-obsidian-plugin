@@ -16,8 +16,9 @@
 6. [Data Flow](#data-flow)
 7. [Property Schema](#property-schema)
 8. [Design Patterns](#design-patterns)
-9. [Current Limitations](#current-limitations)
-10. [Future Architecture](#future-architecture)
+9. [Error Handling](#error-handling)
+10. [Current Limitations](#current-limitations)
+11. [Future Architecture](#future-architecture)
 
 ---
 
@@ -974,6 +975,243 @@ const service = new TaskCreationService(this.app.vault);
 
 ---
 
+## 🚨 Error Handling
+
+Exocortex implements a **centralized error handling strategy** with structured error types, automatic retry logic, and telemetry hooks for monitoring.
+
+### Error Class Hierarchy
+
+**Base Class**: `ApplicationError` (abstract)
+
+All application errors extend the base `ApplicationError` class, providing:
+- **Standardized error codes** for categorization
+- **Retry hint** for transient errors
+- **User guidance** for actionable messages
+- **Context object** for debugging
+- **Timestamp** for when error occurred
+
+```typescript
+// packages/core/src/domain/errors/ApplicationError.ts
+export abstract class ApplicationError extends Error {
+  abstract readonly code: ErrorCode;      // Standardized error code
+  abstract readonly retriable: boolean;   // Can operation be retried?
+  abstract readonly guidance: string;     // User-friendly help text
+  readonly context?: Record<string, unknown>;  // Debug info
+  readonly timestamp: Date;               // When error occurred
+
+  format(): string;    // Formats error for display
+  toJSON(): Record<string, unknown>;  // For logging/telemetry
+}
+```
+
+### Error Types
+
+| Error Type | Code Range | Retriable | Use Case |
+|------------|------------|-----------|----------|
+| `ValidationError` | 1000-1999 | ❌ No | Invalid input, missing fields, schema failures |
+| `NetworkError` | 2000-2999 | ✅ Yes | Network timeouts, connection failures, file I/O |
+| `StateTransitionError` | 3000-3999 | ❌ No | Invalid workflow transitions, state conflicts |
+| `PermissionError` | 4000-4999 | ❌ No | Access denied, unauthorized operations |
+| `NotFoundError` | 5000-5999 | ❌ No | Missing resources, files not found |
+| `ResourceExhaustedError` | 5000-5999 | ✅ Yes | Quota exceeded, rate limiting |
+| `ServiceError` | 9000-9999 | ❌ No | Internal service failures, initialization errors |
+
+### Error Code Ranges
+
+```typescript
+// packages/core/src/domain/errors/ErrorCode.ts
+enum ErrorCode {
+  // Validation Errors (1000-1999)
+  INVALID_INPUT = 1000,
+  INVALID_FORMAT = 1001,
+  MISSING_REQUIRED_FIELD = 1002,
+  INVALID_SCHEMA = 1003,
+
+  // Network/IO Errors (2000-2999)
+  NETWORK_ERROR = 2000,
+  REQUEST_TIMEOUT = 2001,
+  CONNECTION_FAILED = 2002,
+  FILE_READ_ERROR = 2003,
+  FILE_WRITE_ERROR = 2004,
+
+  // State/Logic Errors (3000-3999)
+  INVALID_STATE = 3000,
+  INVALID_TRANSITION = 3001,
+  OPERATION_FAILED = 3002,
+  CONCURRENT_MODIFICATION = 3003,
+
+  // Permission/Access Errors (4000-4999)
+  PERMISSION_DENIED = 4000,
+  UNAUTHORIZED = 4001,
+  FORBIDDEN = 4003,
+
+  // Resource Errors (5000-5999)
+  NOT_FOUND = 5000,
+  RESOURCE_EXHAUSTED = 5001,
+  ALREADY_EXISTS = 5002,
+
+  // System/Unknown Errors (9000-9999)
+  UNKNOWN_ERROR = 9000,
+  INTERNAL_ERROR = 9001,
+}
+```
+
+### ApplicationErrorHandler
+
+The centralized error handler provides:
+- **Error formatting** for display and logging
+- **User notifications** via INotificationService
+- **Automatic retry** with exponential backoff for retriable errors
+- **Telemetry hooks** for monitoring and alerting
+
+```typescript
+// packages/core/src/application/errors/ApplicationErrorHandler.ts
+export class ApplicationErrorHandler {
+  constructor(
+    retryConfig?: RetryConfig,
+    logger?: ILogger,
+    notifier?: INotificationService
+  );
+
+  // Format error, notify user, call telemetry hooks
+  handle(error: Error, context?: Record<string, unknown>): string;
+
+  // Execute operation with automatic retry for retriable errors
+  async executeWithRetry<T>(
+    operation: () => Promise<T>,
+    context?: Record<string, unknown>
+  ): Promise<T>;
+
+  // Register/unregister telemetry hooks
+  registerTelemetryHook(hook: ErrorTelemetryHook): void;
+  unregisterTelemetryHook(hook: ErrorTelemetryHook): void;
+}
+```
+
+### Retry Configuration
+
+Default retry behavior uses **exponential backoff**:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `maxRetries` | 3 | Maximum retry attempts |
+| `initialDelayMs` | 1000 | Initial delay before first retry |
+| `backoffMultiplier` | 2 | Multiplier for each subsequent delay |
+| `maxDelayMs` | 10000 | Maximum delay between retries |
+
+**Delay sequence**: 1000ms → 2000ms → 4000ms → (capped at 10000ms)
+
+```typescript
+// Custom retry configuration example
+const errorHandler = new ApplicationErrorHandler(
+  {
+    maxRetries: 5,
+    initialDelayMs: 500,
+    backoffMultiplier: 1.5,
+    maxDelayMs: 5000,
+  },
+  logger,
+  notifier
+);
+```
+
+### Service Integration Pattern
+
+Services use `ApplicationErrorHandler.executeWithRetry()` for operations that may fail transiently:
+
+```typescript
+// Example: VaultRDFIndexer using executeWithRetry
+export class VaultRDFIndexer {
+  constructor(
+    private converter: TripleConverter,
+    private errorHandler: ApplicationErrorHandler
+  ) {}
+
+  async initialize(): Promise<void> {
+    const triples = await this.errorHandler.executeWithRetry(
+      async () => this.converter.convertVault(),
+      { context: "VaultRDFIndexer.initialize", operation: "convertVault" }
+    );
+    // ... process triples
+  }
+
+  async refresh(): Promise<void> {
+    await this.errorHandler.executeWithRetry(
+      async () => this.indexAllFiles(),
+      { context: "VaultRDFIndexer.refresh", operation: "indexAllFiles" }
+    );
+  }
+}
+```
+
+### Telemetry Hooks
+
+Monitor errors for alerting, analytics, or debugging:
+
+```typescript
+interface ErrorTelemetryHook {
+  onError?(error: ApplicationError, context?: Record<string, unknown>): void;
+  onRetry?(error: ApplicationError, attempt: number, delay: number): void;
+  onRetryExhausted?(error: ApplicationError, totalAttempts: number): void;
+}
+
+// Example: Logging telemetry hook
+const loggingHook: ErrorTelemetryHook = {
+  onError: (error, context) => {
+    console.error(`[ERROR] ${error.code}: ${error.message}`, context);
+  },
+  onRetry: (error, attempt, delay) => {
+    console.warn(`[RETRY] Attempt ${attempt}, waiting ${delay}ms`);
+  },
+  onRetryExhausted: (error, totalAttempts) => {
+    console.error(`[EXHAUSTED] Failed after ${totalAttempts} attempts`);
+  },
+};
+
+errorHandler.registerTelemetryHook(loggingHook);
+```
+
+### Error Display
+
+Errors are formatted with emoji indicators and structured guidance:
+
+```
+❌ ValidationError: Missing required field 'exo__Asset_label'
+
+💡 Check the input data for correctness.
+Common issues:
+  • Missing required fields
+  • Invalid data format or type
+  • Values outside allowed range
+  • Schema validation failed
+
+📋 Context:
+  file: "tasks/my-task.md"
+  field: "exo__Asset_label"
+```
+
+### Best Practices
+
+1. **Throw specific error types**: Use `ValidationError`, `NetworkError`, etc. instead of generic `Error`
+2. **Include context**: Always provide debugging context when throwing errors
+3. **Use executeWithRetry for I/O**: Wrap file and network operations in retry logic
+4. **Register telemetry hooks**: Add monitoring for production deployments
+5. **Don't catch and swallow**: Let errors propagate to the handler for proper logging
+
+```typescript
+// ✅ GOOD: Specific error with context
+throw new ValidationError("Invalid status transition", {
+  currentStatus: "Draft",
+  targetStatus: "Done",
+  allowedTransitions: ["Backlog"],
+});
+
+// ❌ BAD: Generic error without context
+throw new Error("Invalid transition");
+```
+
+---
+
 ## 🔍 Current State (After Monorepo Migration)
 
 ### 1. ✅ RESOLVED: Storage Abstraction
@@ -1100,6 +1338,7 @@ graph TB
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2025-10-26 | Initial architecture documentation (pre-#122) |
+| 1.1 | 2025-11-26 | Added Error Handling section (#438) |
 
 ---
 
