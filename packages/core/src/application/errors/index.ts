@@ -9,6 +9,6 @@
 
 export {
   ApplicationErrorHandler,
-  type RetryConfig,
   type ErrorTelemetryHook,
+  type RetryConfig,
 } from "./ApplicationErrorHandler";
