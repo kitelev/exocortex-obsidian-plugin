@@ -159,7 +159,7 @@ const baseConfig = {
 // Production optimizations
 const productionConfig = {
   ...baseConfig,
-  minify: true,
+  minify: false, // CRITICAL: Disabled because minifyIdentifiers breaks TSyringe DI
   sourcemap: false,
   keepNames: true, // CRITICAL: Required for TSyringe DI to work (uses constructor param names)
   define: {
