@@ -1,9 +1,5 @@
-import React, { useState, useMemo } from "react";
-
-interface SortState {
-  column: string;
-  order: "asc" | "desc";
-}
+import React, { useMemo } from "react";
+import { useTableSortStore, useUIStore } from "../stores";
 
 export interface DailyProject {
   file: {
@@ -36,19 +32,22 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
   projects,
   onProjectClick,
   getAssetLabel,
-  showArchived = false,
-  showFullDateInEffortTimes = false,
+  showArchived: propShowArchived,
+  showFullDateInEffortTimes: propShowFullDate,
 }) => {
-  const [sortState, setSortState] = useState<SortState>({
-    column: "",
-    order: "asc",
-  });
+  const sortState = useTableSortStore((state) => state.dailyProjects);
+  const toggleSort = useTableSortStore((state) => state.toggleSort);
+
+  const storeShowArchived = useUIStore((state) => state.showArchived);
+  const storeShowFullDate = useUIStore(
+    (state) => state.showFullDateInEffortTimes,
+  );
+
+  const showArchived = propShowArchived ?? storeShowArchived;
+  const showFullDateInEffortTimes = propShowFullDate ?? storeShowFullDate;
 
   const handleSort = (column: string) => {
-    setSortState((prev) => ({
-      column,
-      order: prev.column === column && prev.order === "asc" ? "desc" : "asc",
-    }));
+    toggleSort("dailyProjects", column);
   };
 
   interface WikiLink {
@@ -287,27 +286,54 @@ export interface DailyProjectsTableWithToggleProps
     DailyProjectsTableProps,
     "showArchived" | "showFullDateInEffortTimes"
   > {
-  showArchived: boolean;
-  onToggleArchived: () => void;
-  showFullDateInEffortTimes: boolean;
-  onToggleFullDate: () => void;
+  showArchived?: boolean;
+  onToggleArchived?: () => void;
+  showFullDateInEffortTimes?: boolean;
+  onToggleFullDate?: () => void;
 }
 
 export const DailyProjectsTableWithToggle: React.FC<
   DailyProjectsTableWithToggleProps
 > = ({
-  showArchived,
+  showArchived: propShowArchived,
   onToggleArchived,
-  showFullDateInEffortTimes,
+  showFullDateInEffortTimes: propShowFullDate,
   onToggleFullDate,
   ...props
 }) => {
+  const storeShowArchived = useUIStore((state) => state.showArchived);
+  const storeShowFullDate = useUIStore(
+    (state) => state.showFullDateInEffortTimes,
+  );
+
+  const storeToggleArchived = useUIStore((state) => state.toggleArchived);
+  const storeToggleFullDate = useUIStore((state) => state.toggleFullDate);
+
+  const showArchived = propShowArchived ?? storeShowArchived;
+  const showFullDateInEffortTimes = propShowFullDate ?? storeShowFullDate;
+
+  const handleToggleArchived = () => {
+    if (onToggleArchived) {
+      onToggleArchived();
+    } else {
+      storeToggleArchived();
+    }
+  };
+
+  const handleToggleFullDate = () => {
+    if (onToggleFullDate) {
+      onToggleFullDate();
+    } else {
+      storeToggleFullDate();
+    }
+  };
+
   return (
     <div className="exocortex-daily-projects-wrapper">
       <div className="exocortex-daily-projects-controls">
         <button
           className="exocortex-toggle-archived"
-          onClick={onToggleArchived}
+          onClick={handleToggleArchived}
           style={{
             marginBottom: "8px",
             marginRight: "8px",
@@ -320,7 +346,7 @@ export const DailyProjectsTableWithToggle: React.FC<
         </button>
         <button
           className="exocortex-toggle-full-date"
-          onClick={onToggleFullDate}
+          onClick={handleToggleFullDate}
           style={{
             marginBottom: "8px",
             padding: "4px 8px",
