@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 export interface AssetRelation {
   path: string;
@@ -222,91 +223,156 @@ const SingleTable: React.FC<SingleTableProps> = ({
     });
   }, [items, sortState]);
 
-  return (
-    <table className="exocortex-relations-table">
-      <thead>
-        <tr>
-          <th onClick={() => handleSort("title")} className="sortable">
-            Name{" "}
-            {sortState.column === "title" &&
-              (sortState.order === "asc" ? "↑" : "↓")}
-          </th>
-          <th
-            onClick={() => handleSort("exo__Instance_class")}
-            className="sortable"
+  const ROW_HEIGHT = 35;
+  const VIRTUALIZATION_THRESHOLD = 50;
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const rowVirtualizer = useVirtualizer({
+    count: sortedItems.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 5,
+  });
+
+  const shouldVirtualize = sortedItems.length > VIRTUALIZATION_THRESHOLD;
+
+  const renderRow = (relation: AssetRelation, index: number, style?: React.CSSProperties) => {
+    const instanceClass = getInstanceClass(relation.metadata);
+    const uniqueKey = `${relation.path}-${relation.propertyName || "body"}-${index}`;
+    const rowClassName = relation.isArchived ? "archived-asset" : "";
+
+    return (
+      <tr
+        key={uniqueKey}
+        data-path={relation.path}
+        className={rowClassName}
+        style={style}
+      >
+        <td className="asset-name">
+          <a
+            data-href={relation.path}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onAssetClick?.(relation.path, e);
+            }}
+            className="internal-link"
+            style={{ cursor: "pointer" }}
           >
-            exo__Instance_class{" "}
-            {sortState.column === "exo__Instance_class" &&
-              (sortState.order === "asc" ? "↑" : "↓")}
-          </th>
-          {showProperties.map((prop) => (
-            <th
-              key={prop}
-              onClick={() => handleSort(prop)}
-              className="sortable"
+            {getDisplayLabel(relation)}
+          </a>
+        </td>
+        <td className="instance-class">
+          {instanceClass.target !== "-" ? (
+            <a
+              data-href={instanceClass.target}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onAssetClick?.(instanceClass.target, e);
+              }}
+              className="internal-link"
               style={{ cursor: "pointer" }}
             >
-              {prop}{" "}
-              {sortState.column === prop &&
-                (sortState.order === "asc" ? "↑" : "↓")}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {sortedItems.map((relation, index) => {
-          const instanceClass = getInstanceClass(relation.metadata);
-          // Use unique key: path + propertyName to handle multiple relations from same asset via different properties
-          const uniqueKey = `${relation.path}-${relation.propertyName || "body"}-${index}`;
-          const rowClassName = relation.isArchived ? "archived-asset" : "";
-          return (
-            <tr
-              key={uniqueKey}
-              data-path={relation.path}
-              className={rowClassName}
-            >
-              <td className="asset-name">
-                <a
-                  data-href={relation.path}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onAssetClick?.(relation.path, e);
-                  }}
-                  className="internal-link"
-                  style={{ cursor: "pointer" }}
+              {instanceClass.alias || instanceClass.target}
+            </a>
+          ) : (
+            "-"
+          )}
+        </td>
+        {showProperties.map((prop) => (
+          <td key={prop}>
+            {renderPropertyValue(relation.metadata[prop])}
+          </td>
+        ))}
+      </tr>
+    );
+  };
+
+  const renderTableHeader = () => (
+    <thead>
+      <tr>
+        <th onClick={() => handleSort("title")} className="sortable">
+          Name{" "}
+          {sortState.column === "title" &&
+            (sortState.order === "asc" ? "↑" : "↓")}
+        </th>
+        <th
+          onClick={() => handleSort("exo__Instance_class")}
+          className="sortable"
+        >
+          exo__Instance_class{" "}
+          {sortState.column === "exo__Instance_class" &&
+            (sortState.order === "asc" ? "↑" : "↓")}
+        </th>
+        {showProperties.map((prop) => (
+          <th
+            key={prop}
+            onClick={() => handleSort(prop)}
+            className="sortable"
+            style={{ cursor: "pointer" }}
+          >
+            {prop}{" "}
+            {sortState.column === prop &&
+              (sortState.order === "asc" ? "↑" : "↓")}
+          </th>
+        ))}
+      </tr>
+    </thead>
+  );
+
+  if (!shouldVirtualize) {
+    return (
+      <table className="exocortex-relations-table">
+        {renderTableHeader()}
+        <tbody>
+          {sortedItems.map((relation, index) => renderRow(relation, index))}
+        </tbody>
+      </table>
+    );
+  }
+
+  return (
+    <div className="exocortex-relations-virtualized">
+      <table className="exocortex-relations-table exocortex-relations-table-header">
+        {renderTableHeader()}
+      </table>
+      <div
+        ref={parentRef}
+        className="exocortex-virtual-scroll-container"
+        style={{
+          height: "400px",
+          overflow: "auto",
+        }}
+      >
+        <table className="exocortex-relations-table">
+          <tbody>
+            <tr style={{ height: `${rowVirtualizer.getTotalSize()}px`, display: "block" }}>
+              <td style={{ padding: 0, border: "none", display: "block" }}>
+                <table
+                  className="exocortex-relations-table exocortex-virtual-table"
+                  style={{ width: "100%" }}
                 >
-                  {getDisplayLabel(relation)}
-                </a>
+                  <tbody>
+                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                      const relation = sortedItems[virtualRow.index];
+                      return renderRow(relation, virtualRow.index, {
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      });
+                    })}
+                  </tbody>
+                </table>
               </td>
-              <td className="instance-class">
-                {instanceClass.target !== "-" ? (
-                  <a
-                    data-href={instanceClass.target}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      onAssetClick?.(instanceClass.target, e);
-                    }}
-                    className="internal-link"
-                    style={{ cursor: "pointer" }}
-                  >
-                    {instanceClass.alias || instanceClass.target}
-                  </a>
-                ) : (
-                  "-"
-                )}
-              </td>
-              {showProperties.map((prop) => (
-                <td key={prop}>
-                  {renderPropertyValue(relation.metadata[prop])}
-                </td>
-              ))}
             </tr>
-          );
-        })}
-      </tbody>
-    </table>
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };
 
