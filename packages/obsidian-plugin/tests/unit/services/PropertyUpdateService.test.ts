@@ -118,14 +118,15 @@ describe("PropertyUpdateService", () => {
       expect(frontmatter.testKey).toBe("newValue");
     });
 
-    it("should handle processFrontMatter errors", async () => {
-      mockProcessFrontMatter.mockRejectedValueOnce(
+    it("should handle processFrontMatter errors after retries", async () => {
+      // Mock must fail on all retry attempts (default maxRetries = 3, so 4 total attempts)
+      mockProcessFrontMatter.mockRejectedValue(
         new Error("File processing failed"),
       );
 
       await expect(
         service.updateProperty(mockFile, "testKey", "testValue"),
-      ).rejects.toThrow("File processing failed");
+      ).rejects.toThrow("Failed to update property");
     });
   });
 
