@@ -174,7 +174,7 @@ const productionConfig = {
   reserveProps: /^__/, // Reserve double underscore props
   // Enable advanced minification
   minifyWhitespace: true,
-  minifyIdentifiers: true,
+  minifyIdentifiers: false, // CRITICAL: Must be false for TSyringe DI (mangles constructor param names)
   minifySyntax: true,
   // Drop debug code in production
   drop: ["console", "debugger"],
