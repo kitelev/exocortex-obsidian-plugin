@@ -1,4 +1,5 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { MetadataHelpers } from "@exocortex/core";
 import { useTableSortStore, useUIStore } from "../stores";
 
@@ -245,186 +246,249 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     return [...sortedDoing, ...sortedOthers];
   }, [tasks, sortState, getAssetLabel, getEffortArea, showArchived]);
 
+  const ROW_HEIGHT = 35;
+  const VIRTUALIZATION_THRESHOLD = 50;
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const rowVirtualizer = useVirtualizer({
+    count: sortedTasks.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 5,
+  });
+
+  const shouldVirtualize = sortedTasks.length > VIRTUALIZATION_THRESHOLD;
+
+  const renderRow = (task: DailyTask, index: number, style?: React.CSSProperties) => {
+    let effortArea: unknown = null;
+    if (getEffortArea) {
+      effortArea = getEffortArea(task.metadata);
+    }
+    if (!effortArea) {
+      effortArea = task.metadata.ems__Effort_area;
+    }
+
+    let effortAreaParsed: WikiLink | null = null;
+    if (effortArea) {
+      const effortAreaStr = String(effortArea);
+      if (/\[\[.*?\]\]/.test(effortAreaStr)) {
+        effortAreaParsed = parseWikiLink(effortAreaStr);
+      } else if (effortAreaStr.includes("|")) {
+        const parts = effortAreaStr.split("|");
+        effortAreaParsed = {
+          target: parts[0].trim(),
+          alias: parts[1]?.trim(),
+        };
+      } else {
+        effortAreaParsed = { target: effortAreaStr.trim() };
+      }
+    }
+
+    return (
+      <tr
+        key={`${task.path}-${index}`}
+        data-path={task.path}
+        style={style}
+      >
+        <td className="task-name">
+          <a
+            data-href={task.path}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onTaskClick?.(task.path, e);
+            }}
+            className="internal-link"
+            style={{ cursor: "pointer" }}
+          >
+            {getDisplayName(task)}
+          </a>
+        </td>
+        <td className="task-start">
+          {formatTimeDisplay(task.startTimestamp, task.startTime)}
+        </td>
+        <td className="task-end">
+          {formatTimeDisplay(task.endTimestamp, task.endTime)}
+        </td>
+        <td className="task-status">
+          {task.status
+            ? (() => {
+                const isWikiLink =
+                  typeof task.status === "string" &&
+                  /\[\[.*?\]\]/.test(task.status);
+                const parsed = isWikiLink
+                  ? parseWikiLink(task.status)
+                  : { target: task.status };
+                const displayText = parsed.alias || parsed.target;
+
+                return (
+                  <a
+                    data-href={parsed.target}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onTaskClick?.(parsed.target, e);
+                    }}
+                    className="internal-link"
+                    style={{ cursor: "pointer" }}
+                  >
+                    {displayText}
+                  </a>
+                );
+              })()
+            : "-"}
+        </td>
+        {showEffortArea && (
+          <td className="task-effort-area">
+            {effortAreaParsed ? (
+              <a
+                data-href={effortAreaParsed.target}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onTaskClick?.(effortAreaParsed!.target, e);
+                }}
+                className="internal-link"
+                style={{ cursor: "pointer" }}
+              >
+                {getAssetLabel?.(effortAreaParsed.target) ||
+                  effortAreaParsed.alias ||
+                  effortAreaParsed.target}
+              </a>
+            ) : (
+              "-"
+            )}
+          </td>
+        )}
+        {showEffortVotes && (
+          <td className="task-effort-votes">
+            {typeof task.metadata.ems__Effort_votes === "number"
+              ? task.metadata.ems__Effort_votes
+              : "-"}
+          </td>
+        )}
+      </tr>
+    );
+  };
+
+  const renderTableHeader = () => (
+    <thead>
+      <tr>
+        <th
+          onClick={() => handleSort("name")}
+          className="sortable"
+          style={{ cursor: "pointer" }}
+        >
+          Name{" "}
+          {sortState.column === "name" &&
+            (sortState.order === "asc" ? "↑" : "↓")}
+        </th>
+        <th
+          onClick={() => handleSort("start")}
+          className="sortable"
+          style={{ cursor: "pointer" }}
+        >
+          Start{" "}
+          {sortState.column === "start" &&
+            (sortState.order === "asc" ? "↑" : "↓")}
+        </th>
+        <th
+          onClick={() => handleSort("end")}
+          className="sortable"
+          style={{ cursor: "pointer" }}
+        >
+          End{" "}
+          {sortState.column === "end" &&
+            (sortState.order === "asc" ? "↑" : "↓")}
+        </th>
+        <th
+          onClick={() => handleSort("status")}
+          className="sortable"
+          style={{ cursor: "pointer" }}
+        >
+          Status{" "}
+          {sortState.column === "status" &&
+            (sortState.order === "asc" ? "↑" : "↓")}
+        </th>
+        {showEffortArea && (
+          <th
+            onClick={() => handleSort("effortArea")}
+            className="sortable"
+            style={{ cursor: "pointer" }}
+          >
+            Effort Area{" "}
+            {sortState.column === "effortArea" &&
+              (sortState.order === "asc" ? "↑" : "↓")}
+          </th>
+        )}
+        {showEffortVotes && (
+          <th
+            onClick={() => handleSort("votes")}
+            className="sortable"
+            style={{ cursor: "pointer" }}
+          >
+            Votes{" "}
+            {sortState.column === "votes" &&
+              (sortState.order === "asc" ? "↑" : "↓")}
+          </th>
+        )}
+      </tr>
+    </thead>
+  );
+
+  if (!shouldVirtualize) {
+    return (
+      <div className="exocortex-daily-tasks">
+        <table className="exocortex-tasks-table">
+          {renderTableHeader()}
+          <tbody>
+            {sortedTasks.map((task, index) => renderRow(task, index))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
   return (
-    <div className="exocortex-daily-tasks">
-      <table className="exocortex-tasks-table">
-        <thead>
-          <tr>
-            <th
-              onClick={() => handleSort("name")}
-              className="sortable"
-              style={{ cursor: "pointer" }}
-            >
-              Name{" "}
-              {sortState.column === "name" &&
-                (sortState.order === "asc" ? "↑" : "↓")}
-            </th>
-            <th
-              onClick={() => handleSort("start")}
-              className="sortable"
-              style={{ cursor: "pointer" }}
-            >
-              Start{" "}
-              {sortState.column === "start" &&
-                (sortState.order === "asc" ? "↑" : "↓")}
-            </th>
-            <th
-              onClick={() => handleSort("end")}
-              className="sortable"
-              style={{ cursor: "pointer" }}
-            >
-              End{" "}
-              {sortState.column === "end" &&
-                (sortState.order === "asc" ? "↑" : "↓")}
-            </th>
-            <th
-              onClick={() => handleSort("status")}
-              className="sortable"
-              style={{ cursor: "pointer" }}
-            >
-              Status{" "}
-              {sortState.column === "status" &&
-                (sortState.order === "asc" ? "↑" : "↓")}
-            </th>
-            {showEffortArea && (
-              <th
-                onClick={() => handleSort("effortArea")}
-                className="sortable"
-                style={{ cursor: "pointer" }}
-              >
-                Effort Area{" "}
-                {sortState.column === "effortArea" &&
-                  (sortState.order === "asc" ? "↑" : "↓")}
-              </th>
-            )}
-            {showEffortVotes && (
-              <th
-                onClick={() => handleSort("votes")}
-                className="sortable"
-                style={{ cursor: "pointer" }}
-              >
-                Votes{" "}
-                {sortState.column === "votes" &&
-                  (sortState.order === "asc" ? "↑" : "↓")}
-              </th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {sortedTasks.map((task, index) => (
-            <tr key={`${task.path}-${index}`} data-path={task.path}>
-              <td className="task-name">
-                <a
-                  data-href={task.path}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onTaskClick?.(task.path, e);
-                  }}
-                  className="internal-link"
-                  style={{ cursor: "pointer" }}
-                >
-                  {getDisplayName(task)}
-                </a>
-              </td>
-              <td className="task-start">
-                {formatTimeDisplay(task.startTimestamp, task.startTime)}
-              </td>
-              <td className="task-end">
-                {formatTimeDisplay(task.endTimestamp, task.endTime)}
-              </td>
-              <td className="task-status">
-                {task.status
-                  ? (() => {
-                      const isWikiLink =
-                        typeof task.status === "string" &&
-                        /\[\[.*?\]\]/.test(task.status);
-                      const parsed = isWikiLink
-                        ? parseWikiLink(task.status)
-                        : { target: task.status };
-                      const displayText = parsed.alias || parsed.target;
-
-                      return (
-                        <a
-                          data-href={parsed.target}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            onTaskClick?.(parsed.target, e);
-                          }}
-                          className="internal-link"
-                          style={{ cursor: "pointer" }}
-                        >
-                          {displayText}
-                        </a>
-                      );
-                    })()
-                  : "-"}
-              </td>
-              {showEffortArea && (
-                <td className="task-effort-area">
-                  {(() => {
-                    let effortArea: unknown = null;
-
-                    if (getEffortArea) {
-                      effortArea = getEffortArea(task.metadata);
-                    }
-
-                    if (!effortArea) {
-                      effortArea = task.metadata.ems__Effort_area;
-                    }
-
-                    if (!effortArea) return "-";
-
-                    // Parse both formats: [[UID|Alias]] and UID|Alias
-                    let parsed: WikiLink;
-                    const effortAreaStr = String(effortArea);
-
-                    if (/\[\[.*?\]\]/.test(effortAreaStr)) {
-                      // Format: [[UID|Alias]]
-                      parsed = parseWikiLink(effortAreaStr);
-                    } else if (effortAreaStr.includes("|")) {
-                      // Format: UID|Alias (already extracted from wikilink)
-                      const parts = effortAreaStr.split("|");
-                      parsed = {
-                        target: parts[0].trim(),
-                        alias: parts[1]?.trim(),
-                      };
-                    } else {
-                      // Plain value
-                      parsed = { target: effortAreaStr.trim() };
-                    }
-
-                    const displayText = parsed.alias || parsed.target;
-
-                    return (
-                      <a
-                        data-href={parsed.target}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          onTaskClick?.(parsed.target, e);
-                        }}
-                        className="internal-link"
-                        style={{ cursor: "pointer" }}
-                      >
-                        {getAssetLabel?.(parsed.target) || displayText}
-                      </a>
-                    );
-                  })()}
-                </td>
-              )}
-              {showEffortVotes && (
-                <td className="task-effort-votes">
-                  {typeof task.metadata.ems__Effort_votes === "number"
-                    ? task.metadata.ems__Effort_votes
-                    : "-"}
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
+    <div className="exocortex-daily-tasks exocortex-virtualized">
+      <table className="exocortex-tasks-table exocortex-tasks-table-header">
+        {renderTableHeader()}
       </table>
+      <div
+        ref={parentRef}
+        className="exocortex-virtual-scroll-container"
+        style={{
+          height: "400px",
+          overflow: "auto",
+        }}
+      >
+        <table className="exocortex-tasks-table">
+          <tbody>
+            <tr style={{ height: `${rowVirtualizer.getTotalSize()}px`, display: "block" }}>
+              <td style={{ padding: 0, border: "none", display: "block" }}>
+                <table
+                  className="exocortex-tasks-table exocortex-virtual-table"
+                  style={{ width: "100%" }}
+                >
+                  <tbody>
+                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                      const task = sortedTasks[virtualRow.index];
+                      return renderRow(task, virtualRow.index, {
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      });
+                    })}
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

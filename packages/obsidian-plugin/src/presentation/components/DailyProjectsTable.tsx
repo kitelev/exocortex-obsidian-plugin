@@ -1,4 +1,5 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { useTableSortStore, useUIStore } from "../stores";
 
 export interface DailyProject {
@@ -179,104 +180,172 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
     return sorted;
   }, [projects, sortState, getAssetLabel, showArchived]);
 
-  return (
-    <div className="exocortex-daily-projects">
-      <table className="exocortex-projects-table">
-        <thead>
-          <tr>
-            <th
-              onClick={() => handleSort("name")}
-              className="sortable"
-              style={{ cursor: "pointer" }}
-            >
-              Name{" "}
-              {sortState.column === "name" &&
-                (sortState.order === "asc" ? "↑" : "↓")}
-            </th>
-            <th
-              onClick={() => handleSort("start")}
-              className="sortable"
-              style={{ cursor: "pointer" }}
-            >
-              Start{" "}
-              {sortState.column === "start" &&
-                (sortState.order === "asc" ? "↑" : "↓")}
-            </th>
-            <th
-              onClick={() => handleSort("end")}
-              className="sortable"
-              style={{ cursor: "pointer" }}
-            >
-              End{" "}
-              {sortState.column === "end" &&
-                (sortState.order === "asc" ? "↑" : "↓")}
-            </th>
-            <th
-              onClick={() => handleSort("status")}
-              className="sortable"
-              style={{ cursor: "pointer" }}
-            >
-              Status{" "}
-              {sortState.column === "status" &&
-                (sortState.order === "asc" ? "↑" : "↓")}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedProjects.map((project, index) => (
-            <tr key={`${project.path}-${index}`} data-path={project.path}>
-              <td className="project-name">
+  const ROW_HEIGHT = 35;
+  const VIRTUALIZATION_THRESHOLD = 50;
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const rowVirtualizer = useVirtualizer({
+    count: sortedProjects.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 5,
+  });
+
+  const shouldVirtualize = sortedProjects.length > VIRTUALIZATION_THRESHOLD;
+
+  const renderRow = (project: DailyProject, index: number, style?: React.CSSProperties) => (
+    <tr
+      key={`${project.path}-${index}`}
+      data-path={project.path}
+      style={style}
+    >
+      <td className="project-name">
+        <a
+          data-href={project.path}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onProjectClick?.(project.path, e);
+          }}
+          className="internal-link"
+          style={{ cursor: "pointer" }}
+        >
+          {getDisplayName(project)}
+        </a>
+      </td>
+      <td className="project-start">
+        {formatTimeDisplay(project.startTimestamp, project.startTime)}
+      </td>
+      <td className="project-end">
+        {formatTimeDisplay(project.endTimestamp, project.endTime)}
+      </td>
+      <td className="project-status">
+        {project.status
+          ? (() => {
+              const isWikiLink =
+                typeof project.status === "string" &&
+                /\[\[.*?\]\]/.test(project.status);
+              const parsed = isWikiLink
+                ? parseWikiLink(project.status)
+                : { target: project.status };
+              const displayText = parsed.alias || parsed.target;
+
+              return (
                 <a
-                  data-href={project.path}
+                  data-href={parsed.target}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    onProjectClick?.(project.path, e);
+                    onProjectClick?.(parsed.target, e);
                   }}
                   className="internal-link"
                   style={{ cursor: "pointer" }}
                 >
-                  {getDisplayName(project)}
+                  {displayText}
                 </a>
-              </td>
-              <td className="project-start">
-                {formatTimeDisplay(project.startTimestamp, project.startTime)}
-              </td>
-              <td className="project-end">
-                {formatTimeDisplay(project.endTimestamp, project.endTime)}
-              </td>
-              <td className="project-status">
-                {project.status
-                  ? (() => {
-                      const isWikiLink =
-                        typeof project.status === "string" &&
-                        /\[\[.*?\]\]/.test(project.status);
-                      const parsed = isWikiLink
-                        ? parseWikiLink(project.status)
-                        : { target: project.status };
-                      const displayText = parsed.alias || parsed.target;
+              );
+            })()
+          : "-"}
+      </td>
+    </tr>
+  );
 
-                      return (
-                        <a
-                          data-href={parsed.target}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            onProjectClick?.(parsed.target, e);
-                          }}
-                          className="internal-link"
-                          style={{ cursor: "pointer" }}
-                        >
-                          {displayText}
-                        </a>
-                      );
-                    })()
-                  : "-"}
+  const renderTableHeader = () => (
+    <thead>
+      <tr>
+        <th
+          onClick={() => handleSort("name")}
+          className="sortable"
+          style={{ cursor: "pointer" }}
+        >
+          Name{" "}
+          {sortState.column === "name" &&
+            (sortState.order === "asc" ? "↑" : "↓")}
+        </th>
+        <th
+          onClick={() => handleSort("start")}
+          className="sortable"
+          style={{ cursor: "pointer" }}
+        >
+          Start{" "}
+          {sortState.column === "start" &&
+            (sortState.order === "asc" ? "↑" : "↓")}
+        </th>
+        <th
+          onClick={() => handleSort("end")}
+          className="sortable"
+          style={{ cursor: "pointer" }}
+        >
+          End{" "}
+          {sortState.column === "end" &&
+            (sortState.order === "asc" ? "↑" : "↓")}
+        </th>
+        <th
+          onClick={() => handleSort("status")}
+          className="sortable"
+          style={{ cursor: "pointer" }}
+        >
+          Status{" "}
+          {sortState.column === "status" &&
+            (sortState.order === "asc" ? "↑" : "↓")}
+        </th>
+      </tr>
+    </thead>
+  );
+
+  if (!shouldVirtualize) {
+    return (
+      <div className="exocortex-daily-projects">
+        <table className="exocortex-projects-table">
+          {renderTableHeader()}
+          <tbody>
+            {sortedProjects.map((project, index) => renderRow(project, index))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  return (
+    <div className="exocortex-daily-projects exocortex-virtualized">
+      <table className="exocortex-projects-table exocortex-projects-table-header">
+        {renderTableHeader()}
+      </table>
+      <div
+        ref={parentRef}
+        className="exocortex-virtual-scroll-container"
+        style={{
+          height: "400px",
+          overflow: "auto",
+        }}
+      >
+        <table className="exocortex-projects-table">
+          <tbody>
+            <tr style={{ height: `${rowVirtualizer.getTotalSize()}px`, display: "block" }}>
+              <td style={{ padding: 0, border: "none", display: "block" }}>
+                <table
+                  className="exocortex-projects-table exocortex-virtual-table"
+                  style={{ width: "100%" }}
+                >
+                  <tbody>
+                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                      const project = sortedProjects[virtualRow.index];
+                      return renderRow(project, virtualRow.index, {
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      });
+                    })}
+                  </tbody>
+                </table>
               </td>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
