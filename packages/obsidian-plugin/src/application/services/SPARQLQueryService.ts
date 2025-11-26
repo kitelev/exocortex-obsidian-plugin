@@ -9,6 +9,9 @@ import {
   type AlgebraOperation,
   ValidationError,
   ServiceError,
+  ApplicationErrorHandler,
+  type ILogger,
+  type INotificationService,
 } from "@exocortex/core";
 import { VaultRDFIndexer } from "../../infrastructure/VaultRDFIndexer";
 
@@ -19,9 +22,36 @@ export class SPARQLQueryService {
   private optimizer: AlgebraOptimizer;
   private executor: BGPExecutor | null = null;
   private isInitialized = false;
+  private errorHandler: ApplicationErrorHandler;
+  private logger: ILogger;
 
-  constructor(app: App) {
-    this.indexer = new VaultRDFIndexer(app);
+  constructor(
+    app: App,
+    logger?: ILogger,
+    notifier?: INotificationService
+  ) {
+    this.logger = logger || {
+      debug: () => {},
+      info: () => {},
+      warn: console.warn.bind(console),
+      error: console.error.bind(console),
+    };
+
+    const defaultNotifier: INotificationService = {
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+      success: () => {},
+      confirm: async () => false,
+    };
+
+    this.errorHandler = new ApplicationErrorHandler(
+      {},
+      this.logger,
+      notifier || defaultNotifier
+    );
+
+    this.indexer = new VaultRDFIndexer(app, this.logger, notifier);
     this.parser = new SPARQLParser();
     this.translator = new AlgebraTranslator();
     this.optimizer = new AlgebraOptimizer();
@@ -33,14 +63,17 @@ export class SPARQLQueryService {
     }
 
     try {
-      await this.indexer.initialize();
+      await this.errorHandler.executeWithRetry(
+        async () => this.indexer.initialize(),
+        { context: "SPARQLQueryService.initialize", operation: "initializeIndexer" }
+      );
 
       const tripleStore = this.indexer.getTripleStore();
       this.executor = new BGPExecutor(tripleStore);
 
       this.isInitialized = true;
     } catch (error) {
-      throw new ServiceError(
+      const serviceError = new ServiceError(
         "failed to initialize sparql query service",
         {
           service: "SPARQLQueryService",
@@ -48,6 +81,8 @@ export class SPARQLQueryService {
           originalError: error instanceof Error ? error.message : String(error),
         }
       );
+      this.errorHandler.handle(serviceError);
+      throw serviceError;
     }
   }
 
@@ -81,22 +116,25 @@ export class SPARQLQueryService {
       return results;
     } catch (error) {
       if (error instanceof ServiceError) {
+        this.errorHandler.handle(error);
         throw error;
       }
 
       const errorMessage = error instanceof Error ? error.message : String(error);
 
       if (errorMessage.includes("parse") || errorMessage.includes("syntax")) {
-        throw new ValidationError(
+        const validationError = new ValidationError(
           "invalid sparql query",
           {
             query: queryString,
             originalError: errorMessage,
           }
         );
+        this.errorHandler.handle(validationError);
+        throw validationError;
       }
 
-      throw new ServiceError(
+      const serviceError = new ServiceError(
         "sparql query execution failed",
         {
           service: "SPARQLQueryService",
@@ -105,15 +143,23 @@ export class SPARQLQueryService {
           originalError: errorMessage,
         }
       );
+      this.errorHandler.handle(serviceError);
+      throw serviceError;
     }
   }
 
   async refresh(): Promise<void> {
-    await this.indexer.refresh();
+    await this.errorHandler.executeWithRetry(
+      async () => this.indexer.refresh(),
+      { context: "SPARQLQueryService.refresh", operation: "refreshIndexer" }
+    );
   }
 
   async updateFile(file: TFile): Promise<void> {
-    await this.indexer.updateFile(file);
+    await this.errorHandler.executeWithRetry(
+      async () => this.indexer.updateFile(file),
+      { context: "SPARQLQueryService.updateFile", filePath: file.path }
+    );
   }
 
   async dispose(): Promise<void> {
