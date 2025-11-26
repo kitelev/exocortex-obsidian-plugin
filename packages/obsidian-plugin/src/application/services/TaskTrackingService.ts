@@ -2,6 +2,12 @@ import { App, MetadataCache, TFile, Vault, Platform } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
 import { ILogger } from "../../adapters/logging/ILogger";
 import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
+import {
+  ApplicationErrorHandler,
+  NetworkError,
+  ServiceError,
+  type INotificationService,
+} from "@exocortex/core";
 
 /**
  * Task data for iOS Live Activities integration
@@ -31,14 +37,17 @@ export interface TaskData {
  */
 export class TaskTrackingService {
   private logger: ILogger;
+  private errorHandler: ApplicationErrorHandler;
   private currentTask: TaskData | null = null;
 
   constructor(
     private app: App,
     private vault: Vault,
-    private metadataCache: MetadataCache
+    private metadataCache: MetadataCache,
+    notifier?: INotificationService,
   ) {
     this.logger = LoggerFactory.create("TaskTrackingService");
+    this.errorHandler = new ApplicationErrorHandler({}, this.logger, notifier);
   }
 
   /**
@@ -70,7 +79,12 @@ export class TaskTrackingService {
         await this.startTracking(file, cache.frontmatter);
       }
     } catch (error) {
-      this.logger.error("Error handling file change", error);
+      const serviceError = new ServiceError("Error handling file change", {
+        file: file.path,
+        originalError: error instanceof Error ? error.message : String(error),
+      });
+
+      this.errorHandler.handle(serviceError);
     }
   }
 
@@ -93,11 +107,13 @@ export class TaskTrackingService {
    */
   private async startTracking(
     file: TFile,
-    frontmatter: Record<string, unknown>
+    frontmatter: Record<string, unknown>,
   ): Promise<void> {
+    let taskId: string | undefined;
+
     try {
       // Extract or generate task ID
-      let taskId = frontmatter.TaskId as string | undefined;
+      taskId = frontmatter.TaskId as string | undefined;
       if (!taskId) {
         taskId = uuidv4();
         this.logger.info(`Generated new TaskId: ${taskId}`);
@@ -128,7 +144,13 @@ export class TaskTrackingService {
       // Launch iOS app
       await this.launchIOSApp(taskData);
     } catch (error) {
-      this.logger.error("Error starting task tracking", error);
+      const serviceError = new ServiceError("Error starting task tracking", {
+        file: file.path,
+        taskId,
+        originalError: error instanceof Error ? error.message : String(error),
+      });
+
+      this.errorHandler.handle(serviceError);
     }
   }
 
@@ -137,44 +159,71 @@ export class TaskTrackingService {
    */
   private async addTaskIdToFrontmatter(
     file: TFile,
-    taskId: string
+    taskId: string,
   ): Promise<void> {
     try {
-      const content = await this.vault.read(file);
+      await this.errorHandler.executeWithRetry(
+        async () => {
+          try {
+            const content = await this.vault.read(file);
 
-      // Check if frontmatter exists
-      if (!content.startsWith("---")) {
-        this.logger.warn(
-          `Cannot add TaskId: no frontmatter in ${file.basename}`
-        );
-        return;
-      }
+            // Check if frontmatter exists
+            if (!content.startsWith("---")) {
+              this.logger.warn(
+                `Cannot add TaskId: no frontmatter in ${file.basename}`,
+              );
+              return;
+            }
 
-      // Find end of frontmatter
-      const lines = content.split("\n");
-      let endIndex = -1;
-      for (let i = 1; i < lines.length; i++) {
-        if (lines[i].trim() === "---") {
-          endIndex = i;
-          break;
-        }
-      }
+            // Find end of frontmatter
+            const lines = content.split("\n");
+            let endIndex = -1;
+            for (let i = 1; i < lines.length; i++) {
+              if (lines[i].trim() === "---") {
+                endIndex = i;
+                break;
+              }
+            }
 
-      if (endIndex === -1) {
-        this.logger.warn(
-          `Cannot add TaskId: malformed frontmatter in ${file.basename}`
-        );
-        return;
-      }
+            if (endIndex === -1) {
+              this.logger.warn(
+                `Cannot add TaskId: malformed frontmatter in ${file.basename}`,
+              );
+              return;
+            }
 
-      // Insert TaskId before closing ---
-      lines.splice(endIndex, 0, `TaskId: ${taskId}`);
-      const updatedContent = lines.join("\n");
+            // Insert TaskId before closing ---
+            lines.splice(endIndex, 0, `TaskId: ${taskId}`);
+            const updatedContent = lines.join("\n");
 
-      await this.vault.modify(file, updatedContent);
-      this.logger.info(`Added TaskId to ${file.basename}`);
+            await this.vault.modify(file, updatedContent);
+            this.logger.info(`Added TaskId to ${file.basename}`);
+          } catch (error) {
+            throw new NetworkError("Failed to add TaskId to frontmatter", {
+              file: file.path,
+              taskId,
+              originalError:
+                error instanceof Error ? error.message : String(error),
+            });
+          }
+        },
+        {
+          file: file.path,
+          taskId,
+        },
+      );
     } catch (error) {
-      this.logger.error("Error adding TaskId to frontmatter", error);
+      const serviceError =
+        error instanceof NetworkError
+          ? error
+          : new ServiceError("Error adding TaskId to frontmatter", {
+              file: file.path,
+              taskId,
+              originalError:
+                error instanceof Error ? error.message : String(error),
+            });
+
+      this.errorHandler.handle(serviceError);
     }
   }
 
@@ -236,7 +285,12 @@ export class TaskTrackingService {
 
       this.logger.info("iOS app launch initiated successfully");
     } catch (error) {
-      this.logger.error("Failed to launch iOS app", error);
+      const serviceError = new ServiceError("Failed to launch iOS app", {
+        taskData,
+        originalError: error instanceof Error ? error.message : String(error),
+      });
+
+      this.errorHandler.handle(serviceError);
     }
   }
 

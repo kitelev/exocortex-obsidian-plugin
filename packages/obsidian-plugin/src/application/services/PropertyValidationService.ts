@@ -1,11 +1,23 @@
 import {
   type IPropertyValidationService,
   type ValidationResult,
+  ApplicationErrorHandler,
+  ValidationError,
+  type ILogger,
+  type INotificationService,
 } from "@exocortex/core";
 import { SPARQLQueryService } from "./SPARQLQueryService";
 
 export class PropertyValidationService implements IPropertyValidationService {
-  constructor(private sparqlService: SPARQLQueryService) {}
+  private errorHandler: ApplicationErrorHandler;
+
+  constructor(
+    private sparqlService: SPARQLQueryService,
+    logger?: ILogger,
+    notifier?: INotificationService,
+  ) {
+    this.errorHandler = new ApplicationErrorHandler({}, logger, notifier);
+  }
 
   async validatePropertyDomain(
     propertyName: string,
@@ -60,7 +72,16 @@ export class PropertyValidationService implements IPropertyValidationService {
           : `Property "${propertyName}" not allowed on ${assetClass}`,
       };
     } catch (error) {
-      console.error("Property domain validation error:", error);
+      const validationError = new ValidationError(
+        `Property domain validation failed for "${propertyName}" on ${assetClass}`,
+        {
+          propertyName,
+          assetClass,
+          originalError: error instanceof Error ? error.message : String(error),
+        },
+      );
+
+      this.errorHandler.handle(validationError);
       return { isValid: true };
     }
   }
@@ -108,7 +129,16 @@ export class PropertyValidationService implements IPropertyValidationService {
           : `Expected ${String(expectedRange)}, got ${actualType}`,
       };
     } catch (error) {
-      console.error("Property range validation error:", error);
+      const validationError = new ValidationError(
+        `Property range validation failed for "${propertyName}"`,
+        {
+          propertyName,
+          propertyValue,
+          originalError: error instanceof Error ? error.message : String(error),
+        },
+      );
+
+      this.errorHandler.handle(validationError);
       return { isValid: true };
     }
   }

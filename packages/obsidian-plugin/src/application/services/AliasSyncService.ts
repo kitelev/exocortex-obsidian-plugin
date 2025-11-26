@@ -1,10 +1,22 @@
 import { TFile, MetadataCache, App } from "obsidian";
+import {
+  ApplicationErrorHandler,
+  NetworkError,
+  type ILogger,
+  type INotificationService,
+} from "@exocortex/core";
 
 export class AliasSyncService {
+  private errorHandler: ApplicationErrorHandler;
+
   constructor(
     private metadataCache: MetadataCache,
     private app: App,
-  ) {}
+    logger?: ILogger,
+    notifier?: INotificationService,
+  ) {
+    this.errorHandler = new ApplicationErrorHandler({}, logger, notifier);
+  }
 
   async syncAliases(
     file: TFile,
@@ -69,14 +81,37 @@ export class AliasSyncService {
     file: TFile,
     newAliases: string[],
   ): Promise<void> {
-    await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-      if (newAliases.length === 0) {
-        delete frontmatter.aliases;
-      } else if (newAliases.length === 1) {
-        frontmatter.aliases = newAliases[0];
-      } else {
-        frontmatter.aliases = newAliases;
-      }
-    });
+    await this.errorHandler.executeWithRetry(
+      async () => {
+        try {
+          await this.app.fileManager.processFrontMatter(
+            file,
+            (frontmatter) => {
+              if (newAliases.length === 0) {
+                delete frontmatter.aliases;
+              } else if (newAliases.length === 1) {
+                frontmatter.aliases = newAliases[0];
+              } else {
+                frontmatter.aliases = newAliases;
+              }
+            },
+          );
+        } catch (error) {
+          throw new NetworkError(
+            `Failed to update aliases in file: ${file.path}`,
+            {
+              file: file.path,
+              newAliases,
+              originalError:
+                error instanceof Error ? error.message : String(error),
+            },
+          );
+        }
+      },
+      {
+        file: file.path,
+        aliasCount: newAliases.length,
+      },
+    );
   }
 }
