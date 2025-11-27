@@ -8,6 +8,10 @@ export const DI_TOKENS = {
   IFileSystemAdapter: Symbol.for("IFileSystemAdapter"),
   IVaultAdapter: Symbol.for("IVaultAdapter"),
 
+  // Multi-vault support
+  IVaultContext: Symbol.for("IVaultContext"),
+  IMultiVaultManager: Symbol.for("IMultiVaultManager"),
+
   // Cross-cutting concerns
   ILogger: Symbol.for("ILogger"),
   IEventBus: Symbol.for("IEventBus"),
