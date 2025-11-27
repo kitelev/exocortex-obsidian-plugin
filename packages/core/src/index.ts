@@ -89,6 +89,11 @@ export type {
   IFolder,
   IFrontmatter,
 } from "./interfaces/IVaultAdapter";
+export type { IVaultContext } from "./interfaces/IVaultContext";
+export type {
+  IMultiVaultManager,
+  VaultChangeCallback,
+} from "./interfaces/IMultiVaultManager";
 
 // DI Interfaces exports
 export type { ILogger } from "./interfaces/ILogger";
