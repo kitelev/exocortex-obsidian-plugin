@@ -30,7 +30,7 @@ export class AreaSelectionModal extends Modal {
     this.metadataExtractor = new MetadataExtractor(this.vaultAdapter);
   }
 
-  onOpen(): void {
+  override onOpen(): void {
     const { contentEl } = this;
 
     contentEl.addClass("exocortex-area-selection-modal");
@@ -174,7 +174,7 @@ export class AreaSelectionModal extends Modal {
     this.close();
   }
 
-  onClose(): void {
+  override onClose(): void {
     const { contentEl } = this;
     contentEl.empty();
   }

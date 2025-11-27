@@ -18,7 +18,7 @@ export class FleetingNoteModal extends Modal {
     this.onSubmit = onSubmit;
   }
 
-  onOpen(): void {
+  override onOpen(): void {
     const { contentEl } = this;
 
     contentEl.addClass("exocortex-fleeting-note-modal");
@@ -108,7 +108,7 @@ export class FleetingNoteModal extends Modal {
     }
   }
 
-  onClose(): void {
+  override onClose(): void {
     this.contentEl.empty();
   }
 }

@@ -36,11 +36,11 @@ class SPARQLCleanupComponent extends MarkdownRenderChild {
     super(containerEl);
   }
 
-  onload(): void {
+  override onload(): void {
     // Nothing needed on load
   }
 
-  onunload(): void {
+  override onunload(): void {
     const query = this.activeQueries.get(this.el);
     if (query) {
       if (query.refreshTimeout) {

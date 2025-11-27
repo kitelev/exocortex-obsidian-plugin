@@ -40,7 +40,7 @@ export default class ExocortexPlugin extends Plugin {
   sparql!: SPARQLApi;
   settings!: ExocortexSettings;
 
-  async onload(): Promise<void> {
+  override async onload(): Promise<void> {
     try {
       // Initialize DI container (Phase 1 infrastructure)
       PluginContainer.setup(this.app, this);
@@ -141,7 +141,7 @@ export default class ExocortexPlugin extends Plugin {
     }
   }
 
-  async onunload(): Promise<void> {
+  override async onunload(): Promise<void> {
     this.removeAutoRenderedLayouts();
 
     if (this.sparql) {

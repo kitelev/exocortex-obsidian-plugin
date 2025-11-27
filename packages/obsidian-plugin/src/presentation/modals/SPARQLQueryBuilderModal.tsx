@@ -23,7 +23,7 @@ export class SPARQLQueryBuilderModal extends Modal {
     this.errorHandler = new ApplicationErrorHandler();
   }
 
-  async onOpen(): Promise<void> {
+  override async onOpen(): Promise<void> {
     const { contentEl } = this;
     contentEl.empty();
     contentEl.addClass("sparql-query-builder-modal");
@@ -68,7 +68,7 @@ export class SPARQLQueryBuilderModal extends Modal {
     }
   }
 
-  onClose(): void {
+  override onClose(): void {
     const { contentEl } = this;
     this.reactRenderer.unmount(contentEl);
     contentEl.empty();

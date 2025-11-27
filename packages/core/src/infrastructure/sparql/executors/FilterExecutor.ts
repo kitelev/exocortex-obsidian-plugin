@@ -3,8 +3,8 @@ import type { SolutionMapping } from "../SolutionMapping";
 import { BuiltInFunctions } from "../filters/BuiltInFunctions";
 
 export class FilterExecutorError extends Error {
-  constructor(message: string, public readonly cause?: Error) {
-    super(message);
+  constructor(message: string, cause?: Error) {
+    super(message, cause ? { cause } : undefined);
     this.name = "FilterExecutorError";
   }
 }

@@ -26,7 +26,7 @@ export class SupervisionInputModal extends Modal {
     this.onSubmit = onSubmit;
   }
 
-  onOpen(): void {
+  override onOpen(): void {
     const { contentEl } = this;
 
     contentEl.addClass("exocortex-supervision-modal");
@@ -112,7 +112,7 @@ export class SupervisionInputModal extends Modal {
     this.close();
   }
 
-  onClose(): void {
+  override onClose(): void {
     const { contentEl } = this;
     contentEl.empty();
   }

@@ -1,14 +1,14 @@
 import * as sparqljs from "sparqljs";
 
 export class SPARQLParseError extends Error {
-  constructor(
-    message: string,
-    public readonly line?: number,
-    public readonly column?: number,
-    public readonly cause?: Error,
-  ) {
-    super(message);
+  public readonly line?: number;
+  public readonly column?: number;
+
+  constructor(message: string, line?: number, column?: number, cause?: Error) {
+    super(message, cause ? { cause } : undefined);
     this.name = "SPARQLParseError";
+    this.line = line;
+    this.column = column;
   }
 }
 

@@ -7,8 +7,8 @@ import { BlankNode } from "../../../domain/models/rdf/BlankNode";
 import type { Subject, Predicate, Object as RDFObject } from "../../../domain/models/rdf/Triple";
 
 export class BGPExecutorError extends Error {
-  constructor(message: string, public readonly cause?: Error) {
-    super(message);
+  constructor(message: string, cause?: Error) {
+    super(message, cause ? { cause } : undefined);
     this.name = "BGPExecutorError";
   }
 }
