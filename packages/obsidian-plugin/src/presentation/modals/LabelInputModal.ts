@@ -31,7 +31,7 @@ export class LabelInputModal extends Modal {
     this.showTaskSize = showTaskSize;
   }
 
-  onOpen(): void {
+  override onOpen(): void {
     const { contentEl } = this;
 
     contentEl.addClass("exocortex-label-input-modal");
@@ -173,7 +173,7 @@ export class LabelInputModal extends Modal {
     this.close();
   }
 
-  onClose(): void {
+  override onClose(): void {
     const { contentEl } = this;
     contentEl.empty();
   }

@@ -23,7 +23,7 @@ export class NarrowerConceptModal extends Modal {
     this.onSubmit = onSubmit;
   }
 
-  onOpen(): void {
+  override onOpen(): void {
     const { contentEl } = this;
 
     contentEl.addClass("exocortex-narrower-concept-modal");
@@ -191,7 +191,7 @@ export class NarrowerConceptModal extends Modal {
     }, 3000);
   }
 
-  onClose(): void {
+  override onClose(): void {
     const { contentEl } = this;
     contentEl.empty();
   }

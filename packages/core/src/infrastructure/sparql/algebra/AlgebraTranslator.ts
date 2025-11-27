@@ -12,8 +12,8 @@ import type {
 } from "./AlgebraOperation";
 
 export class AlgebraTranslatorError extends Error {
-  constructor(message: string, public readonly cause?: Error) {
-    super(message);
+  constructor(message: string, cause?: Error) {
+    super(message, cause ? { cause } : undefined);
     this.name = "AlgebraTranslatorError";
   }
 }

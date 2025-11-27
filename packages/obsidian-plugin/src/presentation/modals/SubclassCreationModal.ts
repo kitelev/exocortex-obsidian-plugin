@@ -14,7 +14,7 @@ export class SubclassCreationModal extends Modal {
     this.onSubmit = onSubmit;
   }
 
-  onOpen(): void {
+  override onOpen(): void {
     const { contentEl } = this;
 
     contentEl.addClass("exocortex-subclass-creation-modal");
@@ -95,7 +95,7 @@ export class SubclassCreationModal extends Modal {
     }, 3000);
   }
 
-  onClose(): void {
+  override onClose(): void {
     const { contentEl } = this;
     contentEl.empty();
   }
