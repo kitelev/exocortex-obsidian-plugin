@@ -1,5 +1,7 @@
 import { TFile } from "obsidian";
 
+export * from "./TestFixtureBuilder";
+
 export function createMockTFile(
   path: string,
   metadata: Record<string, any> = {},
