@@ -82,6 +82,7 @@ export function createMockApp(overrides?: any): any {
       delete: jest.fn(),
       rename: jest.fn(),
       getFiles: jest.fn().mockReturnValue([]),
+      getName: jest.fn().mockReturnValue("Test Vault"),
     },
     metadataCache: {
       getFileCache: jest.fn().mockReturnValue({ frontmatter: {} }),

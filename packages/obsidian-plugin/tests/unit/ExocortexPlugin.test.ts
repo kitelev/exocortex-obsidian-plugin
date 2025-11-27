@@ -81,6 +81,7 @@ describe("ExocortexPlugin", () => {
     // Setup mock vault
     mockVault = {
       on: jest.fn().mockReturnValue({ unsubscribe: jest.fn() }),
+      getName: jest.fn().mockReturnValue("Test Vault"),
     };
 
     // Setup mock app

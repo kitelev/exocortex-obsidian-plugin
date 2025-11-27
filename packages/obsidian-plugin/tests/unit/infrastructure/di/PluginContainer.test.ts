@@ -12,7 +12,9 @@ describe("PluginContainer", () => {
     container.clearInstances();
 
     mockApp = {
-      vault: {} as any,
+      vault: {
+        getName: jest.fn().mockReturnValue("Test Vault"),
+      } as any,
       metadataCache: {} as any,
     } as App;
 
@@ -33,6 +35,31 @@ describe("PluginContainer", () => {
     expect(() => container.resolve(DI_TOKENS.IConfiguration)).not.toThrow();
     expect(() => container.resolve(DI_TOKENS.INotificationService)).not.toThrow();
     expect(() => container.resolve(DI_TOKENS.IVaultAdapter)).not.toThrow();
+    expect(() => container.resolve(DI_TOKENS.IVaultContext)).not.toThrow();
+    expect(() => container.resolve(DI_TOKENS.IMultiVaultManager)).not.toThrow();
+  });
+
+  it("should resolve IVaultContext with vault identity", () => {
+    PluginContainer.setup(mockApp, mockPlugin);
+
+    const vaultContext = container.resolve(DI_TOKENS.IVaultContext);
+
+    expect(vaultContext).toBeDefined();
+    expect(vaultContext.vaultId).toBe("Test Vault");
+    expect(vaultContext.vaultName).toBe("Test Vault");
+    expect(vaultContext.vaultAdapter).toBeDefined();
+    expect(vaultContext.isActive).toBe(true);
+  });
+
+  it("should resolve IMultiVaultManager with single vault", () => {
+    PluginContainer.setup(mockApp, mockPlugin);
+
+    const manager = container.resolve(DI_TOKENS.IMultiVaultManager);
+
+    expect(manager).toBeDefined();
+    expect(typeof manager.getCurrentVault).toBe("function");
+    expect(typeof manager.listVaults).toBe("function");
+    expect(manager.getVaultCount()).toBe(1);
   });
 
   it("should resolve ILogger implementation", () => {
