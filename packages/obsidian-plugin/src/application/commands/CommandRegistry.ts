@@ -49,6 +49,7 @@ import { ConvertTaskToProjectCommand } from "./ConvertTaskToProjectCommand";
 import { ConvertProjectToTaskCommand } from "./ConvertProjectToTaskCommand";
 import { SetFocusAreaCommand } from "./SetFocusAreaCommand";
 import { OpenQueryBuilderCommand } from "./OpenQueryBuilderCommand";
+import { EditPropertiesCommand } from "./EditPropertiesCommand";
 
 export class CommandRegistry {
   private commands: ICommand[] = [];
@@ -109,6 +110,7 @@ export class CommandRegistry {
       new ConvertProjectToTaskCommand(assetConversionService),
       new SetFocusAreaCommand(app, plugin),
       new OpenQueryBuilderCommand(app, plugin),
+      new EditPropertiesCommand(app, plugin),
     ];
   }
 

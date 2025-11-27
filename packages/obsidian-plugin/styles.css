@@ -1952,3 +1952,224 @@
   border-radius: 3px;
   background-color: var(--background-modifier-error-hover);
 }
+
+/* ============================================================================
+   Property Editor Modal
+   ============================================================================ */
+
+.property-editor-modal {
+  min-width: 400px;
+  max-width: 600px;
+}
+
+.property-editor-modal .modal-title {
+  font-size: 1.2em;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.property-editor-subtitle {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.property-editor-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.property-editor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.property-editor-section {
+  margin-bottom: 16px;
+}
+
+.property-editor-section-title {
+  font-size: 0.9em;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.property-editor-readonly-section {
+  opacity: 0.8;
+  background-color: var(--background-secondary);
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 16px;
+}
+
+/* Property Field Styles */
+.property-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+}
+
+.property-field:last-child {
+  border-bottom: none;
+}
+
+.property-field-label {
+  font-size: 0.9em;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.property-field-label .required-indicator {
+  color: var(--text-error);
+  margin-left: 2px;
+}
+
+.property-field-description {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.property-field-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 0.9em;
+}
+
+.property-field-input:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.property-field-input:disabled,
+.property-field-input[readonly] {
+  background-color: var(--background-secondary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.property-field-input.has-error {
+  border-color: var(--text-error);
+}
+
+.property-field-input.has-error:focus {
+  box-shadow: 0 0 0 2px rgba(var(--text-error-rgb), 0.2);
+}
+
+/* Select Field */
+.property-field-select {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.property-field-select:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+}
+
+/* Checkbox Field */
+.property-field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row;
+}
+
+.property-field-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--interactive-accent);
+}
+
+.property-field-checkbox .checkbox-label {
+  font-size: 0.9em;
+  color: var(--text-normal);
+}
+
+/* WikiLink Field */
+.wikilink-field-input {
+  font-family: var(--font-monospace);
+}
+
+.wikilink-field-hint {
+  font-size: 0.75em;
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+/* Timestamp Field (read-only) */
+.timestamp-field-value {
+  font-family: var(--font-monospace);
+  font-size: 0.85em;
+  padding: 6px 10px;
+  background-color: var(--background-secondary);
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+/* Error Display */
+.property-field-error {
+  font-size: 0.8em;
+  color: var(--text-error);
+  margin-top: 2px;
+}
+
+.property-editor-errors {
+  background-color: var(--background-modifier-error);
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin: 12px 0;
+}
+
+.property-editor-errors .error-summary {
+  color: var(--text-error);
+  font-size: 0.9em;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Action Buttons */
+.property-editor-actions {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .property-editor-modal {
+    min-width: 300px;
+    max-width: 100%;
+  }
+
+  .property-editor-container {
+    max-height: 50vh;
+  }
+
+  .property-field-input,
+  .property-field-select {
+    padding: 10px 12px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
