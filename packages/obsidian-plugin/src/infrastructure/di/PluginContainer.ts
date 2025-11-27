@@ -12,6 +12,8 @@ import { ObsidianEventBus } from "./ObsidianEventBus";
 import { ObsidianConfiguration } from "./ObsidianConfiguration";
 import { ObsidianNotificationService } from "./ObsidianNotificationService";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
+import { SingleVaultContext } from "../vault/SingleVaultContext";
+import { SingleVaultManager } from "../vault/SingleVaultManager";
 
 export class PluginContainer {
   static setup(app: App, plugin: Plugin): void {
@@ -31,11 +33,32 @@ export class PluginContainer {
       useClass: ObsidianNotificationService,
     });
 
+    const vaultAdapter = new ObsidianVaultAdapter(
+      app.vault,
+      app.metadataCache,
+      app,
+    );
+
     container.register(DI_TOKENS.IVaultAdapter, {
-      useFactory: () => new ObsidianVaultAdapter(app.vault, app.metadataCache, app),
+      useValue: vaultAdapter,
     });
 
-    // Phase 2: Register TaskCreationService and its dependencies explicitly as singletons
+    const vaultContext = new SingleVaultContext(
+      app.vault.getName(),
+      app.vault.getName(),
+      vaultAdapter,
+      true,
+    );
+
+    container.register(DI_TOKENS.IVaultContext, {
+      useValue: vaultContext,
+    });
+
+    container.register(DI_TOKENS.IMultiVaultManager, {
+      useFactory: () => new SingleVaultManager(vaultContext),
+    });
+
+    // Register TaskCreationService and its dependencies explicitly as singletons
     container.registerSingleton(TaskFrontmatterGenerator);
     container.registerSingleton(AlgorithmExtractor);
     container.registerSingleton(TaskCreationService);
