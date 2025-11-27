@@ -5,6 +5,8 @@ import type ExocortexPlugin from "../../ExocortexPlugin";
 import { ReactRenderer } from "../utils/ReactRenderer";
 import { PropertyEditorForm } from "../components/property-editor/PropertyEditorForm";
 import { ErrorBoundary } from "../components/ErrorBoundary";
+import { formatPropertyValue } from "../../domain/property-editor/formatPropertyValue";
+import { extractInstanceClass } from "../../domain/property-editor/extractInstanceClass";
 
 export class PropertyEditorModal extends Modal {
   private plugin: ExocortexPlugin;
@@ -24,18 +26,7 @@ export class PropertyEditorModal extends Modal {
     this.reactRenderer = new ReactRenderer();
     this.file = file;
     this.frontmatter = frontmatter;
-    this.instanceClass = this.extractInstanceClass(frontmatter);
-  }
-
-  private extractInstanceClass(frontmatter: Record<string, unknown>): string {
-    const instanceClass = frontmatter["exo__Instance_class"];
-    if (Array.isArray(instanceClass) && instanceClass.length > 0) {
-      return String(instanceClass[0]).replace(/^\[\[|\]\]$/g, "").replace(/^"|"$/g, "");
-    }
-    if (typeof instanceClass === "string") {
-      return instanceClass.replace(/^\[\[|\]\]$/g, "").replace(/^"|"$/g, "");
-    }
-    return "ems__Task";
+    this.instanceClass = extractInstanceClass(frontmatter);
   }
 
   override onOpen(): void {
@@ -77,7 +68,7 @@ export class PropertyEditorModal extends Modal {
       const frontmatterService = new FrontmatterService();
 
       for (const [key, value] of Object.entries(updatedFrontmatter)) {
-        const formattedValue = this.formatPropertyValue(value);
+        const formattedValue = formatPropertyValue(value);
         fileContent = frontmatterService.updateProperty(
           fileContent,
           key,
@@ -94,22 +85,6 @@ export class PropertyEditorModal extends Modal {
       const message = error instanceof Error ? error.message : String(error);
       new Notice(`Failed to save properties: ${message}`, 5000);
     }
-  }
-
-  private formatPropertyValue(value: unknown): string {
-    if (value === null || value === undefined) {
-      return "";
-    }
-    if (typeof value === "boolean") {
-      return value.toString();
-    }
-    if (typeof value === "number") {
-      return value.toString();
-    }
-    if (Array.isArray(value)) {
-      return `\n${value.map((v) => `  - ${v}`).join("\n")}`;
-    }
-    return String(value);
   }
 
   private handleCancel(): void {
