@@ -1952,3 +1952,52 @@
   border-radius: 3px;
   background-color: var(--background-modifier-error-hover);
 }
+
+/* ============================================================================
+   Property Editor Modal
+   ============================================================================ */
+
+.exocortex-property-editor-modal .exocortex-property-form {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.exocortex-property-editor-modal .exocortex-property-field {
+  margin-bottom: 12px;
+}
+
+.exocortex-property-editor-modal .exocortex-property-label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.exocortex-property-editor-modal .exocortex-property-readonly {
+  color: var(--text-muted);
+  font-family: var(--font-monospace);
+}
+
+.exocortex-property-editor-modal .exocortex-modal-select,
+.exocortex-property-editor-modal .exocortex-modal-input {
+  width: 100%;
+}
+
+.exocortex-property-editor-modal .exocortex-modal-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exocortex-property-editor-modal .exocortex-wikilink-input-wrapper {
+  display: flex;
+  gap: 8px;
+}
+
+.exocortex-property-editor-modal .exocortex-wikilink-input-wrapper .exocortex-modal-input {
+  flex: 1;
+}
+
+.exocortex-property-editor-modal .exocortex-browse-button {
+  padding: 4px 12px;
+}

@@ -49,15 +49,15 @@ describe("Commands Index Exports", () => {
     });
   });
 
-  it("should export exactly 27 command classes and 1 registry", () => {
+  it("should export exactly 28 command classes and 1 registry", () => {
     // Filter out type exports (which don't appear at runtime)
     const exports = Object.keys(commandsIndex);
     const commandClasses = exports.filter((key) => key.endsWith("Command"));
     const registryClasses = exports.filter((key) => key.endsWith("Registry"));
 
-    expect(commandClasses.length).toBe(26); // All commands
+    expect(commandClasses.length).toBe(27); // All commands
     expect(registryClasses.length).toBe(1); // CommandRegistry
-    expect(exports.length).toBe(27); // Total exports (excluding ICommand type)
+    expect(exports.length).toBe(28); // Total exports (excluding ICommand type)
   });
 
   it("should have all exported classes be constructable", () => {

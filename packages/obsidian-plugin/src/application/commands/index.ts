@@ -26,3 +26,4 @@ export { ReloadLayoutCommand } from "./ReloadLayoutCommand";
 export { TogglePropertiesVisibilityCommand } from "./TogglePropertiesVisibilityCommand";
 export { ToggleLayoutVisibilityCommand } from "./ToggleLayoutVisibilityCommand";
 export { ToggleArchivedAssetsCommand } from "./ToggleArchivedAssetsCommand";
+export { EditPropertiesCommand } from "./EditPropertiesCommand";

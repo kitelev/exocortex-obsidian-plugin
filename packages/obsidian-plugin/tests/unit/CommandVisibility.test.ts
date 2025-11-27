@@ -24,6 +24,7 @@ import {
   canConvertProjectToTask,
   canCreateTaskForDailyNote,
   canCreateSubclass,
+  canEditProperties,
   AssetClass,
 } from "@exocortex/core";
 
@@ -2583,6 +2584,68 @@ describe("CommandVisibility", () => {
         expectedFolder: null,
       };
       expect(canCreateSubclass(context)).toBe(false);
+    });
+  });
+
+  describe("canEditProperties", () => {
+    it("should return true when metadata has properties", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: { exo__Asset_label: "Test" },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canEditProperties(context)).toBe(true);
+    });
+
+    it("should return true for any asset class with frontmatter", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[exo__Class]]",
+        currentStatus: null,
+        metadata: { exo__Asset_uid: "123-456" },
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canEditProperties(context)).toBe(true);
+    });
+
+    it("should return false when metadata is null", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: null,
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canEditProperties(context)).toBe(false);
+    });
+
+    it("should return false when metadata is empty object", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canEditProperties(context)).toBe(false);
+    });
+
+    it("should return true even for archived assets", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__Task]]",
+        currentStatus: null,
+        metadata: { exo__Asset_label: "Test" },
+        isArchived: true,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canEditProperties(context)).toBe(true);
     });
   });
 });

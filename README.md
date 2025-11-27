@@ -26,7 +26,8 @@ Exocortex is a powerful Obsidian plugin that transforms your notes into an inter
 - 📦 **Archive Filtering**: Toggle visibility of archived tasks and projects in DailyNote layouts (default: hidden)
 - ⚡ **High Performance**: O(1) relation lookups via reverse indexing
 - 📱 **Mobile Compatible**: Full touch-optimized UI for desktop and mobile
-- ⌨️ **24 Commands**: Comprehensive command palette integration for all operations
+- ⌨️ **25 Commands**: Comprehensive command palette integration for all operations
+- ✏️ **Visual Property Editor**: Edit frontmatter properties through form interface with auto-complete for wiki-links
 - 🎨 **Action Buttons**: Context-aware UI buttons for quick access to relevant commands
 - 🔍 **SPARQL Query Blocks**: Execute semantic queries directly in markdown with `sparql` code blocks - results auto-refresh on vault changes
 

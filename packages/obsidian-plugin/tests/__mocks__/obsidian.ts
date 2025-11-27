@@ -252,6 +252,32 @@ export class Modal {
   onClose(): void {}
 }
 
+export class FuzzySuggestModal<T> {
+  app: App;
+  inputEl: HTMLInputElement;
+  resultContainerEl: HTMLElement;
+
+  constructor(app: App) {
+    this.app = app;
+    this.inputEl = document.createElement("input");
+    this.resultContainerEl = document.createElement("div");
+  }
+
+  open(): void {}
+  close(): void {}
+  setPlaceholder(placeholder: string): void {
+    this.inputEl.placeholder = placeholder;
+  }
+  getItems(): T[] {
+    return [];
+  }
+  getItemText(item: T): string {
+    return "";
+  }
+  onChooseItem(item: T, evt: MouseEvent | KeyboardEvent): void {}
+  onNoSuggestion(): void {}
+}
+
 export class PluginSettingTab {
   app: App;
   containerEl: HTMLElement;

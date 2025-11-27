@@ -147,7 +147,7 @@ describe("CommandManager", () => {
         commandManager.registerAllCommands(mockPlugin);
       }).not.toThrow();
 
-      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(31);
+      expect(mockPlugin.addCommand).toHaveBeenCalledTimes(32);
     });
 
     it("should register commands with correct IDs", () => {
@@ -189,6 +189,7 @@ describe("CommandManager", () => {
       );
       expect(registeredCommandIds).toContain("set-focus-area");
       expect(registeredCommandIds).toContain("open-sparql-query-builder");
+      expect(registeredCommandIds).toContain("edit-properties");
     });
 
     it("should register commands with correct names", () => {
@@ -227,6 +228,7 @@ describe("CommandManager", () => {
       expect(registeredNames).toContain("Toggle layout visibility");
       expect(registeredNames).toContain("Toggle archived assets visibility");
       expect(registeredNames).toContain("open sparql query builder");
+      expect(registeredNames).toContain("Edit properties");
     });
 
     it("should register commands with checkCallback or callback function", () => {
@@ -285,6 +287,7 @@ describe("CommandManager", () => {
       "rename-to-uid",
       "vote-on-effort",
       "copy-label-to-aliases",
+      "edit-properties",
     ];
 
     checkCallbackCommands.forEach((commandId) => {

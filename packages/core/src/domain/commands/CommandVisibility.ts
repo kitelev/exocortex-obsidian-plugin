@@ -593,3 +593,11 @@ export function canCreateTaskForDailyNote(
 
   return isCurrentDateGteDay(dailyNoteDate);
 }
+
+/**
+ * Can execute "Edit Properties" command
+ * Available for: any file with frontmatter (has any properties)
+ */
+export function canEditProperties(context: CommandVisibilityContext): boolean {
+  return context.metadata !== null && Object.keys(context.metadata).length > 0;
+}
