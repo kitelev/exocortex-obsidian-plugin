@@ -5,9 +5,19 @@ import * as path from "path";
  * Playwright Component Testing Configuration
  *
  * Tests React components in isolation without requiring full Obsidian environment
+ *
+ * Visual Regression Testing:
+ * - Snapshots stored in tests/component/__snapshots__/
+ * - Run `npx playwright test --update-snapshots` to update baselines
+ * - Threshold: 0.2 (20% pixel difference allowed for anti-aliasing)
  */
 export default defineConfig({
   testDir: "./tests/component",
+
+  // Snapshot configuration for visual regression testing
+  snapshotDir: "./tests/component/__snapshots__",
+  snapshotPathTemplate:
+    "{snapshotDir}/{testFileDir}/{testFileName}-snapshots/{arg}{-projectName}{ext}",
 
   // Run tests in parallel
   fullyParallel: true,
@@ -32,6 +42,19 @@ export default defineConfig({
   timeout: 10000, // 10 seconds per test
   expect: {
     timeout: 5000, // 5 seconds for assertions
+    // Visual regression testing configuration
+    toHaveScreenshot: {
+      // Maximum allowed pixel difference ratio (0.2 = 20%)
+      maxDiffPixelRatio: 0.2,
+      // Animation timing tolerance
+      animations: "disabled",
+      // Scale for screenshot comparison
+      scale: "css",
+    },
+    toMatchSnapshot: {
+      // Maximum allowed pixel difference ratio
+      maxDiffPixelRatio: 0.2,
+    },
   },
 
   // Shared settings for all tests
