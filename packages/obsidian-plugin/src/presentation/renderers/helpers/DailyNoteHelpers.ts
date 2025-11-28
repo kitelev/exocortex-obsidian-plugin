@@ -1,6 +1,6 @@
 import { TFile } from "obsidian";
 import { ILogger } from "../../../adapters/logging/ILogger";
-import { MetadataExtractor } from "@exocortex/core";
+import { MetadataExtractor, IVaultAdapter, IFile } from "@exocortex/core";
 
 export interface DailyNoteInfo {
   isDailyNote: boolean;
@@ -12,7 +12,7 @@ export class DailyNoteHelpers {
    * Checks if a file is a daily note and extracts the day property
    */
   static extractDailyNoteInfo(
-    file: TFile,
+    file: TFile | IFile,
     metadataExtractor: MetadataExtractor,
     logger?: ILogger,
   ): DailyNoteInfo {
@@ -48,11 +48,11 @@ export class DailyNoteHelpers {
   }
 
   static findDailyNoteByDate(
-    app: any,
+    vaultAdapter: IVaultAdapter,
     metadataExtractor: MetadataExtractor,
     dateStr: string,
-  ): TFile | null {
-    const files = app.vault.getMarkdownFiles();
+  ): IFile | null {
+    const files = vaultAdapter.getAllFiles();
 
     for (const file of files) {
       const dailyNoteInfo = this.extractDailyNoteInfo(

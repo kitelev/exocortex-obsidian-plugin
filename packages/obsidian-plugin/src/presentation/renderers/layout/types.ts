@@ -1,7 +1,10 @@
-import { TFile } from "obsidian";
+export interface AssetRelationFile {
+  path: string;
+  basename: string;
+}
 
 export interface AssetRelation {
-  file: TFile;
+  file: AssetRelationFile;
   path: string;
   title: string;
   metadata: Record<string, any>;

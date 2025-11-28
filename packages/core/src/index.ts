@@ -86,6 +86,7 @@ export {
 export type {
   IVaultAdapter,
   IFile,
+  IFileStat,
   IFolder,
   IFrontmatter,
 } from "./interfaces/IVaultAdapter";

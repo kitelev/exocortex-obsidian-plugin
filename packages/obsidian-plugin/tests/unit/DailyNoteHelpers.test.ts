@@ -84,18 +84,16 @@ describe("DailyNoteHelpers", () => {
 
   describe("findDailyNoteByDate", () => {
     it("should find DailyNote by date when it exists", () => {
-      const mockFile1 = { path: "2025-10-14.md" } as TFile;
-      const mockFile2 = { path: "2025-10-15.md" } as TFile;
-      const mockFile3 = { path: "2025-10-16.md" } as TFile;
+      const mockFile1 = { path: "2025-10-14.md", basename: "2025-10-14", name: "2025-10-14.md", parent: null };
+      const mockFile2 = { path: "2025-10-15.md", basename: "2025-10-15", name: "2025-10-15.md", parent: null };
+      const mockFile3 = { path: "2025-10-16.md", basename: "2025-10-16", name: "2025-10-16.md", parent: null };
 
-      const mockApp = {
-        vault: {
-          getMarkdownFiles: jest.fn().mockReturnValue([
-            mockFile1,
-            mockFile2,
-            mockFile3,
-          ]),
-        },
+      const mockVaultAdapter = {
+        getAllFiles: jest.fn().mockReturnValue([
+          mockFile1,
+          mockFile2,
+          mockFile3,
+        ]),
       };
 
       mockMetadataExtractor.extractMetadata
@@ -108,7 +106,7 @@ describe("DailyNoteHelpers", () => {
       );
 
       const result = DailyNoteHelpers.findDailyNoteByDate(
-        mockApp,
+        mockVaultAdapter as any,
         mockMetadataExtractor,
         "2025-10-15",
       );
@@ -117,13 +115,11 @@ describe("DailyNoteHelpers", () => {
     });
 
     it("should return null when DailyNote for given date does not exist", () => {
-      const mockFile1 = { path: "2025-10-14.md" } as TFile;
-      const mockFile2 = { path: "2025-10-16.md" } as TFile;
+      const mockFile1 = { path: "2025-10-14.md", basename: "2025-10-14", name: "2025-10-14.md", parent: null };
+      const mockFile2 = { path: "2025-10-16.md", basename: "2025-10-16", name: "2025-10-16.md", parent: null };
 
-      const mockApp = {
-        vault: {
-          getMarkdownFiles: jest.fn().mockReturnValue([mockFile1, mockFile2]),
-        },
+      const mockVaultAdapter = {
+        getAllFiles: jest.fn().mockReturnValue([mockFile1, mockFile2]),
       };
 
       mockMetadataExtractor.extractMetadata
@@ -135,7 +131,7 @@ describe("DailyNoteHelpers", () => {
       );
 
       const result = DailyNoteHelpers.findDailyNoteByDate(
-        mockApp,
+        mockVaultAdapter as any,
         mockMetadataExtractor,
         "2025-10-15",
       );
@@ -144,14 +140,12 @@ describe("DailyNoteHelpers", () => {
     });
 
     it("should return null when no markdown files exist", () => {
-      const mockApp = {
-        vault: {
-          getMarkdownFiles: jest.fn().mockReturnValue([]),
-        },
+      const mockVaultAdapter = {
+        getAllFiles: jest.fn().mockReturnValue([]),
       };
 
       const result = DailyNoteHelpers.findDailyNoteByDate(
-        mockApp,
+        mockVaultAdapter as any,
         mockMetadataExtractor,
         "2025-10-15",
       );
@@ -160,12 +154,10 @@ describe("DailyNoteHelpers", () => {
     });
 
     it("should handle DailyNote with day property without brackets", () => {
-      const mockFile1 = { path: "2025-10-15.md" } as TFile;
+      const mockFile1 = { path: "2025-10-15.md", basename: "2025-10-15", name: "2025-10-15.md", parent: null };
 
-      const mockApp = {
-        vault: {
-          getMarkdownFiles: jest.fn().mockReturnValue([mockFile1]),
-        },
+      const mockVaultAdapter = {
+        getAllFiles: jest.fn().mockReturnValue([mockFile1]),
       };
 
       mockMetadataExtractor.extractMetadata.mockReturnValue({
@@ -177,7 +169,7 @@ describe("DailyNoteHelpers", () => {
       );
 
       const result = DailyNoteHelpers.findDailyNoteByDate(
-        mockApp,
+        mockVaultAdapter as any,
         mockMetadataExtractor,
         "2025-10-15",
       );
@@ -186,13 +178,11 @@ describe("DailyNoteHelpers", () => {
     });
 
     it("should skip non-DailyNote files", () => {
-      const mockFile1 = { path: "task.md" } as TFile;
-      const mockFile2 = { path: "2025-10-15.md" } as TFile;
+      const mockFile1 = { path: "task.md", basename: "task", name: "task.md", parent: null };
+      const mockFile2 = { path: "2025-10-15.md", basename: "2025-10-15", name: "2025-10-15.md", parent: null };
 
-      const mockApp = {
-        vault: {
-          getMarkdownFiles: jest.fn().mockReturnValue([mockFile1, mockFile2]),
-        },
+      const mockVaultAdapter = {
+        getAllFiles: jest.fn().mockReturnValue([mockFile1, mockFile2]),
       };
 
       mockMetadataExtractor.extractMetadata
@@ -204,7 +194,7 @@ describe("DailyNoteHelpers", () => {
         .mockReturnValueOnce("[[pn__DailyNote]]");
 
       const result = DailyNoteHelpers.findDailyNoteByDate(
-        mockApp,
+        mockVaultAdapter as any,
         mockMetadataExtractor,
         "2025-10-15",
       );
@@ -213,13 +203,11 @@ describe("DailyNoteHelpers", () => {
     });
 
     it("should skip DailyNote files without pn__DailyNote_day property", () => {
-      const mockFile1 = { path: "daily-1.md" } as TFile;
-      const mockFile2 = { path: "2025-10-15.md" } as TFile;
+      const mockFile1 = { path: "daily-1.md", basename: "daily-1", name: "daily-1.md", parent: null };
+      const mockFile2 = { path: "2025-10-15.md", basename: "2025-10-15", name: "2025-10-15.md", parent: null };
 
-      const mockApp = {
-        vault: {
-          getMarkdownFiles: jest.fn().mockReturnValue([mockFile1, mockFile2]),
-        },
+      const mockVaultAdapter = {
+        getAllFiles: jest.fn().mockReturnValue([mockFile1, mockFile2]),
       };
 
       mockMetadataExtractor.extractMetadata
@@ -231,7 +219,7 @@ describe("DailyNoteHelpers", () => {
       );
 
       const result = DailyNoteHelpers.findDailyNoteByDate(
-        mockApp,
+        mockVaultAdapter as any,
         mockMetadataExtractor,
         "2025-10-15",
       );

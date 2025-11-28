@@ -59,6 +59,7 @@ export default class ExocortexPlugin extends Plugin {
         this.app,
         this.settings,
         this,
+        this.vaultAdapter,
       );
       this.taskStatusService = new TaskStatusService(this.vaultAdapter);
       this.taskTrackingService = new TaskTrackingService(

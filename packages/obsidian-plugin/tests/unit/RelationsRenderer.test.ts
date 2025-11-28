@@ -78,6 +78,7 @@ describe("RelationsRenderer", () => {
   let mockElement: any;
   let mockFile: any;
   let mockLeaf: any;
+  let mockVaultAdapter: any;
   let mockPlugin: any;
   let mockSettings: any;
   let mockRefresh: jest.Mock;
@@ -112,6 +113,24 @@ describe("RelationsRenderer", () => {
 
     mockRefresh = jest.fn().mockResolvedValue(undefined);
 
+    mockVaultAdapter = {
+      getAllFiles: jest.fn().mockReturnValue([]),
+      read: jest.fn(),
+      create: jest.fn(),
+      modify: jest.fn(),
+      delete: jest.fn(),
+      exists: jest.fn(),
+      getAbstractFileByPath: jest.fn(),
+      getFrontmatter: jest.fn().mockReturnValue(null),
+      updateFrontmatter: jest.fn(),
+      rename: jest.fn(),
+      createFolder: jest.fn(),
+      getFirstLinkpathDest: jest.fn(),
+      process: jest.fn(),
+      getDefaultNewFileParent: jest.fn(),
+      updateLinks: jest.fn(),
+    };
+
     renderer = new RelationsRenderer(
       mockApp,
       mockSettings,
@@ -120,6 +139,7 @@ describe("RelationsRenderer", () => {
       mockMetadataService,
       mockPlugin,
       mockRefresh,
+      mockVaultAdapter,
     );
 
     mockElement = createMockElement();
@@ -166,18 +186,16 @@ describe("RelationsRenderer", () => {
         });
 
         mockBacklinksCacheManager.getBacklinks.mockReturnValue([sourceFile.path]);
-        mockApp.vault.getAbstractFileByPath.mockReturnValue(sourceFile);
-        mockApp.metadataCache.getFileCache.mockReturnValue({
-          frontmatter: sourceMetadata,
-        });
+        mockVaultAdapter.getAbstractFileByPath.mockReturnValue(sourceFile);
+        mockVaultAdapter.getFrontmatter.mockReturnValue(sourceMetadata);
         MetadataHelpers.isAssetArchived.mockReturnValue(false);
         MetadataHelpers.findAllReferencingProperties.mockReturnValue([]);
         BlockerHelpers.isEffortBlocked.mockReturnValue(false);
         mockMetadataService.getAssetLabel.mockReturnValue("Resolved Label");
       });
 
-      it("should skip non-TFile sources", async () => {
-        mockApp.vault.getAbstractFileByPath.mockReturnValue({ isFolder: true });
+      it("should skip sources when file not found", async () => {
+        mockVaultAdapter.getAbstractFileByPath.mockReturnValue(null);
 
         const result = await renderer.getAssetRelations(mockFile, {});
 
@@ -189,7 +207,7 @@ describe("RelationsRenderer", () => {
 
         expect(result).toHaveLength(1);
         expect(result[0]).toMatchObject({
-          file: sourceFile,
+          file: { path: sourceFile.path, basename: sourceFile.basename },
           path: sourceFile.path,
           title: "Resolved Label",
           propertyName: undefined,
@@ -246,7 +264,7 @@ describe("RelationsRenderer", () => {
       beforeEach(() => {
         sourceFile = createTestTFile("source/archived-file.md");
         mockBacklinksCacheManager.getBacklinks.mockReturnValue([sourceFile.path]);
-        mockApp.vault.getAbstractFileByPath.mockReturnValue(sourceFile);
+        mockVaultAdapter.getAbstractFileByPath.mockReturnValue(sourceFile);
         MetadataHelpers.findAllReferencingProperties.mockReturnValue([]);
         BlockerHelpers.isEffortBlocked.mockReturnValue(false);
         mockMetadataService.getAssetLabel.mockReturnValue(null);
@@ -254,9 +272,7 @@ describe("RelationsRenderer", () => {
 
       it("should return archived assets with isArchived flag set", async () => {
         const archivedMetadata = createMockMetadata({ exo__Asset_isArchived: true });
-        mockApp.metadataCache.getFileCache.mockReturnValue({
-          frontmatter: archivedMetadata,
-        });
+        mockVaultAdapter.getFrontmatter.mockReturnValue(archivedMetadata);
         MetadataHelpers.isAssetArchived.mockReturnValue(true);
 
         const result = await renderer.getAssetRelations(mockFile, {});
@@ -267,9 +283,7 @@ describe("RelationsRenderer", () => {
 
       it("should return archived assets regardless of showArchivedAssets setting", async () => {
         const archivedMetadata = createMockMetadata({ exo__Asset_isArchived: true });
-        mockApp.metadataCache.getFileCache.mockReturnValue({
-          frontmatter: archivedMetadata,
-        });
+        mockVaultAdapter.getFrontmatter.mockReturnValue(archivedMetadata);
         MetadataHelpers.isAssetArchived.mockReturnValue(true);
         mockSettings.showArchivedAssets = false;
 
@@ -281,9 +295,7 @@ describe("RelationsRenderer", () => {
 
       it("should mark non-archived assets correctly", async () => {
         const metadata = createMockMetadata({ exo__Asset_isArchived: false });
-        mockApp.metadataCache.getFileCache.mockReturnValue({
-          frontmatter: metadata,
-        });
+        mockVaultAdapter.getFrontmatter.mockReturnValue(metadata);
         MetadataHelpers.isAssetArchived.mockReturnValue(false);
 
         const result = await renderer.getAssetRelations(mockFile, {});
@@ -301,10 +313,8 @@ describe("RelationsRenderer", () => {
         sourceMetadata = createMockMetadata();
 
         mockBacklinksCacheManager.getBacklinks.mockReturnValue([sourceFile.path]);
-        mockApp.vault.getAbstractFileByPath.mockReturnValue(sourceFile);
-        mockApp.metadataCache.getFileCache.mockReturnValue({
-          frontmatter: sourceMetadata,
-        });
+        mockVaultAdapter.getAbstractFileByPath.mockReturnValue(sourceFile);
+        mockVaultAdapter.getFrontmatter.mockReturnValue(sourceMetadata);
         MetadataHelpers.isAssetArchived.mockReturnValue(false);
         BlockerHelpers.isEffortBlocked.mockReturnValue(false);
         mockMetadataService.getAssetLabel.mockReturnValue(null);
@@ -384,10 +394,8 @@ describe("RelationsRenderer", () => {
           [file3.path, file3],
         ]);
 
-        mockApp.vault.getAbstractFileByPath.mockImplementation((path) => fileMap.get(path));
-        mockApp.metadataCache.getFileCache.mockReturnValue({
-          frontmatter: createMockMetadata(),
-        });
+        mockVaultAdapter.getAbstractFileByPath.mockImplementation((path) => fileMap.get(path));
+        mockVaultAdapter.getFrontmatter.mockReturnValue(createMockMetadata());
         MetadataHelpers.isAssetArchived.mockReturnValue(false);
         MetadataHelpers.findAllReferencingProperties.mockReturnValue([]);
         BlockerHelpers.isEffortBlocked.mockReturnValue(false);
@@ -407,13 +415,11 @@ describe("RelationsRenderer", () => {
 
         mockBacklinksCacheManager.getBacklinks.mockReturnValue([file1.path, file2.path]);
 
-        mockApp.vault.getAbstractFileByPath.mockImplementation((path) => {
+        mockVaultAdapter.getAbstractFileByPath.mockImplementation((path) => {
           return path === file1.path ? file1 : file2;
         });
 
-        mockApp.metadataCache.getFileCache.mockReturnValue({
-          frontmatter: createMockMetadata(),
-        });
+        mockVaultAdapter.getFrontmatter.mockReturnValue(createMockMetadata());
 
         MetadataHelpers.isAssetArchived.mockReturnValue(false);
         MetadataHelpers.findAllReferencingProperties.mockReturnValueOnce([
@@ -457,10 +463,8 @@ describe("RelationsRenderer", () => {
           [file3.path, file3],
         ]);
 
-        mockApp.vault.getAbstractFileByPath.mockImplementation((path) => fileMap.get(path));
-        mockApp.metadataCache.getFileCache.mockReturnValue({
-          frontmatter: createMockMetadata({ exo__Asset_label: null }),
-        });
+        mockVaultAdapter.getAbstractFileByPath.mockImplementation((path) => fileMap.get(path));
+        mockVaultAdapter.getFrontmatter.mockReturnValue(createMockMetadata({ exo__Asset_label: null }));
         MetadataHelpers.isAssetArchived.mockReturnValue(false);
         MetadataHelpers.findAllReferencingProperties.mockReturnValue([]);
         BlockerHelpers.isEffortBlocked.mockReturnValue(false);
@@ -547,11 +551,18 @@ describe("RelationsRenderer", () => {
       });
 
       it("should handle custom metadata properties for sorting", async () => {
-        mockApp.metadataCache.getFileCache.mockImplementation((file) => ({
-          frontmatter: createMockMetadata({
-            priority: file.basename === "z-file" ? 1 : file.basename === "m-file" ? 2 : 3,
+        const priorityMap: Record<string, number> = {
+          [file1.path]: 3,
+          [file2.path]: 1,
+          [file3.path]: 2,
+        };
+
+        mockVaultAdapter.getFrontmatter.mockImplementation((file: any) =>
+          createMockMetadata({
+            priority: priorityMap[file.path],
+            exo__Asset_label: null,
           }),
-        }));
+        );
 
         MetadataHelpers.getPropertyValue.mockImplementation((relation, prop) => {
           if (prop === "priority") return relation.metadata?.priority;
@@ -583,8 +594,8 @@ describe("RelationsRenderer", () => {
       it("should handle missing metadata cache", async () => {
         const sourceFile = createTestTFile("source/file.md");
         mockBacklinksCacheManager.getBacklinks.mockReturnValue([sourceFile.path]);
-        mockApp.vault.getAbstractFileByPath.mockReturnValue(sourceFile);
-        mockApp.metadataCache.getFileCache.mockReturnValue(null);
+        mockVaultAdapter.getAbstractFileByPath.mockReturnValue(sourceFile);
+        mockVaultAdapter.getFrontmatter.mockReturnValue(null);
         MetadataHelpers.isAssetArchived.mockReturnValue(false);
         MetadataHelpers.findAllReferencingProperties.mockReturnValue([]);
         BlockerHelpers.isEffortBlocked.mockReturnValue(false);
@@ -600,10 +611,8 @@ describe("RelationsRenderer", () => {
         const sourceFile = createTestTFile("source/file.md");
         sourceFile.basename = "";
         mockBacklinksCacheManager.getBacklinks.mockReturnValue([sourceFile.path]);
-        mockApp.vault.getAbstractFileByPath.mockReturnValue(sourceFile);
-        mockApp.metadataCache.getFileCache.mockReturnValue({
-          frontmatter: createMockMetadata({ exo__Asset_label: null }),
-        });
+        mockVaultAdapter.getAbstractFileByPath.mockReturnValue(sourceFile);
+        mockVaultAdapter.getFrontmatter.mockReturnValue(createMockMetadata({ exo__Asset_label: null }));
         MetadataHelpers.isAssetArchived.mockReturnValue(false);
         MetadataHelpers.findAllReferencingProperties.mockReturnValue([]);
         BlockerHelpers.isEffortBlocked.mockReturnValue(false);
@@ -618,10 +627,8 @@ describe("RelationsRenderer", () => {
       it("should handle metadata with null value", async () => {
         const sourceFile = createTestTFile("source/file.md");
         mockBacklinksCacheManager.getBacklinks.mockReturnValue([sourceFile.path]);
-        mockApp.vault.getAbstractFileByPath.mockReturnValue(sourceFile);
-        mockApp.metadataCache.getFileCache.mockReturnValue({
-          frontmatter: { ...createMockMetadata(), custom: null },
-        });
+        mockVaultAdapter.getAbstractFileByPath.mockReturnValue(sourceFile);
+        mockVaultAdapter.getFrontmatter.mockReturnValue({ ...createMockMetadata(), custom: null });
         MetadataHelpers.isAssetArchived.mockReturnValue(false);
         MetadataHelpers.findAllReferencingProperties.mockReturnValue([]);
         BlockerHelpers.isEffortBlocked.mockReturnValue(false);
@@ -1058,13 +1065,11 @@ describe("RelationsRenderer", () => {
         [file2.path, file2],
       ]);
 
-      mockApp.vault.getAbstractFileByPath.mockImplementation((path) => fileMap.get(path));
+      mockVaultAdapter.getAbstractFileByPath.mockImplementation((path) => fileMap.get(path));
 
       // File 1 is archived, File 2 is not
-      mockApp.metadataCache.getFileCache.mockImplementation((file) => ({
-        frontmatter: createMockMetadata({
-          exo__Asset_isArchived: file.path === file1.path,
-        }),
+      mockVaultAdapter.getFrontmatter.mockImplementation((file: any) => createMockMetadata({
+        exo__Asset_isArchived: file.path === file1.path,
       }));
 
       MetadataHelpers.isAssetArchived.mockImplementation(
@@ -1094,10 +1099,8 @@ describe("RelationsRenderer", () => {
       const metadata = createMockMetadata({ ems__Effort_blocker: "[[other-file]]" });
 
       mockBacklinksCacheManager.getBacklinks.mockReturnValue([sourceFile.path]);
-      mockApp.vault.getAbstractFileByPath.mockReturnValue(sourceFile);
-      mockApp.metadataCache.getFileCache.mockReturnValue({
-        frontmatter: metadata,
-      });
+      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(sourceFile);
+      mockVaultAdapter.getFrontmatter.mockReturnValue(metadata);
 
       MetadataHelpers.isAssetArchived.mockReturnValue(false);
       MetadataHelpers.findAllReferencingProperties.mockReturnValue([

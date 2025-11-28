@@ -2,7 +2,7 @@ import { DailyProjectsRenderer } from "../../src/presentation/renderers/DailyPro
 import { TFile } from "obsidian";
 import { ExocortexSettings } from "../../src/domain/settings/ExocortexSettings";
 import { ILogger } from "../../src/infrastructure/logging/ILogger";
-import { MetadataExtractor } from "@exocortex/core";
+import { MetadataExtractor, IVaultAdapter } from "@exocortex/core";
 import { ReactRenderer } from "../../src/presentation/utils/ReactRenderer";
 
 describe("DailyProjectsRenderer", () => {
@@ -16,6 +16,7 @@ describe("DailyProjectsRenderer", () => {
   let mockRefresh: jest.Mock;
   let mockGetAssetLabel: jest.Mock;
   let mockGetEffortArea: jest.Mock;
+  let mockVaultAdapter: jest.Mocked<IVaultAdapter>;
 
   const createMockElement = (): any => {
     const el: any = document.createElement("div");
@@ -86,6 +87,24 @@ describe("DailyProjectsRenderer", () => {
     mockGetAssetLabel = jest.fn();
     mockGetEffortArea = jest.fn();
 
+    mockVaultAdapter = {
+      getAllFiles: jest.fn().mockReturnValue([]),
+      read: jest.fn(),
+      create: jest.fn(),
+      modify: jest.fn(),
+      delete: jest.fn(),
+      exists: jest.fn(),
+      getAbstractFileByPath: jest.fn(),
+      getFrontmatter: jest.fn(),
+      updateFrontmatter: jest.fn(),
+      rename: jest.fn(),
+      createFolder: jest.fn(),
+      getFirstLinkpathDest: jest.fn(),
+      process: jest.fn(),
+      getDefaultNewFileParent: jest.fn(),
+      updateLinks: jest.fn(),
+    } as any;
+
     renderer = new DailyProjectsRenderer(
       mockApp,
       mockSettings,
@@ -96,6 +115,7 @@ describe("DailyProjectsRenderer", () => {
       mockRefresh,
       mockGetAssetLabel,
       mockGetEffortArea,
+      mockVaultAdapter,
     );
   });
 
@@ -157,7 +177,7 @@ describe("DailyProjectsRenderer", () => {
       mockMetadataExtractor.extractInstanceClass.mockReturnValue(
         "[[pn__DailyNote]]",
       );
-      mockApp.vault.getMarkdownFiles.mockReturnValue([]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -199,7 +219,7 @@ describe("DailyProjectsRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([projectFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([projectFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -246,7 +266,7 @@ describe("DailyProjectsRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -288,7 +308,7 @@ describe("DailyProjectsRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([projectFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([projectFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -338,7 +358,7 @@ describe("DailyProjectsRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue(projectFiles);
+      mockVaultAdapter.getAllFiles.mockReturnValue(projectFiles);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -364,7 +384,7 @@ describe("DailyProjectsRenderer", () => {
       mockMetadataExtractor.extractInstanceClass.mockReturnValue(
         "[[pn__DailyNote]]",
       );
-      mockApp.vault.getMarkdownFiles.mockImplementation(() => {
+      mockVaultAdapter.getAllFiles.mockImplementation(() => {
         throw new Error("Vault error");
       });
 
@@ -410,7 +430,7 @@ describe("DailyProjectsRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([projectFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([projectFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);

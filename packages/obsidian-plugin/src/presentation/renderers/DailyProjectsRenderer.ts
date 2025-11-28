@@ -7,7 +7,7 @@ import {
   DailyProject,
   DailyProjectsTableWithToggle,
 } from "../components/DailyProjectsTable";
-import { AssetClass, EffortStatus } from "@exocortex/core";
+import { AssetClass, EffortStatus, IVaultAdapter } from "@exocortex/core";
 import { MetadataExtractor } from "@exocortex/core";
 import { EffortSortingHelpers } from "@exocortex/core";
 import { BlockerHelpers } from "../utils/BlockerHelpers";
@@ -24,6 +24,7 @@ export class DailyProjectsRenderer {
   private reactRenderer: ReactRenderer;
   private refresh: () => Promise<void>;
   private getAssetLabelCallback: (path: string) => string | null;
+  private vaultAdapter: IVaultAdapter;
 
   constructor(
     app: ObsidianApp,
@@ -35,6 +36,7 @@ export class DailyProjectsRenderer {
     refresh: () => Promise<void>,
     getAssetLabel: (path: string) => string | null,
     _getEffortArea: (metadata: Record<string, unknown>) => string | null,
+    vaultAdapter: IVaultAdapter,
   ) {
     this.app = app;
     this.settings = settings;
@@ -44,6 +46,7 @@ export class DailyProjectsRenderer {
     this.reactRenderer = reactRenderer;
     this.refresh = refresh;
     this.getAssetLabelCallback = getAssetLabel;
+    this.vaultAdapter = vaultAdapter;
   }
 
   public async render(
@@ -160,7 +163,7 @@ export class DailyProjectsRenderer {
     try {
       const projects: DailyProject[] = [];
 
-      const allFiles = this.app.vault.getMarkdownFiles();
+      const allFiles = this.vaultAdapter.getAllFiles();
 
       for (const file of allFiles) {
         const metadata = this.metadataExtractor.extractMetadata(file);
