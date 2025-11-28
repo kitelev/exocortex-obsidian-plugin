@@ -16,6 +16,7 @@ describe("UniversalLayoutRenderer", () => {
   let mockSettings: ExocortexSettings;
   let mockPlugin: any;
   let mockVault: any;
+  let mockVaultAdapter: any;
 
   beforeEach(() => {
     container.clearInstances();
@@ -51,6 +52,25 @@ describe("UniversalLayoutRenderer", () => {
       saveSettings: jest.fn(),
     };
 
+    // Setup mock vaultAdapter for renderer
+    mockVaultAdapter = {
+      getAllFiles: jest.fn().mockReturnValue([]),
+      read: jest.fn(),
+      create: jest.fn(),
+      modify: jest.fn(),
+      delete: jest.fn(),
+      exists: jest.fn(),
+      getAbstractFileByPath: jest.fn(),
+      getFrontmatter: jest.fn().mockReturnValue({}),
+      updateFrontmatter: jest.fn(),
+      rename: jest.fn(),
+      createFolder: jest.fn(),
+      getFirstLinkpathDest: jest.fn(),
+      process: jest.fn(),
+      getDefaultNewFileParent: jest.fn(),
+      updateLinks: jest.fn(),
+    };
+
     // Setup DI container for TaskCreationService
     mockVault = {
       create: jest.fn().mockResolvedValue({ path: "test-task.md" }),
@@ -70,23 +90,23 @@ describe("UniversalLayoutRenderer", () => {
   });
 
   it("should create renderer instance", () => {
-    const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin);
+    const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
     expect(renderer).toBeDefined();
   });
 
   it("should cleanup without errors", () => {
-    const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin);
+    const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
     expect(() => renderer.cleanup()).not.toThrow();
   });
 
   it("should invalidate backlinks cache without errors", () => {
-    const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin);
+    const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
     expect(() => renderer.invalidateBacklinksCache()).not.toThrow();
   });
 
   describe("handleMetadataChange", () => {
     it("should debounce metadata changes", async () => {
-      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin);
+      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
       const renderer_any = renderer as any;
 
       // Setup mock file
@@ -96,7 +116,7 @@ describe("UniversalLayoutRenderer", () => {
         basename: "test",
       } as TFile;
 
-      mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(mockFile);
 
       // Set current file path so handler processes the file
       renderer_any.currentFilePath = "test.md";
@@ -113,24 +133,24 @@ describe("UniversalLayoutRenderer", () => {
       renderer.handleMetadataChange("test.md");
 
       // Verify debounce happened (should only be called after timer)
-      expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledTimes(0);
+      expect(mockVaultAdapter.getAbstractFileByPath).toHaveBeenCalledTimes(0);
 
       // Fast-forward time past debounce delay
       jest.advanceTimersByTime(100);
 
       // Now it should have been called once
-      expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledTimes(1);
+      expect(mockVaultAdapter.getAbstractFileByPath).toHaveBeenCalledTimes(1);
     });
 
     it("should ignore non-markdown files", async () => {
-      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin);
+      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
 
       const mockFile = {
         path: "test.pdf",
         extension: "pdf",
       } as any;
 
-      mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(mockFile);
 
       await renderer.handleMetadataChange("test.pdf");
       jest.advanceTimersByTime(100);
@@ -141,14 +161,14 @@ describe("UniversalLayoutRenderer", () => {
     });
 
     it("should ignore changes when no container is set", async () => {
-      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin);
+      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
 
       const mockFile = {
         path: "test.md",
         extension: "md",
       } as TFile;
 
-      mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(mockFile);
 
       await renderer.handleMetadataChange("test.md");
       jest.advanceTimersByTime(100);
@@ -158,7 +178,7 @@ describe("UniversalLayoutRenderer", () => {
     });
 
     it("should detect metadata changes", async () => {
-      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin);
+      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
 
       // Setup mock file with changing metadata
       const mockFile = {
@@ -167,7 +187,7 @@ describe("UniversalLayoutRenderer", () => {
         basename: "test",
       } as TFile;
 
-      mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(mockFile);
 
       // First call - set initial metadata
       const renderer_any = renderer as any;
@@ -196,7 +216,7 @@ describe("UniversalLayoutRenderer", () => {
 
   describe("incrementalUpdate", () => {
     it("should update only affected sections", async () => {
-      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin);
+      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
       const renderer_any = renderer as any;
 
       // Mock the section update methods
@@ -222,7 +242,7 @@ describe("UniversalLayoutRenderer", () => {
     });
 
     it("should handle missing root container gracefully", async () => {
-      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin);
+      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
       const renderer_any = renderer as any;
 
       // No root container set
@@ -245,7 +265,7 @@ describe("UniversalLayoutRenderer", () => {
     let mockContainer: HTMLElement;
 
     beforeEach(() => {
-      renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin);
+      renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
       renderer_any = renderer as any;
 
       mockFile = {
@@ -254,7 +274,7 @@ describe("UniversalLayoutRenderer", () => {
       } as TFile;
 
       // Mock vault to return our mock file
-      mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
+      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(mockFile);
       mockApp.metadataCache.getFileCache.mockReturnValue({ frontmatter: {} });
 
       // Create mock container with querySelector

@@ -7,7 +7,7 @@ import {
   DailyTask,
   DailyTasksTableWithToggle,
 } from "../components/DailyTasksTable";
-import { AssetClass, EffortStatus } from "@exocortex/core";
+import { AssetClass, EffortStatus, IVaultAdapter } from "@exocortex/core";
 import { MetadataExtractor } from "@exocortex/core";
 import { EffortSortingHelpers } from "@exocortex/core";
 import { AssetMetadataService } from "./layout/helpers/AssetMetadataService";
@@ -25,6 +25,7 @@ export class DailyTasksRenderer {
   private reactRenderer: ReactRenderer;
   private refresh: () => Promise<void>;
   private metadataService: AssetMetadataService;
+  private vaultAdapter: IVaultAdapter;
 
   constructor(
     app: ObsidianApp,
@@ -35,6 +36,7 @@ export class DailyTasksRenderer {
     reactRenderer: ReactRenderer,
     refresh: () => Promise<void>,
     metadataService: AssetMetadataService,
+    vaultAdapter: IVaultAdapter,
   ) {
     this.app = app;
     this.settings = settings;
@@ -44,6 +46,7 @@ export class DailyTasksRenderer {
     this.reactRenderer = reactRenderer;
     this.refresh = refresh;
     this.metadataService = metadataService;
+    this.vaultAdapter = vaultAdapter;
   }
 
   public async render(
@@ -171,7 +174,7 @@ export class DailyTasksRenderer {
     try {
       const tasks: DailyTask[] = [];
 
-      const allFiles = this.app.vault.getMarkdownFiles();
+      const allFiles = this.vaultAdapter.getAllFiles();
 
       for (const file of allFiles) {
         const metadata = this.metadataExtractor.extractMetadata(file);
@@ -303,7 +306,7 @@ export class DailyTasksRenderer {
     }
     visited.add(areaName);
 
-    const allFiles = this.app.vault.getMarkdownFiles();
+    const allFiles = this.vaultAdapter.getAllFiles();
 
     for (const file of allFiles) {
       const metadata = this.metadataExtractor.extractMetadata(file);

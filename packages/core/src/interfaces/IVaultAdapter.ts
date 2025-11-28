@@ -1,8 +1,14 @@
+export interface IFileStat {
+  ctime: number;
+  mtime: number;
+}
+
 export interface IFile {
   path: string;
   basename: string;
   name: string;
   parent: IFolder | null;
+  stat?: IFileStat;
 }
 
 export interface IFolder {

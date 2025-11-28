@@ -1,9 +1,8 @@
 import { TFile, Keymap } from "obsidian";
 import React from "react";
 import { ReactRenderer } from "../../utils/ReactRenderer";
-import { MetadataExtractor, AssetClass, AreaHierarchyBuilder } from "@exocortex/core";
+import { MetadataExtractor, AssetClass, AreaHierarchyBuilder, IVaultAdapter } from "@exocortex/core";
 import { AreaHierarchyTree } from "../../components/AreaHierarchyTree";
-import { ObsidianVaultAdapter } from "../../../adapters/ObsidianVaultAdapter";
 import { AssetMetadataService } from "./helpers/AssetMetadataService";
 import { AssetRelation } from "./types";
 import { ILogger } from "../../../adapters/logging/ILogger";
@@ -15,7 +14,7 @@ export class AreaTreeRenderer {
     private app: ObsidianApp,
     private reactRenderer: ReactRenderer,
     private metadataExtractor: MetadataExtractor,
-    private vaultAdapter: ObsidianVaultAdapter,
+    private vaultAdapter: IVaultAdapter,
     private metadataService: AssetMetadataService,
     private logger: ILogger,
   ) {}

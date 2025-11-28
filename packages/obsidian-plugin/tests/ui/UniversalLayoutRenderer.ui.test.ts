@@ -27,6 +27,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
   let mockPlugin: any;
   let domContainer: HTMLElement;
   let mockVault: any;
+  let mockVaultAdapter: any;
 
   beforeEach(() => {
     container.clearInstances();
@@ -99,10 +100,38 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     container.register(AlgorithmExtractor, { useClass: AlgorithmExtractor });
     container.register(TaskCreationService, { useClass: TaskCreationService });
 
+    mockVaultAdapter = {
+      getAllFiles: jest.fn().mockReturnValue([]),
+      read: jest.fn(),
+      create: jest.fn(),
+      modify: jest.fn(),
+      delete: jest.fn(),
+      exists: jest.fn(),
+      getAbstractFileByPath: jest.fn((path: string) => {
+        // Delegate to mockApp.vault.getAbstractFileByPath
+        return mockApp.vault.getAbstractFileByPath(path);
+      }),
+      getFrontmatter: jest.fn((file: any) => {
+        // Delegate to mockApp.metadataCache.getFileCache
+        const cache = mockApp.metadataCache.getFileCache(file);
+        return cache?.frontmatter || {};
+      }),
+      updateFrontmatter: jest.fn(),
+      rename: jest.fn(),
+      createFolder: jest.fn(),
+      getFirstLinkpathDest: jest.fn((linkpath: string) => {
+        return mockApp.metadataCache.getFirstLinkpathDest(linkpath, "");
+      }),
+      process: jest.fn(),
+      getDefaultNewFileParent: jest.fn(),
+      updateLinks: jest.fn(),
+    };
+
     renderer = new UniversalLayoutRenderer(
       mockApp,
       { ...DEFAULT_SETTINGS, showPropertiesSection: true },
       mockPlugin,
+      mockVaultAdapter,
     );
   });
 
@@ -1748,7 +1777,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
           return null;
         },
       );
-      (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue([taskFile]);
+      (mockVaultAdapter.getAllFiles as jest.Mock).mockReturnValue([taskFile]);
 
       await renderer.render("", domContainer, {} as MarkdownPostProcessorContext);
 
@@ -1935,7 +1964,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       );
 
       // CRITICAL: Vault returns all task files, renderer should filter by day
-      (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue([
+      (mockVaultAdapter.getAllFiles as jest.Mock).mockReturnValue([
         taskFile1,
         taskFile2,
         otherDayTaskFile, // This should be filtered out!
@@ -2039,7 +2068,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
           return null;
         },
       );
-      (mockApp.vault.getMarkdownFiles as jest.Mock).mockReturnValue([
+      (mockVaultAdapter.getAllFiles as jest.Mock).mockReturnValue([
         relatedTask,
       ]);
 

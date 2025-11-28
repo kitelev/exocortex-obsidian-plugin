@@ -111,6 +111,12 @@ export class ObsidianVaultAdapter implements IVaultAdapter {
       basename: file.basename,
       name: file.name,
       parent: file.parent ? this.fromObsidianFolder(file.parent) : null,
+      stat: file.stat
+        ? {
+            ctime: file.stat.ctime,
+            mtime: file.stat.mtime,
+          }
+        : undefined,
     };
     this.fileCache.set(iFile, file);
     return iFile;

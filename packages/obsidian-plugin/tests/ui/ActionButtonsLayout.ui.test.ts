@@ -21,6 +21,7 @@ describe("Layout Settings and Structure", () => {
   let mockMetadataCache: MetadataCache;
   let mockPlugin: any;
   let mockDIVault: any;
+  let mockVaultAdapter: any;
 
   beforeEach(() => {
     container.clearInstances();
@@ -85,8 +86,33 @@ describe("Layout Settings and Structure", () => {
     container.register(AlgorithmExtractor, { useClass: AlgorithmExtractor });
     container.register(TaskCreationService, { useClass: TaskCreationService });
 
+    mockVaultAdapter = {
+      getAllFiles: jest.fn().mockReturnValue([]),
+      read: jest.fn(),
+      create: jest.fn(),
+      modify: jest.fn(),
+      delete: jest.fn(),
+      exists: jest.fn(),
+      getAbstractFileByPath: jest.fn((path: string) => {
+        return mockVault.getAbstractFileByPath(path);
+      }),
+      getFrontmatter: jest.fn((file: any) => {
+        const cache = mockMetadataCache.getFileCache(file);
+        return cache?.frontmatter || {};
+      }),
+      updateFrontmatter: jest.fn(),
+      rename: jest.fn(),
+      createFolder: jest.fn(),
+      getFirstLinkpathDest: jest.fn((linkpath: string) => {
+        return mockMetadataCache.getFirstLinkpathDest(linkpath, "");
+      }),
+      process: jest.fn(),
+      getDefaultNewFileParent: jest.fn(),
+      updateLinks: jest.fn(),
+    };
+
     const settings: ExocortexSettings = { ...DEFAULT_SETTINGS };
-    renderer = new UniversalLayoutRenderer(mockApp, settings, mockPlugin);
+    renderer = new UniversalLayoutRenderer(mockApp, settings, mockPlugin, mockVaultAdapter);
   });
 
   afterEach(() => {
@@ -99,7 +125,7 @@ describe("Layout Settings and Structure", () => {
         ...DEFAULT_SETTINGS,
         showPropertiesSection: false,
       };
-      renderer = new UniversalLayoutRenderer(mockApp, settings, mockPlugin);
+      renderer = new UniversalLayoutRenderer(mockApp, settings, mockPlugin, mockVaultAdapter);
 
       const mockFile = {
         path: "test-area.md",
@@ -149,7 +175,7 @@ describe("Layout Settings and Structure", () => {
         ...DEFAULT_SETTINGS,
         showPropertiesSection: true,
       };
-      renderer = new UniversalLayoutRenderer(mockApp, settings, mockPlugin);
+      renderer = new UniversalLayoutRenderer(mockApp, settings, mockPlugin, mockVaultAdapter);
 
       const container = document.createElement("div");
       await renderer.render("", container, {} as any);
@@ -170,7 +196,7 @@ describe("Layout Settings and Structure", () => {
         ...DEFAULT_SETTINGS,
         showPropertiesSection: true,
       };
-      renderer = new UniversalLayoutRenderer(mockApp, settings, mockPlugin);
+      renderer = new UniversalLayoutRenderer(mockApp, settings, mockPlugin, mockVaultAdapter);
 
       const mockFile = {
         path: "test-area.md",

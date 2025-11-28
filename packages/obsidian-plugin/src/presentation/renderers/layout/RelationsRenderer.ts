@@ -1,7 +1,7 @@
 import { TFile, Keymap } from "obsidian";
 import React from "react";
 import { ReactRenderer } from "../../utils/ReactRenderer";
-import { MetadataHelpers } from "@exocortex/core";
+import { MetadataHelpers, IVaultAdapter, IFile } from "@exocortex/core";
 import { AssetRelationsTableWithToggle } from "../../components/AssetRelationsTable";
 import { BacklinksCacheManager } from "../../../adapters/caching/BacklinksCacheManager";
 import { ExocortexSettings } from "../../../domain/settings/ExocortexSettings";
@@ -26,6 +26,7 @@ export class RelationsRenderer {
     private metadataService: AssetMetadataService,
     private plugin: any,
     private refresh: () => Promise<void>,
+    private vaultAdapter: IVaultAdapter,
   ) {}
 
   async getAssetRelations(
@@ -33,7 +34,6 @@ export class RelationsRenderer {
     config: UniversalLayoutConfig,
   ): Promise<AssetRelation[]> {
     const relations: AssetRelation[] = [];
-    const cache = this.app.metadataCache;
 
     const backlinks = this.backlinksCacheManager.getBacklinks(file.path);
     if (!backlinks) {
@@ -41,10 +41,10 @@ export class RelationsRenderer {
     }
 
     for (const sourcePath of backlinks) {
-      const sourceFile = this.app.vault.getAbstractFileByPath(sourcePath);
-      if (sourceFile instanceof TFile) {
-        const fileCache = cache.getFileCache(sourceFile);
-        const metadata = fileCache?.frontmatter || {};
+      const sourceFile = this.vaultAdapter.getAbstractFileByPath(sourcePath);
+      if (sourceFile && sourcePath.endsWith(".md")) {
+        const iFile = sourceFile as IFile;
+        const metadata = this.vaultAdapter.getFrontmatter(iFile) || {};
 
         const isArchived = MetadataHelpers.isAssetArchived(metadata);
 
@@ -61,9 +61,9 @@ export class RelationsRenderer {
 
         if (referencingProperties.length > 0) {
           for (const propertyName of referencingProperties) {
-            const displayLabel = enrichedMetadata.exo__Asset_label || sourceFile.basename;
+            const displayLabel = enrichedMetadata.exo__Asset_label || iFile.basename;
             const relation: AssetRelation = {
-              file: sourceFile,
+              file: { path: sourcePath, basename: iFile.basename },
               path: sourcePath,
               title: displayLabel,
               metadata: enrichedMetadata,
@@ -71,15 +71,15 @@ export class RelationsRenderer {
               isBodyLink: false,
               isArchived: isArchived,
               isBlocked: isBlocked,
-              created: sourceFile.stat.ctime,
-              modified: sourceFile.stat.mtime,
+              created: iFile.stat?.ctime || 0,
+              modified: iFile.stat?.mtime || 0,
             };
             relations.push(relation);
           }
         } else {
-          const displayLabel = enrichedMetadata.exo__Asset_label || sourceFile.basename;
+          const displayLabel = enrichedMetadata.exo__Asset_label || iFile.basename;
           const relation: AssetRelation = {
-            file: sourceFile,
+            file: { path: sourcePath, basename: iFile.basename },
             path: sourcePath,
             title: displayLabel,
             metadata: enrichedMetadata,
@@ -87,8 +87,8 @@ export class RelationsRenderer {
             isBodyLink: true,
             isArchived: isArchived,
             isBlocked: isBlocked,
-            created: sourceFile.stat.ctime,
-            modified: sourceFile.stat.mtime,
+            created: iFile.stat?.ctime || 0,
+            modified: iFile.stat?.mtime || 0,
           };
           relations.push(relation);
         }

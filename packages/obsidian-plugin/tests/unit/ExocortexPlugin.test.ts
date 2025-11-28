@@ -162,7 +162,7 @@ describe("ExocortexPlugin", () => {
       expect(mockLogger.info).toHaveBeenCalledWith("Loading Exocortex Plugin");
       expect(plugin.loadData).toHaveBeenCalled();
       expect(ObsidianVaultAdapter).toHaveBeenCalledWith(mockVault, mockMetadataCache, mockApp);
-      expect(UniversalLayoutRenderer).toHaveBeenCalledWith(mockApp, plugin.settings, plugin);
+      expect(UniversalLayoutRenderer).toHaveBeenCalledWith(mockApp, plugin.settings, plugin, plugin.vaultAdapter);
       expect(TaskStatusService).toHaveBeenCalledWith(plugin.vaultAdapter);
       expect(TaskTrackingService).toHaveBeenCalledWith(mockApp, mockVault, mockMetadataCache);
       expect(SPARQLCodeBlockProcessor).toHaveBeenCalledWith(plugin);

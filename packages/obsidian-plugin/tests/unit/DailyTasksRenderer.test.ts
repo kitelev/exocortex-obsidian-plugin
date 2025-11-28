@@ -2,7 +2,7 @@ import { DailyTasksRenderer } from "../../src/presentation/renderers/DailyTasksR
 import { TFile, Keymap } from "obsidian";
 import { ExocortexSettings } from "../../src/domain/settings/ExocortexSettings";
 import { ILogger } from "../../src/infrastructure/logging/ILogger";
-import { MetadataExtractor } from "@exocortex/core";
+import { MetadataExtractor, IVaultAdapter } from "@exocortex/core";
 import { ReactRenderer } from "../../src/presentation/utils/ReactRenderer";
 import { AssetMetadataService } from "../../src/presentation/renderers/layout/helpers/AssetMetadataService";
 
@@ -23,6 +23,7 @@ describe("DailyTasksRenderer", () => {
   let mockReactRenderer: jest.Mocked<ReactRenderer>;
   let mockRefresh: jest.Mock;
   let mockMetadataService: jest.Mocked<AssetMetadataService>;
+  let mockVaultAdapter: jest.Mocked<IVaultAdapter>;
 
   const createMockElement = (): any => {
     const el: any = document.createElement("div");
@@ -109,6 +110,24 @@ describe("DailyTasksRenderer", () => {
       extractInstanceClass: jest.fn((metadata) => realMetadataService.extractInstanceClass(metadata)),
     } as any;
 
+    mockVaultAdapter = {
+      getAllFiles: jest.fn().mockReturnValue([]),
+      read: jest.fn(),
+      create: jest.fn(),
+      modify: jest.fn(),
+      delete: jest.fn(),
+      exists: jest.fn(),
+      getAbstractFileByPath: jest.fn(),
+      getFrontmatter: jest.fn().mockReturnValue({}),
+      updateFrontmatter: jest.fn(),
+      rename: jest.fn(),
+      createFolder: jest.fn(),
+      getFirstLinkpathDest: jest.fn(),
+      process: jest.fn(),
+      getDefaultNewFileParent: jest.fn(),
+      updateLinks: jest.fn(),
+    } as any;
+
     renderer = new DailyTasksRenderer(
       mockApp,
       mockSettings,
@@ -118,6 +137,7 @@ describe("DailyTasksRenderer", () => {
       mockReactRenderer,
       mockRefresh,
       mockMetadataService,
+      mockVaultAdapter,
     );
   });
 
@@ -176,7 +196,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -221,7 +241,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -269,7 +289,7 @@ describe("DailyTasksRenderer", () => {
       mockMetadataExtractor.extractInstanceClass.mockReturnValue(
         "[[pn__DailyNote]]",
       );
-      mockApp.vault.getMarkdownFiles.mockReturnValue([]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -311,7 +331,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -358,7 +378,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([projectFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([projectFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -400,7 +420,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -450,7 +470,7 @@ describe("DailyTasksRenderer", () => {
         "[[other]]",
       ]);
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -499,7 +519,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
       mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(blockerFile);
       mockApp.metadataCache.getFileCache.mockReturnValue({
         frontmatter: blockerMetadata,
@@ -555,7 +575,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
       mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(blockerFile);
       mockApp.metadataCache.getFileCache.mockReturnValue({
         frontmatter: blockerMetadata,
@@ -607,7 +627,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue(taskFiles);
+      mockVaultAdapter.getAllFiles.mockReturnValue(taskFiles);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -633,7 +653,7 @@ describe("DailyTasksRenderer", () => {
       mockMetadataExtractor.extractInstanceClass.mockReturnValue(
         "[[pn__DailyNote]]",
       );
-      mockApp.vault.getMarkdownFiles.mockImplementation(() => {
+      mockVaultAdapter.getAllFiles.mockImplementation(() => {
         throw new Error("Vault error");
       });
 
@@ -679,7 +699,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -724,7 +744,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -771,7 +791,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -818,7 +838,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -871,7 +891,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockLeaf = {
         openLinkText: jest.fn(),
@@ -941,7 +961,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile1, taskFile2]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile1, taskFile2]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -997,7 +1017,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile1, taskFile2]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile1, taskFile2]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1053,7 +1073,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([projectFile, taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([projectFile, taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1113,7 +1133,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile1, taskFile2]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile1, taskFile2]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1183,7 +1203,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles
+      mockVaultAdapter.getAllFiles
         .mockReturnValueOnce([taskFile1, taskFile2])
         .mockReturnValueOnce([areaFile]);
 
@@ -1232,7 +1252,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1277,7 +1297,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1320,7 +1340,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1365,7 +1385,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1410,7 +1430,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1452,7 +1472,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1496,7 +1516,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1540,7 +1560,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1585,7 +1605,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1627,7 +1647,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1672,7 +1692,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1715,7 +1735,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1757,7 +1777,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1800,7 +1820,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1843,7 +1863,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -1897,7 +1917,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
       mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(prototypeFile);
       mockApp.metadataCache.getFileCache.mockReturnValue({
         frontmatter: prototypeMetadata,
@@ -1951,7 +1971,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
       mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(parentFile);
       mockApp.metadataCache.getFileCache.mockReturnValue({
         frontmatter: parentMetadata,
@@ -2008,7 +2028,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
       mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(taskFile);
       mockApp.metadataCache.getFileCache.mockReturnValue({
         frontmatter: taskMetadata,
@@ -2054,7 +2074,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -2098,7 +2118,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const linkedFile = {
         path: "linked.md",
@@ -2154,7 +2174,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const linkedFile = {
         path: "linked.md",
@@ -2222,7 +2242,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
       mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(null);
 
       const mockEl = createMockElement();
@@ -2265,7 +2285,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const linkedFile = {
         path: "linked.md",
@@ -2324,7 +2344,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const linkedFile = {
         path: "linked.md",
@@ -2392,7 +2412,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
       mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(blockerFile);
       mockApp.metadataCache.getFileCache.mockReturnValue({
         frontmatter: blockerMetadata,
@@ -2439,7 +2459,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
       mockApp.metadataCache.getFirstLinkpathDest.mockReturnValue(null);
 
       const mockEl = createMockElement();
@@ -2482,7 +2502,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);
@@ -2525,7 +2545,7 @@ describe("DailyTasksRenderer", () => {
         "[[pn__DailyNote]]",
       );
 
-      mockApp.vault.getMarkdownFiles.mockReturnValue([taskFile]);
+      mockVaultAdapter.getAllFiles.mockReturnValue([taskFile]);
 
       const mockEl = createMockElement();
       await renderer.render(mockEl, mockFile);

@@ -6,7 +6,7 @@ import React from "react";
 import { ReactRenderer } from "../utils/ReactRenderer";
 import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
 import { ActionButtonsGroup } from "../components/ActionButtonsGroup";
-import { TaskCreationService } from "@exocortex/core";
+import { TaskCreationService, IVaultAdapter } from "@exocortex/core";
 import { ProjectCreationService } from "@exocortex/core";
 import { AreaCreationService } from "@exocortex/core";
 import { ClassCreationService } from "@exocortex/core";
@@ -24,7 +24,6 @@ import { MetadataExtractor } from "@exocortex/core";
 import { ButtonGroupsBuilder } from "../builders/ButtonGroupsBuilder";
 import { DailyTasksRenderer } from "./DailyTasksRenderer";
 import { DailyProjectsRenderer } from "./DailyProjectsRenderer";
-import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 import { PropertiesRenderer } from "./layout/PropertiesRenderer";
 import { AreaTreeRenderer } from "./layout/AreaTreeRenderer";
 import { RelationsRenderer, UniversalLayoutConfig } from "./layout/RelationsRenderer";
@@ -52,7 +51,7 @@ export class UniversalLayoutRenderer {
   private buttonGroupsBuilder: ButtonGroupsBuilder;
   private dailyTasksRenderer: DailyTasksRenderer;
   private dailyProjectsRenderer: DailyProjectsRenderer;
-  private vaultAdapter: ObsidianVaultAdapter;
+  private vaultAdapter: IVaultAdapter;
   private metadataService: AssetMetadataService;
   private propertiesRenderer: PropertiesRenderer;
   private areaTreeRenderer: AreaTreeRenderer;
@@ -91,7 +90,7 @@ export class UniversalLayoutRenderer {
   private currentFilePath: string | null = null;
   private currentConfig: UniversalLayoutConfig = {};
 
-  constructor(app: ObsidianApp, settings: ExocortexSettings, plugin: any) {
+  constructor(app: ObsidianApp, settings: ExocortexSettings, plugin: any, vaultAdapter: IVaultAdapter) {
     this.app = app;
     this.settings = settings;
     this.plugin = plugin;
@@ -99,11 +98,7 @@ export class UniversalLayoutRenderer {
     this.reactRenderer = new ReactRenderer();
     this.eventListenerManager = new EventListenerManager();
     this.backlinksCacheManager = new BacklinksCacheManager(this.app);
-    this.vaultAdapter = new ObsidianVaultAdapter(
-      this.app.vault,
-      this.app.metadataCache,
-      this.app,
-    );
+    this.vaultAdapter = vaultAdapter;
     this.metadataExtractor = new MetadataExtractor(this.vaultAdapter);
     // Phase 2: Resolve TaskCreationService from DI container
     this.taskCreationService = container.resolve(TaskCreationService);
@@ -145,6 +140,7 @@ export class UniversalLayoutRenderer {
       this.metadataService,
       this.plugin,
       () => this.refresh(),
+      this.vaultAdapter,
     );
 
     this.buttonGroupsBuilder = new ButtonGroupsBuilder(
@@ -177,6 +173,7 @@ export class UniversalLayoutRenderer {
       this.reactRenderer,
       () => this.refresh(),
       this.metadataService,
+      this.vaultAdapter,
     );
 
     this.dailyProjectsRenderer = new DailyProjectsRenderer(
@@ -189,6 +186,7 @@ export class UniversalLayoutRenderer {
       () => this.refresh(),
       (path: string) => this.metadataService.getAssetLabel(path),
       (metadata: Record<string, unknown>) => this.metadataService.getEffortArea(metadata),
+      this.vaultAdapter,
     );
 
     this.dependencyResolver = new PropertyDependencyResolver();
@@ -218,8 +216,8 @@ export class UniversalLayoutRenderer {
         return;
       }
 
-      const currentFile = this.app.vault.getAbstractFileByPath(filePath);
-      if (!currentFile || currentFile.extension !== "md") {
+      const currentFile = this.vaultAdapter.getAbstractFileByPath(filePath);
+      if (!currentFile || !filePath.endsWith(".md") || !("basename" in currentFile)) {
         return;
       }
 
@@ -636,12 +634,12 @@ export class UniversalLayoutRenderer {
     const nextDateStr = DateFormatter.toDateString(nextDate);
 
     const prevDailyNote = DailyNoteHelpers.findDailyNoteByDate(
-      this.app,
+      this.vaultAdapter,
       this.metadataExtractor,
       prevDateStr,
     );
     const nextDailyNote = DailyNoteHelpers.findDailyNoteByDate(
-      this.app,
+      this.vaultAdapter,
       this.metadataExtractor,
       nextDateStr,
     );
