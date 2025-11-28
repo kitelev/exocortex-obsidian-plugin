@@ -1063,6 +1063,21 @@ setError({ message: "error", queryString: "SELECT ..." });
 
 **Prevention**: Use TypeScript IntelliSense/autocomplete to discover correct property names. Always read interface definitions before first use.
 
+### Fresh Worktree Component Test Failures
+
+**Problem**: Component tests fail with "Cannot find module '@exocortex/core/dist/..." in fresh worktrees
+
+**Root Cause**: Fresh worktrees don't have built dist folders needed for Playwright CT subpath imports.
+
+**Solution**:
+```bash
+npm install
+npm run build  # Required before running component tests!
+npm run test:component
+```
+
+**Prevention**: Always run `npm run build` after `npm install` in new worktrees. The pre-commit hook runs component tests, so build is needed before first commit.
+
 ### E2E Testing Critical Lessons
 
 **5 key lessons from v12.15.45-49 debugging (5 versions, 4 failures):**
