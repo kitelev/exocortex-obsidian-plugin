@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from "@jest/globals";
 import { TableFormatter } from "../../src/formatters/TableFormatter";
 import { SolutionMapping } from "@exocortex/core";
 import { IRI } from "@exocortex/core";

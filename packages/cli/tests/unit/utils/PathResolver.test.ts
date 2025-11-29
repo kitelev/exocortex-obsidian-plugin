@@ -1,16 +1,21 @@
+import { jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals";
 import { PathResolver } from "../../../src/utils/PathResolver";
 import fs from "fs-extra";
-import path from "path";
-
-jest.mock("fs-extra");
 
 describe("PathResolver", () => {
   const mockVaultRoot = "/test/vault";
   let resolver: PathResolver;
+  let existsSyncSpy: jest.SpiedFunction<typeof fs.existsSync>;
+  let statSyncSpy: jest.SpiedFunction<typeof fs.statSync>;
 
   beforeEach(() => {
     resolver = new PathResolver(mockVaultRoot);
-    jest.clearAllMocks();
+    existsSyncSpy = jest.spyOn(fs, "existsSync");
+    statSyncSpy = jest.spyOn(fs, "statSync");
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   describe("resolve()", () => {
@@ -44,14 +49,14 @@ describe("PathResolver", () => {
 
   describe("validate()", () => {
     it("should pass validation for existing markdown file", () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.statSync as jest.Mock).mockReturnValue({ isFile: () => true });
+      existsSyncSpy.mockReturnValue(true);
+      statSyncSpy.mockReturnValue({ isFile: () => true } as fs.Stats);
 
       expect(() => resolver.validate("/test/vault/file.md")).not.toThrow();
     });
 
     it("should throw error if file does not exist", () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(false);
+      existsSyncSpy.mockReturnValue(false);
 
       expect(() => resolver.validate("/test/vault/missing.md")).toThrow(
         "File not found",
@@ -59,8 +64,8 @@ describe("PathResolver", () => {
     });
 
     it("should throw error if path is not a file", () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.statSync as jest.Mock).mockReturnValue({ isFile: () => false });
+      existsSyncSpy.mockReturnValue(true);
+      statSyncSpy.mockReturnValue({ isFile: () => false } as fs.Stats);
 
       expect(() => resolver.validate("/test/vault/directory")).toThrow(
         "Not a file",
@@ -68,8 +73,8 @@ describe("PathResolver", () => {
     });
 
     it("should throw error if file is not markdown", () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.statSync as jest.Mock).mockReturnValue({ isFile: () => true });
+      existsSyncSpy.mockReturnValue(true);
+      statSyncSpy.mockReturnValue({ isFile: () => true } as fs.Stats);
 
       expect(() => resolver.validate("/test/vault/file.txt")).toThrow(
         "Not a Markdown file",
