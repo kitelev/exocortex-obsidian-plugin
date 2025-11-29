@@ -1,3 +1,4 @@
+import { flushPromises } from "./helpers/testHelpers";
 import { PlanForEveningCommand } from "../../src/application/commands/PlanForEveningCommand";
 import { TFile, Notice } from "obsidian";
 import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
@@ -84,7 +85,7 @@ describe("PlanForEveningCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Planned for evening (19:00): test-file");
@@ -99,7 +100,7 @@ describe("PlanForEveningCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Plan for evening error", error);
@@ -119,7 +120,7 @@ describe("PlanForEveningCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(specialFile);
       expect(Notice).toHaveBeenCalledWith("Planned for evening (19:00): [EVENING] Task (2024)");
@@ -134,7 +135,7 @@ describe("PlanForEveningCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Plan for evening error", fsError);
@@ -150,7 +151,7 @@ describe("PlanForEveningCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.planForEvening).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Plan for evening error", permError);
@@ -171,7 +172,7 @@ describe("PlanForEveningCommand", () => {
       files.forEach(file => command.checkCallback(false, file, mockContext));
 
       // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await flushPromises();
 
       expect(mockTaskStatusService.planForEvening).toHaveBeenCalledTimes(3);
       files.forEach((file, index) => {

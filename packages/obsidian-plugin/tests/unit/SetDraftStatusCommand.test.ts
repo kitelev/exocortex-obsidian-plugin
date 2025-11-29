@@ -1,6 +1,7 @@
 import { SetDraftStatusCommand } from "../../src/application/commands/SetDraftStatusCommand";
 import { TFile, Notice } from "obsidian";
 import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import { flushPromises } from "./helpers/testHelpers";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -83,8 +84,7 @@ describe("SetDraftStatusCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.setDraftStatus).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Set Draft status: test-draft");
@@ -98,8 +98,7 @@ describe("SetDraftStatusCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.setDraftStatus).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Set draft status error", error);
@@ -125,8 +124,7 @@ describe("SetDraftStatusCommand", () => {
       const result = command.checkCallback(false, spaceFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.setDraftStatus).toHaveBeenCalledWith(spaceFile);
       expect(Notice).toHaveBeenCalledWith("Set Draft status: my draft task");
@@ -141,8 +139,7 @@ describe("SetDraftStatusCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.setDraftStatus).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Set draft status error", networkError);

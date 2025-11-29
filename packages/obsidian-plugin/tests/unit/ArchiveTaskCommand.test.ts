@@ -1,3 +1,4 @@
+import { flushPromises, waitForCondition } from "./helpers/testHelpers";
 import { ArchiveTaskCommand } from "../../src/application/commands/ArchiveTaskCommand";
 import { TFile, Notice } from "obsidian";
 import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
@@ -84,7 +85,7 @@ describe("ArchiveTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.archiveTask).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Archived: test-task");
@@ -99,7 +100,7 @@ describe("ArchiveTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.archiveTask).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Archive task error", error);
@@ -126,7 +127,7 @@ describe("ArchiveTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.archiveTask).toHaveBeenCalledWith(longFile);
       expect(Notice).toHaveBeenCalledWith(
@@ -166,7 +167,7 @@ describe("ArchiveTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.archiveTask).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Archive task error", customError);
@@ -183,16 +184,14 @@ describe("ArchiveTaskCommand", () => {
         { path: "task3.md", basename: "task3" } as TFile,
       ];
 
-      // Mock service to take some time
-      mockTaskStatusService.archiveTask.mockImplementation(
-        () => new Promise(resolve => setTimeout(resolve, 5))
-      );
+      // Mock service to resolve immediately
+      mockTaskStatusService.archiveTask.mockResolvedValue(undefined);
 
       // Execute commands concurrently
       files.forEach(file => command.checkCallback(false, file, mockContext));
 
       // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await waitForCondition(() => (Notice as jest.Mock).mock.calls.length >= 3);
 
       expect(mockTaskStatusService.archiveTask).toHaveBeenCalledTimes(3);
       files.forEach((file, index) => {

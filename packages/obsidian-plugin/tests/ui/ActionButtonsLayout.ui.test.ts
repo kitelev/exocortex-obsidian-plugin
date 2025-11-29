@@ -6,6 +6,7 @@ import {
   ExocortexSettings,
   DEFAULT_SETTINGS,
 } from "../../src/domain/settings/ExocortexSettings";
+import { flushPromises } from "../unit/helpers/testHelpers";
 import {
   DI_TOKENS,
   IVaultAdapter,
@@ -190,7 +191,7 @@ describe("Layout Settings and Structure", () => {
       await renderer.render("", container, {} as any);
 
       // Wait for React to render
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       const propertiesSection = container.querySelector(
         ".exocortex-properties-section",

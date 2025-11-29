@@ -1,3 +1,4 @@
+import { flushPromises } from "./helpers/testHelpers";
 import { ConvertTaskToProjectCommand } from "../../src/application/commands/ConvertTaskToProjectCommand";
 import { AssetConversionService } from "@exocortex/core";
 import { ObsidianVaultAdapter } from "../../src/adapters/ObsidianVaultAdapter";
@@ -88,7 +89,7 @@ describe("ConvertTaskToProjectCommand", () => {
       const result = command.checkCallback(false, mockFile, context);
 
       // Wait for async execution
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(result).toBe(true);
       expect(mockConversionService.convertTaskToProject).toHaveBeenCalledWith(mockFile);
@@ -112,7 +113,7 @@ describe("ConvertTaskToProjectCommand", () => {
       command.checkCallback(false, mockFile, context);
 
       // Wait for async execution
-      await new Promise((resolve) => setTimeout(resolve, 10));
+      await flushPromises();
 
       consoleErrorSpy.mockRestore();
     });

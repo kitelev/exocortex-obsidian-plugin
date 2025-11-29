@@ -1,3 +1,4 @@
+import { flushPromises, waitForCondition } from "./helpers/testHelpers";
 import "reflect-metadata";
 import { container } from "tsyringe";
 import ExocortexPlugin from "../../src/ExocortexPlugin";
@@ -218,7 +219,7 @@ describe("ExocortexPlugin", () => {
       await plugin.onload();
 
       // Wait for setTimeout
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await flushPromises();
 
       // Assert
       expect(mockWorkspace.getActiveFile).toHaveBeenCalled();
@@ -242,7 +243,7 @@ describe("ExocortexPlugin", () => {
       await plugin.onload();
 
       // Wait for potential setTimeout
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await flushPromises();
 
       // Assert
       expect(mockWorkspace.getActiveFile).toHaveBeenCalled();
@@ -404,7 +405,7 @@ describe("ExocortexPlugin", () => {
       (plugin as any).autoRenderLayout();
 
       // Wait for promise to reject
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       // Assert
       expect(mockLogger.error).toHaveBeenCalledWith("Failed to auto-render layout", error);
@@ -825,8 +826,11 @@ describe("ExocortexPlugin", () => {
       // Act
       fileOpenHandler(mockFile);
 
-      // Wait for setTimeout
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Wait for 150ms setTimeout in handler
+      await waitForCondition(
+        () => mockWorkspace.getActiveViewOfType.mock.calls.length > 0,
+        { timeout: 500, message: "getActiveViewOfType not called" }
+      );
 
       // Assert
       expect(mockWorkspace.getActiveViewOfType).toHaveBeenCalled();
@@ -839,11 +843,17 @@ describe("ExocortexPlugin", () => {
       );
       const leafChangeHandler = leafChangeCall?.[1];
 
+      // Clear previous calls from file-open test
+      mockWorkspace.getActiveViewOfType.mockClear();
+
       // Act
       leafChangeHandler();
 
-      // Wait for setTimeout
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Wait for 150ms setTimeout in handler
+      await waitForCondition(
+        () => mockWorkspace.getActiveViewOfType.mock.calls.length > 0,
+        { timeout: 500, message: "getActiveViewOfType not called" }
+      );
 
       // Assert
       expect(mockWorkspace.getActiveViewOfType).toHaveBeenCalled();
@@ -856,11 +866,17 @@ describe("ExocortexPlugin", () => {
       );
       const layoutChangeHandler = layoutChangeCall?.[1];
 
+      // Clear previous calls from other event tests
+      mockWorkspace.getActiveViewOfType.mockClear();
+
       // Act
       layoutChangeHandler();
 
-      // Wait for setTimeout
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Wait for 150ms setTimeout in handler
+      await waitForCondition(
+        () => mockWorkspace.getActiveViewOfType.mock.calls.length > 0,
+        { timeout: 500, message: "getActiveViewOfType not called" }
+      );
 
       // Assert
       expect(mockWorkspace.getActiveViewOfType).toHaveBeenCalled();

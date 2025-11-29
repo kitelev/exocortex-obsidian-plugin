@@ -1,3 +1,4 @@
+import { flushPromises } from "./helpers/testHelpers";
 import { StartEffortCommand } from "../../src/application/commands/StartEffortCommand";
 import { TFile, Notice } from "obsidian";
 import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
@@ -84,7 +85,7 @@ describe("StartEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.startEffort).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Started effort: test-effort");
@@ -99,7 +100,7 @@ describe("StartEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.startEffort).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Start effort error", error);
@@ -126,7 +127,7 @@ describe("StartEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.startEffort).toHaveBeenCalledWith(unicodeFile);
       expect(Notice).toHaveBeenCalledWith("Started effort: 努力-测试");

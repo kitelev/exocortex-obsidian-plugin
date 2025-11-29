@@ -344,7 +344,102 @@ Available helpers:
 - `createMockReactRenderer()` - Mock React renderer
 - `createMockMetadataExtractor()` - Mock metadata extractor
 
+**Async Testing Utilities** (for non-flaky tests):
+- `flushPromises()` - Flush microtask queue (single tick)
+- `waitForReact()` - Wait for React rendering (multiple ticks)
+- `waitForCondition()` - Wait until condition is true
+- `waitForDomElement()` - Wait for DOM element to appear
+- `retry()` - Retry with exponential backoff
+
 Use these helpers to reduce test duplication and ensure consistent mocking patterns.
+
+### Async Testing Patterns (CRITICAL)
+
+**⚠️ NEVER use fixed delays in tests. They cause flaky CI failures.**
+
+**Pattern 1: Waiting for async operations to complete**
+```typescript
+// ❌ WRONG - Fixed timeout (flaky)
+await new Promise(resolve => setTimeout(resolve, 200));
+expect(result).toBe(true);
+
+// ✅ CORRECT - Flush microtask queue
+await flushPromises();
+expect(result).toBe(true);
+```
+
+**Pattern 2: Waiting for React component to render**
+```typescript
+// ❌ WRONG - Fixed timeout hoping React rendered
+await new Promise(resolve => setTimeout(resolve, 200));
+expect(domContainer.querySelector('.my-class')).toBeTruthy();
+
+// ✅ CORRECT - Wait for React (multiple microtask cycles)
+await waitForReact();
+expect(domContainer.querySelector('.my-class')).toBeTruthy();
+
+// ✅ ALSO CORRECT - Wait for specific element
+const element = await waitForDomElement(domContainer, '.my-class');
+expect(element).toBeTruthy();
+```
+
+**Pattern 3: Waiting for concurrent operations**
+```typescript
+// ❌ WRONG - Fixed timeout for multiple async operations
+command.execute(file1);
+command.execute(file2);
+command.execute(file3);
+await new Promise(resolve => setTimeout(resolve, 500));
+expect(Notice).toHaveBeenCalledTimes(3);
+
+// ✅ CORRECT - Wait for expected outcome
+command.execute(file1);
+command.execute(file2);
+command.execute(file3);
+await waitForCondition(() => (Notice as jest.Mock).mock.calls.length >= 3);
+expect(Notice).toHaveBeenCalledTimes(3);
+```
+
+**Pattern 4: Waiting for production code's internal setTimeout**
+```typescript
+// ❌ WRONG - Guess at timeout duration
+handler();
+await flushPromises();  // Won't wait for 150ms setTimeout
+expect(mockFn).toHaveBeenCalled();
+
+// ✅ CORRECT - Wait for actual condition
+handler();
+await waitForCondition(
+  () => mockFn.mock.calls.length > 0,
+  { timeout: 500, message: "mockFn not called" }
+);
+expect(mockFn).toHaveBeenCalled();
+```
+
+**Pattern 5: Modal callback testing**
+```typescript
+// ✅ CORRECT - Modal callback simulation (intentional setTimeout)
+(MyModal as jest.Mock).mockImplementation((app, callback) => {
+  setTimeout(() => callback({ result: "value" }), 0);
+  return { open: jest.fn() };
+});
+
+// Trigger command and wait
+command.execute();
+await flushPromises();
+expect(Notice).toHaveBeenCalledWith("Success");
+```
+
+**When to use each utility:**
+| Situation | Utility |
+|-----------|---------|
+| Simple async operation completed | `flushPromises()` |
+| React component rendering | `waitForReact()` |
+| Waiting for specific DOM element | `waitForDomElement()` |
+| Waiting for mock to be called N times | `waitForCondition()` |
+| Production code has internal setTimeout | `waitForCondition()` |
+| Concurrent operations completing | `waitForCondition()` |
+| Testing modal callbacks | `setTimeout(..., 0)` + `flushPromises()` |
 
 ### Import Pattern for Tests
 

@@ -1,3 +1,4 @@
+import { flushPromises } from "./helpers/testHelpers";
 import { ShiftDayForwardCommand } from "../../src/application/commands/ShiftDayForwardCommand";
 import { TFile, Notice } from "obsidian";
 import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
@@ -84,7 +85,7 @@ describe("ShiftDayForwardCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.shiftDayForward).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Day shifted forward: test-file");
@@ -99,7 +100,7 @@ describe("ShiftDayForwardCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.shiftDayForward).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Shift day forward error", error);
@@ -119,7 +120,7 @@ describe("ShiftDayForwardCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.shiftDayForward).toHaveBeenCalledWith(specialFile);
       expect(Notice).toHaveBeenCalledWith("Day shifted forward: [DATE] Task (2024-12-31)");
@@ -134,7 +135,7 @@ describe("ShiftDayForwardCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.shiftDayForward).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Shift day forward error", boundaryError);
@@ -150,7 +151,7 @@ describe("ShiftDayForwardCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.shiftDayForward).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Shift day forward error", formatError);
@@ -171,7 +172,7 @@ describe("ShiftDayForwardCommand", () => {
       files.forEach(file => command.checkCallback(false, file, mockContext));
 
       // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await flushPromises();
 
       expect(mockTaskStatusService.shiftDayForward).toHaveBeenCalledTimes(3);
       files.forEach((file, index) => {
@@ -189,7 +190,7 @@ describe("ShiftDayForwardCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.shiftDayForward).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Shift day forward error", fsError);
@@ -209,7 +210,7 @@ describe("ShiftDayForwardCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.shiftDayForward).toHaveBeenCalledWith(leapYearFile);
       expect(Notice).toHaveBeenCalledWith("Day shifted forward: leap-year-task-2024-02-29");

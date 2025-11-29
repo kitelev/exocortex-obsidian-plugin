@@ -7,6 +7,7 @@ import {
 } from "@exocortex/core";
 import { LabelInputModal } from "../../src/presentation/modals/LabelInputModal";
 import { ObsidianVaultAdapter } from "../../src/adapters/ObsidianVaultAdapter";
+import { flushPromises, waitForCondition } from "./helpers/testHelpers";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -131,8 +132,7 @@ describe("CreateProjectCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(LabelInputModal).toHaveBeenCalledWith(
         mockApp,
@@ -163,8 +163,7 @@ describe("CreateProjectCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(LabelInputModal).toHaveBeenCalled();
       expect(mockProjectCreationService.createProject).not.toHaveBeenCalled();
@@ -185,8 +184,7 @@ describe("CreateProjectCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockProjectCreationService.createProject).toHaveBeenCalled();
       expect(LoggingService.error).toHaveBeenCalledWith("Create project error", error);
@@ -211,8 +209,7 @@ describe("CreateProjectCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockProjectCreationService.createProject).toHaveBeenCalledWith(
         mockFile,
@@ -241,8 +238,7 @@ describe("CreateProjectCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockProjectCreationService.createProject).toHaveBeenCalledWith(
         mockFile,
@@ -274,8 +270,7 @@ describe("CreateProjectCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await waitForCondition(() => (mockApp.workspace.getActiveFile as jest.Mock).mock.calls.length >= 3);
 
       expect(mockApp.workspace.getActiveFile).toHaveBeenCalledTimes(3);
       expect(Notice).toHaveBeenCalledWith("Project created: new-project");
@@ -296,8 +291,7 @@ describe("CreateProjectCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockProjectCreationService.createProject).toHaveBeenCalledWith(
         mockFile,
@@ -323,8 +317,7 @@ describe("CreateProjectCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockProjectCreationService.createProject).toHaveBeenCalledWith(
         mockFile,
@@ -352,8 +345,11 @@ describe("CreateProjectCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution (including max attempts)
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      // Wait for polling loop to complete (20 attempts × 100ms = 2000ms + buffer)
+      await waitForCondition(
+        () => (Notice as jest.Mock).mock.calls.length > 0,
+        { timeout: 5000, interval: 100 }
+      );
 
       // Should still complete successfully even if file doesn't become active
       expect(mockApp.workspace.getActiveFile).toHaveBeenCalledTimes(20); // max attempts
