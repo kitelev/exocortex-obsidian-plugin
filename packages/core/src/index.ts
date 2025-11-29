@@ -103,6 +103,16 @@ export type { IConfiguration } from "./interfaces/IConfiguration";
 export type { INotificationService } from "./interfaces/INotificationService";
 export { DI_TOKENS, type DIToken } from "./interfaces/tokens";
 
+// DI Container exports
+export {
+  registerCoreServices,
+  createChildContainer,
+  getContainer,
+  resetContainer,
+  container,
+  type DependencyContainer,
+} from "./infrastructure/container";
+
 // Types exports
 export type { SupervisionFormData } from "./types/SupervisionFormData";
 

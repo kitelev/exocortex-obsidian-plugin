@@ -1,8 +1,10 @@
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { injectable, inject } from "tsyringe";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 import { Triple } from "../domain/models/rdf/Triple";
 import { IRI } from "../domain/models/rdf/IRI";
 import { Literal } from "../domain/models/rdf/Literal";
 import { Namespace } from "../domain/models/rdf/Namespace";
+import { DI_TOKENS } from "../interfaces/tokens";
 
 /**
  * Service for converting Obsidian notes (frontmatter + wikilinks) to RDF triples.
@@ -13,10 +15,13 @@ import { Namespace } from "../domain/models/rdf/Namespace";
  * const triples = await converter.convertNote(file);
  * ```
  */
+@injectable()
 export class NoteToRDFConverter {
   private readonly OBSIDIAN_VAULT_SCHEME = "obsidian://vault/";
 
-  constructor(private readonly vault: IVaultAdapter) {}
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private readonly vault: IVaultAdapter,
+  ) {}
 
   /**
    * Converts a single note to RDF triples.

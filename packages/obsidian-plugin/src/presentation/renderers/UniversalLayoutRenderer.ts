@@ -100,19 +100,19 @@ export class UniversalLayoutRenderer {
     this.backlinksCacheManager = new BacklinksCacheManager(this.app);
     this.vaultAdapter = vaultAdapter;
     this.metadataExtractor = new MetadataExtractor(this.vaultAdapter);
-    // Phase 2: Resolve TaskCreationService from DI container
+    // Resolve all services from DI container
     this.taskCreationService = container.resolve(TaskCreationService);
-    this.projectCreationService = new ProjectCreationService(this.vaultAdapter);
-    this.areaCreationService = new AreaCreationService(this.vaultAdapter);
-    this.classCreationService = new ClassCreationService(this.vaultAdapter);
-    this.conceptCreationService = new ConceptCreationService(this.vaultAdapter);
-    this.taskStatusService = new TaskStatusService(this.vaultAdapter);
-    this.propertyCleanupService = new PropertyCleanupService(this.vaultAdapter, this.logger);
-    this.folderRepairService = new FolderRepairService(this.vaultAdapter);
-    this.renameToUidService = new RenameToUidService(this.vaultAdapter);
-    this.effortVotingService = new EffortVotingService(this.vaultAdapter);
-    this.labelToAliasService = new LabelToAliasService(this.vaultAdapter);
-    this.assetConversionService = new AssetConversionService(this.vaultAdapter);
+    this.projectCreationService = container.resolve(ProjectCreationService);
+    this.areaCreationService = container.resolve(AreaCreationService);
+    this.classCreationService = container.resolve(ClassCreationService);
+    this.conceptCreationService = container.resolve(ConceptCreationService);
+    this.taskStatusService = container.resolve(TaskStatusService);
+    this.propertyCleanupService = container.resolve(PropertyCleanupService);
+    this.folderRepairService = container.resolve(FolderRepairService);
+    this.renameToUidService = container.resolve(RenameToUidService);
+    this.effortVotingService = container.resolve(EffortVotingService);
+    this.labelToAliasService = container.resolve(LabelToAliasService);
+    this.assetConversionService = container.resolve(AssetConversionService);
 
     this.metadataService = new AssetMetadataService(this.app);
 

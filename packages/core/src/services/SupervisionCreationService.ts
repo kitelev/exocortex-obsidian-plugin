@@ -1,10 +1,15 @@
+import { injectable, inject } from "tsyringe";
 import { v4 as uuidv4 } from "uuid";
 import { SupervisionFormData } from "../types/SupervisionFormData";
 import { DateFormatter } from "../utilities/DateFormatter";
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { DI_TOKENS } from "../interfaces/tokens";
 
+@injectable()
 export class SupervisionCreationService {
-  constructor(private vault: IVaultAdapter) {}
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+  ) {}
 
   async createSupervision(formData: SupervisionFormData): Promise<IFile> {
     const uid = uuidv4();

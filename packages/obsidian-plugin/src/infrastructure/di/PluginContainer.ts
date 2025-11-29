@@ -3,9 +3,7 @@ import { container } from "tsyringe";
 import { App, Plugin } from "obsidian";
 import {
   DI_TOKENS,
-  TaskFrontmatterGenerator,
-  AlgorithmExtractor,
-  TaskCreationService,
+  registerCoreServices,
 } from "@exocortex/core";
 import { ObsidianLogger } from "./ObsidianLogger";
 import { ObsidianEventBus } from "./ObsidianEventBus";
@@ -58,10 +56,8 @@ export class PluginContainer {
       useFactory: () => new SingleVaultManager(vaultContext),
     });
 
-    // Register TaskCreationService and its dependencies explicitly as singletons
-    container.registerSingleton(TaskFrontmatterGenerator);
-    container.registerSingleton(AlgorithmExtractor);
-    container.registerSingleton(TaskCreationService);
+    // Register all core services (lazy resolution - dependencies resolved on demand)
+    registerCoreServices();
   }
 
   static reset(): void {

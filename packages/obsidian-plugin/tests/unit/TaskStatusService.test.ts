@@ -1,17 +1,40 @@
-import { TaskStatusService } from "@exocortex/core";
+import "reflect-metadata";
+import { container } from "tsyringe";
+import { TaskStatusService, DI_TOKENS, registerCoreServices, resetContainer } from "@exocortex/core";
 import { TFile, Vault } from "obsidian";
 
 describe("TaskStatusService", () => {
   let service: TaskStatusService;
-  let mockVault: jest.Mocked<Vault>;
+  let mockVault: any;
 
   beforeEach(() => {
+    resetContainer();
+
     mockVault = {
       read: jest.fn(),
       modify: jest.fn(),
-    } as unknown as jest.Mocked<Vault>;
+      getAllFiles: jest.fn().mockReturnValue([]),
+      getFrontmatter: jest.fn().mockReturnValue({}),
+      exists: jest.fn().mockResolvedValue(true),
+      updateFrontmatter: jest.fn().mockResolvedValue(undefined),
+    };
 
-    service = new TaskStatusService(mockVault);
+    const mockLogger = {
+      info: jest.fn(),
+      error: jest.fn(),
+      debug: jest.fn(),
+      warn: jest.fn(),
+    };
+
+    container.register(DI_TOKENS.IVaultAdapter, { useValue: mockVault });
+    container.register(DI_TOKENS.ILogger, { useValue: mockLogger });
+    registerCoreServices();
+
+    service = container.resolve(TaskStatusService);
+  });
+
+  afterEach(() => {
+    resetContainer();
   });
 
   describe("markTaskAsDone", () => {

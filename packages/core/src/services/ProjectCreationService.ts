@@ -1,10 +1,12 @@
+import { injectable, inject } from "tsyringe";
 import { v4 as uuidv4 } from "uuid";
 import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
 import { AssetClass } from "../domain/constants";
 import { DateFormatter } from "../utilities/DateFormatter";
 import { MetadataExtractor } from "../utilities/MetadataExtractor";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { DI_TOKENS } from "../interfaces/tokens";
 
 /**
  * Mapping of source class to effort property name
@@ -16,8 +18,11 @@ const EFFORT_PROPERTY_MAP: Record<string, string> = {
   [AssetClass.PROJECT]: "ems__Effort_parent",
 };
 
+@injectable()
 export class ProjectCreationService {
-  constructor(private vault: IVaultAdapter) {}
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+  ) {}
 
   async createProject(
     sourceFile: IFile,

@@ -1,6 +1,8 @@
+import { injectable, inject } from "tsyringe";
 import { AreaNode, AreaNodeData } from "../domain/models/AreaNode";
 import { AssetClass } from "../domain/constants";
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { DI_TOKENS } from "../interfaces/tokens";
 
 export interface AssetRelation {
   path: string;
@@ -10,8 +12,11 @@ export interface AssetRelation {
   metadata: Record<string, any>;
 }
 
+@injectable()
 export class AreaHierarchyBuilder {
-  constructor(private vault: IVaultAdapter) {}
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+  ) {}
 
   buildHierarchy(
     currentAreaPath: string,

@@ -1,12 +1,17 @@
+import { injectable, inject } from "tsyringe";
 import { v4 as uuidv4 } from "uuid";
 import { AssetClass } from "../domain/constants";
 import { DateFormatter } from "../utilities/DateFormatter";
 import { MetadataExtractor } from "../utilities/MetadataExtractor";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { DI_TOKENS } from "../interfaces/tokens";
 
+@injectable()
 export class AreaCreationService {
-  constructor(private vault: IVaultAdapter) {}
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+  ) {}
 
   async createChildArea(
     sourceFile: IFile,

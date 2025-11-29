@@ -1,11 +1,16 @@
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { injectable, inject } from "tsyringe";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 import { FrontmatterService } from "../utilities/FrontmatterService";
 import { DateFormatter } from "../utilities/DateFormatter";
+import { DI_TOKENS } from "../interfaces/tokens";
 
+@injectable()
 export class PlanningService {
   private frontmatterService: FrontmatterService;
 
-  constructor(private vault: IVaultAdapter) {
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+  ) {
     this.frontmatterService = new FrontmatterService();
   }
 

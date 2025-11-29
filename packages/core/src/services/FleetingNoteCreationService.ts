@@ -1,17 +1,22 @@
+import { injectable, inject } from "tsyringe";
 import { v4 as uuidv4 } from "uuid";
 import { DateFormatter } from "../utilities/DateFormatter";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { DI_TOKENS } from "../interfaces/tokens";
 
 /**
  * Service responsible for creating fleeting note assets.
  *
  * Generates required frontmatter and persists the file inside the inbox folder.
  */
+@injectable()
 export class FleetingNoteCreationService {
   private static readonly INBOX_FOLDER = "01 Inbox";
 
-  constructor(private vault: IVaultAdapter) {}
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+  ) {}
 
   /**
    * Creates a new fleeting note asset using provided label as display name.

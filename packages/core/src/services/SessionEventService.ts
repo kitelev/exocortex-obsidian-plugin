@@ -1,20 +1,28 @@
+import { injectable, inject } from "tsyringe";
 import { v4 as uuidv4 } from "uuid";
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 import { AssetClass } from "../domain/constants";
 import { DateFormatter } from "../utilities/DateFormatter";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
+import { DI_TOKENS } from "../interfaces/tokens";
 
 /**
  * Service for managing area focus session event tracking
  * Creates SessionStartEvent and SessionEndEvent assets when users activate/deactivate focus areas
  */
+@injectable()
 export class SessionEventService {
   private folderPathCache: string | null = null;
+  private defaultOntologyAsset: string | null = null;
 
   constructor(
-    private vault: IVaultAdapter,
-    private defaultOntologyAsset: string | null = null,
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
   ) {}
+
+  setDefaultOntologyAsset(asset: string | null): void {
+    this.defaultOntologyAsset = asset;
+    this.folderPathCache = null;
+  }
 
   /**
    * Create a session start event when user activates a focus area

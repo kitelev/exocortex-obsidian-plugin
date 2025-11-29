@@ -1,4 +1,5 @@
 import { App, Notice } from "obsidian";
+import { container } from "tsyringe";
 import { ICommand } from "./ICommand";
 import { ExocortexPluginInterface } from "../../types";
 import {
@@ -16,8 +17,8 @@ export class SetFocusAreaCommand implements ICommand {
     private app: App,
     private plugin: ExocortexPluginInterface,
   ) {
-    this.sessionEventService = new SessionEventService(
-      this.plugin.vaultAdapter,
+    this.sessionEventService = container.resolve(SessionEventService);
+    this.sessionEventService.setDefaultOntologyAsset(
       (this.plugin.settings?.defaultOntologyAsset as string | null) ?? null,
     );
   }

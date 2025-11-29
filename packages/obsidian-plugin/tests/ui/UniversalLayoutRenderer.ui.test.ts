@@ -16,9 +16,8 @@ import { DEFAULT_SETTINGS } from "../../src/domain/settings/ExocortexSettings";
 import {
   DI_TOKENS,
   IVaultAdapter,
-  TaskFrontmatterGenerator,
-  AlgorithmExtractor,
-  TaskCreationService,
+  registerCoreServices,
+  resetContainer,
 } from "@exocortex/core";
 
 describe("UniversalLayoutRenderer UI Integration", () => {
@@ -30,7 +29,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
   let mockVaultAdapter: any;
 
   beforeEach(() => {
-    container.clearInstances();
+    resetContainer();
 
     // Create a real DOM container
     domContainer = document.createElement("div");
@@ -88,17 +87,28 @@ describe("UniversalLayoutRenderer UI Integration", () => {
       },
     } as unknown as App;
 
-    // Setup DI container for TaskCreationService
+    // Setup DI container with all required dependencies
     mockVault = {
       create: jest.fn().mockResolvedValue({ path: "test-task.md" }),
       read: jest.fn().mockResolvedValue(""),
       modify: jest.fn().mockResolvedValue(undefined),
+      getAllFiles: jest.fn().mockReturnValue([]),
+      getFrontmatter: jest.fn().mockReturnValue({}),
+      exists: jest.fn().mockResolvedValue(true),
+      updateFrontmatter: jest.fn().mockResolvedValue(undefined),
+      getFirstLinkpathDest: jest.fn().mockReturnValue(null),
     };
 
-    container.registerInstance<IVaultAdapter>(DI_TOKENS.IVaultAdapter, mockVault);
-    container.register(TaskFrontmatterGenerator, { useClass: TaskFrontmatterGenerator });
-    container.register(AlgorithmExtractor, { useClass: AlgorithmExtractor });
-    container.register(TaskCreationService, { useClass: TaskCreationService });
+    const mockLogger = {
+      info: jest.fn(),
+      error: jest.fn(),
+      debug: jest.fn(),
+      warn: jest.fn(),
+    };
+
+    container.register(DI_TOKENS.IVaultAdapter, { useValue: mockVault });
+    container.register(DI_TOKENS.ILogger, { useValue: mockLogger });
+    registerCoreServices();
 
     mockVaultAdapter = {
       getAllFiles: jest.fn().mockReturnValue([]),
@@ -139,7 +149,7 @@ describe("UniversalLayoutRenderer UI Integration", () => {
     // Cleanup
     renderer.cleanup();
     document.body.removeChild(domContainer);
-    container.clearInstances();
+    resetContainer();
   });
 
   describe("DOM Rendering", () => {
@@ -1075,9 +1085,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         },
       });
 
+      // Mock both the app's metadataCache and the DI vault's getFirstLinkpathDest
       (mockApp.metadataCache.getFirstLinkpathDest as jest.Mock) = jest
         .fn()
         .mockReturnValue(referencedFile);
+      mockVault.getFirstLinkpathDest.mockReturnValue(referencedFile);
 
       mockApp.metadataCache.resolvedLinks = {};
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
@@ -1191,9 +1203,11 @@ describe("UniversalLayoutRenderer UI Integration", () => {
         },
       });
 
+      // Mock both the app's metadataCache and the DI vault's getFirstLinkpathDest
       (mockApp.metadataCache.getFirstLinkpathDest as jest.Mock) = jest
         .fn()
         .mockReturnValue(referencedFile);
+      mockVault.getFirstLinkpathDest.mockReturnValue(referencedFile);
 
       mockApp.metadataCache.resolvedLinks = {};
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(

@@ -1,10 +1,12 @@
+import "reflect-metadata";
+import { container } from "tsyringe";
 import ExocortexPlugin from "../../src/ExocortexPlugin";
 import { Plugin, MarkdownView, TFile } from "obsidian";
 import { LoggerFactory } from "../../src/adapters/logging/LoggerFactory";
 import { ObsidianVaultAdapter } from "../../src/adapters/ObsidianVaultAdapter";
 import { UniversalLayoutRenderer } from "../../src/presentation/renderers/UniversalLayoutRenderer";
 import { CommandManager } from "../../src/application/services/CommandManager";
-import { TaskStatusService } from "@exocortex/core";
+import { TaskStatusService, DI_TOKENS, registerCoreServices, resetContainer } from "@exocortex/core";
 import { TaskTrackingService } from "../../src/application/services/TaskTrackingService";
 import { AliasSyncService } from "../../src/application/services/AliasSyncService";
 import { SPARQLCodeBlockProcessor } from "../../src/application/processors/SPARQLCodeBlockProcessor";
@@ -16,17 +18,16 @@ jest.mock("../../src/adapters/logging/LoggerFactory");
 jest.mock("../../src/adapters/ObsidianVaultAdapter");
 jest.mock("../../src/presentation/renderers/UniversalLayoutRenderer");
 jest.mock("../../src/application/services/CommandManager");
-jest.mock("@exocortex/core", () => ({
-  ...jest.requireActual("@exocortex/core"),
-  TaskStatusService: jest.fn().mockImplementation(() => ({
-    syncEffortEndTimestamp: jest.fn(),
-    shiftPlannedEndTimestamp: jest.fn(),
-  })),
-}));
 jest.mock("../../src/application/services/TaskTrackingService");
 jest.mock("../../src/application/services/AliasSyncService");
 jest.mock("../../src/application/processors/SPARQLCodeBlockProcessor");
 jest.mock("../../src/presentation/settings/ExocortexSettingTab");
+jest.mock("../../src/infrastructure/di/PluginContainer", () => ({
+  PluginContainer: {
+    setup: jest.fn(),
+    reset: jest.fn(),
+  },
+}));
 
 describe("ExocortexPlugin", () => {
   let plugin: ExocortexPlugin;
@@ -45,6 +46,27 @@ describe("ExocortexPlugin", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    resetContainer();
+
+    // Setup DI container with mock dependencies
+    const mockVaultAdapterForDI = {
+      create: jest.fn().mockResolvedValue({ path: "test.md", basename: "test", name: "test.md", parent: null }),
+      read: jest.fn().mockResolvedValue(""),
+      modify: jest.fn().mockResolvedValue(undefined),
+      getAllFiles: jest.fn().mockReturnValue([]),
+      getFrontmatter: jest.fn().mockReturnValue({}),
+      exists: jest.fn().mockResolvedValue(true),
+      updateFrontmatter: jest.fn().mockResolvedValue(undefined),
+    };
+    const mockLoggerForDI = {
+      info: jest.fn(),
+      error: jest.fn(),
+      debug: jest.fn(),
+      warn: jest.fn(),
+    };
+    container.register(DI_TOKENS.IVaultAdapter, { useValue: mockVaultAdapterForDI });
+    container.register(DI_TOKENS.ILogger, { useValue: mockLoggerForDI });
+    registerCoreServices();
 
     // Setup mock logger
     mockLogger = {
@@ -104,12 +126,10 @@ describe("ExocortexPlugin", () => {
     };
     (CommandManager as jest.Mock).mockImplementation(() => mockCommandManager);
 
-    // Setup mock task status service
-    mockTaskStatusService = {
-      syncEffortEndTimestamp: jest.fn().mockResolvedValue(undefined),
-      shiftPlannedEndTimestamp: jest.fn().mockResolvedValue(undefined),
-    };
-    (TaskStatusService as jest.Mock).mockImplementation(() => mockTaskStatusService);
+    // TaskStatusService is now resolved from DI container, spy on its methods
+    mockTaskStatusService = container.resolve(TaskStatusService);
+    jest.spyOn(mockTaskStatusService, 'syncEffortEndTimestamp').mockResolvedValue(undefined);
+    jest.spyOn(mockTaskStatusService, 'shiftPlannedEndTimestamp').mockResolvedValue(undefined);
 
     // Setup mock task tracking service
     mockTaskTrackingService = {
@@ -145,6 +165,7 @@ describe("ExocortexPlugin", () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    resetContainer();
     // Clean up any DOM elements created during tests
     document.querySelectorAll(".exocortex-auto-layout").forEach(el => el.remove());
   });
@@ -163,7 +184,7 @@ describe("ExocortexPlugin", () => {
       expect(plugin.loadData).toHaveBeenCalled();
       expect(ObsidianVaultAdapter).toHaveBeenCalledWith(mockVault, mockMetadataCache, mockApp);
       expect(UniversalLayoutRenderer).toHaveBeenCalledWith(mockApp, plugin.settings, plugin, plugin.vaultAdapter);
-      expect(TaskStatusService).toHaveBeenCalledWith(plugin.vaultAdapter);
+      // TaskStatusService is now resolved from DI container, not instantiated directly
       expect(TaskTrackingService).toHaveBeenCalledWith(mockApp, mockVault, mockMetadataCache);
       expect(SPARQLCodeBlockProcessor).toHaveBeenCalledWith(plugin);
       expect(CommandManager).toHaveBeenCalledWith(mockApp);
@@ -421,6 +442,10 @@ describe("ExocortexPlugin", () => {
     beforeEach(async () => {
       await plugin.onload();
       mockFile = { path: "test.md" } as TFile;
+      // Spy on the plugin's actual taskStatusService after it's resolved during onload
+      mockTaskStatusService = (plugin as any).taskStatusService;
+      jest.spyOn(mockTaskStatusService, 'syncEffortEndTimestamp').mockResolvedValue(undefined);
+      jest.spyOn(mockTaskStatusService, 'shiftPlannedEndTimestamp').mockResolvedValue(undefined);
     });
 
     it("should handle effort end timestamp change", async () => {

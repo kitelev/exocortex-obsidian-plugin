@@ -1,3 +1,6 @@
+import "reflect-metadata";
+import { container } from "tsyringe";
+import { DI_TOKENS, registerCoreServices, resetContainer } from "@exocortex/core";
 import { SetFocusAreaCommand } from "../../src/application/commands/SetFocusAreaCommand";
 import { App, Notice } from "obsidian";
 import { ExocortexPluginInterface } from "../../src/types";
@@ -14,11 +17,37 @@ describe("SetFocusAreaCommand", () => {
   let command: SetFocusAreaCommand;
   let mockApp: App;
   let mockPlugin: jest.Mocked<ExocortexPluginInterface>;
+  let mockVaultAdapter: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    resetContainer();
 
     mockApp = {} as App;
+
+    mockVaultAdapter = {
+      create: jest.fn().mockResolvedValue({
+        path: "test-uid.md",
+        basename: "test-uid",
+        name: "test-uid.md",
+        parent: null,
+      }),
+      getAllFiles: jest.fn().mockReturnValue([]),
+      getFrontmatter: jest.fn().mockReturnValue(null),
+      getDefaultNewFileParent: jest.fn().mockReturnValue({
+        path: "",
+        name: "",
+      }),
+      exists: jest.fn().mockResolvedValue(true),
+      createFolder: jest.fn().mockResolvedValue(undefined),
+      read: jest.fn().mockResolvedValue(""),
+      modify: jest.fn().mockResolvedValue(undefined),
+      updateFrontmatter: jest.fn().mockResolvedValue(undefined),
+    };
+
+    container.register(DI_TOKENS.IVaultAdapter, { useValue: mockVaultAdapter });
+    container.register(DI_TOKENS.ILogger, { useValue: { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() } });
+    registerCoreServices();
 
     mockPlugin = {
       settings: {
@@ -27,22 +56,7 @@ describe("SetFocusAreaCommand", () => {
       },
       saveSettings: jest.fn(),
       refreshLayout: jest.fn(),
-      vaultAdapter: {
-        create: jest.fn().mockResolvedValue({
-          path: "test-uid.md",
-          basename: "test-uid",
-          name: "test-uid.md",
-          parent: null,
-        }),
-        getAllFiles: jest.fn().mockReturnValue([]),
-        getFrontmatter: jest.fn().mockReturnValue(null),
-        getDefaultNewFileParent: jest.fn().mockReturnValue({
-          path: "",
-          name: "",
-        }),
-        exists: jest.fn().mockResolvedValue(true),
-        createFolder: jest.fn().mockResolvedValue(undefined),
-      },
+      vaultAdapter: mockVaultAdapter,
     } as unknown as jest.Mocked<ExocortexPluginInterface>;
 
     // Setup modal mock
@@ -54,6 +68,10 @@ describe("SetFocusAreaCommand", () => {
     }));
 
     command = new SetFocusAreaCommand(mockApp, mockPlugin);
+  });
+
+  afterEach(() => {
+    resetContainer();
   });
 
   describe("id and name", () => {
