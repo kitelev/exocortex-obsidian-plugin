@@ -1,3 +1,4 @@
+import { flushPromises } from "./helpers/testHelpers";
 import { CleanPropertiesCommand } from "../../src/application/commands/CleanPropertiesCommand";
 import { TFile, Notice } from "obsidian";
 import { PropertyCleanupService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
@@ -84,7 +85,7 @@ describe("CleanPropertiesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockPropertyCleanupService.cleanEmptyProperties).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Cleaned empty properties: test-file");
@@ -99,7 +100,7 @@ describe("CleanPropertiesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockPropertyCleanupService.cleanEmptyProperties).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Clean properties error", error);
@@ -119,7 +120,7 @@ describe("CleanPropertiesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockPropertyCleanupService.cleanEmptyProperties).toHaveBeenCalledWith(specialFile);
       expect(Notice).toHaveBeenCalledWith("Cleaned empty properties: [IMPORTANT] File (2024)");
@@ -134,7 +135,7 @@ describe("CleanPropertiesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockPropertyCleanupService.cleanEmptyProperties).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Clean properties error", fsError);
@@ -162,7 +163,7 @@ describe("CleanPropertiesCommand", () => {
       files.forEach(file => command.checkCallback(false, file, mockContext));
 
       // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await flushPromises();
 
       expect(mockPropertyCleanupService.cleanEmptyProperties).toHaveBeenCalledTimes(3);
       files.forEach((file, index) => {

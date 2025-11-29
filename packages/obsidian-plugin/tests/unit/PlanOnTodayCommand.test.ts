@@ -1,3 +1,4 @@
+import { flushPromises } from "./helpers/testHelpers";
 import { PlanOnTodayCommand } from "../../src/application/commands/PlanOnTodayCommand";
 import { TFile, Notice } from "obsidian";
 import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
@@ -84,7 +85,7 @@ describe("PlanOnTodayCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.planOnToday).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Planned on today: test-file");
@@ -99,7 +100,7 @@ describe("PlanOnTodayCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.planOnToday).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Plan on today error", error);
@@ -119,7 +120,7 @@ describe("PlanOnTodayCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.planOnToday).toHaveBeenCalledWith(specialFile);
       expect(Notice).toHaveBeenCalledWith("Planned on today: [TODAY] Task (2024)");
@@ -134,7 +135,7 @@ describe("PlanOnTodayCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.planOnToday).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Plan on today error", fsError);
@@ -150,7 +151,7 @@ describe("PlanOnTodayCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.planOnToday).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Plan on today error", permError);
@@ -171,7 +172,7 @@ describe("PlanOnTodayCommand", () => {
       files.forEach(file => command.checkCallback(false, file, mockContext));
 
       // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await flushPromises();
 
       expect(mockTaskStatusService.planOnToday).toHaveBeenCalledTimes(3);
       files.forEach((file, index) => {
@@ -189,7 +190,7 @@ describe("PlanOnTodayCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.planOnToday).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Plan on today error", alreadyPlannedError);

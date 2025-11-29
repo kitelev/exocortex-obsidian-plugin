@@ -1,3 +1,4 @@
+import { flushPromises } from "./helpers/testHelpers";
 import { CopyLabelToAliasesCommand } from "../../src/application/commands/CopyLabelToAliasesCommand";
 import { TFile, Notice } from "obsidian";
 import { LabelToAliasService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
@@ -84,7 +85,7 @@ describe("CopyLabelToAliasesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Label copied to aliases");
@@ -99,7 +100,7 @@ describe("CopyLabelToAliasesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Copy label to aliases error", error);
@@ -119,7 +120,7 @@ describe("CopyLabelToAliasesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(specialFile);
       expect(Notice).toHaveBeenCalledWith("Label copied to aliases");
@@ -134,7 +135,7 @@ describe("CopyLabelToAliasesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Copy label to aliases error", fsError);
@@ -150,7 +151,7 @@ describe("CopyLabelToAliasesCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Copy label to aliases error", permError);
@@ -171,7 +172,7 @@ describe("CopyLabelToAliasesCommand", () => {
       files.forEach(file => command.checkCallback(false, file, mockContext));
 
       // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await flushPromises();
 
       expect(mockLabelToAliasService.copyLabelToAliases).toHaveBeenCalledTimes(3);
       files.forEach((file, index) => {

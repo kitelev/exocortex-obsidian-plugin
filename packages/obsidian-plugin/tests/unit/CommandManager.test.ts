@@ -1,3 +1,4 @@
+import { flushPromises } from "./helpers/testHelpers";
 /**
  * CommandManager Unit Tests
  *
@@ -1190,7 +1191,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("set-draft-status");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to set draft status"),
@@ -1210,7 +1211,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("move-to-backlog");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to move to backlog"),
@@ -1230,7 +1231,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("move-to-analysis");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to move to analysis"),
@@ -1250,7 +1251,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("move-to-todo");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to move to todo"),
@@ -1270,7 +1271,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("start-effort");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to start effort"),
@@ -1290,7 +1291,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("plan-on-today");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to plan on today"),
@@ -1310,7 +1311,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("plan-for-evening");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to plan for evening"),
@@ -1330,7 +1331,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("shift-day-backward");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to shift day backward"),
@@ -1350,7 +1351,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("shift-day-forward");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to shift day forward"),
@@ -1370,7 +1371,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("mark-done");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to mark as done"),
@@ -1389,7 +1390,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("trash-effort");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to trash effort"),
@@ -1409,7 +1410,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("archive-task");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to archive task"),
@@ -1428,7 +1429,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("clean-properties");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to clean properties"),
@@ -1464,7 +1465,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("repair-folder");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to repair folder"),
@@ -1492,7 +1493,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("rename-to-uid");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to rename"),
@@ -1511,7 +1512,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("vote-on-effort");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to vote"),
@@ -1530,7 +1531,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("copy-label-to-aliases");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to copy label"),
@@ -1557,7 +1558,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("repair-folder");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith("No expected folder found");
     });
@@ -1587,7 +1588,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("repair-folder");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(Notice).toHaveBeenCalledWith("Asset is already in correct folder");
     });
@@ -1611,7 +1612,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("set-draft-status");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(
@@ -1632,7 +1633,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("move-to-backlog");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Backlog"));
@@ -1651,7 +1652,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("move-to-analysis");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Analysis"));
@@ -1670,7 +1671,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("move-to-todo");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(expect.stringContaining("ToDo"));
@@ -1689,7 +1690,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("start-effort");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(
@@ -1710,7 +1711,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("plan-on-today");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(
@@ -1731,7 +1732,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("plan-for-evening");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(
@@ -1755,7 +1756,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("shift-day-backward");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(
@@ -1779,7 +1780,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("shift-day-forward");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(
@@ -1800,7 +1801,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("mark-done");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(
@@ -1820,7 +1821,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("trash-effort");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Trashed"));
@@ -1839,7 +1840,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("archive-task");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Archived"));
@@ -1858,7 +1859,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("clean-properties");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(
@@ -1880,7 +1881,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("vote-on-effort");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Voted"));
@@ -1901,7 +1902,7 @@ describe("CommandManager", () => {
       const command = registeredCommands.get("copy-label-to-aliases");
       await command.checkCallback(false);
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockApp.vault.modify).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith(

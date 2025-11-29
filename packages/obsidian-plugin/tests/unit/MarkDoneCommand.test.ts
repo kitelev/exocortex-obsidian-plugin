@@ -1,3 +1,4 @@
+import { flushPromises, waitForCondition } from "./helpers/testHelpers";
 import { MarkDoneCommand } from "../../src/application/commands/MarkDoneCommand";
 import { TFile, Notice } from "obsidian";
 import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
@@ -84,7 +85,7 @@ describe("MarkDoneCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Marked as done: test-task");
@@ -99,7 +100,7 @@ describe("MarkDoneCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Mark done error", error);
@@ -139,7 +140,7 @@ describe("MarkDoneCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(specialFile);
       expect(Notice).toHaveBeenCalledWith("Marked as done: task-with-special-chars!@#$");
@@ -153,10 +154,8 @@ describe("MarkDoneCommand", () => {
       const file2 = { path: "task2.md", basename: "task2" } as TFile;
       const file3 = { path: "task3.md", basename: "task3" } as TFile;
 
-      // Mock service to take some time
-      mockTaskStatusService.markTaskAsDone.mockImplementation(
-        () => new Promise(resolve => setTimeout(resolve, 5))
-      );
+      // Mock service to resolve immediately
+      mockTaskStatusService.markTaskAsDone.mockResolvedValue(undefined);
 
       // Execute commands concurrently
       command.checkCallback(false, file1, mockContext);
@@ -164,7 +163,7 @@ describe("MarkDoneCommand", () => {
       command.checkCallback(false, file3, mockContext);
 
       // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await waitForCondition(() => (Notice as jest.Mock).mock.calls.length >= 3);
 
       expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledTimes(3);
       expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(file1);
@@ -183,7 +182,7 @@ describe("MarkDoneCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Marked as done: test-task");
@@ -199,7 +198,7 @@ describe("MarkDoneCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Mark done error", error);

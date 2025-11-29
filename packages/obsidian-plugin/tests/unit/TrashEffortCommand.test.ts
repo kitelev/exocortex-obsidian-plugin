@@ -1,3 +1,4 @@
+import { flushPromises } from "./helpers/testHelpers";
 import { TrashEffortCommand } from "../../src/application/commands/TrashEffortCommand";
 import { TFile, Notice } from "obsidian";
 import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
@@ -84,7 +85,7 @@ describe("TrashEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Trashed: test-effort");
@@ -99,7 +100,7 @@ describe("TrashEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Trash effort error", error);
@@ -126,7 +127,7 @@ describe("TrashEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(specialFile);
       expect(Notice).toHaveBeenCalledWith("Trashed: [URGENT] Important Effort");
@@ -141,7 +142,7 @@ describe("TrashEffortCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Trash effort error", permError);

@@ -1,3 +1,4 @@
+import { flushPromises, waitForCondition } from "./helpers/testHelpers";
 import { CreateRelatedTaskCommand } from "../../src/application/commands/CreateRelatedTaskCommand";
 import { App, TFile, Notice, WorkspaceLeaf } from "obsidian";
 import {
@@ -132,7 +133,7 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(LabelInputModal).toHaveBeenCalledWith(
         mockApp,
@@ -164,7 +165,7 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(LabelInputModal).toHaveBeenCalled();
       expect(mockTaskCreationService.createRelatedTask).not.toHaveBeenCalled();
@@ -186,7 +187,7 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockTaskCreationService.createRelatedTask).toHaveBeenCalled();
       expect(LoggingService.error).toHaveBeenCalledWith("Create related task error", error);
@@ -215,7 +216,7 @@ describe("CreateRelatedTaskCommand", () => {
         command.checkCallback(false, mockFile, mockContext);
 
         // Wait for async execution
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await flushPromises();
 
         expect(mockTaskCreationService.createRelatedTask).toHaveBeenCalledWith(
           mockFile,
@@ -248,7 +249,7 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await waitForCondition(() => (mockApp.workspace.getActiveFile as jest.Mock).mock.calls.length >= 3);
 
       expect(mockApp.workspace.getActiveFile).toHaveBeenCalledTimes(3);
       expect(Notice).toHaveBeenCalledWith("Related task created: new-related-task");
@@ -270,7 +271,7 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockTaskCreationService.createRelatedTask).toHaveBeenCalledWith(
         mockFile,
@@ -297,7 +298,7 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockTaskCreationService.createRelatedTask).toHaveBeenCalledWith(
         mockFile,
@@ -326,7 +327,7 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution (including max attempts)
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      await waitForCondition(() => (Notice as jest.Mock).mock.calls.length > 0, { timeout: 5000, interval: 100 });
 
       // Should still complete successfully even if file doesn't become active
       expect(mockApp.workspace.getActiveFile).toHaveBeenCalledTimes(20); // max attempts
@@ -348,7 +349,7 @@ describe("CreateRelatedTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockTaskCreationService.createRelatedTask).toHaveBeenCalledWith(
         mockFile,

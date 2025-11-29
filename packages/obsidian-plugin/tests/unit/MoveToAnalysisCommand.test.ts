@@ -1,3 +1,4 @@
+import { flushPromises } from "./helpers/testHelpers";
 import { MoveToAnalysisCommand } from "../../src/application/commands/MoveToAnalysisCommand";
 import { TFile, Notice } from "obsidian";
 import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
@@ -84,7 +85,7 @@ describe("MoveToAnalysisCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.moveToAnalysis).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Moved to Analysis: test-task");
@@ -99,7 +100,7 @@ describe("MoveToAnalysisCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.moveToAnalysis).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Move to analysis error", error);
@@ -126,7 +127,7 @@ describe("MoveToAnalysisCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.moveToAnalysis).toHaveBeenCalledWith(underscoreFile);
       expect(Notice).toHaveBeenCalledWith("Moved to Analysis: important_analysis_task");
@@ -141,7 +142,7 @@ describe("MoveToAnalysisCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.moveToAnalysis).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Move to analysis error", dbError);

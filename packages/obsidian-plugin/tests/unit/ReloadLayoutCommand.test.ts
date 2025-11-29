@@ -1,3 +1,4 @@
+import { flushPromises } from "./helpers/testHelpers";
 import { ReloadLayoutCommand } from "../../src/application/commands/ReloadLayoutCommand";
 import { Notice } from "obsidian";
 
@@ -74,7 +75,7 @@ describe("ReloadLayoutCommand", () => {
 
     it("should work with async callback", () => {
       const asyncCallback = jest.fn(async () => {
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await flushPromises();
       });
       command = new ReloadLayoutCommand(asyncCallback);
 

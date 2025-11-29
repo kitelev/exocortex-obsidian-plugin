@@ -1,3 +1,4 @@
+import { flushPromises, waitForCondition } from "./helpers/testHelpers";
 import { CreateTaskCommand } from "../../src/application/commands/CreateTaskCommand";
 import { App, TFile, Notice, MetadataCache, Workspace, WorkspaceLeaf } from "obsidian";
 import { TaskCreationService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
@@ -139,7 +140,7 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await flushPromises();
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,
@@ -165,7 +166,7 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await flushPromises();
 
       expect(mockTaskCreationService.createTask).not.toHaveBeenCalled();
       expect(mockLeaf.openFile).not.toHaveBeenCalled();
@@ -188,7 +189,7 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await flushPromises();
 
       expect(LoggingService.error).toHaveBeenCalledWith("Create task error", error);
       expect(Notice).toHaveBeenCalledWith("Failed to create task: Creation failed");
@@ -228,7 +229,7 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await flushPromises();
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,
@@ -273,7 +274,7 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await flushPromises();
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,
@@ -315,7 +316,7 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await flushPromises();
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,
@@ -357,8 +358,11 @@ describe("CreateTaskCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for retry loop to complete
+      await waitForCondition(
+        () => (Notice as jest.Mock).mock.calls.some(call => call[0] === "Task created: test-task"),
+        { timeout: 2000 }
+      );
 
       expect(mockWorkspace.getActiveFile).toHaveBeenCalledTimes(4);
       expect(Notice).toHaveBeenCalledWith("Task created: test-task");
@@ -392,7 +396,7 @@ describe("CreateTaskCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution (should timeout after 20 attempts * 100ms = 2 seconds)
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      await waitForCondition(() => (Notice as jest.Mock).mock.calls.length > 0, { timeout: 5000, interval: 100 });
 
       expect(mockWorkspace.getActiveFile).toHaveBeenCalledTimes(20);
       expect(Notice).toHaveBeenCalledWith("Task created: test-task");

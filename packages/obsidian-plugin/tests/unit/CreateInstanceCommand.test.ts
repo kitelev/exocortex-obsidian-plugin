@@ -1,3 +1,4 @@
+import { flushPromises, waitForCondition } from "./helpers/testHelpers";
 import { CreateInstanceCommand } from "../../src/application/commands/CreateInstanceCommand";
 import { App, TFile, Notice, WorkspaceLeaf } from "obsidian";
 import {
@@ -144,7 +145,7 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(LabelInputModal).toHaveBeenCalledWith(
         mockApp,
@@ -179,7 +180,7 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(LabelInputModal).toHaveBeenCalled();
       expect(mockTaskCreationService.createTask).not.toHaveBeenCalled();
@@ -201,7 +202,7 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalled();
       expect(LoggingService.error).toHaveBeenCalledWith("Create instance error", error);
@@ -227,7 +228,7 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,
@@ -260,7 +261,7 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(LabelInputModal).toHaveBeenCalledWith(
         mockApp,
@@ -292,7 +293,7 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await waitForCondition(() => (mockApp.workspace.getActiveFile as jest.Mock).mock.calls.length >= 3);
 
       expect(mockApp.workspace.getActiveFile).toHaveBeenCalledTimes(3);
       expect(Notice).toHaveBeenCalledWith("Instance created: new-instance");
@@ -314,7 +315,7 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,
@@ -342,7 +343,7 @@ describe("CreateInstanceCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await flushPromises();
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(
         mockFile,

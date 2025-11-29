@@ -1,3 +1,4 @@
+import { flushPromises } from "./helpers/testHelpers";
 import { MoveToToDoCommand } from "../../src/application/commands/MoveToToDoCommand";
 import { TFile, Notice } from "obsidian";
 import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
@@ -84,7 +85,7 @@ describe("MoveToToDoCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.moveToToDo).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Moved to ToDo: test-task");
@@ -99,7 +100,7 @@ describe("MoveToToDoCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.moveToToDo).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Move to todo error", error);
@@ -126,7 +127,7 @@ describe("MoveToToDoCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.moveToToDo).toHaveBeenCalledWith(numberedFile);
       expect(Notice).toHaveBeenCalledWith("Moved to ToDo: task-123");
@@ -141,7 +142,7 @@ describe("MoveToToDoCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockTaskStatusService.moveToToDo).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Move to todo error", permissionError);

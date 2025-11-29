@@ -1,3 +1,4 @@
+import { flushPromises } from "./helpers/testHelpers";
 import { RepairFolderCommand } from "../../src/application/commands/RepairFolderCommand";
 import { App, TFile, Notice } from "obsidian";
 import { FolderRepairService, LoggingService } from "@exocortex/core";
@@ -103,7 +104,7 @@ describe("RepairFolderCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockFolderRepairService.getExpectedFolder).toHaveBeenCalledWith(
         mockFile,
@@ -123,7 +124,7 @@ describe("RepairFolderCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockFolderRepairService.getExpectedFolder).toHaveBeenCalled();
       expect(mockFolderRepairService.repairFolder).not.toHaveBeenCalled();
@@ -140,7 +141,7 @@ describe("RepairFolderCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockFolderRepairService.getExpectedFolder).toHaveBeenCalled();
       expect(mockFolderRepairService.repairFolder).not.toHaveBeenCalled();
@@ -164,7 +165,7 @@ describe("RepairFolderCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockFolderRepairService.repairFolder).toHaveBeenCalledWith(rootFile, "expected/folder");
       expect(Notice).toHaveBeenCalledWith("Moved to expected/folder");
@@ -181,7 +182,7 @@ describe("RepairFolderCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(LoggingService.error).toHaveBeenCalledWith("Repair folder error", error);
       expect(Notice).toHaveBeenCalledWith("Failed to repair folder: Failed to repair");
@@ -199,7 +200,7 @@ describe("RepairFolderCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(LoggingService.error).toHaveBeenCalledWith("Repair folder error", error);
       expect(Notice).toHaveBeenCalledWith("Failed to repair folder: Move failed");
@@ -215,7 +216,7 @@ describe("RepairFolderCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockFolderRepairService.getExpectedFolder).toHaveBeenCalled();
       expect(mockFolderRepairService.repairFolder).not.toHaveBeenCalled();
@@ -240,7 +241,7 @@ describe("RepairFolderCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockFolderRepairService.getExpectedFolder).toHaveBeenCalledWith(
         mockFile,
@@ -262,7 +263,7 @@ describe("RepairFolderCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(LoggingService.error).toHaveBeenCalledWith("Repair folder error", permError);
       expect(Notice).toHaveBeenCalledWith("Failed to repair folder: Permission denied: cannot move file");

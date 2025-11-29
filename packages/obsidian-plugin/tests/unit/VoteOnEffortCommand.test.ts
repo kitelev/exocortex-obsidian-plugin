@@ -1,6 +1,7 @@
 import { VoteOnEffortCommand } from "../../src/application/commands/VoteOnEffortCommand";
 import { TFile, Notice } from "obsidian";
 import { EffortVotingService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import { flushPromises } from "./helpers/testHelpers";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -83,8 +84,7 @@ describe("VoteOnEffortCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Voted! New vote count: 5");
@@ -97,8 +97,7 @@ describe("VoteOnEffortCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Voted! New vote count: 1");
@@ -111,8 +110,7 @@ describe("VoteOnEffortCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Voted! New vote count: 9999");
@@ -126,8 +124,7 @@ describe("VoteOnEffortCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Vote on effort error", error);
@@ -147,8 +144,7 @@ describe("VoteOnEffortCommand", () => {
       expect(result2).toBe(true);
       expect(result3).toBe(true);
 
-      // Wait for all async executions
-      await new Promise(resolve => setTimeout(resolve, 20));
+      await flushPromises();
 
       expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledTimes(3);
       expect(Notice).toHaveBeenCalledTimes(3);
@@ -163,8 +159,7 @@ describe("VoteOnEffortCommand", () => {
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockEffortVotingService.incrementEffortVotes).toHaveBeenCalledWith(mockFile);
       expect(LoggingService.error).toHaveBeenCalledWith("Vote on effort error", fsError);

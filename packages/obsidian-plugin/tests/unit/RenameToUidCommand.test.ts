@@ -1,3 +1,4 @@
+import { flushPromises } from "./helpers/testHelpers";
 import { RenameToUidCommand } from "../../src/application/commands/RenameToUidCommand";
 import { TFile, Notice } from "obsidian";
 import { RenameToUidService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
@@ -93,7 +94,7 @@ describe("RenameToUidCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(mockFile, mockContext.metadata);
       expect(Notice).toHaveBeenCalledWith('Renamed "test-file" to "asset-12345"');
@@ -108,7 +109,7 @@ describe("RenameToUidCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(mockFile, mockContext.metadata);
       expect(LoggingService.error).toHaveBeenCalledWith("Rename to UID error", error);
@@ -128,7 +129,7 @@ describe("RenameToUidCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(mockFile, contextWithoutUid.metadata);
       expect(Notice).toHaveBeenCalledWith('Renamed "test-file" to "undefined"');
@@ -147,7 +148,7 @@ describe("RenameToUidCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(specialFile, mockContext.metadata);
       expect(Notice).toHaveBeenCalledWith('Renamed "[IMPORTANT] File (2024)" to "asset-12345"');
@@ -166,7 +167,7 @@ describe("RenameToUidCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(uidFile, mockContext.metadata);
       expect(Notice).toHaveBeenCalledWith('Renamed "asset-12345" to "asset-12345"');
@@ -181,7 +182,7 @@ describe("RenameToUidCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(mockFile, mockContext.metadata);
       expect(LoggingService.error).toHaveBeenCalledWith("Rename to UID error", permError);
@@ -206,7 +207,7 @@ describe("RenameToUidCommand", () => {
       expect(result).toBe(true);
 
       // Wait for async execution
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await flushPromises();
 
       expect(mockRenameToUidService.renameToUid).toHaveBeenCalledWith(mockFile, complexContext.metadata);
       expect(Notice).toHaveBeenCalledWith('Renamed "test-file" to "complex-uid-98765"');
