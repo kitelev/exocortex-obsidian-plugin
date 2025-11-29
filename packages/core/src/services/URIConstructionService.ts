@@ -1,4 +1,6 @@
-import { IFileSystemAdapter } from "../interfaces/IFileSystemAdapter";
+import { injectable, inject } from "tsyringe";
+import type { IFileSystemAdapter } from "../interfaces/IFileSystemAdapter";
+import { DI_TOKENS } from "../interfaces/tokens";
 
 export interface URIConstructionOptions {
   defaultOntologyURL?: string;
@@ -10,17 +12,22 @@ export interface AssetMetadata {
   frontmatter?: Record<string, any>;
 }
 
+@injectable()
 export class URIConstructionService {
-  private readonly defaultOntologyURL: string;
-  private readonly strictValidation: boolean;
+  private defaultOntologyURL: string = "https://exocortex.my/default/";
+  private strictValidation: boolean = true;
 
   constructor(
-    private readonly fileSystem: IFileSystemAdapter,
-    options?: URIConstructionOptions,
-  ) {
-    this.defaultOntologyURL =
-      options?.defaultOntologyURL || "https://exocortex.my/default/";
-    this.strictValidation = options?.strictValidation ?? true;
+    @inject(DI_TOKENS.IFileSystemAdapter) private readonly fileSystem: IFileSystemAdapter,
+  ) {}
+
+  configure(options?: URIConstructionOptions): void {
+    if (options?.defaultOntologyURL) {
+      this.defaultOntologyURL = options.defaultOntologyURL;
+    }
+    if (options?.strictValidation !== undefined) {
+      this.strictValidation = options.strictValidation;
+    }
   }
 
   async constructAssetURI(asset: AssetMetadata): Promise<string> {

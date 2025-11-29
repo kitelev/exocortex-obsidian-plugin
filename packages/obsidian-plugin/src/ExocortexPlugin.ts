@@ -5,6 +5,7 @@ import {
   Plugin,
   TFile,
 } from "obsidian";
+import { container } from "tsyringe";
 import { UniversalLayoutRenderer } from "./presentation/renderers/UniversalLayoutRenderer";
 import { ILogger } from "./adapters/logging/ILogger";
 import { LoggerFactory } from "./adapters/logging/LoggerFactory";
@@ -61,7 +62,7 @@ export default class ExocortexPlugin extends Plugin {
         this,
         this.vaultAdapter,
       );
-      this.taskStatusService = new TaskStatusService(this.vaultAdapter);
+      this.taskStatusService = container.resolve(TaskStatusService);
       this.taskTrackingService = new TaskTrackingService(
         this.app,
         this.app.vault,

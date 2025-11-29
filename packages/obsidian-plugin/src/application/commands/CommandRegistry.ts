@@ -15,6 +15,8 @@ import {
   LabelToAliasService,
   AssetConversionService,
   FleetingNoteCreationService,
+  DI_TOKENS,
+  registerCoreServices,
 } from "@exocortex/core";
 import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
 
@@ -62,21 +64,28 @@ export class CommandRegistry {
   ) {
     this.vaultAdapter = new ObsidianVaultAdapter(app.vault, app.metadataCache, app);
 
-    // Create logger for services (Phase 1 DI infrastructure)
+    // Create logger for services
     const logger = LoggerFactory.create("CommandRegistry");
 
-    // Phase 2: Resolve TaskCreationService from DI container
+    // Register infrastructure dependencies with DI container
+    container.register(DI_TOKENS.IVaultAdapter, { useValue: this.vaultAdapter });
+    container.register(DI_TOKENS.ILogger, { useValue: logger });
+
+    // Register all core services
+    registerCoreServices();
+
+    // Resolve services from DI container
     const taskCreationService = container.resolve(TaskCreationService);
-    const projectCreationService = new ProjectCreationService(this.vaultAdapter);
-    const taskStatusService = new TaskStatusService(this.vaultAdapter);
-    const propertyCleanupService = new PropertyCleanupService(this.vaultAdapter, logger);
-    const folderRepairService = new FolderRepairService(this.vaultAdapter);
-    const supervisionCreationService = new SupervisionCreationService(this.vaultAdapter);
-    const renameToUidService = new RenameToUidService(this.vaultAdapter);
-    const effortVotingService = new EffortVotingService(this.vaultAdapter);
-    const labelToAliasService = new LabelToAliasService(this.vaultAdapter);
-    const assetConversionService = new AssetConversionService(this.vaultAdapter);
-    const fleetingNoteCreationService = new FleetingNoteCreationService(this.vaultAdapter);
+    const projectCreationService = container.resolve(ProjectCreationService);
+    const taskStatusService = container.resolve(TaskStatusService);
+    const propertyCleanupService = container.resolve(PropertyCleanupService);
+    const folderRepairService = container.resolve(FolderRepairService);
+    const supervisionCreationService = container.resolve(SupervisionCreationService);
+    const renameToUidService = container.resolve(RenameToUidService);
+    const effortVotingService = container.resolve(EffortVotingService);
+    const labelToAliasService = container.resolve(LabelToAliasService);
+    const assetConversionService = container.resolve(AssetConversionService);
+    const fleetingNoteCreationService = container.resolve(FleetingNoteCreationService);
 
     this.commands = [
       new CreateTaskCommand(app, taskCreationService, this.vaultAdapter),

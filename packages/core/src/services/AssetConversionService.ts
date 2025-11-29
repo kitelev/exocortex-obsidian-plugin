@@ -1,7 +1,9 @@
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { injectable, inject } from "tsyringe";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
 import { AssetClass } from "../domain/constants";
 import { FrontmatterService } from "../utilities/FrontmatterService";
 import { LoggingService } from "./LoggingService";
+import { DI_TOKENS } from "../interfaces/tokens";
 
 /**
  * AssetConversionService
@@ -12,10 +14,13 @@ import { LoggingService } from "./LoggingService";
  * @module services
  * @since 1.0.0
  */
+@injectable()
 export class AssetConversionService {
   private frontmatterService: FrontmatterService;
 
-  constructor(private vault: IVaultAdapter) {
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+  ) {
     this.frontmatterService = new FrontmatterService();
   }
 

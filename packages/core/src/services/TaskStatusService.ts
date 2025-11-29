@@ -1,18 +1,21 @@
+import { injectable, inject } from "tsyringe";
 import { FrontmatterService } from "../utilities/FrontmatterService";
 import { DateFormatter } from "../utilities/DateFormatter";
 import { EffortStatusWorkflow } from "./EffortStatusWorkflow";
 import { StatusTimestampService } from "./StatusTimestampService";
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { DI_TOKENS } from "../interfaces/tokens";
 
+@injectable()
 export class TaskStatusService {
   private frontmatterService: FrontmatterService;
-  private workflow: EffortStatusWorkflow;
-  private timestampService: StatusTimestampService;
 
-  constructor(private vault: IVaultAdapter) {
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+    private workflow: EffortStatusWorkflow,
+    private timestampService: StatusTimestampService,
+  ) {
     this.frontmatterService = new FrontmatterService();
-    this.workflow = new EffortStatusWorkflow();
-    this.timestampService = new StatusTimestampService(vault);
   }
 
   async setDraftStatus(taskFile: IFile): Promise<void> {

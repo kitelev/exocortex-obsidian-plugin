@@ -9,9 +9,8 @@ import {
 import {
   DI_TOKENS,
   IVaultAdapter,
-  TaskFrontmatterGenerator,
-  AlgorithmExtractor,
-  TaskCreationService,
+  registerCoreServices,
+  resetContainer,
 } from "@exocortex/core";
 
 describe("Layout Settings and Structure", () => {
@@ -24,7 +23,7 @@ describe("Layout Settings and Structure", () => {
   let mockVaultAdapter: any;
 
   beforeEach(() => {
-    container.clearInstances();
+    resetContainer();
 
     mockVault = {
       getAbstractFileByPath: jest.fn((path: string) => {
@@ -74,17 +73,27 @@ describe("Layout Settings and Structure", () => {
       },
     };
 
-    // Setup DI container for TaskCreationService
+    // Setup DI container with all required dependencies
     mockDIVault = {
       create: jest.fn().mockResolvedValue({ path: "test-task.md" }),
       read: jest.fn().mockResolvedValue(""),
       modify: jest.fn().mockResolvedValue(undefined),
+      getAllFiles: jest.fn().mockReturnValue([]),
+      getFrontmatter: jest.fn().mockReturnValue({}),
+      exists: jest.fn().mockResolvedValue(true),
+      updateFrontmatter: jest.fn().mockResolvedValue(undefined),
     };
 
-    container.registerInstance<IVaultAdapter>(DI_TOKENS.IVaultAdapter, mockDIVault);
-    container.register(TaskFrontmatterGenerator, { useClass: TaskFrontmatterGenerator });
-    container.register(AlgorithmExtractor, { useClass: AlgorithmExtractor });
-    container.register(TaskCreationService, { useClass: TaskCreationService });
+    const mockLogger = {
+      info: jest.fn(),
+      error: jest.fn(),
+      debug: jest.fn(),
+      warn: jest.fn(),
+    };
+
+    container.register(DI_TOKENS.IVaultAdapter, { useValue: mockDIVault });
+    container.register(DI_TOKENS.ILogger, { useValue: mockLogger });
+    registerCoreServices();
 
     mockVaultAdapter = {
       getAllFiles: jest.fn().mockReturnValue([]),
@@ -116,7 +125,7 @@ describe("Layout Settings and Structure", () => {
   });
 
   afterEach(() => {
-    container.clearInstances();
+    resetContainer();
   });
 
   describe("Properties Section Visibility", () => {

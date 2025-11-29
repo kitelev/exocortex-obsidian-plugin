@@ -1,5 +1,7 @@
+import { injectable } from "tsyringe";
 import { AssetClass, EffortStatus } from "../domain/constants";
 
+@injectable()
 export class EffortStatusWorkflow {
   getPreviousStatus(
     currentStatus: string,

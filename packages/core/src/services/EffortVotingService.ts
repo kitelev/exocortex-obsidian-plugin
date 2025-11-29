@@ -1,11 +1,16 @@
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { injectable, inject } from "tsyringe";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { DI_TOKENS } from "../interfaces/tokens";
 
 /**
  * Service for managing effort voting functionality
  * Handles incrementing ems__Effort_votes property on Tasks/Projects
  */
+@injectable()
 export class EffortVotingService {
-  constructor(private vault: IVaultAdapter) {}
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+  ) {}
 
   /**
    * Increment the vote count for an effort

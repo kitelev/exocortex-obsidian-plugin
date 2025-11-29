@@ -1,7 +1,12 @@
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { injectable, inject } from "tsyringe";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { DI_TOKENS } from "../interfaces/tokens";
 
+@injectable()
 export class LabelToAliasService {
-  constructor(private vault: IVaultAdapter) {}
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+  ) {}
 
   async copyLabelToAliases(file: IFile): Promise<void> {
     const fileContent = await this.vault.read(file);

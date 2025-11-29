@@ -1,10 +1,15 @@
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { injectable, inject } from "tsyringe";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { DI_TOKENS } from "../interfaces/tokens";
 
 /**
  * Service for repairing asset folder locations based on exo__Asset_isDefinedBy references
  */
+@injectable()
 export class FolderRepairService {
-  constructor(private vault: IVaultAdapter) {}
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+  ) {}
 
   /**
    * Get the expected folder for an asset based on its exo__Asset_isDefinedBy property

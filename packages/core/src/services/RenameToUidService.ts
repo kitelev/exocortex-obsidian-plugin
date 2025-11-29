@@ -1,7 +1,12 @@
-import { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { injectable, inject } from "tsyringe";
+import type { IVaultAdapter, IFile } from "../interfaces/IVaultAdapter";
+import { DI_TOKENS } from "../interfaces/tokens";
 
+@injectable()
 export class RenameToUidService {
-  constructor(private vault: IVaultAdapter) {}
+  constructor(
+    @inject(DI_TOKENS.IVaultAdapter) private vault: IVaultAdapter,
+  ) {}
 
   async renameToUid(file: IFile, metadata: Record<string, any>): Promise<void> {
     const uid = metadata.exo__Asset_uid;
