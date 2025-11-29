@@ -3,6 +3,7 @@ export default {
   testEnvironment: "node",
   rootDir: ".",
   testMatch: ["<rootDir>/tests/**/*.test.ts"],
+  setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
   moduleNameMapper: {
     "^@exocortex/core$": "<rootDir>/../core/src/index.ts",
     "^(\\.{1,2}/.*)\\.js$": "$1",
@@ -20,6 +21,9 @@ export default {
       },
     ],
   },
+  transformIgnorePatterns: [
+    "node_modules/(?!(uuid)/)",
+  ],
   extensionsToTreatAsEsm: [".ts"],
   collectCoverageFrom: [
     "src/**/*.ts",
