@@ -793,9 +793,32 @@ interface ITaskRepository {
 
 ### 2. Strategy Pattern
 
-**CommandVisibility implements visibility strategies**:
+**CommandVisibility implements visibility strategies** using domain-segregated modules:
+
+**Structure** (`packages/core/src/domain/commands/visibility/`):
+
+```
+visibility/
+├── index.ts              # Facade re-exports (backward compatibility)
+├── types.ts              # CommandVisibilityContext interface
+├── helpers.ts            # 12 shared utility functions
+├── TaskVisibilityRules.ts      # 3 functions: canCreateTask, canCreateRelatedTask, canConvertTaskToProject
+├── ProjectVisibilityRules.ts   # 4 functions: canCreateProject, canMoveToAnalysis, canMoveToToDo, canConvertProjectToTask
+├── AreaVisibilityRules.ts      # 2 functions: canCreateChildArea, canSetActiveFocus
+├── EffortVisibilityRules.ts    # 12 functions: canPlanOnToday, canStartEffort, canMarkDone, etc.
+└── AssetVisibilityRules.ts     # 9 functions: canCreateEvent, canCleanProperties, canRepairFolder, etc.
+```
+
+**Usage**:
 
 ```typescript
+// Import from domain-specific file (PREFERRED)
+import { canCreateTask } from "domain/commands/visibility/TaskVisibilityRules";
+import { canStartEffort } from "domain/commands/visibility/EffortVisibilityRules";
+
+// Or import from facade (backward compatible)
+import { canCreateTask, canStartEffort } from "domain/commands/visibility";
+
 // Each visibility function is a strategy
 export function canCreateTask(context: CommandVisibilityContext): boolean {
   return isAreaOrProject(context.instanceClass);
@@ -812,9 +835,11 @@ if (canCreateTask(context)) {
 ```
 
 **Benefits**:
-- Easy to add new visibility rules
-- Testable in isolation
-- Reusable across UI and CLI
+- **Domain cohesion**: Related functions grouped by asset type (Task, Project, Area, Effort, Asset)
+- **Easy to add new visibility rules**: Add to relevant domain file
+- **Testable in isolation**: Each file <100 LOC, tests mirror structure
+- **Reusable across UI and CLI**: Pure functions, no framework dependencies
+- **SRP compliance**: Each file handles single responsibility (one domain's visibility rules)
 
 ### 3. Facade Pattern
 
@@ -1339,6 +1364,7 @@ graph TB
 |---------|------|---------|
 | 1.0 | 2025-10-26 | Initial architecture documentation (pre-#122) |
 | 1.1 | 2025-11-26 | Added Error Handling section (#438) |
+| 1.2 | 2025-11-29 | Documented CommandVisibility domain segregation (#468) |
 
 ---
 
