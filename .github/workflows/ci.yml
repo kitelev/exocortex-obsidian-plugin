@@ -207,7 +207,7 @@ jobs:
 
   test-bdd:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 5
 
     steps:
       - name: Checkout
@@ -221,6 +221,10 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Run BDD Tests
+        run: npm run bdd:test
+        continue-on-error: true
 
       - name: Check BDD Coverage
         run: npm run bdd:check
@@ -236,6 +240,15 @@ jobs:
         with:
           name: bdd-coverage-report
           path: bdd-coverage-report.md
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Upload BDD Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bdd-test-report
+          path: packages/obsidian-plugin/reports/
           retention-days: 30
           if-no-files-found: ignore
 

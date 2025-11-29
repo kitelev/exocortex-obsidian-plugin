@@ -1,151 +1,189 @@
-# Exocortex Plugin - Executable Specifications
+# Exocortex Plugin - BDD Test Suite
 
-Эта директория содержит исполняемые спецификации (Executable Specifications) для Exocortex Obsidian Plugin в формате Gherkin.
+This directory contains the BDD (Behavior-Driven Development) test suite for the Exocortex Obsidian Plugin using Cucumber.js with Gherkin syntax.
 
-## Структура
+## Quick Start
+
+```bash
+# Run BDD tests
+npm run bdd:test
+
+# Dry run (check step definitions without executing)
+npm run bdd:test:dry
+
+# Check BDD coverage
+npm run bdd:coverage
+
+# Generate coverage report
+npm run bdd:report
+```
+
+## Directory Structure
 
 ```
 specs/
-├── features/
-│   └── layout/
-│       ├── universal-layout-rendering.feature
-│       ├── dynamic-layout-rendering.feature
-│       ├── instance-class-links.feature
-│       ├── table-sorting.feature
-│       └── layout-views.feature
-└── README.md
+├── features/                    # Gherkin feature files
+│   ├── layout/                  # Layout-related features
+│   │   ├── daily-tasks.feature
+│   │   ├── instance-class-links.feature
+│   │   ├── table-sorting.feature
+│   │   ├── property-cleanup.feature
+│   │   └── ...
+│   └── commands/                # Command-related features
+│       └── command-palette-integration.feature
+├── step_definitions/            # Step implementations
+│   ├── common.steps.ts          # Shared steps
+│   ├── daily-tasks.steps.ts     # Daily task steps
+│   ├── effort-workflow.steps.ts # Effort workflow steps
+│   ├── instance-class-links.steps.ts
+│   ├── table-sorting.steps.ts
+│   ├── property-cleanup.steps.ts
+│   ├── universal-layout.steps.ts
+│   └── command-palette.steps.ts
+├── support/                     # Support files
+│   ├── world.ts                 # Custom World class
+│   └── hooks.ts                 # Before/After hooks
+├── tsconfig.json                # TypeScript config for specs
+└── README.md                    # This file
 ```
 
-## Парадигма Executable Specifications
+## Feature Files
 
-Executable Specifications - это подход к документированию требований через примеры, которые:
+### Layout Features
 
-1. **Понятны всем** - бизнес-аналитикам, разработчикам, тестировщикам
-2. **Исполняемы** - могут быть автоматически проверены
-3. **Актуальны** - служат живой документацией системы
-4. **Являются источником истины** - требования и тесты в одном месте
+| Feature | Description | Scenarios |
+|---------|-------------|-----------|
+| `daily-tasks.feature` | Daily note task display | ~30 |
+| `instance-class-links.feature` | Clickable class links | ~15 |
+| `table-sorting.feature` | Interactive sorting | ~25 |
+| `property-cleanup.feature` | Clean empty properties | ~15 |
+| `universal-layout-rendering.feature` | Table rendering | ~10 |
+| `effort-workflow.feature` | Task status workflow | ~20 |
 
-## Формат Gherkin
+### Command Features
 
-Спецификации написаны на языке Gherkin (русский язык) и следуют структуре:
+| Feature | Description | Scenarios |
+|---------|-------------|-----------|
+| `command-palette-integration.feature` | Command availability | ~25 |
 
+## Writing New Scenarios
+
+### Step Pattern Reference
+
+**Given steps** (setup):
 ```gherkin
-Функция: Краткое описание функциональности
-
-  Как <роль>
-  Я хочу <цель>
-  Чтобы <выгода>
-
-  Сценарий: Описание конкретного сценария
-    Дано <начальное состояние>
-    Когда <действие>
-    Тогда <ожидаемый результат>
+Given I have a pn__DailyNote for "2024-01-15"
+Given I have a Task "My Task" with Draft status
+Given I have an Area "Development"
+Given Dataview plugin is installed and active
 ```
 
-## Ключевые файлы спецификаций
+**When steps** (actions):
+```gherkin
+When I view the daily note
+When I click "Start Effort" button
+When I click on column header "Name"
+When I open Command Palette
+```
 
-### universal-layout-rendering.feature
-Основная функциональность Universal Layout:
-- Отображение таблиц связанных заметок
-- **Кликабельные ссылки в Instance Class** (основное требование)
-- Сортировка по колонкам
-- Фильтрация архивных заметок
-- Мобильная адаптация
+**Then steps** (assertions):
+```gherkin
+Then I should see a "Tasks" section
+Then task "Task A" should display "✅" status icon
+Then table is sorted ascending
+Then "Exocortex: Create Task" command is available
+```
 
-### instance-class-links.feature
-Детальная спецификация требования о кликабельных ссылках:
-- Instance Class должен быть `<a class="internal-link">`
-- НЕ должен содержать символы `[[` или `]]`
-- Клик должен открывать файл класса
-- Обработка массивов, пустых и некорректных значений
+### Adding New Step Definitions
 
-### table-sorting.feature
-Интерактивная сортировка таблиц:
-- Сортировка по Name, Instance Class, кастомным свойствам
-- Переключение asc/desc по клику
-- Индикаторы сортировки (▲/▼)
-- Независимое состояние сортировки для групп
+1. Create or update a step definition file in `step_definitions/`
+2. Import the World class:
+   ```typescript
+   import { Given, When, Then } from "@cucumber/cucumber";
+   import { ExocortexWorld } from "../support/world.js";
+   ```
 
-### layout-views.feature
-Различные виды отображения:
-- Table (таблица)
-- List (список)
-- Cards (карточки)
-- Grouped tables (группировка)
-- Лимитирование результатов
+3. Define steps with proper typing:
+   ```typescript
+   Given("my new step {string}", function (this: ExocortexWorld, param: string) {
+     // Implementation using this.currentNote, this.tableRows, etc.
+   });
+   ```
 
-### dynamic-layout-rendering.feature
-Dynamic Layout с предустановленными макетами:
-- Автоматическое применение по Instance Class
-- Fallback на дефолтный макет
-- Секции и запросы в макетах
-- Кеширование
+## The World Object
 
-## Текущее состояние vs Требования
+The `ExocortexWorld` class provides a simulated Obsidian environment:
 
-### ❌ НЕ реализовано (приоритет 1)
-**Instance Class как кликабельные ссылки**
-- Текущее состояние: `<td>[[ems__Task]]</td>` (простой текст)
-- Требуемое состояние: `<a class="internal-link" href="ems__Task">ems__Task</a>`
-- Файл спецификации: `instance-class-links.feature`
-- Затронутые компоненты:
-  - `UniversalLayoutRenderer.ts` - метод `renderTable()` и `updateTableBody()`
-  - `UniversalLayoutRenderer.ts` - метод `renderGroupedAssetRelationsBlock()`
-  - Нужно заменить `row.createEl("td", {text: instanceClass})` на создание ссылки
+### Properties
+- `currentNote` - Currently viewed note
+- `notes` - Map of all notes in vault
+- `tableRows` - Current table data
+- `renderedSections` - Visible sections
+- `renderedButtons` - Available buttons
+- `sortState` - Current sort state
 
-### ✅ Реализовано
-- Сортировка по колонкам (Name, Instance Class, кастомные свойства)
-- Индикаторы сортировки (▲/▼)
-- Фильтрация архивных заметок
-- Различные виды отображения (table, list, cards)
-- Мобильная адаптация
-- Группировка по свойствам
+### Methods
+- `createFile(path, frontmatter)` - Create a mock note
+- `createTask(name, properties)` - Create a task note
+- `createDailyNote(date)` - Create a daily note
+- `viewNote(note)` - Simulate viewing a note
+- `click(element, modifier)` - Simulate click action
+- `sortColumn(column)` - Sort table by column
+- `resolveAreaForTask(note)` - Resolve area inheritance
 
-## Запуск спецификаций
+## Coverage Goals
 
-На данный момент спецификации служат документацией. Для автоматического выполнения потребуется:
+- **Target**: 80% scenario coverage (176+ of 220 scenarios)
+- **Current**: ~50 scenarios automated (23%)
+- **Priority**: Focus on high-value features first
 
-### Вариант 1: Cucumber.js
+## CI Integration
+
+BDD tests run in the CI pipeline:
+1. `npm run bdd:test` - Execute tests
+2. `npm run bdd:check` - Verify coverage threshold
+3. `npm run bdd:report` - Generate coverage report
+
+Reports are uploaded as artifacts in GitHub Actions.
+
+## Best Practices
+
+1. **One scenario = one behavior** - Keep scenarios focused
+2. **Use backgrounds** - Share common setup steps
+3. **Avoid implementation details** - Test behavior, not code
+4. **Descriptive names** - Scenarios should read like documentation
+5. **Reuse steps** - Avoid duplicate step definitions
+
+## Troubleshooting
+
+### Common Issues
+
+**"Undefined step"**
+- Add the step definition in appropriate `.steps.ts` file
+
+**"Ambiguous step"**
+- Check for duplicate step patterns across files
+- Use regex patterns for complex matching
+
+**"Assertion failed"**
+- Check World state (notes, tableRows, etc.)
+- Verify step execution order
+
+### Debug Tips
+
 ```bash
-npm install --save-dev @cucumber/cucumber
-npx cucumber-js specs/features
+# Run with verbose output
+npm run bdd:test -- --format progress
+
+# Run specific feature
+npm run bdd:test -- specs/features/layout/daily-tasks.feature
+
+# Run specific scenario by line number
+npm run bdd:test -- specs/features/layout/daily-tasks.feature:15
 ```
 
-### Вариант 2: Jest + Cucumber
-```bash
-npm install --save-dev jest-cucumber
-# Создать step definitions в tests/specs/
-```
+## Related Documentation
 
-### Вариант 3: Playwright + Cucumber
-```bash
-npm install --save-dev @playwright/test @cucumber/cucumber
-# Для E2E тестирования в реальном Obsidian
-```
-
-## Приоритеты реализации
-
-1. **Instance Class Links** (критический) - `instance-class-links.feature`
-2. Полное покрытие тестами спецификаций из `table-sorting.feature`
-3. E2E тесты для `layout-views.feature`
-4. Автоматизация `dynamic-layout-rendering.feature`
-
-## Связь со спецификациями
-
-При реализации новой функциональности:
-
-1. Сначала пишется сценарий в `.feature` файле
-2. Сценарий обсуждается с заказчиком/командой
-3. Реализуется функциональность
-4. Пишутся step definitions для автоматизации
-5. Спецификация становится регрессионным тестом
-
-## Полезные ссылки
-
+- [Cucumber.js Documentation](https://cucumber.io/docs/cucumber/)
 - [Gherkin Reference](https://cucumber.io/docs/gherkin/reference/)
-- [Cucumber Best Practices](https://cucumber.io/docs/bdd/better-gherkin/)
-- [Writing Good Gherkin](https://automationpanda.com/2017/01/30/bdd-101-writing-good-gherkin/)
-
-## Вопросы и предложения
-
-Для вопросов по спецификациям или предложений новых сценариев создавайте issues в репозитории проекта.
+- [BDD Best Practices](https://cucumber.io/docs/bdd/)
