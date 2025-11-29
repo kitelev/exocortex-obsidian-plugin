@@ -1078,6 +1078,50 @@ npm run test:component
 
 **Prevention**: Always run `npm run build` after `npm install` in new worktrees. The pre-commit hook runs component tests, so build is needed before first commit.
 
+### CLI Package ESM Test Patterns
+
+**Problem**: CLI tests use ESM mode which requires different mocking patterns than CommonJS.
+
+**Required imports for all CLI tests**:
+```typescript
+import { jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+```
+
+**Mock pattern for ESM modules** (must define mock BEFORE import):
+```typescript
+// Step 1: Define mock instance
+const mockInstance = { method: jest.fn() };
+
+// Step 2: Mock module BEFORE import
+jest.unstable_mockModule("../path/to/module.js", () => ({
+  ClassName: jest.fn(() => mockInstance),
+}));
+
+// Step 3: Dynamic import AFTER mock definition
+const { ClassName } = await import("../path/to/module.js");
+```
+
+**Mock pattern for fs-extra**:
+```typescript
+import fs from "fs-extra";
+
+beforeEach(() => {
+  jest.spyOn(fs, "existsSync").mockReturnValue(true);
+  jest.spyOn(fs, "readFile").mockResolvedValue("content" as any);
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+```
+
+**Common errors and solutions**:
+- `jest is not defined` → Add `@jest/globals` import
+- `mockImplementation is not a function` → Use `jest.unstable_mockModule()` instead of `jest.mock()`
+- `Cannot assign to read only property` → Mock at module level, not property reassignment
+
+**Reference**: See `packages/cli/tests/unit/` for working examples.
+
 ### E2E Testing Critical Lessons
 
 **5 key lessons from v12.15.45-49 debugging (5 versions, 4 failures):**
