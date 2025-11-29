@@ -78,13 +78,25 @@ export { BuiltInFunctions } from "./infrastructure/sparql/filters/BuiltInFunctio
 export { AggregateFunctions } from "./infrastructure/sparql/aggregates/AggregateFunctions";
 
 // Interfaces exports
-export type { IFileSystemAdapter } from "./interfaces/IFileSystemAdapter";
+export type {
+  IFileSystemAdapter,
+  IFileSystemReader,
+  IFileSystemWriter,
+  IFileSystemMetadataProvider,
+  IFileSystemDirectoryManager,
+} from "./interfaces/IFileSystemAdapter";
 export {
   FileNotFoundError,
   FileAlreadyExistsError,
 } from "./interfaces/IFileSystemAdapter";
 export type {
   IVaultAdapter,
+  IVaultFileReader,
+  IVaultFileWriter,
+  IVaultFileRenamer,
+  IVaultFolderManager,
+  IVaultFrontmatterManager,
+  IVaultLinkResolver,
   IFile,
   IFileStat,
   IFolder,
