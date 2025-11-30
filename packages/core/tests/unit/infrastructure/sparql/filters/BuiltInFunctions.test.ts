@@ -204,6 +204,74 @@ describe("BuiltInFunctions", () => {
     });
   });
 
+  describe("CONTAINS", () => {
+    it("should return true when string contains substring", () => {
+      expect(BuiltInFunctions.contains("hello world", "world")).toBe(true);
+    });
+
+    it("should return false when string does not contain substring", () => {
+      expect(BuiltInFunctions.contains("hello world", "foo")).toBe(false);
+    });
+
+    it("should be case-sensitive by default", () => {
+      expect(BuiltInFunctions.contains("Hello World", "hello")).toBe(false);
+    });
+
+    it("should handle empty substring", () => {
+      expect(BuiltInFunctions.contains("hello", "")).toBe(true);
+    });
+
+    it("should handle empty string", () => {
+      expect(BuiltInFunctions.contains("", "test")).toBe(false);
+    });
+
+    it("should handle Cyrillic text", () => {
+      expect(BuiltInFunctions.contains("Поспать после обеда", "Поспать")).toBe(true);
+    });
+  });
+
+  describe("STRSTARTS", () => {
+    it("should return true when string starts with prefix", () => {
+      expect(BuiltInFunctions.strStarts("hello world", "hello")).toBe(true);
+    });
+
+    it("should return false when string does not start with prefix", () => {
+      expect(BuiltInFunctions.strStarts("hello world", "world")).toBe(false);
+    });
+  });
+
+  describe("STRENDS", () => {
+    it("should return true when string ends with suffix", () => {
+      expect(BuiltInFunctions.strEnds("hello world", "world")).toBe(true);
+    });
+
+    it("should return false when string does not end with suffix", () => {
+      expect(BuiltInFunctions.strEnds("hello world", "hello")).toBe(false);
+    });
+  });
+
+  describe("STRLEN", () => {
+    it("should return length of string", () => {
+      expect(BuiltInFunctions.strlen("hello")).toBe(5);
+    });
+
+    it("should return 0 for empty string", () => {
+      expect(BuiltInFunctions.strlen("")).toBe(0);
+    });
+  });
+
+  describe("UCASE", () => {
+    it("should convert string to uppercase", () => {
+      expect(BuiltInFunctions.ucase("hello")).toBe("HELLO");
+    });
+  });
+
+  describe("LCASE", () => {
+    it("should convert string to lowercase", () => {
+      expect(BuiltInFunctions.lcase("HELLO")).toBe("hello");
+    });
+  });
+
   describe("Logical Operators", () => {
     it("should perform logical AND", () => {
       expect(BuiltInFunctions.logicalAnd([true, true])).toBe(true);

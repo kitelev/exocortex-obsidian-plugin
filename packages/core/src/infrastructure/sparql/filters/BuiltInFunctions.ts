@@ -139,6 +139,33 @@ export class BuiltInFunctions {
     return String(value);
   }
 
+  // W3C SPARQL 1.1 String Functions
+  // https://www.w3.org/TR/sparql11-query/#func-contains
+
+  static contains(str: string, substr: string): boolean {
+    return str.includes(substr);
+  }
+
+  static strStarts(str: string, prefix: string): boolean {
+    return str.startsWith(prefix);
+  }
+
+  static strEnds(str: string, suffix: string): boolean {
+    return str.endsWith(suffix);
+  }
+
+  static strlen(str: string): number {
+    return str.length;
+  }
+
+  static ucase(str: string): string {
+    return str.toUpperCase();
+  }
+
+  static lcase(str: string): string {
+    return str.toLowerCase();
+  }
+
   static logicalAnd(operands: boolean[]): boolean {
     return operands.every((op) => op === true);
   }
