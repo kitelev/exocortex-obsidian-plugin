@@ -57,7 +57,8 @@ export type Expression =
   | LogicalExpression
   | FunctionCallExpression
   | VariableExpression
-  | LiteralExpression;
+  | LiteralExpression
+  | ExistsExpression;
 
 export interface ComparisonExpression {
   type: "comparison";
@@ -87,6 +88,12 @@ export interface LiteralExpression {
   type: "literal";
   value: string | number | boolean;
   datatype?: string;
+}
+
+export interface ExistsExpression {
+  type: "exists";
+  negated: boolean;
+  pattern: AlgebraOperation;
 }
 
 export interface JoinOperation {

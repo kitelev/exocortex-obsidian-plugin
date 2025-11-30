@@ -1,8 +1,8 @@
-import { FilterExecutor } from "../../../../../src/infrastructure/sparql/executors/FilterExecutor";
+import { FilterExecutor, ExistsEvaluator } from "../../../../../src/infrastructure/sparql/executors/FilterExecutor";
 import { SolutionMapping } from "../../../../../src/infrastructure/sparql/SolutionMapping";
 import { IRI } from "../../../../../src/domain/models/rdf/IRI";
 import { Literal } from "../../../../../src/domain/models/rdf/Literal";
-import type { FilterOperation } from "../../../../../src/infrastructure/sparql/algebra/AlgebraOperation";
+import type { FilterOperation, AlgebraOperation, ExistsExpression } from "../../../../../src/infrastructure/sparql/algebra/AlgebraOperation";
 
 describe("FilterExecutor", () => {
   let executor: FilterExecutor;
@@ -268,6 +268,378 @@ describe("FilterExecutor", () => {
       }
 
       expect(count).toBe(1);
+    });
+  });
+
+  describe("EXISTS Expressions", () => {
+    let existsEvaluator: jest.Mock<Promise<boolean>, [AlgebraOperation, SolutionMapping]>;
+
+    beforeEach(() => {
+      existsEvaluator = jest.fn();
+      executor.setExistsEvaluator(existsEvaluator);
+    });
+
+    it("should evaluate EXISTS - returns true when pattern matches", async () => {
+      existsEvaluator.mockResolvedValue(true);
+
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "exists",
+          negated: false,
+          pattern: { type: "bgp", triples: [] },
+        } as ExistsExpression,
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("task", new IRI("http://example.org/task1"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+      expect(existsEvaluator).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "bgp" }),
+        solution
+      );
+    });
+
+    it("should evaluate EXISTS - returns false when pattern does not match", async () => {
+      existsEvaluator.mockResolvedValue(false);
+
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "exists",
+          negated: false,
+          pattern: { type: "bgp", triples: [] },
+        } as ExistsExpression,
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("task", new IRI("http://example.org/task1"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(0);
+    });
+
+    it("should evaluate NOT EXISTS - returns true when pattern does not match", async () => {
+      existsEvaluator.mockResolvedValue(false);
+
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "exists",
+          negated: true,
+          pattern: { type: "bgp", triples: [] },
+        } as ExistsExpression,
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("task", new IRI("http://example.org/task1"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should evaluate NOT EXISTS - returns false when pattern matches", async () => {
+      existsEvaluator.mockResolvedValue(true);
+
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "exists",
+          negated: true,
+          pattern: { type: "bgp", triples: [] },
+        } as ExistsExpression,
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("task", new IRI("http://example.org/task1"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(0);
+    });
+
+    it("should handle EXISTS with multiple solutions", async () => {
+      // Mock: solution1 matches, solution2 does not match
+      existsEvaluator
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(true);
+
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "exists",
+          negated: false,
+          pattern: { type: "bgp", triples: [] },
+        } as ExistsExpression,
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("task", new IRI("http://example.org/task1"));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("task", new IRI("http://example.org/task2"));
+
+      const solution3 = new SolutionMapping();
+      solution3.set("task", new IRI("http://example.org/task3"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+      expect(results).toHaveLength(2);
+      expect(existsEvaluator).toHaveBeenCalledTimes(3);
+    });
+
+    it("should handle EXISTS combined with AND", async () => {
+      existsEvaluator.mockResolvedValue(true);
+
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "logical",
+          operator: "&&",
+          operands: [
+            {
+              type: "comparison",
+              operator: ">",
+              left: { type: "variable", name: "priority" },
+              right: { type: "literal", value: 5 },
+            },
+            {
+              type: "exists",
+              negated: false,
+              pattern: { type: "bgp", triples: [] },
+            } as ExistsExpression,
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+      const solution = new SolutionMapping();
+      solution.set("task", new IRI("http://example.org/task1"));
+      solution.set("priority", new Literal("10", xsdInt));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should handle EXISTS combined with AND - both must be true", async () => {
+      existsEvaluator.mockResolvedValue(false);
+
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "logical",
+          operator: "&&",
+          operands: [
+            {
+              type: "comparison",
+              operator: ">",
+              left: { type: "variable", name: "priority" },
+              right: { type: "literal", value: 5 },
+            },
+            {
+              type: "exists",
+              negated: false,
+              pattern: { type: "bgp", triples: [] },
+            } as ExistsExpression,
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+      const solution = new SolutionMapping();
+      solution.set("task", new IRI("http://example.org/task1"));
+      solution.set("priority", new Literal("10", xsdInt));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(0);
+    });
+
+    it("should handle NOT EXISTS combined with OR", async () => {
+      existsEvaluator
+        .mockResolvedValueOnce(true)   // First NOT EXISTS returns false
+        .mockResolvedValueOnce(false); // Second NOT EXISTS returns true
+
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "logical",
+          operator: "||",
+          operands: [
+            {
+              type: "exists",
+              negated: true,
+              pattern: { type: "bgp", triples: [] },
+            } as ExistsExpression,
+            {
+              type: "exists",
+              negated: true,
+              pattern: { type: "bgp", triples: [] },
+            } as ExistsExpression,
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("task", new IRI("http://example.org/task1"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should handle logical NOT with EXISTS", async () => {
+      existsEvaluator.mockResolvedValue(true);
+
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "logical",
+          operator: "!",
+          operands: [
+            {
+              type: "exists",
+              negated: false,
+              pattern: { type: "bgp", triples: [] },
+            } as ExistsExpression,
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("task", new IRI("http://example.org/task1"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(0);
+    });
+
+    it("should throw error if EXISTS evaluator not set", async () => {
+      const freshExecutor = new FilterExecutor();
+      // Don't set EXISTS evaluator
+
+      const existsExpr: ExistsExpression = {
+        type: "exists",
+        negated: false,
+        pattern: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal("test"));
+
+      await expect(
+        freshExecutor.evaluateExpressionAsync(existsExpr, solution)
+      ).rejects.toThrow("EXISTS evaluator not set");
+    });
+
+    it("should call evaluator with correct pattern and solution", async () => {
+      existsEvaluator.mockResolvedValue(true);
+
+      const pattern: AlgebraOperation = {
+        type: "bgp",
+        triples: [
+          {
+            subject: { type: "variable", value: "task" },
+            predicate: { type: "iri", value: "http://example.org/status" },
+            object: { type: "literal", value: "Done" },
+          },
+        ],
+      };
+
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "exists",
+          negated: false,
+          pattern,
+        } as ExistsExpression,
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("task", new IRI("http://example.org/task1"));
+
+      await executor.executeAll(operation, [solution]);
+
+      expect(existsEvaluator).toHaveBeenCalledWith(pattern, solution);
+    });
+
+    it("should pass current solution bindings to EXISTS evaluator", async () => {
+      existsEvaluator.mockResolvedValue(true);
+
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "exists",
+          negated: false,
+          pattern: { type: "bgp", triples: [] },
+        } as ExistsExpression,
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("project", new IRI("http://example.org/project1"));
+      solution.set("name", new Literal("Project Alpha"));
+
+      await executor.executeAll(operation, [solution]);
+
+      const [_, passedSolution] = existsEvaluator.mock.calls[0];
+      expect(passedSolution.get("project")).toBeDefined();
+      expect(passedSolution.get("name")).toBeDefined();
+    });
+  });
+
+  describe("expressionContainsExists", () => {
+    let existsEvaluator: jest.Mock<Promise<boolean>, [AlgebraOperation, SolutionMapping]>;
+
+    it("should detect EXISTS in simple expression", async () => {
+      existsEvaluator = jest.fn().mockResolvedValue(true);
+      executor.setExistsEvaluator(existsEvaluator);
+
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "exists",
+          negated: false,
+          pattern: { type: "bgp", triples: [] },
+        } as ExistsExpression,
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal("test"));
+
+      // This should use async evaluation path
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+      expect(existsEvaluator).toHaveBeenCalled();
+    });
+
+    it("should not use async path for non-EXISTS expressions", async () => {
+      // Don't set evaluator to verify sync path is used
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: { type: "variable", name: "x" },
+          right: { type: "literal", value: "test" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal("test"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
     });
   });
 });

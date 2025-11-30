@@ -1,4 +1,4 @@
-import type { FilterOperation, Expression } from "../algebra/AlgebraOperation";
+import type { FilterOperation, Expression, AlgebraOperation, ExistsExpression } from "../algebra/AlgebraOperation";
 import type { SolutionMapping } from "../SolutionMapping";
 import { BuiltInFunctions } from "../filters/BuiltInFunctions";
 
@@ -9,14 +9,39 @@ export class FilterExecutorError extends Error {
   }
 }
 
+/**
+ * Callback type for evaluating EXISTS patterns.
+ * The callback executes the pattern with the given solution bindings
+ * and returns true if at least one result is found.
+ */
+export type ExistsEvaluator = (pattern: AlgebraOperation, solution: SolutionMapping) => Promise<boolean>;
+
 export class FilterExecutor {
+  private existsEvaluator: ExistsEvaluator | null = null;
+
+  /**
+   * Set the EXISTS evaluator callback.
+   * Must be called before evaluating expressions with EXISTS/NOT EXISTS.
+   */
+  setExistsEvaluator(evaluator: ExistsEvaluator): void {
+    this.existsEvaluator = evaluator;
+  }
+
   async *execute(
     operation: FilterOperation,
     inputSolutions: AsyncIterableIterator<SolutionMapping>
   ): AsyncIterableIterator<SolutionMapping> {
+    // Check if expression contains EXISTS to decide sync vs async evaluation
+    const hasExists = this.expressionContainsExists(operation.expression);
+
     for await (const solution of inputSolutions) {
       try {
-        const result = this.evaluateExpression(operation.expression, solution);
+        let result: boolean;
+        if (hasExists) {
+          result = await this.evaluateExpressionAsync(operation.expression, solution);
+        } else {
+          result = this.evaluateExpression(operation.expression, solution);
+        }
         if (result === true) {
           yield solution;
         }
@@ -24,6 +49,28 @@ export class FilterExecutor {
         continue;
       }
     }
+  }
+
+  /**
+   * Check if an expression contains EXISTS or NOT EXISTS.
+   */
+  private expressionContainsExists(expr: Expression): boolean {
+    if (expr.type === "exists") {
+      return true;
+    }
+
+    if (expr.type === "logical") {
+      return (expr as any).operands.some((op: Expression) => this.expressionContainsExists(op));
+    }
+
+    if (expr.type === "comparison") {
+      return (
+        this.expressionContainsExists((expr as any).left) ||
+        this.expressionContainsExists((expr as any).right)
+      );
+    }
+
+    return false;
   }
 
   async executeAll(operation: FilterOperation, inputSolutions: SolutionMapping[]): Promise<SolutionMapping[]> {
@@ -45,6 +92,7 @@ export class FilterExecutor {
   /**
    * Evaluate a SPARQL expression against a solution mapping.
    * Public to allow reuse in QueryExecutor for BIND evaluation.
+   * Note: EXISTS expressions require async evaluation - use evaluateExpressionAsync for those.
    */
   evaluateExpression(expr: Expression, solution: SolutionMapping): any {
     switch (expr.type) {
@@ -63,9 +111,74 @@ export class FilterExecutor {
       case "literal":
         return expr.value;
 
+      case "exists":
+        // EXISTS requires async evaluation; throw error if called synchronously
+        throw new FilterExecutorError(
+          "EXISTS expressions require async evaluation. Use evaluateExpressionAsync instead."
+        );
+
       default:
         throw new FilterExecutorError(`Unsupported expression type: ${(expr as any).type}`);
     }
+  }
+
+  /**
+   * Evaluate a SPARQL expression asynchronously.
+   * Required for EXISTS/NOT EXISTS which need to execute subqueries.
+   */
+  async evaluateExpressionAsync(expr: Expression, solution: SolutionMapping): Promise<any> {
+    if (expr.type === "exists") {
+      return this.evaluateExists(expr as ExistsExpression, solution);
+    }
+
+    // For logical expressions, need to handle nested EXISTS
+    if (expr.type === "logical") {
+      return this.evaluateLogicalAsync(expr, solution);
+    }
+
+    // For other expression types, use synchronous evaluation
+    return this.evaluateExpression(expr, solution);
+  }
+
+  /**
+   * Evaluate EXISTS or NOT EXISTS expression.
+   * Executes the subpattern with current bindings and checks for any results.
+   */
+  private async evaluateExists(expr: ExistsExpression, solution: SolutionMapping): Promise<boolean> {
+    if (!this.existsEvaluator) {
+      throw new FilterExecutorError(
+        "EXISTS evaluator not set. Call setExistsEvaluator before evaluating EXISTS expressions."
+      );
+    }
+
+    const exists = await this.existsEvaluator(expr.pattern, solution);
+    return expr.negated ? !exists : exists;
+  }
+
+  /**
+   * Evaluate logical expression asynchronously to handle nested EXISTS.
+   */
+  private async evaluateLogicalAsync(expr: any, solution: SolutionMapping): Promise<boolean> {
+    if (expr.operator === "!") {
+      const operand = await this.evaluateExpressionAsync(expr.operands[0], solution);
+      return BuiltInFunctions.logicalNot(operand as boolean);
+    }
+
+    const results: boolean[] = [];
+    for (const op of expr.operands) {
+      const result = await this.evaluateExpressionAsync(op, solution);
+      results.push(result as boolean);
+    }
+
+    if (expr.operator === "&&") {
+      return BuiltInFunctions.logicalAnd(results);
+    }
+
+    if (expr.operator === "||") {
+      return BuiltInFunctions.logicalOr(results);
+    }
+
+    throw new FilterExecutorError(`Unknown logical operator: ${expr.operator}`);
   }
 
   private evaluateComparison(expr: any, solution: SolutionMapping): boolean {
