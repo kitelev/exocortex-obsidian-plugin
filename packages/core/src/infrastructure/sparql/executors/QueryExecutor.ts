@@ -10,12 +10,15 @@ import type {
   OrderByOperation,
   SliceOperation,
   DistinctOperation,
+  GroupOperation,
+  ExtendOperation,
 } from "../algebra/AlgebraOperation";
 import type { SolutionMapping } from "../SolutionMapping";
 import { BGPExecutor } from "./BGPExecutor";
 import { FilterExecutor } from "./FilterExecutor";
 import { OptionalExecutor } from "./OptionalExecutor";
 import { UnionExecutor } from "./UnionExecutor";
+import { AggregateExecutor } from "./AggregateExecutor";
 
 export class QueryExecutorError extends Error {
   constructor(message: string, cause?: Error) {
@@ -34,12 +37,14 @@ export class QueryExecutor {
   private readonly filterExecutor: FilterExecutor;
   private readonly optionalExecutor: OptionalExecutor;
   private readonly unionExecutor: UnionExecutor;
+  private readonly aggregateExecutor: AggregateExecutor;
 
   constructor(tripleStore: ITripleStore) {
     this.bgpExecutor = new BGPExecutor(tripleStore);
     this.filterExecutor = new FilterExecutor();
     this.optionalExecutor = new OptionalExecutor();
     this.unionExecutor = new UnionExecutor();
+    this.aggregateExecutor = new AggregateExecutor();
   }
 
   /**
@@ -92,6 +97,14 @@ export class QueryExecutor {
 
       case "distinct":
         yield* this.executeDistinct(operation);
+        break;
+
+      case "group":
+        yield* this.executeGroup(operation);
+        break;
+
+      case "extend":
+        yield* this.executeExtend(operation);
         break;
 
       default:
@@ -247,6 +260,48 @@ export class QueryExecutor {
         yield solution;
       }
     }
+  }
+
+  private async *executeGroup(operation: GroupOperation): AsyncIterableIterator<SolutionMapping> {
+    // Collect all input solutions
+    const inputSolutions: SolutionMapping[] = [];
+    for await (const solution of this.execute(operation.input)) {
+      inputSolutions.push(solution);
+    }
+
+    // Use AggregateExecutor to compute grouped results
+    const results = this.aggregateExecutor.execute(operation, inputSolutions);
+    for (const result of results) {
+      yield result;
+    }
+  }
+
+  private async *executeExtend(operation: ExtendOperation): AsyncIterableIterator<SolutionMapping> {
+    for await (const solution of this.execute(operation.input)) {
+      const clone = solution.clone();
+      const value = this.evaluateExtendExpression(operation.expression, solution);
+      if (value !== undefined) {
+        clone.set(operation.variable, value);
+      }
+      yield clone;
+    }
+  }
+
+  private evaluateExtendExpression(
+    expr: ExtendOperation["expression"],
+    solution: SolutionMapping
+  ): any {
+    if (expr.type === "variable") {
+      return solution.get(expr.name);
+    }
+    if (expr.type === "literal") {
+      return expr.value;
+    }
+    if (expr.type === "aggregate") {
+      // Aggregates in extend are handled at the group level
+      return undefined;
+    }
+    return undefined;
   }
 
   private getExpressionValue(expr: any, solution: SolutionMapping): any {

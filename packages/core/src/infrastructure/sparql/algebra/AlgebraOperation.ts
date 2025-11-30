@@ -7,7 +7,9 @@ export type AlgebraOperation =
   | ProjectOperation
   | OrderByOperation
   | SliceOperation
-  | DistinctOperation;
+  | DistinctOperation
+  | GroupOperation
+  | ExtendOperation;
 
 export interface BGPOperation {
   type: "bgp";
@@ -132,5 +134,32 @@ export interface SliceOperation {
 
 export interface DistinctOperation {
   type: "distinct";
+  input: AlgebraOperation;
+}
+
+export interface GroupOperation {
+  type: "group";
+  variables: string[];
+  aggregates: AggregateBinding[];
+  input: AlgebraOperation;
+}
+
+export interface AggregateBinding {
+  variable: string;
+  expression: AggregateExpression;
+}
+
+export interface AggregateExpression {
+  type: "aggregate";
+  aggregation: "count" | "sum" | "avg" | "min" | "max" | "group_concat";
+  expression?: Expression;
+  distinct: boolean;
+  separator?: string;
+}
+
+export interface ExtendOperation {
+  type: "extend";
+  variable: string;
+  expression: Expression | AggregateExpression;
   input: AlgebraOperation;
 }
