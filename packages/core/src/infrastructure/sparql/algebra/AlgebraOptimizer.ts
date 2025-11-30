@@ -16,11 +16,110 @@ export class AlgebraOptimizer {
   optimize(operation: AlgebraOperation): AlgebraOperation {
     let optimized = operation;
 
+    // First pass: eliminate empty BGPs in joins with filters
+    optimized = this.eliminateEmptyBGPInFilterJoin(optimized);
+
     optimized = this.filterPushDown(optimized);
 
     optimized = this.joinReordering(optimized);
 
     return optimized;
+  }
+
+  /**
+   * Eliminates patterns like Join(Filter(emptyBGP, expr), BGP)
+   * which sparqljs creates for inline FILTER syntax.
+   * Rewrites to: Filter(BGP, expr)
+   */
+  private eliminateEmptyBGPInFilterJoin(operation: AlgebraOperation): AlgebraOperation {
+    if (operation.type === "join") {
+      // Check for Join(Filter(emptyBGP), anything)
+      if (operation.left.type === "filter") {
+        const leftFilter = operation.left;
+        if (leftFilter.input.type === "bgp" && leftFilter.input.triples.length === 0) {
+          // Rewrite: Join(Filter(emptyBGP, expr), right) → Filter(right, expr)
+          return {
+            type: "filter",
+            expression: leftFilter.expression,
+            input: this.eliminateEmptyBGPInFilterJoin(operation.right),
+          };
+        }
+      }
+
+      // Check for Join(anything, Filter(emptyBGP))
+      if (operation.right.type === "filter") {
+        const rightFilter = operation.right;
+        if (rightFilter.input.type === "bgp" && rightFilter.input.triples.length === 0) {
+          // Rewrite: Join(left, Filter(emptyBGP, expr)) → Filter(left, expr)
+          return {
+            type: "filter",
+            expression: rightFilter.expression,
+            input: this.eliminateEmptyBGPInFilterJoin(operation.left),
+          };
+        }
+      }
+
+      // No empty BGP pattern found, recurse
+      return {
+        type: "join",
+        left: this.eliminateEmptyBGPInFilterJoin(operation.left),
+        right: this.eliminateEmptyBGPInFilterJoin(operation.right),
+      };
+    }
+
+    // Recurse into other operation types
+    if (operation.type === "filter") {
+      return {
+        ...operation,
+        input: this.eliminateEmptyBGPInFilterJoin(operation.input),
+      };
+    }
+
+    if (operation.type === "leftjoin") {
+      return {
+        ...operation,
+        left: this.eliminateEmptyBGPInFilterJoin(operation.left),
+        right: this.eliminateEmptyBGPInFilterJoin(operation.right),
+      };
+    }
+
+    if (operation.type === "union") {
+      return {
+        ...operation,
+        left: this.eliminateEmptyBGPInFilterJoin(operation.left),
+        right: this.eliminateEmptyBGPInFilterJoin(operation.right),
+      };
+    }
+
+    if (operation.type === "project") {
+      return {
+        ...operation,
+        input: this.eliminateEmptyBGPInFilterJoin(operation.input),
+      };
+    }
+
+    if (operation.type === "orderby") {
+      return {
+        ...operation,
+        input: this.eliminateEmptyBGPInFilterJoin(operation.input),
+      };
+    }
+
+    if (operation.type === "slice") {
+      return {
+        ...operation,
+        input: this.eliminateEmptyBGPInFilterJoin(operation.input),
+      };
+    }
+
+    if (operation.type === "distinct") {
+      return {
+        ...operation,
+        input: this.eliminateEmptyBGPInFilterJoin(operation.input),
+      };
+    }
+
+    return operation;
   }
 
   filterPushDown(operation: AlgebraOperation): AlgebraOperation {

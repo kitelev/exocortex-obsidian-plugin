@@ -135,6 +135,34 @@ export class FilterExecutor {
         const flags = expr.args[2] ? String(this.evaluateExpression(expr.args[2], solution)) : undefined;
         return BuiltInFunctions.regex(text, pattern, flags);
 
+      // W3C SPARQL 1.1 String Functions
+      case "contains":
+        const containsStr = String(this.evaluateExpression(expr.args[0], solution));
+        const containsSubstr = String(this.evaluateExpression(expr.args[1], solution));
+        return BuiltInFunctions.contains(containsStr, containsSubstr);
+
+      case "strstarts":
+        const startsStr = String(this.evaluateExpression(expr.args[0], solution));
+        const startsPrefix = String(this.evaluateExpression(expr.args[1], solution));
+        return BuiltInFunctions.strStarts(startsStr, startsPrefix);
+
+      case "strends":
+        const endsStr = String(this.evaluateExpression(expr.args[0], solution));
+        const endsSuffix = String(this.evaluateExpression(expr.args[1], solution));
+        return BuiltInFunctions.strEnds(endsStr, endsSuffix);
+
+      case "strlen":
+        const lenStr = String(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.strlen(lenStr);
+
+      case "ucase":
+        const ucaseStr = String(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.ucase(ucaseStr);
+
+      case "lcase":
+        const lcaseStr = String(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.lcase(lcaseStr);
+
       default:
         throw new FilterExecutorError(`Unknown function: ${funcName}`);
     }
