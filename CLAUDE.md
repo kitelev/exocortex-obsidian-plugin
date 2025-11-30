@@ -1034,6 +1034,261 @@ const handleBlur = () => {
 
 **Real-world example**: See PR #396 (Property field UX improvements - fixed Escape key calling onChange)
 
+---
+
+## 🧠 Advanced Tool Use (Based on Anthropic Engineering Guide)
+
+> **Source**: [Anthropic Engineering - Advanced Tool Use](https://www.anthropic.com/engineering/advanced-tool-use)
+>
+> This section implements recommendations from Anthropic's official guide to optimize Claude's tool usage patterns.
+
+### Tool Priority Matrix
+
+**Choose tools in this order** (faster/cheaper → slower/expensive):
+
+| Priority | Tool | Use Case | Token Cost |
+|----------|------|----------|------------|
+| 1️⃣ | `Glob` | Find files by pattern (`**/*.ts`) | Very Low |
+| 2️⃣ | `Grep` | Search content (`files_with_matches` mode) | Low |
+| 3️⃣ | `Read` | Read specific file sections (use `offset`/`limit`) | Low-Medium |
+| 4️⃣ | `Edit` | Modify existing files | Medium |
+| 5️⃣ | `Write` | Create new files (avoid when possible) | Medium |
+| 6️⃣ | `Bash` | Run commands (npm, git, gh) | Medium |
+| 7️⃣ | `Task` agents | Complex multi-step operations | High |
+| 8️⃣ | `WebSearch`/`WebFetch` | External lookups | Very High |
+
+**Anti-patterns to avoid:**
+```bash
+# ❌ BAD: Reading entire file when you need one function
+Read file.ts  # 2000 lines
+
+# ✅ GOOD: Grep first, then read with context
+Grep "functionName" --output_mode=content -C 10
+```
+
+### Parallel Execution Rules
+
+**When to parallelize** (independent operations):
+```bash
+# ✅ GOOD: Multiple independent searches
+Glob "**/*.test.ts" + Glob "**/*.spec.ts" + Grep "describe("
+# All three run simultaneously
+```
+
+**When to sequence** (dependent operations):
+```bash
+# ✅ GOOD: Sequential when output feeds input
+Grep "ClassName"  # → finds file.ts:42
+Read file.ts offset=40 limit=20  # → uses grep result
+Edit file.ts  # → modifies based on read
+```
+
+**Batch operations in Task agents:**
+```markdown
+# ❌ BAD: 10 separate Task calls for 10 files
+Task("fix file1") → Task("fix file2") → ...
+
+# ✅ GOOD: One Task with batch instruction
+Task("fix all 10 files: [list]. Return summary only, not full diffs")
+```
+
+### Tool Use Examples (Copy-Paste Ready)
+
+**Worktree Creation:**
+```bash
+# ❌ Vague
+/worktree-create feature
+
+# ✅ Specific (describes the change)
+/worktree-create cli-status-commands
+/worktree-create fix-mobile-scrolling
+/worktree-create refactor-query-cache
+```
+
+**PR Creation:**
+```bash
+# ❌ Minimal (loses context)
+gh pr create --title "fix bug" --body "Fixed it"
+
+# ✅ Complete (helps reviewers and future AI agents)
+gh pr create --title "fix(cli): resolve path validation edge case" --body "$(cat <<'EOF'
+## Summary
+- Fix path validation for Windows-style paths
+- Add 5 unit tests for edge cases
+- Update error messages for clarity
+
+## Test plan
+- [x] Unit tests pass locally
+- [ ] Manual test: `exo validate "C:\Users\test"`
+- [ ] CI pipeline green
+EOF
+)"
+```
+
+**File Search:**
+```bash
+# ❌ Wasteful (returns too much)
+Grep "error" --output_mode=content  # Could be 1000+ lines
+
+# ✅ Efficient (filter first)
+Grep "error" --output_mode=files_with_matches  # Just file paths
+Grep "error" --output_mode=count  # Just counts
+Grep "specific_error_code" -C 5  # Targeted with context
+```
+
+**Reading Files:**
+```bash
+# ❌ Wasteful
+Read package.json  # Full file when you need one field
+
+# ✅ Efficient (for large files)
+Read large-file.ts offset=100 limit=50  # Just the section you need
+Grep "export class" large-file.ts -n  # Find location first
+```
+
+**Agent Selection:**
+```bash
+# ❌ Wrong agent
+Task(subagent_type="swebok-engineer", "find all TODO comments")  # Overkill
+
+# ✅ Right agent
+Task(subagent_type="Explore", "find all TODO comments")  # Fast, focused
+Task(subagent_type="code-searcher", "locate authentication logic")  # Specialized
+```
+
+### Safe Retry Operations
+
+**Idempotent (safe to retry on failure):**
+```bash
+git fetch origin main          # ✅ Always safe
+git pull --rebase              # ✅ Safe (may need conflict resolution)
+npm install                    # ✅ Safe
+npm test                       # ✅ Safe
+npm run build                  # ✅ Safe
+npm run lint                   # ✅ Safe
+gh pr checks --watch           # ✅ Safe (read-only)
+gh pr view                     # ✅ Safe (read-only)
+Glob, Grep, Read               # ✅ Always safe (read-only)
+```
+
+**NOT idempotent (require confirmation before retry):**
+```bash
+git push --force-with-lease    # ⚠️ Overwrites remote
+git reset --hard               # ⚠️ Loses local changes
+gh pr merge                    # ⚠️ Can't undo merge
+rm -rf                         # ⚠️ Permanent deletion
+Write (to existing file)       # ⚠️ Overwrites content
+Edit (destructive changes)     # ⚠️ May break code
+```
+
+**Error Recovery Pattern:**
+```bash
+# If command fails:
+1. Check error message
+2. If network error → retry immediately (transient)
+3. If permission error → stop, ask user
+4. If validation error → fix input, then retry
+5. If conflict → resolve conflict, then retry
+```
+
+### Context Management (37% Token Reduction)
+
+**Filter before returning to context:**
+```bash
+# ❌ BAD: Dump raw output
+Grep "import" --output_mode=content  # Could be 500 lines
+
+# ✅ GOOD: Filter to essentials
+Grep "import.*Service" --output_mode=files_with_matches
+# Returns: src/services/UserService.ts, src/services/AuthService.ts
+```
+
+**Summarize large results:**
+```markdown
+# ❌ BAD: Return full file list
+"Found 47 files matching *.test.ts: [full list]"
+
+# ✅ GOOD: Return actionable summary
+"Found 47 test files across 3 packages:
+- packages/core/tests: 23 files
+- packages/cli/tests: 12 files
+- packages/obsidian-plugin/tests: 12 files"
+```
+
+**Use head_limit for exploration:**
+```bash
+# ❌ BAD: Get all matches upfront
+Grep "TODO" --output_mode=content  # All 200 TODOs
+
+# ✅ GOOD: Sample first, expand if needed
+Grep "TODO" --output_mode=content --head_limit=10  # First 10
+# If relevant, expand: Grep "TODO" --output_mode=content --head_limit=50
+```
+
+### Tool Decision Tree
+
+```
+Need to find something?
+├── Know exact file path? → Read
+├── Know file pattern? → Glob ("**/*.ts")
+├── Know content pattern? → Grep
+└── Exploratory search? → Task(Explore)
+
+Need to modify something?
+├── Small change, known location? → Edit
+├── Creating new file? → Write (only if necessary!)
+├── Complex refactoring? → Task(swebok-engineer)
+└── Multiple files? → Task with batch instructions
+
+Need external info?
+├── GitHub API (PRs, issues)? → Bash (gh command)
+├── Web documentation? → WebFetch
+├── Current info needed? → WebSearch
+└── Claude Code docs? → Task(claude-code-guide)
+
+Need to run something?
+├── Tests? → Bash (npm test)
+├── Build? → Bash (npm run build)
+├── Git operations? → Bash (git ...)
+└── Complex workflow? → Task(orchestrator)
+```
+
+### Error Message Documentation
+
+**Document return formats clearly** (helps Claude write correct parsing logic):
+
+```typescript
+// Example: gh pr checks output format
+// SUCCESS:
+// ✓ build-and-test  pass  2m30s  https://github.com/...
+// ✓ e2e-tests       pass  5m12s  https://github.com/...
+
+// FAILURE:
+// ✗ build-and-test  fail  1m45s  https://github.com/...
+// ✓ e2e-tests       pass  5m12s  https://github.com/...
+
+// Parse pattern: first column is status (✓/✗), second is name
+```
+
+```typescript
+// Example: npm test output format
+// SUCCESS:
+// Test Suites: 25 passed, 25 total
+// Tests:       156 passed, 156 total
+
+// FAILURE:
+// Test Suites: 1 failed, 24 passed, 25 total
+// Tests:       2 failed, 154 passed, 156 total
+// FAIL src/services/UserService.test.ts
+//   ● UserService › should validate email
+//     Expected: "valid@email.com"
+//     Received: undefined
+
+// Parse pattern: look for "FAIL" lines to find failing tests
+```
+
+---
+
 ## 🆘 Troubleshooting
 
 ### "Worktree created in wrong location"
