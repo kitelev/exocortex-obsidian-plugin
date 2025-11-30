@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import "reflect-metadata";
 import { Command } from "commander";
 import { sparqlQueryCommand } from "./commands/sparql-query.js";
 import { commandCommand } from "./commands/command.js";
