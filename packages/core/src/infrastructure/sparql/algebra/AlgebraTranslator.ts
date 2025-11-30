@@ -9,6 +9,8 @@ import type {
   TripleElement,
   Expression,
   OrderComparator,
+  AggregateBinding,
+  AggregateExpression,
 } from "./AlgebraOperation";
 
 export class AlgebraTranslatorError extends Error {
@@ -40,10 +42,22 @@ export class AlgebraTranslator {
 
     operation = this.translateWhere(query.where);
 
+    const aggregates = this.extractAggregates(query.variables);
+    const groupVars = this.extractGroupVariables(query.group);
+
+    if (aggregates.length > 0 || groupVars.length > 0) {
+      operation = {
+        type: "group",
+        variables: groupVars,
+        aggregates: aggregates,
+        input: operation,
+      };
+    }
+
     if (query.variables && query.variables.length > 0) {
       const varNames = query.variables
-        .filter((v: any) => v.termType === "Variable")
-        .map((v: any) => v.value);
+        .filter((v: any) => v.termType === "Variable" || v.variable)
+        .map((v: any) => v.termType === "Variable" ? v.value : v.variable.value);
 
       if (varNames.length > 0) {
         operation = {
@@ -79,6 +93,35 @@ export class AlgebraTranslator {
     }
 
     return operation;
+  }
+
+  private extractAggregates(variables: any[]): AggregateBinding[] {
+    if (!variables) return [];
+
+    return variables
+      .filter((v: any) => v.expression && v.expression.type === "aggregate")
+      .map((v: any) => ({
+        variable: v.variable.value,
+        expression: this.translateAggregateExpression(v.expression),
+      }));
+  }
+
+  private extractGroupVariables(group: any[] | undefined): string[] {
+    if (!group) return [];
+
+    return group
+      .filter((g: any) => g.expression && g.expression.termType === "Variable")
+      .map((g: any) => g.expression.value);
+  }
+
+  private translateAggregateExpression(expr: any): AggregateExpression {
+    return {
+      type: "aggregate",
+      aggregation: expr.aggregation.toLowerCase() as AggregateExpression["aggregation"],
+      expression: expr.expression ? this.translateExpression(expr.expression) : undefined,
+      distinct: expr.distinct || false,
+      separator: expr.separator,
+    };
   }
 
   private translateWhere(patterns: any[]): AlgebraOperation {
