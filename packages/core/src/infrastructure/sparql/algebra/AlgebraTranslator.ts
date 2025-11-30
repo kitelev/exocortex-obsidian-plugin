@@ -5,6 +5,7 @@ import type {
   FilterOperation,
   LeftJoinOperation,
   UnionOperation,
+  ExtendOperation,
   Triple,
   TripleElement,
   Expression,
@@ -129,17 +130,44 @@ export class AlgebraTranslator {
       throw new AlgebraTranslatorError("Empty WHERE clause");
     }
 
-    const operations = patterns.map((p) => this.translatePattern(p));
+    // Separate FILTER and BIND patterns from other patterns
+    // FILTER and BIND apply to the result of other patterns, not joined with them
+    const filterPatterns = patterns.filter((p) => p.type === "filter");
+    const bindPatterns = patterns.filter((p) => p.type === "bind");
+    const otherPatterns = patterns.filter((p) => p.type !== "filter" && p.type !== "bind");
 
-    if (operations.length === 1) {
-      return operations[0];
+    // First, translate and join all non-filter, non-bind patterns
+    let result: AlgebraOperation;
+
+    if (otherPatterns.length === 0) {
+      // Only filters/binds with no base patterns - use empty BGP
+      result = { type: "bgp", triples: [] } as BGPOperation;
+    } else if (otherPatterns.length === 1) {
+      result = this.translatePattern(otherPatterns[0]);
+    } else {
+      const operations = otherPatterns.map((p) => this.translatePattern(p));
+      result = operations.reduce((left, right) => ({
+        type: "join",
+        left,
+        right,
+      }));
     }
 
-    return operations.reduce((left, right) => ({
-      type: "join",
-      left,
-      right,
-    }));
+    // Apply BIND operations (they extend solutions with computed values)
+    for (const bindPattern of bindPatterns) {
+      result = this.translateBind(bindPattern, result);
+    }
+
+    // Then, wrap with FILTER operations (they apply to the combined result)
+    for (const filterPattern of filterPatterns) {
+      result = {
+        type: "filter",
+        expression: this.translateExpression(filterPattern.expression),
+        input: result,
+      };
+    }
+
+    return result;
   }
 
   private translatePattern(pattern: any): AlgebraOperation {
@@ -343,6 +371,23 @@ export class AlgebraTranslator {
       type: "union",
       left: this.translateWhere(pattern.patterns[0].patterns || [pattern.patterns[0]]),
       right: this.translateWhere(pattern.patterns[1].patterns || [pattern.patterns[1]]),
+    };
+  }
+
+  /**
+   * Translate BIND(expression AS ?variable) pattern to extend operation.
+   * BIND creates a new binding in each solution by evaluating an expression.
+   */
+  private translateBind(pattern: any, input: AlgebraOperation): ExtendOperation {
+    if (!pattern.variable || !pattern.expression) {
+      throw new AlgebraTranslatorError("BIND pattern must have variable and expression");
+    }
+
+    return {
+      type: "extend",
+      variable: pattern.variable.value,
+      expression: this.translateExpression(pattern.expression),
+      input,
     };
   }
 
