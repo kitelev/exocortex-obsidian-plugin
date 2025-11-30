@@ -6,6 +6,7 @@ import type {
   LeftJoinOperation,
   UnionOperation,
   ExtendOperation,
+  ExistsExpression,
   Triple,
   TripleElement,
   Expression,
@@ -311,10 +312,45 @@ export class AlgebraTranslator {
       };
     }
 
+    // Handle EXISTS and NOT EXISTS
+    if (expr.operator === "exists" || expr.operator === "notexists") {
+      return this.translateExistsExpression(expr);
+    }
+
     return {
       type: "function",
       function: expr.operator,
       args: expr.args.map((a: any) => this.translateExpression(a)),
+    };
+  }
+
+  /**
+   * Translate EXISTS or NOT EXISTS expression.
+   * sparqljs AST: { type: "operation", operator: "exists"|"notexists", args: [pattern] }
+   * The pattern is a graph pattern (BGP, group, etc.) that needs to be evaluated.
+   */
+  private translateExistsExpression(expr: any): ExistsExpression {
+    if (!expr.args || expr.args.length !== 1) {
+      throw new AlgebraTranslatorError("EXISTS/NOT EXISTS must have exactly one pattern argument");
+    }
+
+    const patternArg = expr.args[0];
+    let pattern: AlgebraOperation;
+
+    // Handle group pattern (most common for EXISTS)
+    if (patternArg.type === "group" && patternArg.patterns) {
+      pattern = this.translateWhere(patternArg.patterns);
+    } else if (patternArg.type === "bgp") {
+      pattern = this.translateBGP(patternArg);
+    } else {
+      // Try to translate as a generic pattern
+      pattern = this.translatePattern(patternArg);
+    }
+
+    return {
+      type: "exists",
+      negated: expr.operator === "notexists",
+      pattern,
     };
   }
 

@@ -45,6 +45,33 @@ export class QueryExecutor {
     this.optionalExecutor = new OptionalExecutor();
     this.unionExecutor = new UnionExecutor();
     this.aggregateExecutor = new AggregateExecutor();
+
+    // Set up EXISTS evaluator for FilterExecutor
+    this.filterExecutor.setExistsEvaluator(async (pattern, solution) => {
+      return this.evaluateExistsPattern(pattern, solution);
+    });
+  }
+
+  /**
+   * Evaluate an EXISTS pattern with current solution bindings.
+   * Returns true if the pattern produces at least one result when
+   * variables bound in the solution are substituted.
+   */
+  private async evaluateExistsPattern(
+    pattern: AlgebraOperation,
+    solution: SolutionMapping
+  ): Promise<boolean> {
+    // Execute the pattern and check if any result is found
+    // The pattern is evaluated against the full triple store,
+    // but we need to join with current bindings
+    for await (const result of this.execute(pattern)) {
+      // Check if result is compatible with current solution
+      const merged = solution.merge(result);
+      if (merged !== null) {
+        return true; // Found at least one compatible result
+      }
+    }
+    return false;
   }
 
   /**

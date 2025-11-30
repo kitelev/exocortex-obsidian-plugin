@@ -407,6 +407,207 @@ describe("AlgebraTranslator", () => {
     });
   });
 
+  describe("EXISTS Translation", () => {
+    it("translates FILTER EXISTS with simple BGP", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/type> <http://example.org/Task> .
+          FILTER EXISTS { ?task <http://example.org/status> "Done" }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("filter");
+      expect(input.expression.type).toBe("exists");
+      expect(input.expression.negated).toBe(false);
+      expect(input.expression.pattern.type).toBe("bgp");
+      expect(input.expression.pattern.triples).toHaveLength(1);
+    });
+
+    it("translates FILTER NOT EXISTS with simple BGP", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/type> <http://example.org/Task> .
+          FILTER NOT EXISTS { ?task <http://example.org/blocker> ?blocker }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("filter");
+      expect(input.expression.type).toBe("exists");
+      expect(input.expression.negated).toBe(true);
+      expect(input.expression.pattern.type).toBe("bgp");
+    });
+
+    it("translates EXISTS with multiple triples", () => {
+      const query = `
+        SELECT ?project
+        WHERE {
+          ?project <http://example.org/type> <http://example.org/Project> .
+          FILTER EXISTS {
+            ?task <http://example.org/parent> ?project .
+            ?task <http://example.org/status> "Done"
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("filter");
+      expect(input.expression.type).toBe("exists");
+      expect(input.expression.negated).toBe(false);
+      expect(input.expression.pattern.type).toBe("bgp");
+      expect(input.expression.pattern.triples).toHaveLength(2);
+    });
+
+    it("translates EXISTS combined with AND", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/type> <http://example.org/Task> .
+          ?task <http://example.org/priority> ?priority .
+          FILTER(?priority > 5 && EXISTS { ?task <http://example.org/blocker> ?b })
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("filter");
+      expect(input.expression.type).toBe("logical");
+      expect(input.expression.operator).toBe("&&");
+      expect(input.expression.operands[0].type).toBe("comparison");
+      expect(input.expression.operands[1].type).toBe("exists");
+    });
+
+    it("translates NOT EXISTS combined with OR", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/type> <http://example.org/Task> .
+          FILTER(
+            NOT EXISTS { ?task <http://example.org/blocker> ?b } ||
+            NOT EXISTS { ?task <http://example.org/dependency> ?d }
+          )
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("filter");
+      expect(input.expression.type).toBe("logical");
+      expect(input.expression.operator).toBe("||");
+      expect(input.expression.operands[0].type).toBe("exists");
+      expect(input.expression.operands[0].negated).toBe(true);
+      expect(input.expression.operands[1].type).toBe("exists");
+      expect(input.expression.operands[1].negated).toBe(true);
+    });
+
+    it("translates nested NOT with EXISTS", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/type> <http://example.org/Task> .
+          FILTER(!EXISTS { ?task <http://example.org/blocker> ?b })
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("filter");
+      // sparqljs may parse !EXISTS as logical NOT with EXISTS child
+      // or as notexists directly depending on version
+      if (input.expression.type === "logical") {
+        expect(input.expression.operator).toBe("!");
+        expect(input.expression.operands[0].type).toBe("exists");
+      } else {
+        expect(input.expression.type).toBe("exists");
+      }
+    });
+
+    it("translates EXISTS with PREFIX declarations", () => {
+      const query = `
+        PREFIX ems: <https://exocortex.my/ontology/ems#>
+        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+        SELECT ?task
+        WHERE {
+          ?task rdf:type ems:Task .
+          FILTER EXISTS { ?task ems:assignee ?person }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("filter");
+      expect(input.expression.type).toBe("exists");
+      expect(input.expression.pattern.type).toBe("bgp");
+    });
+
+    it("translates EXISTS with OPTIONAL inside", () => {
+      const query = `
+        SELECT ?project
+        WHERE {
+          ?project <http://example.org/type> <http://example.org/Project> .
+          FILTER EXISTS {
+            ?task <http://example.org/parent> ?project .
+            OPTIONAL { ?task <http://example.org/assignee> ?person }
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("filter");
+      expect(input.expression.type).toBe("exists");
+      // Pattern should contain join with leftjoin for OPTIONAL
+      const pattern = input.expression.pattern;
+      expect(pattern).toBeDefined();
+    });
+
+    it("translates EXISTS with FILTER inside", () => {
+      const query = `
+        SELECT ?project
+        WHERE {
+          ?project <http://example.org/type> <http://example.org/Project> .
+          FILTER EXISTS {
+            ?task <http://example.org/parent> ?project .
+            ?task <http://example.org/effort> ?effort .
+            FILTER(?effort > 60)
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("filter");
+      expect(input.expression.type).toBe("exists");
+      const pattern = input.expression.pattern;
+      // Pattern should contain nested FILTER
+      expect(pattern.type).toBe("filter");
+    });
+  });
+
   describe("Error Handling", () => {
     it("throws error for empty WHERE clause", () => {
       const ast = parser.parse("SELECT ?s WHERE { }");
