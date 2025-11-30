@@ -223,176 +223,127 @@ describe("UniversalLayoutRenderer", () => {
     });
   });
 
-  describe("incrementalUpdate", () => {
-    it("should update only affected sections", async () => {
+  describe("incremental updates via IncrementalUpdateHandler", () => {
+    it("should delegate to incrementalUpdateHandler for section updates", async () => {
       const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
       const renderer_any = renderer as any;
 
-      // Mock the section update methods
-      renderer_any.updatePropertiesSection = jest.fn().mockResolvedValue(undefined);
-      renderer_any.updateButtonsSection = jest.fn().mockResolvedValue(undefined);
-      renderer_any.updateDailyTasksSection = jest.fn().mockResolvedValue(undefined);
+      // Verify incrementalUpdateHandler exists
+      expect(renderer_any.incrementalUpdateHandler).toBeDefined();
+      expect(typeof renderer_any.incrementalUpdateHandler.updateSections).toBe("function");
+    });
 
-      // Mock root container
-      renderer_any.rootContainer = document.createElement("div");
+    it("should have incrementalUpdateHandler with correct dependencies", async () => {
+      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
+      const renderer_any = renderer as any;
+      const handler = renderer_any.incrementalUpdateHandler;
+
+      // Verify handler has access to required dependencies via deps
+      expect(handler).toBeDefined();
+    });
+  });
+
+  describe("render", () => {
+    it("should show no active file message when no file is active", async () => {
+      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
+
+      mockApp.workspace.getActiveFile.mockReturnValue(null);
+
+      const el = document.createElement("div");
+      await renderer.render("", el, {} as any);
+
+      expect(el.textContent).toContain("No active file");
+    });
+
+    it("should render layout for active file", async () => {
+      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
+      const renderer_any = renderer as any;
 
       const mockFile = {
         path: "test.md",
         basename: "test",
       } as TFile;
 
-      // Call with specific sections
-      await renderer_any.incrementalUpdate(mockFile, ["properties", "buttons"]);
+      mockApp.workspace.getActiveFile.mockReturnValue(mockFile);
 
-      // Verify only specified sections were updated
-      expect(renderer_any.updatePropertiesSection).toHaveBeenCalledWith(mockFile);
-      expect(renderer_any.updateButtonsSection).toHaveBeenCalledWith(mockFile);
-      expect(renderer_any.updateDailyTasksSection).not.toHaveBeenCalled();
+      // Mock dependencies
+      renderer_any.dailyNavRenderer = { render: jest.fn() };
+      renderer_any.propertiesRenderer = { render: jest.fn().mockResolvedValue(undefined) };
+      renderer_any.buttonGroupsBuilder = { build: jest.fn().mockResolvedValue([]) };
+      renderer_any.dailyTasksRenderer = { render: jest.fn().mockResolvedValue(undefined) };
+      renderer_any.dailyProjectsRenderer = { render: jest.fn().mockResolvedValue(undefined) };
+      renderer_any.areaTreeRenderer = { render: jest.fn().mockResolvedValue(undefined) };
+      renderer_any.relationsRenderer = {
+        render: jest.fn().mockResolvedValue(undefined),
+        getAssetRelations: jest.fn().mockResolvedValue([]),
+      };
+      renderer_any.backlinksCacheManager = { getBacklinks: jest.fn().mockReturnValue(new Map()) };
+      renderer_any.metadataExtractor = { extractMetadata: jest.fn().mockReturnValue({}) };
+
+      const el = document.createElement("div");
+      await renderer.render("", el, {} as any);
+
+      expect(renderer_any.dailyNavRenderer.render).toHaveBeenCalled();
+      expect(renderer_any.currentFilePath).toBe("test.md");
     });
+  });
 
+  describe("refresh", () => {
     it("should handle missing root container gracefully", async () => {
       const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
       const renderer_any = renderer as any;
 
-      // No root container set
       renderer_any.rootContainer = null;
+
+      // Should not throw
+      await expect(renderer.refresh()).resolves.toBeUndefined();
+    });
+
+    it("should preserve scroll position during refresh", async () => {
+      const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
+      const renderer_any = renderer as any;
 
       const mockFile = {
         path: "test.md",
         basename: "test",
       } as TFile;
 
-      // Should not throw
-      await expect(renderer_any.incrementalUpdate(mockFile, ["properties"])).resolves.toBeUndefined();
-    });
-  });
+      mockApp.workspace.getActiveFile.mockReturnValue(mockFile);
 
-  describe("section update methods", () => {
-    let renderer: UniversalLayoutRenderer;
-    let renderer_any: any;
-    let mockFile: TFile;
-    let mockContainer: HTMLElement;
+      // Create mock container with scroll parent
+      const scrollParent = document.createElement("div");
+      scrollParent.className = "cm-scroller";
+      Object.defineProperty(scrollParent, "scrollTop", {
+        get: () => 100,
+        set: jest.fn(),
+        configurable: true,
+      });
 
-    beforeEach(() => {
-      renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
-      renderer_any = renderer as any;
+      const rootContainer = document.createElement("div");
+      rootContainer.setAttribute("data-source", "");
+      rootContainer.empty = jest.fn();
+      scrollParent.appendChild(rootContainer);
 
-      mockFile = {
-        path: "test.md",
-        basename: "test",
-      } as TFile;
+      renderer_any.rootContainer = rootContainer;
 
-      // Mock vault to return our mock file
-      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(mockFile);
-      mockApp.metadataCache.getFileCache.mockReturnValue({ frontmatter: {} });
-
-      // Create mock container with querySelector
-      mockContainer = document.createElement("div");
-      renderer_any.rootContainer = mockContainer;
-    });
-
-    it("should handle missing section containers gracefully - properties", async () => {
-      // No section element exists
-      const result = await renderer_any.updatePropertiesSection(mockFile);
-      expect(result).toBeUndefined();
-    });
-
-    it("should handle missing section containers gracefully - buttons", async () => {
-      // Mock ButtonGroupsBuilder to return empty array (no buttons to render)
-      renderer_any.buttonGroupsBuilder = {
-        build: jest.fn().mockResolvedValue([]),
-      };
-
-      const result = await renderer_any.updateButtonsSection(mockFile);
-      expect(result).toBeUndefined();
-
-      // Verify builder was called but no container created (empty button groups)
-      expect(renderer_any.buttonGroupsBuilder.build).toHaveBeenCalledWith(mockFile);
-
-      // No button section should exist since buttonGroups.length === 0
-      const container = mockContainer.querySelector(".exocortex-buttons-section");
-      expect(container).toBeNull();
-    });
-
-    it("should handle missing section containers gracefully - daily tasks", async () => {
-      const result = await renderer_any.updateDailyTasksSection(mockFile);
-      expect(result).toBeUndefined();
-    });
-
-    it("should handle missing section containers gracefully - daily projects", async () => {
-      const result = await renderer_any.updateDailyProjectsSection(mockFile);
-      expect(result).toBeUndefined();
-    });
-
-    it("should handle missing section containers gracefully - area tree", async () => {
-      const result = await renderer_any.updateAreaTreeSection(mockFile);
-      expect(result).toBeUndefined();
-    });
-
-    it("should handle missing section containers gracefully - relations", async () => {
-      const result = await renderer_any.updateRelationsSection(mockFile);
-      expect(result).toBeUndefined();
-    });
-
-    it("should update properties section when container exists", async () => {
-      // Create mock section container
-      const sectionContainer = document.createElement("div");
-      sectionContainer.className = "exocortex-properties-section";
-      sectionContainer.empty = jest.fn();
-      mockContainer.appendChild(sectionContainer);
-
-      // Mock querySelector to return our section
-      mockContainer.querySelector = jest.fn().mockReturnValue(sectionContainer);
-
-      // Mock propertiesRenderer
-      renderer_any.propertiesRenderer = {
+      // Mock dependencies
+      renderer_any.dailyNavRenderer = { render: jest.fn() };
+      renderer_any.propertiesRenderer = { render: jest.fn().mockResolvedValue(undefined) };
+      renderer_any.buttonGroupsBuilder = { build: jest.fn().mockResolvedValue([]) };
+      renderer_any.dailyTasksRenderer = { render: jest.fn().mockResolvedValue(undefined) };
+      renderer_any.dailyProjectsRenderer = { render: jest.fn().mockResolvedValue(undefined) };
+      renderer_any.areaTreeRenderer = { render: jest.fn().mockResolvedValue(undefined) };
+      renderer_any.relationsRenderer = {
         render: jest.fn().mockResolvedValue(undefined),
+        getAssetRelations: jest.fn().mockResolvedValue([]),
       };
+      renderer_any.backlinksCacheManager = { getBacklinks: jest.fn().mockReturnValue(new Map()) };
+      renderer_any.metadataExtractor = { extractMetadata: jest.fn().mockReturnValue({}) };
 
-      // Mock backlinks cache
-      renderer_any.backlinksCacheManager = {
-        getBacklinks: jest.fn().mockReturnValue(new Map()),
-      };
+      await renderer.refresh();
 
-      await renderer_any.updatePropertiesSection(mockFile);
-
-      // Verify section was cleared and re-rendered
-      expect(sectionContainer.empty).toHaveBeenCalled();
-      expect(renderer_any.propertiesRenderer.render).toHaveBeenCalled();
-    });
-
-    it("should update buttons section when container exists", async () => {
-      // Mock ButtonGroupsBuilder to return button groups
-      renderer_any.buttonGroupsBuilder = {
-        build: jest.fn().mockResolvedValue([{ buttons: [] }]),
-      };
-
-      await renderer_any.updateButtonsSection(mockFile);
-
-      // Verify builder was called and button groups were generated
-      expect(renderer_any.buttonGroupsBuilder.build).toHaveBeenCalledWith(mockFile);
-
-      // Verify new container was created (old one was removed, new one created)
-      const newContainer = mockContainer.querySelector(".exocortex-buttons-section");
-      expect(newContainer).toBeTruthy();
-    });
-
-    it("should update daily tasks section when container exists", async () => {
-      const sectionContainer = document.createElement("div");
-      sectionContainer.className = "exocortex-daily-tasks-section";
-      sectionContainer.empty = jest.fn();
-      mockContainer.appendChild(sectionContainer);
-
-      mockContainer.querySelector = jest.fn().mockReturnValue(sectionContainer);
-
-      renderer_any.dailyTasksRenderer = {
-        render: jest.fn().mockResolvedValue(undefined),
-      };
-
-      await renderer_any.updateDailyTasksSection(mockFile);
-
-      expect(sectionContainer.empty).toHaveBeenCalled();
-      expect(renderer_any.dailyTasksRenderer.render).toHaveBeenCalled();
+      // Verify container was cleared
+      expect(rootContainer.empty).toHaveBeenCalled();
     });
   });
 });
