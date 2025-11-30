@@ -1,4 +1,3 @@
-import path from "path";
 import { NodeFsAdapter } from "../../adapters/NodeFsAdapter.js";
 import { PathResolver } from "../../utils/PathResolver.js";
 import { FrontmatterService, DateFormatter } from "@exocortex/core";
@@ -42,7 +41,7 @@ export abstract class BaseCommandExecutor {
   /**
    * Get current timestamp for property updates
    */
-  protected getCurrentTimestamp(): number {
+  protected getCurrentTimestamp(): string {
     return DateFormatter.toLocalTimestamp(new Date());
   }
 
