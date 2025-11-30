@@ -42,7 +42,11 @@ export class FilterExecutor {
     return results;
   }
 
-  private evaluateExpression(expr: Expression, solution: SolutionMapping): any {
+  /**
+   * Evaluate a SPARQL expression against a solution mapping.
+   * Public to allow reuse in QueryExecutor for BIND evaluation.
+   */
+  evaluateExpression(expr: Expression, solution: SolutionMapping): any {
     switch (expr.type) {
       case "comparison":
         return this.evaluateComparison(expr, solution);
@@ -130,38 +134,66 @@ export class FilterExecutor {
         return BuiltInFunctions.isLiteral(litArg);
 
       case "regex":
-        const text = String(this.evaluateExpression(expr.args[0], solution));
-        const pattern = String(this.evaluateExpression(expr.args[1], solution));
-        const flags = expr.args[2] ? String(this.evaluateExpression(expr.args[2], solution)) : undefined;
+        const text = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        const pattern = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
+        const flags = expr.args[2] ? this.getStringValue(this.evaluateExpression(expr.args[2], solution)) : undefined;
         return BuiltInFunctions.regex(text, pattern, flags);
 
       // W3C SPARQL 1.1 String Functions
       case "contains":
-        const containsStr = String(this.evaluateExpression(expr.args[0], solution));
-        const containsSubstr = String(this.evaluateExpression(expr.args[1], solution));
+        const containsStr = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        const containsSubstr = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
         return BuiltInFunctions.contains(containsStr, containsSubstr);
 
       case "strstarts":
-        const startsStr = String(this.evaluateExpression(expr.args[0], solution));
-        const startsPrefix = String(this.evaluateExpression(expr.args[1], solution));
+        const startsStr = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        const startsPrefix = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
         return BuiltInFunctions.strStarts(startsStr, startsPrefix);
 
       case "strends":
-        const endsStr = String(this.evaluateExpression(expr.args[0], solution));
-        const endsSuffix = String(this.evaluateExpression(expr.args[1], solution));
+        const endsStr = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        const endsSuffix = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
         return BuiltInFunctions.strEnds(endsStr, endsSuffix);
 
       case "strlen":
-        const lenStr = String(this.evaluateExpression(expr.args[0], solution));
+        const lenStr = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
         return BuiltInFunctions.strlen(lenStr);
 
       case "ucase":
-        const ucaseStr = String(this.evaluateExpression(expr.args[0], solution));
+        const ucaseStr = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
         return BuiltInFunctions.ucase(ucaseStr);
 
       case "lcase":
-        const lcaseStr = String(this.evaluateExpression(expr.args[0], solution));
+        const lcaseStr = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
         return BuiltInFunctions.lcase(lcaseStr);
+
+      case "replace":
+        const replaceStr = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        const replacePattern = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
+        const replaceReplacement = this.getStringValue(this.evaluateExpression(expr.args[2], solution));
+        const replaceFlags = expr.args[3] ? this.getStringValue(this.evaluateExpression(expr.args[3], solution)) : undefined;
+        return BuiltInFunctions.replace(replaceStr, replacePattern, replaceReplacement, replaceFlags);
+
+      // Date comparison functions
+      case "parsedate":
+        const parseDateArg = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.parseDate(parseDateArg);
+
+      case "datebefore":
+        const beforeDate1 = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        const beforeDate2 = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
+        return BuiltInFunctions.dateBefore(beforeDate1, beforeDate2);
+
+      case "dateafter":
+        const afterDate1 = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        const afterDate2 = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
+        return BuiltInFunctions.dateAfter(afterDate1, afterDate2);
+
+      case "dateinrange":
+        const rangeDate = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        const rangeStart = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
+        const rangeEnd = this.getStringValue(this.evaluateExpression(expr.args[2], solution));
+        return BuiltInFunctions.dateInRange(rangeDate, rangeStart, rangeEnd);
 
       default:
         throw new FilterExecutorError(`Unknown function: ${funcName}`);
@@ -173,5 +205,20 @@ export class FilterExecutor {
       return solution.get(expr.name);
     }
     return undefined;
+  }
+
+  /**
+   * Extract raw string value from expression result.
+   * Handles Literal/IRI objects properly (using .value instead of toString()).
+   */
+  private getStringValue(value: any): string {
+    if (value === null || value === undefined) {
+      return "";
+    }
+    // If it's an RDF term with a value property, use that
+    if (typeof value === "object" && "value" in value) {
+      return String(value.value);
+    }
+    return String(value);
   }
 }

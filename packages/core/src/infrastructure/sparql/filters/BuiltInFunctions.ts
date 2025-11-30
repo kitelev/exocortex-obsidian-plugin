@@ -166,6 +166,62 @@ export class BuiltInFunctions {
     return str.toLowerCase();
   }
 
+  /**
+   * SPARQL 1.1 REPLACE function.
+   * https://www.w3.org/TR/sparql11-query/#func-replace
+   */
+  static replace(str: string, pattern: string, replacement: string, flags?: string): string {
+    try {
+      const regex = new RegExp(pattern, flags || "g");
+      return str.replace(regex, replacement);
+    } catch (error) {
+      throw new Error(`REPLACE: invalid pattern '${pattern}': ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Parse a date string to a timestamp (milliseconds since epoch).
+   * Custom function for date comparison support.
+   */
+  static parseDate(dateStr: string): number {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      throw new Error(`PARSEDATE: invalid date string '${dateStr}'`);
+    }
+    return date.getTime();
+  }
+
+  /**
+   * Check if date1 is before date2.
+   * Custom function for date comparison support.
+   */
+  static dateBefore(date1: string, date2: string): boolean {
+    const d1 = this.parseDate(date1);
+    const d2 = this.parseDate(date2);
+    return d1 < d2;
+  }
+
+  /**
+   * Check if date1 is after date2.
+   * Custom function for date comparison support.
+   */
+  static dateAfter(date1: string, date2: string): boolean {
+    const d1 = this.parseDate(date1);
+    const d2 = this.parseDate(date2);
+    return d1 > d2;
+  }
+
+  /**
+   * Check if date is within a range [start, end].
+   * Custom function for date comparison support.
+   */
+  static dateInRange(date: string, start: string, end: string): boolean {
+    const d = this.parseDate(date);
+    const s = this.parseDate(start);
+    const e = this.parseDate(end);
+    return d >= s && d <= e;
+  }
+
   static logicalAnd(operands: boolean[]): boolean {
     return operands.every((op) => op === true);
   }

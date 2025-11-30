@@ -291,17 +291,18 @@ export class QueryExecutor {
     expr: ExtendOperation["expression"],
     solution: SolutionMapping
   ): any {
-    if (expr.type === "variable") {
-      return solution.get(expr.name);
-    }
-    if (expr.type === "literal") {
-      return expr.value;
-    }
     if (expr.type === "aggregate") {
       // Aggregates in extend are handled at the group level
       return undefined;
     }
-    return undefined;
+
+    // Use FilterExecutor's evaluateExpression for all other expression types
+    // This handles: variable, literal, function (REPLACE, STR, etc.), comparison, logical
+    try {
+      return this.filterExecutor.evaluateExpression(expr as any, solution);
+    } catch {
+      return undefined;
+    }
   }
 
   private getExpressionValue(expr: any, solution: SolutionMapping): any {

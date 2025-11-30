@@ -90,12 +90,11 @@ describe("AlgebraTranslator", () => {
 
       expect(algebra.type).toBe("project");
       const input = (algebra as any).input;
-      expect(input.type).toBe("join");
-
-      const filterOp = input.right;
-      expect(filterOp.type).toBe("filter");
-      expect(filterOp.expression.type).toBe("comparison");
-      expect(filterOp.expression.operator).toBe(">");
+      // FILTER wraps the BGP, not joined with it
+      expect(input.type).toBe("filter");
+      expect(input.expression.type).toBe("comparison");
+      expect(input.expression.operator).toBe(">");
+      expect(input.input.type).toBe("bgp");
     });
 
     it("translates FILTER with regex", () => {
@@ -111,12 +110,11 @@ describe("AlgebraTranslator", () => {
 
       expect(algebra.type).toBe("project");
       const input = (algebra as any).input;
-      expect(input.type).toBe("join");
-
-      const filterOp = input.right;
-      expect(filterOp.type).toBe("filter");
-      expect(filterOp.expression.type).toBe("function");
-      expect(filterOp.expression.function).toBe("regex");
+      // FILTER wraps the BGP, not joined with it
+      expect(input.type).toBe("filter");
+      expect(input.expression.type).toBe("function");
+      expect(input.expression.function).toBe("regex");
+      expect(input.input.type).toBe("bgp");
     });
 
     it("translates FILTER with logical operators", () => {
@@ -134,16 +132,13 @@ describe("AlgebraTranslator", () => {
       expect(algebra.type).toBe("project");
       const input = (algebra as any).input;
 
-      const findFilter = (op: any): any => {
-        if (op.type === "filter") return op;
-        if (op.type === "join") return findFilter(op.left) || findFilter(op.right);
-        return null;
-      };
-
-      const filterOp = findFilter(input);
-      expect(filterOp).toBeTruthy();
-      expect(filterOp.expression.type).toBe("logical");
-      expect(filterOp.expression.operator).toBe("&&");
+      // FILTER wraps the BGP (sparqljs combines adjacent triples into one BGP)
+      expect(input.type).toBe("filter");
+      expect(input.expression.type).toBe("logical");
+      expect(input.expression.operator).toBe("&&");
+      // Input to filter is a single BGP with 2 triples
+      expect(input.input.type).toBe("bgp");
+      expect(input.input.triples).toHaveLength(2);
     });
   });
 
@@ -280,6 +275,135 @@ describe("AlgebraTranslator", () => {
 
       current = current.input;
       expect(current.type).toBe("project");
+    });
+  });
+
+  describe("BIND Translation", () => {
+    it("translates BIND with variable copy", () => {
+      const query = `
+        SELECT ?s ?copy WHERE {
+          ?s <http://example.org/p> ?o .
+          BIND(?o AS ?copy)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("extend");
+      expect(input.variable).toBe("copy");
+      expect(input.expression.type).toBe("variable");
+      expect(input.expression.name).toBe("o");
+      expect(input.input.type).toBe("bgp");
+    });
+
+    it("translates BIND with REPLACE function", () => {
+      const query = `
+        SELECT ?s ?clean WHERE {
+          ?s <http://example.org/label> ?raw .
+          BIND(REPLACE(?raw, "[[", "") AS ?clean)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("extend");
+      expect(input.variable).toBe("clean");
+      expect(input.expression.type).toBe("function");
+      expect(input.expression.function).toBe("replace");
+      expect(input.expression.args).toHaveLength(3);
+    });
+
+    it("translates BIND with STR function", () => {
+      const query = `
+        SELECT ?s ?strValue WHERE {
+          ?s <http://example.org/p> ?o .
+          BIND(STR(?o) AS ?strValue)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("extend");
+      expect(input.variable).toBe("strValue");
+      expect(input.expression.type).toBe("function");
+      expect(input.expression.function).toBe("str");
+    });
+
+    it("translates BIND with nested REPLACE functions", () => {
+      const query = `
+        SELECT ?s ?clean WHERE {
+          ?s <http://example.org/label> ?raw .
+          BIND(REPLACE(REPLACE(?raw, "[[", ""), "]]", "") AS ?clean)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("extend");
+      expect(input.variable).toBe("clean");
+      expect(input.expression.type).toBe("function");
+      expect(input.expression.function).toBe("replace");
+      // First arg is another REPLACE function
+      expect(input.expression.args[0].type).toBe("function");
+      expect(input.expression.args[0].function).toBe("replace");
+    });
+
+    it("translates multiple BIND patterns", () => {
+      const query = `
+        SELECT ?s ?a ?b WHERE {
+          ?s <http://example.org/p> ?o .
+          BIND(?o AS ?a)
+          BIND(STR(?o) AS ?b)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      let current = (algebra as any).input;
+
+      // Second BIND wraps first
+      expect(current.type).toBe("extend");
+      expect(current.variable).toBe("b");
+
+      current = current.input;
+      expect(current.type).toBe("extend");
+      expect(current.variable).toBe("a");
+
+      current = current.input;
+      expect(current.type).toBe("bgp");
+    });
+
+    it("translates BIND before FILTER", () => {
+      const query = `
+        SELECT ?s ?clean WHERE {
+          ?s <http://example.org/label> ?raw .
+          BIND(REPLACE(?raw, "prefix_", "") AS ?clean)
+          FILTER(CONTAINS(?clean, "test"))
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+
+      // FILTER should wrap the extend
+      expect(input.type).toBe("filter");
+      expect(input.expression.type).toBe("function");
+      expect(input.expression.function).toBe("contains");
+
+      // extend is input to filter
+      expect(input.input.type).toBe("extend");
+      expect(input.input.variable).toBe("clean");
     });
   });
 
