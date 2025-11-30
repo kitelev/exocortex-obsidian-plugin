@@ -7,7 +7,7 @@ import {
   AlgebraTranslator,
   AlgebraOptimizer,
   AlgebraSerializer,
-  BGPExecutor,
+  QueryExecutor,
   NoteToRDFConverter,
   type SolutionMapping,
 } from "@exocortex/core";
@@ -82,7 +82,8 @@ export function sparqlQueryCommand(): Command {
         console.log(`🎯 Executing query...`);
         const execStartTime = Date.now();
 
-        const results = await executeQuery(algebra, tripleStore);
+        const executor = new QueryExecutor(tripleStore);
+        const results = await executor.executeAll(algebra);
 
         const execDuration = Date.now() - execStartTime;
         const totalDuration = Date.now() - startTime;
@@ -128,38 +129,6 @@ function loadQuery(queryArg: string): string {
   }
 
   return queryArg;
-}
-
-async function executeQuery(
-  algebra: any,
-  tripleStore: InMemoryTripleStore
-): Promise<SolutionMapping[]> {
-  // Extract LIMIT from Slice operation before descending to BGP
-  let limit: number | undefined = undefined;
-  let operation = algebra;
-
-  // Walk down the algebra tree, extracting LIMIT
-  while (operation.type !== "bgp") {
-    if (operation.type === "slice" && operation.limit !== undefined) {
-      limit = operation.limit;
-    }
-
-    if ("input" in operation) {
-      operation = operation.input;
-    } else {
-      throw new Error(`Cannot execute operation type: ${operation.type}`);
-    }
-  }
-
-  const executor = new BGPExecutor(tripleStore);
-  const results = await executor.executeAll(operation);
-
-  // Apply LIMIT if present
-  if (limit !== undefined) {
-    return results.slice(0, limit);
-  }
-
-  return results;
 }
 
 function formatResults(results: SolutionMapping[], format: string): void {

@@ -73,6 +73,7 @@ export { OptionalExecutor } from "./infrastructure/sparql/executors/OptionalExec
 export { UnionExecutor } from "./infrastructure/sparql/executors/UnionExecutor";
 export { ConstructExecutor } from "./infrastructure/sparql/executors/ConstructExecutor";
 export { DescribeExecutor } from "./infrastructure/sparql/executors/DescribeExecutor";
+export { QueryExecutor } from "./infrastructure/sparql/executors/QueryExecutor";
 export { SolutionMapping } from "./infrastructure/sparql/SolutionMapping";
 export { BuiltInFunctions } from "./infrastructure/sparql/filters/BuiltInFunctions";
 export { AggregateFunctions } from "./infrastructure/sparql/aggregates/AggregateFunctions";

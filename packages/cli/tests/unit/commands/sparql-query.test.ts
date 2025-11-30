@@ -35,7 +35,7 @@ jest.unstable_mockModule("@exocortex/core", () => ({
   AlgebraSerializer: jest.fn(() => ({
     toString: jest.fn().mockReturnValue("BGP()"),
   })),
-  BGPExecutor: jest.fn(() => ({
+  QueryExecutor: jest.fn(() => ({
     executeAll: jest.fn().mockResolvedValue([]),
   })),
   NoteToRDFConverter: jest.fn(() => ({
