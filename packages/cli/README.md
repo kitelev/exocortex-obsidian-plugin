@@ -20,13 +20,17 @@ npx exocortex-cli [command]
 exocortex --help
 ```
 
-### SPARQL Query (NEW!)
+### SPARQL Query
 
-Execute SPARQL queries against your Obsidian vault as an RDF knowledge graph:
+Execute SPARQL queries against your Obsidian vault as an RDF knowledge graph.
+
+**Documentation:**
+- [SPARQL Guide](docs/SPARQL_GUIDE.md) - Complete query reference
+- [SPARQL Cookbook](docs/SPARQL_COOKBOOK.md) - Real-world examples
+- [Ontology Reference](docs/ONTOLOGY_REFERENCE.md) - Available predicates
 
 ```bash
-exocortex sparql query "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10" \
-  --vault ~/vault
+exo query "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10" --vault ~/vault
 ```
 
 **Options:**
@@ -40,27 +44,27 @@ exocortex sparql query "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10" \
 **Examples:**
 
 ```bash
-# Find all tasks with high effort
-exocortex sparql query \
-  "PREFIX ems: <http://exocortex.org/ems/>
-   SELECT ?task ?label ?effort
+# Find all tasks
+exo query \
+  "PREFIX exo: <https://exocortex.my/ontology/exo#>
+   PREFIX ems: <https://exocortex.my/ontology/ems#>
+   SELECT ?task ?label
    WHERE {
-     ?task <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ems:Task .
-     ?task ems:label ?label .
-     ?task ems:effort ?effort .
+     ?task exo:Instance_class ems:Task .
+     ?task exo:Asset_label ?label .
    }" \
   --vault ~/vault
 
 # Query from file
-exocortex sparql query queries/high-effort-tasks.sparql --vault ~/vault
+exo query queries/my-query.sparql --vault ~/vault
 
 # JSON output for automation
-exocortex sparql query "SELECT ?s ?p ?o WHERE { ?s ?p ?o }" \
+exo query "SELECT ?s ?p ?o WHERE { ?s ?p ?o }" \
   --vault ~/vault \
   --format json > results.json
 
-# Show query plan
-exocortex sparql query "SELECT ?task WHERE { ?task <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://exocortex.org/ems/Task> }" \
+# Show query plan and stats
+exo query "SELECT ?task WHERE { ?task exo:Instance_class ems:Task }" \
   --vault ~/vault \
   --explain \
   --stats
