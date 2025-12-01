@@ -872,4 +872,320 @@ describe("FilterExecutor", () => {
       expect(results).toHaveLength(1);
     });
   });
+
+  describe("Arithmetic Expressions", () => {
+    it("should evaluate addition", async () => {
+      const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "arithmetic",
+            operator: "+",
+            left: { type: "variable", name: "a" },
+            right: { type: "variable", name: "b" },
+          } as any,
+          right: { type: "literal", value: 15 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("a", new Literal("10", xsdInt));
+      solution.set("b", new Literal("5", xsdInt));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should evaluate subtraction", async () => {
+      const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "arithmetic",
+            operator: "-",
+            left: { type: "variable", name: "a" },
+            right: { type: "variable", name: "b" },
+          } as any,
+          right: { type: "literal", value: 5 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("a", new Literal("10", xsdInt));
+      solution.set("b", new Literal("5", xsdInt));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should evaluate multiplication", async () => {
+      const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "arithmetic",
+            operator: "*",
+            left: { type: "variable", name: "a" },
+            right: { type: "variable", name: "b" },
+          } as any,
+          right: { type: "literal", value: 50 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("a", new Literal("10", xsdInt));
+      solution.set("b", new Literal("5", xsdInt));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should evaluate division", async () => {
+      const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "arithmetic",
+            operator: "/",
+            left: { type: "variable", name: "a" },
+            right: { type: "variable", name: "b" },
+          } as any,
+          right: { type: "literal", value: 2 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("a", new Literal("10", xsdInt));
+      solution.set("b", new Literal("5", xsdInt));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should handle xsd:dateTime subtraction", async () => {
+      const xsdDateTime = new IRI("http://www.w3.org/2001/XMLSchema#dateTime");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: ">",
+          left: {
+            type: "arithmetic",
+            operator: "-",
+            left: { type: "variable", name: "endTime" },
+            right: { type: "variable", name: "startTime" },
+          } as any,
+          // Duration in milliseconds: at least 1 hour = 3600000 ms
+          right: { type: "literal", value: 3600000 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      // Sleep from 23:00 to 07:00 = 8 hours = 28800000 ms
+      solution.set("startTime", new Literal("2025-11-30T23:00:00Z", xsdDateTime));
+      solution.set("endTime", new Literal("2025-12-01T07:00:00Z", xsdDateTime));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should convert dateTime difference to minutes", async () => {
+      const xsdDateTime = new IRI("http://www.w3.org/2001/XMLSchema#dateTime");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "arithmetic",
+            operator: "/",
+            left: {
+              type: "arithmetic",
+              operator: "-",
+              left: { type: "variable", name: "endTime" },
+              right: { type: "variable", name: "startTime" },
+            },
+            // Divide by 60000 to convert ms to minutes
+            right: { type: "literal", value: 60000 },
+          } as any,
+          // Expect 120 minutes (2 hours)
+          right: { type: "literal", value: 120 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("startTime", new Literal("2025-11-30T10:00:00Z", xsdDateTime));
+      solution.set("endTime", new Literal("2025-11-30T12:00:00Z", xsdDateTime));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+  });
+
+  describe("DateTime Accessor Functions", () => {
+    it("should evaluate YEAR function", async () => {
+      const xsdDateTime = new IRI("http://www.w3.org/2001/XMLSchema#dateTime");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "year",
+            args: [{ type: "variable", name: "date" }],
+          },
+          right: { type: "literal", value: 2025 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("date", new Literal("2025-11-30T23:00:00Z", xsdDateTime));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should evaluate MONTH function", async () => {
+      const xsdDateTime = new IRI("http://www.w3.org/2001/XMLSchema#dateTime");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "month",
+            args: [{ type: "variable", name: "date" }],
+          },
+          right: { type: "literal", value: 11 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("date", new Literal("2025-11-30T23:00:00Z", xsdDateTime));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should evaluate DAY function", async () => {
+      const xsdDateTime = new IRI("http://www.w3.org/2001/XMLSchema#dateTime");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "day",
+            args: [{ type: "variable", name: "date" }],
+          },
+          right: { type: "literal", value: 30 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("date", new Literal("2025-11-30T23:00:00Z", xsdDateTime));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should evaluate HOURS function", async () => {
+      const xsdDateTime = new IRI("http://www.w3.org/2001/XMLSchema#dateTime");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "hours",
+            args: [{ type: "variable", name: "date" }],
+          },
+          // Note: JavaScript Date parses Z as UTC, so local hours may differ
+          // Using a time that's clear (no timezone ambiguity)
+          right: { type: "literal", value: 14 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      // No timezone suffix - will be parsed as local time
+      solution.set("date", new Literal("2025-11-30T14:30:00"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should evaluate MINUTES function", async () => {
+      const xsdDateTime = new IRI("http://www.w3.org/2001/XMLSchema#dateTime");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "minutes",
+            args: [{ type: "variable", name: "date" }],
+          },
+          right: { type: "literal", value: 45 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("date", new Literal("2025-11-30T14:45:30"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should evaluate SECONDS function", async () => {
+      const xsdDateTime = new IRI("http://www.w3.org/2001/XMLSchema#dateTime");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "seconds",
+            args: [{ type: "variable", name: "date" }],
+          },
+          right: { type: "literal", value: 30 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("date", new Literal("2025-11-30T14:45:30"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+  });
 });

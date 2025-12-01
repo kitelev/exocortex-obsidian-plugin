@@ -556,4 +556,167 @@ describe("BuiltInFunctions", () => {
       );
     });
   });
+
+  describe("SPARQL 1.1 DateTime Accessor Functions", () => {
+    describe("YEAR", () => {
+      it("should extract year from ISO datetime", () => {
+        expect(BuiltInFunctions.year("2025-11-30T14:30:00Z")).toBe(2025);
+      });
+
+      it("should extract year from date without time", () => {
+        expect(BuiltInFunctions.year("2025-11-30")).toBe(2025);
+      });
+
+      it("should throw for invalid date", () => {
+        expect(() => BuiltInFunctions.year("invalid")).toThrow("YEAR: invalid date string");
+      });
+    });
+
+    describe("MONTH", () => {
+      it("should extract month from ISO datetime", () => {
+        expect(BuiltInFunctions.month("2025-11-30T14:30:00Z")).toBe(11);
+      });
+
+      it("should return 1 for January", () => {
+        expect(BuiltInFunctions.month("2025-01-15T00:00:00Z")).toBe(1);
+      });
+
+      it("should return 12 for December", () => {
+        expect(BuiltInFunctions.month("2025-12-25T00:00:00Z")).toBe(12);
+      });
+
+      it("should throw for invalid date", () => {
+        expect(() => BuiltInFunctions.month("invalid")).toThrow("MONTH: invalid date string");
+      });
+    });
+
+    describe("DAY", () => {
+      it("should extract day from ISO datetime", () => {
+        expect(BuiltInFunctions.day("2025-11-30T14:30:00Z")).toBe(30);
+      });
+
+      it("should return 1 for first day of month", () => {
+        expect(BuiltInFunctions.day("2025-11-01T00:00:00Z")).toBe(1);
+      });
+
+      it("should return 31 for last day of month", () => {
+        expect(BuiltInFunctions.day("2025-01-31T00:00:00Z")).toBe(31);
+      });
+
+      it("should throw for invalid date", () => {
+        expect(() => BuiltInFunctions.day("invalid")).toThrow("DAY: invalid date string");
+      });
+    });
+
+    describe("HOURS", () => {
+      it("should extract hours from ISO datetime (local parse)", () => {
+        // Without Z suffix, will be parsed as local time
+        expect(BuiltInFunctions.hours("2025-11-30T14:30:00")).toBe(14);
+      });
+
+      it("should return 0 for midnight", () => {
+        expect(BuiltInFunctions.hours("2025-11-30T00:30:00")).toBe(0);
+      });
+
+      it("should return 23 for last hour", () => {
+        expect(BuiltInFunctions.hours("2025-11-30T23:30:00")).toBe(23);
+      });
+
+      it("should throw for invalid date", () => {
+        expect(() => BuiltInFunctions.hours("invalid")).toThrow("HOURS: invalid date string");
+      });
+    });
+
+    describe("MINUTES", () => {
+      it("should extract minutes from ISO datetime", () => {
+        expect(BuiltInFunctions.minutes("2025-11-30T14:45:30")).toBe(45);
+      });
+
+      it("should return 0 for zero minutes", () => {
+        expect(BuiltInFunctions.minutes("2025-11-30T14:00:30")).toBe(0);
+      });
+
+      it("should return 59 for last minute", () => {
+        expect(BuiltInFunctions.minutes("2025-11-30T14:59:30")).toBe(59);
+      });
+
+      it("should throw for invalid date", () => {
+        expect(() => BuiltInFunctions.minutes("invalid")).toThrow("MINUTES: invalid date string");
+      });
+    });
+
+    describe("SECONDS", () => {
+      it("should extract seconds from ISO datetime", () => {
+        expect(BuiltInFunctions.seconds("2025-11-30T14:45:30")).toBe(30);
+      });
+
+      it("should include milliseconds as decimal", () => {
+        expect(BuiltInFunctions.seconds("2025-11-30T14:45:30.500")).toBe(30.5);
+      });
+
+      it("should return 0 for zero seconds", () => {
+        expect(BuiltInFunctions.seconds("2025-11-30T14:45:00")).toBe(0);
+      });
+
+      it("should throw for invalid date", () => {
+        expect(() => BuiltInFunctions.seconds("invalid")).toThrow("SECONDS: invalid date string");
+      });
+    });
+
+    describe("NOW", () => {
+      it("should return ISO string format", () => {
+        const result = BuiltInFunctions.now();
+        expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+      });
+
+      it("should return current time (within 1 second)", () => {
+        const result = BuiltInFunctions.now();
+        const resultDate = new Date(result);
+        const now = new Date();
+        const diffMs = Math.abs(resultDate.getTime() - now.getTime());
+        expect(diffMs).toBeLessThan(1000);
+      });
+    });
+  });
+
+  describe("Duration Conversion Functions", () => {
+    describe("msToMinutes", () => {
+      it("should convert milliseconds to minutes", () => {
+        expect(BuiltInFunctions.msToMinutes(60000)).toBe(1);
+        expect(BuiltInFunctions.msToMinutes(3600000)).toBe(60);
+        expect(BuiltInFunctions.msToMinutes(7200000)).toBe(120);
+      });
+
+      it("should round to nearest minute", () => {
+        // 90 seconds = 1.5 minutes → rounds to 2
+        expect(BuiltInFunctions.msToMinutes(90000)).toBe(2);
+        // 30 seconds = 0.5 minutes → rounds to 1
+        expect(BuiltInFunctions.msToMinutes(30000)).toBe(1);
+      });
+    });
+
+    describe("msToHours", () => {
+      it("should convert milliseconds to hours", () => {
+        expect(BuiltInFunctions.msToHours(3600000)).toBe(1);
+        expect(BuiltInFunctions.msToHours(7200000)).toBe(2);
+      });
+
+      it("should return decimal hours", () => {
+        // 1.5 hours
+        expect(BuiltInFunctions.msToHours(5400000)).toBe(1.5);
+      });
+    });
+
+    describe("msToSeconds", () => {
+      it("should convert milliseconds to seconds", () => {
+        expect(BuiltInFunctions.msToSeconds(1000)).toBe(1);
+        expect(BuiltInFunctions.msToSeconds(60000)).toBe(60);
+      });
+
+      it("should round to nearest second", () => {
+        expect(BuiltInFunctions.msToSeconds(1500)).toBe(2);
+        expect(BuiltInFunctions.msToSeconds(500)).toBe(1);
+      });
+    });
+  });
 });

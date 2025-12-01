@@ -131,6 +131,9 @@ export class AlgebraSerializer {
         }
         return `(${expr.operands.map((o) => this.expressionToString(o)).join(` ${expr.operator} `)})`;
 
+      case "arithmetic":
+        return `(${this.expressionToString(expr.left)} ${expr.operator} ${this.expressionToString(expr.right)})`;
+
       case "function":
         return `${expr.function}(${expr.args.map((a) => this.expressionToString(a)).join(", ")})`;
 
