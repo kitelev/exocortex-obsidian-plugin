@@ -6,6 +6,7 @@ import type {
   LeftJoinOperation,
   UnionOperation,
   ExtendOperation,
+  SubqueryOperation,
   ExistsExpression,
   Triple,
   TripleElement,
@@ -189,6 +190,8 @@ export class AlgebraTranslator {
         return this.translateUnion(pattern);
       case "group":
         return this.translateWhere(pattern.patterns);
+      case "query":
+        return this.translateSubquery(pattern);
       default:
         throw new AlgebraTranslatorError(`Unsupported pattern type: ${pattern.type}`);
     }
@@ -537,6 +540,39 @@ export class AlgebraTranslator {
     return {
       expression: this.translateExpression(order.expression),
       descending: order.descending || false,
+    };
+  }
+
+  /**
+   * Translate a subquery (nested SELECT) into a SubqueryOperation.
+   * A subquery is a complete SELECT query that produces solution mappings
+   * which are then joined with the outer query.
+   *
+   * sparqljs AST format:
+   * {
+   *   type: "query",
+   *   queryType: "SELECT",
+   *   variables: [...],
+   *   where: [...],
+   *   order: [...],
+   *   limit: number,
+   *   offset: number,
+   *   distinct: boolean
+   * }
+   */
+  private translateSubquery(pattern: any): SubqueryOperation {
+    if (pattern.queryType !== "SELECT") {
+      throw new AlgebraTranslatorError(`Only SELECT subqueries are supported, got: ${pattern.queryType}`);
+    }
+
+    // Translate the inner SELECT query using the same translateSelect method
+    // This reuses all existing logic for handling variables, WHERE clause,
+    // GROUP BY, ORDER BY, LIMIT, OFFSET, DISTINCT, etc.
+    const innerQuery = this.translateSelect(pattern as SelectQuery);
+
+    return {
+      type: "subquery",
+      query: innerQuery,
     };
   }
 }

@@ -39,6 +39,19 @@ export class AlgebraSerializer {
       case "distinct":
         return `${prefix}Distinct(\n${this.toString(operation.input, indent + 1)}\n${prefix})`;
 
+      case "group":
+        const groupVars = operation.variables.length > 0 ? `[${operation.variables.map((v) => `?${v}`).join(", ")}]` : "[]";
+        const aggs = operation.aggregates.length > 0
+          ? operation.aggregates.map((a) => `?${a.variable} = ${a.expression.aggregation}(${a.expression.distinct ? "DISTINCT " : ""}${a.expression.expression ? this.expressionToString(a.expression.expression) : "*"})`).join(", ")
+          : "";
+        return `${prefix}Group ${groupVars}${aggs ? ` [${aggs}]` : ""}(\n${this.toString(operation.input, indent + 1)}\n${prefix})`;
+
+      case "extend":
+        return `${prefix}Extend (?${operation.variable} = ${this.expressionToString(operation.expression as any)})(\n${this.toString(operation.input, indent + 1)}\n${prefix})`;
+
+      case "subquery":
+        return `${prefix}Subquery(\n${this.toString(operation.query, indent + 1)}\n${prefix})`;
+
       default:
         return `${prefix}Unknown(${(operation as any).type})`;
     }
@@ -120,6 +133,9 @@ export class AlgebraSerializer {
 
       case "function":
         return `${expr.function}(${expr.args.map((a) => this.expressionToString(a)).join(", ")})`;
+
+      case "exists":
+        return `${expr.negated ? "NOT EXISTS" : "EXISTS"} { ${this.toString(expr.pattern, 0)} }`;
 
       default:
         return "unknown";

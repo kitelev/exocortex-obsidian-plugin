@@ -12,6 +12,7 @@ import type {
   DistinctOperation,
   GroupOperation,
   ExtendOperation,
+  SubqueryOperation,
 } from "../algebra/AlgebraOperation";
 import type { SolutionMapping } from "../SolutionMapping";
 import { BGPExecutor } from "./BGPExecutor";
@@ -132,6 +133,10 @@ export class QueryExecutor {
 
       case "extend":
         yield* this.executeExtend(operation);
+        break;
+
+      case "subquery":
+        yield* this.executeSubquery(operation);
         break;
 
       default:
@@ -312,6 +317,20 @@ export class QueryExecutor {
       }
       yield clone;
     }
+  }
+
+  /**
+   * Execute a subquery.
+   * Subqueries are complete SELECT queries that produce solution mappings
+   * which are then joined with the outer query. The inner query is executed
+   * independently and its results are yielded back to be processed by the
+   * outer query's join/pattern matching.
+   */
+  private async *executeSubquery(operation: SubqueryOperation): AsyncIterableIterator<SolutionMapping> {
+    // Execute the inner query and yield its results
+    // The inner query has already been translated to algebra (project, filter, etc.)
+    // so we just recursively execute it
+    yield* this.execute(operation.query);
   }
 
   private evaluateExtendExpression(

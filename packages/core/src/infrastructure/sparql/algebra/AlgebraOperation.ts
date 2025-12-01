@@ -9,7 +9,8 @@ export type AlgebraOperation =
   | SliceOperation
   | DistinctOperation
   | GroupOperation
-  | ExtendOperation;
+  | ExtendOperation
+  | SubqueryOperation;
 
 export interface BGPOperation {
   type: "bgp";
@@ -218,4 +219,21 @@ export interface ExtendOperation {
   variable: string;
   expression: Expression | AggregateExpression;
   input: AlgebraOperation;
+}
+
+/**
+ * Subquery operation for nested SELECT queries.
+ * A subquery is a complete SELECT query that produces solution mappings
+ * which are then joined with the outer query.
+ *
+ * Example:
+ * SELECT ?name WHERE {
+ *   { SELECT ?x WHERE { ?x :hasAge ?age } ORDER BY ?age LIMIT 10 }
+ *   ?x :hasName ?name .
+ * }
+ */
+export interface SubqueryOperation {
+  type: "subquery";
+  /** The complete algebra tree for the inner SELECT query */
+  query: AlgebraOperation;
 }
