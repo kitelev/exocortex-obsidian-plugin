@@ -32,8 +32,9 @@ This guide is for plugin developers who want to integrate SPARQL queries into th
                  ↓
 ┌─────────────────────────────────────────────────────────────┐
 │ InMemoryTripleStore (packages/core)                         │
-│ - Stores triples with SPO/POS/OSP indexes                   │
-│ - O(1) lookup performance                                   │
+│ - Stores triples with 6-index scheme (SPO/SOP/PSO/POS/OSP/OPS)│
+│ - O(1) lookup for all 2-known-term patterns                 │
+│ - LRU query result cache (1000 entries)                     │
 └────────────────┬────────────────────────────────────────────┘
                  │
                  ↓
@@ -44,7 +45,15 @@ This guide is for plugin developers who want to integrate SPARQL queries into th
 │       ↓               ↓                    ↓                 │
 │     AST          Algebra Tree        Optimized Algebra      │
 │                                             ↓                │
-│                              BGPExecutor / ConstructExecutor│
+│                              ┌──────────────┴──────────────┐│
+│                              ↓              ↓               ↓│
+│                          QueryExecutor  PropertyPath   Filter│
+│                              │          Executor       Executor│
+│                              ↓                              │
+│                         BGPExecutor / ConstructExecutor     │
+│                              │                              │
+│                              ↓                              │
+│                      QueryPlanCache (LRU, 100 plans)        │
 └────────────────┬────────────────────────────────────────────┘
                  │
                  ↓
@@ -90,13 +99,21 @@ This guide is for plugin developers who want to integrate SPARQL queries into th
 
 #### 1. Triple Store
 
-The `InMemoryTripleStore` uses three indexes for optimal query performance:
+The `InMemoryTripleStore` uses a **6-index scheme** for optimal query performance:
 
 - **SPO Index**: Subject → Predicate → Object (forward lookups)
+- **SOP Index**: Subject → Object → Predicate
+- **PSO Index**: Predicate → Subject → Object
 - **POS Index**: Predicate → Object → Subject (property-value lookups)
 - **OSP Index**: Object → Subject → Predicate (reverse lookups)
+- **OPS Index**: Object → Predicate → Subject
 
-**Lookup Complexity**: O(1) for indexed patterns, O(n) for unindexed patterns.
+**Lookup Complexity**: O(1) for all 2-known-term patterns. Only full wildcard `(?, ?, ?)` requires O(n) scan.
+
+**Additional Features**:
+- **LRU Query Cache**: 1000-entry cache for `match()` results
+- **Automatic cache invalidation**: Cache clears on `add()` or `remove()`
+- **Transaction support**: Atomic batch operations via `beginTransaction()`
 
 #### 2. SPARQL Algebra
 
@@ -117,6 +134,15 @@ SPARQL queries are translated into algebraic operations:
 - `distinct` - DISTINCT results
 - `filter` - FILTER conditions
 - `construct` - CONSTRUCT template
+- `join` - Joining multiple patterns
+- `leftjoin` - OPTIONAL patterns
+- `union` - UNION patterns
+- `project` - Variable projection (SELECT)
+- `orderby` - ORDER BY sorting
+- `path` - Property path expressions (v2)
+- `exists` - EXISTS/NOT EXISTS patterns (v2)
+- `bind` - BIND expressions (v2)
+- `subquery` - Nested subqueries (v2)
 
 #### 3. Query Execution
 
@@ -364,6 +390,121 @@ async function executeQuery(queryString: string, tripleStore: InMemoryTripleStor
 
   return results;
 }
+```
+
+---
+
+## v2 Executors
+
+SPARQL Engine v2 introduces specialized executors for advanced features.
+
+### PropertyPathExecutor
+
+Handles property path expressions (`+`, `*`, `?`, `^`, `/`, `|`).
+
+```typescript
+import { PropertyPathExecutor } from "@exocortex/core";
+
+const pathExecutor = new PropertyPathExecutor(tripleStore);
+
+// Execute a property path pattern
+for await (const binding of pathExecutor.execute(subject, path, object)) {
+  console.log(binding);
+}
+```
+
+**Supported Path Types**:
+
+| Path Type | Symbol | Description | Max Depth |
+|-----------|--------|-------------|-----------|
+| Sequence | `/` | Match predicates in order | Unlimited |
+| Alternative | `\|` | Match any alternative | Unlimited |
+| Inverse | `^` | Reverse direction | Unlimited |
+| OneOrMore | `+` | At least one step | 100 |
+| ZeroOrMore | `*` | Zero or more steps | 100 |
+| ZeroOrOne | `?` | Optional single step | 1 |
+
+**Cycle Detection**: Uses BFS traversal with visited-node tracking to prevent infinite loops. Maximum depth of 100 for transitive closures.
+
+### FilterExecutor with EXISTS
+
+Handles FILTER expressions including EXISTS/NOT EXISTS.
+
+```typescript
+import { FilterExecutor, ExistsEvaluator } from "@exocortex/core";
+
+const filterExecutor = new FilterExecutor();
+
+// Set up EXISTS evaluator (connects to QueryExecutor for subqueries)
+filterExecutor.setExistsEvaluator(async (pattern, solution) => {
+  // Execute pattern with current bindings
+  const results = await queryExecutor.executePattern(pattern, solution);
+  return results.length > 0; // true if any results found
+});
+
+// Execute filter
+for await (const binding of filterExecutor.execute(filterOp, inputSolutions)) {
+  console.log(binding);
+}
+```
+
+**Supported Functions**:
+- **String**: `STR()`, `STRLEN()`, `UCASE()`, `LCASE()`, `CONTAINS()`, `STRSTARTS()`, `STRENDS()`, `REPLACE()`, `REGEX()`
+- **Type checking**: `BOUND()`, `ISIRI()`, `ISBLANK()`, `ISLITERAL()`, `DATATYPE()`, `LANG()`
+- **Date**: `parseDate()`, `dateBefore()`, `dateAfter()`, `dateInRange()`
+- **Logical**: `&&`, `||`, `!`
+- **Comparison**: `=`, `!=`, `<`, `>`, `<=`, `>=`
+
+### AlgebraOptimizer
+
+Automatically optimizes query plans.
+
+```typescript
+import { AlgebraOptimizer } from "@exocortex/core";
+
+const optimizer = new AlgebraOptimizer();
+const optimizedPlan = optimizer.optimize(algebraTree);
+```
+
+**Optimizations Applied**:
+
+1. **Filter Pushdown**: Moves filters closer to data source
+2. **Join Reordering**: Orders joins by estimated selectivity
+3. **Empty BGP Elimination**: Removes unnecessary empty patterns
+
+**Cost Estimation**:
+```typescript
+const cost = optimizer.estimateCost(operation);
+// Returns numeric cost estimate
+// Lower cost = faster execution
+```
+
+### QueryPlanCache
+
+Caches optimized query plans for repeated queries.
+
+```typescript
+import { QueryPlanCache } from "@exocortex/core";
+
+const cache = new QueryPlanCache(100); // max 100 plans
+
+// Check cache
+const cachedPlan = cache.get(queryString);
+if (cachedPlan) {
+  // Use cached plan
+} else {
+  // Parse, translate, optimize
+  const plan = optimizer.optimize(translator.translate(parser.parse(query)));
+  cache.set(queryString, plan);
+}
+
+// Get statistics
+const stats = cache.getStats();
+console.log(`Hit rate: ${(stats.hitRate * 100).toFixed(1)}%`);
+console.log(`Hits: ${stats.hits}, Misses: ${stats.misses}`);
+
+// Clear on data change
+cache.clear();
 ```
 
 ---

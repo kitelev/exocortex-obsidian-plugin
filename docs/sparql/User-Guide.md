@@ -10,8 +10,9 @@ Welcome to the SPARQL User Guide for Exocortex! This guide will teach you how to
 4. [Working with Obsidian Properties](#working-with-obsidian-properties)
 5. [Aggregations and Grouping](#aggregations-and-grouping)
 6. [Graph Construction](#graph-construction)
-7. [Performance Best Practices](#performance-best-practices)
-8. [Common Pitfalls and Solutions](#common-pitfalls-and-solutions)
+7. [Advanced Features (v2)](#advanced-features-v2)
+8. [Performance Best Practices](#performance-best-practices)
+9. [Common Pitfalls and Solutions](#common-pitfalls-and-solutions)
 
 ---
 
@@ -507,6 +508,248 @@ WHERE {
 ### Export to Turtle Format
 
 CONSTRUCT results can be exported as Turtle (`.ttl`) files using the export button in the query result viewer.
+
+---
+
+## Advanced Features (v2)
+
+SPARQL Engine v2 adds several powerful features for complex queries.
+
+### BIND Expressions
+
+BIND creates new variable bindings from expressions.
+
+#### Basic BIND
+
+```sparql
+SELECT ?task ?label ?displayLabel
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  BIND(CONCAT("Task: ", ?label) AS ?displayLabel)
+}
+```
+
+**Key Points**:
+- BIND appears within the WHERE clause
+- The bound variable can be used in later patterns
+- Use for computed values, type conversions, and formatting
+
+#### BIND with IF
+
+Create conditional values:
+
+```sparql
+SELECT ?task ?votes ?urgency
+WHERE {
+  ?task <https://exocortex.my/ontology/ems#Effort_votes> ?votes .
+  BIND(IF(?votes > 5, "urgent", "normal") AS ?urgency)
+}
+```
+
+**Supported Functions in BIND**:
+- String: `CONCAT()`, `STR()`, `STRLEN()`, `UCASE()`, `LCASE()`, `REPLACE()`
+- Numeric: `+`, `-`, `*`, `/`, `ABS()`, `ROUND()`, `CEIL()`, `FLOOR()`
+- Conditional: `IF()`, `COALESCE()`, `BOUND()`
+- Type: `DATATYPE()`, `LANG()`, `IRI()`, `BNODE()`
+
+---
+
+### EXISTS and NOT EXISTS
+
+Test for pattern existence without binding variables.
+
+#### EXISTS
+
+Check if a pattern exists:
+
+```sparql
+SELECT ?project ?label
+WHERE {
+  ?project <https://exocortex.my/ontology/exo#Instance_class> "ems__Project" .
+  ?project <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  FILTER EXISTS {
+    ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+    ?task <https://exocortex.my/ontology/ems#Task_status> "in-progress" .
+  }
+}
+```
+
+**Result**: Projects with at least one in-progress task.
+
+#### NOT EXISTS
+
+Check if a pattern does NOT exist:
+
+```sparql
+SELECT ?task ?label
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  FILTER NOT EXISTS {
+    ?task <https://exocortex.my/ontology/exo#Asset_archived> "true" .
+  }
+}
+```
+
+**Result**: All non-archived tasks.
+
+#### EXISTS vs OPTIONAL
+
+**Use EXISTS when**:
+- You only need to check for presence/absence
+- You don't need the matched values
+
+**Use OPTIONAL when**:
+- You need the matched values in results
+- Missing values should be null, not filtered out
+
+---
+
+### Property Paths
+
+Navigate graph relationships with path expressions.
+
+#### Path Operators
+
+| Operator | Meaning | Example |
+|----------|---------|---------|
+| `/` | Sequence | `a/b` matches `a` then `b` |
+| `\|` | Alternative | `a\|b` matches `a` OR `b` |
+| `^` | Inverse | `^a` matches reverse of `a` |
+| `+` | One or more | `a+` matches `a`, `a/a`, `a/a/a`, ... |
+| `*` | Zero or more | `a*` matches self, `a`, `a/a`, ... |
+| `?` | Zero or one | `a?` matches self OR `a` |
+
+#### Sequence Path (/)
+
+Match predicates in order:
+
+```sparql
+SELECT ?task ?area
+WHERE {
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project>/<https://exocortex.my/ontology/ems#belongs_to_area> ?area .
+}
+```
+
+**Explanation**: Task → Project → Area in two hops.
+
+#### Alternative Path (|)
+
+Match any of several predicates:
+
+```sparql
+SELECT ?asset ?parent
+WHERE {
+  ?asset (<https://exocortex.my/ontology/ems#belongs_to_project>|<https://exocortex.my/ontology/ems#belongs_to_area>) ?parent .
+}
+```
+
+#### Inverse Path (^)
+
+Reverse the direction:
+
+```sparql
+SELECT ?project ?task
+WHERE {
+  ?project ^<https://exocortex.my/ontology/ems#belongs_to_project> ?task .
+}
+```
+
+**Explanation**: Find tasks that belong to project (reverse of "task belongs_to project").
+
+#### Transitive Paths (+ and *)
+
+`+` requires at least one step:
+
+```sparql
+SELECT ?task ?ancestor
+WHERE {
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project>+ ?ancestor .
+}
+```
+
+`*` includes zero steps (self):
+
+```sparql
+SELECT ?node ?related
+WHERE {
+  ?node <https://exocortex.my/ontology/ems#belongs_to_area>* ?related .
+}
+```
+
+**Performance Note**: Property paths use BFS traversal with cycle detection. Maximum depth is 100 to prevent infinite loops.
+
+#### Optional Step (?)
+
+Match zero or one step:
+
+```sparql
+SELECT ?task ?maybeProject
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project>? ?maybeProject .
+}
+```
+
+**Result**: Tasks and their projects (or null if no project).
+
+---
+
+### Subqueries
+
+Use queries within queries for complex operations.
+
+#### Basic Subquery
+
+```sparql
+SELECT ?task ?taskLabel ?projectTaskCount
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?taskLabel .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+  {
+    SELECT ?project (COUNT(?t) AS ?projectTaskCount)
+    WHERE {
+      ?t <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+    }
+    GROUP BY ?project
+  }
+}
+```
+
+**Explanation**: Each task shows its project's total task count.
+
+#### Filtering with Subquery Results
+
+Find tasks in projects with more than 5 tasks:
+
+```sparql
+SELECT ?task ?label
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+  {
+    SELECT ?project
+    WHERE {
+      SELECT ?project (COUNT(?t) AS ?count)
+      WHERE {
+        ?t <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+      }
+      GROUP BY ?project
+      HAVING (?count > 5)
+    }
+  }
+}
+```
+
+#### Subquery Best Practices
+
+1. **Keep subqueries simple** - Complex nesting hurts readability
+2. **Use aggregations in subqueries** - Main use case for subqueries
+3. **Avoid excessive nesting** - Two levels is usually the practical maximum
+4. **Consider alternatives** - Sometimes OPTIONAL or EXISTS is cleaner
 
 ---
 
