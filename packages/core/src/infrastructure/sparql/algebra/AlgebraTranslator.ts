@@ -397,9 +397,9 @@ export class AlgebraTranslator {
       return this.translateOperationExpression(expr);
     }
 
-    if (expr.type === "functioncall") {
+    if (expr.type === "functioncall" || expr.type === "functionCall") {
       return {
-        type: "function",
+        type: "functionCall",
         function: expr.function,
         args: expr.args.map((a: any) => this.translateExpression(a)),
       };
