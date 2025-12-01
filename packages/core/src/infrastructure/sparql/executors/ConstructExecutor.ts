@@ -4,7 +4,7 @@ import { IRI } from "../../../domain/models/rdf/IRI";
 import { Literal } from "../../../domain/models/rdf/Literal";
 import { BlankNode } from "../../../domain/models/rdf/BlankNode";
 import type { Subject, Predicate, Object as RDFObject } from "../../../domain/models/rdf/Triple";
-import type { Triple as AlgebraTriple, TripleElement } from "../algebra/AlgebraOperation";
+import type { Triple as AlgebraTriple, TripleElement, PropertyPath } from "../algebra/AlgebraOperation";
 
 export class ConstructExecutor {
   async execute(template: AlgebraTriple[], solutions: SolutionMapping[]): Promise<Triple[]> {
@@ -31,11 +31,20 @@ export class ConstructExecutor {
   }
 
   private instantiateTriple(pattern: AlgebraTriple, solution: SolutionMapping): Triple {
+    // Property paths are not supported in CONSTRUCT templates
+    if (this.isPropertyPath(pattern.predicate)) {
+      throw new Error("Property paths are not supported in CONSTRUCT templates");
+    }
+
     const subject = this.instantiateElement(pattern.subject, solution) as Subject;
     const predicate = this.instantiateElement(pattern.predicate, solution) as Predicate;
     const object = this.instantiateElement(pattern.object, solution) as RDFObject;
 
     return new Triple(subject, predicate, object);
+  }
+
+  private isPropertyPath(predicate: TripleElement | PropertyPath): predicate is PropertyPath {
+    return predicate.type === "path";
   }
 
   private instantiateElement(element: TripleElement, solution: SolutionMapping): Subject | Predicate | RDFObject {

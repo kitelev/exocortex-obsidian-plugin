@@ -18,11 +18,60 @@ export interface BGPOperation {
 
 export interface Triple {
   subject: TripleElement;
-  predicate: TripleElement;
+  predicate: TripleElement | PropertyPath;
   object: TripleElement;
 }
 
 export type TripleElement = Variable | IRI | Literal | BlankNode;
+
+/**
+ * Property path expression for SPARQL 1.1 property paths.
+ * Supports: sequence (/), alternative (|), inverse (^),
+ * oneOrMore (+), zeroOrMore (*), zeroOrOne (?)
+ */
+export type PropertyPath =
+  | SequencePath
+  | AlternativePath
+  | InversePath
+  | OneOrMorePath
+  | ZeroOrMorePath
+  | ZeroOrOnePath;
+
+export interface SequencePath {
+  type: "path";
+  pathType: "/";
+  items: (IRI | PropertyPath)[];
+}
+
+export interface AlternativePath {
+  type: "path";
+  pathType: "|";
+  items: (IRI | PropertyPath)[];
+}
+
+export interface InversePath {
+  type: "path";
+  pathType: "^";
+  items: [IRI | PropertyPath]; // Single item
+}
+
+export interface OneOrMorePath {
+  type: "path";
+  pathType: "+";
+  items: [IRI | PropertyPath]; // Single item
+}
+
+export interface ZeroOrMorePath {
+  type: "path";
+  pathType: "*";
+  items: [IRI | PropertyPath]; // Single item
+}
+
+export interface ZeroOrOnePath {
+  type: "path";
+  pathType: "?";
+  items: [IRI | PropertyPath]; // Single item
+}
 
 export interface Variable {
   type: "variable";
