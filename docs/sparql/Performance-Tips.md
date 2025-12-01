@@ -6,10 +6,11 @@ Optimize your SPARQL queries for speed and efficiency, especially in large vault
 
 1. [Query Optimization Basics](#query-optimization-basics)
 2. [Index Utilization](#index-utilization)
-3. [Pattern Ordering](#pattern-ordering)
-4. [Avoiding Anti-Patterns](#avoiding-anti-patterns)
-5. [Monitoring and Debugging](#monitoring-and-debugging)
-6. [Best Practices](#best-practices)
+3. [Automatic Optimizations (v2)](#automatic-optimizations-v2)
+4. [Pattern Ordering](#pattern-ordering)
+5. [Avoiding Anti-Patterns](#avoiding-anti-patterns)
+6. [Monitoring and Debugging](#monitoring-and-debugging)
+7. [Best Practices](#best-practices)
 
 ---
 
@@ -17,13 +18,38 @@ Optimize your SPARQL queries for speed and efficiency, especially in large vault
 
 ### Understanding Triple Store Indexes
 
-Exocortex uses a **triple-indexed storage system** with three indexes:
+Exocortex uses a **6-index storage system** for optimal query performance:
 
 1. **SPO Index** (Subject → Predicate → Object)
-2. **POS Index** (Predicate → Object → Subject)
-3. **OSP Index** (Object → Subject → Predicate)
+2. **SOP Index** (Subject → Object → Predicate)
+3. **PSO Index** (Predicate → Subject → Object)
+4. **POS Index** (Predicate → Object → Subject)
+5. **OSP Index** (Object → Subject → Predicate)
+6. **OPS Index** (Object → Predicate → Subject)
 
-**Key Insight**: Queries that match an index pattern run in **O(1)** time. Queries without index support run in **O(n)** time.
+**Key Insight**: All access patterns with 2 known terms run in **O(1)** time. The 6-index scheme ensures optimal performance regardless of which terms are known.
+
+### Query Plan Caching
+
+SPARQL Engine v2 includes automatic query plan caching:
+
+- **LRU Cache**: Stores up to 100 optimized query plans (configurable)
+- **Key**: Normalized query string (whitespace-insensitive)
+- **Value**: Pre-optimized algebra tree ready for execution
+- **Auto-invalidation**: Cache clears when triple store is modified
+
+**Performance Impact**:
+- **First execution**: Full parse → translate → optimize → execute
+- **Subsequent executions**: Cache hit → execute directly
+- **Speedup**: 2-5x faster for repeated queries
+
+**Cache Statistics** (via API):
+```typescript
+const cache = sparqlApi.getQueryPlanCache();
+const stats = cache.getStats();
+console.log(`Hit rate: ${(stats.hitRate * 100).toFixed(1)}%`);
+console.log(`Cache size: ${stats.size} plans`);
+```
 
 ### Query Execution Time Expectations
 
@@ -50,18 +76,22 @@ Exocortex uses a **triple-indexed storage system** with three indexes:
 
 ### Pattern Analysis
 
-**Check which index your query uses**:
+**Check which index your query uses** (6-index scheme):
 
 | Triple Pattern | Index Used | Speed |
 |---------------|------------|-------|
 | `(s, p, o)` | SPO | ⚡ O(1) |
 | `(s, p, ?)` | SPO | ⚡ O(1) |
+| `(s, ?, o)` | SOP | ⚡ O(1) |
 | `(?, p, o)` | POS | ⚡ O(1) |
 | `(?, ?, o)` | OSP | ⚡ O(1) |
-| `(s, ?, o)` | None | 🐌 O(n) |
-| `(s, ?, ?)` | None | 🐌 O(n) |
-| `(?, p, ?)` | None | 🐌 O(n) |
-| `(?, ?, ?)` | None | 🐌 O(n) |
+| `(s, ?, ?)` | SPO* | ⚡ O(k) |
+| `(?, p, ?)` | PSO | ⚡ O(k) |
+| `(?, ?, ?)` | Full scan | 🐌 O(n) |
+
+*O(k) where k = number of matching triples (efficient iteration over index)
+
+**6-Index Advantage**: The 6-index scheme supports all 2-known-term patterns in O(1), whereas the older 3-index scheme had O(n) gaps for `(s, ?, o)` patterns.
 
 ### Optimization Strategy
 
@@ -104,6 +134,103 @@ WHERE {
 ```
 
 **Lesson**: Never use wildcard predicates (`?p`) if you know the property name.
+
+---
+
+## Automatic Optimizations (v2)
+
+SPARQL Engine v2 applies several automatic optimizations to your queries.
+
+### Filter Pushdown
+
+Filters are automatically pushed down to execute as early as possible.
+
+**Your Query**:
+```sparql
+SELECT ?task ?label
+WHERE {
+  {
+    ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+    ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  }
+  FILTER(CONTAINS(?label, "urgent"))
+}
+```
+
+**Optimized Execution**:
+```sparql
+SELECT ?task ?label
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  FILTER(CONTAINS(?label, "urgent"))  # Pushed inside BGP
+}
+```
+
+**Benefit**: Filter evaluated immediately after label binding, reducing intermediate results.
+
+### Join Reordering
+
+Joins are automatically reordered based on estimated selectivity.
+
+**Your Query** (suboptimal order):
+```sparql
+SELECT ?task ?label ?project
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .      # Matches ~1000 assets
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" . # Matches ~200 tasks
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+}
+```
+
+**Optimized Execution**:
+```sparql
+SELECT ?task ?label ?project
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" . # Evaluated first (most selective)
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+}
+```
+
+**Benefit**: Most selective pattern evaluated first, reducing join cardinality.
+
+### Empty BGP Elimination
+
+Empty patterns from sparqljs parsing are automatically eliminated.
+
+**Parsed Structure** (before optimization):
+```
+Join(
+  Filter(EmptyBGP, CONTAINS(?label, "x")),
+  BGP([?task ...])
+)
+```
+
+**Optimized Structure**:
+```
+Filter(
+  BGP([?task ...]),
+  CONTAINS(?label, "x")
+)
+```
+
+**Benefit**: Removes unnecessary join operations.
+
+### Cost-Based Selectivity
+
+The optimizer estimates costs based on:
+
+| Pattern Type | Base Cost | Variable Cost Multiplier |
+|-------------|-----------|-------------------------|
+| Fixed value | 100 per triple | - |
+| Variable subject | +10 | × patterns |
+| Variable predicate | +20 | × patterns |
+| Variable object | +10 | × patterns |
+| FILTER | × 0.3 | (reduces result set) |
+| JOIN | × (left × right) | (multiplicative) |
+
+**Tip**: The optimizer works best when you use specific predicates rather than variables.
 
 ---
 

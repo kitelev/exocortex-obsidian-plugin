@@ -12,6 +12,11 @@ A collection of practical, ready-to-use SPARQL queries for your Obsidian vault. 
 6. [Aggregation Examples](#aggregation-examples)
 7. [Graph Construction](#graph-construction)
 8. [Advanced Patterns](#advanced-patterns)
+9. [Advanced Features (v2)](#advanced-features-v2)
+   - [BIND Expressions](#bind-expressions)
+   - [EXISTS and NOT EXISTS](#exists-and-not-exists)
+   - [Property Paths](#property-paths)
+   - [Subqueries](#subqueries)
 
 ---
 
@@ -841,6 +846,349 @@ LIMIT 20
 ```
 
 **Use Case**: Highly specific task filtering.
+
+---
+
+## Advanced Features (v2)
+
+The following features were added in SPARQL Engine v2 for more powerful queries.
+
+### BIND Expressions
+
+BIND creates computed values in your query.
+
+#### 38. Simple BIND
+
+Create a formatted label:
+
+```sparql
+SELECT ?task ?label ?displayLabel
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  BIND(CONCAT("Task: ", ?label) AS ?displayLabel)
+}
+```
+
+**Use Case**: Format labels for display.
+
+---
+
+#### 39. Conditional BIND
+
+Classify tasks by effort votes:
+
+```sparql
+SELECT ?task ?label ?votes ?priority
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  ?task <https://exocortex.my/ontology/ems#Effort_votes> ?votes .
+  BIND(
+    IF(?votes > 10, "critical",
+      IF(?votes > 5, "high",
+        IF(?votes > 2, "medium", "low")
+      )
+    ) AS ?priority
+  )
+}
+ORDER BY DESC(?votes)
+```
+
+**Use Case**: Auto-classify tasks by urgency.
+
+---
+
+#### 40. BIND with String Functions
+
+Extract parts of URIs:
+
+```sparql
+SELECT ?task ?label ?folder
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  BIND(REPLACE(STR(?task), "^.*/([^/]+)/[^/]+$", "$1") AS ?folder)
+}
+```
+
+**Use Case**: Group assets by folder.
+
+---
+
+### EXISTS and NOT EXISTS
+
+Test for the presence or absence of patterns.
+
+#### 41. Find Blocked Tasks (EXISTS)
+
+Tasks that have blockers:
+
+```sparql
+SELECT ?task ?label
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  FILTER EXISTS {
+    ?task <https://exocortex.my/ontology/ems#Task_blockedBy> ?blocker .
+  }
+}
+```
+
+**Use Case**: Identify tasks waiting on dependencies.
+
+---
+
+#### 42. Find Independent Tasks (NOT EXISTS)
+
+Tasks with no blockers:
+
+```sparql
+SELECT ?task ?label
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?label .
+  FILTER NOT EXISTS {
+    ?task <https://exocortex.my/ontology/ems#Task_blockedBy> ?blocker .
+  }
+}
+ORDER BY ?label
+```
+
+**Use Case**: Find tasks ready to start.
+
+---
+
+#### 43. EXISTS with Conditions
+
+Find projects that have at least one high-priority task:
+
+```sparql
+SELECT ?project ?projectLabel
+WHERE {
+  ?project <https://exocortex.my/ontology/exo#Instance_class> "ems__Project" .
+  ?project <https://exocortex.my/ontology/exo#Asset_label> ?projectLabel .
+  FILTER EXISTS {
+    ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+    ?task <https://exocortex.my/ontology/ems#Effort_votes> ?votes .
+    FILTER(?votes > 5)
+  }
+}
+```
+
+**Use Case**: Prioritize projects with urgent tasks.
+
+---
+
+### Property Paths
+
+Navigate relationships with path expressions.
+
+#### 44. Transitive Closure (+)
+
+Find all ancestors of a task (one or more levels):
+
+```sparql
+SELECT ?task ?taskLabel ?ancestor ?ancestorLabel
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?taskLabel .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project>+ ?ancestor .
+  ?ancestor <https://exocortex.my/ontology/exo#Asset_label> ?ancestorLabel .
+}
+```
+
+**Use Case**: Full hierarchy traversal.
+
+---
+
+#### 45. Optional Path (*)
+
+Find all ancestors including zero levels (self):
+
+```sparql
+SELECT ?project ?related
+WHERE {
+  ?project <https://exocortex.my/ontology/exo#Instance_class> "ems__Project" .
+  ?project <https://exocortex.my/ontology/ems#belongs_to_area>* ?related .
+}
+```
+
+**Use Case**: Include node itself in results.
+
+---
+
+#### 46. Zero or One (?)
+
+Find direct or no parent:
+
+```sparql
+SELECT ?task ?parent
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project>? ?parent .
+}
+```
+
+**Use Case**: Optional single-step relationships.
+
+---
+
+#### 47. Alternative Paths (|)
+
+Match tasks or projects:
+
+```sparql
+SELECT ?asset ?label
+WHERE {
+  ?asset (<https://exocortex.my/ontology/ems#belongs_to_project>|<https://exocortex.my/ontology/ems#belongs_to_area>) ?parent .
+  ?asset <https://exocortex.my/ontology/exo#Asset_label> ?label .
+}
+```
+
+**Use Case**: Match multiple relationship types.
+
+---
+
+#### 48. Sequence Path (/)
+
+Find task's area via project (two-hop traversal):
+
+```sparql
+SELECT ?task ?taskLabel ?area ?areaLabel
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?taskLabel .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project>/<https://exocortex.my/ontology/ems#belongs_to_area> ?area .
+  ?area <https://exocortex.my/ontology/exo#Asset_label> ?areaLabel .
+}
+```
+
+**Use Case**: Multi-hop relationship navigation.
+
+---
+
+#### 49. Inverse Path (^)
+
+Find all tasks belonging to a project (reverse direction):
+
+```sparql
+SELECT ?project ?projectLabel ?task ?taskLabel
+WHERE {
+  ?project <https://exocortex.my/ontology/exo#Instance_class> "ems__Project" .
+  ?project <https://exocortex.my/ontology/exo#Asset_label> ?projectLabel .
+  ?project ^<https://exocortex.my/ontology/ems#belongs_to_project> ?task .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?taskLabel .
+}
+```
+
+**Use Case**: Reverse relationship traversal.
+
+---
+
+#### 50. Combined Property Path
+
+Find all descendants of an area (projects and tasks):
+
+```sparql
+SELECT ?area ?areaLabel ?descendant ?descendantLabel
+WHERE {
+  ?area <https://exocortex.my/ontology/exo#Instance_class> "ems__Area" .
+  ?area <https://exocortex.my/ontology/exo#Asset_label> ?areaLabel .
+  ?area (^<https://exocortex.my/ontology/ems#belongs_to_area>/^<https://exocortex.my/ontology/ems#belongs_to_project>?)+ ?descendant .
+  ?descendant <https://exocortex.my/ontology/exo#Asset_label> ?descendantLabel .
+}
+```
+
+**Use Case**: Complete area breakdown.
+
+---
+
+### Subqueries
+
+Use queries within queries for complex analysis.
+
+#### 51. Simple Subquery
+
+Find projects with task counts above average:
+
+```sparql
+SELECT ?project ?projectLabel ?taskCount
+WHERE {
+  {
+    SELECT ?project (COUNT(?task) AS ?taskCount)
+    WHERE {
+      ?project <https://exocortex.my/ontology/exo#Instance_class> "ems__Project" .
+      ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+    }
+    GROUP BY ?project
+  }
+  ?project <https://exocortex.my/ontology/exo#Asset_label> ?projectLabel .
+  FILTER(?taskCount > 5)
+}
+ORDER BY DESC(?taskCount)
+```
+
+**Use Case**: Filter by aggregated values.
+
+---
+
+#### 52. Top-N per Group
+
+Find the 3 highest-voted tasks per project:
+
+```sparql
+SELECT ?project ?projectLabel ?task ?taskLabel ?votes ?rank
+WHERE {
+  {
+    SELECT ?project ?task ?votes (COUNT(?t2) + 1 AS ?rank)
+    WHERE {
+      ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+      ?task <https://exocortex.my/ontology/ems#Effort_votes> ?votes .
+      OPTIONAL {
+        ?t2 <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+        ?t2 <https://exocortex.my/ontology/ems#Effort_votes> ?v2 .
+        FILTER(?v2 > ?votes)
+      }
+    }
+    GROUP BY ?project ?task ?votes
+    HAVING (COUNT(?t2) + 1 <= 3)
+  }
+  ?project <https://exocortex.my/ontology/exo#Asset_label> ?projectLabel .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?taskLabel .
+}
+ORDER BY ?projectLabel ?rank
+```
+
+**Use Case**: Dashboard showing top priorities per project.
+
+---
+
+#### 53. Correlated Subquery
+
+Find tasks with above-average votes for their project:
+
+```sparql
+SELECT ?task ?taskLabel ?votes ?projectAvg
+WHERE {
+  ?task <https://exocortex.my/ontology/exo#Instance_class> "ems__Task" .
+  ?task <https://exocortex.my/ontology/exo#Asset_label> ?taskLabel .
+  ?task <https://exocortex.my/ontology/ems#Effort_votes> ?votes .
+  ?task <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+  {
+    SELECT ?project (AVG(?v) AS ?projectAvg)
+    WHERE {
+      ?t <https://exocortex.my/ontology/ems#belongs_to_project> ?project .
+      ?t <https://exocortex.my/ontology/ems#Effort_votes> ?v .
+    }
+    GROUP BY ?project
+  }
+  FILTER(?votes > ?projectAvg)
+}
+ORDER BY DESC(?votes)
+```
+
+**Use Case**: Find outliers within their context.
 
 ---
 
