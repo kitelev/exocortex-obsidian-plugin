@@ -167,6 +167,95 @@ export class BuiltInFunctions {
   }
 
   /**
+   * SPARQL 1.1 SUBSTR function.
+   * https://www.w3.org/TR/sparql11-query/#func-substr
+   *
+   * @param str - Source string
+   * @param start - Starting position (1-based, per SPARQL spec)
+   * @param length - Optional length of substring
+   * @returns Substring from position start with optional length
+   */
+  static substr(str: string, start: number, length?: number): string {
+    // SPARQL uses 1-based indexing, JavaScript uses 0-based
+    const startIndex = start - 1;
+
+    if (startIndex < 0) {
+      // For negative start, adjust length and start from 0
+      if (length !== undefined) {
+        const adjustedLength = length + startIndex;
+        if (adjustedLength <= 0) {
+          return "";
+        }
+        return str.substring(0, adjustedLength);
+      }
+      return str;
+    }
+
+    if (length !== undefined) {
+      return str.substring(startIndex, startIndex + length);
+    }
+
+    return str.substring(startIndex);
+  }
+
+  /**
+   * SPARQL 1.1 STRBEFORE function.
+   * https://www.w3.org/TR/sparql11-query/#func-strbefore
+   *
+   * Returns the substring before the first occurrence of the separator.
+   * Returns empty string if separator not found or str is empty.
+   *
+   * @param str - Source string
+   * @param separator - Separator to search for
+   * @returns Substring before separator, or empty string if not found
+   */
+  static strBefore(str: string, separator: string): string {
+    if (separator === "") {
+      return "";
+    }
+    const index = str.indexOf(separator);
+    if (index === -1) {
+      return "";
+    }
+    return str.substring(0, index);
+  }
+
+  /**
+   * SPARQL 1.1 STRAFTER function.
+   * https://www.w3.org/TR/sparql11-query/#func-strafter
+   *
+   * Returns the substring after the first occurrence of the separator.
+   * Returns empty string if separator not found or str is empty.
+   *
+   * @param str - Source string
+   * @param separator - Separator to search for
+   * @returns Substring after separator, or empty string if not found
+   */
+  static strAfter(str: string, separator: string): string {
+    if (separator === "") {
+      return str;
+    }
+    const index = str.indexOf(separator);
+    if (index === -1) {
+      return "";
+    }
+    return str.substring(index + separator.length);
+  }
+
+  /**
+   * SPARQL 1.1 CONCAT function.
+   * https://www.w3.org/TR/sparql11-query/#func-concat
+   *
+   * Concatenates multiple string arguments.
+   *
+   * @param strings - Strings to concatenate
+   * @returns Concatenated result
+   */
+  static concat(...strings: string[]): string {
+    return strings.join("");
+  }
+
+  /**
    * SPARQL 1.1 REPLACE function.
    * https://www.w3.org/TR/sparql11-query/#func-replace
    */

@@ -307,6 +307,31 @@ export class FilterExecutor {
         const lcaseStr = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
         return BuiltInFunctions.lcase(lcaseStr);
 
+      case "substr":
+        const substrStr = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        const substrStart = Number(this.evaluateExpression(expr.args[1], solution));
+        if (expr.args[2]) {
+          const substrLength = Number(this.evaluateExpression(expr.args[2], solution));
+          return BuiltInFunctions.substr(substrStr, substrStart, substrLength);
+        }
+        return BuiltInFunctions.substr(substrStr, substrStart);
+
+      case "strbefore":
+        const beforeStr = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        const beforeSep = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
+        return BuiltInFunctions.strBefore(beforeStr, beforeSep);
+
+      case "strafter":
+        const afterStr = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        const afterSep = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
+        return BuiltInFunctions.strAfter(afterStr, afterSep);
+
+      case "concat":
+        const concatArgs = expr.args.map((arg: Expression) =>
+          this.getStringValue(this.evaluateExpression(arg, solution))
+        );
+        return BuiltInFunctions.concat(...concatArgs);
+
       case "replace":
         const replaceStr = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
         const replacePattern = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
