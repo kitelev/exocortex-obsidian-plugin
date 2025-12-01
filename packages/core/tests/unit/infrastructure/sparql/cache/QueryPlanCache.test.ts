@@ -180,4 +180,98 @@ describe("QueryPlanCache", () => {
       expect(stats.hitRate).toBe(0);
     });
   });
+
+  describe("Edge Cases", () => {
+    it("should handle cache size of 1", () => {
+      const smallCache = new QueryPlanCache(1);
+      const plan1 = createMockPlan("1");
+      const plan2 = createMockPlan("2");
+
+      smallCache.set("query1", plan1);
+      expect(smallCache.get("query1")).toBe(plan1);
+
+      smallCache.set("query2", plan2);
+      expect(smallCache.get("query2")).toBe(plan2);
+      expect(smallCache.get("query1")).toBeUndefined(); // Evicted
+    });
+
+    it("should handle empty queries", () => {
+      const plan = createMockPlan("s");
+
+      cache.set("", plan);
+
+      expect(cache.get("")).toBe(plan);
+    });
+
+    it("should handle queries with only whitespace", () => {
+      const plan = createMockPlan("s");
+
+      cache.set("   ", plan);
+
+      // After normalization, "   " becomes ""
+      expect(cache.get("")).toBe(plan);
+      expect(cache.get("   ")).toBe(plan);
+      expect(cache.get("  ")).toBe(plan);
+    });
+
+    it("should handle newlines and tabs in queries", () => {
+      const plan = createMockPlan("s");
+      const query1 = "SELECT *\n\tWHERE { ?s ?p ?o }";
+      const query2 = "SELECT * WHERE { ?s ?p ?o }";
+
+      cache.set(query1, plan);
+
+      expect(cache.get(query2)).toBe(plan);
+    });
+
+    it("should handle overwriting existing entry", () => {
+      const plan1 = createMockPlan("1");
+      const plan2 = createMockPlan("2");
+      const query = "SELECT * WHERE { ?s ?p ?o }";
+
+      cache.set(query, plan1);
+      expect(cache.get(query)).toBe(plan1);
+
+      cache.set(query, plan2);
+      expect(cache.get(query)).toBe(plan2);
+      expect(cache.getStats().size).toBe(1);
+    });
+
+    it("should maintain statistics across clear", () => {
+      const query = "SELECT * WHERE { ?s ?p ?o }";
+      cache.set(query, createMockPlan("s"));
+
+      cache.get(query); // hit
+      cache.get("uncached"); // miss
+
+      cache.clear();
+
+      // After clear, stats are preserved (only entries cleared)
+      const stats = cache.getStats();
+      expect(stats.size).toBe(0);
+    });
+
+    it("should correctly track LRU order after set updates", () => {
+      const plan1 = createMockPlan("1");
+      const plan1Updated = createMockPlan("1-updated");
+      const plan2 = createMockPlan("2");
+      const plan3 = createMockPlan("3");
+      const plan4 = createMockPlan("4");
+
+      cache.set("query1", plan1);
+      cache.set("query2", plan2);
+      cache.set("query3", plan3);
+
+      // Update query1 - this should make it most recently used
+      cache.set("query1", plan1Updated);
+
+      // Adding query4 should evict query2 (oldest non-updated)
+      cache.set("query4", plan4);
+
+      expect(cache.get("query1")).toBe(plan1Updated);
+      expect(cache.get("query2")).toBeUndefined();
+      expect(cache.get("query3")).toBe(plan3);
+      expect(cache.get("query4")).toBe(plan4);
+    });
+  });
 });
