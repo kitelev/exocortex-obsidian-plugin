@@ -77,6 +77,7 @@ export { QueryExecutor } from "./infrastructure/sparql/executors/QueryExecutor";
 export { SolutionMapping } from "./infrastructure/sparql/SolutionMapping";
 export { BuiltInFunctions } from "./infrastructure/sparql/filters/BuiltInFunctions";
 export { AggregateFunctions } from "./infrastructure/sparql/aggregates/AggregateFunctions";
+export { QueryPlanCache } from "./infrastructure/sparql/cache/QueryPlanCache";
 
 // Interfaces exports
 export type {
