@@ -8,6 +8,7 @@ import type {
   ExtendOperation,
   SubqueryOperation,
   ExistsExpression,
+  ArithmeticExpression,
   Triple,
   TripleElement,
   Expression,
@@ -417,6 +418,7 @@ export class AlgebraTranslator {
   private translateOperationExpression(expr: any): Expression {
     const comparisonOps = ["=", "!=", "<", ">", "<=", ">="];
     const logicalOps = ["&&", "||", "!"];
+    const arithmeticOps = ["+", "-", "*", "/"];
 
     if (comparisonOps.includes(expr.operator)) {
       return {
@@ -432,6 +434,16 @@ export class AlgebraTranslator {
         type: "logical",
         operator: expr.operator,
         operands: expr.args.map((a: any) => this.translateExpression(a)),
+      };
+    }
+
+    // Handle arithmetic operators (+, -, *, /)
+    if (arithmeticOps.includes(expr.operator)) {
+      return {
+        type: "arithmetic",
+        operator: expr.operator as ArithmeticExpression["operator"],
+        left: this.translateExpression(expr.args[0]),
+        right: this.translateExpression(expr.args[1]),
       };
     }
 

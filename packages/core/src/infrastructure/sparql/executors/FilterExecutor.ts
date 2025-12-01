@@ -1,6 +1,7 @@
-import type { FilterOperation, Expression, AlgebraOperation, ExistsExpression } from "../algebra/AlgebraOperation";
+import type { FilterOperation, Expression, AlgebraOperation, ExistsExpression, ArithmeticExpression } from "../algebra/AlgebraOperation";
 import type { SolutionMapping } from "../SolutionMapping";
 import { BuiltInFunctions } from "../filters/BuiltInFunctions";
+import { Literal } from "../../../domain/models/rdf/Literal";
 
 export class FilterExecutorError extends Error {
   constructor(message: string, cause?: Error) {
@@ -117,6 +118,9 @@ export class FilterExecutor {
       case "logical":
         return this.evaluateLogical(expr, solution);
 
+      case "arithmetic":
+        return this.evaluateArithmetic(expr as ArithmeticExpression, solution);
+
       case "function":
       case "functionCall":
         return this.evaluateFunction(expr, solution);
@@ -224,6 +228,134 @@ export class FilterExecutor {
     }
 
     throw new FilterExecutorError(`Unknown logical operator: ${expr.operator}`);
+  }
+
+  /**
+   * Evaluate arithmetic expression (+, -, *, /).
+   * Supports:
+   * - Numeric arithmetic
+   * - xsd:dateTime subtraction (returns difference in milliseconds as number)
+   */
+  private evaluateArithmetic(expr: ArithmeticExpression, solution: SolutionMapping): number {
+    const left = this.evaluateExpression(expr.left, solution);
+    const right = this.evaluateExpression(expr.right, solution);
+
+    const leftNum = this.toNumericValue(left);
+    const rightNum = this.toNumericValue(right);
+
+    // Special handling for dateTime subtraction
+    if (expr.operator === "-" && this.isDateTimeValue(left) && this.isDateTimeValue(right)) {
+      const leftMs = this.parseDateTimeToMs(left);
+      const rightMs = this.parseDateTimeToMs(right);
+      // Return difference in milliseconds (positive value)
+      return leftMs - rightMs;
+    }
+
+    switch (expr.operator) {
+      case "+":
+        return leftNum + rightNum;
+      case "-":
+        return leftNum - rightNum;
+      case "*":
+        return leftNum * rightNum;
+      case "/":
+        if (rightNum === 0) {
+          throw new FilterExecutorError("Division by zero");
+        }
+        return leftNum / rightNum;
+      default:
+        throw new FilterExecutorError(`Unknown arithmetic operator: ${expr.operator}`);
+    }
+  }
+
+  /**
+   * Convert a value to a numeric type.
+   * Handles: number, Literal with numeric datatype, string representation.
+   */
+  private toNumericValue(value: any): number {
+    if (typeof value === "number") {
+      return value;
+    }
+
+    if (value instanceof Literal) {
+      const datatypeValue = value.datatype?.value || "";
+      // Handle numeric datatypes
+      if (
+        datatypeValue.includes("#integer") ||
+        datatypeValue.includes("#decimal") ||
+        datatypeValue.includes("#double") ||
+        datatypeValue.includes("#float")
+      ) {
+        const num = parseFloat(value.value);
+        if (!isNaN(num)) {
+          return num;
+        }
+      }
+      // Try to parse as number anyway
+      const num = parseFloat(value.value);
+      if (!isNaN(num)) {
+        return num;
+      }
+    }
+
+    if (typeof value === "string") {
+      const num = parseFloat(value);
+      if (!isNaN(num)) {
+        return num;
+      }
+    }
+
+    // If value has a .value property (like RDF terms)
+    if (value && typeof value === "object" && "value" in value) {
+      const num = parseFloat(String(value.value));
+      if (!isNaN(num)) {
+        return num;
+      }
+    }
+
+    throw new FilterExecutorError(`Cannot convert to number: ${value}`);
+  }
+
+  /**
+   * Check if a value represents an xsd:dateTime.
+   */
+  private isDateTimeValue(value: any): boolean {
+    if (value instanceof Literal) {
+      const datatypeValue = value.datatype?.value || "";
+      if (datatypeValue.includes("#dateTime") || datatypeValue.includes("#date")) {
+        return true;
+      }
+      // Try to detect ISO date format in string value
+      const datePattern = /^\d{4}-\d{2}-\d{2}(T|\s)/;
+      return datePattern.test(value.value);
+    }
+    if (typeof value === "string") {
+      const datePattern = /^\d{4}-\d{2}-\d{2}(T|\s)/;
+      return datePattern.test(value);
+    }
+    return false;
+  }
+
+  /**
+   * Parse a dateTime value to milliseconds since epoch.
+   */
+  private parseDateTimeToMs(value: any): number {
+    let dateStr: string;
+    if (value instanceof Literal) {
+      dateStr = value.value;
+    } else if (typeof value === "string") {
+      dateStr = value;
+    } else if (value && typeof value === "object" && "value" in value) {
+      dateStr = String(value.value);
+    } else {
+      throw new FilterExecutorError(`Cannot parse dateTime: ${value}`);
+    }
+
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      throw new FilterExecutorError(`Invalid dateTime format: ${dateStr}`);
+    }
+    return date.getTime();
   }
 
   private evaluateFunction(expr: any, solution: SolutionMapping): boolean | string | number {
@@ -369,6 +501,52 @@ export class FilterExecutor {
         const diffHoursDate1 = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
         const diffHoursDate2 = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
         return BuiltInFunctions.dateDiffHours(diffHoursDate1, diffHoursDate2);
+
+      // SPARQL 1.1 DateTime accessor functions
+      case "year":
+        const yearDate = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.year(yearDate);
+
+      case "month":
+        const monthDate = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.month(monthDate);
+
+      case "day":
+        const dayDate = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.day(dayDate);
+
+      case "hours":
+        const hoursDate = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.hours(hoursDate);
+
+      case "minutes":
+        const minutesDate = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.minutes(minutesDate);
+
+      case "seconds":
+        const secondsDate = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.seconds(secondsDate);
+
+      case "timezone":
+      case "tz":
+        const tzDate = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.timezone(tzDate);
+
+      case "now":
+        return BuiltInFunctions.now();
+
+      // Duration conversion functions (for arithmetic results)
+      case "mstominutes":
+        const msMinArg = Number(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.msToMinutes(msMinArg);
+
+      case "mstohours":
+        const msHoursArg = Number(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.msToHours(msHoursArg);
+
+      case "mstoseconds":
+        const msSecArg = Number(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.msToSeconds(msSecArg);
 
       default:
         throw new FilterExecutorError(`Unknown function: ${funcName}`);

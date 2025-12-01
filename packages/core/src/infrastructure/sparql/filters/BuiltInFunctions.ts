@@ -354,4 +354,149 @@ export class BuiltInFunctions {
   static logicalNot(operand: boolean): boolean {
     return !operand;
   }
+
+  // SPARQL 1.1 Date/Time Accessor Functions
+  // https://www.w3.org/TR/sparql11-query/#func-year
+
+  /**
+   * SPARQL 1.1 YEAR function.
+   * Returns the year component of a dateTime value.
+   */
+  static year(dateStr: string): number {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      throw new Error(`YEAR: invalid date string '${dateStr}'`);
+    }
+    return date.getFullYear();
+  }
+
+  /**
+   * SPARQL 1.1 MONTH function.
+   * Returns the month component of a dateTime value (1-12).
+   */
+  static month(dateStr: string): number {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      throw new Error(`MONTH: invalid date string '${dateStr}'`);
+    }
+    return date.getMonth() + 1; // JavaScript months are 0-indexed
+  }
+
+  /**
+   * SPARQL 1.1 DAY function.
+   * Returns the day component of a dateTime value (1-31).
+   */
+  static day(dateStr: string): number {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      throw new Error(`DAY: invalid date string '${dateStr}'`);
+    }
+    return date.getDate();
+  }
+
+  /**
+   * SPARQL 1.1 HOURS function.
+   * Returns the hours component of a dateTime value (0-23).
+   */
+  static hours(dateStr: string): number {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      throw new Error(`HOURS: invalid date string '${dateStr}'`);
+    }
+    return date.getHours();
+  }
+
+  /**
+   * SPARQL 1.1 MINUTES function.
+   * Returns the minutes component of a dateTime value (0-59).
+   */
+  static minutes(dateStr: string): number {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      throw new Error(`MINUTES: invalid date string '${dateStr}'`);
+    }
+    return date.getMinutes();
+  }
+
+  /**
+   * SPARQL 1.1 SECONDS function.
+   * Returns the seconds component of a dateTime value (0-59, may include decimal).
+   */
+  static seconds(dateStr: string): number {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      throw new Error(`SECONDS: invalid date string '${dateStr}'`);
+    }
+    // Include milliseconds as decimal seconds
+    return date.getSeconds() + date.getMilliseconds() / 1000;
+  }
+
+  /**
+   * SPARQL 1.1 TIMEZONE function.
+   * Returns the timezone offset as a string (e.g., "+05:00", "Z").
+   */
+  static timezone(dateStr: string): string {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      throw new Error(`TIMEZONE: invalid date string '${dateStr}'`);
+    }
+    // Check if original string has timezone info
+    if (dateStr.endsWith("Z")) {
+      return "PT0S"; // UTC
+    }
+    const tzMatch = dateStr.match(/([+-]\d{2}):?(\d{2})$/);
+    if (tzMatch) {
+      const hours = parseInt(tzMatch[1], 10);
+      const minutes = parseInt(tzMatch[2], 10);
+      const sign = hours >= 0 ? "" : "-";
+      const absHours = Math.abs(hours);
+      if (minutes === 0) {
+        return `${sign}PT${absHours}H`;
+      }
+      return `${sign}PT${absHours}H${minutes}M`;
+    }
+    // Return local timezone offset
+    const offset = -date.getTimezoneOffset();
+    const hours = Math.floor(Math.abs(offset) / 60);
+    const mins = Math.abs(offset) % 60;
+    const sign = offset >= 0 ? "" : "-";
+    if (mins === 0) {
+      return `${sign}PT${hours}H`;
+    }
+    return `${sign}PT${hours}H${mins}M`;
+  }
+
+  /**
+   * SPARQL 1.1 NOW function.
+   * Returns the current dateTime as ISO string.
+   */
+  static now(): string {
+    return new Date().toISOString();
+  }
+
+  // Duration arithmetic helpers
+
+  /**
+   * Convert milliseconds to minutes.
+   * Useful for duration calculations.
+   */
+  static msToMinutes(ms: number): number {
+    return Math.round(ms / (1000 * 60));
+  }
+
+  /**
+   * Convert milliseconds to hours.
+   * Useful for duration calculations.
+   */
+  static msToHours(ms: number): number {
+    return Math.round((ms / (1000 * 60 * 60)) * 100) / 100;
+  }
+
+  /**
+   * Convert milliseconds to seconds.
+   * Useful for duration calculations.
+   */
+  static msToSeconds(ms: number): number {
+    return Math.round(ms / 1000);
+  }
 }

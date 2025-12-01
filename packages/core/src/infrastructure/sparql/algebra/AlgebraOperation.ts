@@ -105,6 +105,7 @@ export interface FilterOperation {
 export type Expression =
   | ComparisonExpression
   | LogicalExpression
+  | ArithmeticExpression
   | FunctionCallExpression
   | RawFunctionCallExpression
   | VariableExpression
@@ -122,6 +123,13 @@ export interface LogicalExpression {
   type: "logical";
   operator: "&&" | "||" | "!";
   operands: Expression[];
+}
+
+export interface ArithmeticExpression {
+  type: "arithmetic";
+  operator: "+" | "-" | "*" | "/";
+  left: Expression;
+  right: Expression;
 }
 
 export interface FunctionCallExpression {
