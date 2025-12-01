@@ -30,6 +30,7 @@ describe("UIStore", () => {
       showEffortArea: false,
       showEffortVotes: false,
       showFullDateInEffortTimes: false,
+      focusMode: false,
     });
   });
 
@@ -41,6 +42,7 @@ describe("UIStore", () => {
       expect(state.showEffortArea).toBe(false);
       expect(state.showEffortVotes).toBe(false);
       expect(state.showFullDateInEffortTimes).toBe(false);
+      expect(state.focusMode).toBe(false);
     });
   });
 
@@ -126,6 +128,33 @@ describe("UIStore", () => {
     });
   });
 
+  describe("toggleFocusMode", () => {
+    it("should toggle focusMode from false to true", () => {
+      expect(useUIStore.getState().focusMode).toBe(false);
+
+      useUIStore.getState().toggleFocusMode();
+
+      expect(useUIStore.getState().focusMode).toBe(true);
+    });
+
+    it("should toggle focusMode from true to false", () => {
+      useUIStore.setState({ focusMode: true });
+
+      useUIStore.getState().toggleFocusMode();
+
+      expect(useUIStore.getState().focusMode).toBe(false);
+    });
+
+    it("should not affect other settings when toggling", () => {
+      useUIStore.setState({ showEffortArea: true, showEffortVotes: true });
+
+      useUIStore.getState().toggleFocusMode();
+
+      expect(useUIStore.getState().showEffortArea).toBe(true);
+      expect(useUIStore.getState().showEffortVotes).toBe(true);
+    });
+  });
+
   describe("resetToDefaults", () => {
     it("should reset all settings to defaults", () => {
       useUIStore.setState({
@@ -133,6 +162,7 @@ describe("UIStore", () => {
         showEffortArea: true,
         showEffortVotes: true,
         showFullDateInEffortTimes: true,
+        focusMode: true,
       });
 
       useUIStore.getState().resetToDefaults();
@@ -142,6 +172,7 @@ describe("UIStore", () => {
       expect(state.showEffortArea).toBe(false);
       expect(state.showEffortVotes).toBe(false);
       expect(state.showFullDateInEffortTimes).toBe(false);
+      expect(state.focusMode).toBe(false);
     });
 
     it("should work when already at defaults", () => {
@@ -152,6 +183,7 @@ describe("UIStore", () => {
       expect(state.showEffortArea).toBe(false);
       expect(state.showEffortVotes).toBe(false);
       expect(state.showFullDateInEffortTimes).toBe(false);
+      expect(state.focusMode).toBe(false);
     });
   });
 
@@ -169,12 +201,14 @@ describe("UIStore", () => {
       useUIStore.getState().toggleEffortArea();
       useUIStore.getState().toggleEffortVotes();
       useUIStore.getState().toggleFullDate();
+      useUIStore.getState().toggleFocusMode();
 
       const state = useUIStore.getState();
       expect(state.showArchived).toBe(true);
       expect(state.showEffortArea).toBe(true);
       expect(state.showEffortVotes).toBe(true);
       expect(state.showFullDateInEffortTimes).toBe(true);
+      expect(state.focusMode).toBe(true);
     });
   });
 });
@@ -187,6 +221,7 @@ describe("getUIDefaults", () => {
     expect(defaults.showEffortArea).toBe(false);
     expect(defaults.showEffortVotes).toBe(false);
     expect(defaults.showFullDateInEffortTimes).toBe(false);
+    expect(defaults.focusMode).toBe(false);
   });
 
   it("should return a new object each time", () => {

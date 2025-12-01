@@ -33,6 +33,7 @@ export interface DailyTasksTableProps {
   showEffortVotes?: boolean;
   showArchived?: boolean;
   showFullDateInEffortTimes?: boolean;
+  focusMode?: boolean;
 }
 
 export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
@@ -44,6 +45,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   showEffortVotes: propShowEffortVotes,
   showArchived: propShowArchived,
   showFullDateInEffortTimes: propShowFullDate,
+  focusMode: propFocusMode,
 }) => {
   const sortState = useTableSortStore((state) => state.dailyTasks);
   const toggleSort = useTableSortStore((state) => state.toggleSort);
@@ -54,11 +56,13 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   const storeShowFullDate = useUIStore(
     (state) => state.showFullDateInEffortTimes,
   );
+  const storeFocusMode = useUIStore((state) => state.focusMode);
 
   const showArchived = propShowArchived ?? storeShowArchived;
   const showEffortArea = propShowEffortArea ?? storeShowEffortArea;
   const showEffortVotes = propShowEffortVotes ?? storeShowEffortVotes;
   const showFullDateInEffortTimes = propShowFullDate ?? storeShowFullDate;
+  const focusMode = propFocusMode ?? storeFocusMode;
 
   const handleSort = (column: string) => {
     toggleSort("dailyTasks", column);
@@ -246,18 +250,25 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     return [...sortedDoing, ...sortedOthers];
   }, [tasks, sortState, getAssetLabel, getEffortArea, showArchived]);
 
+  const displayedTasks = useMemo(() => {
+    if (focusMode && sortedTasks.length > 0) {
+      return [sortedTasks[0]];
+    }
+    return sortedTasks;
+  }, [sortedTasks, focusMode]);
+
   const ROW_HEIGHT = 35;
   const VIRTUALIZATION_THRESHOLD = 50;
   const parentRef = useRef<HTMLDivElement>(null);
 
   const rowVirtualizer = useVirtualizer({
-    count: sortedTasks.length,
+    count: displayedTasks.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_HEIGHT,
     overscan: 5,
   });
 
-  const shouldVirtualize = sortedTasks.length > VIRTUALIZATION_THRESHOLD;
+  const shouldVirtualize = displayedTasks.length > VIRTUALIZATION_THRESHOLD;
 
   const renderRow = (task: DailyTask, index: number, style?: React.CSSProperties) => {
     let effortArea: unknown = null;
@@ -442,7 +453,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
         <table className="exocortex-tasks-table">
           {renderTableHeader()}
           <tbody>
-            {sortedTasks.map((task, index) => renderRow(task, index))}
+            {displayedTasks.map((task, index) => renderRow(task, index))}
           </tbody>
         </table>
       </div>
@@ -472,7 +483,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
                 >
                   <tbody>
                     {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                      const task = sortedTasks[virtualRow.index];
+                      const task = displayedTasks[virtualRow.index];
                       return renderRow(task, virtualRow.index, {
                         position: "absolute",
                         top: 0,
@@ -500,6 +511,7 @@ export interface DailyTasksTableWithToggleProps
     | "showEffortVotes"
     | "showArchived"
     | "showFullDateInEffortTimes"
+    | "focusMode"
   > {
   showEffortArea?: boolean;
   onToggleEffortArea?: () => void;
@@ -509,6 +521,8 @@ export interface DailyTasksTableWithToggleProps
   onToggleArchived?: () => void;
   showFullDateInEffortTimes?: boolean;
   onToggleFullDate?: () => void;
+  focusMode?: boolean;
+  onToggleFocusMode?: () => void;
 }
 
 export const DailyTasksTableWithToggle: React.FC<
@@ -522,6 +536,8 @@ export const DailyTasksTableWithToggle: React.FC<
   onToggleArchived,
   showFullDateInEffortTimes: propShowFullDate,
   onToggleFullDate,
+  focusMode: propFocusMode,
+  onToggleFocusMode,
   ...props
 }) => {
   const storeShowEffortArea = useUIStore((state) => state.showEffortArea);
@@ -530,16 +546,19 @@ export const DailyTasksTableWithToggle: React.FC<
   const storeShowFullDate = useUIStore(
     (state) => state.showFullDateInEffortTimes,
   );
+  const storeFocusMode = useUIStore((state) => state.focusMode);
 
   const storeToggleEffortArea = useUIStore((state) => state.toggleEffortArea);
   const storeToggleEffortVotes = useUIStore((state) => state.toggleEffortVotes);
   const storeToggleArchived = useUIStore((state) => state.toggleArchived);
   const storeToggleFullDate = useUIStore((state) => state.toggleFullDate);
+  const storeToggleFocusMode = useUIStore((state) => state.toggleFocusMode);
 
   const showEffortArea = propShowEffortArea ?? storeShowEffortArea;
   const showEffortVotes = propShowEffortVotes ?? storeShowEffortVotes;
   const showArchived = propShowArchived ?? storeShowArchived;
   const showFullDateInEffortTimes = propShowFullDate ?? storeShowFullDate;
+  const focusMode = propFocusMode ?? storeFocusMode;
 
   const handleToggleEffortArea = () => {
     if (onToggleEffortArea) {
@@ -570,6 +589,14 @@ export const DailyTasksTableWithToggle: React.FC<
       onToggleFullDate();
     } else {
       storeToggleFullDate();
+    }
+  };
+
+  const handleToggleFocusMode = () => {
+    if (onToggleFocusMode) {
+      onToggleFocusMode();
+    } else {
+      storeToggleFocusMode();
     }
   };
 
@@ -620,12 +647,25 @@ export const DailyTasksTableWithToggle: React.FC<
           onClick={handleToggleFullDate}
           style={{
             marginBottom: "8px",
+            marginRight: "8px",
             padding: "4px 8px",
             cursor: "pointer",
             fontSize: "12px",
           }}
         >
           {showFullDateInEffortTimes ? "HH:mm" : "MM-DD HH:mm"}
+        </button>
+        <button
+          className="exocortex-toggle-focus-mode"
+          onClick={handleToggleFocusMode}
+          style={{
+            marginBottom: "8px",
+            padding: "4px 8px",
+            cursor: "pointer",
+            fontSize: "12px",
+          }}
+        >
+          {focusMode ? "🎯 focused" : "🎯 focus"}
         </button>
       </div>
       <DailyTasksTable
@@ -634,6 +674,7 @@ export const DailyTasksTableWithToggle: React.FC<
         showEffortVotes={showEffortVotes}
         showArchived={showArchived}
         showFullDateInEffortTimes={showFullDateInEffortTimes}
+        focusMode={focusMode}
       />
     </div>
   );
