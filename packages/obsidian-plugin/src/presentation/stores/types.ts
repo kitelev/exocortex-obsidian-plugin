@@ -8,6 +8,7 @@ export interface UISettings {
   showEffortArea: boolean;
   showEffortVotes: boolean;
   showFullDateInEffortTimes: boolean;
+  focusMode: boolean;
 }
 
 export interface UIStore extends UISettings {
@@ -15,6 +16,7 @@ export interface UIStore extends UISettings {
   toggleEffortArea: () => void;
   toggleEffortVotes: () => void;
   toggleFullDate: () => void;
+  toggleFocusMode: () => void;
   resetToDefaults: () => void;
 }
 
