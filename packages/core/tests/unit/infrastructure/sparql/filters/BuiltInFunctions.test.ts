@@ -272,6 +272,168 @@ describe("BuiltInFunctions", () => {
     });
   });
 
+  describe("SUBSTR", () => {
+    it("should extract substring from start position (1-based)", () => {
+      // SPARQL uses 1-based indexing
+      expect(BuiltInFunctions.substr("foobar", 4)).toBe("bar");
+    });
+
+    it("should extract substring with length", () => {
+      expect(BuiltInFunctions.substr("foobar", 4, 2)).toBe("ba");
+    });
+
+    it("should handle start position 1", () => {
+      expect(BuiltInFunctions.substr("hello", 1)).toBe("hello");
+      expect(BuiltInFunctions.substr("hello", 1, 3)).toBe("hel");
+    });
+
+    it("should handle start position beyond string length", () => {
+      expect(BuiltInFunctions.substr("hello", 10)).toBe("");
+      expect(BuiltInFunctions.substr("hello", 10, 5)).toBe("");
+    });
+
+    it("should handle length exceeding remaining string", () => {
+      expect(BuiltInFunctions.substr("hello", 3, 100)).toBe("llo");
+    });
+
+    it("should handle empty string", () => {
+      expect(BuiltInFunctions.substr("", 1)).toBe("");
+      expect(BuiltInFunctions.substr("", 1, 5)).toBe("");
+    });
+
+    it("should handle unicode strings", () => {
+      expect(BuiltInFunctions.substr("Привет мир", 1, 6)).toBe("Привет");
+    });
+
+    it("should handle zero and negative start positions", () => {
+      // According to SPARQL spec, position 0 maps to position 1
+      expect(BuiltInFunctions.substr("hello", 0)).toBe("hello");
+      expect(BuiltInFunctions.substr("hello", 0, 3)).toBe("he");
+      expect(BuiltInFunctions.substr("hello", -1, 3)).toBe("h");
+    });
+  });
+
+  describe("STRBEFORE", () => {
+    it("should return substring before separator", () => {
+      expect(BuiltInFunctions.strBefore("hello/world", "/")).toBe("hello");
+    });
+
+    it("should return empty string if separator not found", () => {
+      expect(BuiltInFunctions.strBefore("hello world", "/")).toBe("");
+    });
+
+    it("should return empty string if separator is at start", () => {
+      expect(BuiltInFunctions.strBefore("/hello", "/")).toBe("");
+    });
+
+    it("should handle empty separator (returns empty string per spec)", () => {
+      expect(BuiltInFunctions.strBefore("hello", "")).toBe("");
+    });
+
+    it("should handle empty source string", () => {
+      expect(BuiltInFunctions.strBefore("", "/")).toBe("");
+    });
+
+    it("should find first occurrence only", () => {
+      expect(BuiltInFunctions.strBefore("a/b/c", "/")).toBe("a");
+    });
+
+    it("should handle multi-character separator", () => {
+      expect(BuiltInFunctions.strBefore("hello::world", "::")).toBe("hello");
+    });
+
+    it("should handle path extraction", () => {
+      expect(BuiltInFunctions.strBefore("/projects/task.md", "/")).toBe("");
+      expect(BuiltInFunctions.strBefore("projects/task.md", "/")).toBe("projects");
+    });
+  });
+
+  describe("STRAFTER", () => {
+    it("should return substring after separator", () => {
+      expect(BuiltInFunctions.strAfter("hello/world", "/")).toBe("world");
+    });
+
+    it("should return empty string if separator not found", () => {
+      expect(BuiltInFunctions.strAfter("hello world", "/")).toBe("");
+    });
+
+    it("should return empty string if separator is at end", () => {
+      expect(BuiltInFunctions.strAfter("hello/", "/")).toBe("");
+    });
+
+    it("should handle empty separator (returns entire string per spec)", () => {
+      expect(BuiltInFunctions.strAfter("hello", "")).toBe("hello");
+    });
+
+    it("should handle empty source string", () => {
+      expect(BuiltInFunctions.strAfter("", "/")).toBe("");
+    });
+
+    it("should find first occurrence only", () => {
+      expect(BuiltInFunctions.strAfter("a/b/c", "/")).toBe("b/c");
+    });
+
+    it("should handle multi-character separator", () => {
+      expect(BuiltInFunctions.strAfter("hello::world", "::")).toBe("world");
+    });
+
+    it("should extract fragment from URI", () => {
+      expect(BuiltInFunctions.strAfter("http://example.org/resource#fragment", "#")).toBe("fragment");
+    });
+
+    it("should extract file extension", () => {
+      expect(BuiltInFunctions.strAfter("document.md", ".")).toBe("md");
+    });
+  });
+
+  describe("CONCAT", () => {
+    it("should concatenate two strings", () => {
+      expect(BuiltInFunctions.concat("hello", " world")).toBe("hello world");
+    });
+
+    it("should concatenate multiple strings", () => {
+      expect(BuiltInFunctions.concat("a", "b", "c", "d")).toBe("abcd");
+    });
+
+    it("should handle single argument", () => {
+      expect(BuiltInFunctions.concat("hello")).toBe("hello");
+    });
+
+    it("should handle no arguments", () => {
+      expect(BuiltInFunctions.concat()).toBe("");
+    });
+
+    it("should handle empty strings in arguments", () => {
+      expect(BuiltInFunctions.concat("hello", "", "world")).toBe("helloworld");
+    });
+
+    it("should build full name from parts", () => {
+      expect(BuiltInFunctions.concat("John", " ", "Doe")).toBe("John Doe");
+    });
+
+    it("should build path from components", () => {
+      expect(BuiltInFunctions.concat("/projects/", "myproject", "/tasks")).toBe("/projects/myproject/tasks");
+    });
+  });
+
+  describe("REPLACE", () => {
+    it("should replace pattern with replacement", () => {
+      expect(BuiltInFunctions.replace("hello world", "world", "there")).toBe("hello there");
+    });
+
+    it("should support regex patterns", () => {
+      expect(BuiltInFunctions.replace("test123", "\\d+", "NUM")).toBe("testNUM");
+    });
+
+    it("should replace all occurrences by default", () => {
+      expect(BuiltInFunctions.replace("a-b-c", "-", "_")).toBe("a_b_c");
+    });
+
+    it("should throw for invalid regex", () => {
+      expect(() => BuiltInFunctions.replace("test", "[invalid", "x")).toThrow("REPLACE: invalid pattern");
+    });
+  });
+
   describe("Logical Operators", () => {
     it("should perform logical AND", () => {
       expect(BuiltInFunctions.logicalAnd([true, true])).toBe(true);

@@ -210,6 +210,236 @@ describe("FilterExecutor", () => {
     });
   });
 
+  describe("SPARQL 1.1 String Functions", () => {
+    it("should filter by SUBSTR", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "substr",
+            args: [
+              { type: "variable", name: "title" },
+              { type: "literal", value: 1 },
+              { type: "literal", value: 5 },
+            ],
+          },
+          right: { type: "literal", value: "Hello" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("title", new Literal("Hello World"));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("title", new Literal("Goodbye World"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should filter by STRBEFORE", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "strbefore",
+            args: [
+              { type: "variable", name: "path" },
+              { type: "literal", value: "/" },
+            ],
+          },
+          right: { type: "literal", value: "projects" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("path", new Literal("projects/task.md"));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("path", new Literal("areas/health.md"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should filter by STRAFTER", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "strafter",
+            args: [
+              { type: "variable", name: "uri" },
+              { type: "literal", value: "#" },
+            ],
+          },
+          right: { type: "literal", value: "Task" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("uri", new Literal("http://example.org/ontology#Task"));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("uri", new Literal("http://example.org/ontology#Project"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should filter by CONCAT", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "concat",
+            args: [
+              { type: "variable", name: "first" },
+              { type: "literal", value: " " },
+              { type: "variable", name: "last" },
+            ],
+          },
+          right: { type: "literal", value: "John Doe" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("first", new Literal("John"));
+      solution1.set("last", new Literal("Doe"));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("first", new Literal("Jane"));
+      solution2.set("last", new Literal("Doe"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should filter by STRLEN", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: ">",
+          left: {
+            type: "function",
+            function: "strlen",
+            args: [{ type: "variable", name: "name" }],
+          },
+          right: { type: "literal", value: 10 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("name", new Literal("This is a long name"));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("name", new Literal("Short"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should filter by UCASE comparison", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "ucase",
+            args: [{ type: "variable", name: "tag" }],
+          },
+          right: { type: "literal", value: "IMPORTANT" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("tag", new Literal("important"));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("tag", new Literal("normal"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should filter by LCASE comparison", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "lcase",
+            args: [{ type: "variable", name: "status" }],
+          },
+          right: { type: "literal", value: "done" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("status", new Literal("DONE"));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("status", new Literal("PENDING"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should filter by REPLACE", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "replace",
+            args: [
+              { type: "variable", name: "text" },
+              { type: "literal", value: "-" },
+              { type: "literal", value: "_" },
+            ],
+          },
+          right: { type: "literal", value: "hello_world" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("text", new Literal("hello-world"));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("text", new Literal("goodbye-world"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2]);
+      expect(results).toHaveLength(1);
+    });
+  });
+
   describe("Error Handling", () => {
     it("should skip solutions that throw errors during evaluation", async () => {
       const operation: FilterOperation = {
