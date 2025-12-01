@@ -488,4 +488,136 @@ describe("PropertyPathExecutor", () => {
       expect(results[0].get("end")?.toString()).toBe("<ex:b>");
     });
   });
+
+  describe("Edge Cases", () => {
+    it("should return empty for path with no matches", async () => {
+      // No triples at all
+      triples = [];
+
+      const path: PropertyPath = {
+        type: "path",
+        pathType: "+",
+        items: [algebraIri("ex:nonexistent")],
+      };
+
+      const results = await collectResults(algebraIri("ex:a"), path, algebraVar("target"));
+
+      expect(results.length).toBe(0);
+    });
+
+    it("should return only self for ZeroOrMore when no matches exist", async () => {
+      triples = [];
+
+      const path: PropertyPath = {
+        type: "path",
+        pathType: "*",
+        items: [algebraIri("ex:nonexistent")],
+      };
+
+      const results = await collectResults(algebraIri("ex:a"), path, algebraVar("target"));
+
+      expect(results.length).toBe(1);
+      expect(results[0].get("target")?.toString()).toBe("<ex:a>");
+    });
+
+    it("should respect MAX_DEPTH limit for very deep paths", async () => {
+      // Create a chain of 150 nodes (exceeds MAX_DEPTH = 100)
+      triples = [];
+      for (let i = 0; i < 150; i++) {
+        triples.push(new Triple(iri(`ex:node${i}`), iri("ex:next"), iri(`ex:node${i + 1}`)));
+      }
+
+      const path: PropertyPath = {
+        type: "path",
+        pathType: "+",
+        items: [algebraIri("ex:next")],
+      };
+
+      const results = await collectResults(algebraIri("ex:node0"), path, algebraVar("target"));
+
+      // Should stop at MAX_DEPTH (100) and not traverse all 150 nodes
+      expect(results.length).toBeLessThanOrEqual(100);
+      expect(results.length).toBeGreaterThan(50); // Should still find many nodes
+    });
+
+    it("should handle alternative path with both alternatives failing", async () => {
+      triples = [new Triple(iri("ex:a"), iri("ex:other"), iri("ex:b"))];
+
+      const path: PropertyPath = {
+        type: "path",
+        pathType: "|",
+        items: [algebraIri("ex:knows"), algebraIri("ex:likes")],
+      };
+
+      const results = await collectResults(algebraIri("ex:a"), path, algebraVar("target"));
+
+      expect(results.length).toBe(0);
+    });
+
+    it("should handle sequence path with missing intermediate nodes", async () => {
+      // Only has first step, missing second step
+      triples = [new Triple(iri("ex:a"), iri("ex:p1"), iri("ex:b"))];
+
+      const path: PropertyPath = {
+        type: "path",
+        pathType: "/",
+        items: [algebraIri("ex:p1"), algebraIri("ex:p2"), algebraIri("ex:p3")],
+      };
+
+      const results = await collectResults(algebraIri("ex:a"), path, algebraVar("target"));
+
+      expect(results.length).toBe(0);
+    });
+
+    it("should handle inverse path with no reverse matches", async () => {
+      // Triple goes from a to b, inverse looks from b backwards
+      triples = [new Triple(iri("ex:a"), iri("ex:knows"), iri("ex:b"))];
+
+      const path: PropertyPath = {
+        type: "path",
+        pathType: "^",
+        items: [algebraIri("ex:knows")],
+      };
+
+      // Starting from 'a' with inverse - should find nothing since 'a' is not an object
+      const results = await collectResults(algebraIri("ex:a"), path, algebraVar("subject"));
+
+      expect(results.length).toBe(0);
+    });
+
+    it("should handle deeply nested path expression", async () => {
+      triples = [
+        new Triple(iri("ex:a"), iri("ex:p1"), iri("ex:b")),
+        new Triple(iri("ex:a"), iri("ex:p2"), iri("ex:c")),
+        new Triple(iri("ex:b"), iri("ex:p1"), iri("ex:d")),
+        new Triple(iri("ex:c"), iri("ex:p2"), iri("ex:e")),
+      ];
+
+      // Complex: ((p1|p2)/p1)+ - alternative followed by p1, one or more times
+      const innerAlt: PropertyPath = {
+        type: "path",
+        pathType: "|",
+        items: [algebraIri("ex:p1"), algebraIri("ex:p2")],
+      };
+
+      const sequence: PropertyPath = {
+        type: "path",
+        pathType: "/",
+        items: [innerAlt, algebraIri("ex:p1")],
+      };
+
+      const path: PropertyPath = {
+        type: "path",
+        pathType: "+",
+        items: [sequence],
+      };
+
+      const results = await collectResults(algebraIri("ex:a"), path, algebraVar("target"));
+
+      // Should reach 'd' (via a->b->d)
+      expect(results.length).toBeGreaterThanOrEqual(1);
+      const targets = results.map((r) => r.get("target")?.toString());
+      expect(targets).toContain("<ex:d>");
+    });
+  });
 });
