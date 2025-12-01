@@ -1,4 +1,4 @@
-import type { AlgebraOperation, Expression, Triple, TripleElement } from "./AlgebraOperation";
+import type { AlgebraOperation, Expression, Triple, TripleElement, PropertyPath } from "./AlgebraOperation";
 
 export class AlgebraSerializer {
   toString(operation: AlgebraOperation, indent: number = 0): string {
@@ -45,7 +45,42 @@ export class AlgebraSerializer {
   }
 
   private tripleToString(triple: Triple): string {
-    return `${this.elementToString(triple.subject)} ${this.elementToString(triple.predicate)} ${this.elementToString(triple.object)}`;
+    return `${this.elementToString(triple.subject)} ${this.predicateToString(triple.predicate)} ${this.elementToString(triple.object)}`;
+  }
+
+  private predicateToString(predicate: TripleElement | PropertyPath): string {
+    if (this.isPropertyPath(predicate)) {
+      return this.propertyPathToString(predicate);
+    }
+    return this.elementToString(predicate);
+  }
+
+  private isPropertyPath(element: TripleElement | PropertyPath): element is PropertyPath {
+    return element.type === "path";
+  }
+
+  private propertyPathToString(path: PropertyPath): string {
+    const items = path.items.map((item) => {
+      if (item.type === "path") {
+        return `(${this.propertyPathToString(item)})`;
+      }
+      return `<${item.value}>`;
+    });
+
+    switch (path.pathType) {
+      case "/":
+        return items.join("/");
+      case "|":
+        return items.join("|");
+      case "^":
+        return `^${items[0]}`;
+      case "+":
+        return `${items[0]}+`;
+      case "*":
+        return `${items[0]}*`;
+      case "?":
+        return `${items[0]}?`;
+    }
   }
 
   private elementToString(element: TripleElement): string {

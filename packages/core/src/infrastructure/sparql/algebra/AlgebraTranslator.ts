@@ -13,6 +13,8 @@ import type {
   OrderComparator,
   AggregateBinding,
   AggregateExpression,
+  PropertyPath,
+  IRI,
 } from "./AlgebraOperation";
 
 export class AlgebraTranslatorError extends Error {
@@ -210,9 +212,113 @@ export class AlgebraTranslator {
 
     return {
       subject: this.translateTripleElement(triple.subject),
-      predicate: this.translateTripleElement(triple.predicate),
+      predicate: this.translatePredicate(triple.predicate),
       object: this.translateTripleElement(triple.object),
     };
+  }
+
+  /**
+   * Translate a predicate which can be either a simple IRI/Variable or a property path.
+   * sparqljs uses type: "path" for property paths, termType for regular terms.
+   */
+  private translatePredicate(predicate: any): TripleElement | PropertyPath {
+    // Check if this is a property path (sparqljs uses type: "path")
+    if (predicate.type === "path") {
+      return this.translatePropertyPath(predicate);
+    }
+
+    // Otherwise it's a regular triple element (IRI, Variable, etc.)
+    return this.translateTripleElement(predicate);
+  }
+
+  /**
+   * Translate a property path expression from sparqljs AST.
+   * sparqljs format: { type: "path", pathType: "+"|"*"|"?"|"^"|"/"|"|", items: [...] }
+   */
+  private translatePropertyPath(path: any): PropertyPath {
+    if (!path.pathType) {
+      throw new AlgebraTranslatorError("Property path must have pathType");
+    }
+
+    if (!path.items || !Array.isArray(path.items)) {
+      throw new AlgebraTranslatorError("Property path must have items array");
+    }
+
+    const translatedItems = path.items.map((item: any) => this.translatePathItem(item));
+
+    switch (path.pathType) {
+      case "/":
+        return {
+          type: "path",
+          pathType: "/",
+          items: translatedItems,
+        };
+      case "|":
+        return {
+          type: "path",
+          pathType: "|",
+          items: translatedItems,
+        };
+      case "^":
+        if (translatedItems.length !== 1) {
+          throw new AlgebraTranslatorError("Inverse path must have exactly one item");
+        }
+        return {
+          type: "path",
+          pathType: "^",
+          items: [translatedItems[0]],
+        };
+      case "+":
+        if (translatedItems.length !== 1) {
+          throw new AlgebraTranslatorError("OneOrMore path must have exactly one item");
+        }
+        return {
+          type: "path",
+          pathType: "+",
+          items: [translatedItems[0]],
+        };
+      case "*":
+        if (translatedItems.length !== 1) {
+          throw new AlgebraTranslatorError("ZeroOrMore path must have exactly one item");
+        }
+        return {
+          type: "path",
+          pathType: "*",
+          items: [translatedItems[0]],
+        };
+      case "?":
+        if (translatedItems.length !== 1) {
+          throw new AlgebraTranslatorError("ZeroOrOne path must have exactly one item");
+        }
+        return {
+          type: "path",
+          pathType: "?",
+          items: [translatedItems[0]],
+        };
+      default:
+        throw new AlgebraTranslatorError(`Unsupported property path type: ${path.pathType}`);
+    }
+  }
+
+  /**
+   * Translate a single item in a property path.
+   * Can be either an IRI (NamedNode) or a nested path.
+   */
+  private translatePathItem(item: any): IRI | PropertyPath {
+    // Nested property path
+    if (item.type === "path") {
+      return this.translatePropertyPath(item);
+    }
+
+    // IRI (NamedNode)
+    if (item.termType === "NamedNode") {
+      return {
+        type: "iri",
+        value: item.value,
+      };
+    }
+
+    throw new AlgebraTranslatorError(`Unsupported path item type: ${item.type || item.termType}`);
   }
 
   private translateTripleElement(element: any): TripleElement {

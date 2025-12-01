@@ -1,5 +1,5 @@
 import type { ITripleStore } from "../../../interfaces/ITripleStore";
-import type { BGPOperation, Triple as AlgebraTriple, TripleElement } from "../algebra/AlgebraOperation";
+import type { BGPOperation, Triple as AlgebraTriple, TripleElement, PropertyPath } from "../algebra/AlgebraOperation";
 import { SolutionMapping } from "../SolutionMapping";
 import { IRI } from "../../../domain/models/rdf/IRI";
 import { Literal } from "../../../domain/models/rdf/Literal";
@@ -66,9 +66,16 @@ export class BGPExecutor {
    * Match a single triple pattern and return solution mappings.
    */
   private async *matchTriplePattern(pattern: AlgebraTriple): AsyncIterableIterator<SolutionMapping> {
+    // Check if predicate is a property path - not supported in BGPExecutor
+    if (this.isPropertyPath(pattern.predicate)) {
+      throw new BGPExecutorError("Property paths are not supported in BGPExecutor. Use PropertyPathExecutor for path expressions.");
+    }
+
+    const predElement = pattern.predicate as TripleElement;
+
     // Convert algebra triple pattern to triple store query
     const subject = this.isVariable(pattern.subject) ? undefined : this.toRDFTermAsSubject(pattern.subject);
-    const predicate = this.isVariable(pattern.predicate) ? undefined : this.toRDFTermAsPredicate(pattern.predicate);
+    const predicate = this.isVariable(predElement) ? undefined : this.toRDFTermAsPredicate(predElement);
     const object = this.isVariable(pattern.object) ? undefined : this.toRDFTerm(pattern.object);
 
     // Query triple store
@@ -82,8 +89,8 @@ export class BGPExecutor {
       if (this.isVariable(pattern.subject)) {
         mapping.set(pattern.subject.value, triple.subject);
       }
-      if (this.isVariable(pattern.predicate)) {
-        mapping.set(pattern.predicate.value, triple.predicate);
+      if (this.isVariable(predElement)) {
+        mapping.set(predElement.value, triple.predicate);
       }
       if (this.isVariable(pattern.object)) {
         mapping.set(pattern.object.value, triple.object);
@@ -91,6 +98,13 @@ export class BGPExecutor {
 
       yield mapping;
     }
+  }
+
+  /**
+   * Check if a predicate is a property path.
+   */
+  private isPropertyPath(predicate: TripleElement | PropertyPath): predicate is PropertyPath {
+    return predicate.type === "path";
   }
 
   /**
@@ -128,9 +142,14 @@ export class BGPExecutor {
    * Variables that are bound in the solution are replaced with their values.
    */
   private instantiatePattern(pattern: AlgebraTriple, solution: SolutionMapping): AlgebraTriple {
+    // Property paths don't contain variables, so pass through unchanged
+    const predicate = this.isPropertyPath(pattern.predicate)
+      ? pattern.predicate
+      : this.instantiateElement(pattern.predicate, solution);
+
     return {
       subject: this.instantiateElement(pattern.subject, solution),
-      predicate: this.instantiateElement(pattern.predicate, solution),
+      predicate,
       object: this.instantiateElement(pattern.object, solution),
     };
   }

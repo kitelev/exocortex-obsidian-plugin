@@ -608,6 +608,150 @@ describe("AlgebraTranslator", () => {
     });
   });
 
+  describe("Property Paths", () => {
+    it("translates OneOrMore path (+)", () => {
+      const query = `
+        SELECT ?ancestor
+        WHERE {
+          <http://example.org/person> <http://example.org/parent>+ ?ancestor .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("bgp");
+      expect(input.triples.length).toBe(1);
+      const predicate = input.triples[0].predicate;
+      expect(predicate.type).toBe("path");
+      expect(predicate.pathType).toBe("+");
+      expect(predicate.items[0].type).toBe("iri");
+      expect(predicate.items[0].value).toBe("http://example.org/parent");
+    });
+
+    it("translates ZeroOrMore path (*)", () => {
+      const query = `
+        SELECT ?node
+        WHERE {
+          <http://example.org/start> <http://example.org/next>* ?node .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const input = (algebra as any).input;
+      const predicate = input.triples[0].predicate;
+      expect(predicate.type).toBe("path");
+      expect(predicate.pathType).toBe("*");
+    });
+
+    it("translates ZeroOrOne path (?)", () => {
+      const query = `
+        SELECT ?node
+        WHERE {
+          <http://example.org/start> <http://example.org/next>? ?node .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const input = (algebra as any).input;
+      const predicate = input.triples[0].predicate;
+      expect(predicate.type).toBe("path");
+      expect(predicate.pathType).toBe("?");
+    });
+
+    it("translates Inverse path (^)", () => {
+      const query = `
+        SELECT ?child
+        WHERE {
+          <http://example.org/parent> ^<http://example.org/hasParent> ?child .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const input = (algebra as any).input;
+      const predicate = input.triples[0].predicate;
+      expect(predicate.type).toBe("path");
+      expect(predicate.pathType).toBe("^");
+      expect(predicate.items[0].type).toBe("iri");
+    });
+
+    it("translates Sequence path (/)", () => {
+      const query = `
+        SELECT ?grandparent
+        WHERE {
+          ?person <http://example.org/parent>/<http://example.org/parent> ?grandparent .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const input = (algebra as any).input;
+      const predicate = input.triples[0].predicate;
+      expect(predicate.type).toBe("path");
+      expect(predicate.pathType).toBe("/");
+      expect(predicate.items.length).toBe(2);
+      expect(predicate.items[0].type).toBe("iri");
+      expect(predicate.items[1].type).toBe("iri");
+    });
+
+    it("translates Alternative path (|)", () => {
+      const query = `
+        SELECT ?related
+        WHERE {
+          ?person (<http://example.org/knows>|<http://example.org/likes>) ?related .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const input = (algebra as any).input;
+      const predicate = input.triples[0].predicate;
+      expect(predicate.type).toBe("path");
+      expect(predicate.pathType).toBe("|");
+      expect(predicate.items.length).toBe(2);
+    });
+
+    it("translates nested path expressions", () => {
+      const query = `
+        SELECT ?ancestor
+        WHERE {
+          ?person (<http://example.org/parent>/<http://example.org/parent>)+ ?ancestor .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const input = (algebra as any).input;
+      const predicate = input.triples[0].predicate;
+      expect(predicate.type).toBe("path");
+      expect(predicate.pathType).toBe("+");
+      expect(predicate.items[0].type).toBe("path");
+      expect(predicate.items[0].pathType).toBe("/");
+    });
+
+    it("translates path with PREFIX", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?ancestor
+        WHERE {
+          ?person ex:parent+ ?ancestor .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const input = (algebra as any).input;
+      const predicate = input.triples[0].predicate;
+      expect(predicate.type).toBe("path");
+      expect(predicate.pathType).toBe("+");
+      expect(predicate.items[0].value).toBe("http://example.org/parent");
+    });
+  });
+
   describe("Error Handling", () => {
     it("throws error for empty WHERE clause", () => {
       const ast = parser.parse("SELECT ?s WHERE { }");
