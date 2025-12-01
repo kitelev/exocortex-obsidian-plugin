@@ -298,4 +298,100 @@ describe("BuiltInFunctions", () => {
       expect(BuiltInFunctions.logicalNot(false)).toBe(true);
     });
   });
+
+  describe("DATEDIFFMINUTES", () => {
+    it("should calculate difference in minutes between two dates", () => {
+      // 2 hours = 120 minutes
+      const date1 = "2025-11-26T05:00:00Z";
+      const date2 = "2025-11-26T07:00:00Z";
+      expect(BuiltInFunctions.dateDiffMinutes(date1, date2)).toBe(120);
+    });
+
+    it("should return positive value regardless of order", () => {
+      const date1 = "2025-11-26T07:00:00Z";
+      const date2 = "2025-11-26T05:00:00Z";
+      expect(BuiltInFunctions.dateDiffMinutes(date1, date2)).toBe(120);
+    });
+
+    it("should handle JavaScript Date string format", () => {
+      // Real-world format from vault data
+      const date1 = "Wed Nov 26 2025 05:03:42 GMT+0500";
+      const date2 = "Wed Nov 26 2025 14:10:09 GMT+0500";
+      // Difference: 9h 6m 27s ≈ 546 minutes (rounded)
+      const diff = BuiltInFunctions.dateDiffMinutes(date1, date2);
+      expect(diff).toBe(547); // 9*60 + 6 + rounding from 27s
+    });
+
+    it("should handle ISO format dates", () => {
+      const date1 = "2025-11-26T00:00:00";
+      const date2 = "2025-11-26T01:30:00";
+      expect(BuiltInFunctions.dateDiffMinutes(date1, date2)).toBe(90);
+    });
+
+    it("should calculate sleep duration correctly", () => {
+      // Typical sleep scenario: start at midnight, wake up at 8am
+      const sleepStart = "2025-11-26T00:00:00";
+      const sleepEnd = "2025-11-26T08:00:00";
+      expect(BuiltInFunctions.dateDiffMinutes(sleepStart, sleepEnd)).toBe(480); // 8 hours
+    });
+
+    it("should return 0 for same datetime", () => {
+      const date = "2025-11-26T12:00:00Z";
+      expect(BuiltInFunctions.dateDiffMinutes(date, date)).toBe(0);
+    });
+
+    it("should throw for invalid date string", () => {
+      expect(() => BuiltInFunctions.dateDiffMinutes("invalid", "2025-11-26T00:00:00")).toThrow(
+        "PARSEDATE: invalid date string"
+      );
+    });
+  });
+
+  describe("DATEDIFFHOURS", () => {
+    it("should calculate difference in hours between two dates", () => {
+      const date1 = "2025-11-26T05:00:00Z";
+      const date2 = "2025-11-26T13:00:00Z";
+      expect(BuiltInFunctions.dateDiffHours(date1, date2)).toBe(8);
+    });
+
+    it("should return positive value regardless of order", () => {
+      const date1 = "2025-11-26T13:00:00Z";
+      const date2 = "2025-11-26T05:00:00Z";
+      expect(BuiltInFunctions.dateDiffHours(date1, date2)).toBe(8);
+    });
+
+    it("should return decimal hours", () => {
+      // 1.5 hours
+      const date1 = "2025-11-26T10:00:00Z";
+      const date2 = "2025-11-26T11:30:00Z";
+      expect(BuiltInFunctions.dateDiffHours(date1, date2)).toBe(1.5);
+    });
+
+    it("should handle JavaScript Date string format", () => {
+      // Real-world format from vault data
+      const date1 = "Wed Nov 26 2025 05:03:42 GMT+0500";
+      const date2 = "Wed Nov 26 2025 14:10:09 GMT+0500";
+      // Difference: 9h 6m 27s ≈ 9.11 hours
+      const diff = BuiltInFunctions.dateDiffHours(date1, date2);
+      expect(diff).toBeCloseTo(9.11, 1);
+    });
+
+    it("should calculate sleep duration correctly", () => {
+      // Typical sleep scenario: 7.5 hours of sleep
+      const sleepStart = "2025-11-26T23:30:00";
+      const sleepEnd = "2025-11-27T07:00:00";
+      expect(BuiltInFunctions.dateDiffHours(sleepStart, sleepEnd)).toBe(7.5);
+    });
+
+    it("should return 0 for same datetime", () => {
+      const date = "2025-11-26T12:00:00Z";
+      expect(BuiltInFunctions.dateDiffHours(date, date)).toBe(0);
+    });
+
+    it("should throw for invalid date string", () => {
+      expect(() => BuiltInFunctions.dateDiffHours("invalid", "2025-11-26T00:00:00")).toThrow(
+        "PARSEDATE: invalid date string"
+      );
+    });
+  });
 });

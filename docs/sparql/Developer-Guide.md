@@ -451,7 +451,7 @@ for await (const binding of filterExecutor.execute(filterOp, inputSolutions)) {
 **Supported Functions**:
 - **String**: `STR()`, `STRLEN()`, `UCASE()`, `LCASE()`, `CONTAINS()`, `STRSTARTS()`, `STRENDS()`, `REPLACE()`, `REGEX()`
 - **Type checking**: `BOUND()`, `ISIRI()`, `ISBLANK()`, `ISLITERAL()`, `DATATYPE()`, `LANG()`
-- **Date**: `parseDate()`, `dateBefore()`, `dateAfter()`, `dateInRange()`
+- **Date**: `parseDate()`, `dateBefore()`, `dateAfter()`, `dateInRange()`, `exo:dateDiffMinutes()`, `exo:dateDiffHours()`
 - **Logical**: `&&`, `||`, `!`
 - **Comparison**: `=`, `!=`, `<`, `>`, `<=`, `>=`
 
