@@ -1,29 +1,49 @@
 {
   "name": "exocortex-cli",
   "version": "0.1.0",
-  "description": "CLI tool for Exocortex knowledge management system",
-  "type": "module",
+  "description": "CLI tool for Exocortex knowledge management system - SPARQL queries, task management, and more",
   "main": "dist/index.js",
   "bin": {
     "exocortex": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "npm run build:bundle",
+    "build:tsc": "tsc",
+    "build:bundle": "node esbuild.config.mjs production",
+    "dev": "node esbuild.config.mjs",
     "start": "node dist/index.js",
     "clean": "rm -rf dist",
-    "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js"
+    "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js",
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "keywords": [
     "exocortex",
     "cli",
     "knowledge-management",
-    "task-management"
+    "task-management",
+    "sparql",
+    "obsidian",
+    "productivity"
   ],
   "author": "A. Kitelev",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kitelev/exocortex-obsidian-plugin.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/kitelev/exocortex-obsidian-plugin/tree/main/packages/cli#readme",
+  "bugs": {
+    "url": "https://github.com/kitelev/exocortex-obsidian-plugin/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
-    "@exocortex/core": "file:../core",
     "chalk": "^5.3.0",
     "commander": "^14.0.2",
     "fs-extra": "^11.0.0",
@@ -32,10 +52,12 @@
     "ora": "^9.0.0"
   },
   "devDependencies": {
+    "@exocortex/core": "file:../core",
     "@types/fs-extra": "^11.0.0",
     "@types/jest": "^30.0.0",
     "@types/js-yaml": "^4.0.0",
     "@types/node": "^20.19.24",
+    "esbuild": "^0.25.12",
     "jest": "^30.2.0",
     "reflect-metadata": "^0.2.2",
     "ts-jest": "^29.4.5",
