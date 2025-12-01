@@ -95,6 +95,21 @@ export class FilterExecutor {
    * Note: EXISTS expressions require async evaluation - use evaluateExpressionAsync for those.
    */
   evaluateExpression(expr: Expression, solution: SolutionMapping): any {
+    // Handle sparqljs native format (termType) - used by raw parsed expressions
+    const anyExpr = expr as any;
+    if (anyExpr.termType) {
+      switch (anyExpr.termType) {
+        case "Variable":
+          return solution.get(anyExpr.value);
+        case "Literal":
+          return anyExpr.value;
+        case "NamedNode":
+          return anyExpr.value;
+        default:
+          throw new FilterExecutorError(`Unsupported termType: ${anyExpr.termType}`);
+      }
+    }
+
     switch (expr.type) {
       case "comparison":
         return this.evaluateComparison(expr, solution);
@@ -103,13 +118,14 @@ export class FilterExecutor {
         return this.evaluateLogical(expr, solution);
 
       case "function":
+      case "functionCall":
         return this.evaluateFunction(expr, solution);
 
       case "variable":
-        return solution.get(expr.name);
+        return solution.get((expr as any).name);
 
       case "literal":
-        return expr.value;
+        return (expr as any).value;
 
       case "exists":
         // EXISTS requires async evaluation; throw error if called synchronously
@@ -118,7 +134,7 @@ export class FilterExecutor {
         );
 
       default:
-        throw new FilterExecutorError(`Unsupported expression type: ${(expr as any).type}`);
+        throw new FilterExecutorError(`Unsupported expression type: ${(expr as any).type}, expr.termType=${anyExpr.termType}`);
     }
   }
 
@@ -211,7 +227,18 @@ export class FilterExecutor {
   }
 
   private evaluateFunction(expr: any, solution: SolutionMapping): boolean | string | number {
-    const funcName = expr.function.toLowerCase();
+    // Handle both string function names and NamedNode (IRI) function references
+    let funcName: string;
+    if (typeof expr.function === "string") {
+      funcName = expr.function.toLowerCase();
+    } else if (expr.function && typeof expr.function === "object" && "value" in expr.function) {
+      // For IRI functions like exo:dateDiffMinutes, extract local name from IRI
+      const iri = expr.function.value;
+      const localName = iri.includes("#") ? iri.split("#").pop() : iri.split("/").pop();
+      funcName = (localName || iri).toLowerCase();
+    } else {
+      throw new FilterExecutorError(`Unknown function format: ${expr.function}`);
+    }
 
     switch (funcName) {
       case "str":
@@ -307,6 +334,16 @@ export class FilterExecutor {
         const rangeStart = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
         const rangeEnd = this.getStringValue(this.evaluateExpression(expr.args[2], solution));
         return BuiltInFunctions.dateInRange(rangeDate, rangeStart, rangeEnd);
+
+      case "datediffminutes":
+        const diffMinDate1 = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        const diffMinDate2 = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
+        return BuiltInFunctions.dateDiffMinutes(diffMinDate1, diffMinDate2);
+
+      case "datediffhours":
+        const diffHoursDate1 = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        const diffHoursDate2 = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
+        return BuiltInFunctions.dateDiffHours(diffHoursDate1, diffHoursDate2);
 
       default:
         throw new FilterExecutorError(`Unknown function: ${funcName}`);

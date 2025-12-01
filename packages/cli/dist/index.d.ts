@@ -1,3 +1,3 @@
 #!/usr/bin/env node
-export {};
+import "reflect-metadata";
 //# sourceMappingURL=index.d.ts.map

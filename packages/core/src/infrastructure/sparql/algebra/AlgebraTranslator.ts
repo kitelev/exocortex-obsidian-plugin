@@ -60,9 +60,23 @@ export class AlgebraTranslator {
     }
 
     if (query.variables && query.variables.length > 0) {
+      // First, create extend operations for computed expressions (e.g., (expr AS ?var))
+      for (const v of query.variables) {
+        const anyV = v as any;
+        if (anyV.expression && anyV.variable) {
+          // This is a computed expression like (exo:dateDiffMinutes(?start, ?end) AS ?duration)
+          operation = {
+            type: "extend",
+            variable: anyV.variable.value,
+            expression: anyV.expression,
+            input: operation,
+          };
+        }
+      }
+
       const varNames = query.variables
-        .filter((v: any) => v.termType === "Variable" || v.variable)
-        .map((v: any) => v.termType === "Variable" ? v.value : v.variable.value);
+        .filter((v: any) => v.termType === "Variable" || (v as any).variable)
+        .map((v: any) => v.termType === "Variable" ? v.value : (v as any).variable.value);
 
       if (varNames.length > 0) {
         operation = {

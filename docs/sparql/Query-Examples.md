@@ -421,6 +421,54 @@ ORDER BY DESC(?duration)
 
 ---
 
+### 20a. Calculate Duration from Timestamps
+
+Calculate duration between start and end timestamps using `dateDiffMinutes`:
+
+```sparql
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?task ?label (exo:dateDiffMinutes(?start, ?end) AS ?durationMin) (exo:dateDiffHours(?start, ?end) AS ?durationHrs)
+WHERE {
+  ?task exo:Instance_class "ems__Task" .
+  ?task exo:Asset_label ?label .
+  ?task ems:Effort_startTimestamp ?start .
+  ?task ems:Effort_endTimestamp ?end .
+}
+ORDER BY DESC(?durationMin)
+LIMIT 10
+```
+
+**Use Case**: Calculate task durations from timestamps when `Effort_duration_minutes` is not stored.
+
+---
+
+### 20b. Average Sleep Duration per Week
+
+Calculate average sleep time using custom date functions:
+
+```sparql
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT (SUM(?durationMin) AS ?totalMin) (COUNT(?durationMin) AS ?count)
+WHERE {
+  SELECT (exo:dateDiffMinutes(?start, ?end) AS ?durationMin)
+  WHERE {
+    ?task exo:Asset_prototype ?proto .
+    ?task ems:Effort_startTimestamp ?start .
+    ?task ems:Effort_endTimestamp ?end .
+    FILTER(CONTAINS(STR(?proto), "sleep-prototype-uuid"))
+    FILTER(CONTAINS(?start, "Nov 25 2025"))  # Filter by date
+  }
+}
+```
+
+**Use Case**: Calculate average duration for repeated activities (sleep, exercise, etc.). Divide `totalMin` by `count` for the average.
+
+---
+
 ## Aggregation Examples
 
 ### 21. Total Effort by Project

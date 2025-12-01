@@ -106,6 +106,7 @@ export type Expression =
   | ComparisonExpression
   | LogicalExpression
   | FunctionCallExpression
+  | RawFunctionCallExpression
   | VariableExpression
   | LiteralExpression
   | ExistsExpression;
@@ -126,6 +127,13 @@ export interface LogicalExpression {
 export interface FunctionCallExpression {
   type: "function";
   function: string;
+  args: Expression[];
+}
+
+// Raw sparqljs format - used for direct SELECT expressions before algebra translation
+export interface RawFunctionCallExpression {
+  type: "functionCall";
+  function: string | { termType: string; value: string };
   args: Expression[];
 }
 

@@ -222,6 +222,38 @@ export class BuiltInFunctions {
     return d >= s && d <= e;
   }
 
+  /**
+   * Calculate the difference between two dates in minutes.
+   * Returns the absolute difference (always positive).
+   * Custom function for duration calculation support.
+   *
+   * @param date1 - First date string (start timestamp)
+   * @param date2 - Second date string (end timestamp)
+   * @returns Difference in minutes (positive number)
+   */
+  static dateDiffMinutes(date1: string, date2: string): number {
+    const d1 = this.parseDate(date1);
+    const d2 = this.parseDate(date2);
+    const diffMs = Math.abs(d2 - d1);
+    return Math.round(diffMs / (1000 * 60));
+  }
+
+  /**
+   * Calculate the difference between two dates in hours.
+   * Returns the absolute difference (always positive).
+   * Custom function for duration calculation support.
+   *
+   * @param date1 - First date string (start timestamp)
+   * @param date2 - Second date string (end timestamp)
+   * @returns Difference in hours (decimal number with 2 decimal places)
+   */
+  static dateDiffHours(date1: string, date2: string): number {
+    const d1 = this.parseDate(date1);
+    const d2 = this.parseDate(date2);
+    const diffMs = Math.abs(d2 - d1);
+    return Math.round((diffMs / (1000 * 60 * 60)) * 100) / 100;
+  }
+
   static logicalAnd(operands: boolean[]): boolean {
     return operands.every((op) => op === true);
   }
