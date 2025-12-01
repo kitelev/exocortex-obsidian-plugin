@@ -752,6 +752,347 @@ describe("AlgebraTranslator", () => {
     });
   });
 
+  describe("Subqueries", () => {
+    it("translates simple subquery", () => {
+      const query = `
+        SELECT ?name
+        WHERE {
+          {
+            SELECT ?x
+            WHERE { ?x <http://example.org/type> <http://example.org/Person> }
+          }
+          ?x <http://example.org/name> ?name .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("join");
+      expect(input.left.type).toBe("subquery");
+      expect(input.left.query.type).toBe("project");
+      expect(input.right.type).toBe("bgp");
+    });
+
+    it("translates subquery with FILTER", () => {
+      const query = `
+        SELECT ?person ?age
+        WHERE {
+          {
+            SELECT ?person
+            WHERE {
+              ?person <http://example.org/type> <http://example.org/Person> .
+              ?person <http://example.org/age> ?a .
+              FILTER(?a > 18)
+            }
+          }
+          ?person <http://example.org/age> ?age .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("join");
+      expect(input.left.type).toBe("subquery");
+      // Inner query should have filter
+      const innerQuery = input.left.query;
+      expect(innerQuery.type).toBe("project");
+      expect(innerQuery.input.type).toBe("filter");
+    });
+
+    it("translates subquery with ORDER BY", () => {
+      const query = `
+        SELECT ?name
+        WHERE {
+          {
+            SELECT ?x
+            WHERE { ?x <http://example.org/score> ?score }
+            ORDER BY DESC(?score)
+          }
+          ?x <http://example.org/name> ?name .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.left.type).toBe("subquery");
+      const innerQuery = input.left.query;
+      // OrderBy wraps the project
+      expect(innerQuery.type).toBe("orderby");
+      expect(innerQuery.comparators[0].descending).toBe(true);
+    });
+
+    it("translates subquery with LIMIT", () => {
+      const query = `
+        SELECT ?name
+        WHERE {
+          {
+            SELECT ?x
+            WHERE { ?x <http://example.org/type> <http://example.org/Task> }
+            LIMIT 10
+          }
+          ?x <http://example.org/name> ?name .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.left.type).toBe("subquery");
+      const innerQuery = input.left.query;
+      expect(innerQuery.type).toBe("slice");
+      expect(innerQuery.limit).toBe(10);
+    });
+
+    it("translates subquery with OFFSET", () => {
+      const query = `
+        SELECT ?name
+        WHERE {
+          {
+            SELECT ?x
+            WHERE { ?x <http://example.org/type> <http://example.org/Task> }
+            OFFSET 5
+            LIMIT 10
+          }
+          ?x <http://example.org/name> ?name .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const input = (algebra as any).input;
+      const innerQuery = input.left.query;
+      expect(innerQuery.type).toBe("slice");
+      expect(innerQuery.offset).toBe(5);
+      expect(innerQuery.limit).toBe(10);
+    });
+
+    it("translates subquery with DISTINCT", () => {
+      const query = `
+        SELECT ?name
+        WHERE {
+          {
+            SELECT DISTINCT ?x
+            WHERE { ?x <http://example.org/type> <http://example.org/Task> }
+          }
+          ?x <http://example.org/name> ?name .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const input = (algebra as any).input;
+      const innerQuery = input.left.query;
+      expect(innerQuery.type).toBe("distinct");
+    });
+
+    it("translates subquery with GROUP BY", () => {
+      const query = `
+        SELECT ?category ?count
+        WHERE {
+          {
+            SELECT ?category (COUNT(?task) AS ?count)
+            WHERE {
+              ?task <http://example.org/category> ?category
+            }
+            GROUP BY ?category
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("subquery");
+      const innerQuery = input.query;
+      expect(innerQuery.type).toBe("project");
+      // Group should be in the input chain
+      const groupOp = innerQuery.input;
+      expect(groupOp.type).toBe("group");
+      expect(groupOp.variables).toContain("category");
+    });
+
+    it("translates subquery with aggregate COUNT", () => {
+      const query = `
+        SELECT ?category ?total
+        WHERE {
+          {
+            SELECT ?category (COUNT(*) AS ?total)
+            WHERE {
+              ?task <http://example.org/category> ?category
+            }
+            GROUP BY ?category
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const input = (algebra as any).input;
+      const innerQuery = input.query;
+      const groupOp = innerQuery.input;
+      expect(groupOp.type).toBe("group");
+      expect(groupOp.aggregates.length).toBeGreaterThan(0);
+      expect(groupOp.aggregates[0].expression.aggregation).toBe("count");
+    });
+
+    it("translates subquery-only WHERE clause", () => {
+      const query = `
+        SELECT ?x ?score
+        WHERE {
+          {
+            SELECT ?x ?score
+            WHERE { ?x <http://example.org/score> ?score }
+            ORDER BY DESC(?score)
+            LIMIT 5
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("subquery");
+    });
+
+    it("translates subquery with PREFIX", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?name
+        WHERE {
+          {
+            SELECT ?x
+            WHERE { ?x ex:type ex:Person }
+          }
+          ?x ex:name ?name .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("join");
+      expect(input.left.type).toBe("subquery");
+    });
+
+    it("translates subquery with inner subquery (nested)", () => {
+      const query = `
+        SELECT ?name
+        WHERE {
+          {
+            SELECT ?x
+            WHERE {
+              {
+                SELECT ?y
+                WHERE { ?y <http://example.org/active> true }
+              }
+              ?y <http://example.org/related> ?x
+            }
+          }
+          ?x <http://example.org/name> ?name
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("join");
+      expect(input.left.type).toBe("subquery");
+      // Inner subquery structure
+      const innerQuery = input.left.query;
+      expect(innerQuery.type).toBe("project");
+      expect(innerQuery.input.type).toBe("join");
+      expect(innerQuery.input.left.type).toBe("subquery");
+    });
+
+    it("handles subquery projection of fewer variables", () => {
+      const query = `
+        SELECT ?name ?label
+        WHERE {
+          {
+            SELECT ?x
+            WHERE {
+              ?x <http://example.org/type> <http://example.org/Task> .
+              ?x <http://example.org/active> true
+            }
+          }
+          ?x <http://example.org/name> ?name .
+          ?x <http://example.org/label> ?label .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const outerVars = (algebra as any).variables;
+      expect(outerVars).toContain("name");
+      expect(outerVars).toContain("label");
+
+      const input = (algebra as any).input;
+      expect(input.left.type).toBe("subquery");
+      const innerProject = input.left.query;
+      expect(innerProject.variables).toEqual(["x"]);
+    });
+
+    it("translates subquery with UNION inside", () => {
+      const query = `
+        SELECT ?name
+        WHERE {
+          {
+            SELECT ?x
+            WHERE {
+              { ?x <http://example.org/type> <http://example.org/Task> }
+              UNION
+              { ?x <http://example.org/type> <http://example.org/Project> }
+            }
+          }
+          ?x <http://example.org/name> ?name .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const input = (algebra as any).input;
+      expect(input.left.type).toBe("subquery");
+      const innerQuery = input.left.query;
+      expect(innerQuery.input.type).toBe("union");
+    });
+
+    it("translates subquery with OPTIONAL inside", () => {
+      const query = `
+        SELECT ?name ?email
+        WHERE {
+          {
+            SELECT ?x ?email
+            WHERE {
+              ?x <http://example.org/type> <http://example.org/Person> .
+              OPTIONAL { ?x <http://example.org/email> ?email }
+            }
+          }
+          ?x <http://example.org/name> ?name .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const input = (algebra as any).input;
+      expect(input.left.type).toBe("subquery");
+      const innerQuery = input.left.query;
+      // Should contain leftjoin for OPTIONAL
+      expect(innerQuery.input.type).toBe("join");
+    });
+  });
+
   describe("Error Handling", () => {
     it("throws error for empty WHERE clause", () => {
       const ast = parser.parse("SELECT ?s WHERE { }");
