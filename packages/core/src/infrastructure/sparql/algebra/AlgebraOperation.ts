@@ -5,6 +5,7 @@ export type AlgebraOperation =
   | LeftJoinOperation
   | UnionOperation
   | MinusOperation
+  | ValuesOperation
   | ProjectOperation
   | OrderByOperation
   | SliceOperation
@@ -203,6 +204,71 @@ export interface MinusOperation {
   left: AlgebraOperation;
   right: AlgebraOperation;
 }
+
+/**
+ * VALUES operation for inline data injection.
+ * Provides explicit value bindings that are joined with the query pattern.
+ *
+ * SPARQL 1.1 spec: VALUES allows specifying an inline table of values
+ * that behave like a virtual table in the query.
+ *
+ * Each binding in the bindings array represents a single row of values.
+ * UNDEF is represented by omitting the variable from the binding object.
+ *
+ * Example:
+ * ```sparql
+ * SELECT ?task ?status WHERE {
+ *   VALUES ?status { "active" "pending" }
+ *   ?task ems:status ?status .
+ * }
+ * ```
+ *
+ * Multi-variable example:
+ * ```sparql
+ * SELECT ?name ?role WHERE {
+ *   VALUES (?name ?role) {
+ *     ("Alice" "admin")
+ *     ("Bob" "editor")
+ *   }
+ *   ?person foaf:name ?name .
+ *   ?person schema:role ?role .
+ * }
+ * ```
+ *
+ * UNDEF example (variable omitted from binding):
+ * ```sparql
+ * VALUES (?x ?y) {
+ *   (1 2)
+ *   (UNDEF 3)  # ?x is unbound for this row
+ * }
+ * ```
+ */
+export interface ValuesOperation {
+  type: "values";
+  /** Variable names (without ? prefix) that are bound by this VALUES clause */
+  variables: string[];
+  /**
+   * Array of bindings, each representing a row of values.
+   * Each binding maps variable names to their bound terms.
+   * UNDEF is represented by omitting the variable from the binding.
+   */
+  bindings: ValuesBinding[];
+}
+
+/**
+ * A single row of variable bindings in a VALUES clause.
+ * Maps variable names (without ? prefix) to their bound values.
+ * UNDEF is represented by the absence of the variable key.
+ */
+export interface ValuesBinding {
+  [variable: string]: ValuesBindingValue;
+}
+
+/**
+ * A value in a VALUES binding - can be an IRI or Literal.
+ * BlankNodes are not typically used in VALUES clauses.
+ */
+export type ValuesBindingValue = IRI | Literal;
 
 export interface ProjectOperation {
   type: "project";

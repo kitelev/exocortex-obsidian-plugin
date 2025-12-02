@@ -6,6 +6,8 @@ import type {
   LeftJoinOperation,
   UnionOperation,
   MinusOperation,
+  ValuesOperation,
+  ValuesBinding,
   ExtendOperation,
   SubqueryOperation,
   ExistsExpression,
@@ -18,6 +20,7 @@ import type {
   AggregateExpression,
   PropertyPath,
   IRI,
+  Literal,
 } from "./AlgebraOperation";
 
 export class AlgebraTranslatorError extends Error {
@@ -206,6 +209,8 @@ export class AlgebraTranslator {
         return this.translateUnion(pattern);
       case "minus":
         return this.translateMinus(pattern);
+      case "values":
+        return this.translateValues(pattern);
       case "group":
         return this.translateWhere(pattern.patterns);
       case "query":
@@ -571,6 +576,91 @@ export class AlgebraTranslator {
       left: { type: "bgp", triples: [] },
       right: this.translateWhere(pattern.patterns),
     };
+  }
+
+  /**
+   * Translate VALUES clause to ValuesOperation.
+   * VALUES provides inline data that behaves like a virtual table.
+   *
+   * sparqljs AST format:
+   * ```
+   * {
+   *   type: "values",
+   *   values: [
+   *     { "?var1": { termType: "Literal"|"NamedNode", value: "..." }, "?var2": ... },
+   *     { "?var1": { termType: "Literal"|"NamedNode", value: "..." }, "?var2": ... },
+   *     ...
+   *   ]
+   * }
+   * ```
+   *
+   * UNDEF is represented by the absence of a variable key in a binding.
+   *
+   * Example:
+   * VALUES ?status { "active" "pending" }
+   * becomes:
+   * { type: "values", values: [ { "?status": Literal("active") }, { "?status": Literal("pending") } ] }
+   */
+  private translateValues(pattern: any): ValuesOperation {
+    if (!pattern.values || !Array.isArray(pattern.values)) {
+      throw new AlgebraTranslatorError("VALUES pattern must have values array");
+    }
+
+    // Extract all variable names from the first binding (they use ?prefix in sparqljs)
+    const variables: Set<string> = new Set();
+    for (const binding of pattern.values) {
+      for (const key of Object.keys(binding)) {
+        // Remove the ? prefix from variable names
+        const varName = key.startsWith("?") ? key.slice(1) : key;
+        variables.add(varName);
+      }
+    }
+
+    // Convert sparqljs bindings to our format
+    const bindings: ValuesBinding[] = pattern.values.map((sparqljsBinding: any) =>
+      this.translateValuesBinding(sparqljsBinding)
+    );
+
+    return {
+      type: "values",
+      variables: Array.from(variables),
+      bindings,
+    };
+  }
+
+  /**
+   * Translate a single VALUES binding row from sparqljs format to our format.
+   * sparqljs format: { "?var1": { termType: "...", value: "..." }, ... }
+   * Our format: { var1: { type: "iri"|"literal", value: "..." }, ... }
+   *
+   * UNDEF values are represented by the absence of a key.
+   */
+  private translateValuesBinding(sparqljsBinding: any): ValuesBinding {
+    const binding: ValuesBinding = {};
+
+    for (const [key, term] of Object.entries(sparqljsBinding)) {
+      // Remove the ? prefix from variable names
+      const varName = key.startsWith("?") ? key.slice(1) : key;
+      const termValue = term as any;
+
+      if (termValue.termType === "NamedNode") {
+        binding[varName] = {
+          type: "iri",
+          value: termValue.value,
+        } as IRI;
+      } else if (termValue.termType === "Literal") {
+        binding[varName] = {
+          type: "literal",
+          value: termValue.value,
+          datatype: termValue.datatype?.value,
+          language: termValue.language || undefined,
+        } as Literal;
+      } else {
+        throw new AlgebraTranslatorError(`Unsupported VALUES term type: ${termValue.termType}`);
+      }
+    }
+
+    return binding;
   }
 
   /**
