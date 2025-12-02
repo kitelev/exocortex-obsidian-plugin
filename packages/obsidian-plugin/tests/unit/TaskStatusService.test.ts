@@ -429,8 +429,8 @@ ems__Effort_status: "[[ems__EffortStatusDone]]"
 ---
 Content`;
 
-      // Use UTC date to avoid timezone conversion issues
-      const customDate = new Date("2025-05-15T14:30:45Z");
+      // Create custom date and verify timestamp is recorded in local time format (without Z)
+      const customDate = new Date(2025, 4, 15, 14, 30, 45); // May 15, 2025, 14:30:45 local time
       mockVault.read.mockResolvedValue(originalContent);
 
       await service.syncEffortEndTimestamp(mockFile, customDate);
@@ -438,11 +438,13 @@ Content`;
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
 
       expect(modifiedContent).toContain(
-        "ems__Effort_endTimestamp: 2025-05-15T14:30:45Z",
+        "ems__Effort_endTimestamp: 2025-05-15T14:30:45",
       );
       expect(modifiedContent).toContain(
-        "ems__Effort_resolutionTimestamp: 2025-05-15T14:30:45Z",
+        "ems__Effort_resolutionTimestamp: 2025-05-15T14:30:45",
       );
+      // Ensure no Z suffix (local time, not UTC)
+      expect(modifiedContent).not.toContain("14:30:45Z");
     });
 
     it("should preserve other frontmatter properties", async () => {
@@ -815,7 +817,7 @@ Project content`;
   });
 
   describe("planOnToday", () => {
-    it("should set ems__Effort_plannedStartTimestamp to today at 00:00:00Z", async () => {
+    it("should set ems__Effort_plannedStartTimestamp to today at 00:00:00 local time", async () => {
       const mockFile = { path: "test-task.md" } as TFile;
       const originalContent = `---\nems__Effort_status: "[[ems__EffortStatusBacklog]]"\n---\n\nContent`;
       mockVault.read.mockResolvedValue(originalContent);
@@ -825,13 +827,13 @@ Project content`;
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
       expect(modifiedContent).toContain("ems__Effort_plannedStartTimestamp:");
       expect(modifiedContent).toMatch(
-        /ems__Effort_plannedStartTimestamp: \d{4}-\d{2}-\d{2}T00:00:00Z/,
+        /ems__Effort_plannedStartTimestamp: \d{4}-\d{2}-\d{2}T00:00:00$/m,
       );
     });
 
     it("should update existing ems__Effort_plannedStartTimestamp", async () => {
       const mockFile = { path: "test-task.md" } as TFile;
-      const originalContent = `---\nems__Effort_plannedStartTimestamp: 2025-01-01T10:00:00Z\n---\n\nContent`;
+      const originalContent = `---\nems__Effort_plannedStartTimestamp: 2025-01-01T10:00:00\n---\n\nContent`;
       mockVault.read.mockResolvedValue(originalContent);
 
       await service.planOnToday(mockFile);
@@ -839,14 +841,14 @@ Project content`;
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
       expect(modifiedContent).toContain("ems__Effort_plannedStartTimestamp:");
       expect(modifiedContent).toMatch(
-        /ems__Effort_plannedStartTimestamp: \d{4}-\d{2}-\d{2}T00:00:00Z/,
+        /ems__Effort_plannedStartTimestamp: \d{4}-\d{2}-\d{2}T00:00:00$/m,
       );
-      expect(modifiedContent).not.toContain("2025-01-01T10:00:00Z");
+      expect(modifiedContent).not.toContain("2025-01-01T10:00:00");
     });
   });
 
   describe("planForEvening", () => {
-    it("should set plannedStartTimestamp to 19:00 UTC", async () => {
+    it("should set plannedStartTimestamp to 19:00 local time", async () => {
       const mockFile = { path: "test-task.md" } as TFile;
       const originalContent = `---\nems__Effort_status: "[[ems__EffortStatusBacklog]]"\n---\n\nContent`;
       mockVault.read.mockResolvedValue(originalContent);
@@ -856,7 +858,7 @@ Project content`;
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
       expect(modifiedContent).toContain("ems__Effort_plannedStartTimestamp:");
       expect(modifiedContent).toMatch(
-        /ems__Effort_plannedStartTimestamp: \d{4}-\d{2}-\d{2}T19:00:00Z/,
+        /ems__Effort_plannedStartTimestamp: \d{4}-\d{2}-\d{2}T19:00:00$/m,
       );
     });
 
@@ -879,13 +881,13 @@ Project content`;
   describe("shiftDayBackward", () => {
     it("should shift day backward by 1 day", async () => {
       const mockFile = { path: "test-task.md" } as TFile;
-      const originalContent = `---\nems__Effort_plannedStartTimestamp: 2025-10-20T00:00:00Z\n---\n\nContent`;
+      const originalContent = `---\nems__Effort_plannedStartTimestamp: 2025-10-20T00:00:00\n---\n\nContent`;
       mockVault.read.mockResolvedValue(originalContent);
 
       await service.shiftDayBackward(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('ems__Effort_plannedStartTimestamp: 2025-10-19T00:00:00Z');
+      expect(modifiedContent).toContain('ems__Effort_plannedStartTimestamp: 2025-10-19T00:00:00');
       expect(modifiedContent).not.toContain("2025-10-20");
     });
 
@@ -911,26 +913,26 @@ Project content`;
 
     it("should handle month transition backward", async () => {
       const mockFile = { path: "test-task.md" } as TFile;
-      const originalContent = `---\nems__Effort_plannedStartTimestamp: 2025-11-01T00:00:00Z\n---\n\nContent`;
+      const originalContent = `---\nems__Effort_plannedStartTimestamp: 2025-11-01T00:00:00\n---\n\nContent`;
       mockVault.read.mockResolvedValue(originalContent);
 
       await service.shiftDayBackward(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('ems__Effort_plannedStartTimestamp: 2025-10-31T00:00:00Z');
+      expect(modifiedContent).toContain('ems__Effort_plannedStartTimestamp: 2025-10-31T00:00:00');
     });
   });
 
   describe("shiftDayForward", () => {
     it("should shift day forward by 1 day", async () => {
       const mockFile = { path: "test-task.md" } as TFile;
-      const originalContent = `---\nems__Effort_plannedStartTimestamp: 2025-10-20T00:00:00Z\n---\n\nContent`;
+      const originalContent = `---\nems__Effort_plannedStartTimestamp: 2025-10-20T00:00:00\n---\n\nContent`;
       mockVault.read.mockResolvedValue(originalContent);
 
       await service.shiftDayForward(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('ems__Effort_plannedStartTimestamp: 2025-10-21T00:00:00Z');
+      expect(modifiedContent).toContain('ems__Effort_plannedStartTimestamp: 2025-10-21T00:00:00');
       expect(modifiedContent).not.toContain("2025-10-20");
     });
 
@@ -956,18 +958,18 @@ Project content`;
 
     it("should handle month transition forward", async () => {
       const mockFile = { path: "test-task.md" } as TFile;
-      const originalContent = `---\nems__Effort_plannedStartTimestamp: 2025-10-31T00:00:00Z\n---\n\nContent`;
+      const originalContent = `---\nems__Effort_plannedStartTimestamp: 2025-10-31T00:00:00\n---\n\nContent`;
       mockVault.read.mockResolvedValue(originalContent);
 
       await service.shiftDayForward(mockFile);
 
       const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
-      expect(modifiedContent).toContain('ems__Effort_plannedStartTimestamp: 2025-11-01T00:00:00Z');
+      expect(modifiedContent).toContain('ems__Effort_plannedStartTimestamp: 2025-11-01T00:00:00');
     });
 
     it("should preserve other frontmatter properties", async () => {
       const mockFile = { path: "test-task.md" } as TFile;
-      const originalContent = `---\nexo__Asset_uid: test-uid\nems__Effort_plannedStartTimestamp: 2025-10-20T00:00:00Z\nems__Effort_status: "[[ems__EffortStatusBacklog]]"\n---\n\nContent`;
+      const originalContent = `---\nexo__Asset_uid: test-uid\nems__Effort_plannedStartTimestamp: 2025-10-20T00:00:00\nems__Effort_status: "[[ems__EffortStatusBacklog]]"\n---\n\nContent`;
       mockVault.read.mockResolvedValue(originalContent);
 
       await service.shiftDayForward(mockFile);
@@ -977,7 +979,7 @@ Project content`;
       expect(modifiedContent).toContain(
         'ems__Effort_status: "[[ems__EffortStatusBacklog]]"',
       );
-      expect(modifiedContent).toContain('ems__Effort_plannedStartTimestamp: 2025-10-21T00:00:00Z');
+      expect(modifiedContent).toContain('ems__Effort_plannedStartTimestamp: 2025-10-21T00:00:00');
     });
   });
 });

@@ -16,7 +16,7 @@ export class StatusTimestampService {
 
   async addStartTimestamp(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
-    const timestamp = DateFormatter.toISOTimestamp(new Date());
+    const timestamp = DateFormatter.toLocalTimestamp(new Date());
 
     const updated = this.frontmatterService.updateProperty(
       content,
@@ -30,7 +30,7 @@ export class StatusTimestampService {
   async addEndTimestamp(taskFile: IFile, date?: Date): Promise<void> {
     const content = await this.vault.read(taskFile);
     const targetDate = date || new Date();
-    const timestamp = DateFormatter.toISOTimestamp(targetDate);
+    const timestamp = DateFormatter.toLocalTimestamp(targetDate);
 
     const updated = this.frontmatterService.updateProperty(
       content,
@@ -43,7 +43,7 @@ export class StatusTimestampService {
 
   async addResolutionTimestamp(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
-    const timestamp = DateFormatter.toISOTimestamp(new Date());
+    const timestamp = DateFormatter.toLocalTimestamp(new Date());
 
     const updated = this.frontmatterService.updateProperty(
       content,
@@ -60,7 +60,7 @@ export class StatusTimestampService {
   ): Promise<void> {
     const content = await this.vault.read(taskFile);
     const targetDate = date || new Date();
-    const timestamp = DateFormatter.toISOTimestamp(targetDate);
+    const timestamp = DateFormatter.toLocalTimestamp(targetDate);
 
     let updated = this.frontmatterService.updateProperty(
       content,
@@ -140,7 +140,7 @@ export class StatusTimestampService {
     }
 
     const newDate = new Date(currentDate.getTime() + deltaMs);
-    const timestamp = DateFormatter.toISOTimestamp(newDate);
+    const timestamp = DateFormatter.toLocalTimestamp(newDate);
 
     const updated = this.frontmatterService.updateProperty(
       content,

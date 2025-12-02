@@ -20,10 +20,10 @@ test.describe("Effort Timestamps Auto-Sync", () => {
 
     const window = await launcher.getWindow();
 
-    // Use UTC ISO 8601 timestamp format with Z suffix
-    const inputTimestamp = "2025-10-21T15:30:00Z";
-    // Expected output format after sync (ISO 8601 UTC)
-    const expectedTimestamp = "2025-10-21T15:30:00Z";
+    // Use local ISO 8601 timestamp format (no Z suffix)
+    const inputTimestamp = "2025-10-21T15:30:00";
+    // Expected output format after sync (ISO 8601 local time, no Z suffix)
+    const expectedTimestamp = "2025-10-21T15:30:00";
 
     const syncResult = await window.evaluate(async (newTimestamp) => {
       const app = (window as any).app;
