@@ -2173,3 +2173,232 @@
     font-size: 16px; /* Prevents zoom on iOS */
   }
 }
+
+/* ============================================================================
+   Edit Mode Styling Consistency - Match Reading Mode
+   Issue #547: Edit mode uses larger font and ignores width constraints
+   ============================================================================ */
+
+/*
+ * In Obsidian, Edit mode uses .cm-content (CodeMirror) while Reading mode
+ * uses .markdown-preview-view. These selectors ensure Exocortex layouts
+ * render consistently in both modes.
+ */
+
+/* Base container styling for Edit mode to match Reading mode */
+.cm-content .exocortex-action-buttons-container,
+.cm-content .exocortex-properties-section,
+.cm-content .exocortex-daily-tasks-section,
+.cm-content .exocortex-assets-relations,
+.cm-content .exocortex-area-tree,
+.cm-content .exocortex-relations-wrapper,
+.cm-scroller .exocortex-action-buttons-container,
+.cm-scroller .exocortex-properties-section,
+.cm-scroller .exocortex-daily-tasks-section,
+.cm-scroller .exocortex-assets-relations,
+.cm-scroller .exocortex-area-tree,
+.cm-scroller .exocortex-relations-wrapper {
+  /* Inherit font-size from Reading mode (not CodeMirror's larger default) */
+  font-size: var(--font-text-size, 16px);
+  /* Respect the same line-height as Reading mode */
+  line-height: var(--line-height-normal, 1.5);
+  /* Use normal font weight (CodeMirror sometimes uses monospace defaults) */
+  font-family: var(--font-text);
+}
+
+/* Ensure tables in Edit mode have consistent sizing */
+.cm-content .exocortex-relations-table,
+.cm-content .exocortex-properties-table,
+.cm-content .exocortex-tasks-table,
+.cm-content .exocortex-projects-table,
+.cm-scroller .exocortex-relations-table,
+.cm-scroller .exocortex-properties-table,
+.cm-scroller .exocortex-tasks-table,
+.cm-scroller .exocortex-projects-table {
+  font-size: inherit;
+}
+
+/* Table cell text should match Reading mode */
+.cm-content .exocortex-relations-table th,
+.cm-content .exocortex-relations-table td,
+.cm-content .exocortex-properties-table th,
+.cm-content .exocortex-properties-table td,
+.cm-content .exocortex-tasks-table th,
+.cm-content .exocortex-tasks-table td,
+.cm-content .exocortex-projects-table th,
+.cm-content .exocortex-projects-table td,
+.cm-scroller .exocortex-relations-table th,
+.cm-scroller .exocortex-relations-table td,
+.cm-scroller .exocortex-properties-table th,
+.cm-scroller .exocortex-properties-table td,
+.cm-scroller .exocortex-tasks-table th,
+.cm-scroller .exocortex-tasks-table td,
+.cm-scroller .exocortex-projects-table th,
+.cm-scroller .exocortex-projects-table td {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/*
+ * Width constraint: Respect "wide line width" setting in Edit mode
+ * Obsidian uses --file-line-width CSS variable for this
+ */
+.cm-content .exocortex-action-buttons-container,
+.cm-content .exocortex-properties-section,
+.cm-content .exocortex-daily-tasks-section,
+.cm-content .exocortex-assets-relations,
+.cm-content .exocortex-area-tree,
+.cm-scroller .exocortex-action-buttons-container,
+.cm-scroller .exocortex-properties-section,
+.cm-scroller .exocortex-daily-tasks-section,
+.cm-scroller .exocortex-assets-relations,
+.cm-scroller .exocortex-area-tree {
+  /* Respect Obsidian's "Readable line length" / "wide line width" setting */
+  max-width: var(--file-line-width, 100%);
+  /* Center the content like in Reading mode */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Buttons and controls should match Reading mode styling */
+.cm-content .exocortex-action-button,
+.cm-scroller .exocortex-action-button {
+  font-size: 0.875em;
+  font-family: var(--font-text);
+}
+
+/* Toggle buttons in Edit mode */
+.cm-content .exocortex-toggle-effort-votes,
+.cm-content .exocortex-toggle-archived,
+.cm-scroller .exocortex-toggle-effort-votes,
+.cm-scroller .exocortex-toggle-archived {
+  font-size: 12px;
+  font-family: var(--font-text);
+}
+
+/* ============================================================================
+   Large Asset Layouts - Virtualization Container Styles
+   Issue #547: Layout breaks with many assets
+   ============================================================================ */
+
+/* Virtualized relations table container */
+.exocortex-relations-virtualized {
+  width: 100%;
+  position: relative;
+}
+
+/* Sticky header for virtualized table */
+.exocortex-relations-table-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--background-primary);
+}
+
+/* Virtual scroll container with proper overflow handling */
+.exocortex-virtual-scroll-container {
+  width: 100%;
+  max-height: 400px;
+  overflow: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+}
+
+/* Inner virtual table positioning */
+.exocortex-virtual-table {
+  position: relative;
+  width: 100%;
+}
+
+/* Ensure table body can handle absolute positioning */
+.exocortex-virtual-table tbody {
+  position: relative;
+}
+
+/* Grouped relations container - prevent horizontal overflow */
+.exocortex-relations-grouped {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Relations wrapper - handle overflow gracefully */
+.exocortex-relations-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Controls row should not cause horizontal scrolling */
+.exocortex-relations-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* Asset Relations section - proper container behavior */
+.exocortex-assets-relations {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Table overflow handling for very wide tables */
+.exocortex-relations-table {
+  min-width: 100%;
+  table-layout: auto;
+}
+
+/* Prevent cell content from causing overflow */
+.exocortex-relations-table td,
+.exocortex-relations-table th {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Allow first column (Name) to be wider */
+.exocortex-relations-table td.asset-name,
+.exocortex-relations-table th:first-child {
+  max-width: 400px;
+}
+
+/* Responsive adjustments for virtualized tables */
+@media (max-width: 768px) {
+  .exocortex-virtual-scroll-container {
+    max-height: 300px;
+  }
+
+  .exocortex-relations-table td,
+  .exocortex-relations-table th {
+    max-width: 200px;
+    font-size: 0.9em;
+    padding: 6px 8px;
+  }
+
+  .exocortex-relations-table td.asset-name,
+  .exocortex-relations-table th:first-child {
+    max-width: 250px;
+  }
+}
+
+/* High contrast mode for virtualized containers */
+@media (prefers-contrast: high) {
+  .exocortex-virtual-scroll-container {
+    border-width: 2px;
+  }
+
+  .exocortex-relations-table-header {
+    border-bottom: 2px solid var(--background-modifier-border);
+  }
+}
+
+/* Reduced motion - no animations for scroll */
+@media (prefers-reduced-motion: reduce) {
+  .exocortex-virtual-scroll-container {
+    scroll-behavior: auto;
+  }
+}
