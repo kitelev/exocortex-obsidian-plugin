@@ -840,4 +840,103 @@ describe("BuiltInFunctions", () => {
       });
     });
   });
+
+  describe("SPARQL 1.1 Conditional Functions", () => {
+    describe("COALESCE", () => {
+      it("should return first non-null value with 2 arguments", () => {
+        expect(BuiltInFunctions.coalesce([undefined, "fallback"])).toBe("fallback");
+        expect(BuiltInFunctions.coalesce(["first", "second"])).toBe("first");
+      });
+
+      it("should return first non-null value with 3 arguments", () => {
+        expect(BuiltInFunctions.coalesce([undefined, undefined, "third"])).toBe("third");
+        expect(BuiltInFunctions.coalesce([undefined, "second", "third"])).toBe("second");
+        expect(BuiltInFunctions.coalesce(["first", "second", "third"])).toBe("first");
+      });
+
+      it("should return first non-null value with 5 arguments", () => {
+        expect(BuiltInFunctions.coalesce([undefined, undefined, undefined, undefined, "fifth"])).toBe("fifth");
+        expect(BuiltInFunctions.coalesce([undefined, undefined, "third", undefined, "fifth"])).toBe("third");
+      });
+
+      it("should return undefined when all arguments are unbound", () => {
+        expect(BuiltInFunctions.coalesce([undefined, undefined])).toBeUndefined();
+        expect(BuiltInFunctions.coalesce([undefined, undefined, undefined])).toBeUndefined();
+        expect(BuiltInFunctions.coalesce([null, null, null])).toBeUndefined();
+        expect(BuiltInFunctions.coalesce([undefined, null, undefined])).toBeUndefined();
+      });
+
+      it("should return undefined for empty array", () => {
+        expect(BuiltInFunctions.coalesce([])).toBeUndefined();
+      });
+
+      it("should handle mixed types (string, number, IRI)", () => {
+        const iri = new IRI("http://example.org/resource");
+        const literal = new Literal("test");
+
+        expect(BuiltInFunctions.coalesce([undefined, iri])).toBe(iri);
+        expect(BuiltInFunctions.coalesce([undefined, literal])).toBe(literal);
+        expect(BuiltInFunctions.coalesce([undefined, 42])).toBe(42);
+        expect(BuiltInFunctions.coalesce([undefined, 0])).toBe(0);
+        expect(BuiltInFunctions.coalesce([undefined, ""])).toBe("");
+      });
+
+      it("should treat 0 and empty string as valid values", () => {
+        expect(BuiltInFunctions.coalesce([0, 42])).toBe(0);
+        expect(BuiltInFunctions.coalesce(["", "fallback"])).toBe("");
+      });
+
+      it("should skip null values and continue", () => {
+        expect(BuiltInFunctions.coalesce([null, "second"])).toBe("second");
+        expect(BuiltInFunctions.coalesce([null, null, "third"])).toBe("third");
+      });
+    });
+
+    describe("IF", () => {
+      it("should return thenValue when condition is true", () => {
+        expect(BuiltInFunctions.if(true, "yes", "no")).toBe("yes");
+        expect(BuiltInFunctions.if(true, 1, 0)).toBe(1);
+      });
+
+      it("should return elseValue when condition is false", () => {
+        expect(BuiltInFunctions.if(false, "yes", "no")).toBe("no");
+        expect(BuiltInFunctions.if(false, 1, 0)).toBe(0);
+      });
+
+      it("should handle RDF term return types", () => {
+        const iri1 = new IRI("http://example.org/resource1");
+        const iri2 = new IRI("http://example.org/resource2");
+        const literal1 = new Literal("value1");
+        const literal2 = new Literal("value2");
+
+        expect(BuiltInFunctions.if(true, iri1, iri2)).toBe(iri1);
+        expect(BuiltInFunctions.if(false, iri1, iri2)).toBe(iri2);
+        expect(BuiltInFunctions.if(true, literal1, literal2)).toBe(literal1);
+        expect(BuiltInFunctions.if(false, literal1, literal2)).toBe(literal2);
+      });
+
+      it("should handle mixed types via any cast", () => {
+        // In real SPARQL, IF can return different types based on condition
+        // TypeScript generic forces same types, but runtime allows mixed types
+        const iri = new IRI("http://example.org/resource");
+        const literal = new Literal("test");
+
+        // Use explicit any to test runtime behavior with mixed types
+        const result1 = (BuiltInFunctions.if as any)(true, iri, literal);
+        const result2 = (BuiltInFunctions.if as any)(false, iri, literal);
+        const result3 = (BuiltInFunctions.if as any)(true, 42, "forty-two");
+        const result4 = (BuiltInFunctions.if as any)(false, 42, "forty-two");
+
+        expect(result1).toBe(iri);
+        expect(result2).toBe(literal);
+        expect(result3).toBe(42);
+        expect(result4).toBe("forty-two");
+      });
+
+      it("should handle undefined and null as return values", () => {
+        expect(BuiltInFunctions.if(true, undefined, "fallback")).toBeUndefined();
+        expect(BuiltInFunctions.if(false, "value", null)).toBeNull();
+      });
+    });
+  });
 });

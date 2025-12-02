@@ -1351,4 +1351,444 @@ describe("FilterExecutor", () => {
       expect(results).toHaveLength(1);
     });
   });
+
+  describe("SPARQL 1.1 Conditional Functions", () => {
+    describe("COALESCE", () => {
+      it("should return first bound variable value", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "function",
+              function: "coalesce",
+              args: [
+                { type: "variable", name: "alias" },
+                { type: "variable", name: "name" },
+              ],
+            },
+            right: { type: "literal", value: "John" },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        // Solution with alias bound
+        const solution1 = new SolutionMapping();
+        solution1.set("alias", new Literal("John"));
+        solution1.set("name", new Literal("Jonathan"));
+
+        // Solution with only name bound
+        const solution2 = new SolutionMapping();
+        solution2.set("name", new Literal("John"));
+
+        // Solution with neither matching
+        const solution3 = new SolutionMapping();
+        solution3.set("name", new Literal("Jane"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+        expect(results).toHaveLength(2);
+      });
+
+      it("should handle 3 arguments", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "function",
+              function: "coalesce",
+              args: [
+                { type: "variable", name: "nickname" },
+                { type: "variable", name: "alias" },
+                { type: "variable", name: "name" },
+              ],
+            },
+            right: { type: "literal", value: "Default" },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("name", new Literal("Default"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should handle 5 arguments", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "function",
+              function: "coalesce",
+              args: [
+                { type: "variable", name: "a" },
+                { type: "variable", name: "b" },
+                { type: "variable", name: "c" },
+                { type: "variable", name: "d" },
+                { type: "literal", value: "fallback" },
+              ],
+            },
+            right: { type: "literal", value: "fallback" },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        // None of a, b, c, d are bound
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should return fallback literal when all variables are unbound", async () => {
+        // Test COALESCE falling back to a literal when variables are unbound
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "function",
+              function: "coalesce",
+              args: [
+                { type: "variable", name: "dueDate" },
+                { type: "variable", name: "createdDate" },
+                { type: "literal", value: "No date" },
+              ],
+            },
+            right: { type: "literal", value: "No date" },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        // Solution with dueDate bound - won't match "No date"
+        const solution1 = new SolutionMapping();
+        solution1.set("task", new IRI("http://example.org/task1"));
+        solution1.set("dueDate", new Literal("2025-12-01"));
+
+        // Solution with only createdDate bound - won't match "No date"
+        const solution2 = new SolutionMapping();
+        solution2.set("task", new IRI("http://example.org/task2"));
+        solution2.set("createdDate", new Literal("2025-11-01"));
+
+        // Solution with neither bound - falls back to "No date" and matches
+        const solution3 = new SolutionMapping();
+        solution3.set("task", new IRI("http://example.org/task3"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+        expect(results).toHaveLength(1);
+        expect(results[0].get("task")).toEqual(new IRI("http://example.org/task3"));
+      });
+
+      it("should handle COALESCE returning different RDF term types", async () => {
+        // Test COALESCE with IRI value - use STRLEN which works on any stringifiable term
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: ">",
+            left: {
+              type: "function",
+              function: "strlen",
+              args: [
+                {
+                  type: "function",
+                  function: "coalesce",
+                  args: [
+                    { type: "variable", name: "value" },
+                    { type: "literal", value: "" },
+                  ],
+                },
+              ],
+            },
+            right: { type: "literal", value: 0 },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        // Solution with Literal bound
+        const solution1 = new SolutionMapping();
+        solution1.set("value", new Literal("some text"));
+
+        // Solution with IRI bound
+        const solution2 = new SolutionMapping();
+        solution2.set("value", new IRI("http://example.org/resource"));
+
+        // Solution with value not bound - falls back to empty string, STRLEN = 0, fails filter
+        const solution3 = new SolutionMapping();
+        solution3.set("other", new Literal("other"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+        // solution1 and solution2 should pass (STRLEN > 0), solution3 should fail (STRLEN = 0)
+        expect(results).toHaveLength(2);
+      });
+    });
+
+    describe("IF", () => {
+      it("should return thenExpr when condition is true", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "function",
+              function: "if",
+              args: [
+                {
+                  type: "comparison",
+                  operator: "=",
+                  left: { type: "variable", name: "status" },
+                  right: { type: "literal", value: "done" },
+                },
+                { type: "literal", value: "✅" },
+                { type: "literal", value: "⏳" },
+              ],
+            },
+            right: { type: "literal", value: "✅" },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("status", new Literal("done"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should return elseExpr when condition is false", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "function",
+              function: "if",
+              args: [
+                {
+                  type: "comparison",
+                  operator: "=",
+                  left: { type: "variable", name: "status" },
+                  right: { type: "literal", value: "done" },
+                },
+                { type: "literal", value: "✅" },
+                { type: "literal", value: "⏳" },
+              ],
+            },
+            right: { type: "literal", value: "⏳" },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("status", new Literal("pending"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should handle numeric condition (priority > 5)", async () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "function",
+              function: "if",
+              args: [
+                {
+                  type: "comparison",
+                  operator: ">",
+                  left: { type: "variable", name: "priority" },
+                  right: { type: "literal", value: 5 },
+                },
+                { type: "literal", value: "High" },
+                { type: "literal", value: "Low" },
+              ],
+            },
+            right: { type: "literal", value: "High" },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        // High priority task
+        const solution1 = new SolutionMapping();
+        solution1.set("priority", new Literal("8", xsdInt));
+
+        // Low priority task
+        const solution2 = new SolutionMapping();
+        solution2.set("priority", new Literal("3", xsdInt));
+
+        const results = await executor.executeAll(operation, [solution1, solution2]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should throw error when IF has wrong number of arguments", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "function",
+            function: "if",
+            args: [
+              { type: "literal", value: true },
+              { type: "literal", value: "only two args" },
+            ],
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("x", new Literal("test"));
+
+        // Should skip this solution due to error
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(0);
+      });
+
+      it("should handle boolean literal condition", async () => {
+        const xsdBool = new IRI("http://www.w3.org/2001/XMLSchema#boolean");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "function",
+              function: "if",
+              args: [
+                { type: "variable", name: "isActive" },
+                { type: "literal", value: "Active" },
+                { type: "literal", value: "Inactive" },
+              ],
+            },
+            right: { type: "literal", value: "Active" },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution1 = new SolutionMapping();
+        solution1.set("isActive", new Literal("true", xsdBool));
+
+        const solution2 = new SolutionMapping();
+        solution2.set("isActive", new Literal("false", xsdBool));
+
+        const results = await executor.executeAll(operation, [solution1, solution2]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should handle nested IF expressions", async () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        // IF(priority > 7, "Critical", IF(priority > 3, "Medium", "Low"))
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "function",
+              function: "if",
+              args: [
+                {
+                  type: "comparison",
+                  operator: ">",
+                  left: { type: "variable", name: "priority" },
+                  right: { type: "literal", value: 7 },
+                },
+                { type: "literal", value: "Critical" },
+                {
+                  type: "function",
+                  function: "if",
+                  args: [
+                    {
+                      type: "comparison",
+                      operator: ">",
+                      left: { type: "variable", name: "priority" },
+                      right: { type: "literal", value: 3 },
+                    },
+                    { type: "literal", value: "Medium" },
+                    { type: "literal", value: "Low" },
+                  ],
+                },
+              ],
+            },
+            right: { type: "literal", value: "Medium" },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        // Critical (priority = 9)
+        const solution1 = new SolutionMapping();
+        solution1.set("priority", new Literal("9", xsdInt));
+
+        // Medium (priority = 5)
+        const solution2 = new SolutionMapping();
+        solution2.set("priority", new Literal("5", xsdInt));
+
+        // Low (priority = 2)
+        const solution3 = new SolutionMapping();
+        solution3.set("priority", new Literal("2", xsdInt));
+
+        const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+        expect(results).toHaveLength(1);
+        const priorityValue = results[0].get("priority");
+        expect(priorityValue).toBeInstanceOf(Literal);
+        expect((priorityValue as Literal).value).toBe("5");
+      });
+
+      it("should handle combined COALESCE and IF", async () => {
+        // IF(BOUND(?dueDate), COALESCE(?dueDate, ?createdDate), "No date")
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "function",
+              function: "if",
+              args: [
+                {
+                  type: "function",
+                  function: "bound",
+                  args: [{ type: "variable", name: "dueDate" }],
+                },
+                {
+                  type: "function",
+                  function: "coalesce",
+                  args: [
+                    { type: "variable", name: "dueDate" },
+                    { type: "variable", name: "createdDate" },
+                  ],
+                },
+                { type: "literal", value: "No date" },
+              ],
+            },
+            right: { type: "literal", value: "2025-12-01" },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        // Has dueDate
+        const solution1 = new SolutionMapping();
+        solution1.set("dueDate", new Literal("2025-12-01"));
+        solution1.set("createdDate", new Literal("2025-11-01"));
+
+        // Only has createdDate (should return "No date")
+        const solution2 = new SolutionMapping();
+        solution2.set("createdDate", new Literal("2025-11-01"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2]);
+        expect(results).toHaveLength(1);
+      });
+    });
+  });
 });

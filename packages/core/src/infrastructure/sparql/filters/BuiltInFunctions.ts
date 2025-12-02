@@ -557,4 +557,45 @@ export class BuiltInFunctions {
   static rand(): number {
     return Math.random();
   }
+
+  // SPARQL 1.1 Conditional Functions
+  // https://www.w3.org/TR/sparql11-query/#func-coalesce
+  // https://www.w3.org/TR/sparql11-query/#func-if
+
+  /**
+   * SPARQL 1.1 COALESCE function.
+   * Returns the first non-error, non-unbound argument.
+   *
+   * Per SPARQL spec, COALESCE evaluates arguments lazily and returns
+   * the first one that does not raise an error or is not unbound.
+   *
+   * @param values - Array of values to check
+   * @returns First non-null/non-undefined value, or undefined if all are unbound/errors
+   */
+  static coalesce<T>(values: (T | undefined | null)[]): T | undefined {
+    for (const value of values) {
+      if (value !== undefined && value !== null) {
+        return value;
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * SPARQL 1.1 IF function.
+   * Returns one of two values based on a boolean condition.
+   *
+   * IF(condition, thenExpr, elseExpr) returns:
+   * - thenExpr if condition is true
+   * - elseExpr if condition is false
+   * - error if condition raises an error
+   *
+   * @param condition - Boolean condition
+   * @param thenValue - Value to return if condition is true
+   * @param elseValue - Value to return if condition is false
+   * @returns thenValue if condition is true, otherwise elseValue
+   */
+  static if<T>(condition: boolean, thenValue: T, elseValue: T): T {
+    return condition ? thenValue : elseValue;
+  }
 }
