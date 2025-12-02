@@ -36,7 +36,7 @@ export class TaskStatusService {
 
   async startEffort(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
-    const timestamp = DateFormatter.toISOTimestamp(new Date());
+    const timestamp = DateFormatter.toLocalTimestamp(new Date());
 
     let updated = this.frontmatterService.updateProperty(
       content,
@@ -54,7 +54,7 @@ export class TaskStatusService {
 
   async markTaskAsDone(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
-    const timestamp = DateFormatter.toISOTimestamp(new Date());
+    const timestamp = DateFormatter.toLocalTimestamp(new Date());
 
     let updated = this.frontmatterService.updateProperty(
       content,
@@ -85,7 +85,7 @@ export class TaskStatusService {
 
   async trashEffort(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
-    const timestamp = DateFormatter.toISOTimestamp(new Date());
+    const timestamp = DateFormatter.toLocalTimestamp(new Date());
 
     let updated = this.frontmatterService.updateProperty(
       content,
@@ -126,8 +126,8 @@ export class TaskStatusService {
   async planForEvening(taskFile: IFile): Promise<void> {
     const content = await this.vault.read(taskFile);
     const evening = new Date();
-    evening.setUTCHours(19, 0, 0, 0);
-    const eveningTimestamp = DateFormatter.toISOTimestamp(evening);
+    evening.setHours(19, 0, 0, 0);
+    const eveningTimestamp = DateFormatter.toLocalTimestamp(evening);
 
     const updated = this.frontmatterService.updateProperty(
       content,
@@ -227,9 +227,9 @@ export class TaskStatusService {
     }
 
     const newDate = DateFormatter.addDays(currentDate, days);
-    // Keep time at 00:00:00 UTC for shifted dates
-    newDate.setUTCHours(0, 0, 0, 0);
-    const newTimestamp = DateFormatter.toISOTimestamp(newDate);
+    // Keep time at 00:00:00 local for shifted dates
+    newDate.setHours(0, 0, 0, 0);
+    const newTimestamp = DateFormatter.toLocalTimestamp(newDate);
 
     const updated = this.frontmatterService.updateProperty(
       content,

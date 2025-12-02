@@ -242,40 +242,40 @@ export class DateFormatter {
   }
 
   /**
-   * Get start of day timestamp for today (00:00:00) in UTC ISO 8601 format.
+   * Get start of day timestamp for today (00:00:00) in local time ISO 8601 format.
    *
-   * Format: `YYYY-MM-DDT00:00:00Z`
+   * Format: `YYYY-MM-DDT00:00:00`
    *
    * Used for setting planned start timestamp to beginning of current day.
    *
-   * @returns Today's date at midnight UTC as ISO timestamp string
+   * @returns Today's date at midnight local time as ISO timestamp string (without Z suffix)
    *
    * @example
    * ```typescript
    * const startOfToday = DateFormatter.getTodayStartTimestamp();
-   * // "2025-11-03T00:00:00Z"
+   * // "2025-11-03T00:00:00"
    * ```
    */
   static getTodayStartTimestamp(): string {
     const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
-    return DateFormatter.toISOTimestamp(today);
+    today.setHours(0, 0, 0, 0);
+    return DateFormatter.toLocalTimestamp(today);
   }
 
   /**
-   * Convert date string (YYYY-MM-DD) to timestamp at start of day (00:00:00Z) in UTC.
+   * Convert date string (YYYY-MM-DD) to timestamp at start of day (00:00:00) in local time.
    *
-   * Format: `YYYY-MM-DDT00:00:00Z`
+   * Format: `YYYY-MM-DDT00:00:00`
    *
    * Used for creating tasks from DailyNote with planned start at beginning of day.
    *
    * @param dateStr - Date string in format "YYYY-MM-DD" (e.g., "2025-11-11")
-   * @returns Date at midnight UTC as ISO timestamp string
+   * @returns Date at midnight local time as ISO timestamp string (without Z suffix)
    *
    * @example
    * ```typescript
    * const timestamp = DateFormatter.toTimestampAtStartOfDay("2025-11-11");
-   * // "2025-11-11T00:00:00Z"
+   * // "2025-11-11T00:00:00"
    * ```
    */
   static toTimestampAtStartOfDay(dateStr: string): string {
@@ -285,13 +285,13 @@ export class DateFormatter {
     }
 
     const [year, month, day] = parts;
-    const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+    const date = new Date(year, month - 1, day, 0, 0, 0, 0);
 
     if (isNaN(date.getTime())) {
       throw new Error(`Invalid date values: ${dateStr}`);
     }
 
-    return DateFormatter.toISOTimestamp(date);
+    return DateFormatter.toLocalTimestamp(date);
   }
 
   /**
