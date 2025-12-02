@@ -2,6 +2,24 @@
 
 Command-line interface for Exocortex knowledge management system. Manage tasks, projects, and planning from the terminal without needing Obsidian.
 
+## API Stability
+
+**Current Version: 0.1.x (Stable API)**
+
+This CLI follows [Semantic Versioning](https://semver.org/). The commands documented below are considered **stable** and covered by versioning guarantees.
+
+**Documentation:**
+- [CLI API Reference](docs/CLI_API_REFERENCE.md) - Formal command signatures and options
+- [Versioning Policy](VERSIONING.md) - What constitutes breaking changes
+- [SPARQL Guide](docs/SPARQL_GUIDE.md) - Complete query reference
+- [SPARQL Cookbook](docs/SPARQL_COOKBOOK.md) - Real-world query examples
+- [Ontology Reference](docs/ONTOLOGY_REFERENCE.md) - Available predicates
+
+**For MCP Integration:**
+- Pin to `^0.1.0` for stable API access
+- Use exit codes for status (not console messages)
+- Use `--format json` for machine-readable output
+
 ## Installation
 
 ```bash
@@ -24,13 +42,8 @@ exocortex --help
 
 Execute SPARQL queries against your Obsidian vault as an RDF knowledge graph.
 
-**Documentation:**
-- [SPARQL Guide](docs/SPARQL_GUIDE.md) - Complete query reference
-- [SPARQL Cookbook](docs/SPARQL_COOKBOOK.md) - Real-world examples
-- [Ontology Reference](docs/ONTOLOGY_REFERENCE.md) - Available predicates
-
 ```bash
-exo query "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10" --vault ~/vault
+exocortex sparql query "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10" --vault ~/vault
 ```
 
 **Options:**
@@ -45,7 +58,7 @@ exo query "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10" --vault ~/vault
 
 ```bash
 # Find all tasks
-exo query \
+exocortex sparql query \
   "PREFIX exo: <https://exocortex.my/ontology/exo#>
    PREFIX ems: <https://exocortex.my/ontology/ems#>
    SELECT ?task ?label
@@ -56,15 +69,15 @@ exo query \
   --vault ~/vault
 
 # Query from file
-exo query queries/my-query.sparql --vault ~/vault
+exocortex sparql query queries/my-query.sparql --vault ~/vault
 
 # JSON output for automation
-exo query "SELECT ?s ?p ?o WHERE { ?s ?p ?o }" \
+exocortex sparql query "SELECT ?s ?p ?o WHERE { ?s ?p ?o }" \
   --vault ~/vault \
   --format json > results.json
 
 # Show query plan and stats
-exo query "SELECT ?task WHERE { ?task exo:Instance_class ems:Task }" \
+exocortex sparql query "SELECT ?task WHERE { ?task exo:Instance_class ems:Task }" \
   --vault ~/vault \
   --explain \
   --stats
@@ -90,92 +103,82 @@ exo query "SELECT ?task WHERE { ?task exo:Instance_class ems:Task }" \
 └────────────────────────────────────────────────────────────┘
 ```
 
-### Create Task
+### Command Execution
 
-Create a new task from an area or project:
+Execute plugin commands on single assets. All commands follow the pattern:
 
 ```bash
-exocortex create task \
-  --source ~/vault/areas/work.md \
+exocortex command <command-name> <filepath> [options]
+```
+
+**Common Options:**
+- `--vault <path>` - Path to Obsidian vault (default: current directory)
+- `--dry-run` - Preview changes without modifying files
+
+See [CLI API Reference](docs/CLI_API_REFERENCE.md) for complete command documentation.
+
+#### Status Commands
+
+```bash
+# Start a task (ToDo → Doing)
+exocortex command start "tasks/my-task.md" --vault ~/vault
+
+# Complete a task (Doing → Done)
+exocortex command complete "tasks/my-task.md" --vault ~/vault
+
+# Move to backlog
+exocortex command move-to-backlog "tasks/defer-task.md" --vault ~/vault
+
+# Move to ToDo
+exocortex command move-to-todo "tasks/ready-task.md" --vault ~/vault
+
+# Trash a task
+exocortex command trash "tasks/obsolete-task.md" --vault ~/vault
+
+# Archive a task
+exocortex command archive "tasks/old-task.md" --vault ~/vault
+```
+
+#### Creation Commands
+
+```bash
+# Create a new task
+exocortex command create-task "tasks/new-task.md" \
   --label "Implement feature X" \
-  --size small \
-  --root ~/vault
+  --area "areas/product" \
+  --vault ~/vault
+
+# Create a new meeting
+exocortex command create-meeting "meetings/standup.md" \
+  --label "Daily Standup $(date +%Y-%m-%d)" \
+  --prototype "prototypes/standup-template" \
+  --vault ~/vault
+
+# Create a new project
+exocortex command create-project "projects/website-redesign.md" \
+  --label "Website Redesign Q1 2026" \
+  --vault ~/vault
+
+# Create a new area
+exocortex command create-area "areas/product.md" \
+  --label "Product Development" \
+  --vault ~/vault
 ```
 
-**Options:**
-- `-s, --source <path>` - Path to source file (area or project) **[required]**
-- `-l, --label <label>` - Task label
-- `--size <size>` - Task size (small, medium, large)
-- `-r, --root <path>` - Root directory of vault (default: current directory)
-
-**Example:**
+#### Property Commands
 
 ```bash
-cd ~/my-vault
-exocortex create task -s areas/product.md -l "Design mockups" --size medium
-```
+# Rename file to match its UID
+exocortex command rename-to-uid "tasks/My Task Name.md" --vault ~/vault
 
-### Create Instance
+# Update asset label
+exocortex command update-label "tasks/task.md" --label "New Label" --vault ~/vault
 
-Create an instance from a task or meeting prototype:
+# Schedule task for a date
+exocortex command schedule "tasks/feature.md" --date "2025-12-15" --vault ~/vault
 
-```bash
-exocortex create instance \
-  --prototype ~/vault/prototypes/weekly-review.md \
-  --label "Weekly Review 2025-10-26" \
-  --root ~/vault
-```
-
-**Options:**
-- `-p, --prototype <path>` - Path to prototype file **[required]**
-- `-l, --label <label>` - Instance label
-- `--size <size>` - Task size (for task instances)
-- `-r, --root <path>` - Root directory of vault (default: current directory)
-
-**Example:**
-
-```bash
-exocortex create instance -p prototypes/standup.md -l "Daily Standup"
-```
-
-### Change Status
-
-Move a task to ToDo status:
-
-```bash
-exocortex status todo \
-  --task ~/vault/tasks/abc-123.md \
-  --root ~/vault
-```
-
-**Options:**
-- `-t, --task <path>` - Path to task file **[required]**
-- `-r, --root <path>` - Root directory of vault (default: current directory)
-
-**Example:**
-
-```bash
-exocortex status todo -t tasks/feature-implementation.md
-```
-
-### Plan Task
-
-Plan a task for today:
-
-```bash
-exocortex plan today \
-  --task ~/vault/tasks/abc-123.md \
-  --root ~/vault
-```
-
-**Options:**
-- `-t, --task <path>` - Path to task file **[required]**
-- `-r, --root <path>` - Root directory of vault (default: current directory)
-
-**Example:**
-
-```bash
-exocortex plan today -t tasks/write-documentation.md
+# Set deadline
+exocortex command set-deadline "tasks/feature.md" --date "2025-12-31" --vault ~/vault
 ```
 
 ## Workflow Examples
@@ -183,31 +186,62 @@ exocortex plan today -t tasks/write-documentation.md
 ### Morning Planning
 
 ```bash
-# Plan high-priority tasks for today
-exocortex plan today -t tasks/task1.md
-exocortex plan today -t tasks/task2.md
-exocortex plan today -t tasks/task3.md
+# Schedule tasks for today
+exocortex command schedule "tasks/task1.md" --date "$(date +%Y-%m-%d)" --vault ~/vault
+exocortex command schedule "tasks/task2.md" --date "$(date +%Y-%m-%d)" --vault ~/vault
 
 # Move them to ToDo
-exocortex status todo -t tasks/task1.md
-exocortex status todo -t tasks/task2.md
-exocortex status todo -t tasks/task3.md
+exocortex command move-to-todo "tasks/task1.md" --vault ~/vault
+exocortex command move-to-todo "tasks/task2.md" --vault ~/vault
 ```
 
 ### Creating Tasks from Project
 
 ```bash
 # Create multiple tasks for a project
-exocortex create task -s projects/website-redesign.md -l "Update homepage" --size small
-exocortex create task -s projects/website-redesign.md -l "Redesign navigation" --size medium
-exocortex create task -s projects/website-redesign.md -l "Test on mobile" --size small
+exocortex command create-task "tasks/update-homepage.md" \
+  --label "Update homepage" \
+  --parent "projects/website-redesign" \
+  --vault ~/vault
+
+exocortex command create-task "tasks/redesign-nav.md" \
+  --label "Redesign navigation" \
+  --parent "projects/website-redesign" \
+  --vault ~/vault
+
+exocortex command create-task "tasks/test-mobile.md" \
+  --label "Test on mobile" \
+  --parent "projects/website-redesign" \
+  --vault ~/vault
 ```
 
 ### Weekly Review Workflow
 
 ```bash
-# Create this week's review instance
-exocortex create instance -p prototypes/weekly-review.md -l "Weekly Review $(date +%Y-%m-%d)"
+# Create this week's review meeting
+exocortex command create-meeting "meetings/weekly-review-$(date +%Y-%m-%d).md" \
+  --label "Weekly Review $(date +%Y-%m-%d)" \
+  --prototype "prototypes/weekly-review-template" \
+  --vault ~/vault
+```
+
+### Task Lifecycle
+
+```bash
+# 1. Create task
+exocortex command create-task "tasks/feature.md" --label "Implement feature" --vault ~/vault
+
+# 2. Move to ToDo when ready
+exocortex command move-to-todo "tasks/feature.md" --vault ~/vault
+
+# 3. Start working
+exocortex command start "tasks/feature.md" --vault ~/vault
+
+# 4. Complete when done
+exocortex command complete "tasks/feature.md" --vault ~/vault
+
+# 5. Archive for cleanup
+exocortex command archive "tasks/feature.md" --vault ~/vault
 ```
 
 ## Architecture
@@ -298,19 +332,39 @@ ems__Effort_status: "[[ems__EffortStatusDraft]]"
 
 ## Roadmap
 
+### Implemented Commands
+
+**SPARQL Query:**
+- `exocortex sparql query` - Execute SPARQL queries against vault
+
+**Status Transitions:**
+- `exocortex command start` - Start effort (ToDo → Doing)
+- `exocortex command complete` - Complete effort (Doing → Done)
+- `exocortex command trash` - Trash effort
+- `exocortex command archive` - Archive effort
+- `exocortex command move-to-backlog` - Move to Backlog
+- `exocortex command move-to-analysis` - Move to Analysis
+- `exocortex command move-to-todo` - Move to ToDo
+
+**Asset Creation:**
+- `exocortex command create-task` - Create new task
+- `exocortex command create-meeting` - Create new meeting
+- `exocortex command create-project` - Create new project
+- `exocortex command create-area` - Create new area
+
+**Property Mutations:**
+- `exocortex command rename-to-uid` - Rename file to match UID
+- `exocortex command update-label` - Update asset label
+- `exocortex command schedule` - Set planned start date
+- `exocortex command set-deadline` - Set planned end date
+
 ### Planned Commands
 
-- `exocortex status backlog` - Move to Backlog
-- `exocortex status doing` - Start effort
-- `exocortex status done` - Mark as done
-- `exocortex status rollback` - Rollback status
-- `exocortex plan date <date>` - Plan for specific date
-- `exocortex plan shift forward` - Shift day forward
-- `exocortex plan shift backward` - Shift day backward
-- `exocortex create project` - Create project from area
-- `exocortex query` - Query vault by metadata
-- `exocortex list tasks` - List all tasks
-- `exocortex list today` - List today's tasks
+- `exocortex command rollback-status` - Rollback to previous status
+- `exocortex command shift-schedule` - Shift planned date forward/backward
+- `exocortex list tasks` - List all tasks (with filters)
+- `exocortex list today` - List today's scheduled tasks
+- `exocortex report weekly` - Generate weekly effort report
 
 ## License
 
