@@ -5,6 +5,7 @@ import type {
   FilterOperation,
   LeftJoinOperation,
   UnionOperation,
+  MinusOperation,
   ExtendOperation,
   SubqueryOperation,
   ExistsExpression,
@@ -203,6 +204,8 @@ export class AlgebraTranslator {
         return this.translateOptional(pattern);
       case "union":
         return this.translateUnion(pattern);
+      case "minus":
+        return this.translateMinus(pattern);
       case "group":
         return this.translateWhere(pattern.patterns);
       case "query":
@@ -542,6 +545,31 @@ export class AlgebraTranslator {
       type: "union",
       left: this.translateWhere(pattern.patterns[0].patterns || [pattern.patterns[0]]),
       right: this.translateWhere(pattern.patterns[1].patterns || [pattern.patterns[1]]),
+    };
+  }
+
+  /**
+   * Translate MINUS pattern to MinusOperation.
+   * MINUS removes solutions from the preceding pattern that match the MINUS pattern.
+   *
+   * sparqljs AST format: { type: "minus", patterns: [...] }
+   *
+   * The left side of MINUS is implicit - it comes from the preceding patterns
+   * in the WHERE clause. AlgebraTranslator handles this via the translateWhere
+   * method which processes patterns sequentially.
+   */
+  private translateMinus(pattern: any): MinusOperation {
+    if (!pattern.patterns || pattern.patterns.length === 0) {
+      throw new AlgebraTranslatorError("MINUS pattern must have patterns");
+    }
+
+    // MINUS patterns from sparqljs contain the right-hand side patterns.
+    // The left-hand side is empty here - it gets filled in by translateWhere
+    // when joining patterns together.
+    return {
+      type: "minus",
+      left: { type: "bgp", triples: [] },
+      right: this.translateWhere(pattern.patterns),
     };
   }
 

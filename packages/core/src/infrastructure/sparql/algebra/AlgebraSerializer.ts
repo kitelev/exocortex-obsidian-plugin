@@ -21,6 +21,9 @@ export class AlgebraSerializer {
       case "union":
         return `${prefix}Union(\n${this.toString(operation.left, indent + 1)}\n${this.toString(operation.right, indent + 1)}\n${prefix})`;
 
+      case "minus":
+        return `${prefix}Minus(\n${this.toString(operation.left, indent + 1)}\n${this.toString(operation.right, indent + 1)}\n${prefix})`;
+
       case "project":
         return `${prefix}Project [${operation.variables.map((v) => `?${v}`).join(", ")}](\n${this.toString(operation.input, indent + 1)}\n${prefix})`;
 
