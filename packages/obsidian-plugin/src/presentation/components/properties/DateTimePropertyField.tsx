@@ -1,4 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
+import {
+  parseLocalDate,
+  formatForInput,
+  formatDisplayValue,
+} from "../../utils/dateTimeUtils";
 
 export interface DateTimePropertyFieldProps {
   value: string | null;
@@ -54,122 +59,6 @@ export const DateTimePropertyField: React.FC<DateTimePropertyFieldProps> = ({
     };
   }, [isOpen, onBlur]);
 
-  const formatDisplayValue = (isoString: string | null): string => {
-    if (!isoString) return "Empty";
-
-    try {
-      const date = new Date(isoString);
-      if (isNaN(date.getTime())) return isoString;
-
-      const hasTime =
-        isoString.includes("T") ||
-        date.getHours() !== 0 ||
-        date.getMinutes() !== 0;
-
-      if (hasTime) {
-        return date.toLocaleString(undefined, {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        });
-      } else {
-        return date.toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        });
-      }
-    } catch {
-      return isoString;
-    }
-  };
-
-  const formatForInput = (isoString: string): string => {
-    try {
-      const date = new Date(isoString);
-      if (isNaN(date.getTime())) return isoString;
-
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      const hours = String(date.getHours()).padStart(2, "0");
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-
-      if (date.getHours() !== 0 || date.getMinutes() !== 0) {
-        return `${year}-${month}-${day} ${hours}:${minutes}`;
-      } else {
-        return `${year}-${month}-${day}`;
-      }
-    } catch {
-      return isoString;
-    }
-  };
-
-  const parseDate = (input: string): Date | null => {
-    if (!input.trim()) return null;
-
-    const lowerInput = input.toLowerCase().trim();
-
-    if (lowerInput === "today") {
-      const date = new Date();
-      date.setHours(0, 0, 0, 0);
-      return date;
-    }
-
-    if (lowerInput === "tomorrow") {
-      const date = new Date();
-      date.setDate(date.getDate() + 1);
-      date.setHours(0, 0, 0, 0);
-      return date;
-    }
-
-    if (lowerInput === "yesterday") {
-      const date = new Date();
-      date.setDate(date.getDate() - 1);
-      date.setHours(0, 0, 0, 0);
-      return date;
-    }
-
-    if (lowerInput === "next week") {
-      const date = new Date();
-      date.setDate(date.getDate() + 7);
-      date.setHours(0, 0, 0, 0);
-      return date;
-    }
-
-    const inDaysMatch = lowerInput.match(/^in (\d+) days?$/i);
-    if (inDaysMatch) {
-      const days = parseInt(inDaysMatch[1]);
-      const date = new Date();
-      date.setDate(date.getDate() + days);
-      date.setHours(0, 0, 0, 0);
-      return date;
-    }
-
-    const inWeeksMatch = lowerInput.match(/^in (\d+) weeks?$/i);
-    if (inWeeksMatch) {
-      const weeks = parseInt(inWeeksMatch[1]);
-      const date = new Date();
-      date.setDate(date.getDate() + weeks * 7);
-      date.setHours(0, 0, 0, 0);
-      return date;
-    }
-
-    try {
-      const date = new Date(input);
-      if (!isNaN(date.getTime())) {
-        return date;
-      }
-    } catch {
-      // Fall through
-    }
-
-    return null;
-  };
-
   const handleToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -202,7 +91,7 @@ export const DateTimePropertyField: React.FC<DateTimePropertyFieldProps> = ({
       return;
     }
 
-    const parsed = parseDate(textInput);
+    const parsed = parseLocalDate(textInput);
 
     if (parsed) {
       onChange(parsed.toISOString());
