@@ -4,6 +4,7 @@ export type AlgebraOperation =
   | JoinOperation
   | LeftJoinOperation
   | UnionOperation
+  | MinusOperation
   | ProjectOperation
   | OrderByOperation
   | SliceOperation
@@ -177,6 +178,28 @@ export interface LeftJoinOperation {
 
 export interface UnionOperation {
   type: "union";
+  left: AlgebraOperation;
+  right: AlgebraOperation;
+}
+
+/**
+ * MINUS operation for set difference.
+ * Removes solutions from left that are compatible with any solution in right.
+ *
+ * Semantics (SPARQL 1.1):
+ * - Two solutions are compatible if shared variables have the same values
+ * - If no variables are shared, solutions are always compatible (MINUS removes nothing)
+ * - Different from FILTER NOT EXISTS which evaluates patterns per-solution
+ *
+ * Example:
+ * SELECT ?task WHERE {
+ *   ?task a ems:Task .
+ *   MINUS { ?task ems:status "done" }
+ * }
+ * Returns all tasks except those with status "done"
+ */
+export interface MinusOperation {
+  type: "minus";
   left: AlgebraOperation;
   right: AlgebraOperation;
 }

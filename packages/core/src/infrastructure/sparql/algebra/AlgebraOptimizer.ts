@@ -91,6 +91,14 @@ export class AlgebraOptimizer {
       };
     }
 
+    if (operation.type === "minus") {
+      return {
+        ...operation,
+        left: this.eliminateEmptyBGPInFilterJoin(operation.left),
+        right: this.eliminateEmptyBGPInFilterJoin(operation.right),
+      };
+    }
+
     if (operation.type === "project") {
       return {
         ...operation,
@@ -146,6 +154,14 @@ export class AlgebraOptimizer {
     if (operation.type === "union") {
       return {
         type: "union",
+        left: this.filterPushDown(operation.left),
+        right: this.filterPushDown(operation.right),
+      };
+    }
+
+    if (operation.type === "minus") {
+      return {
+        ...operation,
         left: this.filterPushDown(operation.left),
         right: this.filterPushDown(operation.right),
       };
@@ -295,6 +311,9 @@ export class AlgebraOptimizer {
       const leftVars = this.getOperationVariables(operation.left);
       const rightVars = this.getOperationVariables(operation.right);
       return new Set([...leftVars, ...rightVars]);
+    } else if (operation.type === "minus") {
+      // MINUS: variables from left side (right side only used for filtering)
+      return this.getOperationVariables(operation.left);
     } else if (operation.type === "project") {
       return new Set(operation.variables);
     }
@@ -323,6 +342,14 @@ export class AlgebraOptimizer {
     }
 
     if (operation.type === "union") {
+      return {
+        ...operation,
+        left: this.joinReordering(operation.left),
+        right: this.joinReordering(operation.right),
+      };
+    }
+
+    if (operation.type === "minus") {
       return {
         ...operation,
         left: this.joinReordering(operation.left),
@@ -407,6 +434,11 @@ export class AlgebraOptimizer {
 
     if (operation.type === "union") {
       return this.estimateCost(operation.left) + this.estimateCost(operation.right);
+    }
+
+    if (operation.type === "minus") {
+      // MINUS cost: left side plus checking against right side
+      return this.estimateCost(operation.left) + this.estimateCost(operation.right) * 0.3;
     }
 
     return 100;

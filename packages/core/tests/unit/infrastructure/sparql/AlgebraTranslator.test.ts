@@ -187,6 +187,73 @@ describe("AlgebraTranslator", () => {
     });
   });
 
+  describe("MINUS Translation", () => {
+    it("translates SELECT with MINUS", () => {
+      const query = `
+        PREFIX ems: <https://exocortex.my/ontology/ems#>
+        SELECT ?task ?label
+        WHERE {
+          ?task ems:label ?label .
+          MINUS { ?task ems:status "done" }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("join");
+
+      const minusOp = input.right;
+      expect(minusOp.type).toBe("minus");
+      expect(minusOp.right.type).toBe("bgp");
+    });
+
+    it("translates MINUS with multiple patterns", () => {
+      const query = `
+        PREFIX ems: <https://exocortex.my/ontology/ems#>
+        SELECT ?task
+        WHERE {
+          ?task a ems:Task .
+          MINUS {
+            ?task ems:status "done" .
+            ?task ems:archived "true" .
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("join");
+
+      const minusOp = input.right;
+      expect(minusOp.type).toBe("minus");
+      // The right side should be a BGP with 2 triples or a join of BGPs
+      expect(minusOp.right).toBeDefined();
+    });
+
+    it("translates MINUS combined with OPTIONAL", () => {
+      const query = `
+        PREFIX ems: <https://exocortex.my/ontology/ems#>
+        SELECT ?task ?priority
+        WHERE {
+          ?task a ems:Task .
+          OPTIONAL { ?task ems:priority ?priority }
+          MINUS { ?task ems:status "done" }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      // Should have join of (join(bgp, leftjoin)), minus)
+      const input = (algebra as any).input;
+      expect(input.type).toBe("join");
+    });
+  });
+
   describe("Solution Modifiers", () => {
     it("translates SELECT DISTINCT", () => {
       const query = "SELECT DISTINCT ?status WHERE { ?task <http://example.org/status> ?status }";

@@ -6,6 +6,7 @@ import type {
   JoinOperation,
   LeftJoinOperation,
   UnionOperation,
+  MinusOperation,
   ProjectOperation,
   OrderByOperation,
   SliceOperation,
@@ -19,6 +20,7 @@ import { BGPExecutor } from "./BGPExecutor";
 import { FilterExecutor } from "./FilterExecutor";
 import { OptionalExecutor } from "./OptionalExecutor";
 import { UnionExecutor } from "./UnionExecutor";
+import { MinusExecutor } from "./MinusExecutor";
 import { AggregateExecutor } from "./AggregateExecutor";
 
 export class QueryExecutorError extends Error {
@@ -38,6 +40,7 @@ export class QueryExecutor {
   private readonly filterExecutor: FilterExecutor;
   private readonly optionalExecutor: OptionalExecutor;
   private readonly unionExecutor: UnionExecutor;
+  private readonly minusExecutor: MinusExecutor;
   private readonly aggregateExecutor: AggregateExecutor;
 
   constructor(tripleStore: ITripleStore) {
@@ -45,6 +48,7 @@ export class QueryExecutor {
     this.filterExecutor = new FilterExecutor();
     this.optionalExecutor = new OptionalExecutor();
     this.unionExecutor = new UnionExecutor();
+    this.minusExecutor = new MinusExecutor();
     this.aggregateExecutor = new AggregateExecutor();
 
     // Set up EXISTS evaluator for FilterExecutor
@@ -109,6 +113,10 @@ export class QueryExecutor {
 
       case "union":
         yield* this.executeUnion(operation);
+        break;
+
+      case "minus":
+        yield* this.executeMinus(operation);
         break;
 
       case "project":
@@ -215,6 +223,29 @@ export class QueryExecutor {
     }
 
     yield* this.unionExecutor.execute(leftGen(), rightGen());
+  }
+
+  private async *executeMinus(operation: MinusOperation): AsyncIterableIterator<SolutionMapping> {
+    // Collect solutions from both sides
+    const leftSolutions: SolutionMapping[] = [];
+    for await (const solution of this.execute(operation.left)) {
+      leftSolutions.push(solution);
+    }
+
+    const rightSolutions: SolutionMapping[] = [];
+    for await (const solution of this.execute(operation.right)) {
+      rightSolutions.push(solution);
+    }
+
+    // Use MinusExecutor for set difference
+    async function* leftGen() {
+      for (const s of leftSolutions) yield s;
+    }
+    async function* rightGen() {
+      for (const s of rightSolutions) yield s;
+    }
+
+    yield* this.minusExecutor.execute(leftGen(), rightGen());
   }
 
   private async *executeProject(operation: ProjectOperation): AsyncIterableIterator<SolutionMapping> {
