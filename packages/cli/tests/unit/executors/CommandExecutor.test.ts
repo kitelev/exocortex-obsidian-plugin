@@ -44,8 +44,11 @@ const mockDateFormatter = {
     const seconds = String(date.getSeconds()).padStart(2, "0");
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
   }),
+  toISOTimestamp: jest.fn((date: Date) => {
+    return date.toISOString().replace(/\.\d{3}Z$/, "Z");
+  }),
   toTimestampAtStartOfDay: jest.fn((dateStr: string) => {
-    return `${dateStr}T00:00:00`;
+    return `${dateStr}T00:00:00Z`;
   }),
 };
 

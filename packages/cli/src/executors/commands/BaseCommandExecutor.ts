@@ -39,10 +39,11 @@ export abstract class BaseCommandExecutor {
   }
 
   /**
-   * Get current timestamp for property updates
+   * Get current timestamp for property updates in ISO 8601 UTC format.
+   * Format: YYYY-MM-DDTHH:MM:SSZ
    */
   protected getCurrentTimestamp(): string {
-    return DateFormatter.toLocalTimestamp(new Date());
+    return DateFormatter.toISOTimestamp(new Date());
   }
 
   /**
