@@ -548,6 +548,26 @@ export class FilterExecutor {
         const msSecArg = Number(this.evaluateExpression(expr.args[0], solution));
         return BuiltInFunctions.msToSeconds(msSecArg);
 
+      // SPARQL 1.1 Numeric Functions
+      case "abs":
+        const absArg = Number(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.abs(absArg);
+
+      case "round":
+        const roundArg = Number(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.round(roundArg);
+
+      case "ceil":
+        const ceilArg = Number(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.ceil(ceilArg);
+
+      case "floor":
+        const floorArg = Number(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.floor(floorArg);
+
+      case "rand":
+        return BuiltInFunctions.rand();
+
       default:
         throw new FilterExecutorError(`Unknown function: ${funcName}`);
     }
