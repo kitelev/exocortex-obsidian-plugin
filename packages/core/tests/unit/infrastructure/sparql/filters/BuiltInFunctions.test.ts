@@ -719,4 +719,125 @@ describe("BuiltInFunctions", () => {
       });
     });
   });
+
+  describe("SPARQL 1.1 Numeric Functions", () => {
+    describe("ABS", () => {
+      it("should return absolute value of positive number", () => {
+        expect(BuiltInFunctions.abs(5)).toBe(5);
+        expect(BuiltInFunctions.abs(42.5)).toBe(42.5);
+      });
+
+      it("should return absolute value of negative number", () => {
+        expect(BuiltInFunctions.abs(-5)).toBe(5);
+        expect(BuiltInFunctions.abs(-42.5)).toBe(42.5);
+      });
+
+      it("should return 0 for 0", () => {
+        expect(BuiltInFunctions.abs(0)).toBe(0);
+      });
+
+      it("should handle very large numbers", () => {
+        expect(BuiltInFunctions.abs(-1e10)).toBe(1e10);
+        expect(BuiltInFunctions.abs(1e15)).toBe(1e15);
+      });
+
+      it("should handle very small decimals", () => {
+        expect(BuiltInFunctions.abs(-0.00001)).toBe(0.00001);
+        expect(BuiltInFunctions.abs(0.00001)).toBe(0.00001);
+      });
+    });
+
+    describe("ROUND", () => {
+      it("should round to nearest integer", () => {
+        expect(BuiltInFunctions.round(2.5)).toBe(3);
+        expect(BuiltInFunctions.round(2.4)).toBe(2);
+        expect(BuiltInFunctions.round(2.6)).toBe(3);
+      });
+
+      it("should round negative numbers correctly", () => {
+        expect(BuiltInFunctions.round(-2.5)).toBe(-2);
+        expect(BuiltInFunctions.round(-2.4)).toBe(-2);
+        expect(BuiltInFunctions.round(-2.6)).toBe(-3);
+      });
+
+      it("should return integer unchanged", () => {
+        expect(BuiltInFunctions.round(5)).toBe(5);
+        expect(BuiltInFunctions.round(-5)).toBe(-5);
+        expect(BuiltInFunctions.round(0)).toBe(0);
+      });
+
+      it("should handle very large numbers", () => {
+        expect(BuiltInFunctions.round(1e10 + 0.5)).toBe(1e10 + 1);
+      });
+    });
+
+    describe("CEIL", () => {
+      it("should round up to nearest integer", () => {
+        expect(BuiltInFunctions.ceil(2.1)).toBe(3);
+        expect(BuiltInFunctions.ceil(2.9)).toBe(3);
+        expect(BuiltInFunctions.ceil(2.0)).toBe(2);
+      });
+
+      it("should round negative numbers toward zero", () => {
+        expect(BuiltInFunctions.ceil(-2.1)).toBe(-2);
+        expect(BuiltInFunctions.ceil(-2.9)).toBe(-2);
+        expect(BuiltInFunctions.ceil(-2.0)).toBe(-2);
+      });
+
+      it("should return integer unchanged", () => {
+        expect(BuiltInFunctions.ceil(5)).toBe(5);
+        expect(BuiltInFunctions.ceil(-5)).toBe(-5);
+        expect(BuiltInFunctions.ceil(0)).toBe(0);
+      });
+
+      it("should handle very small positive decimals", () => {
+        expect(BuiltInFunctions.ceil(0.00001)).toBe(1);
+        expect(BuiltInFunctions.ceil(0.99999)).toBe(1);
+      });
+    });
+
+    describe("FLOOR", () => {
+      it("should round down to nearest integer", () => {
+        expect(BuiltInFunctions.floor(2.1)).toBe(2);
+        expect(BuiltInFunctions.floor(2.9)).toBe(2);
+        expect(BuiltInFunctions.floor(2.0)).toBe(2);
+      });
+
+      it("should round negative numbers away from zero", () => {
+        expect(BuiltInFunctions.floor(-2.1)).toBe(-3);
+        expect(BuiltInFunctions.floor(-2.9)).toBe(-3);
+        expect(BuiltInFunctions.floor(-2.0)).toBe(-2);
+      });
+
+      it("should return integer unchanged", () => {
+        expect(BuiltInFunctions.floor(5)).toBe(5);
+        expect(BuiltInFunctions.floor(-5)).toBe(-5);
+        expect(BuiltInFunctions.floor(0)).toBe(0);
+      });
+
+      it("should handle very small positive decimals", () => {
+        expect(BuiltInFunctions.floor(0.00001)).toBe(0);
+        expect(BuiltInFunctions.floor(0.99999)).toBe(0);
+      });
+    });
+
+    describe("RAND", () => {
+      it("should return number in range [0, 1)", () => {
+        for (let i = 0; i < 100; i++) {
+          const value = BuiltInFunctions.rand();
+          expect(value).toBeGreaterThanOrEqual(0);
+          expect(value).toBeLessThan(1);
+        }
+      });
+
+      it("should return different values on multiple calls", () => {
+        const values: Set<number> = new Set();
+        for (let i = 0; i < 100; i++) {
+          values.add(BuiltInFunctions.rand());
+        }
+        // Should have mostly unique values (statistically)
+        expect(values.size).toBeGreaterThan(90);
+      });
+    });
+  });
 });

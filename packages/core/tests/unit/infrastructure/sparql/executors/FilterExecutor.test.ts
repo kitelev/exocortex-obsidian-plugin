@@ -1188,4 +1188,167 @@ describe("FilterExecutor", () => {
       expect(results).toHaveLength(1);
     });
   });
+
+  describe("SPARQL 1.1 Numeric Functions", () => {
+    it("should evaluate ABS function with positive number", async () => {
+      const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "abs",
+            args: [{ type: "variable", name: "delta" }],
+          },
+          right: { type: "literal", value: 5 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("delta", new Literal("-5", xsdDecimal));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should evaluate ROUND function", async () => {
+      const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "round",
+            args: [{ type: "variable", name: "avg" }],
+          },
+          right: { type: "literal", value: 3 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("avg", new Literal("2.5", xsdDecimal));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("avg", new Literal("2.4", xsdDecimal));
+
+      const results = await executor.executeAll(operation, [solution1, solution2]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should evaluate CEIL function", async () => {
+      const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "<=",
+          left: {
+            type: "function",
+            function: "ceil",
+            args: [{ type: "variable", name: "priority" }],
+          },
+          right: { type: "literal", value: 3 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("priority", new Literal("2.1", xsdDecimal));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("priority", new Literal("3.5", xsdDecimal));
+
+      const results = await executor.executeAll(operation, [solution1, solution2]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should evaluate FLOOR function", async () => {
+      const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "floor",
+            args: [{ type: "variable", name: "hours" }],
+          },
+          right: { type: "literal", value: 2 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("hours", new Literal("2.9", xsdDecimal));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("hours", new Literal("3.1", xsdDecimal));
+
+      const results = await executor.executeAll(operation, [solution1, solution2]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should evaluate RAND function", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "<",
+          left: {
+            type: "function",
+            function: "rand",
+            args: [],
+          },
+          right: { type: "literal", value: 1 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal("test"));
+
+      // RAND() always returns value in [0, 1), so should always pass filter
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should combine numeric functions in complex expression", async () => {
+      const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+      // Test: ABS(FLOOR(x)) = 2 where x = -2.9
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "abs",
+            args: [
+              {
+                type: "function",
+                function: "floor",
+                args: [{ type: "variable", name: "x" }],
+              },
+            ],
+          },
+          right: { type: "literal", value: 3 },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      // FLOOR(-2.9) = -3, ABS(-3) = 3
+      solution.set("x", new Literal("-2.9", xsdDecimal));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+  });
 });

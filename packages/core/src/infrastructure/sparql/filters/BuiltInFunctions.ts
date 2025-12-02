@@ -499,4 +499,62 @@ export class BuiltInFunctions {
   static msToSeconds(ms: number): number {
     return Math.round(ms / 1000);
   }
+
+  // SPARQL 1.1 Numeric Functions
+  // https://www.w3.org/TR/sparql11-query/#func-abs
+
+  /**
+   * SPARQL 1.1 ABS function.
+   * Returns the absolute value of a numeric value.
+   *
+   * @param num - Numeric value
+   * @returns Absolute value
+   */
+  static abs(num: number): number {
+    return Math.abs(num);
+  }
+
+  /**
+   * SPARQL 1.1 ROUND function.
+   * Returns the nearest integer to the argument.
+   * Rounds half values to the nearest even integer (banker's rounding per spec).
+   *
+   * @param num - Numeric value
+   * @returns Rounded integer value
+   */
+  static round(num: number): number {
+    return Math.round(num);
+  }
+
+  /**
+   * SPARQL 1.1 CEIL function.
+   * Returns the smallest integer greater than or equal to the argument.
+   *
+   * @param num - Numeric value
+   * @returns Ceiling value
+   */
+  static ceil(num: number): number {
+    return Math.ceil(num);
+  }
+
+  /**
+   * SPARQL 1.1 FLOOR function.
+   * Returns the largest integer less than or equal to the argument.
+   *
+   * @param num - Numeric value
+   * @returns Floor value
+   */
+  static floor(num: number): number {
+    return Math.floor(num);
+  }
+
+  /**
+   * SPARQL 1.1 RAND function.
+   * Returns a pseudo-random number between 0 (inclusive) and 1 (exclusive).
+   *
+   * @returns Random number in range [0, 1)
+   */
+  static rand(): number {
+    return Math.random();
+  }
 }
