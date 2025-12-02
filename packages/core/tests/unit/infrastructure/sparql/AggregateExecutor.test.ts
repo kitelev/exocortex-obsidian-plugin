@@ -1,6 +1,7 @@
 import { AggregateExecutor } from "../../../../src/infrastructure/sparql/executors/AggregateExecutor";
 import { SolutionMapping } from "../../../../src/infrastructure/sparql/SolutionMapping";
 import type { GroupOperation, AggregateBinding, AggregateExpression } from "../../../../src/infrastructure/sparql/algebra/AlgebraOperation";
+import { Literal } from "../../../../src/domain/models/rdf/Literal";
 
 describe("AggregateExecutor", () => {
   let executor: AggregateExecutor;
@@ -15,6 +16,23 @@ describe("AggregateExecutor", () => {
       solution.set(key, value);
     }
     return solution;
+  };
+
+  /**
+   * Helper to get aggregate result value - aggregate results are now RDF Literals
+   */
+  const getAggregateValue = (solution: SolutionMapping, variable: string): any => {
+    const term = solution.get(variable);
+    if (term instanceof Literal) {
+      const rawValue = term.value;
+      // Try to parse as number if it looks like one
+      const num = parseFloat(rawValue);
+      if (!isNaN(num) && rawValue === String(num)) {
+        return num;
+      }
+      return rawValue;
+    }
+    return term;
   };
 
   const createGroupOperation = (
@@ -105,7 +123,7 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("count")).toBe(3);
+      expect(getAggregateValue(results[0], "count")).toBe(3);
     });
 
     it("should count with GROUP BY", () => {
@@ -124,8 +142,8 @@ describe("AggregateExecutor", () => {
       const taskResult = results.find((r) => r.toJSON()["class"] === "Task");
       const projectResult = results.find((r) => r.toJSON()["class"] === "Project");
 
-      expect(taskResult?.get("count")).toBe(2);
-      expect(projectResult?.get("count")).toBe(1);
+      expect(getAggregateValue(taskResult!, "count")).toBe(2);
+      expect(getAggregateValue(projectResult!, "count")).toBe(1);
     });
 
     it("should count distinct values", () => {
@@ -148,7 +166,7 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("count")).toBe(2); // distinct: 'a' and 'b'
+      expect(getAggregateValue(results[0], "count")).toBe(2); // distinct: 'a' and 'b'
     });
   });
 
@@ -164,7 +182,7 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("total")).toBe(60);
+      expect(getAggregateValue(results[0], "total")).toBe(60);
     });
 
     it("should handle string numbers", () => {
@@ -177,7 +195,7 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("total")).toBe(30);
+      expect(getAggregateValue(results[0], "total")).toBe(30);
     });
   });
 
@@ -193,7 +211,7 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("avg")).toBe(20);
+      expect(getAggregateValue(results[0], "avg")).toBe(20);
     });
 
     it("should return 0 for empty input", () => {
@@ -203,7 +221,7 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("avg")).toBe(0);
+      expect(getAggregateValue(results[0], "avg")).toBe(0);
     });
   });
 
@@ -219,7 +237,7 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("min")).toBe(10);
+      expect(getAggregateValue(results[0], "min")).toBe(10);
     });
 
     it("should find minimum string value", () => {
@@ -233,7 +251,7 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("min")).toBe("alpha");
+      expect(getAggregateValue(results[0], "min")).toBe("alpha");
     });
   });
 
@@ -249,7 +267,7 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("max")).toBe(30);
+      expect(getAggregateValue(results[0], "max")).toBe(30);
     });
   });
 
@@ -265,7 +283,7 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("names")).toBe("Alice Bob Charlie");
+      expect(getAggregateValue(results[0], "names")).toBe("Alice Bob Charlie");
     });
 
     it("should concatenate values with custom separator", () => {
@@ -278,7 +296,7 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("names")).toBe("Alice, Bob");
+      expect(getAggregateValue(results[0], "names")).toBe("Alice, Bob");
     });
 
     it("should handle distinct values", () => {
@@ -292,7 +310,7 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("names")).toBe("Alice Bob");
+      expect(getAggregateValue(results[0], "names")).toBe("Alice Bob");
     });
   });
 
@@ -314,11 +332,11 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("count")).toBe(3);
-      expect(results[0].get("total")).toBe(60);
-      expect(results[0].get("average")).toBe(20);
-      expect(results[0].get("minimum")).toBe(10);
-      expect(results[0].get("maximum")).toBe(30);
+      expect(getAggregateValue(results[0], "count")).toBe(3);
+      expect(getAggregateValue(results[0], "total")).toBe(60);
+      expect(getAggregateValue(results[0], "average")).toBe(20);
+      expect(getAggregateValue(results[0], "minimum")).toBe(10);
+      expect(getAggregateValue(results[0], "maximum")).toBe(30);
     });
   });
 
@@ -330,7 +348,7 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("count")).toBe(0);
+      expect(getAggregateValue(results[0], "count")).toBe(0);
     });
 
     it("should handle missing values in aggregation", () => {
@@ -344,7 +362,7 @@ describe("AggregateExecutor", () => {
       const results = executor.execute(operation, solutions);
 
       expect(results).toHaveLength(1);
-      expect(results[0].get("total")).toBe(30); // Only valid values summed
+      expect(getAggregateValue(results[0], "total")).toBe(30); // Only valid values summed
     });
   });
 });

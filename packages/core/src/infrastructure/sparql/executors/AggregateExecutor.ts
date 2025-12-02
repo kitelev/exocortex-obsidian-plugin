@@ -1,5 +1,11 @@
 import type { GroupOperation, AggregateExpression, Expression } from "../algebra/AlgebraOperation";
 import type { SolutionMapping } from "../SolutionMapping";
+import { Literal } from "../../../domain/models/rdf/Literal";
+import { IRI } from "../../../domain/models/rdf/IRI";
+
+const XSD_INTEGER = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+const XSD_DECIMAL = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+const XSD_STRING = new IRI("http://www.w3.org/2001/XMLSchema#string");
 
 export class AggregateExecutorError extends Error {
   constructor(message: string, cause?: Error) {
@@ -106,27 +112,49 @@ export class AggregateExecutor {
   private computeAggregate(
     expr: AggregateExpression,
     solutions: SolutionMapping[]
-  ): any {
+  ): Literal {
     const values = this.extractValues(expr, solutions);
 
     switch (expr.aggregation) {
-      case "count":
-        return this.computeCount(values, expr.distinct);
+      case "count": {
+        const count = this.computeCount(values, expr.distinct);
+        return new Literal(String(count), XSD_INTEGER);
+      }
 
-      case "sum":
-        return this.computeSum(values);
+      case "sum": {
+        const sum = this.computeSum(values);
+        return new Literal(String(sum), XSD_DECIMAL);
+      }
 
-      case "avg":
-        return this.computeAvg(values);
+      case "avg": {
+        const avg = this.computeAvg(values);
+        return new Literal(String(avg), XSD_DECIMAL);
+      }
 
-      case "min":
-        return this.computeMin(values);
+      case "min": {
+        const min = this.computeMin(values);
+        if (min === undefined) {
+          return new Literal("", XSD_STRING);
+        }
+        return typeof min === "number"
+          ? new Literal(String(min), XSD_DECIMAL)
+          : new Literal(String(min), XSD_STRING);
+      }
 
-      case "max":
-        return this.computeMax(values);
+      case "max": {
+        const max = this.computeMax(values);
+        if (max === undefined) {
+          return new Literal("", XSD_STRING);
+        }
+        return typeof max === "number"
+          ? new Literal(String(max), XSD_DECIMAL)
+          : new Literal(String(max), XSD_STRING);
+      }
 
-      case "group_concat":
-        return this.computeGroupConcat(values, expr.separator || " ", expr.distinct);
+      case "group_concat": {
+        const concat = this.computeGroupConcat(values, expr.separator || " ", expr.distinct);
+        return new Literal(concat || " ", XSD_STRING);
+      }
 
       default:
         throw new AggregateExecutorError(`Unknown aggregation function: ${expr.aggregation}`);
@@ -226,14 +254,17 @@ export class AggregateExecutor {
     for (const aggregate of operation.aggregates) {
       switch (aggregate.expression.aggregation) {
         case "count":
-          result.set(aggregate.variable, 0);
+          result.set(aggregate.variable, new Literal("0", XSD_INTEGER));
           break;
         case "sum":
         case "avg":
-          result.set(aggregate.variable, 0);
+          result.set(aggregate.variable, new Literal("0", XSD_DECIMAL));
+          break;
+        case "group_concat":
+          result.set(aggregate.variable, new Literal(" ", XSD_STRING));
           break;
         default:
-          result.set(aggregate.variable, undefined);
+          result.set(aggregate.variable, new Literal("", XSD_STRING));
       }
     }
 
