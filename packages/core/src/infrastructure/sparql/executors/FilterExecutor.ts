@@ -358,7 +358,7 @@ export class FilterExecutor {
     return date.getTime();
   }
 
-  private evaluateFunction(expr: any, solution: SolutionMapping): boolean | string | number {
+  private evaluateFunction(expr: any, solution: SolutionMapping): boolean | string | number | undefined | any {
     // Handle both string function names and NamedNode (IRI) function references
     let funcName: string;
     if (typeof expr.function === "string") {
@@ -568,6 +568,37 @@ export class FilterExecutor {
       case "rand":
         return BuiltInFunctions.rand();
 
+      // SPARQL 1.1 Conditional Functions
+      case "coalesce":
+        // COALESCE evaluates arguments lazily, returning first non-error, non-unbound value
+        for (const arg of expr.args) {
+          try {
+            const value = this.evaluateExpression(arg, solution);
+            if (value !== undefined && value !== null) {
+              return value;
+            }
+          } catch {
+            // Skip errors and try next argument
+            continue;
+          }
+        }
+        // All arguments were unbound or errored - return undefined (unbound)
+        return undefined;
+
+      case "if":
+        // IF requires exactly 3 arguments: condition, thenExpr, elseExpr
+        if (!expr.args || expr.args.length !== 3) {
+          throw new FilterExecutorError("IF requires exactly 3 arguments");
+        }
+        // Evaluate condition first
+        const condition = this.evaluateExpression(expr.args[0], solution);
+        // Convert to boolean (handle various truthy/falsy values)
+        const conditionBool = this.toBoolean(condition);
+        // Only evaluate the appropriate branch
+        return conditionBool
+          ? this.evaluateExpression(expr.args[1], solution)
+          : this.evaluateExpression(expr.args[2], solution);
+
       default:
         throw new FilterExecutorError(`Unknown function: ${funcName}`);
     }
@@ -593,5 +624,55 @@ export class FilterExecutor {
       return String(value.value);
     }
     return String(value);
+  }
+
+  /**
+   * Convert a value to boolean for use in IF conditions.
+   * Per SPARQL Effective Boolean Value (EBV) rules:
+   * - boolean true/false → as-is
+   * - numeric non-zero → true, zero/NaN → false
+   * - non-empty string → true, empty string → false
+   * - Literal with boolean datatype → parse as boolean
+   * - Literal with numeric datatype → parse as numeric, apply numeric rules
+   * - Other → truthy coercion
+   */
+  private toBoolean(value: any): boolean {
+    if (typeof value === "boolean") {
+      return value;
+    }
+
+    if (typeof value === "number") {
+      return !isNaN(value) && value !== 0;
+    }
+
+    if (typeof value === "string") {
+      return value.length > 0;
+    }
+
+    if (value instanceof Literal) {
+      const datatypeValue = value.datatype?.value || "";
+
+      // Handle boolean datatype
+      if (datatypeValue.includes("#boolean")) {
+        return value.value === "true" || value.value === "1";
+      }
+
+      // Handle numeric datatypes
+      if (
+        datatypeValue.includes("#integer") ||
+        datatypeValue.includes("#decimal") ||
+        datatypeValue.includes("#double") ||
+        datatypeValue.includes("#float")
+      ) {
+        const num = parseFloat(value.value);
+        return !isNaN(num) && num !== 0;
+      }
+
+      // For strings, non-empty is true
+      return value.value.length > 0;
+    }
+
+    // For other values (IRI, BlankNode), use truthy coercion
+    return Boolean(value);
   }
 }
