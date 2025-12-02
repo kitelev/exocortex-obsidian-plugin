@@ -1160,6 +1160,214 @@ describe("AlgebraTranslator", () => {
     });
   });
 
+  describe("VALUES Translation", () => {
+    it("translates simple single-variable VALUES", () => {
+      const query = `
+        SELECT ?task ?status
+        WHERE {
+          VALUES ?status { "active" "pending" "blocked" }
+          ?task <http://example.org/status> ?status .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("join");
+      expect(input.left.type).toBe("values");
+      expect(input.left.variables).toEqual(["status"]);
+      expect(input.left.bindings).toHaveLength(3);
+      expect(input.left.bindings[0].status.type).toBe("literal");
+      expect(input.left.bindings[0].status.value).toBe("active");
+    });
+
+    it("translates multi-variable VALUES", () => {
+      const query = `
+        SELECT ?name ?role
+        WHERE {
+          VALUES (?name ?role) {
+            ("Alice" "admin")
+            ("Bob" "editor")
+          }
+          ?person <http://example.org/name> ?name .
+          ?person <http://example.org/role> ?role .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("join");
+      expect(input.left.type).toBe("values");
+      expect(input.left.variables).toContain("name");
+      expect(input.left.variables).toContain("role");
+      expect(input.left.bindings).toHaveLength(2);
+      expect(input.left.bindings[0].name.value).toBe("Alice");
+      expect(input.left.bindings[0].role.value).toBe("admin");
+    });
+
+    it("translates VALUES with IRI values", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?proj ?name
+        WHERE {
+          VALUES ?proj { ex:proj1 ex:proj2 <http://example.org/proj3> }
+          ?proj ex:name ?name .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("join");
+      expect(input.left.type).toBe("values");
+      expect(input.left.bindings).toHaveLength(3);
+      expect(input.left.bindings[0].proj.type).toBe("iri");
+      expect(input.left.bindings[0].proj.value).toBe("http://example.org/proj1");
+    });
+
+    it("translates VALUES with UNDEF (missing values)", () => {
+      const query = `
+        SELECT ?x ?y
+        WHERE {
+          VALUES (?x ?y) {
+            (1 2)
+            (UNDEF 3)
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("values");
+      expect(input.bindings).toHaveLength(2);
+      // First row: both bound
+      expect(input.bindings[0].x.value).toBe("1");
+      expect(input.bindings[0].y.value).toBe("2");
+      // Second row: x is UNDEF (not present in binding)
+      expect(input.bindings[1].x).toBeUndefined();
+      expect(input.bindings[1].y.value).toBe("3");
+    });
+
+    it("translates VALUES with typed literals", () => {
+      const query = `
+        SELECT ?count
+        WHERE {
+          VALUES ?count { 1 2 3 }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("values");
+      expect(input.bindings).toHaveLength(3);
+      expect(input.bindings[0].count.type).toBe("literal");
+      expect(input.bindings[0].count.datatype).toContain("integer");
+    });
+
+    it("translates VALUES-only query (no other patterns)", () => {
+      const query = `
+        SELECT ?x ?y
+        WHERE {
+          VALUES (?x ?y) {
+            ("a" "b")
+            ("c" "d")
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("values");
+      expect(input.variables).toContain("x");
+      expect(input.variables).toContain("y");
+    });
+
+    it("translates multiple VALUES clauses", () => {
+      const query = `
+        SELECT ?year ?month
+        WHERE {
+          VALUES ?year { 2023 2024 }
+          VALUES ?month { 1 2 3 }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      // Two VALUES clauses should be joined
+      expect(input.type).toBe("join");
+      expect(input.left.type).toBe("values");
+      expect(input.right.type).toBe("values");
+    });
+
+    it("translates VALUES combined with FILTER", () => {
+      const query = `
+        SELECT ?x ?y
+        WHERE {
+          VALUES ?x { 1 2 3 4 5 }
+          BIND(?x * 2 AS ?y)
+          FILTER(?y > 4)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("filter");
+      expect(input.input.type).toBe("extend");
+      expect(input.input.input.type).toBe("values");
+    });
+
+    it("translates VALUES combined with OPTIONAL", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?task ?status ?priority
+        WHERE {
+          VALUES ?status { "active" "pending" }
+          ?task ex:status ?status .
+          OPTIONAL { ?task ex:priority ?priority }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      // Should have join of (join(values, bgp), leftjoin)
+      const input = (algebra as any).input;
+      expect(input.type).toBe("join");
+    });
+
+    it("translates VALUES with PREFIX declarations", () => {
+      const query = `
+        PREFIX ems: <https://exocortex.my/ontology/ems#>
+        SELECT ?task ?status
+        WHERE {
+          VALUES ?status { "active" "done" }
+          ?task ems:status ?status .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("join");
+      expect(input.left.type).toBe("values");
+    });
+  });
+
   describe("Error Handling", () => {
     it("throws error for empty WHERE clause", () => {
       const ast = parser.parse("SELECT ?s WHERE { }");

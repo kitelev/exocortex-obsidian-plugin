@@ -7,6 +7,7 @@ import type {
   LeftJoinOperation,
   UnionOperation,
   MinusOperation,
+  ValuesOperation,
   ProjectOperation,
   OrderByOperation,
   SliceOperation,
@@ -21,6 +22,7 @@ import { FilterExecutor } from "./FilterExecutor";
 import { OptionalExecutor } from "./OptionalExecutor";
 import { UnionExecutor } from "./UnionExecutor";
 import { MinusExecutor } from "./MinusExecutor";
+import { ValuesExecutor } from "./ValuesExecutor";
 import { AggregateExecutor } from "./AggregateExecutor";
 
 export class QueryExecutorError extends Error {
@@ -41,6 +43,7 @@ export class QueryExecutor {
   private readonly optionalExecutor: OptionalExecutor;
   private readonly unionExecutor: UnionExecutor;
   private readonly minusExecutor: MinusExecutor;
+  private readonly valuesExecutor: ValuesExecutor;
   private readonly aggregateExecutor: AggregateExecutor;
 
   constructor(tripleStore: ITripleStore) {
@@ -49,6 +52,7 @@ export class QueryExecutor {
     this.optionalExecutor = new OptionalExecutor();
     this.unionExecutor = new UnionExecutor();
     this.minusExecutor = new MinusExecutor();
+    this.valuesExecutor = new ValuesExecutor();
     this.aggregateExecutor = new AggregateExecutor();
 
     // Set up EXISTS evaluator for FilterExecutor
@@ -117,6 +121,10 @@ export class QueryExecutor {
 
       case "minus":
         yield* this.executeMinus(operation);
+        break;
+
+      case "values":
+        yield* this.executeValues(operation);
         break;
 
       case "project":
@@ -246,6 +254,10 @@ export class QueryExecutor {
     }
 
     yield* this.minusExecutor.execute(leftGen(), rightGen());
+  }
+
+  private async *executeValues(operation: ValuesOperation): AsyncIterableIterator<SolutionMapping> {
+    yield* this.valuesExecutor.execute(operation);
   }
 
   private async *executeProject(operation: ProjectOperation): AsyncIterableIterator<SolutionMapping> {
