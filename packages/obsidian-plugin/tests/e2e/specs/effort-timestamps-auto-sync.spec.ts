@@ -20,7 +20,10 @@ test.describe("Effort Timestamps Auto-Sync", () => {
 
     const window = await launcher.getWindow();
 
-    const newEndTimestamp = "2025-10-21T15:30:00";
+    // Use UTC ISO 8601 timestamp format with Z suffix
+    const inputTimestamp = "2025-10-21T15:30:00Z";
+    // Expected output format after sync (ISO 8601 UTC)
+    const expectedTimestamp = "2025-10-21T15:30:00Z";
 
     const syncResult = await window.evaluate(async (newTimestamp) => {
       const app = (window as any).app;
@@ -128,12 +131,12 @@ test.describe("Effort Timestamps Auto-Sync", () => {
           : null,
         expectedTimestamp: newTimestamp,
       };
-    }, newEndTimestamp);
+    }, inputTimestamp);
 
     console.log("[E2E Test] Sync result:", syncResult);
 
     expect(syncResult.success).toBe(true);
-    expect(syncResult.endTimestamp).toBe(newEndTimestamp);
-    expect(syncResult.resolutionTimestamp).toBe(newEndTimestamp);
+    expect(syncResult.endTimestamp).toBe(expectedTimestamp);
+    expect(syncResult.resolutionTimestamp).toBe(expectedTimestamp);
   });
 });
