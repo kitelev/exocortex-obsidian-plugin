@@ -45,6 +45,63 @@ describe("DateFormatter", () => {
     });
   });
 
+  describe("toISOTimestamp", () => {
+    it("should format date to UTC ISO 8601 timestamp with Z suffix", () => {
+      const date = new Date("2025-10-24T14:30:45Z");
+      const result = DateFormatter.toISOTimestamp(date);
+
+      expect(result).toBe("2025-10-24T14:30:45Z");
+    });
+
+    it("should convert local time to UTC", () => {
+      // Create date at midnight UTC
+      const date = new Date(Date.UTC(2025, 9, 24, 0, 0, 0));
+      const result = DateFormatter.toISOTimestamp(date);
+
+      expect(result).toBe("2025-10-24T00:00:00Z");
+    });
+
+    it("should remove milliseconds", () => {
+      const date = new Date("2025-10-24T14:30:45.123Z");
+      const result = DateFormatter.toISOTimestamp(date);
+
+      // Should not include milliseconds
+      expect(result).toBe("2025-10-24T14:30:45Z");
+      expect(result).not.toContain(".");
+    });
+
+    it("should handle midnight UTC", () => {
+      const date = new Date(Date.UTC(2025, 11, 31, 0, 0, 0));
+      const result = DateFormatter.toISOTimestamp(date);
+
+      expect(result).toBe("2025-12-31T00:00:00Z");
+    });
+
+    it("should handle end of day UTC", () => {
+      const date = new Date(Date.UTC(2025, 11, 31, 23, 59, 59));
+      const result = DateFormatter.toISOTimestamp(date);
+
+      expect(result).toBe("2025-12-31T23:59:59Z");
+    });
+
+    it("should always end with Z suffix", () => {
+      const date = new Date();
+      const result = DateFormatter.toISOTimestamp(date);
+
+      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+    });
+
+    it("should be parseable by SPARQL date comparison", () => {
+      const date1 = new Date(Date.UTC(2025, 10, 1, 0, 0, 0));
+      const date2 = new Date(Date.UTC(2025, 10, 15, 0, 0, 0));
+      const timestamp1 = DateFormatter.toISOTimestamp(date1);
+      const timestamp2 = DateFormatter.toISOTimestamp(date2);
+
+      // Lexicographic comparison should work for ISO dates
+      expect(timestamp1 < timestamp2).toBe(true);
+    });
+  });
+
   describe("toDateWikilink", () => {
     it("should format date to quoted wikilink", () => {
       const date = new Date(2025, 9, 24, 14, 30, 45);
@@ -291,66 +348,66 @@ describe("DateFormatter", () => {
   });
 
   describe("getTodayStartTimestamp", () => {
-    it("should return today at midnight", () => {
+    it("should return today at midnight UTC", () => {
       const result = DateFormatter.getTodayStartTimestamp();
 
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const expected = DateFormatter.toLocalTimestamp(today);
+      today.setUTCHours(0, 0, 0, 0);
+      const expected = DateFormatter.toISOTimestamp(today);
 
       expect(result).toBe(expected);
     });
 
-    it("should return correct format", () => {
+    it("should return correct ISO format with Z suffix", () => {
       const result = DateFormatter.getTodayStartTimestamp();
 
-      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T00:00:00$/);
+      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T00:00:00Z$/);
     });
 
     it("should return midnight timestamp regardless of current time", () => {
       const result = DateFormatter.getTodayStartTimestamp();
 
-      expect(result).toContain("T00:00:00");
+      expect(result).toContain("T00:00:00Z");
     });
   });
 
   describe("toTimestampAtStartOfDay", () => {
-    it("should convert date string to timestamp at midnight", () => {
+    it("should convert date string to timestamp at midnight UTC", () => {
       const result = DateFormatter.toTimestampAtStartOfDay("2025-11-11");
 
-      expect(result).toBe("2025-11-11T00:00:00");
+      expect(result).toBe("2025-11-11T00:00:00Z");
     });
 
     it("should handle single-digit months and days", () => {
       const result = DateFormatter.toTimestampAtStartOfDay("2025-01-05");
 
-      expect(result).toBe("2025-01-05T00:00:00");
+      expect(result).toBe("2025-01-05T00:00:00Z");
     });
 
     it("should handle leap year dates", () => {
       const result = DateFormatter.toTimestampAtStartOfDay("2024-02-29");
 
-      expect(result).toBe("2024-02-29T00:00:00");
+      expect(result).toBe("2024-02-29T00:00:00Z");
     });
 
     it("should handle year boundaries", () => {
       const resultNewYear = DateFormatter.toTimestampAtStartOfDay("2025-01-01");
       const resultLastDay = DateFormatter.toTimestampAtStartOfDay("2025-12-31");
 
-      expect(resultNewYear).toBe("2025-01-01T00:00:00");
-      expect(resultLastDay).toBe("2025-12-31T00:00:00");
+      expect(resultNewYear).toBe("2025-01-01T00:00:00Z");
+      expect(resultLastDay).toBe("2025-12-31T00:00:00Z");
     });
 
     it("should handle dates before 2000", () => {
       const result = DateFormatter.toTimestampAtStartOfDay("1999-12-31");
 
-      expect(result).toBe("1999-12-31T00:00:00");
+      expect(result).toBe("1999-12-31T00:00:00Z");
     });
 
     it("should handle dates after 2100", () => {
       const result = DateFormatter.toTimestampAtStartOfDay("2150-06-15");
 
-      expect(result).toBe("2150-06-15T00:00:00");
+      expect(result).toBe("2150-06-15T00:00:00Z");
     });
 
     it("should throw error for invalid format (missing dashes)", () => {
@@ -404,15 +461,94 @@ describe("DateFormatter", () => {
     it("should handle dates with leading zeros", () => {
       const result = DateFormatter.toTimestampAtStartOfDay("2025-03-07");
 
-      expect(result).toBe("2025-03-07T00:00:00");
+      expect(result).toBe("2025-03-07T00:00:00Z");
     });
 
-    it("should always return midnight time regardless of input format", () => {
+    it("should always return midnight time with Z suffix", () => {
       const result1 = DateFormatter.toTimestampAtStartOfDay("2025-11-11");
       const result2 = DateFormatter.toTimestampAtStartOfDay("2025-01-01");
 
-      expect(result1.endsWith("T00:00:00")).toBe(true);
-      expect(result2.endsWith("T00:00:00")).toBe(true);
+      expect(result1).toBe("2025-11-11T00:00:00Z");
+      expect(result2).toBe("2025-01-01T00:00:00Z");
+    });
+  });
+
+  describe("normalizeTimestamp", () => {
+    it("should pass through ISO 8601 UTC timestamp unchanged", () => {
+      const timestamp = "2025-11-04T10:00:00Z";
+      const result = DateFormatter.normalizeTimestamp(timestamp);
+
+      expect(result).toBe(timestamp);
+    });
+
+    it("should convert JavaScript Date.toString() format to ISO", () => {
+      const jsDateStr = "Mon Nov 04 2025 10:00:00 GMT+1000";
+      const result = DateFormatter.normalizeTimestamp(jsDateStr);
+
+      // Should be converted to UTC (10:00 GMT+10 = 00:00 UTC)
+      expect(result).toBe("2025-11-04T00:00:00Z");
+    });
+
+    it("should convert ISO local timestamp to UTC", () => {
+      // ISO format without Z is treated as local time by JavaScript
+      const localTimestamp = "2025-11-04T10:00:00";
+      const result = DateFormatter.normalizeTimestamp(localTimestamp);
+
+      // Result should end with Z
+      expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+    });
+
+    it("should handle ISO timestamp with milliseconds", () => {
+      const timestampWithMs = "2025-11-04T10:00:00.123Z";
+      const result = DateFormatter.normalizeTimestamp(timestampWithMs);
+
+      // Should strip milliseconds
+      expect(result).toBe("2025-11-04T10:00:00Z");
+    });
+
+    it("should throw error for invalid timestamp", () => {
+      expect(() => {
+        DateFormatter.normalizeTimestamp("invalid-date");
+      }).toThrow("Invalid timestamp format: invalid-date");
+    });
+
+    it("should handle various JavaScript Date string formats", () => {
+      // Different timezone offsets
+      const gmtMinus5 = "Mon Nov 04 2025 10:00:00 GMT-0500";
+      const result = DateFormatter.normalizeTimestamp(gmtMinus5);
+
+      // 10:00 GMT-5 = 15:00 UTC
+      expect(result).toBe("2025-11-04T15:00:00Z");
+    });
+  });
+
+  describe("isISOTimestamp", () => {
+    it("should return true for valid ISO 8601 UTC timestamp", () => {
+      expect(DateFormatter.isISOTimestamp("2025-11-04T10:00:00Z")).toBe(true);
+    });
+
+    it("should return false for ISO without Z suffix", () => {
+      expect(DateFormatter.isISOTimestamp("2025-11-04T10:00:00")).toBe(false);
+    });
+
+    it("should return false for JavaScript Date.toString() format", () => {
+      expect(DateFormatter.isISOTimestamp("Mon Nov 04 2025 10:00:00 GMT+1000")).toBe(false);
+    });
+
+    it("should return false for ISO with milliseconds", () => {
+      expect(DateFormatter.isISOTimestamp("2025-11-04T10:00:00.123Z")).toBe(false);
+    });
+
+    it("should return false for date-only string", () => {
+      expect(DateFormatter.isISOTimestamp("2025-11-04")).toBe(false);
+    });
+
+    it("should return true for midnight timestamp", () => {
+      expect(DateFormatter.isISOTimestamp("2025-11-04T00:00:00Z")).toBe(true);
+    });
+
+    it("should return true for end of day timestamp", () => {
+      expect(DateFormatter.isISOTimestamp("2025-12-31T23:59:59Z")).toBe(true);
     });
   });
 

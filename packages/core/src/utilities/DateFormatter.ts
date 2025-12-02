@@ -34,9 +34,43 @@
  */
 export class DateFormatter {
   /**
+   * Format date to ISO 8601 timestamp string with UTC timezone (Z suffix).
+   *
+   * Format: `YYYY-MM-DDTHH:MM:SSZ`
+   *
+   * This is the **preferred format** for timestamp properties as it:
+   * - Enables proper SPARQL date range filtering
+   * - Follows ISO 8601 standard with explicit UTC timezone
+   * - Allows lexicographic string comparison for date ordering
+   *
+   * Used for effort timestamp properties like:
+   * - `ems__Effort_startTimestamp`
+   * - `ems__Effort_endTimestamp`
+   * - `ems__Effort_resolutionTimestamp`
+   * - `ems__Effort_plannedStartTimestamp`
+   * - `ems__Effort_plannedEndTimestamp`
+   *
+   * @param date - Date object to format
+   * @returns ISO 8601 UTC timestamp string with Z suffix
+   *
+   * @example
+   * ```typescript
+   * const date = new Date('2025-10-24T14:30:45Z');
+   * const timestamp = DateFormatter.toISOTimestamp(date);
+   * // "2025-10-24T14:30:45Z"
+   * ```
+   */
+  static toISOTimestamp(date: Date): string {
+    return date.toISOString().replace(/\.\d{3}Z$/, "Z");
+  }
+
+  /**
    * Format date to local timestamp string in ISO 8601 format (without timezone).
    *
    * Format: `YYYY-MM-DDTHH:MM:SS`
+   *
+   * @deprecated Use `toISOTimestamp()` for effort timestamps to enable SPARQL filtering.
+   * This method is kept for backward compatibility with display-only timestamps.
    *
    * Used for frontmatter properties like:
    * - `ems__Effort_created`
@@ -208,40 +242,40 @@ export class DateFormatter {
   }
 
   /**
-   * Get start of day timestamp for today (00:00:00).
+   * Get start of day timestamp for today (00:00:00) in UTC ISO 8601 format.
    *
-   * Format: `YYYY-MM-DDT00:00:00`
+   * Format: `YYYY-MM-DDT00:00:00Z`
    *
    * Used for setting planned start timestamp to beginning of current day.
    *
-   * @returns Today's date at midnight as ISO timestamp string
+   * @returns Today's date at midnight UTC as ISO timestamp string
    *
    * @example
    * ```typescript
    * const startOfToday = DateFormatter.getTodayStartTimestamp();
-   * // "2025-11-03T00:00:00"
+   * // "2025-11-03T00:00:00Z"
    * ```
    */
   static getTodayStartTimestamp(): string {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return DateFormatter.toLocalTimestamp(today);
+    today.setUTCHours(0, 0, 0, 0);
+    return DateFormatter.toISOTimestamp(today);
   }
 
   /**
-   * Convert date string (YYYY-MM-DD) to timestamp at start of day (00:00:00).
+   * Convert date string (YYYY-MM-DD) to timestamp at start of day (00:00:00Z) in UTC.
    *
-   * Format: `YYYY-MM-DDT00:00:00`
+   * Format: `YYYY-MM-DDT00:00:00Z`
    *
    * Used for creating tasks from DailyNote with planned start at beginning of day.
    *
    * @param dateStr - Date string in format "YYYY-MM-DD" (e.g., "2025-11-11")
-   * @returns Date at midnight as ISO timestamp string
+   * @returns Date at midnight UTC as ISO timestamp string
    *
    * @example
    * ```typescript
    * const timestamp = DateFormatter.toTimestampAtStartOfDay("2025-11-11");
-   * // "2025-11-11T00:00:00"
+   * // "2025-11-11T00:00:00Z"
    * ```
    */
   static toTimestampAtStartOfDay(dateStr: string): string {
@@ -251,12 +285,71 @@ export class DateFormatter {
     }
 
     const [year, month, day] = parts;
-    const date = new Date(year, month - 1, day, 0, 0, 0, 0);
+    const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
 
     if (isNaN(date.getTime())) {
       throw new Error(`Invalid date values: ${dateStr}`);
     }
 
-    return DateFormatter.toLocalTimestamp(date);
+    return DateFormatter.toISOTimestamp(date);
+  }
+
+  /**
+   * Normalize any timestamp format to ISO 8601 UTC format.
+   *
+   * Handles:
+   * - JavaScript Date.toString() format: "Mon Nov 04 2025 10:00:00 GMT+1000"
+   * - ISO 8601 local format: "2025-11-04T10:00:00"
+   * - ISO 8601 UTC format: "2025-11-04T10:00:00Z" (returns as-is)
+   *
+   * @param timestamp - Any valid date/timestamp string
+   * @returns ISO 8601 UTC timestamp string with Z suffix
+   * @throws Error if timestamp cannot be parsed
+   *
+   * @example
+   * ```typescript
+   * // JavaScript Date string
+   * DateFormatter.normalizeTimestamp("Mon Nov 04 2025 10:00:00 GMT+1000");
+   * // "2025-11-04T00:00:00Z"
+   *
+   * // ISO local
+   * DateFormatter.normalizeTimestamp("2025-11-04T10:00:00");
+   * // "2025-11-04T10:00:00Z"
+   *
+   * // Already ISO UTC (pass-through)
+   * DateFormatter.normalizeTimestamp("2025-11-04T10:00:00Z");
+   * // "2025-11-04T10:00:00Z"
+   * ```
+   */
+  static normalizeTimestamp(timestamp: string): string {
+    // Already in ISO UTC format
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(timestamp)) {
+      return timestamp;
+    }
+
+    const date = new Date(timestamp);
+
+    if (isNaN(date.getTime())) {
+      throw new Error(`Invalid timestamp format: ${timestamp}`);
+    }
+
+    return DateFormatter.toISOTimestamp(date);
+  }
+
+  /**
+   * Check if a timestamp string is in ISO 8601 UTC format.
+   *
+   * @param timestamp - Timestamp string to check
+   * @returns True if timestamp is in ISO 8601 UTC format (YYYY-MM-DDTHH:MM:SSZ)
+   *
+   * @example
+   * ```typescript
+   * DateFormatter.isISOTimestamp("2025-11-04T10:00:00Z");  // true
+   * DateFormatter.isISOTimestamp("2025-11-04T10:00:00");   // false (no Z)
+   * DateFormatter.isISOTimestamp("Mon Nov 04 2025 10:00:00 GMT+1000");  // false
+   * ```
+   */
+  static isISOTimestamp(timestamp: string): boolean {
+    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(timestamp);
   }
 }
