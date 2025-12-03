@@ -831,7 +831,9 @@ test.describe("DailyTasksTable", () => {
       },
     ];
 
-    const component = await mount(<DailyTasksTable tasks={tasksWithTimes} />);
+    const component = await mount(
+      <DailyTasksTable tasks={tasksWithTimes} showEmptySlots={false} />,
+    );
 
     await component.locator('thead th:has-text("Start")').click();
 
@@ -908,6 +910,217 @@ test.describe("DailyTasksTable", () => {
     const taskName = component.locator('tr[data-path="doing-task.md"] .task-name a');
     await expect(taskName).toContainText("🔄");
     await expect(taskName).toContainText("Doing Task");
+  });
+
+  test("should display empty time slots between tasks when showEmptySlots is true", async ({
+    mount,
+  }) => {
+    const tasksWithGap: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Task 1",
+        label: "Task 1",
+        startTime: "09:00",
+        endTime: "10:00",
+        startTimestamp: new Date("2025-01-15T09:00:00").getTime(),
+        endTimestamp: new Date("2025-01-15T10:00:00").getTime(),
+        status: "ems__EffortStatusInProgress",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "task2.md", basename: "task2" },
+        path: "task2.md",
+        title: "Task 2",
+        label: "Task 2",
+        startTime: "11:00",
+        endTime: "12:00",
+        startTimestamp: new Date("2025-01-15T11:00:00").getTime(),
+        endTimestamp: new Date("2025-01-15T12:00:00").getTime(),
+        status: "ems__EffortStatusInProgress",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyTasksTable tasks={tasksWithGap} showEmptySlots={true} />,
+    );
+
+    // Should have 3 rows: task1, empty slot, task2
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(3);
+
+    // Verify empty slot row exists
+    const emptySlotRow = component.locator('tr[data-empty-slot="true"]');
+    await expect(emptySlotRow).toBeVisible();
+
+    // Verify empty slot has correct times (10:00 - 11:00)
+    await expect(emptySlotRow.locator(".task-start")).toContainText("10:00");
+    await expect(emptySlotRow.locator(".task-end")).toContainText("11:00");
+
+    // Verify empty slot name and status are "-"
+    await expect(emptySlotRow.locator(".task-name")).toContainText("-");
+    await expect(emptySlotRow.locator(".task-status")).toContainText("-");
+  });
+
+  test("should not display empty time slots when showEmptySlots is false", async ({
+    mount,
+  }) => {
+    const tasksWithGap: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Task 1",
+        label: "Task 1",
+        startTime: "09:00",
+        endTime: "10:00",
+        startTimestamp: new Date("2025-01-15T09:00:00").getTime(),
+        endTimestamp: new Date("2025-01-15T10:00:00").getTime(),
+        status: "ems__EffortStatusInProgress",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "task2.md", basename: "task2" },
+        path: "task2.md",
+        title: "Task 2",
+        label: "Task 2",
+        startTime: "11:00",
+        endTime: "12:00",
+        startTimestamp: new Date("2025-01-15T11:00:00").getTime(),
+        endTimestamp: new Date("2025-01-15T12:00:00").getTime(),
+        status: "ems__EffortStatusInProgress",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyTasksTable tasks={tasksWithGap} showEmptySlots={false} />,
+    );
+
+    // Should have only 2 rows (no empty slots)
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(2);
+
+    // Verify no empty slot rows exist
+    const emptySlotRow = component.locator('tr[data-empty-slot="true"]');
+    await expect(emptySlotRow).toHaveCount(0);
+  });
+
+  test("should not show empty slot for gaps smaller than 5 minutes", async ({
+    mount,
+  }) => {
+    const tasksWithSmallGap: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Task 1",
+        label: "Task 1",
+        startTime: "09:00",
+        endTime: "09:58",
+        startTimestamp: new Date("2025-01-15T09:00:00").getTime(),
+        endTimestamp: new Date("2025-01-15T09:58:00").getTime(),
+        status: "ems__EffortStatusInProgress",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "task2.md", basename: "task2" },
+        path: "task2.md",
+        title: "Task 2",
+        label: "Task 2",
+        startTime: "10:00",
+        endTime: "11:00",
+        startTimestamp: new Date("2025-01-15T10:00:00").getTime(),
+        endTimestamp: new Date("2025-01-15T11:00:00").getTime(),
+        status: "ems__EffortStatusInProgress",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyTasksTable tasks={tasksWithSmallGap} showEmptySlots={true} />,
+    );
+
+    // Only 2 rows - no empty slot because gap is only 2 minutes
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(2);
+  });
+
+  test("empty slot row should have reduced opacity styling", async ({
+    mount,
+  }) => {
+    const tasksWithGap: DailyTask[] = [
+      {
+        file: { path: "task1.md", basename: "task1" },
+        path: "task1.md",
+        title: "Task 1",
+        label: "Task 1",
+        startTime: "09:00",
+        endTime: "10:00",
+        startTimestamp: new Date("2025-01-15T09:00:00").getTime(),
+        endTimestamp: new Date("2025-01-15T10:00:00").getTime(),
+        status: "ems__EffortStatusInProgress",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+      {
+        file: { path: "task2.md", basename: "task2" },
+        path: "task2.md",
+        title: "Task 2",
+        label: "Task 2",
+        startTime: "12:00",
+        endTime: "13:00",
+        startTimestamp: new Date("2025-01-15T12:00:00").getTime(),
+        endTimestamp: new Date("2025-01-15T13:00:00").getTime(),
+        status: "ems__EffortStatusInProgress",
+        metadata: {},
+        isDone: false,
+        isTrashed: false,
+        isDoing: false,
+        isMeeting: false,
+        isBlocked: false,
+      },
+    ];
+
+    const component = await mount(
+      <DailyTasksTable tasks={tasksWithGap} showEmptySlots={true} />,
+    );
+
+    const emptySlotRow = component.locator('tr[data-empty-slot="true"]');
+    await expect(emptySlotRow).toHaveCSS("opacity", "0.5");
   });
 });
 
@@ -1356,5 +1569,68 @@ test.describe("DailyTasksTableWithToggle", () => {
 
     const rows = component.locator("tbody tr");
     await expect(rows).toHaveCount(2);
+  });
+
+  test("should render toggle button for empty slots", async ({ mount }) => {
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+        showEmptySlots={true}
+        onToggleEmptySlots={() => {}}
+      />,
+    );
+
+    await expect(
+      component.locator(".exocortex-toggle-empty-slots"),
+    ).toBeVisible();
+    await expect(
+      component.locator(".exocortex-toggle-empty-slots"),
+    ).toContainText("Hide Empty Slots");
+  });
+
+  test("should show 'Show Empty Slots' when showEmptySlots is false", async ({
+    mount,
+  }) => {
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+        showEmptySlots={false}
+        onToggleEmptySlots={() => {}}
+      />,
+    );
+
+    await expect(
+      component.locator(".exocortex-toggle-empty-slots"),
+    ).toContainText("Show Empty Slots");
+  });
+
+  test("should call onToggleEmptySlots when button is clicked", async ({
+    mount,
+  }) => {
+    let toggleCalled = false;
+    const component = await mount(
+      <DailyTasksTableWithToggle
+        tasks={mockTasks}
+        showEffortArea={false}
+        onToggleEffortArea={() => {}}
+        showEffortVotes={false}
+        onToggleEffortVotes={() => {}}
+        showEmptySlots={true}
+        onToggleEmptySlots={() => {
+          toggleCalled = true;
+        }}
+      />,
+    );
+
+    await component.locator(".exocortex-toggle-empty-slots").click();
+    expect(toggleCalled).toBe(true);
   });
 });

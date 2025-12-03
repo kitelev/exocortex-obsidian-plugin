@@ -22,6 +22,7 @@ export interface DailyTask {
   isDoing: boolean;
   isMeeting: boolean;
   isBlocked: boolean;
+  isEmptySlot?: boolean;
 }
 
 export interface DailyTasksTableProps {
@@ -34,6 +35,7 @@ export interface DailyTasksTableProps {
   showArchived?: boolean;
   showFullDateInEffortTimes?: boolean;
   focusMode?: boolean;
+  showEmptySlots?: boolean;
 }
 
 export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
@@ -46,6 +48,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   showArchived: propShowArchived,
   showFullDateInEffortTimes: propShowFullDate,
   focusMode: propFocusMode,
+  showEmptySlots: propShowEmptySlots,
 }) => {
   const sortState = useTableSortStore((state) => state.dailyTasks);
   const toggleSort = useTableSortStore((state) => state.toggleSort);
@@ -57,12 +60,14 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     (state) => state.showFullDateInEffortTimes,
   );
   const storeFocusMode = useUIStore((state) => state.focusMode);
+  const storeShowEmptySlots = useUIStore((state) => state.showEmptySlots);
 
   const showArchived = propShowArchived ?? storeShowArchived;
   const showEffortArea = propShowEffortArea ?? storeShowEffortArea;
   const showEffortVotes = propShowEffortVotes ?? storeShowEffortVotes;
   const showFullDateInEffortTimes = propShowFullDate ?? storeShowFullDate;
   const focusMode = propFocusMode ?? storeFocusMode;
+  const showEmptySlots = propShowEmptySlots ?? storeShowEmptySlots;
 
   const handleSort = (column: string) => {
     toggleSort("dailyTasks", column);
@@ -251,12 +256,97 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     return [...sortedDoing, ...sortedOthers];
   }, [tasks, sortState, getAssetLabel, getEffortArea, showArchived]);
 
-  const displayedTasks = useMemo(() => {
-    if (focusMode && sortedTasks.length > 0) {
-      return [sortedTasks[0]];
+  /**
+   * Creates an empty time slot entry.
+   */
+  const createEmptySlot = (
+    startTimestamp: number,
+    endTimestamp: number,
+    index: number,
+  ): DailyTask => {
+    const formatTime = (ts: number): string => {
+      const date = new Date(ts);
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+      return `${hours}:${minutes}`;
+    };
+
+    return {
+      file: { path: `empty-slot-${index}`, basename: `empty-slot-${index}` },
+      path: `empty-slot-${index}`,
+      title: "-",
+      label: "-",
+      startTime: formatTime(startTimestamp),
+      endTime: formatTime(endTimestamp),
+      startTimestamp,
+      endTimestamp,
+      status: "-",
+      metadata: {},
+      isDone: false,
+      isTrashed: false,
+      isDoing: false,
+      isMeeting: false,
+      isBlocked: false,
+      isEmptySlot: true,
+    };
+  };
+
+  /**
+   * Calculates empty time slots between tasks.
+   * Only considers tasks that have both start and end timestamps.
+   * Minimum gap size is 5 minutes.
+   */
+  const calculateEmptySlots = (taskList: DailyTask[]): DailyTask[] => {
+    // Filter tasks with valid timestamps and sort by start time
+    const tasksWithTime = taskList
+      .filter((t) => !t.isEmptySlot && t.startTimestamp && t.endTimestamp)
+      .map((t) => ({
+        task: t,
+        start: new Date(t.startTimestamp!).getTime(),
+        end: new Date(t.endTimestamp!).getTime(),
+      }))
+      .sort((a, b) => a.start - b.start);
+
+    if (tasksWithTime.length === 0) {
+      return taskList;
     }
-    return sortedTasks;
-  }, [sortedTasks, focusMode]);
+
+    const emptySlots: DailyTask[] = [];
+    const MIN_GAP_MS = 5 * 60 * 1000; // 5 minutes minimum gap
+
+    for (let i = 0; i < tasksWithTime.length - 1; i++) {
+      const currentEnd = tasksWithTime[i].end;
+      const nextStart = tasksWithTime[i + 1].start;
+
+      // Check if there's a gap between current task end and next task start
+      if (nextStart - currentEnd >= MIN_GAP_MS) {
+        emptySlots.push(createEmptySlot(currentEnd, nextStart, i));
+      }
+    }
+
+    // Merge empty slots with original tasks and sort by start time
+    const result = [...taskList, ...emptySlots];
+    return result.sort((a, b) => {
+      const aStart = a.startTimestamp ? new Date(a.startTimestamp).getTime() : 0;
+      const bStart = b.startTimestamp ? new Date(b.startTimestamp).getTime() : 0;
+      return aStart - bStart;
+    });
+  };
+
+  const displayedTasks = useMemo(() => {
+    let result = sortedTasks;
+
+    if (focusMode && result.length > 0) {
+      result = [result[0]];
+    }
+
+    // Add empty slots if enabled
+    if (showEmptySlots && !focusMode) {
+      result = calculateEmptySlots(result);
+    }
+
+    return result;
+  }, [sortedTasks, focusMode, showEmptySlots]);
 
   const ROW_HEIGHT = 35;
   const VIRTUALIZATION_THRESHOLD = 50;
@@ -284,6 +374,33 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   });
 
   const renderRow = (task: DailyTask, index: number, style?: React.CSSProperties) => {
+    // Render empty slot row with special styling
+    if (task.isEmptySlot) {
+      return (
+        <tr
+          key={`${task.path}-${index}`}
+          data-path={task.path}
+          data-empty-slot="true"
+          className="empty-slot-row"
+          style={{
+            ...style,
+            opacity: 0.5,
+          }}
+        >
+          <td className="task-name empty-slot-cell">-</td>
+          <td className="task-start empty-slot-cell">
+            {formatTimeDisplay(task.startTimestamp, task.startTime)}
+          </td>
+          <td className="task-end empty-slot-cell">
+            {formatTimeDisplay(task.endTimestamp, task.endTime)}
+          </td>
+          <td className="task-status empty-slot-cell">-</td>
+          {showEffortArea && <td className="task-effort-area empty-slot-cell">-</td>}
+          {showEffortVotes && <td className="task-effort-votes empty-slot-cell">-</td>}
+        </tr>
+      );
+    }
+
     let effortArea: unknown = null;
     if (getEffortArea) {
       effortArea = getEffortArea(task.metadata);
@@ -546,6 +663,7 @@ export interface DailyTasksTableWithToggleProps
     | "showArchived"
     | "showFullDateInEffortTimes"
     | "focusMode"
+    | "showEmptySlots"
   > {
   showEffortArea?: boolean;
   onToggleEffortArea?: () => void;
@@ -557,6 +675,8 @@ export interface DailyTasksTableWithToggleProps
   onToggleFullDate?: () => void;
   focusMode?: boolean;
   onToggleFocusMode?: () => void;
+  showEmptySlots?: boolean;
+  onToggleEmptySlots?: () => void;
 }
 
 export const DailyTasksTableWithToggle: React.FC<
@@ -572,6 +692,8 @@ export const DailyTasksTableWithToggle: React.FC<
   onToggleFullDate,
   focusMode: propFocusMode,
   onToggleFocusMode,
+  showEmptySlots: propShowEmptySlots,
+  onToggleEmptySlots,
   ...props
 }) => {
   const storeShowEffortArea = useUIStore((state) => state.showEffortArea);
@@ -581,18 +703,21 @@ export const DailyTasksTableWithToggle: React.FC<
     (state) => state.showFullDateInEffortTimes,
   );
   const storeFocusMode = useUIStore((state) => state.focusMode);
+  const storeShowEmptySlots = useUIStore((state) => state.showEmptySlots);
 
   const storeToggleEffortArea = useUIStore((state) => state.toggleEffortArea);
   const storeToggleEffortVotes = useUIStore((state) => state.toggleEffortVotes);
   const storeToggleArchived = useUIStore((state) => state.toggleArchived);
   const storeToggleFullDate = useUIStore((state) => state.toggleFullDate);
   const storeToggleFocusMode = useUIStore((state) => state.toggleFocusMode);
+  const storeToggleEmptySlots = useUIStore((state) => state.toggleEmptySlots);
 
   const showEffortArea = propShowEffortArea ?? storeShowEffortArea;
   const showEffortVotes = propShowEffortVotes ?? storeShowEffortVotes;
   const showArchived = propShowArchived ?? storeShowArchived;
   const showFullDateInEffortTimes = propShowFullDate ?? storeShowFullDate;
   const focusMode = propFocusMode ?? storeFocusMode;
+  const showEmptySlots = propShowEmptySlots ?? storeShowEmptySlots;
 
   const handleToggleEffortArea = () => {
     if (onToggleEffortArea) {
@@ -631,6 +756,14 @@ export const DailyTasksTableWithToggle: React.FC<
       onToggleFocusMode();
     } else {
       storeToggleFocusMode();
+    }
+  };
+
+  const handleToggleEmptySlots = () => {
+    if (onToggleEmptySlots) {
+      onToggleEmptySlots();
+    } else {
+      storeToggleEmptySlots();
     }
   };
 
@@ -694,12 +827,25 @@ export const DailyTasksTableWithToggle: React.FC<
           onClick={handleToggleFocusMode}
           style={{
             marginBottom: "8px",
+            marginRight: "8px",
             padding: "4px 8px",
             cursor: "pointer",
             fontSize: "12px",
           }}
         >
           {focusMode ? "🎯 focused" : "🎯 focus"}
+        </button>
+        <button
+          className="exocortex-toggle-empty-slots"
+          onClick={handleToggleEmptySlots}
+          style={{
+            marginBottom: "8px",
+            padding: "4px 8px",
+            cursor: "pointer",
+            fontSize: "12px",
+          }}
+        >
+          {showEmptySlots ? "Hide" : "Show"} Empty Slots
         </button>
       </div>
       <DailyTasksTable
@@ -709,6 +855,7 @@ export const DailyTasksTableWithToggle: React.FC<
         showArchived={showArchived}
         showFullDateInEffortTimes={showFullDateInEffortTimes}
         focusMode={focusMode}
+        showEmptySlots={showEmptySlots}
       />
     </div>
   );
