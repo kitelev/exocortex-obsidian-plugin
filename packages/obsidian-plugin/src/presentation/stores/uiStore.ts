@@ -8,6 +8,7 @@ const DEFAULT_UI_SETTINGS: UISettings = {
   showEffortVotes: false,
   showFullDateInEffortTimes: false,
   focusMode: false,
+  showEmptySlots: true,
 };
 
 export const useUIStore = create<UIStore>()(
@@ -53,6 +54,13 @@ export const useUIStore = create<UIStore>()(
             "toggleFocusMode",
           ),
 
+        toggleEmptySlots: () =>
+          set(
+            (state) => ({ showEmptySlots: !state.showEmptySlots }),
+            false,
+            "toggleEmptySlots",
+          ),
+
         resetToDefaults: () =>
           set(DEFAULT_UI_SETTINGS, false, "resetToDefaults"),
       }),
@@ -64,6 +72,7 @@ export const useUIStore = create<UIStore>()(
           showEffortVotes: state.showEffortVotes,
           showFullDateInEffortTimes: state.showFullDateInEffortTimes,
           focusMode: state.focusMode,
+          showEmptySlots: state.showEmptySlots,
         }),
       },
     ),
