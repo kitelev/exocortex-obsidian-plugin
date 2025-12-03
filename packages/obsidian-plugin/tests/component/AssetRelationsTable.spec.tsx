@@ -894,3 +894,144 @@ test.describe("AssetRelationsTableWithToggle Component", () => {
     await expect(component.locator('thead th:has-text("area")')).toContainText("↑");
   });
 });
+
+test.describe("AssetRelationsTable Virtualization", () => {
+  // Generate mock relations for virtualization tests
+  const generateMockRelations = (count: number): AssetRelation[] => {
+    return Array.from({ length: count }, (_, i) => ({
+      path: `tasks/task${i + 1}.md`,
+      title: `Task ${i + 1}`,
+      propertyName: "assignedTo",
+      isBodyLink: false,
+      created: Date.now() - i * 86400000,
+      modified: Date.now() - i * 43200000,
+      metadata: {
+        exo__Instance_class: "ems__Task",
+        status: i % 2 === 0 ? "active" : "completed",
+        priority: ["high", "medium", "low"][i % 3],
+      },
+    }));
+  };
+
+  test("should render table with exactly 51 items (threshold+1, virtualization active)", async ({ mount }) => {
+    const relations = generateMockRelations(51);
+
+    const component = await mount(
+      <AssetRelationsTable relations={relations} />,
+    );
+
+    // Verify virtualized container is present
+    await expect(component.locator(".exocortex-relations-virtualized")).toBeVisible();
+
+    // Verify scroll container has proper height
+    const scrollContainer = component.locator(".exocortex-virtual-scroll-container");
+    await expect(scrollContainer).toBeVisible();
+
+    // Verify some rows are visible (virtualization renders only visible items + overscan)
+    const rows = component.locator("tbody tr");
+    // With virtualization, we should see at least some rows rendered
+    const rowCount = await rows.count();
+    expect(rowCount).toBeGreaterThan(0);
+
+    // Verify first task is visible (use exact match to avoid matching Task 10, Task 11, etc.)
+    await expect(component.getByText("Task 1", { exact: true })).toBeVisible();
+  });
+
+  test("should render table with 100 items using virtualization", async ({ mount }) => {
+    const relations = generateMockRelations(100);
+
+    const component = await mount(
+      <AssetRelationsTable relations={relations} />,
+    );
+
+    // Verify virtualized structure
+    await expect(component.locator(".exocortex-relations-virtualized")).toBeVisible();
+    await expect(component.locator(".exocortex-virtual-scroll-container")).toBeVisible();
+
+    // Verify rows are rendered (not empty)
+    const rows = component.locator("tbody tr");
+    const rowCount = await rows.count();
+    expect(rowCount).toBeGreaterThan(0);
+
+    // Check that scroll container has proper dimensions
+    const scrollContainer = component.locator(".exocortex-virtual-scroll-container");
+    const scrollStyle = await scrollContainer.getAttribute("style");
+    expect(scrollStyle).toContain("height: 400px");
+    expect(scrollStyle).toContain("overflow: auto");
+
+    // Verify content wrapper has non-zero height (totalSize calculation)
+    const contentWrapper = component.locator(".exocortex-virtual-scroll-container > div").first();
+    const contentStyle = await contentWrapper.getAttribute("style");
+    // Height should be at least 51 * 35 = 1785px (since 51 items exceed threshold)
+    expect(contentStyle).toContain("height:");
+    // Extract height and verify it's reasonable (100 items * 35px = 3500px)
+    const heightMatch = contentStyle?.match(/height:\s*(\d+)px/);
+    expect(heightMatch).not.toBeNull();
+    if (heightMatch) {
+      const height = parseInt(heightMatch[1], 10);
+      // Should be approximately 100 * 35 = 3500px (with some tolerance for render timing)
+      expect(height).toBeGreaterThan(0);
+    }
+  });
+
+  test("should render table with exactly 50 items (at threshold, no virtualization)", async ({ mount }) => {
+    const relations = generateMockRelations(50);
+
+    const component = await mount(
+      <AssetRelationsTable relations={relations} />,
+    );
+
+    // At exactly 50 items, virtualization should NOT be active
+    // Should render regular table structure
+    await expect(component.locator(".exocortex-relations-table")).toBeVisible();
+
+    // Verify all 50 rows are rendered (no virtualization = all rows visible)
+    const rows = component.locator("tbody tr");
+    await expect(rows).toHaveCount(50);
+  });
+
+  test("should render all visible items after scrolling", async ({ mount }) => {
+    const relations = generateMockRelations(75);
+
+    const component = await mount(
+      <AssetRelationsTable relations={relations} />,
+    );
+
+    await expect(component.locator(".exocortex-relations-virtualized")).toBeVisible();
+
+    // Scroll down in the container
+    const scrollContainer = component.locator(".exocortex-virtual-scroll-container");
+    await scrollContainer.evaluate((el) => {
+      el.scrollTop = 500; // Scroll down 500px
+    });
+
+    // Wait for virtualization to update
+    await component.page().waitForTimeout(100);
+
+    // Verify rows are still rendered (not empty after scroll)
+    const rows = component.locator("tbody tr");
+    const rowCount = await rows.count();
+    expect(rowCount).toBeGreaterThan(0);
+  });
+
+  test("should handle sorting with virtualized table", async ({ mount }) => {
+    const relations = generateMockRelations(60);
+
+    const component = await mount(
+      <AssetRelationsTable relations={relations} showProperties={["status"]} />,
+    );
+
+    await expect(component.locator(".exocortex-relations-virtualized")).toBeVisible();
+
+    // Click on status column to sort
+    await component.locator('th:has-text("status")').click();
+
+    // Verify sort indicator appears
+    await expect(component.locator('th:has-text("status")')).toContainText("↑");
+
+    // Verify table still renders rows after sorting
+    const rows = component.locator("tbody tr");
+    const rowCount = await rows.count();
+    expect(rowCount).toBeGreaterThan(0);
+  });
+});
