@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { MetadataHelpers } from "@exocortex/core";
+import { MetadataHelpers, EffortSortingHelpers } from "@exocortex/core";
 import { useTableSortStore, useUIStore } from "../stores";
 
 export interface DailyTask {
@@ -185,11 +185,12 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     const otherTasks = filtered.filter((task) => !task.isDoing);
 
     const applySorting = (taskList: DailyTask[]): DailyTask[] => {
-      if (!sortState.column) {
-        return taskList;
-      }
-
       const sorted = [...taskList];
+
+      // Default sorting by start time when no column is selected
+      if (!sortState.column) {
+        return sorted.sort((a, b) => EffortSortingHelpers.sortByStartTime(a, b));
+      }
 
       sorted.sort((a, b) => {
         let aValue: any;
