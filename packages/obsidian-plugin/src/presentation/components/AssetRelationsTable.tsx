@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useLayoutEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 export interface AssetRelation {
@@ -227,17 +227,25 @@ const SingleTable: React.FC<SingleTableProps> = ({
   const VIRTUALIZATION_THRESHOLD = 50;
   const parentRef = useRef<HTMLDivElement>(null);
 
+  // Track when parent element is mounted for virtualizer initialization
+  const [isParentMounted, setIsParentMounted] = useState(false);
+
+  useLayoutEffect(() => {
+    if (parentRef.current && !isParentMounted) {
+      setIsParentMounted(true);
+    }
+  }, [isParentMounted]);
+
   const shouldVirtualize = sortedItems.length > VIRTUALIZATION_THRESHOLD;
 
-  // Only initialize virtualizer when we need virtualization
-  // This prevents issues with empty virtual items on first render
+  // Only initialize virtualizer when we need virtualization AND parent is mounted
   const rowVirtualizer = useVirtualizer({
     count: shouldVirtualize ? sortedItems.length : 0,
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_HEIGHT,
     overscan: 5,
     // Enable smooth scrolling and ensure proper initialization
-    enabled: shouldVirtualize,
+    enabled: shouldVirtualize && isParentMounted,
   });
 
   const renderRow = (relation: AssetRelation, index: number, style?: React.CSSProperties) => {
@@ -338,7 +346,13 @@ const SingleTable: React.FC<SingleTableProps> = ({
 
   // Get virtual items - may be empty on first render if parentRef is not yet set
   const virtualItems = rowVirtualizer.getVirtualItems();
-  const totalSize = rowVirtualizer.getTotalSize();
+  const virtualizerTotalSize = rowVirtualizer.getTotalSize();
+
+  // Calculate fallback height when virtualizer hasn't initialized yet
+  // This ensures content is visible even before the parent ref is mounted
+  const totalSize = virtualizerTotalSize > 0
+    ? virtualizerTotalSize
+    : sortedItems.length * ROW_HEIGHT;
 
   return (
     <div className="exocortex-relations-virtualized">
