@@ -143,7 +143,15 @@ jobs:
             fs.writeFileSync('packages/obsidian-plugin/manifest.json', JSON.stringify(manifest, null, 2) + '\n');
           "
 
-          echo "Updated package.json and manifest.json to version $NEW_VERSION"
+          # Update root manifest.json (required for BRAT to detect releases)
+          node -e "
+            const fs = require('fs');
+            const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+            manifest.version = '$NEW_VERSION';
+            fs.writeFileSync('manifest.json', JSON.stringify(manifest, null, 2) + '\n');
+          "
+
+          echo "Updated package.json and manifest.json files to version $NEW_VERSION"
 
       - name: Install dependencies
         if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
@@ -192,12 +200,20 @@ jobs:
           echo "Generated changelog:"
           cat release_notes.md
 
-      - name: Create git tag
+      - name: Commit version updates
         if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
         run: |
           NEW_VERSION="${{ steps.new_version.outputs.version }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json manifest.json packages/obsidian-plugin/manifest.json
+          git commit -m "chore(release): bump version to $NEW_VERSION [skip ci]"
+          git push origin main
+
+      - name: Create git tag
+        if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
           git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
           git push origin "v$NEW_VERSION"
 
@@ -218,6 +234,6 @@ jobs:
       - name: Summary
         if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
         run: |
-          echo "✅ Release v${{ steps.new_version.outputs.version }} created successfully"
+          echo "✅ Release v${{ steps.new_version.outputs.version }} created successfully!"
           echo "📦 Tag: v${{ steps.new_version.outputs.version }}"
           echo "📝 Changelog generated from commits"
