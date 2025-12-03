@@ -227,14 +227,18 @@ const SingleTable: React.FC<SingleTableProps> = ({
   const VIRTUALIZATION_THRESHOLD = 50;
   const parentRef = useRef<HTMLDivElement>(null);
 
+  const shouldVirtualize = sortedItems.length > VIRTUALIZATION_THRESHOLD;
+
+  // Only initialize virtualizer when we need virtualization
+  // This prevents issues with empty virtual items on first render
   const rowVirtualizer = useVirtualizer({
-    count: sortedItems.length,
+    count: shouldVirtualize ? sortedItems.length : 0,
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_HEIGHT,
     overscan: 5,
+    // Enable smooth scrolling and ensure proper initialization
+    enabled: shouldVirtualize,
   });
-
-  const shouldVirtualize = sortedItems.length > VIRTUALIZATION_THRESHOLD;
 
   const renderRow = (relation: AssetRelation, index: number, style?: React.CSSProperties) => {
     const instanceClass = getInstanceClass(relation.metadata);
@@ -332,6 +336,10 @@ const SingleTable: React.FC<SingleTableProps> = ({
     );
   }
 
+  // Get virtual items - may be empty on first render if parentRef is not yet set
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const totalSize = rowVirtualizer.getTotalSize();
+
   return (
     <div className="exocortex-relations-virtualized">
       <table className="exocortex-relations-table exocortex-relations-table-header">
@@ -345,32 +353,44 @@ const SingleTable: React.FC<SingleTableProps> = ({
           overflow: "auto",
         }}
       >
-        <table className="exocortex-relations-table">
-          <tbody>
-            <tr style={{ height: `${rowVirtualizer.getTotalSize()}px`, display: "block" }}>
-              <td style={{ padding: 0, border: "none", display: "block" }}>
-                <table
-                  className="exocortex-relations-table exocortex-virtual-table"
-                  style={{ width: "100%" }}
-                >
-                  <tbody>
-                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                      const relation = sortedItems[virtualRow.index];
-                      return renderRow(relation, virtualRow.index, {
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: `${virtualRow.size}px`,
-                        transform: `translateY(${virtualRow.start}px)`,
-                      });
-                    })}
-                  </tbody>
-                </table>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        {/* Wrapper div with total height for scrollbar sizing */}
+        <div
+          style={{
+            height: `${totalSize}px`,
+            width: "100%",
+            position: "relative",
+          }}
+        >
+          <table
+            className="exocortex-relations-table exocortex-virtual-table"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+            }}
+          >
+            <tbody>
+              {virtualItems.length > 0 ? (
+                virtualItems.map((virtualRow) => {
+                  const relation = sortedItems[virtualRow.index];
+                  return renderRow(relation, virtualRow.index, {
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: `${virtualRow.size}px`,
+                    transform: `translateY(${virtualRow.start}px)`,
+                  });
+                })
+              ) : (
+                // Fallback: render all rows if virtualizer hasn't initialized yet
+                // This handles the case where parentRef is not yet set
+                sortedItems.map((relation, index) => renderRow(relation, index))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
