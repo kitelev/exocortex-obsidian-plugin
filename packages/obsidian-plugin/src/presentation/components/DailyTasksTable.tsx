@@ -261,14 +261,18 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   const VIRTUALIZATION_THRESHOLD = 50;
   const parentRef = useRef<HTMLDivElement>(null);
 
+  const shouldVirtualize = displayedTasks.length > VIRTUALIZATION_THRESHOLD;
+
+  // Only initialize virtualizer when we need virtualization
+  // This prevents issues with empty virtual items on first render
   const rowVirtualizer = useVirtualizer({
-    count: displayedTasks.length,
+    count: shouldVirtualize ? displayedTasks.length : 0,
     getScrollElement: () => parentRef.current,
     estimateSize: () => ROW_HEIGHT,
     overscan: 5,
+    // Enable smooth scrolling and ensure proper initialization
+    enabled: shouldVirtualize,
   });
-
-  const shouldVirtualize = displayedTasks.length > VIRTUALIZATION_THRESHOLD;
 
   const renderRow = (task: DailyTask, index: number, style?: React.CSSProperties) => {
     let effortArea: unknown = null;
@@ -460,6 +464,10 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     );
   }
 
+  // Get virtual items - may be empty on first render if parentRef is not yet set
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const totalSize = rowVirtualizer.getTotalSize();
+
   return (
     <div className="exocortex-daily-tasks exocortex-virtualized">
       <table className="exocortex-tasks-table exocortex-tasks-table-header">
@@ -473,32 +481,43 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
           overflow: "auto",
         }}
       >
-        <table className="exocortex-tasks-table">
-          <tbody>
-            <tr style={{ height: `${rowVirtualizer.getTotalSize()}px`, display: "block" }}>
-              <td style={{ padding: 0, border: "none", display: "block" }}>
-                <table
-                  className="exocortex-tasks-table exocortex-virtual-table"
-                  style={{ width: "100%" }}
-                >
-                  <tbody>
-                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                      const task = displayedTasks[virtualRow.index];
-                      return renderRow(task, virtualRow.index, {
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: `${virtualRow.size}px`,
-                        transform: `translateY(${virtualRow.start}px)`,
-                      });
-                    })}
-                  </tbody>
-                </table>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        {/* Wrapper div with total height for scrollbar sizing */}
+        <div
+          style={{
+            height: `${totalSize}px`,
+            width: "100%",
+            position: "relative",
+          }}
+        >
+          <table
+            className="exocortex-tasks-table exocortex-virtual-table"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+            }}
+          >
+            <tbody>
+              {virtualItems.length > 0 ? (
+                virtualItems.map((virtualRow) => {
+                  const task = displayedTasks[virtualRow.index];
+                  return renderRow(task, virtualRow.index, {
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: `${virtualRow.size}px`,
+                    transform: `translateY(${virtualRow.start}px)`,
+                  });
+                })
+              ) : (
+                // Fallback: render all rows if virtualizer hasn't initialized yet
+                displayedTasks.map((task, index) => renderRow(task, index))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
