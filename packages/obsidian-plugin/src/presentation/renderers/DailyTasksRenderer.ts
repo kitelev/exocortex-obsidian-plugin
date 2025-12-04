@@ -286,7 +286,7 @@ export class DailyTasksRenderer {
         });
       }
 
-      filteredTasks.sort((a, b) => EffortSortingHelpers.sortByPriority(a, b));
+      filteredTasks.sort((a, b) => EffortSortingHelpers.sortByStartTime(a, b));
 
       return filteredTasks;
     } catch (error) {
