@@ -266,6 +266,62 @@ describe("MetadataHelpers", () => {
       expect(result).toBe(false);
     });
 
+    it("should return true for exo__Asset_isArchived: 1", () => {
+      const metadata = { exo__Asset_isArchived: 1 };
+      const result = MetadataHelpers.isAssetArchived(metadata);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return true for exo__Asset_isArchived: 'true'", () => {
+      const metadata = { exo__Asset_isArchived: "true" };
+      const result = MetadataHelpers.isAssetArchived(metadata);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return true for exo__Asset_isArchived: 'yes'", () => {
+      const metadata = { exo__Asset_isArchived: "yes" };
+      const result = MetadataHelpers.isAssetArchived(metadata);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return true for exo__Asset_isArchived: '1'", () => {
+      const metadata = { exo__Asset_isArchived: "1" };
+      const result = MetadataHelpers.isAssetArchived(metadata);
+
+      expect(result).toBe(true);
+    });
+
+    it("should return false for exo__Asset_isArchived: 'false'", () => {
+      const metadata = { exo__Asset_isArchived: "false" };
+      const result = MetadataHelpers.isAssetArchived(metadata);
+
+      expect(result).toBe(false);
+    });
+
+    it("should return false for exo__Asset_isArchived: 0", () => {
+      const metadata = { exo__Asset_isArchived: 0 };
+      const result = MetadataHelpers.isAssetArchived(metadata);
+
+      expect(result).toBe(false);
+    });
+
+    it("should handle exo__Asset_isArchived uppercase strings", () => {
+      const metadata = { exo__Asset_isArchived: "TRUE" };
+      const result = MetadataHelpers.isAssetArchived(metadata);
+
+      expect(result).toBe(true);
+    });
+
+    it("should handle exo__Asset_isArchived strings with whitespace", () => {
+      const metadata = { exo__Asset_isArchived: "  yes  " };
+      const result = MetadataHelpers.isAssetArchived(metadata);
+
+      expect(result).toBe(true);
+    });
+
     it("should return true for archived: true", () => {
       const metadata = { archived: true };
       const result = MetadataHelpers.isAssetArchived(metadata);
