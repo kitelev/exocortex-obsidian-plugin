@@ -461,7 +461,7 @@ describe("DailyTasksRenderer - render", () => {
     expect(tasks[0].isBlocked).toBe(false);
   });
 
-  it("should limit results to 50 tasks", async () => {
+  it("should return all tasks without artificial limit", async () => {
     const mockFile = {
       path: "test.md",
       parent: { path: "DailyNotes" },
@@ -508,7 +508,9 @@ describe("DailyTasksRenderer - render", () => {
     expect(ctx.mockReactRenderer.render).toHaveBeenCalled();
     const renderCall = ctx.mockReactRenderer.render.mock.calls[0];
     const tasks = renderCall[1].props.tasks;
-    expect(tasks.length).toBe(50);
+    // No artificial limit - all 60 tasks should be returned
+    // UI component handles virtualization for large lists
+    expect(tasks.length).toBe(60);
   });
 
   it("should handle error gracefully", async () => {

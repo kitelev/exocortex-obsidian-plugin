@@ -319,7 +319,7 @@ describe("DailyProjectsRenderer", () => {
       );
     });
 
-    it("should limit results to 50 projects", async () => {
+    it("should return all projects without artificial limit", async () => {
       const mockFile = {
         path: "test.md",
         parent: { path: "DailyNotes" },
@@ -366,7 +366,9 @@ describe("DailyProjectsRenderer", () => {
       expect(mockReactRenderer.render).toHaveBeenCalled();
       const renderCall = mockReactRenderer.render.mock.calls[0];
       const projects = renderCall[1].props.projects;
-      expect(projects.length).toBe(50);
+      // No artificial limit - all 60 projects should be returned
+      // UI component handles virtualization for large lists
+      expect(projects.length).toBe(60);
     });
 
     it("should handle error gracefully", async () => {

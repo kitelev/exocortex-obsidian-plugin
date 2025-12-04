@@ -288,7 +288,7 @@ export class DailyTasksRenderer {
 
       filteredTasks.sort((a, b) => EffortSortingHelpers.sortByPriority(a, b));
 
-      return filteredTasks.slice(0, 50);
+      return filteredTasks;
     } catch (error) {
       this.logger.error("Failed to get daily tasks", { error });
       return [];
