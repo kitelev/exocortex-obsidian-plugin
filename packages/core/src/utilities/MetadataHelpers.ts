@@ -69,10 +69,24 @@ export class MetadataHelpers {
   }
 
   static isAssetArchived(metadata: Record<string, any>): boolean {
-    if (metadata?.exo__Asset_isArchived === true) {
-      return true;
+    // Check exo__Asset_isArchived field with full truthy value support
+    const exoArchivedValue = metadata?.exo__Asset_isArchived;
+    if (exoArchivedValue !== undefined && exoArchivedValue !== null) {
+      if (exoArchivedValue === true || exoArchivedValue === 1) {
+        return true;
+      }
+      if (typeof exoArchivedValue === "string") {
+        const normalized = exoArchivedValue.toLowerCase().trim();
+        if (normalized === "true" || normalized === "yes" || normalized === "1") {
+          return true;
+        }
+      }
+      if (typeof exoArchivedValue === "boolean") {
+        return exoArchivedValue;
+      }
     }
 
+    // Fallback to legacy 'archived' field
     const archivedValue = metadata?.archived;
 
     if (archivedValue === undefined || archivedValue === null) {
