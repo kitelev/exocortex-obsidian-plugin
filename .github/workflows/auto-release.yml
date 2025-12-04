@@ -200,21 +200,16 @@ jobs:
           echo "Generated changelog:"
           cat release_notes.md
 
-      - name: Commit version updates
+      - name: Create git tag with version updates
         if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
         run: |
           NEW_VERSION="${{ steps.new_version.outputs.version }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Commit version updates locally (not pushed to main due to branch protection)
           git add package.json manifest.json packages/obsidian-plugin/manifest.json
-          # Skip pre-commit hooks - tests already passed in CI workflow that triggered this release
-          git commit --no-verify -m "chore(release): bump version to $NEW_VERSION [skip ci]"
-          git push origin main
-
-      - name: Create git tag
-        if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
-        run: |
-          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+          git commit --no-verify -m "chore(release): bump version to $NEW_VERSION"
+          # Create and push only the tag (tags bypass branch protection)
           git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
           git push origin "v$NEW_VERSION"
 
