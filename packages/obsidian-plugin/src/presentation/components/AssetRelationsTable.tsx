@@ -301,6 +301,25 @@ const SingleTable: React.FC<SingleTableProps> = ({
     );
   };
 
+  // Calculate column widths for fixed table layout
+  const baseColumnCount = 2; // Name + Instance_class
+  const totalColumns = baseColumnCount + showProperties.length;
+  const nameColumnWidth = Math.max(40, 60 - showProperties.length * 10); // Name column gets more space
+  const classColumnWidth = 20; // Instance_class fixed width
+  const propertyColumnWidth = totalColumns > 2
+    ? Math.floor((100 - nameColumnWidth - classColumnWidth) / showProperties.length)
+    : 0;
+
+  const renderColGroup = () => (
+    <colgroup>
+      <col style={{ width: `${nameColumnWidth}%` }} />
+      <col style={{ width: `${classColumnWidth}%` }} />
+      {showProperties.map((prop) => (
+        <col key={prop} style={{ width: `${propertyColumnWidth}%` }} />
+      ))}
+    </colgroup>
+  );
+
   const renderTableHeader = () => (
     <thead>
       <tr>
@@ -335,7 +354,8 @@ const SingleTable: React.FC<SingleTableProps> = ({
 
   if (!shouldVirtualize) {
     return (
-      <table className="exocortex-relations-table">
+      <table className="exocortex-relations-table" style={{ tableLayout: "fixed", width: "100%" }}>
+        {renderColGroup()}
         {renderTableHeader()}
         <tbody>
           {sortedItems.map((relation, index) => renderRow(relation, index))}
@@ -356,7 +376,8 @@ const SingleTable: React.FC<SingleTableProps> = ({
 
   return (
     <div className="exocortex-relations-virtualized">
-      <table className="exocortex-relations-table exocortex-relations-table-header">
+      <table className="exocortex-relations-table exocortex-relations-table-header" style={{ tableLayout: "fixed", width: "100%" }}>
+        {renderColGroup()}
         {renderTableHeader()}
       </table>
       <div
@@ -378,12 +399,14 @@ const SingleTable: React.FC<SingleTableProps> = ({
           <table
             className="exocortex-relations-table exocortex-virtual-table"
             style={{
+              tableLayout: "fixed",
               position: "absolute",
               top: 0,
               left: 0,
               width: "100%",
             }}
           >
+            {renderColGroup()}
             <tbody>
               {virtualItems.length > 0 ? (
                 virtualItems.map((virtualRow) => {
