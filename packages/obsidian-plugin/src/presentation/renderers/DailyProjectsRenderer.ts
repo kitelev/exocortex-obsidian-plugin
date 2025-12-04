@@ -243,7 +243,7 @@ export class DailyProjectsRenderer {
 
       projects.sort((a, b) => EffortSortingHelpers.sortByPriority(a, b));
 
-      return projects.slice(0, 50);
+      return projects;
     } catch (error) {
       this.logger.error("Failed to get daily projects", { error });
       return [];
