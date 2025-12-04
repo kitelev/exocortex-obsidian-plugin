@@ -2175,29 +2175,59 @@
 }
 
 /* ============================================================================
-   Edit Mode Styling Consistency - Match Reading Mode
-   Issue #547: Edit mode uses larger font and ignores width constraints
+   Theme Typography Compatibility - Issue #557 (Minimal theme) & Issue #547
    ============================================================================ */
 
 /*
+ * Obsidian themes use different CSS variables for content width:
+ * - Default theme: --file-line-width (typically 700px)
+ * - Minimal theme: --line-width (typically 40rem)
+ *
+ * The plugin respects both variables to ensure layouts render correctly
+ * regardless of which theme is active. The priority is:
+ * 1. --line-width (Minimal theme and some other themes)
+ * 2. --file-line-width (Obsidian default)
+ * 3. 100% fallback (no constraint)
+ *
  * In Obsidian, Edit mode uses .cm-content (CodeMirror) while Reading mode
  * uses .markdown-preview-view. These selectors ensure Exocortex layouts
  * render consistently in both modes.
  */
 
-/* Base container styling for Edit mode to match Reading mode */
+/* Reading Mode - Respect theme typography settings (Issue #557) */
+.markdown-preview-view .exocortex-action-buttons-container,
+.markdown-preview-view .exocortex-properties-section,
+.markdown-preview-view .exocortex-daily-tasks-section,
+.markdown-preview-view .exocortex-assets-relations,
+.markdown-preview-view .exocortex-area-tree,
+.markdown-preview-view .exocortex-relations-wrapper,
+.markdown-preview-view .exocortex-daily-navigation {
+  /*
+   * Use --line-width (Minimal theme) if available, otherwise fall back to
+   * --file-line-width (default Obsidian), then 100% as final fallback.
+   * This ensures compatibility with both standard and Minimal themes.
+   */
+  max-width: var(--line-width, var(--file-line-width, 100%));
+  /* Center the content to match theme behavior */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Edit Mode - Base container styling to match Reading mode */
 .cm-content .exocortex-action-buttons-container,
 .cm-content .exocortex-properties-section,
 .cm-content .exocortex-daily-tasks-section,
 .cm-content .exocortex-assets-relations,
 .cm-content .exocortex-area-tree,
 .cm-content .exocortex-relations-wrapper,
+.cm-content .exocortex-daily-navigation,
 .cm-scroller .exocortex-action-buttons-container,
 .cm-scroller .exocortex-properties-section,
 .cm-scroller .exocortex-daily-tasks-section,
 .cm-scroller .exocortex-assets-relations,
 .cm-scroller .exocortex-area-tree,
-.cm-scroller .exocortex-relations-wrapper {
+.cm-scroller .exocortex-relations-wrapper,
+.cm-scroller .exocortex-daily-navigation {
   /* Inherit font-size from Reading mode (not CodeMirror's larger default) */
   font-size: var(--font-text-size, 16px);
   /* Respect the same line-height as Reading mode */
@@ -2240,21 +2270,23 @@
 }
 
 /*
- * Width constraint: Respect "wide line width" setting in Edit mode
- * Obsidian uses --file-line-width CSS variable for this
+ * Width constraint for Edit mode - Respect theme typography settings
+ * Uses same fallback chain as Reading mode for consistency
  */
 .cm-content .exocortex-action-buttons-container,
 .cm-content .exocortex-properties-section,
 .cm-content .exocortex-daily-tasks-section,
 .cm-content .exocortex-assets-relations,
 .cm-content .exocortex-area-tree,
+.cm-content .exocortex-daily-navigation,
 .cm-scroller .exocortex-action-buttons-container,
 .cm-scroller .exocortex-properties-section,
 .cm-scroller .exocortex-daily-tasks-section,
 .cm-scroller .exocortex-assets-relations,
-.cm-scroller .exocortex-area-tree {
-  /* Respect Obsidian's "Readable line length" / "wide line width" setting */
-  max-width: var(--file-line-width, 100%);
+.cm-scroller .exocortex-area-tree,
+.cm-scroller .exocortex-daily-navigation {
+  /* Respect theme's line width settings - Minimal (--line-width) or default (--file-line-width) */
+  max-width: var(--line-width, var(--file-line-width, 100%));
   /* Center the content like in Reading mode */
   margin-left: auto;
   margin-right: auto;
