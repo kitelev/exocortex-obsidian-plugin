@@ -189,3 +189,40 @@ export function getPropertyByName(
   const schema = getPropertySchemaForClass(instanceClass);
   return schema.find((prop) => prop.name === propertyName);
 }
+
+/**
+ * Converts an effort status URI to a human-readable label.
+ * Handles various input formats: raw URI, wiki-link wrapped, or already a label.
+ *
+ * @param statusValue - The status value (e.g., "ems__EffortStatusDoing", "[[ems__EffortStatusDoing]]", "Doing")
+ * @returns The human-readable label (e.g., "Doing") or the original value if not found
+ */
+export function getStatusLabel(statusValue: string | null | undefined): string {
+  if (!statusValue) return "-";
+
+  const statusStr = String(statusValue);
+
+  // Try to find a matching status value in the list
+  for (const status of EFFORT_STATUS_VALUES) {
+    // Match against full wiki-link format: [[ems__EffortStatusDoing]]
+    if (status.value === statusStr) {
+      return status.label;
+    }
+    // Match against wiki-link wrapped: [[ems__EffortStatusDoing]]
+    if (status.value === `[[${statusStr}]]`) {
+      return status.label;
+    }
+    // Match against raw URI: ems__EffortStatusDoing
+    const rawUri = status.value.replace(/^\[\[|\]\]$/g, "");
+    if (rawUri === statusStr) {
+      return status.label;
+    }
+    // Match against label itself (already human-readable)
+    if (status.label.toLowerCase() === statusStr.toLowerCase()) {
+      return status.label;
+    }
+  }
+
+  // If no match found, return the original value (might be a custom status)
+  return statusStr;
+}

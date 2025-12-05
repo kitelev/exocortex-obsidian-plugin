@@ -13,6 +13,7 @@ import { EffortSortingHelpers } from "@exocortex/core";
 import { AssetMetadataService } from "./layout/helpers/AssetMetadataService";
 import { DailyNoteHelpers } from "./helpers/DailyNoteHelpers";
 import { BlockerHelpers } from "../utils/BlockerHelpers";
+import { getStatusLabel } from "../../domain/property-editor/PropertySchemas";
 
 type ObsidianApp = any;
 
@@ -248,7 +249,7 @@ export class DailyTasksRenderer {
           endTime,
           startTimestamp: startTimestamp || plannedStartTimestamp || null,
           endTimestamp: endTimestamp || plannedEndTimestamp || null,
-          status: effortStatusStr,
+          status: getStatusLabel(effortStatusStr),
           metadata,
           isDone,
           isTrashed,
