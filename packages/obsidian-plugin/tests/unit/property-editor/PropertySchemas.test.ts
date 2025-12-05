@@ -5,6 +5,7 @@ import {
   getPropertySchemaForClass,
   getEditableProperties,
   getPropertyByName,
+  getStatusLabel,
   type PropertySchemaDefinition,
 } from "../../../src/domain/property-editor/PropertySchemas";
 
@@ -307,6 +308,50 @@ describe("PropertySchemas", () => {
       const votesProperty = getPropertyByName("ems__Task", "ems__Effort_votes");
       expect(votesProperty?.type).toBe("number");
       expect(votesProperty?.min).toBe(0);
+    });
+  });
+
+  describe("getStatusLabel", () => {
+    it("should return human-readable label for raw URI", () => {
+      expect(getStatusLabel("ems__EffortStatusDoing")).toBe("Doing");
+      expect(getStatusLabel("ems__EffortStatusDone")).toBe("Done");
+      expect(getStatusLabel("ems__EffortStatusTrashed")).toBe("Trashed");
+      expect(getStatusLabel("ems__EffortStatusDraft")).toBe("Draft");
+      expect(getStatusLabel("ems__EffortStatusBacklog")).toBe("Backlog");
+      expect(getStatusLabel("ems__EffortStatusAnalysis")).toBe("Analysis");
+      expect(getStatusLabel("ems__EffortStatusToDo")).toBe("To Do");
+    });
+
+    it("should return human-readable label for wiki-link wrapped URI", () => {
+      expect(getStatusLabel("[[ems__EffortStatusDoing]]")).toBe("Doing");
+      expect(getStatusLabel("[[ems__EffortStatusDone]]")).toBe("Done");
+      expect(getStatusLabel("[[ems__EffortStatusToDo]]")).toBe("To Do");
+    });
+
+    it("should return the label as-is if already human-readable", () => {
+      expect(getStatusLabel("Doing")).toBe("Doing");
+      expect(getStatusLabel("Done")).toBe("Done");
+      expect(getStatusLabel("To Do")).toBe("To Do");
+    });
+
+    it("should handle case-insensitive label matching", () => {
+      expect(getStatusLabel("doing")).toBe("Doing");
+      expect(getStatusLabel("DONE")).toBe("Done");
+      expect(getStatusLabel("to do")).toBe("To Do");
+    });
+
+    it("should return dash for null or undefined", () => {
+      expect(getStatusLabel(null)).toBe("-");
+      expect(getStatusLabel(undefined)).toBe("-");
+    });
+
+    it("should return dash for empty string", () => {
+      expect(getStatusLabel("")).toBe("-");
+    });
+
+    it("should return original value for unknown status", () => {
+      expect(getStatusLabel("unknown_status")).toBe("unknown_status");
+      expect(getStatusLabel("CustomStatus")).toBe("CustomStatus");
     });
   });
 });
