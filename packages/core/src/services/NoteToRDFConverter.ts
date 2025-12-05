@@ -162,6 +162,11 @@ export class NoteToRDFConverter {
         }
       }
 
+      // Check for ISO 8601 dateTime format and apply xsd:dateTime datatype
+      if (this.isISO8601DateTime(cleanValue)) {
+        return new Literal(cleanValue, Namespace.XSD.term("dateTime"));
+      }
+
       return new Literal(cleanValue);
     }
 
@@ -177,6 +182,29 @@ export class NoteToRDFConverter {
     }
 
     return new Literal(String(value));
+  }
+
+  /**
+   * Check if a string is a valid ISO 8601 dateTime format.
+   *
+   * Matches formats:
+   * - `YYYY-MM-DDTHH:MM:SSZ` (UTC with Z suffix)
+   * - `YYYY-MM-DDTHH:MM:SS` (local time without timezone)
+   * - `YYYY-MM-DDTHH:MM:SS.sssZ` (with milliseconds)
+   * - `YYYY-MM-DDTHH:MM:SS+HH:MM` (with timezone offset)
+   *
+   * @param value - String to check
+   * @returns True if value matches ISO 8601 dateTime pattern
+   */
+  private isISO8601DateTime(value: string): boolean {
+    // Pattern matches:
+    // - Date: YYYY-MM-DD
+    // - Time separator: T
+    // - Time: HH:MM:SS
+    // - Optional milliseconds: .sss
+    // - Optional timezone: Z or +/-HH:MM
+    const iso8601Pattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?(Z|[+-]\d{2}:\d{2})?$/;
+    return iso8601Pattern.test(value);
   }
 
   private removeQuotes(value: string): string {
