@@ -215,9 +215,35 @@ jobs:
           draft: false
           prerelease: false
 
+      - name: Setup npm for publishing
+        if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Update CLI package version
+        if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('packages/cli/package.json', 'utf8'));
+            pkg.version = '$NEW_VERSION';
+            fs.writeFileSync('packages/cli/package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          echo "Updated CLI package.json to version $NEW_VERSION"
+
+      - name: Publish CLI to npm
+        if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          cd packages/cli
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Summary
         if: steps.commits.outputs.has_commits == 'true' && steps.check_tag.outputs.tag_exists == 'false'
         run: |
           echo "✅ Release v${{ steps.new_version.outputs.version }} created successfully"
           echo "📦 Tag: v${{ steps.new_version.outputs.version }}"
           echo "📝 Changelog generated from commits"
+          echo "📤 CLI published to npm as exocortex-cli@${{ steps.new_version.outputs.version }}"
