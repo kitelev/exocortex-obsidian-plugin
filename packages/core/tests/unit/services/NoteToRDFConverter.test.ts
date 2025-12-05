@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { NoteToRDFConverter } from "../../../src/services/NoteToRDFConverter";
 import { IVaultAdapter, IFile, IFrontmatter } from "../../../src/interfaces/IVaultAdapter";
 import { IRI } from "../../../src/domain/models/rdf/IRI";
@@ -23,6 +24,8 @@ describe("NoteToRDFConverter", () => {
       createFolder: jest.fn(),
       getFirstLinkpathDest: jest.fn(),
       process: jest.fn(),
+      updateLinks: jest.fn(),
+      getDefaultNewFileParent: jest.fn(),
     } as jest.Mocked<IVaultAdapter>;
 
     converter = new NoteToRDFConverter(mockVault);
@@ -294,6 +297,200 @@ describe("NoteToRDFConverter", () => {
 
       expect(areaTriple).toBeDefined();
       expect(areaTriple!.object).toBeInstanceOf(IRI);
+    });
+  });
+
+  describe("xsd:dateTime typed literals", () => {
+    const file: IFile = {
+      path: "test.md",
+      basename: "test",
+      name: "test.md",
+      parent: null,
+    };
+
+    it("should convert ISO 8601 UTC timestamp to xsd:dateTime literal", async () => {
+      const frontmatter: IFrontmatter = {
+        ems__Effort_startTimestamp: "2025-10-24T14:30:45Z",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const timestampTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Effort_startTimestamp")
+      );
+
+      expect(timestampTriple).toBeDefined();
+      expect(timestampTriple!.object).toBeInstanceOf(Literal);
+      const literal = timestampTriple!.object as Literal;
+      expect(literal.value).toBe("2025-10-24T14:30:45Z");
+      expect(literal.datatype).toBeDefined();
+      expect(literal.datatype!.value).toBe(Namespace.XSD.term("dateTime").value);
+    });
+
+    it("should convert ISO 8601 local timestamp (no timezone) to xsd:dateTime literal", async () => {
+      const frontmatter: IFrontmatter = {
+        ems__Effort_endTimestamp: "2025-10-24T14:30:45",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const timestampTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Effort_endTimestamp")
+      );
+
+      expect(timestampTriple).toBeDefined();
+      const literal = timestampTriple!.object as Literal;
+      expect(literal.value).toBe("2025-10-24T14:30:45");
+      expect(literal.datatype).toBeDefined();
+      expect(literal.datatype!.value).toBe(Namespace.XSD.term("dateTime").value);
+    });
+
+    it("should convert ISO 8601 timestamp with milliseconds to xsd:dateTime literal", async () => {
+      const frontmatter: IFrontmatter = {
+        exo__Asset_createdAt: "2025-10-24T14:30:45.123Z",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const timestampTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Asset_createdAt")
+      );
+
+      expect(timestampTriple).toBeDefined();
+      const literal = timestampTriple!.object as Literal;
+      expect(literal.value).toBe("2025-10-24T14:30:45.123Z");
+      expect(literal.datatype).toBeDefined();
+      expect(literal.datatype!.value).toBe(Namespace.XSD.term("dateTime").value);
+    });
+
+    it("should convert ISO 8601 timestamp with positive timezone offset to xsd:dateTime literal", async () => {
+      const frontmatter: IFrontmatter = {
+        ems__Effort_startTimestamp: "2025-10-24T14:30:45+08:00",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const timestampTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Effort_startTimestamp")
+      );
+
+      expect(timestampTriple).toBeDefined();
+      const literal = timestampTriple!.object as Literal;
+      expect(literal.value).toBe("2025-10-24T14:30:45+08:00");
+      expect(literal.datatype).toBeDefined();
+      expect(literal.datatype!.value).toBe(Namespace.XSD.term("dateTime").value);
+    });
+
+    it("should convert ISO 8601 timestamp with negative timezone offset to xsd:dateTime literal", async () => {
+      const frontmatter: IFrontmatter = {
+        ems__Effort_endTimestamp: "2025-10-24T14:30:45-05:00",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const timestampTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Effort_endTimestamp")
+      );
+
+      expect(timestampTriple).toBeDefined();
+      const literal = timestampTriple!.object as Literal;
+      expect(literal.value).toBe("2025-10-24T14:30:45-05:00");
+      expect(literal.datatype).toBeDefined();
+      expect(literal.datatype!.value).toBe(Namespace.XSD.term("dateTime").value);
+    });
+
+    it("should NOT apply xsd:dateTime to plain text strings", async () => {
+      const frontmatter: IFrontmatter = {
+        exo__Asset_label: "My Task Label",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const labelTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Asset_label")
+      );
+
+      expect(labelTriple).toBeDefined();
+      const literal = labelTriple!.object as Literal;
+      expect(literal.value).toBe("My Task Label");
+      expect(literal.datatype).toBeUndefined();
+    });
+
+    it("should NOT apply xsd:dateTime to date-only strings (YYYY-MM-DD)", async () => {
+      const frontmatter: IFrontmatter = {
+        exo__Asset_label: "2025-10-24",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const labelTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Asset_label")
+      );
+
+      expect(labelTriple).toBeDefined();
+      const literal = labelTriple!.object as Literal;
+      expect(literal.value).toBe("2025-10-24");
+      expect(literal.datatype).toBeUndefined();
+    });
+
+    it("should handle multiple timestamp properties in same note", async () => {
+      const frontmatter: IFrontmatter = {
+        ems__Effort_startTimestamp: "2025-10-24T09:00:00Z",
+        ems__Effort_endTimestamp: "2025-10-24T17:30:00Z",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const startTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Effort_startTimestamp")
+      );
+      const endTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Effort_endTimestamp")
+      );
+
+      expect(startTriple).toBeDefined();
+      expect(endTriple).toBeDefined();
+
+      const startLiteral = startTriple!.object as Literal;
+      const endLiteral = endTriple!.object as Literal;
+
+      expect(startLiteral.datatype!.value).toBe(Namespace.XSD.term("dateTime").value);
+      expect(endLiteral.datatype!.value).toBe(Namespace.XSD.term("dateTime").value);
+    });
+
+    it("should serialize xsd:dateTime literal correctly via toString()", async () => {
+      const frontmatter: IFrontmatter = {
+        ems__Effort_startTimestamp: "2025-10-24T14:30:45Z",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const timestampTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Effort_startTimestamp")
+      );
+
+      const literal = timestampTriple!.object as Literal;
+      expect(literal.toString()).toBe(
+        '"2025-10-24T14:30:45Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>'
+      );
     });
   });
 
