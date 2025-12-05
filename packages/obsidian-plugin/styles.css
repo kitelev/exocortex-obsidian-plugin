@@ -2434,3 +2434,198 @@
     scroll-behavior: auto;
   }
 }
+
+/* ============================================================================
+   Daily Tasks Table - Fixed Column Layout (Issue #571)
+   ============================================================================ */
+
+/*
+ * Fixes for inconsistent column alignment:
+ * - Uses table-layout: fixed for predictable column widths
+ * - Fixed widths for time (Start, End) and Status columns
+ * - Name column takes remaining space with text ellipsis
+ * - Prevents long UUIDs from breaking layout
+ */
+
+.exocortex-tasks-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* Column width definitions for Tasks table */
+.exocortex-tasks-table th,
+.exocortex-tasks-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Name column - flexible, takes remaining space */
+.exocortex-tasks-table th:first-child,
+.exocortex-tasks-table td.task-name {
+  width: auto;
+  min-width: 150px;
+}
+
+/* Start column - fixed width for time display (HH:MM or MM-DD HH:MM) */
+.exocortex-tasks-table th:nth-child(2),
+.exocortex-tasks-table td.task-start {
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+  text-align: center;
+}
+
+/* End column - fixed width for time display */
+.exocortex-tasks-table th:nth-child(3),
+.exocortex-tasks-table td.task-end {
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+  text-align: center;
+}
+
+/* Status column - fixed width */
+.exocortex-tasks-table th:nth-child(4),
+.exocortex-tasks-table td.task-status {
+  width: 90px;
+  min-width: 90px;
+  max-width: 90px;
+}
+
+/* Effort Area column (optional, 5th column when visible) */
+.exocortex-tasks-table td.task-effort-area {
+  width: 120px;
+  min-width: 120px;
+  max-width: 180px;
+}
+
+/* Votes column (optional, last column when visible) */
+.exocortex-tasks-table td.task-effort-votes {
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+  text-align: center;
+}
+
+/* Ensure links inside cells respect ellipsis */
+.exocortex-tasks-table td a.internal-link {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Empty slot rows - reduced opacity styling preserved */
+.exocortex-tasks-table tr.empty-slot-row {
+  opacity: 0.5;
+}
+
+.exocortex-tasks-table td.empty-slot-cell {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Mobile responsive - narrower columns on small screens */
+@media (max-width: 768px) {
+  .exocortex-tasks-table th:nth-child(2),
+  .exocortex-tasks-table td.task-start,
+  .exocortex-tasks-table th:nth-child(3),
+  .exocortex-tasks-table td.task-end {
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
+    font-size: 0.85em;
+  }
+
+  .exocortex-tasks-table th:nth-child(4),
+  .exocortex-tasks-table td.task-status {
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
+  }
+
+  .exocortex-tasks-table td.task-effort-area {
+    width: 100px;
+    min-width: 100px;
+    max-width: 100px;
+  }
+}
+
+/* ============================================================================
+   Daily Projects Table - Fixed Column Layout (consistency with Tasks)
+   ============================================================================ */
+
+.exocortex-projects-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* Column width definitions for Projects table */
+.exocortex-projects-table th,
+.exocortex-projects-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Name column - flexible */
+.exocortex-projects-table th:first-child,
+.exocortex-projects-table td.project-name {
+  width: auto;
+  min-width: 150px;
+}
+
+/* Start column */
+.exocortex-projects-table th:nth-child(2),
+.exocortex-projects-table td.project-start {
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+  text-align: center;
+}
+
+/* End column */
+.exocortex-projects-table th:nth-child(3),
+.exocortex-projects-table td.project-end {
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+  text-align: center;
+}
+
+/* Status column */
+.exocortex-projects-table th:nth-child(4),
+.exocortex-projects-table td.project-status {
+  width: 90px;
+  min-width: 90px;
+  max-width: 90px;
+}
+
+/* Ensure links inside cells respect ellipsis */
+.exocortex-projects-table td a.internal-link {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .exocortex-projects-table th:nth-child(2),
+  .exocortex-projects-table td.project-start,
+  .exocortex-projects-table th:nth-child(3),
+  .exocortex-projects-table td.project-end {
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
+    font-size: 0.85em;
+  }
+
+  .exocortex-projects-table th:nth-child(4),
+  .exocortex-projects-table td.project-status {
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
+  }
+}
