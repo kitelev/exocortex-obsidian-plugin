@@ -1,6 +1,9 @@
 import { Command } from "commander";
 import { resolve } from "path";
 import { CommandExecutor } from "../executors/CommandExecutor.js";
+import { ErrorHandler, type OutputFormat } from "../utils/ErrorHandler.js";
+import { InvalidArgumentsError } from "../utils/errors/index.js";
+import { ResponseBuilder, type CommandResult } from "../responses/index.js";
 
 export interface CommandOptions {
   vault: string;
@@ -10,6 +13,48 @@ export interface CommandOptions {
   parent?: string;
   date?: string;
   dryRun?: boolean;
+  format?: OutputFormat;
+}
+
+/**
+ * Outputs command result in the specified format
+ */
+function outputResult(
+  format: OutputFormat,
+  command: string,
+  filepath: string,
+  action: string,
+  changes?: Record<string, unknown>,
+): void {
+  if (format === "json") {
+    const result: CommandResult = {
+      command,
+      filepath,
+      action,
+      ...(changes && { changes }),
+    };
+    const response = ResponseBuilder.success(result);
+    console.log(JSON.stringify(response, null, 2));
+  } else {
+    console.log(`✅ ${action}`);
+  }
+}
+
+/**
+ * Handles missing required option error
+ */
+function handleMissingOption(
+  format: OutputFormat,
+  optionName: string,
+  commandName: string,
+  usage: string,
+): never {
+  const error = new InvalidArgumentsError(
+    `--${optionName} option is required for ${commandName} command`,
+    usage,
+    { command: commandName, missingOption: optionName },
+  );
+  ErrorHandler.handle(error);
 }
 
 /**
@@ -20,6 +65,7 @@ export interface CommandOptions {
  * @example
  * exocortex command rename-to-uid "03 Knowledge/tasks/task.md"
  * exocortex command start "path/to/task.md" --vault /path/to/vault
+ * exocortex command start "path/to/task.md" --format json  # JSON output for MCP
  */
 export function commandCommand(): Command {
   return new Command("command")
@@ -33,130 +79,201 @@ export function commandCommand(): Command {
     .option("--parent <uid>", "Parent UID for effort linkage (creation commands)")
     .option("--date <value>", "Date in YYYY-MM-DD format (required for schedule and set-deadline commands)")
     .option("--dry-run", "Preview changes without modifying files")
+    .option("--format <type>", "Output format: text|json (default: text)", "text")
     .action(async (commandName: string, filepath: string, options: CommandOptions) => {
-      const vaultPath = resolve(options.vault);
-      const executor = new CommandExecutor(vaultPath, options.dryRun);
+      const format = (options.format || "text") as OutputFormat;
+      ErrorHandler.setFormat(format);
 
-      switch (commandName) {
-        // Maintenance commands
-        case "rename-to-uid":
-          await executor.executeRenameToUid(filepath);
-          break;
+      try {
+        const vaultPath = resolve(options.vault);
+        const executor = new CommandExecutor(vaultPath, options.dryRun);
 
-        case "update-label":
-          if (!options.label) {
-            console.error("Error: --label option is required for update-label command");
-            console.error("Usage: exocortex command update-label <filepath> --label \"<value>\"");
-            process.exit(2); // ExitCodes.INVALID_ARGUMENTS
-          }
-          await executor.executeUpdateLabel(filepath, options.label);
-          break;
+        switch (commandName) {
+          // Maintenance commands
+          case "rename-to-uid":
+            await executor.executeRenameToUid(filepath);
+            outputResult(format, commandName, filepath, `Renamed file to UID-based name`);
+            break;
 
-        // Status transition commands
-        case "start":
-          await executor.executeStart(filepath);
-          break;
+          case "update-label":
+            if (!options.label) {
+              handleMissingOption(
+                format,
+                "label",
+                "update-label",
+                'exocortex command update-label <filepath> --label "<value>"',
+              );
+            }
+            await executor.executeUpdateLabel(filepath, options.label);
+            outputResult(format, commandName, filepath, `Updated label to "${options.label}"`, {
+              label: options.label,
+            });
+            break;
 
-        case "complete":
-          await executor.executeComplete(filepath);
-          break;
+          // Status transition commands
+          case "start":
+            await executor.executeStart(filepath);
+            outputResult(format, commandName, filepath, "Started task");
+            break;
 
-        case "trash":
-          await executor.executeTrash(filepath);
-          break;
+          case "complete":
+            await executor.executeComplete(filepath);
+            outputResult(format, commandName, filepath, "Completed task");
+            break;
 
-        case "archive":
-          await executor.executeArchive(filepath);
-          break;
+          case "trash":
+            await executor.executeTrash(filepath);
+            outputResult(format, commandName, filepath, "Moved task to trash");
+            break;
 
-        case "move-to-backlog":
-          await executor.executeMoveToBacklog(filepath);
-          break;
+          case "archive":
+            await executor.executeArchive(filepath);
+            outputResult(format, commandName, filepath, "Archived task");
+            break;
 
-        case "move-to-analysis":
-          await executor.executeMoveToAnalysis(filepath);
-          break;
+          case "move-to-backlog":
+            await executor.executeMoveToBacklog(filepath);
+            outputResult(format, commandName, filepath, "Moved task to backlog");
+            break;
 
-        case "move-to-todo":
-          await executor.executeMoveToToDo(filepath);
-          break;
+          case "move-to-analysis":
+            await executor.executeMoveToAnalysis(filepath);
+            outputResult(format, commandName, filepath, "Moved task to analysis");
+            break;
 
-        // Creation commands
-        case "create-task":
-          if (!options.label) {
-            console.error("Error: --label option is required for create-task command");
-            console.error("Usage: exocortex command create-task <filepath> --label \"<value>\"");
-            process.exit(2); // ExitCodes.INVALID_ARGUMENTS
-          }
-          await executor.executeCreateTask(filepath, options.label, {
-            prototype: options.prototype,
-            area: options.area,
-            parent: options.parent,
-          });
-          break;
+          case "move-to-todo":
+            await executor.executeMoveToToDo(filepath);
+            outputResult(format, commandName, filepath, "Moved task to todo");
+            break;
 
-        case "create-meeting":
-          if (!options.label) {
-            console.error("Error: --label option is required for create-meeting command");
-            console.error("Usage: exocortex command create-meeting <filepath> --label \"<value>\"");
-            process.exit(2); // ExitCodes.INVALID_ARGUMENTS
-          }
-          await executor.executeCreateMeeting(filepath, options.label, {
-            prototype: options.prototype,
-            area: options.area,
-            parent: options.parent,
-          });
-          break;
+          // Creation commands
+          case "create-task":
+            if (!options.label) {
+              handleMissingOption(
+                format,
+                "label",
+                "create-task",
+                'exocortex command create-task <filepath> --label "<value>"',
+              );
+            }
+            await executor.executeCreateTask(filepath, options.label, {
+              prototype: options.prototype,
+              area: options.area,
+              parent: options.parent,
+            });
+            outputResult(format, commandName, filepath, `Created task "${options.label}"`, {
+              label: options.label,
+              prototype: options.prototype,
+              area: options.area,
+              parent: options.parent,
+            });
+            break;
 
-        case "create-project":
-          if (!options.label) {
-            console.error("Error: --label option is required for create-project command");
-            console.error("Usage: exocortex command create-project <filepath> --label \"<value>\"");
-            process.exit(2); // ExitCodes.INVALID_ARGUMENTS
-          }
-          await executor.executeCreateProject(filepath, options.label, {
-            prototype: options.prototype,
-            area: options.area,
-            parent: options.parent,
-          });
-          break;
+          case "create-meeting":
+            if (!options.label) {
+              handleMissingOption(
+                format,
+                "label",
+                "create-meeting",
+                'exocortex command create-meeting <filepath> --label "<value>"',
+              );
+            }
+            await executor.executeCreateMeeting(filepath, options.label, {
+              prototype: options.prototype,
+              area: options.area,
+              parent: options.parent,
+            });
+            outputResult(format, commandName, filepath, `Created meeting "${options.label}"`, {
+              label: options.label,
+              prototype: options.prototype,
+              area: options.area,
+              parent: options.parent,
+            });
+            break;
 
-        case "create-area":
-          if (!options.label) {
-            console.error("Error: --label option is required for create-area command");
-            console.error("Usage: exocortex command create-area <filepath> --label \"<value>\"");
-            process.exit(2); // ExitCodes.INVALID_ARGUMENTS
-          }
-          await executor.executeCreateArea(filepath, options.label, {
-            prototype: options.prototype,
-            area: options.area,
-            parent: options.parent,
-          });
-          break;
+          case "create-project":
+            if (!options.label) {
+              handleMissingOption(
+                format,
+                "label",
+                "create-project",
+                'exocortex command create-project <filepath> --label "<value>"',
+              );
+            }
+            await executor.executeCreateProject(filepath, options.label, {
+              prototype: options.prototype,
+              area: options.area,
+              parent: options.parent,
+            });
+            outputResult(format, commandName, filepath, `Created project "${options.label}"`, {
+              label: options.label,
+              prototype: options.prototype,
+              area: options.area,
+              parent: options.parent,
+            });
+            break;
 
-        // Planning commands
-        case "schedule":
-          if (!options.date) {
-            console.error("Error: --date option is required for schedule command");
-            console.error("Usage: exocortex command schedule <filepath> --date \"YYYY-MM-DD\"");
-            process.exit(2); // ExitCodes.INVALID_ARGUMENTS
-          }
-          await executor.executeSchedule(filepath, options.date);
-          break;
+          case "create-area":
+            if (!options.label) {
+              handleMissingOption(
+                format,
+                "label",
+                "create-area",
+                'exocortex command create-area <filepath> --label "<value>"',
+              );
+            }
+            await executor.executeCreateArea(filepath, options.label, {
+              prototype: options.prototype,
+              area: options.area,
+              parent: options.parent,
+            });
+            outputResult(format, commandName, filepath, `Created area "${options.label}"`, {
+              label: options.label,
+              prototype: options.prototype,
+              area: options.area,
+              parent: options.parent,
+            });
+            break;
 
-        case "set-deadline":
-          if (!options.date) {
-            console.error("Error: --date option is required for set-deadline command");
-            console.error("Usage: exocortex command set-deadline <filepath> --date \"YYYY-MM-DD\"");
-            process.exit(2); // ExitCodes.INVALID_ARGUMENTS
-          }
-          await executor.executeSetDeadline(filepath, options.date);
-          break;
+          // Planning commands
+          case "schedule":
+            if (!options.date) {
+              handleMissingOption(
+                format,
+                "date",
+                "schedule",
+                'exocortex command schedule <filepath> --date "YYYY-MM-DD"',
+              );
+            }
+            await executor.executeSchedule(filepath, options.date);
+            outputResult(format, commandName, filepath, `Scheduled task for ${options.date}`, {
+              date: options.date,
+            });
+            break;
 
-        default:
-          // For other commands, use the old generic execute method
-          await executor.execute(commandName, filepath, options);
-          break;
+          case "set-deadline":
+            if (!options.date) {
+              handleMissingOption(
+                format,
+                "date",
+                "set-deadline",
+                'exocortex command set-deadline <filepath> --date "YYYY-MM-DD"',
+              );
+            }
+            await executor.executeSetDeadline(filepath, options.date);
+            outputResult(format, commandName, filepath, `Set deadline to ${options.date}`, {
+              date: options.date,
+            });
+            break;
+
+          default:
+            // For other commands, use the old generic execute method
+            await executor.execute(commandName, filepath, options);
+            outputResult(format, commandName, filepath, `Executed ${commandName}`);
+            break;
+        }
+      } catch (error) {
+        ErrorHandler.handle(error as Error);
       }
     });
 }

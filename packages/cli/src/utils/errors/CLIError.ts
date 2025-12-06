@@ -1,4 +1,10 @@
 import { ExitCodes } from "../ExitCodes.js";
+import {
+  ErrorCode,
+  type RecoveryHint,
+  type StructuredErrorResponse,
+  ResponseBuilder,
+} from "../../responses/index.js";
 
 /**
  * Base error class for all CLI errors
@@ -8,12 +14,18 @@ import { ExitCodes } from "../ExitCodes.js";
  * - Exit code for shell integration
  * - Actionable guidance on how to fix
  * - Optional context for debugging
+ * - Structured JSON response for MCP compatibility
  */
 export abstract class CLIError extends Error {
   /**
    * Exit code for this error type
    */
   abstract readonly exitCode: ExitCodes;
+
+  /**
+   * Error code for programmatic handling by MCP tools
+   */
+  abstract readonly errorCode: ErrorCode;
 
   /**
    * Actionable guidance on how to fix this error
@@ -25,13 +37,20 @@ export abstract class CLIError extends Error {
    */
   readonly context?: Record<string, unknown>;
 
+  /**
+   * Recovery hint for MCP tools
+   */
+  readonly recoveryHint?: RecoveryHint;
+
   constructor(
     message: string,
     context?: Record<string, unknown>,
+    recoveryHint?: RecoveryHint,
   ) {
     super(message);
     this.name = this.constructor.name;
     this.context = context;
+    this.recoveryHint = recoveryHint;
 
     // Maintain proper stack trace for where error was thrown
     if (Error.captureStackTrace) {
@@ -40,7 +59,7 @@ export abstract class CLIError extends Error {
   }
 
   /**
-   * Formats the error for display to user
+   * Formats the error for display to user (text mode)
    */
   format(): string {
     let output = `❌ ${this.name}: ${this.message}`;
@@ -57,5 +76,29 @@ export abstract class CLIError extends Error {
     }
 
     return output;
+  }
+
+  /**
+   * Converts error to structured JSON response for MCP compatibility
+   *
+   * @param includeStack - Include stack trace (for debug mode)
+   */
+  toStructuredResponse(includeStack = false): StructuredErrorResponse {
+    return ResponseBuilder.error(this.errorCode, this.message, this.exitCode, {
+      recovery: this.recoveryHint || {
+        message: this.guidance,
+      },
+      context: this.context,
+      stack: includeStack ? this.stack : undefined,
+    });
+  }
+
+  /**
+   * Formats the error as JSON string
+   *
+   * @param includeStack - Include stack trace (for debug mode)
+   */
+  formatJson(includeStack = false): string {
+    return JSON.stringify(this.toStructuredResponse(includeStack), null, 2);
   }
 }

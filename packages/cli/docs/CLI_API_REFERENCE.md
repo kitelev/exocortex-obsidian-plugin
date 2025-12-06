@@ -14,6 +14,7 @@
   - [Property Commands](#property-commands)
   - [Planning Commands](#planning-commands)
 - [Exit Codes](#exit-codes)
+- [Structured Error Responses (MCP Compatible)](#structured-error-responses-mcp-compatible)
 - [Common Options](#common-options)
 - [Stability Guarantees](#stability-guarantees)
 
@@ -41,6 +42,7 @@ exocortex sparql query <query> [options]
 |--------|------|---------|-------------|
 | `--vault <path>` | string | `process.cwd()` | Path to Obsidian vault |
 | `--format <type>` | enum | `table` | Output format: `table`, `json`, `csv` |
+| `--output <type>` | enum | `text` | Response format: `text`, `json` (for MCP tools) |
 | `--explain` | boolean | `false` | Show optimized query plan |
 | `--stats` | boolean | `false` | Show execution statistics |
 | `--no-optimize` | boolean | `false` | Disable query optimization |
@@ -695,6 +697,161 @@ All commands use standardized exit codes following Unix conventions:
 | `7` | `TRANSACTION_FAILED` | Transaction failed (atomic operation could not complete) |
 | `8` | `CONCURRENT_MODIFICATION` | Concurrent modification detected (file changed during operation) |
 
+---
+
+## Structured Error Responses (MCP Compatible)
+
+For programmatic integration with MCP tools and automation, use `--format json` (for `command`) or `--output json` (for `sparql query`) to receive structured JSON responses.
+
+### Response Format
+
+**Success Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "command": "start",
+    "filePath": "tasks/my-task.md",
+    "action": "started",
+    "changes": ["Set status to Doing", "Set startTimestamp"]
+  },
+  "meta": {
+    "timestamp": "2025-12-06T10:30:00.000Z",
+    "durationMs": 45
+  }
+}
+```
+
+**Error Response:**
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_FILE_NOT_FOUND",
+    "category": "validation",
+    "message": "File not found: tasks/missing.md",
+    "exitCode": 3,
+    "recoveryHint": {
+      "message": "The file does not exist at the specified path",
+      "suggestion": "Verify the file path and ensure it exists within the vault"
+    }
+  },
+  "meta": {
+    "timestamp": "2025-12-06T10:30:00.000Z"
+  }
+}
+```
+
+### Error Categories
+
+Errors are organized into four categories to help MCP tools and automation handle them appropriately:
+
+| Category | Description | Typical Action |
+|----------|-------------|----------------|
+| `validation` | Input validation failures (missing files, invalid arguments) | Fix input and retry |
+| `permission` | Access control violations (file permissions) | Request appropriate access |
+| `state` | Business logic violations (invalid state transitions) | Change current state first |
+| `internal` | Unexpected errors (system failures) | Report bug or retry |
+
+### Error Codes Reference
+
+#### Validation Errors
+
+| Code | Exit | Description | Recovery Suggestion |
+|------|------|-------------|---------------------|
+| `VALIDATION_FILE_NOT_FOUND` | 3 | File not found at path | Verify path exists in vault |
+| `VALIDATION_INVALID_ARGUMENTS` | 2 | Invalid command arguments | Check --help for correct usage |
+| `VALIDATION_VAULT_NOT_FOUND` | 3 | Vault directory not found | Verify --vault path exists |
+
+#### Permission Errors
+
+| Code | Exit | Description | Recovery Suggestion |
+|------|------|-------------|---------------------|
+| `PERMISSION_DENIED` | 4 | File system access denied | Check file permissions |
+
+#### State Errors
+
+| Code | Exit | Description | Recovery Suggestion |
+|------|------|-------------|---------------------|
+| `STATE_INVALID_TRANSITION` | 6 | Invalid status transition | Check current status first |
+| `STATE_CONCURRENT_MODIFICATION` | 8 | File changed during operation | Retry after reload |
+| `STATE_OPERATION_FAILED` | 5 | Operation could not complete | Check preconditions |
+
+#### Internal Errors
+
+| Code | Exit | Description | Recovery Suggestion |
+|------|------|-------------|---------------------|
+| `INTERNAL_UNKNOWN` | 1 | Unexpected internal error | Report issue with stack trace |
+| `INTERNAL_TRANSACTION_FAILED` | 7 | Atomic operation failed | Retry or check system state |
+
+### Usage Examples
+
+**Command with JSON output:**
+
+```bash
+# Success case
+exocortex command start "tasks/task.md" --vault ~/vault --format json
+# Returns: {"success":true,"data":{...},"meta":{...}}
+
+# Error case
+exocortex command start "missing.md" --vault ~/vault --format json
+# Returns: {"success":false,"error":{"code":"VALIDATION_FILE_NOT_FOUND",...},"meta":{...}}
+```
+
+**SPARQL query with JSON output (for MCP tools):**
+
+```bash
+exocortex sparql query "SELECT ?s WHERE { ?s ?p ?o }" --vault ~/vault --output json
+```
+
+**Script integration:**
+
+```bash
+#!/bin/bash
+result=$(exocortex command start "tasks/task.md" --vault ~/vault --format json)
+success=$(echo "$result" | jq -r '.success')
+if [ "$success" = "true" ]; then
+  echo "Task started successfully"
+else
+  error_code=$(echo "$result" | jq -r '.error.code')
+  case $error_code in
+    VALIDATION_FILE_NOT_FOUND) echo "File not found - check path" ;;
+    STATE_INVALID_TRANSITION) echo "Cannot start - check current status" ;;
+    *) echo "Error: $error_code" ;;
+  esac
+fi
+```
+
+**MCP tool integration:**
+
+```typescript
+interface CLIResponse {
+  success: boolean;
+  data?: unknown;
+  error?: {
+    code: string;
+    category: "validation" | "permission" | "state" | "internal";
+    message: string;
+    exitCode: number;
+    recoveryHint?: {
+      message: string;
+      suggestion: string;
+      docUrl?: string;
+    };
+  };
+  meta: {
+    timestamp: string;
+    durationMs?: number;
+  };
+}
+
+async function executeCommand(command: string): Promise<CLIResponse> {
+  const result = await exec(`exocortex ${command} --format json`);
+  return JSON.parse(result.stdout);
+}
+
 ### Usage in Scripts
 
 ```bash
@@ -718,6 +875,7 @@ These options are available for all commands:
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `--vault <path>` | string | `process.cwd()` | Path to Obsidian vault |
+| `--format <type>` | enum | `text` | Output format: `text`, `json` (for MCP tools/automation) |
 | `--dry-run` | boolean | `false` | Preview changes without modifying files (supported by some commands) |
 | `--help` | boolean | - | Show help for command |
 | `--version` | boolean | - | Show CLI version |

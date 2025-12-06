@@ -5,23 +5,30 @@ import {
   FileNotFoundError,
   InvalidArgumentsError,
   ConcurrentModificationError,
+  VaultNotFoundError,
 } from "../../../src/utils/errors/index";
+import { ErrorCode, ErrorCategory } from "../../../src/responses/index";
 
 describe("ErrorHandler", () => {
   let consoleErrorSpy: jest.SpyInstance;
+  let consoleLogSpy: jest.SpyInstance;
   let processExitSpy: jest.SpyInstance;
 
   beforeEach(() => {
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+    consoleLogSpy = jest.spyOn(console, "log").mockImplementation();
     processExitSpy = jest
       .spyOn(process, "exit")
       .mockImplementation((code?: number) => {
         throw new Error(`process.exit(${code})`);
       }) as any;
+    // Reset format to text for each test
+    ErrorHandler.setFormat("text");
   });
 
   afterEach(() => {
     consoleErrorSpy.mockRestore();
+    consoleLogSpy.mockRestore();
     processExitSpy.mockRestore();
   });
 
@@ -164,6 +171,131 @@ describe("ErrorHandler", () => {
       expect(() => ErrorHandler.handleWithMessage("Some error")).toThrow(
         "process.exit(1)",
       );
+    });
+  });
+
+  describe("JSON output format", () => {
+    beforeEach(() => {
+      ErrorHandler.setFormat("json");
+    });
+
+    it("should output structured JSON for CLIError", () => {
+      const error = new FileNotFoundError("/path/to/file.md");
+
+      expect(() => ErrorHandler.handle(error)).toThrow("process.exit(3)");
+      expect(consoleLogSpy).toHaveBeenCalled();
+
+      const jsonOutput = consoleLogSpy.mock.calls[0][0];
+      const parsed = JSON.parse(jsonOutput);
+
+      expect(parsed.success).toBe(false);
+      expect(parsed.error.code).toBe(ErrorCode.VALIDATION_FILE_NOT_FOUND);
+      expect(parsed.error.category).toBe(ErrorCategory.VALIDATION);
+      expect(parsed.error.message).toContain("File not found");
+      expect(parsed.error.exitCode).toBe(ExitCodes.FILE_NOT_FOUND);
+      expect(parsed.error.recovery).toBeDefined();
+    });
+
+    it("should output structured JSON for VaultNotFoundError", () => {
+      const error = new VaultNotFoundError("/nonexistent/vault");
+
+      expect(() => ErrorHandler.handle(error)).toThrow("process.exit(3)");
+      expect(consoleLogSpy).toHaveBeenCalled();
+
+      const jsonOutput = consoleLogSpy.mock.calls[0][0];
+      const parsed = JSON.parse(jsonOutput);
+
+      expect(parsed.success).toBe(false);
+      expect(parsed.error.code).toBe(ErrorCode.VALIDATION_VAULT_NOT_FOUND);
+      expect(parsed.error.category).toBe(ErrorCategory.VALIDATION);
+      expect(parsed.error.context.vaultPath).toBe("/nonexistent/vault");
+    });
+
+    it("should output structured JSON for plain Error", () => {
+      const error = new Error("ENOENT: no such file or directory");
+
+      expect(() => ErrorHandler.handle(error)).toThrow("process.exit(3)");
+      expect(consoleLogSpy).toHaveBeenCalled();
+
+      const jsonOutput = consoleLogSpy.mock.calls[0][0];
+      const parsed = JSON.parse(jsonOutput);
+
+      expect(parsed.success).toBe(false);
+      expect(parsed.error.code).toBe(ErrorCode.VALIDATION_FILE_NOT_FOUND);
+      expect(parsed.error.message).toContain("ENOENT");
+    });
+
+    it("should include recovery hints in JSON output", () => {
+      const error = new InvalidArgumentsError(
+        "Missing required option",
+        "Provide the --label option",
+      );
+
+      expect(() => ErrorHandler.handle(error)).toThrow("process.exit(2)");
+
+      const jsonOutput = consoleLogSpy.mock.calls[0][0];
+      const parsed = JSON.parse(jsonOutput);
+
+      expect(parsed.error.recovery).toBeDefined();
+      expect(parsed.error.recovery.message).toBeDefined();
+    });
+
+    it("should classify state transition errors correctly", () => {
+      const error = new Error("Invalid state transition from Done to InProgress");
+
+      expect(() => ErrorHandler.handle(error)).toThrow("process.exit(6)");
+
+      const jsonOutput = consoleLogSpy.mock.calls[0][0];
+      const parsed = JSON.parse(jsonOutput);
+
+      expect(parsed.error.code).toBe(ErrorCode.STATE_INVALID_TRANSITION);
+      expect(parsed.error.category).toBe(ErrorCategory.STATE);
+    });
+
+    it("should classify concurrent modification errors correctly", () => {
+      const error = new ConcurrentModificationError("/path/to/file.md", "hash mismatch");
+
+      expect(() => ErrorHandler.handle(error)).toThrow("process.exit(8)");
+
+      const jsonOutput = consoleLogSpy.mock.calls[0][0];
+      const parsed = JSON.parse(jsonOutput);
+
+      expect(parsed.error.code).toBe(ErrorCode.STATE_CONCURRENT_MODIFICATION);
+      expect(parsed.error.category).toBe(ErrorCategory.STATE);
+    });
+
+    it("handleWithMessage should output JSON with error code", () => {
+      expect(() =>
+        ErrorHandler.handleWithMessage(
+          "Custom error",
+          ExitCodes.OPERATION_FAILED,
+          ErrorCode.INTERNAL_OPERATION_FAILED,
+        ),
+      ).toThrow("process.exit(5)");
+
+      const jsonOutput = consoleLogSpy.mock.calls[0][0];
+      const parsed = JSON.parse(jsonOutput);
+
+      expect(parsed.success).toBe(false);
+      expect(parsed.error.code).toBe(ErrorCode.INTERNAL_OPERATION_FAILED);
+      expect(parsed.error.message).toBe("Custom error");
+    });
+  });
+
+  describe("format switching", () => {
+    it("should default to text format", () => {
+      expect(ErrorHandler.getFormat()).toBe("text");
+    });
+
+    it("should switch to json format", () => {
+      ErrorHandler.setFormat("json");
+      expect(ErrorHandler.getFormat()).toBe("json");
+    });
+
+    it("should switch back to text format", () => {
+      ErrorHandler.setFormat("json");
+      ErrorHandler.setFormat("text");
+      expect(ErrorHandler.getFormat()).toBe("text");
     });
   });
 });
