@@ -3,7 +3,7 @@ import { InMemoryTripleStore } from "../../../../../src/infrastructure/rdf/InMem
 import { Triple } from "../../../../../src/domain/models/rdf/Triple";
 import { IRI } from "../../../../../src/domain/models/rdf/IRI";
 import { Literal } from "../../../../../src/domain/models/rdf/Literal";
-import type { BGPOperation } from "../../../../../src/infrastructure/sparql/algebra/AlgebraOperation";
+import type { BGPOperation, PropertyPath } from "../../../../../src/infrastructure/sparql/algebra/AlgebraOperation";
 
 describe("BGPExecutor", () => {
   let tripleStore: InMemoryTripleStore;
@@ -375,6 +375,222 @@ describe("BGPExecutor", () => {
 
       expect(results).toHaveLength(100);
       expect(duration).toBeLessThan(100); // Should be fast with indexes
+    });
+  });
+
+  describe("Property Path Integration", () => {
+    beforeEach(async () => {
+      // Add hierarchical data for property path tests
+      // task1 -> parent -> project1 -> parent -> area1
+      await tripleStore.add(new Triple(ex("task1"), ex("parent"), ex("project1")));
+      await tripleStore.add(new Triple(ex("project1"), ex("parent"), ex("area1")));
+      await tripleStore.add(new Triple(ex("area1"), ex("label"), new Literal("Engineering Area")));
+      // Chain: task2 -> task3 -> task4
+      await tripleStore.add(new Triple(ex("task2"), ex("depends"), ex("task3")));
+      await tripleStore.add(new Triple(ex("task3"), ex("depends"), ex("task4")));
+    });
+
+    it("should execute sequence path (/) to navigate relationships", async () => {
+      // Path: parent/parent - get grandparent
+      const sequencePath: PropertyPath = {
+        type: "path",
+        pathType: "/",
+        items: [
+          { type: "iri", value: "http://example.org/parent" },
+          { type: "iri", value: "http://example.org/parent" },
+        ],
+      };
+
+      const bgp: BGPOperation = {
+        type: "bgp",
+        triples: [
+          {
+            subject: { type: "iri", value: "http://example.org/task1" },
+            predicate: sequencePath,
+            object: { type: "variable", value: "grandparent" },
+          },
+        ],
+      };
+
+      const results = await executor.executeAll(bgp);
+      expect(results).toHaveLength(1);
+      expect(results[0].get("grandparent")?.toString()).toContain("area1");
+    });
+
+    it("should execute sequence path and then get label of target", async () => {
+      // Combined: get grandparent, then its label
+      const sequencePath: PropertyPath = {
+        type: "path",
+        pathType: "/",
+        items: [
+          { type: "iri", value: "http://example.org/parent" },
+          { type: "iri", value: "http://example.org/parent" },
+        ],
+      };
+
+      const bgp: BGPOperation = {
+        type: "bgp",
+        triples: [
+          {
+            subject: { type: "iri", value: "http://example.org/task1" },
+            predicate: sequencePath,
+            object: { type: "variable", value: "grandparent" },
+          },
+          {
+            subject: { type: "variable", value: "grandparent" },
+            predicate: { type: "iri", value: "http://example.org/label" },
+            object: { type: "variable", value: "gpLabel" },
+          },
+        ],
+      };
+
+      const results = await executor.executeAll(bgp);
+      expect(results).toHaveLength(1);
+      expect(results[0].get("grandparent")?.toString()).toContain("area1");
+      expect((results[0].get("gpLabel") as Literal).value).toBe("Engineering Area");
+    });
+
+    it("should execute oneOrMore path (+) for transitive closure", async () => {
+      // Path: parent+ - get all ancestors
+      const oneOrMorePath: PropertyPath = {
+        type: "path",
+        pathType: "+",
+        items: [{ type: "iri", value: "http://example.org/parent" }],
+      };
+
+      const bgp: BGPOperation = {
+        type: "bgp",
+        triples: [
+          {
+            subject: { type: "iri", value: "http://example.org/task1" },
+            predicate: oneOrMorePath,
+            object: { type: "variable", value: "ancestor" },
+          },
+        ],
+      };
+
+      const results = await executor.executeAll(bgp);
+      expect(results).toHaveLength(2); // project1 and area1
+      const ancestors = results.map((r) => r.get("ancestor")?.toString());
+      expect(ancestors).toContain("http://example.org/project1");
+      expect(ancestors).toContain("http://example.org/area1");
+    });
+
+    it("should execute zeroOrMore path (*) including start node", async () => {
+      // Path: depends* - get self and all dependencies
+      const zeroOrMorePath: PropertyPath = {
+        type: "path",
+        pathType: "*",
+        items: [{ type: "iri", value: "http://example.org/depends" }],
+      };
+
+      const bgp: BGPOperation = {
+        type: "bgp",
+        triples: [
+          {
+            subject: { type: "iri", value: "http://example.org/task2" },
+            predicate: zeroOrMorePath,
+            object: { type: "variable", value: "dep" },
+          },
+        ],
+      };
+
+      const results = await executor.executeAll(bgp);
+      expect(results).toHaveLength(3); // task2 (self), task3, task4
+      const deps = results.map((r) => r.get("dep")?.toString());
+      expect(deps).toContain("http://example.org/task2"); // Self (zero steps)
+      expect(deps).toContain("http://example.org/task3");
+      expect(deps).toContain("http://example.org/task4");
+    });
+
+    it("should execute inverse path (^) for reverse navigation", async () => {
+      // Path: ^parent - get children (reverse of parent)
+      const inversePath: PropertyPath = {
+        type: "path",
+        pathType: "^",
+        items: [{ type: "iri", value: "http://example.org/parent" }],
+      };
+
+      const bgp: BGPOperation = {
+        type: "bgp",
+        triples: [
+          {
+            subject: { type: "iri", value: "http://example.org/project1" },
+            predicate: inversePath,
+            object: { type: "variable", value: "child" },
+          },
+        ],
+      };
+
+      const results = await executor.executeAll(bgp);
+      expect(results).toHaveLength(1);
+      expect(results[0].get("child")?.toString()).toContain("task1");
+    });
+
+    it("should execute alternative path (|) for multiple predicates", async () => {
+      // Add an alternative relationship
+      await tripleStore.add(new Triple(ex("task1"), ex("blockedBy"), ex("blocker1")));
+
+      // Path: parent|blockedBy - get either parent or blocker
+      const alternativePath: PropertyPath = {
+        type: "path",
+        pathType: "|",
+        items: [
+          { type: "iri", value: "http://example.org/parent" },
+          { type: "iri", value: "http://example.org/blockedBy" },
+        ],
+      };
+
+      const bgp: BGPOperation = {
+        type: "bgp",
+        triples: [
+          {
+            subject: { type: "iri", value: "http://example.org/task1" },
+            predicate: alternativePath,
+            object: { type: "variable", value: "related" },
+          },
+        ],
+      };
+
+      const results = await executor.executeAll(bgp);
+      expect(results).toHaveLength(2);
+      const related = results.map((r) => r.get("related")?.toString());
+      expect(related).toContain("http://example.org/project1");
+      expect(related).toContain("http://example.org/blocker1");
+    });
+
+    it("should combine property path with variable subject", async () => {
+      // Use path with all tasks as subject
+      const oneOrMorePath: PropertyPath = {
+        type: "path",
+        pathType: "+",
+        items: [{ type: "iri", value: "http://example.org/parent" }],
+      };
+
+      const bgp: BGPOperation = {
+        type: "bgp",
+        triples: [
+          {
+            subject: { type: "variable", value: "task" },
+            predicate: { type: "iri", value: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" },
+            object: { type: "iri", value: "http://example.org/Task" },
+          },
+          {
+            subject: { type: "variable", value: "task" },
+            predicate: oneOrMorePath,
+            object: { type: "variable", value: "ancestor" },
+          },
+        ],
+      };
+
+      const results = await executor.executeAll(bgp);
+      // task1 has 2 ancestors (project1, area1)
+      // task2 has 0 ancestors via parent predicate
+      expect(results.length).toBeGreaterThanOrEqual(2);
+
+      // Verify task1 results
+      const task1Results = results.filter((r) => r.get("task")?.toString().includes("task1"));
+      expect(task1Results).toHaveLength(2);
     });
   });
 });

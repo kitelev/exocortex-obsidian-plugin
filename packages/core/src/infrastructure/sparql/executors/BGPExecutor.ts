@@ -5,6 +5,7 @@ import { IRI } from "../../../domain/models/rdf/IRI";
 import { Literal } from "../../../domain/models/rdf/Literal";
 import { BlankNode } from "../../../domain/models/rdf/BlankNode";
 import type { Subject, Predicate, Object as RDFObject } from "../../../domain/models/rdf/Triple";
+import { PropertyPathExecutor } from "./PropertyPathExecutor";
 
 export class BGPExecutorError extends Error {
   constructor(message: string, cause?: Error) {
@@ -21,9 +22,14 @@ export class BGPExecutorError extends Error {
  * - Multi-pattern execution with join optimization
  * - Hash join and nested loop join strategies
  * - Streaming results via AsyncIterableIterator
+ * - Property path support via PropertyPathExecutor
  */
 export class BGPExecutor {
-  constructor(private readonly tripleStore: ITripleStore) {}
+  private readonly propertyPathExecutor: PropertyPathExecutor;
+
+  constructor(private readonly tripleStore: ITripleStore) {
+    this.propertyPathExecutor = new PropertyPathExecutor(tripleStore);
+  }
 
   /**
    * Execute a BGP operation and return solution mappings.
@@ -64,11 +70,17 @@ export class BGPExecutor {
 
   /**
    * Match a single triple pattern and return solution mappings.
+   * Supports both simple predicates and property paths.
    */
   private async *matchTriplePattern(pattern: AlgebraTriple): AsyncIterableIterator<SolutionMapping> {
-    // Check if predicate is a property path - not supported in BGPExecutor
+    // Delegate property path patterns to PropertyPathExecutor
     if (this.isPropertyPath(pattern.predicate)) {
-      throw new BGPExecutorError("Property paths are not supported in BGPExecutor. Use PropertyPathExecutor for path expressions.");
+      yield* this.propertyPathExecutor.execute(
+        pattern.subject,
+        pattern.predicate,
+        pattern.object
+      );
+      return;
     }
 
     const predElement = pattern.predicate as TripleElement;
