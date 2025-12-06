@@ -5,6 +5,7 @@ import { Command } from "commander";
 import { sparqlQueryCommand } from "./commands/sparql-query.js";
 import { commandCommand } from "./commands/command.js";
 import { watchCommand } from "./commands/watch.js";
+import { batchCommand } from "./commands/batch.js";
 
 const program = new Command();
 
@@ -20,5 +21,6 @@ program
 
 program.addCommand(commandCommand());
 program.addCommand(watchCommand());
+program.addCommand(batchCommand());
 
 program.parse();
