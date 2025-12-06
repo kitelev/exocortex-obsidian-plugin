@@ -1791,4 +1791,173 @@ describe("FilterExecutor", () => {
       });
     });
   });
+
+  describe("XSD Type Casting Functions (Issue #534)", () => {
+    describe("xsd:dateTime", () => {
+      it("should cast string to dateTime for arithmetic operations", async () => {
+        // Test: xsd:dateTime(?end) - xsd:dateTime(?start) > 60000
+        // This is the exact pattern from Issue #534
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: ">",
+            left: {
+              type: "arithmetic",
+              operator: "-",
+              left: {
+                type: "function",
+                function: "datetime",
+                args: [{ type: "variable", name: "end" }],
+              },
+              right: {
+                type: "function",
+                function: "datetime",
+                args: [{ type: "variable", name: "start" }],
+              },
+            } as any,
+            right: { type: "literal", value: 60000 }, // 1 minute in ms
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        // Sleep from 23:00 to 07:00 = 8 hours
+        solution.set("start", new Literal("2025-12-01T23:00:00Z"));
+        solution.set("end", new Literal("2025-12-02T07:00:00Z"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should handle JavaScript Date string format (Issue #534 Blocker 1)", async () => {
+        // Test with real-world JS Date.toString() format
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: ">",
+            left: {
+              type: "arithmetic",
+              operator: "-",
+              left: {
+                type: "function",
+                function: "datetime",
+                args: [{ type: "variable", name: "end" }],
+              },
+              right: {
+                type: "function",
+                function: "datetime",
+                args: [{ type: "variable", name: "start" }],
+              },
+            } as any,
+            right: { type: "literal", value: 0 },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        // Real-world format from vault data
+        solution.set("start", new Literal("Tue Dec 02 2025 02:10:39 GMT+0500"));
+        solution.set("end", new Literal("Tue Dec 02 2025 10:30:00 GMT+0500"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+    });
+
+    describe("xsd:integer", () => {
+      it("should cast string to integer for calculations", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "function",
+              function: "integer",
+              args: [{ type: "variable", name: "count" }],
+            },
+            right: { type: "literal", value: 42 },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("count", new Literal("42"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+    });
+
+    describe("xsd:decimal", () => {
+      it("should cast string to decimal for calculations", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: ">",
+            left: {
+              type: "function",
+              function: "decimal",
+              args: [{ type: "variable", name: "rate" }],
+            },
+            right: { type: "literal", value: 0.5 },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("rate", new Literal("0.75"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+    });
+
+    describe("Sleep analysis query pattern (Issue #534)", () => {
+      it("should calculate average sleep duration using dateTime arithmetic", async () => {
+        // This simulates the query:
+        // BIND((xsd:dateTime(?end) - xsd:dateTime(?start)) AS ?duration)
+        // Then filter for sleep entries > 6 hours (21600000 ms)
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: ">",
+            left: {
+              type: "arithmetic",
+              operator: "-",
+              left: {
+                type: "function",
+                function: "datetime",
+                args: [{ type: "variable", name: "end" }],
+              },
+              right: {
+                type: "function",
+                function: "datetime",
+                args: [{ type: "variable", name: "start" }],
+              },
+            } as any,
+            right: { type: "literal", value: 21600000 }, // 6 hours in ms
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        // Sleep entry with 8 hours (should pass)
+        const solution1 = new SolutionMapping();
+        solution1.set("start", new Literal("2025-12-01T23:00:00Z"));
+        solution1.set("end", new Literal("2025-12-02T07:00:00Z"));
+
+        // Sleep entry with 5 hours (should NOT pass)
+        const solution2 = new SolutionMapping();
+        solution2.set("start", new Literal("2025-12-02T01:00:00Z"));
+        solution2.set("end", new Literal("2025-12-02T06:00:00Z"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2]);
+        expect(results).toHaveLength(1);
+      });
+    });
+  });
 });

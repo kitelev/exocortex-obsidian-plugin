@@ -939,4 +939,120 @@ describe("BuiltInFunctions", () => {
       });
     });
   });
+
+  describe("XSD Type Casting Functions", () => {
+    describe("xsdDateTime", () => {
+      it("should convert ISO 8601 string to dateTime Literal", () => {
+        const result = BuiltInFunctions.xsdDateTime("2025-12-02T10:30:00Z");
+        expect(result).toBeInstanceOf(Literal);
+        expect(result.datatype?.value).toBe("http://www.w3.org/2001/XMLSchema#dateTime");
+        // The value should be a valid ISO string
+        expect(new Date(result.value).toISOString()).toBe("2025-12-02T10:30:00.000Z");
+      });
+
+      it("should convert JavaScript Date string format to dateTime Literal", () => {
+        // Real-world format from vault data (Issue #534)
+        const result = BuiltInFunctions.xsdDateTime("Tue Dec 02 2025 02:10:39 GMT+0500");
+        expect(result).toBeInstanceOf(Literal);
+        expect(result.datatype?.value).toBe("http://www.w3.org/2001/XMLSchema#dateTime");
+        // Should be converted to ISO 8601
+        expect(result.value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+      });
+
+      it("should handle date without time", () => {
+        const result = BuiltInFunctions.xsdDateTime("2025-12-02");
+        expect(result).toBeInstanceOf(Literal);
+        expect(result.datatype?.value).toBe("http://www.w3.org/2001/XMLSchema#dateTime");
+      });
+
+      it("should throw for invalid date string", () => {
+        expect(() => BuiltInFunctions.xsdDateTime("invalid")).toThrow("xsd:dateTime: invalid date string");
+      });
+
+      it("should throw for empty string", () => {
+        expect(() => BuiltInFunctions.xsdDateTime("")).toThrow("xsd:dateTime: invalid date string");
+      });
+
+      it("should preserve date semantics after conversion", () => {
+        // Sleep analysis use case from Issue #534
+        const startStr = "Tue Dec 02 2025 02:10:39 GMT+0500";
+        const endStr = "Tue Dec 02 2025 10:30:00 GMT+0500";
+
+        const startLiteral = BuiltInFunctions.xsdDateTime(startStr);
+        const endLiteral = BuiltInFunctions.xsdDateTime(endStr);
+
+        // Verify the dates can be parsed and compared
+        const startMs = new Date(startLiteral.value).getTime();
+        const endMs = new Date(endLiteral.value).getTime();
+
+        expect(endMs).toBeGreaterThan(startMs);
+        // Difference should be ~8 hours 19 minutes = 499 minutes
+        const diffMinutes = (endMs - startMs) / (1000 * 60);
+        expect(diffMinutes).toBeCloseTo(499, 0);
+      });
+    });
+
+    describe("xsdInteger", () => {
+      it("should convert string to integer Literal", () => {
+        const result = BuiltInFunctions.xsdInteger("42");
+        expect(result).toBeInstanceOf(Literal);
+        expect(result.value).toBe("42");
+        expect(result.datatype?.value).toBe("http://www.w3.org/2001/XMLSchema#integer");
+      });
+
+      it("should handle negative numbers", () => {
+        const result = BuiltInFunctions.xsdInteger("-123");
+        expect(result.value).toBe("-123");
+        expect(result.datatype?.value).toBe("http://www.w3.org/2001/XMLSchema#integer");
+      });
+
+      it("should truncate decimal values", () => {
+        const result = BuiltInFunctions.xsdInteger("42.99");
+        expect(result.value).toBe("42");
+      });
+
+      it("should throw for non-numeric string", () => {
+        expect(() => BuiltInFunctions.xsdInteger("abc")).toThrow("xsd:integer: cannot convert 'abc' to integer");
+      });
+
+      it("should handle zero", () => {
+        const result = BuiltInFunctions.xsdInteger("0");
+        expect(result.value).toBe("0");
+      });
+
+      it("should handle large numbers", () => {
+        const result = BuiltInFunctions.xsdInteger("1234567890");
+        expect(result.value).toBe("1234567890");
+      });
+    });
+
+    describe("xsdDecimal", () => {
+      it("should convert string to decimal Literal", () => {
+        const result = BuiltInFunctions.xsdDecimal("42.5");
+        expect(result).toBeInstanceOf(Literal);
+        expect(result.value).toBe("42.5");
+        expect(result.datatype?.value).toBe("http://www.w3.org/2001/XMLSchema#decimal");
+      });
+
+      it("should handle integer values", () => {
+        const result = BuiltInFunctions.xsdDecimal("42");
+        expect(result.value).toBe("42");
+        expect(result.datatype?.value).toBe("http://www.w3.org/2001/XMLSchema#decimal");
+      });
+
+      it("should handle negative decimals", () => {
+        const result = BuiltInFunctions.xsdDecimal("-3.14159");
+        expect(result.value).toBe("-3.14159");
+      });
+
+      it("should throw for non-numeric string", () => {
+        expect(() => BuiltInFunctions.xsdDecimal("xyz")).toThrow("xsd:decimal: cannot convert 'xyz' to decimal");
+      });
+
+      it("should handle scientific notation", () => {
+        const result = BuiltInFunctions.xsdDecimal("1.5e3");
+        expect(result.value).toBe("1500");
+      });
+    });
+  });
 });

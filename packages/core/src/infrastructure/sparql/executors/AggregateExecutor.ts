@@ -48,19 +48,17 @@ export class AggregateExecutor {
         resultBindings.set(aggregate.variable, value);
       }
 
-      if (groupSolutions.length > 0) {
-        const result = groupSolutions[0].clone();
-        for (const [key, value] of resultBindings.entries()) {
-          result.set(key, value);
-        }
-        results.push(result);
-      } else {
-        const result = new (groupSolutions[0]?.constructor as any || Map)();
-        for (const [key, value] of resultBindings.entries()) {
-          result.set(key, value);
-        }
-        results.push(result);
+      // Create a fresh result with ONLY GROUP BY variables and aggregate results
+      // Per SPARQL 1.1 spec: aggregated results should contain only:
+      // 1. Variables from GROUP BY clause
+      // 2. Variables bound to aggregate expressions
+      // This fixes Issue #534 Blocker 1: aggregate functions returning extra variables
+      const { SolutionMapping: SM } = require("../SolutionMapping");
+      const result = new SM();
+      for (const [key, value] of resultBindings.entries()) {
+        result.set(key, value);
       }
+      results.push(result);
     }
 
     if (results.length === 0 && operation.aggregates.length > 0) {
