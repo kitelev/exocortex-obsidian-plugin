@@ -8,7 +8,7 @@ import {
 import { RangeSetBuilder, Extension } from "@codemirror/state";
 import { TFile } from "obsidian";
 import type { App, MetadataCache } from "obsidian";
-import { AliasIconWidget } from "./AliasIconWidget";
+import { AliasIconWidget, type AliasIconClickResult } from "./AliasIconWidget";
 
 /**
  * Represents a parsed wikilink with its position and extracted components.
@@ -151,8 +151,9 @@ export class AliasIconViewPlugin {
 
   /**
    * Handle clicking the add alias icon.
+   * Returns a result to support optimistic UI (icon reappears on failure).
    */
-  private async handleAddAlias(targetPath: string, alias: string): Promise<void> {
+  private async handleAddAlias(targetPath: string, alias: string): Promise<AliasIconClickResult> {
     const file = this.app.vault.getAbstractFileByPath(targetPath);
 
     // Use instanceof to properly check for TFile
@@ -160,10 +161,17 @@ export class AliasIconViewPlugin {
       try {
         await this.aliasService.addAlias(file, alias);
         this.notifyUser(`Added "${alias}" to aliases`);
+        return { success: true };
       } catch (error) {
-        this.notifyUser(`Failed to add alias: ${error instanceof Error ? error.message : String(error)}`);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        this.notifyUser(`Failed to add alias: ${errorMessage}`);
+        return { success: false, error: errorMessage };
       }
     }
+
+    // File not found or not a TFile
+    this.notifyUser(`Failed to add alias: file not found`);
+    return { success: false, error: "File not found" };
   }
 }
 

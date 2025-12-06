@@ -1,4 +1,4 @@
-export { AliasIconWidget } from "./AliasIconWidget";
+export { AliasIconWidget, type AliasIconClickResult } from "./AliasIconWidget";
 export {
   AliasIconViewPlugin,
   createAliasIconExtension,
