@@ -104,17 +104,25 @@ export class NoteToRDFConverter {
   /**
    * Converts a note path to an obsidian:// IRI.
    *
+   * Uses encodeURI (not encodeURIComponent) to preserve forward slashes
+   * while encoding spaces and other special characters. This ensures
+   * consistent URI normalization for exact SPARQL query matches.
+   *
    * @param path - The note path (e.g., "path/to/note.md")
    * @returns IRI with obsidian:// scheme
    *
    * @example
    * ```typescript
    * const iri = converter.notePathToIRI("My Folder/My Note.md");
-   * // Returns: obsidian://vault/My Folder/My Note.md
+   * // Returns: obsidian://vault/My%20Folder/My%20Note.md
    * ```
    */
   notePathToIRI(path: string): IRI {
-    const encodedPath = encodeURIComponent(path);
+    // Use encodeURI to preserve forward slashes (/) while encoding
+    // spaces and other special characters. This fixes query mismatch
+    // issues where exact URI matches fail due to inconsistent encoding.
+    // See: https://github.com/kitelev/exocortex-obsidian-plugin/issues/621
+    const encodedPath = encodeURI(path);
     return new IRI(`${this.OBSIDIAN_VAULT_SCHEME}${encodedPath}`);
   }
 
