@@ -2629,3 +2629,68 @@
     max-width: 70px;
   }
 }
+
+/* ============================================================================
+   Alias Icon - Inline wikilink alias add icon (Issue #590)
+   ============================================================================ */
+
+/*
+ * Inline icon that appears next to wikilinks with aliases not present in the
+ * target asset's frontmatter aliases property. Clicking the icon adds the alias.
+ * Uses Obsidian's setIcon() for consistent theming.
+ */
+
+.exocortex-alias-add-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 2px;
+  cursor: pointer;
+  opacity: 0.6;
+  vertical-align: middle;
+  color: var(--text-accent);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.exocortex-alias-add-icon:hover,
+.exocortex-alias-add-icon.is-hovered {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.exocortex-alias-add-icon:active {
+  transform: scale(0.95);
+}
+
+/* Icon sizing - use Obsidian's icon container standards */
+.exocortex-alias-add-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Dark theme adjustments */
+.theme-dark .exocortex-alias-add-icon {
+  color: var(--text-accent);
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .exocortex-alias-add-icon {
+    opacity: 1;
+    border: 1px solid currentColor;
+    border-radius: 2px;
+    padding: 1px;
+  }
+}
+
+/* Reduced motion - disable animations for motion-sensitive users */
+@media (prefers-reduced-motion: reduce) {
+  .exocortex-alias-add-icon {
+    transition: none;
+  }
+
+  .exocortex-alias-add-icon:hover,
+  .exocortex-alias-add-icon.is-hovered {
+    transform: none;
+  }
+}
