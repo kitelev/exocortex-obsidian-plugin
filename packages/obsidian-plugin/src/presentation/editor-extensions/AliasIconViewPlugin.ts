@@ -43,6 +43,7 @@ export class AliasIconViewPlugin {
   private metadataCache: MetadataCache;
   private aliasService: IAliasService;
   private notifyUser: (message: string) => void;
+  private pendingAliases: Set<string> = new Set();
 
   constructor(
     view: EditorView,
@@ -56,6 +57,22 @@ export class AliasIconViewPlugin {
     this.aliasService = aliasService;
     this.notifyUser = notifyUser;
     this.decorations = this.buildDecorations(view);
+  }
+
+  private getPendingKey(targetPath: string, alias: string): string {
+    return `${targetPath}|${alias}`;
+  }
+
+  isPending(targetPath: string, alias: string): boolean {
+    return this.pendingAliases.has(this.getPendingKey(targetPath, alias));
+  }
+
+  markAsPending(targetPath: string, alias: string): void {
+    this.pendingAliases.add(this.getPendingKey(targetPath, alias));
+  }
+
+  unmarkAsPending(targetPath: string, alias: string): void {
+    this.pendingAliases.delete(this.getPendingKey(targetPath, alias));
   }
 
   update(update: ViewUpdate): void {
@@ -81,8 +98,8 @@ export class AliasIconViewPlugin {
 
       const existingAliases = this.aliasService.getAliases(targetFile);
 
-      // Check if alias is already in target's aliases
-      if (!existingAliases.includes(wikilink.alias)) {
+      // Check if alias is already in target's aliases or pending addition
+      if (!existingAliases.includes(wikilink.alias) && !this.isPending(targetFile.path, wikilink.alias)) {
         const widget = new AliasIconWidget(
           targetFile.path,
           wikilink.alias,
@@ -152,8 +169,12 @@ export class AliasIconViewPlugin {
   /**
    * Handle clicking the add alias icon.
    * Returns a result to support optimistic UI (icon reappears on failure).
+   * Uses pending state to prevent re-render showing icon while operation in progress.
    */
   private async handleAddAlias(targetPath: string, alias: string): Promise<AliasIconClickResult> {
+    // Mark as pending immediately to prevent re-render showing icon
+    this.markAsPending(targetPath, alias);
+
     const file = this.app.vault.getAbstractFileByPath(targetPath);
 
     // Use instanceof to properly check for TFile
@@ -161,15 +182,21 @@ export class AliasIconViewPlugin {
       try {
         await this.aliasService.addAlias(file, alias);
         this.notifyUser(`Added "${alias}" to aliases`);
+        // Keep pending briefly - MetadataCache update will remove need for icon anyway
+        // Clear after short delay to ensure MetadataCache has updated
+        setTimeout(() => this.unmarkAsPending(targetPath, alias), 100);
         return { success: true };
       } catch (error) {
+        // Clear pending on failure to allow icon to reappear
+        this.unmarkAsPending(targetPath, alias);
         const errorMessage = error instanceof Error ? error.message : String(error);
         this.notifyUser(`Failed to add alias: ${errorMessage}`);
         return { success: false, error: errorMessage };
       }
     }
 
-    // File not found or not a TFile
+    // File not found or not a TFile - clear pending
+    this.unmarkAsPending(targetPath, alias);
     this.notifyUser(`Failed to add alias: file not found`);
     return { success: false, error: "File not found" };
   }
