@@ -162,7 +162,7 @@ describe("LabelInputModal", () => {
       });
     });
 
-    it("should create open-in-new-tab checkbox checked by default", () => {
+    it("should create open-in-new-tab checkbox unchecked by default", () => {
       modal.onOpen();
 
       expect(mockContentEl.createEl).toHaveBeenCalledWith(
@@ -171,7 +171,7 @@ describe("LabelInputModal", () => {
           type: "checkbox",
         }),
       );
-      expect(mockCheckboxEl.checked).toBe(true);
+      expect(mockCheckboxEl.checked).toBe(false);
     });
   });
 
@@ -314,7 +314,7 @@ describe("LabelInputModal", () => {
       expect(onSubmitSpy).toHaveBeenCalledWith({
         label: "Test Label",
         taskSize: null,
-        openInNewTab: true,
+        openInNewTab: false,
       });
       expect(modal.close).toHaveBeenCalled();
     });
@@ -328,7 +328,7 @@ describe("LabelInputModal", () => {
       expect(onSubmitSpy).toHaveBeenCalledWith({
         label: null,
         taskSize: null,
-        openInNewTab: true,
+        openInNewTab: false,
       });
       expect(modal.close).toHaveBeenCalled();
     });
@@ -342,17 +342,17 @@ describe("LabelInputModal", () => {
       expect(onSubmitSpy).toHaveBeenCalledWith({
         label: "Task Name",
         taskSize: '"[[ems__TaskSize_M]]"',
-        openInNewTab: true,
+        openInNewTab: false,
       });
       expect(modal.close).toHaveBeenCalled();
     });
 
-    it("should submit with openInNewTab false when checkbox unchecked", () => {
+    it("should submit with openInNewTab true when checkbox checked", () => {
       modal.contentEl = mockContentEl;
       modal.close = jest.fn();
       modal.onOpen();
 
-      mockCheckboxEl.checked = false;
+      mockCheckboxEl.checked = true;
       mockCheckboxEl.dispatchEvent(new Event("change"));
 
       modal["submit"]();
@@ -360,7 +360,7 @@ describe("LabelInputModal", () => {
       expect(onSubmitSpy).toHaveBeenCalledWith({
         label: null,
         taskSize: null,
-        openInNewTab: false,
+        openInNewTab: true,
       });
       expect(modal.close).toHaveBeenCalled();
     });
@@ -381,7 +381,7 @@ describe("LabelInputModal", () => {
       expect(onSubmitSpy).toHaveBeenCalledWith({
         label: null,
         taskSize: null,
-        openInNewTab: true,
+        openInNewTab: false,
       });
       expect(modal.close).toHaveBeenCalled();
     });

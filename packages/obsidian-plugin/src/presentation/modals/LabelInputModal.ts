@@ -13,7 +13,7 @@ export interface LabelInputModalResult {
 export class LabelInputModal extends Modal {
   private label = "";
   private taskSize: string | null = null;
-  private openInNewTab = true;
+  private openInNewTab = false;
   private onSubmit: (result: LabelInputModalResult) => void;
   private inputEl: HTMLInputElement | null = null;
   private taskSizeSelectEl: HTMLSelectElement | null = null;
