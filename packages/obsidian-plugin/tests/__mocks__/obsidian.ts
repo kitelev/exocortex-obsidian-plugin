@@ -490,6 +490,13 @@ export class Notice {
   constructor(message: string) {}
 }
 
+// Mock setIcon function - sets an icon on an element
+export function setIcon(el: HTMLElement, iconName: string): void {
+  // Mark that setIcon was called for testing
+  el.setAttribute("data-icon-set", "true");
+  el.setAttribute("data-icon-name", iconName);
+}
+
 export class MarkdownView {
   previewMode: {
     rerender: (force: boolean) => void;

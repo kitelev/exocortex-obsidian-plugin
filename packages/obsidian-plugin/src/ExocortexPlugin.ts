@@ -2,6 +2,7 @@ import "reflect-metadata";
 import {
   MarkdownPostProcessorContext,
   MarkdownView,
+  Notice,
   Plugin,
   TFile,
 } from "obsidian";
@@ -19,9 +20,11 @@ import { TaskStatusService } from "@exocortex/core";
 import { ObsidianVaultAdapter } from "./adapters/ObsidianVaultAdapter";
 import { TaskTrackingService } from "./application/services/TaskTrackingService";
 import { AliasSyncService } from "./application/services/AliasSyncService";
+import { WikilinkAliasService } from "./application/services/WikilinkAliasService";
 import { SPARQLCodeBlockProcessor } from "./application/processors/SPARQLCodeBlockProcessor";
 import { SPARQLApi } from "./application/api/SPARQLApi";
 import { PluginContainer } from "./infrastructure/di/PluginContainer";
+import { createAliasIconExtension } from "./presentation/editor-extensions";
 
 /**
  * Exocortex Plugin - Automatic layout rendering
@@ -35,6 +38,7 @@ export default class ExocortexPlugin extends Plugin {
   private taskStatusService!: TaskStatusService;
   private taskTrackingService!: TaskTrackingService;
   private aliasSyncService!: AliasSyncService;
+  private wikilinkAliasService!: WikilinkAliasService;
   private metadataCache!: Map<string, Record<string, unknown>>;
   vaultAdapter!: ObsidianVaultAdapter;
   private sparqlProcessor!: SPARQLCodeBlockProcessor;
@@ -72,9 +76,23 @@ export default class ExocortexPlugin extends Plugin {
         this.app.metadataCache,
         this.app
       );
+      this.wikilinkAliasService = new WikilinkAliasService(
+        this.app,
+        this.app.metadataCache,
+      );
       this.metadataCache = new Map();
       this.sparqlProcessor = new SPARQLCodeBlockProcessor(this);
       this.sparql = new SPARQLApi(this);
+
+      // Register the alias icon editor extension for Live Preview mode
+      this.registerEditorExtension(
+        createAliasIconExtension(
+          this.app,
+          this.app.metadataCache,
+          this.wikilinkAliasService,
+          (message: string) => new Notice(message),
+        ),
+      );
 
       // Initialize CommandManager and register all commands
       this.commandManager = new CommandManager(this.app);

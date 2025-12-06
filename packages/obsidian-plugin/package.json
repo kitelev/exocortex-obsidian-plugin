@@ -15,6 +15,8 @@
     "test:e2e:local": "cd ../.. && ./scripts/test-e2e-local.sh"
   },
   "dependencies": {
+    "@codemirror/state": "^6.5.0",
+    "@codemirror/view": "^6.38.1",
     "@exocortex/core": "*",
     "@tanstack/react-query": "^5.90.11",
     "@tanstack/react-virtual": "^3.13.12",

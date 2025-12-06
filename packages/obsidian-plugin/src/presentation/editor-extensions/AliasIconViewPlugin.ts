@@ -1,0 +1,185 @@
+import {
+  ViewPlugin,
+  ViewUpdate,
+  Decoration,
+  DecorationSet,
+  EditorView,
+} from "@codemirror/view";
+import { RangeSetBuilder, Extension } from "@codemirror/state";
+import { TFile } from "obsidian";
+import type { App, MetadataCache } from "obsidian";
+import { AliasIconWidget } from "./AliasIconWidget";
+
+/**
+ * Represents a parsed wikilink with its position and extracted components.
+ */
+interface WikilinkMatch {
+  from: number;
+  to: number;
+  targetPath: string;
+  alias: string;
+}
+
+/**
+ * Service interface for alias management operations.
+ */
+export interface IAliasService {
+  getAliases(file: TFile): string[];
+  addAlias(file: TFile, alias: string): Promise<void>;
+}
+
+/**
+ * ViewPlugin that adds inline icons next to wikilinks with aliases
+ * that are not present in the target asset's frontmatter aliases property.
+ *
+ * @example
+ * Given a wikilink: [[Target Asset|my alias]]
+ * If "my alias" is not in Target Asset's `aliases` frontmatter property,
+ * an icon appears next to the wikilink. Clicking adds the alias.
+ */
+export class AliasIconViewPlugin {
+  decorations: DecorationSet;
+  private app: App;
+  private metadataCache: MetadataCache;
+  private aliasService: IAliasService;
+  private notifyUser: (message: string) => void;
+
+  constructor(
+    view: EditorView,
+    app: App,
+    metadataCache: MetadataCache,
+    aliasService: IAliasService,
+    notifyUser: (message: string) => void,
+  ) {
+    this.app = app;
+    this.metadataCache = metadataCache;
+    this.aliasService = aliasService;
+    this.notifyUser = notifyUser;
+    this.decorations = this.buildDecorations(view);
+  }
+
+  update(update: ViewUpdate): void {
+    if (update.docChanged || update.viewportChanged) {
+      this.decorations = this.buildDecorations(update.view);
+    }
+  }
+
+  private buildDecorations(view: EditorView): DecorationSet {
+    const builder = new RangeSetBuilder<Decoration>();
+    const wikilinks = this.findWikilinksWithAliases(view);
+
+    // Sort by position (required by RangeSetBuilder)
+    wikilinks.sort((a, b) => a.to - b.to);
+
+    for (const wikilink of wikilinks) {
+      const targetFile = this.resolveTargetFile(wikilink.targetPath);
+
+      if (!targetFile) {
+        // Target file doesn't exist, skip
+        continue;
+      }
+
+      const existingAliases = this.aliasService.getAliases(targetFile);
+
+      // Check if alias is already in target's aliases
+      if (!existingAliases.includes(wikilink.alias)) {
+        const widget = new AliasIconWidget(
+          targetFile.path,
+          wikilink.alias,
+          (path: string, alias: string) => this.handleAddAlias(path, alias),
+        );
+
+        const decoration = Decoration.widget({
+          widget,
+          side: 1, // Position after the wikilink
+        });
+
+        builder.add(wikilink.to, wikilink.to, decoration);
+      }
+    }
+
+    return builder.finish();
+  }
+
+  /**
+   * Find all wikilinks with aliases in the current view.
+   * Wikilinks with aliases have the format: [[target|alias]]
+   */
+  private findWikilinksWithAliases(view: EditorView): WikilinkMatch[] {
+    const matches: WikilinkMatch[] = [];
+    const doc = view.state.doc;
+    const { from, to } = view.viewport;
+
+    // Use regex to find wikilinks with aliases
+    // Pattern: [[target|alias]] where target and alias are captured
+    const wikilinkPattern = /\[\[([^\]|]+)\|([^\]]+)\]\]/g;
+    const text = doc.sliceString(from, to);
+
+    let match;
+    while ((match = wikilinkPattern.exec(text)) !== null) {
+      const targetPath = match[1].trim();
+      const alias = match[2].trim();
+
+      // Don't process if alias is same as target (no need for icon)
+      if (alias !== targetPath && alias.length > 0) {
+        matches.push({
+          from: from + match.index,
+          to: from + match.index + match[0].length,
+          targetPath,
+          alias,
+        });
+      }
+    }
+
+    return matches;
+  }
+
+  /**
+   * Resolve a wikilink target to a TFile.
+   * Handles both with and without .md extension.
+   */
+  private resolveTargetFile(targetPath: string): TFile | null {
+    let file = this.metadataCache.getFirstLinkpathDest(targetPath, "");
+
+    // Try with .md extension if not found
+    if (!file && !targetPath.endsWith(".md")) {
+      file = this.metadataCache.getFirstLinkpathDest(targetPath + ".md", "");
+    }
+
+    return file;
+  }
+
+  /**
+   * Handle clicking the add alias icon.
+   */
+  private async handleAddAlias(targetPath: string, alias: string): Promise<void> {
+    const file = this.app.vault.getAbstractFileByPath(targetPath);
+
+    // Use instanceof to properly check for TFile
+    if (file instanceof TFile) {
+      try {
+        await this.aliasService.addAlias(file, alias);
+        this.notifyUser(`Added "${alias}" to aliases`);
+      } catch (error) {
+        this.notifyUser(`Failed to add alias: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+  }
+}
+
+/**
+ * Creates the editor extension for alias icon decorations.
+ */
+export function createAliasIconExtension(
+  app: App,
+  metadataCache: MetadataCache,
+  aliasService: IAliasService,
+  notifyUser: (message: string) => void,
+): Extension {
+  return ViewPlugin.define(
+    (view) => new AliasIconViewPlugin(view, app, metadataCache, aliasService, notifyUser),
+    {
+      decorations: (plugin) => plugin.decorations,
+    },
+  );
+}
