@@ -2715,6 +2715,11 @@
   transform: scale(0.95);
 }
 
+/* Optimistic UI: Hide icon immediately on click (Issue #599) */
+.exocortex-alias-add-icon.is-hidden {
+  display: none;
+}
+
 /* Icon sizing - use Obsidian's icon container standards */
 .exocortex-alias-add-icon svg {
   width: 14px;
