@@ -2461,30 +2461,32 @@
   width: 100%;
 }
 
-/* Colgroup column width definitions - ensures alignment across separate tables */
-/* Name column: No explicit width - takes remaining space after fixed columns */
+/* Colgroup column width definitions - ensures alignment across separate tables
+ * Using percentage-based widths for reliability with table-layout: fixed.
+ * With table-layout: fixed, col widths are authoritative for both header and body tables.
+ */
 .exocortex-tasks-table col.col-name {
-  /* Intentionally no width set - distributes remaining space */
+  width: 40%;
 }
 
 .exocortex-tasks-table col.col-start {
-  width: 90px;
+  width: 15%;
 }
 
 .exocortex-tasks-table col.col-end {
-  width: 90px;
+  width: 15%;
 }
 
 .exocortex-tasks-table col.col-status {
-  width: 80px;
+  width: 15%;
 }
 
 .exocortex-tasks-table col.col-effort-area {
-  width: 120px;
+  width: 10%;
 }
 
 .exocortex-tasks-table col.col-votes {
-  width: 60px;
+  width: 5%;
 }
 
 /* Column width definitions for header and data cells */
@@ -2495,51 +2497,46 @@
   white-space: nowrap;
 }
 
-/* Name column - flexible, takes remaining space after fixed columns
- * With table-layout: fixed, we must NOT use max-width:0 on <th> headers
- * because it confuses the column width calculation. Only <td> cells use that trick.
+/* Name column - widths defined in colgroup (col.col-name)
+ * With table-layout: fixed, col widths are authoritative - no need to repeat on th/td.
+ * Data cells need max-width:0 trick for text-overflow ellipsis to work.
  */
-.exocortex-tasks-table th.task-name-header,
-.exocortex-tasks-table td.task-name {
-  /* Width is implicit - takes all remaining space after fixed columns */
-  min-width: 100px;
+.exocortex-tasks-table th.task-name-header {
+  /* Width from colgroup col.col-name - no explicit width needed */
 }
 
 .exocortex-tasks-table td.task-name {
-  /* Override: Data cells need max-width:0 trick for text-overflow ellipsis */
+  /* max-width:0 enables text-overflow ellipsis with table-layout:fixed */
   max-width: 0;
 }
 
-/* Start column - fixed width for time display (HH:MM or MM-DD HH:MM) */
+/* Start column - width from colgroup, center-aligned */
 .exocortex-tasks-table th.task-start-header,
 .exocortex-tasks-table td.task-start {
-  width: 90px;
   text-align: center;
 }
 
-/* End column - fixed width for time display */
+/* End column - width from colgroup, center-aligned */
 .exocortex-tasks-table th.task-end-header,
 .exocortex-tasks-table td.task-end {
-  width: 90px;
   text-align: center;
 }
 
-/* Status column - fixed width */
+/* Status column - width from colgroup */
 .exocortex-tasks-table th.task-status-header,
 .exocortex-tasks-table td.task-status {
-  width: 80px;
+  /* Width from colgroup col.col-status */
 }
 
-/* Effort Area column (optional) */
+/* Effort Area column (optional) - width from colgroup */
 .exocortex-tasks-table th.task-effort-area-header,
 .exocortex-tasks-table td.task-effort-area {
-  width: 120px;
+  /* Width from colgroup col.col-effort-area */
 }
 
-/* Votes column (optional, last column when visible) */
+/* Votes column (optional) - width from colgroup, center-aligned */
 .exocortex-tasks-table th.task-votes-header,
 .exocortex-tasks-table td.task-effort-votes {
-  width: 60px;
   text-align: center;
 }
 
