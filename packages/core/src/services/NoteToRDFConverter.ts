@@ -181,6 +181,11 @@ export class NoteToRDFConverter {
       );
     }
 
+    // Handle Date objects (js-yaml auto-parses ISO 8601 strings to Date)
+    if (value instanceof Date) {
+      return new Literal(value.toISOString(), Namespace.XSD.term("dateTime"));
+    }
+
     return new Literal(String(value));
   }
 
