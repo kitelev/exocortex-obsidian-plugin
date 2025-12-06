@@ -2462,8 +2462,9 @@
 }
 
 /* Colgroup column width definitions - ensures alignment across separate tables */
+/* Name column: No explicit width - takes remaining space after fixed columns */
 .exocortex-tasks-table col.col-name {
-  width: auto;
+  /* Intentionally no width set - distributes remaining space */
 }
 
 .exocortex-tasks-table col.col-start {
@@ -2494,11 +2495,19 @@
   white-space: nowrap;
 }
 
-/* Name column - flexible, takes remaining space */
+/* Name column - flexible, takes remaining space after fixed columns
+ * With table-layout: fixed, we must NOT use max-width:0 on <th> headers
+ * because it confuses the column width calculation. Only <td> cells use that trick.
+ */
 .exocortex-tasks-table th.task-name-header,
 .exocortex-tasks-table td.task-name {
-  max-width: 0; /* Forces text-overflow to work with table-layout: fixed */
+  /* Width is implicit - takes all remaining space after fixed columns */
   min-width: 100px;
+}
+
+.exocortex-tasks-table td.task-name {
+  /* Override: Data cells need max-width:0 trick for text-overflow ellipsis */
+  max-width: 0;
 }
 
 /* Start column - fixed width for time display (HH:MM or MM-DD HH:MM) */
