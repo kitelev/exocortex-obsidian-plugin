@@ -244,6 +244,92 @@ exocortex command complete "tasks/feature.md" --vault ~/vault
 exocortex command archive "tasks/feature.md" --vault ~/vault
 ```
 
+### Batch Operations
+
+Execute multiple operations in a single CLI invocation for better performance:
+
+```bash
+# Execute batch from JSON input
+exocortex batch --input '[
+  {"command":"start","filepath":"tasks/task1.md"},
+  {"command":"complete","filepath":"tasks/task2.md"},
+  {"command":"trash","filepath":"tasks/task3.md"}
+]' --vault ~/vault
+
+# Execute batch from file
+exocortex batch --file operations.json --vault ~/vault
+
+# Atomic mode (all-or-nothing - rollback on any failure)
+exocortex batch --file operations.json --vault ~/vault --atomic
+
+# Dry run (preview without modifying files)
+exocortex batch --input '[{"command":"start","filepath":"task.md"}]' --vault ~/vault --dry-run
+
+# JSON output for MCP integration
+exocortex batch --file operations.json --vault ~/vault --format json
+```
+
+**Batch Options:**
+- `--input <json>` - JSON array of operations to execute
+- `--file <path>` - Path to JSON file containing operations
+- `--atomic` - All-or-nothing execution (rollback on any failure)
+- `--dry-run` - Preview changes without modifying files
+- `--format <type>` - Output format: `text` (default), `json`
+- `--vault <path>` - Path to Obsidian vault (default: current directory)
+
+**Operation Format:**
+```json
+{
+  "command": "start",           // Command name (required)
+  "filepath": "tasks/task.md",  // File path (required)
+  "options": {                  // Optional command parameters
+    "label": "New Label",
+    "date": "2025-12-15"
+  }
+}
+```
+
+**Supported Commands:**
+- `start` - Start task (ToDo → Doing)
+- `complete` - Complete task (Doing → Done)
+- `trash` - Trash task
+- `archive` - Archive task
+- `move-to-backlog` - Move to Backlog
+- `move-to-analysis` - Move to Analysis
+- `move-to-todo` - Move to ToDo
+- `update-label` - Update label (requires `options.label`)
+- `schedule` - Schedule task (requires `options.date`)
+- `set-deadline` - Set deadline (requires `options.date`)
+
+**Performance Benefits:**
+- Single process execution (no repeated Node.js startup overhead)
+- Vault loaded once for all operations
+- Batch of 10 operations is ~10x faster than 10 separate CLI calls
+
+**MCP Integration Example:**
+```json
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "total": 3,
+    "succeeded": 3,
+    "failed": 0,
+    "results": [
+      {"success": true, "command": "start", "filepath": "task1.md", "action": "Started task"},
+      {"success": true, "command": "complete", "filepath": "task2.md", "action": "Completed task"},
+      {"success": true, "command": "trash", "filepath": "task3.md", "action": "Trashed task"}
+    ],
+    "durationMs": 45,
+    "atomic": false
+  },
+  "meta": {
+    "durationMs": 45,
+    "itemCount": 3
+  }
+}
+```
+
 ## Architecture
 
 The CLI uses `@exocortex/core` for business logic and implements a Node.js file system adapter:
@@ -357,6 +443,9 @@ ems__Effort_status: "[[ems__EffortStatusDraft]]"
 - `exocortex command update-label` - Update asset label
 - `exocortex command schedule` - Set planned start date
 - `exocortex command set-deadline` - Set planned end date
+
+**Batch Operations:**
+- `exocortex batch` - Execute multiple operations in single invocation
 
 ### Planned Commands
 
