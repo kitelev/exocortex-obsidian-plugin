@@ -2441,38 +2441,33 @@
 
 /*
  * Fixes for inconsistent column alignment (Issue #594):
- * - Uses <colgroup> for consistent widths across header/body tables in virtualization
- * - table-layout: fixed for predictable column widths
- * - Fixed widths for time (Start, End) and Status columns
- * - Name column takes remaining space with text ellipsis
- * - Prevents long UUIDs/task names from breaking layout
+ * - Uses natural table layout (NOT table-layout: fixed)
+ * - Explicit widths on data columns (Start, End, Status)
+ * - Name column takes remaining space with min-width
+ * - Prevents long task names from breaking layout
  *
  * Column width strategy:
- * - Name: flexible (remaining space, ~40% minimum)
- * - Start: 90px fixed
- * - End: 90px fixed
- * - Status: 80px fixed
- * - Area: 100px fixed (when visible)
- * - Votes: 60px fixed (when visible)
+ * - Name: flexible (remaining space, min-width: 200px)
+ * - Start: 90px
+ * - End: 90px
+ * - Status: 100px
+ * - Area: 120px (when visible)
+ * - Votes: 70px (when visible)
+ *
+ * NOTE: table-layout: fixed was removed because it causes misalignment
+ * between header and body when they are separate tables (virtualization).
  */
 
 .exocortex-tasks-table {
-  table-layout: fixed;
   width: 100%;
+  /* Natural table layout - browser calculates column widths based on content and explicit widths */
 }
 
-/* Colgroup column width definitions - ensures alignment across separate tables
- * Using fixed pixel widths for time/status columns, with Name column taking remaining space.
- * This approach works regardless of which optional columns (Effort Area, Votes) are visible.
- * With table-layout: fixed, col widths are authoritative for both header and body tables.
- */
-
-/* Name column uses remaining space after fixed-width columns */
+/* Colgroup column widths - used by natural table layout */
 .exocortex-tasks-table col.col-name {
-  width: auto;
+  /* No fixed width - takes remaining space */
 }
 
-/* Fixed pixel widths for time/status columns - consistent layout */
 .exocortex-tasks-table col.col-start {
   width: 90px;
 }
@@ -2482,19 +2477,18 @@
 }
 
 .exocortex-tasks-table col.col-status {
-  width: 80px;
-}
-
-/* Optional columns with fixed widths */
-.exocortex-tasks-table col.col-effort-area {
   width: 100px;
 }
 
-.exocortex-tasks-table col.col-votes {
-  width: 60px;
+.exocortex-tasks-table col.col-effort-area {
+  width: 120px;
 }
 
-/* Column width definitions for header and data cells */
+.exocortex-tasks-table col.col-votes {
+  width: 70px;
+}
+
+/* Base cell styling */
 .exocortex-tasks-table th,
 .exocortex-tasks-table td {
   overflow: hidden;
@@ -2502,17 +2496,11 @@
   white-space: nowrap;
 }
 
-/* Name column - widths defined in colgroup (col.col-name)
- * With table-layout: fixed, col widths are authoritative - no need to repeat on th/td.
- * Data cells need max-width:0 trick for text-overflow ellipsis to work.
- */
-.exocortex-tasks-table th.task-name-header {
-  /* Width from colgroup col.col-name - no explicit width needed */
-}
-
+/* Name column - flexible with minimum width */
+.exocortex-tasks-table th.task-name-header,
 .exocortex-tasks-table td.task-name {
-  /* max-width:0 enables text-overflow ellipsis with table-layout:fixed */
-  max-width: 0;
+  min-width: 200px;
+  max-width: 500px;
 }
 
 /* Start column - width from colgroup, center-aligned */
