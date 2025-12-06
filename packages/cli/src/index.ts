@@ -7,12 +7,15 @@ import { commandCommand } from "./commands/command.js";
 import { watchCommand } from "./commands/watch.js";
 import { batchCommand } from "./commands/batch.js";
 
+// Version injected at build time by esbuild (see esbuild.config.mjs)
+declare const __CLI_VERSION__: string;
+
 const program = new Command();
 
 program
   .name("exocortex")
   .description("CLI tool for Exocortex knowledge management system")
-  .version("0.1.0");
+  .version(__CLI_VERSION__);
 
 program
   .command("sparql")

@@ -57,6 +57,7 @@ await esbuild.build({
   ],
   define: {
     "process.env.NODE_ENV": prod ? '"production"' : '"development"',
+    "__CLI_VERSION__": JSON.stringify(packageJson.version),
   },
   logLevel: "info",
 });
