@@ -45,7 +45,7 @@ export class AliasIconWidget extends WidgetType {
       span.classList.remove("is-hovered");
     });
 
-    span.addEventListener("click", (e) => {
+    span.addEventListener("click", async (e) => {
       e.preventDefault();
       e.stopPropagation();
       this.handleClick(span);
