@@ -261,7 +261,8 @@ describe("NoteToRDFConverter", () => {
 
       const nonExoEmsTriples = triples.filter((t) => {
         const pred = (t.predicate as IRI).value;
-        return !pred.includes("exocortex.org");
+        // Namespace uses exocortex.my not exocortex.org
+        return !pred.includes("exocortex.my");
       });
 
       expect(nonExoEmsTriples.length).toBe(0);
@@ -608,6 +609,62 @@ describe("NoteToRDFConverter", () => {
     it("should handle spaces in path", () => {
       const iri = converter.notePathToIRI("My Folder/My Note.md");
       expect(iri.value).toBe("obsidian://vault/My%20Folder/My%20Note.md");
+    });
+
+    // Issue #621: Ensure consistent URI normalization for SPARQL exact matches
+    describe("URI normalization for SPARQL queries (Issue #621)", () => {
+      it("should preserve forward slashes in path (not encode to %2F)", () => {
+        const iri = converter.notePathToIRI("03 Knowledge/kitelev/f2dccb6a-802d-48d3-8e8a-2c4264197692.md");
+        // Should preserve / but encode space
+        expect(iri.value).toBe("obsidian://vault/03%20Knowledge/kitelev/f2dccb6a-802d-48d3-8e8a-2c4264197692.md");
+        // Critical: should NOT contain %2F
+        expect(iri.value).not.toContain("%2F");
+      });
+
+      it("should encode special characters that are not valid in URI paths", () => {
+        const iri = converter.notePathToIRI("Tasks/Review PR #123.md");
+        // # should be encoded
+        expect(iri.value).toBe("obsidian://vault/Tasks/Review%20PR%20#123.md");
+      });
+
+      it("should handle nested folders with spaces", () => {
+        const iri = converter.notePathToIRI("01 Areas/02 Projects/My Project.md");
+        expect(iri.value).toBe("obsidian://vault/01%20Areas/02%20Projects/My%20Project.md");
+        expect(iri.value).not.toContain("%2F");
+      });
+
+      it("should handle UUID-based filenames (prototype pattern)", () => {
+        const iri = converter.notePathToIRI("03 Knowledge/kitelev/2d369bb0-159f-4639-911d-ec2c585e8d00.md");
+        expect(iri.value).toBe("obsidian://vault/03%20Knowledge/kitelev/2d369bb0-159f-4639-911d-ec2c585e8d00.md");
+      });
+
+      it("should produce consistent IRIs for same path (idempotent)", () => {
+        const path = "My Folder/Sub Folder/Note.md";
+        const iri1 = converter.notePathToIRI(path);
+        const iri2 = converter.notePathToIRI(path);
+        expect(iri1.value).toBe(iri2.value);
+      });
+
+      it("should handle paths with Cyrillic characters", () => {
+        const iri = converter.notePathToIRI("Заметки/Мой файл.md");
+        // Cyrillic characters should be encoded
+        expect(iri.value).toBe("obsidian://vault/%D0%97%D0%B0%D0%BC%D0%B5%D1%82%D0%BA%D0%B8/%D0%9C%D0%BE%D0%B9%20%D1%84%D0%B0%D0%B9%D0%BB.md");
+        // But slashes should remain (obsidian:// has 2, vault/ has 1, folder/ has 1)
+        expect(iri.value.split("/").length).toBe(5);
+      });
+
+      it("should handle paths with special characters (parentheses, brackets)", () => {
+        const iri = converter.notePathToIRI("Notes/My (Important) Note [v2].md");
+        // encodeURI encodes brackets to %5B and %5D
+        expect(iri.value).toBe("obsidian://vault/Notes/My%20(Important)%20Note%20%5Bv2%5D.md");
+      });
+
+      it("should handle deep nested paths", () => {
+        const iri = converter.notePathToIRI("a/b/c/d/e/f/file.md");
+        expect(iri.value).toBe("obsidian://vault/a/b/c/d/e/f/file.md");
+        // All 6 slashes should be preserved plus obsidian://vault/ (3 more)
+        expect((iri.value.match(/\//g) || []).length).toBe(9);
+      });
     });
   });
 });
