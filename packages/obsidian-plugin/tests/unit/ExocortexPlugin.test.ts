@@ -162,6 +162,7 @@ describe("ExocortexPlugin", () => {
     plugin.registerEvent = jest.fn();
     plugin.addSettingTab = jest.fn();
     plugin.registerMarkdownCodeBlockProcessor = jest.fn();
+    plugin.registerEditorExtension = jest.fn();
   });
 
   afterEach(() => {
