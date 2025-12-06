@@ -492,6 +492,50 @@ describe("NoteToRDFConverter", () => {
         '"2025-10-24T14:30:45Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>'
       );
     });
+
+    it("should convert JavaScript Date object to xsd:dateTime literal (js-yaml auto-parsing)", async () => {
+      // js-yaml automatically parses ISO 8601 strings to Date objects
+      const dateValue = new Date("2025-10-24T14:30:45Z");
+      const frontmatter: IFrontmatter = {
+        ems__Effort_startTimestamp: dateValue,
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const timestampTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Effort_startTimestamp")
+      );
+
+      expect(timestampTriple).toBeDefined();
+      const literal = timestampTriple!.object as Literal;
+      expect(literal.value).toBe("2025-10-24T14:30:45.000Z");
+      expect(literal.datatype).toBeDefined();
+      expect(literal.datatype!.value).toBe(Namespace.XSD.term("dateTime").value);
+    });
+
+    it("should handle Date object without milliseconds (local timezone)", async () => {
+      // Simulate a Date object parsed from "2025-11-03T10:39:54"
+      const dateValue = new Date("2025-11-03T10:39:54");
+      const frontmatter: IFrontmatter = {
+        ems__Effort_startTimestamp: dateValue,
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const timestampTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Effort_startTimestamp")
+      );
+
+      expect(timestampTriple).toBeDefined();
+      const literal = timestampTriple!.object as Literal;
+      // Date.toISOString() always returns UTC with Z suffix
+      expect(literal.value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/);
+      expect(literal.datatype!.value).toBe(Namespace.XSD.term("dateTime").value);
+    });
   });
 
   describe("convertVault", () => {
