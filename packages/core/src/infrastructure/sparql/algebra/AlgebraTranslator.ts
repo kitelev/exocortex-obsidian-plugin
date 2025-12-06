@@ -1,4 +1,4 @@
-import type { SPARQLQuery, SelectQuery } from "../SPARQLParser";
+import type { SPARQLQuery, SelectQuery, ConstructQuery } from "../SPARQLParser";
 import type {
   AlgebraOperation,
   BGPOperation,
@@ -10,6 +10,7 @@ import type {
   ValuesBinding,
   ExtendOperation,
   SubqueryOperation,
+  ConstructOperation,
   ExistsExpression,
   ArithmeticExpression,
   Triple,
@@ -33,14 +34,18 @@ export class AlgebraTranslatorError extends Error {
 export class AlgebraTranslator {
   translate(query: SPARQLQuery): AlgebraOperation {
     if (query.type !== "query") {
-      throw new AlgebraTranslatorError("Only SELECT queries are currently supported");
+      throw new AlgebraTranslatorError("Only query operations are supported (not updates)");
     }
 
-    if (query.queryType !== "SELECT") {
-      throw new AlgebraTranslatorError(`Query type ${query.queryType} not yet supported`);
+    if (query.queryType === "SELECT") {
+      return this.translateSelect(query as SelectQuery);
     }
 
-    return this.translateSelect(query as SelectQuery);
+    if (query.queryType === "CONSTRUCT") {
+      return this.translateConstruct(query as ConstructQuery);
+    }
+
+    throw new AlgebraTranslatorError(`Query type ${query.queryType} not yet supported`);
   }
 
   private translateSelect(query: SelectQuery): AlgebraOperation {
@@ -117,6 +122,41 @@ export class AlgebraTranslator {
     }
 
     return operation;
+  }
+
+  /**
+   * Translate a CONSTRUCT query to algebra.
+   * CONSTRUCT queries produce triples by substituting variables in a template
+   * with values from the WHERE clause solutions.
+   */
+  private translateConstruct(query: ConstructQuery): ConstructOperation {
+    // Translate the template triples (may be undefined in sparqljs)
+    const template = this.translateConstructTemplate(query.template ?? []);
+
+    // Translate the WHERE clause
+    if (!query.where || query.where.length === 0) {
+      throw new AlgebraTranslatorError("CONSTRUCT query must have WHERE clause");
+    }
+    const where = this.translateWhere(query.where);
+
+    return {
+      type: "construct",
+      template,
+      where,
+    };
+  }
+
+  /**
+   * Translate CONSTRUCT template triples from sparqljs AST format.
+   * Template triples may contain variables that will be substituted
+   * with values from the WHERE clause solutions.
+   */
+  private translateConstructTemplate(template: any[]): Triple[] {
+    if (!template || !Array.isArray(template)) {
+      return [];
+    }
+
+    return template.map((t: any) => this.translateTriple(t));
   }
 
   private extractAggregates(variables: any[]): AggregateBinding[] {

@@ -15,8 +15,10 @@ import type {
   GroupOperation,
   ExtendOperation,
   SubqueryOperation,
+  ConstructOperation,
 } from "../algebra/AlgebraOperation";
 import type { SolutionMapping } from "../SolutionMapping";
+import type { Triple } from "../../../domain/models/rdf/Triple";
 import { BGPExecutor } from "./BGPExecutor";
 import { FilterExecutor } from "./FilterExecutor";
 import { OptionalExecutor } from "./OptionalExecutor";
@@ -24,6 +26,7 @@ import { UnionExecutor } from "./UnionExecutor";
 import { MinusExecutor } from "./MinusExecutor";
 import { ValuesExecutor } from "./ValuesExecutor";
 import { AggregateExecutor } from "./AggregateExecutor";
+import { ConstructExecutor } from "./ConstructExecutor";
 
 export class QueryExecutorError extends Error {
   constructor(message: string, cause?: Error) {
@@ -45,6 +48,7 @@ export class QueryExecutor {
   private readonly minusExecutor: MinusExecutor;
   private readonly valuesExecutor: ValuesExecutor;
   private readonly aggregateExecutor: AggregateExecutor;
+  private readonly constructExecutor: ConstructExecutor;
 
   constructor(tripleStore: ITripleStore) {
     this.bgpExecutor = new BGPExecutor(tripleStore);
@@ -54,6 +58,7 @@ export class QueryExecutor {
     this.minusExecutor = new MinusExecutor();
     this.valuesExecutor = new ValuesExecutor();
     this.aggregateExecutor = new AggregateExecutor();
+    this.constructExecutor = new ConstructExecutor();
 
     // Set up EXISTS evaluator for FilterExecutor
     this.filterExecutor.setExistsEvaluator(async (pattern, solution) => {
@@ -409,5 +414,32 @@ export class QueryExecutor {
     const json = solution.toJSON();
     const keys = Object.keys(json).sort();
     return keys.map((k) => `${k}=${json[k]}`).join("|");
+  }
+
+  /**
+   * Check if an algebra operation is a CONSTRUCT query.
+   */
+  isConstructQuery(operation: AlgebraOperation): operation is ConstructOperation {
+    return operation.type === "construct";
+  }
+
+  /**
+   * Execute a CONSTRUCT query and return generated triples.
+   * This is the primary method for executing CONSTRUCT queries.
+   *
+   * @param operation - A CONSTRUCT algebra operation
+   * @returns Array of generated RDF triples
+   * @throws QueryExecutorError if operation is not a CONSTRUCT
+   */
+  async executeConstruct(operation: ConstructOperation): Promise<Triple[]> {
+    if (operation.type !== "construct") {
+      throw new QueryExecutorError("executeConstruct requires a CONSTRUCT operation");
+    }
+
+    // Execute the WHERE clause to get solution mappings
+    const solutions = await this.executeAll(operation.where);
+
+    // Apply the template to generate triples
+    return this.constructExecutor.execute(operation.template, solutions);
   }
 }

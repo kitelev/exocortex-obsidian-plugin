@@ -1374,14 +1374,150 @@ describe("AlgebraTranslator", () => {
       expect(() => translator.translate(ast)).toThrow(AlgebraTranslatorError);
     });
 
-    it("throws error for non-SELECT query types", () => {
+    it("throws error for unsupported query types (ASK)", () => {
+      const ast: any = {
+        type: "query",
+        queryType: "ASK",
+        where: [{ type: "bgp", triples: [] }],
+      };
+      expect(() => translator.translate(ast)).toThrow(AlgebraTranslatorError);
+    });
+
+    it("throws error for unsupported query types (DESCRIBE)", () => {
+      const ast: any = {
+        type: "query",
+        queryType: "DESCRIBE",
+        where: [{ type: "bgp", triples: [] }],
+      };
+      expect(() => translator.translate(ast)).toThrow(AlgebraTranslatorError);
+    });
+  });
+
+  describe("CONSTRUCT Query Translation", () => {
+    it("translates simple CONSTRUCT query", () => {
+      const query = `
+        CONSTRUCT {
+          ?s <http://example.org/derived> "value" .
+        }
+        WHERE {
+          ?s <http://example.org/type> <http://example.org/Task> .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("construct");
+      expect((algebra as any).template).toHaveLength(1);
+      expect((algebra as any).where.type).toBe("bgp");
+    });
+
+    it("translates CONSTRUCT with PREFIX declarations", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        CONSTRUCT {
+          ?task ex:isProcessed "true" .
+        }
+        WHERE {
+          ?task ex:type ex:Task .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("construct");
+      const template = (algebra as any).template;
+      expect(template[0].predicate.value).toBe("http://example.org/isProcessed");
+    });
+
+    it("translates CONSTRUCT with multiple template patterns", () => {
+      const query = `
+        CONSTRUCT {
+          ?s <http://example.org/p1> "v1" .
+          ?s <http://example.org/p2> "v2" .
+        }
+        WHERE {
+          ?s <http://example.org/type> <http://example.org/Thing> .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("construct");
+      expect((algebra as any).template).toHaveLength(2);
+    });
+
+    it("translates CONSTRUCT with FILTER in WHERE", () => {
+      const query = `
+        CONSTRUCT {
+          ?task <http://example.org/completed> "true" .
+        }
+        WHERE {
+          ?task <http://example.org/status> ?s .
+          FILTER(?s = "done")
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("construct");
+      expect((algebra as any).where.type).toBe("filter");
+    });
+
+    it("translates CONSTRUCT with BIND in WHERE", () => {
+      const query = `
+        CONSTRUCT {
+          ?task <http://example.org/length> ?len .
+        }
+        WHERE {
+          ?task <http://example.org/label> ?label .
+          BIND(STRLEN(?label) AS ?len)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("construct");
+      expect((algebra as any).where.type).toBe("extend");
+    });
+
+    it("translates CONSTRUCT with OPTIONAL in WHERE", () => {
+      const query = `
+        CONSTRUCT {
+          ?task <http://example.org/hasStatus> ?status .
+        }
+        WHERE {
+          ?task <http://example.org/type> <http://example.org/Task> .
+          OPTIONAL { ?task <http://example.org/status> ?status }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("construct");
+    });
+
+    it("throws error for CONSTRUCT without WHERE clause", () => {
       const ast: any = {
         type: "query",
         queryType: "CONSTRUCT",
         template: [],
         where: [],
       };
-      expect(() => translator.translate(ast)).toThrow(AlgebraTranslatorError);
+      expect(() => translator.translate(ast)).toThrow("CONSTRUCT query must have WHERE clause");
+    });
+
+    it("handles empty template gracefully", () => {
+      const query = `
+        CONSTRUCT { }
+        WHERE {
+          ?s <http://example.org/p> ?o .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("construct");
+      expect((algebra as any).template).toHaveLength(0);
     });
   });
 });
