@@ -243,8 +243,7 @@ export class CaseWhenTransformer {
     const clauses: Array<{ condition: string; result: string }> = [];
 
     // Remove CASE and END keywords
-    let content = caseExpr.replace(/^\s*CASE\s+/i, "").replace(/\s*END\s*$/i, "");
-    const contentUpper = content.toUpperCase();
+    const content = caseExpr.replace(/^\s*CASE\s+/i, "").replace(/\s*END\s*$/i, "");
 
     // Find all WHEN positions that are at the top level (not inside parentheses or strings)
     const whenPositions = this.findKeywordPositions(content, "WHEN");
