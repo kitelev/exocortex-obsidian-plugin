@@ -2,6 +2,7 @@ import type { GroupOperation, AggregateExpression, Expression } from "../algebra
 import type { SolutionMapping } from "../SolutionMapping";
 import { Literal } from "../../../domain/models/rdf/Literal";
 import { IRI } from "../../../domain/models/rdf/IRI";
+import { FilterExecutor } from "./FilterExecutor";
 
 const XSD_INTEGER = new IRI("http://www.w3.org/2001/XMLSchema#integer");
 const XSD_DECIMAL = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
@@ -15,6 +16,11 @@ export class AggregateExecutorError extends Error {
 }
 
 export class AggregateExecutor {
+  private readonly filterExecutor: FilterExecutor;
+
+  constructor() {
+    this.filterExecutor = new FilterExecutor();
+  }
   execute(
     operation: GroupOperation,
     inputSolutions: SolutionMapping[]
@@ -177,22 +183,56 @@ export class AggregateExecutor {
     return values;
   }
 
+  /**
+   * Evaluate an expression against a solution mapping.
+   * Supports all expression types including arithmetic, function calls, and BIND-computed values.
+   *
+   * This enables aggregate functions to work with:
+   * - Simple variables: AVG(?duration) where ?duration is BIND-computed
+   * - Arithmetic expressions: SUM(?end - ?start)
+   * - Function calls: AVG(HOURS(?end) - HOURS(?start))
+   * - Nested expressions: SUM((?end - ?start) / 60000)
+   */
   private evaluateExpression(expr: Expression, solution: SolutionMapping): any {
+    // For variable expressions, we need special handling to extract values properly
     if (expr.type === "variable") {
-      const term = solution.get(expr.name);
-      if (!term) return undefined;
+      const term = solution.get((expr as any).name);
+      if (term === undefined || term === null) return undefined;
 
-      if (typeof term === "object" && "value" in term) {
-        return term.value;
+      // Handle raw primitive values (from BIND computations)
+      if (typeof term === "number") {
+        return term;
       }
+      if (typeof term === "string") {
+        return term;
+      }
+      if (typeof term === "boolean") {
+        return term;
+      }
+
+      // Handle RDF terms with .value property (Literal, IRI)
+      if (typeof term === "object" && "value" in term) {
+        return (term as any).value;
+      }
+
+      // Fallback: return as-is
       return term;
     }
 
+    // For literal expressions, return the value directly
     if (expr.type === "literal") {
-      return expr.value;
+      return (expr as any).value;
     }
 
-    return undefined;
+    // For all other expression types (arithmetic, function, comparison, etc.),
+    // delegate to FilterExecutor which has full expression evaluation support
+    try {
+      return this.filterExecutor.evaluateExpression(expr as any, solution);
+    } catch {
+      // If evaluation fails (e.g., missing variable, type error), return undefined
+      // This matches SPARQL semantics where errors result in unbound values
+      return undefined;
+    }
   }
 
   private computeCount(values: any[], distinct: boolean): number {
