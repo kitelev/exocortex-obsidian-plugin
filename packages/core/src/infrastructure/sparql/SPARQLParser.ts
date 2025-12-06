@@ -1,4 +1,5 @@
 import * as sparqljs from "sparqljs";
+import { CaseWhenTransformer, CaseWhenTransformerError } from "./CaseWhenTransformer";
 
 export class SPARQLParseError extends Error {
   public readonly line?: number;
@@ -22,18 +23,25 @@ export type QueryType = "SELECT" | "CONSTRUCT" | "ASK" | "DESCRIBE";
 export class SPARQLParser {
   private readonly parser: InstanceType<typeof sparqljs.Parser>;
   private readonly generator: InstanceType<typeof sparqljs.Generator>;
+  private readonly caseWhenTransformer: CaseWhenTransformer;
 
   constructor() {
     this.parser = new sparqljs.Parser();
     this.generator = new sparqljs.Generator();
+    this.caseWhenTransformer = new CaseWhenTransformer();
   }
 
   parse(queryString: string): SPARQLQuery {
     try {
-      const parsed = this.parser.parse(queryString);
+      // Transform CASE WHEN expressions to IF expressions before parsing
+      const transformedQuery = this.caseWhenTransformer.transform(queryString);
+      const parsed = this.parser.parse(transformedQuery);
       this.validateQuery(parsed);
       return parsed;
     } catch (error) {
+      if (error instanceof CaseWhenTransformerError) {
+        throw new SPARQLParseError(error.message);
+      }
       if (error instanceof Error) {
         const match = error.message.match(/line (\d+), column (\d+)/);
         const line = match ? parseInt(match[1], 10) : undefined;
