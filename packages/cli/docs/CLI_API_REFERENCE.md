@@ -7,6 +7,7 @@
 ## Table of Contents
 
 - [SPARQL Query](#sparql-query)
+- [Watch Command](#watch-command)
 - [Command Execution](#command-execution)
   - [Status Commands](#status-commands)
   - [Creation Commands](#creation-commands)
@@ -73,6 +74,158 @@ exocortex sparql query "SELECT ?task WHERE { ?task exo:Instance_class ems:Task }
 # Query with plan visualization
 exocortex sparql query queries/complex.sparql --vault ~/vault --explain
 ```
+
+---
+
+## Watch Command
+
+Monitor vault file changes and emit structured events in NDJSON format. Designed for integration with MCP resource subscriptions and automation pipelines.
+
+### Signature
+
+```bash
+exocortex watch [options]
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `--vault <path>` | string | `process.cwd()` | Path to Obsidian vault to watch |
+| `--pattern <glob>` | string | `**/*.md` | Glob pattern to filter files (e.g., `*.md`, `tasks/**`) |
+| `--asset-type <type>` | string | - | Filter by asset type from frontmatter (e.g., `ems__Task`, `ems__Project`) |
+| `--debounce <ms>` | number | `100` | Debounce interval in milliseconds |
+
+### Output Format
+
+The watch command outputs events to **stdout** in NDJSON format (one JSON object per line). Each event has the following structure:
+
+```typescript
+interface WatchEvent {
+  type: "create" | "modify" | "delete";  // Event type
+  path: string;                           // Absolute path to file
+  relativePath: string;                   // Path relative to vault root
+  timestamp: string;                      // ISO 8601 timestamp
+  assetType?: string;                     // Asset type from frontmatter (for .md files)
+}
+```
+
+### Event Types
+
+| Type | Description |
+|------|-------------|
+| `create` | File was created (detected via birthtime < 1 second) |
+| `modify` | File was modified (existing file changed) |
+| `delete` | File was deleted (file no longer exists) |
+
+### Startup Messages
+
+Startup and status messages are emitted to **stderr** to avoid interfering with NDJSON output on stdout:
+
+```
+Watching vault: /path/to/vault
+  Pattern filter: *.md
+  Asset type filter: ems__Task
+  Debounce: 100ms
+Press Ctrl+C to stop
+```
+
+### Error Events
+
+Watcher errors are emitted to stdout as JSON objects:
+
+```json
+{"type":"error","message":"Watch error: ENOENT","timestamp":"2025-12-06T10:30:00.000Z"}
+```
+
+### Signal Handling
+
+- **SIGINT** (Ctrl+C): Graceful shutdown with exit code 0
+- **SIGTERM**: Graceful shutdown with exit code 0
+
+### Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | Graceful shutdown (SIGINT/SIGTERM) |
+| `2` | Invalid arguments (bad path, invalid debounce) |
+| `3` | Vault path does not exist |
+
+### Examples
+
+```bash
+# Watch entire vault with default settings
+exocortex watch --vault ~/vault
+
+# Watch only markdown files in tasks directory
+exocortex watch --vault ~/vault --pattern "tasks/**/*.md"
+
+# Watch only task files (filter by asset type)
+exocortex watch --vault ~/vault --asset-type "ems__Task"
+
+# Custom debounce for rapid file changes
+exocortex watch --vault ~/vault --debounce 500
+
+# Combine pattern and asset type filters
+exocortex watch --vault ~/vault --pattern "*.md" --asset-type "ems__Meeting"
+
+# Pipe to jq for processing
+exocortex watch --vault ~/vault | jq -c 'select(.type == "modify")'
+
+# Log events to file
+exocortex watch --vault ~/vault >> events.ndjson
+
+# Use in MCP resource subscription
+exocortex watch --vault ~/vault --asset-type "ems__Task" | while read -r event; do
+  echo "Task changed: $event"
+done
+```
+
+### Integration with MCP
+
+The watch command is designed for MCP (Model Context Protocol) resource subscriptions. Example integration:
+
+```typescript
+import { spawn } from "child_process";
+
+const watcher = spawn("exocortex", [
+  "watch",
+  "--vault", "/path/to/vault",
+  "--asset-type", "ems__Task"
+]);
+
+watcher.stdout.on("data", (data) => {
+  const lines = data.toString().split("\n").filter(Boolean);
+  for (const line of lines) {
+    const event = JSON.parse(line);
+    // Notify MCP clients about resource update
+    mcpServer.notify("resources/updated", {
+      uri: `exocortex://task/${event.relativePath}`
+    });
+  }
+});
+```
+
+### Debouncing
+
+The watcher implements per-file debouncing to prevent event storms:
+
+- Each file has its own debounce timer
+- Rapid changes to the same file are coalesced into a single event
+- Changes to different files are tracked independently
+- Default debounce of 100ms works well for most editors
+
+### Pattern Matching
+
+Pattern matching uses [minimatch](https://github.com/isaacs/minimatch) glob syntax:
+
+| Pattern | Description |
+|---------|-------------|
+| `*.md` | All markdown files in root |
+| `**/*.md` | All markdown files (recursive) |
+| `tasks/**` | All files in tasks directory |
+| `*.{md,txt}` | Markdown and text files |
+| `!archive/**` | Exclude archive directory (negation) |
 
 ---
 

@@ -4,6 +4,7 @@ import "reflect-metadata";
 import { Command } from "commander";
 import { sparqlQueryCommand } from "./commands/sparql-query.js";
 import { commandCommand } from "./commands/command.js";
+import { watchCommand } from "./commands/watch.js";
 
 const program = new Command();
 
@@ -18,5 +19,6 @@ program
   .addCommand(sparqlQueryCommand());
 
 program.addCommand(commandCommand());
+program.addCommand(watchCommand());
 
 program.parse();
