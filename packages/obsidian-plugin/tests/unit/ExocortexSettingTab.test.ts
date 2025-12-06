@@ -36,6 +36,7 @@ describe("ExocortexSettingTab", () => {
         layoutVisible: true,
         showPropertiesSection: true,
         showArchivedAssets: false,
+        showDailyNoteProjects: true,
       },
       saveSettings: jest.fn().mockResolvedValue(undefined),
       refreshLayout: jest.fn(),
@@ -299,7 +300,7 @@ describe("ExocortexSettingTab", () => {
 
       expect(mockContainerEl.empty).toHaveBeenCalled();
       expect(getOntologySpy).toHaveBeenCalledTimes(1);
-      expect(MockSetting).toHaveBeenCalledTimes(4);
+      expect(MockSetting).toHaveBeenCalledTimes(5);
     });
 
     it("should render ontology dropdown with correct options", () => {
@@ -550,6 +551,60 @@ describe("ExocortexSettingTab", () => {
       }
 
       expect(mockPlugin.settings.showArchivedAssets).toBe(true);
+      expect(mockPlugin.saveSettings).toHaveBeenCalled();
+      expect(mockPlugin.refreshLayout).toHaveBeenCalled();
+    });
+
+    it("should render Daily Note Projects toggle", () => {
+      jest.spyOn(settingTab as any, "getOntologyAssets").mockReturnValue([]);
+
+      settingTab.display();
+
+      const fifthSetting = (MockSetting as jest.Mock).mock.results[4].value;
+      expect(fifthSetting.setName).toHaveBeenCalledWith("Show projects in daily notes");
+      expect(fifthSetting.setDesc).toHaveBeenCalledWith(
+        "Display the projects section in the layout for daily notes"
+      );
+    });
+
+    it("should handle Daily Note Projects toggle change", async () => {
+      jest.spyOn(settingTab as any, "getOntologyAssets").mockReturnValue([]);
+
+      let toggleCallbacks: any[] = [];
+      MockSetting.mockImplementation((containerEl: any) => {
+        const setting = {
+          containerEl,
+          setName: jest.fn().mockReturnThis(),
+          setDesc: jest.fn().mockReturnThis(),
+          addDropdown: jest.fn().mockReturnThis(),
+          addToggle: jest.fn().mockImplementation((callback) => {
+            const toggle = {
+              setValue: jest.fn().mockReturnThis(),
+              onChange: jest.fn().mockReturnThis(),
+            };
+            toggleCallbacks.push({ toggle, callback, onChange: null });
+            toggle.onChange.mockImplementation((cb: any) => {
+              toggleCallbacks[toggleCallbacks.length - 1].onChange = cb;
+              return toggle;
+            });
+            callback(toggle);
+            return setting;
+          }),
+        };
+        return setting;
+      });
+
+      settingTab.display();
+
+      // Fifth setting's toggle (Daily Note Projects)
+      const dailyProjectsToggle = toggleCallbacks[3];
+      expect(dailyProjectsToggle.toggle.setValue).toHaveBeenCalledWith(true);
+
+      if (dailyProjectsToggle.onChange) {
+        await dailyProjectsToggle.onChange(false);
+      }
+
+      expect(mockPlugin.settings.showDailyNoteProjects).toBe(false);
       expect(mockPlugin.saveSettings).toHaveBeenCalled();
       expect(mockPlugin.refreshLayout).toHaveBeenCalled();
     });
