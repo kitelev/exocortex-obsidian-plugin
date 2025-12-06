@@ -2436,15 +2436,24 @@
 }
 
 /* ============================================================================
-   Daily Tasks Table - Fixed Column Layout (Issue #571)
+   Daily Tasks Table - Fixed Column Layout (Issue #571, Issue #594)
    ============================================================================ */
 
 /*
- * Fixes for inconsistent column alignment:
- * - Uses table-layout: fixed for predictable column widths
+ * Fixes for inconsistent column alignment (Issue #594):
+ * - Uses <colgroup> for consistent widths across header/body tables in virtualization
+ * - table-layout: fixed for predictable column widths
  * - Fixed widths for time (Start, End) and Status columns
  * - Name column takes remaining space with text ellipsis
- * - Prevents long UUIDs from breaking layout
+ * - Prevents long UUIDs/task names from breaking layout
+ *
+ * Column width strategy:
+ * - Name: flexible (remaining space, ~40% minimum)
+ * - Start: 90px fixed
+ * - End: 90px fixed
+ * - Status: 80px fixed
+ * - Area: 100px fixed (when visible)
+ * - Votes: 60px fixed (when visible)
  */
 
 .exocortex-tasks-table {
@@ -2452,7 +2461,32 @@
   width: 100%;
 }
 
-/* Column width definitions for Tasks table */
+/* Colgroup column width definitions - ensures alignment across separate tables */
+.exocortex-tasks-table col.col-name {
+  width: auto;
+}
+
+.exocortex-tasks-table col.col-start {
+  width: 90px;
+}
+
+.exocortex-tasks-table col.col-end {
+  width: 90px;
+}
+
+.exocortex-tasks-table col.col-status {
+  width: 80px;
+}
+
+.exocortex-tasks-table col.col-effort-area {
+  width: 120px;
+}
+
+.exocortex-tasks-table col.col-votes {
+  width: 60px;
+}
+
+/* Column width definitions for header and data cells */
 .exocortex-tasks-table th,
 .exocortex-tasks-table td {
   overflow: hidden;
@@ -2461,50 +2495,42 @@
 }
 
 /* Name column - flexible, takes remaining space */
-.exocortex-tasks-table th:first-child,
+.exocortex-tasks-table th.task-name-header,
 .exocortex-tasks-table td.task-name {
-  width: auto;
-  min-width: 150px;
+  max-width: 0; /* Forces text-overflow to work with table-layout: fixed */
+  min-width: 100px;
 }
 
 /* Start column - fixed width for time display (HH:MM or MM-DD HH:MM) */
-.exocortex-tasks-table th:nth-child(2),
+.exocortex-tasks-table th.task-start-header,
 .exocortex-tasks-table td.task-start {
-  width: 100px;
-  min-width: 100px;
-  max-width: 100px;
+  width: 90px;
   text-align: center;
 }
 
 /* End column - fixed width for time display */
-.exocortex-tasks-table th:nth-child(3),
+.exocortex-tasks-table th.task-end-header,
 .exocortex-tasks-table td.task-end {
-  width: 100px;
-  min-width: 100px;
-  max-width: 100px;
+  width: 90px;
   text-align: center;
 }
 
 /* Status column - fixed width */
-.exocortex-tasks-table th:nth-child(4),
+.exocortex-tasks-table th.task-status-header,
 .exocortex-tasks-table td.task-status {
-  width: 90px;
-  min-width: 90px;
-  max-width: 90px;
+  width: 80px;
 }
 
-/* Effort Area column (optional, 5th column when visible) */
+/* Effort Area column (optional) */
+.exocortex-tasks-table th.task-effort-area-header,
 .exocortex-tasks-table td.task-effort-area {
   width: 120px;
-  min-width: 120px;
-  max-width: 180px;
 }
 
 /* Votes column (optional, last column when visible) */
+.exocortex-tasks-table th.task-votes-header,
 .exocortex-tasks-table td.task-effort-votes {
   width: 60px;
-  min-width: 60px;
-  max-width: 60px;
   text-align: center;
 }
 
@@ -2526,29 +2552,47 @@
   font-style: italic;
 }
 
+/* Virtualized table-specific styles for proper alignment */
+.exocortex-virtualized .exocortex-tasks-table-header {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.exocortex-virtualized .exocortex-virtual-table {
+  border-top: none;
+}
+
 /* Mobile responsive - narrower columns on small screens */
 @media (max-width: 768px) {
-  .exocortex-tasks-table th:nth-child(2),
+  .exocortex-tasks-table col.col-start,
+  .exocortex-tasks-table col.col-end {
+    width: 70px;
+  }
+
+  .exocortex-tasks-table col.col-status {
+    width: 65px;
+  }
+
+  .exocortex-tasks-table col.col-effort-area {
+    width: 80px;
+  }
+
+  .exocortex-tasks-table th.task-start-header,
   .exocortex-tasks-table td.task-start,
-  .exocortex-tasks-table th:nth-child(3),
+  .exocortex-tasks-table th.task-end-header,
   .exocortex-tasks-table td.task-end {
     width: 70px;
-    min-width: 70px;
-    max-width: 70px;
     font-size: 0.85em;
   }
 
-  .exocortex-tasks-table th:nth-child(4),
+  .exocortex-tasks-table th.task-status-header,
   .exocortex-tasks-table td.task-status {
-    width: 70px;
-    min-width: 70px;
-    max-width: 70px;
+    width: 65px;
   }
 
+  .exocortex-tasks-table th.task-effort-area-header,
   .exocortex-tasks-table td.task-effort-area {
-    width: 100px;
-    min-width: 100px;
-    max-width: 100px;
+    width: 80px;
   }
 }
 

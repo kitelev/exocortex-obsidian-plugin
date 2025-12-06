@@ -512,12 +512,27 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     );
   };
 
+  /**
+   * Renders <colgroup> for consistent column widths across header/body tables.
+   * This is essential for virtualized tables where header and body are separate.
+   */
+  const renderColGroup = () => (
+    <colgroup>
+      <col className="col-name" />
+      <col className="col-start" />
+      <col className="col-end" />
+      <col className="col-status" />
+      {showEffortArea && <col className="col-effort-area" />}
+      {showEffortVotes && <col className="col-votes" />}
+    </colgroup>
+  );
+
   const renderTableHeader = () => (
     <thead>
       <tr>
         <th
           onClick={() => handleSort("name")}
-          className="sortable"
+          className="sortable task-name-header"
           style={{ cursor: "pointer" }}
         >
           Name{" "}
@@ -526,7 +541,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
         </th>
         <th
           onClick={() => handleSort("start")}
-          className="sortable"
+          className="sortable task-start-header"
           style={{ cursor: "pointer" }}
         >
           Start{" "}
@@ -535,7 +550,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
         </th>
         <th
           onClick={() => handleSort("end")}
-          className="sortable"
+          className="sortable task-end-header"
           style={{ cursor: "pointer" }}
         >
           End{" "}
@@ -544,7 +559,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
         </th>
         <th
           onClick={() => handleSort("status")}
-          className="sortable"
+          className="sortable task-status-header"
           style={{ cursor: "pointer" }}
         >
           Status{" "}
@@ -554,7 +569,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
         {showEffortArea && (
           <th
             onClick={() => handleSort("effortArea")}
-            className="sortable"
+            className="sortable task-effort-area-header"
             style={{ cursor: "pointer" }}
           >
             Effort Area{" "}
@@ -565,7 +580,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
         {showEffortVotes && (
           <th
             onClick={() => handleSort("votes")}
-            className="sortable"
+            className="sortable task-votes-header"
             style={{ cursor: "pointer" }}
           >
             Votes{" "}
@@ -581,6 +596,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     return (
       <div className="exocortex-daily-tasks">
         <table className="exocortex-tasks-table">
+          {renderColGroup()}
           {renderTableHeader()}
           <tbody>
             {displayedTasks.map((task, index) => renderRow(task, index))}
@@ -603,6 +619,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   return (
     <div className="exocortex-daily-tasks exocortex-virtualized">
       <table className="exocortex-tasks-table exocortex-tasks-table-header">
+        {renderColGroup()}
         {renderTableHeader()}
       </table>
       <div
@@ -630,6 +647,7 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
               width: "100%",
             }}
           >
+            {renderColGroup()}
             <tbody>
               {virtualItems.length > 0 ? (
                 virtualItems.map((virtualRow) => {
