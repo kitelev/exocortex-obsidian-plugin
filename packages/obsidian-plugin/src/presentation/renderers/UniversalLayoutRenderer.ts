@@ -220,7 +220,9 @@ export class UniversalLayoutRenderer {
       }
 
       await this.dailyTasksRenderer.render(el, currentFile, renderHeader, this.sectionStateManager.isCollapsed("daily-tasks"));
-      await this.dailyProjectsRenderer.render(el, currentFile, renderHeader, this.sectionStateManager.isCollapsed("daily-projects"));
+      if (this.settings.showDailyNoteProjects) {
+        await this.dailyProjectsRenderer.render(el, currentFile, renderHeader, this.sectionStateManager.isCollapsed("daily-projects"));
+      }
 
       const relations = await this.relationsRenderer.getAssetRelations(currentFile, config);
       await this.areaTreeRenderer.render(el, currentFile, relations, renderHeader, this.sectionStateManager.isCollapsed("area-tree"));
