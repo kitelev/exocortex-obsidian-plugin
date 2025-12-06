@@ -599,6 +599,52 @@ export class FilterExecutor {
           ? this.evaluateExpression(expr.args[1], solution)
           : this.evaluateExpression(expr.args[2], solution);
 
+      // XSD Cast Functions (SPARQL 1.1 §17.5)
+      // These convert values to specific datatypes
+      case "integer":
+      case "int":
+      case "long":
+      case "short":
+      case "byte":
+      case "nonnegativeinteger":
+      case "positiveinteger":
+      case "nonpositiveinteger":
+      case "negativeinteger":
+      case "unsignedlong":
+      case "unsignedint":
+      case "unsignedshort":
+      case "unsignedbyte": {
+        const intArg = this.evaluateExpression(expr.args[0], solution);
+        return this.castToInteger(intArg);
+      }
+
+      case "decimal":
+      case "double":
+      case "float": {
+        const decimalArg = this.evaluateExpression(expr.args[0], solution);
+        return this.castToDecimal(decimalArg);
+      }
+
+      case "boolean": {
+        const boolArg = this.evaluateExpression(expr.args[0], solution);
+        return this.castToBoolean(boolArg);
+      }
+
+      case "string": {
+        const stringArg = this.evaluateExpression(expr.args[0], solution);
+        return this.getStringValue(stringArg);
+      }
+
+      case "datetime": {
+        const dtArg = this.evaluateExpression(expr.args[0], solution);
+        return this.castToDateTime(dtArg);
+      }
+
+      case "date": {
+        const dateArg = this.evaluateExpression(expr.args[0], solution);
+        return this.castToDate(dateArg);
+      }
+
       default:
         throw new FilterExecutorError(`Unknown function: ${funcName}`);
     }
@@ -674,5 +720,229 @@ export class FilterExecutor {
 
     // For other values (IRI, BlankNode), use truthy coercion
     return Boolean(value);
+  }
+
+  /**
+   * Cast a value to integer (xsd:integer and related types).
+   * Per SPARQL 1.1 §17.5, cast functions:
+   * - From numeric: truncate to integer
+   * - From boolean: true → 1, false → 0
+   * - From string: parse as integer
+   * - From dateTime: extract Unix timestamp in milliseconds
+   */
+  private castToInteger(value: any): number {
+    if (typeof value === "number") {
+      return Math.trunc(value);
+    }
+
+    if (typeof value === "boolean") {
+      return value ? 1 : 0;
+    }
+
+    if (typeof value === "string") {
+      // Try parsing as dateTime first
+      if (this.looksLikeDateTime(value)) {
+        const date = new Date(value);
+        if (!isNaN(date.getTime())) {
+          return date.getTime();
+        }
+      }
+      const num = parseInt(value, 10);
+      if (!isNaN(num)) {
+        return num;
+      }
+      throw new FilterExecutorError(`Cannot cast "${value}" to integer`);
+    }
+
+    if (value instanceof Literal) {
+      const datatypeValue = value.datatype?.value || "";
+      // Check if it's a dateTime literal
+      if (datatypeValue.includes("#dateTime") || datatypeValue.includes("#date")) {
+        const date = new Date(value.value);
+        if (!isNaN(date.getTime())) {
+          return date.getTime();
+        }
+      }
+      // Handle boolean datatype - convert boolean to integer
+      if (datatypeValue.includes("#boolean")) {
+        const boolVal = value.value === "true" || value.value === "1";
+        return boolVal ? 1 : 0;
+      }
+      return this.castToInteger(value.value);
+    }
+
+    if (value && typeof value === "object" && "value" in value) {
+      return this.castToInteger(value.value);
+    }
+
+    throw new FilterExecutorError(`Cannot cast ${typeof value} to integer`);
+  }
+
+  /**
+   * Cast a value to decimal (xsd:decimal, xsd:double, xsd:float).
+   * Per SPARQL 1.1 §17.5:
+   * - From numeric: return as-is
+   * - From boolean: true → 1.0, false → 0.0
+   * - From string: parse as decimal
+   */
+  private castToDecimal(value: any): number {
+    if (typeof value === "number") {
+      return value;
+    }
+
+    if (typeof value === "boolean") {
+      return value ? 1.0 : 0.0;
+    }
+
+    if (typeof value === "string") {
+      const num = parseFloat(value);
+      if (!isNaN(num)) {
+        return num;
+      }
+      throw new FilterExecutorError(`Cannot cast "${value}" to decimal`);
+    }
+
+    if (value instanceof Literal) {
+      const datatypeValue = value.datatype?.value || "";
+      // Handle boolean datatype - convert boolean to decimal
+      if (datatypeValue.includes("#boolean")) {
+        const boolVal = value.value === "true" || value.value === "1";
+        return boolVal ? 1.0 : 0.0;
+      }
+      return this.castToDecimal(value.value);
+    }
+
+    if (value && typeof value === "object" && "value" in value) {
+      return this.castToDecimal(value.value);
+    }
+
+    throw new FilterExecutorError(`Cannot cast ${typeof value} to decimal`);
+  }
+
+  /**
+   * Cast a value to boolean (xsd:boolean).
+   * Per SPARQL 1.1 §17.5:
+   * - From numeric: non-zero → true, zero/NaN → false
+   * - From string: "true"/"1" → true, "false"/"0"/empty → false
+   */
+  private castToBoolean(value: any): boolean {
+    if (typeof value === "boolean") {
+      return value;
+    }
+
+    if (typeof value === "number") {
+      return !isNaN(value) && value !== 0;
+    }
+
+    if (typeof value === "string") {
+      const lower = value.toLowerCase().trim();
+      if (lower === "true" || lower === "1") {
+        return true;
+      }
+      if (lower === "false" || lower === "0" || lower === "") {
+        return false;
+      }
+      throw new FilterExecutorError(`Cannot cast "${value}" to boolean`);
+    }
+
+    if (value instanceof Literal) {
+      const datatypeValue = value.datatype?.value || "";
+      // Handle numeric datatypes - non-zero → true
+      if (
+        datatypeValue.includes("#integer") ||
+        datatypeValue.includes("#decimal") ||
+        datatypeValue.includes("#double") ||
+        datatypeValue.includes("#float") ||
+        datatypeValue.includes("#int") ||
+        datatypeValue.includes("#long") ||
+        datatypeValue.includes("#short") ||
+        datatypeValue.includes("#byte")
+      ) {
+        const num = parseFloat(value.value);
+        return !isNaN(num) && num !== 0;
+      }
+      return this.castToBoolean(value.value);
+    }
+
+    if (value && typeof value === "object" && "value" in value) {
+      return this.castToBoolean(value.value);
+    }
+
+    throw new FilterExecutorError(`Cannot cast ${typeof value} to boolean`);
+  }
+
+  /**
+   * Cast a value to dateTime (xsd:dateTime).
+   * Returns ISO 8601 date string.
+   */
+  private castToDateTime(value: any): string {
+    if (typeof value === "string") {
+      // Try parsing as number first (timestamp in string form)
+      const numVal = Number(value);
+      if (!isNaN(numVal) && value.match(/^\d+$/)) {
+        const date = new Date(numVal);
+        if (!isNaN(date.getTime())) {
+          return date.toISOString();
+        }
+      }
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString();
+      }
+      throw new FilterExecutorError(`Cannot cast "${value}" to dateTime`);
+    }
+
+    if (typeof value === "number") {
+      // Assume Unix timestamp in milliseconds
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString();
+      }
+      throw new FilterExecutorError(`Cannot cast ${value} to dateTime`);
+    }
+
+    if (value instanceof Literal) {
+      const datatypeValue = value.datatype?.value || "";
+      // Handle integer literals as timestamps
+      if (
+        datatypeValue.includes("#integer") ||
+        datatypeValue.includes("#int") ||
+        datatypeValue.includes("#long")
+      ) {
+        const timestamp = parseInt(value.value, 10);
+        if (!isNaN(timestamp)) {
+          const date = new Date(timestamp);
+          if (!isNaN(date.getTime())) {
+            return date.toISOString();
+          }
+        }
+      }
+      return this.castToDateTime(value.value);
+    }
+
+    if (value && typeof value === "object" && "value" in value) {
+      return this.castToDateTime(value.value);
+    }
+
+    throw new FilterExecutorError(`Cannot cast ${typeof value} to dateTime`);
+  }
+
+  /**
+   * Cast a value to date (xsd:date).
+   * Returns ISO 8601 date string (YYYY-MM-DD).
+   */
+  private castToDate(value: any): string {
+    const dateTime = this.castToDateTime(value);
+    // Extract just the date part (YYYY-MM-DD)
+    return dateTime.split("T")[0];
+  }
+
+  /**
+   * Check if a string looks like a dateTime value.
+   */
+  private looksLikeDateTime(value: string): boolean {
+    // ISO 8601 format: YYYY-MM-DDTHH:mm:ss or similar
+    const datePattern = /^\d{4}-\d{2}-\d{2}(T|\s)/;
+    return datePattern.test(value);
   }
 }

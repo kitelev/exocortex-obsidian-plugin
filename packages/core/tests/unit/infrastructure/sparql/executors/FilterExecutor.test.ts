@@ -1791,4 +1791,411 @@ describe("FilterExecutor", () => {
       });
     });
   });
+
+  /**
+   * Tests for XSD Cast Functions (SPARQL 1.1 §17.5).
+   * These functions convert values between datatypes.
+   * Issue #583: xsd:integer(?var) was not implemented, causing BIND to return undefined.
+   */
+  describe("XSD Cast Functions", () => {
+    describe("xsd:integer", () => {
+      it("should cast numeric string to integer", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "functionCall",
+              function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#integer" },
+              args: [{ type: "variable", name: "value" }],
+            },
+            right: { type: "literal", value: 42 },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("value", new Literal("42"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should truncate decimal to integer", async () => {
+        const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "functionCall",
+              function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#integer" },
+              args: [{ type: "variable", name: "value" }],
+            },
+            right: { type: "literal", value: 42 },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("value", new Literal("42.9", xsdDecimal));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should cast dateTime to Unix timestamp in milliseconds", async () => {
+        const xsdDateTime = new IRI("http://www.w3.org/2001/XMLSchema#dateTime");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: ">",
+            left: {
+              type: "functionCall",
+              function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#integer" },
+              args: [{ type: "variable", name: "timestamp" }],
+            },
+            right: { type: "literal", value: 0 },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("timestamp", new Literal("2025-12-01T10:00:00Z", xsdDateTime));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should cast boolean true to 1", async () => {
+        const xsdBool = new IRI("http://www.w3.org/2001/XMLSchema#boolean");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "functionCall",
+              function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#integer" },
+              args: [{ type: "variable", name: "flag" }],
+            },
+            right: { type: "literal", value: 1 },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("flag", new Literal("true", xsdBool));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should cast boolean false to 0", async () => {
+        const xsdBool = new IRI("http://www.w3.org/2001/XMLSchema#boolean");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "functionCall",
+              function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#integer" },
+              args: [{ type: "variable", name: "flag" }],
+            },
+            right: { type: "literal", value: 0 },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("flag", new Literal("false", xsdBool));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+    });
+
+    describe("xsd:decimal/double/float", () => {
+      it("should cast string to decimal", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "functionCall",
+              function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#decimal" },
+              args: [{ type: "variable", name: "value" }],
+            },
+            right: { type: "literal", value: 3.14 },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("value", new Literal("3.14"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should cast boolean to 1.0 or 0.0", async () => {
+        const xsdBool = new IRI("http://www.w3.org/2001/XMLSchema#boolean");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "functionCall",
+              function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#double" },
+              args: [{ type: "variable", name: "active" }],
+            },
+            right: { type: "literal", value: 1.0 },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("active", new Literal("true", xsdBool));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+    });
+
+    describe("xsd:boolean", () => {
+      it("should cast 'true' string to boolean true", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "functionCall",
+            function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#boolean" },
+            args: [{ type: "variable", name: "value" }],
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("value", new Literal("true"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should cast '1' string to boolean true", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "functionCall",
+            function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#boolean" },
+            args: [{ type: "variable", name: "value" }],
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("value", new Literal("1"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should cast non-zero number to boolean true", async () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "functionCall",
+            function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#boolean" },
+            args: [{ type: "variable", name: "count" }],
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("count", new Literal("5", xsdInt));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should cast zero to boolean false", async () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "logical",
+            operator: "!",
+            operands: [
+              {
+                type: "functionCall",
+                function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#boolean" },
+                args: [{ type: "variable", name: "count" }],
+              },
+            ],
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("count", new Literal("0", xsdInt));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+    });
+
+    describe("xsd:string", () => {
+      it("should cast number to string", async () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "functionCall",
+              function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#string" },
+              args: [{ type: "variable", name: "num" }],
+            },
+            right: { type: "literal", value: "42" },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("num", new Literal("42", xsdInt));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+    });
+
+    describe("xsd:dateTime and xsd:date", () => {
+      it("should cast timestamp to dateTime string", async () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "function",
+            function: "strstarts",
+            args: [
+              {
+                type: "functionCall",
+                function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#dateTime" },
+                args: [{ type: "variable", name: "ms" }],
+              },
+              { type: "literal", value: "2025" },
+            ],
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        // Unix timestamp for 2025-06-15T12:00:00Z
+        solution.set("ms", new Literal("1750075200000", xsdInt));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should cast dateTime string to date (YYYY-MM-DD)", async () => {
+        const xsdDateTime = new IRI("http://www.w3.org/2001/XMLSchema#dateTime");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: "=",
+            left: {
+              type: "functionCall",
+              function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#date" },
+              args: [{ type: "variable", name: "timestamp" }],
+            },
+            right: { type: "literal", value: "2025-12-01" },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("timestamp", new Literal("2025-12-01T10:30:00Z", xsdDateTime));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+    });
+
+    describe("Issue #583: AVG with BIND and xsd:integer", () => {
+      it("should use xsd:integer in arithmetic for duration calculation", async () => {
+        const xsdDateTime = new IRI("http://www.w3.org/2001/XMLSchema#dateTime");
+        // This tests the exact use case from Issue #583:
+        // BIND((xsd:integer(?end) - xsd:integer(?start)) / 60000 AS ?duration)
+        // The result should be a proper number that can be aggregated with AVG
+
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "comparison",
+            operator: ">",
+            left: {
+              type: "arithmetic",
+              operator: "/",
+              left: {
+                type: "arithmetic",
+                operator: "-",
+                left: {
+                  type: "functionCall",
+                  function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#integer" },
+                  args: [{ type: "variable", name: "end" }],
+                },
+                right: {
+                  type: "functionCall",
+                  function: { termType: "NamedNode", value: "http://www.w3.org/2001/XMLSchema#integer" },
+                  args: [{ type: "variable", name: "start" }],
+                },
+              },
+              right: { type: "literal", value: 60000 },
+            } as any,
+            // Duration should be > 10 minutes
+            right: { type: "literal", value: 10 },
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        // 20 minute shower: 10:00 to 10:20
+        solution.set("start", new Literal("2025-12-01T10:00:00Z", xsdDateTime));
+        solution.set("end", new Literal("2025-12-01T10:20:00Z", xsdDateTime));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should work with xsd:integer in BIND-like expression evaluation", () => {
+        // Direct test of evaluateExpression for the BIND pattern
+        const xsdDateTime = new IRI("http://www.w3.org/2001/XMLSchema#dateTime");
+
+        const solution = new SolutionMapping();
+        solution.set("start", new Literal("2025-12-01T10:00:00Z", xsdDateTime));
+        solution.set("end", new Literal("2025-12-01T10:20:00Z", xsdDateTime));
+
+        // Evaluate xsd:integer(?end)
+        const endExpr = {
+          type: "functionCall",
+          function: { value: "http://www.w3.org/2001/XMLSchema#integer" },
+          args: [{ type: "variable", name: "end" }],
+        };
+
+        const result = executor.evaluateExpression(endExpr as any, solution);
+
+        // Should return a number (Unix timestamp in ms)
+        expect(typeof result).toBe("number");
+        expect(result).toBeGreaterThan(0);
+      });
+    });
+  });
 });
