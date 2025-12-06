@@ -641,6 +641,87 @@ describe("AggregateExecutor", () => {
       });
     });
 
+    describe("Issue #534: Aggregate results should only contain GROUP BY and aggregate variables", () => {
+      it("should NOT include extra variables from input solutions (Blocker 1)", () => {
+        // This test verifies that aggregate results contain ONLY:
+        // 1. Variables from GROUP BY clause
+        // 2. Variables bound to aggregate expressions
+        // NOT the original solution variables like ?x, ?extra, etc.
+        const solutions = [
+          createSolution({ class: "Task", x: "value1", extra: "ignored1" }),
+          createSolution({ class: "Task", x: "value2", extra: "ignored2" }),
+          createSolution({ class: "Project", x: "value3", extra: "ignored3" }),
+        ];
+
+        const operation = createGroupOperation(["class"], [createCountAggregate("count")]);
+        const results = executor.execute(operation, solutions);
+
+        expect(results).toHaveLength(2);
+
+        // Each result should ONLY have 'class' (GROUP BY) and 'count' (aggregate)
+        for (const result of results) {
+          const vars = result.variables();
+          expect(vars).toContain("class");
+          expect(vars).toContain("count");
+          // Should NOT contain extra variables from input solutions
+          expect(vars).not.toContain("x");
+          expect(vars).not.toContain("extra");
+          // Exactly 2 variables: class + count
+          expect(vars.length).toBe(2);
+        }
+      });
+
+      it("should work correctly for global aggregates (no GROUP BY)", () => {
+        // When there's no GROUP BY, result should only have aggregate variables
+        const solutions = [
+          createSolution({ value: 10, extra: "ignored1", other: "data1" }),
+          createSolution({ value: 20, extra: "ignored2", other: "data2" }),
+          createSolution({ value: 30, extra: "ignored3", other: "data3" }),
+        ];
+
+        const operation = createGroupOperation([], [
+          createSumAggregate("total", "value"),
+          createCountAggregate("count"),
+        ]);
+        const results = executor.execute(operation, solutions);
+
+        expect(results).toHaveLength(1);
+
+        const result = results[0];
+        const vars = result.variables();
+        // Should ONLY have 'total' and 'count', NOT 'value', 'extra', 'other'
+        expect(vars).toContain("total");
+        expect(vars).toContain("count");
+        expect(vars).not.toContain("value");
+        expect(vars).not.toContain("extra");
+        expect(vars).not.toContain("other");
+        // Exactly 2 variables
+        expect(vars.length).toBe(2);
+      });
+
+      it("should return clean results for sleep analysis query pattern (Issue #534)", () => {
+        // Simulates: SELECT (AVG(?duration) AS ?avgSleepMinutes) WHERE { ... BIND(...) }
+        // Previously would return extra variables like ?start, ?end, ?s alongside ?avgSleepMinutes
+        const solutions = [
+          createSolution({ s: "sleep1", start: "2025-12-01T23:00", end: "2025-12-02T07:00", duration: 480 }),
+          createSolution({ s: "sleep2", start: "2025-12-02T22:30", end: "2025-12-03T06:30", duration: 480 }),
+          createSolution({ s: "sleep3", start: "2025-12-03T23:30", end: "2025-12-04T07:00", duration: 450 }),
+        ];
+
+        const operation = createGroupOperation([], [createAvgAggregate("avgSleepMinutes", "duration")]);
+        const results = executor.execute(operation, solutions);
+
+        expect(results).toHaveLength(1);
+
+        const result = results[0];
+        const vars = result.variables();
+
+        // Should ONLY contain 'avgSleepMinutes', not ?s, ?start, ?end, ?duration
+        expect(vars).toEqual(["avgSleepMinutes"]);
+        expect(getAggregateValue(result, "avgSleepMinutes")).toBeCloseTo(470, 0); // (480+480+450)/3
+      });
+    });
+
     describe("GROUP BY with BIND-computed values", () => {
       it("should compute per-group averages with BIND values", () => {
         // GROUP BY ?prototype, then AVG(?duration) per group

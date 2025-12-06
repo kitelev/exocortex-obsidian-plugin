@@ -598,4 +598,56 @@ export class BuiltInFunctions {
   static if<T>(condition: boolean, thenValue: T, elseValue: T): T {
     return condition ? thenValue : elseValue;
   }
+
+  // XSD Type Casting Functions
+  // https://www.w3.org/TR/sparql11-query/#FunctionMapping
+
+  /**
+   * XSD dateTime constructor/cast function.
+   * Converts a string value to an xsd:dateTime Literal.
+   * Used for dateTime arithmetic: xsd:dateTime(?end) - xsd:dateTime(?start)
+   *
+   * @param value - String representation of dateTime (ISO 8601 or JS Date format)
+   * @returns Literal with xsd:dateTime datatype
+   */
+  static xsdDateTime(value: string): Literal {
+    // Parse the date to validate it
+    const date = new Date(value);
+    if (isNaN(date.getTime())) {
+      throw new Error(`xsd:dateTime: invalid date string '${value}'`);
+    }
+    // Return as ISO 8601 string with xsd:dateTime datatype
+    return new Literal(date.toISOString(), new IRI("http://www.w3.org/2001/XMLSchema#dateTime"));
+  }
+
+  /**
+   * XSD integer constructor/cast function.
+   * Converts a string/number value to an xsd:integer Literal.
+   * Used for duration calculations.
+   *
+   * @param value - String or numeric representation of integer
+   * @returns Literal with xsd:integer datatype
+   */
+  static xsdInteger(value: string): Literal {
+    const num = parseInt(value, 10);
+    if (isNaN(num)) {
+      throw new Error(`xsd:integer: cannot convert '${value}' to integer`);
+    }
+    return new Literal(String(num), new IRI("http://www.w3.org/2001/XMLSchema#integer"));
+  }
+
+  /**
+   * XSD decimal constructor/cast function.
+   * Converts a string/number value to an xsd:decimal Literal.
+   *
+   * @param value - String or numeric representation of decimal
+   * @returns Literal with xsd:decimal datatype
+   */
+  static xsdDecimal(value: string): Literal {
+    const num = parseFloat(value);
+    if (isNaN(num)) {
+      throw new Error(`xsd:decimal: cannot convert '${value}' to decimal`);
+    }
+    return new Literal(String(num), new IRI("http://www.w3.org/2001/XMLSchema#decimal"));
+  }
 }

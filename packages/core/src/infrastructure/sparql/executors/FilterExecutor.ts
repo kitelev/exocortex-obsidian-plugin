@@ -535,6 +535,28 @@ export class FilterExecutor {
       case "now":
         return BuiltInFunctions.now();
 
+      // XSD Type casting functions - for SPARQL dateTime arithmetic (Issue #534)
+      // xsd:dateTime(?value) casts a value to dateTime for arithmetic operations
+      case "datetime":
+      case "xsd:datetime": {
+        const dtValue = this.evaluateExpression(expr.args[0], solution);
+        return BuiltInFunctions.xsdDateTime(this.getStringValue(dtValue));
+      }
+
+      // xsd:integer(?value) casts a value to integer for arithmetic operations
+      case "integer":
+      case "xsd:integer": {
+        const intValue = this.evaluateExpression(expr.args[0], solution);
+        return BuiltInFunctions.xsdInteger(this.getStringValue(intValue));
+      }
+
+      // xsd:decimal(?value) casts a value to decimal for arithmetic operations
+      case "decimal":
+      case "xsd:decimal": {
+        const decValue = this.evaluateExpression(expr.args[0], solution);
+        return BuiltInFunctions.xsdDecimal(this.getStringValue(decValue));
+      }
+
       // Duration conversion functions (for arithmetic results)
       case "mstominutes":
         const msMinArg = Number(this.evaluateExpression(expr.args[0], solution));
