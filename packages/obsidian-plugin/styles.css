@@ -2462,31 +2462,36 @@
 }
 
 /* Colgroup column width definitions - ensures alignment across separate tables
- * Using percentage-based widths for reliability with table-layout: fixed.
+ * Using fixed pixel widths for time/status columns, with Name column taking remaining space.
+ * This approach works regardless of which optional columns (Effort Area, Votes) are visible.
  * With table-layout: fixed, col widths are authoritative for both header and body tables.
  */
+
+/* Name column uses remaining space after fixed-width columns */
 .exocortex-tasks-table col.col-name {
-  width: 40%;
+  width: auto;
 }
 
+/* Fixed pixel widths for time/status columns - consistent layout */
 .exocortex-tasks-table col.col-start {
-  width: 15%;
+  width: 90px;
 }
 
 .exocortex-tasks-table col.col-end {
-  width: 15%;
+  width: 90px;
 }
 
 .exocortex-tasks-table col.col-status {
-  width: 15%;
+  width: 80px;
 }
 
+/* Optional columns with fixed widths */
 .exocortex-tasks-table col.col-effort-area {
-  width: 10%;
+  width: 100px;
 }
 
 .exocortex-tasks-table col.col-votes {
-  width: 5%;
+  width: 60px;
 }
 
 /* Column width definitions for header and data cells */
@@ -2583,22 +2588,15 @@
     width: 80px;
   }
 
+  .exocortex-tasks-table col.col-votes {
+    width: 50px;
+  }
+
   .exocortex-tasks-table th.task-start-header,
   .exocortex-tasks-table td.task-start,
   .exocortex-tasks-table th.task-end-header,
   .exocortex-tasks-table td.task-end {
-    width: 70px;
     font-size: 0.85em;
-  }
-
-  .exocortex-tasks-table th.task-status-header,
-  .exocortex-tasks-table td.task-status {
-    width: 65px;
-  }
-
-  .exocortex-tasks-table th.task-effort-area-header,
-  .exocortex-tasks-table td.task-effort-area {
-    width: 80px;
   }
 }
 
