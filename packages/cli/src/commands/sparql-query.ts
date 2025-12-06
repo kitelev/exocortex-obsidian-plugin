@@ -10,17 +10,19 @@ import {
   QueryExecutor,
   NoteToRDFConverter,
   type SolutionMapping,
+  type AlgebraOperation,
 } from "@exocortex/core";
 import { FileSystemVaultAdapter } from "../adapters/FileSystemVaultAdapter.js";
 import { TableFormatter } from "../formatters/TableFormatter.js";
 import { JsonFormatter } from "../formatters/JsonFormatter.js";
+import { TriplesFormatter } from "../formatters/TriplesFormatter.js";
 import { ErrorHandler, type OutputFormat } from "../utils/ErrorHandler.js";
 import { VaultNotFoundError } from "../utils/errors/index.js";
-import { ResponseBuilder, type QueryResult } from "../responses/index.js";
+import { ResponseBuilder, type QueryResult, type ConstructResult } from "../responses/index.js";
 
 export interface SparqlQueryOptions {
   vault: string;
-  format: "table" | "json" | "csv";
+  format: "table" | "json" | "csv" | "ntriples";
   output?: OutputFormat;
   explain?: boolean;
   stats?: boolean;
@@ -32,7 +34,7 @@ export function sparqlQueryCommand(): Command {
     .description("Execute SPARQL query against Obsidian vault")
     .argument("<query>", "SPARQL query string or path to .sparql file")
     .option("--vault <path>", "Path to Obsidian vault", process.cwd())
-    .option("--format <type>", "Output format: table|json|csv", "table")
+    .option("--format <type>", "Output format: table|json|csv|ntriples", "table")
     .option("--output <type>", "Response format: text|json (for MCP tools)", "text")
     .option("--explain", "Show optimized query plan")
     .option("--stats", "Show execution statistics")
@@ -79,19 +81,28 @@ export function sparqlQueryCommand(): Command {
         const translator = new AlgebraTranslator();
         let algebra = translator.translate(ast);
 
-        if (options.noOptimize) {
-          if (outputFormat === "text") {
-            console.log(`⚠️  Query optimization disabled\n`);
-          }
-        } else {
+        // Optimization is only applicable to non-CONSTRUCT queries
+        // CONSTRUCT queries have their WHERE clause optimized separately
+        if (!options.noOptimize && algebra.type !== "construct") {
           const optimizer = new AlgebraOptimizer();
           algebra = optimizer.optimize(algebra);
+        } else if (!options.noOptimize && algebra.type === "construct") {
+          // Optimize the WHERE clause inside CONSTRUCT
+          const optimizer = new AlgebraOptimizer();
+          (algebra as any).where = optimizer.optimize((algebra as any).where);
         }
 
         if (options.explain && outputFormat === "text") {
           console.log(`📊 Query Plan:`);
           const serializer = new AlgebraSerializer();
-          console.log(serializer.toString(algebra));
+          if (algebra.type === "construct") {
+            console.log("CONSTRUCT Template:");
+            console.log("  (template patterns)");
+            console.log("WHERE:");
+            console.log(serializer.toString((algebra as any).where));
+          } else {
+            console.log(serializer.toString(algebra));
+          }
           console.log();
         }
 
@@ -101,44 +112,89 @@ export function sparqlQueryCommand(): Command {
         const execStartTime = Date.now();
 
         const executor = new QueryExecutor(tripleStore);
-        const results = await executor.executeAll(algebra);
 
-        const execDuration = Date.now() - execStartTime;
-        const totalDuration = Date.now() - startTime;
+        // Execute based on query type
+        if (executor.isConstructQuery(algebra)) {
+          // CONSTRUCT query - returns triples
+          const resultTriples = await executor.executeConstruct(algebra);
+          const execDuration = Date.now() - execStartTime;
+          const totalDuration = Date.now() - startTime;
 
-        if (outputFormat === "json") {
-          // Structured JSON response for MCP tools
-          const bindings = results.map((r) => r.toJSON());
-          const queryResult: QueryResult = {
-            query: queryString,
-            count: results.length,
-            bindings,
-          };
-          const response = ResponseBuilder.success(queryResult, {
-            durationMs: totalDuration,
-            itemCount: results.length,
-            loadDurationMs: loadDuration,
-            execDurationMs: execDuration,
-            triplesScanned: triples.length,
-          });
-          console.log(JSON.stringify(response, null, 2));
-        } else {
-          // Text mode output
-          console.log(`✅ Found ${results.length} result(s) in ${execDuration}ms\n`);
-
-          if (results.length > 0) {
-            formatResults(results, options.format);
+          if (outputFormat === "json") {
+            // Structured JSON response for MCP tools
+            const triplesFormatter = new TriplesFormatter();
+            const constructResult: ConstructResult = {
+              query: queryString,
+              count: resultTriples.length,
+              triples: JSON.parse(triplesFormatter.formatJson(resultTriples)),
+            };
+            const response = ResponseBuilder.success(constructResult, {
+              durationMs: totalDuration,
+              itemCount: resultTriples.length,
+              loadDurationMs: loadDuration,
+              execDurationMs: execDuration,
+              triplesScanned: triples.length,
+            });
+            console.log(JSON.stringify(response, null, 2));
           } else {
-            console.log("No results found.");
-          }
+            // Text mode output
+            console.log(`✅ Generated ${resultTriples.length} triple(s) in ${execDuration}ms\n`);
 
-          if (options.stats) {
-            console.log(`\n📊 Execution Statistics:`);
-            console.log(`  Vault loading: ${loadDuration}ms`);
-            console.log(`  Query execution: ${execDuration}ms`);
-            console.log(`  Total time: ${totalDuration}ms`);
-            console.log(`  Triples scanned: ${triples.length}`);
-            console.log(`  Results returned: ${results.length}`);
+            if (resultTriples.length > 0) {
+              formatConstructResults(resultTriples, options.format);
+            } else {
+              console.log("No triples generated.");
+            }
+
+            if (options.stats) {
+              console.log(`\n📊 Execution Statistics:`);
+              console.log(`  Vault loading: ${loadDuration}ms`);
+              console.log(`  Query execution: ${execDuration}ms`);
+              console.log(`  Total time: ${totalDuration}ms`);
+              console.log(`  Triples scanned: ${triples.length}`);
+              console.log(`  Triples generated: ${resultTriples.length}`);
+            }
+          }
+        } else {
+          // SELECT query - returns solution mappings
+          const results = await executor.executeAll(algebra);
+          const execDuration = Date.now() - execStartTime;
+          const totalDuration = Date.now() - startTime;
+
+          if (outputFormat === "json") {
+            // Structured JSON response for MCP tools
+            const bindings = results.map((r) => r.toJSON());
+            const queryResult: QueryResult = {
+              query: queryString,
+              count: results.length,
+              bindings,
+            };
+            const response = ResponseBuilder.success(queryResult, {
+              durationMs: totalDuration,
+              itemCount: results.length,
+              loadDurationMs: loadDuration,
+              execDurationMs: execDuration,
+              triplesScanned: triples.length,
+            });
+            console.log(JSON.stringify(response, null, 2));
+          } else {
+            // Text mode output
+            console.log(`✅ Found ${results.length} result(s) in ${execDuration}ms\n`);
+
+            if (results.length > 0) {
+              formatSelectResults(results, options.format);
+            } else {
+              console.log("No results found.");
+            }
+
+            if (options.stats) {
+              console.log(`\n📊 Execution Statistics:`);
+              console.log(`  Vault loading: ${loadDuration}ms`);
+              console.log(`  Query execution: ${execDuration}ms`);
+              console.log(`  Total time: ${totalDuration}ms`);
+              console.log(`  Triples scanned: ${triples.length}`);
+              console.log(`  Results returned: ${results.length}`);
+            }
           }
         }
       } catch (error) {
@@ -160,7 +216,7 @@ function loadQuery(queryArg: string): string {
   return queryArg;
 }
 
-function formatResults(results: SolutionMapping[], format: string): void {
+function formatSelectResults(results: SolutionMapping[], format: string): void {
   switch (format) {
     case "json":
       const jsonFormatter = new JsonFormatter();
@@ -171,6 +227,25 @@ function formatResults(results: SolutionMapping[], format: string): void {
     default:
       const tableFormatter = new TableFormatter();
       console.log(tableFormatter.format(results));
+      break;
+  }
+}
+
+function formatConstructResults(triples: any[], format: string): void {
+  const formatter = new TriplesFormatter();
+
+  switch (format) {
+    case "json":
+      console.log(formatter.formatJson(triples));
+      break;
+
+    case "ntriples":
+      console.log(formatter.formatNTriples(triples));
+      break;
+
+    case "table":
+    default:
+      console.log(formatter.formatTable(triples));
       break;
   }
 }

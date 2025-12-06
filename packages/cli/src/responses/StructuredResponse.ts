@@ -160,6 +160,19 @@ export interface QueryResult {
   bindings: Record<string, unknown>[];
 }
 
+export interface ConstructResult {
+  /** CONSTRUCT query that was executed */
+  query: string;
+  /** Number of triples generated */
+  count: number;
+  /** Generated RDF triples */
+  triples: Array<{
+    subject: { type: string; value: string };
+    predicate: { type: string; value: string };
+    object: { type: string; value: string; datatype?: string; language?: string };
+  }>;
+}
+
 /**
  * Builder for structured responses
  */

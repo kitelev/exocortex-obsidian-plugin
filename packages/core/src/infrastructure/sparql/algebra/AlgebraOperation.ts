@@ -12,7 +12,8 @@ export type AlgebraOperation =
   | DistinctOperation
   | GroupOperation
   | ExtendOperation
-  | SubqueryOperation;
+  | SubqueryOperation
+  | ConstructOperation;
 
 export interface BGPOperation {
   type: "bgp";
@@ -341,4 +342,32 @@ export interface SubqueryOperation {
   type: "subquery";
   /** The complete algebra tree for the inner SELECT query */
   query: AlgebraOperation;
+}
+
+/**
+ * CONSTRUCT operation for generating RDF triples from query results.
+ * Applies a template to solution mappings to produce derived triples.
+ *
+ * SPARQL 1.1 spec: CONSTRUCT queries return RDF triples constructed
+ * by substituting variables in a template graph pattern with values
+ * from the solutions to the WHERE clause.
+ *
+ * Example:
+ * ```sparql
+ * CONSTRUCT {
+ *   ?task exo:Sleep_durationMinutes ?duration .
+ * }
+ * WHERE {
+ *   ?task ems:Effort_startTimestamp ?start .
+ *   ?task ems:Effort_endTimestamp ?end .
+ *   BIND((SECONDS(?end) - SECONDS(?start)) / 60 AS ?duration)
+ * }
+ * ```
+ */
+export interface ConstructOperation {
+  type: "construct";
+  /** The triple template patterns to instantiate with solution bindings */
+  template: Triple[];
+  /** The WHERE clause algebra that produces solution mappings */
+  where: AlgebraOperation;
 }

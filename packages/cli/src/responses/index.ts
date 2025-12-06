@@ -12,5 +12,6 @@ export {
   type StructuredResponse,
   type CommandResult,
   type QueryResult,
+  type ConstructResult,
   ResponseBuilder,
 } from "./StructuredResponse.js";
