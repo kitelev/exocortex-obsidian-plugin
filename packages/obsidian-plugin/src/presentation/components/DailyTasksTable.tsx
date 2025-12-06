@@ -512,20 +512,8 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     );
   };
 
-  /**
-   * Renders <colgroup> for consistent column widths across header/body tables.
-   * This is essential for virtualized tables where header and body are separate.
-   */
-  const renderColGroup = () => (
-    <colgroup>
-      <col className="col-name" />
-      <col className="col-start" />
-      <col className="col-end" />
-      <col className="col-status" />
-      {showEffortArea && <col className="col-effort-area" />}
-      {showEffortVotes && <col className="col-votes" />}
-    </colgroup>
-  );
+  // NOTE: <colgroup> removed - column widths are now set via CSS on TH/TD elements
+  // This is more reliable than COL elements, which only work with table-layout: fixed
 
   const renderTableHeader = () => (
     <thead>
@@ -596,7 +584,6 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
     return (
       <div className="exocortex-daily-tasks">
         <table className="exocortex-tasks-table">
-          {renderColGroup()}
           {renderTableHeader()}
           <tbody>
             {displayedTasks.map((task, index) => renderRow(task, index))}
@@ -619,7 +606,6 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
   return (
     <div className="exocortex-daily-tasks exocortex-virtualized">
       <table className="exocortex-tasks-table exocortex-tasks-table-header">
-        {renderColGroup()}
         {renderTableHeader()}
       </table>
       <div
@@ -647,7 +633,6 @@ export const DailyTasksTable: React.FC<DailyTasksTableProps> = ({
               width: "100%",
             }}
           >
-            {renderColGroup()}
             <tbody>
               {virtualItems.length > 0 ? (
                 virtualItems.map((virtualRow) => {
