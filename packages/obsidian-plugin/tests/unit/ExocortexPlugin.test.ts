@@ -526,6 +526,52 @@ describe("ExocortexPlugin", () => {
       expect(mockTaskTrackingService.handleFileChange).not.toHaveBeenCalled();
     });
 
+    it("should not double-shift plannedEndTimestamp on recursive metadata change event", async () => {
+      const metadata = {
+        ems__Effort_plannedStartTimestamp: "2023-11-01T08:00:00Z",
+      };
+      mockMetadataCache.getFileCache.mockReturnValue({
+        frontmatter: metadata,
+      });
+
+      await (plugin as any).handleMetadataChange(mockFile);
+
+      metadata.ems__Effort_plannedStartTimestamp = "2023-11-01T08:05:00Z";
+      await (plugin as any).handleMetadataChange(mockFile);
+
+      await (plugin as any).handleMetadataChange(mockFile);
+      await (plugin as any).handleMetadataChange(mockFile);
+
+      expect(mockTaskStatusService.shiftPlannedEndTimestamp).toHaveBeenCalledTimes(1);
+      expect(mockTaskStatusService.shiftPlannedEndTimestamp).toHaveBeenCalledWith(
+        mockFile,
+        5 * 60 * 1000
+      );
+    });
+
+    it("should not double-sync endTimestamp on recursive metadata change event", async () => {
+      const metadata = {
+        ems__Effort_endTimestamp: "2023-11-01T10:00:00Z",
+      };
+      mockMetadataCache.getFileCache.mockReturnValue({
+        frontmatter: metadata,
+      });
+
+      await (plugin as any).handleMetadataChange(mockFile);
+
+      metadata.ems__Effort_endTimestamp = "2023-11-01T11:00:00Z";
+      await (plugin as any).handleMetadataChange(mockFile);
+
+      await (plugin as any).handleMetadataChange(mockFile);
+      await (plugin as any).handleMetadataChange(mockFile);
+
+      expect(mockTaskStatusService.syncEffortEndTimestamp).toHaveBeenCalledTimes(1);
+      expect(mockTaskStatusService.syncEffortEndTimestamp).toHaveBeenCalledWith(
+        mockFile,
+        new Date("2023-11-01T11:00:00Z")
+      );
+    });
+
     it("should cache metadata on first call", async () => {
       // Arrange
       const metadata = {

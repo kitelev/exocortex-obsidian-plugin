@@ -273,6 +273,8 @@ export default class ExocortexPlugin extends Plugin {
           `Detected ems__Effort_endTimestamp change in ${file.path}: ${String(previousEndTimestamp)} → ${String(currentEndTimestamp)}`,
         );
 
+        cachedMetadata.ems__Effort_endTimestamp = currentEndTimestamp;
+
         const parsedDate = new Date(currentEndTimestamp);
         if (!isNaN(parsedDate.getTime())) {
           await this.taskStatusService.syncEffortEndTimestamp(file, parsedDate);
@@ -289,6 +291,9 @@ export default class ExocortexPlugin extends Plugin {
         this.logger.info(
           `Detected ems__Effort_plannedStartTimestamp change in ${file.path}: ${String(previousPlannedStartTimestamp)} → ${String(currentPlannedStartTimestamp)}`,
         );
+
+        cachedMetadata.ems__Effort_plannedStartTimestamp =
+          currentPlannedStartTimestamp;
 
         const currentDate = new Date(
           String(currentPlannedStartTimestamp),
@@ -318,6 +323,8 @@ export default class ExocortexPlugin extends Plugin {
         this.logger.info(
           `Detected exo__Asset_label change in ${file.path}: ${String(previousAssetLabel)} → ${currentAssetLabel}`,
         );
+
+        cachedMetadata.exo__Asset_label = currentAssetLabel;
 
         await this.aliasSyncService.syncAliases(
           file,
