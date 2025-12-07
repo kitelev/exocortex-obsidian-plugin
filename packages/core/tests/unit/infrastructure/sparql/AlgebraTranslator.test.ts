@@ -1289,6 +1289,81 @@ describe("AlgebraTranslator", () => {
       // Should contain leftjoin for OPTIONAL
       expect(innerQuery.input.type).toBe("join");
     });
+
+    it("translates outer SELECT with arithmetic expression referencing subquery variables", () => {
+      // Issue #609: Arithmetic expressions in outer SELECT with subqueries
+      // Example: SELECT ?label (FLOOR(?avgSec / 60) AS ?avgMin) WHERE { { SELECT ?label (AVG(?d) AS ?avgSec) ... } }
+      const query = `
+        SELECT ?label (FLOOR(?avgSec / 60) AS ?avgMin)
+        WHERE {
+          {
+            SELECT ?label (AVG(?duration) AS ?avgSec)
+            WHERE {
+              ?s <http://example.org/label> ?label .
+              ?s <http://example.org/duration> ?duration .
+            }
+            GROUP BY ?label
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Outer query should have:
+      // project(variables: [label, avgMin], input: extend(variable: avgMin, expression: FLOOR(...), input: subquery))
+      expect(algebra.type).toBe("project");
+      const outerVars = (algebra as any).variables;
+      expect(outerVars).toContain("label");
+      expect(outerVars).toContain("avgMin");
+
+      // There should be an extend for the FLOOR expression
+      const input = (algebra as any).input;
+      expect(input.type).toBe("extend");
+      expect(input.variable).toBe("avgMin");
+      expect(input.expression.type).toBe("function");
+      expect(input.expression.function).toBe("floor");
+
+      // The extend's input should be the subquery
+      expect(input.input.type).toBe("subquery");
+    });
+
+    it("translates outer SELECT with multiple arithmetic expressions from subquery", () => {
+      // More complex case: multiple computed columns from subquery variables
+      const query = `
+        SELECT ?label (?totalSec / 60 AS ?totalMin) (?totalSec / 3600 AS ?totalHours)
+        WHERE {
+          {
+            SELECT ?label (SUM(?duration) AS ?totalSec)
+            WHERE {
+              ?s <http://example.org/label> ?label .
+              ?s <http://example.org/duration> ?duration .
+            }
+            GROUP BY ?label
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const outerVars = (algebra as any).variables;
+      expect(outerVars).toContain("label");
+      expect(outerVars).toContain("totalMin");
+      expect(outerVars).toContain("totalHours");
+
+      // Should have two extend operations (nested)
+      let current = (algebra as any).input;
+      expect(current.type).toBe("extend");
+      expect(current.expression.type).toBe("arithmetic");
+
+      current = current.input;
+      expect(current.type).toBe("extend");
+      expect(current.expression.type).toBe("arithmetic");
+
+      // Finally the subquery
+      current = current.input;
+      expect(current.type).toBe("subquery");
+    });
   });
 
   describe("VALUES Translation", () => {
