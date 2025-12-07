@@ -6,6 +6,7 @@ import {
   needsFolderRepair,
   extractDailyNoteDate,
   isCurrentDateGteDay,
+  isPrototypeClass,
 } from "./helpers";
 import { AssetClass } from "../../constants";
 
@@ -25,14 +26,28 @@ export function canCreateEvent(context: CommandVisibilityContext): boolean {
 
 /**
  * Can execute "Create Instance" command
- * Available for: ems__TaskPrototype, ems__MeetingPrototype, and exo__EventPrototype assets
+ * Available for: Any asset class that inherits from exo__Prototype
+ *
+ * This includes:
+ * - Known prototype classes: ems__TaskPrototype, ems__MeetingPrototype, exo__EventPrototype
+ * - Any custom class with exo__Class_superClass pointing to exo__Prototype (directly or transitively)
+ *
+ * The check works in two modes:
+ * 1. Instance mode: Asset is an instance of a prototype class (checked via instanceClass)
+ * 2. Class definition mode: Asset is a class that inherits from exo__Prototype (checked via metadata)
  */
 export function canCreateInstance(context: CommandVisibilityContext): boolean {
-  return (
+  // Check for known prototype instance classes (backward compatibility)
+  if (
     hasClass(context.instanceClass, AssetClass.TASK_PROTOTYPE) ||
     hasClass(context.instanceClass, AssetClass.MEETING_PROTOTYPE) ||
     hasClass(context.instanceClass, AssetClass.EVENT_PROTOTYPE)
-  );
+  ) {
+    return true;
+  }
+
+  // Check if asset is a class definition that inherits from exo__Prototype
+  return isPrototypeClass(context.instanceClass, context.metadata);
 }
 
 /**
@@ -110,7 +125,7 @@ export function canCreateNarrowerConcept(
 export function canCreateSubclass(
   context: CommandVisibilityContext,
 ): boolean {
-  return hasClass(context.instanceClass, "exo__Class");
+  return hasClass(context.instanceClass, AssetClass.CLASS);
 }
 
 /**

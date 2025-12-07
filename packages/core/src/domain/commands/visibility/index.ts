@@ -26,6 +26,8 @@ export {
   hasPlannedStartTimestamp,
   extractDailyNoteDate,
   isCurrentDateGteDay,
+  inheritsFromPrototype,
+  isPrototypeClass,
 } from "./helpers";
 
 // Task visibility rules
