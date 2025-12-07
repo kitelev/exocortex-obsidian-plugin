@@ -5,6 +5,7 @@ import { DI_TOKENS } from "../interfaces/tokens";
 // Import all services
 import { TaskCreationService } from "../services/TaskCreationService";
 import { TaskFrontmatterGenerator } from "../services/TaskFrontmatterGenerator";
+import { DynamicFrontmatterGenerator } from "../services/DynamicFrontmatterGenerator";
 import { AlgorithmExtractor } from "../services/AlgorithmExtractor";
 import { PropertyCleanupService } from "../services/PropertyCleanupService";
 import { ProjectCreationService } from "../services/ProjectCreationService";
@@ -42,6 +43,10 @@ export function registerCoreServices(
   targetContainer.registerSingleton(
     DI_TOKENS.TaskFrontmatterGenerator,
     TaskFrontmatterGenerator,
+  );
+  targetContainer.registerSingleton(
+    DI_TOKENS.DynamicFrontmatterGenerator,
+    DynamicFrontmatterGenerator,
   );
   targetContainer.registerSingleton(
     DI_TOKENS.AlgorithmExtractor,
