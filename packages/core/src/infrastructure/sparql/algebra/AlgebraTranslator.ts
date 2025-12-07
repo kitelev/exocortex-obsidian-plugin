@@ -57,7 +57,14 @@ export class AlgebraTranslator {
 
     operation = this.translateWhere(query.where);
 
-    const aggregates = this.extractAggregates(query.variables);
+    // Reset aggregate counter for each query translation
+    this.aggregateCounter = 0;
+
+    // Map to track aggregate expressions and their assigned variable names
+    // This is used to replace aggregate references in arithmetic expressions
+    const aggregateVarMap = new Map<any, string>();
+
+    const aggregates = this.extractAggregatesWithMapping(query.variables, aggregateVarMap);
     const groupVars = this.extractGroupVariables(query.group);
 
     if (aggregates.length > 0 || groupVars.length > 0) {
@@ -70,15 +77,27 @@ export class AlgebraTranslator {
     }
 
     if (query.variables && query.variables.length > 0) {
-      // First, create extend operations for computed expressions (e.g., (expr AS ?var))
+      // Create extend operations for computed expressions that need post-aggregate evaluation
       for (const v of query.variables) {
         const anyV = v as any;
         if (anyV.expression && anyV.variable) {
-          // This is a computed expression like (exo:dateDiffMinutes(?start, ?end) AS ?duration)
+          // Skip simple aggregates - they're already bound by the group operation
+          if (anyV.expression.type === "aggregate") {
+            continue;
+          }
+
+          // For complex expressions containing aggregates (e.g., SUM(?x) / COUNT(?x)),
+          // we need to create an extend that evaluates the arithmetic using the
+          // pre-computed aggregate variable values
+          const transformedExpr = this.transformExpressionWithAggregateVars(
+            anyV.expression,
+            aggregateVarMap
+          );
+
           operation = {
             type: "extend",
             variable: anyV.variable.value,
-            expression: anyV.expression,
+            expression: transformedExpr,
             input: operation,
           };
         }
@@ -159,15 +178,148 @@ export class AlgebraTranslator {
     return template.map((t: any) => this.translateTriple(t));
   }
 
-  private extractAggregates(variables: any[]): AggregateBinding[] {
+  /**
+   * Counter for generating unique aggregate variable names.
+   * Used when aggregates are nested inside arithmetic expressions.
+   */
+  private aggregateCounter = 0;
+
+  /**
+   * Extract all aggregate bindings from SELECT variables with mapping.
+   * This handles both simple aggregates like (SUM(?x) AS ?total) and
+   * complex expressions with aggregates like (SUM(?x) / COUNT(?x) AS ?avg).
+   *
+   * The aggregateVarMap is populated with mappings from the original aggregate
+   * expression objects to their assigned variable names, so that later we can
+   * transform the containing expression to reference these variables.
+   */
+  private extractAggregatesWithMapping(
+    variables: any[],
+    aggregateVarMap: Map<any, string>
+  ): AggregateBinding[] {
     if (!variables) return [];
 
-    return variables
-      .filter((v: any) => v.expression && v.expression.type === "aggregate")
-      .map((v: any) => ({
-        variable: v.variable.value,
-        expression: this.translateAggregateExpression(v.expression),
-      }));
+    const aggregates: AggregateBinding[] = [];
+
+    for (const v of variables) {
+      if (!v.expression || !v.variable) continue;
+
+      if (v.expression.type === "aggregate") {
+        // Simple case: (SUM(?x) AS ?total)
+        // The variable name is directly from the AS clause
+        aggregates.push({
+          variable: v.variable.value,
+          expression: this.translateAggregateExpression(v.expression),
+        });
+        // Map this aggregate to its variable for potential nested references
+        aggregateVarMap.set(v.expression, v.variable.value);
+      } else {
+        // Complex case: expression contains aggregates (e.g., SUM(?x) / COUNT(?x))
+        // Find all nested aggregates and create bindings for them
+        this.collectNestedAggregates(v.expression, aggregates, aggregateVarMap);
+      }
+    }
+
+    return aggregates;
+  }
+
+  /**
+   * Recursively collect all aggregate expressions nested within an expression tree.
+   * For each aggregate found, creates a temporary variable binding and records
+   * the mapping in aggregateVarMap for later expression transformation.
+   */
+  private collectNestedAggregates(
+    expr: any,
+    aggregates: AggregateBinding[],
+    aggregateVarMap: Map<any, string>
+  ): void {
+    if (!expr) return;
+
+    if (expr.type === "aggregate") {
+      // Found an aggregate - create a unique variable name for it
+      const varName = `__agg${this.aggregateCounter++}`;
+      aggregates.push({
+        variable: varName,
+        expression: this.translateAggregateExpression(expr),
+      });
+      // Record the mapping so we can transform the containing expression later
+      aggregateVarMap.set(expr, varName);
+    } else if (expr.type === "operation" && expr.args) {
+      // Recursively search in operation arguments
+      for (const arg of expr.args) {
+        this.collectNestedAggregates(arg, aggregates, aggregateVarMap);
+      }
+    }
+  }
+
+  /**
+   * Transform an expression by replacing aggregate sub-expressions with
+   * variable references to their pre-computed values.
+   *
+   * For example, given the expression "SUM(?x) / COUNT(?x)" and a mapping
+   * { SUM(?x) -> "__agg0", COUNT(?x) -> "__agg1" }, this returns the
+   * translated expression "?__agg0 / ?__agg1".
+   */
+  private transformExpressionWithAggregateVars(
+    expr: any,
+    aggregateVarMap: Map<any, string>
+  ): Expression {
+    // Check if this exact expression object has a variable mapping
+    if (aggregateVarMap.has(expr)) {
+      // Replace aggregate with variable reference
+      return {
+        type: "variable",
+        name: aggregateVarMap.get(expr)!,
+      };
+    }
+
+    // For operations, recursively transform arguments
+    if (expr.type === "operation" && expr.args) {
+      const transformedArgs = expr.args.map((arg: any) =>
+        this.transformExpressionWithAggregateVars(arg, aggregateVarMap)
+      );
+
+      // Determine expression type based on operator
+      const comparisonOps = ["=", "!=", "<", ">", "<=", ">="];
+      const logicalOps = ["&&", "||", "!"];
+      const arithmeticOps = ["+", "-", "*", "/"];
+
+      if (comparisonOps.includes(expr.operator)) {
+        return {
+          type: "comparison",
+          operator: expr.operator,
+          left: transformedArgs[0],
+          right: transformedArgs[1],
+        };
+      }
+
+      if (logicalOps.includes(expr.operator)) {
+        return {
+          type: "logical",
+          operator: expr.operator,
+          operands: transformedArgs,
+        };
+      }
+
+      if (arithmeticOps.includes(expr.operator)) {
+        return {
+          type: "arithmetic",
+          operator: expr.operator as ArithmeticExpression["operator"],
+          left: transformedArgs[0],
+          right: transformedArgs[1],
+        };
+      }
+
+      // Function call
+      return {
+        type: "function",
+        function: expr.operator,
+        args: transformedArgs,
+      };
+    }
+
+    // For other expression types, use the standard translation
+    return this.translateExpression(expr);
   }
 
   private extractGroupVariables(group: any[] | undefined): string[] {
