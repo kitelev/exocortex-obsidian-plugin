@@ -37,6 +37,7 @@ export const DI_TOKENS = {
 
   // Frontmatter services
   TaskFrontmatterGenerator: Symbol.for("TaskFrontmatterGenerator"),
+  DynamicFrontmatterGenerator: Symbol.for("DynamicFrontmatterGenerator"),
   AlgorithmExtractor: Symbol.for("AlgorithmExtractor"),
 
   // Status services

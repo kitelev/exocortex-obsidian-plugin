@@ -31,6 +31,11 @@ export { StatusTimestampService } from "./services/StatusTimestampService";
 export { SupervisionCreationService } from "./services/SupervisionCreationService";
 export { FleetingNoteCreationService } from "./services/FleetingNoteCreationService";
 export { TaskFrontmatterGenerator } from "./services/TaskFrontmatterGenerator";
+export {
+  DynamicFrontmatterGenerator,
+  type PropertyFieldType,
+  type PropertyDefinition,
+} from "./services/DynamicFrontmatterGenerator";
 export { AlgorithmExtractor } from "./services/AlgorithmExtractor";
 export { PlanningService } from "./services/PlanningService";
 export { AssetConversionService } from "./services/AssetConversionService";
