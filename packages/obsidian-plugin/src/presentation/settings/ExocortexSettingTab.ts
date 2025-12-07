@@ -124,5 +124,19 @@ export class ExocortexSettingTab extends PluginSettingTab {
             this.plugin.refreshLayout();
           }),
       );
+
+    new Setting(containerEl)
+      .setName("Use dynamic property fields")
+      .setDesc(
+        "Generate modal fields from ontology (experimental)",
+      )
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.plugin.settings.useDynamicPropertyFields)
+          .onChange(async (value) => {
+            this.plugin.settings.useDynamicPropertyFields = value;
+            await this.plugin.saveSettings();
+          }),
+      );
   }
 }

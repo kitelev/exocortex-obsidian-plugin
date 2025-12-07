@@ -37,6 +37,7 @@ describe("ExocortexSettingTab", () => {
         showPropertiesSection: true,
         showArchivedAssets: false,
         showDailyNoteProjects: true,
+        useDynamicPropertyFields: false,
       },
       saveSettings: jest.fn().mockResolvedValue(undefined),
       refreshLayout: jest.fn(),
@@ -300,7 +301,7 @@ describe("ExocortexSettingTab", () => {
 
       expect(mockContainerEl.empty).toHaveBeenCalled();
       expect(getOntologySpy).toHaveBeenCalledTimes(1);
-      expect(MockSetting).toHaveBeenCalledTimes(5);
+      expect(MockSetting).toHaveBeenCalledTimes(6);
     });
 
     it("should render ontology dropdown with correct options", () => {
@@ -607,6 +608,60 @@ describe("ExocortexSettingTab", () => {
       expect(mockPlugin.settings.showDailyNoteProjects).toBe(false);
       expect(mockPlugin.saveSettings).toHaveBeenCalled();
       expect(mockPlugin.refreshLayout).toHaveBeenCalled();
+    });
+
+    it("should render Dynamic Property Fields toggle", () => {
+      jest.spyOn(settingTab as any, "getOntologyAssets").mockReturnValue([]);
+
+      settingTab.display();
+
+      const sixthSetting = (MockSetting as jest.Mock).mock.results[5].value;
+      expect(sixthSetting.setName).toHaveBeenCalledWith("Use dynamic property fields");
+      expect(sixthSetting.setDesc).toHaveBeenCalledWith(
+        "Generate modal fields from ontology (experimental)"
+      );
+    });
+
+    it("should handle Dynamic Property Fields toggle change", async () => {
+      jest.spyOn(settingTab as any, "getOntologyAssets").mockReturnValue([]);
+
+      let toggleCallbacks: any[] = [];
+      MockSetting.mockImplementation((containerEl: any) => {
+        const setting = {
+          containerEl,
+          setName: jest.fn().mockReturnThis(),
+          setDesc: jest.fn().mockReturnThis(),
+          addDropdown: jest.fn().mockReturnThis(),
+          addToggle: jest.fn().mockImplementation((callback) => {
+            const toggle = {
+              setValue: jest.fn().mockReturnThis(),
+              onChange: jest.fn().mockReturnThis(),
+            };
+            toggleCallbacks.push({ toggle, callback, onChange: null });
+            toggle.onChange.mockImplementation((cb: any) => {
+              toggleCallbacks[toggleCallbacks.length - 1].onChange = cb;
+              return toggle;
+            });
+            callback(toggle);
+            return setting;
+          }),
+        };
+        return setting;
+      });
+
+      settingTab.display();
+
+      // Sixth setting's toggle (Dynamic Property Fields)
+      const dynamicFieldsToggle = toggleCallbacks[4];
+      expect(dynamicFieldsToggle.toggle.setValue).toHaveBeenCalledWith(false);
+
+      if (dynamicFieldsToggle.onChange) {
+        await dynamicFieldsToggle.onChange(true);
+      }
+
+      expect(mockPlugin.settings.useDynamicPropertyFields).toBe(true);
+      expect(mockPlugin.saveSettings).toHaveBeenCalled();
+      // Should NOT call refreshLayout (unlike other toggles)
     });
 
     it("should set dropdown value to existing setting", () => {
