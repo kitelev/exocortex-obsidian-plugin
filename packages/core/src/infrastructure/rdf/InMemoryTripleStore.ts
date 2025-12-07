@@ -7,7 +7,11 @@ import { Triple, Subject, Predicate, Object as RDFObject } from "../../domain/mo
 import { IRI } from "../../domain/models/rdf/IRI";
 import { BlankNode } from "../../domain/models/rdf/BlankNode";
 import { Literal } from "../../domain/models/rdf/Literal";
+import { Namespace } from "../../domain/models/rdf/Namespace";
 import { LRUCache } from "./LRUCache";
+
+/** XSD string datatype URI for RDF 1.1 compatibility */
+const XSD_STRING = Namespace.XSD.term("string").value;
 
 type TripleKey = string;
 type NodeKey = string;
@@ -347,7 +351,11 @@ export class InMemoryTripleStore implements ITripleStore {
       return `b:${node.id}`;
     } else if (node instanceof Literal) {
       let key = `l:${node.value}`;
-      if (node.datatype) {
+      // Per RDF 1.1 semantics, xsd:string typed literals are equivalent to
+      // plain literals (simple literals). We normalize by omitting xsd:string
+      // from the key to ensure consistent matching.
+      // See: https://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal
+      if (node.datatype && node.datatype.value !== XSD_STRING) {
         key += `^^${node.datatype.value}`;
       } else if (node.language) {
         key += `@${node.language}`;
