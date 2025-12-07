@@ -8,6 +8,7 @@ export interface ExocortexSettings {
   defaultOntologyAsset: string | null;
   showFullDateInEffortTimes: boolean;
   showDailyNoteProjects: boolean;
+  useDynamicPropertyFields: boolean;
   [key: string]: unknown;
 }
 
@@ -21,4 +22,5 @@ export const DEFAULT_SETTINGS: ExocortexSettings = {
   defaultOntologyAsset: null,
   showFullDateInEffortTimes: false,
   showDailyNoteProjects: true,
+  useDynamicPropertyFields: false,
 };
