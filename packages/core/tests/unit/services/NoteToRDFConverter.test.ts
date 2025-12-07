@@ -241,6 +241,112 @@ describe("NoteToRDFConverter", () => {
       expect((archivedTriple!.object as Literal).value).toBe("true");
     });
 
+    // Issue #666: Add Asset_fileName predicate for all assets
+    describe("Asset_fileName predicate (Issue #666)", () => {
+      it("should add Asset_fileName triple with file basename (without .md)", async () => {
+        const file: IFile = {
+          path: "03 Knowledge/ems/ems__Meeting.md",
+          basename: "ems__Meeting",
+          name: "ems__Meeting.md",
+          parent: null,
+        };
+
+        const frontmatter: IFrontmatter = {
+          exo__Asset_label: "Meeting",
+        };
+
+        mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+        const triples = await converter.convertNote(file);
+
+        const fileNameTriple = triples.find((t) =>
+          (t.predicate as IRI).value.includes("Asset_fileName")
+        );
+
+        expect(fileNameTriple).toBeDefined();
+        expect(fileNameTriple!.predicate).toBeInstanceOf(IRI);
+        expect((fileNameTriple!.predicate as IRI).value).toBe(
+          Namespace.EXO.term("Asset_fileName").value
+        );
+        expect(fileNameTriple!.object).toBeInstanceOf(Literal);
+        expect((fileNameTriple!.object as Literal).value).toBe("ems__Meeting");
+      });
+
+      it("should add Asset_fileName for files with spaces in path", async () => {
+        const file: IFile = {
+          path: "My Folder/My Task.md",
+          basename: "My Task",
+          name: "My Task.md",
+          parent: null,
+        };
+
+        const frontmatter: IFrontmatter = {
+          exo__Instance_class: "ems__Task",
+        };
+
+        mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+        const triples = await converter.convertNote(file);
+
+        const fileNameTriple = triples.find((t) =>
+          (t.predicate as IRI).value.includes("Asset_fileName")
+        );
+
+        expect(fileNameTriple).toBeDefined();
+        expect((fileNameTriple!.object as Literal).value).toBe("My Task");
+      });
+
+      it("should use correct subject IRI for Asset_fileName triple", async () => {
+        const file: IFile = {
+          path: "03 Knowledge/ems/ems__Task.md",
+          basename: "ems__Task",
+          name: "ems__Task.md",
+          parent: null,
+        };
+
+        const frontmatter: IFrontmatter = {
+          exo__Asset_label: "Task",
+        };
+
+        mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+        const triples = await converter.convertNote(file);
+
+        const fileNameTriple = triples.find((t) =>
+          (t.predicate as IRI).value.includes("Asset_fileName")
+        );
+
+        expect(fileNameTriple).toBeDefined();
+        expect(fileNameTriple!.subject).toBeInstanceOf(IRI);
+        expect((fileNameTriple!.subject as IRI).value).toBe(
+          "obsidian://vault/03%20Knowledge/ems/ems__Task.md"
+        );
+      });
+
+      it("should add Asset_fileName even if no other exo/ems properties exist", async () => {
+        const file: IFile = {
+          path: "Notes/My Note.md",
+          basename: "My Note",
+          name: "My Note.md",
+          parent: null,
+        };
+
+        const frontmatter: IFrontmatter = {
+          tags: ["tag1", "tag2"],
+          customProperty: "value",
+        };
+
+        mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+        const triples = await converter.convertNote(file);
+
+        // Should only have Asset_fileName triple (no exo/ems properties)
+        expect(triples.length).toBe(1);
+        expect((triples[0].predicate as IRI).value).toContain("Asset_fileName");
+        expect((triples[0].object as Literal).value).toBe("My Note");
+      });
+    });
+
     it("should skip non-exo and non-ems properties", async () => {
       const file: IFile = {
         path: "test.md",
@@ -430,6 +536,161 @@ describe("NoteToRDFConverter", () => {
         expect(domainTriple!.object).toBeInstanceOf(IRI);
         expect((domainTriple!.object as IRI).value).toBe(Namespace.EMS.term("Effort").value);
       });
+    });
+  });
+
+  // Issue #666: Asset_fileName predicate for SPARQL queries by filename
+  describe("Asset_fileName predicate (Issue #666)", () => {
+    it("should add Asset_fileName triple for every file with frontmatter", async () => {
+      const file: IFile = {
+        path: "03 Knowledge/ems/ems__Meeting.md",
+        basename: "ems__Meeting",
+        name: "ems__Meeting.md",
+        parent: null,
+      };
+
+      const frontmatter: IFrontmatter = {
+        exo__Instance_class: "ems__Class",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const fileNameTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Asset_fileName")
+      );
+
+      expect(fileNameTriple).toBeDefined();
+      expect(fileNameTriple!.object).toBeInstanceOf(Literal);
+      expect((fileNameTriple!.object as Literal).value).toBe("ems__Meeting");
+    });
+
+    it("should use exo namespace for Asset_fileName predicate", async () => {
+      const file: IFile = {
+        path: "test.md",
+        basename: "test",
+        name: "test.md",
+        parent: null,
+      };
+
+      const frontmatter: IFrontmatter = {
+        exo__Asset_label: "Test",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const fileNameTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Asset_fileName")
+      );
+
+      expect(fileNameTriple).toBeDefined();
+      expect((fileNameTriple!.predicate as IRI).value).toBe(
+        Namespace.EXO.term("Asset_fileName").value
+      );
+    });
+
+    it("should use file basename without .md extension", async () => {
+      const file: IFile = {
+        path: "folder/My Note.md",
+        basename: "My Note", // basename is already without extension
+        name: "My Note.md",
+        parent: null,
+      };
+
+      const frontmatter: IFrontmatter = {
+        exo__Asset_label: "Test",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const fileNameTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Asset_fileName")
+      );
+
+      expect(fileNameTriple).toBeDefined();
+      expect((fileNameTriple!.object as Literal).value).toBe("My Note");
+      expect((fileNameTriple!.object as Literal).value).not.toContain(".md");
+    });
+
+    it("should handle UUID-based filenames", async () => {
+      const file: IFile = {
+        path: "03 Knowledge/kitelev/f2dccb6a-802d-48d3-8e8a-2c4264197692.md",
+        basename: "f2dccb6a-802d-48d3-8e8a-2c4264197692",
+        name: "f2dccb6a-802d-48d3-8e8a-2c4264197692.md",
+        parent: null,
+      };
+
+      const frontmatter: IFrontmatter = {
+        exo__Asset_label: "My Task",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      const fileNameTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Asset_fileName")
+      );
+
+      expect(fileNameTriple).toBeDefined();
+      expect((fileNameTriple!.object as Literal).value).toBe(
+        "f2dccb6a-802d-48d3-8e8a-2c4264197692"
+      );
+    });
+
+    it("should NOT add Asset_fileName for files without frontmatter", async () => {
+      const file: IFile = {
+        path: "test.md",
+        basename: "test",
+        name: "test.md",
+        parent: null,
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(null);
+
+      const triples = await converter.convertNote(file);
+
+      expect(triples).toEqual([]);
+      const fileNameTriple = triples.find((t) =>
+        (t.predicate as IRI).value?.includes("Asset_fileName")
+      );
+      expect(fileNameTriple).toBeUndefined();
+    });
+
+    it("should add Asset_fileName for all files in convertVault", async () => {
+      const file1: IFile = {
+        path: "note1.md",
+        basename: "note1",
+        name: "note1.md",
+        parent: null,
+      };
+
+      const file2: IFile = {
+        path: "note2.md",
+        basename: "note2",
+        name: "note2.md",
+        parent: null,
+      };
+
+      mockVault.getAllFiles.mockReturnValue([file1, file2]);
+      mockVault.getFrontmatter.mockReturnValue({
+        exo__Asset_label: "Test",
+      });
+
+      const triples = await converter.convertVault();
+
+      const fileNameTriples = triples.filter((t) =>
+        (t.predicate as IRI).value.includes("Asset_fileName")
+      );
+
+      expect(fileNameTriples.length).toBe(2);
+      expect((fileNameTriples[0].object as Literal).value).toBe("note1");
+      expect((fileNameTriples[1].object as Literal).value).toBe("note2");
     });
   });
 

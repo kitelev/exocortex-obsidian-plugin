@@ -45,6 +45,11 @@ export class NoteToRDFConverter {
     const triples: Triple[] = [];
     const subject = this.notePathToIRI(file.path);
 
+    // Always add Asset_fileName triple (Issue #666)
+    // This allows SPARQL queries to search by filename without hardcoded URIs
+    const fileNamePredicate = Namespace.EXO.term("Asset_fileName");
+    triples.push(new Triple(subject, fileNamePredicate, new Literal(file.basename)));
+
     for (const [key, value] of Object.entries(frontmatter)) {
       if (!this.isExocortexProperty(key)) {
         continue;
