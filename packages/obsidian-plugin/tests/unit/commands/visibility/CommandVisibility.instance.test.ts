@@ -116,6 +116,42 @@ describe("CommandVisibility - Instance/Subclass Commands", () => {
       expect(canCreateInstance(context)).toBe(true);
     });
 
+    it("should return true for ems__ProjectPrototype", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "[[ems__ProjectPrototype]]",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateInstance(context)).toBe(true);
+    });
+
+    it("should return true for ProjectPrototype without brackets", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: "ems__ProjectPrototype",
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateInstance(context)).toBe(true);
+    });
+
+    it("should return true for array with ems__ProjectPrototype", () => {
+      const context: CommandVisibilityContext = {
+        instanceClass: ["[[ems__ProjectPrototype]]", "[[SomeOtherClass]]"],
+        currentStatus: null,
+        metadata: {},
+        isArchived: false,
+        currentFolder: "",
+        expectedFolder: null,
+      };
+      expect(canCreateInstance(context)).toBe(true);
+    });
+
     it("should return true for array with exo__EventPrototype", () => {
       const context: CommandVisibilityContext = {
         instanceClass: ["[[exo__EventPrototype]]", "[[SomeOtherClass]]"],
