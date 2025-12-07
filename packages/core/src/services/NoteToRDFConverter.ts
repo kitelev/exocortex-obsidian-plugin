@@ -160,6 +160,15 @@ export class NoteToRDFConverter {
         if (targetFile) {
           return this.notePathToIRI(targetFile.path);
         }
+        // If wikilink target not found but looks like a class reference,
+        // expand to namespace IRI (e.g., [[ems__Effort]] → ems:Effort)
+        // This normalizes Property_domain values for property path queries
+        if (this.isClassReference(wikilink)) {
+          const classIRI = this.expandClassValue(wikilink);
+          if (classIRI) {
+            return classIRI;
+          }
+        }
         return new Literal(cleanValue);
       }
 
