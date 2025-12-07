@@ -136,6 +136,34 @@ describe("BGPExecutor", () => {
       expect(results[0].get("s")?.toString()).toContain("task1");
     });
 
+    // RDF 1.1 semantics: plain literals and xsd:string literals are equivalent
+    // https://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal
+    // This tests Issue #613: Instance_class literal matching inconsistency
+    it("should match xsd:string literal against plain literal (RDF 1.1)", async () => {
+      // Data is stored with plain literals (no datatype)
+      // SPARQL parser creates xsd:string typed literals from '...' syntax
+
+      const bgp: BGPOperation = {
+        type: "bgp",
+        triples: [
+          {
+            subject: { type: "variable", value: "s" },
+            predicate: { type: "iri", value: "http://example.org/label" },
+            // This mimics how sparqljs parses: '[[ems__Task]]' becomes xsd:string typed
+            object: {
+              type: "literal",
+              value: "Task 1",
+              datatype: "http://www.w3.org/2001/XMLSchema#string",
+            },
+          },
+        ],
+      };
+
+      const results = await executor.executeAll(bgp);
+      expect(results).toHaveLength(1);
+      expect(results[0].get("s")?.toString()).toContain("task1");
+    });
+
     it("should return empty results when no matches", async () => {
       const bgp: BGPOperation = {
         type: "bgp",

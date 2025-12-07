@@ -565,14 +565,62 @@ describe("InMemoryTripleStore", () => {
     });
 
     it("should handle Literals with datatypes", async () => {
-      const xsdString = new IRI("http://www.w3.org/2001/XMLSchema#string");
-      const literal = new Literal("Test", xsdString);
-      const triple4 = new Triple(alice, name, literal);
+      const xsdInteger = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+      const literal = new Literal("42", xsdInteger);
+      const triple4 = new Triple(alice, age, literal);
 
       await store.add(triple4);
 
       const results = await store.match(undefined, undefined, literal);
       expect(results.length).toBe(1);
+    });
+
+    // RDF 1.1 semantics: plain literals and xsd:string literals are equivalent
+    // https://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal
+    it("should match plain literal when querying with xsd:string literal (RDF 1.1)", async () => {
+      // Store with plain literal (no datatype)
+      const plainLiteral = new Literal("[[ems__Task]]");
+      const instanceClass = new IRI("https://exocortex.my/ontology/exo#Instance_class");
+      const tripleWithPlain = new Triple(alice, instanceClass, plainLiteral);
+      await store.add(tripleWithPlain);
+
+      // Query with xsd:string typed literal (how SPARQL parser creates it)
+      const xsdString = new IRI("http://www.w3.org/2001/XMLSchema#string");
+      const typedLiteral = new Literal("[[ems__Task]]", xsdString);
+
+      const results = await store.match(undefined, instanceClass, typedLiteral);
+      expect(results.length).toBe(1);
+      expect(results[0]).toEqual(tripleWithPlain);
+    });
+
+    it("should match xsd:string literal when querying with plain literal (RDF 1.1)", async () => {
+      // Store with xsd:string typed literal
+      const xsdString = new IRI("http://www.w3.org/2001/XMLSchema#string");
+      const typedLiteral = new Literal("[[ems__Task]]", xsdString);
+      const instanceClass = new IRI("https://exocortex.my/ontology/exo#Instance_class");
+      const tripleWithTyped = new Triple(alice, instanceClass, typedLiteral);
+      await store.add(tripleWithTyped);
+
+      // Query with plain literal (no datatype)
+      const plainLiteral = new Literal("[[ems__Task]]");
+
+      const results = await store.match(undefined, instanceClass, plainLiteral);
+      expect(results.length).toBe(1);
+      expect(results[0]).toEqual(tripleWithTyped);
+    });
+
+    it("should NOT match plain literal with other datatype literals", async () => {
+      // Store with plain literal
+      const plainLiteral = new Literal("42");
+      const triple4 = new Triple(alice, age, plainLiteral);
+      await store.add(triple4);
+
+      // Query with xsd:integer (should NOT match)
+      const xsdInteger = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+      const typedLiteral = new Literal("42", xsdInteger);
+
+      const results = await store.match(undefined, age, typedLiteral);
+      expect(results.length).toBe(0);
     });
 
     it("should handle Literals with language tags", async () => {

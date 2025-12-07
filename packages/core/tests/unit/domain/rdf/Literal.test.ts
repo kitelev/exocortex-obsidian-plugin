@@ -64,10 +64,35 @@ describe("Literal", () => {
 
     it("should return false for same value but different datatypes", () => {
       const dt1 = new IRI("http://www.w3.org/2001/XMLSchema#integer");
-      const dt2 = new IRI("http://www.w3.org/2001/XMLSchema#string");
+      const dt2 = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
       const lit1 = new Literal("42", dt1);
       const lit2 = new Literal("42", dt2);
       expect(lit1.equals(lit2)).toBe(false);
+    });
+
+    // RDF 1.1 semantics: plain literals and xsd:string literals are equivalent
+    // https://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal
+    it("should treat plain literal as equal to xsd:string literal (RDF 1.1)", () => {
+      const xsdString = new IRI("http://www.w3.org/2001/XMLSchema#string");
+      const plain = new Literal("test");
+      const typed = new Literal("test", xsdString);
+      expect(plain.equals(typed)).toBe(true);
+      expect(typed.equals(plain)).toBe(true);
+    });
+
+    it("should treat two xsd:string literals as equal", () => {
+      const xsdString = new IRI("http://www.w3.org/2001/XMLSchema#string");
+      const lit1 = new Literal("test", xsdString);
+      const lit2 = new Literal("test", xsdString);
+      expect(lit1.equals(lit2)).toBe(true);
+    });
+
+    it("should not treat xsd:string as equal to other datatypes", () => {
+      const xsdString = new IRI("http://www.w3.org/2001/XMLSchema#string");
+      const xsdInteger = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+      const stringLit = new Literal("42", xsdString);
+      const integerLit = new Literal("42", xsdInteger);
+      expect(stringLit.equals(integerLit)).toBe(false);
     });
 
     it("should return true for literals with same language", () => {
