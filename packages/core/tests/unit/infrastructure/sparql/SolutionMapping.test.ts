@@ -272,4 +272,135 @@ describe("SolutionMapping", () => {
       expect(mapping.has("y")).toBe(false);
     });
   });
+
+  describe("RDF 1.1 Literal Equality (Issue #607)", () => {
+    const XSD_STRING = "http://www.w3.org/2001/XMLSchema#string";
+    const XSD_INTEGER = "http://www.w3.org/2001/XMLSchema#integer";
+
+    it("should treat plain literal and xsd:string typed literal as equal", () => {
+      // This is the core issue: VALUES creates plain literals,
+      // but triple stores often return xsd:string typed literals
+      const plainLiteral = new Literal("Поспать 2025-11-01");
+      const typedLiteral = new Literal("Поспать 2025-11-01", new IRI(XSD_STRING));
+
+      const mapping1 = new SolutionMapping();
+      mapping1.set("label", plainLiteral);
+
+      const mapping2 = new SolutionMapping();
+      mapping2.set("label", typedLiteral);
+
+      // They should be compatible for join operations
+      expect(mapping1.isCompatibleWith(mapping2)).toBe(true);
+      expect(mapping2.isCompatibleWith(mapping1)).toBe(true);
+
+      // And should merge successfully
+      const merged = mapping1.merge(mapping2);
+      expect(merged).not.toBeNull();
+    });
+
+    it("should correctly join VALUES bindings with BGP results", () => {
+      // Simulate VALUES clause: VALUES ?label { 'Label1' 'Label2' }
+      const valuesLiteral = new Literal("Label1"); // Plain literal from VALUES
+
+      // Simulate BGP result: ?s exo:Asset_label ?label -> "Label1"^^xsd:string
+      const bgpLiteral = new Literal("Label1", new IRI(XSD_STRING));
+
+      const valuesSolution = new SolutionMapping();
+      valuesSolution.set("label", valuesLiteral);
+
+      const bgpSolution = new SolutionMapping();
+      bgpSolution.set("s", new IRI("http://example.org/task1"));
+      bgpSolution.set("label", bgpLiteral);
+
+      // Join should work - this is the bug fix
+      const merged = valuesSolution.merge(bgpSolution);
+      expect(merged).not.toBeNull();
+      expect(merged!.get("s")!.toString()).toBe("<http://example.org/task1>");
+      expect((merged!.get("label") as Literal).value).toBe("Label1");
+    });
+
+    it("should not treat literals with different datatypes as equal", () => {
+      const stringLiteral = new Literal("42", new IRI(XSD_STRING));
+      const integerLiteral = new Literal("42", new IRI(XSD_INTEGER));
+
+      const mapping1 = new SolutionMapping();
+      mapping1.set("x", stringLiteral);
+
+      const mapping2 = new SolutionMapping();
+      mapping2.set("x", integerLiteral);
+
+      expect(mapping1.isCompatibleWith(mapping2)).toBe(false);
+      expect(mapping1.merge(mapping2)).toBeNull();
+    });
+
+    it("should not treat literals with different values as equal", () => {
+      const literal1 = new Literal("Поспать 2025-11-01");
+      const literal2 = new Literal("Поспать 2025-11-02");
+
+      const mapping1 = new SolutionMapping();
+      mapping1.set("label", literal1);
+
+      const mapping2 = new SolutionMapping();
+      mapping2.set("label", literal2);
+
+      expect(mapping1.isCompatibleWith(mapping2)).toBe(false);
+      expect(mapping1.merge(mapping2)).toBeNull();
+    });
+
+    it("should not treat literals with different language tags as equal", () => {
+      const enLiteral = new Literal("hello", undefined, "en");
+      const frLiteral = new Literal("hello", undefined, "fr");
+
+      const mapping1 = new SolutionMapping();
+      mapping1.set("label", enLiteral);
+
+      const mapping2 = new SolutionMapping();
+      mapping2.set("label", frLiteral);
+
+      expect(mapping1.isCompatibleWith(mapping2)).toBe(false);
+      expect(mapping1.merge(mapping2)).toBeNull();
+    });
+
+    it("should not treat IRI and Literal as equal even with same string value", () => {
+      const iri = new IRI("http://example.org/value");
+      const literal = new Literal("http://example.org/value");
+
+      const mapping1 = new SolutionMapping();
+      mapping1.set("x", iri);
+
+      const mapping2 = new SolutionMapping();
+      mapping2.set("x", literal);
+
+      expect(mapping1.isCompatibleWith(mapping2)).toBe(false);
+      expect(mapping1.merge(mapping2)).toBeNull();
+    });
+
+    it("should treat identical BlankNodes as equal", () => {
+      const blank1 = new BlankNode("b1");
+      const blank2 = new BlankNode("b1");
+
+      const mapping1 = new SolutionMapping();
+      mapping1.set("x", blank1);
+
+      const mapping2 = new SolutionMapping();
+      mapping2.set("x", blank2);
+
+      expect(mapping1.isCompatibleWith(mapping2)).toBe(true);
+      expect(mapping1.merge(mapping2)).not.toBeNull();
+    });
+
+    it("should not treat different BlankNodes as equal", () => {
+      const blank1 = new BlankNode("b1");
+      const blank2 = new BlankNode("b2");
+
+      const mapping1 = new SolutionMapping();
+      mapping1.set("x", blank1);
+
+      const mapping2 = new SolutionMapping();
+      mapping2.set("x", blank2);
+
+      expect(mapping1.isCompatibleWith(mapping2)).toBe(false);
+      expect(mapping1.merge(mapping2)).toBeNull();
+    });
+  });
 });

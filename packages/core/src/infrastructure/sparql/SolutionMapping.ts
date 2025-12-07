@@ -1,4 +1,7 @@
 import type { Subject, Predicate, Object as RDFObject } from "../../domain/models/rdf/Triple";
+import { Literal } from "../../domain/models/rdf/Literal";
+import { IRI } from "../../domain/models/rdf/IRI";
+import { BlankNode } from "../../domain/models/rdf/BlankNode";
 
 /**
  * A solution mapping represents variable bindings from SPARQL query execution.
@@ -87,11 +90,31 @@ export class SolutionMapping {
   }
 
   /**
-   * Check if two RDF terms are equal
+   * Check if two RDF terms are equal.
+   *
+   * For Literals, uses RDF 1.1 semantics where plain literals are equivalent
+   * to xsd:string typed literals (both have normalized datatype of null).
+   *
+   * For IRIs and BlankNodes, uses value comparison.
    */
   private areEqual(a: Subject | Predicate | RDFObject, b: Subject | Predicate | RDFObject): boolean {
-    // Use toString() for comparison (works for IRI, Literal, BlankNode)
-    return a.toString() === b.toString();
+    // Both are Literals - use Literal.equals() for proper RDF 1.1 semantics
+    if (a instanceof Literal && b instanceof Literal) {
+      return a.equals(b);
+    }
+
+    // Both are IRIs - compare values
+    if (a instanceof IRI && b instanceof IRI) {
+      return a.value === b.value;
+    }
+
+    // Both are BlankNodes - compare ids
+    if (a instanceof BlankNode && b instanceof BlankNode) {
+      return a.id === b.id;
+    }
+
+    // Different types cannot be equal
+    return false;
   }
 
   /**
