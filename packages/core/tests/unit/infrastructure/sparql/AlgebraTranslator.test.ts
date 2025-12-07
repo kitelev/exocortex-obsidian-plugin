@@ -185,6 +185,137 @@ describe("AlgebraTranslator", () => {
       expect(input.left.type).toBe("bgp");
       expect(input.right.type).toBe("bgp");
     });
+
+    it("translates SELECT with 3-branch UNION (n-ary)", () => {
+      const query = `
+        PREFIX ems: <https://exocortex.my/ontology/ems#>
+        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+        SELECT ?asset
+        WHERE {
+          { ?asset rdf:type ems:Task }
+          UNION
+          { ?asset rdf:type ems:Project }
+          UNION
+          { ?asset rdf:type ems:Area }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      // Should be left-associative: ((Task UNION Project) UNION Area)
+      expect(input.type).toBe("union");
+      expect(input.left.type).toBe("union"); // Nested union
+      expect(input.right.type).toBe("bgp"); // Area branch
+      // Verify the nested union
+      expect(input.left.left.type).toBe("bgp"); // Task branch
+      expect(input.left.right.type).toBe("bgp"); // Project branch
+    });
+
+    it("translates SELECT with 4-branch UNION", () => {
+      const query = `
+        SELECT ?s
+        WHERE {
+          { ?s <http://example.org/type> <http://example.org/A> }
+          UNION
+          { ?s <http://example.org/type> <http://example.org/B> }
+          UNION
+          { ?s <http://example.org/type> <http://example.org/C> }
+          UNION
+          { ?s <http://example.org/type> <http://example.org/D> }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      // Should be: (((A UNION B) UNION C) UNION D)
+      expect(input.type).toBe("union");
+      expect(input.right.type).toBe("bgp"); // D
+      expect(input.left.type).toBe("union"); // ((A UNION B) UNION C)
+      expect(input.left.right.type).toBe("bgp"); // C
+      expect(input.left.left.type).toBe("union"); // (A UNION B)
+      expect(input.left.left.left.type).toBe("bgp"); // A
+      expect(input.left.left.right.type).toBe("bgp"); // B
+    });
+
+    it("translates UNION with multiple triples per branch", () => {
+      const query = `
+        SELECT ?entity ?label
+        WHERE {
+          {
+            ?entity <http://example.org/type> <http://example.org/Task> .
+            ?entity <http://example.org/label> ?label
+          }
+          UNION
+          {
+            ?entity <http://example.org/type> <http://example.org/Note> .
+            ?entity <http://example.org/label> ?label
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("union");
+      // Each branch should have 2 triples (joined)
+      expect(input.left.type).toBe("bgp");
+      expect(input.left.triples.length).toBe(2);
+      expect(input.right.type).toBe("bgp");
+      expect(input.right.triples.length).toBe(2);
+    });
+
+    it("translates UNION with FILTER in one branch", () => {
+      const query = `
+        SELECT ?s ?val
+        WHERE {
+          {
+            ?s <http://example.org/value> ?val .
+            FILTER(?val > 10)
+          }
+          UNION
+          { ?s <http://example.org/default> ?val }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("union");
+      // Left branch should have filter
+      expect(input.left.type).toBe("filter");
+      expect(input.left.input.type).toBe("bgp");
+      // Right branch is just BGP
+      expect(input.right.type).toBe("bgp");
+    });
+
+    it("translates nested UNION inside OPTIONAL", () => {
+      const query = `
+        SELECT ?s ?type
+        WHERE {
+          ?s <http://example.org/name> ?name .
+          OPTIONAL {
+            { ?s <http://example.org/type> <http://example.org/Task> . BIND("task" AS ?type) }
+            UNION
+            { ?s <http://example.org/type> <http://example.org/Project> . BIND("project" AS ?type) }
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("join");
+      expect(input.right.type).toBe("leftjoin");
+      // The OPTIONAL right side should contain the UNION
+      expect(input.right.right.type).toBe("union");
+    });
   });
 
   describe("MINUS Translation", () => {
