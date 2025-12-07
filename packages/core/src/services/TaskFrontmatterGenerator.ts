@@ -13,6 +13,7 @@ const EFFORT_PROPERTY_MAP: Record<string, string> = {
   [AssetClass.TASK_PROTOTYPE]: "exo__Asset_prototype",
   [AssetClass.MEETING_PROTOTYPE]: "exo__Asset_prototype",
   [AssetClass.EVENT_PROTOTYPE]: "exo__Asset_prototype",
+  [AssetClass.PROJECT_PROTOTYPE]: "exo__Asset_prototype",
 };
 
 const INSTANCE_CLASS_MAP: Record<string, string> = {
@@ -21,6 +22,7 @@ const INSTANCE_CLASS_MAP: Record<string, string> = {
   [AssetClass.TASK_PROTOTYPE]: AssetClass.TASK,
   [AssetClass.MEETING_PROTOTYPE]: AssetClass.MEETING,
   [AssetClass.EVENT_PROTOTYPE]: AssetClass.EVENT,
+  [AssetClass.PROJECT_PROTOTYPE]: AssetClass.PROJECT,
 };
 
 @injectable()

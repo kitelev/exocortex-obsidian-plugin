@@ -375,6 +375,26 @@ describe("TaskCreationService", () => {
       );
     });
 
+    it("should create ems__Project instance from ProjectPrototype with exo__Asset_prototype", () => {
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!toos]]"',
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Sprint Template",
+        "ems__ProjectPrototype",
+        "Sprint Q1 2025",
+      );
+
+      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Project]]"']);
+      expect(frontmatter.exo__Asset_prototype).toBe('"[[Sprint Template]]"');
+      expect(frontmatter.exo__Asset_label).toBe("Sprint Q1 2025");
+      expect(frontmatter.ems__Effort_status).toBe(
+        '"[[ems__EffortStatusDraft]]"',
+      );
+    });
+
     it("should auto-generate label from exo__Asset_label + date for ems__Meeting when no label provided", () => {
       const sourceMetadata = {
         exo__Asset_isDefinedBy: '"[[!toos]]"',
