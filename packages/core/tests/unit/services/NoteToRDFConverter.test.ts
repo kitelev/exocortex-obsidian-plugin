@@ -299,6 +299,138 @@ describe("NoteToRDFConverter", () => {
       expect(areaTriple).toBeDefined();
       expect(areaTriple!.object).toBeInstanceOf(IRI);
     });
+
+    // Issue #667, #668: Normalize Instance_class/Property_domain from wiki-link literal to URI
+    describe("wiki-link class reference normalization (Issue #667, #668)", () => {
+      const file: IFile = {
+        path: "test.md",
+        basename: "test",
+        name: "test.md",
+        parent: null,
+      };
+
+      it("should expand wiki-link to ems__ class as namespace URI when file not found", async () => {
+        const frontmatter: IFrontmatter = {
+          exo__Property_domain: "[[ems__Effort]]",
+        };
+
+        mockVault.getFrontmatter.mockReturnValue(frontmatter);
+        mockVault.getFirstLinkpathDest.mockReturnValue(null); // File not found
+
+        const triples = await converter.convertNote(file);
+
+        const domainTriple = triples.find((t) =>
+          (t.predicate as IRI).value.includes("Property_domain")
+        );
+
+        expect(domainTriple).toBeDefined();
+        expect(domainTriple!.object).toBeInstanceOf(IRI);
+        expect((domainTriple!.object as IRI).value).toBe(Namespace.EMS.term("Effort").value);
+      });
+
+      it("should expand wiki-link to exo__ class as namespace URI when file not found", async () => {
+        const frontmatter: IFrontmatter = {
+          exo__Property_domain: "[[exo__ObjectProperty]]",
+        };
+
+        mockVault.getFrontmatter.mockReturnValue(frontmatter);
+        mockVault.getFirstLinkpathDest.mockReturnValue(null); // File not found
+
+        const triples = await converter.convertNote(file);
+
+        const domainTriple = triples.find((t) =>
+          (t.predicate as IRI).value.includes("Property_domain")
+        );
+
+        expect(domainTriple).toBeDefined();
+        expect(domainTriple!.object).toBeInstanceOf(IRI);
+        expect((domainTriple!.object as IRI).value).toBe(Namespace.EXO.term("ObjectProperty").value);
+      });
+
+      it("should expand Instance_class wiki-link as namespace URI when file not found", async () => {
+        const frontmatter: IFrontmatter = {
+          exo__Instance_class: "[[ems__Task]]",
+        };
+
+        mockVault.getFrontmatter.mockReturnValue(frontmatter);
+        mockVault.getFirstLinkpathDest.mockReturnValue(null); // File not found
+
+        const triples = await converter.convertNote(file);
+
+        const classTriple = triples.find((t) =>
+          (t.predicate as IRI).value.includes("Instance_class")
+        );
+
+        expect(classTriple).toBeDefined();
+        expect(classTriple!.object).toBeInstanceOf(IRI);
+        expect((classTriple!.object as IRI).value).toBe(Namespace.EMS.term("Task").value);
+      });
+
+      it("should still use file URI when wiki-link target file exists", async () => {
+        const frontmatter: IFrontmatter = {
+          exo__Property_domain: "[[ems__Effort]]",
+        };
+
+        const targetFile: IFile = {
+          path: "03 Knowledge/exo/ems__Effort.md",
+          basename: "ems__Effort",
+          name: "ems__Effort.md",
+          parent: null,
+        };
+
+        mockVault.getFrontmatter.mockReturnValue(frontmatter);
+        mockVault.getFirstLinkpathDest.mockReturnValue(targetFile);
+
+        const triples = await converter.convertNote(file);
+
+        const domainTriple = triples.find((t) =>
+          (t.predicate as IRI).value.includes("Property_domain")
+        );
+
+        expect(domainTriple).toBeDefined();
+        expect(domainTriple!.object).toBeInstanceOf(IRI);
+        expect((domainTriple!.object as IRI).value).toContain("obsidian://vault/");
+        expect((domainTriple!.object as IRI).value).toContain("ems__Effort.md");
+      });
+
+      it("should return literal for wiki-link to non-class file when not found", async () => {
+        const frontmatter: IFrontmatter = {
+          ems__Effort_area: "[[Development]]",
+        };
+
+        mockVault.getFrontmatter.mockReturnValue(frontmatter);
+        mockVault.getFirstLinkpathDest.mockReturnValue(null); // File not found
+
+        const triples = await converter.convertNote(file);
+
+        const areaTriple = triples.find((t) =>
+          (t.predicate as IRI).value.includes("Effort_area")
+        );
+
+        expect(areaTriple).toBeDefined();
+        expect(areaTriple!.object).toBeInstanceOf(Literal);
+        expect((areaTriple!.object as Literal).value).toBe("[[Development]]");
+      });
+
+      it("should handle quoted wiki-link to class when file not found", async () => {
+        const frontmatter: IFrontmatter = {
+          exo__Property_domain: '"[[ems__Effort]]"',
+        };
+
+        mockVault.getFrontmatter.mockReturnValue(frontmatter);
+        mockVault.getFirstLinkpathDest.mockReturnValue(null); // File not found
+
+        const triples = await converter.convertNote(file);
+
+        const domainTriple = triples.find((t) =>
+          (t.predicate as IRI).value.includes("Property_domain")
+        );
+
+        expect(domainTriple).toBeDefined();
+        expect(domainTriple!.object).toBeInstanceOf(IRI);
+        expect((domainTriple!.object as IRI).value).toBe(Namespace.EMS.term("Effort").value);
+      });
+    });
   });
 
   describe("xsd:dateTime typed literals", () => {

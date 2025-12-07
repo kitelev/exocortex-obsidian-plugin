@@ -160,6 +160,14 @@ export class NoteToRDFConverter {
         if (targetFile) {
           return this.notePathToIRI(targetFile.path);
         }
+        // If target file not found but wikilink is a class reference,
+        // expand to namespace URI (Issue #667, #668: normalize Instance_class/Property_domain)
+        if (this.isClassReference(wikilink)) {
+          const classIRI = this.expandClassValue(wikilink);
+          if (classIRI) {
+            return classIRI;
+          }
+        }
         return new Literal(cleanValue);
       }
 
