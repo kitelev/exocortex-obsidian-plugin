@@ -194,3 +194,72 @@ export function isCurrentDateGteDay(dailyNoteDate: string): boolean {
   const today = getTodayDateString();
   return today >= dailyNoteDate;
 }
+
+/**
+ * Normalize a value by removing quotes, wiki-link brackets, and trimming whitespace.
+ *
+ * This handles various frontmatter formats:
+ * - `[[exo__Prototype]]` → `exo__Prototype`
+ * - `"[[exo__Prototype]]"` → `exo__Prototype`
+ * - `exo__Prototype` → `exo__Prototype`
+ *
+ * @param value - The value to normalize
+ * @returns The normalized string
+ */
+function normalizeWithQuotes(value: string | null | undefined): string {
+  if (!value) return "";
+  // Remove quotes first, then wiki-link brackets
+  return value.replace(/^["']|["']$/g, "").replace(/\[\[|\]\]/g, "").trim();
+}
+
+/**
+ * Check if class inherits from exo__Prototype
+ *
+ * This function checks if the asset's class (via exo__Class_superClass property)
+ * has exo__Prototype in its inheritance chain. The check includes:
+ * 1. Direct inheritance: exo__Class_superClass contains exo__Prototype
+ * 2. Known prototype classes: ems__TaskPrototype, ems__MeetingPrototype, exo__EventPrototype
+ *
+ * Note: This function checks the metadata of the current asset, which works when
+ * the asset is itself a class definition (i.e., has exo__Instance_class: exo__Class).
+ * For assets that are instances of prototype classes, use hasClass() with specific prototype types.
+ *
+ * @param metadata - The frontmatter metadata of the asset
+ * @returns true if the class inherits from exo__Prototype
+ */
+export function inheritsFromPrototype(metadata: Record<string, any>): boolean {
+  const superClass = metadata.exo__Class_superClass;
+  if (!superClass) return false;
+
+  const superClasses = Array.isArray(superClass) ? superClass : [superClass];
+
+  return superClasses.some((cls) => {
+    const normalized = normalizeWithQuotes(cls);
+    return normalized === AssetClass.PROTOTYPE;
+  });
+}
+
+/**
+ * Check if an asset is a prototype class definition.
+ *
+ * An asset is considered a prototype class if:
+ * 1. It is a class definition (exo__Instance_class contains exo__Class)
+ * 2. Its superclass chain includes exo__Prototype (directly via exo__Class_superClass)
+ *
+ * This is the main function for determining "Create Instance" button visibility
+ * for any class that inherits from exo__Prototype, not just hardcoded types.
+ *
+ * @param instanceClass - The exo__Instance_class property value
+ * @param metadata - The frontmatter metadata of the asset
+ * @returns true if the asset is a prototype class that can create instances
+ */
+export function isPrototypeClass(
+  instanceClass: string | string[] | null,
+  metadata: Record<string, any>,
+): boolean {
+  // First, check if this asset is a class definition
+  if (!hasClass(instanceClass, AssetClass.CLASS)) return false;
+
+  // Then, check if it inherits from exo__Prototype
+  return inheritsFromPrototype(metadata);
+}

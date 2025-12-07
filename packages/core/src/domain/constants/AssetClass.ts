@@ -12,4 +12,6 @@ export enum AssetClass {
   CONCEPT = "ims__Concept",
   SESSION_START_EVENT = "ems__SessionStartEvent",
   SESSION_END_EVENT = "ems__SessionEndEvent",
+  PROTOTYPE = "exo__Prototype",
+  CLASS = "exo__Class",
 }
