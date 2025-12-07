@@ -213,30 +213,91 @@ function normalizeWithQuotes(value: string | null | undefined): string {
 }
 
 /**
- * Check if class inherits from exo__Prototype
+ * Maximum depth for class hierarchy traversal.
+ * Prevents infinite loops in case of circular inheritance.
+ */
+const MAX_INHERITANCE_DEPTH = 10;
+
+/**
+ * Check if class inherits from exo__Prototype (directly or transitively)
  *
- * This function checks if the asset's class (via exo__Class_superClass property)
- * has exo__Prototype in its inheritance chain. The check includes:
- * 1. Direct inheritance: exo__Class_superClass contains exo__Prototype
- * 2. Known prototype classes: ems__TaskPrototype, ems__MeetingPrototype, exo__EventPrototype
+ * This function traverses the superclass chain via exo__Class_superClass property
+ * until finding exo__Prototype or reaching max depth. It supports transitive inheritance
+ * by looking up parent class metadata using a flat namespace pattern:
  *
- * Note: This function checks the metadata of the current asset, which works when
- * the asset is itself a class definition (i.e., has exo__Instance_class: exo__Class).
- * For assets that are instances of prototype classes, use hasClass() with specific prototype types.
+ * For a class "custom__MyPrototype" with superclass "custom__BasePrototype",
+ * the metadata should contain:
+ * - exo__Class_superClass: "custom__BasePrototype" (current class's superclass)
+ * - "custom__BasePrototype__exo__Class_superClass": "exo__Prototype" (parent's superclass)
  *
- * @param metadata - The frontmatter metadata of the asset
+ * The function uses BFS traversal with visited set to handle:
+ * - Direct inheritance: exo__Class_superClass contains exo__Prototype
+ * - Transitive inheritance: Walking through multiple levels of class hierarchy
+ * - Circular inheritance: Detected via visited set, returns false
+ *
+ * @param metadata - The frontmatter metadata containing class hierarchy information
+ * @param maxDepth - Maximum traversal depth (default: 10)
  * @returns true if the class inherits from exo__Prototype
  */
-export function inheritsFromPrototype(metadata: Record<string, any>): boolean {
-  const superClass = metadata.exo__Class_superClass;
-  if (!superClass) return false;
+export function inheritsFromPrototype(
+  metadata: Record<string, any>,
+  maxDepth: number = MAX_INHERITANCE_DEPTH,
+): boolean {
+  // Start with the current class's superclass
+  const initialSuperClass = metadata.exo__Class_superClass;
+  if (!initialSuperClass) return false;
 
-  const superClasses = Array.isArray(superClass) ? superClass : [superClass];
+  const visited = new Set<string>();
+  const queue: Array<{ className: string; depth: number }> = [];
 
-  return superClasses.some((cls) => {
+  // Initialize queue with direct superclasses
+  const initialSuperClasses = Array.isArray(initialSuperClass)
+    ? initialSuperClass
+    : [initialSuperClass];
+
+  for (const cls of initialSuperClasses) {
     const normalized = normalizeWithQuotes(cls);
-    return normalized === AssetClass.PROTOTYPE;
-  });
+    if (normalized) {
+      queue.push({ className: normalized, depth: 0 });
+    }
+  }
+
+  // BFS traversal of class hierarchy
+  while (queue.length > 0) {
+    const item = queue.shift();
+    if (!item) continue;
+    const { className, depth } = item;
+
+    // Stop at max depth to prevent infinite loops
+    if (depth > maxDepth) continue;
+
+    // Found target class
+    if (className === AssetClass.PROTOTYPE) return true;
+
+    // Skip if already visited (handles circular inheritance)
+    if (visited.has(className)) continue;
+    visited.add(className);
+
+    // Look up parent class's superclass using flat namespace pattern
+    // e.g., "custom__BasePrototype__exo__Class_superClass"
+    const parentSuperClassKey = `${className}__exo__Class_superClass`;
+    const parentSuperClass = metadata[parentSuperClassKey];
+
+    if (parentSuperClass) {
+      const parentSuperClasses = Array.isArray(parentSuperClass)
+        ? parentSuperClass
+        : [parentSuperClass];
+
+      for (const parentCls of parentSuperClasses) {
+        const normalized = normalizeWithQuotes(parentCls);
+        if (normalized && !visited.has(normalized)) {
+          queue.push({ className: normalized, depth: depth + 1 });
+        }
+      }
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -244,13 +305,24 @@ export function inheritsFromPrototype(metadata: Record<string, any>): boolean {
  *
  * An asset is considered a prototype class if:
  * 1. It is a class definition (exo__Instance_class contains exo__Class)
- * 2. Its superclass chain includes exo__Prototype (directly via exo__Class_superClass)
+ * 2. Its superclass chain includes exo__Prototype (directly or transitively via exo__Class_superClass)
  *
  * This is the main function for determining "Create Instance" button visibility
  * for any class that inherits from exo__Prototype, not just hardcoded types.
  *
+ * Transitive inheritance example:
+ * ```
+ * exo__Prototype
+ * └── custom__BasePrototype
+ *     └── custom__MySpecificPrototype  ← "Create Instance" button appears here
+ * ```
+ *
+ * The metadata should contain the full class hierarchy using flat namespace pattern:
+ * - exo__Class_superClass: "custom__BasePrototype" (current class's superclass)
+ * - "custom__BasePrototype__exo__Class_superClass": "exo__Prototype" (parent's superclass)
+ *
  * @param instanceClass - The exo__Instance_class property value
- * @param metadata - The frontmatter metadata of the asset
+ * @param metadata - The frontmatter metadata containing class hierarchy information
  * @returns true if the asset is a prototype class that can create instances
  */
 export function isPrototypeClass(
@@ -260,6 +332,6 @@ export function isPrototypeClass(
   // First, check if this asset is a class definition
   if (!hasClass(instanceClass, AssetClass.CLASS)) return false;
 
-  // Then, check if it inherits from exo__Prototype
+  // Then, check if it inherits from exo__Prototype (directly or transitively)
   return inheritsFromPrototype(metadata);
 }
