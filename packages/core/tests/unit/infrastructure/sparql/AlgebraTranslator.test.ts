@@ -1520,4 +1520,150 @@ describe("AlgebraTranslator", () => {
       expect((algebra as any).template).toHaveLength(0);
     });
   });
+
+  describe("Arithmetic on Aggregates (Issue #614)", () => {
+    it("translates SELECT with division of two aggregates (SUM / COUNT)", () => {
+      const query = `
+        SELECT (SUM(?value) / COUNT(?value) AS ?avg)
+        WHERE { ?s <http://example.org/value> ?value }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Should have: project -> extend -> group -> bgp
+      expect(algebra.type).toBe("project");
+      expect((algebra as any).variables).toContain("avg");
+
+      const extend = (algebra as any).input;
+      expect(extend.type).toBe("extend");
+      expect(extend.variable).toBe("avg");
+
+      // The extend expression should be arithmetic division of two variables
+      const expr = extend.expression;
+      expect(expr.type).toBe("arithmetic");
+      expect(expr.operator).toBe("/");
+      // Left and right should be variable references to computed aggregates
+      expect(expr.left.type).toBe("variable");
+      expect(expr.right.type).toBe("variable");
+
+      const group = extend.input;
+      expect(group.type).toBe("group");
+      // Should have two aggregate bindings for SUM and COUNT
+      expect(group.aggregates.length).toBe(2);
+      expect(group.aggregates.some((a: any) => a.expression.aggregation === "sum")).toBe(true);
+      expect(group.aggregates.some((a: any) => a.expression.aggregation === "count")).toBe(true);
+    });
+
+    it("translates nested arithmetic with aggregates (SUM / COUNT / 60)", () => {
+      const query = `
+        SELECT (SUM(?duration) / COUNT(?s) / 60 AS ?avgMinutes)
+        WHERE { ?s <http://example.org/duration> ?duration }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const extend = (algebra as any).input;
+      expect(extend.type).toBe("extend");
+      expect(extend.variable).toBe("avgMinutes");
+
+      // Expression should be nested arithmetic
+      const expr = extend.expression;
+      expect(expr.type).toBe("arithmetic");
+      expect(expr.operator).toBe("/");
+      // Right should be literal 60
+      expect(expr.right.type).toBe("literal");
+      expect(expr.right.value).toBe(60);
+      // Left should be another division
+      expect(expr.left.type).toBe("arithmetic");
+      expect(expr.left.operator).toBe("/");
+    });
+
+    it("translates multiplication of aggregates (SUM * 100 / SUM as percentage)", () => {
+      const query = `
+        SELECT (SUM(?completed) * 100 / SUM(?total) AS ?percentage)
+        WHERE {
+          ?s <http://example.org/completed> ?completed .
+          ?s <http://example.org/total> ?total .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const extend = (algebra as any).input;
+      expect(extend.type).toBe("extend");
+      expect(extend.variable).toBe("percentage");
+
+      // Should have arithmetic expression
+      const expr = extend.expression;
+      expect(expr.type).toBe("arithmetic");
+    });
+
+    it("translates mixed simple aggregates and arithmetic on aggregates", () => {
+      const query = `
+        SELECT (COUNT(?s) AS ?total) (SUM(?value) / COUNT(?s) AS ?avg)
+        WHERE { ?s <http://example.org/value> ?value }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      expect((algebra as any).variables).toContain("total");
+      expect((algebra as any).variables).toContain("avg");
+
+      // Should have extend for the arithmetic expression
+      let current = (algebra as any).input;
+      expect(current.type).toBe("extend");
+      expect(current.variable).toBe("avg");
+
+      // Group operation should exist
+      const group = current.input;
+      expect(group.type).toBe("group");
+      // Should have aggregates including the simple COUNT bound to "total"
+      expect(group.aggregates.some((a: any) => a.variable === "total")).toBe(true);
+    });
+
+    it("translates arithmetic on aggregates with GROUP BY", () => {
+      const query = `
+        SELECT ?category (SUM(?duration) / COUNT(?task) AS ?avgDuration)
+        WHERE {
+          ?task <http://example.org/category> ?category .
+          ?task <http://example.org/duration> ?duration .
+        }
+        GROUP BY ?category
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const extend = (algebra as any).input;
+      expect(extend.type).toBe("extend");
+
+      const group = extend.input;
+      expect(group.type).toBe("group");
+      expect(group.variables).toContain("category");
+    });
+
+    it("preserves aggregate variable names in expressions correctly", () => {
+      const query = `
+        SELECT (SUM(?x) / COUNT(?x) AS ?result)
+        WHERE { ?s <http://example.org/x> ?x }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const extend = (algebra as any).input;
+      const group = extend.input;
+
+      // Get the variable names assigned to the aggregates
+      const sumVar = group.aggregates.find((a: any) => a.expression.aggregation === "sum").variable;
+      const countVar = group.aggregates.find((a: any) => a.expression.aggregation === "count").variable;
+
+      // The extend expression should reference these exact variables
+      const expr = extend.expression;
+      expect(expr.left.name).toBe(sumVar);
+      expect(expr.right.name).toBe(countVar);
+    });
+  });
 });
