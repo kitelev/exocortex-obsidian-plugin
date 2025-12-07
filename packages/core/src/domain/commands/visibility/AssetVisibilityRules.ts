@@ -29,7 +29,7 @@ export function canCreateEvent(context: CommandVisibilityContext): boolean {
  * Available for: Any asset class that inherits from exo__Prototype
  *
  * This includes:
- * - Known prototype classes: ems__TaskPrototype, ems__MeetingPrototype, exo__EventPrototype
+ * - Known prototype classes: ems__TaskPrototype, ems__MeetingPrototype, exo__EventPrototype, ems__ProjectPrototype
  * - Any custom class with exo__Class_superClass pointing to exo__Prototype (directly or transitively)
  *
  * The check works in two modes:
@@ -41,7 +41,8 @@ export function canCreateInstance(context: CommandVisibilityContext): boolean {
   if (
     hasClass(context.instanceClass, AssetClass.TASK_PROTOTYPE) ||
     hasClass(context.instanceClass, AssetClass.MEETING_PROTOTYPE) ||
-    hasClass(context.instanceClass, AssetClass.EVENT_PROTOTYPE)
+    hasClass(context.instanceClass, AssetClass.EVENT_PROTOTYPE) ||
+    hasClass(context.instanceClass, AssetClass.PROJECT_PROTOTYPE)
   ) {
     return true;
   }
