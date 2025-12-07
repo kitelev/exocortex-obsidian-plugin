@@ -5,6 +5,7 @@ import { WikiLinkHelpers } from "../utilities/WikiLinkHelpers";
 import { MetadataExtractor } from "../utilities/MetadataExtractor";
 import { MetadataHelpers } from "../utilities/MetadataHelpers";
 import { AssetClass } from "../domain/constants";
+import { isPrototypeClass } from "../domain/commands/visibility/helpers";
 
 const EFFORT_PROPERTY_MAP: Record<string, string> = {
   [AssetClass.AREA]: "ems__Effort_area",
@@ -53,6 +54,10 @@ export class TaskFrontmatterGenerator {
 
     if (effortProperty) {
       frontmatter[effortProperty] = `"[[${sourceName}]]"`;
+    } else if (isPrototypeClass(sourceClass, sourceMetadata)) {
+      // For custom prototype classes that inherit from exo__Prototype,
+      // set exo__Asset_prototype to link instance back to its prototype
+      frontmatter["exo__Asset_prototype"] = `"[[${sourceName}]]"`;
     }
 
     let finalLabel = label;

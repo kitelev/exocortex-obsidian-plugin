@@ -471,6 +471,71 @@ describe("TaskCreationService", () => {
       expect(frontmatter.ems__Effort_parent).toBeUndefined();
       expect(frontmatter.exo__Asset_prototype).toBeUndefined();
     });
+
+    it("should create instance from custom prototype class with exo__Asset_prototype", () => {
+      // Custom prototype class that inherits from exo__Prototype
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!custom]]"',
+        exo__Class_superClass: "[[exo__Prototype]]",
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Morning Routine",
+        "exo__Class", // Custom prototype has exo__Instance_class: [[exo__Class]]
+        "Morning Routine 2025-12-07",
+      );
+
+      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Task]]"']);
+      expect(frontmatter.exo__Asset_prototype).toBe('"[[Morning Routine]]"');
+      expect(frontmatter.exo__Asset_label).toBe("Morning Routine 2025-12-07");
+      expect(frontmatter.ems__Effort_status).toBe(
+        '"[[ems__EffortStatusDraft]]"',
+      );
+    });
+
+    it("should create instance from custom prototype class with transitive inheritance", () => {
+      // Custom prototype class that inherits from exo__Prototype transitively
+      // e.g., custom__WorkoutPrototype → custom__RoutinePrototype → exo__Prototype
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!custom]]"',
+        exo__Class_superClass: "[[custom__RoutinePrototype]]",
+        "custom__RoutinePrototype__exo__Class_superClass": "[[exo__Prototype]]",
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Gym Workout Template",
+        "exo__Class",
+        "Leg Day 2025-12-07",
+      );
+
+      expect(frontmatter.exo__Instance_class).toEqual(['"[[ems__Task]]"']);
+      expect(frontmatter.exo__Asset_prototype).toBe(
+        '"[[Gym Workout Template]]"',
+      );
+      expect(frontmatter.exo__Asset_label).toBe("Leg Day 2025-12-07");
+    });
+
+    it("should NOT set exo__Asset_prototype for non-prototype class definitions", () => {
+      // A class that does NOT inherit from exo__Prototype
+      const sourceMetadata = {
+        exo__Asset_isDefinedBy: '"[[!custom]]"',
+        exo__Class_superClass: "[[exo__Asset]]", // Inherits from exo__Asset, not exo__Prototype
+      };
+
+      const frontmatter = service.generateTaskFrontmatter(
+        sourceMetadata,
+        "Custom Class Definition",
+        "exo__Class",
+        "Instance Label",
+      );
+
+      // Should NOT have exo__Asset_prototype since it's not a prototype class
+      expect(frontmatter.exo__Asset_prototype).toBeUndefined();
+      expect(frontmatter.ems__Effort_area).toBeUndefined();
+      expect(frontmatter.ems__Effort_parent).toBeUndefined();
+    });
   });
 
   describe("buildFileContent", () => {
