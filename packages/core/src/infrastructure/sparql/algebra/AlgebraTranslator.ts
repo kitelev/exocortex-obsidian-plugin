@@ -733,16 +733,46 @@ export class AlgebraTranslator {
     };
   }
 
+  /**
+   * Translate UNION pattern to UnionOperation.
+   * Supports n-ary UNION (2 or more branches) by nesting binary unions left-associatively:
+   * A UNION B UNION C becomes (A UNION B) UNION C
+   *
+   * sparqljs AST format: { type: "union", patterns: [...] }
+   * Each pattern can be a BGP, group, or other graph pattern.
+   */
   private translateUnion(pattern: any): UnionOperation {
-    if (!pattern.patterns || pattern.patterns.length !== 2) {
-      throw new AlgebraTranslatorError("UNION pattern must have exactly 2 patterns");
+    if (!pattern.patterns || pattern.patterns.length < 2) {
+      throw new AlgebraTranslatorError("UNION pattern must have at least 2 patterns");
     }
 
-    return {
-      type: "union",
-      left: this.translateWhere(pattern.patterns[0].patterns || [pattern.patterns[0]]),
-      right: this.translateWhere(pattern.patterns[1].patterns || [pattern.patterns[1]]),
+    // Helper to translate a single union branch
+    const translateBranch = (branch: any): AlgebraOperation => {
+      // If branch has nested patterns (group), unwrap them
+      if (branch.patterns && Array.isArray(branch.patterns)) {
+        return this.translateWhere(branch.patterns);
+      }
+      // Otherwise treat as a single pattern (BGP, etc.)
+      return this.translateWhere([branch]);
     };
+
+    // Build left-associative binary union tree: (((A UNION B) UNION C) UNION D)
+    let result: UnionOperation = {
+      type: "union",
+      left: translateBranch(pattern.patterns[0]),
+      right: translateBranch(pattern.patterns[1]),
+    };
+
+    // Add remaining branches by nesting
+    for (let i = 2; i < pattern.patterns.length; i++) {
+      result = {
+        type: "union",
+        left: result,
+        right: translateBranch(pattern.patterns[i]),
+      };
+    }
+
+    return result;
   }
 
   /**
