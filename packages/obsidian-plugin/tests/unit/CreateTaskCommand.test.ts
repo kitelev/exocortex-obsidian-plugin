@@ -4,6 +4,7 @@ import { App, TFile, Notice, MetadataCache, Workspace, WorkspaceLeaf } from "obs
 import { TaskCreationService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
 import { ObsidianVaultAdapter } from "../../src/adapters/ObsidianVaultAdapter";
 import { LabelInputModal } from "../../src/presentation/modals/LabelInputModal";
+import { ExocortexPluginInterface } from "../../src/types";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -23,6 +24,7 @@ describe("CreateTaskCommand", () => {
   let mockApp: jest.Mocked<App>;
   let mockTaskCreationService: jest.Mocked<TaskCreationService>;
   let mockVaultAdapter: jest.Mocked<ObsidianVaultAdapter>;
+  let mockPlugin: jest.Mocked<ExocortexPluginInterface>;
   let mockFile: jest.Mocked<TFile>;
   let mockContext: CommandVisibilityContext;
   let mockWorkspace: jest.Mocked<Workspace>;
@@ -67,6 +69,14 @@ describe("CreateTaskCommand", () => {
       toTFile: jest.fn(),
     } as unknown as jest.Mocked<ObsidianVaultAdapter>;
 
+    // Create mock plugin with default settings (useDynamicPropertyFields = false)
+    mockPlugin = {
+      settings: {
+        useDynamicPropertyFields: false,
+      },
+      saveSettings: jest.fn().mockResolvedValue(undefined),
+    } as unknown as jest.Mocked<ExocortexPluginInterface>;
+
     // Create mock file
     mockFile = {
       path: "test.md",
@@ -82,7 +92,7 @@ describe("CreateTaskCommand", () => {
     };
 
     // Create command instance
-    command = new CreateTaskCommand(mockApp, mockTaskCreationService, mockVaultAdapter);
+    command = new CreateTaskCommand(mockApp, mockTaskCreationService, mockVaultAdapter, mockPlugin);
   });
 
   describe("id and name", () => {

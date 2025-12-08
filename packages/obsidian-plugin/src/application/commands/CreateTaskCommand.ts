@@ -8,7 +8,9 @@ import {
   LoggingService,
 } from "@exocortex/core";
 import { LabelInputModal, type LabelInputModalResult } from "../../presentation/modals/LabelInputModal";
+import { DynamicAssetCreationModal, type DynamicAssetCreationResult } from "../../presentation/modals/DynamicAssetCreationModal";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
+import { ExocortexPluginInterface } from "../../types";
 
 export class CreateTaskCommand implements ICommand {
   id = "create-task";
@@ -18,6 +20,7 @@ export class CreateTaskCommand implements ICommand {
     private app: App,
     private taskCreationService: TaskCreationService,
     private vaultAdapter: ObsidianVaultAdapter,
+    private plugin: ExocortexPluginInterface,
   ) {}
 
   checkCallback = (checking: boolean, file: TFile, context: CommandVisibilityContext | null): boolean => {
@@ -34,9 +37,9 @@ export class CreateTaskCommand implements ICommand {
   };
 
   private async execute(file: TFile, context: CommandVisibilityContext): Promise<void> {
-    const result = await new Promise<LabelInputModalResult>((resolve) => {
-      new LabelInputModal(this.app, resolve).open();
-    });
+    const useDynamicFields = this.plugin.settings.useDynamicPropertyFields ?? false;
+
+    const result = await this.showModal(useDynamicFields);
 
     if (result.label === null) {
       return;
@@ -75,5 +78,26 @@ export class CreateTaskCommand implements ICommand {
     }
 
     new Notice(`Task created: ${createdFile.basename}`);
+  }
+
+  /**
+   * Shows the appropriate modal based on the useDynamicPropertyFields setting.
+   * @param useDynamicFields - If true, shows DynamicAssetCreationModal; otherwise LabelInputModal
+   * @returns Promise resolving to the modal result
+   */
+  private showModal(useDynamicFields: boolean): Promise<LabelInputModalResult> {
+    if (useDynamicFields) {
+      return new Promise<DynamicAssetCreationResult>((resolve) => {
+        new DynamicAssetCreationModal(
+          this.app,
+          "ems__Task",
+          resolve,
+        ).open();
+      });
+    }
+
+    return new Promise<LabelInputModalResult>((resolve) => {
+      new LabelInputModal(this.app, resolve).open();
+    });
   }
 }
