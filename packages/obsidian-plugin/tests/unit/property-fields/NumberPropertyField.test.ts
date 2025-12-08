@@ -297,6 +297,99 @@ describe("NumberPropertyField", () => {
     });
   });
 
+  describe("focus", () => {
+    it("should focus the input element", () => {
+      const field = new NumberPropertyField(containerEl, {
+        property: {
+          uri: "exo:count",
+          name: "exo__Asset_count",
+          label: "Count",
+          fieldType: PropertyFieldType.Number,
+        },
+        value: 42,
+        onChange: jest.fn(),
+      });
+
+      const input = field.getInputEl();
+      expect(input).not.toBeNull();
+      const focusSpy = jest.spyOn(input!, "focus");
+      field.focus();
+      expect(focusSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe("increment/decrement", () => {
+    it("should increment the value", () => {
+      const onChange = jest.fn();
+      const field = new NumberPropertyField(containerEl, {
+        property: {
+          uri: "exo:count",
+          name: "exo__Asset_count",
+          label: "Count",
+          fieldType: PropertyFieldType.Number,
+        },
+        value: 10,
+        onChange,
+      });
+
+      field.increment();
+      expect(onChange).toHaveBeenCalledWith(11);
+    });
+
+    it("should decrement the value", () => {
+      const onChange = jest.fn();
+      const field = new NumberPropertyField(containerEl, {
+        property: {
+          uri: "exo:count",
+          name: "exo__Asset_count",
+          label: "Count",
+          fieldType: PropertyFieldType.Number,
+        },
+        value: 10,
+        onChange,
+      });
+
+      field.decrement();
+      expect(onChange).toHaveBeenCalledWith(9);
+    });
+
+    it("should respect max constraint on increment", () => {
+      const onChange = jest.fn();
+      const field = new NumberPropertyField(containerEl, {
+        property: {
+          uri: "exo:count",
+          name: "exo__Asset_count",
+          label: "Count",
+          fieldType: PropertyFieldType.Number,
+          maxValue: 10,
+        },
+        value: 10,
+        onChange,
+      });
+
+      field.increment();
+      expect(onChange).toHaveBeenCalledWith(10);
+    });
+
+    it("should respect min constraint on decrement", () => {
+      const onChange = jest.fn();
+      const field = new NumberPropertyField(containerEl, {
+        property: {
+          uri: "exo:count",
+          name: "exo__Asset_count",
+          label: "Count",
+          fieldType: PropertyFieldType.Number,
+          minValue: 0,
+        },
+        value: 0,
+        onChange,
+      });
+
+      field.decrement();
+      expect(onChange).toHaveBeenCalledWith(0);
+    });
+  });
+
   describe("destroy", () => {
     it("should remove the setting element", () => {
       const field = new NumberPropertyField(containerEl, {
