@@ -9,7 +9,9 @@ import {
   LoggingService,
 } from "@exocortex/core";
 import { LabelInputModal, type LabelInputModalResult } from "../../presentation/modals/LabelInputModal";
+import { DynamicAssetCreationModal, type DynamicAssetCreationResult } from "../../presentation/modals/DynamicAssetCreationModal";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
+import { ExocortexPluginInterface } from "../../types";
 
 export class CreateInstanceCommand implements ICommand {
   id = "create-instance";
@@ -19,6 +21,7 @@ export class CreateInstanceCommand implements ICommand {
     private app: App,
     private taskCreationService: TaskCreationService,
     private vaultAdapter: ObsidianVaultAdapter,
+    private plugin: ExocortexPluginInterface,
   ) {}
 
   checkCallback = (checking: boolean, file: TFile, context: CommandVisibilityContext | null): boolean => {
@@ -43,11 +46,10 @@ export class CreateInstanceCommand implements ICommand {
     const firstClass = classes[0] || "";
     const sourceClass = WikiLinkHelpers.normalize(firstClass);
 
+    const useDynamicFields = this.plugin.settings.useDynamicPropertyFields ?? false;
     const showTaskSize = sourceClass !== AssetClass.MEETING_PROTOTYPE;
 
-    const result = await new Promise<LabelInputModalResult>((resolve) => {
-      new LabelInputModal(this.app, resolve, "", showTaskSize).open();
-    });
+    const result = await this.showModal(useDynamicFields, sourceClass, showTaskSize);
 
     if (result.label === null) {
       return;
@@ -78,5 +80,32 @@ export class CreateInstanceCommand implements ICommand {
     }
 
     new Notice(`Instance created: ${createdFile.basename}`);
+  }
+
+  /**
+   * Shows the appropriate modal based on the useDynamicPropertyFields setting.
+   * @param useDynamicFields - If true, shows DynamicAssetCreationModal; otherwise LabelInputModal
+   * @param className - The class name for dynamic modal (e.g., 'ems__Task', 'ems__Effort')
+   * @param showTaskSize - Whether to show task size in LabelInputModal (fallback)
+   * @returns Promise resolving to the modal result
+   */
+  private showModal(
+    useDynamicFields: boolean,
+    className: string,
+    showTaskSize: boolean,
+  ): Promise<LabelInputModalResult> {
+    if (useDynamicFields) {
+      return new Promise<DynamicAssetCreationResult>((resolve) => {
+        new DynamicAssetCreationModal(
+          this.app,
+          className,
+          resolve,
+        ).open();
+      });
+    }
+
+    return new Promise<LabelInputModalResult>((resolve) => {
+      new LabelInputModal(this.app, resolve, "", showTaskSize).open();
+    });
   }
 }

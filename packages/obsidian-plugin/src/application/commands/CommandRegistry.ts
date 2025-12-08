@@ -90,7 +90,7 @@ export class CommandRegistry {
     this.commands = [
       new CreateTaskCommand(app, taskCreationService, this.vaultAdapter, plugin),
       new CreateProjectCommand(app, projectCreationService, this.vaultAdapter),
-      new CreateInstanceCommand(app, taskCreationService, this.vaultAdapter),
+      new CreateInstanceCommand(app, taskCreationService, this.vaultAdapter, plugin),
       new CreateFleetingNoteCommand(app, fleetingNoteCreationService, this.vaultAdapter),
       new CreateRelatedTaskCommand(app, taskCreationService, this.vaultAdapter),
       new SetDraftStatusCommand(taskStatusService),
