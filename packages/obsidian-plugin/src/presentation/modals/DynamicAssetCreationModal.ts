@@ -1,5 +1,9 @@
 import { App, Modal, Setting } from "obsidian";
 import type { LabelInputModalResult } from "./LabelInputModal";
+import type {
+  OntologySchemaService,
+  OntologyPropertyDefinition,
+} from "../../application/services/OntologySchemaService";
 
 /**
  * Result from DynamicAssetCreationModal
@@ -13,12 +17,13 @@ export interface DynamicAssetCreationResult extends LabelInputModalResult {
 /**
  * Dynamic modal for creating assets with ontology-driven fields.
  *
- * Phase 1 (current): Shows basic label and task size fields (same as LabelInputModal)
- * Phase 2 (future): Will query OntologySchemaService for class properties
- *                   and render fields dynamically based on property types.
+ * When provided with an OntologySchemaService, queries class properties
+ * from the RDF ontology and renders appropriate field types dynamically.
+ * Falls back to basic fields (label + task size) when no schema service available.
  *
  * @example
  * ```typescript
+ * // With schema service (Phase 2 - dynamic fields)
  * const modal = new DynamicAssetCreationModal(
  *   this.app,
  *   'ems__Task',
@@ -26,9 +31,18 @@ export interface DynamicAssetCreationResult extends LabelInputModalResult {
  *     if (result.label !== null) {
  *       // Create asset with result.label, result.taskSize, result.propertyValues
  *     }
- *   }
+ *   },
+ *   schemaService // Optional - enables dynamic field rendering
  * );
  * modal.open();
+ *
+ * // Without schema service (Phase 1 - basic fields only)
+ * const basicModal = new DynamicAssetCreationModal(
+ *   this.app,
+ *   'ems__Task',
+ *   (result) => { ... }
+ * );
+ * basicModal.open();
  * ```
  */
 export class DynamicAssetCreationModal extends Modal {
@@ -37,11 +51,13 @@ export class DynamicAssetCreationModal extends Modal {
   private openInNewTab = false;
   private propertyValues: Record<string, unknown> = {};
   private inputEl: HTMLInputElement | null = null;
+  private properties: OntologyPropertyDefinition[] = [];
 
   constructor(
     app: App,
     private className: string,
     private onSubmit: (result: DynamicAssetCreationResult) => void,
+    private schemaService?: OntologySchemaService,
   ) {
     super(app);
   }
@@ -55,35 +71,314 @@ export class DynamicAssetCreationModal extends Modal {
     const displayClassName = this.getDisplayClassName(this.className);
     contentEl.createEl("h2", { text: `Create ${displayClassName}` });
 
-    // Phase 1: Basic fields (label + task size)
-    // TODO (Phase 2): Fetch properties from OntologySchemaService and render dynamically
-    this.renderBasicFields(contentEl);
-
-    // Button container
-    const buttonContainer = contentEl.createDiv({
-      cls: "modal-button-container",
-    });
-
-    const createButton = buttonContainer.createEl("button", {
-      text: "Create",
-      cls: "mod-cta",
-    });
-    createButton.addEventListener("click", () => this.submit());
-
-    const cancelButton = buttonContainer.createEl("button", {
-      text: "Cancel",
-    });
-    cancelButton.addEventListener("click", () => this.cancel());
-
-    // Focus on input
-    setTimeout(() => {
-      this.inputEl?.focus();
-    }, 50);
+    // If schema service is provided, load properties dynamically
+    if (this.schemaService) {
+      this.loadPropertiesAndRender(contentEl);
+    } else {
+      // Fallback to basic fields
+      this.renderBasicFields(contentEl);
+      this.renderButtons(contentEl);
+      this.focusInput();
+    }
   }
 
   /**
-   * Renders basic fields for Phase 1 implementation.
-   * Will be replaced/extended by dynamic field rendering in Phase 2.
+   * Load properties from schema service and render fields.
+   */
+  private async loadPropertiesAndRender(contentEl: HTMLElement): Promise<void> {
+    // Show loading indicator
+    const loadingEl = contentEl.createDiv({ cls: "loading-message" });
+    loadingEl.setText("Loading properties...");
+
+    try {
+      // Fetch properties from ontology
+      this.properties = await this.schemaService!.getClassProperties(
+        this.className,
+      );
+
+      // Filter out deprecated properties
+      const activeProperties = this.properties.filter((p) => !p.deprecated);
+
+      // Remove loading indicator
+      loadingEl.remove();
+
+      // If no properties found, use defaults
+      if (activeProperties.length === 0) {
+        const defaultProps =
+          this.schemaService!.getDefaultProperties(this.className);
+        this.renderDynamicFields(contentEl, defaultProps);
+      } else {
+        this.renderDynamicFields(contentEl, activeProperties);
+      }
+
+      // Always show open in new tab toggle
+      this.renderOpenInNewTabToggle(contentEl);
+
+      this.renderButtons(contentEl);
+      this.focusInput();
+    } catch (error) {
+      console.warn("Failed to load properties, falling back to basic fields:", error);
+      loadingEl.remove();
+      this.renderBasicFields(contentEl);
+      this.renderButtons(contentEl);
+      this.focusInput();
+    }
+  }
+
+  /**
+   * Render fields dynamically based on property definitions.
+   */
+  private renderDynamicFields(
+    contentEl: HTMLElement,
+    properties: OntologyPropertyDefinition[],
+  ): void {
+    for (const prop of properties) {
+      this.renderPropertyField(contentEl, prop);
+    }
+  }
+
+  /**
+   * Render a single property field based on its type.
+   */
+  private renderPropertyField(
+    contentEl: HTMLElement,
+    prop: OntologyPropertyDefinition,
+  ): void {
+    const setting = new Setting(contentEl)
+      .setName(prop.label)
+      .setDesc(prop.description || prop.uri);
+
+    switch (prop.fieldType) {
+      case "text":
+        this.renderTextField(setting, prop);
+        break;
+
+      case "timestamp":
+        this.renderDateTimeField(setting, prop);
+        break;
+
+      case "number":
+        this.renderNumberField(setting, prop);
+        break;
+
+      case "boolean":
+        this.renderBooleanField(setting, prop);
+        break;
+
+      case "status-select":
+        this.renderStatusSelectField(setting, prop);
+        break;
+
+      case "size-select":
+        this.renderSizeSelectField(setting, prop);
+        break;
+
+      case "wikilink":
+        this.renderWikilinkField(setting, prop);
+        break;
+
+      default:
+        // Default to text field for unknown types
+        this.renderTextField(setting, prop);
+    }
+  }
+
+  /**
+   * Render a text input field.
+   */
+  private renderTextField(
+    setting: Setting,
+    prop: OntologyPropertyDefinition,
+  ): void {
+    setting.addText((text) => {
+      // Special handling for label field
+      if (prop.uri === "exo__Asset_label") {
+        this.inputEl = text.inputEl;
+        text
+          .setPlaceholder("Enter label...")
+          .setValue(this.label)
+          .onChange((value) => {
+            this.label = value;
+            this.propertyValues[prop.uri] = value;
+          });
+
+        text.inputEl.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            this.submit();
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            this.cancel();
+          }
+        });
+      } else {
+        text
+          .setPlaceholder(`Enter ${prop.label.toLowerCase()}...`)
+          .setValue(String(this.propertyValues[prop.uri] || ""))
+          .onChange((value) => {
+            this.propertyValues[prop.uri] = value;
+          });
+      }
+    });
+  }
+
+  /**
+   * Render a datetime input field.
+   */
+  private renderDateTimeField(
+    setting: Setting,
+    prop: OntologyPropertyDefinition,
+  ): void {
+    setting.addText((text) => {
+      text.inputEl.type = "datetime-local";
+      text
+        .setValue(String(this.propertyValues[prop.uri] || ""))
+        .onChange((value) => {
+          this.propertyValues[prop.uri] = value;
+        });
+    });
+  }
+
+  /**
+   * Render a number input field.
+   */
+  private renderNumberField(
+    setting: Setting,
+    prop: OntologyPropertyDefinition,
+  ): void {
+    setting.addText((text) => {
+      text.inputEl.type = "number";
+      text
+        .setValue(String(this.propertyValues[prop.uri] || ""))
+        .onChange((value) => {
+          const numValue = parseFloat(value);
+          this.propertyValues[prop.uri] = isNaN(numValue) ? null : numValue;
+        });
+    });
+  }
+
+  /**
+   * Render a boolean toggle field.
+   */
+  private renderBooleanField(
+    setting: Setting,
+    prop: OntologyPropertyDefinition,
+  ): void {
+    setting.addToggle((toggle) => {
+      toggle
+        .setValue(Boolean(this.propertyValues[prop.uri]))
+        .onChange((value) => {
+          this.propertyValues[prop.uri] = value;
+        });
+    });
+  }
+
+  /**
+   * Render a status select field.
+   */
+  private renderStatusSelectField(
+    setting: Setting,
+    prop: OntologyPropertyDefinition,
+  ): void {
+    const selectContainer = setting.controlEl.createEl("select", {
+      cls: "dropdown",
+    });
+
+    const statusOptions = [
+      { value: "", label: "Not specified" },
+      { value: '"[[ems__EffortStatus_Draft]]"', label: "Draft" },
+      { value: '"[[ems__EffortStatus_Active]]"', label: "Active" },
+      { value: '"[[ems__EffortStatus_Done]]"', label: "Done" },
+      { value: '"[[ems__EffortStatus_Cancelled]]"', label: "Cancelled" },
+    ];
+
+    statusOptions.forEach((option) => {
+      selectContainer.createEl("option", {
+        value: option.value,
+        text: option.label,
+      });
+    });
+
+    selectContainer.addEventListener("change", (e) => {
+      const selectedValue = (e.target as HTMLSelectElement).value;
+      this.propertyValues[prop.uri] = selectedValue || null;
+    });
+  }
+
+  /**
+   * Render a task size select field.
+   */
+  private renderSizeSelectField(
+    setting: Setting,
+    prop: OntologyPropertyDefinition,
+  ): void {
+    const selectContainer = setting.controlEl.createEl("select", {
+      cls: "dropdown",
+    });
+
+    const taskSizeOptions = [
+      { value: "", label: "Not specified" },
+      { value: '"[[ems__TaskSize_XXS]]"', label: "XXS" },
+      { value: '"[[ems__TaskSize_XS]]"', label: "XS" },
+      { value: '"[[ems__TaskSize_S]]"', label: "S" },
+      { value: '"[[ems__TaskSize_M]]"', label: "M" },
+    ];
+
+    taskSizeOptions.forEach((option) => {
+      selectContainer.createEl("option", {
+        value: option.value,
+        text: option.label,
+      });
+    });
+
+    selectContainer.addEventListener("change", (e) => {
+      const selectedValue = (e.target as HTMLSelectElement).value;
+      // For ems__Effort_taskSize, also update taskSize for backward compatibility
+      if (prop.uri === "ems__Effort_taskSize") {
+        this.taskSize = selectedValue || null;
+      }
+      this.propertyValues[prop.uri] = selectedValue || null;
+    });
+  }
+
+  /**
+   * Render a wikilink reference field.
+   */
+  private renderWikilinkField(
+    setting: Setting,
+    prop: OntologyPropertyDefinition,
+  ): void {
+    setting.addText((text) => {
+      text
+        .setPlaceholder("[[Note name]]") // eslint-disable-line obsidianmd/ui/sentence-case
+        .setValue(String(this.propertyValues[prop.uri] || ""))
+        .onChange((value) => {
+          // Auto-wrap in wikilink syntax if not already
+          let formattedValue = value.trim();
+          if (formattedValue && !formattedValue.startsWith("[[")) {
+            formattedValue = `[[${formattedValue}]]`;
+          }
+          this.propertyValues[prop.uri] = formattedValue || null;
+        });
+    });
+  }
+
+  /**
+   * Render the open in new tab toggle.
+   */
+  private renderOpenInNewTabToggle(contentEl: HTMLElement): void {
+    new Setting(contentEl)
+      .setName("Open in new tab")
+      .setDesc("Open the created asset in a new tab instead of the current one")
+      .addToggle((toggle) => {
+        toggle.setValue(this.openInNewTab).onChange((value) => {
+          this.openInNewTab = value;
+        });
+      });
+  }
+
+  /**
+   * Renders basic fields for fallback when no schema service available.
    */
   private renderBasicFields(contentEl: HTMLElement): void {
     // Label field
@@ -150,6 +445,35 @@ export class DynamicAssetCreationModal extends Modal {
           this.openInNewTab = value;
         });
       });
+  }
+
+  /**
+   * Render submit and cancel buttons.
+   */
+  private renderButtons(contentEl: HTMLElement): void {
+    const buttonContainer = contentEl.createDiv({
+      cls: "modal-button-container",
+    });
+
+    const createButton = buttonContainer.createEl("button", {
+      text: "Create",
+      cls: "mod-cta",
+    });
+    createButton.addEventListener("click", () => this.submit());
+
+    const cancelButton = buttonContainer.createEl("button", {
+      text: "Cancel",
+    });
+    cancelButton.addEventListener("click", () => this.cancel());
+  }
+
+  /**
+   * Focus on the first input field.
+   */
+  private focusInput(): void {
+    setTimeout(() => {
+      this.inputEl?.focus();
+    }, 50);
   }
 
   /**

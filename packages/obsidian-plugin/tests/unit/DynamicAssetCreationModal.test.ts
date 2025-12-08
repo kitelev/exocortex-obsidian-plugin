@@ -280,6 +280,34 @@ describe("DynamicAssetCreationModal", () => {
     });
   });
 
+  describe("with OntologySchemaService", () => {
+    it("should accept optional schemaService parameter", () => {
+      const mockSchemaService = {
+        getClassProperties: jest.fn().mockResolvedValue([]),
+        getDefaultProperties: jest.fn().mockReturnValue([]),
+      };
+
+      modal = new DynamicAssetCreationModal(
+        mockApp,
+        "ems__Task",
+        onSubmit,
+        mockSchemaService as any,
+      );
+
+      expect(modal).toBeDefined();
+    });
+
+    it("should fallback to basic fields when schemaService is not provided", () => {
+      modal = new DynamicAssetCreationModal(mockApp, "ems__Task", onSubmit);
+      modal.close = jest.fn();
+
+      modal.onOpen();
+
+      // Should render without errors
+      expect(modal.contentEl.children.length).toBeGreaterThan(0);
+    });
+  });
+
   describe("DynamicAssetCreationResult interface", () => {
     it("should extend LabelInputModalResult with propertyValues", () => {
       const result: DynamicAssetCreationResult = {
