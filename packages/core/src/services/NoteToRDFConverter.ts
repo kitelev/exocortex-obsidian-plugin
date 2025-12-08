@@ -59,8 +59,17 @@ export class NoteToRDFConverter {
       const values = Array.isArray(value) ? value : [value];
 
       for (const val of values) {
-        const objectNode = await this.valueToRDFObject(val, file);
-        triples.push(new Triple(subject, predicate, objectNode));
+        // Issue #663: For exo__Instance_class, always use namespace URIs for class references
+        // This enables canonical SPARQL JOINs: ?s exo:Instance_class ?class . ?class exo:Asset_label ?label .
+        // Previously, if the class file existed, we'd use the file URI which couldn't be joined with
+        // class definitions (which use namespace URIs as subjects).
+        if (key === "exo__Instance_class") {
+          const objectNode = this.valueToClassURI(val);
+          triples.push(new Triple(subject, predicate, objectNode));
+        } else {
+          const objectNode = await this.valueToRDFObject(val, file);
+          triples.push(new Triple(subject, predicate, objectNode));
+        }
       }
 
       if (key === "exo__Instance_class") {
@@ -247,6 +256,42 @@ export class NoteToRDFConverter {
   private extractWikilink(value: string): string | null {
     const match = value.match(/^\[\[([^\]]+)\]\]$/);
     return match ? match[1] : null;
+  }
+
+  /**
+   * Converts a value for exo__Instance_class to a namespace URI.
+   *
+   * Issue #663: Always stores class references as namespace URIs (not file URIs),
+   * enabling canonical SPARQL JOINs with class definitions.
+   *
+   * @param value - The value from frontmatter (e.g., "[[ems__Task]]", "ems__Task", '"[[exo__Class]]"')
+   * @returns IRI with namespace URI for class references, or Literal for non-class values
+   *
+   * @example
+   * ```typescript
+   * valueToClassURI("[[ems__Task]]")  // → IRI("https://exocortex.my/ontology/ems#Task")
+   * valueToClassURI("ems__Task")      // → IRI("https://exocortex.my/ontology/ems#Task")
+   * valueToClassURI('"[[exo__Class]]"')  // → IRI("https://exocortex.my/ontology/exo#Class")
+   * valueToClassURI("[[SomeNote]]")   // → Literal("[[SomeNote]]") (not a class reference)
+   * ```
+   */
+  private valueToClassURI(value: any): IRI | Literal {
+    if (typeof value !== "string") {
+      return new Literal(String(value));
+    }
+
+    const cleanValue = this.removeQuotes(value);
+    const wikilink = this.extractWikilink(cleanValue);
+    const classRef = wikilink || cleanValue;
+
+    // Try to expand as a class reference (ems__ or exo__ prefix)
+    const classIRI = this.expandClassValue(classRef);
+    if (classIRI) {
+      return classIRI;
+    }
+
+    // Not a class reference - return as literal (preserves original wiki-link format)
+    return new Literal(cleanValue);
   }
 
   private isClassReference(value: string): boolean {
