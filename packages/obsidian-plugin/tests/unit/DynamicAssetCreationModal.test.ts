@@ -109,6 +109,92 @@ describe("DynamicAssetCreationModal", () => {
     });
   });
 
+  describe("submit (private method)", () => {
+    beforeEach(() => {
+      modal = new DynamicAssetCreationModal(mockApp, "ems__Task", onSubmit);
+    });
+
+    it("should call onSubmit with label trimmed", () => {
+      // Set private properties
+      (modal as any).label = "  Test Label  ";
+      (modal as any).taskSize = "M";
+      (modal as any).openInNewTab = true;
+      (modal as any).propertyValues = { custom: "value" };
+      (modal as any).close = jest.fn();
+
+      // Call submit
+      (modal as any).submit();
+
+      expect(onSubmit).toHaveBeenCalledWith({
+        label: "Test Label",
+        taskSize: "M",
+        openInNewTab: true,
+        propertyValues: { custom: "value" },
+      });
+    });
+
+    it("should convert empty label to null", () => {
+      (modal as any).label = "   ";
+      (modal as any).close = jest.fn();
+
+      (modal as any).submit();
+
+      expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+        label: null,
+      }));
+    });
+
+    it("should call close after submit", () => {
+      const closeMock = jest.fn();
+      (modal as any).close = closeMock;
+      (modal as any).label = "Test";
+
+      (modal as any).submit();
+
+      expect(closeMock).toHaveBeenCalled();
+    });
+  });
+
+  describe("cancel (private method)", () => {
+    beforeEach(() => {
+      modal = new DynamicAssetCreationModal(mockApp, "ems__Task", onSubmit);
+    });
+
+    it("should call onSubmit with null label and taskSize", () => {
+      (modal as any).openInNewTab = true;
+      (modal as any).close = jest.fn();
+
+      (modal as any).cancel();
+
+      expect(onSubmit).toHaveBeenCalledWith({
+        label: null,
+        taskSize: null,
+        openInNewTab: true,
+        propertyValues: {},
+      });
+    });
+
+    it("should preserve openInNewTab value", () => {
+      (modal as any).openInNewTab = false;
+      (modal as any).close = jest.fn();
+
+      (modal as any).cancel();
+
+      expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({
+        openInNewTab: false,
+      }));
+    });
+
+    it("should call close after cancel", () => {
+      const closeMock = jest.fn();
+      (modal as any).close = closeMock;
+
+      (modal as any).cancel();
+
+      expect(closeMock).toHaveBeenCalled();
+    });
+  });
+
   describe("DynamicAssetCreationResult interface", () => {
     it("should extend LabelInputModalResult with propertyValues", () => {
       const result: DynamicAssetCreationResult = {
