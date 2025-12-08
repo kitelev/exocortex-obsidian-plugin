@@ -1078,6 +1078,169 @@ describe("NoteToRDFConverter", () => {
 
       expect(duration).toBeLessThan(1000);
     });
+
+    // Issue #684: Graceful degradation - skip files with invalid IRIs instead of crashing
+    describe("graceful degradation (Issue #684)", () => {
+      it("should skip files that cause errors and continue processing", async () => {
+        const validFile: IFile = {
+          path: "valid-note.md",
+          basename: "valid-note",
+          name: "valid-note.md",
+          parent: null,
+        };
+
+        const validFile2: IFile = {
+          path: "valid-note-2.md",
+          basename: "valid-note-2",
+          name: "valid-note-2.md",
+          parent: null,
+        };
+
+        mockVault.getAllFiles.mockReturnValue([validFile, validFile2]);
+
+        // First file succeeds, second file succeeds
+        mockVault.getFrontmatter.mockImplementation((file) => {
+          if (file.path === "valid-note.md") return { exo__Asset_label: "Valid Note 1" };
+          if (file.path === "valid-note-2.md") return { exo__Asset_label: "Valid Note 2" };
+          return null;
+        });
+
+        // Spy on console.warn to verify warning is emitted
+        const warnSpy = jest.spyOn(console, "warn").mockImplementation();
+
+        const triples = await converter.convertVault();
+
+        // Should have triples from both valid files
+        expect(triples.length).toBeGreaterThan(0);
+
+        // Verify file name triples from both files
+        const fileNameTriples = triples.filter((t) =>
+          (t.predicate as IRI).value.includes("Asset_fileName")
+        );
+        expect(fileNameTriples.length).toBe(2);
+
+        warnSpy.mockRestore();
+      });
+
+      it("should emit warning for files that throw errors during conversion", async () => {
+        // Create a mock that will cause IRI constructor to throw
+        const validFile: IFile = {
+          path: "valid-note.md",
+          basename: "valid-note",
+          name: "valid-note.md",
+          parent: null,
+        };
+
+        mockVault.getAllFiles.mockReturnValue([validFile]);
+
+        // Mock getFrontmatter to throw an error (simulating problematic frontmatter)
+        mockVault.getFrontmatter.mockImplementation(() => {
+          throw new Error("Test error: Invalid frontmatter");
+        });
+
+        // Spy on console.warn
+        const warnSpy = jest.spyOn(console, "warn").mockImplementation();
+
+        const triples = await converter.convertVault();
+
+        // Should return empty array (file was skipped)
+        expect(triples).toEqual([]);
+
+        // Should have called console.warn with skip message
+        expect(warnSpy).toHaveBeenCalledWith(
+          expect.stringContaining("Skipping file with invalid IRI")
+        );
+        expect(warnSpy).toHaveBeenCalledWith(
+          expect.stringContaining("Test error: Invalid frontmatter")
+        );
+
+        warnSpy.mockRestore();
+      });
+
+      it("should continue processing after skipping problematic file", async () => {
+        const validFile1: IFile = {
+          path: "note1.md",
+          basename: "note1",
+          name: "note1.md",
+          parent: null,
+        };
+
+        const problematicFile: IFile = {
+          path: "problematic.md",
+          basename: "problematic",
+          name: "problematic.md",
+          parent: null,
+        };
+
+        const validFile2: IFile = {
+          path: "note2.md",
+          basename: "note2",
+          name: "note2.md",
+          parent: null,
+        };
+
+        mockVault.getAllFiles.mockReturnValue([validFile1, problematicFile, validFile2]);
+
+        mockVault.getFrontmatter.mockImplementation((file) => {
+          if (file.path === "note1.md") return { exo__Asset_label: "Note 1" };
+          if (file.path === "problematic.md") throw new Error("Simulated IRI error");
+          if (file.path === "note2.md") return { exo__Asset_label: "Note 2" };
+          return null;
+        });
+
+        const warnSpy = jest.spyOn(console, "warn").mockImplementation();
+
+        const triples = await converter.convertVault();
+
+        // Should have triples from valid files only
+        const labelTriples = triples.filter((t) =>
+          (t.predicate as IRI).value.includes("Asset_label")
+        );
+        expect(labelTriples.length).toBe(2);
+
+        const labels = labelTriples.map((t) => (t.object as Literal).value);
+        expect(labels).toContain("Note 1");
+        expect(labels).toContain("Note 2");
+
+        // Should have warned about problematic file
+        expect(warnSpy).toHaveBeenCalledWith(
+          expect.stringContaining("problematic.md")
+        );
+
+        warnSpy.mockRestore();
+      });
+
+      it("should not crash when all files are problematic", async () => {
+        const file1: IFile = {
+          path: "bad1.md",
+          basename: "bad1",
+          name: "bad1.md",
+          parent: null,
+        };
+
+        const file2: IFile = {
+          path: "bad2.md",
+          basename: "bad2",
+          name: "bad2.md",
+          parent: null,
+        };
+
+        mockVault.getAllFiles.mockReturnValue([file1, file2]);
+        mockVault.getFrontmatter.mockImplementation(() => {
+          throw new Error("All files are problematic");
+        });
+
+        const warnSpy = jest.spyOn(console, "warn").mockImplementation();
+
+        // Should NOT throw - instead returns empty array
+        const triples = await converter.convertVault();
+
+        expect(triples).toEqual([]);
+        expect(warnSpy).toHaveBeenCalledTimes(4); // 2 files × 2 warnings each
+
+        warnSpy.mockRestore();
+      });
+    });
   });
 
   describe("notePathToIRI", () => {
