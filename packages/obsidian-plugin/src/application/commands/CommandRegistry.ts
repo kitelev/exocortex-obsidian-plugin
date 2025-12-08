@@ -88,7 +88,7 @@ export class CommandRegistry {
     const fleetingNoteCreationService = container.resolve(FleetingNoteCreationService);
 
     this.commands = [
-      new CreateTaskCommand(app, taskCreationService, this.vaultAdapter),
+      new CreateTaskCommand(app, taskCreationService, this.vaultAdapter, plugin),
       new CreateProjectCommand(app, projectCreationService, this.vaultAdapter),
       new CreateInstanceCommand(app, taskCreationService, this.vaultAdapter),
       new CreateFleetingNoteCommand(app, fleetingNoteCreationService, this.vaultAdapter),

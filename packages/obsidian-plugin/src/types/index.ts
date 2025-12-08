@@ -64,6 +64,7 @@ export interface ExocortexPluginInterface extends Plugin {
     activeFocusArea?: string | null;
     showEffortArea?: boolean;
     showEffortVotes?: boolean;
+    useDynamicPropertyFields?: boolean;
   };
   vaultAdapter: any; // ObsidianVaultAdapter - avoiding circular dependency
   saveSettings(): Promise<void>;
