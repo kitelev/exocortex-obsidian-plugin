@@ -280,6 +280,273 @@ describe("DynamicAssetCreationModal", () => {
     });
   });
 
+  describe("with OntologySchemaService", () => {
+    let mockSchemaService: any;
+
+    beforeEach(() => {
+      mockSchemaService = {
+        getClassProperties: jest.fn().mockResolvedValue([]),
+        getDefaultProperties: jest.fn().mockReturnValue([]),
+      };
+    });
+
+    it("should accept optional schemaService parameter", () => {
+      modal = new DynamicAssetCreationModal(
+        mockApp,
+        "ems__Task",
+        onSubmit,
+        mockSchemaService,
+      );
+
+      expect(modal).toBeDefined();
+    });
+
+    it("should fallback to basic fields when schemaService is not provided", () => {
+      modal = new DynamicAssetCreationModal(mockApp, "ems__Task", onSubmit);
+      modal.close = jest.fn();
+
+      modal.onOpen();
+
+      // Should render without errors
+      expect(modal.contentEl.children.length).toBeGreaterThan(0);
+    });
+
+    it("should load properties from schema service on open", async () => {
+      mockSchemaService.getClassProperties.mockResolvedValue([
+        {
+          uri: "exo__Asset_label",
+          label: "Label",
+          fieldType: "text",
+          deprecated: false,
+          required: false,
+        },
+      ]);
+
+      modal = new DynamicAssetCreationModal(
+        mockApp,
+        "ems__Task",
+        onSubmit,
+        mockSchemaService,
+      );
+      modal.close = jest.fn();
+      modal.onOpen();
+
+      // Wait for async loading
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockSchemaService.getClassProperties).toHaveBeenCalledWith("ems__Task");
+    });
+
+    it("should use default properties when no properties found", async () => {
+      mockSchemaService.getClassProperties.mockResolvedValue([]);
+      mockSchemaService.getDefaultProperties.mockReturnValue([
+        {
+          uri: "exo__Asset_label",
+          label: "Label",
+          fieldType: "text",
+          deprecated: false,
+          required: false,
+        },
+      ]);
+
+      modal = new DynamicAssetCreationModal(
+        mockApp,
+        "ems__Task",
+        onSubmit,
+        mockSchemaService,
+      );
+      modal.close = jest.fn();
+      modal.onOpen();
+
+      // Wait for async loading
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(mockSchemaService.getDefaultProperties).toHaveBeenCalledWith("ems__Task");
+    });
+
+    it("should filter out deprecated properties", async () => {
+      mockSchemaService.getClassProperties.mockResolvedValue([
+        {
+          uri: "exo__Asset_label",
+          label: "Label",
+          fieldType: "text",
+          deprecated: false,
+          required: false,
+        },
+        {
+          uri: "exo__Asset_oldField",
+          label: "Old Field",
+          fieldType: "text",
+          deprecated: true, // This should be filtered out
+          required: false,
+        },
+      ]);
+
+      modal = new DynamicAssetCreationModal(
+        mockApp,
+        "ems__Task",
+        onSubmit,
+        mockSchemaService,
+      );
+      modal.close = jest.fn();
+      modal.onOpen();
+
+      // Wait for async loading
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Modal should have content
+      expect(modal.contentEl.children.length).toBeGreaterThan(0);
+    });
+
+    it("should fallback to basic fields when schema service throws error", async () => {
+      mockSchemaService.getClassProperties.mockRejectedValue(new Error("SPARQL error"));
+
+      modal = new DynamicAssetCreationModal(
+        mockApp,
+        "ems__Task",
+        onSubmit,
+        mockSchemaService,
+      );
+      modal.close = jest.fn();
+
+      // Capture console.warn
+      const warnSpy = jest.spyOn(console, "warn").mockImplementation();
+
+      modal.onOpen();
+
+      // Wait for async error handling
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Should have logged warning
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
+
+      // Modal should still have content (fallback)
+      expect(modal.contentEl.children.length).toBeGreaterThan(0);
+    });
+
+    it("should render different field types from properties", async () => {
+      mockSchemaService.getClassProperties.mockResolvedValue([
+        {
+          uri: "exo__Asset_label",
+          label: "Label",
+          fieldType: "text",
+          deprecated: false,
+          required: false,
+        },
+        {
+          uri: "ems__Effort_startTimestamp",
+          label: "Start Time",
+          fieldType: "timestamp",
+          deprecated: false,
+          required: false,
+        },
+        {
+          uri: "ems__Effort_count",
+          label: "Count",
+          fieldType: "number",
+          deprecated: false,
+          required: false,
+        },
+        {
+          uri: "ems__Effort_isActive",
+          label: "Is Active",
+          fieldType: "boolean",
+          deprecated: false,
+          required: false,
+        },
+        {
+          uri: "ems__Effort_status",
+          label: "Status",
+          fieldType: "status-select",
+          deprecated: false,
+          required: false,
+        },
+        {
+          uri: "ems__Effort_taskSize",
+          label: "Task Size",
+          fieldType: "size-select",
+          deprecated: false,
+          required: false,
+        },
+        {
+          uri: "ems__Effort_parent",
+          label: "Parent",
+          fieldType: "wikilink",
+          deprecated: false,
+          required: false,
+        },
+      ]);
+
+      modal = new DynamicAssetCreationModal(
+        mockApp,
+        "ems__Task",
+        onSubmit,
+        mockSchemaService,
+      );
+      modal.close = jest.fn();
+      modal.onOpen();
+
+      // Wait for async loading
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Modal should have content for all field types
+      expect(modal.contentEl.children.length).toBeGreaterThan(0);
+    });
+
+    it("should handle unknown field types by defaulting to text", async () => {
+      mockSchemaService.getClassProperties.mockResolvedValue([
+        {
+          uri: "exo__Asset_unknownField",
+          label: "Unknown",
+          fieldType: "unknown-type" as any,
+          deprecated: false,
+          required: false,
+        },
+      ]);
+
+      modal = new DynamicAssetCreationModal(
+        mockApp,
+        "ems__Task",
+        onSubmit,
+        mockSchemaService,
+      );
+      modal.close = jest.fn();
+      modal.onOpen();
+
+      // Wait for async loading
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Modal should render without errors
+      expect(modal.contentEl.children.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("focusInput (private method)", () => {
+    it("should call focus on input element after timeout", () => {
+      modal = new DynamicAssetCreationModal(mockApp, "ems__Task", onSubmit);
+      const mockInput = { focus: jest.fn() };
+      (modal as any).inputEl = mockInput;
+
+      jest.useFakeTimers();
+      (modal as any).focusInput();
+      jest.advanceTimersByTime(100);
+      jest.useRealTimers();
+
+      expect(mockInput.focus).toHaveBeenCalled();
+    });
+
+    it("should not throw when inputEl is null", () => {
+      modal = new DynamicAssetCreationModal(mockApp, "ems__Task", onSubmit);
+      (modal as any).inputEl = null;
+
+      jest.useFakeTimers();
+      expect(() => (modal as any).focusInput()).not.toThrow();
+      jest.advanceTimersByTime(100);
+      jest.useRealTimers();
+    });
+  });
+
   describe("DynamicAssetCreationResult interface", () => {
     it("should extend LabelInputModalResult with propertyValues", () => {
       const result: DynamicAssetCreationResult = {

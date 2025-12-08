@@ -1,0 +1,339 @@
+import { SPARQLQueryService } from "./SPARQLQueryService";
+import type { PropertyFieldType } from "@exocortex/core";
+
+/**
+ * Extended property definition for ontology-driven forms.
+ * Contains all metadata needed to render a property field dynamically.
+ */
+export interface OntologyPropertyDefinition {
+  /** Property URI (e.g., "exo__Asset_label") */
+  uri: string;
+  /** Human-readable label for the property */
+  label: string;
+  /** Field type for rendering (text, datetime, wikilink, etc.) */
+  fieldType: PropertyFieldType;
+  /** Whether this property is deprecated */
+  deprecated: boolean;
+  /** Whether this property is required */
+  required: boolean;
+  /** Description of the property (from rdfs:comment) */
+  description?: string;
+  /** The range type IRI (e.g., xsd:string) */
+  rangeType?: string;
+}
+
+/**
+ * Service for reading class properties from the RDF ontology.
+ *
+ * Queries the triple store to discover which properties are defined
+ * for a given class, including inherited properties from superclasses.
+ *
+ * @example
+ * ```typescript
+ * const schemaService = new OntologySchemaService(sparqlService);
+ * const properties = await schemaService.getClassProperties("ems__Task");
+ * // Returns properties from Task, Effort (if inherited), and Asset
+ * ```
+ */
+export class OntologySchemaService {
+  constructor(private sparqlService: SPARQLQueryService) {}
+
+  /**
+   * Get all properties for a class, including inherited properties.
+   *
+   * @param className - The class name (e.g., "ems__Task")
+   * @returns Array of property definitions sorted by label
+   */
+  async getClassProperties(
+    className: string,
+  ): Promise<OntologyPropertyDefinition[]> {
+    // Get direct properties for this class
+    const directProperties = await this.getDirectProperties(className);
+
+    // Get superclasses and their properties
+    const superClasses = await this.getSuperClasses(className);
+    const inheritedProperties: OntologyPropertyDefinition[] = [];
+
+    for (const superClass of superClasses) {
+      const superProps = await this.getDirectProperties(superClass);
+      inheritedProperties.push(...superProps);
+    }
+
+    // Combine and deduplicate (prefer direct over inherited)
+    const propertyMap = new Map<string, OntologyPropertyDefinition>();
+
+    // Add inherited first
+    for (const prop of inheritedProperties) {
+      propertyMap.set(prop.uri, prop);
+    }
+
+    // Override with direct (if same property defined both places)
+    for (const prop of directProperties) {
+      propertyMap.set(prop.uri, prop);
+    }
+
+    // Sort by label alphabetically
+    return Array.from(propertyMap.values()).sort((a, b) =>
+      a.label.localeCompare(b.label),
+    );
+  }
+
+  /**
+   * Get properties directly defined for a class (not inherited).
+   */
+  private async getDirectProperties(
+    className: string,
+  ): Promise<OntologyPropertyDefinition[]> {
+    const classIri = this.toClassIri(className);
+
+    // Query for properties where rdfs:domain matches this class
+    const query = `
+      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX owl: <http://www.w3.org/2002/07/owl#>
+      PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+      PREFIX exo: <https://exocortex.my/ontology/exo#>
+      PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+      SELECT ?property ?label ?range ?deprecated ?comment WHERE {
+        ?property rdfs:domain <${classIri}> .
+        OPTIONAL { ?property rdfs:label ?label . }
+        OPTIONAL { ?property rdfs:range ?range . }
+        OPTIONAL { ?property owl:deprecated ?deprecated . }
+        OPTIONAL { ?property rdfs:comment ?comment . }
+      }
+    `;
+
+    try {
+      const results = await this.sparqlService.query(query);
+      const properties: OntologyPropertyDefinition[] = [];
+
+      for (const binding of results) {
+        const propertyUri = binding.get("property");
+        if (!propertyUri) continue;
+
+        const uri = this.toPropertyName(String(propertyUri));
+        const label =
+          binding.get("label")?.toString() || this.extractLabel(uri);
+        const rangeType = binding.get("range")?.toString();
+        const deprecated = binding.get("deprecated")?.toString() === "true";
+        const description = binding.get("comment")?.toString();
+
+        properties.push({
+          uri,
+          label,
+          fieldType: this.rangeToFieldType(rangeType),
+          deprecated,
+          required: false, // Could be determined from cardinality constraints
+          description,
+          rangeType,
+        });
+      }
+
+      return properties;
+    } catch (error) {
+      // If query fails (e.g., no ontology loaded), return empty array
+      console.warn(
+        `Failed to get properties for class ${className}:`,
+        error,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * Get superclasses for a class.
+   */
+  private async getSuperClasses(className: string): Promise<string[]> {
+    const classIri = this.toClassIri(className);
+
+    const query = `
+      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX exo: <https://exocortex.my/ontology/exo#>
+      PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+      SELECT ?superClass WHERE {
+        <${classIri}> rdfs:subClassOf+ ?superClass .
+      }
+    `;
+
+    try {
+      const results = await this.sparqlService.query(query);
+      const superClasses: string[] = [];
+
+      for (const binding of results) {
+        const superClassUri = binding.get("superClass");
+        if (superClassUri) {
+          const className = this.toClassName(String(superClassUri));
+          if (className) {
+            superClasses.push(className);
+          }
+        }
+      }
+
+      return superClasses;
+    } catch (error) {
+      console.warn(`Failed to get superclasses for ${className}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Convert class name to full IRI.
+   */
+  private toClassIri(className: string): string {
+    if (className.startsWith("http://") || className.startsWith("https://")) {
+      return className;
+    }
+
+    // Parse prefix (ems__, exo__, etc.)
+    const match = className.match(/^([a-z]+)__(.+)$/);
+    if (match) {
+      const [, prefix, localName] = match;
+      switch (prefix) {
+        case "ems":
+          return `https://exocortex.my/ontology/ems#${localName}`;
+        case "exo":
+          return `https://exocortex.my/ontology/exo#${localName}`;
+        default:
+          return `https://exocortex.my/ontology/${prefix}#${localName}`;
+      }
+    }
+
+    return className;
+  }
+
+  /**
+   * Convert IRI to class name format.
+   */
+  private toClassName(iri: string): string | null {
+    const match = iri.match(
+      /https:\/\/exocortex\.my\/ontology\/([a-z]+)#(.+)$/,
+    );
+    if (match) {
+      const [, prefix, localName] = match;
+      return `${prefix}__${localName}`;
+    }
+    return null;
+  }
+
+  /**
+   * Convert IRI to property name format.
+   */
+  private toPropertyName(iri: string): string {
+    const match = iri.match(
+      /https:\/\/exocortex\.my\/ontology\/([a-z]+)#(.+)$/,
+    );
+    if (match) {
+      const [, prefix, localName] = match;
+      return `${prefix}__${localName}`;
+    }
+    // Return last segment as fallback
+    const lastHash = iri.lastIndexOf("#");
+    const lastSlash = iri.lastIndexOf("/");
+    const separator = Math.max(lastHash, lastSlash);
+    return separator >= 0 ? iri.substring(separator + 1) : iri;
+  }
+
+  /**
+   * Extract human-readable label from property URI.
+   */
+  private extractLabel(uri: string): string {
+    // Remove prefix (ems__, exo__, etc.)
+    const withoutPrefix = uri.replace(/^[a-z]+__/, "");
+
+    // Split on underscore (e.g., "Asset_label" -> "Label")
+    const parts = withoutPrefix.split("_");
+    const propertyPart = parts.length > 1 ? parts.slice(1).join(" ") : parts[0];
+
+    // Convert camelCase to spaces
+    return propertyPart
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .replace(/^./, (s) => s.toUpperCase());
+  }
+
+  /**
+   * Map RDF range type to property field type.
+   */
+  private rangeToFieldType(rangeType?: string): PropertyFieldType {
+    if (!rangeType) {
+      return "text";
+    }
+
+    // Check for XSD types
+    if (rangeType.includes("XMLSchema#") || rangeType.startsWith("xsd:")) {
+      if (rangeType.includes("dateTime") || rangeType.includes("date")) {
+        return "timestamp";
+      }
+      if (rangeType.includes("integer") || rangeType.includes("decimal") || rangeType.includes("float") || rangeType.includes("double")) {
+        return "number";
+      }
+      if (rangeType.includes("boolean")) {
+        return "boolean";
+      }
+      return "text";
+    }
+
+    // Check for EMS/EXO types
+    if (rangeType.includes("EffortStatus")) {
+      return "status-select";
+    }
+    if (rangeType.includes("TaskSize")) {
+      return "size-select";
+    }
+
+    // Check if it's a reference to another class
+    if (
+      rangeType.includes("exocortex.my/ontology") ||
+      rangeType.includes("Asset") ||
+      rangeType.includes("Task") ||
+      rangeType.includes("Project") ||
+      rangeType.includes("Area")
+    ) {
+      return "wikilink";
+    }
+
+    return "text";
+  }
+
+  /**
+   * Get hardcoded default properties for a class when no ontology data is available.
+   * This ensures the modal can still function without full RDF data.
+   */
+  getDefaultProperties(className: string): OntologyPropertyDefinition[] {
+    const baseProperties: OntologyPropertyDefinition[] = [
+      {
+        uri: "exo__Asset_label",
+        label: "Label",
+        fieldType: "text",
+        deprecated: false,
+        required: false,
+        description: "Display label for the asset",
+      },
+    ];
+
+    // Task-specific properties
+    if (className === "ems__Task" || className.startsWith("ems__Task_")) {
+      return [
+        ...baseProperties,
+        {
+          uri: "ems__Effort_taskSize",
+          label: "Task Size",
+          fieldType: "size-select",
+          deprecated: false,
+          required: false,
+          description: "Estimated size of the task",
+        },
+        {
+          uri: "ems__Effort_status",
+          label: "Status",
+          fieldType: "status-select",
+          deprecated: false,
+          required: false,
+          description: "Current status of the effort",
+        },
+      ];
+    }
+
+    return baseProperties;
+  }
+}
