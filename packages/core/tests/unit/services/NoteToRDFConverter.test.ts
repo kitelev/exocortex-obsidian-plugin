@@ -472,6 +472,93 @@ describe("NoteToRDFConverter", () => {
         expect((classTriple!.object as IRI).value).toBe(Namespace.EMS.term("Task").value);
       });
 
+      // Issue #663: Instance_class should ALWAYS use namespace URIs for proper SPARQL JOINs
+      it("should use namespace URI for Instance_class even when file exists (Issue #663)", async () => {
+        const frontmatter: IFrontmatter = {
+          exo__Instance_class: "[[ems__Task]]",
+        };
+
+        const targetFile: IFile = {
+          path: "03 Knowledge/ems/ems__Task.md",
+          basename: "ems__Task",
+          name: "ems__Task.md",
+          parent: null,
+        };
+
+        mockVault.getFrontmatter.mockReturnValue(frontmatter);
+        mockVault.getFirstLinkpathDest.mockReturnValue(targetFile); // File EXISTS
+
+        const triples = await converter.convertNote(file);
+
+        const classTriple = triples.find((t) =>
+          (t.predicate as IRI).value.includes("Instance_class")
+        );
+
+        // Should use namespace URI, NOT file URI
+        expect(classTriple).toBeDefined();
+        expect(classTriple!.object).toBeInstanceOf(IRI);
+        expect((classTriple!.object as IRI).value).toBe(Namespace.EMS.term("Task").value);
+        // Explicitly verify it's NOT a file URI
+        expect((classTriple!.object as IRI).value).not.toContain("obsidian://vault/");
+      });
+
+      it("should use namespace URI for Instance_class with bare class name (no wikilink)", async () => {
+        const frontmatter: IFrontmatter = {
+          exo__Instance_class: "ems__Task",
+        };
+
+        mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+        const triples = await converter.convertNote(file);
+
+        const classTriple = triples.find((t) =>
+          (t.predicate as IRI).value.includes("Instance_class")
+        );
+
+        expect(classTriple).toBeDefined();
+        expect(classTriple!.object).toBeInstanceOf(IRI);
+        expect((classTriple!.object as IRI).value).toBe(Namespace.EMS.term("Task").value);
+      });
+
+      it("should use namespace URI for Instance_class with quoted wikilink", async () => {
+        const frontmatter: IFrontmatter = {
+          exo__Instance_class: '"[[exo__ObjectProperty]]"',
+        };
+
+        mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+        const triples = await converter.convertNote(file);
+
+        const classTriple = triples.find((t) =>
+          (t.predicate as IRI).value.includes("Instance_class")
+        );
+
+        expect(classTriple).toBeDefined();
+        expect(classTriple!.object).toBeInstanceOf(IRI);
+        expect((classTriple!.object as IRI).value).toBe(Namespace.EXO.term("ObjectProperty").value);
+      });
+
+      it("should handle multiple Instance_class values with namespace URIs", async () => {
+        const frontmatter: IFrontmatter = {
+          exo__Instance_class: ["[[ems__Task]]", "[[ems__Effort]]"],
+        };
+
+        mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+        const triples = await converter.convertNote(file);
+
+        const classTriples = triples.filter((t) =>
+          (t.predicate as IRI).value.includes("Instance_class")
+        );
+
+        expect(classTriples.length).toBe(2);
+        expect(classTriples.every((t) => t.object instanceof IRI)).toBe(true);
+
+        const values = classTriples.map((t) => (t.object as IRI).value);
+        expect(values).toContain(Namespace.EMS.term("Task").value);
+        expect(values).toContain(Namespace.EMS.term("Effort").value);
+      });
+
       it("should still use file URI when wiki-link target file exists", async () => {
         const frontmatter: IFrontmatter = {
           exo__Property_domain: "[[ems__Effort]]",
