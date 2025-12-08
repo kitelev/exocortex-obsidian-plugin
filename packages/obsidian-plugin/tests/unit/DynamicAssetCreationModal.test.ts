@@ -281,17 +281,21 @@ describe("DynamicAssetCreationModal", () => {
   });
 
   describe("with OntologySchemaService", () => {
-    it("should accept optional schemaService parameter", () => {
-      const mockSchemaService = {
+    let mockSchemaService: any;
+
+    beforeEach(() => {
+      mockSchemaService = {
         getClassProperties: jest.fn().mockResolvedValue([]),
         getDefaultProperties: jest.fn().mockReturnValue([]),
       };
+    });
 
+    it("should accept optional schemaService parameter", () => {
       modal = new DynamicAssetCreationModal(
         mockApp,
         "ems__Task",
         onSubmit,
-        mockSchemaService as any,
+        mockSchemaService,
       );
 
       expect(modal).toBeDefined();
@@ -306,6 +310,7 @@ describe("DynamicAssetCreationModal", () => {
       // Should render without errors
       expect(modal.contentEl.children.length).toBeGreaterThan(0);
     });
+
   });
 
   describe("DynamicAssetCreationResult interface", () => {
