@@ -1146,5 +1146,45 @@ describe("NoteToRDFConverter", () => {
         expect((iri.value.match(/\//g) || []).length).toBe(9);
       });
     });
+
+    // Issue #682: Ensure angle brackets in filenames are properly encoded
+    describe("angle bracket encoding (Issue #682)", () => {
+      it("should encode angle brackets in filename to %3C and %3E", () => {
+        const iri = converter.notePathToIRI("Notes/File<test>.md");
+        expect(iri.value).toBe("obsidian://vault/Notes/File%3Ctest%3E.md");
+        // Verify angle brackets are NOT present unencoded
+        expect(iri.value).not.toContain("<");
+        expect(iri.value).not.toContain(">");
+      });
+
+      it("should handle generic type syntax in filenames (common ontology pattern)", () => {
+        const iri = converter.notePathToIRI("01 Inbox/GetAreaChain (exo__Query<ems__Area>).md");
+        expect(iri.value).toBe(
+          "obsidian://vault/01%20Inbox/GetAreaChain%20(exo__Query%3Cems__Area%3E).md"
+        );
+        // Verify spaces, angle brackets are encoded but slashes preserved
+        expect(iri.value).not.toContain(" ");
+        expect(iri.value).not.toContain("<");
+        expect(iri.value).not.toContain(">");
+        expect(iri.value).not.toContain("%2F");
+      });
+
+      it("should handle multiple angle bracket pairs in filename", () => {
+        const iri = converter.notePathToIRI("Types/Map<K, V> extends Collection<T>.md");
+        expect(iri.value).toBe(
+          "obsidian://vault/Types/Map%3CK,%20V%3E%20extends%20Collection%3CT%3E.md"
+        );
+      });
+
+      it("should handle angle brackets in folder path", () => {
+        const iri = converter.notePathToIRI("Generic<Types>/SpecificType.md");
+        expect(iri.value).toBe("obsidian://vault/Generic%3CTypes%3E/SpecificType.md");
+      });
+
+      it("should encode nested generic types", () => {
+        const iri = converter.notePathToIRI("Query<List<Item>>.md");
+        expect(iri.value).toBe("obsidian://vault/Query%3CList%3CItem%3E%3E.md");
+      });
+    });
   });
 });

@@ -120,4 +120,43 @@ describe("IRI", () => {
       expect(iri.value).toBe("https://example.com/リソース");
     });
   });
+
+  // Issue #682: Ensure angle brackets are handled correctly in IRIs
+  describe("angle bracket handling (Issue #682)", () => {
+    it("should accept percent-encoded angle brackets in obsidian:// URI", () => {
+      const iri = new IRI("obsidian://vault/File%3Ctest%3E.md");
+      expect(iri.value).toBe("obsidian://vault/File%3Ctest%3E.md");
+    });
+
+    it("should accept unencoded angle brackets in obsidian:// URI", () => {
+      // Node.js URL API is lenient and accepts these
+      const iri = new IRI("obsidian://vault/File<test>.md");
+      expect(iri.value).toBe("obsidian://vault/File<test>.md");
+    });
+
+    it("should accept percent-encoded angle brackets in https:// URI", () => {
+      const iri = new IRI("https://example.com/File%3Ctest%3E.md");
+      expect(iri.value).toBe("https://example.com/File%3Ctest%3E.md");
+    });
+
+    it("should accept unencoded angle brackets in https:// URI", () => {
+      // Node.js URL API is lenient and accepts these
+      const iri = new IRI("https://example.com/File<test>.md");
+      expect(iri.value).toBe("https://example.com/File<test>.md");
+    });
+
+    it("should accept generic type syntax in namespace URIs", () => {
+      const iri = new IRI("https://exocortex.my/ontology/exo#Query<?>");
+      expect(iri.value).toBe("https://exocortex.my/ontology/exo#Query<?>");
+    });
+
+    it("should accept complex generic type in file path", () => {
+      const iri = new IRI(
+        "obsidian://vault/01%20Inbox/GetAreaChain%20(exo__Query%3Cems__Area%3E).md"
+      );
+      expect(iri.value).toBe(
+        "obsidian://vault/01%20Inbox/GetAreaChain%20(exo__Query%3Cems__Area%3E).md"
+      );
+    });
+  });
 });
