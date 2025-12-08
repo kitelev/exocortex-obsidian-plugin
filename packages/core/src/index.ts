@@ -9,6 +9,19 @@ export * from "./domain/models/rdf";
 export * from "./domain/commands/CommandVisibility";
 export type { IPropertyValidationService, ValidationResult } from "./domain/services/IPropertyValidationService";
 
+// Property definition types
+export {
+  PropertyFieldType,
+  rangeToFieldType,
+} from "./domain/types/PropertyFieldType";
+export {
+  type PropertyDefinition,
+  type PropertyOption,
+  propertyNameToUri,
+  uriToPropertyName,
+  extractPropertyLabel,
+} from "./domain/types/PropertyDefinition";
+
 // Services exports
 export { TaskCreationService } from "./services/TaskCreationService";
 export { ProjectCreationService } from "./services/ProjectCreationService";
@@ -33,8 +46,8 @@ export { FleetingNoteCreationService } from "./services/FleetingNoteCreationServ
 export { TaskFrontmatterGenerator } from "./services/TaskFrontmatterGenerator";
 export {
   DynamicFrontmatterGenerator,
-  type PropertyFieldType,
-  type PropertyDefinition,
+  type LegacyPropertyFieldType,
+  type FrontmatterPropertyDefinition,
 } from "./services/DynamicFrontmatterGenerator";
 export { AlgorithmExtractor } from "./services/AlgorithmExtractor";
 export { PlanningService } from "./services/PlanningService";

@@ -3,10 +3,10 @@ import { v4 as uuidv4 } from "uuid";
 import { DateFormatter } from "../utilities/DateFormatter";
 
 /**
- * Property field type enumeration.
- * Represents the different types of properties that can be set on an asset.
+ * Legacy property field type for backwards compatibility.
+ * @deprecated Use PropertyFieldType enum from domain/types instead.
  */
-export type PropertyFieldType =
+export type LegacyPropertyFieldType =
   | "text"
   | "status-select"
   | "size-select"
@@ -16,12 +16,15 @@ export type PropertyFieldType =
   | "timestamp";
 
 /**
- * Property definition for dynamic frontmatter generation.
- * Describes a property's metadata including its type for proper formatting.
+ * Simple property definition for frontmatter generation.
+ * For more comprehensive property definitions, use PropertyDefinition from domain/types.
  */
-export interface PropertyDefinition {
+export interface FrontmatterPropertyDefinition {
+  /** Property name (e.g., "exo__Asset_label") */
   name: string;
-  type: PropertyFieldType;
+  /** Field type for formatting */
+  type: LegacyPropertyFieldType;
+  /** Whether this property is required */
   required?: boolean;
 }
 
@@ -72,7 +75,7 @@ export class DynamicFrontmatterGenerator {
   generate(
     className: string,
     values: Record<string, any>,
-    properties: PropertyDefinition[],
+    properties: FrontmatterPropertyDefinition[],
     options?: {
       /** Custom UID to use instead of generating a new one */
       uid?: string;
@@ -97,7 +100,7 @@ export class DynamicFrontmatterGenerator {
     frontmatter["exo__Instance_class"] = [this.formatWikilink(className)];
 
     // Create a map of property names to their types for quick lookup
-    const propertyTypeMap = new Map<string, PropertyFieldType>();
+    const propertyTypeMap = new Map<string, LegacyPropertyFieldType>();
     for (const prop of properties) {
       propertyTypeMap.set(prop.name, prop.type);
     }
@@ -141,7 +144,7 @@ export class DynamicFrontmatterGenerator {
    * @param type - The property type (optional, defaults to text)
    * @returns Formatted value for YAML frontmatter
    */
-  formatValue(value: any, type?: PropertyFieldType): any {
+  formatValue(value: any, type?: LegacyPropertyFieldType): any {
     // Handle empty/null values
     if (value === null || value === undefined) {
       return null;
@@ -329,7 +332,7 @@ export class DynamicFrontmatterGenerator {
   generateYAML(
     className: string,
     values: Record<string, any>,
-    properties: PropertyDefinition[],
+    properties: FrontmatterPropertyDefinition[],
     options?: {
       uid?: string;
       createdAt?: string;
