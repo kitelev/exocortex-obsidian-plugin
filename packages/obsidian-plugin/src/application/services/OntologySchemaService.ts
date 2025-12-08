@@ -1,5 +1,5 @@
 import { SPARQLQueryService } from "./SPARQLQueryService";
-import type { PropertyFieldType } from "@exocortex/core";
+import { PropertyFieldType } from "@exocortex/core";
 
 /**
  * Extended property definition for ontology-driven forms.
@@ -256,29 +256,29 @@ export class OntologySchemaService {
    */
   private rangeToFieldType(rangeType?: string): PropertyFieldType {
     if (!rangeType) {
-      return "text";
+      return PropertyFieldType.Text;
     }
 
     // Check for XSD types
     if (rangeType.includes("XMLSchema#") || rangeType.startsWith("xsd:")) {
       if (rangeType.includes("dateTime") || rangeType.includes("date")) {
-        return "timestamp";
+        return PropertyFieldType.Timestamp;
       }
       if (rangeType.includes("integer") || rangeType.includes("decimal") || rangeType.includes("float") || rangeType.includes("double")) {
-        return "number";
+        return PropertyFieldType.Number;
       }
       if (rangeType.includes("boolean")) {
-        return "boolean";
+        return PropertyFieldType.Boolean;
       }
-      return "text";
+      return PropertyFieldType.Text;
     }
 
     // Check for EMS/EXO types
     if (rangeType.includes("EffortStatus")) {
-      return "status-select";
+      return PropertyFieldType.StatusSelect;
     }
     if (rangeType.includes("TaskSize")) {
-      return "size-select";
+      return PropertyFieldType.SizeSelect;
     }
 
     // Check if it's a reference to another class
@@ -289,10 +289,10 @@ export class OntologySchemaService {
       rangeType.includes("Project") ||
       rangeType.includes("Area")
     ) {
-      return "wikilink";
+      return PropertyFieldType.Wikilink;
     }
 
-    return "text";
+    return PropertyFieldType.Text;
   }
 
   /**
@@ -304,7 +304,7 @@ export class OntologySchemaService {
       {
         uri: "exo__Asset_label",
         label: "Label",
-        fieldType: "text",
+        fieldType: PropertyFieldType.Text,
         deprecated: false,
         required: false,
         description: "Display label for the asset",
@@ -318,7 +318,7 @@ export class OntologySchemaService {
         {
           uri: "ems__Effort_taskSize",
           label: "Task Size",
-          fieldType: "size-select",
+          fieldType: PropertyFieldType.SizeSelect,
           deprecated: false,
           required: false,
           description: "Estimated size of the task",
@@ -326,7 +326,7 @@ export class OntologySchemaService {
         {
           uri: "ems__Effort_status",
           label: "Status",
-          fieldType: "status-select",
+          fieldType: PropertyFieldType.StatusSelect,
           deprecated: false,
           required: false,
           description: "Current status of the effort",
