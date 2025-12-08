@@ -2,16 +2,12 @@ import type { PropertyDefinition } from "@exocortex/core";
 import type { App } from "obsidian";
 
 /**
- * Base props for all property field renderers.
+ * Base props for all property field renderers (without value and onChange).
  * Provides common functionality for rendering property fields in forms.
  */
 export interface PropertyFieldBaseProps {
   /** Property definition from ontology */
   property: PropertyDefinition;
-  /** Current field value */
-  value: unknown;
-  /** Callback when value changes */
-  onChange: (value: unknown) => void;
   /** Optional validation error message */
   error?: string;
   /** Whether the field is disabled */
