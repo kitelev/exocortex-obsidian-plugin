@@ -1,8 +1,5 @@
 import { SPARQLQueryService } from "../../../src/application/services/SPARQLQueryService";
-import {
-  OntologySchemaService,
-  type OntologyPropertyDefinition,
-} from "../../../src/application/services/OntologySchemaService";
+import { OntologySchemaService } from "../../../src/application/services/OntologySchemaService";
 
 // Mock SPARQLQueryService
 jest.mock("../../../src/application/services/SPARQLQueryService");
@@ -292,6 +289,288 @@ describe("OntologySchemaService", () => {
       const properties = await schemaService.getClassProperties("exo__Asset");
 
       expect(properties[0].label).toBe("Is Archived");
+    });
+  });
+
+  describe("superclass inheritance", () => {
+    it("should include inherited properties from superclasses", async () => {
+      // First call returns direct properties
+      // Second call returns superclasses
+      // Third call returns superclass properties
+      mockSparqlService.query
+        .mockResolvedValueOnce([
+          new Map<string, unknown>([
+            ["property", "https://exocortex.my/ontology/ems#Task_directProp"],
+            ["label", "Direct Property"],
+          ]),
+        ])
+        .mockResolvedValueOnce([
+          new Map<string, unknown>([
+            ["superClass", "https://exocortex.my/ontology/exo#Asset"],
+          ]),
+        ])
+        .mockResolvedValueOnce([
+          new Map<string, unknown>([
+            ["property", "https://exocortex.my/ontology/exo#Asset_label"],
+            ["label", "Label"],
+          ]),
+        ]);
+
+      const properties = await schemaService.getClassProperties("ems__Task");
+
+      expect(properties).toHaveLength(2);
+      expect(properties.map((p) => p.uri)).toContain("ems__Task_directProp");
+      expect(properties.map((p) => p.uri)).toContain("exo__Asset_label");
+    });
+
+    it("should prefer direct properties over inherited with same name", async () => {
+      mockSparqlService.query
+        .mockResolvedValueOnce([
+          new Map<string, unknown>([
+            ["property", "https://exocortex.my/ontology/exo#Asset_label"],
+            ["label", "Task Label"],
+          ]),
+        ])
+        .mockResolvedValueOnce([
+          new Map<string, unknown>([
+            ["superClass", "https://exocortex.my/ontology/exo#Asset"],
+          ]),
+        ])
+        .mockResolvedValueOnce([
+          new Map<string, unknown>([
+            ["property", "https://exocortex.my/ontology/exo#Asset_label"],
+            ["label", "Asset Label"],
+          ]),
+        ]);
+
+      const properties = await schemaService.getClassProperties("ems__Task");
+
+      expect(properties).toHaveLength(1);
+      expect(properties[0].label).toBe("Task Label");
+    });
+  });
+
+  describe("edge cases", () => {
+    it("should handle full IRI class name", async () => {
+      mockSparqlService.query.mockResolvedValue([]);
+
+      await schemaService.getClassProperties(
+        "https://exocortex.my/ontology/ems#Task",
+      );
+
+      expect(mockSparqlService.query).toHaveBeenCalledWith(
+        expect.stringContaining("<https://exocortex.my/ontology/ems#Task>"),
+      );
+    });
+
+    it("should handle custom namespace prefix", async () => {
+      mockSparqlService.query.mockResolvedValue([]);
+
+      await schemaService.getClassProperties("custom__MyClass");
+
+      expect(mockSparqlService.query).toHaveBeenCalledWith(
+        expect.stringContaining("<https://exocortex.my/ontology/custom#MyClass>"),
+      );
+    });
+
+    it("should return class name as-is if no prefix pattern matches", async () => {
+      mockSparqlService.query.mockResolvedValue([]);
+
+      await schemaService.getClassProperties("SimpleClassName");
+
+      expect(mockSparqlService.query).toHaveBeenCalledWith(
+        expect.stringContaining("SimpleClassName"),
+      );
+    });
+
+    it("should handle property IRI with slash separator", async () => {
+      const mockBinding = new Map<string, unknown>([
+        ["property", "http://example.org/props/myProperty"],
+      ]);
+
+      mockSparqlService.query.mockResolvedValue([mockBinding]);
+
+      const properties = await schemaService.getClassProperties("exo__Asset");
+
+      expect(properties[0].uri).toBe("myProperty");
+    });
+
+    it("should handle property IRI with no separator", async () => {
+      const mockBinding = new Map<string, unknown>([
+        ["property", "simpleProperty"],
+      ]);
+
+      mockSparqlService.query.mockResolvedValue([mockBinding]);
+
+      const properties = await schemaService.getClassProperties("exo__Asset");
+
+      expect(properties[0].uri).toBe("simpleProperty");
+    });
+
+    it("should skip bindings without property URI", async () => {
+      mockSparqlService.query.mockResolvedValue([
+        new Map<string, unknown>([["label", "Orphan Label"]]),
+        new Map<string, unknown>([
+          ["property", "https://exocortex.my/ontology/exo#Asset_valid"],
+        ]),
+      ]);
+
+      const properties = await schemaService.getClassProperties("exo__Asset");
+
+      expect(properties).toHaveLength(1);
+      expect(properties[0].uri).toBe("exo__Asset_valid");
+    });
+
+    it("should filter out null superclasses", async () => {
+      mockSparqlService.query
+        .mockResolvedValueOnce([]) // direct properties
+        .mockResolvedValueOnce([
+          new Map<string, unknown>([["superClass", "http://other.org/Class"]]),
+          new Map<string, unknown>([
+            ["superClass", "https://exocortex.my/ontology/exo#Asset"],
+          ]),
+        ])
+        .mockResolvedValueOnce([
+          new Map<string, unknown>([
+            ["property", "https://exocortex.my/ontology/exo#Asset_label"],
+          ]),
+        ]);
+
+      const properties = await schemaService.getClassProperties("ems__Task");
+
+      // Only exo__Asset properties should be included (not http://other.org/Class)
+      expect(properties).toHaveLength(1);
+    });
+  });
+
+  describe("rangeToFieldType additional mappings", () => {
+    it("should map xsd:decimal to number", async () => {
+      const mockBinding = new Map<string, unknown>([
+        ["property", "https://exocortex.my/ontology/exo#Asset_amount"],
+        ["range", "http://www.w3.org/2001/XMLSchema#decimal"],
+      ]);
+
+      mockSparqlService.query.mockResolvedValue([mockBinding]);
+
+      const properties = await schemaService.getClassProperties("exo__Asset");
+
+      expect(properties[0].fieldType).toBe("number");
+    });
+
+    it("should map xsd:float to number", async () => {
+      const mockBinding = new Map<string, unknown>([
+        ["property", "https://exocortex.my/ontology/exo#Asset_rate"],
+        ["range", "http://www.w3.org/2001/XMLSchema#float"],
+      ]);
+
+      mockSparqlService.query.mockResolvedValue([mockBinding]);
+
+      const properties = await schemaService.getClassProperties("exo__Asset");
+
+      expect(properties[0].fieldType).toBe("number");
+    });
+
+    it("should map xsd:double to number", async () => {
+      const mockBinding = new Map<string, unknown>([
+        ["property", "https://exocortex.my/ontology/exo#Asset_precision"],
+        ["range", "http://www.w3.org/2001/XMLSchema#double"],
+      ]);
+
+      mockSparqlService.query.mockResolvedValue([mockBinding]);
+
+      const properties = await schemaService.getClassProperties("exo__Asset");
+
+      expect(properties[0].fieldType).toBe("number");
+    });
+
+    it("should map xsd:date to timestamp", async () => {
+      const mockBinding = new Map<string, unknown>([
+        ["property", "https://exocortex.my/ontology/exo#Asset_dueDate"],
+        ["range", "http://www.w3.org/2001/XMLSchema#date"],
+      ]);
+
+      mockSparqlService.query.mockResolvedValue([mockBinding]);
+
+      const properties = await schemaService.getClassProperties("exo__Asset");
+
+      expect(properties[0].fieldType).toBe("timestamp");
+    });
+
+    it("should map xsd: prefixed types", async () => {
+      const mockBinding = new Map<string, unknown>([
+        ["property", "https://exocortex.my/ontology/exo#Asset_count"],
+        ["range", "xsd:integer"],
+      ]);
+
+      mockSparqlService.query.mockResolvedValue([mockBinding]);
+
+      const properties = await schemaService.getClassProperties("exo__Asset");
+
+      expect(properties[0].fieldType).toBe("number");
+    });
+
+    it("should map Task reference to wikilink", async () => {
+      const mockBinding = new Map<string, unknown>([
+        ["property", "https://exocortex.my/ontology/ems#Effort_task"],
+        ["range", "https://exocortex.my/ontology/ems#Task"],
+      ]);
+
+      mockSparqlService.query.mockResolvedValue([mockBinding]);
+
+      const properties = await schemaService.getClassProperties("ems__Effort");
+
+      expect(properties[0].fieldType).toBe("wikilink");
+    });
+
+    it("should map Project reference to wikilink", async () => {
+      const mockBinding = new Map<string, unknown>([
+        ["property", "https://exocortex.my/ontology/ems#Area_project"],
+        ["range", "https://exocortex.my/ontology/ems#Project"],
+      ]);
+
+      mockSparqlService.query.mockResolvedValue([mockBinding]);
+
+      const properties = await schemaService.getClassProperties("ems__Area");
+
+      expect(properties[0].fieldType).toBe("wikilink");
+    });
+
+    it("should map Area reference to wikilink", async () => {
+      const mockBinding = new Map<string, unknown>([
+        ["property", "https://exocortex.my/ontology/ems#Project_area"],
+        ["range", "https://exocortex.my/ontology/ems#Area"],
+      ]);
+
+      mockSparqlService.query.mockResolvedValue([mockBinding]);
+
+      const properties = await schemaService.getClassProperties("ems__Project");
+
+      expect(properties[0].fieldType).toBe("wikilink");
+    });
+
+    it("should default to text for unknown range types", async () => {
+      const mockBinding = new Map<string, unknown>([
+        ["property", "https://exocortex.my/ontology/exo#Asset_custom"],
+        ["range", "http://unknown.org/CustomType"],
+      ]);
+
+      mockSparqlService.query.mockResolvedValue([mockBinding]);
+
+      const properties = await schemaService.getClassProperties("exo__Asset");
+
+      expect(properties[0].fieldType).toBe("text");
+    });
+  });
+
+  describe("getSuperClasses error handling", () => {
+    it("should return empty array when superclass query fails", async () => {
+      mockSparqlService.query
+        .mockResolvedValueOnce([]) // direct properties
+        .mockRejectedValueOnce(new Error("Superclass query failed")); // superclasses
+
+      const properties = await schemaService.getClassProperties("ems__Task");
+
+      expect(properties).toEqual([]);
     });
   });
 });
