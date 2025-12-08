@@ -4,6 +4,11 @@ import type {
   OntologySchemaService,
   OntologyPropertyDefinition,
 } from "../../application/services/OntologySchemaService";
+import { PropertyFieldType } from "@exocortex/core";
+import {
+  PropertyFieldFactory,
+  type PropertyFieldInstance,
+} from "../components/property-fields";
 
 /**
  * Result from DynamicAssetCreationModal
@@ -52,6 +57,8 @@ export class DynamicAssetCreationModal extends Modal {
   private propertyValues: Record<string, unknown> = {};
   private inputEl: HTMLInputElement | null = null;
   private properties: OntologyPropertyDefinition[] = [];
+  private fieldFactory: PropertyFieldFactory;
+  private createdFields: PropertyFieldInstance[] = [];
 
   constructor(
     app: App,
@@ -60,6 +67,7 @@ export class DynamicAssetCreationModal extends Modal {
     private schemaService?: OntologySchemaService,
   ) {
     super(app);
+    this.fieldFactory = new PropertyFieldFactory(app);
   }
 
   override onOpen(): void {
@@ -139,11 +147,77 @@ export class DynamicAssetCreationModal extends Modal {
 
   /**
    * Render a single property field based on its type.
+   * Uses PropertyFieldFactory for advanced field types like Reference with autocomplete.
    */
   private renderPropertyField(
     contentEl: HTMLElement,
     prop: OntologyPropertyDefinition,
   ): void {
+    // Use factory for reference fields to get autocomplete support
+    if (prop.fieldType === PropertyFieldType.Reference) {
+      const field = this.fieldFactory.create({
+        containerEl: contentEl,
+        property: {
+          uri: prop.uri,
+          name: prop.uri,
+          label: prop.label,
+          fieldType: PropertyFieldType.Reference,
+          description: prop.description,
+          required: prop.required,
+        },
+        value: this.propertyValues[prop.uri] || "",
+        onChange: (value) => {
+          this.propertyValues[prop.uri] = value;
+        },
+        app: this.app,
+      });
+      this.createdFields.push(field);
+      return;
+    }
+
+    // Use factory for date fields
+    if (prop.fieldType === PropertyFieldType.Date) {
+      const field = this.fieldFactory.create({
+        containerEl: contentEl,
+        property: {
+          uri: prop.uri,
+          name: prop.uri,
+          label: prop.label,
+          fieldType: PropertyFieldType.Date,
+          description: prop.description,
+          required: prop.required,
+        },
+        value: this.propertyValues[prop.uri] || "",
+        onChange: (value) => {
+          this.propertyValues[prop.uri] = value;
+        },
+      });
+      this.createdFields.push(field);
+      return;
+    }
+
+    // Use factory for datetime fields
+    if (prop.fieldType === PropertyFieldType.DateTime) {
+      const field = this.fieldFactory.create({
+        containerEl: contentEl,
+        property: {
+          uri: prop.uri,
+          name: prop.uri,
+          label: prop.label,
+          fieldType: PropertyFieldType.DateTime,
+          description: prop.description,
+          required: prop.required,
+        },
+        value: this.propertyValues[prop.uri] || "",
+        onChange: (value) => {
+          this.propertyValues[prop.uri] = value;
+        },
+      });
+      this.createdFields.push(field);
+      return;
+    }
+
+    // For other field types, use the existing inline rendering
     const setting = new Setting(contentEl)
       .setName(prop.label)
       .setDesc(prop.description || prop.uri);
@@ -518,6 +592,9 @@ export class DynamicAssetCreationModal extends Modal {
 
   override onClose(): void {
     const { contentEl } = this;
+    // Cleanup created field instances
+    this.fieldFactory.destroyAll(this.createdFields);
+    this.createdFields = [];
     contentEl.empty();
   }
 }
