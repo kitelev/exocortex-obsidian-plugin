@@ -106,9 +106,12 @@ export class NoteToRDFConverter {
         const triples = await this.convertNote(file);
         allTriples.push(...triples);
       } catch (error) {
-        console.error(`❌ Error converting note: ${file.path}`);
-        console.error(`   Error: ${error instanceof Error ? error.message : String(error)}`);
-        throw error;
+        // Issue #684: Skip files with invalid IRIs instead of crashing
+        // This allows SPARQL queries to continue processing valid files
+        // even when vault contains files with problematic characters (e.g., angle brackets <>)
+        console.warn(`⚠️ Skipping file with invalid IRI: ${file.path}`);
+        console.warn(`   Reason: ${error instanceof Error ? error.message : String(error)}`);
+        continue;
       }
     }
 
