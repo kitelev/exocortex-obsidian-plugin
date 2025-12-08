@@ -31,6 +31,7 @@ declare global {
     addClass?: (cls: string) => void;
     removeClass?: (cls: string) => void;
     hasClass?: (cls: string) => boolean;
+    setText?: (text: string) => void;
   }
 }
 
@@ -94,6 +95,11 @@ if (typeof document !== "undefined") {
   if (!proto.hasClass) {
     proto.hasClass = function (cls: string) {
       return this.classList.contains(cls);
+    };
+  }
+  if (!proto.setText) {
+    proto.setText = function (text: string) {
+      this.textContent = text;
     };
   }
 }
