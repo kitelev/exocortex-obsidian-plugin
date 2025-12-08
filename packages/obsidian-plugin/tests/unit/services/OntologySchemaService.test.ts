@@ -562,7 +562,68 @@ describe("OntologySchemaService", () => {
     });
   });
 
-  describe("getSuperClasses error handling", () => {
+  describe("getClassHierarchy", () => {
+    it("should return superclasses for a class", async () => {
+      mockSparqlService.query.mockResolvedValue([
+        new Map<string, unknown>([
+          ["superClass", "https://exocortex.my/ontology/ems#Effort"],
+        ]),
+        new Map<string, unknown>([
+          ["superClass", "https://exocortex.my/ontology/exo#Asset"],
+        ]),
+      ]);
+
+      const hierarchy = await schemaService.getClassHierarchy("ems__Task");
+
+      expect(hierarchy).toEqual(["ems__Effort", "exo__Asset"]);
+    });
+
+    it("should return empty array for class with no superclasses", async () => {
+      mockSparqlService.query.mockResolvedValue([]);
+
+      const hierarchy = await schemaService.getClassHierarchy("exo__Asset");
+
+      expect(hierarchy).toEqual([]);
+    });
+
+    it("should filter out non-matching namespace URIs", async () => {
+      mockSparqlService.query.mockResolvedValue([
+        new Map<string, unknown>([
+          ["superClass", "http://www.w3.org/2002/07/owl#Thing"],
+        ]),
+        new Map<string, unknown>([
+          ["superClass", "https://exocortex.my/ontology/exo#Asset"],
+        ]),
+      ]);
+
+      const hierarchy = await schemaService.getClassHierarchy("ems__Task");
+
+      // Only exocortex.my namespaces should be included
+      expect(hierarchy).toEqual(["exo__Asset"]);
+    });
+
+    it("should return empty array on query error", async () => {
+      mockSparqlService.query.mockRejectedValue(new Error("Query failed"));
+
+      const hierarchy = await schemaService.getClassHierarchy("ems__Task");
+
+      expect(hierarchy).toEqual([]);
+    });
+
+    it("should handle full IRI as class name", async () => {
+      mockSparqlService.query.mockResolvedValue([]);
+
+      await schemaService.getClassHierarchy(
+        "https://exocortex.my/ontology/ems#Task",
+      );
+
+      expect(mockSparqlService.query).toHaveBeenCalledWith(
+        expect.stringContaining("<https://exocortex.my/ontology/ems#Task>"),
+      );
+    });
+  });
+
+  describe("getClassHierarchy error handling (via getClassProperties)", () => {
     it("should return empty array when superclass query fails", async () => {
       mockSparqlService.query
         .mockResolvedValueOnce([]) // direct properties
@@ -571,6 +632,98 @@ describe("OntologySchemaService", () => {
       const properties = await schemaService.getClassProperties("ems__Task");
 
       expect(properties).toEqual([]);
+    });
+  });
+
+  describe("isDeprecatedProperty", () => {
+    it("should return true for deprecated property", async () => {
+      // SELECT query returns binding with deprecated = true
+      mockSparqlService.query.mockResolvedValue([
+        new Map<string, unknown>([["deprecated", { toString: () => "true" }]]),
+      ]);
+
+      const isDeprecated =
+        await schemaService.isDeprecatedProperty("exo__Asset_oldField");
+
+      expect(isDeprecated).toBe(true);
+    });
+
+    it("should return false for non-deprecated property", async () => {
+      // No results means no owl:deprecated triple exists
+      mockSparqlService.query.mockResolvedValue([]);
+
+      const isDeprecated =
+        await schemaService.isDeprecatedProperty("exo__Asset_prototype");
+
+      expect(isDeprecated).toBe(false);
+    });
+
+    it("should return false when deprecated value is false", async () => {
+      mockSparqlService.query.mockResolvedValue([
+        new Map<string, unknown>([["deprecated", { toString: () => "false" }]]),
+      ]);
+
+      const isDeprecated =
+        await schemaService.isDeprecatedProperty("exo__Asset_active");
+
+      expect(isDeprecated).toBe(false);
+    });
+
+    it("should return false on query error", async () => {
+      mockSparqlService.query.mockRejectedValue(new Error("Query failed"));
+
+      const isDeprecated =
+        await schemaService.isDeprecatedProperty("exo__Asset_test");
+
+      expect(isDeprecated).toBe(false);
+    });
+
+    it("should convert prefixed property name to full IRI", async () => {
+      mockSparqlService.query.mockResolvedValue([]);
+
+      await schemaService.isDeprecatedProperty("ems__Effort_status");
+
+      expect(mockSparqlService.query).toHaveBeenCalledWith(
+        expect.stringContaining(
+          "<https://exocortex.my/ontology/ems#Effort_status>",
+        ),
+      );
+    });
+
+    it("should handle full IRI as property name", async () => {
+      mockSparqlService.query.mockResolvedValue([]);
+
+      await schemaService.isDeprecatedProperty(
+        "https://exocortex.my/ontology/exo#Asset_label",
+      );
+
+      expect(mockSparqlService.query).toHaveBeenCalledWith(
+        expect.stringContaining(
+          "<https://exocortex.my/ontology/exo#Asset_label>",
+        ),
+      );
+    });
+
+    it("should handle custom namespace prefix", async () => {
+      mockSparqlService.query.mockResolvedValue([]);
+
+      await schemaService.isDeprecatedProperty("custom__MyProperty");
+
+      expect(mockSparqlService.query).toHaveBeenCalledWith(
+        expect.stringContaining(
+          "<https://exocortex.my/ontology/custom#MyProperty>",
+        ),
+      );
+    });
+
+    it("should use SELECT query with LIMIT 1", async () => {
+      mockSparqlService.query.mockResolvedValue([]);
+
+      await schemaService.isDeprecatedProperty("exo__Asset_test");
+
+      expect(mockSparqlService.query).toHaveBeenCalledWith(
+        expect.stringMatching(/SELECT.*deprecated.*LIMIT 1/s),
+      );
     });
   });
 });

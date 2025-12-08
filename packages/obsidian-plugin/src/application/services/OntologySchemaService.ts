@@ -51,7 +51,7 @@ export class OntologySchemaService {
     const directProperties = await this.getDirectProperties(className);
 
     // Get superclasses and their properties
-    const superClasses = await this.getSuperClasses(className);
+    const superClasses = await this.getClassHierarchy(className);
     const inheritedProperties: OntologyPropertyDefinition[] = [];
 
     for (const superClass of superClasses) {
@@ -76,6 +76,129 @@ export class OntologySchemaService {
     return Array.from(propertyMap.values()).sort((a, b) =>
       a.label.localeCompare(b.label),
     );
+  }
+
+  /**
+   * Get the class hierarchy (superclass chain) for a given class.
+   *
+   * Returns all superclasses that the class inherits from, ordered by
+   * proximity (immediate superclass first, then its superclass, etc.).
+   *
+   * @param className - The class name (e.g., "ems__Task")
+   * @returns Array of superclass names (e.g., ["ems__Effort", "exo__Asset"])
+   *
+   * @example
+   * ```typescript
+   * const hierarchy = await schemaService.getClassHierarchy("ems__Task");
+   * // Returns: ["ems__Effort", "exo__Asset"]
+   * ```
+   */
+  async getClassHierarchy(className: string): Promise<string[]> {
+    const classIri = this.toClassIri(className);
+
+    const query = `
+      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX exo: <https://exocortex.my/ontology/exo#>
+      PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+      SELECT ?superClass WHERE {
+        <${classIri}> rdfs:subClassOf+ ?superClass .
+      }
+    `;
+
+    try {
+      const results = await this.sparqlService.query(query);
+      const superClasses: string[] = [];
+
+      for (const binding of results) {
+        const superClassUri = binding.get("superClass");
+        if (superClassUri) {
+          const superClassName = this.toClassName(String(superClassUri));
+          if (superClassName) {
+            superClasses.push(superClassName);
+          }
+        }
+      }
+
+      return superClasses;
+    } catch (error) {
+      console.warn(`Failed to get class hierarchy for ${className}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Check if a property is deprecated in the ontology.
+   *
+   * @param propertyUri - The property URI (e.g., "exo__Asset_prototype")
+   * @returns true if the property is marked as deprecated, false otherwise
+   *
+   * @example
+   * ```typescript
+   * const isDeprecated = await schemaService.isDeprecatedProperty("exo__Asset_prototype");
+   * // Returns: false
+   * ```
+   */
+  async isDeprecatedProperty(propertyUri: string): Promise<boolean> {
+    const fullUri = this.toPropertyIri(propertyUri);
+
+    // Use SELECT query instead of ASK for compatibility
+    const query = `
+      PREFIX owl: <http://www.w3.org/2002/07/owl#>
+      PREFIX exo: <https://exocortex.my/ontology/exo#>
+      PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+      SELECT ?deprecated WHERE {
+        <${fullUri}> owl:deprecated ?deprecated .
+      }
+      LIMIT 1
+    `;
+
+    try {
+      const results = await this.sparqlService.query(query);
+      // Check if any results returned with deprecated = true
+      if (results.length > 0) {
+        const binding = results[0];
+        const deprecatedValue = binding.get("deprecated");
+        // The value should be a Literal with value "true"
+        return deprecatedValue?.toString() === "true";
+      }
+      return false;
+    } catch (error) {
+      console.warn(
+        `Failed to check deprecated status for ${propertyUri}:`,
+        error,
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Convert property name to full IRI.
+   */
+  private toPropertyIri(propertyName: string): string {
+    if (
+      propertyName.startsWith("http://") ||
+      propertyName.startsWith("https://")
+    ) {
+      return propertyName;
+    }
+
+    // Parse prefix (ems__, exo__, etc.)
+    const match = propertyName.match(/^([a-z]+)__(.+)$/);
+    if (match) {
+      const [, prefix, localName] = match;
+      switch (prefix) {
+        case "ems":
+          return `https://exocortex.my/ontology/ems#${localName}`;
+        case "exo":
+          return `https://exocortex.my/ontology/exo#${localName}`;
+        default:
+          return `https://exocortex.my/ontology/${prefix}#${localName}`;
+      }
+    }
+
+    return propertyName;
   }
 
   /**
@@ -136,43 +259,6 @@ export class OntologySchemaService {
         `Failed to get properties for class ${className}:`,
         error,
       );
-      return [];
-    }
-  }
-
-  /**
-   * Get superclasses for a class.
-   */
-  private async getSuperClasses(className: string): Promise<string[]> {
-    const classIri = this.toClassIri(className);
-
-    const query = `
-      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-      PREFIX exo: <https://exocortex.my/ontology/exo#>
-      PREFIX ems: <https://exocortex.my/ontology/ems#>
-
-      SELECT ?superClass WHERE {
-        <${classIri}> rdfs:subClassOf+ ?superClass .
-      }
-    `;
-
-    try {
-      const results = await this.sparqlService.query(query);
-      const superClasses: string[] = [];
-
-      for (const binding of results) {
-        const superClassUri = binding.get("superClass");
-        if (superClassUri) {
-          const className = this.toClassName(String(superClassUri));
-          if (className) {
-            superClasses.push(className);
-          }
-        }
-      }
-
-      return superClasses;
-    } catch (error) {
-      console.warn(`Failed to get superclasses for ${className}:`, error);
       return [];
     }
   }
