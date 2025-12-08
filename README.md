@@ -503,6 +503,44 @@ result.bindings.forEach(binding => {
 - Property URIs: `<http://exocortex.ai/ontology#PropertyName>`
 - Vault paths: `<vault://path/to/file.md>`
 
+## 🧩 Dynamic Property Fields (Experimental)
+
+Automatically generate asset creation forms based on your RDF ontology definitions. Instead of fixed forms, the plugin reads your ontology to determine which fields should appear when creating assets.
+
+### Key Features
+
+- **Ontology-Driven Forms**: Fields generated from `rdfs:domain` property definitions
+- **Property Inheritance**: Child classes inherit properties from parent classes
+- **Type-Specific Widgets**: Automatic field type detection based on `rdfs:range`:
+  - `xsd:string` → Text input
+  - `xsd:dateTime` → DateTime picker
+  - `xsd:integer` → Number input
+  - `xsd:boolean` → Toggle switch
+  - Asset references → Wikilink input
+- **Deprecated Property Hiding**: Properties marked `owl:deprecated true` are automatically hidden
+- **Graceful Fallback**: Uses basic fields when ontology is unavailable
+
+### Enabling the Feature
+
+1. Open Obsidian Settings
+2. Navigate to **Exocortex** section
+3. Enable **"Use dynamic property fields"** toggle
+4. Create assets using commands like "Create Task" - the modal will show ontology-defined fields
+
+### How It Works
+
+When you invoke a creation command (e.g., "Create Task"):
+
+1. The plugin queries your ontology for properties where `rdfs:domain` matches the target class
+2. Traverses class hierarchy via `rdfs:subClassOf` to find inherited properties
+3. Filters out deprecated properties
+4. Renders appropriate field types based on `rdfs:range`
+
+### Documentation
+
+- **[Dynamic Fields Guide](./docs/DYNAMIC_FIELDS.md)** - Complete feature documentation
+- **[Ontology Extension Guide](./docs/ONTOLOGY_EXTENSION.md)** - Add custom properties to your ontology
+
 ## ⚙️ Plugin Settings
 
 Access via Settings → Exocortex.
@@ -512,6 +550,7 @@ Access via Settings → Exocortex.
 | **Show Layout** | On | Display automatic layout sections in reading mode |
 | **Show Properties Section** | On | Include properties table in layout |
 | **Show Archived Assets** | Off | Display archived assets in relations table with reduced opacity |
+| **Use Dynamic Property Fields** | Off | Generate modal fields from ontology (experimental) |
 
 Additional internal settings:
 - **Active Focus Area**: Current focus area for daily tasks filtering (set via "Set Active Focus" button)
@@ -755,6 +794,8 @@ For plugin developers and contributors:
 
 ### Advanced Topics
 
+- **[Dynamic Property Fields Guide](./docs/DYNAMIC_FIELDS.md)** - Ontology-driven asset creation forms
+- **[Ontology Extension Guide](./docs/ONTOLOGY_EXTENSION.md)** - Add custom properties to your ontology
 - **[Performance Guide](./docs/Performance-Guide.md)** - Optimization tips and benchmarks
 - **[Troubleshooting](./docs/Troubleshooting.md)** - Common issues and solutions
 - **[Property Schema](./docs/PROPERTY_SCHEMA.md)** - Complete frontmatter property reference
