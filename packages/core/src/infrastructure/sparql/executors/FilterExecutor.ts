@@ -411,6 +411,11 @@ export class FilterExecutor {
         const flags = expr.args[2] ? this.getStringValue(this.evaluateExpression(expr.args[2], solution)) : undefined;
         return BuiltInFunctions.regex(text, pattern, flags);
 
+      case "langmatches":
+        const langTag = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        const langRange = this.getStringValue(this.evaluateExpression(expr.args[1], solution));
+        return BuiltInFunctions.langMatches(langTag, langRange);
+
       // W3C SPARQL 1.1 String Functions
       case "contains":
         const containsStr = this.getStringValue(this.evaluateExpression(expr.args[0], solution));

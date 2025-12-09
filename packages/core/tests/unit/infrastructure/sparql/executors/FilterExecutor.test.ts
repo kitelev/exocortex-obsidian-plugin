@@ -136,6 +136,172 @@ describe("FilterExecutor", () => {
     });
   });
 
+  describe("LANGMATCHES Function", () => {
+    it("should match exact language tag", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "langmatches",
+          args: [
+            {
+              type: "function",
+              function: "lang",
+              args: [{ type: "variable", name: "label" }],
+            },
+            { type: "literal", value: "en" },
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("label", new Literal("Hello", undefined, "en"));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("label", new Literal("Bonjour", undefined, "fr"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should match language subtags (en-US matches en)", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "langmatches",
+          args: [
+            {
+              type: "function",
+              function: "lang",
+              args: [{ type: "variable", name: "label" }],
+            },
+            { type: "literal", value: "en" },
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("label", new Literal("Color", undefined, "en-US"));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("label", new Literal("Colour", undefined, "en-GB"));
+
+      const solution3 = new SolutionMapping();
+      solution3.set("label", new Literal("Farbe", undefined, "de"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+      expect(results).toHaveLength(2); // en-US and en-GB both match "en"
+    });
+
+    it("should match any language with wildcard '*'", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "langmatches",
+          args: [
+            {
+              type: "function",
+              function: "lang",
+              args: [{ type: "variable", name: "label" }],
+            },
+            { type: "literal", value: "*" },
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("label", new Literal("Hello", undefined, "en"));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("label", new Literal("Bonjour", undefined, "fr"));
+
+      // Literal without language tag - should NOT match
+      const solution3 = new SolutionMapping();
+      solution3.set("label", new Literal("Plain text"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+      expect(results).toHaveLength(2); // en and fr match, plain text does not
+    });
+
+    it("should not match empty language tag with non-empty range", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "langmatches",
+          args: [
+            {
+              type: "function",
+              function: "lang",
+              args: [{ type: "variable", name: "label" }],
+            },
+            { type: "literal", value: "en" },
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      // Literal without language tag
+      const solution = new SolutionMapping();
+      solution.set("label", new Literal("No language"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(0);
+    });
+
+    it("should be case-insensitive for language tags", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "langmatches",
+          args: [
+            {
+              type: "function",
+              function: "lang",
+              args: [{ type: "variable", name: "label" }],
+            },
+            { type: "literal", value: "EN" },
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      // Literal class normalizes language to lowercase, so "en-US" becomes "en-us"
+      solution.set("label", new Literal("Hello", undefined, "en-US"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should use langMatches with string arguments directly", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "langmatches",
+          args: [
+            { type: "literal", value: "en-GB" },
+            { type: "literal", value: "en" },
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal("dummy"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+  });
+
   describe("REGEX Function", () => {
     it("should filter by regex match", async () => {
       const operation: FilterOperation = {
