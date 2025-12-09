@@ -174,10 +174,10 @@ All commands accessible via Command Palette (Cmd/Ctrl+P → "Exocortex:"). Comma
 | **Create Task** | ems__Area, ems__Project | ems__Task | Parent reference, area, prototype |
 | **Create Project** | ems__Area, ems__Initiative, ems__Project | ems__Project | Area, initiative reference |
 | **Create Instance** | ems__TaskPrototype, ems__MeetingPrototype, exo__EventPrototype | ems__Task, ems__Meeting, or exo__Event | Prototype template content |
+| **Create Fleeting Note** | Always available | Quick-capture note in 01 Inbox | Label from prompt |
 | **Create Related Task** | ems__Project | ems__Task with project parent | Parent project, area |
-| **Create Area** | ems__Area | Child ems__Area | Parent area reference |
 
-### Status Transition Commands (8)
+### Status Transition Commands (7)
 
 Complete workflow lifecycle with automatic timestamp tracking:
 
@@ -190,7 +190,6 @@ Complete workflow lifecycle with automatic timestamp tracking:
 | **Start Effort** | ToDo status | ToDo → Doing | ems__Effort_startTimestamp |
 | **Mark as Done** | Doing status | Doing → Done | ems__Effort_endTimestamp, ems__Effort_resolutionTimestamp |
 | **Trash** | Any effort | Any → Trashed | ems__Effort_endTimestamp |
-| **Rollback Status** | Done/Trashed efforts | → Previous status | Removes end timestamps |
 
 ### Planning Commands (6)
 
@@ -205,7 +204,7 @@ Schedule and prioritize efforts:
 | **Vote on Effort** | Task/Project (not archived) | Increment vote counter | ems__Effort_votes |
 | **Set Focus Area** | Always available | Focus daily tasks on area + children | Plugin settings (activeFocusArea) |
 
-### Maintenance Commands (3)
+### Maintenance Commands (5)
 
 Keep your vault organized:
 
@@ -214,15 +213,25 @@ Keep your vault organized:
 | **Clean Empty Properties** | Any asset | Remove null/empty frontmatter properties |
 | **Repair Folder** | Assets with exo__Asset_isDefinedBy | Move file to correct folder based on reference |
 | **Rename to UID** | Filename ≠ exo__Asset_uid | Rename file to match UID, preserve label |
+| **Archive Task** | Tasks/Projects | Set exo__Asset_isArchived to true |
+| **Copy Label to Aliases** | Assets with exo__Asset_label | Copy label to YAML aliases array |
 
-### System Commands (8)
+### Conversion Commands (2)
+
+Convert between asset types:
+
+| Command | Available When | Action |
+|---------|---------------|--------|
+| **Convert Task to Project** | ems__Task | Change class to ems__Project, preserve properties |
+| **Convert Project to Task** | ems__Project | Change class to ems__Task, preserve properties |
+
+### System Commands (7)
 
 Control plugin behavior and visualization:
 
 | Command | Always Available | Action |
 |---------|-----------------|--------|
 | **Reload Layout** | Yes | Manually refresh layout rendering |
-| **Create Fleeting Note** | Yes | Create quick-capture note with label in 01 Inbox |
 | **Add Supervision** | Yes | Create CBT diary record (structured fleeting note with situation/emotions/thoughts/behavior) |
 | **Toggle Layout Visibility** | Yes | Show/hide entire layout section |
 | **Toggle Properties Visibility** | Yes | Show/hide properties table |
