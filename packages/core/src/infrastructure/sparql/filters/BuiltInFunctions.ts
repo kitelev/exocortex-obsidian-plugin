@@ -81,6 +81,54 @@ export class BuiltInFunctions {
     return term instanceof Literal;
   }
 
+  /**
+   * SPARQL 1.1 isNumeric function.
+   * https://www.w3.org/TR/sparql11-query/#func-isNumeric
+   *
+   * Returns true if the term is a numeric literal (xsd:integer, xsd:decimal,
+   * xsd:float, xsd:double, or derived numeric types).
+   *
+   * @param term - RDF term to check
+   * @returns true if term is a numeric literal, false otherwise
+   */
+  static isNumeric(term: RDFTerm | undefined): boolean {
+    if (term === undefined) {
+      return false;
+    }
+
+    if (!(term instanceof Literal)) {
+      return false;
+    }
+
+    const datatype = term.datatype?.value;
+    if (!datatype) {
+      return false;
+    }
+
+    // XSD numeric types per SPARQL 1.1 spec section 17.4.2.4
+    const numericTypes = [
+      "http://www.w3.org/2001/XMLSchema#integer",
+      "http://www.w3.org/2001/XMLSchema#decimal",
+      "http://www.w3.org/2001/XMLSchema#float",
+      "http://www.w3.org/2001/XMLSchema#double",
+      // Derived integer types (all are subtypes of xsd:integer)
+      "http://www.w3.org/2001/XMLSchema#nonPositiveInteger",
+      "http://www.w3.org/2001/XMLSchema#negativeInteger",
+      "http://www.w3.org/2001/XMLSchema#long",
+      "http://www.w3.org/2001/XMLSchema#int",
+      "http://www.w3.org/2001/XMLSchema#short",
+      "http://www.w3.org/2001/XMLSchema#byte",
+      "http://www.w3.org/2001/XMLSchema#nonNegativeInteger",
+      "http://www.w3.org/2001/XMLSchema#unsignedLong",
+      "http://www.w3.org/2001/XMLSchema#unsignedInt",
+      "http://www.w3.org/2001/XMLSchema#unsignedShort",
+      "http://www.w3.org/2001/XMLSchema#unsignedByte",
+      "http://www.w3.org/2001/XMLSchema#positiveInteger",
+    ];
+
+    return numericTypes.includes(datatype);
+  }
+
   static regex(text: string, pattern: string, flags?: string): boolean {
     try {
       const regex = new RegExp(pattern, flags);
