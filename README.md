@@ -36,10 +36,74 @@ This project is organized as a monorepo with multiple packages:
 
 ```
 packages/
-├── core/                    # @exocortex/core - Core business logic (storage-agnostic)
+├── core/                    # @exocortex/core - Shared business logic (storage-agnostic)
 ├── obsidian-plugin/         # @exocortex/obsidian-plugin - Obsidian UI integration
 └── cli/                     # @exocortex/cli - Command-line automation tool
 ```
+
+### Package Comparison
+
+| Feature | Obsidian Plugin | CLI |
+|---------|----------------|-----|
+| **Primary Use** | Interactive UI in Obsidian | Terminal automation & scripting |
+| **Installation** | Obsidian plugin manager | `npm install -g exocortex-cli` |
+| **Task Management** | ✅ Visual buttons & commands | ✅ All status transitions |
+| **SPARQL Queries** | ✅ Live results in notes | ✅ Table/JSON/CSV output |
+| **Asset Creation** | ✅ Modal dialogs | ✅ Command-line flags |
+| **Batch Operations** | ❌ One at a time | ✅ Atomic batch execution |
+| **CI/CD Integration** | ❌ Requires Obsidian | ✅ Headless execution |
+| **MCP/AI Agent Integration** | ❌ N/A | ✅ JSON output, exit codes |
+
+### CLI Package Overview
+
+The CLI (`@exocortex/cli`) enables managing your Exocortex vault from the terminal without opening Obsidian. It's ideal for:
+
+- **Automation scripts** - Schedule tasks, update statuses, create assets programmatically
+- **CI/CD pipelines** - Integrate vault operations into GitHub Actions, GitLab CI
+- **AI agent integration** - MCP-compatible JSON output for Claude, GPT, etc.
+- **Batch operations** - Execute multiple commands atomically
+
+**CLI Installation:**
+
+```bash
+# Global installation
+npm install -g exocortex-cli
+
+# Or use directly with npx
+npx exocortex-cli --help
+```
+
+**CLI Command Categories:**
+
+| Category | Commands | Description |
+|----------|----------|-------------|
+| **SPARQL** | `sparql query` | Execute SPARQL 1.1 queries with table/JSON/CSV output |
+| **Status** | `start`, `complete`, `trash`, `archive`, `move-to-*` | Full task lifecycle management |
+| **Creation** | `create-task`, `create-meeting`, `create-project`, `create-area` | Create assets with frontmatter |
+| **Planning** | `schedule`, `set-deadline` | Set dates for efforts |
+| **Maintenance** | `rename-to-uid`, `update-label` | File and property management |
+| **Batch** | `batch` | Execute multiple operations atomically |
+
+**Quick Examples:**
+
+```bash
+# Execute SPARQL query
+exocortex sparql query "SELECT ?task ?label WHERE { ?task exo:Instance_class ems:Task . ?task exo:Asset_label ?label }" --vault ~/vault
+
+# Complete a task
+exocortex command complete "tasks/my-task.md" --vault ~/vault
+
+# Create a new task
+exocortex command create-task "tasks/new-task.md" --label "Implement feature" --vault ~/vault
+
+# Batch operations (atomic)
+exocortex batch --input '[{"command":"start","filepath":"task1.md"},{"command":"complete","filepath":"task2.md"}]' --vault ~/vault --atomic
+```
+
+For complete CLI documentation, see:
+- [CLI Command Reference](./docs/cli/Command-Reference.md)
+- [Scripting Patterns](./docs/cli/Scripting-Patterns.md)
+- [Integration Examples](./docs/cli/Integration-Examples.md)
 
 The monorepo structure enables:
 - Shared core logic between UI and CLI
