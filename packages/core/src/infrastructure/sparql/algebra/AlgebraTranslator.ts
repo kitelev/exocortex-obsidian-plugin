@@ -123,6 +123,15 @@ export class AlgebraTranslator {
       };
     }
 
+    // REDUCED modifier - spec allows treating it as DISTINCT or doing nothing
+    // sparqljs exposes this as query.reduced
+    if ((query as any).reduced) {
+      operation = {
+        type: "reduced",
+        input: operation,
+      };
+    }
+
     if (query.order && query.order.length > 0) {
       operation = {
         type: "orderby",

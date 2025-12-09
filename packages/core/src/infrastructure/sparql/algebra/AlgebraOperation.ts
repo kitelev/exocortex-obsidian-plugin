@@ -10,6 +10,7 @@ export type AlgebraOperation =
   | OrderByOperation
   | SliceOperation
   | DistinctOperation
+  | ReducedOperation
   | GroupOperation
   | ExtendOperation
   | SubqueryOperation
@@ -297,6 +298,20 @@ export interface SliceOperation {
 
 export interface DistinctOperation {
   type: "distinct";
+  input: AlgebraOperation;
+}
+
+/**
+ * REDUCED solution modifier.
+ * SPARQL 1.1 spec allows implementations to eliminate some or all duplicates.
+ * This implementation treats REDUCED identically to DISTINCT (allowed by spec).
+ *
+ * SPARQL 1.1 Query Language Section 15.3:
+ * "REDUCED can be viewed as a hint to the query engine that duplicates
+ * may be eliminated, but it is not required to do so."
+ */
+export interface ReducedOperation {
+  type: "reduced";
   input: AlgebraOperation;
 }
 
