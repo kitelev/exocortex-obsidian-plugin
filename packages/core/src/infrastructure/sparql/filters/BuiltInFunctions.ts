@@ -2,6 +2,7 @@ import type { Subject, Predicate, Object as RDFObject } from "../../../domain/mo
 import { IRI } from "../../../domain/models/rdf/IRI";
 import { Literal } from "../../../domain/models/rdf/Literal";
 import { BlankNode } from "../../../domain/models/rdf/BlankNode";
+import { v4 as uuidv4 } from "uuid";
 
 export type RDFTerm = Subject | Predicate | RDFObject;
 
@@ -899,5 +900,231 @@ export class BuiltInFunctions {
     }
 
     return false;
+  }
+
+  // SPARQL 1.1 Constructor Functions
+  // https://www.w3.org/TR/sparql11-query/#FunctionMapping
+
+  /**
+   * SPARQL 1.1 IRI constructor function.
+   * https://www.w3.org/TR/sparql11-query/#func-iri
+   *
+   * Creates an IRI from a string literal or returns the IRI unchanged.
+   * URI is a synonym for IRI.
+   *
+   * @param term - String literal containing the IRI value, or an existing IRI
+   * @returns IRI term
+   *
+   * Examples:
+   * - IRI("http://example.org/resource") → <http://example.org/resource>
+   * - IRI(<http://example.org/resource>) → <http://example.org/resource>
+   */
+  static iri(term: RDFTerm | undefined): IRI {
+    if (term === undefined) {
+      throw new Error("IRI: argument is undefined");
+    }
+
+    // If already an IRI, return as-is
+    if (term instanceof IRI) {
+      return term;
+    }
+
+    // If literal, create IRI from value
+    if (term instanceof Literal) {
+      return new IRI(term.value);
+    }
+
+    // Blank nodes cannot be converted to IRIs
+    if (term instanceof BlankNode) {
+      throw new Error("IRI: cannot convert blank node to IRI");
+    }
+
+    throw new Error("IRI: unsupported term type");
+  }
+
+  /**
+   * SPARQL 1.1 URI constructor function (synonym for IRI).
+   * https://www.w3.org/TR/sparql11-query/#func-iri
+   *
+   * @param term - String literal containing the URI value, or an existing IRI
+   * @returns IRI term
+   */
+  static uri(term: RDFTerm | undefined): IRI {
+    return this.iri(term);
+  }
+
+  /**
+   * SPARQL 1.1 BNODE constructor function.
+   * https://www.w3.org/TR/sparql11-query/#func-bnode
+   *
+   * Creates a blank node. If called with no argument or empty argument,
+   * generates a unique blank node each call. If called with a string literal,
+   * creates a blank node with that label (consistent within query scope).
+   *
+   * @param label - Optional string literal to use as blank node label
+   * @returns BlankNode term
+   *
+   * Examples:
+   * - BNODE() → _:b1 (unique per call)
+   * - BNODE("label") → _:label (consistent within query)
+   */
+  static bnode(label?: RDFTerm | undefined): BlankNode {
+    // No argument - generate unique blank node
+    if (label === undefined) {
+      // Generate a unique ID using random component
+      const uniqueId = `b${Math.random().toString(36).substring(2, 11)}`;
+      return new BlankNode(uniqueId);
+    }
+
+    // With literal argument - use as label
+    if (label instanceof Literal) {
+      return new BlankNode(label.value);
+    }
+
+    // Already a blank node - return as is
+    if (label instanceof BlankNode) {
+      return label;
+    }
+
+    throw new Error("BNODE: argument must be a string literal or omitted");
+  }
+
+  /**
+   * SPARQL 1.1 STRDT constructor function.
+   * https://www.w3.org/TR/sparql11-query/#func-strdt
+   *
+   * Creates a typed literal with specified datatype.
+   *
+   * @param lexicalForm - String literal containing the lexical form
+   * @param datatypeIRI - IRI of the datatype
+   * @returns Literal with specified datatype
+   *
+   * Examples:
+   * - STRDT("42", xsd:integer) → "42"^^xsd:integer
+   * - STRDT("2025-01-01", xsd:date) → "2025-01-01"^^xsd:date
+   */
+  static strdt(lexicalForm: RDFTerm | undefined, datatypeIRI: RDFTerm | undefined): Literal {
+    if (lexicalForm === undefined) {
+      throw new Error("STRDT: lexical form is undefined");
+    }
+
+    if (datatypeIRI === undefined) {
+      throw new Error("STRDT: datatype IRI is undefined");
+    }
+
+    // Get the lexical form string
+    let lexicalValue: string;
+    if (lexicalForm instanceof Literal) {
+      // Must be a simple literal (no language tag, no datatype other than xsd:string)
+      if (lexicalForm.language) {
+        throw new Error("STRDT: lexical form must not have a language tag");
+      }
+      lexicalValue = lexicalForm.value;
+    } else if (typeof lexicalForm === "string") {
+      lexicalValue = lexicalForm;
+    } else {
+      throw new Error("STRDT: lexical form must be a string literal");
+    }
+
+    // Get the datatype IRI
+    let datatypeValue: IRI;
+    if (datatypeIRI instanceof IRI) {
+      datatypeValue = datatypeIRI;
+    } else if (datatypeIRI instanceof Literal) {
+      datatypeValue = new IRI(datatypeIRI.value);
+    } else {
+      throw new Error("STRDT: datatype must be an IRI");
+    }
+
+    return new Literal(lexicalValue, datatypeValue);
+  }
+
+  /**
+   * SPARQL 1.1 STRLANG constructor function.
+   * https://www.w3.org/TR/sparql11-query/#func-strlang
+   *
+   * Creates a language-tagged literal.
+   *
+   * @param lexicalForm - String literal containing the text
+   * @param languageTag - String literal containing the language tag
+   * @returns Literal with specified language tag
+   *
+   * Examples:
+   * - STRLANG("hello", "en") → "hello"@en
+   * - STRLANG("Привет", "ru") → "Привет"@ru
+   */
+  static strlang(lexicalForm: RDFTerm | undefined, languageTag: RDFTerm | undefined): Literal {
+    if (lexicalForm === undefined) {
+      throw new Error("STRLANG: lexical form is undefined");
+    }
+
+    if (languageTag === undefined) {
+      throw new Error("STRLANG: language tag is undefined");
+    }
+
+    // Get the lexical form string
+    let lexicalValue: string;
+    if (lexicalForm instanceof Literal) {
+      // Must be a simple literal (no language tag, no datatype other than xsd:string)
+      if (lexicalForm.language) {
+        throw new Error("STRLANG: lexical form must not already have a language tag");
+      }
+      lexicalValue = lexicalForm.value;
+    } else if (typeof lexicalForm === "string") {
+      lexicalValue = lexicalForm;
+    } else {
+      throw new Error("STRLANG: lexical form must be a string literal");
+    }
+
+    // Get the language tag string
+    let langValue: string;
+    if (languageTag instanceof Literal) {
+      langValue = languageTag.value;
+    } else if (typeof languageTag === "string") {
+      langValue = languageTag;
+    } else {
+      throw new Error("STRLANG: language tag must be a string literal");
+    }
+
+    // Validate language tag is not empty
+    if (langValue === "") {
+      throw new Error("STRLANG: language tag cannot be empty");
+    }
+
+    return new Literal(lexicalValue, undefined, langValue);
+  }
+
+  /**
+   * SPARQL 1.1 UUID constructor function.
+   * https://www.w3.org/TR/sparql11-query/#func-uuid
+   *
+   * Returns a fresh IRI from the UUID URN scheme. Each call returns a
+   * different UUID. Uses RFC 4122 UUID format.
+   *
+   * @returns IRI in the form <urn:uuid:XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX>
+   *
+   * Examples:
+   * - UUID() → <urn:uuid:b7f4e9a2-8c3d-4e5f-a1b2-c3d4e5f6a7b8>
+   */
+  static uuid(): IRI {
+    const uuid = uuidv4();
+    return new IRI(`urn:uuid:${uuid}`);
+  }
+
+  /**
+   * SPARQL 1.1 STRUUID constructor function.
+   * https://www.w3.org/TR/sparql11-query/#func-struuid
+   *
+   * Returns a string that is the UUID of a fresh IRI. Each call returns a
+   * different UUID string. Uses RFC 4122 UUID format.
+   *
+   * @returns String literal containing the UUID (without urn:uuid: prefix)
+   *
+   * Examples:
+   * - STRUUID() → "b7f4e9a2-8c3d-4e5f-a1b2-c3d4e5f6a7b8"
+   */
+  static struuid(): Literal {
+    const uuid = uuidv4();
+    return new Literal(uuid);
   }
 }
