@@ -1,4 +1,5 @@
 import type { Subject, Predicate, Object as RDFObject } from "../../../domain/models/rdf/Triple";
+import * as hashUtils from "../utils/hashUtils";
 import { IRI } from "../../../domain/models/rdf/IRI";
 import { Literal } from "../../../domain/models/rdf/Literal";
 import { BlankNode } from "../../../domain/models/rdf/BlankNode";
@@ -759,6 +760,89 @@ export class BuiltInFunctions {
    */
   static encodeForUri(str: string): string {
     return encodeURIComponent(str);
+  }
+
+  // SPARQL 1.1 Hash Functions
+  // https://www.w3.org/TR/sparql11-query/#func-hash
+
+  /**
+   * SPARQL 1.1 MD5 function.
+   * https://www.w3.org/TR/sparql11-query/#func-md5
+   *
+   * Returns the MD5 hash of a string as a lowercase hexadecimal string.
+   *
+   * @param str - String to hash
+   * @returns Lowercase hexadecimal hash string
+   *
+   * Example:
+   * - MD5("test") → "098f6bcd4621d373cade4e832627b4f6"
+   */
+  static md5(str: string): string {
+    return hashUtils.md5(str);
+  }
+
+  /**
+   * SPARQL 1.1 SHA1 function.
+   * https://www.w3.org/TR/sparql11-query/#func-sha1
+   *
+   * Returns the SHA-1 hash of a string as a lowercase hexadecimal string.
+   *
+   * @param str - String to hash
+   * @returns Lowercase hexadecimal hash string
+   *
+   * Example:
+   * - SHA1("test") → "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
+   */
+  static sha1(str: string): string {
+    return hashUtils.sha1(str);
+  }
+
+  /**
+   * SPARQL 1.1 SHA256 function.
+   * https://www.w3.org/TR/sparql11-query/#func-sha256
+   *
+   * Returns the SHA-256 hash of a string as a lowercase hexadecimal string.
+   *
+   * @param str - String to hash
+   * @returns Lowercase hexadecimal hash string
+   *
+   * Example:
+   * - SHA256("test") → "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+   */
+  static sha256(str: string): string {
+    return hashUtils.sha256(str);
+  }
+
+  /**
+   * SPARQL 1.1 SHA384 function.
+   * https://www.w3.org/TR/sparql11-query/#func-sha384
+   *
+   * Returns the SHA-384 hash of a string as a lowercase hexadecimal string.
+   *
+   * @param str - String to hash
+   * @returns Lowercase hexadecimal hash string
+   *
+   * Example:
+   * - SHA384("test") → "768412320f7b0aa5812fce428dc4706b3cae50e02a64caa16a782249bfe8efc4b7ef1ccb126255d196047dfedf17a0a9"
+   */
+  static sha384(str: string): string {
+    return hashUtils.sha384(str);
+  }
+
+  /**
+   * SPARQL 1.1 SHA512 function.
+   * https://www.w3.org/TR/sparql11-query/#func-sha512
+   *
+   * Returns the SHA-512 hash of a string as a lowercase hexadecimal string.
+   *
+   * @param str - String to hash
+   * @returns Lowercase hexadecimal hash string
+   *
+   * Example:
+   * - SHA512("test") → "ee26b0dd4af7e749aa1a8ee3c10ae9923f618980772e473f8819a5d4940e0db27ac185f8a0e1d5f84f88bc887fd67b143732c304cc5fa9ad8e6f57f50028a8ff"
+   */
+  static sha512(str: string): string {
+    return hashUtils.sha512(str);
   }
 
   // SPARQL 1.1 RDF Term Functions
