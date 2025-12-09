@@ -167,7 +167,7 @@ ems__Effort_status: "[[ems__EffortStatusBacklog]]"
 
 All commands accessible via Command Palette (Cmd/Ctrl+P → "Exocortex:"). Commands are context-aware and only appear when applicable to the current note.
 
-### Creation Commands (5)
+### Creation Commands (4)
 
 | Command | Available When | Creates | Inherited Properties |
 |---------|---------------|---------|---------------------|
@@ -175,7 +175,6 @@ All commands accessible via Command Palette (Cmd/Ctrl+P → "Exocortex:"). Comma
 | **Create Project** | ems__Area, ems__Initiative, ems__Project | ems__Project | Area, initiative reference |
 | **Create Instance** | ems__TaskPrototype, ems__MeetingPrototype, exo__EventPrototype | ems__Task, ems__Meeting, or exo__Event | Prototype template content |
 | **Create Related Task** | ems__Project | ems__Task with project parent | Parent project, area |
-| **Create Area** | ems__Area | Child ems__Area | Parent area reference |
 
 ### Status Transition Commands (8)
 
@@ -190,7 +189,7 @@ Complete workflow lifecycle with automatic timestamp tracking:
 | **Start Effort** | ToDo status | ToDo → Doing | ems__Effort_startTimestamp |
 | **Mark as Done** | Doing status | Doing → Done | ems__Effort_endTimestamp, ems__Effort_resolutionTimestamp |
 | **Trash** | Any effort | Any → Trashed | ems__Effort_endTimestamp |
-| **Rollback Status** | Done/Trashed efforts | → Previous status | Removes end timestamps |
+| **Archive Task** | Done/Trashed tasks | → Archived | Sets ems__Effort_isArchived |
 
 ### Planning Commands (6)
 
@@ -205,7 +204,7 @@ Schedule and prioritize efforts:
 | **Vote on Effort** | Task/Project (not archived) | Increment vote counter | ems__Effort_votes |
 | **Set Focus Area** | Always available | Focus daily tasks on area + children | Plugin settings (activeFocusArea) |
 
-### Maintenance Commands (3)
+### Maintenance Commands (4)
 
 Keep your vault organized:
 
@@ -214,6 +213,7 @@ Keep your vault organized:
 | **Clean Empty Properties** | Any asset | Remove null/empty frontmatter properties |
 | **Repair Folder** | Assets with exo__Asset_isDefinedBy | Move file to correct folder based on reference |
 | **Rename to UID** | Filename ≠ exo__Asset_uid | Rename file to match UID, preserve label |
+| **Copy Label to Aliases** | Assets with exo__Asset_label | Copy label value to frontmatter aliases array |
 
 ### System Commands (8)
 
@@ -229,6 +229,15 @@ Control plugin behavior and visualization:
 | **Toggle Archived Assets Visibility** | Yes | Show/hide archived assets in layout tables (persists in settings) |
 | **Edit Properties** | With frontmatter | Open modal for editing frontmatter properties |
 | **Open SPARQL Query Builder** | Yes | Visual query builder with templates, live preview, and copy-to-clipboard |
+
+### Conversion Commands (2)
+
+Transform asset types while preserving relationships:
+
+| Command | Available When | Action |
+|---------|---------------|--------|
+| **Convert Task to Project** | ems__Task (not archived) | Convert task to project, preserving area and parent |
+| **Convert Project to Task** | ems__Project (not archived) | Convert project to task, preserving area and parent |
 
 ## 🏷️ Frontmatter Properties Reference
 
