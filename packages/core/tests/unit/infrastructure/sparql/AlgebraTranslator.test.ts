@@ -2037,4 +2037,158 @@ describe("AlgebraTranslator", () => {
       expect((algebra as any).where.type).toBe("join");
     });
   });
+
+  describe("IN / NOT IN Operators (Issue #718)", () => {
+    it("translates IN operator with literal list", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/status> ?status .
+          FILTER(?status IN ("active", "pending", "review"))
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const filter = (algebra as any).input;
+      expect(filter.type).toBe("filter");
+      expect(filter.expression.type).toBe("in");
+      expect(filter.expression.negated).toBe(false);
+      expect(filter.expression.expression.type).toBe("variable");
+      expect(filter.expression.expression.name).toBe("status");
+      expect(filter.expression.list).toHaveLength(3);
+      expect(filter.expression.list[0].type).toBe("literal");
+      expect(filter.expression.list[0].value).toBe("active");
+    });
+
+    it("translates NOT IN operator", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/status> ?status .
+          FILTER(?status NOT IN ("blocked", "archived"))
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const filter = (algebra as any).input;
+      expect(filter.type).toBe("filter");
+      expect(filter.expression.type).toBe("in");
+      expect(filter.expression.negated).toBe(true);
+      expect(filter.expression.list).toHaveLength(2);
+    });
+
+    it("translates IN with numeric values", () => {
+      const query = `
+        SELECT ?x
+        WHERE {
+          ?s ?p ?x .
+          FILTER(?x IN (1, 2, 3))
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const filter = (algebra as any).input;
+      expect(filter.expression.type).toBe("in");
+      expect(filter.expression.list).toHaveLength(3);
+      expect(filter.expression.list[0].value).toBe(1);
+      expect(filter.expression.list[1].value).toBe(2);
+      expect(filter.expression.list[2].value).toBe(3);
+    });
+
+    it("translates IN with variable in list", () => {
+      const query = `
+        SELECT ?x
+        WHERE {
+          ?s ?p ?x .
+          ?s <http://example.org/allowed> ?y .
+          FILTER(?x IN (?y, "fallback"))
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const filter = (algebra as any).input;
+      expect(filter.expression.type).toBe("in");
+      expect(filter.expression.list).toHaveLength(2);
+      expect(filter.expression.list[0].type).toBe("variable");
+      expect(filter.expression.list[0].name).toBe("y");
+      expect(filter.expression.list[1].type).toBe("literal");
+    });
+
+    it("translates IN with empty list", () => {
+      const query = `
+        SELECT ?x
+        WHERE {
+          ?s ?p ?x .
+          FILTER(?x IN ())
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const filter = (algebra as any).input;
+      expect(filter.expression.type).toBe("in");
+      expect(filter.expression.list).toHaveLength(0);
+    });
+
+    it("translates IN combined with AND", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/status> ?status .
+          ?task <http://example.org/priority> ?priority .
+          FILTER(?status IN ("active", "pending") && ?priority > 5)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const filter = (algebra as any).input;
+      expect(filter.type).toBe("filter");
+      expect(filter.expression.type).toBe("logical");
+      expect(filter.expression.operator).toBe("&&");
+      expect(filter.expression.operands[0].type).toBe("in");
+      expect(filter.expression.operands[1].type).toBe("comparison");
+    });
+
+    it("translates IN combined with OR", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/type> ?type .
+          FILTER(?type IN ("urgent") || ?type = "critical")
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const filter = (algebra as any).input;
+      expect(filter.expression.type).toBe("logical");
+      expect(filter.expression.operator).toBe("||");
+      expect(filter.expression.operands[0].type).toBe("in");
+    });
+
+    it("translates NOT IN with complex filter", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/status> ?status .
+          ?task <http://example.org/priority> ?priority .
+          FILTER(?status NOT IN ("blocked", "archived") && ?priority > 0)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const filter = (algebra as any).input;
+      expect(filter.expression.type).toBe("logical");
+      expect(filter.expression.operands[0].type).toBe("in");
+      expect(filter.expression.operands[0].negated).toBe(true);
+    });
+  });
 });

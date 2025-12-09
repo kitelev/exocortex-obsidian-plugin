@@ -13,6 +13,7 @@ import type {
   ConstructOperation,
   AskOperation,
   ExistsExpression,
+  InExpression,
   ArithmeticExpression,
   Triple,
   TripleElement,
@@ -685,6 +686,11 @@ export class AlgebraTranslator {
       return this.translateExistsExpression(expr);
     }
 
+    // Handle IN and NOT IN operators (SPARQL 1.1 Section 17.4.1.5)
+    if (expr.operator === "in" || expr.operator === "notin") {
+      return this.translateInExpression(expr);
+    }
+
     return {
       type: "function",
       function: expr.operator,
@@ -719,6 +725,39 @@ export class AlgebraTranslator {
       type: "exists",
       negated: expr.operator === "notexists",
       pattern,
+    };
+  }
+
+  /**
+   * Translate IN or NOT IN expression.
+   * sparqljs AST format:
+   * {
+   *   type: "operation",
+   *   operator: "in" | "notin",
+   *   args: [expression, [value1, value2, ...]]
+   * }
+   *
+   * SPARQL 1.1 Section 17.4.1.5:
+   * - expr IN (val1, val2, ...) returns true if expr = val_i for any value
+   * - expr NOT IN (val1, val2, ...) returns true if expr != val_i for all values
+   */
+  private translateInExpression(expr: any): InExpression {
+    if (!expr.args || expr.args.length !== 2) {
+      throw new AlgebraTranslatorError("IN/NOT IN must have exactly 2 arguments (expression and list)");
+    }
+
+    const testExpr = expr.args[0];
+    const listArg = expr.args[1];
+
+    if (!Array.isArray(listArg)) {
+      throw new AlgebraTranslatorError("IN/NOT IN second argument must be an array of values");
+    }
+
+    return {
+      type: "in",
+      expression: this.translateExpression(testExpr),
+      list: listArg.map((item: any) => this.translateExpression(item)),
+      negated: expr.operator === "notin",
     };
   }
 

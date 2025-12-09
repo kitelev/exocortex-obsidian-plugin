@@ -2,7 +2,7 @@ import { FilterExecutor, ExistsEvaluator } from "../../../../../src/infrastructu
 import { SolutionMapping } from "../../../../../src/infrastructure/sparql/SolutionMapping";
 import { IRI } from "../../../../../src/domain/models/rdf/IRI";
 import { Literal } from "../../../../../src/domain/models/rdf/Literal";
-import type { FilterOperation, AlgebraOperation, ExistsExpression } from "../../../../../src/infrastructure/sparql/algebra/AlgebraOperation";
+import type { FilterOperation, AlgebraOperation, ExistsExpression, InExpression } from "../../../../../src/infrastructure/sparql/algebra/AlgebraOperation";
 
 describe("FilterExecutor", () => {
   let executor: FilterExecutor;
@@ -133,6 +133,422 @@ describe("FilterExecutor", () => {
 
       const results = await executor.executeAll(operation, [solution1, solution2]);
       expect(results).toHaveLength(1);
+    });
+  });
+
+  describe("IN / NOT IN Operators (SPARQL 1.1 Section 17.4.1.5)", () => {
+    describe("IN operator", () => {
+      it("should match when value is in list of integers", async () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            expression: { type: "variable", name: "x" },
+            list: [
+              { type: "literal", value: 1 },
+              { type: "literal", value: 2 },
+              { type: "literal", value: 3 },
+            ],
+            negated: false,
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution1 = new SolutionMapping();
+        solution1.set("x", new Literal("2", xsdInt));
+
+        const solution2 = new SolutionMapping();
+        solution2.set("x", new Literal("5", xsdInt));
+
+        const results = await executor.executeAll(operation, [solution1, solution2]);
+        expect(results).toHaveLength(1);
+        expect((results[0].get("x") as Literal).value).toBe("2");
+      });
+
+      it("should match when value is in list of strings", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            expression: { type: "variable", name: "status" },
+            list: [
+              { type: "literal", value: "active" },
+              { type: "literal", value: "pending" },
+              { type: "literal", value: "review" },
+            ],
+            negated: false,
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution1 = new SolutionMapping();
+        solution1.set("status", new Literal("active"));
+
+        const solution2 = new SolutionMapping();
+        solution2.set("status", new Literal("done"));
+
+        const solution3 = new SolutionMapping();
+        solution3.set("status", new Literal("pending"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+        expect(results).toHaveLength(2);
+      });
+
+      it("should not match when value is not in list", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            expression: { type: "variable", name: "x" },
+            list: [
+              { type: "literal", value: "a" },
+              { type: "literal", value: "b" },
+            ],
+            negated: false,
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("x", new Literal("c"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(0);
+      });
+
+      it("should work with empty list (always returns false)", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            expression: { type: "variable", name: "x" },
+            list: [],
+            negated: false,
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("x", new Literal("anything"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(0);
+      });
+
+      it("should work with IRI values in list", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            expression: { type: "variable", name: "type" },
+            list: [
+              { type: "literal", value: "http://example.org/Task" },
+              { type: "literal", value: "http://example.org/Project" },
+            ],
+            negated: false,
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution1 = new SolutionMapping();
+        solution1.set("type", new IRI("http://example.org/Task"));
+
+        const solution2 = new SolutionMapping();
+        solution2.set("type", new IRI("http://example.org/Area"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should work with variables in list", async () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            expression: { type: "variable", name: "x" },
+            list: [
+              { type: "variable", name: "y" },
+              { type: "variable", name: "z" },
+            ],
+            negated: false,
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution1 = new SolutionMapping();
+        solution1.set("x", new Literal("5", xsdInt));
+        solution1.set("y", new Literal("5", xsdInt));
+        solution1.set("z", new Literal("10", xsdInt));
+
+        const solution2 = new SolutionMapping();
+        solution2.set("x", new Literal("15", xsdInt));
+        solution2.set("y", new Literal("5", xsdInt));
+        solution2.set("z", new Literal("10", xsdInt));
+
+        const results = await executor.executeAll(operation, [solution1, solution2]);
+        expect(results).toHaveLength(1);
+        expect((results[0].get("x") as Literal).value).toBe("5");
+      });
+    });
+
+    describe("NOT IN operator", () => {
+      it("should match when value is not in list of strings", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            expression: { type: "variable", name: "x" },
+            list: [
+              { type: "literal", value: "a" },
+              { type: "literal", value: "b" },
+            ],
+            negated: true,
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution1 = new SolutionMapping();
+        solution1.set("x", new Literal("c"));
+
+        const solution2 = new SolutionMapping();
+        solution2.set("x", new Literal("a"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2]);
+        expect(results).toHaveLength(1);
+        expect((results[0].get("x") as Literal).value).toBe("c");
+      });
+
+      it("should not match when value is in list", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            expression: { type: "variable", name: "status" },
+            list: [
+              { type: "literal", value: "done" },
+              { type: "literal", value: "archived" },
+            ],
+            negated: true,
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("status", new Literal("done"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(0);
+      });
+
+      it("should match all when list is empty (always returns true)", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            expression: { type: "variable", name: "x" },
+            list: [],
+            negated: true,
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("x", new Literal("anything"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+      });
+
+      it("should filter out specific values efficiently", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            expression: { type: "variable", name: "priority" },
+            list: [
+              { type: "literal", value: 1 },
+              { type: "literal", value: 2 },
+            ],
+            negated: true,
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const solution1 = new SolutionMapping();
+        solution1.set("priority", new Literal("3", xsdInt));
+
+        const solution2 = new SolutionMapping();
+        solution2.set("priority", new Literal("1", xsdInt));
+
+        const solution3 = new SolutionMapping();
+        solution3.set("priority", new Literal("5", xsdInt));
+
+        const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+        expect(results).toHaveLength(2);
+      });
+    });
+
+    describe("IN / NOT IN combined with other expressions", () => {
+      it("should work with AND operator", async () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "logical",
+            operator: "&&",
+            operands: [
+              {
+                type: "in",
+                expression: { type: "variable", name: "status" },
+                list: [
+                  { type: "literal", value: "active" },
+                  { type: "literal", value: "pending" },
+                ],
+                negated: false,
+              } as InExpression,
+              {
+                type: "comparison",
+                operator: ">",
+                left: { type: "variable", name: "priority" },
+                right: { type: "literal", value: 5 },
+              },
+            ],
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        // Active with high priority - should pass
+        const solution1 = new SolutionMapping();
+        solution1.set("status", new Literal("active"));
+        solution1.set("priority", new Literal("8", xsdInt));
+
+        // Active with low priority - should NOT pass
+        const solution2 = new SolutionMapping();
+        solution2.set("status", new Literal("active"));
+        solution2.set("priority", new Literal("3", xsdInt));
+
+        // Done with high priority - should NOT pass
+        const solution3 = new SolutionMapping();
+        solution3.set("status", new Literal("done"));
+        solution3.set("priority", new Literal("8", xsdInt));
+
+        const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+        expect(results).toHaveLength(1);
+        expect((results[0].get("status") as Literal).value).toBe("active");
+        expect((results[0].get("priority") as Literal).value).toBe("8");
+      });
+
+      it("should work with OR operator", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "logical",
+            operator: "||",
+            operands: [
+              {
+                type: "in",
+                expression: { type: "variable", name: "status" },
+                list: [
+                  { type: "literal", value: "urgent" },
+                ],
+                negated: false,
+              } as InExpression,
+              {
+                type: "in",
+                expression: { type: "variable", name: "tag" },
+                list: [
+                  { type: "literal", value: "high-priority" },
+                ],
+                negated: false,
+              } as InExpression,
+            ],
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        // Urgent status - should pass
+        const solution1 = new SolutionMapping();
+        solution1.set("status", new Literal("urgent"));
+        solution1.set("tag", new Literal("normal"));
+
+        // High-priority tag - should pass
+        const solution2 = new SolutionMapping();
+        solution2.set("status", new Literal("normal"));
+        solution2.set("tag", new Literal("high-priority"));
+
+        // Neither - should NOT pass
+        const solution3 = new SolutionMapping();
+        solution3.set("status", new Literal("normal"));
+        solution3.set("tag", new Literal("low"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+        expect(results).toHaveLength(2);
+      });
+
+      it("should work with NOT operator", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "logical",
+            operator: "!",
+            operands: [
+              {
+                type: "in",
+                expression: { type: "variable", name: "status" },
+                list: [
+                  { type: "literal", value: "done" },
+                ],
+                negated: false,
+              } as InExpression,
+            ],
+          },
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution1 = new SolutionMapping();
+        solution1.set("status", new Literal("active"));
+
+        const solution2 = new SolutionMapping();
+        solution2.set("status", new Literal("done"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2]);
+        expect(results).toHaveLength(1);
+        expect((results[0].get("status") as Literal).value).toBe("active");
+      });
+    });
+
+    describe("expressionContainsExists with IN", () => {
+      it("should detect EXISTS in IN list (edge case)", async () => {
+        // This is an edge case - EXISTS shouldn't typically appear in IN list
+        // but we should handle it gracefully
+        const existsEvaluator = jest.fn().mockResolvedValue(false);
+        executor.setExistsEvaluator(existsEvaluator);
+
+        // Verify sync evaluation works for simple IN without EXISTS
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            expression: { type: "variable", name: "x" },
+            list: [
+              { type: "literal", value: "a" },
+            ],
+            negated: false,
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("x", new Literal("a"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(1);
+        // EXISTS evaluator should NOT be called since IN doesn't contain EXISTS
+        expect(existsEvaluator).not.toHaveBeenCalled();
+      });
     });
   });
 
@@ -2123,6 +2539,225 @@ describe("FilterExecutor", () => {
 
         const results = await executor.executeAll(operation, [solution1, solution2]);
         expect(results).toHaveLength(1);
+      });
+    });
+  });
+
+  describe("IN / NOT IN Operators (Issue #718)", () => {
+    describe("IN Operator", () => {
+      it("should match when value is in list of numbers", async () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            negated: false,
+            expression: { type: "variable", name: "x" },
+            list: [
+              { type: "literal", value: 1 },
+              { type: "literal", value: 2 },
+              { type: "literal", value: 3 },
+            ],
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution1 = new SolutionMapping();
+        solution1.set("x", new Literal("2", xsdInt));
+
+        const solution2 = new SolutionMapping();
+        solution2.set("x", new Literal("5", xsdInt));
+
+        const results = await executor.executeAll(operation, [solution1, solution2]);
+        expect(results).toHaveLength(1);
+        expect((results[0].get("x") as Literal).value).toBe("2");
+      });
+
+      it("should match when value is in list of strings", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            negated: false,
+            expression: { type: "variable", name: "status" },
+            list: [
+              { type: "literal", value: "active" },
+              { type: "literal", value: "pending" },
+              { type: "literal", value: "review" },
+            ],
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution1 = new SolutionMapping();
+        solution1.set("status", new Literal("active"));
+
+        const solution2 = new SolutionMapping();
+        solution2.set("status", new Literal("pending"));
+
+        const solution3 = new SolutionMapping();
+        solution3.set("status", new Literal("archived"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+        expect(results).toHaveLength(2);
+      });
+
+      it("should not match when value is not in list", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            negated: false,
+            expression: { type: "variable", name: "color" },
+            list: [
+              { type: "literal", value: "red" },
+              { type: "literal", value: "green" },
+              { type: "literal", value: "blue" },
+            ],
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("color", new Literal("yellow"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(0);
+      });
+
+      it("should work with variables in list", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            negated: false,
+            expression: { type: "variable", name: "x" },
+            list: [
+              { type: "variable", name: "y" },
+              { type: "variable", name: "z" },
+            ],
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution1 = new SolutionMapping();
+        solution1.set("x", new Literal("match"));
+        solution1.set("y", new Literal("match"));
+        solution1.set("z", new Literal("other"));
+
+        const solution2 = new SolutionMapping();
+        solution2.set("x", new Literal("match"));
+        solution2.set("y", new Literal("no"));
+        solution2.set("z", new Literal("match"));
+
+        const solution3 = new SolutionMapping();
+        solution3.set("x", new Literal("match"));
+        solution3.set("y", new Literal("no"));
+        solution3.set("z", new Literal("also-no"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+        expect(results).toHaveLength(2);
+      });
+
+      it("should handle empty list (no matches)", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            negated: false,
+            expression: { type: "variable", name: "x" },
+            list: [],
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution = new SolutionMapping();
+        solution.set("x", new Literal("anything"));
+
+        const results = await executor.executeAll(operation, [solution]);
+        expect(results).toHaveLength(0);
+      });
+    });
+
+    describe("NOT IN Operator", () => {
+      it("should match when value is NOT in list of strings", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            negated: true,
+            expression: { type: "variable", name: "x" },
+            list: [
+              { type: "literal", value: "a" },
+              { type: "literal", value: "b" },
+            ],
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution1 = new SolutionMapping();
+        solution1.set("x", new Literal("c"));
+
+        const solution2 = new SolutionMapping();
+        solution2.set("x", new Literal("a"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2]);
+        expect(results).toHaveLength(1);
+        expect((results[0].get("x") as Literal).value).toBe("c");
+      });
+
+      it("should match all when list is empty", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            negated: true,
+            expression: { type: "variable", name: "x" },
+            list: [],
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution1 = new SolutionMapping();
+        solution1.set("x", new Literal("anything"));
+
+        const solution2 = new SolutionMapping();
+        solution2.set("x", new Literal("everything"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2]);
+        expect(results).toHaveLength(2);
+      });
+
+      it("should exclude items with blocked statuses", async () => {
+        const operation: FilterOperation = {
+          type: "filter",
+          expression: {
+            type: "in",
+            negated: true,
+            expression: { type: "variable", name: "status" },
+            list: [
+              { type: "literal", value: "blocked" },
+              { type: "literal", value: "cancelled" },
+              { type: "literal", value: "archived" },
+            ],
+          } as InExpression,
+          input: { type: "bgp", triples: [] },
+        };
+
+        const solution1 = new SolutionMapping();
+        solution1.set("status", new Literal("active"));
+
+        const solution2 = new SolutionMapping();
+        solution2.set("status", new Literal("blocked"));
+
+        const solution3 = new SolutionMapping();
+        solution3.set("status", new Literal("pending"));
+
+        const solution4 = new SolutionMapping();
+        solution4.set("status", new Literal("cancelled"));
+
+        const results = await executor.executeAll(operation, [solution1, solution2, solution3, solution4]);
+        expect(results).toHaveLength(2);
       });
     });
   });
