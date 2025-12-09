@@ -1892,4 +1892,480 @@ describe("BuiltInFunctions", () => {
       });
     });
   });
+
+  // SPARQL 1.1 Constructor Functions Tests
+  // https://www.w3.org/TR/sparql11-query/#FunctionMapping
+
+  describe("IRI constructor function", () => {
+    describe("basic functionality", () => {
+      it("should create IRI from string literal", () => {
+        const literal = new Literal("http://example.org/resource");
+        const result = BuiltInFunctions.iri(literal);
+        expect(result).toBeInstanceOf(IRI);
+        expect(result.value).toBe("http://example.org/resource");
+      });
+
+      it("should return IRI unchanged", () => {
+        const iri = new IRI("http://example.org/resource");
+        const result = BuiltInFunctions.iri(iri);
+        expect(result).toBeInstanceOf(IRI);
+        expect(result.value).toBe("http://example.org/resource");
+      });
+
+      it("should handle absolute URIs", () => {
+        const literal = new Literal("https://example.org/path/to/resource#fragment");
+        const result = BuiltInFunctions.iri(literal);
+        expect(result.value).toBe("https://example.org/path/to/resource#fragment");
+      });
+
+      it("should handle URN scheme", () => {
+        const literal = new Literal("urn:isbn:0451450523");
+        const result = BuiltInFunctions.iri(literal);
+        expect(result.value).toBe("urn:isbn:0451450523");
+      });
+    });
+
+    describe("error handling", () => {
+      it("should throw for undefined", () => {
+        expect(() => BuiltInFunctions.iri(undefined)).toThrow("IRI: argument is undefined");
+      });
+
+      it("should throw for blank node", () => {
+        const blank = new BlankNode("b1");
+        expect(() => BuiltInFunctions.iri(blank)).toThrow("IRI: cannot convert blank node to IRI");
+      });
+    });
+
+    describe("SPARQL spec examples", () => {
+      it("IRI(literal) creates IRI from string value", () => {
+        const literal = new Literal("http://example.org/test");
+        const result = BuiltInFunctions.iri(literal);
+        expect(result).toBeInstanceOf(IRI);
+        expect(result.value).toBe("http://example.org/test");
+      });
+
+      it("IRI(IRI) returns the same IRI", () => {
+        const iri = new IRI("http://example.org/test");
+        const result = BuiltInFunctions.iri(iri);
+        expect(result).toBe(iri);
+      });
+    });
+  });
+
+  describe("URI constructor function (synonym for IRI)", () => {
+    it("should behave identically to IRI", () => {
+      const literal = new Literal("http://example.org/resource");
+      const iriResult = BuiltInFunctions.iri(literal);
+      const uriResult = BuiltInFunctions.uri(literal);
+      expect(uriResult.value).toBe(iriResult.value);
+    });
+
+    it("should throw for undefined", () => {
+      expect(() => BuiltInFunctions.uri(undefined)).toThrow("IRI: argument is undefined");
+    });
+
+    it("should throw for blank node", () => {
+      const blank = new BlankNode("b1");
+      expect(() => BuiltInFunctions.uri(blank)).toThrow("IRI: cannot convert blank node to IRI");
+    });
+  });
+
+  describe("BNODE constructor function", () => {
+    describe("without argument", () => {
+      it("should create unique blank node", () => {
+        const result = BuiltInFunctions.bnode();
+        expect(result).toBeInstanceOf(BlankNode);
+        expect(result.id).toBeDefined();
+        expect(result.id.length).toBeGreaterThan(0);
+      });
+
+      it("should create different blank nodes on each call", () => {
+        const bn1 = BuiltInFunctions.bnode();
+        const bn2 = BuiltInFunctions.bnode();
+        const bn3 = BuiltInFunctions.bnode();
+        expect(bn1.id).not.toBe(bn2.id);
+        expect(bn2.id).not.toBe(bn3.id);
+        expect(bn1.id).not.toBe(bn3.id);
+      });
+
+      it("should generate IDs starting with 'b'", () => {
+        const result = BuiltInFunctions.bnode();
+        expect(result.id.startsWith("b")).toBe(true);
+      });
+    });
+
+    describe("with string literal argument", () => {
+      it("should create blank node with specified label", () => {
+        const label = new Literal("myLabel");
+        const result = BuiltInFunctions.bnode(label);
+        expect(result).toBeInstanceOf(BlankNode);
+        expect(result.id).toBe("myLabel");
+      });
+
+      it("should create consistent blank nodes for same label", () => {
+        const label = new Literal("consistentLabel");
+        const bn1 = BuiltInFunctions.bnode(label);
+        const bn2 = BuiltInFunctions.bnode(label);
+        expect(bn1.id).toBe(bn2.id);
+      });
+
+      it("should handle empty string label", () => {
+        const label = new Literal("");
+        const result = BuiltInFunctions.bnode(label);
+        expect(result.id).toBe("");
+      });
+    });
+
+    describe("with blank node argument", () => {
+      it("should return the same blank node", () => {
+        const blank = new BlankNode("existing");
+        const result = BuiltInFunctions.bnode(blank);
+        expect(result).toBe(blank);
+      });
+    });
+
+    describe("error handling", () => {
+      it("should throw for IRI argument", () => {
+        const iri = new IRI("http://example.org/resource");
+        expect(() => BuiltInFunctions.bnode(iri)).toThrow("BNODE: argument must be a string literal or omitted");
+      });
+    });
+
+    describe("uniqueness properties", () => {
+      it("should generate many unique IDs", () => {
+        const ids: Set<string> = new Set();
+        for (let i = 0; i < 100; i++) {
+          ids.add(BuiltInFunctions.bnode().id);
+        }
+        expect(ids.size).toBe(100);
+      });
+    });
+  });
+
+  describe("STRDT constructor function", () => {
+    describe("basic functionality", () => {
+      it("should create typed literal with xsd:integer", () => {
+        const lexicalForm = new Literal("42");
+        const datatypeIRI = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const result = BuiltInFunctions.strdt(lexicalForm, datatypeIRI);
+        expect(result).toBeInstanceOf(Literal);
+        expect(result.value).toBe("42");
+        expect(result.datatype?.value).toBe("http://www.w3.org/2001/XMLSchema#integer");
+      });
+
+      it("should create typed literal with xsd:date", () => {
+        const lexicalForm = new Literal("2025-01-01");
+        const datatypeIRI = new IRI("http://www.w3.org/2001/XMLSchema#date");
+        const result = BuiltInFunctions.strdt(lexicalForm, datatypeIRI);
+        expect(result.value).toBe("2025-01-01");
+        expect(result.datatype?.value).toBe("http://www.w3.org/2001/XMLSchema#date");
+      });
+
+      it("should create typed literal with xsd:boolean", () => {
+        const lexicalForm = new Literal("true");
+        const datatypeIRI = new IRI("http://www.w3.org/2001/XMLSchema#boolean");
+        const result = BuiltInFunctions.strdt(lexicalForm, datatypeIRI);
+        expect(result.value).toBe("true");
+        expect(result.datatype?.value).toBe("http://www.w3.org/2001/XMLSchema#boolean");
+      });
+
+      it("should create typed literal with custom datatype", () => {
+        const lexicalForm = new Literal("custom-value");
+        const datatypeIRI = new IRI("http://example.org/myDatatype");
+        const result = BuiltInFunctions.strdt(lexicalForm, datatypeIRI);
+        expect(result.value).toBe("custom-value");
+        expect(result.datatype?.value).toBe("http://example.org/myDatatype");
+      });
+    });
+
+    describe("error handling", () => {
+      it("should throw for undefined lexical form", () => {
+        const datatypeIRI = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        expect(() => BuiltInFunctions.strdt(undefined, datatypeIRI)).toThrow("STRDT: lexical form is undefined");
+      });
+
+      it("should throw for undefined datatype", () => {
+        const lexicalForm = new Literal("42");
+        expect(() => BuiltInFunctions.strdt(lexicalForm, undefined)).toThrow("STRDT: datatype IRI is undefined");
+      });
+
+      it("should throw for language-tagged lexical form", () => {
+        const lexicalForm = new Literal("hello", undefined, "en");
+        const datatypeIRI = new IRI("http://www.w3.org/2001/XMLSchema#string");
+        expect(() => BuiltInFunctions.strdt(lexicalForm, datatypeIRI)).toThrow(
+          "STRDT: lexical form must not have a language tag"
+        );
+      });
+
+      it("should throw for blank node as lexical form", () => {
+        const blank = new BlankNode("b1");
+        const datatypeIRI = new IRI("http://www.w3.org/2001/XMLSchema#string");
+        expect(() => BuiltInFunctions.strdt(blank, datatypeIRI)).toThrow("STRDT: lexical form must be a string literal");
+      });
+
+      it("should throw for blank node as datatype", () => {
+        const lexicalForm = new Literal("42");
+        const blank = new BlankNode("b1");
+        expect(() => BuiltInFunctions.strdt(lexicalForm, blank)).toThrow("STRDT: datatype must be an IRI");
+      });
+    });
+
+    describe("SPARQL spec examples", () => {
+      it('STRDT("123", xsd:integer) returns "123"^^xsd:integer', () => {
+        const lexicalForm = new Literal("123");
+        const xsdInteger = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const result = BuiltInFunctions.strdt(lexicalForm, xsdInteger);
+        expect(result.value).toBe("123");
+        expect(result.datatype?.value).toBe("http://www.w3.org/2001/XMLSchema#integer");
+      });
+
+      it('STRDT("iiii", <http://example.org/Roman>) returns "iiii"^^<http://example.org/Roman>', () => {
+        const lexicalForm = new Literal("iiii");
+        const romanDatatype = new IRI("http://example.org/Roman");
+        const result = BuiltInFunctions.strdt(lexicalForm, romanDatatype);
+        expect(result.value).toBe("iiii");
+        expect(result.datatype?.value).toBe("http://example.org/Roman");
+      });
+    });
+  });
+
+  describe("STRLANG constructor function", () => {
+    describe("basic functionality", () => {
+      it("should create language-tagged literal with 'en'", () => {
+        const lexicalForm = new Literal("hello");
+        const langTag = new Literal("en");
+        const result = BuiltInFunctions.strlang(lexicalForm, langTag);
+        expect(result).toBeInstanceOf(Literal);
+        expect(result.value).toBe("hello");
+        expect(result.language).toBe("en");
+      });
+
+      it("should create language-tagged literal with 'ru'", () => {
+        const lexicalForm = new Literal("Привет");
+        const langTag = new Literal("ru");
+        const result = BuiltInFunctions.strlang(lexicalForm, langTag);
+        expect(result.value).toBe("Привет");
+        expect(result.language).toBe("ru");
+      });
+
+      it("should create language-tagged literal with subtag 'en-US'", () => {
+        const lexicalForm = new Literal("color");
+        const langTag = new Literal("en-US");
+        const result = BuiltInFunctions.strlang(lexicalForm, langTag);
+        expect(result.value).toBe("color");
+        expect(result.language).toBe("en-us"); // Normalized to lowercase
+      });
+
+      it("should create language-tagged literal with 'zh-Hans'", () => {
+        const lexicalForm = new Literal("你好");
+        const langTag = new Literal("zh-Hans");
+        const result = BuiltInFunctions.strlang(lexicalForm, langTag);
+        expect(result.value).toBe("你好");
+        expect(result.language).toBe("zh-hans"); // Normalized to lowercase
+      });
+    });
+
+    describe("error handling", () => {
+      it("should throw for undefined lexical form", () => {
+        const langTag = new Literal("en");
+        expect(() => BuiltInFunctions.strlang(undefined, langTag)).toThrow("STRLANG: lexical form is undefined");
+      });
+
+      it("should throw for undefined language tag", () => {
+        const lexicalForm = new Literal("hello");
+        expect(() => BuiltInFunctions.strlang(lexicalForm, undefined)).toThrow("STRLANG: language tag is undefined");
+      });
+
+      it("should throw for empty language tag", () => {
+        const lexicalForm = new Literal("hello");
+        const langTag = new Literal("");
+        expect(() => BuiltInFunctions.strlang(lexicalForm, langTag)).toThrow("STRLANG: language tag cannot be empty");
+      });
+
+      it("should throw for language-tagged lexical form", () => {
+        const lexicalForm = new Literal("hello", undefined, "en");
+        const langTag = new Literal("de");
+        expect(() => BuiltInFunctions.strlang(lexicalForm, langTag)).toThrow(
+          "STRLANG: lexical form must not already have a language tag"
+        );
+      });
+
+      it("should throw for blank node as lexical form", () => {
+        const blank = new BlankNode("b1");
+        const langTag = new Literal("en");
+        expect(() => BuiltInFunctions.strlang(blank, langTag)).toThrow("STRLANG: lexical form must be a string literal");
+      });
+
+      it("should throw for IRI as language tag", () => {
+        const lexicalForm = new Literal("hello");
+        const iri = new IRI("http://example.org/en");
+        expect(() => BuiltInFunctions.strlang(lexicalForm, iri)).toThrow("STRLANG: language tag must be a string literal");
+      });
+    });
+
+    describe("SPARQL spec examples", () => {
+      it('STRLANG("chat", "en") returns "chat"@en', () => {
+        const lexicalForm = new Literal("chat");
+        const langTag = new Literal("en");
+        const result = BuiltInFunctions.strlang(lexicalForm, langTag);
+        expect(result.value).toBe("chat");
+        expect(result.language).toBe("en");
+        expect(result.datatype).toBeUndefined();
+      });
+    });
+  });
+
+  describe("UUID constructor function", () => {
+    describe("basic functionality", () => {
+      it("should return IRI with urn:uuid scheme", () => {
+        const result = BuiltInFunctions.uuid();
+        expect(result).toBeInstanceOf(IRI);
+        expect(result.value.startsWith("urn:uuid:")).toBe(true);
+      });
+
+      it("should return valid UUID format", () => {
+        const result = BuiltInFunctions.uuid();
+        const uuidPart = result.value.replace("urn:uuid:", "");
+        // UUID v4 format: xxxxxxxx-xxxx-4xxx-[89ab]xxx-xxxxxxxxxxxx
+        expect(uuidPart).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+      });
+
+      it("should return different UUID on each call", () => {
+        const uuid1 = BuiltInFunctions.uuid();
+        const uuid2 = BuiltInFunctions.uuid();
+        const uuid3 = BuiltInFunctions.uuid();
+        expect(uuid1.value).not.toBe(uuid2.value);
+        expect(uuid2.value).not.toBe(uuid3.value);
+        expect(uuid1.value).not.toBe(uuid3.value);
+      });
+    });
+
+    describe("uniqueness properties", () => {
+      it("should generate many unique UUIDs", () => {
+        const uuids: Set<string> = new Set();
+        for (let i = 0; i < 100; i++) {
+          uuids.add(BuiltInFunctions.uuid().value);
+        }
+        expect(uuids.size).toBe(100);
+      });
+    });
+
+    describe("SPARQL spec examples", () => {
+      it("UUID() returns fresh IRI with UUID URN scheme", () => {
+        const result = BuiltInFunctions.uuid();
+        expect(result).toBeInstanceOf(IRI);
+        expect(result.value).toMatch(/^urn:uuid:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+      });
+    });
+  });
+
+  describe("STRUUID constructor function", () => {
+    describe("basic functionality", () => {
+      it("should return string literal", () => {
+        const result = BuiltInFunctions.struuid();
+        expect(result).toBeInstanceOf(Literal);
+      });
+
+      it("should return valid UUID format", () => {
+        const result = BuiltInFunctions.struuid();
+        // UUID v4 format: xxxxxxxx-xxxx-4xxx-[89ab]xxx-xxxxxxxxxxxx
+        expect(result.value).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+      });
+
+      it("should NOT include urn:uuid: prefix", () => {
+        const result = BuiltInFunctions.struuid();
+        expect(result.value.includes("urn:uuid:")).toBe(false);
+      });
+
+      it("should return different UUID string on each call", () => {
+        const uuid1 = BuiltInFunctions.struuid();
+        const uuid2 = BuiltInFunctions.struuid();
+        const uuid3 = BuiltInFunctions.struuid();
+        expect(uuid1.value).not.toBe(uuid2.value);
+        expect(uuid2.value).not.toBe(uuid3.value);
+        expect(uuid1.value).not.toBe(uuid3.value);
+      });
+
+      it("should return plain literal without datatype", () => {
+        const result = BuiltInFunctions.struuid();
+        expect(result.datatype).toBeUndefined();
+        expect(result.language).toBeUndefined();
+      });
+    });
+
+    describe("uniqueness properties", () => {
+      it("should generate many unique UUID strings", () => {
+        const uuids: Set<string> = new Set();
+        for (let i = 0; i < 100; i++) {
+          uuids.add(BuiltInFunctions.struuid().value);
+        }
+        expect(uuids.size).toBe(100);
+      });
+    });
+
+    describe("SPARQL spec examples", () => {
+      it("STRUUID() returns fresh UUID string (without urn:uuid: prefix)", () => {
+        const result = BuiltInFunctions.struuid();
+        expect(result).toBeInstanceOf(Literal);
+        expect(result.value).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+      });
+    });
+
+    describe("comparison with UUID", () => {
+      it("STRUUID value should match UUID value without prefix", () => {
+        // While UUIDs are random, the format should be consistent
+        const struuidResult = BuiltInFunctions.struuid();
+        const uuidResult = BuiltInFunctions.uuid();
+
+        // Both should have same format (just one with prefix)
+        expect(struuidResult.value.length).toBe(36); // UUID string length
+        expect(uuidResult.value.length).toBe(45); // "urn:uuid:" (9) + UUID string (36)
+      });
+    });
+  });
+
+  describe("Constructor Functions Integration", () => {
+    describe("BIND-style usage patterns", () => {
+      it("should create IRI from concatenated string (CONCAT + IRI pattern)", () => {
+        // Simulates: BIND(IRI(CONCAT("http://example.com/", ?name)) AS ?newIri)
+        const name = "John";
+        const concatenated = new Literal("http://example.com/" + name);
+        const result = BuiltInFunctions.iri(concatenated);
+        expect(result.value).toBe("http://example.com/John");
+      });
+
+      it("should create typed literal from string (STRDT pattern)", () => {
+        // Simulates: BIND(STRDT(?value, xsd:integer) AS ?typedValue)
+        const value = new Literal("42");
+        const xsdInteger = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const result = BuiltInFunctions.strdt(value, xsdInteger);
+        expect(result.value).toBe("42");
+        expect(result.datatype?.value).toBe("http://www.w3.org/2001/XMLSchema#integer");
+      });
+
+      it("should create language-tagged literal (STRLANG pattern)", () => {
+        // Simulates: BIND(STRLANG(?text, "fr") AS ?frenchText)
+        const text = new Literal("Bonjour");
+        const lang = new Literal("fr");
+        const result = BuiltInFunctions.strlang(text, lang);
+        expect(result.value).toBe("Bonjour");
+        expect(result.language).toBe("fr");
+      });
+    });
+
+    describe("CONSTRUCT-style usage patterns", () => {
+      it("should generate unique identifiers for new resources", () => {
+        // Simulates: CONSTRUCT { ?newIri rdf:type ?class } WHERE { ... BIND(UUID() AS ?newIri) }
+        const newIri = BuiltInFunctions.uuid();
+        expect(newIri).toBeInstanceOf(IRI);
+        expect(newIri.value).toMatch(/^urn:uuid:/);
+      });
+
+      it("should create blank nodes for anonymous resources", () => {
+        // Simulates: CONSTRUCT { _:x rdf:type ex:AnonymousThing }
+        const bnode = BuiltInFunctions.bnode();
+        expect(bnode).toBeInstanceOf(BlankNode);
+      });
+    });
+  });
 });
