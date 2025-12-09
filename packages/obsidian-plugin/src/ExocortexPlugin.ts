@@ -203,6 +203,13 @@ export default class ExocortexPlugin extends Plugin {
       return;
     }
 
+    // Only render in Reading Mode (Preview), not in Edit Mode (Source/Live Preview)
+    // getMode() returns 'preview' for Reading Mode, 'source' for Edit Mode
+    const mode = view.getMode();
+    if (mode !== "preview") {
+      return;
+    }
+
     // Get the container element from the view
     // Use containerEl which contains the entire view DOM
     const viewContainer = view.containerEl;
