@@ -139,14 +139,37 @@ ems__Effort_status: "[[ems__EffortStatusBacklog]]"
 **Button**: "Add Supervision"
 **Keyboard**: Cmd/Ctrl + P → "Add Supervision"
 
-**Purpose**: Create supervision relationship for tracking oversight.
+**Purpose**: Create a structured CBT (Cognitive Behavioral Therapy) diary record for self-reflection.
 
 **Usage**:
-1. Open note to supervise
-2. Click "Add Supervision" button
-3. Fill form with supervisor details
+1. Cmd/Ctrl + P → "Add Supervision"
+2. Fill form with CBT fields:
+   - **Situation/trigger**: What happened
+   - **Emotions**: How you felt
+   - **Thoughts**: What you were thinking
+   - **Behavior**: What you did
+   - **Short-term consequences**: Immediate effects
+   - **Long-term consequences**: Future implications
+3. Click OK
 
-**Visibility**: Available on effort assets.
+**Result**: Creates specialized fleeting note in `01 Inbox/` with:
+```yaml
+---
+exo__Instance_class: ztlk__FleetingNote
+ztlk__FleetingNote_type: "[[CBT-Diary Record]]"
+---
+
+- Ситуация/триггер: [situation]
+- Эмоции: [emotions]
+- Мысли: [thoughts]
+- Поведение: [behavior]
+- Краткосрочные последствия поведения: [short-term]
+- Долгосрочные последствия поведения: [long-term]
+```
+
+**Visibility**: Always available.
+
+**Note**: This is a specialized fleeting note for CBT self-reflection. For simple quick-capture notes, use [Create Fleeting Note](#create-fleeting-note).
 
 ---
 

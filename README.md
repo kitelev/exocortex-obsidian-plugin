@@ -215,14 +215,15 @@ Keep your vault organized:
 | **Repair Folder** | Assets with exo__Asset_isDefinedBy | Move file to correct folder based on reference |
 | **Rename to UID** | Filename ≠ exo__Asset_uid | Rename file to match UID, preserve label |
 
-### System Commands (7)
+### System Commands (8)
 
 Control plugin behavior and visualization:
 
 | Command | Always Available | Action |
 |---------|-----------------|--------|
 | **Reload Layout** | Yes | Manually refresh layout rendering |
-| **Add Supervision** | Yes | Create CBT-format fleeting note in 01 Inbox |
+| **Create Fleeting Note** | Yes | Create quick-capture note with label in 01 Inbox |
+| **Add Supervision** | Yes | Create CBT diary record (structured fleeting note with situation/emotions/thoughts/behavior) |
 | **Toggle Layout Visibility** | Yes | Show/hide entire layout section |
 | **Toggle Properties Visibility** | Yes | Show/hide properties table |
 | **Toggle Archived Assets Visibility** | Yes | Show/hide archived assets in layout tables (persists in settings) |
