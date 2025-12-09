@@ -604,6 +604,31 @@ Archived assets represent completed or inactive items that you want to keep for 
 
 Special-purpose commands.
 
+### Edit Properties
+
+**Command ID**: `edit-properties`
+**Keyboard**: Cmd/Ctrl + P → "Edit Properties"
+
+**Purpose**: Open a dedicated modal for editing frontmatter properties of the current note.
+
+**Usage**:
+1. Open any note with frontmatter
+2. Cmd/Ctrl + P → "Edit Properties"
+3. Modal shows all editable properties for the note's class
+4. Modify values using appropriate field types (text, datetime, toggles)
+5. Click Save to apply changes
+
+**Features**:
+- Class-aware property display (shows relevant properties for the note type)
+- Type-specific editors (datetime picker, text input, toggles)
+- Wiki-link property support
+- Validation before save
+- Layout auto-refresh after save
+
+**Visibility**: Available on notes with frontmatter.
+
+---
+
 ### Open Query Builder
 
 **Command ID**: `open-query-builder`
@@ -657,6 +682,7 @@ Special-purpose commands.
 | Toggle Properties Visibility | View | Cmd/Ctrl+P | Yes |
 | Toggle Archived Assets Visibility | View | Cmd/Ctrl+P | Yes |
 | Reload Layout | View | Cmd/Ctrl+P | Yes |
+| Edit Properties | Utility | Cmd/Ctrl+P | No |
 | Open Query Builder | Utility | Cmd/Ctrl+P | Yes |
 
 ---
@@ -673,6 +699,7 @@ Commands appear contextually based on note type and state:
 | `ems__Project` | Create Task, Status commands, Planning commands, Convert to Task |
 | `ems__Area` | Create Project |
 | `pn__DailyNote` | Create Task, Set Focus Area |
+| Any (with frontmatter) | Edit Properties |
 | Any | Clean Properties, Reload Layout, Open Query Builder, Toggle Archived Assets Visibility |
 
 ### By Status
