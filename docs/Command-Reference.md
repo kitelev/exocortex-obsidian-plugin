@@ -538,19 +538,48 @@ Commands for controlling layout display.
 
 ---
 
-### Toggle Archived Assets
+### Toggle Archived Assets Visibility
 
-**Command ID**: `toggle-archived-assets`
-**Button**: "Toggle Archived Assets" or "Show Archived"
-**Keyboard**: Cmd/Ctrl + P → "Toggle Archived Assets"
+**Command ID**: `toggle-archived-assets-visibility`
+**Button**: "Show/Hide Archived" (in Daily Tasks and Daily Projects tables)
+**Keyboard**: Cmd/Ctrl + P → "Exocortex: Toggle archived assets visibility"
 
-**Purpose**: Show/hide archived tasks in daily note.
+**Purpose**: Toggle visibility of archived assets across all layout tables.
+
+**What are "Archived Assets"?**
+
+Assets (tasks, projects) can be marked as archived in two ways:
+```yaml
+exo__Asset_isArchived: true
+# or
+archived: true
+```
+
+Archived assets represent completed or inactive items that you want to keep for reference but hide from active views.
 
 **Effect**:
-- Shows archived tasks (greyed out)
-- Clicking again hides them
+- **When OFF (default)**: Archived assets are hidden from:
+  - Daily Tasks table
+  - Daily Projects table
+  - Asset Relations table
+- **When ON**: Archived assets are shown with:
+  - Reduced opacity (greyed out styling)
+  - Full functionality preserved
 
-**Visibility**: Available on `pn__DailyNote`.
+**Notification**: Shows "Archived assets shown" or "Archived assets hidden" after toggle.
+
+**Persisted**: Setting saves to plugin configuration and persists across sessions.
+
+**Use cases**:
+- **Daily planning**: Hide completed tasks to focus on active work
+- **Review mode**: Show archived to review past completions
+- **Cleanup**: Identify archived items that can be permanently deleted
+
+**Alternative Access**:
+- Settings → Exocortex → "Show Archived Assets" toggle
+- "Show/Hide Archived" button in Daily Tasks and Daily Projects tables
+
+**Visibility**: Always available via Command Palette.
 
 ---
 
@@ -626,7 +655,7 @@ Special-purpose commands.
 | Convert Project to Task | Maintenance | Cmd/Ctrl+P | Yes |
 | Toggle Layout Visibility | View | Cmd/Ctrl+P | Yes |
 | Toggle Properties Visibility | View | Cmd/Ctrl+P | Yes |
-| Toggle Archived Assets | View | Cmd/Ctrl+P | Yes (Daily) |
+| Toggle Archived Assets Visibility | View | Cmd/Ctrl+P | Yes |
 | Reload Layout | View | Cmd/Ctrl+P | Yes |
 | Open Query Builder | Utility | Cmd/Ctrl+P | Yes |
 
@@ -643,8 +672,8 @@ Commands appear contextually based on note type and state:
 | `ems__Task` | Create Related Task, Status commands, Planning commands, Convert to Project |
 | `ems__Project` | Create Task, Status commands, Planning commands, Convert to Task |
 | `ems__Area` | Create Project |
-| `pn__DailyNote` | Create Task, Set Focus Area, Toggle Archived Assets |
-| Any | Clean Properties, Reload Layout, Open Query Builder |
+| `pn__DailyNote` | Create Task, Set Focus Area |
+| Any | Clean Properties, Reload Layout, Open Query Builder, Toggle Archived Assets Visibility |
 
 ### By Status
 
