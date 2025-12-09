@@ -673,6 +673,27 @@ export class FilterExecutor {
         const sameTerm2 = this.getTermFromExpression(expr.args[1], solution);
         return BuiltInFunctions.sameTerm(sameTerm1, sameTerm2);
 
+      // SPARQL 1.1 Hash Functions
+      case "md5":
+        const md5Arg = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.md5(md5Arg);
+
+      case "sha1":
+        const sha1Arg = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.sha1(sha1Arg);
+
+      case "sha256":
+        const sha256Arg = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.sha256(sha256Arg);
+
+      case "sha384":
+        const sha384Arg = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.sha384(sha384Arg);
+
+      case "sha512":
+        const sha512Arg = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.sha512(sha512Arg);
+
       default:
         throw new FilterExecutorError(`Unknown function: ${funcName}`);
     }

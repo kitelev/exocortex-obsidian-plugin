@@ -3146,4 +3146,126 @@ describe("FilterExecutor", () => {
       expect(results).toHaveLength(2);
     });
   });
+
+  describe("Hash Functions", () => {
+    it("should evaluate MD5 function", async () => {
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal("test"));
+
+      // Test MD5 returns correct hash
+      const result = executor.evaluateExpression(
+        {
+          type: "function",
+          function: "md5",
+          args: [{ type: "variable", name: "x" }],
+        },
+        solution
+      );
+      expect(result).toBe("098f6bcd4621d373cade4e832627b4f6");
+    });
+
+    it("should evaluate SHA1 function", async () => {
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal("test"));
+
+      const result = executor.evaluateExpression(
+        {
+          type: "function",
+          function: "sha1",
+          args: [{ type: "variable", name: "x" }],
+        },
+        solution
+      );
+      expect(result).toBe("a94a8fe5ccb19ba61c4c0873d391e987982fbbd3");
+    });
+
+    it("should evaluate SHA256 function", async () => {
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal("test"));
+
+      const result = executor.evaluateExpression(
+        {
+          type: "function",
+          function: "sha256",
+          args: [{ type: "variable", name: "x" }],
+        },
+        solution
+      );
+      expect(result).toBe("9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08");
+    });
+
+    it("should evaluate SHA384 function", async () => {
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal(""));
+
+      const result = executor.evaluateExpression(
+        {
+          type: "function",
+          function: "sha384",
+          args: [{ type: "variable", name: "x" }],
+        },
+        solution
+      );
+      expect(result).toBe(
+        "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b"
+      );
+    });
+
+    it("should evaluate SHA512 function", async () => {
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal(""));
+
+      const result = executor.evaluateExpression(
+        {
+          type: "function",
+          function: "sha512",
+          args: [{ type: "variable", name: "x" }],
+        },
+        solution
+      );
+      expect(result).toBe(
+        "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+      );
+    });
+
+    it("should filter by hashed value comparison", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "md5",
+            args: [{ type: "variable", name: "email" }],
+          },
+          right: { type: "literal", value: "098f6bcd4621d373cade4e832627b4f6" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("email", new Literal("test"));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("email", new Literal("other"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should work with literal values directly", async () => {
+      const solution = new SolutionMapping();
+
+      const result = executor.evaluateExpression(
+        {
+          type: "function",
+          function: "sha256",
+          args: [{ type: "literal", value: "hello" }],
+        },
+        solution
+      );
+      expect(result).toBe("2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824");
+    });
+  });
 });

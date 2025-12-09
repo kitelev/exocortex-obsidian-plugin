@@ -1727,4 +1727,169 @@ describe("BuiltInFunctions", () => {
       });
     });
   });
+
+  describe("SPARQL 1.1 Hash Functions", () => {
+    describe("MD5", () => {
+      it("should return correct hash for 'test'", () => {
+        // Well-known MD5 hash for "test"
+        expect(BuiltInFunctions.md5("test")).toBe("098f6bcd4621d373cade4e832627b4f6");
+      });
+
+      it("should return lowercase hex string", () => {
+        const result = BuiltInFunctions.md5("hello");
+        expect(result).toMatch(/^[0-9a-f]{32}$/);
+      });
+
+      it("should handle empty string", () => {
+        // MD5("") = d41d8cd98f00b204e9800998ecf8427e
+        expect(BuiltInFunctions.md5("")).toBe("d41d8cd98f00b204e9800998ecf8427e");
+      });
+
+      it("should handle unicode strings", () => {
+        const result = BuiltInFunctions.md5("Привет");
+        expect(result).toMatch(/^[0-9a-f]{32}$/);
+        expect(result.length).toBe(32);
+      });
+
+      it("should produce different hashes for different inputs", () => {
+        const hash1 = BuiltInFunctions.md5("test1");
+        const hash2 = BuiltInFunctions.md5("test2");
+        expect(hash1).not.toBe(hash2);
+      });
+    });
+
+    describe("SHA1", () => {
+      it("should return correct hash for 'test'", () => {
+        // Well-known SHA1 hash for "test"
+        expect(BuiltInFunctions.sha1("test")).toBe("a94a8fe5ccb19ba61c4c0873d391e987982fbbd3");
+      });
+
+      it("should return lowercase hex string", () => {
+        const result = BuiltInFunctions.sha1("hello");
+        expect(result).toMatch(/^[0-9a-f]{40}$/);
+      });
+
+      it("should handle empty string", () => {
+        // SHA1("") = da39a3ee5e6b4b0d3255bfef95601890afd80709
+        expect(BuiltInFunctions.sha1("")).toBe("da39a3ee5e6b4b0d3255bfef95601890afd80709");
+      });
+
+      it("should handle unicode strings", () => {
+        const result = BuiltInFunctions.sha1("Привет");
+        expect(result).toMatch(/^[0-9a-f]{40}$/);
+        expect(result.length).toBe(40);
+      });
+
+      it("should produce different hashes for different inputs", () => {
+        const hash1 = BuiltInFunctions.sha1("test1");
+        const hash2 = BuiltInFunctions.sha1("test2");
+        expect(hash1).not.toBe(hash2);
+      });
+    });
+
+    describe("SHA256", () => {
+      it("should return correct hash for 'test'", () => {
+        // Well-known SHA256 hash for "test"
+        expect(BuiltInFunctions.sha256("test")).toBe(
+          "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        );
+      });
+
+      it("should return lowercase hex string", () => {
+        const result = BuiltInFunctions.sha256("hello");
+        expect(result).toMatch(/^[0-9a-f]{64}$/);
+      });
+
+      it("should handle empty string", () => {
+        // SHA256("") = e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        expect(BuiltInFunctions.sha256("")).toBe(
+          "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        );
+      });
+
+      it("should handle unicode strings", () => {
+        const result = BuiltInFunctions.sha256("Привет");
+        expect(result).toMatch(/^[0-9a-f]{64}$/);
+        expect(result.length).toBe(64);
+      });
+
+      it("should produce different hashes for different inputs", () => {
+        const hash1 = BuiltInFunctions.sha256("test1");
+        const hash2 = BuiltInFunctions.sha256("test2");
+        expect(hash1).not.toBe(hash2);
+      });
+    });
+
+    describe("SHA384", () => {
+      it("should return lowercase hex string of correct length", () => {
+        const result = BuiltInFunctions.sha384("test");
+        expect(result).toMatch(/^[0-9a-f]{96}$/);
+        expect(result.length).toBe(96);
+      });
+
+      it("should handle empty string", () => {
+        // SHA384("") starts with 38b060a751ac96...
+        expect(BuiltInFunctions.sha384("")).toBe(
+          "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b"
+        );
+      });
+
+      it("should handle unicode strings", () => {
+        const result = BuiltInFunctions.sha384("Привет");
+        expect(result).toMatch(/^[0-9a-f]{96}$/);
+      });
+
+      it("should produce different hashes for different inputs", () => {
+        const hash1 = BuiltInFunctions.sha384("test1");
+        const hash2 = BuiltInFunctions.sha384("test2");
+        expect(hash1).not.toBe(hash2);
+      });
+    });
+
+    describe("SHA512", () => {
+      it("should return lowercase hex string of correct length", () => {
+        const result = BuiltInFunctions.sha512("test");
+        expect(result).toMatch(/^[0-9a-f]{128}$/);
+        expect(result.length).toBe(128);
+      });
+
+      it("should handle empty string", () => {
+        // SHA512("") starts with cf83e1357eefb8...
+        expect(BuiltInFunctions.sha512("")).toBe(
+          "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+        );
+      });
+
+      it("should handle unicode strings", () => {
+        const result = BuiltInFunctions.sha512("Привет");
+        expect(result).toMatch(/^[0-9a-f]{128}$/);
+      });
+
+      it("should produce different hashes for different inputs", () => {
+        const hash1 = BuiltInFunctions.sha512("test1");
+        const hash2 = BuiltInFunctions.sha512("test2");
+        expect(hash1).not.toBe(hash2);
+      });
+    });
+
+    describe("SPARQL spec use cases", () => {
+      it("should generate reproducible keys from email addresses", () => {
+        const email = "user@example.org";
+        const hash1 = BuiltInFunctions.sha256(email);
+        const hash2 = BuiltInFunctions.sha256(email);
+        expect(hash1).toBe(hash2);
+      });
+
+      it("should generate unique identifiers from strings", () => {
+        const id1 = BuiltInFunctions.md5("resource1");
+        const id2 = BuiltInFunctions.md5("resource2");
+        expect(id1).not.toBe(id2);
+      });
+
+      it("should work with special characters", () => {
+        const result = BuiltInFunctions.sha256("test@email.com#anchor?query=1");
+        expect(result).toMatch(/^[0-9a-f]{64}$/);
+      });
+    });
+  });
 });
