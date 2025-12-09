@@ -46,6 +46,96 @@ describe("BuiltInFunctions", () => {
     });
   });
 
+  describe("langMatches", () => {
+    describe("exact matches", () => {
+      it("should return true for exact match", () => {
+        expect(BuiltInFunctions.langMatches("en", "en")).toBe(true);
+      });
+
+      it("should return true for exact match with subtag", () => {
+        expect(BuiltInFunctions.langMatches("en-US", "en-US")).toBe(true);
+      });
+
+      it("should be case-insensitive", () => {
+        expect(BuiltInFunctions.langMatches("EN", "en")).toBe(true);
+        expect(BuiltInFunctions.langMatches("en", "EN")).toBe(true);
+        expect(BuiltInFunctions.langMatches("En-Us", "en-us")).toBe(true);
+      });
+    });
+
+    describe("prefix matches", () => {
+      it("should return true when tag extends range with hyphen", () => {
+        expect(BuiltInFunctions.langMatches("en-US", "en")).toBe(true);
+        expect(BuiltInFunctions.langMatches("en-GB", "en")).toBe(true);
+        expect(BuiltInFunctions.langMatches("en-GB-oed", "en")).toBe(true);
+      });
+
+      it("should return true for nested subtag matches", () => {
+        expect(BuiltInFunctions.langMatches("en-GB-oed", "en-GB")).toBe(true);
+      });
+
+      it("should return false when range is longer than tag", () => {
+        expect(BuiltInFunctions.langMatches("en", "en-US")).toBe(false);
+      });
+
+      it("should return false for partial prefix without hyphen", () => {
+        // "eng" does NOT start with "en-"
+        expect(BuiltInFunctions.langMatches("eng", "en")).toBe(false);
+      });
+    });
+
+    describe("wildcard matching", () => {
+      it("should return true for any non-empty tag with '*' range", () => {
+        expect(BuiltInFunctions.langMatches("en", "*")).toBe(true);
+        expect(BuiltInFunctions.langMatches("en-US", "*")).toBe(true);
+        expect(BuiltInFunctions.langMatches("fr", "*")).toBe(true);
+        expect(BuiltInFunctions.langMatches("de-AT", "*")).toBe(true);
+      });
+
+      it("should return false for empty tag with '*' range", () => {
+        expect(BuiltInFunctions.langMatches("", "*")).toBe(false);
+      });
+    });
+
+    describe("no matches", () => {
+      it("should return false for different language families", () => {
+        expect(BuiltInFunctions.langMatches("fr", "en")).toBe(false);
+        expect(BuiltInFunctions.langMatches("de", "en")).toBe(false);
+        expect(BuiltInFunctions.langMatches("fr-FR", "en")).toBe(false);
+      });
+    });
+
+    describe("empty string handling", () => {
+      it("should return false for empty tag with non-wildcard range", () => {
+        expect(BuiltInFunctions.langMatches("", "en")).toBe(false);
+      });
+
+      it("should return true for empty tag with empty range", () => {
+        expect(BuiltInFunctions.langMatches("", "")).toBe(true);
+      });
+
+      it("should return false for non-empty tag with empty range", () => {
+        // Per implementation: non-empty tag doesn't match empty range
+        // because it requires exact match or prefix match with hyphen
+        expect(BuiltInFunctions.langMatches("en", "")).toBe(false);
+      });
+    });
+
+    describe("SPARQL spec examples", () => {
+      // Examples from SPARQL 1.1 spec section 17.4.3.2
+      it("should match langMatches(LANG(?label), 'en') for en-tagged literals", () => {
+        expect(BuiltInFunctions.langMatches("en", "en")).toBe(true);
+        expect(BuiltInFunctions.langMatches("en-US", "en")).toBe(true);
+        expect(BuiltInFunctions.langMatches("en-GB", "en")).toBe(true);
+      });
+
+      it("should not match langMatches(LANG(?label), 'en') for non-en literals", () => {
+        expect(BuiltInFunctions.langMatches("fr", "en")).toBe(false);
+        expect(BuiltInFunctions.langMatches("de", "en")).toBe(false);
+      });
+    });
+  });
+
   describe("DATATYPE", () => {
     it("should return datatype for typed literal", () => {
       const xsdInteger = new IRI("http://www.w3.org/2001/XMLSchema#integer");
@@ -317,6 +407,112 @@ describe("BuiltInFunctions", () => {
         const nanLiteral = new Literal("NaN", xsdFloat);
         expect(BuiltInFunctions.isNumeric(infLiteral)).toBe(true);
         expect(BuiltInFunctions.isNumeric(nanLiteral)).toBe(true);
+      });
+    });
+  });
+
+  describe("langMatches", () => {
+    describe("exact match", () => {
+      it("should return true for identical tags", () => {
+        expect(BuiltInFunctions.langMatches("en", "en")).toBe(true);
+        expect(BuiltInFunctions.langMatches("fr", "fr")).toBe(true);
+        expect(BuiltInFunctions.langMatches("de", "de")).toBe(true);
+      });
+
+      it("should be case-insensitive", () => {
+        expect(BuiltInFunctions.langMatches("EN", "en")).toBe(true);
+        expect(BuiltInFunctions.langMatches("en", "EN")).toBe(true);
+        expect(BuiltInFunctions.langMatches("En-US", "en-us")).toBe(true);
+      });
+    });
+
+    describe("prefix match", () => {
+      it("should match language subtags", () => {
+        expect(BuiltInFunctions.langMatches("en-US", "en")).toBe(true);
+        expect(BuiltInFunctions.langMatches("en-GB", "en")).toBe(true);
+        expect(BuiltInFunctions.langMatches("fr-CA", "fr")).toBe(true);
+        expect(BuiltInFunctions.langMatches("zh-Hans-CN", "zh")).toBe(true);
+      });
+
+      it("should match multi-level subtags", () => {
+        expect(BuiltInFunctions.langMatches("en-GB-oed", "en-GB")).toBe(true);
+        expect(BuiltInFunctions.langMatches("zh-Hans-CN", "zh-Hans")).toBe(true);
+      });
+
+      it("should not match if range is not a prefix", () => {
+        expect(BuiltInFunctions.langMatches("en", "en-US")).toBe(false);
+        expect(BuiltInFunctions.langMatches("fr", "en")).toBe(false);
+        expect(BuiltInFunctions.langMatches("english", "en")).toBe(false);
+      });
+
+      it("should not match partial prefixes without hyphen", () => {
+        // "eng" is not a proper subtag prefix of "english"
+        expect(BuiltInFunctions.langMatches("english", "eng")).toBe(false);
+      });
+    });
+
+    describe("wildcard range", () => {
+      it("should match any non-empty language tag with '*'", () => {
+        expect(BuiltInFunctions.langMatches("en", "*")).toBe(true);
+        expect(BuiltInFunctions.langMatches("en-US", "*")).toBe(true);
+        expect(BuiltInFunctions.langMatches("fr", "*")).toBe(true);
+        expect(BuiltInFunctions.langMatches("zh-Hans-CN", "*")).toBe(true);
+      });
+
+      it("should not match empty language tag with '*'", () => {
+        expect(BuiltInFunctions.langMatches("", "*")).toBe(false);
+      });
+    });
+
+    describe("empty language tag", () => {
+      it("should not match non-empty range", () => {
+        expect(BuiltInFunctions.langMatches("", "en")).toBe(false);
+        expect(BuiltInFunctions.langMatches("", "fr")).toBe(false);
+      });
+
+      it("should match empty range", () => {
+        expect(BuiltInFunctions.langMatches("", "")).toBe(true);
+      });
+    });
+
+    describe("SPARQL spec examples", () => {
+      // Examples from SPARQL 1.1 spec section 17.4.3.2
+      it('langMatches("en", "en") returns true', () => {
+        expect(BuiltInFunctions.langMatches("en", "en")).toBe(true);
+      });
+
+      it('langMatches("en-US", "en") returns true', () => {
+        expect(BuiltInFunctions.langMatches("en-US", "en")).toBe(true);
+      });
+
+      it('langMatches("fr", "en") returns false', () => {
+        expect(BuiltInFunctions.langMatches("fr", "en")).toBe(false);
+      });
+
+      it('langMatches("en-US", "*") returns true', () => {
+        expect(BuiltInFunctions.langMatches("en-US", "*")).toBe(true);
+      });
+
+      it('langMatches("", "*") returns false', () => {
+        expect(BuiltInFunctions.langMatches("", "*")).toBe(false);
+      });
+    });
+
+    describe("edge cases", () => {
+      it("should handle very long language tags", () => {
+        // Valid BCP 47 tag with multiple extensions
+        expect(BuiltInFunctions.langMatches("en-Latn-US-x-twain", "en")).toBe(true);
+        expect(BuiltInFunctions.langMatches("en-Latn-US-x-twain", "en-Latn")).toBe(true);
+      });
+
+      it("should handle single character language codes", () => {
+        // While not common, single character should work
+        expect(BuiltInFunctions.langMatches("x-custom", "x")).toBe(true);
+      });
+
+      it("should not confuse similar prefixes", () => {
+        // "en" should not match "eno" even though "eno" starts with "en"
+        expect(BuiltInFunctions.langMatches("eno", "en")).toBe(false);
       });
     });
   });

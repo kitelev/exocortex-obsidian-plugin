@@ -38,6 +38,46 @@ export class BuiltInFunctions {
     return "";
   }
 
+  /**
+   * SPARQL 1.1 langMatches function.
+   * https://www.w3.org/TR/sparql11-query/#func-langMatches
+   *
+   * Matches a language tag against a language range per RFC 4647 basic filtering.
+   *
+   * @param languageTag - The language tag to check (e.g., "en", "en-US", "en-GB")
+   * @param languageRange - The language range to match against (e.g., "en", "*")
+   * @returns true if the language tag matches the range, false otherwise
+   *
+   * Special cases:
+   * - Range "*" matches any non-empty language tag
+   * - Empty language tag matches nothing (except empty range for exact match)
+   * - Case-insensitive comparison (per RFC 4647)
+   */
+  static langMatches(languageTag: string, languageRange: string): boolean {
+    // Normalize both to lowercase for case-insensitive comparison
+    const tag = languageTag.toLowerCase();
+    const range = languageRange.toLowerCase();
+
+    // Special case: "*" matches any non-empty language tag
+    if (range === "*") {
+      return tag !== "";
+    }
+
+    // Empty tag matches nothing (except empty range for exact match)
+    if (tag === "") {
+      return range === "";
+    }
+
+    // Exact match
+    if (tag === range) {
+      return true;
+    }
+
+    // Prefix match: tag starts with range followed by "-"
+    // e.g., "en-US" matches "en", "en-GB-oed" matches "en-GB"
+    return tag.startsWith(range + "-");
+  }
+
   static datatype(term: RDFTerm | undefined): IRI {
     if (term === undefined) {
       throw new Error("DATATYPE: argument is undefined");
