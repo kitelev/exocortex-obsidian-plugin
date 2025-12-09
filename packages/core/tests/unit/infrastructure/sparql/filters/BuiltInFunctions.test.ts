@@ -140,6 +140,187 @@ describe("BuiltInFunctions", () => {
     });
   });
 
+  describe("isNumeric", () => {
+    describe("core numeric types", () => {
+      it("should return true for xsd:integer", () => {
+        const xsdInteger = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const literal = new Literal("42", xsdInteger);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for xsd:decimal", () => {
+        const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+        const literal = new Literal("3.14", xsdDecimal);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for xsd:float", () => {
+        const xsdFloat = new IRI("http://www.w3.org/2001/XMLSchema#float");
+        const literal = new Literal("3.14159", xsdFloat);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for xsd:double", () => {
+        const xsdDouble = new IRI("http://www.w3.org/2001/XMLSchema#double");
+        const literal = new Literal("3.141592653589793", xsdDouble);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+    });
+
+    describe("derived integer types", () => {
+      it("should return true for xsd:long", () => {
+        const xsdLong = new IRI("http://www.w3.org/2001/XMLSchema#long");
+        const literal = new Literal("9223372036854775807", xsdLong);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for xsd:int", () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#int");
+        const literal = new Literal("2147483647", xsdInt);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for xsd:short", () => {
+        const xsdShort = new IRI("http://www.w3.org/2001/XMLSchema#short");
+        const literal = new Literal("32767", xsdShort);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for xsd:byte", () => {
+        const xsdByte = new IRI("http://www.w3.org/2001/XMLSchema#byte");
+        const literal = new Literal("127", xsdByte);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for xsd:unsignedLong", () => {
+        const xsdUnsignedLong = new IRI("http://www.w3.org/2001/XMLSchema#unsignedLong");
+        const literal = new Literal("18446744073709551615", xsdUnsignedLong);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for xsd:unsignedInt", () => {
+        const xsdUnsignedInt = new IRI("http://www.w3.org/2001/XMLSchema#unsignedInt");
+        const literal = new Literal("4294967295", xsdUnsignedInt);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for xsd:unsignedShort", () => {
+        const xsdUnsignedShort = new IRI("http://www.w3.org/2001/XMLSchema#unsignedShort");
+        const literal = new Literal("65535", xsdUnsignedShort);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for xsd:unsignedByte", () => {
+        const xsdUnsignedByte = new IRI("http://www.w3.org/2001/XMLSchema#unsignedByte");
+        const literal = new Literal("255", xsdUnsignedByte);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for xsd:positiveInteger", () => {
+        const xsdPositiveInteger = new IRI("http://www.w3.org/2001/XMLSchema#positiveInteger");
+        const literal = new Literal("1", xsdPositiveInteger);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for xsd:nonNegativeInteger", () => {
+        const xsdNonNegativeInteger = new IRI("http://www.w3.org/2001/XMLSchema#nonNegativeInteger");
+        const literal = new Literal("0", xsdNonNegativeInteger);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for xsd:negativeInteger", () => {
+        const xsdNegativeInteger = new IRI("http://www.w3.org/2001/XMLSchema#negativeInteger");
+        const literal = new Literal("-1", xsdNegativeInteger);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for xsd:nonPositiveInteger", () => {
+        const xsdNonPositiveInteger = new IRI("http://www.w3.org/2001/XMLSchema#nonPositiveInteger");
+        const literal = new Literal("0", xsdNonPositiveInteger);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+    });
+
+    describe("non-numeric types", () => {
+      it("should return false for plain literal (string without datatype)", () => {
+        const literal = new Literal("42");
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(false);
+      });
+
+      it("should return false for xsd:string", () => {
+        const xsdString = new IRI("http://www.w3.org/2001/XMLSchema#string");
+        const literal = new Literal("42", xsdString);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(false);
+      });
+
+      it("should return false for xsd:boolean", () => {
+        const xsdBoolean = new IRI("http://www.w3.org/2001/XMLSchema#boolean");
+        const literal = new Literal("true", xsdBoolean);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(false);
+      });
+
+      it("should return false for xsd:dateTime", () => {
+        const xsdDateTime = new IRI("http://www.w3.org/2001/XMLSchema#dateTime");
+        const literal = new Literal("2025-12-09T10:00:00Z", xsdDateTime);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(false);
+      });
+
+      it("should return false for xsd:date", () => {
+        const xsdDate = new IRI("http://www.w3.org/2001/XMLSchema#date");
+        const literal = new Literal("2025-12-09", xsdDate);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(false);
+      });
+
+      it("should return false for language-tagged literal", () => {
+        const literal = new Literal("forty-two", undefined, "en");
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(false);
+      });
+
+      it("should return false for IRI", () => {
+        const iri = new IRI("http://example.org/resource");
+        expect(BuiltInFunctions.isNumeric(iri)).toBe(false);
+      });
+
+      it("should return false for BlankNode", () => {
+        const blank = new BlankNode("b1");
+        expect(BuiltInFunctions.isNumeric(blank)).toBe(false);
+      });
+
+      it("should return false for undefined", () => {
+        expect(BuiltInFunctions.isNumeric(undefined)).toBe(false);
+      });
+    });
+
+    describe("edge cases", () => {
+      it("should return true for negative integer literal", () => {
+        const xsdInteger = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const literal = new Literal("-42", xsdInteger);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for zero as integer", () => {
+        const xsdInteger = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const literal = new Literal("0", xsdInteger);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for scientific notation as double", () => {
+        const xsdDouble = new IRI("http://www.w3.org/2001/XMLSchema#double");
+        const literal = new Literal("1.0e10", xsdDouble);
+        expect(BuiltInFunctions.isNumeric(literal)).toBe(true);
+      });
+
+      it("should return true for special float values", () => {
+        const xsdFloat = new IRI("http://www.w3.org/2001/XMLSchema#float");
+        // SPARQL allows INF and NaN for float/double types
+        const infLiteral = new Literal("INF", xsdFloat);
+        const nanLiteral = new Literal("NaN", xsdFloat);
+        expect(BuiltInFunctions.isNumeric(infLiteral)).toBe(true);
+        expect(BuiltInFunctions.isNumeric(nanLiteral)).toBe(true);
+      });
+    });
+  });
+
   describe("REGEX", () => {
     it("should match regex pattern", () => {
       expect(BuiltInFunctions.regex("hello world", "world")).toBe(true);
@@ -936,6 +1117,180 @@ describe("BuiltInFunctions", () => {
       it("should handle undefined and null as return values", () => {
         expect(BuiltInFunctions.if(true, undefined, "fallback")).toBeUndefined();
         expect(BuiltInFunctions.if(false, "value", null)).toBeNull();
+      });
+    });
+  });
+
+  describe("sameTerm", () => {
+    describe("IRI comparison", () => {
+      it("should return true for identical IRIs", () => {
+        const iri1 = new IRI("http://example.org/resource");
+        const iri2 = new IRI("http://example.org/resource");
+        expect(BuiltInFunctions.sameTerm(iri1, iri2)).toBe(true);
+      });
+
+      it("should return false for different IRIs", () => {
+        const iri1 = new IRI("http://example.org/resource1");
+        const iri2 = new IRI("http://example.org/resource2");
+        expect(BuiltInFunctions.sameTerm(iri1, iri2)).toBe(false);
+      });
+
+      it("should handle same IRI object reference", () => {
+        const iri = new IRI("http://example.org/resource");
+        expect(BuiltInFunctions.sameTerm(iri, iri)).toBe(true);
+      });
+    });
+
+    describe("BlankNode comparison", () => {
+      it("should return true for identical blank nodes", () => {
+        const bn1 = new BlankNode("b1");
+        const bn2 = new BlankNode("b1");
+        expect(BuiltInFunctions.sameTerm(bn1, bn2)).toBe(true);
+      });
+
+      it("should return false for different blank nodes", () => {
+        const bn1 = new BlankNode("b1");
+        const bn2 = new BlankNode("b2");
+        expect(BuiltInFunctions.sameTerm(bn1, bn2)).toBe(false);
+      });
+    });
+
+    describe("Literal comparison - plain literals", () => {
+      it("should return true for identical plain literals", () => {
+        const lit1 = new Literal("hello");
+        const lit2 = new Literal("hello");
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(true);
+      });
+
+      it("should return false for different plain literal values", () => {
+        const lit1 = new Literal("hello");
+        const lit2 = new Literal("world");
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(false);
+      });
+    });
+
+    describe("Literal comparison - typed literals", () => {
+      it("should return true for identical typed literals", () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const lit1 = new Literal("42", xsdInt);
+        const lit2 = new Literal("42", xsdInt);
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(true);
+      });
+
+      it("should return false for same value with different datatypes", () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+        const lit1 = new Literal("42", xsdInt);
+        const lit2 = new Literal("42", xsdDecimal);
+        // Key difference from = operator: sameTerm requires exact datatype match
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(false);
+      });
+
+      it("should return false for plain literal vs xsd:string typed literal", () => {
+        // This is the key semantic difference from Literal.equals()
+        // Per SPARQL 1.1 spec, sameTerm requires exact term identity
+        const xsdString = new IRI("http://www.w3.org/2001/XMLSchema#string");
+        const plainLit = new Literal("hello");
+        const typedLit = new Literal("hello", xsdString);
+        // Plain literal has no datatype, typed has xsd:string - not identical terms
+        expect(BuiltInFunctions.sameTerm(plainLit, typedLit)).toBe(false);
+      });
+
+      it("should return false for different numeric representations", () => {
+        // "42"^^xsd:integer and "42.0"^^xsd:decimal are equal by value but not same term
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+        const intLit = new Literal("42", xsdInt);
+        const decLit = new Literal("42.0", xsdDecimal);
+        expect(BuiltInFunctions.sameTerm(intLit, decLit)).toBe(false);
+      });
+    });
+
+    describe("Literal comparison - language tags", () => {
+      it("should return true for identical language-tagged literals", () => {
+        const lit1 = new Literal("hello", undefined, "en");
+        const lit2 = new Literal("hello", undefined, "en");
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(true);
+      });
+
+      it("should return false for different language tags", () => {
+        const lit1 = new Literal("hello", undefined, "en");
+        const lit2 = new Literal("hello", undefined, "de");
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(false);
+      });
+
+      it("should return false for language-tagged vs plain literal", () => {
+        const lit1 = new Literal("hello", undefined, "en");
+        const lit2 = new Literal("hello");
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(false);
+      });
+
+      it("should be case-insensitive for language tags (normalized by Literal)", () => {
+        // Literal class normalizes language tags to lowercase
+        const lit1 = new Literal("hello", undefined, "EN");
+        const lit2 = new Literal("hello", undefined, "en");
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(true);
+      });
+    });
+
+    describe("Cross-type comparison", () => {
+      it("should return false for IRI vs Literal", () => {
+        const iri = new IRI("http://example.org/resource");
+        const lit = new Literal("http://example.org/resource");
+        expect(BuiltInFunctions.sameTerm(iri, lit)).toBe(false);
+      });
+
+      it("should return false for IRI vs BlankNode", () => {
+        const iri = new IRI("http://example.org/b1");
+        const bn = new BlankNode("b1");
+        expect(BuiltInFunctions.sameTerm(iri, bn)).toBe(false);
+      });
+
+      it("should return false for Literal vs BlankNode", () => {
+        const lit = new Literal("b1");
+        const bn = new BlankNode("b1");
+        expect(BuiltInFunctions.sameTerm(lit, bn)).toBe(false);
+      });
+    });
+
+    describe("Undefined handling", () => {
+      it("should return true for both undefined", () => {
+        expect(BuiltInFunctions.sameTerm(undefined, undefined)).toBe(true);
+      });
+
+      it("should return false for undefined vs IRI", () => {
+        const iri = new IRI("http://example.org/resource");
+        expect(BuiltInFunctions.sameTerm(undefined, iri)).toBe(false);
+        expect(BuiltInFunctions.sameTerm(iri, undefined)).toBe(false);
+      });
+
+      it("should return false for undefined vs Literal", () => {
+        const lit = new Literal("test");
+        expect(BuiltInFunctions.sameTerm(undefined, lit)).toBe(false);
+        expect(BuiltInFunctions.sameTerm(lit, undefined)).toBe(false);
+      });
+
+      it("should return false for undefined vs BlankNode", () => {
+        const bn = new BlankNode("b1");
+        expect(BuiltInFunctions.sameTerm(undefined, bn)).toBe(false);
+        expect(BuiltInFunctions.sameTerm(bn, undefined)).toBe(false);
+      });
+    });
+
+    describe("SPARQL spec examples", () => {
+      it("should distinguish between equal values and same terms", () => {
+        // From SPARQL 1.1 spec section 17.4.2.5
+        // sameTerm("42"^^xsd:integer, "42"^^xsd:integer) = true
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const lit1 = new Literal("42", xsdInt);
+        const lit2 = new Literal("42", xsdInt);
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(true);
+
+        // sameTerm("42"^^xsd:integer, "42.0"^^xsd:decimal) = false
+        // Even though they are equal by value
+        const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+        const lit3 = new Literal("42.0", xsdDecimal);
+        expect(BuiltInFunctions.sameTerm(lit1, lit3)).toBe(false);
       });
     });
   });
