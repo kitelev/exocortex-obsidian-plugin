@@ -115,7 +115,8 @@ export type Expression =
   | RawFunctionCallExpression
   | VariableExpression
   | LiteralExpression
-  | ExistsExpression;
+  | ExistsExpression
+  | InExpression;
 
 export interface ComparisonExpression {
   type: "comparison";
@@ -165,6 +166,31 @@ export interface ExistsExpression {
   type: "exists";
   negated: boolean;
   pattern: AlgebraOperation;
+}
+
+/**
+ * IN / NOT IN expression for set membership testing.
+ * SPARQL 1.1 Section 17.4.1.5: Tests whether a value is in a list of values.
+ *
+ * Example:
+ * ```sparql
+ * FILTER(?status IN ("active", "pending", "review"))
+ * FILTER(?priority NOT IN (1, 2))
+ * ```
+ *
+ * Semantics:
+ * - IN returns true if the expression equals any value in the list
+ * - NOT IN returns true if the expression does not equal any value in the list
+ * - Comparison uses RDF term equality (=)
+ */
+export interface InExpression {
+  type: "in";
+  /** The expression being tested */
+  expression: Expression;
+  /** List of values to test against */
+  list: Expression[];
+  /** True for NOT IN, false for IN */
+  negated: boolean;
 }
 
 export interface JoinOperation {

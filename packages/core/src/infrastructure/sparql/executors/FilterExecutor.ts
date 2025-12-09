@@ -1,4 +1,4 @@
-import type { FilterOperation, Expression, AlgebraOperation, ExistsExpression, ArithmeticExpression } from "../algebra/AlgebraOperation";
+import type { FilterOperation, Expression, AlgebraOperation, ExistsExpression, ArithmeticExpression, InExpression } from "../algebra/AlgebraOperation";
 import type { SolutionMapping } from "../SolutionMapping";
 import { BuiltInFunctions } from "../filters/BuiltInFunctions";
 import { Literal } from "../../../domain/models/rdf/Literal";
@@ -71,6 +71,14 @@ export class FilterExecutor {
       );
     }
 
+    if (expr.type === "in") {
+      const inExpr = expr as InExpression;
+      return (
+        this.expressionContainsExists(inExpr.expression) ||
+        inExpr.list.some((item) => this.expressionContainsExists(item))
+      );
+    }
+
     return false;
   }
 
@@ -130,6 +138,9 @@ export class FilterExecutor {
 
       case "literal":
         return (expr as any).value;
+
+      case "in":
+        return this.evaluateIn(expr as InExpression, solution);
 
       case "exists":
         // EXISTS requires async evaluation; throw error if called synchronously
@@ -228,6 +239,27 @@ export class FilterExecutor {
     }
 
     throw new FilterExecutorError(`Unknown logical operator: ${expr.operator}`);
+  }
+
+  /**
+   * Evaluate IN or NOT IN expression.
+   * SPARQL 1.1 Section 17.4.1.5:
+   * - expr IN (val1, val2, ...) returns true if expr = val_i for any value in the list
+   * - expr NOT IN (val1, val2, ...) returns true if expr != val_i for all values in the list
+   *
+   * Uses RDF term equality semantics (same as = operator).
+   */
+  private evaluateIn(expr: InExpression, solution: SolutionMapping): boolean {
+    const testValue = this.evaluateExpression(expr.expression, solution);
+
+    // Check if testValue equals any value in the list
+    const found = expr.list.some((listItem) => {
+      const listValue = this.evaluateExpression(listItem, solution);
+      return BuiltInFunctions.compare(testValue, listValue, "=");
+    });
+
+    // For IN, return true if found; for NOT IN, return true if NOT found
+    return expr.negated ? !found : found;
   }
 
   /**
