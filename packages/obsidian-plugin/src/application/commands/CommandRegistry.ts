@@ -6,6 +6,7 @@ import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 import {
   TaskCreationService,
   ProjectCreationService,
+  AreaCreationService,
   TaskStatusService,
   PropertyCleanupService,
   FolderRepairService,
@@ -22,6 +23,7 @@ import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
 
 import { CreateTaskCommand } from "./CreateTaskCommand";
 import { CreateProjectCommand } from "./CreateProjectCommand";
+import { CreateAreaCommand } from "./CreateAreaCommand";
 import { CreateInstanceCommand } from "./CreateInstanceCommand";
 import { CreateFleetingNoteCommand } from "./CreateFleetingNoteCommand";
 import { CreateRelatedTaskCommand } from "./CreateRelatedTaskCommand";
@@ -77,6 +79,7 @@ export class CommandRegistry {
     // Resolve services from DI container
     const taskCreationService = container.resolve(TaskCreationService);
     const projectCreationService = container.resolve(ProjectCreationService);
+    const areaCreationService = container.resolve(AreaCreationService);
     const taskStatusService = container.resolve(TaskStatusService);
     const propertyCleanupService = container.resolve(PropertyCleanupService);
     const folderRepairService = container.resolve(FolderRepairService);
@@ -90,6 +93,7 @@ export class CommandRegistry {
     this.commands = [
       new CreateTaskCommand(app, taskCreationService, this.vaultAdapter, plugin),
       new CreateProjectCommand(app, projectCreationService, this.vaultAdapter),
+      new CreateAreaCommand(app, areaCreationService, this.vaultAdapter),
       new CreateInstanceCommand(app, taskCreationService, this.vaultAdapter, plugin),
       new CreateFleetingNoteCommand(app, fleetingNoteCreationService, this.vaultAdapter),
       new CreateRelatedTaskCommand(app, taskCreationService, this.vaultAdapter),
