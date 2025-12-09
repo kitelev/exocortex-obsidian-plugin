@@ -396,6 +396,44 @@ describe("AlgebraTranslator", () => {
       expect(input.type).toBe("project");
     });
 
+    it("translates SELECT REDUCED", () => {
+      const query = "SELECT REDUCED ?status WHERE { ?task <http://example.org/status> ?status }";
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("reduced");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("project");
+    });
+
+    it("translates SELECT REDUCED with ORDER BY", () => {
+      const query = `
+        SELECT REDUCED ?task ?effort
+        WHERE { ?task <http://example.org/effort> ?effort }
+        ORDER BY ASC(?effort)
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // ORDER BY wraps REDUCED
+      expect(algebra.type).toBe("orderby");
+      const reduced = (algebra as any).input;
+      expect(reduced.type).toBe("reduced");
+      expect(reduced.input.type).toBe("project");
+    });
+
+    it("translates SELECT REDUCED with LIMIT", () => {
+      const query = "SELECT REDUCED ?status WHERE { ?task <http://example.org/status> ?status } LIMIT 10";
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // LIMIT (slice) wraps REDUCED
+      expect(algebra.type).toBe("slice");
+      expect((algebra as any).limit).toBe(10);
+      const reduced = (algebra as any).input;
+      expect(reduced.type).toBe("reduced");
+    });
+
     it("translates SELECT with ORDER BY ASC", () => {
       const query = `
         SELECT ?task ?effort

@@ -12,6 +12,7 @@ import type {
   OrderByOperation,
   SliceOperation,
   DistinctOperation,
+  ReducedOperation,
   GroupOperation,
   ExtendOperation,
   SubqueryOperation,
@@ -146,6 +147,10 @@ export class QueryExecutor {
 
       case "distinct":
         yield* this.executeDistinct(operation);
+        break;
+
+      case "reduced":
+        yield* this.executeReduced(operation);
         break;
 
       case "group":
@@ -331,6 +336,26 @@ export class QueryExecutor {
   }
 
   private async *executeDistinct(operation: DistinctOperation): AsyncIterableIterator<SolutionMapping> {
+    const seen = new Set<string>();
+
+    for await (const solution of this.execute(operation.input)) {
+      const key = this.getSolutionKey(solution);
+      if (!seen.has(key)) {
+        seen.add(key);
+        yield solution;
+      }
+    }
+  }
+
+  /**
+   * Execute REDUCED modifier.
+   * SPARQL 1.1 spec (Section 15.3) allows implementations to eliminate
+   * some or all duplicates. This implementation treats REDUCED identically
+   * to DISTINCT (full duplicate elimination) which is allowed by spec.
+   */
+  private async *executeReduced(operation: ReducedOperation): AsyncIterableIterator<SolutionMapping> {
+    // Per SPARQL 1.1 spec, REDUCED may eliminate duplicates but is not required to.
+    // We choose to eliminate all duplicates (same as DISTINCT) for simplicity.
     const seen = new Set<string>();
 
     for await (const solution of this.execute(operation.input)) {
