@@ -588,25 +588,60 @@ describe("PropertyCleanupService with DI", () => {
 |---------|---------|-----|------|
 | **ButtonGroupsBuilder** | Build action button configurations | 533 | Complex |
 
-### Components (13 Total)
+### Components (58 Total)
 
-React components for UI rendering:
-- `DailyTasksTable.tsx`
-- `DailyProjectsTable.tsx`
-- `AssetPropertiesTable.tsx`
-- `AssetRelationsTable.tsx`
-- `AreaHierarchyTree.tsx`
-- `ActionButtonsGroup.tsx`
-- `CreateTaskButton.tsx`
-- `CreateInstanceButton.tsx`
-- `StartEffortButton.tsx`
-- `MarkTaskDoneButton.tsx`
-- `PlanOnTodayButton.tsx`
-- `VoteOnEffortButton.tsx`
-- `ArchiveTaskButton.tsx`
-- `ResponsiveLayout.tsx` (layout wrapper)
+The presentation layer contains **58 component files** organized by purpose:
 
-**All components have Playwright CT tests** ✅
+#### Main UI Components (25 files)
+
+Core tables, trees, and action buttons:
+
+| Category | Components |
+|----------|------------|
+| **Tables** (4) | `DailyTasksTable`, `DailyProjectsTable`, `AssetPropertiesTable`, `AssetRelationsTable` |
+| **Trees** (1) | `AreaHierarchyTree` |
+| **Button Groups** (1) | `ActionButtonsGroup` |
+| **Action Buttons** (18) | `CreateTaskButton`, `CreateInstanceButton`, `CreateProjectButton`, `StartEffortButton`, `MarkTaskDoneButton`, `PlanOnTodayButton`, `VoteOnEffortButton`, `ArchiveTaskButton`, `TrashEffortButton`, `RollbackStatusButton`, `MoveToToDoButton`, `MoveToBacklogButton`, `MoveToAnalysisButton`, `ShiftDayForwardButton`, `ShiftDayBackwardButton`, `CleanEmptyPropertiesButton`, `RenameToUidButton`, `RepairFolderButton` |
+| **Utilities** (1) | `ErrorBoundary` |
+
+#### Property Fields (14 files in `property-fields/`)
+
+Non-React field renderers for inline property editing:
+
+| Type | Files |
+|------|-------|
+| **Field Types** (12) | `TextPropertyField`, `NumberPropertyField`, `BooleanPropertyField`, `DatePropertyField`, `DateTimePropertyField`, `TimestampPropertyField`, `EnumPropertyField`, `ReferencePropertyField`, `SizeSelectPropertyField`, `StatusSelectPropertyField`, `WikilinkPropertyField`, `PropertyFieldFactory` |
+| **Infrastructure** (2) | `index.ts`, `types.ts` |
+
+#### Property Editor (8 files in `property-editor/`)
+
+React-based modal property editor:
+
+| Type | Files |
+|------|-------|
+| **Form** (1) | `PropertyEditorForm` |
+| **Field Components** (6) | `TextField`, `NumberField`, `BooleanField`, `SelectField`, `TimestampField`, `WikiLinkField` |
+| **Infrastructure** (1) | `fields/index.ts` |
+
+#### SPARQL Components (9 files in `sparql/`)
+
+SPARQL query interface and result visualization:
+
+| Type | Files |
+|------|-------|
+| **Query Builder** (2) | `QueryBuilder`, `QueryTemplates` |
+| **Result Views** (5) | `SPARQLResultViewer`, `SPARQLTableView`, `SPARQLListView`, `SPARQLGraphView`, `SPARQLEmptyState` |
+| **Error Handling** (1) | `SPARQLErrorView` |
+| **Controls** (1) | `ViewModeSelector` |
+
+#### Properties (2 files in `properties/`)
+
+Specialized property field components:
+
+- `DateTimePropertyField.tsx`
+- `TextPropertyField.tsx`
+
+**Main UI components have Playwright CT tests** ✅
 
 ### Modals (6 Total)
 
