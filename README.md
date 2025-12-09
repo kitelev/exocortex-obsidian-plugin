@@ -151,7 +151,7 @@ Keep your vault organized:
 | **Repair Folder** | Assets with exo__Asset_isDefinedBy | Move file to correct folder based on reference |
 | **Rename to UID** | Filename ≠ exo__Asset_uid | Rename file to match UID, preserve label |
 
-### System Commands (5)
+### System Commands (6)
 
 Control plugin behavior and visualization:
 
@@ -161,6 +161,7 @@ Control plugin behavior and visualization:
 | **Add Supervision** | Yes | Create CBT-format fleeting note in 01 Inbox |
 | **Toggle Layout Visibility** | Yes | Show/hide entire layout section |
 | **Toggle Properties Visibility** | Yes | Show/hide properties table |
+| **Toggle Archived Assets Visibility** | Yes | Show/hide archived assets in layout tables (persists in settings) |
 | **Open SPARQL Query Builder** | Yes | Visual query builder with templates, live preview, and copy-to-clipboard |
 
 ## 🏷️ Frontmatter Properties Reference
