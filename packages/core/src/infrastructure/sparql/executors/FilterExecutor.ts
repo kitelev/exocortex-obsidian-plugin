@@ -658,6 +658,21 @@ export class FilterExecutor {
           ? this.evaluateExpression(expr.args[1], solution)
           : this.evaluateExpression(expr.args[2], solution);
 
+      // SPARQL 1.1 String URI Functions
+      case "encode_for_uri":
+        const encodeArg = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
+        return BuiltInFunctions.encodeForUri(encodeArg);
+
+      // SPARQL 1.1 RDF Term Functions
+      case "isnumeric":
+        const numericArg = this.getTermFromExpression(expr.args[0], solution);
+        return BuiltInFunctions.isNumeric(numericArg);
+
+      case "sameterm":
+        const sameTerm1 = this.getTermFromExpression(expr.args[0], solution);
+        const sameTerm2 = this.getTermFromExpression(expr.args[1], solution);
+        return BuiltInFunctions.sameTerm(sameTerm1, sameTerm2);
+
       default:
         throw new FilterExecutorError(`Unknown function: ${funcName}`);
     }

@@ -2761,4 +2761,389 @@ describe("FilterExecutor", () => {
       });
     });
   });
+
+  describe("ENCODE_FOR_URI function", () => {
+    it("should encode spaces in variable value", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "encode_for_uri",
+            args: [{ type: "variable", name: "name" }],
+          },
+          right: { type: "literal", value: "hello%20world" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("name", new Literal("hello world"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should encode URL special characters", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "encode_for_uri",
+            args: [{ type: "variable", name: "path" }],
+          },
+          right: { type: "literal", value: "a%2Fb%3Fc%3Dd" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("path", new Literal("a/b?c=d"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should not encode unreserved characters", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "encode_for_uri",
+            args: [{ type: "variable", name: "text" }],
+          },
+          right: { type: "literal", value: "simple-test_123.txt~" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("text", new Literal("simple-test_123.txt~"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should encode unicode characters", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "encode_for_uri",
+            args: [{ type: "variable", name: "text" }],
+          },
+          right: { type: "literal", value: "%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("text", new Literal("Привет"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should work with literal string argument", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "encode_for_uri",
+            args: [{ type: "literal", value: "Los Angeles" }],
+          },
+          right: { type: "literal", value: "Los%20Angeles" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should handle input that encodes to a known value", async () => {
+      // Test encoding of a string that produces a predictable result
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "comparison",
+          operator: "=",
+          left: {
+            type: "function",
+            function: "encode_for_uri",
+            args: [{ type: "literal", value: "test" }],
+          },
+          right: { type: "literal", value: "test" },
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      // Unreserved characters should remain unchanged
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+  });
+
+  describe("isNumeric function", () => {
+    it("should return true for xsd:integer literal", async () => {
+      const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "isnumeric",
+          args: [{ type: "variable", name: "x" }],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal("42", xsdInt));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should return true for xsd:decimal literal", async () => {
+      const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "isnumeric",
+          args: [{ type: "variable", name: "x" }],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal("3.14", xsdDecimal));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should return false for plain string literal", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "isnumeric",
+          args: [{ type: "variable", name: "x" }],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal("hello"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(0);
+    });
+
+    it("should return false for IRI", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "isnumeric",
+          args: [{ type: "variable", name: "x" }],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("x", new IRI("http://example.org/resource"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(0);
+    });
+
+    it("should filter numeric values from mixed set", async () => {
+      const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "isnumeric",
+          args: [{ type: "variable", name: "x" }],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("x", new Literal("42", xsdInt));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("x", new Literal("hello"));
+
+      const solution3 = new SolutionMapping();
+      solution3.set("x", new IRI("http://example.org"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+      expect(results).toHaveLength(1);
+      expect((results[0].get("x") as Literal).value).toBe("42");
+    });
+  });
+
+  describe("sameTerm function", () => {
+    it("should return true for identical IRIs", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "sameterm",
+          args: [
+            { type: "variable", name: "x" },
+            { type: "variable", name: "y" },
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("x", new IRI("http://example.org/resource"));
+      solution.set("y", new IRI("http://example.org/resource"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should return false for different IRIs", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "sameterm",
+          args: [
+            { type: "variable", name: "x" },
+            { type: "variable", name: "y" },
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("x", new IRI("http://example.org/resource1"));
+      solution.set("y", new IRI("http://example.org/resource2"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(0);
+    });
+
+    it("should return true for identical typed literals", async () => {
+      const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "sameterm",
+          args: [
+            { type: "variable", name: "x" },
+            { type: "variable", name: "y" },
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal("42", xsdInt));
+      solution.set("y", new Literal("42", xsdInt));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(1);
+    });
+
+    it("should return false for same value with different datatypes", async () => {
+      const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+      const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "sameterm",
+          args: [
+            { type: "variable", name: "x" },
+            { type: "variable", name: "y" },
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("x", new Literal("42", xsdInt));
+      solution.set("y", new Literal("42", xsdDecimal));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(0);
+    });
+
+    it("should return false for different term types (IRI vs Literal)", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "sameterm",
+          args: [
+            { type: "variable", name: "x" },
+            { type: "variable", name: "y" },
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution = new SolutionMapping();
+      solution.set("x", new IRI("http://example.org/resource"));
+      solution.set("y", new Literal("http://example.org/resource"));
+
+      const results = await executor.executeAll(operation, [solution]);
+      expect(results).toHaveLength(0);
+    });
+
+    it("should filter pairs where terms match", async () => {
+      const operation: FilterOperation = {
+        type: "filter",
+        expression: {
+          type: "function",
+          function: "sameterm",
+          args: [
+            { type: "variable", name: "x" },
+            { type: "variable", name: "y" },
+          ],
+        },
+        input: { type: "bgp", triples: [] },
+      };
+
+      const solution1 = new SolutionMapping();
+      solution1.set("x", new IRI("http://example.org/a"));
+      solution1.set("y", new IRI("http://example.org/a"));
+
+      const solution2 = new SolutionMapping();
+      solution2.set("x", new IRI("http://example.org/a"));
+      solution2.set("y", new IRI("http://example.org/b"));
+
+      const solution3 = new SolutionMapping();
+      solution3.set("x", new Literal("test"));
+      solution3.set("y", new Literal("test"));
+
+      const results = await executor.executeAll(operation, [solution1, solution2, solution3]);
+      expect(results).toHaveLength(2);
+    });
+  });
 });
