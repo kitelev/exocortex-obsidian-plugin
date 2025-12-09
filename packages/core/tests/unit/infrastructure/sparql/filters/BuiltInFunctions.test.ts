@@ -940,6 +940,180 @@ describe("BuiltInFunctions", () => {
     });
   });
 
+  describe("sameTerm", () => {
+    describe("IRI comparison", () => {
+      it("should return true for identical IRIs", () => {
+        const iri1 = new IRI("http://example.org/resource");
+        const iri2 = new IRI("http://example.org/resource");
+        expect(BuiltInFunctions.sameTerm(iri1, iri2)).toBe(true);
+      });
+
+      it("should return false for different IRIs", () => {
+        const iri1 = new IRI("http://example.org/resource1");
+        const iri2 = new IRI("http://example.org/resource2");
+        expect(BuiltInFunctions.sameTerm(iri1, iri2)).toBe(false);
+      });
+
+      it("should handle same IRI object reference", () => {
+        const iri = new IRI("http://example.org/resource");
+        expect(BuiltInFunctions.sameTerm(iri, iri)).toBe(true);
+      });
+    });
+
+    describe("BlankNode comparison", () => {
+      it("should return true for identical blank nodes", () => {
+        const bn1 = new BlankNode("b1");
+        const bn2 = new BlankNode("b1");
+        expect(BuiltInFunctions.sameTerm(bn1, bn2)).toBe(true);
+      });
+
+      it("should return false for different blank nodes", () => {
+        const bn1 = new BlankNode("b1");
+        const bn2 = new BlankNode("b2");
+        expect(BuiltInFunctions.sameTerm(bn1, bn2)).toBe(false);
+      });
+    });
+
+    describe("Literal comparison - plain literals", () => {
+      it("should return true for identical plain literals", () => {
+        const lit1 = new Literal("hello");
+        const lit2 = new Literal("hello");
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(true);
+      });
+
+      it("should return false for different plain literal values", () => {
+        const lit1 = new Literal("hello");
+        const lit2 = new Literal("world");
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(false);
+      });
+    });
+
+    describe("Literal comparison - typed literals", () => {
+      it("should return true for identical typed literals", () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const lit1 = new Literal("42", xsdInt);
+        const lit2 = new Literal("42", xsdInt);
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(true);
+      });
+
+      it("should return false for same value with different datatypes", () => {
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+        const lit1 = new Literal("42", xsdInt);
+        const lit2 = new Literal("42", xsdDecimal);
+        // Key difference from = operator: sameTerm requires exact datatype match
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(false);
+      });
+
+      it("should return false for plain literal vs xsd:string typed literal", () => {
+        // This is the key semantic difference from Literal.equals()
+        // Per SPARQL 1.1 spec, sameTerm requires exact term identity
+        const xsdString = new IRI("http://www.w3.org/2001/XMLSchema#string");
+        const plainLit = new Literal("hello");
+        const typedLit = new Literal("hello", xsdString);
+        // Plain literal has no datatype, typed has xsd:string - not identical terms
+        expect(BuiltInFunctions.sameTerm(plainLit, typedLit)).toBe(false);
+      });
+
+      it("should return false for different numeric representations", () => {
+        // "42"^^xsd:integer and "42.0"^^xsd:decimal are equal by value but not same term
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+        const intLit = new Literal("42", xsdInt);
+        const decLit = new Literal("42.0", xsdDecimal);
+        expect(BuiltInFunctions.sameTerm(intLit, decLit)).toBe(false);
+      });
+    });
+
+    describe("Literal comparison - language tags", () => {
+      it("should return true for identical language-tagged literals", () => {
+        const lit1 = new Literal("hello", undefined, "en");
+        const lit2 = new Literal("hello", undefined, "en");
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(true);
+      });
+
+      it("should return false for different language tags", () => {
+        const lit1 = new Literal("hello", undefined, "en");
+        const lit2 = new Literal("hello", undefined, "de");
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(false);
+      });
+
+      it("should return false for language-tagged vs plain literal", () => {
+        const lit1 = new Literal("hello", undefined, "en");
+        const lit2 = new Literal("hello");
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(false);
+      });
+
+      it("should be case-insensitive for language tags (normalized by Literal)", () => {
+        // Literal class normalizes language tags to lowercase
+        const lit1 = new Literal("hello", undefined, "EN");
+        const lit2 = new Literal("hello", undefined, "en");
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(true);
+      });
+    });
+
+    describe("Cross-type comparison", () => {
+      it("should return false for IRI vs Literal", () => {
+        const iri = new IRI("http://example.org/resource");
+        const lit = new Literal("http://example.org/resource");
+        expect(BuiltInFunctions.sameTerm(iri, lit)).toBe(false);
+      });
+
+      it("should return false for IRI vs BlankNode", () => {
+        const iri = new IRI("http://example.org/b1");
+        const bn = new BlankNode("b1");
+        expect(BuiltInFunctions.sameTerm(iri, bn)).toBe(false);
+      });
+
+      it("should return false for Literal vs BlankNode", () => {
+        const lit = new Literal("b1");
+        const bn = new BlankNode("b1");
+        expect(BuiltInFunctions.sameTerm(lit, bn)).toBe(false);
+      });
+    });
+
+    describe("Undefined handling", () => {
+      it("should return true for both undefined", () => {
+        expect(BuiltInFunctions.sameTerm(undefined, undefined)).toBe(true);
+      });
+
+      it("should return false for undefined vs IRI", () => {
+        const iri = new IRI("http://example.org/resource");
+        expect(BuiltInFunctions.sameTerm(undefined, iri)).toBe(false);
+        expect(BuiltInFunctions.sameTerm(iri, undefined)).toBe(false);
+      });
+
+      it("should return false for undefined vs Literal", () => {
+        const lit = new Literal("test");
+        expect(BuiltInFunctions.sameTerm(undefined, lit)).toBe(false);
+        expect(BuiltInFunctions.sameTerm(lit, undefined)).toBe(false);
+      });
+
+      it("should return false for undefined vs BlankNode", () => {
+        const bn = new BlankNode("b1");
+        expect(BuiltInFunctions.sameTerm(undefined, bn)).toBe(false);
+        expect(BuiltInFunctions.sameTerm(bn, undefined)).toBe(false);
+      });
+    });
+
+    describe("SPARQL spec examples", () => {
+      it("should distinguish between equal values and same terms", () => {
+        // From SPARQL 1.1 spec section 17.4.2.5
+        // sameTerm("42"^^xsd:integer, "42"^^xsd:integer) = true
+        const xsdInt = new IRI("http://www.w3.org/2001/XMLSchema#integer");
+        const lit1 = new Literal("42", xsdInt);
+        const lit2 = new Literal("42", xsdInt);
+        expect(BuiltInFunctions.sameTerm(lit1, lit2)).toBe(true);
+
+        // sameTerm("42"^^xsd:integer, "42.0"^^xsd:decimal) = false
+        // Even though they are equal by value
+        const xsdDecimal = new IRI("http://www.w3.org/2001/XMLSchema#decimal");
+        const lit3 = new Literal("42.0", xsdDecimal);
+        expect(BuiltInFunctions.sameTerm(lit1, lit3)).toBe(false);
+      });
+    });
+  });
+
   describe("XSD Type Casting Functions", () => {
     describe("xsdDateTime", () => {
       it("should convert ISO 8601 string to dateTime Literal", () => {

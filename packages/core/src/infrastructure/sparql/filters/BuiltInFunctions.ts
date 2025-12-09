@@ -650,4 +650,74 @@ export class BuiltInFunctions {
     }
     return new Literal(String(num), new IRI("http://www.w3.org/2001/XMLSchema#decimal"));
   }
+
+  // SPARQL 1.1 RDF Term Functions
+  // https://www.w3.org/TR/sparql11-query/#func-sameTerm
+
+  /**
+   * SPARQL 1.1 sameTerm function.
+   * Returns true if two RDF terms are exactly identical.
+   *
+   * Unlike the = operator which performs value-based comparison (e.g.,
+   * "42"^^xsd:integer equals "42.0"^^xsd:decimal), sameTerm() checks
+   * if two terms are exactly the same RDF term:
+   * - Same IRI value for IRIs
+   * - Same blank node ID for blank nodes
+   * - Same literal value, datatype, AND language tag for literals
+   *
+   * @see https://www.w3.org/TR/sparql11-query/#func-sameTerm
+   *
+   * @param term1 - First RDF term
+   * @param term2 - Second RDF term
+   * @returns true if terms are exactly identical, false otherwise
+   */
+  static sameTerm(term1: RDFTerm | undefined, term2: RDFTerm | undefined): boolean {
+    // Both undefined = same (vacuously)
+    if (term1 === undefined && term2 === undefined) {
+      return true;
+    }
+
+    // One undefined, one not = different
+    if (term1 === undefined || term2 === undefined) {
+      return false;
+    }
+
+    // Different term types = different
+    if (term1.constructor !== term2.constructor) {
+      return false;
+    }
+
+    // Same IRI value
+    if (term1 instanceof IRI && term2 instanceof IRI) {
+      return term1.value === term2.value;
+    }
+
+    // Same blank node ID
+    if (term1 instanceof BlankNode && term2 instanceof BlankNode) {
+      return term1.id === term2.id;
+    }
+
+    // Same literal: value, datatype, AND language must all match exactly
+    if (term1 instanceof Literal && term2 instanceof Literal) {
+      // Value must match
+      if (term1.value !== term2.value) {
+        return false;
+      }
+
+      // Language must match exactly (both undefined or same string)
+      if (term1.language !== term2.language) {
+        return false;
+      }
+
+      // Datatype must match exactly (both undefined or same IRI value)
+      const dt1 = term1.datatype?.value;
+      const dt2 = term2.datatype?.value;
+
+      // Unlike Literal.equals(), we do NOT treat plain literal as xsd:string
+      // sameTerm() requires exact identity
+      return dt1 === dt2;
+    }
+
+    return false;
+  }
 }
