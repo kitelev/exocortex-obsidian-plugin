@@ -1,4 +1,4 @@
-import type { SPARQLQuery, SelectQuery, ConstructQuery } from "../SPARQLParser";
+import type { SPARQLQuery, SelectQuery, ConstructQuery, AskQuery } from "../SPARQLParser";
 import type {
   AlgebraOperation,
   BGPOperation,
@@ -11,6 +11,7 @@ import type {
   ExtendOperation,
   SubqueryOperation,
   ConstructOperation,
+  AskOperation,
   ExistsExpression,
   ArithmeticExpression,
   Triple,
@@ -43,6 +44,10 @@ export class AlgebraTranslator {
 
     if (query.queryType === "CONSTRUCT") {
       return this.translateConstruct(query as ConstructQuery);
+    }
+
+    if (query.queryType === "ASK") {
+      return this.translateAsk(query as AskQuery);
     }
 
     throw new AlgebraTranslatorError(`Query type ${query.queryType} not yet supported`);
@@ -185,6 +190,25 @@ export class AlgebraTranslator {
     }
 
     return template.map((t: any) => this.translateTriple(t));
+  }
+
+  /**
+   * Translate an ASK query to algebra.
+   * ASK queries test whether a pattern matches and return a boolean result.
+   *
+   * SPARQL 1.1 spec (Section 16.3): ASK queries return true if the pattern
+   * matches at least one solution, false otherwise.
+   */
+  private translateAsk(query: AskQuery): AskOperation {
+    // ASK queries may have an empty WHERE clause (rare but valid)
+    const where = query.where && query.where.length > 0
+      ? this.translateWhere(query.where)
+      : ({ type: "bgp", triples: [] } as BGPOperation);
+
+    return {
+      type: "ask",
+      where,
+    };
   }
 
   /**
