@@ -26,7 +26,7 @@ Exocortex is a powerful Obsidian plugin that transforms your notes into an inter
 - 📦 **Archive Filtering**: Toggle visibility of archived tasks and projects in DailyNote layouts (default: hidden)
 - ⚡ **High Performance**: O(1) relation lookups via reverse indexing
 - 📱 **Mobile Compatible**: Full touch-optimized UI for desktop and mobile
-- ⌨️ **24 Commands**: Comprehensive command palette integration for all operations
+- ⌨️ **32 Commands**: Comprehensive command palette integration for all operations
 - 🎨 **Action Buttons**: Context-aware UI buttons for quick access to relevant commands
 - 🔍 **SPARQL Query Blocks**: Execute semantic queries directly in markdown with `sparql` code blocks - results auto-refresh on vault changes
 
@@ -151,7 +151,7 @@ Keep your vault organized:
 | **Repair Folder** | Assets with exo__Asset_isDefinedBy | Move file to correct folder based on reference |
 | **Rename to UID** | Filename ≠ exo__Asset_uid | Rename file to match UID, preserve label |
 
-### System Commands (6)
+### System Commands (7)
 
 Control plugin behavior and visualization:
 
@@ -162,6 +162,7 @@ Control plugin behavior and visualization:
 | **Toggle Layout Visibility** | Yes | Show/hide entire layout section |
 | **Toggle Properties Visibility** | Yes | Show/hide properties table |
 | **Toggle Archived Assets Visibility** | Yes | Show/hide archived assets in layout tables (persists in settings) |
+| **Edit Properties** | With frontmatter | Open modal for editing frontmatter properties |
 | **Open SPARQL Query Builder** | Yes | Visual query builder with templates, live preview, and copy-to-clipboard |
 
 ## 🏷️ Frontmatter Properties Reference
