@@ -41,7 +41,7 @@ describe("CommandManager - registration", () => {
         ctx.commandManager.registerAllCommands(ctx.mockPlugin);
       }).not.toThrow();
 
-      expect(ctx.mockPlugin.addCommand).toHaveBeenCalledTimes(32);
+      expect(ctx.mockPlugin.addCommand).toHaveBeenCalledTimes(33);
     });
 
     it("should register commands with correct IDs", () => {
@@ -54,6 +54,7 @@ describe("CommandManager - registration", () => {
 
       expect(registeredCommandIds).toContain("create-task");
       expect(registeredCommandIds).toContain("create-project");
+      expect(registeredCommandIds).toContain("create-area");
       expect(registeredCommandIds).toContain("create-instance");
       expect(registeredCommandIds).toContain("create-fleeting-note");
       expect(registeredCommandIds).toContain("create-related-task");
@@ -95,6 +96,7 @@ describe("CommandManager - registration", () => {
 
       expect(registeredNames).toContain("Create task");
       expect(registeredNames).toContain("Create project");
+      expect(registeredNames).toContain("Create area");
       expect(registeredNames).toContain("Create instance");
       expect(registeredNames).toContain("Create fleeting note");
       expect(registeredNames).toContain("Create related task");
@@ -160,6 +162,7 @@ describe("CommandManager - registration", () => {
     const checkCallbackCommands = [
       "create-task",
       "create-project",
+      "create-area",
       "create-instance",
       "create-related-task",
       "set-draft-status",
