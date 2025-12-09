@@ -41,6 +41,68 @@ packages/
 └── cli/                     # @exocortex/cli - Command-line automation tool
 ```
 
+### Package Comparison
+
+| Feature | Obsidian Plugin | CLI |
+|---------|-----------------|-----|
+| **Primary Use** | Interactive UI in Obsidian | Terminal automation & scripting |
+| **Installation** | Obsidian plugin folder | `npm install -g exocortex-cli` |
+| **Task Management** | ✅ UI buttons & commands | ✅ Same commands via terminal |
+| **SPARQL Queries** | ✅ Code blocks in notes | ✅ Command-line queries |
+| **Batch Operations** | Single task at a time | ✅ Multiple tasks in one command |
+| **CI/CD Integration** | ❌ | ✅ Exit codes for scripting |
+| **Visual Layout** | ✅ Rendered sections | ❌ Terminal output only |
+
+### CLI Package (`@exocortex/cli`)
+
+The CLI provides the same task management capabilities as the Obsidian plugin, but through a command-line interface. Use it for:
+
+- **Automation scripts**: Batch process tasks with shell scripts
+- **CI/CD pipelines**: Integrate task management into GitHub Actions or GitLab CI
+- **MCP integration**: Stable API for AI agent orchestration
+- **Headless servers**: Manage vaults on systems without Obsidian
+
+**Installation:**
+
+```bash
+# Global installation
+npm install -g exocortex-cli
+
+# Or use directly with npx
+npx exocortex-cli [command]
+```
+
+**Available CLI Commands (15+):**
+
+| Category | Commands |
+|----------|----------|
+| **SPARQL** | `sparql query` - Execute semantic queries |
+| **Status** | `start`, `complete`, `trash`, `archive`, `move-to-backlog`, `move-to-analysis`, `move-to-todo` |
+| **Creation** | `create-task`, `create-meeting`, `create-project`, `create-area` |
+| **Properties** | `rename-to-uid`, `update-label`, `schedule`, `set-deadline` |
+| **Batch** | `batch` - Execute multiple operations atomically |
+
+**Example CLI workflow:**
+
+```bash
+# Create a task
+exocortex command create-task "tasks/feature.md" --label "Implement feature" --vault ~/vault
+
+# Start working (ToDo → Doing)
+exocortex command start "tasks/feature.md" --vault ~/vault
+
+# Complete the task (Doing → Done)
+exocortex command complete "tasks/feature.md" --vault ~/vault
+
+# Query all active tasks via SPARQL
+exocortex sparql query "SELECT ?task ?label WHERE { ?task exo:Instance_class ems:Task }" --vault ~/vault
+```
+
+**CLI Documentation:**
+- [CLI Command Reference](./docs/cli/Command-Reference.md) - Complete syntax for all commands
+- [Scripting Patterns](./docs/cli/Scripting-Patterns.md) - Bash automation examples
+- [packages/cli/README.md](./packages/cli/README.md) - CLI package documentation
+
 The monorepo structure enables:
 - Shared core logic between UI and CLI
 - Independent versioning per package
