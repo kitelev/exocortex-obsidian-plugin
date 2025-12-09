@@ -1618,15 +1618,6 @@ describe("AlgebraTranslator", () => {
       expect(() => translator.translate(ast)).toThrow(AlgebraTranslatorError);
     });
 
-    it("throws error for unsupported query types (ASK)", () => {
-      const ast: any = {
-        type: "query",
-        queryType: "ASK",
-        where: [{ type: "bgp", triples: [] }],
-      };
-      expect(() => translator.translate(ast)).toThrow(AlgebraTranslatorError);
-    });
-
     it("throws error for unsupported query types (DESCRIBE)", () => {
       const ast: any = {
         type: "query",
@@ -1908,6 +1899,142 @@ describe("AlgebraTranslator", () => {
       const expr = extend.expression;
       expect(expr.left.name).toBe(sumVar);
       expect(expr.right.name).toBe(countVar);
+    });
+  });
+
+  describe("ASK Query Translation", () => {
+    it("translates simple ASK query", () => {
+      const query = `
+        ASK WHERE {
+          ?s <http://example.org/type> <http://example.org/Task> .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("bgp");
+      expect((algebra as any).where.triples).toHaveLength(1);
+    });
+
+    it("translates ASK with PREFIX declarations", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        ASK WHERE {
+          ?task ex:type ex:Task .
+          ?task ex:status "done" .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("bgp");
+      expect((algebra as any).where.triples).toHaveLength(2);
+    });
+
+    it("translates ASK with FILTER", () => {
+      const query = `
+        ASK WHERE {
+          ?task <http://example.org/effort> ?effort .
+          FILTER(?effort > 60)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("filter");
+      expect((algebra as any).where.input.type).toBe("bgp");
+    });
+
+    it("translates ASK with OPTIONAL", () => {
+      const query = `
+        ASK WHERE {
+          ?task <http://example.org/type> <http://example.org/Task> .
+          OPTIONAL { ?task <http://example.org/priority> ?priority }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      const where = (algebra as any).where;
+      expect(where.type).toBe("join");
+    });
+
+    it("translates ASK with UNION", () => {
+      const query = `
+        ASK WHERE {
+          { ?s <http://example.org/type> <http://example.org/Task> }
+          UNION
+          { ?s <http://example.org/type> <http://example.org/Project> }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("union");
+    });
+
+    it("translates ASK with FILTER NOT EXISTS", () => {
+      const query = `
+        ASK WHERE {
+          ?task <http://example.org/type> <http://example.org/Task> .
+          FILTER NOT EXISTS { ?task <http://example.org/blocker> ?blocker }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("filter");
+      expect((algebra as any).where.expression.type).toBe("exists");
+      expect((algebra as any).where.expression.negated).toBe(true);
+    });
+
+    it("translates ASK with BIND", () => {
+      const query = `
+        ASK WHERE {
+          ?s <http://example.org/label> ?label .
+          BIND(STRLEN(?label) AS ?len)
+          FILTER(?len > 10)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("filter");
+      expect((algebra as any).where.input.type).toBe("extend");
+    });
+
+    it("translates ASK with empty WHERE clause", () => {
+      const ast: any = {
+        type: "query",
+        queryType: "ASK",
+        where: [],
+      };
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("bgp");
+      expect((algebra as any).where.triples).toHaveLength(0);
+    });
+
+    it("translates ASK with VALUES", () => {
+      const query = `
+        ASK WHERE {
+          VALUES ?status { "active" "pending" }
+          ?task <http://example.org/status> ?status .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("join");
     });
   });
 });

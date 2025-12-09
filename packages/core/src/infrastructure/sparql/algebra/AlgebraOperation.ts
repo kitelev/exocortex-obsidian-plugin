@@ -14,7 +14,8 @@ export type AlgebraOperation =
   | GroupOperation
   | ExtendOperation
   | SubqueryOperation
-  | ConstructOperation;
+  | ConstructOperation
+  | AskOperation;
 
 export interface BGPOperation {
   type: "bgp";
@@ -384,5 +385,28 @@ export interface ConstructOperation {
   /** The triple template patterns to instantiate with solution bindings */
   template: Triple[];
   /** The WHERE clause algebra that produces solution mappings */
+  where: AlgebraOperation;
+}
+
+/**
+ * ASK operation for existence testing.
+ * Returns a boolean indicating whether the WHERE pattern matches any solutions.
+ *
+ * SPARQL 1.1 spec (Section 16.3): ASK queries test whether a pattern matches
+ * and return true if there is at least one solution, false otherwise.
+ * No bindings are returned, only the boolean result.
+ *
+ * Example:
+ * ```sparql
+ * ASK WHERE {
+ *   ?task a ems:Task .
+ *   ?task ems:status "done" .
+ * }
+ * ```
+ * Returns true if any task has status "done", false otherwise.
+ */
+export interface AskOperation {
+  type: "ask";
+  /** The WHERE clause algebra pattern to test for existence */
   where: AlgebraOperation;
 }

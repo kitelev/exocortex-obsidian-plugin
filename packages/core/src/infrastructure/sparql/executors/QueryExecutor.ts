@@ -17,6 +17,7 @@ import type {
   ExtendOperation,
   SubqueryOperation,
   ConstructOperation,
+  AskOperation,
 } from "../algebra/AlgebraOperation";
 import type { SolutionMapping } from "../SolutionMapping";
 import type { Triple } from "../../../domain/models/rdf/Triple";
@@ -466,5 +467,37 @@ export class QueryExecutor {
 
     // Apply the template to generate triples
     return this.constructExecutor.execute(operation.template, solutions);
+  }
+
+  /**
+   * Check if an algebra operation is an ASK query.
+   */
+  isAskQuery(operation: AlgebraOperation): operation is AskOperation {
+    return operation.type === "ask";
+  }
+
+  /**
+   * Execute an ASK query and return boolean result.
+   * This is the primary method for executing ASK queries.
+   *
+   * SPARQL 1.1 spec (Section 16.3): ASK queries test whether a pattern
+   * matches and return true if there is at least one solution, false otherwise.
+   *
+   * @param operation - An ASK algebra operation
+   * @returns true if the pattern matches at least one solution, false otherwise
+   * @throws QueryExecutorError if operation is not an ASK
+   */
+  async executeAsk(operation: AskOperation): Promise<boolean> {
+    if (operation.type !== "ask") {
+      throw new QueryExecutorError("executeAsk requires an ASK operation");
+    }
+
+    // Execute the WHERE clause and check if any solution is found
+    // Early termination: we only need to know if at least one solution exists
+    for await (const _solution of this.execute(operation.where)) {
+      return true; // Found at least one solution
+    }
+
+    return false; // No solutions found
   }
 }
