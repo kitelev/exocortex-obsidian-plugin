@@ -136,7 +136,7 @@ Exocortex follows **Clean Architecture** principles with clear separation of con
 **Location**: `packages/core/src/application/services/`
 
 **Components**:
-- `CommandManager` - Facade for all 26 commands
+- `CommandManager` - Facade for all 32 commands
 - 14 specialized services (TaskCreationService, ProjectCreationService, etc.)
 
 **Dependencies**: Domain layer, IFileSystemAdapter interface
