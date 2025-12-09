@@ -739,6 +739,28 @@ export class BuiltInFunctions {
     return new Literal(String(num), new IRI("http://www.w3.org/2001/XMLSchema#decimal"));
   }
 
+  // SPARQL 1.1 String Functions (URI)
+  // https://www.w3.org/TR/sparql11-query/#func-encode
+
+  /**
+   * SPARQL 1.1 ENCODE_FOR_URI function.
+   * https://www.w3.org/TR/sparql11-query/#func-encode
+   *
+   * Percent-encodes a string for safe inclusion in a URI.
+   * Encodes all characters except unreserved characters (A-Z, a-z, 0-9, -, _, ., ~).
+   *
+   * @param str - String to encode
+   * @returns Percent-encoded string
+   *
+   * Examples:
+   * - ENCODE_FOR_URI("hello world") → "hello%20world"
+   * - ENCODE_FOR_URI("a/b?c=d") → "a%2Fb%3Fc%3Dd"
+   * - ENCODE_FOR_URI("Los Angeles") → "Los%20Angeles"
+   */
+  static encodeForUri(str: string): string {
+    return encodeURIComponent(str);
+  }
+
   // SPARQL 1.1 RDF Term Functions
   // https://www.w3.org/TR/sparql11-query/#func-sameTerm
 

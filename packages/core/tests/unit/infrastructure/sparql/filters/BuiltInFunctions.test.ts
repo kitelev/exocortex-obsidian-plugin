@@ -1606,4 +1606,125 @@ describe("BuiltInFunctions", () => {
       });
     });
   });
+
+  describe("ENCODE_FOR_URI", () => {
+    describe("basic encoding", () => {
+      it("should encode spaces as %20", () => {
+        expect(BuiltInFunctions.encodeForUri("hello world")).toBe("hello%20world");
+      });
+
+      it("should encode URL special characters", () => {
+        expect(BuiltInFunctions.encodeForUri("a/b?c=d")).toBe("a%2Fb%3Fc%3Dd");
+      });
+
+      it("should encode ampersand", () => {
+        expect(BuiltInFunctions.encodeForUri("foo&bar")).toBe("foo%26bar");
+      });
+
+      it("should encode hash/fragment", () => {
+        expect(BuiltInFunctions.encodeForUri("test#anchor")).toBe("test%23anchor");
+      });
+
+      it("should encode percent sign", () => {
+        expect(BuiltInFunctions.encodeForUri("100%")).toBe("100%25");
+      });
+    });
+
+    describe("unreserved characters (should NOT be encoded)", () => {
+      it("should not encode alphabetic characters", () => {
+        expect(BuiltInFunctions.encodeForUri("ABCxyz")).toBe("ABCxyz");
+      });
+
+      it("should not encode digits", () => {
+        expect(BuiltInFunctions.encodeForUri("0123456789")).toBe("0123456789");
+      });
+
+      it("should not encode hyphen", () => {
+        expect(BuiltInFunctions.encodeForUri("foo-bar")).toBe("foo-bar");
+      });
+
+      it("should not encode underscore", () => {
+        expect(BuiltInFunctions.encodeForUri("foo_bar")).toBe("foo_bar");
+      });
+
+      it("should not encode period", () => {
+        expect(BuiltInFunctions.encodeForUri("file.txt")).toBe("file.txt");
+      });
+
+      it("should not encode tilde", () => {
+        expect(BuiltInFunctions.encodeForUri("~user")).toBe("~user");
+      });
+    });
+
+    describe("reserved characters (should be encoded)", () => {
+      it("should encode colon", () => {
+        expect(BuiltInFunctions.encodeForUri("http://example.org")).toBe("http%3A%2F%2Fexample.org");
+      });
+
+      it("should encode brackets", () => {
+        expect(BuiltInFunctions.encodeForUri("[array]")).toBe("%5Barray%5D");
+      });
+
+      it("should encode parentheses", () => {
+        expect(BuiltInFunctions.encodeForUri("(value)")).toBe("(value)");
+      });
+
+      it("should encode plus sign", () => {
+        expect(BuiltInFunctions.encodeForUri("a+b")).toBe("a%2Bb");
+      });
+
+      it("should encode exclamation mark", () => {
+        expect(BuiltInFunctions.encodeForUri("hello!")).toBe("hello!");
+      });
+    });
+
+    describe("unicode characters", () => {
+      it("should encode Cyrillic characters", () => {
+        expect(BuiltInFunctions.encodeForUri("Привет")).toBe("%D0%9F%D1%80%D0%B8%D0%B2%D0%B5%D1%82");
+      });
+
+      it("should encode Chinese characters", () => {
+        expect(BuiltInFunctions.encodeForUri("中文")).toBe("%E4%B8%AD%E6%96%87");
+      });
+
+      it("should encode emoji", () => {
+        expect(BuiltInFunctions.encodeForUri("👍")).toBe("%F0%9F%91%8D");
+      });
+    });
+
+    describe("edge cases", () => {
+      it("should return empty string for empty input", () => {
+        expect(BuiltInFunctions.encodeForUri("")).toBe("");
+      });
+
+      it("should handle string with only unreserved characters", () => {
+        expect(BuiltInFunctions.encodeForUri("simple-test_123.txt~")).toBe("simple-test_123.txt~");
+      });
+
+      it("should handle string with only reserved characters", () => {
+        expect(BuiltInFunctions.encodeForUri("/?#")).toBe("%2F%3F%23");
+      });
+
+      it("should handle mixed content", () => {
+        expect(BuiltInFunctions.encodeForUri("Los Angeles")).toBe("Los%20Angeles");
+        expect(BuiltInFunctions.encodeForUri("New York City")).toBe("New%20York%20City");
+      });
+    });
+
+    describe("SPARQL spec examples", () => {
+      // From SPARQL 1.1 spec section 17.4.3.11
+      it('ENCODE_FOR_URI("Los Angeles") returns "Los%20Angeles"', () => {
+        expect(BuiltInFunctions.encodeForUri("Los Angeles")).toBe("Los%20Angeles");
+      });
+
+      it("should properly encode for use in IRI construction", () => {
+        // Use case: CONCAT("http://example.org/", ENCODE_FOR_URI(?name))
+        const name = "John Doe";
+        const encoded = BuiltInFunctions.encodeForUri(name);
+        expect(encoded).toBe("John%20Doe");
+        const uri = "http://example.org/" + encoded;
+        expect(uri).toBe("http://example.org/John%20Doe");
+      });
+    });
+  });
 });
