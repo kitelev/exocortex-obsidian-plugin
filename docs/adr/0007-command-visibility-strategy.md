@@ -206,7 +206,7 @@ describe('CommandVisibility', () => {
 
 - **File**: `src/domain/commands/CommandVisibility.ts`
 - **Test**: `tests/unit/CommandVisibility.test.ts`
-- **Users**: CommandManager (26 commands), ButtonGroupsBuilder
+- **Users**: CommandManager (32 commands), ButtonGroupsBuilder
 - **Coverage**: 79% (target: 95% in Issue #123)
 
 ## Future
