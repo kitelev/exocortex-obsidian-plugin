@@ -222,7 +222,7 @@ Commands for moving efforts through workflow.
 
 **Status Change**: ToDo → `ems__EffortStatusDoing`
 
-**Timestamps**: Sets `ems__Effort_started_on` to current time.
+**Timestamps**: Sets `ems__Effort_startTimestamp` to current ISO 8601 timestamp.
 
 **Visibility**: Available on ToDo efforts.
 
@@ -238,7 +238,7 @@ Commands for moving efforts through workflow.
 
 **Status Change**: Doing → `ems__EffortStatusDone`
 
-**Timestamps**: Sets `ems__Effort_completed_on` to current time.
+**Timestamps**: Sets `ems__Effort_endTimestamp` to current ISO 8601 timestamp.
 
 **Visibility**: Available on Doing efforts.
 
@@ -258,7 +258,7 @@ Commands for scheduling and organizing efforts.
 
 **Updates**:
 ```yaml
-ems__Effort_scheduled_start_date: "2025-11-10"  # Today's date
+ems__Effort_day: "[[2025-11-10]]"  # Wiki-link to today's date
 ```
 
 **Visibility**: Available on efforts (tasks/projects).
@@ -275,8 +275,8 @@ ems__Effort_scheduled_start_date: "2025-11-10"  # Today's date
 
 **Updates**:
 ```yaml
-ems__Effort_scheduled_start_date: "2025-11-10"
-ems__Session_scheduled_start_time: "18:00"
+ems__Effort_day: "[[2025-11-10]]"
+ems__Effort_plannedStartTimestamp: "2025-11-10T19:00:00.000Z"  # ISO 8601 timestamp
 ```
 
 **Visibility**: Available on efforts.
@@ -291,7 +291,7 @@ ems__Session_scheduled_start_time: "18:00"
 
 **Purpose**: Reschedule effort to next day.
 
-**Updates**: Increments `ems__Effort_scheduled_start_date` by 1 day.
+**Updates**: Increments `ems__Effort_day` by 1 day.
 
 **Example**: 2025-11-10 → 2025-11-11
 
@@ -307,7 +307,7 @@ ems__Session_scheduled_start_time: "18:00"
 
 **Purpose**: Reschedule effort to previous day.
 
-**Updates**: Decrements `ems__Effort_scheduled_start_date` by 1 day.
+**Updates**: Decrements `ems__Effort_day` by 1 day.
 
 **Example**: 2025-11-10 → 2025-11-09
 
@@ -661,7 +661,7 @@ Commands appear contextually based on note type and state:
 
 | Property | Required Commands |
 |----------|-------------------|
-| `ems__Effort_scheduled_start_date` | Shift Day Forward/Backward |
+| `ems__Effort_day` | Shift Day Forward/Backward |
 | `exo__Asset_label` | Copy Label to Aliases |
 | UID property | Rename to UID |
 | Not archived | Archive Task |
