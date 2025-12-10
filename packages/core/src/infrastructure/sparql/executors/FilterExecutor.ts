@@ -1,6 +1,8 @@
 import type { FilterOperation, Expression, AlgebraOperation, ExistsExpression, ArithmeticExpression, InExpression } from "../algebra/AlgebraOperation";
 import type { SolutionMapping } from "../SolutionMapping";
+import type { ITripleStore } from "../../../interfaces/ITripleStore";
 import { BuiltInFunctions } from "../filters/BuiltInFunctions";
+import { IRI } from "../../../domain/models/rdf/IRI";
 import { Literal } from "../../../domain/models/rdf/Literal";
 
 export class FilterExecutorError extends Error {
@@ -19,6 +21,8 @@ export type ExistsEvaluator = (pattern: AlgebraOperation, solution: SolutionMapp
 
 export class FilterExecutor {
   private existsEvaluator: ExistsEvaluator | null = null;
+  private tripleStore: ITripleStore | null = null;
+  private uuidCache: Map<string, IRI | null> = new Map();
 
   /**
    * Set the EXISTS evaluator callback.
@@ -26,6 +30,15 @@ export class FilterExecutor {
    */
   setExistsEvaluator(evaluator: ExistsEvaluator): void {
     this.existsEvaluator = evaluator;
+  }
+
+  /**
+   * Set the triple store for UUID lookups.
+   * Required for exo:byUUID() function to perform O(1) index lookups.
+   */
+  setTripleStore(store: ITripleStore): void {
+    this.tripleStore = store;
+    this.uuidCache.clear();
   }
 
   async *execute(
@@ -694,6 +707,11 @@ export class FilterExecutor {
         const sha512Arg = this.getStringValue(this.evaluateExpression(expr.args[0], solution));
         return BuiltInFunctions.sha512(sha512Arg);
 
+      // Exocortex Extension Function: exo:byUUID()
+      // Resolves UUID to full file path URI using O(1) index lookup
+      case "byuuid":
+        return this.evaluateByUUID(expr, solution);
+
       default:
         throw new FilterExecutorError(`Unknown function: ${funcName}`);
     }
@@ -769,5 +787,92 @@ export class FilterExecutor {
 
     // For other values (IRI, BlankNode), use truthy coercion
     return Boolean(value);
+  }
+
+  /**
+   * Evaluate exo:byUUID() function.
+   * Resolves a UUID string to the full obsidian://vault/... URI using O(1) index lookup.
+   *
+   * SPARQL Usage:
+   *   BIND(exo:byUUID('uuid-string') AS ?subject)
+   *   ?subject ?p ?o
+   *
+   * Or in FILTER:
+   *   FILTER(?s = exo:byUUID('uuid-string'))
+   *
+   * Performance: O(1) lookup via UUID index vs O(n) scan with FILTER(CONTAINS()).
+   *
+   * @param expr - Function call expression with UUID string argument
+   * @param solution - Current solution mapping
+   * @returns IRI if UUID found, undefined if not found (results in unbound/error)
+   */
+  private evaluateByUUID(expr: any, solution: SolutionMapping): IRI | undefined {
+    if (!expr.args || expr.args.length !== 1) {
+      throw new FilterExecutorError("exo:byUUID requires exactly 1 argument (UUID string)");
+    }
+
+    // Get the UUID argument - evaluate in case it's a variable or expression
+    const uuidArg = this.evaluateExpression(expr.args[0], solution);
+    const uuid = this.getStringValue(uuidArg);
+
+    if (!uuid) {
+      return undefined;
+    }
+
+    // Normalize UUID to lowercase for consistent lookup
+    const normalizedUUID = uuid.toLowerCase();
+
+    // Check cache first
+    if (this.uuidCache.has(normalizedUUID)) {
+      const cached = this.uuidCache.get(normalizedUUID);
+      return cached ?? undefined;
+    }
+
+    // If no triple store is set, we cannot perform UUID lookup
+    if (!this.tripleStore) {
+      this.uuidCache.set(normalizedUUID, null);
+      return undefined;
+    }
+
+    // Use synchronous lookup if available (required for expression evaluation)
+    if (this.tripleStore.findSubjectsByUUIDSync) {
+      const subjects = this.tripleStore.findSubjectsByUUIDSync(normalizedUUID);
+      if (subjects.length === 0) {
+        this.uuidCache.set(normalizedUUID, null);
+        return undefined;
+      }
+      // Return first matching subject (UUID should be unique)
+      const result = subjects[0] as IRI;
+      this.uuidCache.set(normalizedUUID, result);
+      return result;
+    }
+
+    // Fallback: no sync method available
+    this.uuidCache.set(normalizedUUID, null);
+    return undefined;
+  }
+
+  /**
+   * Synchronous version of UUID lookup for use in pre-cached scenarios.
+   * Call this method to pre-populate the UUID cache before query execution.
+   *
+   * @param uuid - UUID string to look up
+   * @param result - IRI result from async lookup, or null if not found
+   */
+  cacheUUIDResult(uuid: string, result: IRI | null): void {
+    const normalizedUUID = uuid.toLowerCase();
+    this.uuidCache.set(normalizedUUID, result);
+  }
+
+  /**
+   * Get cached UUID result.
+   * Returns undefined if not in cache, null if cached as "not found", IRI if found.
+   */
+  getCachedUUID(uuid: string): IRI | null | undefined {
+    const normalizedUUID = uuid.toLowerCase();
+    if (this.uuidCache.has(normalizedUUID)) {
+      return this.uuidCache.get(normalizedUUID);
+    }
+    return undefined;
   }
 }

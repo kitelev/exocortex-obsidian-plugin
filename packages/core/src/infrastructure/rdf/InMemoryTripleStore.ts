@@ -202,6 +202,17 @@ export class InMemoryTripleStore implements ITripleStore {
    * @returns Array of subjects whose URI contains the UUID
    */
   async findSubjectsByUUID(uuid: string): Promise<Subject[]> {
+    return this.findSubjectsByUUIDSync(uuid);
+  }
+
+  /**
+   * Synchronous version of findSubjectsByUUID for use in expression evaluation.
+   * Used by exo:byUUID() function which requires synchronous evaluation.
+   *
+   * @param uuid - The UUID string to search for (case-insensitive)
+   * @returns Array of subjects whose URI contains the UUID
+   */
+  findSubjectsByUUIDSync(uuid: string): Subject[] {
     const normalizedUUID = uuid.toLowerCase();
     const subjectUris = this.uuidIndex.get(normalizedUUID);
 
