@@ -12,6 +12,7 @@ import type {
   SubqueryOperation,
   ConstructOperation,
   AskOperation,
+  ServiceOperation,
   ExistsExpression,
   InExpression,
   ArithmeticExpression,
@@ -441,6 +442,8 @@ export class AlgebraTranslator {
         return this.translateWhere(pattern.patterns);
       case "query":
         return this.translateSubquery(pattern);
+      case "service":
+        return this.translateService(pattern);
       default:
         throw new AlgebraTranslatorError(`Unsupported pattern type: ${pattern.type}`);
     }
@@ -1011,6 +1014,45 @@ export class AlgebraTranslator {
     return {
       type: "subquery",
       query: innerQuery,
+    };
+  }
+
+  /**
+   * Translate SERVICE pattern for federated queries.
+   *
+   * SPARQL 1.1 Federated Query allows querying remote SPARQL endpoints.
+   * sparqljs AST format:
+   * {
+   *   type: "service",
+   *   name: { termType: "NamedNode", value: "http://endpoint" },
+   *   patterns: [...],
+   *   silent: boolean
+   * }
+   *
+   * The SERVICE clause executes the inner pattern against a remote endpoint
+   * and joins the results with the local query.
+   *
+   * SILENT keyword:
+   * When silent is true, errors from the remote endpoint are suppressed
+   * and an empty result set is returned instead of failing the query.
+   */
+  private translateService(pattern: any): ServiceOperation {
+    if (!pattern.name || pattern.name.termType !== "NamedNode") {
+      throw new AlgebraTranslatorError("SERVICE pattern must have a NamedNode endpoint");
+    }
+
+    if (!pattern.patterns || !Array.isArray(pattern.patterns)) {
+      throw new AlgebraTranslatorError("SERVICE pattern must have patterns array");
+    }
+
+    // Translate the inner patterns
+    const innerPattern = this.translateWhere(pattern.patterns);
+
+    return {
+      type: "service",
+      endpoint: pattern.name.value,
+      pattern: innerPattern,
+      silent: pattern.silent || false,
     };
   }
 }

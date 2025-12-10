@@ -15,7 +15,8 @@ export type AlgebraOperation =
   | ExtendOperation
   | SubqueryOperation
   | ConstructOperation
-  | AskOperation;
+  | AskOperation
+  | ServiceOperation;
 
 export interface BGPOperation {
   type: "bgp";
@@ -435,4 +436,51 @@ export interface AskOperation {
   type: "ask";
   /** The WHERE clause algebra pattern to test for existence */
   where: AlgebraOperation;
+}
+
+/**
+ * SERVICE operation for federated queries.
+ * Executes a graph pattern against a remote SPARQL endpoint.
+ *
+ * SPARQL 1.1 Federated Query:
+ * https://www.w3.org/TR/sparql11-federated-query/
+ *
+ * The SERVICE clause allows querying external SPARQL endpoints within
+ * a local query. Results from the remote endpoint are joined with
+ * local query patterns.
+ *
+ * Example:
+ * ```sparql
+ * SELECT ?s ?label ?dbpediaLabel
+ * WHERE {
+ *   ?s <label> ?label .
+ *   SERVICE <http://dbpedia.org/sparql> {
+ *     ?s rdfs:label ?dbpediaLabel .
+ *     FILTER(LANG(?dbpediaLabel) = 'en')
+ *   }
+ * }
+ * ```
+ *
+ * SILENT keyword:
+ * When SILENT is specified, errors from the remote endpoint are suppressed
+ * and the SERVICE pattern returns an empty result set instead of failing.
+ *
+ * Example with SILENT:
+ * ```sparql
+ * SELECT ?s ?name WHERE {
+ *   ?s a :Person .
+ *   SERVICE SILENT <http://example.org/sparql> {
+ *     ?s foaf:name ?name .
+ *   }
+ * }
+ * ```
+ */
+export interface ServiceOperation {
+  type: "service";
+  /** The URI of the remote SPARQL endpoint */
+  endpoint: string;
+  /** The graph pattern to execute at the remote endpoint */
+  pattern: AlgebraOperation;
+  /** If true, errors from the remote endpoint are suppressed */
+  silent: boolean;
 }

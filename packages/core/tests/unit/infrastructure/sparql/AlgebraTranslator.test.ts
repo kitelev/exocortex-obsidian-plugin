@@ -2191,4 +2191,235 @@ describe("AlgebraTranslator", () => {
       expect(filter.expression.operands[0].negated).toBe(true);
     });
   });
+
+  describe("SERVICE clause (Federated Query)", () => {
+    it("translates simple SERVICE clause", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?s ?name
+        WHERE {
+          ?s ex:label ?label .
+          SERVICE <http://remote.example.org/sparql> {
+            ?s ex:name ?name .
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Find the SERVICE operation
+      const findService = (op: AlgebraOperation): any => {
+        if (op.type === "service") return op;
+        if ("input" in op) return findService((op as any).input);
+        if ("left" in op) {
+          const left = findService((op as any).left);
+          if (left) return left;
+          return findService((op as any).right);
+        }
+        if ("right" in op) return findService((op as any).right);
+        return null;
+      };
+
+      const service = findService(algebra);
+      expect(service).not.toBeNull();
+      expect(service.type).toBe("service");
+      expect(service.endpoint).toBe("http://remote.example.org/sparql");
+      expect(service.silent).toBe(false);
+      expect(service.pattern.type).toBe("bgp");
+    });
+
+    it("translates SERVICE SILENT clause", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?s ?name
+        WHERE {
+          ?s ex:type ex:Task .
+          SERVICE SILENT <http://remote.example.org/sparql> {
+            ?s ex:name ?name .
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Find the SERVICE operation
+      const findService = (op: AlgebraOperation): any => {
+        if (op.type === "service") return op;
+        if ("input" in op) return findService((op as any).input);
+        if ("left" in op) {
+          const left = findService((op as any).left);
+          if (left) return left;
+          return findService((op as any).right);
+        }
+        if ("right" in op) return findService((op as any).right);
+        return null;
+      };
+
+      const service = findService(algebra);
+      expect(service).not.toBeNull();
+      expect(service.type).toBe("service");
+      expect(service.silent).toBe(true);
+    });
+
+    it("translates SERVICE with multiple inner triples", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?s ?name ?age
+        WHERE {
+          ?s ex:id ?id .
+          SERVICE <http://remote.example.org/sparql> {
+            ?s ex:name ?name .
+            ?s ex:age ?age .
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Find the SERVICE operation
+      const findService = (op: AlgebraOperation): any => {
+        if (op.type === "service") return op;
+        if ("input" in op) return findService((op as any).input);
+        if ("left" in op) {
+          const left = findService((op as any).left);
+          if (left) return left;
+          return findService((op as any).right);
+        }
+        if ("right" in op) return findService((op as any).right);
+        return null;
+      };
+
+      const service = findService(algebra);
+      expect(service).not.toBeNull();
+
+      // The inner pattern should be a join of two BGPs
+      expect(service.pattern).toBeDefined();
+      // Could be BGP with 2 triples or join of 2 BGPs depending on sparqljs parsing
+      if (service.pattern.type === "bgp") {
+        expect(service.pattern.triples.length).toBeGreaterThanOrEqual(2);
+      } else if (service.pattern.type === "join") {
+        expect(service.pattern.left).toBeDefined();
+        expect(service.pattern.right).toBeDefined();
+      }
+    });
+
+    it("translates SERVICE with inner FILTER", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?s ?label
+        WHERE {
+          ?s ex:type ex:Person .
+          SERVICE <http://dbpedia.org/sparql> {
+            ?s <http://www.w3.org/2000/01/rdf-schema#label> ?label .
+            FILTER(LANG(?label) = "en")
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Find the SERVICE operation
+      const findService = (op: AlgebraOperation): any => {
+        if (op.type === "service") return op;
+        if ("input" in op) return findService((op as any).input);
+        if ("left" in op) {
+          const left = findService((op as any).left);
+          if (left) return left;
+          return findService((op as any).right);
+        }
+        if ("right" in op) return findService((op as any).right);
+        return null;
+      };
+
+      const service = findService(algebra);
+      expect(service).not.toBeNull();
+
+      // Find filter inside service pattern
+      const findFilter = (op: any): any => {
+        if (op.type === "filter") return op;
+        if ("input" in op) return findFilter(op.input);
+        if ("left" in op) {
+          const left = findFilter(op.left);
+          if (left) return left;
+          return findFilter(op.right);
+        }
+        return null;
+      };
+
+      const filter = findFilter(service.pattern);
+      expect(filter).not.toBeNull();
+      expect(filter.type).toBe("filter");
+    });
+
+    it("translates multiple SERVICE clauses", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?s ?nameA ?nameB
+        WHERE {
+          ?s ex:id ?id .
+          SERVICE <http://endpointA.example.org/sparql> {
+            ?s ex:nameA ?nameA .
+          }
+          SERVICE <http://endpointB.example.org/sparql> {
+            ?s ex:nameB ?nameB .
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Find all SERVICE operations
+      const findAllServices = (op: AlgebraOperation, services: any[] = []): any[] => {
+        if (op.type === "service") services.push(op);
+        if ("input" in op) findAllServices((op as any).input, services);
+        if ("left" in op) {
+          findAllServices((op as any).left, services);
+          findAllServices((op as any).right, services);
+        }
+        if ("right" in op && !("left" in op)) findAllServices((op as any).right, services);
+        return services;
+      };
+
+      const services = findAllServices(algebra);
+      expect(services.length).toBe(2);
+
+      const endpoints = services.map((s) => s.endpoint).sort();
+      expect(endpoints).toContain("http://endpointA.example.org/sparql");
+      expect(endpoints).toContain("http://endpointB.example.org/sparql");
+    });
+
+    it("translates SERVICE within OPTIONAL", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?s ?name ?remoteData
+        WHERE {
+          ?s ex:name ?name .
+          OPTIONAL {
+            SERVICE <http://remote.example.org/sparql> {
+              ?s ex:remoteData ?remoteData .
+            }
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Find the SERVICE operation (should be inside a leftjoin)
+      const findService = (op: AlgebraOperation): any => {
+        if (op.type === "service") return op;
+        if ("input" in op) return findService((op as any).input);
+        if ("left" in op) {
+          const left = findService((op as any).left);
+          if (left) return left;
+          return findService((op as any).right);
+        }
+        if ("right" in op) return findService((op as any).right);
+        return null;
+      };
+
+      const service = findService(algebra);
+      expect(service).not.toBeNull();
+      expect(service.type).toBe("service");
+    });
+  });
 });
