@@ -4,6 +4,11 @@ import type {
   JoinOperation,
   Expression,
 } from "./AlgebraOperation";
+import {
+  FilterContainsOptimizer,
+  OptimizationHint,
+} from "../optimization/FilterContainsOptimizer";
+import type { ITripleStore } from "../../../interfaces/ITripleStore";
 
 export interface OptimizationStats {
   tripleCount: number;
@@ -12,12 +17,87 @@ export interface OptimizationStats {
 
 export class AlgebraOptimizer {
   private stats: Map<string, OptimizationStats> = new Map();
+  private filterContainsOptimizer: FilterContainsOptimizer;
+  private tripleStore: ITripleStore | null = null;
+
+  constructor() {
+    this.filterContainsOptimizer = new FilterContainsOptimizer();
+  }
+
+  /**
+   * Set the triple store for UUID index lookups during optimization.
+   * When set, FILTER(CONTAINS(STR(?s), 'uuid')) patterns can be optimized
+   * using O(1) index lookup instead of O(n) scan.
+   */
+  setTripleStore(store: ITripleStore): void {
+    this.tripleStore = store;
+    this.filterContainsOptimizer.setTripleStore(store);
+  }
+
+  /**
+   * Get optimization hints from the last optimization run.
+   * Useful for --explain mode to show users what optimizations are possible.
+   */
+  getOptimizationHints(): OptimizationHint[] {
+    return this.filterContainsOptimizer.getLastOptimizationHints();
+  }
+
+  /**
+   * Analyze a query for potential optimizations without applying them.
+   * Returns hints about what optimizations could be applied.
+   */
+  analyzeQuery(operation: AlgebraOperation): OptimizationHint[] {
+    return this.filterContainsOptimizer.analyzeQuery(operation);
+  }
 
   optimize(operation: AlgebraOperation): AlgebraOperation {
     let optimized = operation;
 
     // First pass: eliminate empty BGPs in joins with filters
     optimized = this.eliminateEmptyBGPInFilterJoin(optimized);
+
+    optimized = this.filterPushDown(optimized);
+
+    optimized = this.joinReordering(optimized);
+
+    return optimized;
+  }
+
+  /**
+   * Async version of optimize that can perform UUID index lookups.
+   * Use this when you have a triple store set and want FILTER(CONTAINS())
+   * optimizations to use the index.
+   */
+  async optimizeAsync(operation: AlgebraOperation): Promise<AlgebraOperation> {
+    let optimized = operation;
+
+    // First pass: eliminate empty BGPs in joins with filters
+    optimized = this.eliminateEmptyBGPInFilterJoin(optimized);
+
+    // Optimize FILTER(CONTAINS()) patterns using UUID index
+    if (this.tripleStore) {
+      optimized = await this.filterContainsOptimizer.optimize(optimized);
+    }
+
+    optimized = this.filterPushDown(optimized);
+
+    optimized = this.joinReordering(optimized);
+
+    return optimized;
+  }
+
+  /**
+   * Synchronous version with subject URIs for FILTER(CONTAINS()) optimization.
+   * Use when you have pre-fetched subject URIs.
+   */
+  optimizeWithSubjects(operation: AlgebraOperation, subjectUris: string[]): AlgebraOperation {
+    let optimized = operation;
+
+    // First pass: eliminate empty BGPs in joins with filters
+    optimized = this.eliminateEmptyBGPInFilterJoin(optimized);
+
+    // Optimize FILTER(CONTAINS()) patterns using provided subjects
+    optimized = this.filterContainsOptimizer.optimizeSync(optimized, subjectUris);
 
     optimized = this.filterPushDown(optimized);
 

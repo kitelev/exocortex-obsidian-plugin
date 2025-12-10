@@ -97,6 +97,11 @@ export { BuiltInFunctions } from "./infrastructure/sparql/filters/BuiltInFunctio
 export { AggregateFunctions } from "./infrastructure/sparql/aggregates/AggregateFunctions";
 export { QueryPlanCache } from "./infrastructure/sparql/cache/QueryPlanCache";
 export { CaseWhenTransformer, CaseWhenTransformerError } from "./infrastructure/sparql/CaseWhenTransformer";
+export {
+  FilterContainsOptimizer,
+  type ContainsUUIDPattern,
+  type OptimizationHint,
+} from "./infrastructure/sparql/optimization/FilterContainsOptimizer";
 
 // Interfaces exports
 export type {
