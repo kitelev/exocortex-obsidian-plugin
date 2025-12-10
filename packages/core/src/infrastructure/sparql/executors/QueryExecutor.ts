@@ -18,6 +18,7 @@ import type {
   SubqueryOperation,
   ConstructOperation,
   AskOperation,
+  ServiceOperation,
 } from "../algebra/AlgebraOperation";
 import type { SolutionMapping } from "../SolutionMapping";
 import type { Triple } from "../../../domain/models/rdf/Triple";
@@ -29,6 +30,8 @@ import { MinusExecutor } from "./MinusExecutor";
 import { ValuesExecutor } from "./ValuesExecutor";
 import { AggregateExecutor } from "./AggregateExecutor";
 import { ConstructExecutor } from "./ConstructExecutor";
+import { ServiceExecutor, ServiceExecutorConfig } from "./ServiceExecutor";
+import { SPARQLGenerator } from "../algebra/SPARQLGenerator";
 
 export class QueryExecutorError extends Error {
   constructor(message: string, cause?: Error) {
@@ -42,6 +45,16 @@ export class QueryExecutorError extends Error {
  * Coordinates all specialized executors (BGP, Filter, Join, etc.)
  * to produce query results.
  */
+/**
+ * Configuration options for QueryExecutor.
+ */
+export interface QueryExecutorConfig {
+  /**
+   * Configuration for the ServiceExecutor (federated queries).
+   */
+  serviceConfig?: ServiceExecutorConfig;
+}
+
 export class QueryExecutor {
   private readonly bgpExecutor: BGPExecutor;
   private readonly filterExecutor: FilterExecutor;
@@ -51,8 +64,10 @@ export class QueryExecutor {
   private readonly valuesExecutor: ValuesExecutor;
   private readonly aggregateExecutor: AggregateExecutor;
   private readonly constructExecutor: ConstructExecutor;
+  private readonly serviceExecutor: ServiceExecutor;
+  private readonly sparqlGenerator: SPARQLGenerator;
 
-  constructor(tripleStore: ITripleStore) {
+  constructor(tripleStore: ITripleStore, config: QueryExecutorConfig = {}) {
     this.bgpExecutor = new BGPExecutor(tripleStore);
     this.filterExecutor = new FilterExecutor();
     this.optionalExecutor = new OptionalExecutor();
@@ -61,6 +76,8 @@ export class QueryExecutor {
     this.valuesExecutor = new ValuesExecutor();
     this.aggregateExecutor = new AggregateExecutor();
     this.constructExecutor = new ConstructExecutor();
+    this.serviceExecutor = new ServiceExecutor(config.serviceConfig);
+    this.sparqlGenerator = new SPARQLGenerator();
 
     // Set up EXISTS evaluator for FilterExecutor
     this.filterExecutor.setExistsEvaluator(async (pattern, solution) => {
@@ -167,6 +184,10 @@ export class QueryExecutor {
 
       case "subquery":
         yield* this.executeSubquery(operation);
+        break;
+
+      case "service":
+        yield* this.executeService(operation);
         break;
 
       default:
@@ -408,6 +429,25 @@ export class QueryExecutor {
     // The inner query has already been translated to algebra (project, filter, etc.)
     // so we just recursively execute it
     yield* this.execute(operation.query);
+  }
+
+  /**
+   * Execute a SERVICE operation for federated queries.
+   *
+   * SERVICE clauses allow querying remote SPARQL endpoints. The inner pattern
+   * is converted to a SPARQL query string, sent to the remote endpoint via HTTP,
+   * and the results are converted to SolutionMappings for joining with local patterns.
+   *
+   * SILENT mode: When silent is true, errors from the remote endpoint are
+   * suppressed and an empty result set is returned instead of failing.
+   *
+   * SPARQL 1.1 Federated Query specification:
+   * https://www.w3.org/TR/sparql11-federated-query/
+   */
+  private async *executeService(operation: ServiceOperation): AsyncIterableIterator<SolutionMapping> {
+    yield* this.serviceExecutor.execute(operation, (pattern) => {
+      return this.sparqlGenerator.generateSelect(pattern);
+    });
   }
 
   private evaluateExtendExpression(
