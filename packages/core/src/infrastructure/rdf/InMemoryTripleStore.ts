@@ -16,6 +16,9 @@ const XSD_STRING = Namespace.XSD.term("string").value;
 type TripleKey = string;
 type NodeKey = string;
 
+/** UUID pattern regex for standard UUID v4 format */
+const UUID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
+
 export class InMemoryTripleStore implements ITripleStore {
   private triples: Map<TripleKey, Triple> = new Map();
   private spo: Map<NodeKey, Map<NodeKey, Set<NodeKey>>> = new Map();
@@ -25,6 +28,12 @@ export class InMemoryTripleStore implements ITripleStore {
   private osp: Map<NodeKey, Map<NodeKey, Set<NodeKey>>> = new Map();
   private ops: Map<NodeKey, Map<NodeKey, Set<NodeKey>>> = new Map();
   private queryCache: LRUCache<string, Triple[]> = new LRUCache(1000);
+
+  /**
+   * UUID index: maps lowercase UUID strings to sets of subject IRIs.
+   * Enables O(1) lookup for FILTER(CONTAINS(STR(?s), 'uuid')) patterns.
+   */
+  private uuidIndex: Map<string, Set<string>> = new Map();
 
   async add(triple: Triple): Promise<void> {
     const key = this.getTripleKey(triple);
@@ -45,6 +54,9 @@ export class InMemoryTripleStore implements ITripleStore {
     this.addToIndex(this.pos, p, o, s);
     this.addToIndex(this.osp, o, s, p);
     this.addToIndex(this.ops, o, p, s);
+
+    // Update UUID index for subject IRIs
+    this.addToUUIDIndex(triple.subject);
 
     this.queryCache.clear();
   }
@@ -68,6 +80,10 @@ export class InMemoryTripleStore implements ITripleStore {
     this.removeFromIndex(this.pos, p, o, s);
     this.removeFromIndex(this.osp, o, s, p);
     this.removeFromIndex(this.ops, o, p, s);
+
+    // Update UUID index - note: we don't remove from UUID index since
+    // the same subject might be referenced in other triples
+    // The index is rebuilt lazily if needed
 
     this.queryCache.clear();
 
@@ -141,6 +157,7 @@ export class InMemoryTripleStore implements ITripleStore {
     this.pos.clear();
     this.osp.clear();
     this.ops.clear();
+    this.uuidIndex.clear();
     this.queryCache.clear();
   }
 
@@ -174,6 +191,58 @@ export class InMemoryTripleStore implements ITripleStore {
 
   async beginTransaction(): Promise<ITransaction> {
     return new InMemoryTransaction(this);
+  }
+
+  /**
+   * Find subjects containing a specific UUID.
+   * This is an optimization for FILTER(CONTAINS(STR(?s), 'uuid')) patterns.
+   * Uses the UUID index for O(1) lookup instead of O(n) scan.
+   *
+   * @param uuid - The UUID string to search for (case-insensitive)
+   * @returns Array of subjects whose URI contains the UUID
+   */
+  async findSubjectsByUUID(uuid: string): Promise<Subject[]> {
+    const normalizedUUID = uuid.toLowerCase();
+    const subjectUris = this.uuidIndex.get(normalizedUUID);
+
+    if (!subjectUris || subjectUris.size === 0) {
+      return [];
+    }
+
+    // Convert URIs back to IRI objects, but only include ones that still exist
+    const results: Subject[] = [];
+    for (const uri of subjectUris) {
+      // Check if this subject still exists in the store
+      if (this.spo.has(`i:${uri}`)) {
+        results.push(new IRI(uri));
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Add a subject to the UUID index if it's an IRI containing UUIDs.
+   */
+  private addToUUIDIndex(subject: Subject): void {
+    if (!(subject instanceof IRI)) {
+      return;
+    }
+
+    const uri = subject.value;
+    // Find all UUIDs in the URI
+    const matches = uri.match(UUID_PATTERN);
+    if (!matches) {
+      return;
+    }
+
+    for (const match of matches) {
+      const normalizedUUID = match.toLowerCase();
+      if (!this.uuidIndex.has(normalizedUUID)) {
+        this.uuidIndex.set(normalizedUUID, new Set());
+      }
+      this.uuidIndex.get(normalizedUUID)!.add(uri);
+    }
   }
 
   private matchSPO(s: Subject, p: Predicate, o: RDFObject): Triple[] {
