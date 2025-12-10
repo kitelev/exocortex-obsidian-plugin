@@ -10,10 +10,13 @@ export type AlgebraOperation =
   | OrderByOperation
   | SliceOperation
   | DistinctOperation
+  | ReducedOperation
   | GroupOperation
   | ExtendOperation
   | SubqueryOperation
-  | ConstructOperation;
+  | ConstructOperation
+  | AskOperation
+  | ServiceOperation;
 
 export interface BGPOperation {
   type: "bgp";
@@ -113,7 +116,8 @@ export type Expression =
   | RawFunctionCallExpression
   | VariableExpression
   | LiteralExpression
-  | ExistsExpression;
+  | ExistsExpression
+  | InExpression;
 
 export interface ComparisonExpression {
   type: "comparison";
@@ -163,6 +167,31 @@ export interface ExistsExpression {
   type: "exists";
   negated: boolean;
   pattern: AlgebraOperation;
+}
+
+/**
+ * IN / NOT IN expression for set membership testing.
+ * SPARQL 1.1 Section 17.4.1.5: Tests whether a value is in a list of values.
+ *
+ * Example:
+ * ```sparql
+ * FILTER(?status IN ("active", "pending", "review"))
+ * FILTER(?priority NOT IN (1, 2))
+ * ```
+ *
+ * Semantics:
+ * - IN returns true if the expression equals any value in the list
+ * - NOT IN returns true if the expression does not equal any value in the list
+ * - Comparison uses RDF term equality (=)
+ */
+export interface InExpression {
+  type: "in";
+  /** The expression being tested */
+  expression: Expression;
+  /** List of values to test against */
+  list: Expression[];
+  /** True for NOT IN, false for IN */
+  negated: boolean;
 }
 
 export interface JoinOperation {
@@ -300,6 +329,20 @@ export interface DistinctOperation {
   input: AlgebraOperation;
 }
 
+/**
+ * REDUCED solution modifier.
+ * SPARQL 1.1 spec allows implementations to eliminate some or all duplicates.
+ * This implementation treats REDUCED identically to DISTINCT (allowed by spec).
+ *
+ * SPARQL 1.1 Query Language Section 15.3:
+ * "REDUCED can be viewed as a hint to the query engine that duplicates
+ * may be eliminated, but it is not required to do so."
+ */
+export interface ReducedOperation {
+  type: "reduced";
+  input: AlgebraOperation;
+}
+
 export interface GroupOperation {
   type: "group";
   variables: string[];
@@ -370,4 +413,74 @@ export interface ConstructOperation {
   template: Triple[];
   /** The WHERE clause algebra that produces solution mappings */
   where: AlgebraOperation;
+}
+
+/**
+ * ASK operation for existence testing.
+ * Returns a boolean indicating whether the WHERE pattern matches any solutions.
+ *
+ * SPARQL 1.1 spec (Section 16.3): ASK queries test whether a pattern matches
+ * and return true if there is at least one solution, false otherwise.
+ * No bindings are returned, only the boolean result.
+ *
+ * Example:
+ * ```sparql
+ * ASK WHERE {
+ *   ?task a ems:Task .
+ *   ?task ems:status "done" .
+ * }
+ * ```
+ * Returns true if any task has status "done", false otherwise.
+ */
+export interface AskOperation {
+  type: "ask";
+  /** The WHERE clause algebra pattern to test for existence */
+  where: AlgebraOperation;
+}
+
+/**
+ * SERVICE operation for federated queries.
+ * Executes a graph pattern against a remote SPARQL endpoint.
+ *
+ * SPARQL 1.1 Federated Query:
+ * https://www.w3.org/TR/sparql11-federated-query/
+ *
+ * The SERVICE clause allows querying external SPARQL endpoints within
+ * a local query. Results from the remote endpoint are joined with
+ * local query patterns.
+ *
+ * Example:
+ * ```sparql
+ * SELECT ?s ?label ?dbpediaLabel
+ * WHERE {
+ *   ?s <label> ?label .
+ *   SERVICE <http://dbpedia.org/sparql> {
+ *     ?s rdfs:label ?dbpediaLabel .
+ *     FILTER(LANG(?dbpediaLabel) = 'en')
+ *   }
+ * }
+ * ```
+ *
+ * SILENT keyword:
+ * When SILENT is specified, errors from the remote endpoint are suppressed
+ * and the SERVICE pattern returns an empty result set instead of failing.
+ *
+ * Example with SILENT:
+ * ```sparql
+ * SELECT ?s ?name WHERE {
+ *   ?s a :Person .
+ *   SERVICE SILENT <http://example.org/sparql> {
+ *     ?s foaf:name ?name .
+ *   }
+ * }
+ * ```
+ */
+export interface ServiceOperation {
+  type: "service";
+  /** The URI of the remote SPARQL endpoint */
+  endpoint: string;
+  /** The graph pattern to execute at the remote endpoint */
+  pattern: AlgebraOperation;
+  /** If true, errors from the remote endpoint are suppressed */
+  silent: boolean;
 }

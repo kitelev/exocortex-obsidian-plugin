@@ -17,6 +17,7 @@ A collection of practical, ready-to-use SPARQL queries for your Obsidian vault. 
    - [EXISTS and NOT EXISTS](#exists-and-not-exists)
    - [Property Paths](#property-paths)
    - [Subqueries](#subqueries)
+   - [Custom Extension Functions](#custom-extension-functions)
 
 ---
 
@@ -1237,6 +1238,114 @@ ORDER BY DESC(?votes)
 ```
 
 **Use Case**: Find outliers within their context.
+
+---
+
+### Custom Extension Functions
+
+Exocortex provides custom SPARQL functions beyond the standard specification.
+
+#### 54. Direct UUID Resolution (exo:byUUID)
+
+Look up an entity directly by its UUID without scanning:
+
+```sparql
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?asset ?label
+WHERE {
+  BIND(exo:byUUID("550e8400-e29b-41d4-a716-446655440000") AS ?asset)
+  ?asset exo:Asset_label ?label .
+}
+```
+
+**Use Case**: O(1) lookup when you know the UUID. ~100x faster than `FILTER(CONTAINS(...))`.
+
+---
+
+#### 55. UUID Lookup with Property Retrieval
+
+Get all properties of a specific note:
+
+```sparql
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?label ?status ?votes ?createdAt
+WHERE {
+  BIND(exo:byUUID("550e8400-e29b-41d4-a716-446655440000") AS ?task)
+  ?task exo:Asset_label ?label .
+  OPTIONAL { ?task ems:Effort_status ?status }
+  OPTIONAL { ?task ems:Effort_votes ?votes }
+  OPTIONAL { ?task exo:Asset_createdAt ?createdAt }
+}
+```
+
+**Use Case**: Fetch complete entity details when UUID is known.
+
+---
+
+#### 56. UUID with Variable (Dynamic Resolution)
+
+Use a variable containing a UUID string:
+
+```sparql
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?asset ?label
+WHERE {
+  BIND("550e8400-e29b-41d4-a716-446655440000" AS ?uuid)
+  BIND(exo:byUUID(?uuid) AS ?asset)
+  ?asset exo:Asset_label ?label .
+}
+```
+
+**Use Case**: Pass UUID from external source (e.g., API integration).
+
+---
+
+#### 57. Find Related Entities via UUID
+
+Look up a task and find its parent project:
+
+```sparql
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+PREFIX ems: <https://exocortex.my/ontology/ems#>
+
+SELECT ?task ?taskLabel ?project ?projectLabel
+WHERE {
+  BIND(exo:byUUID("550e8400-e29b-41d4-a716-446655440000") AS ?task)
+  ?task exo:Asset_label ?taskLabel .
+  ?task ems:belongs_to_project ?project .
+  ?project exo:Asset_label ?projectLabel .
+}
+```
+
+**Use Case**: Navigate relationships starting from known UUID.
+
+---
+
+#### 58. Batch UUID Resolution
+
+Look up multiple entities by UUID in a single query:
+
+```sparql
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?entity ?label
+WHERE {
+  VALUES ?uuid {
+    "uuid-1"
+    "uuid-2"
+    "uuid-3"
+  }
+  BIND(exo:byUUID(?uuid) AS ?entity)
+  FILTER(BOUND(?entity))
+  ?entity exo:Asset_label ?label .
+}
+```
+
+**Use Case**: Resolve multiple UUIDs efficiently in one query.
 
 ---
 

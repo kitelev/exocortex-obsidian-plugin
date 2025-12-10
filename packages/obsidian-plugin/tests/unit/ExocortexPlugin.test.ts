@@ -81,6 +81,7 @@ describe("ExocortexPlugin", () => {
     // Setup mock view
     mockView = {
       containerEl: document.createElement("div"),
+      getMode: jest.fn().mockReturnValue("preview"), // Default to Reading Mode (preview)
     };
 
     // Create metadata container in view
@@ -460,6 +461,70 @@ describe("ExocortexPlugin", () => {
 
       // Cleanup
       existingLayout.remove();
+    });
+
+    it("should render layout in Reading Mode (preview)", () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+      mockView.getMode.mockReturnValue("preview");
+
+      // Act
+      (plugin as any).autoRenderLayout();
+
+      // Assert
+      expect(mockView.getMode).toHaveBeenCalled();
+      expect(mockLayoutRenderer.render).toHaveBeenCalled();
+
+      // Check that layout container was created in the view container
+      const layoutContainers = mockView.containerEl.querySelectorAll(".exocortex-auto-layout");
+      expect(layoutContainers.length).toBe(1);
+    });
+
+    it("should NOT render layout in Edit Mode (source)", () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+      mockView.getMode.mockReturnValue("source");
+
+      // Act
+      (plugin as any).autoRenderLayout();
+
+      // Assert
+      expect(mockView.getMode).toHaveBeenCalled();
+      expect(mockLayoutRenderer.render).not.toHaveBeenCalled();
+
+      // Check that no layout container was created
+      const layoutContainers = mockView.containerEl.querySelectorAll(".exocortex-auto-layout");
+      expect(layoutContainers.length).toBe(0);
+    });
+
+    it("should correctly switch between modes when mode changes", () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+
+      // Start in Reading Mode (preview) - should render
+      mockView.getMode.mockReturnValue("preview");
+      (plugin as any).autoRenderLayout();
+      expect(mockLayoutRenderer.render).toHaveBeenCalledTimes(1);
+
+      // Verify render was called (layout created in preview mode)
+      const firstLayoutContainers = mockView.containerEl.querySelectorAll(".exocortex-auto-layout");
+      expect(firstLayoutContainers.length).toBe(1);
+
+      // Clean up the layout container manually (simulating what removeAutoRenderedLayouts does)
+      // Note: removeAutoRenderedLayouts uses document.querySelectorAll which doesn't reach
+      // elements inside mockView.containerEl since it's not attached to the document
+      mockView.containerEl.querySelector(".exocortex-auto-layout")?.remove();
+
+      // Switch to Edit Mode (source) - should not render new layout
+      mockView.getMode.mockReturnValue("source");
+
+      (plugin as any).autoRenderLayout();
+      // render should still only be called once (from preview mode)
+      expect(mockLayoutRenderer.render).toHaveBeenCalledTimes(1);
+
+      // Verify no layout container exists after switching to source mode
+      const layoutContainers = mockView.containerEl.querySelectorAll(".exocortex-auto-layout");
+      expect(layoutContainers.length).toBe(0);
     });
   });
 

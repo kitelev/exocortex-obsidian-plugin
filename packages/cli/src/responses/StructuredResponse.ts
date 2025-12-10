@@ -173,6 +173,17 @@ export interface ConstructResult {
   }>;
 }
 
+export interface ResolveResult {
+  /** UUID extracted from filename */
+  uuid: string;
+  /** Relative path within vault */
+  path: string;
+  /** Absolute filesystem path */
+  absolutePath: string;
+  /** Obsidian URI (obsidian://vault/...) */
+  uri: string;
+}
+
 /**
  * Builder for structured responses
  */

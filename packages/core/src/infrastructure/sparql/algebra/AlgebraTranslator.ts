@@ -1,4 +1,4 @@
-import type { SPARQLQuery, SelectQuery, ConstructQuery } from "../SPARQLParser";
+import type { SPARQLQuery, SelectQuery, ConstructQuery, AskQuery } from "../SPARQLParser";
 import type {
   AlgebraOperation,
   BGPOperation,
@@ -11,7 +11,10 @@ import type {
   ExtendOperation,
   SubqueryOperation,
   ConstructOperation,
+  AskOperation,
+  ServiceOperation,
   ExistsExpression,
+  InExpression,
   ArithmeticExpression,
   Triple,
   TripleElement,
@@ -43,6 +46,10 @@ export class AlgebraTranslator {
 
     if (query.queryType === "CONSTRUCT") {
       return this.translateConstruct(query as ConstructQuery);
+    }
+
+    if (query.queryType === "ASK") {
+      return this.translateAsk(query as AskQuery);
     }
 
     throw new AlgebraTranslatorError(`Query type ${query.queryType} not yet supported`);
@@ -123,6 +130,15 @@ export class AlgebraTranslator {
       };
     }
 
+    // REDUCED modifier - spec allows treating it as DISTINCT or doing nothing
+    // sparqljs exposes this as query.reduced
+    if ((query as any).reduced) {
+      operation = {
+        type: "reduced",
+        input: operation,
+      };
+    }
+
     if (query.order && query.order.length > 0) {
       operation = {
         type: "orderby",
@@ -176,6 +192,25 @@ export class AlgebraTranslator {
     }
 
     return template.map((t: any) => this.translateTriple(t));
+  }
+
+  /**
+   * Translate an ASK query to algebra.
+   * ASK queries test whether a pattern matches and return a boolean result.
+   *
+   * SPARQL 1.1 spec (Section 16.3): ASK queries return true if the pattern
+   * matches at least one solution, false otherwise.
+   */
+  private translateAsk(query: AskQuery): AskOperation {
+    // ASK queries may have an empty WHERE clause (rare but valid)
+    const where = query.where && query.where.length > 0
+      ? this.translateWhere(query.where)
+      : ({ type: "bgp", triples: [] } as BGPOperation);
+
+    return {
+      type: "ask",
+      where,
+    };
   }
 
   /**
@@ -407,6 +442,8 @@ export class AlgebraTranslator {
         return this.translateWhere(pattern.patterns);
       case "query":
         return this.translateSubquery(pattern);
+      case "service":
+        return this.translateService(pattern);
       default:
         throw new AlgebraTranslatorError(`Unsupported pattern type: ${pattern.type}`);
     }
@@ -652,6 +689,11 @@ export class AlgebraTranslator {
       return this.translateExistsExpression(expr);
     }
 
+    // Handle IN and NOT IN operators (SPARQL 1.1 Section 17.4.1.5)
+    if (expr.operator === "in" || expr.operator === "notin") {
+      return this.translateInExpression(expr);
+    }
+
     return {
       type: "function",
       function: expr.operator,
@@ -686,6 +728,39 @@ export class AlgebraTranslator {
       type: "exists",
       negated: expr.operator === "notexists",
       pattern,
+    };
+  }
+
+  /**
+   * Translate IN or NOT IN expression.
+   * sparqljs AST format:
+   * {
+   *   type: "operation",
+   *   operator: "in" | "notin",
+   *   args: [expression, [value1, value2, ...]]
+   * }
+   *
+   * SPARQL 1.1 Section 17.4.1.5:
+   * - expr IN (val1, val2, ...) returns true if expr = val_i for any value
+   * - expr NOT IN (val1, val2, ...) returns true if expr != val_i for all values
+   */
+  private translateInExpression(expr: any): InExpression {
+    if (!expr.args || expr.args.length !== 2) {
+      throw new AlgebraTranslatorError("IN/NOT IN must have exactly 2 arguments (expression and list)");
+    }
+
+    const testExpr = expr.args[0];
+    const listArg = expr.args[1];
+
+    if (!Array.isArray(listArg)) {
+      throw new AlgebraTranslatorError("IN/NOT IN second argument must be an array of values");
+    }
+
+    return {
+      type: "in",
+      expression: this.translateExpression(testExpr),
+      list: listArg.map((item: any) => this.translateExpression(item)),
+      negated: expr.operator === "notin",
     };
   }
 
@@ -939,6 +1014,45 @@ export class AlgebraTranslator {
     return {
       type: "subquery",
       query: innerQuery,
+    };
+  }
+
+  /**
+   * Translate SERVICE pattern for federated queries.
+   *
+   * SPARQL 1.1 Federated Query allows querying remote SPARQL endpoints.
+   * sparqljs AST format:
+   * {
+   *   type: "service",
+   *   name: { termType: "NamedNode", value: "http://endpoint" },
+   *   patterns: [...],
+   *   silent: boolean
+   * }
+   *
+   * The SERVICE clause executes the inner pattern against a remote endpoint
+   * and joins the results with the local query.
+   *
+   * SILENT keyword:
+   * When silent is true, errors from the remote endpoint are suppressed
+   * and an empty result set is returned instead of failing the query.
+   */
+  private translateService(pattern: any): ServiceOperation {
+    if (!pattern.name || pattern.name.termType !== "NamedNode") {
+      throw new AlgebraTranslatorError("SERVICE pattern must have a NamedNode endpoint");
+    }
+
+    if (!pattern.patterns || !Array.isArray(pattern.patterns)) {
+      throw new AlgebraTranslatorError("SERVICE pattern must have patterns array");
+    }
+
+    // Translate the inner patterns
+    const innerPattern = this.translateWhere(pattern.patterns);
+
+    return {
+      type: "service",
+      endpoint: pattern.name.value,
+      pattern: innerPattern,
+      silent: pattern.silent || false,
     };
   }
 }

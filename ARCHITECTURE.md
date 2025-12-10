@@ -136,7 +136,7 @@ Exocortex follows **Clean Architecture** principles with clear separation of con
 **Location**: `packages/core/src/application/services/`
 
 **Components**:
-- `CommandManager` - Facade for all 26 commands
+- `CommandManager` - Facade for all 32 commands
 - 14 specialized services (TaskCreationService, ProjectCreationService, etc.)
 
 **Dependencies**: Domain layer, IFileSystemAdapter interface
@@ -539,27 +539,39 @@ describe("PropertyCleanupService with DI", () => {
 
 ## 🔧 Component Responsibilities
 
-### Services (14 Total)
+### Services (25 Total)
 
 | Service | Responsibility | LOC | Dependencies | Pure Logic % |
 |---------|----------------|-----|--------------|--------------|
-| **TaskCreationService** | Create tasks from areas/projects/prototypes | 354 | Vault | 60% |
-| **ProjectCreationService** | Create projects from areas/initiatives | 80 | Vault | 60% |
-| **ConceptCreationService** | Create narrower concepts | 65 | Vault | 70% |
+| **AlgorithmExtractor** | Extract H2 sections from markdown content | 32 | None | **100%** ✅ |
 | **AreaCreationService** | Create child areas | 66 | Vault | 60% |
-| **TaskStatusService** | Manage effort status transitions | 372 | Vault | 70% |
-| **EffortVotingService** | Increment effort vote counts | 98 | Vault | 80% |
-| **PropertyCleanupService** | Remove empty properties from frontmatter | 133 | Vault | 80% |
-| **LabelToAliasService** | Copy labels to aliases array | 68 | Vault | 70% |
-| **SupervisionCreationService** | Create CBT supervision notes | 71 | Vault | 80% |
-| **AreaHierarchyBuilder** | Build area hierarchy trees | 195 | Vault, MetadataCache | 50% |
-| **FrontmatterService** | Parse/manipulate YAML frontmatter | 303 | **None** | **100%** ✅ |
-| **RenameToUidService** | Rename files to UID format | 49 | App.fileManager | 0% |
-| **FolderRepairService** | Move files to expected folders | 114 | Vault, MetadataCache | 10% |
+| **AreaHierarchyBuilder** | Build area hierarchy trees | 163 | Vault, MetadataCache | 50% |
+| **AssetConversionService** | Convert between asset classes (Task↔Project) | 147 | Vault | 70% |
+| **ClassCreationService** | Create subclasses in ontology | 76 | Vault | 60% |
+| **ConceptCreationService** | Create narrower concepts | 69 | Vault | 70% |
+| **DynamicFrontmatterGenerator** | Generate YAML frontmatter from property definitions | 363 | None | **100%** ✅ |
+| **EffortStatusWorkflow** | Determine previous status in workflow | 66 | None | **100%** ✅ |
+| **EffortVotingService** | Increment effort vote counts | 103 | Vault | 80% |
+| **FleetingNoteCreationService** | Create fleeting note assets in inbox | 57 | Vault | 70% |
+| **FolderRepairService** | Move files to expected folders | 118 | Vault, MetadataCache | 10% |
+| **LabelToAliasService** | Copy labels to aliases array | 74 | Vault | 70% |
+| **LoggingService** | Centralized logging with debug/info/warn/error | 29 | None | **100%** ✅ |
+| **NoteToRDFConverter** | Convert Obsidian notes to RDF triples | 323 | Vault | 60% |
+| **PlanningService** | Set plannedStartTimestamp on tasks | 37 | Vault | 70% |
+| **ProjectCreationService** | Create projects from areas/initiatives | 86 | Vault | 60% |
+| **PropertyCleanupService** | Remove empty properties from frontmatter | 144 | Vault | 80% |
+| **RenameToUidService** | Rename files to UID format | 93 | App.fileManager | 0% |
+| **SessionEventService** | Track focus session start/end events | 116 | Vault | 60% |
+| **StatusTimestampService** | Manage start/end/resolution timestamps | 153 | Vault | 70% |
+| **SupervisionCreationService** | Create CBT supervision notes | 76 | Vault | 80% |
+| **TaskCreationService** | Create tasks from areas/projects/prototypes | 186 | Vault | 60% |
+| **TaskFrontmatterGenerator** | Generate frontmatter for new tasks | 125 | None | **100%** ✅ |
+| **TaskStatusService** | Manage effort status transitions | 290 | Vault | 70% |
+| **URIConstructionService** | Construct URIs for assets | 111 | FileSystem | 50% |
 
-**Total Lines**: ~2,175 (services only)
+**Total Lines**: ~3,103 (services only)
 
-### Utilities (5 Total)
+### Utilities (6 Total)
 
 | Utility | Purpose | LOC | Obsidian Deps | Type |
 |---------|---------|-----|---------------|------|
@@ -588,25 +600,60 @@ describe("PropertyCleanupService with DI", () => {
 |---------|---------|-----|------|
 | **ButtonGroupsBuilder** | Build action button configurations | 533 | Complex |
 
-### Components (13 Total)
+### Components (58 Total)
 
-React components for UI rendering:
-- `DailyTasksTable.tsx`
-- `DailyProjectsTable.tsx`
-- `AssetPropertiesTable.tsx`
-- `AssetRelationsTable.tsx`
-- `AreaHierarchyTree.tsx`
-- `ActionButtonsGroup.tsx`
-- `CreateTaskButton.tsx`
-- `CreateInstanceButton.tsx`
-- `StartEffortButton.tsx`
-- `MarkTaskDoneButton.tsx`
-- `PlanOnTodayButton.tsx`
-- `VoteOnEffortButton.tsx`
-- `ArchiveTaskButton.tsx`
-- `ResponsiveLayout.tsx` (layout wrapper)
+The presentation layer contains **58 component files** organized by purpose:
 
-**All components have Playwright CT tests** ✅
+#### Main UI Components (25 files)
+
+Core tables, trees, and action buttons:
+
+| Category | Components |
+|----------|------------|
+| **Tables** (4) | `DailyTasksTable`, `DailyProjectsTable`, `AssetPropertiesTable`, `AssetRelationsTable` |
+| **Trees** (1) | `AreaHierarchyTree` |
+| **Button Groups** (1) | `ActionButtonsGroup` |
+| **Action Buttons** (18) | `CreateTaskButton`, `CreateInstanceButton`, `CreateProjectButton`, `StartEffortButton`, `MarkTaskDoneButton`, `PlanOnTodayButton`, `VoteOnEffortButton`, `ArchiveTaskButton`, `TrashEffortButton`, `RollbackStatusButton`, `MoveToToDoButton`, `MoveToBacklogButton`, `MoveToAnalysisButton`, `ShiftDayForwardButton`, `ShiftDayBackwardButton`, `CleanEmptyPropertiesButton`, `RenameToUidButton`, `RepairFolderButton` |
+| **Utilities** (1) | `ErrorBoundary` |
+
+#### Property Fields (14 files in `property-fields/`)
+
+Non-React field renderers for inline property editing:
+
+| Type | Files |
+|------|-------|
+| **Field Types** (12) | `TextPropertyField`, `NumberPropertyField`, `BooleanPropertyField`, `DatePropertyField`, `DateTimePropertyField`, `TimestampPropertyField`, `EnumPropertyField`, `ReferencePropertyField`, `SizeSelectPropertyField`, `StatusSelectPropertyField`, `WikilinkPropertyField`, `PropertyFieldFactory` |
+| **Infrastructure** (2) | `index.ts`, `types.ts` |
+
+#### Property Editor (8 files in `property-editor/`)
+
+React-based modal property editor:
+
+| Type | Files |
+|------|-------|
+| **Form** (1) | `PropertyEditorForm` |
+| **Field Components** (6) | `TextField`, `NumberField`, `BooleanField`, `SelectField`, `TimestampField`, `WikiLinkField` |
+| **Infrastructure** (1) | `fields/index.ts` |
+
+#### SPARQL Components (9 files in `sparql/`)
+
+SPARQL query interface and result visualization:
+
+| Type | Files |
+|------|-------|
+| **Query Builder** (2) | `QueryBuilder`, `QueryTemplates` |
+| **Result Views** (5) | `SPARQLResultViewer`, `SPARQLTableView`, `SPARQLListView`, `SPARQLGraphView`, `SPARQLEmptyState` |
+| **Error Handling** (1) | `SPARQLErrorView` |
+| **Controls** (1) | `ViewModeSelector` |
+
+#### Properties (2 files in `properties/`)
+
+Specialized property field components:
+
+- `DateTimePropertyField.tsx`
+- `TextPropertyField.tsx`
+
+**Main UI components have Playwright CT tests** ✅
 
 ### Modals (6 Total)
 

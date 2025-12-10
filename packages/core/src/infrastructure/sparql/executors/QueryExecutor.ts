@@ -12,10 +12,13 @@ import type {
   OrderByOperation,
   SliceOperation,
   DistinctOperation,
+  ReducedOperation,
   GroupOperation,
   ExtendOperation,
   SubqueryOperation,
   ConstructOperation,
+  AskOperation,
+  ServiceOperation,
 } from "../algebra/AlgebraOperation";
 import type { SolutionMapping } from "../SolutionMapping";
 import type { Triple } from "../../../domain/models/rdf/Triple";
@@ -27,6 +30,8 @@ import { MinusExecutor } from "./MinusExecutor";
 import { ValuesExecutor } from "./ValuesExecutor";
 import { AggregateExecutor } from "./AggregateExecutor";
 import { ConstructExecutor } from "./ConstructExecutor";
+import { ServiceExecutor, ServiceExecutorConfig } from "./ServiceExecutor";
+import { SPARQLGenerator } from "../algebra/SPARQLGenerator";
 
 export class QueryExecutorError extends Error {
   constructor(message: string, cause?: Error) {
@@ -40,6 +45,16 @@ export class QueryExecutorError extends Error {
  * Coordinates all specialized executors (BGP, Filter, Join, etc.)
  * to produce query results.
  */
+/**
+ * Configuration options for QueryExecutor.
+ */
+export interface QueryExecutorConfig {
+  /**
+   * Configuration for the ServiceExecutor (federated queries).
+   */
+  serviceConfig?: ServiceExecutorConfig;
+}
+
 export class QueryExecutor {
   private readonly bgpExecutor: BGPExecutor;
   private readonly filterExecutor: FilterExecutor;
@@ -49,8 +64,10 @@ export class QueryExecutor {
   private readonly valuesExecutor: ValuesExecutor;
   private readonly aggregateExecutor: AggregateExecutor;
   private readonly constructExecutor: ConstructExecutor;
+  private readonly serviceExecutor: ServiceExecutor;
+  private readonly sparqlGenerator: SPARQLGenerator;
 
-  constructor(tripleStore: ITripleStore) {
+  constructor(tripleStore: ITripleStore, config: QueryExecutorConfig = {}) {
     this.bgpExecutor = new BGPExecutor(tripleStore);
     this.filterExecutor = new FilterExecutor();
     this.optionalExecutor = new OptionalExecutor();
@@ -59,11 +76,16 @@ export class QueryExecutor {
     this.valuesExecutor = new ValuesExecutor();
     this.aggregateExecutor = new AggregateExecutor();
     this.constructExecutor = new ConstructExecutor();
+    this.serviceExecutor = new ServiceExecutor(config.serviceConfig);
+    this.sparqlGenerator = new SPARQLGenerator();
 
     // Set up EXISTS evaluator for FilterExecutor
     this.filterExecutor.setExistsEvaluator(async (pattern, solution) => {
       return this.evaluateExistsPattern(pattern, solution);
     });
+
+    // Set up triple store for UUID lookup functions (exo:byUUID)
+    this.filterExecutor.setTripleStore(tripleStore);
   }
 
   /**
@@ -148,6 +170,10 @@ export class QueryExecutor {
         yield* this.executeDistinct(operation);
         break;
 
+      case "reduced":
+        yield* this.executeReduced(operation);
+        break;
+
       case "group":
         yield* this.executeGroup(operation);
         break;
@@ -158,6 +184,10 @@ export class QueryExecutor {
 
       case "subquery":
         yield* this.executeSubquery(operation);
+        break;
+
+      case "service":
+        yield* this.executeService(operation);
         break;
 
       default:
@@ -342,6 +372,26 @@ export class QueryExecutor {
     }
   }
 
+  /**
+   * Execute REDUCED modifier.
+   * SPARQL 1.1 spec (Section 15.3) allows implementations to eliminate
+   * some or all duplicates. This implementation treats REDUCED identically
+   * to DISTINCT (full duplicate elimination) which is allowed by spec.
+   */
+  private async *executeReduced(operation: ReducedOperation): AsyncIterableIterator<SolutionMapping> {
+    // Per SPARQL 1.1 spec, REDUCED may eliminate duplicates but is not required to.
+    // We choose to eliminate all duplicates (same as DISTINCT) for simplicity.
+    const seen = new Set<string>();
+
+    for await (const solution of this.execute(operation.input)) {
+      const key = this.getSolutionKey(solution);
+      if (!seen.has(key)) {
+        seen.add(key);
+        yield solution;
+      }
+    }
+  }
+
   private async *executeGroup(operation: GroupOperation): AsyncIterableIterator<SolutionMapping> {
     // Collect all input solutions
     const inputSolutions: SolutionMapping[] = [];
@@ -379,6 +429,25 @@ export class QueryExecutor {
     // The inner query has already been translated to algebra (project, filter, etc.)
     // so we just recursively execute it
     yield* this.execute(operation.query);
+  }
+
+  /**
+   * Execute a SERVICE operation for federated queries.
+   *
+   * SERVICE clauses allow querying remote SPARQL endpoints. The inner pattern
+   * is converted to a SPARQL query string, sent to the remote endpoint via HTTP,
+   * and the results are converted to SolutionMappings for joining with local patterns.
+   *
+   * SILENT mode: When silent is true, errors from the remote endpoint are
+   * suppressed and an empty result set is returned instead of failing.
+   *
+   * SPARQL 1.1 Federated Query specification:
+   * https://www.w3.org/TR/sparql11-federated-query/
+   */
+  private async *executeService(operation: ServiceOperation): AsyncIterableIterator<SolutionMapping> {
+    yield* this.serviceExecutor.execute(operation, (pattern) => {
+      return this.sparqlGenerator.generateSelect(pattern);
+    });
   }
 
   private evaluateExtendExpression(
@@ -441,5 +510,37 @@ export class QueryExecutor {
 
     // Apply the template to generate triples
     return this.constructExecutor.execute(operation.template, solutions);
+  }
+
+  /**
+   * Check if an algebra operation is an ASK query.
+   */
+  isAskQuery(operation: AlgebraOperation): operation is AskOperation {
+    return operation.type === "ask";
+  }
+
+  /**
+   * Execute an ASK query and return boolean result.
+   * This is the primary method for executing ASK queries.
+   *
+   * SPARQL 1.1 spec (Section 16.3): ASK queries test whether a pattern
+   * matches and return true if there is at least one solution, false otherwise.
+   *
+   * @param operation - An ASK algebra operation
+   * @returns true if the pattern matches at least one solution, false otherwise
+   * @throws QueryExecutorError if operation is not an ASK
+   */
+  async executeAsk(operation: AskOperation): Promise<boolean> {
+    if (operation.type !== "ask") {
+      throw new QueryExecutorError("executeAsk requires an ASK operation");
+    }
+
+    // Execute the WHERE clause and check if any solution is found
+    // Early termination: we only need to know if at least one solution exists
+    for await (const _solution of this.execute(operation.where)) {
+      return true; // Found at least one solution
+    }
+
+    return false; // No solutions found
   }
 }

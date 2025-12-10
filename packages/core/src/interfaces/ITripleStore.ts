@@ -28,6 +28,24 @@ export interface ITripleStore {
   objects(): Promise<RDFObject[]>;
 
   beginTransaction(): Promise<ITransaction>;
+
+  /**
+   * Find subjects containing a specific UUID.
+   * This is an optimization for FILTER(CONTAINS(STR(?s), 'uuid')) patterns.
+   *
+   * @param uuid - The UUID string to search for (case-insensitive)
+   * @returns Array of subjects whose URI contains the UUID
+   */
+  findSubjectsByUUID?(uuid: string): Promise<Subject[]>;
+
+  /**
+   * Synchronous version of findSubjectsByUUID for use in expression evaluation.
+   * Required for exo:byUUID() function which requires synchronous evaluation.
+   *
+   * @param uuid - The UUID string to search for (case-insensitive)
+   * @returns Array of subjects whose URI contains the UUID
+   */
+  findSubjectsByUUIDSync?(uuid: string): Subject[];
 }
 
 export interface ITransaction {

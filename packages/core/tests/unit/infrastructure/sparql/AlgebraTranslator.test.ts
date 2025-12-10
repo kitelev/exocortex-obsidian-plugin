@@ -396,6 +396,44 @@ describe("AlgebraTranslator", () => {
       expect(input.type).toBe("project");
     });
 
+    it("translates SELECT REDUCED", () => {
+      const query = "SELECT REDUCED ?status WHERE { ?task <http://example.org/status> ?status }";
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("reduced");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("project");
+    });
+
+    it("translates SELECT REDUCED with ORDER BY", () => {
+      const query = `
+        SELECT REDUCED ?task ?effort
+        WHERE { ?task <http://example.org/effort> ?effort }
+        ORDER BY ASC(?effort)
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // ORDER BY wraps REDUCED
+      expect(algebra.type).toBe("orderby");
+      const reduced = (algebra as any).input;
+      expect(reduced.type).toBe("reduced");
+      expect(reduced.input.type).toBe("project");
+    });
+
+    it("translates SELECT REDUCED with LIMIT", () => {
+      const query = "SELECT REDUCED ?status WHERE { ?task <http://example.org/status> ?status } LIMIT 10";
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // LIMIT (slice) wraps REDUCED
+      expect(algebra.type).toBe("slice");
+      expect((algebra as any).limit).toBe(10);
+      const reduced = (algebra as any).input;
+      expect(reduced.type).toBe("reduced");
+    });
+
     it("translates SELECT with ORDER BY ASC", () => {
       const query = `
         SELECT ?task ?effort
@@ -1580,15 +1618,6 @@ describe("AlgebraTranslator", () => {
       expect(() => translator.translate(ast)).toThrow(AlgebraTranslatorError);
     });
 
-    it("throws error for unsupported query types (ASK)", () => {
-      const ast: any = {
-        type: "query",
-        queryType: "ASK",
-        where: [{ type: "bgp", triples: [] }],
-      };
-      expect(() => translator.translate(ast)).toThrow(AlgebraTranslatorError);
-    });
-
     it("throws error for unsupported query types (DESCRIBE)", () => {
       const ast: any = {
         type: "query",
@@ -1870,6 +1899,527 @@ describe("AlgebraTranslator", () => {
       const expr = extend.expression;
       expect(expr.left.name).toBe(sumVar);
       expect(expr.right.name).toBe(countVar);
+    });
+  });
+
+  describe("ASK Query Translation", () => {
+    it("translates simple ASK query", () => {
+      const query = `
+        ASK WHERE {
+          ?s <http://example.org/type> <http://example.org/Task> .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("bgp");
+      expect((algebra as any).where.triples).toHaveLength(1);
+    });
+
+    it("translates ASK with PREFIX declarations", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        ASK WHERE {
+          ?task ex:type ex:Task .
+          ?task ex:status "done" .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("bgp");
+      expect((algebra as any).where.triples).toHaveLength(2);
+    });
+
+    it("translates ASK with FILTER", () => {
+      const query = `
+        ASK WHERE {
+          ?task <http://example.org/effort> ?effort .
+          FILTER(?effort > 60)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("filter");
+      expect((algebra as any).where.input.type).toBe("bgp");
+    });
+
+    it("translates ASK with OPTIONAL", () => {
+      const query = `
+        ASK WHERE {
+          ?task <http://example.org/type> <http://example.org/Task> .
+          OPTIONAL { ?task <http://example.org/priority> ?priority }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      const where = (algebra as any).where;
+      expect(where.type).toBe("join");
+    });
+
+    it("translates ASK with UNION", () => {
+      const query = `
+        ASK WHERE {
+          { ?s <http://example.org/type> <http://example.org/Task> }
+          UNION
+          { ?s <http://example.org/type> <http://example.org/Project> }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("union");
+    });
+
+    it("translates ASK with FILTER NOT EXISTS", () => {
+      const query = `
+        ASK WHERE {
+          ?task <http://example.org/type> <http://example.org/Task> .
+          FILTER NOT EXISTS { ?task <http://example.org/blocker> ?blocker }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("filter");
+      expect((algebra as any).where.expression.type).toBe("exists");
+      expect((algebra as any).where.expression.negated).toBe(true);
+    });
+
+    it("translates ASK with BIND", () => {
+      const query = `
+        ASK WHERE {
+          ?s <http://example.org/label> ?label .
+          BIND(STRLEN(?label) AS ?len)
+          FILTER(?len > 10)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("filter");
+      expect((algebra as any).where.input.type).toBe("extend");
+    });
+
+    it("translates ASK with empty WHERE clause", () => {
+      const ast: any = {
+        type: "query",
+        queryType: "ASK",
+        where: [],
+      };
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("bgp");
+      expect((algebra as any).where.triples).toHaveLength(0);
+    });
+
+    it("translates ASK with VALUES", () => {
+      const query = `
+        ASK WHERE {
+          VALUES ?status { "active" "pending" }
+          ?task <http://example.org/status> ?status .
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("ask");
+      expect((algebra as any).where.type).toBe("join");
+    });
+  });
+
+  describe("IN / NOT IN Operators (Issue #718)", () => {
+    it("translates IN operator with literal list", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/status> ?status .
+          FILTER(?status IN ("active", "pending", "review"))
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const filter = (algebra as any).input;
+      expect(filter.type).toBe("filter");
+      expect(filter.expression.type).toBe("in");
+      expect(filter.expression.negated).toBe(false);
+      expect(filter.expression.expression.type).toBe("variable");
+      expect(filter.expression.expression.name).toBe("status");
+      expect(filter.expression.list).toHaveLength(3);
+      expect(filter.expression.list[0].type).toBe("literal");
+      expect(filter.expression.list[0].value).toBe("active");
+    });
+
+    it("translates NOT IN operator", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/status> ?status .
+          FILTER(?status NOT IN ("blocked", "archived"))
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const filter = (algebra as any).input;
+      expect(filter.type).toBe("filter");
+      expect(filter.expression.type).toBe("in");
+      expect(filter.expression.negated).toBe(true);
+      expect(filter.expression.list).toHaveLength(2);
+    });
+
+    it("translates IN with numeric values", () => {
+      const query = `
+        SELECT ?x
+        WHERE {
+          ?s ?p ?x .
+          FILTER(?x IN (1, 2, 3))
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const filter = (algebra as any).input;
+      expect(filter.expression.type).toBe("in");
+      expect(filter.expression.list).toHaveLength(3);
+      expect(filter.expression.list[0].value).toBe(1);
+      expect(filter.expression.list[1].value).toBe(2);
+      expect(filter.expression.list[2].value).toBe(3);
+    });
+
+    it("translates IN with variable in list", () => {
+      const query = `
+        SELECT ?x
+        WHERE {
+          ?s ?p ?x .
+          ?s <http://example.org/allowed> ?y .
+          FILTER(?x IN (?y, "fallback"))
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const filter = (algebra as any).input;
+      expect(filter.expression.type).toBe("in");
+      expect(filter.expression.list).toHaveLength(2);
+      expect(filter.expression.list[0].type).toBe("variable");
+      expect(filter.expression.list[0].name).toBe("y");
+      expect(filter.expression.list[1].type).toBe("literal");
+    });
+
+    it("translates IN with empty list", () => {
+      const query = `
+        SELECT ?x
+        WHERE {
+          ?s ?p ?x .
+          FILTER(?x IN ())
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const filter = (algebra as any).input;
+      expect(filter.expression.type).toBe("in");
+      expect(filter.expression.list).toHaveLength(0);
+    });
+
+    it("translates IN combined with AND", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/status> ?status .
+          ?task <http://example.org/priority> ?priority .
+          FILTER(?status IN ("active", "pending") && ?priority > 5)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const filter = (algebra as any).input;
+      expect(filter.type).toBe("filter");
+      expect(filter.expression.type).toBe("logical");
+      expect(filter.expression.operator).toBe("&&");
+      expect(filter.expression.operands[0].type).toBe("in");
+      expect(filter.expression.operands[1].type).toBe("comparison");
+    });
+
+    it("translates IN combined with OR", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/type> ?type .
+          FILTER(?type IN ("urgent") || ?type = "critical")
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const filter = (algebra as any).input;
+      expect(filter.expression.type).toBe("logical");
+      expect(filter.expression.operator).toBe("||");
+      expect(filter.expression.operands[0].type).toBe("in");
+    });
+
+    it("translates NOT IN with complex filter", () => {
+      const query = `
+        SELECT ?task
+        WHERE {
+          ?task <http://example.org/status> ?status .
+          ?task <http://example.org/priority> ?priority .
+          FILTER(?status NOT IN ("blocked", "archived") && ?priority > 0)
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      const filter = (algebra as any).input;
+      expect(filter.expression.type).toBe("logical");
+      expect(filter.expression.operands[0].type).toBe("in");
+      expect(filter.expression.operands[0].negated).toBe(true);
+    });
+  });
+
+  describe("SERVICE clause (Federated Query)", () => {
+    it("translates simple SERVICE clause", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?s ?name
+        WHERE {
+          ?s ex:label ?label .
+          SERVICE <http://remote.example.org/sparql> {
+            ?s ex:name ?name .
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Find the SERVICE operation
+      const findService = (op: AlgebraOperation): any => {
+        if (op.type === "service") return op;
+        if ("input" in op) return findService((op as any).input);
+        if ("left" in op) {
+          const left = findService((op as any).left);
+          if (left) return left;
+          return findService((op as any).right);
+        }
+        if ("right" in op) return findService((op as any).right);
+        return null;
+      };
+
+      const service = findService(algebra);
+      expect(service).not.toBeNull();
+      expect(service.type).toBe("service");
+      expect(service.endpoint).toBe("http://remote.example.org/sparql");
+      expect(service.silent).toBe(false);
+      expect(service.pattern.type).toBe("bgp");
+    });
+
+    it("translates SERVICE SILENT clause", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?s ?name
+        WHERE {
+          ?s ex:type ex:Task .
+          SERVICE SILENT <http://remote.example.org/sparql> {
+            ?s ex:name ?name .
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Find the SERVICE operation
+      const findService = (op: AlgebraOperation): any => {
+        if (op.type === "service") return op;
+        if ("input" in op) return findService((op as any).input);
+        if ("left" in op) {
+          const left = findService((op as any).left);
+          if (left) return left;
+          return findService((op as any).right);
+        }
+        if ("right" in op) return findService((op as any).right);
+        return null;
+      };
+
+      const service = findService(algebra);
+      expect(service).not.toBeNull();
+      expect(service.type).toBe("service");
+      expect(service.silent).toBe(true);
+    });
+
+    it("translates SERVICE with multiple inner triples", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?s ?name ?age
+        WHERE {
+          ?s ex:id ?id .
+          SERVICE <http://remote.example.org/sparql> {
+            ?s ex:name ?name .
+            ?s ex:age ?age .
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Find the SERVICE operation
+      const findService = (op: AlgebraOperation): any => {
+        if (op.type === "service") return op;
+        if ("input" in op) return findService((op as any).input);
+        if ("left" in op) {
+          const left = findService((op as any).left);
+          if (left) return left;
+          return findService((op as any).right);
+        }
+        if ("right" in op) return findService((op as any).right);
+        return null;
+      };
+
+      const service = findService(algebra);
+      expect(service).not.toBeNull();
+
+      // The inner pattern should be a join of two BGPs
+      expect(service.pattern).toBeDefined();
+      // Could be BGP with 2 triples or join of 2 BGPs depending on sparqljs parsing
+      if (service.pattern.type === "bgp") {
+        expect(service.pattern.triples.length).toBeGreaterThanOrEqual(2);
+      } else if (service.pattern.type === "join") {
+        expect(service.pattern.left).toBeDefined();
+        expect(service.pattern.right).toBeDefined();
+      }
+    });
+
+    it("translates SERVICE with inner FILTER", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?s ?label
+        WHERE {
+          ?s ex:type ex:Person .
+          SERVICE <http://dbpedia.org/sparql> {
+            ?s <http://www.w3.org/2000/01/rdf-schema#label> ?label .
+            FILTER(LANG(?label) = "en")
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Find the SERVICE operation
+      const findService = (op: AlgebraOperation): any => {
+        if (op.type === "service") return op;
+        if ("input" in op) return findService((op as any).input);
+        if ("left" in op) {
+          const left = findService((op as any).left);
+          if (left) return left;
+          return findService((op as any).right);
+        }
+        if ("right" in op) return findService((op as any).right);
+        return null;
+      };
+
+      const service = findService(algebra);
+      expect(service).not.toBeNull();
+
+      // Find filter inside service pattern
+      const findFilter = (op: any): any => {
+        if (op.type === "filter") return op;
+        if ("input" in op) return findFilter(op.input);
+        if ("left" in op) {
+          const left = findFilter(op.left);
+          if (left) return left;
+          return findFilter(op.right);
+        }
+        return null;
+      };
+
+      const filter = findFilter(service.pattern);
+      expect(filter).not.toBeNull();
+      expect(filter.type).toBe("filter");
+    });
+
+    it("translates multiple SERVICE clauses", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?s ?nameA ?nameB
+        WHERE {
+          ?s ex:id ?id .
+          SERVICE <http://endpointA.example.org/sparql> {
+            ?s ex:nameA ?nameA .
+          }
+          SERVICE <http://endpointB.example.org/sparql> {
+            ?s ex:nameB ?nameB .
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Find all SERVICE operations
+      const findAllServices = (op: AlgebraOperation, services: any[] = []): any[] => {
+        if (op.type === "service") services.push(op);
+        if ("input" in op) findAllServices((op as any).input, services);
+        if ("left" in op) {
+          findAllServices((op as any).left, services);
+          findAllServices((op as any).right, services);
+        }
+        if ("right" in op && !("left" in op)) findAllServices((op as any).right, services);
+        return services;
+      };
+
+      const services = findAllServices(algebra);
+      expect(services.length).toBe(2);
+
+      const endpoints = services.map((s) => s.endpoint).sort();
+      expect(endpoints).toContain("http://endpointA.example.org/sparql");
+      expect(endpoints).toContain("http://endpointB.example.org/sparql");
+    });
+
+    it("translates SERVICE within OPTIONAL", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?s ?name ?remoteData
+        WHERE {
+          ?s ex:name ?name .
+          OPTIONAL {
+            SERVICE <http://remote.example.org/sparql> {
+              ?s ex:remoteData ?remoteData .
+            }
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Find the SERVICE operation (should be inside a leftjoin)
+      const findService = (op: AlgebraOperation): any => {
+        if (op.type === "service") return op;
+        if ("input" in op) return findService((op as any).input);
+        if ("left" in op) {
+          const left = findService((op as any).left);
+          if (left) return left;
+          return findService((op as any).right);
+        }
+        if ("right" in op) return findService((op as any).right);
+        return null;
+      };
+
+      const service = findService(algebra);
+      expect(service).not.toBeNull();
+      expect(service.type).toBe("service");
     });
   });
 });

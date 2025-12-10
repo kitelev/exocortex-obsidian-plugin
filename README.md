@@ -36,7 +36,7 @@ This project is organized as a monorepo with multiple packages:
 
 ```
 packages/
-├── core/                    # @exocortex/core - Core business logic (storage-agnostic)
+├── core/                    # @exocortex/core - Shared business logic (storage-agnostic)
 ├── obsidian-plugin/         # @exocortex/obsidian-plugin - Obsidian UI integration
 └── cli/                     # @exocortex/cli - Command-line automation tool
 ```
@@ -44,64 +44,66 @@ packages/
 ### Package Comparison
 
 | Feature | Obsidian Plugin | CLI |
-|---------|-----------------|-----|
+|---------|----------------|-----|
 | **Primary Use** | Interactive UI in Obsidian | Terminal automation & scripting |
-| **Installation** | Obsidian plugin folder | `npm install -g exocortex-cli` |
-| **Task Management** | ✅ UI buttons & commands | ✅ Same commands via terminal |
-| **SPARQL Queries** | ✅ Code blocks in notes | ✅ Command-line queries |
-| **Batch Operations** | Single task at a time | ✅ Multiple tasks in one command |
-| **CI/CD Integration** | ❌ | ✅ Exit codes for scripting |
-| **Visual Layout** | ✅ Rendered sections | ❌ Terminal output only |
+| **Installation** | Obsidian plugin manager | `npm install -g exocortex-cli` |
+| **Task Management** | ✅ Visual buttons & commands | ✅ All status transitions |
+| **SPARQL Queries** | ✅ Live results in notes | ✅ Table/JSON/CSV output |
+| **Asset Creation** | ✅ Modal dialogs | ✅ Command-line flags |
+| **Batch Operations** | ❌ One at a time | ✅ Atomic batch execution |
+| **CI/CD Integration** | ❌ Requires Obsidian | ✅ Headless execution |
+| **MCP/AI Agent Integration** | ❌ N/A | ✅ JSON output, exit codes |
 
-### CLI Package (`@exocortex/cli`)
+### CLI Package Overview
 
-The CLI provides the same task management capabilities as the Obsidian plugin, but through a command-line interface. Use it for:
+The CLI (`@exocortex/cli`) enables managing your Exocortex vault from the terminal without opening Obsidian. It's ideal for:
 
-- **Automation scripts**: Batch process tasks with shell scripts
-- **CI/CD pipelines**: Integrate task management into GitHub Actions or GitLab CI
-- **MCP integration**: Stable API for AI agent orchestration
-- **Headless servers**: Manage vaults on systems without Obsidian
+- **Automation scripts** - Schedule tasks, update statuses, create assets programmatically
+- **CI/CD pipelines** - Integrate vault operations into GitHub Actions, GitLab CI
+- **AI agent integration** - MCP-compatible JSON output for Claude, GPT, etc.
+- **Batch operations** - Execute multiple commands atomically
 
-**Installation:**
+**CLI Installation:**
 
 ```bash
 # Global installation
 npm install -g exocortex-cli
 
 # Or use directly with npx
-npx exocortex-cli [command]
+npx exocortex-cli --help
 ```
 
-**Available CLI Commands (15+):**
+**CLI Command Categories:**
 
-| Category | Commands |
-|----------|----------|
-| **SPARQL** | `sparql query` - Execute semantic queries |
-| **Status** | `start`, `complete`, `trash`, `archive`, `move-to-backlog`, `move-to-analysis`, `move-to-todo` |
-| **Creation** | `create-task`, `create-meeting`, `create-project`, `create-area` |
-| **Properties** | `rename-to-uid`, `update-label`, `schedule`, `set-deadline` |
-| **Batch** | `batch` - Execute multiple operations atomically |
+| Category | Commands | Description |
+|----------|----------|-------------|
+| **SPARQL** | `sparql query` | Execute SPARQL 1.1 queries with table/JSON/CSV output |
+| **Status** | `start`, `complete`, `trash`, `archive`, `move-to-*` | Full task lifecycle management |
+| **Creation** | `create-task`, `create-meeting`, `create-project`, `create-area` | Create assets with frontmatter |
+| **Planning** | `schedule`, `set-deadline` | Set dates for efforts |
+| **Maintenance** | `rename-to-uid`, `update-label` | File and property management |
+| **Batch** | `batch` | Execute multiple operations atomically |
 
-**Example CLI workflow:**
+**Quick Examples:**
 
 ```bash
-# Create a task
-exocortex command create-task "tasks/feature.md" --label "Implement feature" --vault ~/vault
+# Execute SPARQL query
+exocortex sparql query "SELECT ?task ?label WHERE { ?task exo:Instance_class ems:Task . ?task exo:Asset_label ?label }" --vault ~/vault
 
-# Start working (ToDo → Doing)
-exocortex command start "tasks/feature.md" --vault ~/vault
+# Complete a task
+exocortex command complete "tasks/my-task.md" --vault ~/vault
 
-# Complete the task (Doing → Done)
-exocortex command complete "tasks/feature.md" --vault ~/vault
+# Create a new task
+exocortex command create-task "tasks/new-task.md" --label "Implement feature" --vault ~/vault
 
-# Query all active tasks via SPARQL
-exocortex sparql query "SELECT ?task ?label WHERE { ?task exo:Instance_class ems:Task }" --vault ~/vault
+# Batch operations (atomic)
+exocortex batch --input '[{"command":"start","filepath":"task1.md"},{"command":"complete","filepath":"task2.md"}]' --vault ~/vault --atomic
 ```
 
-**CLI Documentation:**
-- [CLI Command Reference](./docs/cli/Command-Reference.md) - Complete syntax for all commands
-- [Scripting Patterns](./docs/cli/Scripting-Patterns.md) - Bash automation examples
-- [packages/cli/README.md](./packages/cli/README.md) - CLI package documentation
+For complete CLI documentation, see:
+- [CLI Command Reference](./docs/cli/Command-Reference.md)
+- [Scripting Patterns](./docs/cli/Scripting-Patterns.md)
+- [Integration Examples](./docs/cli/Integration-Examples.md)
 
 The monorepo structure enables:
 - Shared core logic between UI and CLI
@@ -172,10 +174,10 @@ All commands accessible via Command Palette (Cmd/Ctrl+P → "Exocortex:"). Comma
 | **Create Task** | ems__Area, ems__Project | ems__Task | Parent reference, area, prototype |
 | **Create Project** | ems__Area, ems__Initiative, ems__Project | ems__Project | Area, initiative reference |
 | **Create Instance** | ems__TaskPrototype, ems__MeetingPrototype, exo__EventPrototype | ems__Task, ems__Meeting, or exo__Event | Prototype template content |
+| **Create Fleeting Note** | Always available | Quick-capture note in 01 Inbox | Label from prompt |
 | **Create Related Task** | ems__Project | ems__Task with project parent | Parent project, area |
-| **Create Area** | ems__Area | Child ems__Area | Parent area reference |
 
-### Status Transition Commands (8)
+### Status Transition Commands (7)
 
 Complete workflow lifecycle with automatic timestamp tracking:
 
@@ -188,7 +190,6 @@ Complete workflow lifecycle with automatic timestamp tracking:
 | **Start Effort** | ToDo status | ToDo → Doing | ems__Effort_startTimestamp |
 | **Mark as Done** | Doing status | Doing → Done | ems__Effort_endTimestamp, ems__Effort_resolutionTimestamp |
 | **Trash** | Any effort | Any → Trashed | ems__Effort_endTimestamp |
-| **Rollback Status** | Done/Trashed efforts | → Previous status | Removes end timestamps |
 
 ### Planning Commands (6)
 
@@ -203,7 +204,7 @@ Schedule and prioritize efforts:
 | **Vote on Effort** | Task/Project (not archived) | Increment vote counter | ems__Effort_votes |
 | **Set Focus Area** | Always available | Focus daily tasks on area + children | Plugin settings (activeFocusArea) |
 
-### Maintenance Commands (3)
+### Maintenance Commands (5)
 
 Keep your vault organized:
 
@@ -212,6 +213,17 @@ Keep your vault organized:
 | **Clean Empty Properties** | Any asset | Remove null/empty frontmatter properties |
 | **Repair Folder** | Assets with exo__Asset_isDefinedBy | Move file to correct folder based on reference |
 | **Rename to UID** | Filename ≠ exo__Asset_uid | Rename file to match UID, preserve label |
+| **Archive Task** | Tasks/Projects | Set exo__Asset_isArchived to true |
+| **Copy Label to Aliases** | Assets with exo__Asset_label | Copy label to YAML aliases array |
+
+### Conversion Commands (2)
+
+Convert between asset types:
+
+| Command | Available When | Action |
+|---------|---------------|--------|
+| **Convert Task to Project** | ems__Task | Change class to ems__Project, preserve properties |
+| **Convert Project to Task** | ems__Project | Change class to ems__Task, preserve properties |
 
 ### System Commands (7)
 
@@ -220,7 +232,7 @@ Control plugin behavior and visualization:
 | Command | Always Available | Action |
 |---------|-----------------|--------|
 | **Reload Layout** | Yes | Manually refresh layout rendering |
-| **Add Supervision** | Yes | Create CBT-format fleeting note in 01 Inbox |
+| **Add Supervision** | Yes | Create CBT diary record (structured fleeting note with situation/emotions/thoughts/behavior) |
 | **Toggle Layout Visibility** | Yes | Show/hide entire layout section |
 | **Toggle Properties Visibility** | Yes | Show/hide properties table |
 | **Toggle Archived Assets Visibility** | Yes | Show/hide archived assets in layout tables (persists in settings) |
