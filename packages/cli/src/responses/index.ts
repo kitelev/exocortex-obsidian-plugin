@@ -13,5 +13,6 @@ export {
   type CommandResult,
   type QueryResult,
   type ConstructResult,
+  type ResolveResult,
   ResponseBuilder,
 } from "./StructuredResponse.js";
