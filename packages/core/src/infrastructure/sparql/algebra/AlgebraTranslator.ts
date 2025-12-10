@@ -13,6 +13,7 @@ import type {
   ConstructOperation,
   AskOperation,
   ServiceOperation,
+  GraphOperation,
   ExistsExpression,
   InExpression,
   ArithmeticExpression,
@@ -25,6 +26,7 @@ import type {
   PropertyPath,
   IRI,
   Literal,
+  Variable,
 } from "./AlgebraOperation";
 
 export class AlgebraTranslatorError extends Error {
@@ -444,6 +446,8 @@ export class AlgebraTranslator {
         return this.translateSubquery(pattern);
       case "service":
         return this.translateService(pattern);
+      case "graph":
+        return this.translateGraph(pattern);
       default:
         throw new AlgebraTranslatorError(`Unsupported pattern type: ${pattern.type}`);
     }
@@ -823,6 +827,14 @@ export class AlgebraTranslator {
 
     // Helper to translate a single union branch
     const translateBranch = (branch: any): AlgebraOperation => {
+      // If branch is a typed pattern like GRAPH or SERVICE, translate it directly
+      // (these have patterns property but should not be unwrapped)
+      if (branch.type === "graph") {
+        return this.translateGraph(branch);
+      }
+      if (branch.type === "service") {
+        return this.translateService(branch);
+      }
       // If branch has nested patterns (group), unwrap them
       if (branch.patterns && Array.isArray(branch.patterns)) {
         return this.translateWhere(branch.patterns);
@@ -1053,6 +1065,62 @@ export class AlgebraTranslator {
       endpoint: pattern.name.value,
       pattern: innerPattern,
       silent: pattern.silent || false,
+    };
+  }
+
+  /**
+   * Translate GRAPH pattern for named graph queries.
+   *
+   * SPARQL 1.1 allows querying specific named graphs within a dataset.
+   * sparqljs AST format:
+   * {
+   *   type: "graph",
+   *   name: { termType: "NamedNode" | "Variable", value: "..." },
+   *   patterns: [...]
+   * }
+   *
+   * The GRAPH clause restricts pattern matching to a specific named graph.
+   * The graph name can be:
+   * - A concrete IRI (NamedNode): GRAPH <http://example.org/g1> { ... }
+   * - A variable: GRAPH ?g { ... } (matches all named graphs, binding ?g)
+   *
+   * SPARQL 1.1 spec Section 13.3:
+   * https://www.w3.org/TR/sparql11-query/#queryDataset
+   */
+  private translateGraph(pattern: any): GraphOperation {
+    if (!pattern.name) {
+      throw new AlgebraTranslatorError("GRAPH pattern must have a name (IRI or variable)");
+    }
+
+    if (!pattern.patterns || !Array.isArray(pattern.patterns)) {
+      throw new AlgebraTranslatorError("GRAPH pattern must have patterns array");
+    }
+
+    // Translate the graph name (can be IRI or Variable)
+    let name: IRI | Variable;
+    if (pattern.name.termType === "NamedNode") {
+      name = {
+        type: "iri",
+        value: pattern.name.value,
+      };
+    } else if (pattern.name.termType === "Variable") {
+      name = {
+        type: "variable",
+        value: pattern.name.value,
+      };
+    } else {
+      throw new AlgebraTranslatorError(
+        `GRAPH pattern name must be NamedNode or Variable, got: ${pattern.name.termType}`
+      );
+    }
+
+    // Translate the inner patterns
+    const innerPattern = this.translateWhere(pattern.patterns);
+
+    return {
+      type: "graph",
+      name,
+      pattern: innerPattern,
     };
   }
 }

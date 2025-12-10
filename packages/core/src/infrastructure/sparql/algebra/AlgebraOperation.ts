@@ -16,7 +16,8 @@ export type AlgebraOperation =
   | SubqueryOperation
   | ConstructOperation
   | AskOperation
-  | ServiceOperation;
+  | ServiceOperation
+  | GraphOperation;
 
 export interface BGPOperation {
   type: "bgp";
@@ -483,4 +484,51 @@ export interface ServiceOperation {
   pattern: AlgebraOperation;
   /** If true, errors from the remote endpoint are suppressed */
   silent: boolean;
+}
+
+/**
+ * GRAPH operation for named graph patterns.
+ * Evaluates a graph pattern against a specific named graph in the dataset.
+ *
+ * SPARQL 1.1 spec Section 13.3:
+ * https://www.w3.org/TR/sparql11-query/#queryDataset
+ *
+ * The GRAPH keyword restricts pattern matching to a specific named graph.
+ * The graph can be specified as:
+ * - A concrete IRI: GRAPH <http://example.org/graph1> { ... }
+ * - A variable: GRAPH ?g { ... } (matches all named graphs, binding ?g)
+ *
+ * Examples:
+ * ```sparql
+ * # Query a specific named graph
+ * SELECT ?s ?p ?o
+ * WHERE {
+ *   GRAPH <http://example.org/graph1> {
+ *     ?s ?p ?o
+ *   }
+ * }
+ *
+ * # Query all named graphs, binding graph name to ?g
+ * SELECT ?g ?s ?p ?o
+ * WHERE {
+ *   GRAPH ?g {
+ *     ?s ?p ?o
+ *   }
+ * }
+ * ```
+ *
+ * Dataset management with FROM/FROM NAMED:
+ * - FROM clauses specify the default graph (merged from multiple sources)
+ * - FROM NAMED clauses specify available named graphs
+ * - Without FROM/FROM NAMED, all graphs in the dataset are available
+ */
+export interface GraphOperation {
+  type: "graph";
+  /**
+   * The named graph to match against.
+   * Can be an IRI (concrete graph name) or Variable (match all named graphs).
+   */
+  name: IRI | Variable;
+  /** The graph pattern to evaluate within the named graph */
+  pattern: AlgebraOperation;
 }
