@@ -66,6 +66,9 @@ export class QueryExecutor {
     this.filterExecutor.setExistsEvaluator(async (pattern, solution) => {
       return this.evaluateExistsPattern(pattern, solution);
     });
+
+    // Set up triple store for UUID lookup functions (exo:byUUID)
+    this.filterExecutor.setTripleStore(tripleStore);
   }
 
   /**

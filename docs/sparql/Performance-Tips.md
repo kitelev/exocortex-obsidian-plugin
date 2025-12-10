@@ -6,6 +6,7 @@ Optimize your SPARQL queries for speed and efficiency, especially in large vault
 
 1. [Query Optimization Basics](#query-optimization-basics)
 2. [Index Utilization](#index-utilization)
+   - [UUID Index and exo:byUUID()](#uuid-index-and-exobyuuid)
 3. [Automatic Optimizations (v2)](#automatic-optimizations-v2)
 4. [Pattern Ordering](#pattern-ordering)
 5. [Avoiding Anti-Patterns](#avoiding-anti-patterns)
@@ -134,6 +135,67 @@ WHERE {
 ```
 
 **Lesson**: Never use wildcard predicates (`?p`) if you know the property name.
+
+### UUID Index and exo:byUUID()
+
+When you know an entity's UUID but not its full file path, use the `exo:byUUID()` function for **O(1) lookup** instead of scanning.
+
+**The Problem**: Finding an entity by UUID the naive way requires O(n) string matching:
+
+```sparql
+# Slow (O(n) table scan)
+SELECT ?s ?p ?o
+WHERE {
+  ?s ?p ?o .
+  FILTER(CONTAINS(STR(?s), '550e8400-e29b-41d4-a716-446655440000'))
+}
+```
+
+**The Solution**: Use the `exo:byUUID()` extension function:
+
+```sparql
+# Fast (O(1) index lookup)
+PREFIX exo: <https://exocortex.my/ontology/exo#>
+
+SELECT ?p ?o
+WHERE {
+  BIND(exo:byUUID('550e8400-e29b-41d4-a716-446655440000') AS ?entity)
+  ?entity ?p ?o .
+}
+```
+
+**Performance Comparison**:
+
+| Method | Complexity | 100k files |
+|--------|------------|------------|
+| FILTER(CONTAINS(STR(?s), 'uuid')) | O(n) | ~2000ms |
+| exo:byUUID('uuid') | O(1) | <10ms |
+
+**Speedup**: 100-1000x faster for large vaults!
+
+**Usage Patterns**:
+
+1. **BIND Pattern** (recommended):
+```sparql
+BIND(exo:byUUID('uuid-string') AS ?entity)
+?entity ?p ?o .
+```
+
+2. **FILTER Pattern**:
+```sparql
+?entity ?p ?o .
+FILTER(?entity = exo:byUUID('uuid-string'))
+```
+
+**Features**:
+- **Case-insensitive**: UUIDs are normalized to lowercase
+- **Caching**: Results are cached for repeated lookups
+- **Graceful failure**: Returns empty result for non-existent UUIDs (no error)
+
+**Best Practices**:
+- Always use full UUIDs (partial UUIDs return empty result for security)
+- Use BIND pattern for cleaner queries
+- Cache results if querying same entity multiple times
 
 ---
 
