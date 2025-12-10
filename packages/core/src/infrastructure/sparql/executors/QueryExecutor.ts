@@ -19,6 +19,7 @@ import type {
   ConstructOperation,
   AskOperation,
   ServiceOperation,
+  GraphOperation,
 } from "../algebra/AlgebraOperation";
 import type { SolutionMapping } from "../SolutionMapping";
 import type { Triple } from "../../../domain/models/rdf/Triple";
@@ -31,7 +32,9 @@ import { ValuesExecutor } from "./ValuesExecutor";
 import { AggregateExecutor } from "./AggregateExecutor";
 import { ConstructExecutor } from "./ConstructExecutor";
 import { ServiceExecutor, ServiceExecutorConfig } from "./ServiceExecutor";
+import { GraphExecutor } from "./GraphExecutor";
 import { SPARQLGenerator } from "../algebra/SPARQLGenerator";
+import { IRI } from "../../../domain/models/rdf/IRI";
 
 export class QueryExecutorError extends Error {
   constructor(message: string, cause?: Error) {
@@ -56,6 +59,7 @@ export interface QueryExecutorConfig {
 }
 
 export class QueryExecutor {
+  private readonly tripleStore: ITripleStore;
   private readonly bgpExecutor: BGPExecutor;
   private readonly filterExecutor: FilterExecutor;
   private readonly optionalExecutor: OptionalExecutor;
@@ -65,9 +69,14 @@ export class QueryExecutor {
   private readonly aggregateExecutor: AggregateExecutor;
   private readonly constructExecutor: ConstructExecutor;
   private readonly serviceExecutor: ServiceExecutor;
+  private readonly graphExecutor: GraphExecutor;
   private readonly sparqlGenerator: SPARQLGenerator;
 
+  /** Current graph context for GRAPH clause execution */
+  private currentGraphContext?: IRI;
+
   constructor(tripleStore: ITripleStore, config: QueryExecutorConfig = {}) {
+    this.tripleStore = tripleStore;
     this.bgpExecutor = new BGPExecutor(tripleStore);
     this.filterExecutor = new FilterExecutor();
     this.optionalExecutor = new OptionalExecutor();
@@ -77,6 +86,7 @@ export class QueryExecutor {
     this.aggregateExecutor = new AggregateExecutor();
     this.constructExecutor = new ConstructExecutor();
     this.serviceExecutor = new ServiceExecutor(config.serviceConfig);
+    this.graphExecutor = new GraphExecutor(tripleStore);
     this.sparqlGenerator = new SPARQLGenerator();
 
     // Set up EXISTS evaluator for FilterExecutor
@@ -188,6 +198,10 @@ export class QueryExecutor {
 
       case "service":
         yield* this.executeService(operation);
+        break;
+
+      case "graph":
+        yield* this.executeGraph(operation);
         break;
 
       default:
@@ -448,6 +462,74 @@ export class QueryExecutor {
     yield* this.serviceExecutor.execute(operation, (pattern) => {
       return this.sparqlGenerator.generateSelect(pattern);
     });
+  }
+
+  /**
+   * Execute a GRAPH operation for named graph queries.
+   *
+   * GRAPH clauses restrict pattern matching to a specific named graph.
+   * When the graph name is a variable, it iterates over all named graphs
+   * and binds the variable to each graph's IRI.
+   *
+   * SPARQL 1.1 spec Section 13.3:
+   * https://www.w3.org/TR/sparql11-query/#queryDataset
+   */
+  private async *executeGraph(operation: GraphOperation): AsyncIterableIterator<SolutionMapping> {
+    // Create a pattern executor that respects graph context
+    const executePatternInGraph = async function* (
+      this: QueryExecutor,
+      pattern: AlgebraOperation,
+      graphContext?: IRI
+    ): AsyncIterableIterator<SolutionMapping> {
+      // Save current graph context
+      const previousContext = this.currentGraphContext;
+      this.currentGraphContext = graphContext;
+
+      try {
+        // Execute the pattern
+        // For BGP operations, we need to match in the specific graph
+        if (pattern.type === "bgp" && graphContext && this.tripleStore.matchInGraph) {
+          yield* this.executeBGPInGraph(pattern, graphContext);
+        } else {
+          yield* this.execute(pattern);
+        }
+      } finally {
+        // Restore previous graph context
+        this.currentGraphContext = previousContext;
+      }
+    }.bind(this);
+
+    yield* this.graphExecutor.execute(operation, executePatternInGraph);
+  }
+
+  /**
+   * Execute a BGP operation within a specific named graph context.
+   */
+  private async *executeBGPInGraph(
+    operation: BGPOperation,
+    graphContext: IRI
+  ): AsyncIterableIterator<SolutionMapping> {
+    // Create a graph-scoped BGPExecutor by using matchInGraph
+    // This is a simplified approach - for full support, BGPExecutor would need refactoring
+    // For now, we create a temporary store proxy that uses matchInGraph
+
+    // If no triples in the pattern, return empty solution
+    if (operation.triples.length === 0) {
+      const { SolutionMapping } = await import("../SolutionMapping");
+      yield new SolutionMapping();
+      return;
+    }
+
+    // Execute BGP through the graph-scoped store
+    // For simplicity, we'll use the regular BGPExecutor with filtered triples
+    // The BGPExecutor will call match() on the store - we need to intercept this
+
+    // Alternative approach: temporarily scope the triple store
+    // For MVP, we'll use a simpler approach where GRAPH queries work with
+    // the tripleStore.matchInGraph method directly
+
+    // For each triple pattern in the BGP, we need to match against the named graph
+    yield* this.bgpExecutor.executeInGraph(operation, graphContext);
   }
 
   private evaluateExtendExpression(

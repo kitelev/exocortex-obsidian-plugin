@@ -2422,4 +2422,282 @@ describe("AlgebraTranslator", () => {
       expect(service.type).toBe("service");
     });
   });
+
+  describe("GRAPH clause (Named Graphs)", () => {
+    it("translates GRAPH with concrete IRI", () => {
+      const query = `
+        SELECT ?s ?p ?o
+        WHERE {
+          GRAPH <http://example.org/graph1> {
+            ?s ?p ?o
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("graph");
+      expect(input.name.type).toBe("iri");
+      expect(input.name.value).toBe("http://example.org/graph1");
+      expect(input.pattern.type).toBe("bgp");
+    });
+
+    it("translates GRAPH with variable", () => {
+      const query = `
+        SELECT ?g ?s ?p ?o
+        WHERE {
+          GRAPH ?g {
+            ?s ?p ?o
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("graph");
+      expect(input.name.type).toBe("variable");
+      expect(input.name.value).toBe("g");
+      expect(input.pattern.type).toBe("bgp");
+    });
+
+    it("translates GRAPH with PREFIX declarations", () => {
+      const query = `
+        PREFIX ex: <http://example.org/>
+        SELECT ?s ?p ?o
+        WHERE {
+          GRAPH ex:myGraph {
+            ?s ?p ?o
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("graph");
+      expect(input.name.type).toBe("iri");
+      expect(input.name.value).toBe("http://example.org/myGraph");
+    });
+
+    it("translates GRAPH with multiple inner triples", () => {
+      const query = `
+        SELECT ?s ?name ?age
+        WHERE {
+          GRAPH <http://example.org/data> {
+            ?s <http://example.org/name> ?name .
+            ?s <http://example.org/age> ?age .
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("graph");
+      expect(input.pattern.type).toBe("bgp");
+      expect(input.pattern.triples).toHaveLength(2);
+    });
+
+    it("translates GRAPH with inner FILTER", () => {
+      const query = `
+        SELECT ?s ?value
+        WHERE {
+          GRAPH <http://example.org/data> {
+            ?s <http://example.org/value> ?value .
+            FILTER(?value > 10)
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("graph");
+      expect(input.pattern.type).toBe("filter");
+      expect(input.pattern.input.type).toBe("bgp");
+    });
+
+    it("translates GRAPH with inner OPTIONAL", () => {
+      const query = `
+        SELECT ?s ?name ?email
+        WHERE {
+          GRAPH <http://example.org/people> {
+            ?s <http://example.org/name> ?name .
+            OPTIONAL { ?s <http://example.org/email> ?email }
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("graph");
+      expect(input.pattern.type).toBe("join");
+    });
+
+    it("translates multiple GRAPH clauses", () => {
+      const query = `
+        SELECT ?s ?name1 ?name2
+        WHERE {
+          GRAPH <http://example.org/graph1> {
+            ?s <http://example.org/name> ?name1 .
+          }
+          GRAPH <http://example.org/graph2> {
+            ?s <http://example.org/name> ?name2 .
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Find all GRAPH operations
+      const findAllGraphs = (op: AlgebraOperation, graphs: any[] = []): any[] => {
+        if (op.type === "graph") graphs.push(op);
+        if ("input" in op) findAllGraphs((op as any).input, graphs);
+        if ("left" in op) {
+          findAllGraphs((op as any).left, graphs);
+          findAllGraphs((op as any).right, graphs);
+        }
+        if ("right" in op && !("left" in op)) findAllGraphs((op as any).right, graphs);
+        return graphs;
+      };
+
+      const graphs = findAllGraphs(algebra);
+      expect(graphs.length).toBe(2);
+
+      const graphNames = graphs.map((g) => g.name.value).sort();
+      expect(graphNames).toContain("http://example.org/graph1");
+      expect(graphNames).toContain("http://example.org/graph2");
+    });
+
+    it("translates GRAPH combined with default graph patterns", () => {
+      const query = `
+        SELECT ?s ?defaultValue ?graphValue
+        WHERE {
+          ?s <http://example.org/defaultProp> ?defaultValue .
+          GRAPH <http://example.org/namedGraph> {
+            ?s <http://example.org/graphProp> ?graphValue .
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("join");
+
+      // One side should be BGP (default graph), other should be GRAPH
+      const hasGraph = input.left?.type === "graph" || input.right?.type === "graph";
+      const hasBGP = input.left?.type === "bgp" || input.right?.type === "bgp";
+      expect(hasGraph).toBe(true);
+      expect(hasBGP).toBe(true);
+    });
+
+    it("translates GRAPH within OPTIONAL", () => {
+      const query = `
+        SELECT ?s ?name ?remoteData
+        WHERE {
+          ?s <http://example.org/name> ?name .
+          OPTIONAL {
+            GRAPH <http://example.org/external> {
+              ?s <http://example.org/remoteData> ?remoteData .
+            }
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      // Find the GRAPH operation (should be inside a leftjoin)
+      const findGraph = (op: AlgebraOperation): any => {
+        if (op.type === "graph") return op;
+        if ("input" in op) return findGraph((op as any).input);
+        if ("left" in op) {
+          const left = findGraph((op as any).left);
+          if (left) return left;
+          return findGraph((op as any).right);
+        }
+        if ("right" in op) return findGraph((op as any).right);
+        return null;
+      };
+
+      const graph = findGraph(algebra);
+      expect(graph).not.toBeNull();
+      expect(graph.type).toBe("graph");
+      expect(graph.name.value).toBe("http://example.org/external");
+    });
+
+    it("translates nested GRAPH within UNION", () => {
+      const query = `
+        SELECT ?s ?value
+        WHERE {
+          {
+            GRAPH <http://example.org/graph1> {
+              ?s <http://example.org/value> ?value .
+            }
+          }
+          UNION
+          {
+            GRAPH <http://example.org/graph2> {
+              ?s <http://example.org/value> ?value .
+            }
+          }
+        }
+      `;
+      const ast = parser.parse(query);
+      const algebra = translator.translate(ast);
+
+      expect(algebra.type).toBe("project");
+      const input = (algebra as any).input;
+      expect(input.type).toBe("union");
+      expect(input.left.type).toBe("graph");
+      expect(input.right.type).toBe("graph");
+    });
+
+    it("throws error for GRAPH without name", () => {
+      // Manually create an invalid AST to test error handling
+      // sparqljs won't produce this, but our code should handle it gracefully
+      const invalidAst: any = {
+        type: "query",
+        queryType: "SELECT",
+        variables: [{ termType: "Variable", value: "s" }],
+        where: [
+          {
+            type: "graph",
+            name: null, // Invalid: missing name
+            patterns: [{ type: "bgp", triples: [] }],
+          },
+        ],
+      };
+
+      expect(() => translator.translate(invalidAst)).toThrow(AlgebraTranslatorError);
+    });
+
+    it("throws error for GRAPH without patterns", () => {
+      // Manually create an invalid AST
+      const invalidAst: any = {
+        type: "query",
+        queryType: "SELECT",
+        variables: [{ termType: "Variable", value: "s" }],
+        where: [
+          {
+            type: "graph",
+            name: { termType: "NamedNode", value: "http://example.org/g" },
+            patterns: null, // Invalid: missing patterns
+          },
+        ],
+      };
+
+      expect(() => translator.translate(invalidAst)).toThrow(AlgebraTranslatorError);
+    });
+  });
 });

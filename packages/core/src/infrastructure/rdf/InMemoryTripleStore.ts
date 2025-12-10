@@ -2,6 +2,7 @@ import {
   ITripleStore,
   ITransaction,
   TransactionError,
+  GraphName,
 } from "../../interfaces/ITripleStore";
 import { Triple, Subject, Predicate, Object as RDFObject } from "../../domain/models/rdf/Triple";
 import { IRI } from "../../domain/models/rdf/IRI";
@@ -19,6 +20,9 @@ type NodeKey = string;
 /** UUID pattern regex for standard UUID v4 format */
 const UUID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
 
+/** Default graph key for named graph storage */
+const DEFAULT_GRAPH_KEY = "__default__";
+
 export class InMemoryTripleStore implements ITripleStore {
   private triples: Map<TripleKey, Triple> = new Map();
   private spo: Map<NodeKey, Map<NodeKey, Set<NodeKey>>> = new Map();
@@ -34,6 +38,13 @@ export class InMemoryTripleStore implements ITripleStore {
    * Enables O(1) lookup for FILTER(CONTAINS(STR(?s), 'uuid')) patterns.
    */
   private uuidIndex: Map<string, Set<string>> = new Map();
+
+  /**
+   * Named graph storage: maps graph name to InMemoryTripleStore instance.
+   * The default graph is stored with key "__default__".
+   * Each named graph has its own complete triple store with indexes.
+   */
+  private namedGraphs: Map<string, InMemoryTripleStore> = new Map();
 
   async add(triple: Triple): Promise<void> {
     const key = this.getTripleKey(triple);
@@ -454,6 +465,163 @@ export class InMemoryTripleStore implements ITripleStore {
     const p = predicate ? this.getNodeKey(predicate) : "?";
     const o = object ? this.getNodeKey(object) : "?";
     return `${s}|${p}|${o}`;
+  }
+
+  // ===== Named Graph Support (SPARQL 1.1 Section 13.3) =====
+
+  /**
+   * Get the graph key for a given graph name.
+   * Returns DEFAULT_GRAPH_KEY for undefined (default graph).
+   */
+  private getGraphKey(graph: GraphName): string {
+    return graph ? graph.value : DEFAULT_GRAPH_KEY;
+  }
+
+  /**
+   * Get or create a named graph store.
+   * Named graphs are stored as separate InMemoryTripleStore instances.
+   */
+  private getOrCreateGraphStore(graph: GraphName): InMemoryTripleStore {
+    const key = this.getGraphKey(graph);
+
+    // For default graph, return this instance
+    if (key === DEFAULT_GRAPH_KEY) {
+      return this;
+    }
+
+    // For named graphs, get or create a new store
+    if (!this.namedGraphs.has(key)) {
+      this.namedGraphs.set(key, new InMemoryTripleStore());
+    }
+
+    return this.namedGraphs.get(key)!;
+  }
+
+  /**
+   * Add a triple to a specific named graph.
+   *
+   * @param triple - The triple to add
+   * @param graph - The graph name (undefined for default graph)
+   */
+  async addToGraph(triple: Triple, graph: GraphName): Promise<void> {
+    const store = this.getOrCreateGraphStore(graph);
+    await store.add(triple);
+  }
+
+  /**
+   * Remove a triple from a specific named graph.
+   *
+   * @param triple - The triple to remove
+   * @param graph - The graph name (undefined for default graph)
+   * @returns true if the triple was removed, false if it didn't exist
+   */
+  async removeFromGraph(triple: Triple, graph: GraphName): Promise<boolean> {
+    const key = this.getGraphKey(graph);
+
+    if (key === DEFAULT_GRAPH_KEY) {
+      return this.remove(triple);
+    }
+
+    const store = this.namedGraphs.get(key);
+    if (!store) {
+      return false;
+    }
+
+    return store.remove(triple);
+  }
+
+  /**
+   * Match triples within a specific named graph.
+   *
+   * @param subject - Subject filter (undefined for any)
+   * @param predicate - Predicate filter (undefined for any)
+   * @param object - Object filter (undefined for any)
+   * @param graph - The graph name (undefined for default graph)
+   * @returns Array of matching triples
+   */
+  async matchInGraph(
+    subject?: Subject,
+    predicate?: Predicate,
+    object?: RDFObject,
+    graph?: GraphName
+  ): Promise<Triple[]> {
+    const key = this.getGraphKey(graph);
+
+    if (key === DEFAULT_GRAPH_KEY) {
+      return this.match(subject, predicate, object);
+    }
+
+    const store = this.namedGraphs.get(key);
+    if (!store) {
+      return [];
+    }
+
+    return store.match(subject, predicate, object);
+  }
+
+  /**
+   * Get all named graphs in the dataset.
+   *
+   * @returns Array of graph IRIs (does not include the default graph)
+   */
+  async getNamedGraphs(): Promise<IRI[]> {
+    return Array.from(this.namedGraphs.keys()).map((key) => new IRI(key));
+  }
+
+  /**
+   * Check if a named graph exists in the dataset.
+   *
+   * @param graph - The graph name to check
+   * @returns true if the graph exists and contains at least one triple
+   */
+  async hasGraph(graph: IRI): Promise<boolean> {
+    const store = this.namedGraphs.get(graph.value);
+    if (!store) {
+      return false;
+    }
+
+    return (await store.count()) > 0;
+  }
+
+  /**
+   * Clear all triples from a specific named graph.
+   *
+   * @param graph - The graph name (undefined for default graph)
+   */
+  async clearGraph(graph: GraphName): Promise<void> {
+    const key = this.getGraphKey(graph);
+
+    if (key === DEFAULT_GRAPH_KEY) {
+      await this.clear();
+      return;
+    }
+
+    const store = this.namedGraphs.get(key);
+    if (store) {
+      await store.clear();
+      this.namedGraphs.delete(key);
+    }
+  }
+
+  /**
+   * Get the count of triples in a specific named graph.
+   *
+   * @param graph - The graph name (undefined for default graph)
+   * @returns Number of triples in the graph
+   */
+  async countInGraph(graph: GraphName): Promise<number> {
+    const key = this.getGraphKey(graph);
+
+    if (key === DEFAULT_GRAPH_KEY) {
+      return this.count();
+    }
+
+    const store = this.namedGraphs.get(key);
+    if (!store) {
+      return 0;
+    }
+
+    return store.count();
   }
 }
 

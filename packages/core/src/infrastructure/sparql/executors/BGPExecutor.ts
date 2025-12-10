@@ -69,6 +69,110 @@ export class BGPExecutor {
   }
 
   /**
+   * Execute a BGP operation within a specific named graph context.
+   * Uses matchInGraph instead of match for all triple pattern matching.
+   *
+   * @param bgp - The BGP operation to execute
+   * @param graphContext - The named graph IRI to query
+   */
+  async *executeInGraph(bgp: BGPOperation, graphContext: IRI): AsyncIterableIterator<SolutionMapping> {
+    if (bgp.triples.length === 0) {
+      // Empty BGP yields one empty solution
+      yield new SolutionMapping();
+      return;
+    }
+
+    // Start with first triple pattern
+    let solutions = this.matchTriplePatternInGraph(bgp.triples[0], graphContext);
+
+    // Join with remaining patterns
+    for (let i = 1; i < bgp.triples.length; i++) {
+      solutions = this.joinWithPatternInGraph(solutions, bgp.triples[i], graphContext);
+    }
+
+    // Yield all solutions
+    for await (const solution of solutions) {
+      yield solution;
+    }
+  }
+
+  /**
+   * Match a single triple pattern within a named graph and return solution mappings.
+   */
+  private async *matchTriplePatternInGraph(
+    pattern: AlgebraTriple,
+    graphContext: IRI
+  ): AsyncIterableIterator<SolutionMapping> {
+    // Property paths in named graphs are not supported in this implementation
+    // They would require PropertyPathExecutor to be graph-aware
+    if (this.isPropertyPath(pattern.predicate)) {
+      throw new BGPExecutorError("Property paths within named graphs are not yet supported");
+    }
+
+    const predElement = pattern.predicate as TripleElement;
+
+    // Convert algebra triple pattern to triple store query
+    const subject = this.isVariable(pattern.subject) ? undefined : this.toRDFTermAsSubject(pattern.subject);
+    const predicate = this.isVariable(predElement) ? undefined : this.toRDFTermAsPredicate(predElement);
+    const object = this.isVariable(pattern.object) ? undefined : this.toRDFTerm(pattern.object);
+
+    // Query named graph
+    if (!this.tripleStore.matchInGraph) {
+      throw new BGPExecutorError("Triple store does not support named graph operations");
+    }
+
+    const triples = await this.tripleStore.matchInGraph(subject, predicate, object, graphContext);
+
+    // Convert each matching triple to a solution mapping
+    for (const triple of triples) {
+      const mapping = new SolutionMapping();
+
+      // Bind variables from pattern
+      if (this.isVariable(pattern.subject)) {
+        mapping.set(pattern.subject.value, triple.subject);
+      }
+      if (this.isVariable(predElement)) {
+        mapping.set(predElement.value, triple.predicate);
+      }
+      if (this.isVariable(pattern.object)) {
+        mapping.set(pattern.object.value, triple.object);
+      }
+
+      yield mapping;
+    }
+  }
+
+  /**
+   * Join existing solutions with a new triple pattern within a named graph.
+   */
+  private async *joinWithPatternInGraph(
+    solutions: AsyncIterableIterator<SolutionMapping>,
+    pattern: AlgebraTriple,
+    graphContext: IRI
+  ): AsyncIterableIterator<SolutionMapping> {
+    // Collect all existing solutions (needed for join)
+    const existingSolutions: SolutionMapping[] = [];
+    for await (const solution of solutions) {
+      existingSolutions.push(solution);
+    }
+
+    // For each existing solution, find compatible bindings from new pattern
+    for (const existingSolution of existingSolutions) {
+      // Instantiate pattern with existing bindings
+      const instantiatedPattern = this.instantiatePattern(pattern, existingSolution);
+
+      // Match instantiated pattern in graph
+      for await (const newBinding of this.matchTriplePatternInGraph(instantiatedPattern, graphContext)) {
+        // Merge with existing solution
+        const merged = existingSolution.merge(newBinding);
+        if (merged !== null) {
+          yield merged;
+        }
+      }
+    }
+  }
+
+  /**
    * Match a single triple pattern and return solution mappings.
    * Supports both simple predicates and property paths.
    */
