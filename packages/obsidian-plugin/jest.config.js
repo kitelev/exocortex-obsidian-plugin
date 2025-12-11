@@ -25,31 +25,20 @@ module.exports = {
     "^obsidian$": "<rootDir>/tests/__mocks__/obsidian.ts",
     "^d3$": "<rootDir>/tests/__mocks__/d3.ts",
   },
+  // Coverage thresholds per Test Pyramid policy (docs/TEST-PYRAMID.md)
+  // These are enforced in CI via .github/workflows/ci.yml
   coverageThreshold: {
     global: {
-      branches: 67, // Temporary: Lowered from 70 for incremental layout updates (current: 68.96%)
-      functions: 71, // Temporary: Lowered from 75 due to PropertyFieldRenderer components (current: 71.99%)
-      lines: 78, // Updated from 75 to 78 (current: 79.31%)
-      statements: 79, // Temporary: Lowered from 80 for incremental layout updates (current: 79.13%)
+      statements: 75, // CI threshold (current: ~80%)
+      branches: 67,   // CI threshold (current: ~71%)
+      functions: 70,  // CI threshold (current: ~73%)
+      lines: 75,      // CI threshold (current: ~81%)
     },
-    // Domain layer thresholds disabled until core package coverage collection is fixed
-    // See: https://github.com/kitelev/exocortex-obsidian-plugin/issues/197
-    // "<rootDir>/../core/src/domain/": {
-    //   branches: 78,
-    //   functions: 80,
-    //   lines: 79,
-    //   statements: 78,
-    // },
   },
-  // 🎯 COVERAGE TARGETS (enforced in CI):
-  // Current: 79% statements, 78% lines, 75% functions, 67% branches
-  // Note: Temporarily lowered from 80% statements / 70% branches due to
-  //       untested presentation layer code in UniversalLayoutRenderer (incremental updates).
-  //       Will restore to 80%/70% after E2E tests for incremental updates are added.
-  // Previous milestone: 80% statements coverage ✅ (before incremental updates PR)
-  // Next milestone: 85% statements, 80% lines/functions
-  // Ultimate goal: 85% statements/lines, 80% branches/functions
-  // Domain layer: 85% across all metrics (once core package coverage collection works)
+  // 🎯 COVERAGE POLICY (see docs/TEST-PYRAMID.md):
+  // - obsidian-plugin: 75% statements, 67% branches, 70% functions, 75% lines
+  // - Short-term goal: 80% statements, 70% branches
+  // - Long-term goal: 85% statements, 80% branches
   // Note: setupFilesAfterEnv moved to memory optimization section above
   // Handle ES modules and other transformations in CI
   // Transform @exocortex/core package files

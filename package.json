@@ -38,7 +38,9 @@
     "bdd:check": "node scripts/bdd-coverage.js --fail-on-uncovered",
     "test:mutation": "stryker run",
     "test:mutation:core": "stryker run --mutate 'packages/core/src/**/*.ts'",
-    "test:mutation:report": "open mutation-report.html"
+    "test:mutation:report": "open mutation-report.html",
+    "test:pyramid": "node scripts/check-test-pyramid.js",
+    "test:pyramid:strict": "node scripts/check-test-pyramid.js --strict"
   },
   "keywords": [
     "obsidian",
