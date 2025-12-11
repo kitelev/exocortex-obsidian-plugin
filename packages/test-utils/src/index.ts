@@ -108,17 +108,19 @@ export {
   type RetryOptions,
 } from "./helpers/async.helpers";
 
-// Reporters and Flaky Test Detection
+// Flaky test detection and quarantine
 export {
   FlakyReporter,
-  QuarantineManager,
-  loadQuarantine,
-  getQuarantineManager,
-  isTestQuarantined,
+  QUARANTINED_TESTS,
+  isQuarantined,
   shouldSkipTest,
+  getQuarantinedTests,
+  getQuarantineStats,
+  quarantineTest,
+  generateQuarantineReport,
+  // Types
   type FlakyTestInfo,
   type FlakyReport,
   type FlakyReporterOptions,
   type QuarantinedTest,
-  type QuarantineConfig,
-} from "./reporters";
+} from "./flaky";

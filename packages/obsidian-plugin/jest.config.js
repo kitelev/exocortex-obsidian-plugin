@@ -22,6 +22,7 @@ module.exports = {
   ],
   moduleNameMapper: {
     "^@exocortex/core$": "<rootDir>/../core/src/index.ts",
+    "^@exocortex/test-utils$": "<rootDir>/../test-utils/src/index.ts",
     "^obsidian$": "<rootDir>/tests/__mocks__/obsidian.ts",
     "^d3$": "<rootDir>/tests/__mocks__/d3.ts",
   },
@@ -79,6 +80,7 @@ module.exports = {
   // EMERGENCY: Enhanced memory management setup
   setupFilesAfterEnv: [
     "<rootDir>/tests/setup-reflect-metadata.ts", // Global reflect-metadata for TSyringe
+    "<rootDir>/tests/setup-flaky-detection.js", // Flaky test retry configuration (CI only)
     // "<rootDir>/tests/setup.ts", // File doesn't exist
     // '<rootDir>/tests/emergency-memory-setup.ts', // TEMPORARY: Disabled for debugging
     // "<rootDir>/tests/test-cleanup.ts", // File doesn't exist
@@ -113,6 +115,23 @@ module.exports = {
   // Test result optimization
   passWithNoTests: true,
   errorOnDeprecated: false,
+  // Flaky test detection reporter
+  // Generates flaky-report.json with tests that passed after retry
+  // Only enabled in CI to avoid noise during local development
+  reporters: process.env.CI
+    ? [
+        "default",
+        [
+          "<rootDir>/tests/reporters/flaky-reporter.js",
+          {
+            outputFile: "flaky-report.json",
+            outputDir: "<rootDir>",
+            consoleOutput: true,
+            failOnFlaky: false, // Don't fail CI, just report
+          },
+        ],
+      ]
+    : ["default"],
   // Modern ts-jest configuration
   transform: {
     "^.+\\.ts$": [
