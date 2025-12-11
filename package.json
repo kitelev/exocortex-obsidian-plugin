@@ -40,7 +40,9 @@
     "test:mutation:core": "stryker run --mutate 'packages/core/src/**/*.ts'",
     "test:mutation:report": "open mutation-report.html",
     "test:pyramid": "node scripts/check-test-pyramid.js",
-    "test:pyramid:strict": "node scripts/check-test-pyramid.js --strict"
+    "test:pyramid:strict": "node scripts/check-test-pyramid.js --strict",
+    "test:perf": "jest --config packages/obsidian-plugin/jest.config.js --testPathPatterns='performance.*\\.test\\.ts$'",
+    "test:perf:component": "cd packages/obsidian-plugin && npx playwright test -c playwright-ct.config.ts RenderingPerformance && cd ../.."
   },
   "keywords": [
     "obsidian",
