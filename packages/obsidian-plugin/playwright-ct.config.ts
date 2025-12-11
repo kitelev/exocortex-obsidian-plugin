@@ -15,9 +15,10 @@ export default defineConfig({
   testDir: "./tests/component",
 
   // Snapshot configuration for visual regression testing
+  // Platform-specific snapshots to handle font rendering differences between macOS/Linux
   snapshotDir: "./tests/component/__snapshots__",
   snapshotPathTemplate:
-    "{snapshotDir}/{testFileDir}/{testFileName}-snapshots/{arg}{-projectName}{ext}",
+    "{snapshotDir}/{testFileDir}/{testFileName}-snapshots/{arg}{-projectName}{-platform}{ext}",
 
   // Run tests in parallel
   fullyParallel: true,
