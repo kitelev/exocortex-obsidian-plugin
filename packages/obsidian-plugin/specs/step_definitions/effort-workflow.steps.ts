@@ -12,12 +12,8 @@ Given("I have a Task without ems__Effort_status property", function (this: Exoco
   this.currentNote = note;
 });
 
-Given("I have a Task {string} with Draft status", function (this: ExocortexWorld, taskName: string) {
-  const note = this.createTask(taskName, {
-    ems__Effort_status: "[[ems__EffortStatusDraft]]",
-  });
-  this.currentNote = note;
-});
+// Note: "I have a Task X with Y status" is defined in common.steps.ts
+// to handle all status variants (Draft, Backlog, Doing, Done, Trashed)
 
 Given("I have a Task {string} with:", function (this: ExocortexWorld, taskName: string, dataTable: any) {
   const properties: Record<string, string> = {};
@@ -233,5 +229,57 @@ Then(
   function (this: ExocortexWorld, property: string, value: string) {
     assert.ok(this.lastCreatedNote);
     assert.strictEqual(this.lastCreatedNote?.frontmatter[property], value);
+  },
+);
+
+// ============================================
+// Additional Effort Steps
+// ============================================
+
+Then(
+  "first status in array is replaced with {string}",
+  function (this: ExocortexWorld, expectedStatus: string) {
+    const status = this.currentNote?.frontmatter.ems__Effort_status;
+    if (Array.isArray(status)) {
+      assert.ok(
+        status[0]?.includes(expectedStatus.replace(/\[\[|\]\]/g, "")),
+        `First status in array should be "${expectedStatus}", got "${status[0]}"`,
+      );
+    } else {
+      assert.ok(
+        status?.includes(expectedStatus.replace(/\[\[|\]\]/g, "")),
+        `Status should include "${expectedStatus}", got "${status}"`,
+      );
+    }
+  },
+);
+
+Then(
+  "all original properties are preserved:",
+  function (this: ExocortexWorld, dataTable: any) {
+    assert.ok(this.currentNote, "Current note should exist");
+    const rows = dataTable.rows();
+    for (const row of rows) {
+      const [property] = row;
+      assert.ok(
+        property in this.currentNote!.frontmatter,
+        `Property "${property}" should be preserved`,
+      );
+    }
+  },
+);
+
+Then(
+  "new properties are added:",
+  function (this: ExocortexWorld, dataTable: any) {
+    assert.ok(this.currentNote, "Current note should exist");
+    const rows = dataTable.rows();
+    for (const row of rows) {
+      const [property] = row;
+      assert.ok(
+        property in this.currentNote!.frontmatter,
+        `Property "${property}" should be added`,
+      );
+    }
   },
 );

@@ -56,6 +56,9 @@ export class ExocortexWorld extends World {
   // All folders in the vault
   public folders: Map<string, MockFolder> = new Map();
 
+  // Relations map for backlinks
+  public relations: Map<string, any> = new Map();
+
   // Plugin state
   public dataviewInstalled: boolean = true;
   public pluginInitialized: boolean = true;
@@ -93,6 +96,7 @@ export class ExocortexWorld extends World {
     this.currentNote = null;
     this.notes.clear();
     this.folders.clear();
+    this.relations.clear();
     this.dataviewInstalled = true;
     this.pluginInitialized = true;
     this.renderedSections.clear();
