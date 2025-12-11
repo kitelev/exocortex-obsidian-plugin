@@ -36,7 +36,8 @@ fi
 echo "📦 Running CLI tests..."
 CLI_JEST_ARGS="--config packages/cli/jest.config.js --forceExit --testTimeout=60000"
 if [ "$COVERAGE" = "true" ]; then
-    CLI_JEST_ARGS="$CLI_JEST_ARGS --coverage"
+    echo "📊 CLI coverage collection enabled"
+    CLI_JEST_ARGS="$CLI_JEST_ARGS --coverage --coverageReporters=lcov --coverageReporters=json-summary --coverageReporters=text-summary"
 fi
 
 if node --experimental-vm-modules ./node_modules/jest/bin/jest.js $CLI_JEST_ARGS; then

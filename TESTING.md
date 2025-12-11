@@ -2,6 +2,8 @@
 
 Comprehensive documentation for testing the Exocortex monorepo. This guide covers all test types, frameworks, patterns, and best practices.
 
+> **📐 Test Pyramid Policy**: For formal test architecture strategy, coverage thresholds, and CI enforcement mechanisms, see **[docs/TEST-PYRAMID.md](./docs/TEST-PYRAMID.md)**.
+
 ## Table of Contents
 
 - [Quick Start](#quick-start)

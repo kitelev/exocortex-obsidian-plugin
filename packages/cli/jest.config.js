@@ -31,5 +31,14 @@ module.exports = {
     "!src/**/*.test.ts",
   ],
   coverageDirectory: "coverage",
-  coverageReporters: ["text", "lcov", "html"],
+  coverageReporters: ["text", "lcov", "html", "json-summary"],
+  // Coverage thresholds per Test Pyramid policy (docs/TEST-PYRAMID.md)
+  coverageThreshold: {
+    global: {
+      statements: 65,
+      branches: 60,
+      functions: 70,
+      lines: 65,
+    },
+  },
 };

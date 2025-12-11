@@ -164,9 +164,11 @@ jobs:
           export COVERAGE=true
           ./scripts/test-ci-batched.sh || exit 1
 
-      - name: Check coverage thresholds
+      - name: Check coverage thresholds (obsidian-plugin)
         run: |
-          echo "Verifying coverage meets required thresholds..."
+          echo "=============================================="
+          echo "Verifying obsidian-plugin coverage thresholds"
+          echo "=============================================="
 
           # Check if coverage report exists
           COVERAGE_FILE="packages/obsidian-plugin/coverage/coverage-summary.json"
@@ -182,34 +184,96 @@ jobs:
           FUNCTIONS=$(cat "$COVERAGE_FILE" | jq -r '.total.functions.pct')
           LINES=$(cat "$COVERAGE_FILE" | jq -r '.total.lines.pct')
 
-          echo "Coverage Report:"
+          echo "📊 obsidian-plugin Coverage Report:"
           echo "  Statements: ${STATEMENTS}% (required: 75%)"
           echo "  Branches:   ${BRANCHES}% (required: 67%)"
           echo "  Functions:  ${FUNCTIONS}% (required: 70%)"
           echo "  Lines:      ${LINES}% (required: 75%)"
 
           # Check if coverage meets thresholds using awk for floating point comparison
+          FAILED=0
           if [ $(echo "$STATEMENTS < 75" | awk '{print ($1 < $3) ? 1 : 0}') -eq 1 ]; then
             echo "❌ Statement coverage ${STATEMENTS}% is below 75% threshold"
-            exit 1
+            FAILED=1
           fi
 
           if [ $(echo "$BRANCHES < 67" | awk '{print ($1 < $3) ? 1 : 0}') -eq 1 ]; then
             echo "❌ Branch coverage ${BRANCHES}% is below 67% threshold"
-            exit 1
+            FAILED=1
           fi
 
           if [ $(echo "$FUNCTIONS < 70" | awk '{print ($1 < $3) ? 1 : 0}') -eq 1 ]; then
             echo "❌ Function coverage ${FUNCTIONS}% is below 70% threshold"
-            exit 1
+            FAILED=1
           fi
 
           if [ $(echo "$LINES < 75" | awk '{print ($1 < $3) ? 1 : 0}') -eq 1 ]; then
             echo "❌ Line coverage ${LINES}% is below 75% threshold"
+            FAILED=1
+          fi
+
+          if [ $FAILED -eq 1 ]; then
             exit 1
           fi
 
-          echo "✅ All coverage thresholds met!"
+          echo "✅ obsidian-plugin coverage thresholds met!"
+
+      - name: Check coverage thresholds (cli)
+        run: |
+          echo "=============================================="
+          echo "Verifying CLI package coverage thresholds"
+          echo "=============================================="
+
+          # Check if CLI coverage report exists
+          CLI_COVERAGE_FILE="packages/cli/coverage/coverage-summary.json"
+          if [ ! -f "$CLI_COVERAGE_FILE" ]; then
+            echo "⚠️ CLI coverage report not found at $CLI_COVERAGE_FILE"
+            echo "CLI coverage collection may not be enabled."
+            exit 0
+          fi
+
+          # Extract coverage percentages from JSON
+          STATEMENTS=$(cat "$CLI_COVERAGE_FILE" | jq -r '.total.statements.pct')
+          BRANCHES=$(cat "$CLI_COVERAGE_FILE" | jq -r '.total.branches.pct')
+          FUNCTIONS=$(cat "$CLI_COVERAGE_FILE" | jq -r '.total.functions.pct')
+          LINES=$(cat "$CLI_COVERAGE_FILE" | jq -r '.total.lines.pct')
+
+          echo "📊 CLI Coverage Report:"
+          echo "  Statements: ${STATEMENTS}% (required: 65%)"
+          echo "  Branches:   ${BRANCHES}% (required: 60%)"
+          echo "  Functions:  ${FUNCTIONS}% (required: 70%)"
+          echo "  Lines:      ${LINES}% (required: 65%)"
+
+          # Check if coverage meets thresholds
+          FAILED=0
+          if [ $(echo "$STATEMENTS < 65" | awk '{print ($1 < $3) ? 1 : 0}') -eq 1 ]; then
+            echo "❌ CLI Statement coverage ${STATEMENTS}% is below 65% threshold"
+            FAILED=1
+          fi
+
+          if [ $(echo "$BRANCHES < 60" | awk '{print ($1 < $3) ? 1 : 0}') -eq 1 ]; then
+            echo "❌ CLI Branch coverage ${BRANCHES}% is below 60% threshold"
+            FAILED=1
+          fi
+
+          if [ $(echo "$FUNCTIONS < 70" | awk '{print ($1 < $3) ? 1 : 0}') -eq 1 ]; then
+            echo "❌ CLI Function coverage ${FUNCTIONS}% is below 70% threshold"
+            FAILED=1
+          fi
+
+          if [ $(echo "$LINES < 65" | awk '{print ($1 < $3) ? 1 : 0}') -eq 1 ]; then
+            echo "❌ CLI Line coverage ${LINES}% is below 65% threshold"
+            FAILED=1
+          fi
+
+          if [ $FAILED -eq 1 ]; then
+            exit 1
+          fi
+
+          echo "✅ CLI coverage thresholds met!"
+          echo "=============================================="
+          echo "✅ All package coverage thresholds passed!"
+          echo "=============================================="
 
       - name: Generate coverage summary
         if: always()
@@ -388,6 +452,59 @@ jobs:
         with:
           name: flaky-test-report-component
           path: packages/obsidian-plugin/flaky-report-playwright.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+  test-pyramid:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: [test-unit, test-coverage]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download coverage reports
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-reports
+          path: packages/obsidian-plugin/coverage/
+        continue-on-error: true
+
+      - name: Run Test Pyramid Health Check
+        run: npm run test:pyramid
+
+      - name: Validate Test Pyramid (Strict)
+        run: npm run test:pyramid:strict
+        continue-on-error: false
+
+      - name: Generate Pyramid Report
+        if: always()
+        run: |
+          npm run test:pyramid -- --json > test-pyramid-report.json
+          echo "## Test Pyramid Report" > test-pyramid-summary.md
+          echo "" >> test-pyramid-summary.md
+          echo "Generated: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> test-pyramid-summary.md
+          echo "" >> test-pyramid-summary.md
+          npm run test:pyramid >> test-pyramid-summary.md
+
+      - name: Upload Pyramid Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-pyramid-report
+          path: |
+            test-pyramid-report.json
+            test-pyramid-summary.md
           retention-days: 30
           if-no-files-found: ignore
 
