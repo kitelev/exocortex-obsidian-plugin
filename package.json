@@ -25,6 +25,8 @@
     "test:component": "cd packages/obsidian-plugin && npx playwright test -c playwright-ct.config.ts && cd ../..",
     "test:component:ui": "playwright test -c packages/obsidian-plugin/playwright-ct.config.ts --ui",
     "test:component:report": "playwright show-report playwright-report-ct",
+    "test:visual": "cd packages/obsidian-plugin && npx playwright test -c playwright-ct.config.ts --grep visual && cd ../..",
+    "test:visual:update": "cd packages/obsidian-plugin && npx playwright test -c playwright-ct.config.ts --grep visual --update-snapshots && cd ../..",
     "test:e2e": "playwright test -c packages/obsidian-plugin/playwright-e2e.config.ts",
     "test:e2e:local": "./scripts/test-e2e-local.sh",
     "test:e2e:docker": "docker build --platform linux/amd64 -f packages/obsidian-plugin/Dockerfile.e2e -t exocortex-e2e . && docker run --rm exocortex-e2e",
