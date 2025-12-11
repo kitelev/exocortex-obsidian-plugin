@@ -363,24 +363,120 @@ Feature: Daily Tasks Table in Layout
 
 ## Test Architecture
 
-### Test Pyramid
+### Test Pyramid Policy
 
-The project follows the test pyramid approach:
+The project enforces a **test pyramid architecture** to ensure fast feedback, maintainable tests, and optimal resource usage. This policy is validated automatically in CI.
+
+#### Pyramid Structure
 
 ```
-        /\
-       /  \     E2E Tests (few, slow, critical paths)
-      /    \
-     /------\   Component Tests (some, medium speed)
-    /        \
-   /----------\ Unit Tests (many, fast, isolated)
-  /____________\
+          ╱╲
+         ╱  ╲        E2E Tests (≤10%)
+        ╱────╲       Critical user journeys only
+       ╱      ╲
+      ╱────────╲     Component Tests (10-25%)
+     ╱          ╲    Isolated React component testing
+    ╱────────────╲
+   ╱              ╲  Unit Tests (≥70%)
+  ╱────────────────╲ Fast, isolated business logic
+ ╱__________________╲
 ```
 
-**Target Ratios**:
-- **Unit Tests**: ~80% of test count (fast, isolated)
-- **Component Tests**: ~15% (medium speed, UI behavior)
-- **E2E Tests**: ~5% (slow, critical workflows only)
+#### Ratios and Enforcement
+
+| Layer | Target Ratio | CI Gate | Framework |
+|-------|--------------|---------|-----------|
+| Unit Tests | ≥70% | `npm run test:pyramid:strict` | Jest |
+| Component Tests | 10-25% | All must pass | Playwright CT |
+| E2E Tests | ≤10% | All must pass | Playwright E2E |
+| BDD Scenarios | 100% coverage | `npm run bdd:check` | Cucumber |
+
+#### Why This Structure?
+
+1. **Fast Feedback**: Unit tests run in seconds, catching bugs early
+2. **Cost Efficiency**: Unit tests are cheap to write and maintain
+3. **Reliability**: Fewer flaky tests (E2E tests are most flaky)
+4. **Comprehensive Coverage**: Each layer tests different aspects
+
+#### Pyramid Health Check
+
+Run the health check locally:
+
+```bash
+# Visual report
+npm run test:pyramid
+
+# Strict validation (fails if ratios violated)
+npm run test:pyramid:strict
+
+# JSON output for CI/automation
+npm run test:pyramid -- --json
+```
+
+Example output:
+
+```
+🔺 Test Pyramid Health Check
+════════════════════════════════════════════════════════════
+
+📊 Test Distribution:
+
+   Unit Tests:      244 files, 5116 cases (84%)
+   Component Tests: 33 files, 530 cases (11%)
+   E2E Tests:       14 files, 67 cases (5%)
+   ─────────────────────────────────────
+   Total:           291 files, 5713 cases
+
+📐 Test Pyramid:
+
+   E2E        [█                   ] 5%
+   Component  [██                  ] 11%
+   Unit       [████████████████    ] 84%
+
+🏥 Pyramid Health:
+
+   ✅ Pyramid structure is healthy
+```
+
+#### When to Add Each Test Type
+
+**Add Unit Tests when**:
+- Testing pure functions and algorithms
+- Testing business logic in services
+- Testing data transformations
+- Testing edge cases and error handling
+- Fast iteration is needed
+
+**Add Component Tests when**:
+- Testing React component behavior
+- Testing user interactions (clicks, inputs)
+- Testing visual appearance (snapshots)
+- Testing component state changes
+
+**Add E2E Tests when**:
+- Testing critical user workflows
+- Testing full integration with Obsidian
+- Regression testing major features
+- Testing file operations and vault modifications
+
+**Avoid adding E2E tests when**:
+- The scenario can be tested at unit level
+- Testing implementation details
+- Testing non-critical paths
+- Tests would be flaky or slow
+
+### Current Test Distribution
+
+As of December 2025:
+
+| Type | Files | Test Cases | Percentage |
+|------|-------|------------|------------|
+| Unit | ~244 | ~5116 | 84% |
+| Component | ~33 | ~530 | 11% |
+| E2E | ~14 | ~67 | 5% |
+| **Total** | **291** | **5713** | **100%** |
+
+This distribution is **healthy** and follows the test pyramid principles.
 
 ### Package-Specific Testing
 
@@ -991,24 +1087,36 @@ await page.evaluate(() => console.log("Debug from browser"));
 | `npm run test:component` | Component tests | ~30s |
 | `npm run test:e2e:docker` | E2E in Docker | ~3min |
 | `npm run bdd:check` | BDD coverage check | ~5s |
+| `npm run test:pyramid` | Test pyramid health check | ~2s |
+| `npm run test:pyramid:strict` | Pyramid check (fails on violation) | ~2s |
 
 ### Coverage Targets
 
 | Layer | Target | Current |
 |-------|--------|---------|
-| Global (statements) | 79% | ✅ |
-| Global (branches) | 67% | ✅ |
-| BDD scenarios | 80% | ✅ |
+| Global (statements) | 75% | ✅ 80% |
+| Global (branches) | 67% | ✅ 71% |
+| Global (functions) | 70% | ✅ 73% |
+| Global (lines) | 75% | ✅ 81% |
+| BDD scenarios | 100% | ✅ |
 | Domain layer | 78% | 🎯 |
 
-### Test Count (approximate)
+### Test Pyramid Targets
 
-| Type | Count |
-|------|-------|
-| Unit tests | ~270 |
-| Component tests | ~8 |
-| E2E tests | ~6 |
-| BDD scenarios | ~50 |
+| Layer | Target Ratio | Current |
+|-------|--------------|---------|
+| Unit Tests | ≥70% | ✅ 84% |
+| Component Tests | 10-25% | ✅ 11% |
+| E2E Tests | ≤10% | ✅ 5% |
+
+### Test Count
+
+| Type | Files | Test Cases |
+|------|-------|------------|
+| Unit tests | ~244 | ~5116 |
+| Component tests | ~33 | ~530 |
+| E2E tests | ~14 | ~67 |
+| BDD scenarios | 14 | ~50 |
 
 ---
 

@@ -5,8 +5,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![CI](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-passing-success)](https://github.com/kitelev/exocortex-obsidian-plugin/actions)
-[![Coverage](https://img.shields.io/badge/coverage-49%25-orange)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-5700%2B-success)](https://github.com/kitelev/exocortex-obsidian-plugin/actions)
+[![Coverage](https://img.shields.io/badge/coverage-80%25-brightgreen)](https://github.com/kitelev/exocortex-obsidian-plugin/actions/workflows/ci.yml)
+[![Test Pyramid](https://img.shields.io/badge/pyramid-healthy-brightgreen)](./TESTING.md#test-pyramid-policy)
 
 ## 🎯 What is Exocortex?
 
