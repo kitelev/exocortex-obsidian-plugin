@@ -2,17 +2,46 @@
 
 **Testing patterns and best practices for Exocortex.**
 
+> **📖 Comprehensive Guide**: For complete testing documentation including all test types, patterns, CI/CD integration, and troubleshooting, see the main **[TESTING.md](../TESTING.md)** guide.
+
 ---
 
-## Test Types
+## Quick Reference
 
-### Unit Tests
+### Run Tests
 
-**Location**: `packages/obsidian-plugin/tests/unit/`
+```bash
+npm test              # Unit + UI + Component tests
+npm run test:all      # All tests including E2E
+npm run test:unit     # Unit tests only
+npm run test:component # Component tests
+npm run test:e2e:docker # E2E in Docker
+npm run bdd:check     # BDD coverage check
+```
 
-**Run**: `npm run test:unit`
+### Test Locations
 
-**Pattern**:
+| Type | Location | Framework |
+|------|----------|-----------|
+| Unit | `packages/*/tests/unit/` | Jest |
+| Component | `packages/obsidian-plugin/tests/component/` | Playwright CT |
+| E2E | `packages/obsidian-plugin/tests/e2e/` | Playwright |
+| BDD | `packages/obsidian-plugin/specs/features/` | Cucumber |
+
+### Coverage Requirements
+
+| Metric | Threshold |
+|--------|-----------|
+| Statements | 79% |
+| Branches | 67% |
+| Functions | 71% |
+| Lines | 78% |
+| BDD scenarios | 80% |
+
+---
+
+## Quick Start: Unit Test
+
 ```typescript
 import { MyService } from '../../src/services/MyService';
 
@@ -30,29 +59,9 @@ describe('MyService', () => {
 });
 ```
 
-### Component Tests
-
-**Location**: `packages/obsidian-plugin/tests/component/`
-
-**Run**: `npm run test:component`
-
-**Pattern**: Uses Playwright Component Testing for React components.
-
-### E2E Tests
-
-**Location**: `packages/obsidian-plugin/tests/e2e/`
-
-**Run**: `npm run test:e2e:local` (Docker)
-
----
-
 ## Mock Helpers
 
-### Test Helpers Location
-
-`packages/obsidian-plugin/tests/unit/helpers/testHelpers.ts`
-
-### Available Mocks
+**Location**: `packages/obsidian-plugin/tests/unit/helpers/testHelpers.ts`
 
 ```typescript
 import {
@@ -70,11 +79,9 @@ const mockMetadata = createMockMetadata({
 const mockFile = createMockTFile('test.md');
 ```
 
----
-
-## Best Practices
-
 ### Override Mock Defaults
+
+Always test null/undefined cases explicitly:
 
 ```typescript
 const metadata = createMockMetadata({
@@ -82,26 +89,12 @@ const metadata = createMockMetadata({
 });
 ```
 
-### Test File Lookups
-
-```typescript
-mockApp.metadataCache.getFirstLinkpathDest.mockImplementation(
-  (linkpath: string) => {
-    if (linkpath === "file") return null;
-    if (linkpath === "file.md") return mockFile;
-    return null;
-  }
-);
-```
-
-### Coverage Requirements
-
-- Global: ≥49%
-- Domain layer: ≥78-80%
-- BDD coverage: ≥80%
-
 ---
 
-**See also:**
-- [Plugin Development Guide](Plugin-Development-Guide.md)
-- [Core API Reference](api/Core-API.md)
+## Additional Resources
+
+- **[TESTING.md](../TESTING.md)** - Comprehensive testing guide (recommended)
+- **[TEST_TEMPLATES.md](../TEST_TEMPLATES.md)** - Ready-to-use test templates
+- **[COVERAGE_ANALYSIS.md](../COVERAGE_ANALYSIS.md)** - Coverage analysis report
+- **[Plugin Development Guide](./Plugin-Development-Guide.md)**
+- **[Core API Reference](./api/Core-API.md)**

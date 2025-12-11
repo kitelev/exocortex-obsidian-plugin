@@ -865,7 +865,8 @@ For plugin developers and contributors:
 
 - **[Core API Reference](./docs/api/Core-API.md)** - @exocortex/core package documentation
 - **[Plugin Development Guide](./docs/Plugin-Development-Guide.md)** - Extend Exocortex with custom functionality
-- **[Testing Guide](./docs/Testing-Guide.md)** - Testing patterns and best practices
+- **[TESTING.md](./TESTING.md)** - Comprehensive testing guide (test types, patterns, CI/CD, troubleshooting)
+- **[Testing Guide (Quick Reference)](./docs/Testing-Guide.md)** - Quick reference for common testing tasks
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)** - System design and Clean Architecture patterns
 
 ### Advanced Topics
