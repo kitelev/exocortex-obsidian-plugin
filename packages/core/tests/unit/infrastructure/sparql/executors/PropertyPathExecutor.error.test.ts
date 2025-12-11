@@ -25,83 +25,40 @@ import type {
   IRI as AlgebraIRI,
 } from "../../../../../src/infrastructure/sparql/algebra/AlgebraOperation";
 
-// Mock triple store implementation
-class MockTripleStore implements ITripleStore {
-  private triples: Triple[] = [];
-
-  async add(triple: Triple): Promise<void> {
-    this.triples.push(triple);
-  }
-
-  async addAll(triples: Triple[]): Promise<void> {
-    this.triples.push(...triples);
-  }
-
-  async remove(triple: Triple): Promise<boolean> {
-    const idx = this.triples.findIndex(
-      (t) =>
-        t.subject.equals(triple.subject) &&
-        t.predicate.equals(triple.predicate) &&
-        t.object.equals(triple.object)
-    );
-    if (idx !== -1) {
-      this.triples.splice(idx, 1);
-      return true;
-    }
-    return false;
-  }
-
-  async has(triple: Triple): Promise<boolean> {
-    return this.triples.some(
-      (t) =>
-        t.subject.equals(triple.subject) &&
-        t.predicate.equals(triple.predicate) &&
-        t.object.equals(triple.object)
-    );
-  }
-
-  async match(
-    subject?: IRI,
-    predicate?: IRI,
-    object?: IRI | Literal
-  ): Promise<Triple[]> {
-    return this.triples.filter((t) => {
-      if (subject && !t.subject.equals(subject)) return false;
-      if (predicate && !t.predicate.equals(predicate)) return false;
-      if (object && !t.object.equals(object)) return false;
-      return true;
-    });
-  }
-
-  async count(): Promise<number> {
-    return this.triples.length;
-  }
-
-  async clear(): Promise<void> {
-    this.triples = [];
-  }
-
-  async matchStream(): AsyncIterableIterator<Triple> {
-    const triples = this.triples;
-    return (async function* () {
-      for (const triple of triples) {
-        yield triple;
-      }
-    })();
-  }
-}
-
-// Helper functions to create algebra elements (matching existing test patterns)
+// Helper functions (same pattern as PropertyPathExecutor.test.ts)
+const iri = (value: string): IRI => new IRI(value);
+const literal = (value: string): Literal => new Literal(value);
 const algebraIri = (value: string): AlgebraIRI => ({ type: "iri", value });
 const algebraVar = (name: string): TripleElement => ({ type: "variable", value: name });
 
 describe("PropertyPathExecutor Error Scenarios", () => {
-  let store: MockTripleStore;
   let executor: PropertyPathExecutor;
+  let mockTripleStore: jest.Mocked<ITripleStore>;
+  let triples: Triple[];
 
   beforeEach(() => {
-    store = new MockTripleStore();
-    executor = new PropertyPathExecutor(store);
+    triples = [];
+    mockTripleStore = {
+      add: jest.fn().mockImplementation((triple: Triple) => {
+        triples.push(triple);
+        return Promise.resolve();
+      }),
+      match: jest.fn().mockImplementation((s, p, o) => {
+        return Promise.resolve(
+          triples.filter((t) => {
+            if (s !== undefined && t.subject.toString() !== s.toString()) return false;
+            if (p !== undefined && t.predicate.toString() !== p.toString()) return false;
+            if (o !== undefined && t.object.toString() !== o.toString()) return false;
+            return true;
+          })
+        );
+      }),
+      clear: jest.fn(),
+      size: jest.fn().mockReturnValue(triples.length),
+      getTriples: jest.fn().mockReturnValue(triples),
+    } as unknown as jest.Mocked<ITripleStore>;
+
+    executor = new PropertyPathExecutor(mockTripleStore);
   });
 
   // Helper to collect results
@@ -156,14 +113,11 @@ describe("PropertyPathExecutor Error Scenarios", () => {
   describe("Cyclic Graph Handling", () => {
     it("should handle simple cycle without infinite loop", async () => {
       // Create A -> B -> C -> A cycle
-      const a = new IRI("http://example.org/A");
-      const b = new IRI("http://example.org/B");
-      const c = new IRI("http://example.org/C");
-      const knows = new IRI("http://example.org/knows");
-
-      await store.add(new Triple(a, knows, b));
-      await store.add(new Triple(b, knows, c));
-      await store.add(new Triple(c, knows, a));
+      triples = [
+        new Triple(iri("http://example.org/A"), iri("http://example.org/knows"), iri("http://example.org/B")),
+        new Triple(iri("http://example.org/B"), iri("http://example.org/knows"), iri("http://example.org/C")),
+        new Triple(iri("http://example.org/C"), iri("http://example.org/knows"), iri("http://example.org/A")),
+      ];
 
       const path: PropertyPath = {
         type: "path",
@@ -195,11 +149,10 @@ describe("PropertyPathExecutor Error Scenarios", () => {
     });
 
     it("should handle self-loop without infinite loop", async () => {
-      const a = new IRI("http://example.org/A");
-      const self = new IRI("http://example.org/self");
-
       // A -> A (self-loop)
-      await store.add(new Triple(a, self, a));
+      triples = [
+        new Triple(iri("http://example.org/A"), iri("http://example.org/self"), iri("http://example.org/A")),
+      ];
 
       const path: PropertyPath = {
         type: "path",
@@ -220,11 +173,9 @@ describe("PropertyPathExecutor Error Scenarios", () => {
 
   describe("Path Not Found", () => {
     it("should return empty for non-matching predicate", async () => {
-      const a = new IRI("http://example.org/A");
-      const b = new IRI("http://example.org/B");
-      const knows = new IRI("http://example.org/knows");
-
-      await store.add(new Triple(a, knows, b));
+      triples = [
+        new Triple(iri("http://example.org/A"), iri("http://example.org/knows"), iri("http://example.org/B")),
+      ];
 
       const path: PropertyPath = {
         type: "path",
@@ -242,12 +193,10 @@ describe("PropertyPathExecutor Error Scenarios", () => {
     });
 
     it("should return empty when target not reachable", async () => {
-      const a = new IRI("http://example.org/A");
-      const b = new IRI("http://example.org/B");
-      const knows = new IRI("http://example.org/knows");
-
       // A -> B (no path to C)
-      await store.add(new Triple(a, knows, b));
+      triples = [
+        new Triple(iri("http://example.org/A"), iri("http://example.org/knows"), iri("http://example.org/B")),
+      ];
 
       const path: PropertyPath = {
         type: "path",
@@ -267,12 +216,10 @@ describe("PropertyPathExecutor Error Scenarios", () => {
 
   describe("Inverse Path Edge Cases", () => {
     it("should handle inverse path correctly", async () => {
-      const a = new IRI("http://example.org/A");
-      const b = new IRI("http://example.org/B");
-      const knows = new IRI("http://example.org/knows");
-
       // A -> B
-      await store.add(new Triple(a, knows, b));
+      triples = [
+        new Triple(iri("http://example.org/A"), iri("http://example.org/knows"), iri("http://example.org/B")),
+      ];
 
       // Query: B ^knows ?o (who knows B? -> A)
       const path: PropertyPath = {
@@ -292,11 +239,9 @@ describe("PropertyPathExecutor Error Scenarios", () => {
     });
 
     it("should handle inverse path with no matches", async () => {
-      const a = new IRI("http://example.org/A");
-      const b = new IRI("http://example.org/B");
-      const knows = new IRI("http://example.org/knows");
-
-      await store.add(new Triple(a, knows, b));
+      triples = [
+        new Triple(iri("http://example.org/A"), iri("http://example.org/knows"), iri("http://example.org/B")),
+      ];
 
       // Query: A ^knows ?o (who knows A? -> nobody)
       const path: PropertyPath = {
@@ -317,16 +262,12 @@ describe("PropertyPathExecutor Error Scenarios", () => {
 
   describe("Sequence Path Edge Cases", () => {
     it("should handle sequence path with missing intermediate", async () => {
-      const a = new IRI("http://example.org/A");
-      const b = new IRI("http://example.org/B");
-      const c = new IRI("http://example.org/C");
-      const p1 = new IRI("http://example.org/p1");
-      const p2 = new IRI("http://example.org/p2");
-
       // A -p1-> B but no p2 from B
-      await store.add(new Triple(a, p1, b));
       // C has p2 but not connected to A
-      await store.add(new Triple(c, p2, new Literal("value")));
+      triples = [
+        new Triple(iri("http://example.org/A"), iri("http://example.org/p1"), iri("http://example.org/B")),
+        new Triple(iri("http://example.org/C"), iri("http://example.org/p2"), literal("value")),
+      ];
 
       const path: PropertyPath = {
         type: "path",
@@ -348,15 +289,16 @@ describe("PropertyPathExecutor Error Scenarios", () => {
     });
 
     it("should handle long sequence path", async () => {
-      const nodes: IRI[] = [];
-      for (let i = 0; i < 10; i++) {
-        nodes.push(new IRI(`http://example.org/N${i}`));
-      }
-      const p = new IRI("http://example.org/p");
-
       // Create chain: N0 -> N1 -> N2 -> ... -> N9
+      triples = [];
       for (let i = 0; i < 9; i++) {
-        await store.add(new Triple(nodes[i], p, nodes[i + 1]));
+        triples.push(
+          new Triple(
+            iri(`http://example.org/N${i}`),
+            iri("http://example.org/p"),
+            iri(`http://example.org/N${i + 1}`)
+          )
+        );
       }
 
       // Path: p/p/p (3 hops)
@@ -384,12 +326,10 @@ describe("PropertyPathExecutor Error Scenarios", () => {
 
   describe("Alternative Path Edge Cases", () => {
     it("should handle alternative path where only one matches", async () => {
-      const a = new IRI("http://example.org/A");
-      const b = new IRI("http://example.org/B");
-      const p1 = new IRI("http://example.org/p1");
-
       // Only p1 exists
-      await store.add(new Triple(a, p1, b));
+      triples = [
+        new Triple(iri("http://example.org/A"), iri("http://example.org/p1"), iri("http://example.org/B")),
+      ];
 
       const path: PropertyPath = {
         type: "path",
@@ -410,12 +350,10 @@ describe("PropertyPathExecutor Error Scenarios", () => {
     });
 
     it("should handle alternative path where neither matches", async () => {
-      const a = new IRI("http://example.org/A");
-      const b = new IRI("http://example.org/B");
-      const p3 = new IRI("http://example.org/p3");
-
       // Different predicate
-      await store.add(new Triple(a, p3, b));
+      triples = [
+        new Triple(iri("http://example.org/A"), iri("http://example.org/p3"), iri("http://example.org/B")),
+      ];
 
       const path: PropertyPath = {
         type: "path",
@@ -436,14 +374,11 @@ describe("PropertyPathExecutor Error Scenarios", () => {
     });
 
     it("should handle alternative path where both match same target", async () => {
-      const a = new IRI("http://example.org/A");
-      const b = new IRI("http://example.org/B");
-      const p1 = new IRI("http://example.org/p1");
-      const p2 = new IRI("http://example.org/p2");
-
       // Both predicates lead to B
-      await store.add(new Triple(a, p1, b));
-      await store.add(new Triple(a, p2, b));
+      triples = [
+        new Triple(iri("http://example.org/A"), iri("http://example.org/p1"), iri("http://example.org/B")),
+        new Triple(iri("http://example.org/A"), iri("http://example.org/p2"), iri("http://example.org/B")),
+      ];
 
       const path: PropertyPath = {
         type: "path",
@@ -468,11 +403,9 @@ describe("PropertyPathExecutor Error Scenarios", () => {
 
   describe("ZeroOrOne Path Edge Cases", () => {
     it("should include start node for ZeroOrOne path", async () => {
-      const a = new IRI("http://example.org/A");
-      const b = new IRI("http://example.org/B");
-      const p = new IRI("http://example.org/p");
-
-      await store.add(new Triple(a, p, b));
+      triples = [
+        new Triple(iri("http://example.org/A"), iri("http://example.org/p"), iri("http://example.org/B")),
+      ];
 
       const path: PropertyPath = {
         type: "path",
@@ -497,15 +430,15 @@ describe("PropertyPathExecutor Error Scenarios", () => {
   describe("Large Graph Performance", () => {
     it("should handle moderately deep path traversal", async () => {
       // Create a chain of 20 nodes
-      const p = new IRI("http://example.org/next");
-      const nodes: IRI[] = [];
-      for (let i = 0; i < 20; i++) {
-        nodes.push(new IRI(`http://example.org/node${i}`));
-      }
-
-      // Create chain
+      triples = [];
       for (let i = 0; i < 19; i++) {
-        await store.add(new Triple(nodes[i], p, nodes[i + 1]));
+        triples.push(
+          new Triple(
+            iri(`http://example.org/node${i}`),
+            iri("http://example.org/next"),
+            iri(`http://example.org/node${i + 1}`)
+          )
+        );
       }
 
       const path: PropertyPath = {
