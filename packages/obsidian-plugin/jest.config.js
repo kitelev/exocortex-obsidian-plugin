@@ -3,6 +3,7 @@ module.exports = {
   testEnvironment: "jsdom",
   testMatch: [
     "<rootDir>/tests/unit/**/*.test.ts",
+    "<rootDir>/tests/performance/**/*.test.ts",
     "<rootDir>/../core/tests/**/*.test.ts",
   ],
   testPathIgnorePatterns: [
