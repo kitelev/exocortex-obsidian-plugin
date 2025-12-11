@@ -40,35 +40,10 @@ Given(
 // Task Start Effort - Then Steps (Unique to Start Effort)
 // ============================================
 
-Then(
-  /^I see a "Start Effort" button above properties table$/,
-  function (this: ExocortexWorld) {
-    assert.ok(
-      this.renderedButtons.has("Start Effort"),
-      `Expected to see "Start Effort" button`,
-    );
-  },
-);
-
-Then(
-  /^I see a "Start Effort" button$/,
-  function (this: ExocortexWorld) {
-    assert.ok(
-      this.renderedButtons.has("Start Effort"),
-      `Expected to see "Start Effort" button`,
-    );
-  },
-);
-
-Then(
-  /^I do NOT see "Start Effort" button$/,
-  function (this: ExocortexWorld) {
-    assert.ok(
-      !this.renderedButtons.has("Start Effort"),
-      `Expected NOT to see "Start Effort" button`,
-    );
-  },
-);
+// NOTE: Generic button visibility steps are defined in property-cleanup.steps.ts:
+//   - I see a "([^"]*)" button
+//   - I do NOT see "([^"]*)" button
+// Removed duplicate specific definitions to avoid ambiguous step matches
 
 Then(
   /^"Start Effort" button disappears from layout$/,

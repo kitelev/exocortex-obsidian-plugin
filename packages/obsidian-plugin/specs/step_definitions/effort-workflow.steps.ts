@@ -99,12 +99,8 @@ Then("{string} button appears", function (this: ExocortexWorld, buttonName: stri
   );
 });
 
-Then("Start Effort button is visible", function (this: ExocortexWorld) {
-  assert.ok(
-    this.renderedButtons.has("Start Effort"),
-    "Start Effort button should be visible",
-  );
-});
+// NOTE: "Start Effort button is visible" step removed to avoid ambiguity
+// Use the generic "I see a "Start Effort" button" step from property-cleanup.steps.ts instead
 
 Then(
   /^status is set to "([^"]*)"$/,

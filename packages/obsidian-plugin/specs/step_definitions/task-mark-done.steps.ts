@@ -33,43 +33,19 @@ Given(
   },
 );
 
-Given(/^Done button is visible$/, function (this: ExocortexWorld) {
-  assert.ok(
-    this.renderedButtons.has("Done"),
-    "Done button should be visible",
-  );
-});
+// NOTE: "Done button is visible" step removed to avoid ambiguity
+// Use the generic "I see a "Done" button" step from property-cleanup.steps.ts instead
 
 // ============================================
 // Task Mark Done - Then Steps (Unique to Mark Done)
 // ============================================
 
-Then(
-  /^I see a "Done" button above properties table$/,
-  function (this: ExocortexWorld) {
-    assert.ok(
-      this.renderedButtons.has("Done"),
-      `Expected to see "Done" button`,
-    );
-  },
-);
-
-Then("Done button is visible", function (this: ExocortexWorld) {
-  assert.ok(
-    this.renderedButtons.has("Done"),
-    "Done button should be visible",
-  );
-});
-
-Then(
-  /^I do NOT see "Done" button$/,
-  function (this: ExocortexWorld) {
-    assert.ok(
-      !this.renderedButtons.has("Done"),
-      `Expected NOT to see "Done" button`,
-    );
-  },
-);
+// NOTE: Generic button visibility steps are defined in property-cleanup.steps.ts:
+//   - I see a "([^"]*)" button
+//   - I do NOT see "([^"]*)" button
+// And in area-task-creation.steps.ts:
+//   - I see a "([^"]*)" button above properties table
+// Removed duplicate specific definitions to avoid ambiguous step matches
 
 Then(
   /^"Done" button disappears from layout$/,
