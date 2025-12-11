@@ -1,4 +1,4 @@
-import { Given, When, Then } from "@cucumber/cucumber";
+import { Given, Then } from "@cucumber/cucumber";
 import { ExocortexWorld } from "../support/world.js";
 import assert from "assert";
 
@@ -68,25 +68,10 @@ Given(
 // Task Archive - Then Steps
 // ============================================
 
-Then(
-  /^I see a "To Archive" button$/,
-  function (this: ExocortexWorld) {
-    assert.ok(
-      this.renderedButtons.has("To Archive"),
-      `Expected to see "To Archive" button, but found: [${[...this.renderedButtons].join(", ")}]`,
-    );
-  },
-);
-
-Then(
-  /^I do NOT see "To Archive" button$/,
-  function (this: ExocortexWorld) {
-    assert.ok(
-      !this.renderedButtons.has("To Archive"),
-      `Expected NOT to see "To Archive" button, but it was visible`,
-    );
-  },
-);
+// NOTE: Generic button visibility steps are defined in property-cleanup.steps.ts:
+//   - I see a "([^"]*)" button
+//   - I do NOT see "([^"]*)" button
+// Removed duplicate specific definitions to avoid ambiguous step matches
 
 Then(
   /^Task frontmatter is updated:$/,

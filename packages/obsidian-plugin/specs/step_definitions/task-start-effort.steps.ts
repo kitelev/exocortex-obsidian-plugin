@@ -1,4 +1,4 @@
-import { Given, When, Then } from "@cucumber/cucumber";
+import { Given, Then } from "@cucumber/cucumber";
 import { ExocortexWorld } from "../support/world.js";
 import assert from "assert";
 
@@ -33,12 +33,8 @@ Given(
   },
 );
 
-Given(/^Start Effort button is visible$/, function (this: ExocortexWorld) {
-  assert.ok(
-    this.renderedButtons.has("Start Effort"),
-    "Start Effort button should be visible",
-  );
-});
+// Note: "Start Effort button is visible" step is defined in effort-workflow.steps.ts
+// to avoid ambiguous step definitions
 
 // ============================================
 // Task Start Effort - Then Steps (Unique to Start Effort)
@@ -134,21 +130,8 @@ Then(
   },
 );
 
-Then(
-  /^button has class "exocortex-start-effort-btn"$/,
-  function (this: ExocortexWorld) {
-    // CSS class check is implicit in our simulation
-    assert.ok(true, "Class name verified");
-  },
-);
-
-Then(
-  /^button is inside container with class "exocortex-start-effort-section"$/,
-  function (this: ExocortexWorld) {
-    // Container class check is implicit
-    assert.ok(true, "Container class verified");
-  },
-);
+// Note: Generic "button has class X" and "button is inside container with class X" steps
+// are defined in area-task-creation.steps.ts to avoid ambiguous step definitions
 
 // ============================================
 // World Extensions for Start Effort

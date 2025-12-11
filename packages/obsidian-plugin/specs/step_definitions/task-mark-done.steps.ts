@@ -1,4 +1,4 @@
-import { Given, When, Then } from "@cucumber/cucumber";
+import { Given, Then } from "@cucumber/cucumber";
 import { ExocortexWorld } from "../support/world.js";
 import assert from "assert";
 
@@ -149,21 +149,8 @@ Then("layout is refreshed", function (this: ExocortexWorld) {
   assert.ok(true, "Layout refreshed");
 });
 
-Then(
-  /^button has class "exocortex-mark-done-btn"$/,
-  function (this: ExocortexWorld) {
-    // CSS class check is implicit in our simulation
-    assert.ok(true, "Class name verified");
-  },
-);
-
-Then(
-  /^button is inside container with class "exocortex-mark-done-section"$/,
-  function (this: ExocortexWorld) {
-    // Container class check is implicit
-    assert.ok(true, "Container class verified");
-  },
-);
+// Note: Generic "button has class X" and "button is inside container with class X" steps
+// are defined in area-task-creation.steps.ts to avoid ambiguous step definitions
 
 // ============================================
 // World Extensions for Mark Done

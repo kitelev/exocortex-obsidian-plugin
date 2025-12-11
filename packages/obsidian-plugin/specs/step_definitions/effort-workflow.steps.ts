@@ -629,16 +629,8 @@ Then("correct buttons are displayed", function (this: ExocortexWorld) {
   assert.ok(this.renderedButtons.size >= 0, "Buttons displayed correctly");
 });
 
-Given(
-  /^I have an asset with exo__Asset_isDefinedBy: "([^"]*)"$/,
-  function (this: ExocortexWorld, isDefinedBy: string) {
-    const note = this.createFile("Assets/asset.md", {
-      exo__Instance_class: "[[ems__Task]]",
-      exo__Asset_isDefinedBy: isDefinedBy,
-    });
-    this.currentNote = note;
-  },
-);
+// NOTE: "I have an asset with exo__Asset_isDefinedBy:" step is defined in folder-repair.steps.ts
+// Removed duplicate definition to avoid ambiguous step matches
 
 Given(
   /^a note "([^"]*)" exists with metadata:$/,
