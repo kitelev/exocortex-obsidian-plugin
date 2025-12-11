@@ -107,3 +107,20 @@ export {
   type WaitForDomElementOptions,
   type RetryOptions,
 } from "./helpers/async.helpers";
+
+// Flaky test detection and quarantine
+export {
+  FlakyReporter,
+  QUARANTINED_TESTS,
+  isQuarantined,
+  shouldSkipTest,
+  getQuarantinedTests,
+  getQuarantineStats,
+  quarantineTest,
+  generateQuarantineReport,
+  // Types
+  type FlakyTestInfo,
+  type FlakyReport,
+  type FlakyReporterOptions,
+  type QuarantinedTest,
+} from "./flaky";

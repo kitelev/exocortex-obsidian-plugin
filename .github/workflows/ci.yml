@@ -107,6 +107,54 @@ jobs:
           export NODE_OPTIONS="--max-old-space-size=4096"
           npm run test:unit && npm run test:ui
 
+      - name: Check for flaky tests
+        if: always()
+        run: |
+          # Collect flaky reports from all packages
+          echo "## Flaky Test Report" > flaky-summary.md
+          echo "" >> flaky-summary.md
+          echo "Flaky tests are those that passed after being retried." >> flaky-summary.md
+          echo "" >> flaky-summary.md
+
+          TOTAL_FLAKY=0
+
+          for pkg in packages/obsidian-plugin packages/core packages/cli; do
+            REPORT="${pkg}/flaky-report.json"
+            if [ -f "$REPORT" ]; then
+              FLAKY_COUNT=$(cat "$REPORT" | jq -r '.totalFlakyTests // 0')
+              TOTAL_FLAKY=$((TOTAL_FLAKY + FLAKY_COUNT))
+
+              if [ "$FLAKY_COUNT" -gt 0 ]; then
+                PKG_NAME=$(basename "$pkg")
+                echo "### Package: ${PKG_NAME}" >> flaky-summary.md
+                echo "Flaky tests: ${FLAKY_COUNT}" >> flaky-summary.md
+                echo "" >> flaky-summary.md
+                cat "$REPORT" | jq -r '.tests[]? | "- **\(.name)**\n  - File: `\(.file)`\n  - Retries: \(.retryCount)"' >> flaky-summary.md || true
+                echo "" >> flaky-summary.md
+              fi
+            fi
+          done
+
+          if [ "$TOTAL_FLAKY" -gt 0 ]; then
+            echo "⚠️ Detected ${TOTAL_FLAKY} flaky test(s) in this run"
+            echo ""
+            echo "FLAKY_COUNT=${TOTAL_FLAKY}" >> $GITHUB_OUTPUT
+          else
+            echo "✅ No flaky tests detected"
+            echo "No flaky tests detected in this run." >> flaky-summary.md
+          fi
+
+      - name: Upload flaky test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flaky-test-reports
+          path: |
+            packages/*/flaky-report.json
+            flaky-summary.md
+          retention-days: 30
+          if-no-files-found: ignore
+
   test-coverage:
     runs-on: ubuntu-latest
     timeout-minutes: 5
