@@ -11,6 +11,8 @@
     "test:unit": "cd ../.. && ./scripts/test-ci-batched.sh",
     "test:ui": "jest --config jest.ui.config.js",
     "test:component": "npx playwright test -c playwright-ct.config.ts",
+    "test:visual": "npx playwright test -c playwright-ct.config.ts --grep visual",
+    "test:visual:update": "npx playwright test -c playwright-ct.config.ts --grep visual --update-snapshots",
     "test:e2e": "playwright test -c playwright-e2e.config.ts",
     "test:e2e:local": "cd ../.. && ./scripts/test-e2e-local.sh"
   },

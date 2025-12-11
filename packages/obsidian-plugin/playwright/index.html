@@ -185,6 +185,341 @@
         text-align: center;
         color: #6b7280;
       }
+
+      /* ============================================================================
+         Action Buttons Group - Visual Regression Testing Styles
+         ============================================================================ */
+
+      /* CSS Variables for theming (matching Obsidian defaults) */
+      :root {
+        --background-primary: #ffffff;
+        --background-modifier-border: #e0e0e0;
+        --background-modifier-hover: #f5f5f5;
+        --text-normal: #374151;
+        --text-muted: #6b7280;
+        --interactive-accent: #7c3aed;
+        --interactive-accent-hover: #6d28d9;
+        --text-on-accent: #ffffff;
+        --interactive-accent-rgb: 124, 58, 237;
+      }
+
+      /* Main container for all button groups */
+      .exocortex-action-buttons-container {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        margin: 16px 0 32px 0;
+        padding: 20px;
+        background-color: var(--background-primary);
+        border-radius: 8px;
+        border: 1px solid var(--background-modifier-border);
+      }
+
+      /* Individual button group */
+      .exocortex-button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      /* Group title */
+      .exocortex-button-group-title {
+        font-size: 0.75em;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+      }
+
+      /* Button container within group */
+      .exocortex-button-group-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      /* Separator between groups */
+      .exocortex-button-group-separator {
+        height: 1px;
+        background: var(--background-modifier-border);
+        margin: 12px 0;
+        opacity: 0.6;
+      }
+
+      /* Base action button styles */
+      .exocortex-action-button {
+        padding: 8px 16px;
+        font-size: 0.875em;
+        font-weight: 500;
+        line-height: 1.5;
+        border: 1.5px solid var(--background-modifier-border);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        background-color: var(--background-primary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .exocortex-action-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      }
+
+      .exocortex-action-button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      }
+
+      /* Primary variant - Main actions (Create, etc.) */
+      .exocortex-action-button--primary {
+        background-color: var(--interactive-accent);
+        color: var(--text-on-accent);
+        border-color: var(--interactive-accent);
+      }
+
+      .exocortex-action-button--primary:hover {
+        background-color: var(--interactive-accent-hover);
+        border-color: var(--interactive-accent-hover);
+        box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
+      }
+
+      /* Secondary variant - Status changes */
+      .exocortex-action-button--secondary {
+        background-color: var(--background-primary);
+        color: var(--text-normal);
+        border-color: var(--background-modifier-border);
+      }
+
+      .exocortex-action-button--secondary:hover {
+        background-color: var(--background-modifier-hover);
+        border-color: var(--text-muted);
+      }
+
+      /* Success variant - Complete actions (Done) */
+      .exocortex-action-button--success {
+        background-color: rgba(76, 175, 80, 0.15);
+        color: #4caf50;
+        border-color: rgba(76, 175, 80, 0.3);
+      }
+
+      .exocortex-action-button--success:hover {
+        background-color: rgba(76, 175, 80, 0.25);
+        border-color: #4caf50;
+        box-shadow: 0 2px 12px rgba(76, 175, 80, 0.3);
+      }
+
+      /* Warning variant - Planning actions */
+      .exocortex-action-button--warning {
+        background-color: rgba(255, 152, 0, 0.15);
+        color: #ff9800;
+        border-color: rgba(255, 152, 0, 0.3);
+      }
+
+      .exocortex-action-button--warning:hover {
+        background-color: rgba(255, 152, 0, 0.25);
+        border-color: #ff9800;
+        box-shadow: 0 2px 12px rgba(255, 152, 0, 0.3);
+      }
+
+      /* Danger variant - Destructive actions (Trash, Archive) */
+      .exocortex-action-button--danger {
+        background-color: rgba(244, 67, 54, 0.15);
+        color: #f44336;
+        border-color: rgba(244, 67, 54, 0.3);
+      }
+
+      .exocortex-action-button--danger:hover {
+        background-color: rgba(244, 67, 54, 0.25);
+        border-color: #f44336;
+        box-shadow: 0 2px 12px rgba(244, 67, 54, 0.3);
+      }
+
+      /* Mobile responsive adjustments */
+      @media (max-width: 768px) {
+        .exocortex-action-buttons-container {
+          padding: 12px;
+          gap: 16px;
+        }
+
+        .exocortex-button-group-buttons {
+          flex-direction: column;
+        }
+
+        .exocortex-action-button {
+          width: 100%;
+          text-align: center;
+        }
+      }
+
+      /* ============================================================================
+         Daily Tasks Table - Visual Regression Testing Styles
+         ============================================================================ */
+
+      /* Add link color to root variables */
+      :root {
+        --link-color: #2563eb;
+        --link-color-hover: #1d4ed8;
+        --background-secondary: #f9fafb;
+      }
+
+      /* Base table styles */
+      .exocortex-tasks-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        border: 1px solid var(--background-modifier-border);
+      }
+
+      /* Table header */
+      .exocortex-tasks-table thead {
+        background-color: var(--background-secondary);
+        border-bottom: 2px solid var(--background-modifier-border);
+      }
+
+      .exocortex-tasks-table th {
+        text-align: left;
+        padding: 8px 12px;
+        font-weight: 600;
+        font-size: 0.85em;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        border-right: 1px solid var(--background-modifier-border);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .exocortex-tasks-table th:last-child {
+        border-right: none;
+      }
+
+      /* Table body */
+      .exocortex-tasks-table tbody tr {
+        border-bottom: 1px solid var(--background-modifier-border);
+        transition: background-color 0.2s ease;
+      }
+
+      .exocortex-tasks-table tbody tr:hover {
+        background-color: var(--background-secondary);
+      }
+
+      .exocortex-tasks-table td {
+        padding: 8px 12px;
+        border-right: 1px solid var(--background-modifier-border);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .exocortex-tasks-table td:last-child {
+        border-right: none;
+      }
+
+      /* Column widths */
+      .exocortex-tasks-table th.task-start-header,
+      .exocortex-tasks-table td.task-start {
+        width: 90px;
+        text-align: center;
+      }
+
+      .exocortex-tasks-table th.task-end-header,
+      .exocortex-tasks-table td.task-end {
+        width: 90px;
+        text-align: center;
+      }
+
+      .exocortex-tasks-table th.task-status-header,
+      .exocortex-tasks-table td.task-status {
+        width: 100px;
+      }
+
+      .exocortex-tasks-table th.task-effort-area-header,
+      .exocortex-tasks-table td.task-effort-area {
+        width: 120px;
+      }
+
+      .exocortex-tasks-table th.task-votes-header,
+      .exocortex-tasks-table td.task-effort-votes {
+        width: 70px;
+        text-align: center;
+      }
+
+      /* Links in tables */
+      .exocortex-tasks-table .internal-link {
+        color: var(--link-color);
+        text-decoration: none;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .exocortex-tasks-table .internal-link:hover {
+        color: var(--link-color-hover);
+        text-decoration: underline;
+      }
+
+      /* Empty slot rows */
+      .exocortex-tasks-table tr.empty-slot-row,
+      .exocortex-tasks-table tr[data-empty-slot="true"] {
+        opacity: 0.5;
+      }
+
+      .exocortex-tasks-table td.empty-slot-cell {
+        color: var(--text-muted);
+        font-style: italic;
+      }
+
+      /* Virtualized table styles */
+      .exocortex-tasks-table-header {
+        margin-bottom: 0;
+        border-bottom: none;
+      }
+
+      .exocortex-virtual-table {
+        border-top: none;
+      }
+
+      .exocortex-virtual-scroll-container {
+        overflow: auto;
+        max-height: 600px;
+      }
+
+      /* Toggle buttons container */
+      .exocortex-table-toggles {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+
+      /* Toggle button styles */
+      .exocortex-toggle-effort-area,
+      .exocortex-toggle-effort-votes,
+      .exocortex-toggle-archived,
+      .exocortex-toggle-empty-slots {
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        background-color: var(--background-primary);
+        border: 1px solid var(--background-modifier-border);
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        color: var(--text-normal);
+      }
+
+      .exocortex-toggle-effort-area:hover,
+      .exocortex-toggle-effort-votes:hover,
+      .exocortex-toggle-archived:hover,
+      .exocortex-toggle-empty-slots:hover {
+        background-color: var(--background-modifier-hover);
+        border-color: var(--text-muted);
+      }
     </style>
   </head>
   <body>

@@ -297,6 +297,17 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
+      - name: Upload visual diff artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diff
+          path: |
+            packages/obsidian-plugin/tests/component/__snapshots__/**/*-diff.png
+            packages/obsidian-plugin/tests/component/__snapshots__/**/*-actual.png
+          retention-days: 30
+          if-no-files-found: ignore
+
   e2e-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 15
