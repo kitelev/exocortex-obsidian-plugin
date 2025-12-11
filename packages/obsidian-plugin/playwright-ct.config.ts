@@ -37,6 +37,15 @@ export default defineConfig({
     ["html", { outputFolder: "playwright-report-ct", open: "never" }],
     ["list"],
     ...(process.env.CI ? [["github"] as ["github"]] : []),
+    // Flaky test reporter - tracks tests that pass after retry
+    [
+      "./playwright-flaky-reporter.ts",
+      {
+        outputFile: "flaky-report-playwright.json",
+        failOnFlaky: false, // Track but don't fail CI
+        verbose: true,
+      },
+    ],
   ],
 
   // Timeout configuration
