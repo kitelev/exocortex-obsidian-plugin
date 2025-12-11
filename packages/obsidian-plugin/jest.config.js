@@ -93,6 +93,23 @@ module.exports = {
   coverageReporters: process.env.CI
     ? ["lcov", "json-summary", "text-summary"]
     : ["text", "html"],
+  // Flaky test reporter - tracks tests that pass after retry
+  // Note: Uses compiled .js file because Jest doesn't transform custom reporters
+  reporters: [
+    "default",
+    ...(process.env.CI
+      ? [
+          [
+            "<rootDir>/../test-utils/reporters/flaky-reporter.js",
+            {
+              outputFile: "flaky-report.json",
+              failOnFlaky: false, // Track but don't fail CI
+              verbose: true,
+            },
+          ],
+        ]
+      : []),
+  ],
   // Test result optimization
   passWithNoTests: true,
   errorOnDeprecated: false,

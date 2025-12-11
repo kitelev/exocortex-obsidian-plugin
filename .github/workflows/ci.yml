@@ -107,6 +107,35 @@ jobs:
           export NODE_OPTIONS="--max-old-space-size=4096"
           npm run test:unit && npm run test:ui
 
+      - name: Track Flaky Tests
+        if: always()
+        run: |
+          # Check if flaky report was generated
+          if [ -f "flaky-report.json" ]; then
+            echo "📊 Flaky Test Report Generated"
+            cat flaky-report.json
+
+            # Check if any flaky tests were detected
+            FLAKY_COUNT=$(cat flaky-report.json | grep -o '"totalFlaky":[0-9]*' | grep -o '[0-9]*' || echo "0")
+            if [ "$FLAKY_COUNT" -gt 0 ]; then
+              echo ""
+              echo "⚠️ WARNING: $FLAKY_COUNT flaky test(s) detected!"
+              echo "Flaky tests indicate race conditions or timing issues."
+              echo "Please investigate and fix these tests."
+            fi
+          else
+            echo "No flaky report generated (no retries occurred)"
+          fi
+
+      - name: Upload Flaky Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flaky-test-report-unit
+          path: flaky-report.json
+          retention-days: 30
+          if-no-files-found: ignore
+
   test-coverage:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -329,6 +358,36 @@ jobs:
         with:
           name: linux-visual-snapshots
           path: packages/obsidian-plugin/tests/component/__snapshots__/**/*-linux.png
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Track Flaky Tests (Component)
+        if: always()
+        run: |
+          cd packages/obsidian-plugin
+          # Check if flaky report was generated
+          if [ -f "flaky-report-playwright.json" ]; then
+            echo "📊 Playwright Flaky Test Report Generated"
+            cat flaky-report-playwright.json
+
+            # Check if any flaky tests were detected
+            FLAKY_COUNT=$(cat flaky-report-playwright.json | grep -o '"totalFlaky":[0-9]*' | grep -o '[0-9]*' || echo "0")
+            if [ "$FLAKY_COUNT" -gt 0 ]; then
+              echo ""
+              echo "⚠️ WARNING: $FLAKY_COUNT flaky component test(s) detected!"
+              echo "Flaky tests indicate race conditions or timing issues."
+              echo "Please investigate and fix these tests."
+            fi
+          else
+            echo "No flaky report generated (no retries occurred)"
+          fi
+
+      - name: Upload Flaky Test Report (Component)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flaky-test-report-component
+          path: packages/obsidian-plugin/flaky-report-playwright.json
           retention-days: 30
           if-no-files-found: ignore
 
