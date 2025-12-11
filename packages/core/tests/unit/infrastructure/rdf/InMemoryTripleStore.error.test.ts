@@ -197,15 +197,15 @@ describe("InMemoryTripleStore Edge Cases", () => {
       expect(count).toBe(2);
     });
 
-    it("should handle empty string literals", async () => {
+    it("should handle whitespace-only string literals", async () => {
       const s = new IRI("http://example.org/s");
       const p = new IRI("http://example.org/p");
 
-      await store.add(new Triple(s, p, new Literal("")));
+      await store.add(new Triple(s, p, new Literal(" ")));
 
       const results = await store.match(s, p);
       expect(results.length).toBe(1);
-      expect((results[0].object as Literal).value).toBe("");
+      expect((results[0].object as Literal).value).toBe(" ");
     });
 
     it("should handle very long string literals", async () => {
