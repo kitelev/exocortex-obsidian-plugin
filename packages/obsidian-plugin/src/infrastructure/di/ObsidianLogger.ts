@@ -1,3 +1,4 @@
+ 
 import type { ILogger } from "@exocortex/core";
 import { Plugin } from "obsidian";
 

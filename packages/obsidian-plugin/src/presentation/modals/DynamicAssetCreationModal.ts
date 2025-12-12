@@ -9,6 +9,7 @@ import {
   PropertyFieldFactory,
   type PropertyFieldInstance,
 } from "../components/property-fields";
+import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
 
 /**
  * Result from DynamicAssetCreationModal
@@ -59,6 +60,7 @@ export class DynamicAssetCreationModal extends Modal {
   private properties: OntologyPropertyDefinition[] = [];
   private fieldFactory: PropertyFieldFactory;
   private createdFields: PropertyFieldInstance[] = [];
+  private readonly logger = LoggerFactory.create("DynamicAssetCreationModal");
 
   constructor(
     app: App,
@@ -125,7 +127,7 @@ export class DynamicAssetCreationModal extends Modal {
       this.renderButtons(contentEl);
       this.focusInput();
     } catch (error) {
-      console.warn("Failed to load properties, falling back to basic fields:", error);
+      this.logger.warn("Failed to load properties, falling back to basic fields", error);
       loadingEl.remove();
       this.renderBasicFields(contentEl);
       this.renderButtons(contentEl);

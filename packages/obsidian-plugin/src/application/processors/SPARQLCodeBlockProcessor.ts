@@ -21,6 +21,7 @@ import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 import { ReactRenderer } from "../../presentation/utils/ReactRenderer";
 import { SPARQLResultViewer } from "../../presentation/components/sparql/SPARQLResultViewer";
 import { SPARQLErrorView, type SPARQLError } from "../../presentation/components/sparql/SPARQLErrorView";
+import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
 
 class SPARQLCleanupComponent extends MarkdownRenderChild {
   constructor(
@@ -70,6 +71,7 @@ export class SPARQLCodeBlockProcessor {
     eventRef?: EventRef;
   }> = new Map();
   private readonly DEBOUNCE_DELAY = 500;
+  private readonly logger = LoggerFactory.create("SPARQLCodeBlockProcessor");
 
   constructor(plugin: ExocortexPlugin) {
     this.plugin = plugin;
@@ -133,8 +135,7 @@ export class SPARQLCodeBlockProcessor {
 
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
-      console.error("[Exocortex SPARQL] Query execution error:", errorObj);
-      console.error("[Exocortex SPARQL] Stack trace:", errorObj.stack);
+      this.logger.error("Query execution error", errorObj);
       new Notice(`SPARQL query error: ${errorObj.message}`, 5000);
 
       container.innerHTML = "";
@@ -177,8 +178,7 @@ export class SPARQLCodeBlockProcessor {
       }
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
-      console.error("[Exocortex SPARQL] Query refresh error:", errorObj);
-      console.error("[Exocortex SPARQL] Stack trace:", errorObj.stack);
+      this.logger.error("Query refresh error", errorObj);
       new Notice(`SPARQL query refresh error: ${errorObj.message}`, 5000);
 
       container.innerHTML = "";
@@ -306,8 +306,7 @@ export class SPARQLCodeBlockProcessor {
       }
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
-      console.error("[Exocortex SPARQL] Triple store initialization error:", errorObj);
-      console.error("[Exocortex SPARQL] Stack trace:", errorObj.stack);
+      this.logger.error("Triple store initialization error", errorObj);
       new Notice(`Failed to load triple store: ${errorObj.message}`, 5000);
       throw errorObj;
     } finally {
