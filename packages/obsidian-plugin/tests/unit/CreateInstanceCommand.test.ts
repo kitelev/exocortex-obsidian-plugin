@@ -12,6 +12,7 @@ import { LabelInputModal } from "../../src/presentation/modals/LabelInputModal";
 import { DynamicAssetCreationModal } from "../../src/presentation/modals/DynamicAssetCreationModal";
 import { ObsidianVaultAdapter } from "../../src/adapters/ObsidianVaultAdapter";
 import { ExocortexPluginInterface } from "../../src/types";
+import { initTimerManager, disposeTimerManager } from "../../src/infrastructure/lifecycle";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -46,6 +47,9 @@ describe("CreateInstanceCommand", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Initialize TimerManager for lifecycle-managed polling
+    initTimerManager();
 
     // Setup WikiLinkHelpers mock
     const { WikiLinkHelpers } = require("@exocortex/core");
@@ -108,6 +112,11 @@ describe("CreateInstanceCommand", () => {
 
     // Create command instance
     command = new CreateInstanceCommand(mockApp, mockTaskCreationService, mockVaultAdapter, mockPlugin);
+  });
+
+  afterEach(() => {
+    // Dispose TimerManager after each test
+    disposeTimerManager();
   });
 
   describe("id and name", () => {

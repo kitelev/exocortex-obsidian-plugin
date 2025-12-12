@@ -8,6 +8,7 @@ import {
 } from "@exocortex/core";
 import { LabelInputModal } from "../../src/presentation/modals/LabelInputModal";
 import { ObsidianVaultAdapter } from "../../src/adapters/ObsidianVaultAdapter";
+import { initTimerManager, disposeTimerManager } from "../../src/infrastructure/lifecycle";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -34,6 +35,9 @@ describe("CreateRelatedTaskCommand", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Initialize TimerManager for lifecycle-managed polling
+    initTimerManager();
 
     // Create mock leaf
     mockLeaf = {
@@ -85,6 +89,11 @@ describe("CreateRelatedTaskCommand", () => {
 
     // Create command instance
     command = new CreateRelatedTaskCommand(mockApp, mockTaskCreationService, mockVaultAdapter);
+  });
+
+  afterEach(() => {
+    // Dispose TimerManager after each test
+    disposeTimerManager();
   });
 
   describe("id and name", () => {

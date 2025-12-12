@@ -12,6 +12,7 @@ import { LabelInputModal, type LabelInputModalResult } from "../../presentation/
 import { DynamicAssetCreationModal, type DynamicAssetCreationResult } from "../../presentation/modals/DynamicAssetCreationModal";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 import { ExocortexPluginInterface } from "../../types";
+import { CommandHelpers } from "./helpers/CommandHelpers";
 
 export class CreateInstanceCommand implements ICommand {
   id = "create-instance";
@@ -63,26 +64,13 @@ export class CreateInstanceCommand implements ICommand {
       result.taskSize,
     );
 
-    const leaf = result.openInNewTab
-      ? this.app.workspace.getLeaf("tab")
-      : this.app.workspace.getLeaf(false);
     const tfile = this.vaultAdapter.toTFile(createdFile);
     if (!tfile) {
       throw new Error(`Failed to convert created file to TFile: ${createdFile.path}`);
     }
-    await leaf.openFile(tfile);
 
-    this.app.workspace.setActiveLeaf(leaf, { focus: true });
-
-    const maxAttempts = 20;
-    const targetPath = tfile.path;
-    for (let i = 0; i < maxAttempts; i++) {
-      const activeFile = this.app.workspace.getActiveFile();
-      if (activeFile?.path === targetPath) {
-        break;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
+    // Use lifecycle-managed polling for file activation
+    await CommandHelpers.openFile(this.app, tfile, result.openInNewTab ?? false);
 
     new Notice(`Instance created: ${createdFile.basename}`);
   }

@@ -1,5 +1,6 @@
 import { CommandHelpers } from "../../src/application/commands/helpers/CommandHelpers";
 import { TFile } from "obsidian";
+import { initTimerManager, disposeTimerManager } from "../../src/infrastructure/lifecycle";
 
 describe("CommandHelpers", () => {
   let mockApp: any;
@@ -8,6 +9,9 @@ describe("CommandHelpers", () => {
   let mockWorkspace: any;
 
   beforeEach(() => {
+    // Initialize TimerManager before tests
+    initTimerManager();
+
     // Setup mock file
     mockFile = {
       path: "test/file.md",
@@ -37,6 +41,9 @@ describe("CommandHelpers", () => {
   });
 
   afterEach(() => {
+    // Dispose TimerManager after tests
+    disposeTimerManager();
+
     jest.clearAllMocks();
     jest.clearAllTimers();
     jest.useRealTimers();
@@ -170,6 +177,63 @@ describe("CommandHelpers", () => {
 
       // Assert - should wait for correct file path
       expect(mockWorkspace.getActiveFile).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe("openFile", () => {
+    it("should open file in current tab when openInNewTab is false", async () => {
+      // Arrange
+      mockWorkspace.getActiveFile.mockReturnValue(mockFile);
+
+      // Act
+      await CommandHelpers.openFile(mockApp, mockFile, false);
+
+      // Assert
+      expect(mockWorkspace.getLeaf).toHaveBeenCalledWith(false);
+      expect(mockLeaf.openFile).toHaveBeenCalledWith(mockFile);
+      expect(mockWorkspace.setActiveLeaf).toHaveBeenCalledWith(mockLeaf, { focus: true });
+    });
+
+    it("should open file in new tab when openInNewTab is true", async () => {
+      // Arrange
+      mockWorkspace.getActiveFile.mockReturnValue(mockFile);
+
+      // Act
+      await CommandHelpers.openFile(mockApp, mockFile, true);
+
+      // Assert
+      expect(mockWorkspace.getLeaf).toHaveBeenCalledWith("tab");
+      expect(mockLeaf.openFile).toHaveBeenCalledWith(mockFile);
+    });
+
+    it("should support cancellation via AbortSignal", async () => {
+      // Arrange
+      mockWorkspace.getActiveFile.mockReturnValue(null); // Never becomes active
+      const controller = new AbortController();
+
+      // Abort after a short delay
+      setTimeout(() => controller.abort(), 50);
+
+      // Act & Assert
+      await expect(
+        CommandHelpers.openFile(mockApp, mockFile, false, controller.signal)
+      ).rejects.toThrow("Aborted");
+    });
+
+    it("should not throw if file becomes active before cancellation", async () => {
+      // Arrange
+      let callCount = 0;
+      mockWorkspace.getActiveFile.mockImplementation(() => {
+        callCount++;
+        return callCount >= 2 ? mockFile : null;
+      });
+      const controller = new AbortController();
+
+      // Act - should complete before abort
+      await CommandHelpers.openFile(mockApp, mockFile, false, controller.signal);
+
+      // Assert
+      expect(mockWorkspace.getActiveFile).toHaveBeenCalled();
     });
   });
 });

@@ -5,6 +5,7 @@ import { TaskCreationService, CommandVisibilityContext, LoggingService } from "@
 import { ObsidianVaultAdapter } from "../../src/adapters/ObsidianVaultAdapter";
 import { LabelInputModal } from "../../src/presentation/modals/LabelInputModal";
 import { ExocortexPluginInterface } from "../../src/types";
+import { initTimerManager, disposeTimerManager } from "../../src/infrastructure/lifecycle";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -33,6 +34,9 @@ describe("CreateTaskCommand", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Initialize TimerManager for lifecycle-managed polling
+    initTimerManager();
 
     // Create mock leaf
     mockLeaf = {
@@ -93,6 +97,11 @@ describe("CreateTaskCommand", () => {
 
     // Create command instance
     command = new CreateTaskCommand(mockApp, mockTaskCreationService, mockVaultAdapter, mockPlugin);
+  });
+
+  afterEach(() => {
+    // Dispose TimerManager after each test
+    disposeTimerManager();
   });
 
   describe("id and name", () => {

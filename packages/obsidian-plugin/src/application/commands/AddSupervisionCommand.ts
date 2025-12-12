@@ -3,6 +3,7 @@ import { ICommand } from "./ICommand";
 import { SupervisionCreationService, LoggingService } from "@exocortex/core";
 import { SupervisionInputModal, SupervisionFormData } from "../../presentation/modals/SupervisionInputModal";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
+import { CommandHelpers } from "./helpers/CommandHelpers";
 
 export class AddSupervisionCommand implements ICommand {
   id = "add-supervision";
@@ -26,19 +27,10 @@ export class AddSupervisionCommand implements ICommand {
 
       const createdFile = await this.supervisionCreationService.createSupervision(formData);
 
-      const leaf = this.app.workspace.getLeaf("tab");
       const tfile = this.vaultAdapter.toTFile(createdFile);
-      await leaf.openFile(tfile);
 
-      this.app.workspace.setActiveLeaf(leaf, { focus: true });
-
-      const maxAttempts = 20;
-      for (let i = 0; i < maxAttempts; i++) {
-        if (this.app.workspace.getActiveFile()?.path === tfile.path) {
-          break;
-        }
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      }
+      // Use lifecycle-managed polling for file activation (always opens in new tab)
+      await CommandHelpers.openFileInNewTab(this.app, tfile);
 
       new Notice(`Supervision created: ${createdFile.basename}`);
     } catch (error: unknown) {

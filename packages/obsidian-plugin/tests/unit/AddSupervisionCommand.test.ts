@@ -3,6 +3,7 @@ import { App, Notice, TFile, WorkspaceLeaf } from "obsidian";
 import { SupervisionCreationService, LoggingService } from "@exocortex/core";
 import { SupervisionInputModal } from "../../src/presentation/modals/SupervisionInputModal";
 import { ObsidianVaultAdapter } from "../../src/adapters/ObsidianVaultAdapter";
+import { initTimerManager, disposeTimerManager } from "../../src/infrastructure/lifecycle";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -26,6 +27,9 @@ describe("AddSupervisionCommand", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Initialize TimerManager for lifecycle-managed polling
+    initTimerManager();
 
     // Create mock leaf
     mockLeaf = {
@@ -58,6 +62,11 @@ describe("AddSupervisionCommand", () => {
 
     // Create command instance
     command = new AddSupervisionCommand(mockApp, mockSupervisionCreationService, mockVaultAdapter);
+  });
+
+  afterEach(() => {
+    // Dispose TimerManager after each test
+    disposeTimerManager();
   });
 
   describe("id and name", () => {

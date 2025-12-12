@@ -8,6 +8,7 @@ import {
 import { LabelInputModal } from "../../src/presentation/modals/LabelInputModal";
 import { ObsidianVaultAdapter } from "../../src/adapters/ObsidianVaultAdapter";
 import { flushPromises, waitForCondition } from "./helpers/testHelpers";
+import { initTimerManager, disposeTimerManager } from "../../src/infrastructure/lifecycle";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -34,6 +35,9 @@ describe("CreateAreaCommand", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Initialize TimerManager for lifecycle-managed polling
+    initTimerManager();
 
     // Create mock leaf
     mockLeaf = {
@@ -85,6 +89,11 @@ describe("CreateAreaCommand", () => {
 
     // Create command instance
     command = new CreateAreaCommand(mockApp, mockAreaCreationService, mockVaultAdapter);
+  });
+
+  afterEach(() => {
+    // Dispose TimerManager after each test
+    disposeTimerManager();
   });
 
   describe("id and name", () => {

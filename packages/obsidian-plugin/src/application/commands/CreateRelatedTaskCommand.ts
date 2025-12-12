@@ -8,6 +8,7 @@ import {
 } from "@exocortex/core";
 import { LabelInputModal, type LabelInputModalResult } from "../../presentation/modals/LabelInputModal";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
+import { CommandHelpers } from "./helpers/CommandHelpers";
 
 export class CreateRelatedTaskCommand implements ICommand {
   id = "create-related-task";
@@ -51,21 +52,10 @@ export class CreateRelatedTaskCommand implements ICommand {
       result.taskSize,
     );
 
-    const leaf = result.openInNewTab
-      ? this.app.workspace.getLeaf("tab")
-      : this.app.workspace.getLeaf(false);
     const tfile = this.vaultAdapter.toTFile(createdFile);
-    await leaf.openFile(tfile);
 
-    this.app.workspace.setActiveLeaf(leaf, { focus: true });
-
-    const maxAttempts = 20;
-    for (let i = 0; i < maxAttempts; i++) {
-      if (this.app.workspace.getActiveFile()?.path === tfile.path) {
-        break;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
+    // Use lifecycle-managed polling for file activation
+    await CommandHelpers.openFile(this.app, tfile, result.openInNewTab ?? false);
 
     new Notice(`Related task created: ${createdFile.basename}`);
   }

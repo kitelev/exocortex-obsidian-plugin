@@ -25,6 +25,7 @@ import { SPARQLCodeBlockProcessor } from "./application/processors/SPARQLCodeBlo
 import { SPARQLApi } from "./application/api/SPARQLApi";
 import { PluginContainer } from "./infrastructure/di/PluginContainer";
 import { createAliasIconExtension } from "./presentation/editor-extensions";
+import { initTimerManager, disposeTimerManager } from "./infrastructure/lifecycle";
 
 /**
  * Exocortex Plugin - Automatic layout rendering
@@ -47,6 +48,9 @@ export default class ExocortexPlugin extends Plugin {
 
   override async onload(): Promise<void> {
     try {
+      // Initialize timer lifecycle management (must be first)
+      initTimerManager();
+
       // Initialize DI container (Phase 1 infrastructure)
       PluginContainer.setup(this.app, this);
 
@@ -167,6 +171,9 @@ export default class ExocortexPlugin extends Plugin {
     if (this.sparql) {
       await this.sparql.dispose();
     }
+
+    // Dispose all managed timers (prevents memory leaks)
+    disposeTimerManager();
 
     this.logger?.info("Exocortex Plugin unloaded");
   }
