@@ -14,14 +14,13 @@ import { AssetMetadataService } from "./layout/helpers/AssetMetadataService";
 import { DailyNoteHelpers } from "./helpers/DailyNoteHelpers";
 import { BlockerHelpers } from "../utils/BlockerHelpers";
 import { getStatusLabel } from "../../domain/property-editor/PropertySchemas";
-
-type ObsidianApp = any;
+import { ObsidianApp, ExocortexPluginInterface } from "../../types";
 
 export class DailyTasksRenderer {
   private logger: ILogger;
   private app: ObsidianApp;
   private settings: ExocortexSettings;
-  private plugin: any;
+  private plugin: ExocortexPluginInterface;
   private metadataExtractor: MetadataExtractor;
   private reactRenderer: ReactRenderer;
   private refresh: () => Promise<void>;
@@ -31,7 +30,7 @@ export class DailyTasksRenderer {
   constructor(
     app: ObsidianApp,
     settings: ExocortexSettings,
-    plugin: any,
+    plugin: ExocortexPluginInterface,
     logger: ILogger,
     metadataExtractor: MetadataExtractor,
     reactRenderer: ReactRenderer,

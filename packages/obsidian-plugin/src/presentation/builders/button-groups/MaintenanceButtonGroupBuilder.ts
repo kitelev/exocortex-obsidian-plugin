@@ -9,7 +9,10 @@ import {
   canCopyLabelToAliases,
   canConvertTaskToProject,
   canConvertProjectToTask,
+  CommandVisibilityContext,
 } from "@exocortex/core";
+import { ILogger } from "../../../adapters/logging/ILogger";
+import { MetadataRecord } from "../../../types";
 import {
   IButtonGroupBuilder,
   ButtonBuilderContext,
@@ -49,8 +52,8 @@ export class MaintenanceButtonGroupBuilder implements IButtonGroupBuilder {
 
   private trashButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -69,8 +72,8 @@ export class MaintenanceButtonGroupBuilder implements IButtonGroupBuilder {
 
   private archiveButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -89,8 +92,8 @@ export class MaintenanceButtonGroupBuilder implements IButtonGroupBuilder {
 
   private cleanPropertiesButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -109,10 +112,10 @@ export class MaintenanceButtonGroupBuilder implements IButtonGroupBuilder {
 
   private repairFolderButton(
     file: TFile,
-    context: any,
+    context: CommandVisibilityContext,
     expectedFolder: string | null,
     currentFolder: string,
-    logger: any,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -138,9 +141,9 @@ export class MaintenanceButtonGroupBuilder implements IButtonGroupBuilder {
 
   private renameToUidButton(
     file: TFile,
-    metadata: Record<string, any>,
-    context: any,
-    logger: any,
+    metadata: MetadataRecord,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -150,7 +153,7 @@ export class MaintenanceButtonGroupBuilder implements IButtonGroupBuilder {
       visible: canRenameToUid(context, file.basename),
       onClick: async () => {
         const oldName = file.basename;
-        const uid = metadata.exo__Asset_uid;
+        const uid = String(metadata.exo__Asset_uid);
         await this.services.renameToUidService.renameToUid(file, metadata);
         await new Promise((resolve) => setTimeout(resolve, 100));
         await refresh();
@@ -161,8 +164,8 @@ export class MaintenanceButtonGroupBuilder implements IButtonGroupBuilder {
 
   private copyLabelToAliasesButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -181,8 +184,8 @@ export class MaintenanceButtonGroupBuilder implements IButtonGroupBuilder {
 
   private convertTaskToProjectButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -201,8 +204,8 @@ export class MaintenanceButtonGroupBuilder implements IButtonGroupBuilder {
 
   private convertProjectToTaskButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {

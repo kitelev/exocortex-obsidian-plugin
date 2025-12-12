@@ -1,8 +1,8 @@
+import { TFile } from "obsidian";
 import { ILogger } from "../../../adapters/logging/ILogger";
-import { MetadataExtractor, IVaultAdapter, DateFormatter } from "@exocortex/core";
+import { MetadataExtractor, IVaultAdapter, DateFormatter, IFile } from "@exocortex/core";
 import { DailyNoteHelpers } from "./DailyNoteHelpers";
-
-type ObsidianApp = any;
+import { ObsidianApp } from "../../../types";
 
 /**
  * Renders daily note navigation (previous/next day links)
@@ -18,7 +18,7 @@ export class DailyNavigationRenderer {
   /**
    * Render daily navigation for a file
    */
-  render(el: HTMLElement, file: any): void {
+  render(el: HTMLElement, file: TFile): void {
     const dailyNoteInfo = DailyNoteHelpers.extractDailyNoteInfo(
       file,
       this.metadataExtractor,
@@ -60,8 +60,8 @@ export class DailyNavigationRenderer {
 
   private renderNavLink(
     navContainer: HTMLElement,
-    currentFile: any,
-    targetNote: any | null,
+    currentFile: TFile,
+    targetNote: IFile | null,
     dateStr: string,
     direction: "prev" | "next",
   ): void {

@@ -7,6 +7,8 @@ import {
   ServiceError,
   type ILogger,
   type INotificationService,
+  type IFile,
+  IRI,
 } from "@exocortex/core";
 import { ObsidianVaultAdapter } from "../adapters/ObsidianVaultAdapter";
 
@@ -147,7 +149,7 @@ export class VaultRDFIndexer {
     await this.errorHandler.executeWithRetry(
       async () => {
         await this.removeFileTriples(file.path);
-        const triples = await this.converter.convertNote(file as any);
+        const triples = await this.converter.convertNote(file as IFile);
         await this.tripleStore.addAll(triples);
       },
       { context: "VaultRDFIndexer.updateFile", filePath: file.path }
@@ -172,8 +174,8 @@ export class VaultRDFIndexer {
   }
 
   private async removeFileTriples(filePath: string): Promise<void> {
-    const fileIRI = `obsidian://vault/${encodeURIComponent(filePath)}`;
-    const triples = await this.tripleStore.match(fileIRI as any);
+    const fileIRI = new IRI(`obsidian://vault/${encodeURIComponent(filePath)}`);
+    const triples = await this.tripleStore.match(fileIRI);
     await this.tripleStore.removeAll(triples);
   }
 

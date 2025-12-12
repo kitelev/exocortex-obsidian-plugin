@@ -12,14 +12,13 @@ import { MetadataExtractor } from "@exocortex/core";
 import { EffortSortingHelpers } from "@exocortex/core";
 import { BlockerHelpers } from "../utils/BlockerHelpers";
 import { DailyNoteHelpers } from "./helpers/DailyNoteHelpers";
-
-type ObsidianApp = any;
+import { ObsidianApp, ExocortexPluginInterface } from "../../types";
 
 export class DailyProjectsRenderer {
   private logger: ILogger;
   private app: ObsidianApp;
   private settings: ExocortexSettings;
-  private plugin: any;
+  private plugin: ExocortexPluginInterface;
   private metadataExtractor: MetadataExtractor;
   private reactRenderer: ReactRenderer;
   private refresh: () => Promise<void>;
@@ -29,7 +28,7 @@ export class DailyProjectsRenderer {
   constructor(
     app: ObsidianApp,
     settings: ExocortexSettings,
-    plugin: any,
+    plugin: ExocortexPluginInterface,
     logger: ILogger,
     metadataExtractor: MetadataExtractor,
     reactRenderer: ReactRenderer,

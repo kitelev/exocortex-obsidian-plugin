@@ -1,6 +1,5 @@
 import { Keymap } from "obsidian";
-
-type ObsidianApp = any;
+import { ObsidianApp } from "../../../types";
 
 /**
  * Utility class for handling common Obsidian link interactions

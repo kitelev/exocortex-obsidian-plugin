@@ -140,8 +140,8 @@ export const DailyProjectsTable: React.FC<DailyProjectsTableProps> = ({
     const sorted = [...filtered];
 
     sorted.sort((a, b) => {
-      let aValue: any;
-      let bValue: any;
+      let aValue: string | number;
+      let bValue: string | number;
 
       switch (sortState.column) {
         case "name":

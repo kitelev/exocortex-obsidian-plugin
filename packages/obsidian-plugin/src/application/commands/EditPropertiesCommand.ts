@@ -1,6 +1,6 @@
 import { App, TFile, Notice } from "obsidian";
 import { ICommand } from "./ICommand";
-import type { ExocortexPluginInterface } from "../../types";
+import type ExocortexPlugin from "../../ExocortexPlugin";
 import { PropertyEditorModal } from "../../presentation/modals/PropertyEditorModal";
 import type { CommandVisibilityContext } from "@exocortex/core";
 
@@ -10,7 +10,7 @@ export class EditPropertiesCommand implements ICommand {
 
   constructor(
     private app: App,
-    private plugin: ExocortexPluginInterface,
+    private plugin: ExocortexPlugin,
   ) {}
 
   checkCallback = (
@@ -28,7 +28,7 @@ export class EditPropertiesCommand implements ICommand {
     if (hasFrontmatter && cache?.frontmatter) {
       const modal = new PropertyEditorModal(
         this.app,
-        this.plugin as any,
+        this.plugin,
         file,
         cache.frontmatter as Record<string, unknown>,
       );

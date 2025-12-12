@@ -1,6 +1,6 @@
 import { App } from "obsidian";
 import { ICommand } from "./ICommand";
-import type { ExocortexPluginInterface } from "../../types";
+import type ExocortexPlugin from "../../ExocortexPlugin";
 import { SPARQLQueryBuilderModal } from "../../presentation/modals/SPARQLQueryBuilderModal";
 
 export class OpenQueryBuilderCommand implements ICommand {
@@ -9,11 +9,11 @@ export class OpenQueryBuilderCommand implements ICommand {
 
   constructor(
     private app: App,
-    private plugin: ExocortexPluginInterface,
+    private plugin: ExocortexPlugin,
   ) {}
 
   callback = async (): Promise<void> => {
-    const modal = new SPARQLQueryBuilderModal(this.app, this.plugin as any);
+    const modal = new SPARQLQueryBuilderModal(this.app, this.plugin);
     modal.open();
   };
 }

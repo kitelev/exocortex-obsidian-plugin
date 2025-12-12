@@ -26,9 +26,9 @@ export class RenameToUidCommand implements ICommand {
     return true;
   };
 
-  private async execute(file: TFile, metadata: Record<string, any>): Promise<void> {
+  private async execute(file: TFile, metadata: Record<string, unknown>): Promise<void> {
     const oldName = file.basename;
-    const uid = metadata.exo__Asset_uid;
+    const uid = String(metadata.exo__Asset_uid);
 
     await this.renameToUidService.renameToUid(file, metadata);
 

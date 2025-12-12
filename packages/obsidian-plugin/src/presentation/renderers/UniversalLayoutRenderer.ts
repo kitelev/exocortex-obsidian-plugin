@@ -28,8 +28,7 @@ import {
   LayoutConfigParser,
   IncrementalUpdateHandler,
 } from "./helpers";
-
-type ObsidianApp = any;
+import { ObsidianApp, ExocortexPluginInterface } from "../../types";
 
 /**
  * Renders the UniversalLayout view with properties, buttons, daily sections, and relations.
@@ -44,7 +43,7 @@ export class UniversalLayoutRenderer {
   private logger: ILogger;
   private app: ObsidianApp;
   private settings: ExocortexSettings;
-  private plugin: any;
+  private plugin: ExocortexPluginInterface;
   private eventListenerManager: EventListenerManager;
   private backlinksCacheManager: BacklinksCacheManager;
   private reactRenderer: ReactRenderer;
@@ -69,7 +68,7 @@ export class UniversalLayoutRenderer {
   private currentFilePath: string | null = null;
   private currentConfig: UniversalLayoutConfig = {};
 
-  constructor(app: ObsidianApp, settings: ExocortexSettings, plugin: any, vaultAdapter: IVaultAdapter) {
+  constructor(app: ObsidianApp, settings: ExocortexSettings, plugin: ExocortexPluginInterface, vaultAdapter: IVaultAdapter) {
     this.app = app;
     this.settings = settings;
     this.plugin = plugin;

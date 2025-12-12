@@ -28,8 +28,7 @@ export class SPARQLApi {
   }
 
   getTripleStore(): InMemoryTripleStore {
-    const indexer = (this.queryService as any).indexer;
-    return indexer.getTripleStore();
+    return this.queryService.getTripleStore();
   }
 
   async refresh(): Promise<void> {

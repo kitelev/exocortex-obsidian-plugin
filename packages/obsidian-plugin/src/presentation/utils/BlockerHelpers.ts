@@ -1,6 +1,5 @@
 import { EffortStatus } from "@exocortex/core";
-
-type ObsidianApp = any;
+import { ObsidianApp } from "../../types";
 
 export class BlockerHelpers {
   /**

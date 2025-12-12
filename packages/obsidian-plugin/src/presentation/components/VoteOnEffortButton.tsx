@@ -1,10 +1,11 @@
 import React from "react";
 import { TFile } from "obsidian";
 import { canVoteOnEffort, CommandVisibilityContext } from "@exocortex/core";
+import type { MetadataRecord } from "../../types";
 
 export interface VoteOnEffortButtonProps {
   instanceClass: string | string[] | null;
-  metadata: Record<string, any>;
+  metadata: MetadataRecord;
   isArchived: boolean;
   sourceFile: TFile;
   onVote: () => Promise<void>;

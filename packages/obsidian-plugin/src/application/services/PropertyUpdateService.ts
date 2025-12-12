@@ -22,7 +22,7 @@ export class PropertyUpdateService {
   async updateProperty(
     file: TFile,
     propertyKey: string,
-    newValue: any,
+    newValue: unknown,
   ): Promise<void> {
     this.logger.debug(
       `Updating property "${propertyKey}" in file: ${file.path}`,

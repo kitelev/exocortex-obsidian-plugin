@@ -21,9 +21,7 @@ describe("SPARQLApi", () => {
       query: jest.fn(),
       refresh: jest.fn(),
       dispose: jest.fn(),
-      indexer: {
-        getTripleStore: jest.fn().mockReturnValue({}),
-      },
+      getTripleStore: jest.fn().mockReturnValue({}),
     } as any;
 
     (SPARQLQueryService as jest.Mock).mockImplementation(() => mockQueryService);
@@ -69,13 +67,14 @@ describe("SPARQLApi", () => {
   });
 
   describe("getTripleStore", () => {
-    it("should return triple store from indexer", () => {
+    it("should return triple store from query service", () => {
       const mockTripleStore = {};
-      (api as any).queryService.indexer.getTripleStore.mockReturnValue(mockTripleStore);
+      mockQueryService.getTripleStore.mockReturnValue(mockTripleStore);
 
       const tripleStore = api.getTripleStore();
 
       expect(tripleStore).toBe(mockTripleStore);
+      expect(mockQueryService.getTripleStore).toHaveBeenCalled();
     });
   });
 

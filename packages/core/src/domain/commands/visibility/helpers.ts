@@ -68,7 +68,7 @@ export function hasStatus(
  * Check if asset is archived
  * Supports multiple formats: true, "true", "yes", 1
  */
-export function isAssetArchived(isArchived: any): boolean {
+export function isAssetArchived(isArchived: unknown): boolean {
   if (isArchived === true || isArchived === 1) return true;
   if (typeof isArchived === "string") {
     const lowerValue = isArchived.toLowerCase();
@@ -80,7 +80,7 @@ export function isAssetArchived(isArchived: any): boolean {
 /**
  * Check if metadata has empty properties
  */
-export function hasEmptyProperties(metadata: Record<string, any>): boolean {
+export function hasEmptyProperties(metadata: Record<string, unknown>): boolean {
   if (!metadata || Object.keys(metadata).length === 0) return false;
 
   return Object.values(metadata).some((value) => {
@@ -127,7 +127,7 @@ export function getTodayDateString(): string {
  * Check if ems__Effort_plannedStartTimestamp is set to today's date
  * Handles timestamp format: YYYY-MM-DDTHH:MM:SS
  */
-export function isPlannedForToday(metadata: Record<string, any>): boolean {
+export function isPlannedForToday(metadata: Record<string, unknown>): boolean {
   const plannedTimestamp = metadata.ems__Effort_plannedStartTimestamp;
   if (!plannedTimestamp) return false;
 
@@ -149,7 +149,7 @@ export function isPlannedForToday(metadata: Record<string, any>): boolean {
 /**
  * Check if ems__Effort_plannedStartTimestamp property exists
  */
-export function hasPlannedStartTimestamp(metadata: Record<string, any>): boolean {
+export function hasPlannedStartTimestamp(metadata: Record<string, unknown>): boolean {
   const plannedTimestamp = metadata.ems__Effort_plannedStartTimestamp;
   if (!plannedTimestamp) return false;
 
@@ -169,7 +169,7 @@ export function hasPlannedStartTimestamp(metadata: Record<string, any>): boolean
  * Extract date string from pn__DailyNote_day property
  * Handles wiki-link format: [[2025-11-11]] -> 2025-11-11
  */
-export function extractDailyNoteDate(metadata: Record<string, any>): string | null {
+export function extractDailyNoteDate(metadata: Record<string, unknown>): string | null {
   const dayProperty = metadata.pn__DailyNote_day;
   if (!dayProperty) return null;
 
@@ -240,7 +240,7 @@ const MAX_INHERITANCE_DEPTH = 10;
  * @returns true if the class inherits from exo__Prototype
  */
 export function inheritsFromPrototype(
-  metadata: Record<string, any>,
+  metadata: Record<string, unknown>,
   maxDepth: number = MAX_INHERITANCE_DEPTH,
 ): boolean {
   // Start with the current class's superclass
@@ -327,7 +327,7 @@ export function inheritsFromPrototype(
  */
 export function isPrototypeClass(
   instanceClass: string | string[] | null,
-  metadata: Record<string, any>,
+  metadata: Record<string, unknown>,
 ): boolean {
   // First, check if this asset is a class definition
   if (!hasClass(instanceClass, AssetClass.CLASS)) return false;

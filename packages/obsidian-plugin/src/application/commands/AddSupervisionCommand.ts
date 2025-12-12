@@ -1,7 +1,7 @@
 import { App, Notice } from "obsidian";
 import { ICommand } from "./ICommand";
 import { SupervisionCreationService, LoggingService } from "@exocortex/core";
-import { SupervisionInputModal } from "../../presentation/modals/SupervisionInputModal";
+import { SupervisionInputModal, SupervisionFormData } from "../../presentation/modals/SupervisionInputModal";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 
 export class AddSupervisionCommand implements ICommand {
@@ -16,7 +16,7 @@ export class AddSupervisionCommand implements ICommand {
 
   callback = async (): Promise<void> => {
     try {
-      const formData = await new Promise<any>((resolve) => {
+      const formData = await new Promise<SupervisionFormData | null>((resolve) => {
         new SupervisionInputModal(this.app, resolve).open();
       });
 
@@ -41,9 +41,10 @@ export class AddSupervisionCommand implements ICommand {
       }
 
       new Notice(`Supervision created: ${createdFile.basename}`);
-    } catch (error: any) {
-      new Notice(`Failed to create supervision: ${error.message}`);
-      LoggingService.error("Add supervision error", error);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      new Notice(`Failed to create supervision: ${errorMessage}`);
+      LoggingService.error("Add supervision error", error instanceof Error ? error : new Error(String(error)));
     }
   };
 }

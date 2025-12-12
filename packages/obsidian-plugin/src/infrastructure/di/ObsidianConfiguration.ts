@@ -1,21 +1,23 @@
-import { IConfiguration } from "@exocortex/core";
+import type { IConfiguration } from "@exocortex/core";
 import { Plugin } from "obsidian";
+import type { ExocortexPluginInterface } from "../../types";
 
 export class ObsidianConfiguration implements IConfiguration {
   constructor(private plugin: Plugin) {}
 
-  get<T = any>(key: string): T | undefined {
-    const settings = (this.plugin as any).settings;
+  get<T>(key: string): T | undefined {
+    const exoPlugin = this.plugin as unknown as ExocortexPluginInterface;
+    const settings = exoPlugin.settings;
     if (!settings) {
       return undefined;
     }
 
     const keys = key.split(".");
-    let value: any = settings;
+    let value: unknown = settings;
 
     for (const k of keys) {
       if (value && typeof value === "object" && k in value) {
-        value = value[k];
+        value = (value as Record<string, unknown>)[k];
       } else {
         return undefined;
       }
@@ -24,8 +26,9 @@ export class ObsidianConfiguration implements IConfiguration {
     return value as T;
   }
 
-  async set<T = any>(key: string, value: T): Promise<void> {
-    const settings = (this.plugin as any).settings;
+  async set<T>(key: string, value: T): Promise<void> {
+    const exoPlugin = this.plugin as unknown as ExocortexPluginInterface;
+    const settings = exoPlugin.settings;
     if (!settings) {
       throw new Error("Plugin settings not initialized");
     }
@@ -35,23 +38,24 @@ export class ObsidianConfiguration implements IConfiguration {
     if (!lastKey) {
       throw new Error("Invalid configuration key");
     }
-    let current: any = settings;
+    let current: Record<string, unknown> = settings;
 
     for (const k of keys) {
       if (!current[k] || typeof current[k] !== "object") {
         current[k] = {};
       }
-      current = current[k];
+      current = current[k] as Record<string, unknown>;
     }
 
     current[lastKey] = value;
 
-    if (typeof (this.plugin as any).saveSettings === "function") {
-      await (this.plugin as any).saveSettings();
+    if (typeof exoPlugin.saveSettings === "function") {
+      await exoPlugin.saveSettings();
     }
   }
 
-  getAll(): Record<string, any> {
-    return (this.plugin as any).settings || {};
+  getAll(): Record<string, unknown> {
+    const exoPlugin = this.plugin as unknown as ExocortexPluginInterface;
+    return exoPlugin.settings || {};
   }
 }

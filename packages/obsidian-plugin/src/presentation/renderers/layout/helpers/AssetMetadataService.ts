@@ -1,7 +1,6 @@
 import { TFile } from "obsidian";
 import { BlockerHelpers } from "../../../utils/BlockerHelpers";
-
-type ObsidianApp = any;
+import { ObsidianApp, MetadataRecord } from "../../../../types";
 
 export class AssetMetadataService {
   constructor(private app: ObsidianApp) {}
@@ -150,7 +149,7 @@ export class AssetMetadataService {
     return null;
   }
 
-  extractInstanceClass(metadata: Record<string, any>): string {
+  extractInstanceClass(metadata: MetadataRecord): string {
     const instanceClass = metadata.exo__Instance_class || "";
     if (Array.isArray(instanceClass)) {
       const firstClass = instanceClass[0] || "";

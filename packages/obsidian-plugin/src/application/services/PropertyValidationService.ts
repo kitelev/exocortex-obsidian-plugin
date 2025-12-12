@@ -88,7 +88,7 @@ export class PropertyValidationService implements IPropertyValidationService {
 
   async validatePropertyRange(
     propertyName: string,
-    propertyValue: any,
+    propertyValue: unknown,
   ): Promise<ValidationResult> {
     const query = `
       PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -160,7 +160,7 @@ export class PropertyValidationService implements IPropertyValidationService {
     return iri.substring(separatorIndex + 1);
   }
 
-  private detectValueType(value: any): string {
+  private detectValueType(value: unknown): string {
     if (value === null || value === undefined) return "null";
     if (typeof value === "boolean") return "boolean";
     if (typeof value === "number") return "number";

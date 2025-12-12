@@ -193,12 +193,12 @@ export class CreationButtonGroupBuilder implements IButtonGroupBuilder {
     );
   }
 
-  private generateDefaultLabel(metadata: Record<string, any>, fileName: string): string {
-    const baseLabel = metadata.exo__Asset_label || fileName;
+  private generateDefaultLabel(metadata: Record<string, unknown>, fileName: string): string {
+    const baseLabel = String(metadata.exo__Asset_label || fileName);
     return `${baseLabel} ${DateFormatter.toDateString(new Date())}`;
   }
 
-  private extractDailyNoteDate(metadata: Record<string, any>): string | null {
+  private extractDailyNoteDate(metadata: Record<string, unknown>): string | null {
     const dayProperty = metadata.pn__DailyNote_day;
     if (!dayProperty) return null;
 
