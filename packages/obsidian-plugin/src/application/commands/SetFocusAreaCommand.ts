@@ -1,13 +1,13 @@
 import { App, Notice } from "obsidian";
 import { container } from "tsyringe";
 import { ICommand } from "./ICommand";
-import { ExocortexPluginInterface } from "../../types";
+import { ExocortexPluginInterface } from '@plugin/types';
 import {
   AreaSelectionModal,
   AreaSelectionModalResult,
-} from "../../presentation/modals/AreaSelectionModal";
+} from '@plugin/presentation/modals/AreaSelectionModal';
 import { SessionEventService } from "@exocortex/core";
-import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
+import { LoggerFactory } from '@plugin/adapters/logging/LoggerFactory';
 
 export class SetFocusAreaCommand implements ICommand {
   id = "set-focus-area";

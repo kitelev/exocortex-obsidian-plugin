@@ -1,8 +1,8 @@
 import { App, TFile } from "obsidian";
-import { ExocortexPluginInterface } from "../../types";
-import { CommandRegistry } from "../commands/CommandRegistry";
+import { ExocortexPluginInterface } from '@plugin/types';
+import { CommandRegistry } from '@plugin/application/commands/CommandRegistry';
 import { MetadataExtractor } from "@exocortex/core";
-import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
+import { ObsidianVaultAdapter } from '@plugin/adapters/ObsidianVaultAdapter';
 import { CommandVisibilityContext } from "@exocortex/core";
 
 export class CommandManager {

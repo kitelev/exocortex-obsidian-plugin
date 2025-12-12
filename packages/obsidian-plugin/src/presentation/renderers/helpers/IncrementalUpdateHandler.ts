@@ -1,16 +1,16 @@
 import React from "react";
 import { TFile } from "obsidian";
-import { EventListenerManager } from "../../../adapters/events/EventListenerManager";
-import { BacklinksCacheManager } from "../../../adapters/caching/BacklinksCacheManager";
-import { ReactRenderer } from "../../utils/ReactRenderer";
-import { ActionButtonsGroup } from "../../components/ActionButtonsGroup";
-import { ButtonGroupsBuilder } from "../../builders/ButtonGroupsBuilder";
-import { DailyTasksRenderer } from "../DailyTasksRenderer";
-import { DailyProjectsRenderer } from "../DailyProjectsRenderer";
-import { PropertiesRenderer } from "../layout/PropertiesRenderer";
-import { AreaTreeRenderer } from "../layout/AreaTreeRenderer";
-import { RelationsRenderer, UniversalLayoutConfig } from "../layout/RelationsRenderer";
-import { LayoutSection } from "../../../application/services/PropertyDependencyResolver";
+import { EventListenerManager } from '@plugin/adapters/events/EventListenerManager';
+import { BacklinksCacheManager } from '@plugin/adapters/caching/BacklinksCacheManager';
+import { ReactRenderer } from '@plugin/presentation/utils/ReactRenderer';
+import { ActionButtonsGroup } from '@plugin/presentation/components/ActionButtonsGroup';
+import { ButtonGroupsBuilder } from '@plugin/presentation/builders/ButtonGroupsBuilder';
+import { DailyTasksRenderer } from '@plugin/presentation/renderers/DailyTasksRenderer';
+import { DailyProjectsRenderer } from '@plugin/presentation/renderers/DailyProjectsRenderer';
+import { PropertiesRenderer } from '@plugin/presentation/renderers/layout/PropertiesRenderer';
+import { AreaTreeRenderer } from '@plugin/presentation/renderers/layout/AreaTreeRenderer';
+import { RelationsRenderer, UniversalLayoutConfig } from '@plugin/presentation/renderers/layout/RelationsRenderer';
+import { LayoutSection } from '@plugin/application/services/PropertyDependencyResolver';
 import { SectionStateManager } from "./SectionStateManager";
 
 type RenderHeaderFn = (container: HTMLElement, sectionId: string, title: string) => void;

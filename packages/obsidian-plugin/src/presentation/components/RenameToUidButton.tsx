@@ -2,7 +2,7 @@ import React from "react";
 import { TFile, Notice } from "obsidian";
 import { canRenameToUid } from "@exocortex/core";
 import { LoggingService } from "@exocortex/core";
-import type { MetadataRecord } from "../../types";
+import type { MetadataRecord } from '@plugin/types';
 
 interface RenameToUidButtonProps {
   file: TFile;

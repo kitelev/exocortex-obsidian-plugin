@@ -1,11 +1,11 @@
 import { TFile, Keymap } from "obsidian";
 import React from "react";
-import { ReactRenderer } from "../../utils/ReactRenderer";
+import { ReactRenderer } from '@plugin/presentation/utils/ReactRenderer';
 import { MetadataExtractor } from "@exocortex/core";
-import { AssetPropertiesTable } from "../../components/AssetPropertiesTable";
+import { AssetPropertiesTable } from '@plugin/presentation/components/AssetPropertiesTable';
 import { AssetMetadataService } from "./helpers/AssetMetadataService";
-import { PropertyUpdateService } from "../../../application/services/PropertyUpdateService";
-import { ObsidianApp } from "../../../types";
+import { PropertyUpdateService } from '@plugin/application/services/PropertyUpdateService';
+import { ObsidianApp } from '@plugin/types';
 
 export interface PropertiesRendererOptions {
   /**

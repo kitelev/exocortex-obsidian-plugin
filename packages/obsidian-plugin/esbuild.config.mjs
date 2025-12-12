@@ -145,10 +145,17 @@ const baseConfig = {
   treeShaking: true,
   outfile: "packages/obsidian-plugin/main.js",
   // Preact aliases for massive bundle size reduction
+  // Path aliases for cleaner imports
   alias: {
     'react': 'preact/compat',
     'react-dom': 'preact/compat',
-    'react/jsx-runtime': 'preact/jsx-runtime'
+    'react/jsx-runtime': 'preact/jsx-runtime',
+    '@plugin/types': './packages/obsidian-plugin/src/types/index.ts',
+    '@plugin/adapters': './packages/obsidian-plugin/src/adapters',
+    '@plugin/application': './packages/obsidian-plugin/src/application',
+    '@plugin/domain': './packages/obsidian-plugin/src/domain',
+    '@plugin/infrastructure': './packages/obsidian-plugin/src/infrastructure',
+    '@plugin/presentation': './packages/obsidian-plugin/src/presentation',
   },
   plugins: [
     esbuildPluginTsc(), // CRITICAL: Uses actual TypeScript compiler to emit decorator metadata for TSyringe DI

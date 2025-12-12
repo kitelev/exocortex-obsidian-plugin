@@ -10,8 +10,8 @@ import {
   type IFile,
   IRI,
 } from "@exocortex/core";
-import { ObsidianVaultAdapter } from "../adapters/ObsidianVaultAdapter";
-import { LoggerFactory } from "../adapters/logging/LoggerFactory";
+import { ObsidianVaultAdapter } from '@plugin/adapters/ObsidianVaultAdapter';
+import { LoggerFactory } from '@plugin/adapters/logging/LoggerFactory';
 
 export class VaultRDFIndexer {
   private tripleStore: InMemoryTripleStore;

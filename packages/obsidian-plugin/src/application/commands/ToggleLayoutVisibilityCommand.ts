@@ -1,6 +1,6 @@
 import { Notice } from "obsidian";
 import { ICommand } from "./ICommand";
-import { ExocortexPluginInterface } from "../../types";
+import { ExocortexPluginInterface } from '@plugin/types';
 
 export class ToggleLayoutVisibilityCommand implements ICommand {
   id = "toggle-layout-visibility";

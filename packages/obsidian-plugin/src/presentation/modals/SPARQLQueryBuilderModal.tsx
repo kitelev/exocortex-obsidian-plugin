@@ -2,10 +2,10 @@ import { Modal, App, Notice, TFile, Plugin } from "obsidian";
 import React from "react";
 import type { SolutionMapping, Triple } from "@exocortex/core";
 import { ApplicationErrorHandler } from "@exocortex/core";
-import { ReactRenderer } from "../utils/ReactRenderer";
-import { QueryBuilder } from "../components/sparql/QueryBuilder";
-import { SPARQLQueryService } from "../../application/services/SPARQLQueryService";
-import { ErrorBoundary } from "../components/ErrorBoundary";
+import { ReactRenderer } from '@plugin/presentation/utils/ReactRenderer';
+import { QueryBuilder } from '@plugin/presentation/components/sparql/QueryBuilder';
+import { SPARQLQueryService } from '@plugin/application/services/SPARQLQueryService';
+import { ErrorBoundary } from '@plugin/presentation/components/ErrorBoundary';
 
 export class SPARQLQueryBuilderModal extends Modal {
   private plugin: Plugin;

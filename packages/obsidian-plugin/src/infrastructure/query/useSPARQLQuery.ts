@@ -1,7 +1,7 @@
 import { useQuery, UseQueryOptions, UseQueryResult } from "@tanstack/react-query";
 import type { SolutionMapping, Triple } from "@exocortex/core";
-import type { QueryResult } from "../../application/api/SPARQLApi";
-import type ExocortexPlugin from "../../ExocortexPlugin";
+import type { QueryResult } from '@plugin/application/api/SPARQLApi';
+import type ExocortexPlugin from '@plugin/ExocortexPlugin';
 import { getQueryClient } from "./QueryClientSetup";
 
 export type SPARQLQueryResult = SolutionMapping[] | Triple[];

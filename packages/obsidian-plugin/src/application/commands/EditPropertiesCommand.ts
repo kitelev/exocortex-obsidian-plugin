@@ -1,7 +1,7 @@
 import { App, TFile, Notice } from "obsidian";
 import { ICommand } from "./ICommand";
-import { ExocortexPluginInterface } from "../../types";
-import { PropertyEditorModal } from "../../presentation/modals/PropertyEditorModal";
+import { ExocortexPluginInterface } from '@plugin/types';
+import { PropertyEditorModal } from '@plugin/presentation/modals/PropertyEditorModal';
 import type { CommandVisibilityContext } from "@exocortex/core";
 
 export class EditPropertiesCommand implements ICommand {

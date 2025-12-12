@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import type { Triple } from "@exocortex/core";
 import type { GraphData, GraphNode, GraphEdge } from "@exocortex/core";
-import { RDFToGraphDataConverter } from "../../../application/utils/RDFToGraphDataConverter";
+import { RDFToGraphDataConverter } from '@plugin/application/utils/RDFToGraphDataConverter';
 
 interface SPARQLGraphViewProps {
   triples: Triple[];

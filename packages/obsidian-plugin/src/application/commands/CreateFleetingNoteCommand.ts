@@ -4,8 +4,8 @@ import {
   LoggingService,
 } from "@exocortex/core";
 import { ICommand } from "./ICommand";
-import { FleetingNoteModal, FleetingNoteModalResult } from "../../presentation/modals/FleetingNoteModal";
-import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
+import { FleetingNoteModal, FleetingNoteModalResult } from '@plugin/presentation/modals/FleetingNoteModal';
+import { ObsidianVaultAdapter } from '@plugin/adapters/ObsidianVaultAdapter';
 import { CommandHelpers } from "./helpers/CommandHelpers";
 
 export class CreateFleetingNoteCommand implements ICommand {

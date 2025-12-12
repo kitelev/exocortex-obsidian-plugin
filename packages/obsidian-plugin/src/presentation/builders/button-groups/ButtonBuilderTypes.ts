@@ -1,7 +1,7 @@
 import { TFile } from "obsidian";
-import { ILogger } from "../../../adapters/logging/ILogger";
-import { ExocortexSettings } from "../../../domain/settings/ExocortexSettings";
-import { ActionButton, ButtonGroup } from "../../components/ActionButtonsGroup";
+import { ILogger } from '@plugin/adapters/logging/ILogger';
+import { ExocortexSettings } from '@plugin/domain/settings/ExocortexSettings';
+import { ActionButton, ButtonGroup } from '@plugin/presentation/components/ActionButtonsGroup';
 import { CommandVisibilityContext } from "@exocortex/core";
 import { TaskCreationService } from "@exocortex/core";
 import { ProjectCreationService } from "@exocortex/core";
@@ -15,7 +15,7 @@ import { RenameToUidService } from "@exocortex/core";
 import { EffortVotingService } from "@exocortex/core";
 import { LabelToAliasService } from "@exocortex/core";
 import { AssetConversionService } from "@exocortex/core";
-import { ObsidianApp, ExocortexPluginInterface, MetadataRecord } from "../../../types";
+import { ObsidianApp, ExocortexPluginInterface, MetadataRecord } from '@plugin/types';
 
 /**
  * Context passed to button group builders

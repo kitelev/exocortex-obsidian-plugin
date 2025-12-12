@@ -1,7 +1,7 @@
 import React from "react";
 import { TFile } from "obsidian";
 import { canCreateInstance, CommandVisibilityContext } from "@exocortex/core";
-import type { MetadataRecord } from "../../types";
+import type { MetadataRecord } from '@plugin/types';
 
 export interface CreateInstanceButtonProps {
   instanceClass: string | string[] | null;

@@ -1,7 +1,7 @@
 import { App, MetadataCache, TFile, Vault, Platform } from "obsidian";
 import { v4 as uuidv4 } from "uuid";
-import { ILogger } from "../../adapters/logging/ILogger";
-import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
+import { ILogger } from '@plugin/adapters/logging/ILogger';
+import { LoggerFactory } from '@plugin/adapters/logging/LoggerFactory';
 import {
   ApplicationErrorHandler,
   NetworkError,

@@ -1,6 +1,6 @@
 import type { InMemoryTripleStore, SolutionMapping, Triple } from "@exocortex/core";
-import { SPARQLQueryService } from "../services/SPARQLQueryService";
-import type ExocortexPlugin from "../../ExocortexPlugin";
+import { SPARQLQueryService } from '@plugin/application/services/SPARQLQueryService';
+import type ExocortexPlugin from '@plugin/ExocortexPlugin';
 
 export interface QueryResult {
   bindings: SolutionMapping[];

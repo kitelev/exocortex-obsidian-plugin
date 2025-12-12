@@ -1,6 +1,6 @@
 import { TFile } from "obsidian";
-import { BlockerHelpers } from "../../../utils/BlockerHelpers";
-import { ObsidianApp, MetadataRecord } from "../../../../types";
+import { BlockerHelpers } from '@plugin/presentation/utils/BlockerHelpers';
+import { ObsidianApp, MetadataRecord } from '@plugin/types';
 
 export class AssetMetadataService {
   constructor(private app: ObsidianApp) {}

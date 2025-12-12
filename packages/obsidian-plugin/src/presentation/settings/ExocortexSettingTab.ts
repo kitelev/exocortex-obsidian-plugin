@@ -1,5 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import type ExocortexPlugin from "../../ExocortexPlugin";
+import type ExocortexPlugin from '@plugin/ExocortexPlugin';
 
 export class ExocortexSettingTab extends PluginSettingTab {
   plugin: ExocortexPlugin;

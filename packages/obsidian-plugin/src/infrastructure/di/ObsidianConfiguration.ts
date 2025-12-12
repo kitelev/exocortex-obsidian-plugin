@@ -1,6 +1,6 @@
 import type { IConfiguration } from "@exocortex/core";
 import { Plugin } from "obsidian";
-import type { ExocortexPluginInterface } from "../../types";
+import type { ExocortexPluginInterface } from '@plugin/types';
 
 export class ObsidianConfiguration implements IConfiguration {
   constructor(private plugin: Plugin) {}

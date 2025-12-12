@@ -1,4 +1,4 @@
-import type { MetadataRecord } from "../../../types";
+import type { MetadataRecord } from '@plugin/types';
 
 export interface AssetRelationFile {
   path: string;

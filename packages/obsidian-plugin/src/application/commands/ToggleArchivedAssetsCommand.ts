@@ -1,6 +1,6 @@
 import { Notice } from "obsidian";
 import { ICommand } from "./ICommand";
-import { ExocortexPluginInterface } from "../../types";
+import { ExocortexPluginInterface } from '@plugin/types';
 
 export class ToggleArchivedAssetsCommand implements ICommand {
   id = "toggle-archived-assets-visibility";

@@ -3,13 +3,13 @@ import type { LabelInputModalResult } from "./LabelInputModal";
 import type {
   OntologySchemaService,
   OntologyPropertyDefinition,
-} from "../../application/services/OntologySchemaService";
+} from '@plugin/application/services/OntologySchemaService';
 import { PropertyFieldType } from "@exocortex/core";
 import {
   PropertyFieldFactory,
   type PropertyFieldInstance,
-} from "../components/property-fields";
-import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
+} from '@plugin/presentation/components/property-fields';
+import { LoggerFactory } from '@plugin/adapters/logging/LoggerFactory';
 
 /**
  * Result from DynamicAssetCreationModal

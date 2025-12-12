@@ -1,18 +1,18 @@
 import { TFile, Keymap } from "obsidian";
-import { ILogger } from "../../adapters/logging/ILogger";
-import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
+import { ILogger } from '@plugin/adapters/logging/ILogger';
+import { ExocortexSettings } from '@plugin/domain/settings/ExocortexSettings';
 import React from "react";
-import { ReactRenderer } from "../utils/ReactRenderer";
+import { ReactRenderer } from '@plugin/presentation/utils/ReactRenderer';
 import {
   DailyProject,
   DailyProjectsTableWithToggle,
-} from "../components/DailyProjectsTable";
+} from '@plugin/presentation/components/DailyProjectsTable';
 import { AssetClass, EffortStatus, IVaultAdapter } from "@exocortex/core";
 import { MetadataExtractor } from "@exocortex/core";
 import { EffortSortingHelpers } from "@exocortex/core";
-import { BlockerHelpers } from "../utils/BlockerHelpers";
+import { BlockerHelpers } from '@plugin/presentation/utils/BlockerHelpers';
 import { DailyNoteHelpers } from "./helpers/DailyNoteHelpers";
-import { ObsidianApp, ExocortexPluginInterface } from "../../types";
+import { ObsidianApp, ExocortexPluginInterface } from '@plugin/types';
 
 export class DailyProjectsRenderer {
   private logger: ILogger;

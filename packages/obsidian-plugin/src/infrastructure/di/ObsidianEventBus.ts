@@ -1,5 +1,5 @@
 import type { IEventBus } from "@exocortex/core";
-import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
+import { LoggerFactory } from '@plugin/adapters/logging/LoggerFactory';
 
 type EventHandler<T = unknown> = (data: T) => void;
 

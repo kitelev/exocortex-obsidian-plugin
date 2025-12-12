@@ -1,35 +1,35 @@
 import { MarkdownPostProcessorContext, TFile } from "obsidian";
 import { container } from "tsyringe";
-import { ILogger } from "../../adapters/logging/ILogger";
-import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
+import { ILogger } from '@plugin/adapters/logging/ILogger';
+import { LoggerFactory } from '@plugin/adapters/logging/LoggerFactory';
 import React from "react";
-import { ReactRenderer } from "../utils/ReactRenderer";
-import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
-import { ActionButtonsGroup } from "../components/ActionButtonsGroup";
+import { ReactRenderer } from '@plugin/presentation/utils/ReactRenderer';
+import { ExocortexSettings } from '@plugin/domain/settings/ExocortexSettings';
+import { ActionButtonsGroup } from '@plugin/presentation/components/ActionButtonsGroup';
 import { TaskCreationService, IVaultAdapter, MetadataExtractor } from "@exocortex/core";
 import { ProjectCreationService, AreaCreationService, ClassCreationService } from "@exocortex/core";
 import { ConceptCreationService, TaskStatusService, PropertyCleanupService } from "@exocortex/core";
 import { FolderRepairService, RenameToUidService, EffortVotingService } from "@exocortex/core";
 import { LabelToAliasService, AssetConversionService } from "@exocortex/core";
-import { BacklinksCacheManager } from "../../adapters/caching/BacklinksCacheManager";
-import { EventListenerManager } from "../../adapters/events/EventListenerManager";
-import { ButtonGroupsBuilder } from "../builders/ButtonGroupsBuilder";
+import { BacklinksCacheManager } from '@plugin/adapters/caching/BacklinksCacheManager';
+import { EventListenerManager } from '@plugin/adapters/events/EventListenerManager';
+import { ButtonGroupsBuilder } from '@plugin/presentation/builders/ButtonGroupsBuilder';
 import { DailyTasksRenderer } from "./DailyTasksRenderer";
 import { DailyProjectsRenderer } from "./DailyProjectsRenderer";
 import { PropertiesRenderer } from "./layout/PropertiesRenderer";
 import { AreaTreeRenderer } from "./layout/AreaTreeRenderer";
 import { RelationsRenderer, UniversalLayoutConfig } from "./layout/RelationsRenderer";
 import { AssetMetadataService } from "./layout/helpers/AssetMetadataService";
-import { PropertyDependencyResolver } from "../../application/services/PropertyDependencyResolver";
-import { FrontmatterDeltaDetector } from "../../application/services/FrontmatterDeltaDetector";
+import { PropertyDependencyResolver } from '@plugin/application/services/PropertyDependencyResolver';
+import { FrontmatterDeltaDetector } from '@plugin/application/services/FrontmatterDeltaDetector';
 import {
   SectionStateManager,
   DailyNavigationRenderer,
   LayoutConfigParser,
   IncrementalUpdateHandler,
 } from "./helpers";
-import { ObsidianApp, ExocortexPluginInterface } from "../../types";
-import { LRUCache } from "../../infrastructure/cache";
+import { ObsidianApp, ExocortexPluginInterface } from '@plugin/types';
+import { LRUCache } from '@plugin/infrastructure/cache';
 
 /**
  * Renders the UniversalLayout view with properties, buttons, daily sections, and relations.

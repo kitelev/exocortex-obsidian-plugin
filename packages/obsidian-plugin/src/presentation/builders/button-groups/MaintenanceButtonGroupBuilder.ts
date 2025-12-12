@@ -1,5 +1,5 @@
 import { TFile } from "obsidian";
-import { ActionButton } from "../../components/ActionButtonsGroup";
+import { ActionButton } from '@plugin/presentation/components/ActionButtonsGroup';
 import {
   canTrashEffort,
   canArchiveTask,
@@ -11,8 +11,8 @@ import {
   canConvertProjectToTask,
   CommandVisibilityContext,
 } from "@exocortex/core";
-import { ILogger } from "../../../adapters/logging/ILogger";
-import { MetadataRecord } from "../../../types";
+import { ILogger } from '@plugin/adapters/logging/ILogger';
+import { MetadataRecord } from '@plugin/types';
 import {
   IButtonGroupBuilder,
   ButtonBuilderContext,

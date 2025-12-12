@@ -1,4 +1,4 @@
-import { EventListenerManager } from "../../../adapters/events/EventListenerManager";
+import { EventListenerManager } from '@plugin/adapters/events/EventListenerManager';
 
 /**
  * Manages collapse/expand state for layout sections

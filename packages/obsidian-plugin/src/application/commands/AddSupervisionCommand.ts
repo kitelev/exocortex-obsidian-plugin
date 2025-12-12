@@ -1,8 +1,8 @@
 import { App, Notice } from "obsidian";
 import { ICommand } from "./ICommand";
 import { SupervisionCreationService, LoggingService } from "@exocortex/core";
-import { SupervisionInputModal, SupervisionFormData } from "../../presentation/modals/SupervisionInputModal";
-import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
+import { SupervisionInputModal, SupervisionFormData } from '@plugin/presentation/modals/SupervisionInputModal';
+import { ObsidianVaultAdapter } from '@plugin/adapters/ObsidianVaultAdapter';
 
 export class AddSupervisionCommand implements ICommand {
   id = "add-supervision";
