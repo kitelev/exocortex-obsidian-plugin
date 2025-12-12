@@ -17,10 +17,14 @@ export class TrashEffortCommand implements ICommand {
     if (!context || !canTrashEffort(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to trash effort: ${error.message}`);
-        LoggingService.error("Trash effort error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to trash effort: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Trash effort error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

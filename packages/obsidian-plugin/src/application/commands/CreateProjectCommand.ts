@@ -23,10 +23,14 @@ export class CreateProjectCommand implements ICommand {
     if (!context || !canCreateProject(context)) return false;
 
     if (!checking) {
-      this.execute(file, context).catch((error) => {
-        new Notice(`Failed to create project: ${error.message}`);
-        LoggingService.error("Create project error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file, context);
+        } catch (error) {
+          new Notice(`Failed to create project: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Create project error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

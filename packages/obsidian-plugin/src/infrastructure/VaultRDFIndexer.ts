@@ -84,9 +84,13 @@ export class VaultRDFIndexer {
     this.eventRefs.push(
       this.app.vault.on("modify", (file) => {
         if (file instanceof TFile) {
-          this.updateFile(file).catch((error) => {
-            this.handleFileError("modify", file.path, error);
-          });
+          void (async () => {
+            try {
+              await this.updateFile(file);
+            } catch (error) {
+              this.handleFileError("modify", file.path, error);
+            }
+          })();
         }
       })
     );
@@ -94,9 +98,13 @@ export class VaultRDFIndexer {
     this.eventRefs.push(
       this.app.vault.on("delete", (file) => {
         if (file instanceof TFile) {
-          this.removeFile(file).catch((error) => {
-            this.handleFileError("delete", file.path, error);
-          });
+          void (async () => {
+            try {
+              await this.removeFile(file);
+            } catch (error) {
+              this.handleFileError("delete", file.path, error);
+            }
+          })();
         }
       })
     );
@@ -104,9 +112,13 @@ export class VaultRDFIndexer {
     this.eventRefs.push(
       this.app.vault.on("create", (file) => {
         if (file instanceof TFile) {
-          this.updateFile(file).catch((error) => {
-            this.handleFileError("create", file.path, error);
-          });
+          void (async () => {
+            try {
+              await this.updateFile(file);
+            } catch (error) {
+              this.handleFileError("create", file.path, error);
+            }
+          })();
         }
       })
     );
@@ -114,9 +126,13 @@ export class VaultRDFIndexer {
     this.eventRefs.push(
       this.app.vault.on("rename", (file, oldPath) => {
         if (file instanceof TFile) {
-          this.renameFile(file, oldPath).catch((error) => {
-            this.handleFileError("rename", file.path, error, { oldPath });
-          });
+          void (async () => {
+            try {
+              await this.renameFile(file, oldPath);
+            } catch (error) {
+              this.handleFileError("rename", file.path, error, { oldPath });
+            }
+          })();
         }
       })
     );

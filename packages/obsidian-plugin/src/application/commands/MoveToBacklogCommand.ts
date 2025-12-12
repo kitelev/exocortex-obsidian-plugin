@@ -17,10 +17,14 @@ export class MoveToBacklogCommand implements ICommand {
     if (!context || !canMoveToBacklog(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to move to backlog: ${error.message}`);
-        LoggingService.error("Move to backlog error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to move to backlog: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Move to backlog error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

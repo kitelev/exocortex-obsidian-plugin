@@ -17,10 +17,14 @@ export class RenameToUidCommand implements ICommand {
     if (!context || !canRenameToUid(context, file.basename)) return false;
 
     if (!checking) {
-      this.execute(file, context.metadata).catch((error) => {
-        new Notice(`Failed to rename: ${error.message}`);
-        LoggingService.error("Rename to UID error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file, context.metadata);
+        } catch (error) {
+          new Notice(`Failed to rename: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Rename to UID error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

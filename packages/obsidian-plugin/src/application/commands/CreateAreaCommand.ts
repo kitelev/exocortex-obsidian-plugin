@@ -23,10 +23,14 @@ export class CreateAreaCommand implements ICommand {
     if (!context || !canCreateChildArea(context)) return false;
 
     if (!checking) {
-      this.execute(file, context).catch((error) => {
-        new Notice(`Failed to create area: ${error.message}`);
-        LoggingService.error("Create area error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file, context);
+        } catch (error) {
+          new Notice(`Failed to create area: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Create area error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

@@ -201,9 +201,10 @@ describe("MarkDoneCommand", () => {
       await flushPromises();
 
       expect(mockTaskStatusService.markTaskAsDone).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Mark done error", error);
-      // Since error doesn't have message property, it will use error.message which is undefined
-      expect(Notice).toHaveBeenCalledWith("Failed to mark as done: undefined");
+      // Since error is not an Error instance, undefined is passed to LoggingService.error
+      expect(LoggingService.error).toHaveBeenCalledWith("Mark done error", undefined);
+      // Since error is not an Error instance, String(error) is used which calls toString()
+      expect(Notice).toHaveBeenCalledWith("Failed to mark as done: Custom error");
     });
   });
 });

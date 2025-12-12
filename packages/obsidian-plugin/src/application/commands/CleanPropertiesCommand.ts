@@ -17,10 +17,14 @@ export class CleanPropertiesCommand implements ICommand {
     if (!context || !canCleanProperties(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to clean properties: ${error.message}`);
-        LoggingService.error("Clean properties error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to clean properties: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Clean properties error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

@@ -18,10 +18,14 @@ export class RepairFolderCommand implements ICommand {
     if (!metadata?.exo__Asset_isDefinedBy) return false;
 
     if (!checking) {
-      this.execute(file, metadata).catch((error) => {
-        new Notice(`Failed to repair folder: ${error.message}`);
-        LoggingService.error("Repair folder error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file, metadata);
+        } catch (error) {
+          new Notice(`Failed to repair folder: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Repair folder error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

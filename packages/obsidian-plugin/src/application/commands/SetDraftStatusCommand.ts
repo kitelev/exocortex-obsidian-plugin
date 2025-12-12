@@ -17,10 +17,14 @@ export class SetDraftStatusCommand implements ICommand {
     if (!context || !canSetDraftStatus(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to set draft status: ${error.message}`);
-        LoggingService.error("Set draft status error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to set draft status: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Set draft status error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

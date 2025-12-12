@@ -17,10 +17,14 @@ export class CopyLabelToAliasesCommand implements ICommand {
     if (!context || !canCopyLabelToAliases(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to copy label: ${error.message}`);
-        LoggingService.error("Copy label to aliases error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to copy label: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Copy label to aliases error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

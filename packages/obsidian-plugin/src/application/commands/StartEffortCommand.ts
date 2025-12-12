@@ -17,10 +17,14 @@ export class StartEffortCommand implements ICommand {
     if (!context || !canStartEffort(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to start effort: ${error.message}`);
-        LoggingService.error("Start effort error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to start effort: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Start effort error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

@@ -17,10 +17,14 @@ export class VoteOnEffortCommand implements ICommand {
     if (!context || !canVoteOnEffort(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to vote: ${error.message}`);
-        LoggingService.error("Vote on effort error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to vote: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Vote on effort error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

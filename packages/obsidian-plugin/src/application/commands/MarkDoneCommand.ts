@@ -17,10 +17,14 @@ export class MarkDoneCommand implements ICommand {
     if (!context || !canMarkDone(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to mark as done: ${error.message}`);
-        LoggingService.error("Mark done error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to mark as done: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Mark done error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

@@ -27,10 +27,14 @@ export class CreateTaskCommand implements ICommand {
     if (!context || !canCreateTask(context)) return false;
 
     if (!checking) {
-      this.execute(file, context).catch((error) => {
-        new Notice(`Failed to create task: ${error.message}`);
-        LoggingService.error("Create task error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file, context);
+        } catch (error) {
+          new Notice(`Failed to create task: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Create task error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

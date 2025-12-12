@@ -17,10 +17,14 @@ export class ArchiveTaskCommand implements ICommand {
     if (!context || !canArchiveTask(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to archive task: ${error.message}`);
-        LoggingService.error("Archive task error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to archive task: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Archive task error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

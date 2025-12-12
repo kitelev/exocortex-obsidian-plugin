@@ -17,10 +17,14 @@ export class ShiftDayBackwardCommand implements ICommand {
     if (!context || !canShiftDayBackward(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to shift day backward: ${error.message}`);
-        LoggingService.error("Shift day backward error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to shift day backward: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Shift day backward error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;
