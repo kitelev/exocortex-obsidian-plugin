@@ -16,10 +16,10 @@ export const RenameToUidButton: React.FC<RenameToUidButtonProps> = ({
   onRename,
 }) => {
   const context = {
-    instanceClass: metadata.exo__Instance_class || null,
-    currentStatus: metadata.ems__Effort_status || null,
+    instanceClass: (metadata.exo__Instance_class as string | string[] | null) || null,
+    currentStatus: (metadata.ems__Effort_status as string | string[] | null) || null,
     metadata,
-    isArchived: metadata.archived ?? metadata.exo__Asset_isArchived ?? false,
+    isArchived: Boolean(metadata.archived ?? metadata.exo__Asset_isArchived ?? false),
     currentFolder: file.parent?.path || "",
     expectedFolder: null,
   };
