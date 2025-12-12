@@ -44,4 +44,30 @@ export class ObsidianEventBus implements IEventBus {
       }
     }
   }
+
+  /**
+   * Returns the total number of registered handlers across all events.
+   */
+  getHandlerCount(): number {
+    let count = 0;
+    for (const handlers of this.handlers.values()) {
+      count += handlers.size;
+    }
+    return count;
+  }
+
+  /**
+   * Returns the number of distinct event types being listened to.
+   */
+  getEventCount(): number {
+    return this.handlers.size;
+  }
+
+  /**
+   * Clears all event handlers.
+   * Should be called in onunload() or cleanup() methods.
+   */
+  cleanup(): void {
+    this.handlers.clear();
+  }
 }

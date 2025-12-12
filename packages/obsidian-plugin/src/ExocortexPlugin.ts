@@ -26,6 +26,7 @@ import { SPARQLApi } from "./application/api/SPARQLApi";
 import { PluginContainer } from "./infrastructure/di/PluginContainer";
 import { createAliasIconExtension } from "./presentation/editor-extensions";
 import { TimerManager } from "./infrastructure/timer";
+import { LRUCache } from "./infrastructure/cache";
 
 /**
  * Exocortex Plugin - Automatic layout rendering
@@ -40,7 +41,8 @@ export default class ExocortexPlugin extends Plugin {
   private taskTrackingService!: TaskTrackingService;
   private aliasSyncService!: AliasSyncService;
   private wikilinkAliasService!: WikilinkAliasService;
-  private metadataCache!: Map<string, Record<string, unknown>>;
+  // Use LRU cache with max 1000 entries to prevent unbounded memory growth
+  private metadataCache!: LRUCache<string, Record<string, unknown>>;
   vaultAdapter!: ObsidianVaultAdapter;
   private sparqlProcessor!: SPARQLCodeBlockProcessor;
   sparql!: SPARQLApi;
@@ -85,7 +87,7 @@ export default class ExocortexPlugin extends Plugin {
         this.app,
         this.app.metadataCache,
       );
-      this.metadataCache = new Map();
+      this.metadataCache = new LRUCache(1000);
       this.sparqlProcessor = new SPARQLCodeBlockProcessor(this);
       this.sparql = new SPARQLApi(this);
 
@@ -175,8 +177,23 @@ export default class ExocortexPlugin extends Plugin {
 
     this.removeAutoRenderedLayouts();
 
+    // Cleanup SPARQL processor
+    if (this.sparqlProcessor) {
+      this.sparqlProcessor.cleanup();
+    }
+
     if (this.sparql) {
       await this.sparql.dispose();
+    }
+
+    // Cleanup layout renderer (includes backlinks cache, metadata cache, etc.)
+    if (this.layoutRenderer) {
+      this.layoutRenderer.cleanup();
+    }
+
+    // Cleanup metadata cache
+    if (this.metadataCache) {
+      this.metadataCache.cleanup();
     }
 
     this.logger?.info("Exocortex Plugin unloaded");

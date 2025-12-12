@@ -427,4 +427,35 @@ export class SPARQLCodeBlockProcessor {
       React.createElement(SPARQLErrorView, { error: sparqlError }),
     );
   }
+
+  /**
+   * Returns the number of active queries being tracked.
+   */
+  getActiveQueryCount(): number {
+    return this.activeQueries.size;
+  }
+
+  /**
+   * Cleans up all active queries, timers, and event refs.
+   * Should be called in onunload() methods.
+   */
+  cleanup(): void {
+    // Clear all active query timeouts and event refs
+    for (const [el, query] of this.activeQueries.entries()) {
+      if (query.refreshTimeout) {
+        clearTimeout(query.refreshTimeout);
+      }
+      if (query.eventRef) {
+        this.plugin.app.metadataCache.offref(query.eventRef);
+      }
+      this.activeQueries.delete(el);
+    }
+
+    // Clear React renderer
+    this.reactRenderer.cleanup();
+
+    // Clear triple store
+    this.tripleStore = null;
+    this.isLoading = false;
+  }
 }

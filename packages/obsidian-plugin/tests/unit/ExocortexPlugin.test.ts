@@ -119,6 +119,7 @@ describe("ExocortexPlugin", () => {
     mockLayoutRenderer = {
       render: jest.fn().mockResolvedValue(undefined),
       invalidateBacklinksCache: jest.fn(),
+      cleanup: jest.fn(),
     };
     (UniversalLayoutRenderer as jest.Mock).mockImplementation(() => mockLayoutRenderer);
 
@@ -148,6 +149,7 @@ describe("ExocortexPlugin", () => {
     // Setup mock SPARQL processor
     mockSparqlProcessor = {
       process: jest.fn(),
+      cleanup: jest.fn(),
     };
     (SPARQLCodeBlockProcessor as jest.Mock).mockImplementation(() => mockSparqlProcessor);
 
