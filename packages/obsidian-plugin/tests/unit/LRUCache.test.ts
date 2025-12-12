@@ -321,6 +321,7 @@ describe("LRUCache", () => {
       expect(stats.hits).toBe(0);
       expect(stats.misses).toBe(0);
       expect(stats.evictions).toBe(0);
+      expect(stats.expirations).toBe(0);
     });
   });
 
