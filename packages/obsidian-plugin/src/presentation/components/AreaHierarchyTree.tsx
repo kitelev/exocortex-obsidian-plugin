@@ -10,10 +10,13 @@ export interface AreaNode {
   children: AreaNode[];
 }
 
+/** Event type for area click handler - supports both mouse and keyboard interaction */
+export type AreaClickEvent = React.MouseEvent | React.KeyboardEvent;
+
 export interface AreaHierarchyTreeProps {
   tree: AreaNode;
   currentAreaPath: string;
-  onAreaClick?: (path: string, event: React.MouseEvent) => void;
+  onAreaClick?: (path: string, event: AreaClickEvent) => void;
   getAssetLabel?: (path: string) => string | null;
 }
 
@@ -21,7 +24,7 @@ interface AreaTreeNodeProps {
   node: AreaNode;
   currentAreaPath: string;
   depth: number;
-  onAreaClick?: (path: string, event: React.MouseEvent) => void;
+  onAreaClick?: (path: string, event: AreaClickEvent) => void;
   getAssetLabel?: (path: string) => string | null;
 }
 
@@ -65,7 +68,7 @@ const AreaTreeNode: React.FC<AreaTreeNodeProps> = ({
       case "Enter":
       case " ":
         e.preventDefault();
-        onAreaClick?.(node.path, e as any);
+        onAreaClick?.(node.path, e);
         break;
     }
   };

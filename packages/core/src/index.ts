@@ -84,7 +84,11 @@ export { SPARQLParser, SPARQLParseError, type SPARQLQuery, type SelectQuery, typ
 export { AlgebraTranslator } from "./infrastructure/sparql/algebra/AlgebraTranslator";
 export { AlgebraOptimizer } from "./infrastructure/sparql/algebra/AlgebraOptimizer";
 export { AlgebraSerializer } from "./infrastructure/sparql/algebra/AlgebraSerializer";
-export type { AlgebraOperation } from "./infrastructure/sparql/algebra/AlgebraOperation";
+export type {
+  AlgebraOperation,
+  ConstructOperation,
+  Triple as AlgebraTriple,
+} from "./infrastructure/sparql/algebra/AlgebraOperation";
 export { BGPExecutor } from "./infrastructure/sparql/executors/BGPExecutor";
 export { FilterExecutor } from "./infrastructure/sparql/executors/FilterExecutor";
 export { OptionalExecutor } from "./infrastructure/sparql/executors/OptionalExecutor";

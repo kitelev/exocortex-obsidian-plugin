@@ -12,6 +12,9 @@ import {
   type SPARQLQuery,
   type SolutionMapping,
   type Triple,
+  type AlgebraOperation,
+  type ConstructOperation,
+  type AlgebraTriple,
 } from "@exocortex/core";
 import type ExocortexPlugin from "../../ExocortexPlugin";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
@@ -337,17 +340,18 @@ export class SPARQLCodeBlockProcessor {
     return /^\s*CONSTRUCT\s+/i.test(queryString);
   }
 
-  private async executeConstructQuery(algebra: any): Promise<Triple[]> {
+  private async executeConstructQuery(algebra: AlgebraOperation): Promise<Triple[]> {
     if (!this.tripleStore) {
       throw new Error("Triple store not initialized");
     }
 
-    let operation = algebra;
-    let template: any[] = [];
+    let operation: AlgebraOperation = algebra;
+    let template: AlgebraTriple[] = [];
 
     if (operation.type === "construct") {
-      template = operation.template;
-      operation = operation.input;
+      const constructOp = operation as ConstructOperation;
+      template = constructOp.template;
+      operation = constructOp.where;
     }
 
     const solutions = await this.executeAlgebra(operation);
@@ -356,7 +360,7 @@ export class SPARQLCodeBlockProcessor {
     return await constructExecutor.execute(template, solutions);
   }
 
-  private async executeAlgebra(algebra: any): Promise<SolutionMapping[]> {
+  private async executeAlgebra(algebra: AlgebraOperation): Promise<SolutionMapping[]> {
     if (!this.tripleStore) {
       throw new Error("Triple store not initialized");
     }

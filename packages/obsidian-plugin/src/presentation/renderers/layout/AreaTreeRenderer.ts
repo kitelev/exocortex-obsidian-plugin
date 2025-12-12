@@ -2,7 +2,7 @@ import { TFile, Keymap } from "obsidian";
 import React from "react";
 import { ReactRenderer } from "../../utils/ReactRenderer";
 import { MetadataExtractor, AssetClass, AreaHierarchyBuilder, IVaultAdapter } from "@exocortex/core";
-import { AreaHierarchyTree } from "../../components/AreaHierarchyTree";
+import { AreaHierarchyTree, type AreaClickEvent } from "../../components/AreaHierarchyTree";
 import { AssetMetadataService } from "./helpers/AssetMetadataService";
 import { AssetRelation } from "./types";
 import { ILogger } from "../../../adapters/logging/ILogger";
@@ -76,10 +76,10 @@ export class AreaTreeRenderer {
       React.createElement(AreaHierarchyTree, {
         tree,
         currentAreaPath: file.path,
-        onAreaClick: async (path: string, event: React.MouseEvent) => {
-          const isModPressed = Keymap.isModEvent(
-            event.nativeEvent as MouseEvent,
-          );
+        onAreaClick: async (path: string, event: AreaClickEvent) => {
+          // Check for modifier key press - works for both mouse and keyboard events
+          const nativeEvent = event.nativeEvent as MouseEvent | KeyboardEvent;
+          const isModPressed = Keymap.isModEvent(nativeEvent);
 
           if (isModPressed) {
             const leaf = this.app.workspace.getLeaf("tab");

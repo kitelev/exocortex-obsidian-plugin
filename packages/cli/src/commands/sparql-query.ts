@@ -9,8 +9,10 @@ import {
   AlgebraSerializer,
   QueryExecutor,
   NoteToRDFConverter,
+  Triple,
   type SolutionMapping,
   type AlgebraOperation,
+  type ConstructOperation,
 } from "@exocortex/core";
 import { FileSystemVaultAdapter } from "../adapters/FileSystemVaultAdapter.js";
 import { TableFormatter } from "../formatters/TableFormatter.js";
@@ -89,17 +91,22 @@ export function sparqlQueryCommand(): Command {
         } else if (!options.noOptimize && algebra.type === "construct") {
           // Optimize the WHERE clause inside CONSTRUCT
           const optimizer = new AlgebraOptimizer();
-          (algebra as any).where = optimizer.optimize((algebra as any).where);
+          const constructOp = algebra as ConstructOperation;
+          algebra = {
+            ...constructOp,
+            where: optimizer.optimize(constructOp.where),
+          };
         }
 
         if (options.explain && outputFormat === "text") {
           console.log(`📊 Query Plan:`);
           const serializer = new AlgebraSerializer();
           if (algebra.type === "construct") {
+            const constructOp = algebra as ConstructOperation;
             console.log("CONSTRUCT Template:");
             console.log("  (template patterns)");
             console.log("WHERE:");
-            console.log(serializer.toString((algebra as any).where));
+            console.log(serializer.toString(constructOp.where));
           } else {
             console.log(serializer.toString(algebra));
           }
@@ -231,7 +238,7 @@ function formatSelectResults(results: SolutionMapping[], format: string): void {
   }
 }
 
-function formatConstructResults(triples: any[], format: string): void {
+function formatConstructResults(triples: Triple[], format: string): void {
   const formatter = new TriplesFormatter();
 
   switch (format) {

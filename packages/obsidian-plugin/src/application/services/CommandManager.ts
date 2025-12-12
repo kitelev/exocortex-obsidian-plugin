@@ -6,7 +6,7 @@ import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 import { CommandVisibilityContext } from "@exocortex/core";
 
 export class CommandManager {
-  private commandRegistry: CommandRegistry;
+  private commandRegistry: CommandRegistry | null = null;
   private metadataExtractor: MetadataExtractor;
   private vaultAdapter: ObsidianVaultAdapter;
 
@@ -17,7 +17,8 @@ export class CommandManager {
       app,
     );
     this.metadataExtractor = new MetadataExtractor(this.vaultAdapter);
-    this.commandRegistry = new CommandRegistry(app, {} as ExocortexPluginInterface);
+    // CommandRegistry is lazily initialized in registerAllCommands()
+    // to avoid needing a placeholder plugin instance
   }
 
   registerAllCommands(

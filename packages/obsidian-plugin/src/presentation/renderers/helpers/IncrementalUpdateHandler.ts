@@ -1,4 +1,5 @@
 import React from "react";
+import { TFile } from "obsidian";
 import { EventListenerManager } from "../../../adapters/events/EventListenerManager";
 import { BacklinksCacheManager } from "../../../adapters/caching/BacklinksCacheManager";
 import { ReactRenderer } from "../../utils/ReactRenderer";
@@ -44,7 +45,7 @@ export class IncrementalUpdateHandler {
 
   async updateSections(
     rootContainer: HTMLElement,
-    file: any,
+    file: TFile,
     sections: LayoutSection[],
     config: UniversalLayoutConfig,
   ): Promise<void> {
@@ -63,7 +64,7 @@ export class IncrementalUpdateHandler {
 
   private async updateSection(
     rootContainer: HTMLElement,
-    file: any,
+    file: TFile,
     section: LayoutSection,
     config: UniversalLayoutConfig,
     renderHeader: RenderHeaderFn,
@@ -92,7 +93,7 @@ export class IncrementalUpdateHandler {
   private async updateProperties(
     rootContainer: HTMLElement,
     container: HTMLElement,
-    file: any,
+    file: TFile,
     renderHeader: RenderHeaderFn,
   ): Promise<void> {
     container.empty();
@@ -109,7 +110,7 @@ export class IncrementalUpdateHandler {
   private async updateButtons(
     rootContainer: HTMLElement,
     container: HTMLElement,
-    file: any,
+    file: TFile,
   ): Promise<void> {
     container.remove();
     const buttonGroups = await this.deps.buttonGroupsBuilder.build(file);
@@ -125,7 +126,7 @@ export class IncrementalUpdateHandler {
   private async updateRelationSection(
     rootContainer: HTMLElement,
     container: HTMLElement,
-    file: any,
+    file: TFile,
     section: LayoutSection,
     config: UniversalLayoutConfig,
     renderHeader: RenderHeaderFn,
