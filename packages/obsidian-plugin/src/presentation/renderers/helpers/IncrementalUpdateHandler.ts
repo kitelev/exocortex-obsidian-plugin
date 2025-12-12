@@ -69,10 +69,10 @@ export class IncrementalUpdateHandler {
     config: UniversalLayoutConfig,
     renderHeader: RenderHeaderFn,
   ): Promise<void> {
-    const container = rootContainer.querySelector(
-      IncrementalUpdateHandler.SECTION_SELECTORS[section]
-    ) as HTMLElement;
-    if (!container) return;
+    const selector = IncrementalUpdateHandler.SECTION_SELECTORS[section];
+    const containerElement = rootContainer.querySelector(selector);
+    if (!(containerElement instanceof HTMLElement)) return;
+    const container = containerElement;
 
     switch (section) {
       case LayoutSection.PROPERTIES:
