@@ -3,7 +3,7 @@ import {
   parseLocalDate,
   formatForInput,
   formatDisplayValue,
-} from "../../utils/dateTimeUtils";
+} from '@plugin/presentation/utils/dateTimeUtils';
 
 export interface DateTimePropertyFieldProps {
   value: string | null;

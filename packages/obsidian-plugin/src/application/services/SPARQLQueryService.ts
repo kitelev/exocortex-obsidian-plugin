@@ -14,8 +14,8 @@ import {
   type ILogger,
   type INotificationService,
 } from "@exocortex/core";
-import { VaultRDFIndexer } from "../../infrastructure/VaultRDFIndexer";
-import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
+import { VaultRDFIndexer } from '@plugin/infrastructure/VaultRDFIndexer';
+import { LoggerFactory } from '@plugin/adapters/logging/LoggerFactory';
 
 export class SPARQLQueryService {
   private indexer: VaultRDFIndexer;

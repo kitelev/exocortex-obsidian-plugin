@@ -1,7 +1,7 @@
 import React from "react";
 import { TFile } from "obsidian";
 import { canCleanProperties, CommandVisibilityContext } from "@exocortex/core";
-import type { MetadataRecord } from "../../types";
+import type { MetadataRecord } from '@plugin/types';
 
 export interface CleanEmptyPropertiesButtonProps {
   sourceFile: TFile;

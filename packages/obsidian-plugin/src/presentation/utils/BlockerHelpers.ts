@@ -1,5 +1,5 @@
 import { EffortStatus } from "@exocortex/core";
-import { ObsidianApp } from "../../types";
+import { ObsidianApp } from '@plugin/types';
 
 export class BlockerHelpers {
   /**

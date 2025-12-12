@@ -1,5 +1,5 @@
 import { TFile } from "obsidian";
-import { ActionButton } from "../../components/ActionButtonsGroup";
+import { ActionButton } from '@plugin/presentation/components/ActionButtonsGroup';
 import {
   canSetDraftStatus,
   canMoveToBacklog,
@@ -10,7 +10,7 @@ import {
   canRollbackStatus,
   CommandVisibilityContext,
 } from "@exocortex/core";
-import { ILogger } from "../../../adapters/logging/ILogger";
+import { ILogger } from '@plugin/adapters/logging/ILogger';
 import {
   IButtonGroupBuilder,
   ButtonBuilderContext,

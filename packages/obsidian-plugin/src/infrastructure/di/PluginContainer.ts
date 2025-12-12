@@ -5,13 +5,13 @@ import {
   DI_TOKENS,
   registerCoreServices,
 } from "@exocortex/core";
-import { ObsidianLogger } from "./ObsidianLogger";
-import { ObsidianEventBus } from "./ObsidianEventBus";
-import { ObsidianConfiguration } from "./ObsidianConfiguration";
-import { ObsidianNotificationService } from "./ObsidianNotificationService";
-import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
-import { SingleVaultContext } from "../vault/SingleVaultContext";
-import { SingleVaultManager } from "../vault/SingleVaultManager";
+import { ObsidianLogger } from "@plugin/infrastructure/di/ObsidianLogger";
+import { ObsidianEventBus } from "@plugin/infrastructure/di/ObsidianEventBus";
+import { ObsidianConfiguration } from "@plugin/infrastructure/di/ObsidianConfiguration";
+import { ObsidianNotificationService } from "@plugin/infrastructure/di/ObsidianNotificationService";
+import { ObsidianVaultAdapter } from '@plugin/adapters/ObsidianVaultAdapter';
+import { SingleVaultContext } from '@plugin/infrastructure/vault/SingleVaultContext';
+import { SingleVaultManager } from '@plugin/infrastructure/vault/SingleVaultManager';
 
 export class PluginContainer {
   static setup(app: App, plugin: Plugin): void {

@@ -1,20 +1,20 @@
 import { TFile, Keymap } from "obsidian";
-import { ILogger } from "../../adapters/logging/ILogger";
-import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
+import { ILogger } from '@plugin/adapters/logging/ILogger';
+import { ExocortexSettings } from '@plugin/domain/settings/ExocortexSettings';
 import React from "react";
-import { ReactRenderer } from "../utils/ReactRenderer";
+import { ReactRenderer } from '@plugin/presentation/utils/ReactRenderer';
 import {
   DailyTask,
   DailyTasksTableWithToggle,
-} from "../components/DailyTasksTable";
+} from '@plugin/presentation/components/DailyTasksTable';
 import { AssetClass, EffortStatus, IVaultAdapter } from "@exocortex/core";
 import { MetadataExtractor } from "@exocortex/core";
 import { EffortSortingHelpers } from "@exocortex/core";
 import { AssetMetadataService } from "./layout/helpers/AssetMetadataService";
 import { DailyNoteHelpers } from "./helpers/DailyNoteHelpers";
-import { BlockerHelpers } from "../utils/BlockerHelpers";
-import { getStatusLabel } from "../../domain/property-editor/PropertySchemas";
-import { ObsidianApp, ExocortexPluginInterface } from "../../types";
+import { BlockerHelpers } from '@plugin/presentation/utils/BlockerHelpers';
+import { getStatusLabel } from '@plugin/domain/property-editor/PropertySchemas';
+import { ObsidianApp, ExocortexPluginInterface } from '@plugin/types';
 
 export class DailyTasksRenderer {
   private logger: ILogger;

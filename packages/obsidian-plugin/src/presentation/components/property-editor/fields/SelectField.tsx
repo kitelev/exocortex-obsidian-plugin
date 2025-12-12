@@ -1,9 +1,9 @@
 import React, { useCallback } from "react";
-import type { PropertySchemaDefinition } from "../../../../domain/property-editor/PropertySchemas";
+import type { PropertySchemaDefinition } from '@plugin/domain/property-editor/PropertySchemas';
 import {
   EFFORT_STATUS_VALUES,
   TASK_SIZE_VALUES,
-} from "../../../../domain/property-editor/PropertySchemas";
+} from '@plugin/domain/property-editor/PropertySchemas';
 
 export interface SelectFieldProps {
   property: PropertySchemaDefinition;

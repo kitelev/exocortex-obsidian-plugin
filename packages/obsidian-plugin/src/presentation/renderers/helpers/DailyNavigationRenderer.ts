@@ -1,8 +1,8 @@
 import { TFile } from "obsidian";
-import { ILogger } from "../../../adapters/logging/ILogger";
+import { ILogger } from '@plugin/adapters/logging/ILogger';
 import { MetadataExtractor, IVaultAdapter, DateFormatter, IFile } from "@exocortex/core";
 import { DailyNoteHelpers } from "./DailyNoteHelpers";
-import { ObsidianApp } from "../../../types";
+import { ObsidianApp } from '@plugin/types';
 
 /**
  * Renders daily note navigation (previous/next day links)

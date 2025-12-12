@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import type { PropertySchemaDefinition } from "../../../../domain/property-editor/PropertySchemas";
+import type { PropertySchemaDefinition } from '@plugin/domain/property-editor/PropertySchemas';
 
 export interface WikiLinkFieldProps {
   property: PropertySchemaDefinition;

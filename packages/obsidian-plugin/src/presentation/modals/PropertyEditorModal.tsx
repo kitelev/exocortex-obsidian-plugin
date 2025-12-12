@@ -1,12 +1,12 @@
 import { Modal, App, Notice, TFile } from "obsidian";
 import React from "react";
 import { FrontmatterService } from "@exocortex/core";
-import { ExocortexPluginInterface } from "../../types";
-import { ReactRenderer } from "../utils/ReactRenderer";
-import { PropertyEditorForm } from "../components/property-editor/PropertyEditorForm";
-import { ErrorBoundary } from "../components/ErrorBoundary";
-import { formatPropertyValue } from "../../domain/property-editor/formatPropertyValue";
-import { extractInstanceClass } from "../../domain/property-editor/extractInstanceClass";
+import { ExocortexPluginInterface } from '@plugin/types';
+import { ReactRenderer } from '@plugin/presentation/utils/ReactRenderer';
+import { PropertyEditorForm } from '@plugin/presentation/components/property-editor/PropertyEditorForm';
+import { ErrorBoundary } from '@plugin/presentation/components/ErrorBoundary';
+import { formatPropertyValue } from '@plugin/domain/property-editor/formatPropertyValue';
+import { extractInstanceClass } from '@plugin/domain/property-editor/extractInstanceClass';
 
 export class PropertyEditorModal extends Modal {
   private plugin: ExocortexPluginInterface;

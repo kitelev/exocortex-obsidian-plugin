@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from "react";
-import type { PropertySchemaDefinition } from "../../../domain/property-editor/PropertySchemas";
-import { getPropertySchemaForClass } from "../../../domain/property-editor/PropertySchemas";
+import type { PropertySchemaDefinition } from '@plugin/domain/property-editor/PropertySchemas';
+import { getPropertySchemaForClass } from '@plugin/domain/property-editor/PropertySchemas';
 import {
   TextField,
   SelectField,

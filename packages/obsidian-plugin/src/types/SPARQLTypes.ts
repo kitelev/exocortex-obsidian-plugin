@@ -10,6 +10,6 @@ export type {
 export type {
   QueryResult,
   ConstructResult,
-} from "../application/api/SPARQLApi";
+} from '@plugin/application/api/SPARQLApi';
 
-export { SPARQLApi } from "../application/api/SPARQLApi";
+export { SPARQLApi } from '@plugin/application/api/SPARQLApi';

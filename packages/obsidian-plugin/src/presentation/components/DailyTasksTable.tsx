@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState, useLayoutEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { MetadataHelpers, EffortSortingHelpers } from "@exocortex/core";
-import { useTableSortStore, useUIStore } from "../stores";
+import { useTableSortStore, useUIStore } from '@plugin/presentation/stores';
 
 export interface DailyTask {
   file: {

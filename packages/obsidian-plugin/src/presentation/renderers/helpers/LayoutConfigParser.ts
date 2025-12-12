@@ -1,4 +1,4 @@
-import { UniversalLayoutConfig } from "../layout/RelationsRenderer";
+import { UniversalLayoutConfig } from '@plugin/presentation/renderers/layout/RelationsRenderer';
 
 /**
  * Parses layout configuration from code block source

@@ -1,6 +1,6 @@
 import { App, Modal } from "obsidian";
 import { MetadataExtractor } from "@exocortex/core";
-import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
+import { ObsidianVaultAdapter } from '@plugin/adapters/ObsidianVaultAdapter';
 import { AssetClass } from "@exocortex/core";
 
 export interface AreaSelectionModalResult {

@@ -4,7 +4,7 @@
 
 import type { App, Plugin, TFile } from "obsidian";
 import type { IVaultAdapter } from "@exocortex/core";
-import type ExocortexPlugin from "../ExocortexPlugin";
+import type ExocortexPlugin from '@plugin/ExocortexPlugin';
 
 /**
  * Metadata extracted from Obsidian frontmatter

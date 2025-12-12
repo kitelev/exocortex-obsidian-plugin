@@ -1,12 +1,12 @@
 import { TFile, Keymap } from "obsidian";
 import React from "react";
-import { ReactRenderer } from "../../utils/ReactRenderer";
+import { ReactRenderer } from '@plugin/presentation/utils/ReactRenderer';
 import { MetadataExtractor, AssetClass, AreaHierarchyBuilder, IVaultAdapter } from "@exocortex/core";
-import { AreaHierarchyTree, type AreaClickEvent } from "../../components/AreaHierarchyTree";
+import { AreaHierarchyTree, type AreaClickEvent } from '@plugin/presentation/components/AreaHierarchyTree';
 import { AssetMetadataService } from "./helpers/AssetMetadataService";
 import { AssetRelation } from "./types";
-import { ILogger } from "../../../adapters/logging/ILogger";
-import { ObsidianApp } from "../../../types";
+import { ILogger } from '@plugin/adapters/logging/ILogger';
+import { ObsidianApp } from '@plugin/types';
 
 export class AreaTreeRenderer {
   constructor(

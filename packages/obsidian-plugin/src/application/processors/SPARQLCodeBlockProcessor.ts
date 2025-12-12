@@ -16,12 +16,12 @@ import {
   type ConstructOperation,
   type AlgebraTriple,
 } from "@exocortex/core";
-import type ExocortexPlugin from "../../ExocortexPlugin";
-import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
-import { ReactRenderer } from "../../presentation/utils/ReactRenderer";
-import { SPARQLResultViewer } from "../../presentation/components/sparql/SPARQLResultViewer";
-import { SPARQLErrorView, type SPARQLError } from "../../presentation/components/sparql/SPARQLErrorView";
-import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
+import type ExocortexPlugin from '@plugin/ExocortexPlugin';
+import { ObsidianVaultAdapter } from '@plugin/adapters/ObsidianVaultAdapter';
+import { ReactRenderer } from '@plugin/presentation/utils/ReactRenderer';
+import { SPARQLResultViewer } from '@plugin/presentation/components/sparql/SPARQLResultViewer';
+import { SPARQLErrorView, type SPARQLError } from '@plugin/presentation/components/sparql/SPARQLErrorView';
+import { LoggerFactory } from '@plugin/adapters/logging/LoggerFactory';
 
 class SPARQLCleanupComponent extends MarkdownRenderChild {
   constructor(

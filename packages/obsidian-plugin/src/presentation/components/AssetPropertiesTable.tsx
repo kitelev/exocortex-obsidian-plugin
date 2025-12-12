@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { TFile } from "obsidian";
-import { PropertyUpdateService } from "../../application/services/PropertyUpdateService";
-import { PropertyValidationService } from "../../application/services/PropertyValidationService";
+import { PropertyUpdateService } from '@plugin/application/services/PropertyUpdateService';
+import { PropertyValidationService } from '@plugin/application/services/PropertyValidationService';
 import { TextPropertyField } from "./properties/TextPropertyField";
 import { DateTimePropertyField } from "./properties/DateTimePropertyField";
 

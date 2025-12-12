@@ -1,7 +1,7 @@
 import { TFile } from "obsidian";
-import { ILogger } from "../../adapters/logging/ILogger";
-import { ExocortexSettings } from "../../domain/settings/ExocortexSettings";
-import { ButtonGroup } from "../components/ActionButtonsGroup";
+import { ILogger } from '@plugin/adapters/logging/ILogger';
+import { ExocortexSettings } from '@plugin/domain/settings/ExocortexSettings';
+import { ButtonGroup } from '@plugin/presentation/components/ActionButtonsGroup';
 import { CommandVisibilityContext } from "@exocortex/core";
 import { TaskCreationService } from "@exocortex/core";
 import { ProjectCreationService } from "@exocortex/core";
@@ -26,7 +26,7 @@ import {
   PlanningButtonGroupBuilder,
   MaintenanceButtonGroupBuilder,
 } from "./button-groups";
-import { ObsidianApp, ExocortexPluginInterface } from "../../types";
+import { ObsidianApp, ExocortexPluginInterface } from '@plugin/types';
 
 /**
  * Orchestrator for building button groups.

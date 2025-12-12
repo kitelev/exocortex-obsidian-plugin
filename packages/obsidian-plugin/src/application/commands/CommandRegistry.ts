@@ -1,8 +1,8 @@
 import { App } from "obsidian";
 import { container } from "tsyringe";
 import { ICommand } from "./ICommand";
-import { ExocortexPluginInterface } from "../../types";
-import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
+import { ExocortexPluginInterface } from '@plugin/types';
+import { ObsidianVaultAdapter } from '@plugin/adapters/ObsidianVaultAdapter';
 import {
   TaskCreationService,
   ProjectCreationService,
@@ -19,7 +19,7 @@ import {
   DI_TOKENS,
   registerCoreServices,
 } from "@exocortex/core";
-import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
+import { LoggerFactory } from '@plugin/adapters/logging/LoggerFactory';
 
 import { CreateTaskCommand } from "./CreateTaskCommand";
 import { CreateProjectCommand } from "./CreateProjectCommand";

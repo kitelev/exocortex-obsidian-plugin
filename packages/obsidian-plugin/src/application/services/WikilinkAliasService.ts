@@ -1,5 +1,5 @@
 import type { App, TFile, MetadataCache } from "obsidian";
-import type { IAliasService } from "../../presentation/editor-extensions/AliasIconViewPlugin";
+import type { IAliasService } from '@plugin/presentation/editor-extensions/AliasIconViewPlugin';
 
 /**
  * Service for managing aliases in frontmatter.

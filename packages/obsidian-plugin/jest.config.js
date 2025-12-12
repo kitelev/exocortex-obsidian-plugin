@@ -23,6 +23,14 @@ module.exports = {
   ],
   moduleNameMapper: {
     "^@exocortex/core$": "<rootDir>/../core/src/index.ts",
+    "^@plugin/types$": "<rootDir>/src/types/index.ts",
+    "^@plugin/types/(.*)$": "<rootDir>/src/types/$1",
+    "^@plugin/adapters/(.*)$": "<rootDir>/src/adapters/$1",
+    "^@plugin/application/(.*)$": "<rootDir>/src/application/$1",
+    "^@plugin/domain/(.*)$": "<rootDir>/src/domain/$1",
+    "^@plugin/infrastructure/(.*)$": "<rootDir>/src/infrastructure/$1",
+    "^@plugin/presentation/(.*)$": "<rootDir>/src/presentation/$1",
+    "^@plugin/(.*)$": "<rootDir>/src/$1",
     "^obsidian$": "<rootDir>/tests/__mocks__/obsidian.ts",
     "^d3$": "<rootDir>/tests/__mocks__/d3.ts",
   },
@@ -120,7 +128,15 @@ module.exports = {
           esModuleInterop: true,
           isolatedModules: true, // Move isolatedModules here
           paths: {
-            "@exocortex/core": ["<rootDir>/../core/src/index.ts"]
+            "@exocortex/core": ["<rootDir>/../core/src/index.ts"],
+            "@plugin/types": ["<rootDir>/src/types/index.ts"],
+            "@plugin/types/*": ["<rootDir>/src/types/*"],
+            "@plugin/adapters/*": ["<rootDir>/src/adapters/*"],
+            "@plugin/application/*": ["<rootDir>/src/application/*"],
+            "@plugin/domain/*": ["<rootDir>/src/domain/*"],
+            "@plugin/infrastructure/*": ["<rootDir>/src/infrastructure/*"],
+            "@plugin/presentation/*": ["<rootDir>/src/presentation/*"],
+            "@plugin/*": ["<rootDir>/src/*"]
           }
         },
       },

@@ -1,4 +1,4 @@
-import { ActionButton } from "../../components/ActionButtonsGroup";
+import { ActionButton } from '@plugin/presentation/components/ActionButtonsGroup';
 import {
   canCreateTask,
   canCreateProject,
@@ -15,11 +15,11 @@ import {
 import {
   NarrowerConceptModal,
   type NarrowerConceptModalResult,
-} from "../../modals/NarrowerConceptModal";
+} from '@plugin/presentation/modals/NarrowerConceptModal';
 import {
   SubclassCreationModal,
   type SubclassCreationModalResult,
-} from "../../modals/SubclassCreationModal";
+} from '@plugin/presentation/modals/SubclassCreationModal';
 import {
   IButtonGroupBuilder,
   ButtonBuilderContext,

@@ -6,8 +6,8 @@ import {
   ProjectCreationService,
   LoggingService,
 } from "@exocortex/core";
-import { LabelInputModal, type LabelInputModalResult } from "../../presentation/modals/LabelInputModal";
-import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
+import { LabelInputModal, type LabelInputModalResult } from '@plugin/presentation/modals/LabelInputModal';
+import { ObsidianVaultAdapter } from '@plugin/adapters/ObsidianVaultAdapter';
 
 export class CreateProjectCommand implements ICommand {
   id = "create-project";

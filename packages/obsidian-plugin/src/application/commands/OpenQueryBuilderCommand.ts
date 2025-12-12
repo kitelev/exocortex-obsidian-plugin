@@ -1,6 +1,6 @@
 import { App, Plugin } from "obsidian";
 import { ICommand } from "./ICommand";
-import { SPARQLQueryBuilderModal } from "../../presentation/modals/SPARQLQueryBuilderModal";
+import { SPARQLQueryBuilderModal } from '@plugin/presentation/modals/SPARQLQueryBuilderModal';
 
 export class OpenQueryBuilderCommand implements ICommand {
   id = "open-sparql-query-builder";

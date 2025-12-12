@@ -1,14 +1,14 @@
 import { TFile, Keymap } from "obsidian";
 import React from "react";
-import { ReactRenderer } from "../../utils/ReactRenderer";
+import { ReactRenderer } from '@plugin/presentation/utils/ReactRenderer';
 import { MetadataHelpers, IVaultAdapter, IFile } from "@exocortex/core";
-import { AssetRelationsTableWithToggle } from "../../components/AssetRelationsTable";
-import { BacklinksCacheManager } from "../../../adapters/caching/BacklinksCacheManager";
-import { ExocortexSettings } from "../../../domain/settings/ExocortexSettings";
+import { AssetRelationsTableWithToggle } from '@plugin/presentation/components/AssetRelationsTable';
+import { BacklinksCacheManager } from '@plugin/adapters/caching/BacklinksCacheManager';
+import { ExocortexSettings } from '@plugin/domain/settings/ExocortexSettings';
 import { AssetMetadataService } from "./helpers/AssetMetadataService";
 import { AssetRelation } from "./types";
-import { BlockerHelpers } from "../../utils/BlockerHelpers";
-import { ObsidianApp, ExocortexPluginInterface } from "../../../types";
+import { BlockerHelpers } from '@plugin/presentation/utils/BlockerHelpers';
+import { ObsidianApp, ExocortexPluginInterface } from '@plugin/types';
 
 export interface UniversalLayoutConfig {
   sortBy?: string;

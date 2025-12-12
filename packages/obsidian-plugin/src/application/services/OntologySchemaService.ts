@@ -1,6 +1,6 @@
 import { SPARQLQueryService } from "./SPARQLQueryService";
 import { PropertyFieldType } from "@exocortex/core";
-import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
+import { LoggerFactory } from '@plugin/adapters/logging/LoggerFactory';
 
 /**
  * Extended property definition for ontology-driven forms.

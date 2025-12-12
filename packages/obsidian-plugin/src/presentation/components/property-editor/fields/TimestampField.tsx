@@ -1,5 +1,5 @@
 import React from "react";
-import type { PropertySchemaDefinition } from "../../../../domain/property-editor/PropertySchemas";
+import type { PropertySchemaDefinition } from '@plugin/domain/property-editor/PropertySchemas';
 
 export interface TimestampFieldProps {
   property: PropertySchemaDefinition;

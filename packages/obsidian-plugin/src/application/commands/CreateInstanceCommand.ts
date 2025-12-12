@@ -8,10 +8,10 @@ import {
   AssetClass,
   LoggingService,
 } from "@exocortex/core";
-import { LabelInputModal, type LabelInputModalResult } from "../../presentation/modals/LabelInputModal";
-import { DynamicAssetCreationModal, type DynamicAssetCreationResult } from "../../presentation/modals/DynamicAssetCreationModal";
-import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
-import { ExocortexPluginInterface } from "../../types";
+import { LabelInputModal, type LabelInputModalResult } from '@plugin/presentation/modals/LabelInputModal';
+import { DynamicAssetCreationModal, type DynamicAssetCreationResult } from '@plugin/presentation/modals/DynamicAssetCreationModal';
+import { ObsidianVaultAdapter } from '@plugin/adapters/ObsidianVaultAdapter';
+import { ExocortexPluginInterface } from '@plugin/types';
 
 export class CreateInstanceCommand implements ICommand {
   id = "create-instance";

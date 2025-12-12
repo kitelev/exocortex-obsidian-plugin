@@ -1,5 +1,5 @@
 import { TFile } from "obsidian";
-import { ActionButton } from "../../components/ActionButtonsGroup";
+import { ActionButton } from '@plugin/presentation/components/ActionButtonsGroup';
 import {
   canPlanOnToday,
   canPlanForEvening,
@@ -9,14 +9,14 @@ import {
   canSetActiveFocus,
   CommandVisibilityContext,
 } from "@exocortex/core";
-import { ILogger } from "../../../adapters/logging/ILogger";
-import { ExocortexSettings } from "../../../domain/settings/ExocortexSettings";
+import { ILogger } from '@plugin/adapters/logging/ILogger';
+import { ExocortexSettings } from '@plugin/domain/settings/ExocortexSettings';
 import {
   IButtonGroupBuilder,
   ButtonBuilderContext,
   ButtonBuilderServices,
 } from "./ButtonBuilderTypes";
-import { ExocortexPluginInterface, MetadataRecord } from "../../../types";
+import { ExocortexPluginInterface, MetadataRecord } from '@plugin/types';
 
 /**
  * Builds planning-related buttons (Plan on Today, Vote, Set Active Focus, etc.)

@@ -6,8 +6,8 @@ import {
   TaskCreationService,
   LoggingService,
 } from "@exocortex/core";
-import { LabelInputModal, type LabelInputModalResult } from "../../presentation/modals/LabelInputModal";
-import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
+import { LabelInputModal, type LabelInputModalResult } from '@plugin/presentation/modals/LabelInputModal';
+import { ObsidianVaultAdapter } from '@plugin/adapters/ObsidianVaultAdapter';
 
 export class CreateRelatedTaskCommand implements ICommand {
   id = "create-related-task";
