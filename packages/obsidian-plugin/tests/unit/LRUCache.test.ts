@@ -516,4 +516,178 @@ describe("LRUCache", () => {
       expect(cache.has("d")).toBe(true);
     });
   });
+
+  describe("TTL (Time-To-Live) support", () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it("should create cache with options object (TTL)", () => {
+      const ttlCache = new LRUCache<string, number>({
+        maxEntries: 100,
+        ttl: 5000, // 5 seconds
+      });
+
+      expect(ttlCache.capacity).toBe(100);
+      expect(ttlCache.getStats().ttl).toBe(5000);
+    });
+
+    it("should create cache with options object (no TTL)", () => {
+      const noTtlCache = new LRUCache<string, number>({
+        maxEntries: 50,
+      });
+
+      expect(noTtlCache.capacity).toBe(50);
+      expect(noTtlCache.getStats().ttl).toBeUndefined();
+    });
+
+    it("should expire entries after TTL", () => {
+      const ttlCache = new LRUCache<string, number>({
+        maxEntries: 10,
+        ttl: 1000, // 1 second TTL
+      });
+
+      ttlCache.set("a", 1);
+      expect(ttlCache.get("a")).toBe(1);
+
+      // Advance time past TTL
+      jest.advanceTimersByTime(1001);
+
+      // Entry should now be expired
+      expect(ttlCache.get("a")).toBeUndefined();
+    });
+
+    it("should not expire entries before TTL", () => {
+      const ttlCache = new LRUCache<string, number>({
+        maxEntries: 10,
+        ttl: 5000, // 5 second TTL
+      });
+
+      ttlCache.set("a", 1);
+
+      // Advance time but not past TTL
+      jest.advanceTimersByTime(4000);
+
+      // Entry should still be available
+      expect(ttlCache.get("a")).toBe(1);
+    });
+
+    it("should refresh TTL on get", () => {
+      const ttlCache = new LRUCache<string, number>({
+        maxEntries: 10,
+        ttl: 1000, // 1 second TTL
+      });
+
+      ttlCache.set("a", 1);
+
+      // Advance 800ms
+      jest.advanceTimersByTime(800);
+      expect(ttlCache.get("a")).toBe(1); // Access refreshes TTL
+
+      // Advance another 800ms (1600ms total from start, 800ms from last access)
+      jest.advanceTimersByTime(800);
+      expect(ttlCache.get("a")).toBe(1); // Still valid
+
+      // Advance 1100ms (should expire now)
+      jest.advanceTimersByTime(1100);
+      expect(ttlCache.get("a")).toBeUndefined();
+    });
+
+    it("should track ttlExpiries in stats", () => {
+      const ttlCache = new LRUCache<string, number>({
+        maxEntries: 10,
+        ttl: 1000,
+      });
+
+      ttlCache.set("a", 1);
+      ttlCache.set("b", 2);
+
+      jest.advanceTimersByTime(1001);
+
+      // Access expired entries
+      ttlCache.get("a");
+      ttlCache.get("b");
+
+      const stats = ttlCache.getStats();
+      expect(stats.ttlExpiries).toBe(2);
+      expect(stats.misses).toBe(2);
+    });
+
+    it("should return false from has() for expired entries", () => {
+      const ttlCache = new LRUCache<string, number>({
+        maxEntries: 10,
+        ttl: 1000,
+      });
+
+      ttlCache.set("a", 1);
+      expect(ttlCache.has("a")).toBe(true);
+
+      jest.advanceTimersByTime(1001);
+
+      expect(ttlCache.has("a")).toBe(false);
+    });
+
+    it("should prune expired entries", () => {
+      const ttlCache = new LRUCache<string, number>({
+        maxEntries: 10,
+        ttl: 1000,
+      });
+
+      ttlCache.set("a", 1);
+      ttlCache.set("b", 2);
+      ttlCache.set("c", 3);
+
+      jest.advanceTimersByTime(500);
+      ttlCache.set("d", 4); // Fresh entry
+
+      jest.advanceTimersByTime(600); // a, b, c expired; d still valid
+
+      const pruned = ttlCache.pruneExpired();
+
+      expect(pruned).toBe(3);
+      expect(ttlCache.size).toBe(1);
+      expect(ttlCache.has("d")).toBe(true);
+    });
+
+    it("should not prune when no TTL is set", () => {
+      const noTtlCache = new LRUCache<string, number>(10);
+
+      noTtlCache.set("a", 1);
+      noTtlCache.set("b", 2);
+
+      const pruned = noTtlCache.pruneExpired();
+
+      expect(pruned).toBe(0);
+      expect(noTtlCache.size).toBe(2);
+    });
+
+    it("should handle backward-compatible number constructor with TTL getStats", () => {
+      const numCache = new LRUCache<string, number>(100);
+
+      const stats = numCache.getStats();
+      expect(stats.ttl).toBeUndefined();
+      expect(stats.ttlExpiries).toBe(0);
+    });
+
+    it("should reset ttlExpiries in resetStats", () => {
+      const ttlCache = new LRUCache<string, number>({
+        maxEntries: 10,
+        ttl: 1000,
+      });
+
+      ttlCache.set("a", 1);
+      jest.advanceTimersByTime(1001);
+      ttlCache.get("a"); // Triggers TTL expiry
+
+      expect(ttlCache.getStats().ttlExpiries).toBe(1);
+
+      ttlCache.resetStats();
+
+      expect(ttlCache.getStats().ttlExpiries).toBe(0);
+    });
+  });
 });
