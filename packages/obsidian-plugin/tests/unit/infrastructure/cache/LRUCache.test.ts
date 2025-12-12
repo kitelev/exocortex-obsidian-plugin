@@ -338,4 +338,249 @@ describe("LRUCache", () => {
       expect(cache.get(2)).toBe("two");
     });
   });
+
+  describe("TTL (Time-To-Live) functionality", () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    describe("constructor with TTL options", () => {
+      it("should create cache with TTL using options object", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 100, ttl: 5000 });
+        expect(cache.capacity).toBe(100);
+        expect(cache.getStats().ttl).toBe(5000);
+      });
+
+      it("should create cache with TTL=0 (disabled) by default", () => {
+        const cache = new LRUCache<string, number>(100);
+        expect(cache.getStats().ttl).toBe(0);
+      });
+
+      it("should throw error if TTL is negative", () => {
+        expect(() => new LRUCache({ maxEntries: 100, ttl: -1 })).toThrow(
+          "ttl must be non-negative"
+        );
+      });
+
+      it("should accept TTL=0 to disable expiration", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 100, ttl: 0 });
+        expect(cache.getStats().ttl).toBe(0);
+      });
+    });
+
+    describe("TTL expiration on get", () => {
+      it("should return value before TTL expires", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+        cache.set("key", 42);
+
+        // Advance time but stay within TTL
+        jest.advanceTimersByTime(4999);
+
+        expect(cache.get("key")).toBe(42);
+      });
+
+      it("should return undefined after TTL expires", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+        cache.set("key", 42);
+
+        // Advance time past TTL
+        jest.advanceTimersByTime(5001);
+
+        expect(cache.get("key")).toBeUndefined();
+      });
+
+      it("should track TTL expirations in stats", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+        cache.set("key1", 1);
+        cache.set("key2", 2);
+
+        jest.advanceTimersByTime(5001);
+
+        cache.get("key1"); // Triggers expiration
+        cache.get("key2"); // Triggers expiration
+
+        const stats = cache.getStats();
+        expect(stats.ttlExpirations).toBe(2);
+        expect(stats.misses).toBe(2); // Expired entries count as misses
+      });
+
+      it("should refresh TTL on access (sliding window)", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+        cache.set("key", 42);
+
+        // Advance time to 4 seconds
+        jest.advanceTimersByTime(4000);
+
+        // Access refreshes TTL
+        expect(cache.get("key")).toBe(42);
+
+        // Advance another 4 seconds (8 total from start, but only 4 from last access)
+        jest.advanceTimersByTime(4000);
+
+        // Should still be valid because TTL was refreshed
+        expect(cache.get("key")).toBe(42);
+      });
+    });
+
+    describe("TTL expiration on has", () => {
+      it("should return true for non-expired entries", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+        cache.set("key", 42);
+
+        jest.advanceTimersByTime(4999);
+
+        expect(cache.has("key")).toBe(true);
+      });
+
+      it("should return false for expired entries", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+        cache.set("key", 42);
+
+        jest.advanceTimersByTime(5001);
+
+        expect(cache.has("key")).toBe(false);
+      });
+    });
+
+    describe("TTL with no expiration (ttl=0)", () => {
+      it("should never expire entries when TTL is 0", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 0 });
+        cache.set("key", 42);
+
+        // Advance time significantly
+        jest.advanceTimersByTime(999999999);
+
+        expect(cache.get("key")).toBe(42);
+        expect(cache.has("key")).toBe(true);
+      });
+    });
+
+    describe("pruneExpired", () => {
+      it("should remove all expired entries", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+        cache.set("key1", 1);
+        cache.set("key2", 2);
+
+        jest.advanceTimersByTime(5001);
+
+        cache.set("key3", 3); // Fresh entry
+
+        const pruned = cache.pruneExpired();
+
+        expect(pruned).toBe(2);
+        expect(cache.size).toBe(1);
+        expect(cache.get("key3")).toBe(3);
+      });
+
+      it("should return 0 when no TTL configured", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 0 });
+        cache.set("key1", 1);
+        cache.set("key2", 2);
+
+        jest.advanceTimersByTime(999999);
+
+        const pruned = cache.pruneExpired();
+        expect(pruned).toBe(0);
+        expect(cache.size).toBe(2);
+      });
+
+      it("should track TTL expirations from pruning in stats", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+        cache.set("key1", 1);
+        cache.set("key2", 2);
+        cache.set("key3", 3);
+
+        jest.advanceTimersByTime(5001);
+
+        cache.pruneExpired();
+
+        expect(cache.getStats().ttlExpirations).toBe(3);
+      });
+    });
+
+    describe("iteration with TTL", () => {
+      it("should not include expired entries in values()", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+        cache.set("expired1", 1);
+        cache.set("expired2", 2);
+
+        jest.advanceTimersByTime(5001);
+
+        cache.set("fresh", 3);
+
+        const values = Array.from(cache.values());
+        expect(values).toEqual([3]);
+      });
+
+      it("should not include expired entries in entries()", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+        cache.set("expired", 1);
+
+        jest.advanceTimersByTime(5001);
+
+        cache.set("fresh", 2);
+
+        const entries = Array.from(cache.entries());
+        expect(entries).toEqual([["fresh", 2]]);
+      });
+
+      it("should not include expired entries in forEach", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+        cache.set("expired", 1);
+
+        jest.advanceTimersByTime(5001);
+
+        cache.set("fresh", 2);
+
+        const collected: Array<[string, number]> = [];
+        cache.forEach((value, key) => {
+          collected.push([key, value]);
+        });
+
+        expect(collected).toEqual([["fresh", 2]]);
+      });
+    });
+
+    describe("TTL statistics", () => {
+      it("should include ttl and ttlExpirations in stats", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+        cache.set("key", 1);
+
+        jest.advanceTimersByTime(5001);
+        cache.get("key"); // Triggers expiration
+
+        const stats = cache.getStats();
+        expect(stats.ttl).toBe(5000);
+        expect(stats.ttlExpirations).toBe(1);
+      });
+
+      it("should reset ttlExpirations on resetStats()", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+        cache.set("key", 1);
+
+        jest.advanceTimersByTime(5001);
+        cache.get("key"); // Triggers expiration
+
+        cache.resetStats();
+
+        expect(cache.getStats().ttlExpirations).toBe(0);
+      });
+
+      it("should reset ttlExpirations on cleanup()", () => {
+        const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+        cache.set("key", 1);
+
+        jest.advanceTimersByTime(5001);
+        cache.get("key"); // Triggers expiration
+
+        cache.cleanup();
+
+        expect(cache.getStats().ttlExpirations).toBe(0);
+      });
+    });
+  });
 });
