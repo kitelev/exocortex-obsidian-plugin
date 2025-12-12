@@ -171,5 +171,65 @@ describe("CommandHelpers", () => {
       // Assert - should wait for correct file path
       expect(mockWorkspace.getActiveFile).toHaveBeenCalledTimes(2);
     });
+
+    it("should stop polling when AbortSignal is aborted", async () => {
+      // Arrange
+      mockWorkspace.getActiveFile.mockReturnValue(null); // Never becomes active
+      const controller = new AbortController();
+
+      // Abort after a short delay
+      setTimeout(() => controller.abort(), 50);
+
+      // Act
+      await CommandHelpers.openFileInNewTab(mockApp, mockFile, controller.signal);
+
+      // Assert - should have stopped before max attempts
+      expect(mockWorkspace.getActiveFile.mock.calls.length).toBeLessThan(20);
+    });
+
+    it("should return immediately if AbortSignal is already aborted", async () => {
+      // Arrange
+      mockWorkspace.getActiveFile.mockReturnValue(null);
+      const controller = new AbortController();
+      controller.abort(); // Abort before call
+
+      // Act
+      await CommandHelpers.openFileInNewTab(mockApp, mockFile, controller.signal);
+
+      // Assert - should return without any polling (openFile is still called, but no waiting)
+      // getActiveFile is only called when waiting, not when already aborted
+      expect(mockWorkspace.getActiveFile).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe("waitForFileActivation", () => {
+    it("should resolve when file becomes active", async () => {
+      // Arrange
+      let callCount = 0;
+      mockWorkspace.getActiveFile.mockImplementation(() => {
+        callCount++;
+        return callCount >= 2 ? mockFile : null;
+      });
+
+      // Act
+      await CommandHelpers.waitForFileActivation(mockApp, mockFile.path);
+
+      // Assert
+      expect(mockWorkspace.getActiveFile).toHaveBeenCalledTimes(2);
+    });
+
+    it("should cancel via AbortSignal", async () => {
+      // Arrange
+      mockWorkspace.getActiveFile.mockReturnValue(null);
+      const controller = new AbortController();
+
+      setTimeout(() => controller.abort(), 50);
+
+      // Act
+      await CommandHelpers.waitForFileActivation(mockApp, mockFile.path, controller.signal);
+
+      // Assert - should have stopped early
+      expect(mockWorkspace.getActiveFile.mock.calls.length).toBeLessThan(20);
+    });
   });
 });
