@@ -15,6 +15,7 @@ import {
   type INotificationService,
 } from "@exocortex/core";
 import { VaultRDFIndexer } from "../../infrastructure/VaultRDFIndexer";
+import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
 
 export class SPARQLQueryService {
   private indexer: VaultRDFIndexer;
@@ -31,11 +32,12 @@ export class SPARQLQueryService {
     logger?: ILogger,
     notifier?: INotificationService
   ) {
+    const defaultLogger = LoggerFactory.create("SPARQLQueryService");
     this.logger = logger || {
-      debug: () => {},
-      info: () => {},
-      warn: console.warn.bind(console),
-      error: console.error.bind(console),
+      debug: defaultLogger.debug.bind(defaultLogger),
+      info: defaultLogger.info.bind(defaultLogger),
+      warn: defaultLogger.warn.bind(defaultLogger),
+      error: defaultLogger.error.bind(defaultLogger),
     };
 
     const defaultNotifier: INotificationService = {

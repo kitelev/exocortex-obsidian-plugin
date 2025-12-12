@@ -1,5 +1,6 @@
 import { SPARQLQueryService } from "./SPARQLQueryService";
 import { PropertyFieldType } from "@exocortex/core";
+import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
 
 /**
  * Extended property definition for ontology-driven forms.
@@ -36,6 +37,8 @@ export interface OntologyPropertyDefinition {
  * ```
  */
 export class OntologySchemaService {
+  private readonly logger = LoggerFactory.create("OntologySchemaService");
+
   constructor(private sparqlService: SPARQLQueryService) {}
 
   /**
@@ -122,7 +125,7 @@ export class OntologySchemaService {
 
       return superClasses;
     } catch (error) {
-      console.warn(`Failed to get class hierarchy for ${className}:`, error);
+      this.logger.warn(`Failed to get class hierarchy for ${className}`, error);
       return [];
     }
   }
@@ -165,10 +168,7 @@ export class OntologySchemaService {
       }
       return false;
     } catch (error) {
-      console.warn(
-        `Failed to check deprecated status for ${propertyUri}:`,
-        error,
-      );
+      this.logger.warn(`Failed to check deprecated status for ${propertyUri}`, error);
       return false;
     }
   }
@@ -255,10 +255,7 @@ export class OntologySchemaService {
       return properties;
     } catch (error) {
       // If query fails (e.g., no ontology loaded), return empty array
-      console.warn(
-        `Failed to get properties for class ${className}:`,
-        error,
-      );
+      this.logger.warn(`Failed to get properties for class ${className}`, error);
       return [];
     }
   }

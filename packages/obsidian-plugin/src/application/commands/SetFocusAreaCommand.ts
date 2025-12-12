@@ -7,11 +7,13 @@ import {
   AreaSelectionModalResult,
 } from "../../presentation/modals/AreaSelectionModal";
 import { SessionEventService } from "@exocortex/core";
+import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
 
 export class SetFocusAreaCommand implements ICommand {
   id = "set-focus-area";
   name = "Set Focus Area";
   private sessionEventService: SessionEventService;
+  private readonly logger = LoggerFactory.create("SetFocusAreaCommand");
 
   constructor(
     private app: App,
@@ -77,7 +79,7 @@ export class SetFocusAreaCommand implements ICommand {
       new Notice(
         `Failed to ${previousArea && newArea ? "switch" : newArea ? "activate" : "deactivate"} focus area. ${errorMessage}`,
       );
-      console.error("Session event creation failed:", error);
+      this.logger.error("Session event creation failed", error instanceof Error ? error : new Error(String(error)));
     }
   }
 }

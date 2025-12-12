@@ -36,7 +36,7 @@ export default tseslint.config(
       '@typescript-eslint/require-await': 'off',
       '@typescript-eslint/no-base-to-string': 'off',
 
-      'no-console': 'warn',
+      'no-console': 'error',
       'no-debugger': 'error',
       'prefer-const': 'error',
       'no-var': 'error',

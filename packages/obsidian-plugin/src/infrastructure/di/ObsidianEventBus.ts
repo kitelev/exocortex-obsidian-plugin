@@ -1,6 +1,9 @@
 import type { IEventBus } from "@exocortex/core";
+import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
 
 type EventHandler<T = unknown> = (data: T) => void;
+
+const logger = LoggerFactory.create("ObsidianEventBus");
 
 export class ObsidianEventBus implements IEventBus {
   private handlers: Map<string, Set<EventHandler>> = new Map();
@@ -12,7 +15,7 @@ export class ObsidianEventBus implements IEventBus {
         try {
           handler(data);
         } catch (error) {
-          console.error(`[EventBus] Error in handler for event "${eventName}":`, error);
+          logger.error(`Error in handler for event "${eventName}"`, error instanceof Error ? error : new Error(String(error)));
         }
       });
     }

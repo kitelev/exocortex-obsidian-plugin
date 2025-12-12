@@ -11,6 +11,7 @@ import {
   IRI,
 } from "@exocortex/core";
 import { ObsidianVaultAdapter } from "../adapters/ObsidianVaultAdapter";
+import { LoggerFactory } from "../adapters/logging/LoggerFactory";
 
 export class VaultRDFIndexer {
   private tripleStore: InMemoryTripleStore;
@@ -34,11 +35,12 @@ export class VaultRDFIndexer {
     );
     this.converter = new NoteToRDFConverter(this.vaultAdapter);
 
+    const defaultLogger = LoggerFactory.create("VaultRDFIndexer");
     this.logger = logger || {
-      debug: () => {},
-      info: () => {},
-      warn: console.warn.bind(console),
-      error: console.error.bind(console),
+      debug: defaultLogger.debug.bind(defaultLogger),
+      info: defaultLogger.info.bind(defaultLogger),
+      warn: defaultLogger.warn.bind(defaultLogger),
+      error: defaultLogger.error.bind(defaultLogger),
     };
 
     const defaultNotifier: INotificationService = {
