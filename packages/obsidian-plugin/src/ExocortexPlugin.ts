@@ -87,7 +87,10 @@ export default class ExocortexPlugin extends Plugin {
         this.app,
         this.app.metadataCache,
       );
-      this.metadataCache = new LRUCache(1000);
+      this.metadataCache = new LRUCache({
+        maxEntries: 1000,
+        ttl: 5 * 60 * 1000, // 5 minutes TTL to prevent unbounded memory growth
+      });
       this.sparqlProcessor = new SPARQLCodeBlockProcessor(this);
       this.sparql = new SPARQLApi(this);
 

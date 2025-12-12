@@ -64,8 +64,11 @@ export class UniversalLayoutRenderer {
 
   private dependencyResolver: PropertyDependencyResolver;
   private deltaDetector: FrontmatterDeltaDetector;
-  // Use LRU cache with max 500 entries to prevent unbounded growth
-  private metadataCache: LRUCache<string, Record<string, unknown>> = new LRUCache(500);
+  // Use LRU cache with max 500 entries and 5 minute TTL to prevent unbounded growth
+  private metadataCache: LRUCache<string, Record<string, unknown>> = new LRUCache({
+    maxEntries: 500,
+    ttl: 5 * 60 * 1000, // 5 minutes TTL
+  });
   private debounceTimeout: NodeJS.Timeout | null = null;
   private currentFilePath: string | null = null;
   private currentConfig: UniversalLayoutConfig = {};
