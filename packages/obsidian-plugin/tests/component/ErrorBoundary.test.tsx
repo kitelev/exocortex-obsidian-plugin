@@ -54,7 +54,7 @@ test.describe("ErrorBoundary", () => {
   test.skip("should call error handler when error occurs", async ({ mount }) => {
     // SKIP: Playwright CT has issues with complex prop serialization (errorHandler)
     // Component doesn't mount when errorHandler prop is passed
-    // TODO: Test errorHandler integration in E2E tests instead
+    // NOTE: errorHandler integration is tested in unit tests (ErrorBoundary.test.ts)
     const errorHandler = new ApplicationErrorHandler();
 
     const component = await mount(
@@ -106,7 +106,7 @@ test.describe("ErrorBoundary", () => {
   test.skip("should use custom fallback UI when provided", async ({ mount }) => {
     // SKIP: Playwright CT has issues with function prop serialization (fallback)
     // Component doesn't mount when fallback function prop is passed
-    // TODO: Test custom fallback in E2E tests instead
+    // NOTE: Custom fallback is tested in unit tests (ErrorBoundary.test.ts)
     const customFallback = (
       error: Error,
       errorInfo: React.ErrorInfo,
