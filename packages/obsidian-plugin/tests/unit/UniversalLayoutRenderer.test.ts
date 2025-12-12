@@ -119,14 +119,16 @@ describe("UniversalLayoutRenderer", () => {
       const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
       const renderer_any = renderer as any;
 
-      // Setup mock file
-      const mockFile = {
+      // Setup mock file as proper TFile instance (needed for instanceof check)
+      const mockFile = Object.create(TFile.prototype);
+      Object.assign(mockFile, {
         path: "test.md",
         extension: "md",
         basename: "test",
-      } as TFile;
+      });
 
-      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(mockFile);
+      // Mock at app.vault level (handleMetadataChange uses this.app.vault.getAbstractFileByPath)
+      mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
 
       // Set current file path so handler processes the file
       renderer_any.currentFilePath = "test.md";
@@ -143,13 +145,13 @@ describe("UniversalLayoutRenderer", () => {
       renderer.handleMetadataChange("test.md");
 
       // Verify debounce happened (should only be called after timer)
-      expect(mockVaultAdapter.getAbstractFileByPath).toHaveBeenCalledTimes(0);
+      expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledTimes(0);
 
       // Fast-forward time past debounce delay
       jest.advanceTimersByTime(100);
 
       // Now it should have been called once
-      expect(mockVaultAdapter.getAbstractFileByPath).toHaveBeenCalledTimes(1);
+      expect(mockApp.vault.getAbstractFileByPath).toHaveBeenCalledTimes(1);
     });
 
     it("should ignore non-markdown files", async () => {
@@ -160,7 +162,8 @@ describe("UniversalLayoutRenderer", () => {
         extension: "pdf",
       } as any;
 
-      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(mockFile);
+      // Mock at app.vault level (handleMetadataChange uses this.app.vault.getAbstractFileByPath)
+      mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
 
       await renderer.handleMetadataChange("test.pdf");
       jest.advanceTimersByTime(100);
@@ -178,7 +181,8 @@ describe("UniversalLayoutRenderer", () => {
         extension: "md",
       } as TFile;
 
-      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(mockFile);
+      // Mock at app.vault level (handleMetadataChange uses this.app.vault.getAbstractFileByPath)
+      mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
 
       await renderer.handleMetadataChange("test.md");
       jest.advanceTimersByTime(100);
@@ -190,14 +194,16 @@ describe("UniversalLayoutRenderer", () => {
     it("should detect metadata changes", async () => {
       const renderer = new UniversalLayoutRenderer(mockApp, mockSettings, mockPlugin, mockVaultAdapter);
 
-      // Setup mock file with changing metadata
-      const mockFile = {
+      // Setup mock file as proper TFile instance (needed for instanceof check)
+      const mockFile = Object.create(TFile.prototype);
+      Object.assign(mockFile, {
         path: "test.md",
         extension: "md",
         basename: "test",
-      } as TFile;
+      });
 
-      mockVaultAdapter.getAbstractFileByPath.mockReturnValue(mockFile);
+      // Mock at app.vault level (handleMetadataChange uses this.app.vault.getAbstractFileByPath)
+      mockApp.vault.getAbstractFileByPath.mockReturnValue(mockFile);
 
       // First call - set initial metadata
       const renderer_any = renderer as any;
