@@ -36,9 +36,10 @@ export class CreateFleetingNoteCommand implements ICommand {
       await CommandHelpers.openFileInNewTab(this.app, tfile);
 
       new Notice(`Fleeting note created: ${createdFile.basename}`);
-    } catch (error: any) {
-      new Notice(`Failed to create fleeting note: ${error.message}`);
-      LoggingService.error("Create fleeting note error", error);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      new Notice(`Failed to create fleeting note: ${errorMessage}`);
+      LoggingService.error("Create fleeting note error", error instanceof Error ? error : new Error(String(error)));
     }
   };
 }

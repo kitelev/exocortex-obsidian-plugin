@@ -1,4 +1,4 @@
-import { Setting } from "obsidian";
+import { Setting, ToggleComponent } from "obsidian";
 import type { BooleanPropertyFieldProps, ValidationResult } from "./types";
 
 /**
@@ -17,7 +17,7 @@ import type { BooleanPropertyFieldProps, ValidationResult } from "./types";
  */
 export class BooleanPropertyField {
   private setting: Setting;
-  private toggleComponent: any = null; // Obsidian's toggle component
+  private toggleComponent: ToggleComponent | null = null;
 
   constructor(
     private containerEl: HTMLElement,

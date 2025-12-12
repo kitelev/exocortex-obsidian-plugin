@@ -1,10 +1,11 @@
 import React from "react";
 import { TFile } from "obsidian";
 import { canCreateInstance, CommandVisibilityContext } from "@exocortex/core";
+import type { MetadataRecord } from "../../types";
 
 export interface CreateInstanceButtonProps {
   instanceClass: string | string[] | null;
-  metadata: Record<string, any>;
+  metadata: MetadataRecord;
   sourceFile: TFile;
   onInstanceCreate: () => Promise<void>;
 }

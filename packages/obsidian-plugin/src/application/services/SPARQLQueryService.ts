@@ -7,6 +7,7 @@ import {
   type SPARQLQuery,
   type SolutionMapping,
   type AlgebraOperation,
+  type BGPOperation,
   ValidationError,
   ServiceError,
   ApplicationErrorHandler,
@@ -107,7 +108,7 @@ export class SPARQLQueryService {
       let algebra: AlgebraOperation = this.translator.translate(ast);
       algebra = this.optimizer.optimize(algebra);
 
-      const resultIterator = this.executor.execute(algebra as any);
+      const resultIterator = this.executor.execute(algebra as BGPOperation);
       const results: SolutionMapping[] = [];
       for await (const mapping of resultIterator) {
         results.push(mapping);
@@ -166,5 +167,13 @@ export class SPARQLQueryService {
     this.indexer.dispose();
     this.executor = null;
     this.isInitialized = false;
+  }
+
+  /**
+   * Get the underlying triple store for direct access.
+   * Useful for debugging and advanced SPARQL operations.
+   */
+  getTripleStore() {
+    return this.indexer.getTripleStore();
   }
 }

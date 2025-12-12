@@ -1,3 +1,5 @@
+import type { MetadataRecord } from "../../../types";
+
 export interface AssetRelationFile {
   path: string;
   basename: string;
@@ -7,7 +9,7 @@ export interface AssetRelation {
   file: AssetRelationFile;
   path: string;
   title: string;
-  metadata: Record<string, any>;
+  metadata: MetadataRecord;
   propertyName?: string;
   isBodyLink: boolean;
   isArchived?: boolean;

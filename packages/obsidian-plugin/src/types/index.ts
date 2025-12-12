@@ -2,7 +2,8 @@
  * Core type definitions for Exocortex plugin
  */
 
-import type { Plugin } from "obsidian";
+import type { App, Plugin, TFile } from "obsidian";
+import type { IVaultAdapter } from "@exocortex/core";
 import type ExocortexPlugin from "../ExocortexPlugin";
 
 /**
@@ -66,7 +67,7 @@ export interface ExocortexPluginInterface extends Plugin {
     showEffortVotes?: boolean;
     useDynamicPropertyFields?: boolean;
   };
-  vaultAdapter: any; // ObsidianVaultAdapter - avoiding circular dependency
+  vaultAdapter: IVaultAdapter;
   saveSettings(): Promise<void>;
   refreshLayout?(): void;
 }
@@ -82,6 +83,11 @@ export type ExocortexPluginInstance = ExocortexPlugin;
 export type MetadataRecord = Record<string, unknown>;
 
 /**
- * Observer App type (avoids circular dependency with Obsidian)
+ * Obsidian App type - re-exported from obsidian for type-safe usage
  */
-export type ObsidianApp = any;
+export type ObsidianApp = App;
+
+/**
+ * Obsidian TFile type - re-exported for type-safe file handling
+ */
+export type ObsidianFile = TFile;

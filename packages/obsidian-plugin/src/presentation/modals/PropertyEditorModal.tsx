@@ -1,7 +1,7 @@
 import { Modal, App, Notice, TFile } from "obsidian";
 import React from "react";
 import { FrontmatterService } from "@exocortex/core";
-import type ExocortexPlugin from "../../ExocortexPlugin";
+import { ExocortexPluginInterface } from "../../types";
 import { ReactRenderer } from "../utils/ReactRenderer";
 import { PropertyEditorForm } from "../components/property-editor/PropertyEditorForm";
 import { ErrorBoundary } from "../components/ErrorBoundary";
@@ -9,7 +9,7 @@ import { formatPropertyValue } from "../../domain/property-editor/formatProperty
 import { extractInstanceClass } from "../../domain/property-editor/extractInstanceClass";
 
 export class PropertyEditorModal extends Modal {
-  private plugin: ExocortexPlugin;
+  private plugin: ExocortexPluginInterface;
   private reactRenderer: ReactRenderer;
   private file: TFile;
   private frontmatter: Record<string, unknown>;
@@ -17,7 +17,7 @@ export class PropertyEditorModal extends Modal {
 
   constructor(
     app: App,
-    plugin: ExocortexPlugin,
+    plugin: ExocortexPluginInterface,
     file: TFile,
     frontmatter: Record<string, unknown>,
   ) {

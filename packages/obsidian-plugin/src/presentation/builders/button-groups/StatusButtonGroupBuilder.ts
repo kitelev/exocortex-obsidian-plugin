@@ -8,7 +8,9 @@ import {
   canStartEffort,
   canMarkDone,
   canRollbackStatus,
+  CommandVisibilityContext,
 } from "@exocortex/core";
+import { ILogger } from "../../../adapters/logging/ILogger";
 import {
   IButtonGroupBuilder,
   ButtonBuilderContext,
@@ -45,8 +47,8 @@ export class StatusButtonGroupBuilder implements IButtonGroupBuilder {
 
   private setDraftStatusButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -65,8 +67,8 @@ export class StatusButtonGroupBuilder implements IButtonGroupBuilder {
 
   private moveToBacklogButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -85,8 +87,8 @@ export class StatusButtonGroupBuilder implements IButtonGroupBuilder {
 
   private moveToAnalysisButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -105,8 +107,8 @@ export class StatusButtonGroupBuilder implements IButtonGroupBuilder {
 
   private moveToToDoButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -125,8 +127,8 @@ export class StatusButtonGroupBuilder implements IButtonGroupBuilder {
 
   private startEffortButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -145,8 +147,8 @@ export class StatusButtonGroupBuilder implements IButtonGroupBuilder {
 
   private markDoneButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -165,8 +167,8 @@ export class StatusButtonGroupBuilder implements IButtonGroupBuilder {
 
   private rollbackStatusButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {

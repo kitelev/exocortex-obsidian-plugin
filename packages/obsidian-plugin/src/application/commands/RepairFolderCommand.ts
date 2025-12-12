@@ -27,7 +27,7 @@ export class RepairFolderCommand implements ICommand {
     return true;
   };
 
-  private async execute(file: TFile, metadata: Record<string, any>): Promise<void> {
+  private async execute(file: TFile, metadata: Record<string, unknown>): Promise<void> {
     const expectedFolder = await this.folderRepairService.getExpectedFolder(file, metadata);
 
     if (!expectedFolder) {

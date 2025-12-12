@@ -1,10 +1,11 @@
 import React from "react";
 import { TFile } from "obsidian";
 import { canShiftDayForward, CommandVisibilityContext } from "@exocortex/core";
+import type { MetadataRecord } from "../../types";
 
 export interface ShiftDayForwardButtonProps {
   instanceClass: string | string[] | null;
-  metadata: Record<string, any>;
+  metadata: MetadataRecord;
   sourceFile: TFile;
   onShiftDayForward: () => Promise<void>;
 }

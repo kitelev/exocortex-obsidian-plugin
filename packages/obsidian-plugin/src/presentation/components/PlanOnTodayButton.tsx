@@ -1,10 +1,11 @@
 import React from "react";
 import { TFile } from "obsidian";
 import { canPlanOnToday, CommandVisibilityContext } from "@exocortex/core";
+import type { MetadataRecord } from "../../types";
 
 export interface PlanOnTodayButtonProps {
   instanceClass: string | string[] | null;
-  metadata: Record<string, any>;
+  metadata: MetadataRecord;
   sourceFile: TFile;
   onPlanOnToday: () => Promise<void>;
 }

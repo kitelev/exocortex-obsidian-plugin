@@ -26,8 +26,7 @@ import {
   PlanningButtonGroupBuilder,
   MaintenanceButtonGroupBuilder,
 } from "./button-groups";
-
-type ObsidianApp = any;
+import { ObsidianApp, ExocortexPluginInterface } from "../../types";
 
 /**
  * Orchestrator for building button groups.
@@ -45,7 +44,7 @@ export class ButtonGroupsBuilder {
   constructor(
     private app: ObsidianApp,
     private settings: ExocortexSettings,
-    private plugin: any,
+    private plugin: ExocortexPluginInterface,
     taskCreationService: TaskCreationService,
     projectCreationService: ProjectCreationService,
     areaCreationService: AreaCreationService,

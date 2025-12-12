@@ -8,8 +8,7 @@ import { ExocortexSettings } from "../../../domain/settings/ExocortexSettings";
 import { AssetMetadataService } from "./helpers/AssetMetadataService";
 import { AssetRelation } from "./types";
 import { BlockerHelpers } from "../../utils/BlockerHelpers";
-
-type ObsidianApp = any;
+import { ObsidianApp, ExocortexPluginInterface } from "../../../types";
 
 export interface UniversalLayoutConfig {
   sortBy?: string;
@@ -24,7 +23,7 @@ export class RelationsRenderer {
     private reactRenderer: ReactRenderer,
     private backlinksCacheManager: BacklinksCacheManager,
     private metadataService: AssetMetadataService,
-    private plugin: any,
+    private plugin: ExocortexPluginInterface,
     private refresh: () => Promise<void>,
     private vaultAdapter: IVaultAdapter,
   ) {}
@@ -169,8 +168,7 @@ export class RelationsRenderer {
           );
 
           if (isModPressed) {
-            const leaf = this.app.workspace.getLeaf("tab");
-            await leaf.openLinkText(path, "");
+            await this.app.workspace.openLinkText(path, "", "tab");
           } else {
             await this.app.workspace.openLinkText(path, "", false);
           }

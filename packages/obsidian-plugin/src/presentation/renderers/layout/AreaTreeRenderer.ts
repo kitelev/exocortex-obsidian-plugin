@@ -6,8 +6,7 @@ import { AreaHierarchyTree, type AreaClickEvent } from "../../components/AreaHie
 import { AssetMetadataService } from "./helpers/AssetMetadataService";
 import { AssetRelation } from "./types";
 import { ILogger } from "../../../adapters/logging/ILogger";
-
-type ObsidianApp = any;
+import { ObsidianApp } from "../../../types";
 
 export class AreaTreeRenderer {
   constructor(
@@ -82,8 +81,7 @@ export class AreaTreeRenderer {
           const isModPressed = Keymap.isModEvent(nativeEvent);
 
           if (isModPressed) {
-            const leaf = this.app.workspace.getLeaf("tab");
-            await leaf.openLinkText(path, "");
+            await this.app.workspace.openLinkText(path, "", "tab");
           } else {
             await this.app.workspace.openLinkText(path, "", false);
           }

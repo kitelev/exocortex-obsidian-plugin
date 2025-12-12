@@ -1,8 +1,7 @@
 import { TFile } from "obsidian";
 import { ILogger } from "../../../adapters/logging/ILogger";
 import { LabelInputModal, type LabelInputModalResult } from "../../modals/LabelInputModal";
-
-type ObsidianApp = any;
+import { ObsidianApp } from "../../../types";
 
 export interface FileCreationResult {
   path: string;

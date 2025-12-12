@@ -86,6 +86,7 @@ export { AlgebraOptimizer } from "./infrastructure/sparql/algebra/AlgebraOptimiz
 export { AlgebraSerializer } from "./infrastructure/sparql/algebra/AlgebraSerializer";
 export type {
   AlgebraOperation,
+  BGPOperation,
   ConstructOperation,
   Triple as AlgebraTriple,
 } from "./infrastructure/sparql/algebra/AlgebraOperation";

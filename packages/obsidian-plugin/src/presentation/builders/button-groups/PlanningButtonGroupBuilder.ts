@@ -7,12 +7,16 @@ import {
   canShiftDayForward,
   canVoteOnEffort,
   canSetActiveFocus,
+  CommandVisibilityContext,
 } from "@exocortex/core";
+import { ILogger } from "../../../adapters/logging/ILogger";
+import { ExocortexSettings } from "../../../domain/settings/ExocortexSettings";
 import {
   IButtonGroupBuilder,
   ButtonBuilderContext,
   ButtonBuilderServices,
 } from "./ButtonBuilderTypes";
+import { ExocortexPluginInterface, MetadataRecord } from "../../../types";
 
 /**
  * Builds planning-related buttons (Plan on Today, Vote, Set Active Focus, etc.)
@@ -42,11 +46,11 @@ export class PlanningButtonGroupBuilder implements IButtonGroupBuilder {
   }
 
   private setActiveFocusButton(
-    settings: any,
-    plugin: any,
+    settings: ExocortexSettings,
+    plugin: ExocortexPluginInterface,
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -73,8 +77,8 @@ export class PlanningButtonGroupBuilder implements IButtonGroupBuilder {
 
   private planOnTodayButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -93,8 +97,8 @@ export class PlanningButtonGroupBuilder implements IButtonGroupBuilder {
 
   private planForEveningButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -113,8 +117,8 @@ export class PlanningButtonGroupBuilder implements IButtonGroupBuilder {
 
   private shiftDayBackwardButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -133,8 +137,8 @@ export class PlanningButtonGroupBuilder implements IButtonGroupBuilder {
 
   private shiftDayForwardButton(
     file: TFile,
-    context: any,
-    logger: any,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {
@@ -153,9 +157,9 @@ export class PlanningButtonGroupBuilder implements IButtonGroupBuilder {
 
   private voteOnEffortButton(
     file: TFile,
-    metadata: Record<string, any>,
-    context: any,
-    logger: any,
+    metadata: MetadataRecord,
+    context: CommandVisibilityContext,
+    logger: ILogger,
     refresh: () => Promise<void>,
   ): ActionButton {
     return {

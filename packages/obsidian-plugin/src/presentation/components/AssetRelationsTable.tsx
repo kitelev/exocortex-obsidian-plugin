@@ -11,7 +11,7 @@ export interface AssetRelation {
   isArchived?: boolean;
   isBlocked?: boolean;
 
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface AssetRelationsTableProps {
@@ -59,7 +59,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
     }));
   };
 
-  const getInstanceClass = (metadata: Record<string, any>): WikiLink => {
+  const getInstanceClass = (metadata: Record<string, unknown>): WikiLink => {
     const instanceClassRaw =
       metadata?.exo__Instance_class || metadata?.["exo__Instance_class"] || "-";
 
@@ -95,7 +95,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
     return blockerIcon + relation.title;
   };
 
-  const isWikiLink = (value: any): boolean => {
+  const isWikiLink = (value: unknown): boolean => {
     return typeof value === "string" && /\[\[.*?\]\]/.test(value);
   };
 
@@ -123,7 +123,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
     };
   };
 
-  const renderPropertyValue = (value: any): React.ReactNode => {
+  const renderPropertyValue = (value: unknown): React.ReactNode => {
     if (value === null || value === undefined) {
       return "-";
     }
@@ -161,7 +161,7 @@ const SingleTable: React.FC<SingleTableProps> = ({
     return String(value);
   };
 
-  const normalizeMetadataValue = (value: any): string | number => {
+  const normalizeMetadataValue = (value: unknown): string | number => {
     if (value === null || value === undefined) return "";
     if (typeof value === "number") return value;
     if (typeof value === "boolean") return value ? "true" : "false";

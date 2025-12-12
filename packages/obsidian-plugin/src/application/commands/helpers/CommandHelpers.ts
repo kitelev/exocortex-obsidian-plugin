@@ -1,6 +1,5 @@
 import { TFile } from "obsidian";
-
-type ObsidianApp = any;
+import { ObsidianApp } from "../../../types";
 
 /**
  * Utility class for common file operations in commands

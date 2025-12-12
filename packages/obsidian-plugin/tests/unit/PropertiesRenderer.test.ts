@@ -136,9 +136,7 @@ describe("PropertiesRenderer", () => {
         await onLinkClick("path/to/file.md", mockEvent);
 
         expect(Keymap.isModEvent).toHaveBeenCalledWith({});
-        expect(mockApp.workspace.getLeaf).toHaveBeenCalledWith("tab");
-        expect(mockLeaf.openLinkText).toHaveBeenCalledWith("path/to/file.md", "");
-        expect(mockApp.workspace.openLinkText).not.toHaveBeenCalled();
+        expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith("path/to/file.md", "", "tab");
       });
 
       it("should handle different event types correctly", async () => {

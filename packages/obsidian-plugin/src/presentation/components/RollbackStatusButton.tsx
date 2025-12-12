@@ -1,11 +1,12 @@
 import React from "react";
 import { TFile } from "obsidian";
 import { canRollbackStatus, CommandVisibilityContext } from "@exocortex/core";
+import type { MetadataRecord } from "../../types";
 
 export interface RollbackStatusButtonProps {
   instanceClass: string | string[] | null;
   currentStatus: string | string[] | null;
-  metadata: Record<string, any>;
+  metadata: MetadataRecord;
   sourceFile: TFile;
   onRollbackStatus: () => Promise<void>;
 }

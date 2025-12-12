@@ -18,7 +18,7 @@ interface PropertyValidationErrors {
 }
 
 export interface AssetPropertiesTableProps {
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   onLinkClick?: (path: string, event: React.MouseEvent) => void;
   getAssetLabel?: (path: string) => string | null;
   file?: TFile;
@@ -50,7 +50,7 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
         return;
       }
 
-      const assetClass = metadata["exo__Instance_class"] || "";
+      const assetClass = String(metadata["exo__Instance_class"] || "");
       const errors: PropertyValidationErrors = {};
 
       for (const [key, value] of Object.entries(metadata)) {
@@ -91,7 +91,7 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
     }));
   };
 
-  const isWikiLink = (value: any): boolean => {
+  const isWikiLink = (value: unknown): boolean => {
     return typeof value === "string" && /\[\[.*?\]\]/.test(value);
   };
 
@@ -120,7 +120,7 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
   };
 
   const detectPropertyType = (
-    value: any,
+    value: unknown,
   ): "datetime" | "text" | "number" | "boolean" | "wikilink" | "array" | "object" => {
     if (value === null || value === undefined) return "text";
     if (typeof value === "boolean") return "boolean";
@@ -145,7 +145,7 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
     return "text";
   };
 
-  const handlePropertyUpdate = async (key: string, newValue: any) => {
+  const handlePropertyUpdate = async (key: string, newValue: unknown) => {
     if (!file || !propertyUpdateService) return;
 
     try {
@@ -155,14 +155,14 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
     }
   };
 
-  const renderEditableField = (key: string, value: any): React.ReactNode => {
+  const renderEditableField = (key: string, value: unknown): React.ReactNode => {
     const propertyType = detectPropertyType(value);
 
     switch (propertyType) {
       case "datetime":
         return (
           <DateTimePropertyField
-            value={value}
+            value={typeof value === "string" ? value : null}
             onChange={(newValue) => handlePropertyUpdate(key, newValue)}
           />
         );
@@ -185,7 +185,7 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
     }
   };
 
-  const renderValue = (value: any): React.ReactNode => {
+  const renderValue = (value: unknown): React.ReactNode => {
     if (value === null || value === undefined) {
       return "-";
     }
@@ -239,7 +239,7 @@ export const AssetPropertiesTable: React.FC<AssetPropertiesTableProps> = ({
 
   const metadataEntries = Object.entries(metadata || {});
 
-  const getNormalizedValue = (value: any): string | number => {
+  const getNormalizedValue = (value: unknown): string | number => {
     if (value === null || value === undefined) return "";
     if (typeof value === "number") return value;
     if (typeof value === "boolean") return value ? "true" : "false";

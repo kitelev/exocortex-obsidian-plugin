@@ -15,8 +15,7 @@ import { RenameToUidService } from "@exocortex/core";
 import { EffortVotingService } from "@exocortex/core";
 import { LabelToAliasService } from "@exocortex/core";
 import { AssetConversionService } from "@exocortex/core";
-
-type ObsidianApp = any;
+import { ObsidianApp, ExocortexPluginInterface, MetadataRecord } from "../../../types";
 
 /**
  * Context passed to button group builders
@@ -24,9 +23,9 @@ type ObsidianApp = any;
 export interface ButtonBuilderContext {
   app: ObsidianApp;
   settings: ExocortexSettings;
-  plugin: any;
+  plugin: ExocortexPluginInterface;
   file: TFile;
-  metadata: Record<string, any>;
+  metadata: MetadataRecord;
   instanceClass: string | string[] | null;
   visibilityContext: CommandVisibilityContext;
   logger: ILogger;

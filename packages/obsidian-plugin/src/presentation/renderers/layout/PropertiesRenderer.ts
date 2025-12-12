@@ -5,8 +5,7 @@ import { MetadataExtractor } from "@exocortex/core";
 import { AssetPropertiesTable } from "../../components/AssetPropertiesTable";
 import { AssetMetadataService } from "./helpers/AssetMetadataService";
 import { PropertyUpdateService } from "../../../application/services/PropertyUpdateService";
-
-type ObsidianApp = any;
+import { ObsidianApp } from "../../../types";
 
 export interface PropertiesRendererOptions {
   /**
@@ -79,8 +78,7 @@ export class PropertiesRenderer {
             );
 
             if (isModPressed) {
-              const leaf = this.app.workspace.getLeaf("tab");
-              await leaf.openLinkText(path, "");
+              await this.app.workspace.openLinkText(path, "", "tab");
             } else {
               await this.app.workspace.openLinkText(path, "", false);
             }
