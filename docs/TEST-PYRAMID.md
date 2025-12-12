@@ -51,7 +51,7 @@ The Exocortex project follows the **Test Pyramid** architecture pattern, which p
 
 | Package | Statements | Branches | Functions | Lines |
 |---------|------------|----------|-----------|-------|
-| obsidian-plugin | 75% | 67% | 70% | 75% |
+| obsidian-plugin | 80% | 70% | 73% | 80% |
 | core | 95% | 95% | 95% | 95% |
 | cli | 65% | 60% | 70% | 65% |
 
@@ -146,10 +146,10 @@ test-coverage:
 
 | Metric | Required | Current | Status |
 |--------|----------|---------|--------|
-| Statements | 75% | 80.51% | ✅ |
-| Branches | 67% | 71.09% | ✅ |
-| Functions | 70% | 72.89% | ✅ |
-| Lines | 75% | 80.72% | ✅ |
+| Statements | 80% | 82.64% | ✅ |
+| Branches | 70% | 72.32% | ✅ |
+| Functions | 73% | 75.76% | ✅ |
+| Lines | 80% | 82.91% | ✅ |
 
 #### core Package
 
@@ -164,24 +164,29 @@ test-coverage:
 
 | Metric | Required | Current | Status |
 |--------|----------|---------|--------|
-| Statements | 65% | 69.39% | ✅ |
+| Statements | 65% | 69.29% | ✅ |
 | Branches | 60% | 62.97% | ✅ |
 | Functions | 70% | 77.43% | ✅ |
-| Lines | 65% | 69.09% | ✅ |
+| Lines | 65% | 68.99% | ✅ |
 
 ---
 
 ## Coverage Progression Goals
 
+### Completed (December 2025)
+
+- [x] obsidian-plugin: 80% statements, 70% branches (Issue #786)
+- [x] Restored coverage thresholds from temporary reduction
+
 ### Short-term (Q1 2026)
 
-- [ ] obsidian-plugin: 80% statements, 70% branches
+- [ ] obsidian-plugin: 85% statements, 75% branches
 - [ ] cli: 75% statements, 70% branches
 - [ ] Core package coverage collection working in CI
 
 ### Medium-term (Q2-Q3 2026)
 
-- [ ] obsidian-plugin: 85% statements, 75% branches
+- [ ] obsidian-plugin: 85% statements, 80% branches
 - [ ] cli: 80% statements, 75% branches
 - [ ] All packages integrated in coverage report
 

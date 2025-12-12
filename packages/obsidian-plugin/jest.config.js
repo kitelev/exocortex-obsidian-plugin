@@ -36,18 +36,18 @@ module.exports = {
   },
   // Coverage thresholds per Test Pyramid policy (docs/TEST-PYRAMID.md)
   // These are enforced in CI via .github/workflows/ci.yml
+  // Restored from temporary reduction (Issue #786)
   coverageThreshold: {
     global: {
-      statements: 75, // CI threshold (current: ~80%)
-      branches: 67,   // CI threshold (current: ~71%)
-      functions: 70,  // CI threshold (current: ~73%)
-      lines: 75,      // CI threshold (current: ~81%)
+      statements: 80, // Restored (current: ~83%)
+      branches: 70,   // Restored from 67% (current: ~72%)
+      functions: 73,  // Restored (current: ~76%)
+      lines: 80,      // Restored (current: ~83%)
     },
   },
   // 🎯 COVERAGE POLICY (see docs/TEST-PYRAMID.md):
-  // - obsidian-plugin: 75% statements, 67% branches, 70% functions, 75% lines
-  // - Short-term goal: 80% statements, 70% branches
-  // - Long-term goal: 85% statements, 80% branches
+  // - obsidian-plugin: 80% statements, 70% branches, 73% functions, 80% lines
+  // - Target goal: 85% statements, 75% branches, 80% functions, 85% lines
   // Note: setupFilesAfterEnv moved to memory optimization section above
   // Handle ES modules and other transformations in CI
   // Transform @exocortex/core package files
