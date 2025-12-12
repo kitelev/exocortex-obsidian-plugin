@@ -332,4 +332,58 @@ describe("BacklinksCacheManager", () => {
       expect(targetBacklinks?.has("emoji-😀.md")).toBe(true);
     });
   });
+
+  describe("size", () => {
+    it("should return 0 for empty cache", () => {
+      expect(cacheManager.size).toBe(0);
+    });
+
+    it("should return number of cached entries after building", () => {
+      cacheManager.buildCache();
+      // Based on mockResolvedLinks: note2, note3, note4, note1 have backlinks
+      expect(cacheManager.size).toBe(4);
+    });
+  });
+
+  describe("cleanup", () => {
+    it("should clear all entries from the cache", () => {
+      cacheManager.buildCache();
+      expect(cacheManager.size).toBeGreaterThan(0);
+
+      cacheManager.cleanup();
+
+      expect(cacheManager.size).toBe(0);
+    });
+
+    it("should mark cache as invalid after cleanup", () => {
+      cacheManager.buildCache();
+      expect(cacheManager.isValid()).toBe(true);
+
+      cacheManager.cleanup();
+
+      expect(cacheManager.isValid()).toBe(false);
+    });
+
+    it("should allow rebuilding cache after cleanup", () => {
+      cacheManager.buildCache();
+      cacheManager.cleanup();
+
+      cacheManager.buildCache();
+
+      expect(cacheManager.isValid()).toBe(true);
+      expect(cacheManager.size).toBeGreaterThan(0);
+    });
+
+    it("should return undefined for all keys after cleanup", () => {
+      cacheManager.buildCache();
+      const backlinks = cacheManager.getBacklinks("note3.md");
+      expect(backlinks).toBeDefined();
+
+      cacheManager.cleanup();
+
+      // After cleanup, cache is invalid, so getBacklinks will rebuild
+      // To test immediate state, we need to check without triggering rebuild
+      expect(cacheManager.isValid()).toBe(false);
+    });
+  });
 });

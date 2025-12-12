@@ -29,6 +29,7 @@ import {
   IncrementalUpdateHandler,
 } from "./helpers";
 import { ObsidianApp, ExocortexPluginInterface } from "../../types";
+import { LRUCache } from "../../infrastructure/cache";
 
 /**
  * Renders the UniversalLayout view with properties, buttons, daily sections, and relations.
@@ -63,7 +64,8 @@ export class UniversalLayoutRenderer {
 
   private dependencyResolver: PropertyDependencyResolver;
   private deltaDetector: FrontmatterDeltaDetector;
-  private metadataCache: Map<string, Record<string, unknown>> = new Map();
+  // Use LRU cache with max 500 entries to prevent unbounded growth
+  private metadataCache: LRUCache<string, Record<string, unknown>> = new LRUCache(500);
   private debounceTimeout: NodeJS.Timeout | null = null;
   private currentFilePath: string | null = null;
   private currentConfig: UniversalLayoutConfig = {};
@@ -164,6 +166,11 @@ export class UniversalLayoutRenderer {
     }
     this.eventListenerManager.cleanup();
     this.reactRenderer.cleanup();
+    this.backlinksCacheManager.cleanup();
+    this.metadataCache.cleanup();
+    this.sectionStateManager.cleanup();
+    this.currentFilePath = null;
+    this.rootContainer = null;
   }
 
   public async handleMetadataChange(filePath: string): Promise<void> {

@@ -76,4 +76,19 @@ export class SectionStateManager {
 
     header.createEl("h3", { text: title });
   }
+
+  /**
+   * Returns the number of sections being tracked.
+   */
+  get size(): number {
+    return this.collapsedSections.size;
+  }
+
+  /**
+   * Clears all section states.
+   * Should be called in cleanup() methods.
+   */
+  cleanup(): void {
+    this.collapsedSections.clear();
+  }
 }

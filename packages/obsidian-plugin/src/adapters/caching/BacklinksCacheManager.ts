@@ -39,4 +39,20 @@ export class BacklinksCacheManager {
   isValid(): boolean {
     return this.cacheValid;
   }
+
+  /**
+   * Returns the current number of entries in the cache.
+   */
+  get size(): number {
+    return this.backlinksCache.size;
+  }
+
+  /**
+   * Clears all entries from the cache and marks it as invalid.
+   * Should be called in onunload() or cleanup() methods.
+   */
+  cleanup(): void {
+    this.backlinksCache.clear();
+    this.cacheValid = false;
+  }
 }
