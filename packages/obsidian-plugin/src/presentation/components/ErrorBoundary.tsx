@@ -29,7 +29,7 @@ export interface ErrorBoundaryProps {
 /**
  * State for ErrorBoundary component
  */
-interface ErrorBoundaryState {
+export interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;

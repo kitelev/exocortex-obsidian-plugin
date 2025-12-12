@@ -2,8 +2,14 @@ import { test, expect } from "@playwright/experimental-ct-react";
 import React from "react";
 import { ErrorBoundary } from "../../src/presentation/components/ErrorBoundary";
 import { ValidationError } from "@exocortex/core/domain/errors";
-import { ApplicationErrorHandler } from "@exocortex/core/application/errors";
-import { ThrowError, WorkingComponent, ToggleError } from "./ErrorBoundary.testHelpers";
+import {
+  ThrowError,
+  WorkingComponent,
+  ToggleError,
+  ErrorBoundaryWithHandler,
+  ErrorBoundaryWithCustomFallback,
+  ErrorBoundaryWithBothCallbacks,
+} from "./ErrorBoundary.testHelpers";
 
 test.describe("ErrorBoundary", () => {
   test("should render children when no error occurs", async ({ mount }) => {
@@ -51,18 +57,13 @@ test.describe("ErrorBoundary", () => {
     await expect(component.getByRole("button", { name: /Try Again/i })).toBeVisible();
   });
 
-  test.skip("should call error handler when error occurs", async ({ mount }) => {
-    // SKIP: Playwright CT has issues with complex prop serialization (errorHandler)
-    // Component doesn't mount when errorHandler prop is passed
-    // TODO: Test errorHandler integration in E2E tests instead
-    const errorHandler = new ApplicationErrorHandler();
-
+  test("should call error handler when error occurs", async ({ mount }) => {
+    // Uses wrapper component that creates errorHandler internally to avoid Playwright CT serialization issues
     const component = await mount(
-      <ErrorBoundary errorHandler={errorHandler}>
-        <ThrowError error={new Error("Handler test")} />
-      </ErrorBoundary>,
+      <ErrorBoundaryWithHandler errorMessage="Handler test" />,
     );
 
+    // Error UI should be displayed
     await expect(component.getByText("❌ Something went wrong")).toBeVisible();
     await expect(component.getByRole("button", { name: /Try Again/i })).toBeVisible();
   });
@@ -103,30 +104,18 @@ test.describe("ErrorBoundary", () => {
     await expect(component.getByText("❌ Something went wrong")).toBeVisible();
   });
 
-  test.skip("should use custom fallback UI when provided", async ({ mount }) => {
-    // SKIP: Playwright CT has issues with function prop serialization (fallback)
-    // Component doesn't mount when fallback function prop is passed
-    // TODO: Test custom fallback in E2E tests instead
-    const customFallback = (
-      error: Error,
-      errorInfo: React.ErrorInfo,
-      retry: () => void,
-    ) => (
-      <div data-testid="custom-fallback">
-        <h1>Custom Error UI</h1>
-        <p>{error.message}</p>
-        <button onClick={retry}>Custom Retry</button>
-      </div>
-    );
-
+  test("should use custom fallback UI when provided", async ({ mount }) => {
+    // Uses wrapper component that creates fallback function internally to avoid Playwright CT serialization issues
     const component = await mount(
-      <ErrorBoundary fallback={customFallback}>
-        <ThrowError error={new Error("Custom fallback test")} />
-      </ErrorBoundary>,
+      <ErrorBoundaryWithCustomFallback errorMessage="Custom fallback test" />,
     );
 
+    // Custom fallback UI should be rendered - use text/role selectors for better reliability
     await expect(component.getByText("Custom Error UI")).toBeVisible();
-    await expect(component.getByRole("button", { name: "Custom Retry" })).toBeVisible();
+    await expect(component.getByText("Custom fallback test")).toBeVisible();
+    await expect(
+      component.getByRole("button", { name: "Custom Retry" }),
+    ).toBeVisible();
   });
 
   test("should show component stack in development mode", async ({ mount }) => {
@@ -203,5 +192,40 @@ test.describe("ErrorBoundary", () => {
 
     expect(styles).toContain("var(--background-modifier-error)");
     expect(styles).toContain("var(--background-secondary)");
+  });
+
+  test("should call both errorHandler and onError when both are provided", async ({
+    mount,
+  }) => {
+    // Uses wrapper component that creates both callbacks internally
+    const component = await mount(
+      <ErrorBoundaryWithBothCallbacks errorMessage="Both callbacks test" />,
+    );
+
+    // Error UI should be displayed
+    await expect(component.getByText("❌ Something went wrong")).toBeVisible();
+
+    // Both callbacks should have been called (indicated by data-testid elements)
+    await expect(component.getByTestId("handler-called")).toBeVisible();
+    await expect(component.getByTestId("callback-called")).toBeVisible();
+  });
+
+  test("should reset state and re-render children when custom retry is clicked", async ({
+    mount,
+  }) => {
+    // Uses wrapper component with custom fallback that has a custom retry button
+    const component = await mount(
+      <ErrorBoundaryWithCustomFallback errorMessage="Retry test" />,
+    );
+
+    // Custom fallback should be visible - use text/role selectors for better reliability
+    await expect(component.getByText("Custom Error UI")).toBeVisible();
+    await expect(component.getByText("Retry test")).toBeVisible();
+
+    // Click custom retry button
+    await component.getByRole("button", { name: "Custom Retry" }).click();
+
+    // Since the child component still throws, custom fallback should appear again
+    await expect(component.getByText("Custom Error UI")).toBeVisible();
   });
 });
