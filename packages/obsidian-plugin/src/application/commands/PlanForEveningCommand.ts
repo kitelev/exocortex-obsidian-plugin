@@ -17,10 +17,14 @@ export class PlanForEveningCommand implements ICommand {
     if (!context || !canPlanForEvening(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to plan for evening: ${error.message}`);
-        LoggingService.error("Plan for evening error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to plan for evening: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Plan for evening error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

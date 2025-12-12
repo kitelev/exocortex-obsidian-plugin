@@ -17,10 +17,14 @@ export class PlanOnTodayCommand implements ICommand {
     if (!context || !canPlanOnToday(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to plan on today: ${error.message}`);
-        LoggingService.error("Plan on today error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to plan on today: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Plan on today error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

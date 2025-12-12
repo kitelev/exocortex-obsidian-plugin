@@ -23,10 +23,14 @@ export class CreateRelatedTaskCommand implements ICommand {
     if (!context || !canCreateRelatedTask(context)) return false;
 
     if (!checking) {
-      this.execute(file, context).catch((error) => {
-        new Notice(`Failed to create related task: ${error.message}`);
-        LoggingService.error("Create related task error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file, context);
+        } catch (error) {
+          new Notice(`Failed to create related task: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Create related task error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

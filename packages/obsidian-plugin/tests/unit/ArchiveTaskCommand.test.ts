@@ -170,8 +170,10 @@ describe("ArchiveTaskCommand", () => {
       await flushPromises();
 
       expect(mockTaskStatusService.archiveTask).toHaveBeenCalledWith(mockFile);
-      expect(LoggingService.error).toHaveBeenCalledWith("Archive task error", customError);
-      expect(Notice).toHaveBeenCalledWith("Failed to archive task: undefined");
+      // Since error is not an Error instance, undefined is passed to LoggingService.error
+      expect(LoggingService.error).toHaveBeenCalledWith("Archive task error", undefined);
+      // Since error is not an Error instance, String(error) is used which calls toString()
+      expect(Notice).toHaveBeenCalledWith("Failed to archive task: Custom error string");
     });
 
     it("should handle multiple concurrent archive operations", async () => {

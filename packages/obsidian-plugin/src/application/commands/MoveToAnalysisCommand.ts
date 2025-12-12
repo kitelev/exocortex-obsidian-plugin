@@ -17,10 +17,14 @@ export class MoveToAnalysisCommand implements ICommand {
     if (!context || !canMoveToAnalysis(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to move to analysis: ${error.message}`);
-        LoggingService.error("Move to analysis error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to move to analysis: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Move to analysis error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

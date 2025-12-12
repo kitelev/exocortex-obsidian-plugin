@@ -17,10 +17,14 @@ export class MoveToToDoCommand implements ICommand {
     if (!context || !canMoveToToDo(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to move to todo: ${error.message}`);
-        LoggingService.error("Move to todo error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to move to todo: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Move to todo error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

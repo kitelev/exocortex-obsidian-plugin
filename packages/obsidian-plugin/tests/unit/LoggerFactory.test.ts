@@ -227,7 +227,7 @@ describe("LoggerFactory", () => {
       });
     });
 
-    it("should be thread-safe for concurrent creation", () => {
+    it("should be thread-safe for concurrent creation", async () => {
       const promises: Promise<ILogger>[] = [];
 
       // Simulate concurrent logger creation
@@ -239,19 +239,18 @@ describe("LoggerFactory", () => {
         );
       }
 
-      return Promise.all(promises).then(loggers => {
-        expect(loggers).toHaveLength(100);
-        loggers.forEach(logger => {
-          expect(logger).toBeInstanceOf(Logger);
-        });
-
-        // Verify all are different instances
-        for (let i = 0; i < loggers.length; i++) {
-          for (let j = i + 1; j < loggers.length; j++) {
-            expect(loggers[i]).not.toBe(loggers[j]);
-          }
-        }
+      const loggers = await Promise.all(promises);
+      expect(loggers).toHaveLength(100);
+      loggers.forEach(logger => {
+        expect(logger).toBeInstanceOf(Logger);
       });
+
+      // Verify all are different instances
+      for (let i = 0; i < loggers.length; i++) {
+        for (let j = i + 1; j < loggers.length; j++) {
+          expect(loggers[i]).not.toBe(loggers[j]);
+        }
+      }
     });
 
     it("should handle rapid successive creations", () => {

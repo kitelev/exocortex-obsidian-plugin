@@ -23,10 +23,14 @@ export class ConvertTaskToProjectCommand implements ICommand {
     if (!context || !canConvertTaskToProject(context)) return false;
 
     if (!checking) {
-      this.execute(file).catch((error) => {
-        new Notice(`Failed to convert Task to Project: ${error.message}`);
-        LoggingService.error("Convert Task to Project error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file);
+        } catch (error) {
+          new Notice(`Failed to convert Task to Project: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Convert Task to Project error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

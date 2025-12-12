@@ -28,10 +28,14 @@ export class CreateInstanceCommand implements ICommand {
     if (!context || !canCreateInstance(context)) return false;
 
     if (!checking) {
-      this.execute(file, context).catch((error) => {
-        new Notice(`Failed to create instance: ${error.message}`);
-        LoggingService.error("Create instance error", error);
-      });
+      void (async () => {
+        try {
+          await this.execute(file, context);
+        } catch (error) {
+          new Notice(`Failed to create instance: ${error instanceof Error ? error.message : String(error)}`);
+          LoggingService.error("Create instance error", error instanceof Error ? error : undefined);
+        }
+      })();
     }
 
     return true;

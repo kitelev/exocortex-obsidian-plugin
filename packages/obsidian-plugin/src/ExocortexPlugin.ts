@@ -252,11 +252,13 @@ export default class ExocortexPlugin extends Plugin {
     metadataContainer.insertAdjacentElement("afterend", layoutContainer);
 
     // Render layout
-    this.layoutRenderer
-      .render("", layoutContainer, {} as MarkdownPostProcessorContext)
-      .catch((error) => {
+    void (async () => {
+      try {
+        await this.layoutRenderer.render("", layoutContainer, {} as MarkdownPostProcessorContext);
+      } catch (error) {
         this.logger.error("Failed to auto-render layout", error);
-      });
+      }
+    })();
   }
 
   private async handleMetadataChange(file: TFile): Promise<void> {
