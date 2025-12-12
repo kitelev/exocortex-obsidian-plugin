@@ -215,7 +215,6 @@ describe("DailyTasksRenderer - React component callbacks", () => {
     (Keymap.isModEvent as jest.Mock).mockReturnValue(true);
     await onTaskClick("task.md", mockEvent);
 
-    expect(ctx.mockApp.workspace.getLeaf).toHaveBeenCalledWith("tab");
-    expect(mockLeaf.openLinkText).toHaveBeenCalledWith("task.md", "");
+    expect(ctx.mockApp.workspace.openLinkText).toHaveBeenCalledWith("task.md", "", "tab");
   });
 });

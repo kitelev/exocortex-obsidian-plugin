@@ -883,9 +883,7 @@ describe("RelationsRenderer", () => {
         await onAssetClick("test/path.md", mockEvent);
 
         expect(Keymap.isModEvent).toHaveBeenCalledWith({});
-        expect(mockApp.workspace.getLeaf).toHaveBeenCalledWith("tab");
-        expect(mockLeaf.openLinkText).toHaveBeenCalledWith("test/path.md", "");
-        expect(mockApp.workspace.openLinkText).not.toHaveBeenCalled();
+        expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith("test/path.md", "", "tab");
       });
 
       it("should propagate errors from openLinkText", async () => {
@@ -906,10 +904,10 @@ describe("RelationsRenderer", () => {
         );
       });
 
-      it("should propagate errors from leaf.openLinkText", async () => {
+      it("should propagate errors from workspace.openLinkText with tab", async () => {
         (Keymap.isModEvent as jest.Mock).mockReturnValue(true);
         const error = new Error("Failed to open in new tab");
-        mockLeaf.openLinkText.mockRejectedValue(error);
+        mockApp.workspace.openLinkText.mockRejectedValue(error);
         const relations = [createMockAssetRelation()];
 
         await renderer.render(mockElement, relations, {});
@@ -945,7 +943,7 @@ describe("RelationsRenderer", () => {
 
         await onAssetClick("macos/file.md", mockEvent);
 
-        expect(mockApp.workspace.getLeaf).toHaveBeenCalledWith("tab");
+        expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith("macos/file.md", "", "tab");
       });
 
       it("should handle Ctrl key on Windows/Linux", async () => {
@@ -969,7 +967,7 @@ describe("RelationsRenderer", () => {
 
         await onAssetClick("windows/file.md", mockEvent);
 
-        expect(mockApp.workspace.getLeaf).toHaveBeenCalledWith("tab");
+        expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith("windows/file.md", "", "tab");
       });
     });
 

@@ -1,7 +1,7 @@
 import { App } from "obsidian";
 import { container } from "tsyringe";
 import { ICommand } from "./ICommand";
-import type ExocortexPlugin from "../../ExocortexPlugin";
+import { ExocortexPluginInterface } from "../../types";
 import { ObsidianVaultAdapter } from "../../adapters/ObsidianVaultAdapter";
 import {
   TaskCreationService,
@@ -61,7 +61,7 @@ export class CommandRegistry {
 
   constructor(
     app: App,
-    plugin: ExocortexPlugin,
+    plugin: ExocortexPluginInterface,
     reloadLayoutCallback?: () => void,
   ) {
     this.vaultAdapter = new ObsidianVaultAdapter(app.vault, app.metadataCache, app);

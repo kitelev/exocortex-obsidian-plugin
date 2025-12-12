@@ -253,9 +253,7 @@ describe("AreaTreeRenderer", () => {
         await onAreaClick("areas/sub-area.md", mockEvent);
 
         expect(Keymap.isModEvent).toHaveBeenCalledWith({});
-        expect(mockApp.workspace.getLeaf).toHaveBeenCalledWith("tab");
-        expect(mockLeaf.openLinkText).toHaveBeenCalledWith("areas/sub-area.md", "");
-        expect(mockApp.workspace.openLinkText).not.toHaveBeenCalled();
+        expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith("areas/sub-area.md", "", "tab");
       });
 
       it("should handle synthetic React events", async () => {

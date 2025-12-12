@@ -143,8 +143,7 @@ export class DailyProjectsRenderer {
           );
 
           if (isModPressed) {
-            const leaf = this.app.workspace.getLeaf("tab");
-            await leaf.openLinkText(path, "");
+            await this.app.workspace.openLinkText(path, "", "tab");
           } else {
             await this.app.workspace.openLinkText(path, "", false);
           }

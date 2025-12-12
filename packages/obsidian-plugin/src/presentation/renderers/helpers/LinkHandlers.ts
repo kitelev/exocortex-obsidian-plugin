@@ -17,8 +17,7 @@ export class LinkHandlers {
       const isModPressed = Keymap.isModEvent(event.nativeEvent as MouseEvent);
 
       if (isModPressed) {
-        const leaf = app.workspace.getLeaf("tab");
-        await leaf.openLinkText(path, "");
+        await app.workspace.openLinkText(path, "", "tab");
       } else {
         await app.workspace.openLinkText(path, "", false);
       }

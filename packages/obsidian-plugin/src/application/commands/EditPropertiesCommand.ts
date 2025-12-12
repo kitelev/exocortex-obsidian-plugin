@@ -1,6 +1,6 @@
 import { App, TFile, Notice } from "obsidian";
 import { ICommand } from "./ICommand";
-import type ExocortexPlugin from "../../ExocortexPlugin";
+import { ExocortexPluginInterface } from "../../types";
 import { PropertyEditorModal } from "../../presentation/modals/PropertyEditorModal";
 import type { CommandVisibilityContext } from "@exocortex/core";
 
@@ -10,7 +10,7 @@ export class EditPropertiesCommand implements ICommand {
 
   constructor(
     private app: App,
-    private plugin: ExocortexPlugin,
+    private plugin: ExocortexPluginInterface,
   ) {}
 
   checkCallback = (

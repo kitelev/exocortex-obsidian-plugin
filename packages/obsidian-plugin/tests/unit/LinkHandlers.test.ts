@@ -80,9 +80,7 @@ describe("LinkHandlers", () => {
         await handler("test/path.md", mockEvent);
 
         expect(Keymap.isModEvent).toHaveBeenCalledWith({});
-        expect(mockApp.workspace.getLeaf).toHaveBeenCalledWith("tab");
-        expect(mockLeaf.openLinkText).toHaveBeenCalledWith("test/path.md", "");
-        expect(mockApp.workspace.openLinkText).not.toHaveBeenCalled();
+        expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith("test/path.md", "", "tab");
       });
 
       it("should handle Cmd key on macOS", async () => {
@@ -100,8 +98,7 @@ describe("LinkHandlers", () => {
 
         await handler("macos/file.md", mockEvent);
 
-        expect(mockApp.workspace.getLeaf).toHaveBeenCalledWith("tab");
-        expect(mockLeaf.openLinkText).toHaveBeenCalledWith("macos/file.md", "");
+        expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith("macos/file.md", "", "tab");
       });
 
       it("should handle Ctrl key on Windows/Linux", async () => {
@@ -119,8 +116,7 @@ describe("LinkHandlers", () => {
 
         await handler("windows/file.md", mockEvent);
 
-        expect(mockApp.workspace.getLeaf).toHaveBeenCalledWith("tab");
-        expect(mockLeaf.openLinkText).toHaveBeenCalledWith("windows/file.md", "");
+        expect(mockApp.workspace.openLinkText).toHaveBeenCalledWith("windows/file.md", "", "tab");
       });
     });
 
@@ -138,9 +134,9 @@ describe("LinkHandlers", () => {
         );
       });
 
-      it("should propagate errors from leaf.openLinkText", async () => {
+      it("should propagate errors from workspace.openLinkText with tab", async () => {
         const error = new Error("Failed to open in new tab");
-        mockLeaf.openLinkText.mockRejectedValue(error);
+        mockApp.workspace.openLinkText.mockRejectedValue(error);
         (Keymap.isModEvent as jest.Mock).mockReturnValue(true);
 
         const handler = LinkHandlers.createLinkClickHandler(mockApp);

@@ -7,6 +7,7 @@ export interface SupervisionFormData {
   behavior: string;
   shortTermConsequences: string;
   longTermConsequences: string;
+  desiredBehavior: string;
 }
 
 export class SupervisionInputModal extends Modal {
@@ -17,6 +18,7 @@ export class SupervisionInputModal extends Modal {
     behavior: "",
     shortTermConsequences: "",
     longTermConsequences: "",
+    desiredBehavior: "",
   };
   private onSubmit: (data: SupervisionFormData | null) => void;
   private inputs: HTMLInputElement[] = [];
@@ -45,6 +47,10 @@ export class SupervisionInputModal extends Modal {
       {
         key: "longTermConsequences",
         label: "Долгосрочные последствия поведения",
+      },
+      {
+        key: "desiredBehavior",
+        label: "Желательное поведение",
       },
     ];
 

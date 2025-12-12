@@ -12,8 +12,8 @@ describe("SupervisionInputModal", () => {
     // Mock App
     mockApp = {} as App;
 
-    // Create mock input elements for each field
-    mockInputElements = Array.from({ length: 6 }, () => {
+    // Create mock input elements for each field (7 fields including desiredBehavior)
+    mockInputElements = Array.from({ length: 7 }, () => {
       const input = document.createElement("input");
       input.addEventListener = jest.fn((event, handler) => {
         if (event === "input") {
@@ -81,6 +81,7 @@ describe("SupervisionInputModal", () => {
         behavior: "",
         shortTermConsequences: "",
         longTermConsequences: "",
+        desiredBehavior: "",
       });
     });
   });
@@ -102,12 +103,12 @@ describe("SupervisionInputModal", () => {
       expect(mockContentEl.createEl).toHaveBeenCalledWith("h2", { text: "Добавить супервизию" });
     });
 
-    it("should create 6 field containers", () => {
+    it("should create 7 field containers", () => {
       modal.onOpen();
-      expect(mockContentEl.createDiv).toHaveBeenCalledTimes(7); // 6 fields + 1 button container
+      expect(mockContentEl.createDiv).toHaveBeenCalledTimes(8); // 7 fields + 1 button container
 
       // Verify field containers
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < 7; i++) {
         expect(mockContentEl.createDiv).toHaveBeenCalledWith({
           cls: "exocortex-modal-field-container",
         });
@@ -148,6 +149,7 @@ describe("SupervisionInputModal", () => {
         "Поведение",
         "Краткосрочные последствия поведения",
         "Долгосрочные последствия поведения",
+        "Желательное поведение",
       ];
 
       // Verify each field container created a label with correct text
@@ -167,7 +169,7 @@ describe("SupervisionInputModal", () => {
         .map(result => result.value);
 
       // Verify each container created an input
-      fieldContainerCalls.slice(0, 6).forEach(container => {
+      fieldContainerCalls.slice(0, 7).forEach(container => {
         expect(container.createEl).toHaveBeenCalledWith("input", {
           type: "text",
           cls: "exocortex-modal-input",
@@ -177,7 +179,7 @@ describe("SupervisionInputModal", () => {
 
     it("should store all inputs in inputs array", () => {
       modal.onOpen();
-      expect(modal["inputs"]).toHaveLength(6);
+      expect(modal["inputs"]).toHaveLength(7);
       modal["inputs"].forEach(input => {
         expect(input).toBeInstanceOf(HTMLInputElement);
       });
@@ -350,6 +352,7 @@ describe("SupervisionInputModal", () => {
         behavior: "Productive",
         shortTermConsequences: "Good",
         longTermConsequences: "Better",
+        desiredBehavior: "Better behavior",
       };
 
       modal["submit"]();
@@ -361,6 +364,7 @@ describe("SupervisionInputModal", () => {
         behavior: "Productive",
         shortTermConsequences: "Good",
         longTermConsequences: "Better",
+        desiredBehavior: "Better behavior",
       });
       expect(modal.close).toHaveBeenCalled();
     });
@@ -373,6 +377,7 @@ describe("SupervisionInputModal", () => {
         behavior: "",
         shortTermConsequences: "",
         longTermConsequences: "",
+        desiredBehavior: "",
       };
 
       modal["submit"]();
@@ -384,6 +389,7 @@ describe("SupervisionInputModal", () => {
         behavior: "",
         shortTermConsequences: "",
         longTermConsequences: "",
+        desiredBehavior: "",
       });
       expect(modal.close).toHaveBeenCalled();
     });
@@ -396,6 +402,7 @@ describe("SupervisionInputModal", () => {
         behavior: "",
         shortTermConsequences: "",
         longTermConsequences: "Future impact",
+        desiredBehavior: "",
       };
 
       modal["submit"]();
@@ -407,6 +414,7 @@ describe("SupervisionInputModal", () => {
         behavior: "",
         shortTermConsequences: "",
         longTermConsequences: "Future impact",
+        desiredBehavior: "",
       });
     });
   });
@@ -425,6 +433,7 @@ describe("SupervisionInputModal", () => {
         behavior: "Some behavior",
         shortTermConsequences: "Short",
         longTermConsequences: "Long",
+        desiredBehavior: "Better",
       };
 
       modal["cancel"]();
@@ -534,6 +543,7 @@ describe("SupervisionInputModal", () => {
         "behavior",
         "shortTermConsequences",
         "longTermConsequences",
+        "desiredBehavior",
       ];
 
       const formDataKeys = Object.keys(modal["formData"]);

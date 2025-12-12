@@ -1,21 +1,20 @@
-import { Modal, App, Notice, TFile } from "obsidian";
+import { Modal, App, Notice, TFile, Plugin } from "obsidian";
 import React from "react";
 import type { SolutionMapping, Triple } from "@exocortex/core";
 import { ApplicationErrorHandler } from "@exocortex/core";
-import type ExocortexPlugin from "../../ExocortexPlugin";
 import { ReactRenderer } from "../utils/ReactRenderer";
 import { QueryBuilder } from "../components/sparql/QueryBuilder";
 import { SPARQLQueryService } from "../../application/services/SPARQLQueryService";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 
 export class SPARQLQueryBuilderModal extends Modal {
-  private plugin: ExocortexPlugin;
+  private plugin: Plugin;
   private reactRenderer: ReactRenderer;
   private queryService: SPARQLQueryService;
   private errorHandler: ApplicationErrorHandler;
   private isInitialized = false;
 
-  constructor(app: App, plugin: ExocortexPlugin) {
+  constructor(app: App, plugin: Plugin) {
     super(app);
     this.plugin = plugin;
     this.reactRenderer = new ReactRenderer();
