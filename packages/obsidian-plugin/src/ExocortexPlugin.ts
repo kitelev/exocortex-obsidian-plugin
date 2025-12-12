@@ -25,6 +25,7 @@ import { SPARQLCodeBlockProcessor } from "./application/processors/SPARQLCodeBlo
 import { SPARQLApi } from "./application/api/SPARQLApi";
 import { PluginContainer } from "./infrastructure/di/PluginContainer";
 import { createAliasIconExtension } from "./presentation/editor-extensions";
+import { TimerManager } from "./infrastructure/timer";
 
 /**
  * Exocortex Plugin - Automatic layout rendering
@@ -44,6 +45,7 @@ export default class ExocortexPlugin extends Plugin {
   private sparqlProcessor!: SPARQLCodeBlockProcessor;
   sparql!: SPARQLApi;
   settings!: ExocortexSettings;
+  private timerManager!: TimerManager;
 
   override async onload(): Promise<void> {
     try {
@@ -52,6 +54,9 @@ export default class ExocortexPlugin extends Plugin {
 
       this.logger = LoggerFactory.create("ExocortexPlugin");
       this.logger.info("Loading Exocortex Plugin");
+
+      // Initialize timer manager for lifecycle-safe setTimeout/setInterval
+      this.timerManager = new TimerManager();
 
       await this.loadSettings();
 
@@ -128,30 +133,31 @@ export default class ExocortexPlugin extends Plugin {
       );
 
       // AutoLayout: Automatic rendering on file open
+      // Using TimerManager for lifecycle-safe timers that are cleared on plugin unload
       this.registerEvent(
         this.app.workspace.on("file-open", (file) => {
           if (file) {
-            setTimeout(() => this.autoRenderLayout(), 150);
+            this.timerManager.setTimeout("auto-layout-file-open", () => this.autoRenderLayout(), 150);
           }
         }),
       );
 
       this.registerEvent(
         this.app.workspace.on("active-leaf-change", () => {
-          setTimeout(() => this.autoRenderLayout(), 150);
+          this.timerManager.setTimeout("auto-layout-leaf-change", () => this.autoRenderLayout(), 150);
         }),
       );
 
       this.registerEvent(
         this.app.workspace.on("layout-change", () => {
-          setTimeout(() => this.autoRenderLayout(), 150);
+          this.timerManager.setTimeout("auto-layout-change", () => this.autoRenderLayout(), 150);
         }),
       );
 
       // Initial render
       const activeFile = this.app.workspace.getActiveFile();
       if (activeFile) {
-        setTimeout(() => this.autoRenderLayout(), 150);
+        this.timerManager.setTimeout("auto-layout-initial", () => this.autoRenderLayout(), 150);
       }
 
       this.logger.info("Exocortex Plugin loaded successfully");
@@ -162,6 +168,11 @@ export default class ExocortexPlugin extends Plugin {
   }
 
   override async onunload(): Promise<void> {
+    // Dispose timer manager first to prevent any more timer callbacks from firing
+    if (this.timerManager) {
+      this.timerManager.dispose();
+    }
+
     this.removeAutoRenderedLayouts();
 
     if (this.sparql) {
