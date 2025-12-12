@@ -41,7 +41,8 @@ export default class ExocortexPlugin extends Plugin {
   private taskTrackingService!: TaskTrackingService;
   private aliasSyncService!: AliasSyncService;
   private wikilinkAliasService!: WikilinkAliasService;
-  // Use LRU cache with max 1000 entries to prevent unbounded memory growth
+  // Use LRU cache with max 1000 entries and 5-minute TTL to prevent unbounded memory growth
+  // TTL ensures stale entries are evicted even if not accessed
   private metadataCache!: LRUCache<string, Record<string, unknown>>;
   vaultAdapter!: ObsidianVaultAdapter;
   private sparqlProcessor!: SPARQLCodeBlockProcessor;
@@ -87,7 +88,10 @@ export default class ExocortexPlugin extends Plugin {
         this.app,
         this.app.metadataCache,
       );
-      this.metadataCache = new LRUCache(1000);
+      this.metadataCache = new LRUCache({
+        maxEntries: 1000,
+        ttl: 5 * 60 * 1000, // 5 minutes
+      });
       this.sparqlProcessor = new SPARQLCodeBlockProcessor(this);
       this.sparql = new SPARQLApi(this);
 

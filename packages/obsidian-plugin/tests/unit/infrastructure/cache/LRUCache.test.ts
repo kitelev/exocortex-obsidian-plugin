@@ -7,14 +7,31 @@ describe("LRUCache", () => {
       expect(cache.capacity).toBe(1000);
     });
 
-    it("should create a cache with specified capacity", () => {
+    it("should create a cache with specified capacity (number)", () => {
       const cache = new LRUCache<string, number>(50);
       expect(cache.capacity).toBe(50);
     });
 
-    it("should throw error if maxEntries is less than 1", () => {
+    it("should create a cache with options object", () => {
+      const cache = new LRUCache<string, number>({ maxEntries: 100, ttl: 60000 });
+      expect(cache.capacity).toBe(100);
+      expect(cache.getStats().ttl).toBe(60000);
+    });
+
+    it("should create a cache with default maxEntries when only ttl specified", () => {
+      const cache = new LRUCache<string, number>({ ttl: 60000 });
+      expect(cache.capacity).toBe(1000);
+      expect(cache.getStats().ttl).toBe(60000);
+    });
+
+    it("should throw error if maxEntries is less than 1 (number)", () => {
       expect(() => new LRUCache(0)).toThrow("maxEntries must be at least 1");
       expect(() => new LRUCache(-1)).toThrow("maxEntries must be at least 1");
+    });
+
+    it("should throw error if maxEntries is less than 1 (options)", () => {
+      expect(() => new LRUCache({ maxEntries: 0 })).toThrow("maxEntries must be at least 1");
+      expect(() => new LRUCache({ maxEntries: -1 })).toThrow("maxEntries must be at least 1");
     });
   });
 
@@ -336,6 +353,194 @@ describe("LRUCache", () => {
 
       expect(cache.get(1)).toBe("one");
       expect(cache.get(2)).toBe("two");
+    });
+  });
+
+  describe("TTL (Time-To-Live)", () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it("should return value before TTL expires", () => {
+      const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 1000 }); // 1 second TTL
+      cache.set("key", 42);
+
+      // Value available immediately
+      expect(cache.get("key")).toBe(42);
+
+      // Value still available at 999ms
+      jest.advanceTimersByTime(999);
+      expect(cache.get("key")).toBe(42);
+    });
+
+    it("should expire entry after TTL", () => {
+      const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 1000 }); // 1 second TTL
+      cache.set("key", 42);
+
+      // Advance past TTL
+      jest.advanceTimersByTime(1001);
+
+      // Value should be expired
+      expect(cache.get("key")).toBeUndefined();
+    });
+
+    it("should track expirations in stats", () => {
+      const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 1000 });
+      cache.set("key1", 1);
+      cache.set("key2", 2);
+
+      jest.advanceTimersByTime(1001);
+
+      cache.get("key1"); // Triggers expiration
+      cache.get("key2"); // Triggers expiration
+
+      const stats = cache.getStats();
+      expect(stats.expirations).toBe(2);
+      expect(stats.misses).toBe(2); // Expired entries count as misses
+    });
+
+    it("should refresh timestamp on get", () => {
+      const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 1000 });
+      cache.set("key", 42);
+
+      // Advance 500ms
+      jest.advanceTimersByTime(500);
+
+      // Access refreshes timestamp
+      expect(cache.get("key")).toBe(42);
+
+      // Advance another 500ms (would expire original, but we refreshed)
+      jest.advanceTimersByTime(500);
+
+      // Still available because timestamp was refreshed
+      expect(cache.get("key")).toBe(42);
+    });
+
+    it("should expire in has() check", () => {
+      const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 1000 });
+      cache.set("key", 42);
+
+      expect(cache.has("key")).toBe(true);
+
+      jest.advanceTimersByTime(1001);
+
+      expect(cache.has("key")).toBe(false);
+      expect(cache.getStats().expirations).toBe(1);
+    });
+
+    it("should work without TTL", () => {
+      const cache = new LRUCache<string, number>(10); // No TTL
+      cache.set("key", 42);
+
+      // Simulate long time passing (no real time changes since jest.useFakeTimers)
+      jest.advanceTimersByTime(1000000000);
+
+      // Value should still be available (no TTL)
+      expect(cache.get("key")).toBe(42);
+    });
+
+    it("should include ttl in stats", () => {
+      const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 5000 });
+      expect(cache.getStats().ttl).toBe(5000);
+    });
+
+    it("should return undefined ttl when not configured", () => {
+      const cache = new LRUCache<string, number>(10);
+      expect(cache.getStats().ttl).toBeUndefined();
+    });
+  });
+
+  describe("evictExpired", () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it("should evict all expired entries", () => {
+      const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 1000 });
+      cache.set("key1", 1);
+      cache.set("key2", 2);
+
+      jest.advanceTimersByTime(500);
+      cache.set("key3", 3); // Added later, won't be expired
+
+      jest.advanceTimersByTime(600); // Total 1100ms, key1 and key2 expired
+
+      const evicted = cache.evictExpired();
+
+      expect(evicted).toBe(2);
+      expect(cache.size).toBe(1);
+      expect(cache.has("key3")).toBe(true);
+    });
+
+    it("should return 0 when no TTL configured", () => {
+      const cache = new LRUCache<string, number>(10);
+      cache.set("key", 1);
+
+      jest.advanceTimersByTime(10000);
+
+      expect(cache.evictExpired()).toBe(0);
+      expect(cache.size).toBe(1);
+    });
+
+    it("should return 0 when no entries expired", () => {
+      const cache = new LRUCache<string, number>({ maxEntries: 10, ttl: 10000 });
+      cache.set("key1", 1);
+      cache.set("key2", 2);
+
+      jest.advanceTimersByTime(1000);
+
+      expect(cache.evictExpired()).toBe(0);
+      expect(cache.size).toBe(2);
+    });
+  });
+
+  describe("invalidateWhere", () => {
+    it("should delete entries matching predicate", () => {
+      const cache = new LRUCache<string, number>(10);
+      cache.set("user:1", 100);
+      cache.set("user:2", 200);
+      cache.set("order:1", 1000);
+      cache.set("order:2", 2000);
+
+      const invalidated = cache.invalidateWhere((key) => key.startsWith("user:"));
+
+      expect(invalidated).toBe(2);
+      expect(cache.size).toBe(2);
+      expect(cache.has("user:1")).toBe(false);
+      expect(cache.has("user:2")).toBe(false);
+      expect(cache.has("order:1")).toBe(true);
+      expect(cache.has("order:2")).toBe(true);
+    });
+
+    it("should invalidate based on value", () => {
+      const cache = new LRUCache<string, { active: boolean }>(10);
+      cache.set("a", { active: true });
+      cache.set("b", { active: false });
+      cache.set("c", { active: true });
+
+      const invalidated = cache.invalidateWhere((_, value) => value.active);
+
+      expect(invalidated).toBe(2);
+      expect(cache.has("b")).toBe(true);
+    });
+
+    it("should return 0 when no entries match", () => {
+      const cache = new LRUCache<string, number>(10);
+      cache.set("a", 1);
+      cache.set("b", 2);
+
+      const invalidated = cache.invalidateWhere((key) => key === "nonexistent");
+
+      expect(invalidated).toBe(0);
+      expect(cache.size).toBe(2);
     });
   });
 });
