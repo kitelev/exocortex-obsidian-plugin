@@ -1,4 +1,4 @@
-import { Modal, App, Notice } from "obsidian";
+import { Modal, App, Notice, TFile } from "obsidian";
 import React from "react";
 import type { SolutionMapping, Triple } from "@exocortex/core";
 import { ApplicationErrorHandler } from "@exocortex/core";
@@ -94,13 +94,19 @@ export class SPARQLQueryBuilderModal extends Modal {
       return;
     }
 
+    // Type guard: openFile requires TFile, not TAbstractFile (which could be TFolder)
+    if (!(file instanceof TFile)) {
+      new Notice(`path is not a file: ${path}`);
+      return;
+    }
+
     const newLeaf = event?.ctrlKey || event?.metaKey;
 
     if (newLeaf) {
       const leaf = this.plugin.app.workspace.getLeaf("tab");
-      leaf.openFile(file as any);
+      leaf.openFile(file);
     } else {
-      this.plugin.app.workspace.getLeaf().openFile(file as any);
+      this.plugin.app.workspace.getLeaf().openFile(file);
       this.close();
     }
   }

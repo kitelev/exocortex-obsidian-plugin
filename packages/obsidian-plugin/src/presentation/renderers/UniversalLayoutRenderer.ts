@@ -1,4 +1,4 @@
-import { MarkdownPostProcessorContext } from "obsidian";
+import { MarkdownPostProcessorContext, TFile } from "obsidian";
 import { container } from "tsyringe";
 import { ILogger } from "../../adapters/logging/ILogger";
 import { LoggerFactory } from "../../adapters/logging/LoggerFactory";
@@ -173,8 +173,10 @@ export class UniversalLayoutRenderer {
     this.debounceTimeout = setTimeout(async () => {
       if (!this.rootContainer || filePath !== this.currentFilePath) return;
 
-      const currentFile = this.vaultAdapter.getAbstractFileByPath(filePath);
-      if (!currentFile || !filePath.endsWith(".md") || !("basename" in currentFile)) return;
+      // Use app.vault to get proper TFile instance (not IFile from adapter)
+      const abstractFile = this.app.vault.getAbstractFileByPath(filePath);
+      if (!abstractFile || !(abstractFile instanceof TFile)) return;
+      const currentFile = abstractFile;
 
       const oldMetadata = this.metadataCache.get(filePath) || {};
       const newMetadata = this.metadataExtractor.extractMetadata(currentFile);
