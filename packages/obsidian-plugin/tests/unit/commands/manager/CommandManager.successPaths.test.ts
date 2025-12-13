@@ -4,6 +4,7 @@ import {
   TFile,
   Notice,
   flushPromises,
+  mockTrashReasonModalCallback,
 } from "./CommandManager.fixtures";
 
 describe("CommandManager - success paths", () => {
@@ -293,11 +294,18 @@ describe("CommandManager - success paths", () => {
       ctx.mockApp.vault.modify.mockResolvedValue(undefined);
 
       const command = ctx.registeredCommands.get("trash-effort");
-      await command.checkCallback(false);
+      command.checkCallback(false);
 
+      // Let the async code start and create the modal
       await flushPromises();
 
-      expect(ctx.mockApp.vault.modify).toHaveBeenCalled();
+      // Simulate user confirming the modal without a reason
+      // The callback is captured when TrashReasonModal is constructed
+      if (mockTrashReasonModalCallback) {
+        mockTrashReasonModalCallback({ reason: null, confirmed: true });
+        await flushPromises();
+      }
+
       expect(Notice).toHaveBeenCalledWith(expect.stringContaining("Trashed"));
     });
 

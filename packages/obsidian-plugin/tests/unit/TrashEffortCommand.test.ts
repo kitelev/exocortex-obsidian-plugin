@@ -1,7 +1,8 @@
 import { flushPromises } from "./helpers/testHelpers";
 import { TrashEffortCommand } from "../../src/application/commands/TrashEffortCommand";
-import { TFile, Notice } from "obsidian";
-import { TaskStatusService, CommandVisibilityContext, LoggingService } from "@exocortex/core";
+import { App, TFile, Notice } from "obsidian";
+import { TaskStatusService, CommandVisibilityContext, LoggingService, IVaultAdapter } from "@exocortex/core";
+import { TrashReasonModal, TrashReasonModalResult } from "../../src/presentation/modals/TrashReasonModal";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
@@ -14,25 +15,39 @@ jest.mock("@exocortex/core", () => ({
     error: jest.fn(),
   },
 }));
+jest.mock("../../src/presentation/modals/TrashReasonModal");
 
 describe("TrashEffortCommand", () => {
   let command: TrashEffortCommand;
+  let mockApp: jest.Mocked<App>;
   let mockTaskStatusService: jest.Mocked<TaskStatusService>;
+  let mockVaultAdapter: jest.Mocked<IVaultAdapter>;
   let mockFile: jest.Mocked<TFile>;
   let mockContext: CommandVisibilityContext;
+  let modalResolve: (result: TrashReasonModalResult) => void;
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    mockApp = {} as jest.Mocked<App>;
 
     // Create mock task status service
     mockTaskStatusService = {
       trashEffort: jest.fn(),
     } as unknown as jest.Mocked<TaskStatusService>;
 
+    // Create mock vault adapter
+    mockVaultAdapter = {
+      read: jest.fn().mockResolvedValue("---\nfrontmatter: value\n---\n\nBody content"),
+      modify: jest.fn().mockResolvedValue(undefined),
+    } as unknown as jest.Mocked<IVaultAdapter>;
+
     // Create mock file
     mockFile = {
       path: "test-effort.md",
       basename: "test-effort",
+      name: "test-effort.md",
+      parent: null,
     } as jest.Mocked<TFile>;
 
     // Create mock context
@@ -43,8 +58,16 @@ describe("TrashEffortCommand", () => {
       isDraft: false,
     };
 
+    // Mock TrashReasonModal to capture the resolve function
+    (TrashReasonModal as jest.Mock).mockImplementation((app, onSubmit) => {
+      modalResolve = onSubmit;
+      return {
+        open: jest.fn(),
+      };
+    });
+
     // Create command instance
-    command = new TrashEffortCommand(mockTaskStatusService);
+    command = new TrashEffortCommand(mockApp, mockTaskStatusService, mockVaultAdapter);
   });
 
   describe("id and name", () => {
@@ -77,18 +100,72 @@ describe("TrashEffortCommand", () => {
       expect(mockTaskStatusService.trashEffort).not.toHaveBeenCalled();
     });
 
-    it("should execute command when checking is false and canTrashEffort returns true", async () => {
+    it("should show modal when checking is false and canTrashEffort returns true", async () => {
       mockCanTrashEffort.mockReturnValue(true);
       mockTaskStatusService.trashEffort.mockResolvedValue();
 
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
+      // Wait for modal to be created
       await flushPromises();
 
+      expect(TrashReasonModal).toHaveBeenCalledWith(mockApp, expect.any(Function));
+    });
+
+    it("should trash effort when modal is confirmed without reason", async () => {
+      mockCanTrashEffort.mockReturnValue(true);
+      mockTaskStatusService.trashEffort.mockResolvedValue();
+
+      command.checkCallback(false, mockFile, mockContext);
+      await flushPromises();
+
+      // Simulate user confirming without reason
+      modalResolve({ reason: null, confirmed: true });
+      await flushPromises();
+
+      expect(mockVaultAdapter.read).not.toHaveBeenCalled();
+      expect(mockVaultAdapter.modify).not.toHaveBeenCalled();
       expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(mockFile);
       expect(Notice).toHaveBeenCalledWith("Trashed: test-effort");
+    });
+
+    it("should append reason to note body when provided", async () => {
+      mockCanTrashEffort.mockReturnValue(true);
+      mockTaskStatusService.trashEffort.mockResolvedValue();
+
+      command.checkCallback(false, mockFile, mockContext);
+      await flushPromises();
+
+      // Simulate user confirming with reason
+      modalResolve({ reason: "No longer needed", confirmed: true });
+      await flushPromises();
+
+      expect(mockVaultAdapter.read).toHaveBeenCalledWith(
+        expect.objectContaining({ path: "test-effort.md" }),
+      );
+      expect(mockVaultAdapter.modify).toHaveBeenCalledWith(
+        expect.objectContaining({ path: "test-effort.md" }),
+        "---\nfrontmatter: value\n---\n\nBody content\n\n## Trash Reason\n\nNo longer needed",
+      );
+      expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(mockFile);
+      expect(Notice).toHaveBeenCalledWith("Trashed: test-effort");
+    });
+
+    it("should not trash effort when modal is cancelled", async () => {
+      mockCanTrashEffort.mockReturnValue(true);
+
+      command.checkCallback(false, mockFile, mockContext);
+      await flushPromises();
+
+      // Simulate user cancelling
+      modalResolve({ reason: null, confirmed: false });
+      await flushPromises();
+
+      expect(mockVaultAdapter.read).not.toHaveBeenCalled();
+      expect(mockVaultAdapter.modify).not.toHaveBeenCalled();
+      expect(mockTaskStatusService.trashEffort).not.toHaveBeenCalled();
+      expect(Notice).not.toHaveBeenCalled();
     });
 
     it("should handle errors and show notice", async () => {
@@ -96,10 +173,11 @@ describe("TrashEffortCommand", () => {
       const error = new Error("Failed to move to trash");
       mockTaskStatusService.trashEffort.mockRejectedValue(error);
 
-      const result = command.checkCallback(false, mockFile, mockContext);
-      expect(result).toBe(true);
+      command.checkCallback(false, mockFile, mockContext);
+      await flushPromises();
 
-      // Wait for async execution
+      // Simulate user confirming
+      modalResolve({ reason: null, confirmed: true });
       await flushPromises();
 
       expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(mockFile);
@@ -121,12 +199,15 @@ describe("TrashEffortCommand", () => {
       const specialFile = {
         path: "path/to/[URGENT] Important Effort.md",
         basename: "[URGENT] Important Effort",
+        name: "[URGENT] Important Effort.md",
+        parent: null,
       } as TFile;
 
-      const result = command.checkCallback(false, specialFile, mockContext);
-      expect(result).toBe(true);
+      command.checkCallback(false, specialFile, mockContext);
+      await flushPromises();
 
-      // Wait for async execution
+      // Simulate user confirming
+      modalResolve({ reason: null, confirmed: true });
       await flushPromises();
 
       expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(specialFile);
@@ -138,10 +219,11 @@ describe("TrashEffortCommand", () => {
       const permError = new Error("Permission denied: cannot delete file");
       mockTaskStatusService.trashEffort.mockRejectedValue(permError);
 
-      const result = command.checkCallback(false, mockFile, mockContext);
-      expect(result).toBe(true);
+      command.checkCallback(false, mockFile, mockContext);
+      await flushPromises();
 
-      // Wait for async execution
+      // Simulate user confirming
+      modalResolve({ reason: null, confirmed: true });
       await flushPromises();
 
       expect(mockTaskStatusService.trashEffort).toHaveBeenCalledWith(mockFile);
@@ -161,6 +243,23 @@ describe("TrashEffortCommand", () => {
       const inProgressContext = { ...mockContext, status: "InProgress" };
       const result = command.checkCallback(true, mockFile, inProgressContext);
       expect(result).toBe(false);
+    });
+
+    it("should handle multiline reason", async () => {
+      mockCanTrashEffort.mockReturnValue(true);
+      mockTaskStatusService.trashEffort.mockResolvedValue();
+
+      command.checkCallback(false, mockFile, mockContext);
+      await flushPromises();
+
+      // Simulate user confirming with multiline reason
+      modalResolve({ reason: "Line 1\nLine 2\nLine 3", confirmed: true });
+      await flushPromises();
+
+      expect(mockVaultAdapter.modify).toHaveBeenCalledWith(
+        expect.objectContaining({ path: "test-effort.md" }),
+        "---\nfrontmatter: value\n---\n\nBody content\n\n## Trash Reason\n\nLine 1\nLine 2\nLine 3",
+      );
     });
   });
 });

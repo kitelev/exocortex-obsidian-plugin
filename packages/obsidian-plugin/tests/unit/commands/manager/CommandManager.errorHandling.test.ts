@@ -4,6 +4,7 @@ import {
   TFile,
   Notice,
   flushPromises,
+  mockTrashReasonModalCallback,
 } from "./CommandManager.fixtures";
 
 describe("CommandManager - error handling", () => {
@@ -227,9 +228,16 @@ describe("CommandManager - error handling", () => {
       ctx.mockApp.vault.modify.mockRejectedValue(new Error("Vault error"));
 
       const command = ctx.registeredCommands.get("trash-effort");
-      await command.checkCallback(false);
+      command.checkCallback(false);
 
+      // Let the async code start and create the modal
       await flushPromises();
+
+      // Simulate user confirming the modal
+      if (mockTrashReasonModalCallback) {
+        mockTrashReasonModalCallback({ reason: null, confirmed: true });
+        await flushPromises();
+      }
 
       expect(Notice).toHaveBeenCalledWith(
         expect.stringContaining("Failed to trash effort"),

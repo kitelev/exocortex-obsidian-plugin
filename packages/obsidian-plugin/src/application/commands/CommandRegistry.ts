@@ -113,7 +113,7 @@ export class CommandRegistry {
       new ShiftDayBackwardCommand(taskStatusService),
       new ShiftDayForwardCommand(taskStatusService),
       new MarkDoneCommand(taskStatusService),
-      new TrashEffortCommand(taskStatusService),
+      new TrashEffortCommand(app, taskStatusService, this.vaultAdapter),
       new ArchiveTaskCommand(taskStatusService),
       new CleanPropertiesCommand(propertyCleanupService),
       new RepairFolderCommand(app, folderRepairService),

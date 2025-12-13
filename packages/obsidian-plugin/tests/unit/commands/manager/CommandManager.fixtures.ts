@@ -10,33 +10,25 @@ import {
   AlgorithmExtractor,
   TaskCreationService,
 } from "@exocortex/core";
+import { LabelInputModal } from "../../../../src/presentation/modals/LabelInputModal";
+import { SupervisionInputModal } from "../../../../src/presentation/modals/SupervisionInputModal";
+import { TrashReasonModal } from "../../../../src/presentation/modals/TrashReasonModal";
 
 jest.mock("obsidian", () => ({
   ...jest.requireActual("obsidian"),
   Notice: jest.fn(),
 }));
 
+jest.mock("../../../../src/presentation/modals/LabelInputModal");
+jest.mock("../../../../src/presentation/modals/SupervisionInputModal");
+jest.mock("../../../../src/presentation/modals/TrashReasonModal");
+
 export let mockLabelInputModalCallback: ((result: any) => void) | null = null;
 export let mockSupervisionInputModalCallback: ((result: any) => void) | null =
   null;
+export let mockTrashReasonModalCallback: ((result: any) => void) | null = null;
 
-jest.mock("../../../../src/presentation/modals/LabelInputModal", () => ({
-  LabelInputModal: jest.fn().mockImplementation((app, onSubmit) => {
-    mockLabelInputModalCallback = onSubmit;
-    return {
-      open: jest.fn(),
-    };
-  }),
-}));
-
-jest.mock("../../../../src/presentation/modals/SupervisionInputModal", () => ({
-  SupervisionInputModal: jest.fn().mockImplementation((app, onSubmit) => {
-    mockSupervisionInputModalCallback = onSubmit;
-    return {
-      open: jest.fn(),
-    };
-  }),
-}));
+// Mock implementations are set up in beforeEach via setupMockModals()
 
 export interface CommandManagerTestContext {
   mockApp: any;
@@ -49,6 +41,28 @@ export interface CommandManagerTestContext {
 export const setupCommandManagerTest = (): CommandManagerTestContext => {
   container.clearInstances();
   jest.clearAllMocks();
+
+  // Reset modal callback variables
+  mockLabelInputModalCallback = null;
+  mockSupervisionInputModalCallback = null;
+  mockTrashReasonModalCallback = null;
+
+  // Set up modal mock implementations
+  (LabelInputModal as jest.Mock).mockImplementation((app, onSubmit) => {
+    mockLabelInputModalCallback = onSubmit;
+    return { open: jest.fn() };
+  });
+
+  (SupervisionInputModal as jest.Mock).mockImplementation((app, onSubmit) => {
+    mockSupervisionInputModalCallback = onSubmit;
+    return { open: jest.fn() };
+  });
+
+  (TrashReasonModal as jest.Mock).mockImplementation((app, onSubmit) => {
+    mockTrashReasonModalCallback = onSubmit;
+    return { open: jest.fn() };
+  });
+
   const registeredCommands = new Map<string, any>();
 
   const mockFile = new TFile("test/path.md");
