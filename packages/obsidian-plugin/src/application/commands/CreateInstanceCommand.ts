@@ -1,4 +1,4 @@
-import { App, TFile, Notice } from "obsidian";
+import { App, TFile, Notice, EventRef } from "obsidian";
 import { ICommand } from "./ICommand";
 import {
   CommandVisibilityContext,
@@ -12,6 +12,9 @@ import { LabelInputModal, type LabelInputModalResult } from '@plugin/presentatio
 import { DynamicAssetCreationModal, type DynamicAssetCreationResult } from '@plugin/presentation/modals/DynamicAssetCreationModal';
 import { ObsidianVaultAdapter } from '@plugin/adapters/ObsidianVaultAdapter';
 import { ExocortexPluginInterface } from '@plugin/types';
+
+/** Default timeout for waiting for file to become active (in milliseconds) */
+const FILE_ACTIVATION_TIMEOUT_MS = 5000;
 
 export class CreateInstanceCommand implements ICommand {
   id = "create-instance";
@@ -78,17 +81,58 @@ export class CreateInstanceCommand implements ICommand {
 
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
-    const maxAttempts = 20;
-    const targetPath = tfile.path;
-    for (let i = 0; i < maxAttempts; i++) {
-      const activeFile = this.app.workspace.getActiveFile();
-      if (activeFile?.path === targetPath) {
-        break;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
+    await this.waitForFileActivation(tfile.path);
 
     new Notice(`Instance created: ${createdFile.basename}`);
+  }
+
+  /**
+   * Waits for a file to become the active file using event listeners instead of polling.
+   * This is more efficient and doesn't block the UI.
+   *
+   * @param targetPath - The path of the file to wait for
+   * @param timeoutMs - Timeout in milliseconds (default: 5000ms)
+   * @returns Promise that resolves when the file becomes active or times out
+   */
+  private waitForFileActivation(targetPath: string, timeoutMs: number = FILE_ACTIVATION_TIMEOUT_MS): Promise<void> {
+    return new Promise<void>((resolve) => {
+      // Check if file is already active
+      const activeFile = this.app.workspace.getActiveFile();
+      if (activeFile?.path === targetPath) {
+        resolve();
+        return;
+      }
+
+      let eventRef: EventRef | null = null;
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+      const cleanup = (): void => {
+        if (timeoutId !== null) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        if (eventRef !== null) {
+          this.app.workspace.offref(eventRef);
+          eventRef = null;
+        }
+      };
+
+      // Set up timeout
+      timeoutId = setTimeout(() => {
+        cleanup();
+        // Resolve even on timeout - the file was created successfully,
+        // we just couldn't confirm it became active
+        resolve();
+      }, timeoutMs);
+
+      // Listen for file-open event
+      eventRef = this.app.workspace.on("file-open", (openedFile: TFile | null) => {
+        if (openedFile?.path === targetPath) {
+          cleanup();
+          resolve();
+        }
+      });
+    });
   }
 
   /**

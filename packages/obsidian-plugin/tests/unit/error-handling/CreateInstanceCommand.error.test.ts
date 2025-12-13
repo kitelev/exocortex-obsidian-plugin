@@ -77,6 +77,8 @@ describe("CreateInstanceCommand Error Handling", () => {
         getLeaf: jest.fn().mockReturnValue(mockLeaf),
         setActiveLeaf: jest.fn(),
         getActiveFile: jest.fn().mockReturnValue(mockTFile),
+        on: jest.fn().mockReturnValue({}),
+        offref: jest.fn(),
       },
       metadataCache: {
         getFileCache: jest.fn().mockReturnValue({
@@ -523,44 +525,15 @@ describe("CreateInstanceCommand Error Handling", () => {
     });
   });
 
-  describe("Timeout and Long-Running Operation Handling", () => {
+  describe("Event-Based File Activation Handling", () => {
     const mockCanCreateInstance = require("@exocortex/core").canCreateInstance;
 
-    it("should handle file never becoming active (timeout scenario)", async () => {
+    it("should register event listener when file is not immediately active", async () => {
       mockCanCreateInstance.mockReturnValue(true);
       const createdFile = { basename: "new-instance", path: "new-instance.md" };
       mockTaskCreationService.createTask.mockResolvedValue(createdFile as any);
 
-      // File never becomes active (returns different file)
-      const differentFile = {
-        path: "different-file.md",
-        basename: "different-file",
-      } as jest.Mocked<TFile>;
-      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(
-        differentFile
-      );
-
-      (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
-        open: jest.fn(() => {
-          setTimeout(() => callback({ label: "Test", taskSize: "small" }), 0);
-        }),
-      }));
-
-      command.checkCallback(false, mockFile, mockContext);
-      await flushPromises();
-
-      // Wait for all timeout iterations (20 * 100ms)
-      await new Promise((resolve) => setTimeout(resolve, 2100));
-
-      // Should still show success notice even if file didn't become active
-      expect(Notice).toHaveBeenCalledWith("Instance created: new-instance");
-    });
-
-    it("should handle getActiveFile returning null consistently", async () => {
-      mockCanCreateInstance.mockReturnValue(true);
-      const createdFile = { basename: "new-instance", path: "new-instance.md" };
-      mockTaskCreationService.createTask.mockResolvedValue(createdFile as any);
-
+      // File is NOT active initially
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(null);
 
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
@@ -572,9 +545,29 @@ describe("CreateInstanceCommand Error Handling", () => {
       command.checkCallback(false, mockFile, mockContext);
       await flushPromises();
 
-      // Wait for polling to complete
-      await new Promise((resolve) => setTimeout(resolve, 2100));
+      // Verify event listener was registered for file-open
+      expect(mockApp.workspace.on).toHaveBeenCalledWith("file-open", expect.any(Function));
+    });
 
+    it("should not register event listener when file is already active", async () => {
+      mockCanCreateInstance.mockReturnValue(true);
+      const createdFile = { basename: "new-instance", path: "new-instance.md" };
+      mockTaskCreationService.createTask.mockResolvedValue(createdFile as any);
+
+      // File IS already active
+      (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(mockTFile);
+
+      (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
+        open: jest.fn(() => {
+          setTimeout(() => callback({ label: "Test", taskSize: "small" }), 0);
+        }),
+      }));
+
+      command.checkCallback(false, mockFile, mockContext);
+      await flushPromises();
+
+      // Event listener should NOT be registered since file is already active
+      expect(mockApp.workspace.on).not.toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith("Instance created: new-instance");
     });
   });

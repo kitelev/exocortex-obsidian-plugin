@@ -1,6 +1,6 @@
-import { flushPromises, waitForCondition } from "./helpers/testHelpers";
+import { flushPromises } from "./helpers/testHelpers";
 import { CreateInstanceCommand } from "../../src/application/commands/CreateInstanceCommand";
-import { App, TFile, Notice, WorkspaceLeaf } from "obsidian";
+import { App, TFile, Notice, WorkspaceLeaf, EventRef } from "obsidian";
 import {
   TaskCreationService,
   CommandVisibilityContext,
@@ -43,9 +43,15 @@ describe("CreateInstanceCommand", () => {
   let mockContext: CommandVisibilityContext;
   let mockLeaf: jest.Mocked<WorkspaceLeaf>;
   let mockTFile: jest.Mocked<TFile>;
+  let fileOpenCallbacks: Array<(file: TFile | null) => void>;
+  let mockEventRef: EventRef;
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Reset event callbacks
+    fileOpenCallbacks = [];
+    mockEventRef = {} as EventRef;
 
     // Setup WikiLinkHelpers mock
     const { WikiLinkHelpers } = require("@exocortex/core");
@@ -62,12 +68,22 @@ describe("CreateInstanceCommand", () => {
       basename: "new-instance",
     } as jest.Mocked<TFile>;
 
-    // Create mock app
+    // Create mock app with event listener support
     mockApp = {
       workspace: {
         getLeaf: jest.fn().mockReturnValue(mockLeaf),
         setActiveLeaf: jest.fn(),
         getActiveFile: jest.fn().mockReturnValue(mockTFile),
+        on: jest.fn((event: string, callback: (file: TFile | null) => void) => {
+          if (event === "file-open") {
+            fileOpenCallbacks.push(callback);
+          }
+          return mockEventRef;
+        }),
+        offref: jest.fn((ref: EventRef) => {
+          // Remove the callback associated with this ref
+          fileOpenCallbacks = [];
+        }),
       },
       metadataCache: {
         getFileCache: jest.fn().mockReturnValue({
@@ -108,6 +124,12 @@ describe("CreateInstanceCommand", () => {
 
     // Create command instance
     command = new CreateInstanceCommand(mockApp, mockTaskCreationService, mockVaultAdapter, mockPlugin);
+  });
+
+  afterEach(() => {
+    // Clean up any remaining timers
+    jest.clearAllTimers();
+    jest.useRealTimers();
   });
 
   describe("id and name", () => {
@@ -282,31 +304,102 @@ describe("CreateInstanceCommand", () => {
       );
     });
 
-    it("should wait for file to become active", async () => {
+    it("should wait for file to become active using event listener", async () => {
       mockCanCreateInstance.mockReturnValue(true);
       const createdFile = { basename: "new-instance", path: "new-instance.md" };
       mockTaskCreationService.createTask.mockResolvedValue(createdFile as any);
 
+      // File is NOT active initially
+      mockApp.workspace.getActiveFile = jest.fn().mockReturnValue(null);
+
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
-          setTimeout(() => callback({ label: "Test", taskSize: "small" }), 0);
+          // Use real setTimeout behavior
+          Promise.resolve().then(() => callback({ label: "Test", taskSize: "small" }));
         }),
       }));
-
-      // Simulate file becoming active after 3 attempts
-      let attempts = 0;
-      mockApp.workspace.getActiveFile = jest.fn(() => {
-        attempts++;
-        return attempts >= 3 ? mockTFile : null;
-      });
 
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
-      // Wait for async execution
-      await waitForCondition(() => (mockApp.workspace.getActiveFile as jest.Mock).mock.calls.length >= 3);
+      // Let the modal callback execute
+      await flushPromises();
 
-      expect(mockApp.workspace.getActiveFile).toHaveBeenCalledTimes(3);
+      // Verify event listener was registered
+      expect(mockApp.workspace.on).toHaveBeenCalledWith("file-open", expect.any(Function));
+
+      // Simulate the file-open event firing with our target file
+      expect(fileOpenCallbacks.length).toBeGreaterThan(0);
+      fileOpenCallbacks[0](mockTFile);
+
+      // Let promises resolve
+      await flushPromises();
+
+      // Verify cleanup was called
+      expect(mockApp.workspace.offref).toHaveBeenCalledWith(mockEventRef);
+      expect(Notice).toHaveBeenCalledWith("Instance created: new-instance");
+    });
+
+    it("should resolve immediately if file is already active", async () => {
+      mockCanCreateInstance.mockReturnValue(true);
+      const createdFile = { basename: "new-instance", path: "new-instance.md" };
+      mockTaskCreationService.createTask.mockResolvedValue(createdFile as any);
+
+      // File is already active
+      mockApp.workspace.getActiveFile = jest.fn().mockReturnValue(mockTFile);
+
+      (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
+        open: jest.fn(() => {
+          Promise.resolve().then(() => callback({ label: "Test", taskSize: "small" }));
+        }),
+      }));
+
+      const result = command.checkCallback(false, mockFile, mockContext);
+      expect(result).toBe(true);
+
+      await flushPromises();
+
+      // Event listener should NOT be registered since file is already active
+      expect(mockApp.workspace.on).not.toHaveBeenCalled();
+      expect(Notice).toHaveBeenCalledWith("Instance created: new-instance");
+    });
+
+    it("should ignore file-open events for wrong files", async () => {
+      mockCanCreateInstance.mockReturnValue(true);
+      const createdFile = { basename: "new-instance", path: "new-instance.md" };
+      mockTaskCreationService.createTask.mockResolvedValue(createdFile as any);
+
+      // File is NOT active initially
+      mockApp.workspace.getActiveFile = jest.fn().mockReturnValue(null);
+
+      (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
+        open: jest.fn(() => {
+          Promise.resolve().then(() => callback({ label: "Test", taskSize: "small" }));
+        }),
+      }));
+
+      const result = command.checkCallback(false, mockFile, mockContext);
+      expect(result).toBe(true);
+
+      await flushPromises();
+
+      // Verify event listener was registered
+      expect(mockApp.workspace.on).toHaveBeenCalledWith("file-open", expect.any(Function));
+
+      // Simulate a file-open event for a DIFFERENT file - should not trigger cleanup
+      const wrongFile = { path: "different-file.md", basename: "different-file" } as TFile;
+      fileOpenCallbacks[0](wrongFile);
+      await flushPromises();
+
+      // offref should NOT have been called yet (wrong file)
+      expect(mockApp.workspace.offref).not.toHaveBeenCalled();
+
+      // Now fire the correct file event
+      fileOpenCallbacks[0](mockTFile);
+      await flushPromises();
+
+      // NOW cleanup should have been called
+      expect(mockApp.workspace.offref).toHaveBeenCalledWith(mockEventRef);
       expect(Notice).toHaveBeenCalledWith("Instance created: new-instance");
     });
 
