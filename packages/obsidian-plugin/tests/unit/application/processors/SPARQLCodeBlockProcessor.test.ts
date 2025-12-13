@@ -323,4 +323,236 @@ describe("SPARQLCodeBlockProcessor", () => {
       expect((processor as any).refreshQuery).not.toHaveBeenCalled();
     });
   });
+
+  describe("TTL and Stale Query Cleanup", () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+      processor.cleanup();
+    });
+
+    it("should expose query max age constant", () => {
+      expect(processor.getQueryMaxAge()).toBe(5 * 60 * 1000); // 5 minutes
+    });
+
+    it("should expose cleanup interval constant", () => {
+      expect(processor.getCleanupInterval()).toBe(60 * 1000); // 1 minute
+    });
+
+    it("should include startTime when setting up active queries", () => {
+      const el = document.createElement("div");
+      const source = "SELECT * WHERE { ?s ?p ?o }";
+
+      // Set up active query with startTime
+      const beforeTime = Date.now();
+      (processor as any).activeQueries.set(el, {
+        source,
+        lastResults: [],
+        startTime: Date.now(),
+      });
+      const afterTime = Date.now();
+
+      const query = (processor as any).activeQueries.get(el);
+      expect(query.startTime).toBeGreaterThanOrEqual(beforeTime);
+      expect(query.startTime).toBeLessThanOrEqual(afterTime);
+    });
+
+    it("should clean up stale queries older than max age", () => {
+      const el = document.createElement("div");
+      const source = "SELECT * WHERE { ?s ?p ?o }";
+
+      // Set up an old query (6 minutes ago)
+      const sixMinutesAgo = Date.now() - (6 * 60 * 1000);
+      (processor as any).activeQueries.set(el, {
+        source,
+        lastResults: [],
+        startTime: sixMinutesAgo,
+      });
+
+      expect((processor as any).activeQueries.size).toBe(1);
+
+      // Trigger cleanup
+      processor.triggerCleanup();
+
+      expect((processor as any).activeQueries.size).toBe(0);
+    });
+
+    it("should NOT clean up queries younger than max age", () => {
+      const el = document.createElement("div");
+      const source = "SELECT * WHERE { ?s ?p ?o }";
+
+      // Set up a recent query (1 minute ago)
+      const oneMinuteAgo = Date.now() - (1 * 60 * 1000);
+      (processor as any).activeQueries.set(el, {
+        source,
+        lastResults: [],
+        startTime: oneMinuteAgo,
+      });
+
+      expect((processor as any).activeQueries.size).toBe(1);
+
+      // Trigger cleanup
+      processor.triggerCleanup();
+
+      // Should still exist
+      expect((processor as any).activeQueries.size).toBe(1);
+    });
+
+    it("should clear refresh timeout when cleaning up stale query", () => {
+      const el = document.createElement("div");
+      const source = "SELECT * WHERE { ?s ?p ?o }";
+      const clearTimeoutSpy = jest.spyOn(global, "clearTimeout");
+
+      // Set up an old query with a refresh timeout
+      const sixMinutesAgo = Date.now() - (6 * 60 * 1000);
+      const timeout = setTimeout(() => {}, 1000);
+      (processor as any).activeQueries.set(el, {
+        source,
+        lastResults: [],
+        startTime: sixMinutesAgo,
+        refreshTimeout: timeout,
+      });
+
+      // Trigger cleanup
+      processor.triggerCleanup();
+
+      expect(clearTimeoutSpy).toHaveBeenCalledWith(timeout);
+      clearTimeoutSpy.mockRestore();
+    });
+
+    it("should unregister event ref when cleaning up stale query", () => {
+      const el = document.createElement("div");
+      const source = "SELECT * WHERE { ?s ?p ?o }";
+      const mockEventRef = { id: "test-event-ref" } as EventRef;
+      const offrefMock = jest.fn();
+
+      // Set up mock plugin with offref
+      (processor as any).plugin = {
+        app: {
+          metadataCache: {
+            offref: offrefMock,
+          },
+        },
+      };
+
+      // Set up an old query with an event ref
+      const sixMinutesAgo = Date.now() - (6 * 60 * 1000);
+      (processor as any).activeQueries.set(el, {
+        source,
+        lastResults: [],
+        startTime: sixMinutesAgo,
+        eventRef: mockEventRef,
+      });
+
+      // Trigger cleanup
+      processor.triggerCleanup();
+
+      expect(offrefMock).toHaveBeenCalledWith(mockEventRef);
+    });
+
+    it("should clean up multiple stale queries at once", () => {
+      const el1 = document.createElement("div");
+      const el2 = document.createElement("div");
+      const el3 = document.createElement("div");
+      const source = "SELECT * WHERE { ?s ?p ?o }";
+
+      const sixMinutesAgo = Date.now() - (6 * 60 * 1000);
+      const oneMinuteAgo = Date.now() - (1 * 60 * 1000);
+
+      // Two stale queries, one fresh
+      (processor as any).activeQueries.set(el1, {
+        source,
+        lastResults: [],
+        startTime: sixMinutesAgo,
+      });
+      (processor as any).activeQueries.set(el2, {
+        source,
+        lastResults: [],
+        startTime: sixMinutesAgo,
+      });
+      (processor as any).activeQueries.set(el3, {
+        source,
+        lastResults: [],
+        startTime: oneMinuteAgo,
+      });
+
+      expect((processor as any).activeQueries.size).toBe(3);
+
+      // Trigger cleanup
+      processor.triggerCleanup();
+
+      // Only fresh query should remain
+      expect((processor as any).activeQueries.size).toBe(1);
+      expect((processor as any).activeQueries.has(el3)).toBe(true);
+    });
+
+    it("should reset startTime on successful refresh", async () => {
+      const container = document.createElement("div");
+      const el = document.createElement("div");
+      const source = "SELECT * WHERE { ?s ?p ?o }";
+
+      // Set up query with old startTime
+      const fourMinutesAgo = Date.now() - (4 * 60 * 1000);
+      (processor as any).activeQueries.set(el, {
+        source,
+        lastResults: [],
+        startTime: fourMinutesAgo,
+      });
+
+      // Mock methods for refresh
+      (processor as any).invalidateTripleStore = jest.fn();
+      (processor as any).ensureTripleStoreLoaded = jest.fn().mockResolvedValue(undefined);
+      (processor as any).showRefreshIndicator = jest.fn();
+      (processor as any).hideRefreshIndicator = jest.fn();
+      (processor as any).executeQuery = jest.fn().mockResolvedValue([]);
+      (processor as any).areResultsEqual = jest.fn().mockReturnValue(true);
+
+      const beforeRefresh = Date.now();
+      await (processor as any).refreshQuery(el, container, source);
+      const afterRefresh = Date.now();
+
+      const query = (processor as any).activeQueries.get(el);
+      expect(query.startTime).toBeGreaterThanOrEqual(beforeRefresh);
+      expect(query.startTime).toBeLessThanOrEqual(afterRefresh);
+    });
+
+    it("should stop cleanup interval on cleanup()", () => {
+      const clearIntervalSpy = jest.spyOn(global, "clearInterval");
+
+      // The constructor starts the interval
+      const newProcessor = new SPARQLCodeBlockProcessor(mockPlugin);
+      const intervalId = (newProcessor as any).cleanupIntervalId;
+
+      expect(intervalId).not.toBeNull();
+
+      // Call cleanup
+      newProcessor.cleanup();
+
+      expect(clearIntervalSpy).toHaveBeenCalledWith(intervalId);
+      expect((newProcessor as any).cleanupIntervalId).toBeNull();
+
+      clearIntervalSpy.mockRestore();
+    });
+
+    it("should run periodic cleanup at specified interval", () => {
+      const newProcessor = new SPARQLCodeBlockProcessor(mockPlugin);
+      const cleanupSpy = jest.spyOn(newProcessor as any, "cleanupStaleQueries");
+
+      // Fast forward by cleanup interval
+      jest.advanceTimersByTime(60 * 1000);
+
+      expect(cleanupSpy).toHaveBeenCalledTimes(1);
+
+      // Fast forward another interval
+      jest.advanceTimersByTime(60 * 1000);
+
+      expect(cleanupSpy).toHaveBeenCalledTimes(2);
+
+      newProcessor.cleanup();
+      cleanupSpy.mockRestore();
+    });
+  });
 });

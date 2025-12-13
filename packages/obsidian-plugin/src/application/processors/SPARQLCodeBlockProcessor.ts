@@ -23,16 +23,27 @@ import { SPARQLResultViewer } from '@plugin/presentation/components/sparql/SPARQ
 import { SPARQLErrorView, type SPARQLError } from '@plugin/presentation/components/sparql/SPARQLErrorView';
 import { LoggerFactory } from '@plugin/adapters/logging/LoggerFactory';
 
+/**
+ * Represents an active SPARQL query with tracking metadata for TTL management.
+ */
+interface ActiveQuery {
+  /** The SPARQL query source string */
+  source: string;
+  /** Last execution results */
+  lastResults: SolutionMapping[] | Triple[];
+  /** Debounce timeout for refresh scheduling */
+  refreshTimeout?: ReturnType<typeof setTimeout>;
+  /** Event reference for metadata change listener */
+  eventRef?: EventRef;
+  /** Timestamp when the query was started (for TTL tracking) */
+  startTime: number;
+}
+
 class SPARQLCleanupComponent extends MarkdownRenderChild {
   constructor(
     containerEl: HTMLElement,
     private el: HTMLElement,
-    private activeQueries: Map<HTMLElement, {
-      source: string;
-      lastResults: SolutionMapping[] | Triple[];
-      refreshTimeout?: ReturnType<typeof setTimeout>;
-      eventRef?: EventRef;
-    }>,
+    private activeQueries: Map<HTMLElement, ActiveQuery>,
     private reactRenderer: ReactRenderer,
     private container: HTMLElement,
     private plugin: ExocortexPlugin
@@ -64,17 +75,77 @@ export class SPARQLCodeBlockProcessor {
   private tripleStore: InMemoryTripleStore | null = null;
   private isLoading = false;
   private reactRenderer: ReactRenderer = new ReactRenderer();
-  private activeQueries: Map<HTMLElement, {
-    source: string;
-    lastResults: SolutionMapping[] | Triple[];
-    refreshTimeout?: ReturnType<typeof setTimeout>;
-    eventRef?: EventRef;
-  }> = new Map();
+  private activeQueries: Map<HTMLElement, ActiveQuery> = new Map();
   private readonly DEBOUNCE_DELAY = 500;
+  /** Maximum age for active queries (5 minutes in milliseconds) */
+  private readonly QUERY_MAX_AGE_MS = 5 * 60 * 1000;
+  /** Interval for stale query cleanup (1 minute in milliseconds) */
+  private readonly CLEANUP_INTERVAL_MS = 60 * 1000;
+  private cleanupIntervalId: ReturnType<typeof setInterval> | null = null;
   private readonly logger = LoggerFactory.create("SPARQLCodeBlockProcessor");
 
   constructor(plugin: ExocortexPlugin) {
     this.plugin = plugin;
+    this.startCleanupInterval();
+  }
+
+  /**
+   * Starts the periodic cleanup interval for stale queries.
+   */
+  private startCleanupInterval(): void {
+    if (this.cleanupIntervalId !== null) {
+      return;
+    }
+    this.cleanupIntervalId = setInterval(() => {
+      this.cleanupStaleQueries();
+    }, this.CLEANUP_INTERVAL_MS);
+  }
+
+  /**
+   * Stops the periodic cleanup interval.
+   */
+  private stopCleanupInterval(): void {
+    if (this.cleanupIntervalId !== null) {
+      clearInterval(this.cleanupIntervalId);
+      this.cleanupIntervalId = null;
+    }
+  }
+
+  /**
+   * Cleans up queries that have exceeded the maximum age (TTL).
+   * Removes stale entries and logs timeout events.
+   */
+  private cleanupStaleQueries(): void {
+    const now = Date.now();
+    const staleEntries: HTMLElement[] = [];
+
+    for (const [el, query] of this.activeQueries.entries()) {
+      const age = now - query.startTime;
+      if (age > this.QUERY_MAX_AGE_MS) {
+        staleEntries.push(el);
+        this.logger.warn(
+          `Query timed out after ${Math.round(age / 1000)}s: ${query.source.substring(0, 100)}...`
+        );
+      }
+    }
+
+    for (const el of staleEntries) {
+      const query = this.activeQueries.get(el);
+      if (query) {
+        if (query.refreshTimeout) {
+          clearTimeout(query.refreshTimeout);
+        }
+        if (query.eventRef) {
+          this.plugin.app.metadataCache.offref(query.eventRef);
+        }
+        this.activeQueries.delete(el);
+        this.logger.info(`Cleaned up stale query entry`);
+      }
+    }
+
+    if (staleEntries.length > 0) {
+      this.logger.info(`Cleaned up ${staleEntries.length} stale query entries`);
+    }
   }
 
   async process(
@@ -111,6 +182,7 @@ export class SPARQLCodeBlockProcessor {
       this.activeQueries.set(el, {
         source,
         lastResults: results,
+        startTime: Date.now(),
       });
 
       const eventRef = this.plugin.app.metadataCache.on("changed", () => {
@@ -176,6 +248,8 @@ export class SPARQLCodeBlockProcessor {
       } else {
         this.hideRefreshIndicator(container);
       }
+      // Reset TTL on successful refresh
+      query.startTime = Date.now();
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
       this.logger.error("Query refresh error", errorObj);
@@ -440,6 +514,9 @@ export class SPARQLCodeBlockProcessor {
    * Should be called in onunload() methods.
    */
   cleanup(): void {
+    // Stop the periodic cleanup interval
+    this.stopCleanupInterval();
+
     // Clear all active query timeouts and event refs
     for (const [el, query] of this.activeQueries.entries()) {
       if (query.refreshTimeout) {
@@ -457,5 +534,29 @@ export class SPARQLCodeBlockProcessor {
     // Clear triple store
     this.tripleStore = null;
     this.isLoading = false;
+  }
+
+  /**
+   * Returns the maximum age in milliseconds before queries are considered stale.
+   * Useful for testing.
+   */
+  getQueryMaxAge(): number {
+    return this.QUERY_MAX_AGE_MS;
+  }
+
+  /**
+   * Returns the cleanup interval in milliseconds.
+   * Useful for testing.
+   */
+  getCleanupInterval(): number {
+    return this.CLEANUP_INTERVAL_MS;
+  }
+
+  /**
+   * Manually triggers stale query cleanup.
+   * Useful for testing.
+   */
+  triggerCleanup(): void {
+    this.cleanupStaleQueries();
   }
 }
