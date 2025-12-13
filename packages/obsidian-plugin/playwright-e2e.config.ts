@@ -26,11 +26,14 @@ export default defineConfig({
     ["./playwright-no-flaky-reporter.ts"],
   ],
 
+  // Output directory for test artifacts (videos, screenshots, traces)
+  outputDir: "test-results",
+
   use: {
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
     screenshot: "only-on-failure",
-    // Disabled video in CI to speed up tests
-    video: process.env.CI ? "off" : "retain-on-failure",
+    // Enable video recording for failures to aid debugging in CI
+    video: "retain-on-failure",
     launchOptions: {
       args: [
         "--disable-dev-shm-usage",
