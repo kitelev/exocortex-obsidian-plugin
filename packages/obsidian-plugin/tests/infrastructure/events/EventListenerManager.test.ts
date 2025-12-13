@@ -1,4 +1,4 @@
-import { EventListenerManager } from "../../../src/infrastructure/events/EventListenerManager";
+import { EventListenerManager } from "../../../src/adapters/events/EventListenerManager";
 
 describe("EventListenerManager", () => {
   let manager: EventListenerManager;
@@ -191,6 +191,63 @@ describe("EventListenerManager", () => {
       expect(clickHandler).not.toHaveBeenCalled();
       expect(mouseoverHandler).not.toHaveBeenCalled();
       expect(mouseoutHandler).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("unregister", () => {
+    it("should remove a specific listener", () => {
+      const handler = jest.fn();
+      const removeEventListenerSpy = jest.spyOn(mockElement, "removeEventListener");
+
+      manager.register(mockElement, "click", handler);
+      const result = manager.unregister(mockElement, "click", handler);
+
+      expect(result).toBe(true);
+      expect(manager.getListenerCount()).toBe(0);
+      expect(removeEventListenerSpy).toHaveBeenCalledWith("click", handler);
+    });
+
+    it("should return false when listener not found", () => {
+      const handler1 = jest.fn();
+      const handler2 = jest.fn();
+
+      manager.register(mockElement, "click", handler1);
+      const result = manager.unregister(mockElement, "click", handler2);
+
+      expect(result).toBe(false);
+      expect(manager.getListenerCount()).toBe(1);
+    });
+  });
+
+  describe("unsubscribe function", () => {
+    it("should return unsubscribe function from register", () => {
+      const handler = jest.fn();
+
+      const unsubscribe = manager.register(mockElement, "click", handler);
+
+      expect(typeof unsubscribe).toBe("function");
+    });
+
+    it("should remove listener when unsubscribe called", () => {
+      const handler = jest.fn();
+
+      const unsubscribe = manager.register(mockElement, "click", handler);
+      expect(manager.getListenerCount()).toBe(1);
+
+      unsubscribe();
+
+      expect(manager.getListenerCount()).toBe(0);
+    });
+
+    it("should prevent memory leaks over multiple cycles", () => {
+      for (let cycle = 0; cycle < 5; cycle++) {
+        const handler = jest.fn();
+        manager.register(mockElement, "click", handler);
+        expect(manager.getListenerCount()).toBe(1);
+
+        manager.cleanup();
+        expect(manager.getListenerCount()).toBe(0);
+      }
     });
   });
 });
