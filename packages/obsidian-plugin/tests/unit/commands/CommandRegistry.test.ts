@@ -80,6 +80,25 @@ jest.mock("../../../src/application/commands/SetFocusAreaCommand");
 jest.mock("../../../src/application/commands/OpenQueryBuilderCommand");
 jest.mock("../../../src/application/commands/EditPropertiesCommand");
 
+// Mock SPARQLQueryService and OntologySchemaService
+jest.mock("../../../src/application/services/SPARQLQueryService", () => ({
+  SPARQLQueryService: jest.fn().mockImplementation(() => ({
+    initialize: jest.fn(),
+    query: jest.fn(),
+    refresh: jest.fn(),
+    dispose: jest.fn(),
+  })),
+}));
+
+jest.mock("../../../src/application/services/OntologySchemaService", () => ({
+  OntologySchemaService: jest.fn().mockImplementation(() => ({
+    getClassProperties: jest.fn(),
+    getClassHierarchy: jest.fn(),
+    isDeprecatedProperty: jest.fn(),
+    getDefaultProperties: jest.fn(),
+  })),
+}));
+
 describe("CommandRegistry", () => {
   let mockApp: App;
   let mockPlugin: ExocortexPluginInterface;

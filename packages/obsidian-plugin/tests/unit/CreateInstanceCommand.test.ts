@@ -407,7 +407,8 @@ describe("CreateInstanceCommand", () => {
       expect(DynamicAssetCreationModal).toHaveBeenCalledWith(
         mockApp,
         "Task",
-        expect.any(Function)
+        expect.any(Function),
+        undefined, // schemaService (optional)
       );
       expect(LabelInputModal).not.toHaveBeenCalled();
 
@@ -480,7 +481,8 @@ describe("CreateInstanceCommand", () => {
       expect(DynamicAssetCreationModal).toHaveBeenCalledWith(
         mockApp,
         "ems__Effort",
-        expect.any(Function)
+        expect.any(Function),
+        undefined, // schemaService (optional)
       );
 
       expect(mockTaskCreationService.createTask).toHaveBeenCalledWith(

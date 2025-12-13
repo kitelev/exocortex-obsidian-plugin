@@ -12,6 +12,7 @@ import { LabelInputModal, type LabelInputModalResult } from '@plugin/presentatio
 import { DynamicAssetCreationModal, type DynamicAssetCreationResult } from '@plugin/presentation/modals/DynamicAssetCreationModal';
 import { ObsidianVaultAdapter } from '@plugin/adapters/ObsidianVaultAdapter';
 import { ExocortexPluginInterface } from '@plugin/types';
+import type { OntologySchemaService } from '@plugin/application/services/OntologySchemaService';
 
 export class CreateInstanceCommand implements ICommand {
   id = "create-instance";
@@ -22,6 +23,7 @@ export class CreateInstanceCommand implements ICommand {
     private taskCreationService: TaskCreationService,
     private vaultAdapter: ObsidianVaultAdapter,
     private plugin: ExocortexPluginInterface,
+    private schemaService?: OntologySchemaService,
   ) {}
 
   checkCallback = (checking: boolean, file: TFile, context: CommandVisibilityContext | null): boolean => {
@@ -101,6 +103,7 @@ export class CreateInstanceCommand implements ICommand {
           this.app,
           className,
           resolve,
+          this.schemaService,
         ).open();
       });
     }
