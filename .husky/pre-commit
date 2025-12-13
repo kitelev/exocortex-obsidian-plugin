@@ -9,24 +9,13 @@ else
   echo "   Version will be auto-bumped after PR merge by pr-auto-version workflow"
 fi
 
-# Run tests
-echo "🧪 Running tests..."
-# Force ARM64 architecture for node to ensure correct rollup binary is loaded (macOS only)
-case "$OSTYPE" in
-  darwin*)
-    arch -arm64 npm test || exit 1
-    ;;
-  *)
-    npm test || exit 1
-    ;;
-esac
+# Run lint-staged (ESLint + related tests for staged files only)
+echo "🚀 Running lint-staged (affected files only)..."
+npx lint-staged || exit 1
 
-# Check BDD coverage
+# Check BDD coverage (fast static check)
 echo "📊 Checking BDD coverage..."
 npm run bdd:check || exit 1
 
-# Run ESLint
-echo "🔍 Running ESLint..."
-npm run lint || exit 1
-
-echo "✅ All checks passed!"
+echo "✅ All pre-commit checks passed!"
+echo "   Note: Full test suite (unit + UI + component + E2E) runs in CI"
