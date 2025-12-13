@@ -3,11 +3,12 @@ import { PathResolver } from "../utils/PathResolver.js";
 import { ErrorHandler } from "../utils/ErrorHandler.js";
 import { ExitCodes } from "../utils/ExitCodes.js";
 import { FrontmatterService } from "@exocortex/core";
-import type { CommandContext } from "./commands/index.js";
+import type { CommandContext, FolderRepairResult } from "./commands/index.js";
 import {
   StatusCommandExecutor,
   AssetCreationExecutor,
   PropertyCommandExecutor,
+  FolderRepairExecutor,
 } from "./commands/index.js";
 
 /**
@@ -17,12 +18,14 @@ import {
  * - StatusCommandExecutor: start, complete, trash, archive, moveToBacklog, etc.
  * - AssetCreationExecutor: createTask, createMeeting, createProject, createArea
  * - PropertyCommandExecutor: renameToUid, updateLabel, schedule, setDeadline
+ * - FolderRepairExecutor: repairFolder
  */
 export class CommandExecutor {
   private context: CommandContext;
   private statusExecutor: StatusCommandExecutor;
   private creationExecutor: AssetCreationExecutor;
   private propertyExecutor: PropertyCommandExecutor;
+  private folderRepairExecutor: FolderRepairExecutor;
 
   constructor(vaultRoot: string, dryRun: boolean = false) {
     this.context = {
@@ -35,6 +38,7 @@ export class CommandExecutor {
     this.statusExecutor = new StatusCommandExecutor(this.context);
     this.creationExecutor = new AssetCreationExecutor(this.context);
     this.propertyExecutor = new PropertyCommandExecutor(this.context);
+    this.folderRepairExecutor = new FolderRepairExecutor(this.context);
   }
 
   /**
@@ -152,5 +156,10 @@ export class CommandExecutor {
 
   async executeSetDeadline(filepath: string, date: string): Promise<void> {
     return this.propertyExecutor.executeSetDeadline(filepath, date);
+  }
+
+  // Folder repair command
+  async executeRepairFolder(filepath: string): Promise<FolderRepairResult> {
+    return this.folderRepairExecutor.executeRepairFolder(filepath);
   }
 }
