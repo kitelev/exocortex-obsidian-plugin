@@ -20,6 +20,8 @@ import {
   registerCoreServices,
 } from "@exocortex/core";
 import { LoggerFactory } from '@plugin/adapters/logging/LoggerFactory';
+import { SPARQLQueryService } from '@plugin/application/services/SPARQLQueryService';
+import { OntologySchemaService } from '@plugin/application/services/OntologySchemaService';
 
 import { CreateTaskCommand } from "./CreateTaskCommand";
 import { CreateProjectCommand } from "./CreateProjectCommand";
@@ -90,11 +92,15 @@ export class CommandRegistry {
     const assetConversionService = container.resolve(AssetConversionService);
     const fleetingNoteCreationService = container.resolve(FleetingNoteCreationService);
 
+    // Create ontology schema service for dynamic forms
+    const sparqlQueryService = new SPARQLQueryService(app, logger);
+    const ontologySchemaService = new OntologySchemaService(sparqlQueryService);
+
     this.commands = [
-      new CreateTaskCommand(app, taskCreationService, this.vaultAdapter, plugin),
+      new CreateTaskCommand(app, taskCreationService, this.vaultAdapter, plugin, ontologySchemaService),
       new CreateProjectCommand(app, projectCreationService, this.vaultAdapter),
       new CreateAreaCommand(app, areaCreationService, this.vaultAdapter),
-      new CreateInstanceCommand(app, taskCreationService, this.vaultAdapter, plugin),
+      new CreateInstanceCommand(app, taskCreationService, this.vaultAdapter, plugin, ontologySchemaService),
       new CreateFleetingNoteCommand(app, fleetingNoteCreationService, this.vaultAdapter),
       new CreateRelatedTaskCommand(app, taskCreationService, this.vaultAdapter),
       new SetDraftStatusCommand(taskStatusService),
