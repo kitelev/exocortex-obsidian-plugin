@@ -1,4 +1,5 @@
 import { App, Modal } from "obsidian";
+import { FilenameValidator } from "@exocortex/core";
 
 export interface LabelInputModalResult {
   label: string | null;
@@ -18,6 +19,7 @@ export class LabelInputModal extends Modal {
   private inputEl: HTMLInputElement | null = null;
   private taskSizeSelectEl: HTMLSelectElement | null = null;
   private showTaskSize: boolean;
+  private errorEl: HTMLElement | null = null;
 
   constructor(
     app: App,
@@ -57,6 +59,7 @@ export class LabelInputModal extends Modal {
 
     this.inputEl.addEventListener("input", (e) => {
       this.label = (e.target as HTMLInputElement).value;
+      this.validateAndShowWarning();
     });
 
     this.inputEl.addEventListener("keydown", (e) => {
@@ -156,12 +159,56 @@ export class LabelInputModal extends Modal {
 
   private submit(): void {
     const trimmedLabel = this.label.trim();
+
+    // Sanitize the label to remove any invalid characters
+    const sanitizedLabel = trimmedLabel
+      ? FilenameValidator.sanitize(trimmedLabel)
+      : null;
+
     this.onSubmit({
-      label: trimmedLabel || null,
+      label: sanitizedLabel || null,
       taskSize: this.taskSize,
       openInNewTab: this.openInNewTab,
     });
     this.close();
+  }
+
+  /**
+   * Validates the current label and shows a warning if it contains invalid characters.
+   * The warning informs the user that invalid characters will be replaced.
+   */
+  private validateAndShowWarning(): void {
+    // Clear any existing warning
+    if (this.errorEl) {
+      this.errorEl.remove();
+      this.errorEl = null;
+    }
+
+    const trimmedLabel = this.label.trim();
+    if (!trimmedLabel) return;
+
+    const validation = FilenameValidator.validate(trimmedLabel, {
+      allowEmpty: true,
+    });
+
+    if (!validation.valid && validation.sanitized !== trimmedLabel) {
+      // Show warning that label will be sanitized
+      this.errorEl = this.contentEl.createDiv({
+        cls: "exocortex-modal-warning",
+      });
+      this.errorEl.createEl("span", {
+        text: `⚠️ Label contains invalid characters. Will be saved as: "${validation.sanitized}"`,
+      });
+
+      // Insert warning after the input container
+      const inputContainer = this.inputEl?.parentElement;
+      if (inputContainer?.nextSibling) {
+        inputContainer.parentElement?.insertBefore(
+          this.errorEl,
+          inputContainer.nextSibling,
+        );
+      }
+    }
   }
 
   private cancel(): void {
