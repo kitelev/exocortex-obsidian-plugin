@@ -7,6 +7,18 @@ jest.mock("react-dom/client", () => ({
   createRoot: jest.fn(),
 }));
 
+// Mock LoggerFactory to prevent initialization errors
+jest.mock("../../src/adapters/logging/LoggerFactory", () => ({
+  LoggerFactory: {
+    create: jest.fn().mockReturnValue({
+      info: jest.fn(),
+      error: jest.fn(),
+      debug: jest.fn(),
+      warn: jest.fn(),
+    }),
+  },
+}));
+
 describe("ReactRenderer", () => {
   let renderer: ReactRenderer;
   let mockRoot: jest.Mocked<Root>;
@@ -28,8 +40,9 @@ describe("ReactRenderer", () => {
     // Create mock HTML element
     mockElement = document.createElement("div");
 
-    // Create renderer instance
-    renderer = new ReactRenderer();
+    // Create renderer instance with ErrorBoundary disabled for most tests
+    // This matches the original test behavior where components are rendered directly
+    renderer = new ReactRenderer({ enableErrorBoundary: false });
   });
 
   describe("constructor", () => {
@@ -514,6 +527,96 @@ describe("ReactRenderer", () => {
 
       // Should have created 20 roots total (10 before + 10 after cleanup)
       expect(createRoot).toHaveBeenCalledTimes(20);
+    });
+  });
+
+  describe("ErrorBoundary wrapping", () => {
+    it("should wrap components in ErrorBoundary by default", () => {
+      const rendererWithErrorBoundary = new ReactRenderer();
+      const component = <div>Test Component</div>;
+
+      rendererWithErrorBoundary.render(mockElement, component);
+
+      expect(createRoot).toHaveBeenCalledWith(mockElement);
+      expect(mockRoot.render).toHaveBeenCalled();
+
+      // The rendered component should be wrapped (it's an ErrorBoundary element)
+      const renderedComponent = mockRoot.render.mock.calls[0][0] as React.ReactElement;
+      // ErrorBoundary is a class component, so we check if it's wrapped
+      expect(renderedComponent).not.toBe(component);
+      expect(renderedComponent.props.children).toBe(component);
+    });
+
+    it("should render component directly when ErrorBoundary is disabled", () => {
+      const rendererWithoutErrorBoundary = new ReactRenderer({ enableErrorBoundary: false });
+      const component = <div>Test Component</div>;
+
+      rendererWithoutErrorBoundary.render(mockElement, component);
+
+      expect(mockRoot.render).toHaveBeenCalledWith(component);
+    });
+
+    it("should accept enableErrorBoundary option in constructor", () => {
+      const renderer1 = new ReactRenderer({ enableErrorBoundary: true });
+      const renderer2 = new ReactRenderer({ enableErrorBoundary: false });
+
+      const component = <div>Test</div>;
+
+      renderer1.render(mockElement, component);
+      const rendered1 = mockRoot.render.mock.calls[0][0] as React.ReactElement;
+
+      // Reset for second render
+      mockRoot.render.mockClear();
+
+      const element2 = document.createElement("div");
+      renderer2.render(element2, component);
+      const rendered2 = mockRoot.render.mock.calls[0][0] as React.ReactElement;
+
+      // With ErrorBoundary enabled, component should be wrapped
+      expect(rendered1).not.toBe(component);
+      expect(rendered1.props.children).toBe(component);
+
+      // With ErrorBoundary disabled, component should be rendered directly
+      expect(rendered2).toBe(component);
+    });
+
+    it("should provide fallback prop to ErrorBoundary", () => {
+      const rendererWithErrorBoundary = new ReactRenderer({ enableErrorBoundary: true });
+      const component = <div>Test Component</div>;
+
+      rendererWithErrorBoundary.render(mockElement, component);
+
+      const renderedComponent = mockRoot.render.mock.calls[0][0] as React.ReactElement;
+
+      // ErrorBoundary should have fallback prop
+      expect(renderedComponent.props.fallback).toBeDefined();
+      expect(typeof renderedComponent.props.fallback).toBe("function");
+    });
+
+    it("should provide onError callback to ErrorBoundary", () => {
+      const rendererWithErrorBoundary = new ReactRenderer({ enableErrorBoundary: true });
+      const component = <div>Test Component</div>;
+
+      rendererWithErrorBoundary.render(mockElement, component);
+
+      const renderedComponent = mockRoot.render.mock.calls[0][0] as React.ReactElement;
+
+      // ErrorBoundary should have onError prop
+      expect(renderedComponent.props.onError).toBeDefined();
+      expect(typeof renderedComponent.props.onError).toBe("function");
+    });
+
+    it("should default to enabling ErrorBoundary when no options provided", () => {
+      const defaultRenderer = new ReactRenderer();
+      const component = <div>Test</div>;
+
+      defaultRenderer.render(mockElement, component);
+
+      const renderedComponent = mockRoot.render.mock.calls[0][0] as React.ReactElement;
+
+      // By default, component should be wrapped
+      expect(renderedComponent).not.toBe(component);
+      expect(renderedComponent.props.children).toBe(component);
     });
   });
 });
