@@ -411,10 +411,50 @@ describe("ExocortexPlugin", () => {
       expect(mockLayoutRenderer.render).not.toHaveBeenCalled();
     });
 
-    it("should not render when no metadata container", () => {
+    it("should render using fallback when no metadata container but markdown-preview-sizer exists", () => {
       // Arrange
       plugin.settings.layoutVisible = true;
-      // Remove metadata container from mock view
+      // Remove metadata container but add fallback container
+      mockView.containerEl.innerHTML = "";
+      const previewSizer = document.createElement("div");
+      previewSizer.className = "markdown-preview-sizer";
+      mockView.containerEl.appendChild(previewSizer);
+
+      // Act
+      (plugin as any).autoRenderLayout();
+
+      // Assert
+      expect(mockLayoutRenderer.render).toHaveBeenCalled();
+      const layoutContainers = mockView.containerEl.querySelectorAll(".exocortex-auto-layout");
+      expect(layoutContainers.length).toBe(1);
+      // Layout should be inserted at the beginning of preview-sizer
+      expect(previewSizer.firstElementChild?.classList.contains("exocortex-auto-layout")).toBe(true);
+    });
+
+    it("should render using fallback when no metadata container but markdown-preview-section exists", () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+      // Remove metadata container but add fallback container
+      mockView.containerEl.innerHTML = "";
+      const previewSection = document.createElement("div");
+      previewSection.className = "markdown-preview-section";
+      mockView.containerEl.appendChild(previewSection);
+
+      // Act
+      (plugin as any).autoRenderLayout();
+
+      // Assert
+      expect(mockLayoutRenderer.render).toHaveBeenCalled();
+      const layoutContainers = mockView.containerEl.querySelectorAll(".exocortex-auto-layout");
+      expect(layoutContainers.length).toBe(1);
+      // Layout should be inserted at the beginning of preview-section
+      expect(previewSection.firstElementChild?.classList.contains("exocortex-auto-layout")).toBe(true);
+    });
+
+    it("should not render when no suitable container found", () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+      // Remove all containers
       mockView.containerEl.innerHTML = "";
 
       // Act
@@ -422,6 +462,49 @@ describe("ExocortexPlugin", () => {
 
       // Assert
       expect(mockLayoutRenderer.render).not.toHaveBeenCalled();
+    });
+
+    it("should not re-render when layout already exists in fallback container", () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+      mockView.containerEl.innerHTML = "";
+      const previewSizer = document.createElement("div");
+      previewSizer.className = "markdown-preview-sizer";
+      // Add existing layout
+      const existingLayout = document.createElement("div");
+      existingLayout.className = "exocortex-auto-layout";
+      previewSizer.appendChild(existingLayout);
+      mockView.containerEl.appendChild(previewSizer);
+
+      // Act
+      (plugin as any).autoRenderLayout();
+
+      // Assert
+      expect(mockLayoutRenderer.render).not.toHaveBeenCalled();
+      // Existing layout should still be there
+      expect(previewSizer.querySelectorAll(".exocortex-auto-layout").length).toBe(1);
+    });
+
+    it("should prefer metadata-container over fallback containers", () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+      mockView.containerEl.innerHTML = "";
+      // Add both metadata container and fallback container
+      const metadataContainer = document.createElement("div");
+      metadataContainer.className = "metadata-container";
+      const previewSizer = document.createElement("div");
+      previewSizer.className = "markdown-preview-sizer";
+      previewSizer.appendChild(metadataContainer);
+      mockView.containerEl.appendChild(previewSizer);
+
+      // Act
+      (plugin as any).autoRenderLayout();
+
+      // Assert
+      expect(mockLayoutRenderer.render).toHaveBeenCalled();
+      // Layout should be after metadata container, not at the beginning of preview-sizer
+      const layout = metadataContainer.nextElementSibling;
+      expect(layout?.classList.contains("exocortex-auto-layout")).toBe(true);
     });
 
     it("should handle render errors gracefully", async () => {
@@ -527,6 +610,137 @@ describe("ExocortexPlugin", () => {
       // Verify no layout container exists after switching to source mode
       const layoutContainers = mockView.containerEl.querySelectorAll(".exocortex-auto-layout");
       expect(layoutContainers.length).toBe(0);
+    });
+
+    describe("embed asset edge cases (Issue #869)", () => {
+      it("should NOT remove existing layout when metadata container is not found (transient DOM state)", () => {
+        // This test verifies the fix for Issue #869:
+        // When embeds are loading, the DOM may be in a transient state where
+        // metadata container is temporarily unavailable. We should NOT remove
+        // the existing layout in this case.
+
+        // Arrange
+        plugin.settings.layoutVisible = true;
+
+        // First, render the layout
+        mockView.getMode.mockReturnValue("preview");
+        (plugin as any).autoRenderLayout();
+
+        // Verify layout was created
+        expect(mockLayoutRenderer.render).toHaveBeenCalledTimes(1);
+        const layoutContainers = mockView.containerEl.querySelectorAll(".exocortex-auto-layout");
+        expect(layoutContainers.length).toBe(1);
+
+        // Move layout to document body (where removeAutoRenderedLayouts searches)
+        const existingLayout = document.createElement("div");
+        existingLayout.className = "exocortex-auto-layout";
+        document.body.appendChild(existingLayout);
+
+        // Simulate transient DOM state: metadata container disappears
+        mockView.containerEl.innerHTML = "";
+
+        // Act
+        (plugin as any).autoRenderLayout();
+
+        // Assert: existing layout in document body should NOT be removed
+        const remainingLayouts = document.querySelectorAll(".exocortex-auto-layout");
+        expect(remainingLayouts.length).toBe(1);
+
+        // Cleanup
+        existingLayout.remove();
+      });
+
+      it("should NOT remove existing layout when no active markdown view", () => {
+        // This tests the case where view might be null during embed loading
+
+        // Arrange
+        plugin.settings.layoutVisible = true;
+
+        // Add existing layout to document
+        const existingLayout = document.createElement("div");
+        existingLayout.className = "exocortex-auto-layout";
+        document.body.appendChild(existingLayout);
+
+        // Simulate no active view
+        mockWorkspace.getActiveViewOfType.mockReturnValue(null);
+
+        // Act
+        (plugin as any).autoRenderLayout();
+
+        // Assert: existing layout should NOT be removed
+        const remainingLayouts = document.querySelectorAll(".exocortex-auto-layout");
+        expect(remainingLayouts.length).toBe(1);
+
+        // Cleanup
+        existingLayout.remove();
+      });
+
+      it("should NOT re-render when layout already exists in correct position", () => {
+        // This prevents unnecessary re-renders during frequent layout-change events
+        // triggered by embed loading
+
+        // Arrange
+        plugin.settings.layoutVisible = true;
+        mockView.getMode.mockReturnValue("preview");
+
+        // First render - creates the layout
+        (plugin as any).autoRenderLayout();
+        expect(mockLayoutRenderer.render).toHaveBeenCalledTimes(1);
+
+        // Verify layout is in correct position (after metadata container)
+        const metadataContainer = mockView.containerEl.querySelector(".metadata-container");
+        const existingLayout = metadataContainer?.nextElementSibling;
+        expect(existingLayout?.classList.contains("exocortex-auto-layout")).toBe(true);
+
+        // Act - call again (simulating layout-change event from embed loading)
+        (plugin as any).autoRenderLayout();
+
+        // Assert - should NOT re-render since layout already exists in correct position
+        expect(mockLayoutRenderer.render).toHaveBeenCalledTimes(1);
+      });
+
+      it("should remove layout when switching to edit mode", () => {
+        // Verify that layouts ARE removed when switching to edit mode
+        // (this is intentional, unlike the transient DOM state case)
+
+        // Arrange
+        plugin.settings.layoutVisible = true;
+
+        // Add existing layout to document body
+        const existingLayout = document.createElement("div");
+        existingLayout.className = "exocortex-auto-layout";
+        document.body.appendChild(existingLayout);
+
+        // Simulate being in edit mode
+        mockView.getMode.mockReturnValue("source");
+
+        // Act
+        (plugin as any).autoRenderLayout();
+
+        // Assert: layout should be removed when in edit mode
+        const remainingLayouts = document.querySelectorAll(".exocortex-auto-layout");
+        expect(remainingLayouts.length).toBe(0);
+      });
+
+      it("should remove layout when layoutVisible is set to false", () => {
+        // Verify layouts ARE removed when user hides layout via settings
+
+        // Arrange
+        // Add existing layout to document body
+        const existingLayout = document.createElement("div");
+        existingLayout.className = "exocortex-auto-layout";
+        document.body.appendChild(existingLayout);
+
+        // Hide layout via settings
+        plugin.settings.layoutVisible = false;
+
+        // Act
+        (plugin as any).autoRenderLayout();
+
+        // Assert: layout should be removed when layoutVisible is false
+        const remainingLayouts = document.querySelectorAll(".exocortex-auto-layout");
+        expect(remainingLayouts.length).toBe(0);
+      });
     });
   });
 

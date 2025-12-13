@@ -220,11 +220,9 @@ export default class ExocortexPlugin extends Plugin {
   }
 
   private autoRenderLayout(): void {
-    // Remove existing auto-rendered layouts
-    this.removeAutoRenderedLayouts();
-
-    // If layout is hidden by settings, do not render
+    // If layout is hidden by settings, remove existing and do not render
     if (!this.settings.layoutVisible) {
+      this.removeAutoRenderedLayouts();
       return;
     }
 
@@ -232,6 +230,8 @@ export default class ExocortexPlugin extends Plugin {
     const view = this.app.workspace.getActiveViewOfType(MarkdownView);
 
     if (!view) {
+      // No active view - don't remove existing layout as this may be a transient state
+      // (e.g., during embed loading when DOM is temporarily unstable)
       return;
     }
 
@@ -239,6 +239,8 @@ export default class ExocortexPlugin extends Plugin {
     // getMode() returns 'preview' for Reading Mode, 'source' for Edit Mode
     const mode = view.getMode();
     if (mode !== "preview") {
+      // Not in preview mode - remove layout
+      this.removeAutoRenderedLayouts();
       return;
     }
 
@@ -247,6 +249,7 @@ export default class ExocortexPlugin extends Plugin {
     const viewContainer = view.containerEl;
 
     if (!viewContainer) {
+      // No view container - don't remove existing layout as this may be a transient state
       return;
     }
 
@@ -255,9 +258,57 @@ export default class ExocortexPlugin extends Plugin {
       ".metadata-container",
     ) as HTMLElement;
 
-    if (!metadataContainer) {
+    // Fallback containers for notes that may not have a .metadata-container
+    // This can happen when files have embedded assets (![[...]]) that cause
+    // DOM restructuring, or when the Properties section is hidden in settings
+    const markdownPreviewSizer = viewContainer.querySelector(
+      ".markdown-preview-sizer",
+    ) as HTMLElement;
+
+    const markdownPreviewSection = viewContainer.querySelector(
+      ".markdown-preview-section",
+    ) as HTMLElement;
+
+    // Determine the insertion strategy based on available containers
+    let insertionParent: HTMLElement | null = null;
+    let insertionStrategy: "afterend" | "afterbegin" = "afterend";
+    let referenceElement: HTMLElement | null = null;
+
+    if (metadataContainer) {
+      // Primary: Insert after metadata container
+      referenceElement = metadataContainer;
+      insertionStrategy = "afterend";
+    } else if (markdownPreviewSizer) {
+      // Fallback 1: Insert at the beginning of markdown-preview-sizer
+      // This places the layout at the top of the reading view content
+      insertionParent = markdownPreviewSizer;
+      insertionStrategy = "afterbegin";
+    } else if (markdownPreviewSection) {
+      // Fallback 2: Insert at the beginning of markdown-preview-section
+      insertionParent = markdownPreviewSection;
+      insertionStrategy = "afterbegin";
+    } else {
+      // No suitable container found - cannot render layout
       return;
     }
+
+    // Check if layout already exists in the correct position
+    if (referenceElement) {
+      const existingLayout = referenceElement.nextElementSibling;
+      if (existingLayout?.classList.contains("exocortex-auto-layout")) {
+        // Layout already exists in correct position - no need to re-render
+        return;
+      }
+    } else if (insertionParent) {
+      const existingLayout = insertionParent.firstElementChild;
+      if (existingLayout?.classList.contains("exocortex-auto-layout")) {
+        // Layout already exists in correct position - no need to re-render
+        return;
+      }
+    }
+
+    // Now we're sure we can render - remove any existing layouts
+    this.removeAutoRenderedLayouts();
 
     // Create layout container
     const layoutContainer = document.createElement("div");
@@ -268,9 +319,12 @@ export default class ExocortexPlugin extends Plugin {
       border-top: 1px solid var(--background-modifier-border);
     `;
 
-    // Insert after metadata container using insertAdjacentElement
-    // This ensures it always goes right after the metadata, not before
-    metadataContainer.insertAdjacentElement("afterend", layoutContainer);
+    // Insert layout container using the determined strategy
+    if (referenceElement) {
+      referenceElement.insertAdjacentElement(insertionStrategy, layoutContainer);
+    } else if (insertionParent) {
+      insertionParent.insertAdjacentElement(insertionStrategy, layoutContainer);
+    }
 
     // Render layout
     void (async () => {
