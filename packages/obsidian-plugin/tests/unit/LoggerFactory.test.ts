@@ -1,10 +1,12 @@
 import { LoggerFactory } from "../../src/adapters/logging/LoggerFactory";
 import { Logger } from "../../src/adapters/logging/Logger";
-import { ILogger } from "../../src/adapters/logging/ILogger";
+import type { ILogger } from "../../src/adapters/logging/ILogger";
 
 describe("LoggerFactory", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset to production mode (default)
+    Logger.setDevelopmentMode(false);
   });
 
   describe("create", () => {
@@ -151,10 +153,9 @@ describe("LoggerFactory", () => {
       expect(console.debug).toHaveBeenCalledWith("[FunctionalTest] Debug message");
       expect(console.info).toHaveBeenCalledWith("[FunctionalTest] Info message");
       expect(console.warn).toHaveBeenCalledWith("[FunctionalTest] Warning message");
-      expect(console.error).toHaveBeenCalledWith(
-        "[FunctionalTest] Error message",
-        expect.any(Error)
-      );
+      // In production mode (default), error logs message first, then details
+      expect(console.error).toHaveBeenCalledWith("[FunctionalTest] Error message");
+      expect(console.error).toHaveBeenCalledWith("  Details: Test error");
 
       // Restore console
       Object.assign(console, originalConsole);

@@ -22,6 +22,7 @@ import { ReactRenderer } from '@plugin/presentation/utils/ReactRenderer';
 import { SPARQLResultViewer } from '@plugin/presentation/components/sparql/SPARQLResultViewer';
 import { SPARQLErrorView, type SPARQLError } from '@plugin/presentation/components/sparql/SPARQLErrorView';
 import { LoggerFactory } from '@plugin/adapters/logging/LoggerFactory';
+import { ErrorCodes } from '@plugin/adapters/logging/ErrorCodes';
 
 /**
  * Represents an active SPARQL query with tracking metadata for TTL management.
@@ -207,7 +208,11 @@ export class SPARQLCodeBlockProcessor {
 
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
-      this.logger.error("Query execution error", errorObj);
+      this.logger.error("Query execution failed", {
+        errorCode: ErrorCodes.SPARQL_QUERY_EXECUTION,
+        error: errorObj,
+        context: { queryPreview: source.substring(0, 100) },
+      });
       new Notice(`SPARQL query error: ${errorObj.message}`, 5000);
 
       container.innerHTML = "";
@@ -252,7 +257,11 @@ export class SPARQLCodeBlockProcessor {
       query.startTime = Date.now();
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
-      this.logger.error("Query refresh error", errorObj);
+      this.logger.error("Query refresh failed", {
+        errorCode: ErrorCodes.SPARQL_QUERY_REFRESH,
+        error: errorObj,
+        context: { queryPreview: source.substring(0, 100) },
+      });
       new Notice(`SPARQL query refresh error: ${errorObj.message}`, 5000);
 
       container.innerHTML = "";
@@ -380,7 +389,10 @@ export class SPARQLCodeBlockProcessor {
       }
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error(String(error));
-      this.logger.error("Triple store initialization error", errorObj);
+      this.logger.error("Triple store initialization failed", {
+        errorCode: ErrorCodes.STORE_INITIALIZATION,
+        error: errorObj,
+      });
       new Notice(`Failed to load triple store: ${errorObj.message}`, 5000);
       throw errorObj;
     } finally {
