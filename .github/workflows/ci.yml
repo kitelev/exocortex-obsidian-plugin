@@ -562,11 +562,11 @@ jobs:
           retention-days: 1
           if-no-files-found: ignore
 
-      - name: Upload E2E test results (screenshots) for shard ${{ matrix.shard }}
+      - name: Upload E2E test artifacts (videos, screenshots, traces) for shard ${{ matrix.shard }}
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-test-results-${{ matrix.shard }}
+          name: e2e-test-artifacts-${{ matrix.shard }}
           path: test-results-e2e/
           retention-days: 7
           if-no-files-found: ignore
@@ -607,6 +607,14 @@ jobs:
           path: all-blob-reports
           merge-multiple: true
 
+      - name: Download all test artifacts (videos, screenshots, traces)
+        if: always()
+        uses: actions/download-artifact@v4
+        with:
+          pattern: e2e-test-artifacts-*
+          path: all-test-artifacts
+          merge-multiple: true
+
       - name: Merge E2E reports
         run: |
           npx playwright merge-reports --reporter html ./all-blob-reports
@@ -619,6 +627,15 @@ jobs:
           name: e2e-test-report
           path: playwright-report/
           retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Upload merged test artifacts (videos, screenshots, traces)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-artifacts
+          path: all-test-artifacts/
+          retention-days: 7
           if-no-files-found: ignore
 
   performance-tests:
