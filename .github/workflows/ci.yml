@@ -510,7 +510,8 @@ jobs:
 
   # E2E tests with sharding for faster execution
   # Target: 5 minutes (down from 15 minutes)
-  e2e-tests:
+  # Note: Named e2e-shard-* to avoid conflict with branch protection rule for "e2e-tests"
+  e2e-shard:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     needs: build
@@ -571,13 +572,23 @@ jobs:
           if-no-files-found: ignore
 
   # Merge E2E test reports from all shards
-  e2e-tests-report:
+  # Named "e2e-tests" to satisfy branch protection rule
+  e2e-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 2
-    needs: e2e-tests
+    needs: e2e-shard
     if: always()
 
     steps:
+      - name: Check shard results
+        run: |
+          # Fail if any shard failed (needs.e2e-shard.result will be 'failure' or 'success')
+          if [ "${{ needs.e2e-shard.result }}" != "success" ]; then
+            echo "❌ One or more E2E shards failed"
+            exit 1
+          fi
+          echo "✅ All E2E shards passed"
+
       - name: Checkout
         uses: actions/checkout@v4
 
