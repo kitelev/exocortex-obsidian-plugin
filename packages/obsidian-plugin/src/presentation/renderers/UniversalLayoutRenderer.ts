@@ -80,7 +80,22 @@ export class UniversalLayoutRenderer {
     this.plugin = plugin;
     this.vaultAdapter = vaultAdapter;
     this.logger = LoggerFactory.create("UniversalLayoutRenderer");
-    this.reactRenderer = new ReactRenderer();
+
+    // Create ReactRenderer with ErrorBoundary enabled for graceful error handling.
+    // All React components rendered through this instance will be wrapped with
+    // ErrorBoundary, ensuring render errors don't crash the entire plugin UI.
+    this.reactRenderer = new ReactRenderer({
+      useErrorBoundary: true,
+      onError: (error, errorInfo) => {
+        this.logger.error("Layout component render error", {
+          error: error.message,
+          stack: error.stack,
+          componentStack: errorInfo.componentStack,
+          filePath: this.currentFilePath,
+        });
+      },
+    });
+
     this.eventListenerManager = new EventListenerManager();
     this.backlinksCacheManager = new BacklinksCacheManager(this.app);
     this.metadataExtractor = new MetadataExtractor(this.vaultAdapter);
