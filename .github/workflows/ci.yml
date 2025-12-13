@@ -508,10 +508,16 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
+  # E2E tests with sharding for faster execution
+  # Target: 5 minutes (down from 15 minutes)
   e2e-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
 
     steps:
       - name: Checkout
@@ -536,30 +542,72 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Run E2E tests
+      - name: Run E2E tests (shard ${{ matrix.shard }}/4)
         run: |
-          mkdir -p test-results-e2e playwright-report-e2e
+          mkdir -p test-results-e2e playwright-report-e2e blob-report
           docker run --init --rm \
             -v $PWD/test-results-e2e:/app/test-results \
             -v $PWD/playwright-report-e2e:/app/playwright-report-e2e \
-            exocortex-e2e npm run test:e2e
+            -v $PWD/blob-report:/app/packages/obsidian-plugin/blob-report \
+            -e CI=true \
+            exocortex-e2e npx playwright test -c packages/obsidian-plugin/playwright-e2e.config.ts --shard=${{ matrix.shard }}/4
 
-      - name: Upload E2E test report
+      - name: Upload blob report for shard ${{ matrix.shard }}
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-blob-report-${{ matrix.shard }}
+          path: blob-report/
+          retention-days: 1
+          if-no-files-found: ignore
+
+      - name: Upload E2E test results (screenshots) for shard ${{ matrix.shard }}
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results-${{ matrix.shard }}
+          path: test-results-e2e/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  # Merge E2E test reports from all shards
+  e2e-tests-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: e2e-tests
+    if: always()
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install Playwright
+        run: npm install -D @playwright/test
+
+      - name: Download all blob reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: e2e-blob-report-*
+          path: all-blob-reports
+          merge-multiple: true
+
+      - name: Merge E2E reports
+        run: |
+          npx playwright merge-reports --reporter html ./all-blob-reports
+        continue-on-error: true
+
+      - name: Upload merged E2E test report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: e2e-test-report
-          path: playwright-report-e2e/
+          path: playwright-report/
           retention-days: 30
-          if-no-files-found: ignore
-
-      - name: Upload E2E test results (screenshots)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-test-results
-          path: test-results-e2e/
-          retention-days: 7
           if-no-files-found: ignore
 
   performance-tests:
