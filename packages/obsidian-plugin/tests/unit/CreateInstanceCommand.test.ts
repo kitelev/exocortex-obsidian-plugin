@@ -68,6 +68,8 @@ describe("CreateInstanceCommand", () => {
         getLeaf: jest.fn().mockReturnValue(mockLeaf),
         setActiveLeaf: jest.fn(),
         getActiveFile: jest.fn().mockReturnValue(mockTFile),
+        on: jest.fn().mockReturnValue({ id: "mock-event-ref" }),
+        offref: jest.fn(),
       },
       metadataCache: {
         getFileCache: jest.fn().mockReturnValue({
@@ -282,7 +284,7 @@ describe("CreateInstanceCommand", () => {
       );
     });
 
-    it("should wait for file to become active", async () => {
+    it("should wait for file to become active using event listener", async () => {
       mockCanCreateInstance.mockReturnValue(true);
       const createdFile = { basename: "new-instance", path: "new-instance.md" };
       mockTaskCreationService.createTask.mockResolvedValue(createdFile as any);
@@ -293,20 +295,29 @@ describe("CreateInstanceCommand", () => {
         }),
       }));
 
-      // Simulate file becoming active after 3 attempts
-      let attempts = 0;
-      mockApp.workspace.getActiveFile = jest.fn(() => {
-        attempts++;
-        return attempts >= 3 ? mockTFile : null;
+      // File not immediately active
+      mockApp.workspace.getActiveFile = jest.fn().mockReturnValue(null);
+
+      // Mock workspace.on to capture the event handler and call it
+      let fileOpenHandler: ((file: TFile | null) => void) | null = null;
+      (mockApp.workspace.on as jest.Mock).mockImplementation((event: string, handler: (file: TFile | null) => void) => {
+        if (event === "file-open") {
+          fileOpenHandler = handler;
+          // Simulate the file-open event firing after a short delay
+          setTimeout(() => handler(mockTFile), 50);
+        }
+        return { id: "mock-event-ref" };
       });
 
       const result = command.checkCallback(false, mockFile, mockContext);
       expect(result).toBe(true);
 
       // Wait for async execution
-      await waitForCondition(() => (mockApp.workspace.getActiveFile as jest.Mock).mock.calls.length >= 3);
+      await flushPromises();
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
-      expect(mockApp.workspace.getActiveFile).toHaveBeenCalledTimes(3);
+      expect(mockApp.workspace.on).toHaveBeenCalledWith("file-open", expect.any(Function));
+      expect(mockApp.workspace.offref).toHaveBeenCalled();
       expect(Notice).toHaveBeenCalledWith("Instance created: new-instance");
     });
 

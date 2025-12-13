@@ -1,4 +1,4 @@
-import { App, TFile, Notice } from "obsidian";
+import { App, TFile, Notice, EventRef } from "obsidian";
 import { ICommand } from "./ICommand";
 import {
   CommandVisibilityContext,
@@ -78,15 +78,7 @@ export class CreateInstanceCommand implements ICommand {
 
     this.app.workspace.setActiveLeaf(leaf, { focus: true });
 
-    const maxAttempts = 20;
-    const targetPath = tfile.path;
-    for (let i = 0; i < maxAttempts; i++) {
-      const activeFile = this.app.workspace.getActiveFile();
-      if (activeFile?.path === targetPath) {
-        break;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
+    await this.waitForFileActive(tfile.path);
 
     new Notice(`Instance created: ${createdFile.basename}`);
   }
@@ -115,6 +107,52 @@ export class CreateInstanceCommand implements ICommand {
 
     return new Promise<LabelInputModalResult>((resolve) => {
       new LabelInputModal(this.app, resolve, "", showTaskSize).open();
+    });
+  }
+
+  /**
+   * Waits for a file to become active using event listeners instead of polling.
+   * Uses file-open event for efficient, non-blocking detection.
+   * @param targetPath - Path of the file to wait for
+   * @param timeoutMs - Maximum time to wait (default: 2000ms to match original behavior)
+   */
+  private waitForFileActive(targetPath: string, timeoutMs: number = 2000): Promise<void> {
+    return new Promise((resolve) => {
+      // Check immediately if file is already active
+      const activeFile = this.app.workspace.getActiveFile();
+      if (activeFile?.path === targetPath) {
+        resolve();
+        return;
+      }
+
+      let eventRef: EventRef | null = null;
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+      const cleanup = (): void => {
+        if (eventRef) {
+          this.app.workspace.offref(eventRef);
+          eventRef = null;
+        }
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+      };
+
+      // Set up timeout - resolves anyway to not block indefinitely
+      // This matches the original behavior where the loop would eventually finish
+      timeoutId = setTimeout(() => {
+        cleanup();
+        resolve();
+      }, timeoutMs);
+
+      // Listen for file-open event
+      eventRef = this.app.workspace.on("file-open", (file) => {
+        if (file?.path === targetPath) {
+          cleanup();
+          resolve();
+        }
+      });
     });
   }
 }
