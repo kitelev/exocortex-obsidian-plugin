@@ -5,6 +5,7 @@ import { IRI } from "../domain/models/rdf/IRI";
 import { Literal } from "../domain/models/rdf/Literal";
 import { Namespace } from "../domain/models/rdf/Namespace";
 import { DI_TOKENS } from "../interfaces/tokens";
+import { RDFVocabularyMapper } from "../infrastructure/rdf/RDFVocabularyMapper";
 
 /**
  * Service for converting Obsidian notes (frontmatter + wikilinks) to RDF triples.
@@ -18,10 +19,13 @@ import { DI_TOKENS } from "../interfaces/tokens";
 @injectable()
 export class NoteToRDFConverter {
   private readonly OBSIDIAN_VAULT_SCHEME = "obsidian://vault/";
+  private readonly vocabularyMapper: RDFVocabularyMapper;
 
   constructor(
     @inject(DI_TOKENS.IVaultAdapter) private readonly vault: IVaultAdapter,
-  ) {}
+  ) {
+    this.vocabularyMapper = new RDFVocabularyMapper();
+  }
 
   /**
    * Converts a single note to RDF triples.
@@ -69,6 +73,20 @@ export class NoteToRDFConverter {
         } else {
           const objectNode = await this.valueToRDFObject(val, file);
           triples.push(new Triple(subject, predicate, objectNode));
+
+          // Issue #871: Generate additional RDFS triple for properties with vocabulary mappings
+          // This enables SPARQL queries using standard RDFS predicates like rdfs:domain, rdfs:range
+          // to work with Exocortex ontology properties.
+          if (this.vocabularyMapper.hasMappingFor(key) && objectNode instanceof IRI) {
+            const mappedTriple = this.vocabularyMapper.generateMappedTriple(
+              subject,
+              key,
+              objectNode,
+            );
+            if (mappedTriple) {
+              triples.push(mappedTriple);
+            }
+          }
         }
       }
 
