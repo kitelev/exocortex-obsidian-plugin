@@ -266,6 +266,20 @@ export function commandCommand(): Command {
             });
             break;
 
+          // Folder repair command
+          case "repair-folder": {
+            const result = await executor.executeRepairFolder(filepath);
+            outputResult(format, commandName, filepath, result.moved
+              ? `Moved to correct folder: ${result.newPath}`
+              : `Already in correct folder`, {
+              moved: result.moved,
+              oldPath: result.oldPath,
+              newPath: result.newPath,
+              expectedFolder: result.expectedFolder,
+            });
+            break;
+          }
+
           default:
             // For other commands, use the old generic execute method
             await executor.execute(commandName, filepath, options);

@@ -16,6 +16,10 @@ const mockFsAdapterInstance = {
   fileExists: jest.fn(),
   createFile: jest.fn(),
   writeFile: jest.fn(),
+  directoryExists: jest.fn(),
+  createDirectory: jest.fn(),
+  getMarkdownFiles: jest.fn(),
+  findFileByUID: jest.fn(),
 };
 
 const mockFrontmatterService = {
@@ -895,6 +899,158 @@ describe("CommandExecutor", () => {
 
       expect(processExitSpy).toHaveBeenCalledWith(0);
       expect(mockFsAdapterInstance.writeFile).toHaveBeenCalled();
+    });
+  });
+
+  describe("executeRepairFolder()", () => {
+    beforeEach(() => {
+      mockPathResolverInstance.resolve.mockReturnValue("/test/vault/wrong-folder/task.md");
+      mockFsAdapterInstance.getFileMetadata.mockResolvedValue({
+        exo__Asset_isDefinedBy: "[[correct-folder/definition.md]]",
+      });
+      mockFsAdapterInstance.fileExists.mockResolvedValue(false);
+      mockFsAdapterInstance.directoryExists.mockResolvedValue(true);
+      mockFsAdapterInstance.renameFile.mockResolvedValue(undefined);
+      mockFsAdapterInstance.getMarkdownFiles.mockResolvedValue([
+        "correct-folder/definition.md",
+        "wrong-folder/task.md",
+      ]);
+      mockFsAdapterInstance.findFileByUID.mockResolvedValue(null);
+    });
+
+    it("should move file to correct folder when in wrong location", async () => {
+      // The source file is in wrong-folder, but should be in correct-folder
+      mockFsAdapterInstance.fileExists.mockImplementation(async (path: string) => {
+        if (path === "correct-folder/definition.md") return true;
+        if (path === "correct-folder/task.md") return false; // target doesn't exist
+        return false;
+      });
+
+      await executor.executeRepairFolder("wrong-folder/task.md");
+
+      expect(processExitSpy).toHaveBeenCalledWith(0);
+      expect(mockFsAdapterInstance.renameFile).toHaveBeenCalledWith(
+        "wrong-folder/task.md",
+        "correct-folder/task.md",
+      );
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("Moved to correct folder"));
+    });
+
+    it("should report already in correct folder when file is in expected location", async () => {
+      mockPathResolverInstance.resolve.mockReturnValue("/test/vault/correct-folder/task.md");
+      mockFsAdapterInstance.getFileMetadata.mockResolvedValue({
+        exo__Asset_isDefinedBy: "[[correct-folder/definition.md]]",
+      });
+      mockFsAdapterInstance.fileExists.mockImplementation(async (path: string) => {
+        if (path === "correct-folder/definition.md") return true;
+        return false;
+      });
+
+      await executor.executeRepairFolder("correct-folder/task.md");
+
+      expect(processExitSpy).toHaveBeenCalledWith(0);
+      expect(mockFsAdapterInstance.renameFile).not.toHaveBeenCalled();
+      expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining("Already in correct folder"));
+    });
+
+    it("should throw error when exo__Asset_isDefinedBy is missing", async () => {
+      mockFsAdapterInstance.getFileMetadata.mockResolvedValue({});
+
+      try {
+        await executor.executeRepairFolder("task.md");
+      } catch {
+        // Expected: error is re-thrown after ErrorHandler.handle
+      }
+
+      expect(processExitSpy).toHaveBeenCalled();
+      expect(mockFsAdapterInstance.renameFile).not.toHaveBeenCalled();
+    });
+
+    it("should throw error when referenced file is not found", async () => {
+      mockFsAdapterInstance.getFileMetadata.mockResolvedValue({
+        exo__Asset_isDefinedBy: "[[nonexistent.md]]",
+      });
+      mockFsAdapterInstance.fileExists.mockResolvedValue(false);
+      mockFsAdapterInstance.getMarkdownFiles.mockResolvedValue([]);
+      mockFsAdapterInstance.findFileByUID.mockResolvedValue(null);
+
+      try {
+        await executor.executeRepairFolder("task.md");
+      } catch {
+        // Expected: error is re-thrown after ErrorHandler.handle
+      }
+
+      expect(processExitSpy).toHaveBeenCalled();
+      expect(mockFsAdapterInstance.renameFile).not.toHaveBeenCalled();
+    });
+
+    it("should throw error when target file already exists", async () => {
+      mockFsAdapterInstance.fileExists.mockImplementation(async (path: string) => {
+        if (path === "correct-folder/definition.md") return true;
+        if (path === "correct-folder/task.md") return true; // target already exists!
+        return false;
+      });
+
+      try {
+        await executor.executeRepairFolder("wrong-folder/task.md");
+      } catch {
+        // Expected: error is re-thrown after ErrorHandler.handle
+      }
+
+      expect(processExitSpy).toHaveBeenCalled();
+      expect(mockFsAdapterInstance.renameFile).not.toHaveBeenCalled();
+    });
+
+    it("should handle quoted wikilink format in exo__Asset_isDefinedBy", async () => {
+      mockFsAdapterInstance.getFileMetadata.mockResolvedValue({
+        exo__Asset_isDefinedBy: '"[[correct-folder/definition.md]]"',
+      });
+      mockFsAdapterInstance.fileExists.mockImplementation(async (path: string) => {
+        if (path === "correct-folder/definition.md") return true;
+        if (path === "correct-folder/task.md") return false;
+        return false;
+      });
+
+      await executor.executeRepairFolder("wrong-folder/task.md");
+
+      expect(processExitSpy).toHaveBeenCalledWith(0);
+      expect(mockFsAdapterInstance.renameFile).toHaveBeenCalledWith(
+        "wrong-folder/task.md",
+        "correct-folder/task.md",
+      );
+    });
+
+    it("should create directory if it does not exist", async () => {
+      mockFsAdapterInstance.fileExists.mockImplementation(async (path: string) => {
+        if (path === "correct-folder/definition.md") return true;
+        if (path === "correct-folder/task.md") return false;
+        return false;
+      });
+      mockFsAdapterInstance.directoryExists.mockResolvedValue(false);
+      mockFsAdapterInstance.createDirectory.mockResolvedValue(undefined);
+
+      await executor.executeRepairFolder("wrong-folder/task.md");
+
+      expect(processExitSpy).toHaveBeenCalledWith(0);
+      expect(mockFsAdapterInstance.createDirectory).toHaveBeenCalledWith("correct-folder");
+      expect(mockFsAdapterInstance.renameFile).toHaveBeenCalled();
+    });
+
+    it("should find referenced file by UID when path lookup fails", async () => {
+      mockFsAdapterInstance.getFileMetadata.mockResolvedValue({
+        exo__Asset_isDefinedBy: "[[abc12345-def6-7890-abcd-ef1234567890]]",
+      });
+      mockFsAdapterInstance.fileExists.mockImplementation(async (path: string) => {
+        if (path === "uid-folder/definition.md") return false;
+        if (path === "uid-folder/task.md") return false;
+        return false;
+      });
+      mockFsAdapterInstance.findFileByUID.mockResolvedValue("uid-folder/definition.md");
+
+      await executor.executeRepairFolder("wrong-folder/task.md");
+
+      expect(processExitSpy).toHaveBeenCalledWith(0);
+      expect(mockFsAdapterInstance.findFileByUID).toHaveBeenCalledWith("abc12345-def6-7890-abcd-ef1234567890");
     });
   });
 });
