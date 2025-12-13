@@ -1,4 +1,5 @@
 import { App, Modal } from "obsidian";
+import { FilenameValidator } from "@exocortex/core";
 
 export interface NarrowerConceptModalResult {
   fileName: string | null;
@@ -14,6 +15,7 @@ export class NarrowerConceptModal extends Modal {
   private fileNameEl: HTMLInputElement | null = null;
   private definitionEl: HTMLTextAreaElement | null = null;
   private aliasesContainer: HTMLElement | null = null;
+  private filenameWarningEl: HTMLElement | null = null;
 
   constructor(
     app: App,
@@ -47,6 +49,7 @@ export class NarrowerConceptModal extends Modal {
 
     this.fileNameEl.addEventListener("input", (e) => {
       this.fileName = (e.target as HTMLInputElement).value;
+      this.validateFilenameAndShowWarning();
     });
 
     contentEl.createEl("p", {
@@ -151,6 +154,13 @@ export class NarrowerConceptModal extends Modal {
       return;
     }
 
+    // Validate and sanitize the filename
+    const validation = FilenameValidator.validate(trimmedFileName);
+    if (!validation.sanitized) {
+      this.showError("File name is invalid. Please enter a valid file name.");
+      return;
+    }
+
     if (!trimmedDefinition) {
       this.showError("Definition is required");
       return;
@@ -161,11 +171,47 @@ export class NarrowerConceptModal extends Modal {
       .filter((a) => a.length > 0);
 
     this.onSubmit({
-      fileName: trimmedFileName,
+      fileName: validation.sanitized,
       definition: trimmedDefinition,
       aliases: filteredAliases,
     });
     this.close();
+  }
+
+  /**
+   * Validates the current filename and shows a warning if it contains invalid characters.
+   * The warning informs the user that invalid characters will be replaced.
+   */
+  private validateFilenameAndShowWarning(): void {
+    // Clear any existing warning
+    if (this.filenameWarningEl) {
+      this.filenameWarningEl.remove();
+      this.filenameWarningEl = null;
+    }
+
+    const trimmedFileName = this.fileName.trim();
+    if (!trimmedFileName) return;
+
+    const validation = FilenameValidator.validate(trimmedFileName);
+
+    if (!validation.valid && validation.sanitized && validation.sanitized !== trimmedFileName) {
+      // Show warning that filename will be sanitized
+      this.filenameWarningEl = this.contentEl.createDiv({
+        cls: "exocortex-modal-warning",
+      });
+      this.filenameWarningEl.createEl("span", {
+        text: `⚠️ Filename contains invalid characters. Will be saved as: "${validation.sanitized}"`,
+      });
+
+      // Insert warning after the filename input container
+      const fileNameContainer = this.fileNameEl?.parentElement;
+      if (fileNameContainer?.nextSibling) {
+        fileNameContainer.parentElement?.insertBefore(
+          this.filenameWarningEl,
+          fileNameContainer.nextSibling,
+        );
+      }
+    }
   }
 
   private cancel(): void {

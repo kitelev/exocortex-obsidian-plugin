@@ -66,6 +66,11 @@ export { WikiLinkHelpers } from "./utilities/WikiLinkHelpers";
 export { MetadataHelpers } from "./utilities/MetadataHelpers";
 export { MetadataExtractor } from "./utilities/MetadataExtractor";
 export { EffortSortingHelpers } from "./utilities/EffortSortingHelpers";
+export {
+  FilenameValidator,
+  type FilenameValidationResult,
+  type FilenameValidationOptions,
+} from "./utilities/FilenameValidator";
 
 // Infrastructure exports
 export {

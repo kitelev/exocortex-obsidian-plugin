@@ -4,7 +4,7 @@ import type {
   OntologySchemaService,
   OntologyPropertyDefinition,
 } from '@plugin/application/services/OntologySchemaService';
-import { PropertyFieldType } from "@exocortex/core";
+import { PropertyFieldType, FilenameValidator } from "@exocortex/core";
 import {
   PropertyFieldFactory,
   type PropertyFieldInstance,
@@ -573,8 +573,14 @@ export class DynamicAssetCreationModal extends Modal {
 
   private submit(): void {
     const trimmedLabel = this.label.trim();
+
+    // Sanitize the label to remove any invalid characters
+    const sanitizedLabel = trimmedLabel
+      ? FilenameValidator.sanitize(trimmedLabel)
+      : null;
+
     this.onSubmit({
-      label: trimmedLabel || null,
+      label: sanitizedLabel || null,
       taskSize: this.taskSize,
       openInNewTab: this.openInNewTab,
       propertyValues: this.propertyValues,
