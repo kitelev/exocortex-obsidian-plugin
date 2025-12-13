@@ -347,7 +347,7 @@ jobs:
 
   test-component:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     container:
       image: mcr.microsoft.com/playwright:v1.56.1-jammy
 
