@@ -89,7 +89,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: typescript
           # Use default queries plus security-extended and security-and-quality
@@ -108,7 +108,7 @@ jobs:
         run: npm run build
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: "/language:typescript"
 
@@ -129,7 +129,7 @@ jobs:
           # Fail on high and critical vulnerabilities
           fail-on-severity: high
           # Allow specific licenses
-          allow-licenses: MIT, Apache-2.0, ISC, BSD-2-Clause, BSD-3-Clause, 0BSD, Unlicense, CC0-1.0
+          allow-licenses: MIT, Apache-2.0, ISC, BSD-2-Clause, BSD-3-Clause, 0BSD, Unlicense, CC0-1.0, BlueOak-1.0.0
 
   security-report:
     name: Generate Security Report
