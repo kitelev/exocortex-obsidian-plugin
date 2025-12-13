@@ -29,7 +29,23 @@ interface RendererDependencies {
 }
 
 /**
- * Handles incremental updates to layout sections
+ * Update request data for the queue
+ */
+interface UpdateRequest {
+  rootContainer: HTMLElement;
+  file: TFile;
+  sections: LayoutSection[];
+  config: UniversalLayoutConfig;
+  version: number;
+}
+
+/**
+ * Handles incremental updates to layout sections with race condition protection.
+ *
+ * Key features:
+ * - Queue mechanism ensures updates are processed sequentially
+ * - Version tracking skips obsolete updates when newer ones are pending
+ * - Prevents DOM corruption from concurrent modifications
  */
 export class IncrementalUpdateHandler {
   private static readonly SECTION_SELECTORS: Record<LayoutSection, string> = {
@@ -41,19 +57,89 @@ export class IncrementalUpdateHandler {
     [LayoutSection.RELATIONS]: ".exocortex-assets-relations",
   };
 
+  /** Promise chain for sequential update processing */
+  private updateQueue: Promise<void> = Promise.resolve();
+
+  /** Current update version counter for obsolete update detection */
+  private currentVersion = 0;
+
   constructor(private deps: RendererDependencies) {}
 
+  /**
+   * Queue an update for the specified sections.
+   *
+   * Updates are processed sequentially to prevent race conditions.
+   * If a newer update is queued while this one is waiting, this update
+   * will be skipped to avoid unnecessary DOM operations.
+   *
+   * @param rootContainer - The root container element for all sections
+   * @param file - The file being rendered
+   * @param sections - Array of sections to update
+   * @param config - Layout configuration
+   * @returns Promise that resolves when this update completes (or is skipped)
+   */
   async updateSections(
     rootContainer: HTMLElement,
     file: TFile,
     sections: LayoutSection[],
     config: UniversalLayoutConfig,
   ): Promise<void> {
+    const version = ++this.currentVersion;
+
+    const request: UpdateRequest = {
+      rootContainer,
+      file,
+      sections,
+      config,
+      version,
+    };
+
+    this.updateQueue = this.updateQueue.then(async () => {
+      // Skip this update if a newer one has been queued
+      if (version < this.currentVersion) {
+        return;
+      }
+
+      await this.performUpdate(request);
+    });
+
+    return this.updateQueue;
+  }
+
+  /**
+   * Perform the actual DOM update for the given request.
+   * This method is only called from within the queue processor.
+   */
+  private async performUpdate(request: UpdateRequest): Promise<void> {
+    const { rootContainer, file, sections, config, version } = request;
     const renderHeader = this.createRenderHeader();
 
     for (const section of sections) {
+      // Check version before each section update to allow early exit
+      if (version < this.currentVersion) {
+        return;
+      }
       await this.updateSection(rootContainer, file, section, config, renderHeader);
     }
+  }
+
+  /**
+   * Get the current version number.
+   * Useful for testing and debugging.
+   */
+  getCurrentVersion(): number {
+    return this.currentVersion;
+  }
+
+  /**
+   * Check if there are pending updates in the queue.
+   * Returns true if the queue has unprocessed updates.
+   */
+  hasPendingUpdates(): boolean {
+    // Check if queue promise is not yet resolved
+    let pending = true;
+    this.updateQueue.then(() => { pending = false; });
+    return pending;
   }
 
   private createRenderHeader(): RenderHeaderFn {
