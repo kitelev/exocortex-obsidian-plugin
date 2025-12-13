@@ -36,63 +36,40 @@ module.exports = {
   },
   // Coverage thresholds per Test Pyramid policy (docs/TEST-PYRAMID.md)
   // These are enforced in CI via .github/workflows/ci.yml
-  // Restored from temporary reduction (Issue #786)
   coverageThreshold: {
     global: {
-      statements: 80, // Restored (current: ~83%)
-      branches: 70,   // Restored from 67% (current: ~72%)
-      functions: 73,  // Restored (current: ~76%)
-      lines: 80,      // Restored (current: ~83%)
+      statements: 80,
+      branches: 70,
+      functions: 73,
+      lines: 80,
     },
   },
-  // 🎯 COVERAGE POLICY (see docs/TEST-PYRAMID.md):
-  // - obsidian-plugin: 80% statements, 70% branches, 73% functions, 80% lines
-  // - Target goal: 85% statements, 75% branches, 80% functions, 85% lines
-  // Note: setupFilesAfterEnv moved to memory optimization section above
-  // Handle ES modules and other transformations in CI
-  // Transform @exocortex/core package files
+  // Handle ES modules from node_modules
   transformIgnorePatterns: ["node_modules/(?!(chai|uuid)/)"],
-  // ULTIMATE EMERGENCY: Extended timeouts for memory safety
-  testTimeout: process.env.CI ? 300000 : 60000, // 5 minute timeout for ultimate safety
-  // maxWorkers moved to memory management section above
+  // Test timeout: 30s default, extended in CI for stability
+  testTimeout: process.env.CI ? 60000 : 30000,
   // Performance optimizations
   verbose: false,
-  silent: process.env.CI ? true : false, // Reduce CI noise
+  silent: process.env.CI ? true : false,
   bail: process.env.CI ? 3 : false, // Fail fast in CI after 3 failures
-  // EMERGENCY: Safe degradation settings
-  forceExit: true, // Always force exit to prevent hangs
-  detectOpenHandles: false, // Disabled to prevent hangs
-
-  // EMERGENCY: Memory allocation handled via NODE_OPTIONS environment variable
-  // Critical memory optimizations for CI/CD stability
+  // Mock management
   clearMocks: true,
   restoreMocks: true,
   resetMocks: true,
-  // ULTIMATE EMERGENCY: Maximum memory stabilization
-  workerIdleMemoryLimit: process.env.CI ? "512MB" : "1024MB", // Ultimate memory allocation
-  maxWorkers: 1, // Force single worker always - no parallelism
-  // Memory leak detection - CRITICAL for stability
-  detectLeaks: false, // Disabled - incompatible with emergency mode
-  logHeapUsage: false, // Disabled - saves memory
-  // EMERGENCY: Enhanced memory management setup
+  // Worker configuration - parallel execution enabled
+  maxWorkers: process.env.CI ? "50%" : "50%",
+  // Setup files
   setupFilesAfterEnv: [
-    "<rootDir>/tests/setup-reflect-metadata.ts", // Global reflect-metadata for TSyringe
-    // "<rootDir>/tests/setup.ts", // File doesn't exist
-    // '<rootDir>/tests/emergency-memory-setup.ts', // TEMPORARY: Disabled for debugging
-    // "<rootDir>/tests/test-cleanup.ts", // File doesn't exist
+    "<rootDir>/tests/setup-reflect-metadata.ts",
   ],
-  // Reduce cache to prevent memory buildup
+  // Cache configuration
   cacheDirectory: "<rootDir>/.jest-cache",
-  cache: false, // EMERGENCY: Disable all caching to prevent memory buildup
-  // Coverage optimization
-  // Note: collectCoverage controlled by --coverage flag, not environment variable
-  // This allows batched test script to control coverage collection
-  collectCoverage: false, // Let --coverage flag control this
+  // Coverage configuration
+  collectCoverage: false, // Controlled by --coverage flag
   coverageReporters: process.env.CI
     ? ["lcov", "json-summary", "text-summary"]
     : ["text", "html"],
-  // Flaky test reporter - tracks tests that pass after retry
-  // Note: Uses compiled .js file because Jest doesn't transform custom reporters
+  // Flaky test reporter for CI
   reporters: [
     "default",
     ...(process.env.CI
@@ -101,7 +78,7 @@ module.exports = {
             "<rootDir>/../test-utils/reporters/flaky-reporter.js",
             {
               outputFile: "flaky-report.json",
-              failOnFlaky: false, // Track but don't fail CI
+              failOnFlaky: false,
               verbose: true,
             },
           ],
@@ -116,17 +93,16 @@ module.exports = {
     "^.+\\.ts$": [
       "ts-jest",
       {
-        // Use isolatedModules from tsconfig instead of here
         useESM: false,
         tsconfig: {
-          module: "commonjs", // Use CommonJS for better Jest compatibility
+          module: "commonjs",
           target: "es2020",
           lib: ["es2020", "dom"],
           skipLibCheck: true,
           moduleResolution: "node",
           allowSyntheticDefaultImports: true,
           esModuleInterop: true,
-          isolatedModules: true, // Move isolatedModules here
+          isolatedModules: true,
           paths: {
             "@exocortex/core": ["<rootDir>/../core/src/index.ts"],
             "@plugin/types": ["<rootDir>/src/types/index.ts"],
@@ -141,6 +117,6 @@ module.exports = {
         },
       },
     ],
-    "^.+\\.(js|mjs)$": "babel-jest", // Transform ES modules from node_modules (uuid v13)
+    "^.+\\.(js|mjs)$": "babel-jest",
   },
 };
