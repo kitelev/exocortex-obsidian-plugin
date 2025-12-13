@@ -1,10 +1,21 @@
-import React from "react";
-import { ReactRenderer } from "../../src/presentation/utils/ReactRenderer";
+import React, { ErrorInfo } from "react";
+import { ReactRenderer, ReactRendererConfig } from "../../src/presentation/utils/ReactRenderer";
 import { createRoot, Root } from "react-dom/client";
+import { ErrorBoundary } from "../../src/presentation/components/ErrorBoundary";
+import { LayoutErrorFallback } from "../../src/presentation/components/LayoutErrorFallback";
 
 // Mock react-dom/client
 jest.mock("react-dom/client", () => ({
   createRoot: jest.fn(),
+}));
+
+// Mock ErrorBoundary and LayoutErrorFallback
+jest.mock("../../src/presentation/components/ErrorBoundary", () => ({
+  ErrorBoundary: jest.fn(({ children }) => children),
+}));
+
+jest.mock("../../src/presentation/components/LayoutErrorFallback", () => ({
+  LayoutErrorFallback: jest.fn(() => null),
 }));
 
 describe("ReactRenderer", () => {
@@ -514,6 +525,174 @@ describe("ReactRenderer", () => {
 
       // Should have created 20 roots total (10 before + 10 after cleanup)
       expect(createRoot).toHaveBeenCalledTimes(20);
+    });
+  });
+
+  describe("ErrorBoundary integration", () => {
+    let mockElement: HTMLElement;
+    let mockRoot: jest.Mocked<Root>;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockRoot = {
+        render: jest.fn(),
+        unmount: jest.fn(),
+      } as unknown as jest.Mocked<Root>;
+      (createRoot as jest.Mock).mockReturnValue(mockRoot);
+      mockElement = document.createElement("div");
+    });
+
+    describe("constructor config", () => {
+      it("should accept empty config", () => {
+        const renderer = new ReactRenderer();
+        expect(renderer).toBeDefined();
+      });
+
+      it("should accept config with useErrorBoundary", () => {
+        const renderer = new ReactRenderer({ useErrorBoundary: true });
+        expect(renderer).toBeDefined();
+      });
+
+      it("should accept config with onError callback", () => {
+        const onError = jest.fn();
+        const renderer = new ReactRenderer({
+          useErrorBoundary: true,
+          onError,
+        });
+        expect(renderer).toBeDefined();
+      });
+    });
+
+    describe("render with useErrorBoundary: false (default)", () => {
+      it("should render component without ErrorBoundary wrapper", () => {
+        const renderer = new ReactRenderer({ useErrorBoundary: false });
+        const component = <div>Test</div>;
+
+        renderer.render(mockElement, component);
+
+        expect(mockRoot.render).toHaveBeenCalledWith(component);
+        expect(ErrorBoundary).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("render with useErrorBoundary: true", () => {
+      it("should wrap component with ErrorBoundary", () => {
+        const renderer = new ReactRenderer({ useErrorBoundary: true });
+        const component = <div>Test Component</div>;
+
+        renderer.render(mockElement, component);
+
+        expect(ErrorBoundary).toHaveBeenCalled();
+        expect(createRoot).toHaveBeenCalledWith(mockElement);
+        expect(mockRoot.render).toHaveBeenCalled();
+      });
+
+      it("should pass onError callback to ErrorBoundary", () => {
+        const onError = jest.fn();
+        const renderer = new ReactRenderer({
+          useErrorBoundary: true,
+          onError,
+        });
+        const component = <div>Test</div>;
+
+        renderer.render(mockElement, component);
+
+        // Verify ErrorBoundary was called with onError prop
+        expect(ErrorBoundary).toHaveBeenCalled();
+        const errorBoundaryCall = (ErrorBoundary as jest.Mock).mock.calls[0][0];
+        expect(errorBoundaryCall.onError).toBe(onError);
+      });
+
+      it("should pass fallback function to ErrorBoundary", () => {
+        const renderer = new ReactRenderer({ useErrorBoundary: true });
+        const component = <div>Test</div>;
+
+        renderer.render(mockElement, component);
+
+        expect(ErrorBoundary).toHaveBeenCalled();
+        const errorBoundaryCall = (ErrorBoundary as jest.Mock).mock.calls[0][0];
+        expect(typeof errorBoundaryCall.fallback).toBe("function");
+      });
+
+      it("should create LayoutErrorFallback when fallback is called", () => {
+        const renderer = new ReactRenderer({ useErrorBoundary: true });
+        const component = <div>Test</div>;
+
+        renderer.render(mockElement, component);
+
+        const errorBoundaryCall = (ErrorBoundary as jest.Mock).mock.calls[0][0];
+        const fallbackFn = errorBoundaryCall.fallback;
+
+        const error = new Error("Test error");
+        const errorInfo: ErrorInfo = { componentStack: "test stack" };
+        const retry = jest.fn();
+
+        fallbackFn(error, errorInfo, retry);
+
+        expect(LayoutErrorFallback).toHaveBeenCalledWith(
+          expect.objectContaining({
+            error,
+            errorInfo,
+            onRetry: retry,
+          }),
+          expect.anything()
+        );
+      });
+
+      it("should wrap multiple renders with ErrorBoundary", () => {
+        const renderer = new ReactRenderer({ useErrorBoundary: true });
+        const element1 = document.createElement("div");
+        const element2 = document.createElement("div");
+
+        renderer.render(element1, <div>Component 1</div>);
+        renderer.render(element2, <div>Component 2</div>);
+
+        expect(ErrorBoundary).toHaveBeenCalledTimes(2);
+      });
+
+      it("should unmount before re-rendering with ErrorBoundary", () => {
+        const renderer = new ReactRenderer({ useErrorBoundary: true });
+
+        renderer.render(mockElement, <div>First</div>);
+        renderer.render(mockElement, <div>Second</div>);
+
+        expect(mockRoot.unmount).toHaveBeenCalledTimes(1);
+        expect(ErrorBoundary).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    describe("renderWithErrorBoundary method", () => {
+      it("should wrap component with ErrorBoundary", () => {
+        const renderer = new ReactRenderer();
+        const component = <div>Test</div>;
+
+        renderer.renderWithErrorBoundary(mockElement, component);
+
+        expect(ErrorBoundary).toHaveBeenCalled();
+        expect(createRoot).toHaveBeenCalledWith(mockElement);
+        expect(mockRoot.render).toHaveBeenCalled();
+      });
+
+      it("should pass onError from options to ErrorBoundary", () => {
+        const renderer = new ReactRenderer();
+        const onError = jest.fn();
+        const component = <div>Test</div>;
+
+        renderer.renderWithErrorBoundary(mockElement, component, { onError });
+
+        expect(ErrorBoundary).toHaveBeenCalled();
+        const errorBoundaryCall = (ErrorBoundary as jest.Mock).mock.calls[0][0];
+        expect(errorBoundaryCall.onError).toBe(onError);
+      });
+
+      it("should unmount existing root before rendering", () => {
+        const renderer = new ReactRenderer();
+
+        renderer.renderWithErrorBoundary(mockElement, <div>First</div>);
+        renderer.renderWithErrorBoundary(mockElement, <div>Second</div>);
+
+        expect(mockRoot.unmount).toHaveBeenCalledTimes(1);
+      });
     });
   });
 });
