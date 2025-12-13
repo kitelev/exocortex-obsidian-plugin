@@ -48,7 +48,7 @@
     "commander": "^14.0.2",
     "fs-extra": "^11.0.0",
     "glob": "^10.3.0",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.1.1",
     "minimatch": "^9.0.5",
     "ora": "^9.0.0"
   },
@@ -58,10 +58,10 @@
     "@types/jest": "^30.0.0",
     "@types/js-yaml": "^4.0.0",
     "@types/node": "^20.19.24",
-    "esbuild": "^0.25.12",
+    "esbuild": "^0.27.1",
     "jest": "^30.2.0",
     "reflect-metadata": "^0.2.2",
-    "ts-jest": "^29.4.5",
+    "ts-jest": "^29.4.6",
     "tsyringe": "^4.8.0",
     "typescript": "^5.9.3"
   }
