@@ -17,25 +17,25 @@
     "test:e2e:local": "cd ../.. && ./scripts/test-e2e-local.sh"
   },
   "dependencies": {
-    "@codemirror/state": "^6.5.0",
+    "@codemirror/state": "^6.5.2",
     "@codemirror/view": "^6.38.1",
     "@exocortex/core": "*",
-    "@tanstack/react-query": "^5.90.11",
-    "@tanstack/react-virtual": "^3.13.12",
+    "@tanstack/react-query": "^5.90.12",
+    "@tanstack/react-virtual": "^3.13.13",
     "d3": "^7.9.0",
     "obsidian": "latest",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "reflect-metadata": "^0.2.2",
     "tsyringe": "^4.10.0",
     "uuid": "^11.1.0",
-    "zustand": "^5.0.8"
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@playwright/experimental-ct-react": "^1.55.1",
     "@playwright/test": "^1.55.1",
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
     "esbuild-plugin-tsc": "^0.5.0",
     "jest": "^30.0.5",
     "jest-environment-jsdom": "^30.2.0",
