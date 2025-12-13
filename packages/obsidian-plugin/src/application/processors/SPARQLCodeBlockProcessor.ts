@@ -23,16 +23,23 @@ import { SPARQLResultViewer } from '@plugin/presentation/components/sparql/SPARQ
 import { SPARQLErrorView, type SPARQLError } from '@plugin/presentation/components/sparql/SPARQLErrorView';
 import { LoggerFactory } from '@plugin/adapters/logging/LoggerFactory';
 
+/**
+ * Interface for active query tracking with TTL support
+ */
+interface ActiveQuery {
+  source: string;
+  lastResults: SolutionMapping[] | Triple[];
+  refreshTimeout?: ReturnType<typeof setTimeout>;
+  eventRef?: EventRef;
+  startTime: number;
+  controller: AbortController;
+}
+
 class SPARQLCleanupComponent extends MarkdownRenderChild {
   constructor(
     containerEl: HTMLElement,
     private el: HTMLElement,
-    private activeQueries: Map<HTMLElement, {
-      source: string;
-      lastResults: SolutionMapping[] | Triple[];
-      refreshTimeout?: ReturnType<typeof setTimeout>;
-      eventRef?: EventRef;
-    }>,
+    private activeQueries: Map<HTMLElement, ActiveQuery>,
     private reactRenderer: ReactRenderer,
     private container: HTMLElement,
     private plugin: ExocortexPlugin
@@ -64,17 +71,83 @@ export class SPARQLCodeBlockProcessor {
   private tripleStore: InMemoryTripleStore | null = null;
   private isLoading = false;
   private reactRenderer: ReactRenderer = new ReactRenderer();
-  private activeQueries: Map<HTMLElement, {
-    source: string;
-    lastResults: SolutionMapping[] | Triple[];
-    refreshTimeout?: ReturnType<typeof setTimeout>;
-    eventRef?: EventRef;
-  }> = new Map();
+  private activeQueries: Map<HTMLElement, ActiveQuery> = new Map();
   private readonly DEBOUNCE_DELAY = 500;
   private readonly logger = LoggerFactory.create("SPARQLCodeBlockProcessor");
 
+  /** Maximum age for active queries before automatic cleanup (5 minutes) */
+  private readonly QUERY_TTL_MS = 5 * 60 * 1000;
+  /** Interval for periodic cleanup of stale queries (1 minute) */
+  private readonly CLEANUP_INTERVAL_MS = 60 * 1000;
+  /** Timer for periodic stale query cleanup */
+  private cleanupIntervalId: ReturnType<typeof setInterval> | null = null;
+
   constructor(plugin: ExocortexPlugin) {
     this.plugin = plugin;
+    this.startCleanupInterval();
+  }
+
+  /**
+   * Starts the periodic cleanup interval for stale queries.
+   */
+  private startCleanupInterval(): void {
+    if (this.cleanupIntervalId === null) {
+      this.cleanupIntervalId = setInterval(() => {
+        this.cleanupStaleQueries();
+      }, this.CLEANUP_INTERVAL_MS);
+    }
+  }
+
+  /**
+   * Stops the periodic cleanup interval.
+   */
+  private stopCleanupInterval(): void {
+    if (this.cleanupIntervalId !== null) {
+      clearInterval(this.cleanupIntervalId);
+      this.cleanupIntervalId = null;
+    }
+  }
+
+  /**
+   * Cleans up queries that have exceeded the TTL.
+   * Aborts the query and removes it from the activeQueries map.
+   *
+   * @returns Number of stale queries cleaned up
+   */
+  cleanupStaleQueries(): number {
+    const now = Date.now();
+    let cleanedUp = 0;
+
+    for (const [el, query] of this.activeQueries.entries()) {
+      if (now - query.startTime > this.QUERY_TTL_MS) {
+        this.logger.warn(`Query timed out after ${this.QUERY_TTL_MS}ms`, {
+          source: query.source.substring(0, 100),
+          startTime: new Date(query.startTime).toISOString(),
+        });
+
+        // Abort the query if it's still running
+        query.controller.abort();
+
+        // Clear any pending refresh timeout
+        if (query.refreshTimeout) {
+          clearTimeout(query.refreshTimeout);
+        }
+
+        // Unregister event listener
+        if (query.eventRef) {
+          this.plugin.app.metadataCache.offref(query.eventRef);
+        }
+
+        this.activeQueries.delete(el);
+        cleanedUp++;
+      }
+    }
+
+    if (cleanedUp > 0) {
+      this.logger.info(`Cleaned up ${cleanedUp} stale queries`);
+    }
+
+    return cleanedUp;
   }
 
   async process(
@@ -103,7 +176,11 @@ export class SPARQLCodeBlockProcessor {
       executingDiv.textContent = "Executing query...";
       container.appendChild(executingDiv);
 
-      const results = await this.executeQuery(source);
+      // Create AbortController for this query
+      const controller = new AbortController();
+      const startTime = Date.now();
+
+      const results = await this.executeQuery(source, controller.signal);
 
       container.innerHTML = "";
       this.renderResults(results, container, source);
@@ -111,6 +188,8 @@ export class SPARQLCodeBlockProcessor {
       this.activeQueries.set(el, {
         source,
         lastResults: results,
+        startTime,
+        controller,
       });
 
       const eventRef = this.plugin.app.metadataCache.on("changed", () => {
@@ -167,7 +246,10 @@ export class SPARQLCodeBlockProcessor {
 
       this.showRefreshIndicator(container);
 
-      const newResults = await this.executeQuery(source);
+      // Reset startTime on refresh to extend the TTL
+      query.startTime = Date.now();
+
+      const newResults = await this.executeQuery(source, query.controller.signal);
 
       if (!this.areResultsEqual(query.lastResults, newResults)) {
         container.innerHTML = "";
@@ -177,6 +259,12 @@ export class SPARQLCodeBlockProcessor {
         this.hideRefreshIndicator(container);
       }
     } catch (error) {
+      // Check if this was an abort error
+      if (error instanceof DOMException && error.name === "AbortError") {
+        this.logger.info("Query refresh aborted", { source: source.substring(0, 100) });
+        return;
+      }
+
       const errorObj = error instanceof Error ? error : new Error(String(error));
       this.logger.error("Query refresh error", errorObj);
       new Notice(`SPARQL query refresh error: ${errorObj.message}`, 5000);
@@ -314,7 +402,12 @@ export class SPARQLCodeBlockProcessor {
     }
   }
 
-  private async executeQuery(queryString: string): Promise<SolutionMapping[] | Triple[]> {
+  private async executeQuery(queryString: string, signal?: AbortSignal): Promise<SolutionMapping[] | Triple[]> {
+    // Check if query was aborted before starting
+    if (signal?.aborted) {
+      throw new DOMException("Query aborted", "AbortError");
+    }
+
     if (!this.tripleStore) {
       throw new Error("Triple store not initialized");
     }
@@ -322,11 +415,21 @@ export class SPARQLCodeBlockProcessor {
     const parser = new SPARQLParser();
     const ast: SPARQLQuery = parser.parse(queryString);
 
+    // Check for abort after parsing
+    if (signal?.aborted) {
+      throw new DOMException("Query aborted", "AbortError");
+    }
+
     const translator = new AlgebraTranslator();
     let algebra = translator.translate(ast);
 
     const optimizer = new AlgebraOptimizer();
     algebra = optimizer.optimize(algebra);
+
+    // Check for abort before execution
+    if (signal?.aborted) {
+      throw new DOMException("Query aborted", "AbortError");
+    }
 
     if (this.isConstructQuery(queryString)) {
       return await this.executeConstructQuery(algebra);
@@ -440,8 +543,14 @@ export class SPARQLCodeBlockProcessor {
    * Should be called in onunload() methods.
    */
   cleanup(): void {
-    // Clear all active query timeouts and event refs
+    // Stop the periodic cleanup interval
+    this.stopCleanupInterval();
+
+    // Clear all active query timeouts, event refs, and abort controllers
     for (const [el, query] of this.activeQueries.entries()) {
+      // Abort any running queries
+      query.controller.abort();
+
       if (query.refreshTimeout) {
         clearTimeout(query.refreshTimeout);
       }
@@ -457,5 +566,39 @@ export class SPARQLCodeBlockProcessor {
     // Clear triple store
     this.tripleStore = null;
     this.isLoading = false;
+  }
+
+  /**
+   * Returns the query TTL in milliseconds.
+   * Useful for testing and debugging.
+   */
+  getQueryTTL(): number {
+    return this.QUERY_TTL_MS;
+  }
+
+  /**
+   * Returns statistics about active queries.
+   * Useful for monitoring and debugging.
+   */
+  getStats(): {
+    activeQueryCount: number;
+    oldestQueryAge: number | null;
+    cleanupIntervalActive: boolean;
+  } {
+    let oldestQueryAge: number | null = null;
+    const now = Date.now();
+
+    for (const query of this.activeQueries.values()) {
+      const age = now - query.startTime;
+      if (oldestQueryAge === null || age > oldestQueryAge) {
+        oldestQueryAge = age;
+      }
+    }
+
+    return {
+      activeQueryCount: this.activeQueries.size,
+      oldestQueryAge,
+      cleanupIntervalActive: this.cleanupIntervalId !== null,
+    };
   }
 }

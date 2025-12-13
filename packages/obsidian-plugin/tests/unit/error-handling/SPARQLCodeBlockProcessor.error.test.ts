@@ -62,6 +62,11 @@ describe("SPARQLCodeBlockProcessor Error Handling", () => {
     processor = new SPARQLCodeBlockProcessor(mockPlugin);
   });
 
+  afterEach(() => {
+    // Clean up the processor to stop the cleanup interval
+    processor.cleanup();
+  });
+
   describe("Invalid Query Syntax Errors", () => {
     it("should handle malformed SELECT query", async () => {
       // Mock ensureTripleStoreLoaded to succeed
@@ -345,10 +350,12 @@ describe("SPARQLCodeBlockProcessor Error Handling", () => {
       const el = document.createElement("div");
       const source = "SELECT * WHERE { ?s ?p ?o }";
 
-      // Set up active query
+      // Set up active query with required fields
       (processor as any).activeQueries.set(el, {
         source,
         lastResults: [],
+        startTime: Date.now(),
+        controller: new AbortController(),
       });
 
       const error = new Error("Refresh failed: vault unavailable");
@@ -369,6 +376,8 @@ describe("SPARQLCodeBlockProcessor Error Handling", () => {
       (processor as any).activeQueries.set(el, {
         source,
         lastResults: [],
+        startTime: Date.now(),
+        controller: new AbortController(),
       });
 
       (processor as any).invalidateTripleStore = jest.fn();
@@ -396,6 +405,8 @@ describe("SPARQLCodeBlockProcessor Error Handling", () => {
       (processor as any).activeQueries.set(el, {
         source,
         lastResults: [],
+        startTime: Date.now(),
+        controller: new AbortController(),
       });
 
       (processor as any).invalidateTripleStore = jest.fn();
@@ -482,11 +493,15 @@ describe("SPARQLCodeBlockProcessor Error Handling", () => {
         lastResults: [],
         refreshTimeout: setTimeout(() => {}, 1000),
         eventRef: {},
+        startTime: Date.now(),
+        controller: new AbortController(),
       });
 
       (processor as any).activeQueries.set(el2, {
         source: "query2",
         lastResults: [],
+        startTime: Date.now(),
+        controller: new AbortController(),
       });
 
       // Mock offref to work normally
@@ -508,6 +523,8 @@ describe("SPARQLCodeBlockProcessor Error Handling", () => {
         source: "query",
         lastResults: [],
         refreshTimeout: timeout,
+        startTime: Date.now(),
+        controller: new AbortController(),
       });
 
       processor.cleanup();
