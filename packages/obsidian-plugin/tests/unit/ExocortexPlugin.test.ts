@@ -1049,4 +1049,193 @@ describe("ExocortexPlugin", () => {
       expect(mockSparqlProcessor.process).toHaveBeenCalledWith(source, el, ctx);
     });
   });
+
+  describe("Layout persistence for embedded assets", () => {
+    beforeEach(async () => {
+      await plugin.onload();
+    });
+
+    it("should set up MutationObserver when rendering layout", () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+
+      // Act
+      (plugin as any).autoRenderLayout();
+
+      // Assert
+      expect((plugin as any).layoutPersistenceObserver).not.toBeNull();
+      expect((plugin as any).layoutPersistenceObserver).toBeInstanceOf(MutationObserver);
+    });
+
+    it("should disconnect previous MutationObserver when rendering new layout", () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+
+      // First render
+      (plugin as any).autoRenderLayout();
+      const firstObserver = (plugin as any).layoutPersistenceObserver;
+      const disconnectSpy = jest.spyOn(firstObserver, 'disconnect');
+
+      // Act - render again
+      (plugin as any).autoRenderLayout();
+
+      // Assert
+      expect(disconnectSpy).toHaveBeenCalled();
+      expect((plugin as any).layoutPersistenceObserver).not.toBe(firstObserver);
+    });
+
+    it("should disconnect MutationObserver on plugin unload", async () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+      (plugin as any).autoRenderLayout();
+      const observer = (plugin as any).layoutPersistenceObserver;
+      const disconnectSpy = jest.spyOn(observer, 'disconnect');
+
+      // Act
+      await plugin.onunload();
+
+      // Assert
+      expect(disconnectSpy).toHaveBeenCalled();
+      expect((plugin as any).layoutPersistenceObserver).toBeNull();
+    });
+
+    it("should re-render layout when it is removed from DOM (simulating embed re-render)", async () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+
+      // Initial render
+      (plugin as any).autoRenderLayout();
+      await flushPromises();
+
+      // Verify initial layout exists
+      let layoutContainers = mockView.containerEl.querySelectorAll(".exocortex-auto-layout");
+      expect(layoutContainers.length).toBe(1);
+
+      // Reset mock to track re-render
+      mockLayoutRenderer.render.mockClear();
+
+      // Act - Simulate Obsidian re-rendering due to embed processing
+      // This removes our layout container
+      const layoutContainer = mockView.containerEl.querySelector(".exocortex-auto-layout");
+      layoutContainer?.remove();
+
+      // Wait for MutationObserver callback and debounce
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await flushPromises();
+
+      // Assert - Layout should be re-inserted
+      layoutContainers = mockView.containerEl.querySelectorAll(".exocortex-auto-layout");
+      expect(layoutContainers.length).toBe(1);
+      expect(mockLayoutRenderer.render).toHaveBeenCalled();
+    });
+
+    it("should not re-render when layout is removed but settings hide layout", async () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+
+      // Initial render
+      (plugin as any).autoRenderLayout();
+      await flushPromises();
+
+      // Reset mock
+      mockLayoutRenderer.render.mockClear();
+
+      // Hide layout in settings
+      plugin.settings.layoutVisible = false;
+
+      // Act - Remove layout
+      const layoutContainer = mockView.containerEl.querySelector(".exocortex-auto-layout");
+      layoutContainer?.remove();
+
+      // Wait for MutationObserver callback
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await flushPromises();
+
+      // Assert - Layout should NOT be re-rendered
+      const layoutContainers = mockView.containerEl.querySelectorAll(".exocortex-auto-layout");
+      expect(layoutContainers.length).toBe(0);
+      expect(mockLayoutRenderer.render).not.toHaveBeenCalled();
+    });
+
+    it("should not re-render when metadata container is also removed (view switching)", async () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+
+      // Initial render
+      (plugin as any).autoRenderLayout();
+      await flushPromises();
+
+      // Reset mock
+      mockLayoutRenderer.render.mockClear();
+
+      // Act - Remove both metadata container and layout (simulating view switch)
+      mockView.containerEl.innerHTML = "";
+
+      // Wait for MutationObserver callback
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await flushPromises();
+
+      // Assert - Layout should NOT be re-rendered (metadata container gone)
+      expect(mockLayoutRenderer.render).not.toHaveBeenCalled();
+    });
+
+    it("should debounce multiple rapid re-renders", async () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+
+      // Initial render
+      (plugin as any).autoRenderLayout();
+      await flushPromises();
+
+      // Verify initial layout
+      expect(mockView.containerEl.querySelectorAll(".exocortex-auto-layout").length).toBe(1);
+
+      // Reset mock
+      mockLayoutRenderer.render.mockClear();
+
+      // Act - Rapidly remove and trigger multiple mutations
+      for (let i = 0; i < 5; i++) {
+        const layout = mockView.containerEl.querySelector(".exocortex-auto-layout");
+        layout?.remove();
+        // Small delay between removals
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
+
+      // Wait for debounce to settle
+      await new Promise(resolve => setTimeout(resolve, 150));
+      await flushPromises();
+
+      // Assert - Should only render once due to debouncing
+      // Note: The exact count may vary due to timing, but should be minimal
+      expect(mockLayoutRenderer.render.mock.calls.length).toBeLessThanOrEqual(2);
+    });
+
+    it("should handle errors during re-render gracefully", async () => {
+      // Arrange
+      plugin.settings.layoutVisible = true;
+
+      // Initial render
+      (plugin as any).autoRenderLayout();
+      await flushPromises();
+
+      // Reset mock and setup to fail
+      mockLayoutRenderer.render.mockClear();
+      const error = new Error("Re-render failed");
+      mockLayoutRenderer.render.mockRejectedValue(error);
+
+      // Act - Remove layout to trigger re-render
+      const layoutContainer = mockView.containerEl.querySelector(".exocortex-auto-layout");
+      layoutContainer?.remove();
+
+      // Wait for MutationObserver callback
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await flushPromises();
+
+      // Assert - Error should be logged
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        "Failed to re-render layout after embed processing",
+        error
+      );
+    });
+  });
 });

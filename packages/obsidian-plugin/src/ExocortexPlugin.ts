@@ -49,6 +49,8 @@ export default class ExocortexPlugin extends Plugin {
   sparql!: SPARQLApi;
   settings!: ExocortexSettings;
   private timerManager!: TimerManager;
+  // MutationObserver to detect when layout is removed by Obsidian re-renders (e.g., when processing embeds)
+  private layoutPersistenceObserver: MutationObserver | null = null;
 
   override async onload(): Promise<void> {
     try {
@@ -179,6 +181,12 @@ export default class ExocortexPlugin extends Plugin {
       this.timerManager.dispose();
     }
 
+    // Disconnect MutationObserver for layout persistence
+    if (this.layoutPersistenceObserver) {
+      this.layoutPersistenceObserver.disconnect();
+      this.layoutPersistenceObserver = null;
+    }
+
     this.removeAutoRenderedLayouts();
 
     // Cleanup SPARQL processor
@@ -222,6 +230,12 @@ export default class ExocortexPlugin extends Plugin {
   private autoRenderLayout(): void {
     // Remove existing auto-rendered layouts
     this.removeAutoRenderedLayouts();
+
+    // Disconnect previous MutationObserver if any
+    if (this.layoutPersistenceObserver) {
+      this.layoutPersistenceObserver.disconnect();
+      this.layoutPersistenceObserver = null;
+    }
 
     // If layout is hidden by settings, do not render
     if (!this.settings.layoutVisible) {
@@ -280,6 +294,104 @@ export default class ExocortexPlugin extends Plugin {
         this.logger.error("Failed to auto-render layout", error);
       }
     })();
+
+    // Set up MutationObserver to detect when layout is removed by Obsidian re-renders
+    // This happens when the note body contains embedded assets (![[...]]) that trigger
+    // a view re-render after the initial layout is inserted
+    this.setupLayoutPersistenceObserver(viewContainer, metadataContainer);
+  }
+
+  /**
+   * Sets up a MutationObserver to watch for layout removal and re-render when necessary.
+   *
+   * When Obsidian processes embedded assets (![[image.png]] or ![[note]]) in reading mode,
+   * it may re-render the preview view, which removes any custom elements that were inserted
+   * after .metadata-container. This observer detects when our layout is removed and
+   * re-inserts it to ensure the layout persists.
+   *
+   * @param viewContainer - The container element of the MarkdownView
+   * @param metadataContainer - The metadata container element to observe
+   */
+  private setupLayoutPersistenceObserver(
+    viewContainer: HTMLElement,
+    _metadataContainer: HTMLElement,
+  ): void {
+    // Track if we're currently re-rendering to prevent infinite loops
+    let isReRendering = false;
+    // Debounce timeout for re-render
+    let debounceTimeout: NodeJS.Timeout | null = null;
+
+    this.layoutPersistenceObserver = new MutationObserver((_mutations) => {
+      // Skip if we're already re-rendering or layout is hidden
+      if (isReRendering || !this.settings.layoutVisible) {
+        return;
+      }
+
+      // Check if our layout was removed
+      const layoutExists = viewContainer.querySelector(".exocortex-auto-layout");
+      if (layoutExists) {
+        return;
+      }
+
+      // Check if metadata container still exists (view might be switching)
+      const currentMetadataContainer = viewContainer.querySelector(".metadata-container");
+      if (!currentMetadataContainer) {
+        return;
+      }
+
+      // Clear existing debounce
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+
+      // Debounce the re-render to avoid rapid multiple renders
+      debounceTimeout = setTimeout(() => {
+        // Double-check conditions before re-rendering
+        if (isReRendering || !this.settings.layoutVisible) {
+          return;
+        }
+
+        const layoutStillMissing = !viewContainer.querySelector(".exocortex-auto-layout");
+        const metadataStillExists = viewContainer.querySelector(".metadata-container");
+
+        if (layoutStillMissing && metadataStillExists) {
+          isReRendering = true;
+
+          // Create new layout container
+          const newLayoutContainer = document.createElement("div");
+          newLayoutContainer.className = "exocortex-auto-layout";
+          newLayoutContainer.style.cssText = `
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--background-modifier-border);
+          `;
+
+          // Insert after metadata container
+          metadataStillExists.insertAdjacentElement("afterend", newLayoutContainer);
+
+          // Render layout
+          void (async () => {
+            try {
+              await this.layoutRenderer.render("", newLayoutContainer, {} as MarkdownPostProcessorContext);
+            } catch (error) {
+              this.logger.error("Failed to re-render layout after embed processing", error);
+            } finally {
+              // Reset flag after a short delay to allow for DOM stabilization
+              this.timerManager.setTimeout(null, () => {
+                isReRendering = false;
+              }, 100);
+            }
+          })();
+        }
+      }, 50); // 50ms debounce
+    });
+
+    // Observe the view container for changes in its child list
+    // This will detect when the preview content is re-rendered
+    this.layoutPersistenceObserver.observe(viewContainer, {
+      childList: true,
+      subtree: true,
+    });
   }
 
   private async handleMetadataChange(file: TFile): Promise<void> {
