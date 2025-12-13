@@ -108,13 +108,26 @@ export class UniversalLayoutRenderer {
       this.app, this.settings, this.reactRenderer, this.backlinksCacheManager,
       this.metadataService, this.plugin, () => this.refresh(), this.vaultAdapter);
 
-    this.buttonGroupsBuilder = new ButtonGroupsBuilder(
-      this.app, this.settings, this.plugin,
-      services.taskCreation, services.projectCreation, services.areaCreation,
-      services.classCreation, services.conceptCreation, services.taskStatus,
-      services.propertyCleanup, services.folderRepair, services.renameToUid,
-      services.effortVoting, services.labelToAlias, services.assetConversion,
-      this.metadataExtractor, this.logger, () => this.refresh());
+    this.buttonGroupsBuilder = new ButtonGroupsBuilder({
+      app: this.app,
+      settings: this.settings,
+      plugin: this.plugin,
+      taskCreationService: services.taskCreation,
+      projectCreationService: services.projectCreation,
+      areaCreationService: services.areaCreation,
+      classCreationService: services.classCreation,
+      conceptCreationService: services.conceptCreation,
+      taskStatusService: services.taskStatus,
+      propertyCleanupService: services.propertyCleanup,
+      folderRepairService: services.folderRepair,
+      renameToUidService: services.renameToUid,
+      effortVotingService: services.effortVoting,
+      labelToAliasService: services.labelToAlias,
+      assetConversionService: services.assetConversion,
+      metadataExtractor: this.metadataExtractor,
+      logger: this.logger,
+      refresh: () => this.refresh(),
+    });
 
     this.dailyTasksRenderer = new DailyTasksRenderer(
       this.app, this.settings, this.plugin, this.logger,

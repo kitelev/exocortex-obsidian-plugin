@@ -1,4 +1,4 @@
-import { ButtonGroupsBuilder } from "../../../../src/presentation/builders/ButtonGroupsBuilder";
+import { ButtonGroupsBuilder, ButtonGroupsBuilderConfig } from "../../../../src/presentation/builders/ButtonGroupsBuilder";
 import { TFile } from "obsidian";
 import { ExocortexSettings } from "../../../../src/domain/settings/ExocortexSettings";
 import {
@@ -139,26 +139,26 @@ export function setupButtonGroupsBuilderTest(): ButtonGroupsBuilderTestContext {
 
   const mockRefresh = jest.fn();
 
-  const builder = new ButtonGroupsBuilder(
-    mockApp,
-    mockSettings,
-    mockPlugin,
-    mockTaskCreationService,
-    mockProjectCreationService,
-    mockAreaCreationService,
-    mockClassCreationService,
-    mockConceptCreationService,
-    mockTaskStatusService,
-    mockPropertyCleanupService,
-    mockFolderRepairService,
-    mockRenameToUidService,
-    mockEffortVotingService,
-    mockLabelToAliasService,
-    mockAssetConversionService,
-    mockMetadataExtractor,
-    mockLogger,
-    mockRefresh,
-  );
+  const builder = new ButtonGroupsBuilder({
+    app: mockApp,
+    settings: mockSettings,
+    plugin: mockPlugin,
+    taskCreationService: mockTaskCreationService,
+    projectCreationService: mockProjectCreationService,
+    areaCreationService: mockAreaCreationService,
+    classCreationService: mockClassCreationService,
+    conceptCreationService: mockConceptCreationService,
+    taskStatusService: mockTaskStatusService,
+    propertyCleanupService: mockPropertyCleanupService,
+    folderRepairService: mockFolderRepairService,
+    renameToUidService: mockRenameToUidService,
+    effortVotingService: mockEffortVotingService,
+    labelToAliasService: mockLabelToAliasService,
+    assetConversionService: mockAssetConversionService,
+    metadataExtractor: mockMetadataExtractor,
+    logger: mockLogger,
+    refresh: mockRefresh,
+  });
 
   return {
     builder,
@@ -183,4 +183,4 @@ export function setupButtonGroupsBuilderTest(): ButtonGroupsBuilderTestContext {
   };
 }
 
-export { TFile, ButtonGroupsBuilder };
+export { TFile, ButtonGroupsBuilder, ButtonGroupsBuilderConfig };
