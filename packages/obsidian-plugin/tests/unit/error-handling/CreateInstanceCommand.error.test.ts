@@ -77,6 +77,8 @@ describe("CreateInstanceCommand Error Handling", () => {
         getLeaf: jest.fn().mockReturnValue(mockLeaf),
         setActiveLeaf: jest.fn(),
         getActiveFile: jest.fn().mockReturnValue(mockTFile),
+        on: jest.fn().mockReturnValue({ id: "mock-event-ref" }),
+        offref: jest.fn(),
       },
       metadataCache: {
         getFileCache: jest.fn().mockReturnValue({
@@ -540,6 +542,9 @@ describe("CreateInstanceCommand Error Handling", () => {
         differentFile
       );
 
+      // Event listener is registered but never fires for the right file
+      (mockApp.workspace.on as jest.Mock).mockReturnValue({ id: "mock-event-ref" });
+
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
           setTimeout(() => callback({ label: "Test", taskSize: "small" }), 0);
@@ -549,11 +554,12 @@ describe("CreateInstanceCommand Error Handling", () => {
       command.checkCallback(false, mockFile, mockContext);
       await flushPromises();
 
-      // Wait for all timeout iterations (20 * 100ms)
+      // Wait for timeout to complete (default 2000ms)
       await new Promise((resolve) => setTimeout(resolve, 2100));
 
       // Should still show success notice even if file didn't become active
       expect(Notice).toHaveBeenCalledWith("Instance created: new-instance");
+      expect(mockApp.workspace.offref).toHaveBeenCalled();
     });
 
     it("should handle getActiveFile returning null consistently", async () => {
@@ -562,6 +568,8 @@ describe("CreateInstanceCommand Error Handling", () => {
       mockTaskCreationService.createTask.mockResolvedValue(createdFile as any);
 
       (mockApp.workspace.getActiveFile as jest.Mock).mockReturnValue(null);
+      // Event listener is registered but never fires
+      (mockApp.workspace.on as jest.Mock).mockReturnValue({ id: "mock-event-ref" });
 
       (LabelInputModal as jest.Mock).mockImplementation((app, callback) => ({
         open: jest.fn(() => {
@@ -572,10 +580,11 @@ describe("CreateInstanceCommand Error Handling", () => {
       command.checkCallback(false, mockFile, mockContext);
       await flushPromises();
 
-      // Wait for polling to complete
+      // Wait for timeout to complete (default 2000ms)
       await new Promise((resolve) => setTimeout(resolve, 2100));
 
       expect(Notice).toHaveBeenCalledWith("Instance created: new-instance");
+      expect(mockApp.workspace.on).toHaveBeenCalledWith("file-open", expect.any(Function));
     });
   });
 
