@@ -32,8 +32,8 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
-    "@playwright/experimental-ct-react": "^1.55.1",
-    "@playwright/test": "^1.55.1",
+    "@playwright/experimental-ct-react": "^1.57.0",
+    "@playwright/test": "^1.57.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "esbuild-plugin-tsc": "^0.5.0",
