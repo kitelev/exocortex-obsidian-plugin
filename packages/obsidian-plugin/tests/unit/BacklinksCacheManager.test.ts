@@ -1,12 +1,16 @@
 import { BacklinksCacheManager } from "../../src/adapters/caching/BacklinksCacheManager";
-import { App } from "obsidian";
+import { App, TFile, EventRef } from "obsidian";
 
 describe("BacklinksCacheManager", () => {
   let cacheManager: BacklinksCacheManager;
   let mockApp: App;
   let mockResolvedLinks: Record<string, Record<string, number>>;
+  let mockEventHandlers: Map<string, ((file: any, oldPath?: string) => void)[]>;
+  let mockEventRefs: EventRef[];
 
   beforeEach(() => {
+    jest.useFakeTimers();
+
     // Create mock resolved links structure
     mockResolvedLinks = {
       "note1.md": {
@@ -25,14 +29,60 @@ describe("BacklinksCacheManager", () => {
       },
     };
 
-    // Mock Obsidian App
+    // Track event handlers for testing
+    mockEventHandlers = new Map();
+    mockEventRefs = [];
+
+    // Mock Obsidian App with vault event system
     mockApp = {
       metadataCache: {
         resolvedLinks: mockResolvedLinks,
       },
+      vault: {
+        on: jest.fn((eventType: string, handler: (file: any, oldPath?: string) => void) => {
+          if (!mockEventHandlers.has(eventType)) {
+            mockEventHandlers.set(eventType, []);
+          }
+          mockEventHandlers.get(eventType)!.push(handler);
+          const eventRef = { eventType, handler } as unknown as EventRef;
+          mockEventRefs.push(eventRef);
+          return eventRef;
+        }),
+        offref: jest.fn((ref: EventRef) => {
+          const typedRef = ref as unknown as { eventType: string; handler: Function };
+          const handlers = mockEventHandlers.get(typedRef.eventType);
+          if (handlers) {
+            const index = handlers.indexOf(typedRef.handler as any);
+            if (index !== -1) {
+              handlers.splice(index, 1);
+            }
+          }
+          const refIndex = mockEventRefs.indexOf(ref);
+          if (refIndex !== -1) {
+            mockEventRefs.splice(refIndex, 1);
+          }
+        }),
+      },
     } as any;
 
-    cacheManager = new BacklinksCacheManager(mockApp);
+    cacheManager = new BacklinksCacheManager(mockApp, 100);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  // Helper to simulate vault events
+  const simulateVaultEvent = (eventType: string, file: Partial<TFile>, oldPath?: string) => {
+    const handlers = mockEventHandlers.get(eventType);
+    if (handlers) {
+      handlers.forEach(handler => handler(file, oldPath));
+    }
+  };
+
+  const createMockFile = (path: string): Partial<TFile> => ({
+    path,
+    extension: "md",
   });
 
   describe("constructor", () => {
@@ -42,6 +92,12 @@ describe("BacklinksCacheManager", () => {
 
     it("should initialize with empty backlinks cache", () => {
       expect(cacheManager.getBacklinks("any-file.md")).toBeUndefined();
+    });
+
+    it("should accept custom debounce delay", () => {
+      const customDelayManager = new BacklinksCacheManager(mockApp, 500);
+      expect(customDelayManager).toBeDefined();
+      customDelayManager.cleanup();
     });
   });
 
@@ -384,6 +440,354 @@ describe("BacklinksCacheManager", () => {
       // After cleanup, cache is invalid, so getBacklinks will rebuild
       // To test immediate state, we need to check without triggering rebuild
       expect(cacheManager.isValid()).toBe(false);
+    });
+
+    it("should clear pending invalidations", () => {
+      cacheManager.registerEventListeners();
+      cacheManager.invalidateFor("note1.md");
+      expect(cacheManager.pendingInvalidationCount).toBe(1);
+
+      cacheManager.cleanup();
+
+      expect(cacheManager.pendingInvalidationCount).toBe(0);
+    });
+
+    it("should unregister event listeners", () => {
+      cacheManager.registerEventListeners();
+      expect(mockApp.vault.on).toHaveBeenCalledTimes(4);
+
+      cacheManager.cleanup();
+
+      expect(mockApp.vault.offref).toHaveBeenCalledTimes(4);
+    });
+  });
+
+  describe("registerEventListeners", () => {
+    it("should register listeners for modify, delete, create, and rename events", () => {
+      cacheManager.registerEventListeners();
+
+      expect(mockApp.vault.on).toHaveBeenCalledWith("modify", expect.any(Function));
+      expect(mockApp.vault.on).toHaveBeenCalledWith("delete", expect.any(Function));
+      expect(mockApp.vault.on).toHaveBeenCalledWith("create", expect.any(Function));
+      expect(mockApp.vault.on).toHaveBeenCalledWith("rename", expect.any(Function));
+      expect(mockApp.vault.on).toHaveBeenCalledTimes(4);
+    });
+
+    it("should invalidate cache on file modify event", () => {
+      cacheManager.buildCache();
+      cacheManager.registerEventListeners();
+      expect(cacheManager.isValid()).toBe(true);
+
+      // Create a proper TFile-like object
+      const mockFile = Object.assign(Object.create(TFile.prototype), createMockFile("note1.md"));
+      simulateVaultEvent("modify", mockFile);
+
+      // Process debounced invalidations
+      jest.runAllTimers();
+
+      expect(cacheManager.isValid()).toBe(false);
+    });
+
+    it("should invalidate cache on file delete event", () => {
+      cacheManager.buildCache();
+      cacheManager.registerEventListeners();
+      expect(cacheManager.isValid()).toBe(true);
+
+      const mockFile = Object.assign(Object.create(TFile.prototype), createMockFile("note1.md"));
+      simulateVaultEvent("delete", mockFile);
+
+      jest.runAllTimers();
+
+      expect(cacheManager.isValid()).toBe(false);
+    });
+
+    it("should invalidate cache on file create event", () => {
+      cacheManager.buildCache();
+      cacheManager.registerEventListeners();
+      expect(cacheManager.isValid()).toBe(true);
+
+      const mockFile = Object.assign(Object.create(TFile.prototype), createMockFile("new-file.md"));
+      simulateVaultEvent("create", mockFile);
+
+      jest.runAllTimers();
+
+      expect(cacheManager.isValid()).toBe(false);
+    });
+
+    it("should invalidate cache for both old and new paths on rename event", () => {
+      cacheManager.buildCache();
+      cacheManager.registerEventListeners();
+      expect(cacheManager.isValid()).toBe(true);
+
+      const mockFile = Object.assign(Object.create(TFile.prototype), createMockFile("new-name.md"));
+      simulateVaultEvent("rename", mockFile, "old-name.md");
+
+      // Should have two pending invalidations
+      expect(cacheManager.pendingInvalidationCount).toBe(2);
+
+      jest.runAllTimers();
+
+      expect(cacheManager.isValid()).toBe(false);
+    });
+
+    it("should ignore non-TFile objects", () => {
+      cacheManager.buildCache();
+      cacheManager.registerEventListeners();
+      expect(cacheManager.isValid()).toBe(true);
+
+      // Simulate event with non-TFile object (e.g., TFolder)
+      const nonFile = { path: "some-folder", extension: undefined };
+      simulateVaultEvent("modify", nonFile);
+
+      jest.runAllTimers();
+
+      // Cache should still be valid because non-TFile was ignored
+      expect(cacheManager.isValid()).toBe(true);
+    });
+  });
+
+  describe("unregisterEventListeners", () => {
+    it("should unregister all event listeners", () => {
+      cacheManager.registerEventListeners();
+      expect(mockEventRefs.length).toBe(4);
+
+      cacheManager.unregisterEventListeners();
+
+      expect(mockApp.vault.offref).toHaveBeenCalledTimes(4);
+    });
+
+    it("should handle being called when no listeners are registered", () => {
+      expect(() => cacheManager.unregisterEventListeners()).not.toThrow();
+    });
+
+    it("should allow re-registering listeners after unregistering", () => {
+      cacheManager.registerEventListeners();
+      cacheManager.unregisterEventListeners();
+
+      expect(() => cacheManager.registerEventListeners()).not.toThrow();
+      expect(mockApp.vault.on).toHaveBeenCalledTimes(8); // 4 initial + 4 re-registered
+    });
+  });
+
+  describe("invalidateFor (partial invalidation)", () => {
+    it("should queue path for invalidation", () => {
+      cacheManager.invalidateFor("note1.md");
+      expect(cacheManager.pendingInvalidationCount).toBe(1);
+    });
+
+    it("should batch multiple invalidations together", () => {
+      cacheManager.invalidateFor("note1.md");
+      cacheManager.invalidateFor("note2.md");
+      cacheManager.invalidateFor("note3.md");
+
+      expect(cacheManager.pendingInvalidationCount).toBe(3);
+    });
+
+    it("should deduplicate same path invalidations", () => {
+      cacheManager.invalidateFor("note1.md");
+      cacheManager.invalidateFor("note1.md");
+      cacheManager.invalidateFor("note1.md");
+
+      expect(cacheManager.pendingInvalidationCount).toBe(1);
+    });
+
+    it("should process invalidations after debounce delay", () => {
+      cacheManager.buildCache();
+      expect(cacheManager.isValid()).toBe(true);
+
+      cacheManager.invalidateFor("note1.md");
+
+      // Before debounce completes, cache should still have pending invalidations
+      expect(cacheManager.pendingInvalidationCount).toBe(1);
+      expect(cacheManager.isValid()).toBe(true);
+
+      // Run timers to trigger debounced function
+      jest.runAllTimers();
+
+      // After debounce, invalidations should be processed
+      expect(cacheManager.pendingInvalidationCount).toBe(0);
+      expect(cacheManager.isValid()).toBe(false);
+    });
+
+    it("should remove direct cache entry for invalidated path", () => {
+      cacheManager.buildCache();
+      expect(cacheManager.getBacklinks("note2.md")).toBeDefined();
+
+      cacheManager.invalidateFor("note2.md");
+      jest.runAllTimers();
+
+      // After invalidation processing, cache is invalid and will rebuild on access
+      expect(cacheManager.isValid()).toBe(false);
+    });
+
+    it("should invalidate entire cache if affected links exist", () => {
+      cacheManager.buildCache();
+      expect(cacheManager.isValid()).toBe(true);
+
+      // note1.md links to note2.md and note3.md
+      // Invalidating note1.md should trigger full cache invalidation
+      cacheManager.invalidateFor("note1.md");
+      jest.runAllTimers();
+
+      expect(cacheManager.isValid()).toBe(false);
+    });
+  });
+
+  describe("debouncing behavior", () => {
+    it("should not process invalidations until debounce delay passes", () => {
+      cacheManager.buildCache();
+      cacheManager.invalidateFor("note1.md");
+
+      // Advance time by less than debounce delay
+      jest.advanceTimersByTime(50);
+
+      // Invalidations should still be pending
+      expect(cacheManager.pendingInvalidationCount).toBe(1);
+    });
+
+    it("should batch rapid invalidations within debounce window", () => {
+      cacheManager.buildCache();
+
+      // Rapid fire invalidations
+      cacheManager.invalidateFor("note1.md");
+      jest.advanceTimersByTime(30);
+      cacheManager.invalidateFor("note2.md");
+      jest.advanceTimersByTime(30);
+      cacheManager.invalidateFor("note3.md");
+
+      // All should be batched
+      expect(cacheManager.pendingInvalidationCount).toBe(3);
+
+      // Complete the debounce
+      jest.runAllTimers();
+
+      // All processed at once
+      expect(cacheManager.pendingInvalidationCount).toBe(0);
+    });
+
+    it("should use trailing edge debounce (delayed processing)", () => {
+      cacheManager.buildCache();
+      expect(cacheManager.isValid()).toBe(true);
+
+      cacheManager.invalidateFor("note1.md");
+
+      // With trailing edge debounce, pending invalidations accumulate until delay passes
+      expect(cacheManager.pendingInvalidationCount).toBe(1);
+      expect(cacheManager.isValid()).toBe(true);
+
+      // After timer completes, invalidations are processed
+      jest.runAllTimers();
+
+      expect(cacheManager.pendingInvalidationCount).toBe(0);
+      expect(cacheManager.isValid()).toBe(false);
+    });
+  });
+
+  describe("pendingInvalidationCount", () => {
+    it("should return 0 when no invalidations pending", () => {
+      expect(cacheManager.pendingInvalidationCount).toBe(0);
+    });
+
+    it("should track number of pending invalidations", () => {
+      cacheManager.invalidateFor("note1.md");
+      expect(cacheManager.pendingInvalidationCount).toBe(1);
+
+      cacheManager.invalidateFor("note2.md");
+      expect(cacheManager.pendingInvalidationCount).toBe(2);
+    });
+
+    it("should return 0 after invalidations are processed", () => {
+      cacheManager.invalidateFor("note1.md");
+      expect(cacheManager.pendingInvalidationCount).toBe(1);
+
+      jest.runAllTimers();
+
+      expect(cacheManager.pendingInvalidationCount).toBe(0);
+    });
+  });
+
+  describe("integration with vault events", () => {
+    it("should handle rapid file modifications", () => {
+      cacheManager.buildCache();
+      cacheManager.registerEventListeners();
+
+      // Simulate rapid file saves (common during auto-save)
+      for (let i = 0; i < 10; i++) {
+        const mockFile = Object.assign(Object.create(TFile.prototype), createMockFile("note1.md"));
+        simulateVaultEvent("modify", mockFile);
+        jest.advanceTimersByTime(10);
+      }
+
+      // All invalidations should be batched
+      expect(cacheManager.pendingInvalidationCount).toBe(1); // Same file
+
+      jest.runAllTimers();
+
+      expect(cacheManager.isValid()).toBe(false);
+      expect(cacheManager.pendingInvalidationCount).toBe(0);
+    });
+
+    it("should handle file rename with linked files", () => {
+      // Setup: note1.md links to note2.md
+      cacheManager.buildCache();
+      cacheManager.registerEventListeners();
+
+      // Rename note2.md to renamed.md
+      const mockFile = Object.assign(Object.create(TFile.prototype), createMockFile("renamed.md"));
+      simulateVaultEvent("rename", mockFile, "note2.md");
+
+      jest.runAllTimers();
+
+      // Cache should be invalidated
+      expect(cacheManager.isValid()).toBe(false);
+
+      // After rebuild, should reflect new state
+      // (In real scenario, Obsidian would update resolvedLinks)
+    });
+
+    it("should handle file deletion", () => {
+      cacheManager.buildCache();
+      cacheManager.registerEventListeners();
+
+      const mockFile = Object.assign(Object.create(TFile.prototype), createMockFile("note2.md"));
+      simulateVaultEvent("delete", mockFile);
+
+      jest.runAllTimers();
+
+      expect(cacheManager.isValid()).toBe(false);
+    });
+
+    it("should handle new file creation", () => {
+      cacheManager.buildCache();
+      cacheManager.registerEventListeners();
+
+      const mockFile = Object.assign(Object.create(TFile.prototype), createMockFile("new-note.md"));
+      simulateVaultEvent("create", mockFile);
+
+      jest.runAllTimers();
+
+      expect(cacheManager.isValid()).toBe(false);
+    });
+
+    it("should correctly rebuild cache after invalidation from event", () => {
+      cacheManager.buildCache();
+      cacheManager.registerEventListeners();
+
+      // Add new link to resolved links
+      mockApp.metadataCache.resolvedLinks["new-note.md"] = { "note1.md": 1 };
+
+      // Simulate create event
+      const mockFile = Object.assign(Object.create(TFile.prototype), createMockFile("new-note.md"));
+      simulateVaultEvent("create", mockFile);
+
+      jest.runAllTimers();
+
+      // Access triggers rebuild
+      const note1Backlinks = cacheManager.getBacklinks("note1.md");
+
+      // Should now include the new backlink
+      expect(note1Backlinks?.has("new-note.md")).toBe(true);
+      expect(cacheManager.isValid()).toBe(true);
     });
   });
 });

@@ -899,13 +899,32 @@ export function requestUrl(request: {
   });
 }
 
-// Mock debounce function
+// Mock debounce function - compatible with Jest fake timers
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number,
   immediate?: boolean,
 ): T {
-  return func; // Simplified mock - just return the function as-is for testing
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  const debounced = ((...args: Parameters<T>) => {
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId);
+    }
+
+    if (immediate && timeoutId === null) {
+      func(...args);
+    }
+
+    timeoutId = setTimeout(() => {
+      timeoutId = null;
+      if (!immediate) {
+        func(...args);
+      }
+    }, wait);
+  }) as T;
+
+  return debounced;
 }
 
 // Mock moment if needed
