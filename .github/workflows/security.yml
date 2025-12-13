@@ -1,0 +1,181 @@
+name: Security Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # Weekly scan on Sunday at midnight UTC
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+    # Allow manual trigger
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  npm-audit:
+    name: NPM Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: |
+          echo "## NPM Security Audit Report" > npm-audit-report.md
+          echo "" >> npm-audit-report.md
+          echo "**Scan Date:** $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> npm-audit-report.md
+          echo "" >> npm-audit-report.md
+
+          # Run audit and capture output
+          set +e
+          npm audit --audit-level=moderate 2>&1 | tee npm-audit-output.txt
+          AUDIT_EXIT_CODE=$?
+          set -e
+
+          if [ $AUDIT_EXIT_CODE -eq 0 ]; then
+            echo "### Result: No vulnerabilities found" >> npm-audit-report.md
+            echo "" >> npm-audit-report.md
+            echo "All dependencies passed security audit at moderate level." >> npm-audit-report.md
+          else
+            echo "### Result: Vulnerabilities detected" >> npm-audit-report.md
+            echo "" >> npm-audit-report.md
+            echo '```' >> npm-audit-report.md
+            cat npm-audit-output.txt >> npm-audit-report.md
+            echo '```' >> npm-audit-report.md
+          fi
+
+          # Also generate JSON report for further processing
+          npm audit --json > npm-audit-report.json || true
+
+          # Exit with audit result
+          exit $AUDIT_EXIT_CODE
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: |
+            npm-audit-report.md
+            npm-audit-report.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+  codeql-analysis:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: typescript
+          # Use default queries plus security-extended and security-and-quality
+          queries: security-extended,security-and-quality
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:typescript"
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Only run on pull requests
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          # Fail on high and critical vulnerabilities
+          fail-on-severity: high
+          # Allow specific licenses
+          allow-licenses: MIT, Apache-2.0, ISC, BSD-2-Clause, BSD-3-Clause, 0BSD, Unlicense, CC0-1.0
+
+  security-report:
+    name: Generate Security Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [npm-audit, codeql-analysis]
+    if: always() && github.event_name == 'schedule'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download npm audit report
+        uses: actions/download-artifact@v4
+        with:
+          name: npm-audit-report
+          path: reports/
+        continue-on-error: true
+
+      - name: Generate Weekly Security Summary
+        run: |
+          echo "# Weekly Security Report" > security-summary.md
+          echo "" >> security-summary.md
+          echo "**Generated:** $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> security-summary.md
+          echo "**Repository:** ${{ github.repository }}" >> security-summary.md
+          echo "" >> security-summary.md
+          echo "## Scans Performed" >> security-summary.md
+          echo "" >> security-summary.md
+          echo "| Scan Type | Status |" >> security-summary.md
+          echo "|-----------|--------|" >> security-summary.md
+          echo "| NPM Audit | ${{ needs.npm-audit.result }} |" >> security-summary.md
+          echo "| CodeQL Analysis | ${{ needs.codeql-analysis.result }} |" >> security-summary.md
+          echo "" >> security-summary.md
+          echo "## Recommendations" >> security-summary.md
+          echo "" >> security-summary.md
+          echo "1. Review any vulnerabilities detected in npm audit" >> security-summary.md
+          echo "2. Check CodeQL alerts in the Security tab" >> security-summary.md
+          echo "3. Review and merge Dependabot PRs for security updates" >> security-summary.md
+          echo "" >> security-summary.md
+          echo "---" >> security-summary.md
+          echo "" >> security-summary.md
+          echo "*This report is automatically generated every Sunday at 00:00 UTC*" >> security-summary.md
+
+      - name: Upload weekly report
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-security-report
+          path: security-summary.md
+          retention-days: 90
