@@ -475,4 +475,251 @@ describe("EventListenerManager", () => {
       expect(manager.getListenerCount()).toBe(1);
     });
   });
+
+  describe("unregister", () => {
+    it("should remove a specific event listener", () => {
+      const handler = jest.fn();
+
+      manager.register(mockElement, "click", handler);
+      expect(manager.getListenerCount()).toBe(1);
+
+      const result = manager.unregister(mockElement, "click", handler);
+
+      expect(result).toBe(true);
+      expect(manager.getListenerCount()).toBe(0);
+      expect(removeEventListenerSpy).toHaveBeenCalledWith("click", handler);
+    });
+
+    it("should return false when listener not found", () => {
+      const handler1 = jest.fn();
+      const handler2 = jest.fn();
+
+      manager.register(mockElement, "click", handler1);
+
+      const result = manager.unregister(mockElement, "click", handler2);
+
+      expect(result).toBe(false);
+      expect(manager.getListenerCount()).toBe(1);
+    });
+
+    it("should not remove listener with different event type", () => {
+      const handler = jest.fn();
+
+      manager.register(mockElement, "click", handler);
+
+      const result = manager.unregister(mockElement, "mouseover", handler);
+
+      expect(result).toBe(false);
+      expect(manager.getListenerCount()).toBe(1);
+    });
+
+    it("should not remove listener on different element", () => {
+      const handler = jest.fn();
+      const element2 = document.createElement("button");
+
+      manager.register(mockElement, "click", handler);
+
+      const result = manager.unregister(element2, "click", handler);
+
+      expect(result).toBe(false);
+      expect(manager.getListenerCount()).toBe(1);
+    });
+
+    it("should remove only first matching listener when duplicates exist", () => {
+      const handler = jest.fn();
+
+      manager.register(mockElement, "click", handler);
+      manager.register(mockElement, "click", handler);
+      expect(manager.getListenerCount()).toBe(2);
+
+      const result = manager.unregister(mockElement, "click", handler);
+
+      expect(result).toBe(true);
+      expect(manager.getListenerCount()).toBe(1);
+    });
+
+    it("should handle unregister on empty manager", () => {
+      const handler = jest.fn();
+
+      const result = manager.unregister(mockElement, "click", handler);
+
+      expect(result).toBe(false);
+      expect(manager.getListenerCount()).toBe(0);
+    });
+
+    it("should allow re-registration after unregister", () => {
+      const handler = jest.fn();
+
+      manager.register(mockElement, "click", handler);
+      manager.unregister(mockElement, "click", handler);
+
+      manager.register(mockElement, "click", handler);
+      expect(manager.getListenerCount()).toBe(1);
+    });
+  });
+
+  describe("unsubscribe function from register", () => {
+    it("should return an unsubscribe function", () => {
+      const handler = jest.fn();
+
+      const unsubscribe = manager.register(mockElement, "click", handler);
+
+      expect(typeof unsubscribe).toBe("function");
+    });
+
+    it("should remove listener when unsubscribe is called", () => {
+      const handler = jest.fn();
+
+      const unsubscribe = manager.register(mockElement, "click", handler);
+      expect(manager.getListenerCount()).toBe(1);
+
+      unsubscribe();
+
+      expect(manager.getListenerCount()).toBe(0);
+      expect(removeEventListenerSpy).toHaveBeenCalledWith("click", handler);
+    });
+
+    it("should handle multiple unsubscribe calls safely", () => {
+      const handler = jest.fn();
+
+      const unsubscribe = manager.register(mockElement, "click", handler);
+
+      unsubscribe();
+      unsubscribe(); // Second call should not throw
+
+      expect(manager.getListenerCount()).toBe(0);
+      expect(removeEventListenerSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it("should only unsubscribe the specific listener", () => {
+      const handler1 = jest.fn();
+      const handler2 = jest.fn();
+
+      const unsubscribe1 = manager.register(mockElement, "click", handler1);
+      manager.register(mockElement, "click", handler2);
+
+      expect(manager.getListenerCount()).toBe(2);
+
+      unsubscribe1();
+
+      expect(manager.getListenerCount()).toBe(1);
+      expect(removeEventListenerSpy).toHaveBeenCalledWith("click", handler1);
+    });
+
+    it("should work with multiple unsubscribe functions", () => {
+      const handler1 = jest.fn();
+      const handler2 = jest.fn();
+      const handler3 = jest.fn();
+
+      const unsubscribe1 = manager.register(mockElement, "click", handler1);
+      const unsubscribe2 = manager.register(mockElement, "mouseover", handler2);
+      const unsubscribe3 = manager.register(mockElement, "keydown", handler3);
+
+      expect(manager.getListenerCount()).toBe(3);
+
+      unsubscribe2();
+      expect(manager.getListenerCount()).toBe(2);
+
+      unsubscribe1();
+      expect(manager.getListenerCount()).toBe(1);
+
+      unsubscribe3();
+      expect(manager.getListenerCount()).toBe(0);
+    });
+
+    it("should work alongside cleanup", () => {
+      const handler1 = jest.fn();
+      const handler2 = jest.fn();
+
+      const unsubscribe1 = manager.register(mockElement, "click", handler1);
+      manager.register(mockElement, "mouseover", handler2);
+
+      unsubscribe1();
+      expect(manager.getListenerCount()).toBe(1);
+
+      manager.cleanup();
+      expect(manager.getListenerCount()).toBe(0);
+    });
+
+    it("should not affect other handlers when unsubscribing duplicates", () => {
+      // Use different handlers to test isolation
+      const handler1 = jest.fn();
+      const handler2 = jest.fn();
+
+      const unsubscribe1 = manager.register(mockElement, "click", handler1);
+      manager.register(mockElement, "click", handler2);
+
+      expect(manager.getListenerCount()).toBe(2);
+
+      unsubscribe1();
+      expect(manager.getListenerCount()).toBe(1);
+
+      // Only handler2 should be called after unsubscribing handler1
+      mockElement.dispatchEvent(new Event("click"));
+      expect(handler1).toHaveBeenCalledTimes(0);
+      expect(handler2).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("component lifecycle integration", () => {
+    it("should handle typical component mount/unmount with unsubscribe", () => {
+      const container = document.createElement("div");
+      const button = document.createElement("button");
+      container.appendChild(button);
+
+      const clickHandler = jest.fn();
+      const hoverHandler = jest.fn();
+
+      // Component mounts
+      const unsubscribeClick = manager.register(button, "click", clickHandler);
+      const unsubscribeHover = manager.register(button, "mouseover", hoverHandler);
+
+      expect(manager.getListenerCount()).toBe(2);
+
+      // Some interactions
+      button.dispatchEvent(new Event("click"));
+      expect(clickHandler).toHaveBeenCalledTimes(1);
+
+      // Only unsubscribe click (partial cleanup)
+      unsubscribeClick();
+      expect(manager.getListenerCount()).toBe(1);
+
+      // Click no longer works
+      button.dispatchEvent(new Event("click"));
+      expect(clickHandler).toHaveBeenCalledTimes(1); // Still 1
+
+      // Hover still works
+      button.dispatchEvent(new Event("mouseover"));
+      expect(hoverHandler).toHaveBeenCalledTimes(1);
+
+      // Final cleanup
+      unsubscribeHover();
+      expect(manager.getListenerCount()).toBe(0);
+    });
+
+    it("should prevent memory leaks during plugin reload cycles", () => {
+      const handlers: jest.Mock[] = [];
+      const unsubscribes: (() => void)[] = [];
+
+      // Simulate multiple reload cycles
+      for (let cycle = 0; cycle < 3; cycle++) {
+        // Plugin load: register listeners
+        for (let i = 0; i < 10; i++) {
+          const handler = jest.fn();
+          handlers.push(handler);
+          unsubscribes.push(manager.register(mockElement, "click", handler));
+        }
+
+        expect(manager.getListenerCount()).toBe(10);
+
+        // Plugin unload: cleanup
+        manager.cleanup();
+        expect(manager.getListenerCount()).toBe(0);
+
+        // Clear for next cycle
+        handlers.length = 0;
+        unsubscribes.length = 0;
+      }
+    });
+  });
 });
