@@ -1243,6 +1243,195 @@ describe("NoteToRDFConverter", () => {
     });
   });
 
+  // Issue #871: Generate RDFS vocabulary triples for mapped properties
+  describe("RDFS vocabulary mapping (Issue #871)", () => {
+    const file: IFile = {
+      path: "03 Knowledge/exo/exo__Effort_status.md",
+      basename: "exo__Effort_status",
+      name: "exo__Effort_status.md",
+      parent: null,
+    };
+
+    it("should generate rdfs:domain triple for exo__Property_domain property", async () => {
+      const frontmatter: IFrontmatter = {
+        exo__Property_domain: "[[ems__Effort]]",
+      };
+
+      const targetFile: IFile = {
+        path: "03 Knowledge/ems/ems__Effort.md",
+        basename: "ems__Effort",
+        name: "ems__Effort.md",
+        parent: null,
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+      mockVault.getFirstLinkpathDest.mockReturnValue(targetFile);
+
+      const triples = await converter.convertNote(file);
+
+      // Should have the original exo:Property_domain triple
+      const exoTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Property_domain")
+      );
+      expect(exoTriple).toBeDefined();
+
+      // Should ALSO have the mapped rdfs:domain triple
+      const rdfsTriple = triples.find((t) =>
+        (t.predicate as IRI).value === "http://www.w3.org/2000/01/rdf-schema#domain"
+      );
+      expect(rdfsTriple).toBeDefined();
+      expect(rdfsTriple!.object).toBeInstanceOf(IRI);
+    });
+
+    it("should generate rdfs:range triple for exo__Property_range property", async () => {
+      const frontmatter: IFrontmatter = {
+        exo__Property_range: "[[exo__Asset]]",
+      };
+
+      const targetFile: IFile = {
+        path: "03 Knowledge/exo/exo__Asset.md",
+        basename: "exo__Asset",
+        name: "exo__Asset.md",
+        parent: null,
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+      mockVault.getFirstLinkpathDest.mockReturnValue(targetFile);
+
+      const triples = await converter.convertNote(file);
+
+      const rdfsTriple = triples.find((t) =>
+        (t.predicate as IRI).value === "http://www.w3.org/2000/01/rdf-schema#range"
+      );
+      expect(rdfsTriple).toBeDefined();
+      expect(rdfsTriple!.object).toBeInstanceOf(IRI);
+    });
+
+    it("should generate rdfs:subClassOf triple for exo__Class_superClass property", async () => {
+      const classFile: IFile = {
+        path: "03 Knowledge/ems/ems__Task.md",
+        basename: "ems__Task",
+        name: "ems__Task.md",
+        parent: null,
+      };
+
+      const frontmatter: IFrontmatter = {
+        exo__Class_superClass: "[[exo__Asset]]",
+      };
+
+      const targetFile: IFile = {
+        path: "03 Knowledge/exo/exo__Asset.md",
+        basename: "exo__Asset",
+        name: "exo__Asset.md",
+        parent: null,
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+      mockVault.getFirstLinkpathDest.mockReturnValue(targetFile);
+
+      const triples = await converter.convertNote(classFile);
+
+      const rdfsTriple = triples.find((t) =>
+        (t.predicate as IRI).value === "http://www.w3.org/2000/01/rdf-schema#subClassOf"
+      );
+      expect(rdfsTriple).toBeDefined();
+      expect(rdfsTriple!.object).toBeInstanceOf(IRI);
+    });
+
+    it("should NOT generate vocabulary triple for properties without mappings", async () => {
+      const frontmatter: IFrontmatter = {
+        exo__Asset_label: "Test Label",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+
+      const triples = await converter.convertNote(file);
+
+      // Should have the original exo:Asset_label triple
+      const labelTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Asset_label")
+      );
+      expect(labelTriple).toBeDefined();
+
+      // Should NOT have any rdfs:* triples (except what's naturally generated)
+      const rdfsTriples = triples.filter((t) =>
+        (t.predicate as IRI).value.startsWith("http://www.w3.org/2000/01/rdf-schema#")
+      );
+      expect(rdfsTriples.length).toBe(0);
+    });
+
+    it("should NOT generate vocabulary triple for Literal values (only IRI)", async () => {
+      const frontmatter: IFrontmatter = {
+        exo__Property_domain: "Some plain text", // Not a wiki-link, will be Literal
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+      mockVault.getFirstLinkpathDest.mockReturnValue(null);
+
+      const triples = await converter.convertNote(file);
+
+      // Should have the original exo:Property_domain triple with Literal value
+      const exoTriple = triples.find((t) =>
+        (t.predicate as IRI).value.includes("Property_domain")
+      );
+      expect(exoTriple).toBeDefined();
+      expect(exoTriple!.object).toBeInstanceOf(Literal);
+
+      // Should NOT have rdfs:domain triple (mapping only applies to IRI values)
+      const rdfsTriple = triples.filter((t) =>
+        (t.predicate as IRI).value === "http://www.w3.org/2000/01/rdf-schema#domain"
+      );
+      expect(rdfsTriple.length).toBe(0);
+    });
+
+    it("should generate both original and RDFS triple when target file exists", async () => {
+      const frontmatter: IFrontmatter = {
+        exo__Property_domain: "[[ems__Task]]",
+      };
+
+      const targetFile: IFile = {
+        path: "03 Knowledge/ems/ems__Task.md",
+        basename: "ems__Task",
+        name: "ems__Task.md",
+        parent: null,
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+      mockVault.getFirstLinkpathDest.mockReturnValue(targetFile);
+
+      const triples = await converter.convertNote(file);
+
+      // Count domain-related triples
+      const domainTriples = triples.filter((t) => {
+        const predValue = (t.predicate as IRI).value;
+        return predValue.includes("Property_domain") ||
+               predValue === "http://www.w3.org/2000/01/rdf-schema#domain";
+      });
+
+      // Should have BOTH the exo:Property_domain and rdfs:domain triples
+      expect(domainTriples.length).toBe(2);
+    });
+
+    it("should work with class reference that gets expanded to namespace URI", async () => {
+      const frontmatter: IFrontmatter = {
+        exo__Property_domain: "[[ems__Effort]]",
+      };
+
+      mockVault.getFrontmatter.mockReturnValue(frontmatter);
+      mockVault.getFirstLinkpathDest.mockReturnValue(null); // File not found, will expand to namespace URI
+
+      const triples = await converter.convertNote(file);
+
+      // Should have rdfs:domain triple pointing to namespace URI
+      const rdfsTriple = triples.find((t) =>
+        (t.predicate as IRI).value === "http://www.w3.org/2000/01/rdf-schema#domain"
+      );
+      expect(rdfsTriple).toBeDefined();
+      expect(rdfsTriple!.object).toBeInstanceOf(IRI);
+      expect((rdfsTriple!.object as IRI).value).toBe(Namespace.EMS.term("Effort").value);
+    });
+  });
+
   describe("notePathToIRI", () => {
     it("should convert note path to obsidian:// IRI", () => {
       const iri = converter.notePathToIRI("path/to/note.md");
