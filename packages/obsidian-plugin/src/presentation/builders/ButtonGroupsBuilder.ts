@@ -2,20 +2,22 @@ import { TFile } from "obsidian";
 import { ILogger } from '@plugin/adapters/logging/ILogger';
 import { ExocortexSettings } from '@plugin/domain/settings/ExocortexSettings';
 import { ButtonGroup } from '@plugin/presentation/components/ActionButtonsGroup';
-import { CommandVisibilityContext } from "@exocortex/core";
-import { TaskCreationService } from "@exocortex/core";
-import { ProjectCreationService } from "@exocortex/core";
-import { AreaCreationService } from "@exocortex/core";
-import { ClassCreationService } from "@exocortex/core";
-import { ConceptCreationService } from "@exocortex/core";
-import { TaskStatusService } from "@exocortex/core";
-import { PropertyCleanupService } from "@exocortex/core";
-import { FolderRepairService } from "@exocortex/core";
-import { RenameToUidService } from "@exocortex/core";
-import { EffortVotingService } from "@exocortex/core";
-import { LabelToAliasService } from "@exocortex/core";
-import { AssetConversionService } from "@exocortex/core";
-import { MetadataExtractor } from "@exocortex/core";
+import {
+  CommandVisibilityContext,
+  TaskCreationService,
+  ProjectCreationService,
+  AreaCreationService,
+  ClassCreationService,
+  ConceptCreationService,
+  TaskStatusService,
+  PropertyCleanupService,
+  FolderRepairService,
+  RenameToUidService,
+  EffortVotingService,
+  LabelToAliasService,
+  AssetConversionService,
+  MetadataExtractor,
+} from "@exocortex/core";
 import {
   ButtonBuilderContext,
   ButtonBuilderServices,
@@ -29,6 +31,49 @@ import {
 import { ObsidianApp, ExocortexPluginInterface } from '@plugin/types';
 
 /**
+ * Configuration object for ButtonGroupsBuilder.
+ * Groups related parameters together for better readability and maintainability.
+ */
+export interface ButtonGroupsBuilderConfig {
+  /** Obsidian app instance */
+  app: ObsidianApp;
+  /** Plugin settings */
+  settings: ExocortexSettings;
+  /** Plugin instance for save operations */
+  plugin: ExocortexPluginInterface;
+  /** Service for creating tasks */
+  taskCreationService: TaskCreationService;
+  /** Service for creating projects */
+  projectCreationService: ProjectCreationService;
+  /** Service for creating areas */
+  areaCreationService: AreaCreationService;
+  /** Service for creating classes */
+  classCreationService: ClassCreationService;
+  /** Service for creating concepts */
+  conceptCreationService: ConceptCreationService;
+  /** Service for task status operations */
+  taskStatusService: TaskStatusService;
+  /** Service for cleaning up properties */
+  propertyCleanupService: PropertyCleanupService;
+  /** Service for repairing folder locations */
+  folderRepairService: FolderRepairService;
+  /** Service for renaming files to UID */
+  renameToUidService: RenameToUidService;
+  /** Service for voting on efforts */
+  effortVotingService: EffortVotingService;
+  /** Service for copying label to aliases */
+  labelToAliasService: LabelToAliasService;
+  /** Service for converting between task and project */
+  assetConversionService: AssetConversionService;
+  /** Extractor for file metadata */
+  metadataExtractor: MetadataExtractor;
+  /** Logger instance */
+  logger: ILogger;
+  /** Callback to refresh the view */
+  refresh: () => Promise<void>;
+}
+
+/**
  * Orchestrator for building button groups.
  *
  * Delegates to specialized button group builders:
@@ -38,29 +83,44 @@ import { ObsidianApp, ExocortexPluginInterface } from '@plugin/types';
  * - MaintenanceButtonGroupBuilder: Trash, Archive, Clean Properties, etc.
  */
 export class ButtonGroupsBuilder {
+  private app: ObsidianApp;
+  private settings: ExocortexSettings;
+  private plugin: ExocortexPluginInterface;
+  private metadataExtractor: MetadataExtractor;
+  private logger: ILogger;
+  private refresh: () => Promise<void>;
   private services: ButtonBuilderServices;
   private builders: IButtonGroupBuilder[];
 
-  constructor(
-    private app: ObsidianApp,
-    private settings: ExocortexSettings,
-    private plugin: ExocortexPluginInterface,
-    taskCreationService: TaskCreationService,
-    projectCreationService: ProjectCreationService,
-    areaCreationService: AreaCreationService,
-    classCreationService: ClassCreationService,
-    conceptCreationService: ConceptCreationService,
-    taskStatusService: TaskStatusService,
-    propertyCleanupService: PropertyCleanupService,
-    folderRepairService: FolderRepairService,
-    renameToUidService: RenameToUidService,
-    effortVotingService: EffortVotingService,
-    labelToAliasService: LabelToAliasService,
-    assetConversionService: AssetConversionService,
-    private metadataExtractor: MetadataExtractor,
-    private logger: ILogger,
-    private refresh: () => Promise<void>,
-  ) {
+  constructor(config: ButtonGroupsBuilderConfig) {
+    const {
+      app,
+      settings,
+      plugin,
+      taskCreationService,
+      projectCreationService,
+      areaCreationService,
+      classCreationService,
+      conceptCreationService,
+      taskStatusService,
+      propertyCleanupService,
+      folderRepairService,
+      renameToUidService,
+      effortVotingService,
+      labelToAliasService,
+      assetConversionService,
+      metadataExtractor,
+      logger,
+      refresh,
+    } = config;
+
+    this.app = app;
+    this.settings = settings;
+    this.plugin = plugin;
+    this.metadataExtractor = metadataExtractor;
+    this.logger = logger;
+    this.refresh = refresh;
+
     // Aggregate services for button builders
     this.services = {
       taskCreationService,
