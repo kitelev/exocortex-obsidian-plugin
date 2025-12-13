@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Simple test runner for CI
+# Test runner for CI - supports parallel execution
 set -e
 
 echo "🚀 Running tests..."
@@ -19,7 +19,8 @@ export NODE_OPTIONS="--max-old-space-size=4096"
 echo "📦 Running obsidian-plugin tests..."
 
 # Build jest command with conditional coverage flag
-JEST_ARGS="--config packages/obsidian-plugin/jest.config.js --runInBand --forceExit --testTimeout=60000"
+# Uses parallel workers by default (configured in jest.config.js)
+JEST_ARGS="--config packages/obsidian-plugin/jest.config.js"
 if [ "$COVERAGE" = "true" ]; then
     echo "📊 Coverage collection enabled"
     JEST_ARGS="$JEST_ARGS --coverage --coverageReporters=lcov --coverageReporters=json-summary --coverageReporters=text-summary"
@@ -34,7 +35,7 @@ fi
 
 # Run CLI tests
 echo "📦 Running CLI tests..."
-CLI_JEST_ARGS="--config packages/cli/jest.config.js --forceExit --testTimeout=60000"
+CLI_JEST_ARGS="--config packages/cli/jest.config.js"
 if [ "$COVERAGE" = "true" ]; then
     echo "📊 CLI coverage collection enabled"
     CLI_JEST_ARGS="$CLI_JEST_ARGS --coverage --coverageReporters=lcov --coverageReporters=json-summary --coverageReporters=text-summary"
