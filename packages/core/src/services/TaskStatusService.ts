@@ -83,7 +83,7 @@ export class TaskStatusService {
     await this.timestampService.shiftPlannedEndTimestamp(taskFile, deltaMs);
   }
 
-  async trashEffort(taskFile: IFile): Promise<void> {
+  async trashEffort(taskFile: IFile, reason?: string | null): Promise<void> {
     const content = await this.vault.read(taskFile);
     const timestamp = DateFormatter.toLocalTimestamp(new Date());
 
@@ -98,7 +98,25 @@ export class TaskStatusService {
       timestamp,
     );
 
+    // Append trash reason to note body if provided
+    if (reason) {
+      updated = this.appendTrashReason(updated, reason);
+    }
+
     await this.vault.modify(taskFile, updated);
+  }
+
+  /**
+   * Append a trash reason section to the note body.
+   * Adds a `## Trash Reason` header followed by the reason text.
+   *
+   * @param content - Full markdown file content
+   * @param reason - The reason for trashing the effort
+   * @returns Updated content with trash reason appended
+   */
+  private appendTrashReason(content: string, reason: string): string {
+    const trashReasonSection = `\n\n## Trash Reason\n\n${reason}`;
+    return content.trimEnd() + trashReasonSection;
   }
 
   async archiveTask(taskFile: IFile): Promise<void> {

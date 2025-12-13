@@ -1,4 +1,4 @@
-import { TFile, Notice } from "obsidian";
+import { App, TFile, Notice } from "obsidian";
 import { ICommand } from "./ICommand";
 import {
   CommandVisibilityContext,
@@ -6,12 +6,19 @@ import {
   TaskStatusService,
   LoggingService,
 } from "@exocortex/core";
+import {
+  TrashReasonModal,
+  type TrashReasonModalResult,
+} from "@plugin/presentation/modals/TrashReasonModal";
 
 export class TrashEffortCommand implements ICommand {
   id = "trash-effort";
   name = "Trash";
 
-  constructor(private taskStatusService: TaskStatusService) {}
+  constructor(
+    private app: App,
+    private taskStatusService: TaskStatusService,
+  ) {}
 
   checkCallback = (checking: boolean, file: TFile, context: CommandVisibilityContext | null): boolean => {
     if (!context || !canTrashEffort(context)) return false;
@@ -31,7 +38,19 @@ export class TrashEffortCommand implements ICommand {
   };
 
   private async execute(file: TFile): Promise<void> {
-    await this.taskStatusService.trashEffort(file);
+    const result = await this.showModal();
+
+    if (!result.confirmed) {
+      return;
+    }
+
+    await this.taskStatusService.trashEffort(file, result.reason);
     new Notice(`Trashed: ${file.basename}`);
+  }
+
+  private showModal(): Promise<TrashReasonModalResult> {
+    return new Promise<TrashReasonModalResult>((resolve) => {
+      new TrashReasonModal(this.app, resolve).open();
+    });
   }
 }

@@ -358,6 +358,82 @@ ems__Effort_endTimestamp: 2025-10-12T10:30:00
       const oldEndTimestamp = "ems__Effort_endTimestamp: 2025-10-12T10:30:00";
       expect(modifiedContent).toContain(oldEndTimestamp);
     });
+
+    it("should append trash reason section when reason is provided", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+ems__Effort_status: "[[ems__EffortStatusDoing]]"
+---
+Task content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.trashEffort(mockFile, "No longer needed - project cancelled");
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusTrashed]]"',
+      );
+      expect(modifiedContent).toContain("## Trash Reason");
+      expect(modifiedContent).toContain("No longer needed - project cancelled");
+    });
+
+    it("should not append trash reason section when reason is null", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+ems__Effort_status: "[[ems__EffortStatusDoing]]"
+---
+Task content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.trashEffort(mockFile, null);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusTrashed]]"',
+      );
+      expect(modifiedContent).not.toContain("## Trash Reason");
+    });
+
+    it("should not append trash reason section when reason is undefined", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+ems__Effort_status: "[[ems__EffortStatusDoing]]"
+---
+Task content`;
+
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.trashEffort(mockFile);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain(
+        'ems__Effort_status: "[[ems__EffortStatusTrashed]]"',
+      );
+      expect(modifiedContent).not.toContain("## Trash Reason");
+    });
+
+    it("should preserve multiline trash reason", async () => {
+      const mockFile = { path: "test-task.md" } as TFile;
+      const originalContent = `---
+ems__Effort_status: "[[ems__EffortStatusDoing]]"
+---
+Task content`;
+
+      const multilineReason = "First line\nSecond line\nThird line";
+      mockVault.read.mockResolvedValue(originalContent);
+
+      await service.trashEffort(mockFile, multilineReason);
+
+      const modifiedContent = (mockVault.modify as jest.Mock).mock.calls[0][1];
+
+      expect(modifiedContent).toContain("## Trash Reason");
+      expect(modifiedContent).toContain("First line\nSecond line\nThird line");
+    });
   });
 
   describe("syncEffortEndTimestamp", () => {

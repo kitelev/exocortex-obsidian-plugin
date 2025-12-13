@@ -19,6 +19,7 @@ jest.mock("obsidian", () => ({
 export let mockLabelInputModalCallback: ((result: any) => void) | null = null;
 export let mockSupervisionInputModalCallback: ((result: any) => void) | null =
   null;
+export let mockTrashReasonModalCallback: ((result: any) => void) | null = null;
 
 jest.mock("../../../../src/presentation/modals/LabelInputModal", () => ({
   LabelInputModal: jest.fn().mockImplementation((app, onSubmit) => {
@@ -32,6 +33,16 @@ jest.mock("../../../../src/presentation/modals/LabelInputModal", () => ({
 jest.mock("../../../../src/presentation/modals/SupervisionInputModal", () => ({
   SupervisionInputModal: jest.fn().mockImplementation((app, onSubmit) => {
     mockSupervisionInputModalCallback = onSubmit;
+    return {
+      open: jest.fn(),
+    };
+  }),
+}));
+
+// Mock TrashReasonModal - stores callback so tests can trigger it
+jest.mock("../../../../src/presentation/modals/TrashReasonModal", () => ({
+  TrashReasonModal: jest.fn().mockImplementation((app, onSubmit) => {
+    mockTrashReasonModalCallback = onSubmit;
     return {
       open: jest.fn(),
     };
