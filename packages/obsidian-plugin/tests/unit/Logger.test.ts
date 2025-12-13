@@ -1,6 +1,7 @@
 import { Logger } from "../../src/adapters/logging/Logger";
 import { LoggerFactory } from "../../src/adapters/logging/LoggerFactory";
-import { ILogger } from "../../src/adapters/logging/ILogger";
+import type { ILogger } from "../../src/adapters/logging/ILogger";
+import { ErrorCodes } from "../../src/adapters/logging/ErrorCodes";
 
 describe("Logger", () => {
   let logger: Logger;
@@ -15,6 +16,9 @@ describe("Logger", () => {
     consoleInfoSpy = jest.spyOn(console, "info").mockImplementation();
     consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation();
     consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
+
+    // Reset development mode for each test
+    Logger.setDevelopmentMode(false);
 
     logger = new Logger("TestContext");
   });
@@ -123,67 +127,158 @@ describe("Logger", () => {
   });
 
   describe("error", () => {
-    it("should log error message with context", () => {
-      logger.error("Error message");
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error message", undefined);
+    describe("production mode (default)", () => {
+      beforeEach(() => {
+        Logger.setDevelopmentMode(false);
+      });
+
+      it("should log error message with context (no stack trace)", () => {
+        logger.error("Error message");
+        expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error message");
+      });
+
+      it("should log error with Error object (message only, no stack)", () => {
+        const error = new Error("Test error");
+        error.stack = "Error: Test error\n    at test.js:1:1";
+        logger.error("Error occurred", error);
+        expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error occurred");
+        expect(consoleErrorSpy).toHaveBeenCalledWith("  Details: Test error");
+        expect(consoleErrorSpy).not.toHaveBeenCalledWith(expect.stringContaining("Stack trace"));
+      });
+
+      it("should not log stack trace in production", () => {
+        const error = new Error("Stack error");
+        error.stack = "Error: Stack error\n    at test.js:1:1";
+        logger.error("Error occurred", error);
+        const allCalls = consoleErrorSpy.mock.calls.flat().join(" ");
+        // Should not contain the actual stack trace lines
+        expect(allCalls).not.toContain("at test.js:1:1");
+        // Should not contain the prefix "Stack trace:" that indicates full stack logging
+        expect(allCalls).not.toContain("Stack trace:");
+      });
+
+      it("should log error with error code", () => {
+        const error = new Error("Query failed");
+        logger.error("Query execution failed", {
+          errorCode: ErrorCodes.SPARQL_QUERY_EXECUTION,
+          error,
+        });
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "[TestContext] [SPARQL_001] Query execution failed"
+        );
+      });
+
+      it("should show user-friendly message for known error code", () => {
+        logger.error("Internal error", {
+          errorCode: ErrorCodes.SPARQL_QUERY_EXECUTION,
+        });
+        // Should use the user-friendly message from ErrorMessages
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "[TestContext] [SPARQL_001] Query execution failed"
+        );
+      });
     });
 
-    it("should log error with Error object", () => {
-      const error = new Error("Test error");
-      logger.error("Error occurred", error);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error occurred", error);
+    describe("development mode", () => {
+      beforeEach(() => {
+        Logger.setDevelopmentMode(true);
+      });
+
+      it("should log error message with full context", () => {
+        logger.error("Error message");
+        expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error message");
+      });
+
+      it("should log error with Error object and stack trace", () => {
+        const error = new Error("Test error");
+        error.stack = "Error: Test error\n    at test.js:1:1";
+        logger.error("Error occurred", error);
+        expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error occurred");
+        expect(consoleErrorSpy).toHaveBeenCalledWith("  Error: Test error");
+        expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Stack trace"));
+      });
+
+      it("should log error with error code and full context", () => {
+        const error = new Error("Query failed");
+        error.stack = "Error: Query failed\n    at query.ts:42:10";
+        logger.error("Query execution failed", {
+          errorCode: ErrorCodes.SPARQL_QUERY_EXECUTION,
+          error,
+          context: { queryPreview: "SELECT * WHERE" },
+        });
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "[TestContext] [SPARQL_001] Query execution failed"
+        );
+        expect(consoleErrorSpy).toHaveBeenCalledWith("  Error: Query failed");
+        expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Stack trace"));
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          "  Context:",
+          { queryPreview: "SELECT * WHERE" }
+        );
+      });
+
+      it("should handle non-Error objects", () => {
+        const customError = { code: "ERR_001", message: "Custom error" };
+        logger.error("Custom error occurred", customError);
+        expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Custom error occurred");
+        expect(consoleErrorSpy).toHaveBeenCalledWith("  Error:", customError);
+      });
     });
 
-    it("should log error with non-Error object", () => {
-      const customError = { code: "ERR_001", message: "Custom error" };
-      logger.error("Custom error occurred", customError);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Custom error occurred", customError);
+    describe("setDevelopmentMode", () => {
+      it("should toggle development mode", () => {
+        Logger.setDevelopmentMode(true);
+        expect(Logger.isDevelopmentMode()).toBe(true);
+
+        Logger.setDevelopmentMode(false);
+        expect(Logger.isDevelopmentMode()).toBe(false);
+      });
+
+      it("should affect logging behavior immediately", () => {
+        const error = new Error("Test");
+        error.stack = "Error: Test\n    at file.ts:1:1";
+
+        Logger.setDevelopmentMode(false);
+        logger.error("Msg", error);
+        expect(consoleErrorSpy).not.toHaveBeenCalledWith(expect.stringContaining("Stack trace"));
+
+        consoleErrorSpy.mockClear();
+
+        Logger.setDevelopmentMode(true);
+        logger.error("Msg", error);
+        expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Stack trace"));
+      });
     });
 
-    it("should handle string as error", () => {
-      logger.error("Error message", "String error");
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error message", "String error");
-    });
+    describe("backward compatibility", () => {
+      it("should handle null as error", () => {
+        logger.error("Null error", null);
+        expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Null error");
+      });
 
-    it("should handle number as error", () => {
-      logger.error("Error code", 404);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error code", 404);
-    });
+      it("should handle undefined as error", () => {
+        logger.error("Undefined error", undefined);
+        expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Undefined error");
+      });
 
-    it("should handle Error with stack trace", () => {
-      const errorWithStack = new Error("Stack error");
-      errorWithStack.stack = "Error: Stack error\n    at test.js:1:1";
-      logger.error("Stack trace error", errorWithStack);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Stack trace error", errorWithStack);
-    });
+      it("should handle error without second argument", () => {
+        logger.error("Just a message");
+        expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Just a message");
+      });
 
-    it("should handle custom Error types", () => {
-      class CustomError extends Error {
-        code: string;
-        constructor(message: string, code: string) {
-          super(message);
-          this.code = code;
-        }
-      }
+      it("should handle string as error in development mode", () => {
+        Logger.setDevelopmentMode(true);
+        logger.error("Error message", "String error");
+        expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error message");
+        expect(consoleErrorSpy).toHaveBeenCalledWith("  Error:", "String error");
+      });
 
-      const customError = new CustomError("Custom", "CUSTOM_001");
-      logger.error("Custom error type", customError);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Custom error type", customError);
-    });
-
-    it("should handle null as error", () => {
-      logger.error("Null error", null);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Null error", null);
-    });
-
-    it("should handle undefined as error", () => {
-      logger.error("Undefined error", undefined);
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Undefined error", undefined);
-    });
-
-    it("should handle error without second argument", () => {
-      logger.error("Just a message");
-      expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Just a message", undefined);
+      it("should handle number as error in development mode", () => {
+        Logger.setDevelopmentMode(true);
+        logger.error("Error code", 404);
+        expect(consoleErrorSpy).toHaveBeenCalledWith("[TestContext] Error code");
+        expect(consoleErrorSpy).toHaveBeenCalledWith("  Error:", 404);
+      });
     });
   });
 
